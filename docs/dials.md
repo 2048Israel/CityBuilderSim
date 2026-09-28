@@ -2,7 +2,7 @@
 
 Generated 2026-09-28 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**997 constants in 226 files.**
+**999 constants in 226 files.**
 
 ## model (623 constants)
 
@@ -503,10 +503,10 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1508 | `GameVersion.VERSION` | `"0.7.15"` | Bump on release. |
-| 1967 | `GameVersion.SAVE_FORMAT` | `27` | The save shape. |
-| 1970 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
-| 1972 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 1525 | `GameVersion.VERSION` | `"0.7.16"` | Bump on release. |
+| 1984 | `GameVersion.SAVE_FORMAT` | `27` | The save shape. |
+| 1987 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
+| 1989 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### GoodsMarket.java ([map](map/GoodsMarket.md))
 
@@ -975,9 +975,9 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 238 | `YearBook.RULES` | `rules()` |  |
 | 239 | `YearBook.PREFIXES` | `prefixRules()` |  |
 | 476 | `YearBook.GDP_PARTS` | `{ "consumption", "investment", "government", "netExports" }` | GDP's four parts, as HistorySave names them (0.7.6): C, I, G and NX, in the order they stack. |
-| 904 | `YearBook.EPISODE_MIN_MONTHS` | `3` | A run shorter than this many months is noise, and is not named - or shaded on the chart. |
-| 907 | `YearBook.EPISODE_JOIN_MONTHS` | `6` | Two runs with fewer months of relief than this between them are one episode. |
-| 910 | `YearBook.DEPRESSION_MONTHS` | `24` | A recession this many months long, or longer, is called a depression. |
+| 1025 | `YearBook.EPISODE_MIN_MONTHS` | `3` | A run shorter than this many months is noise, and is not named - or shaded on the chart. |
+| 1028 | `YearBook.EPISODE_JOIN_MONTHS` | `6` | Two runs with fewer months of relief than this between them are one episode. |
+| 1031 | `YearBook.DEPRESSION_MONTHS` | `24` | A recession this many months long, or longer, is called a depression. |
 
 ## sectors (39 constants)
 
@@ -1124,16 +1124,16 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 312 | `HistoryScreen.TRACE_COLOURS` | `{ "#5cb8ff", "#ff6b6b", "#5fd68a", "#ffb454", "#ce93d8", "#4dd0e1", "#d4e157", "#c8b0a5" }` | Eight, then it wraps - and the legend swatch uses the same list. |
 | 353 | `HistoryScreen.GRAPH` | `760` | How wide this one screen runs. |
 | 358 | `HistoryScreen.PRESETS` | `{ new Preset("What money costs", "the borrowing rate, the price level, and how fast it ...` |  |
-| 828 | `HistoryScreen.SMALL_CHART` | `150` | How tall a pinned chart is. |
-| 1013 | `HistoryScreen.LAYERED` | `"realGdp"` | The one line this page can draw in layers. |
-| 1016 | `HistoryScreen.LAYERED_LINE` | `Palette.TEXT_HEAD` | What the GDP line is drawn in over the layers: the headings' ink, which no step of the blue ramp is near. |
-| 1019 | `HistoryScreen.SMALL_Y_AXIS` | `56` | How wide a small chart's y-axis is held when a stack is drawn behind it, so the two plots line up. |
-| 1022 | `HistoryScreen.LAYER_NAMES` | `{ "consumption", "investment", "government", "net exports" }` | What each part is called on the key and in the crosshair, in YearBook.GDP_PARTS' order. |
-| 1194 | `HistoryScreen.BIG_CHART` | `380` | How tall the big chart is. |
-| 1202 | `HistoryScreen.Y_AXIS` | `76` | How wide each y-axis is held when there are two. |
-| 1205 | `HistoryScreen.RECESSION_SHADE` | `0.12` | How strongly a recession is shaded: enough to see, not enough to read as a colour. |
-| 1208 | `HistoryScreen.CONTROLS` | `130` | Room kept at the right of the preset row for "clear all" and "log". |
-| 2426 | `HistoryScreen.TABLE_WIDTH` | `660` | How wide the paragraph above the buyback table wraps. |
+| 847 | `HistoryScreen.SMALL_CHART` | `150` | How tall a pinned chart is. |
+| 1032 | `HistoryScreen.LAYERED` | `"realGdp"` | The one line this page can draw in layers. |
+| 1035 | `HistoryScreen.LAYERED_LINE` | `Palette.TEXT_HEAD` | What the GDP line is drawn in over the layers: the headings' ink, which no step of the blue ramp is near. |
+| 1038 | `HistoryScreen.SMALL_Y_AXIS` | `56` | How wide a small chart's y-axis is held when a stack is drawn behind it, so the two plots line up. |
+| 1041 | `HistoryScreen.LAYER_NAMES` | `{ "consumption", "investment", "government", "net exports" }` | What each part is called on the key and in the crosshair, in YearBook.GDP_PARTS' order. |
+| 1213 | `HistoryScreen.BIG_CHART` | `380` | How tall the big chart is. |
+| 1221 | `HistoryScreen.Y_AXIS` | `76` | How wide each y-axis is held when there are two. |
+| 1224 | `HistoryScreen.RECESSION_SHADE` | `0.12` | How strongly a recession is shaded: enough to see, not enough to read as a colour. |
+| 1227 | `HistoryScreen.CONTROLS` | `130` | Room kept at the right of the preset row for "clear all" and "log". |
+| 2445 | `HistoryScreen.TABLE_WIDTH` | `660` | How wide the paragraph above the buyback table wraps. |
 
 ### Icons.java ([map](map/Icons.md))
 
@@ -1342,7 +1342,7 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3240 | `UserInterface.STRIP_HEIGHT` | `72` | The strip under the stage that holds the dome and the time controls. |
 | 3612 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
 
-## harnesses (126 constants)
+## harnesses (128 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -1614,6 +1614,8 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 40 | `YearBookCheck.A_CENT` | `0.005` | What HistorySave.round2() can lose on a figure it stores. |
 | 43 | `YearBookCheck.HALF_A_PERSON` | `0.51` | What storing the pool as a whole person can lose on a figure derived from it. |
 | 52 | `YearBookCheck.ARDEN` | `Currency.fromCityName("Arden")` | The money a hand-built history is written in (0.7.10). |
+| 895 | `YearBookCheck.COMMA_CO` | `"Acme, Inc."` | Two companies on the fixture's register, named the way a CSV has to quote. |
+| 897 | `YearBookCheck.QUOTE_CO` | `"The \"Good\" Co"` | ...and the second, with a double quote in its name, which the CSV doubles. |
 
 ## tools (34 constants)
 

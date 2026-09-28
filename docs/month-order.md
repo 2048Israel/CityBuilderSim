@@ -57,15 +57,15 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 40. **L6221** `centralBank.settleRedemptions();` → [CentralBank.settleRedemptions](map/CentralBank.md) (L524)
 41. **L6230** `if (debtManager.isAutopilot() && priceIndex.hasRate()) {` → [DebtManager.isAutopilot](map/DebtManager.md) (L106), [PriceIndex.hasRate](map/PriceIndex.md) (L204), [DebtManager.setPolicyRate](map/DebtManager.md) (L69), [DebtManager.advisedPolicyRate](map/DebtManager.md) (L187), [PriceIndex.inflation](map/PriceIndex.md) (L196)  
    _THE AUTOPILOT (0.7.0), before anything is priced: with the rule's hand on the dial, the dial goes where the rule says - DebtManager .advisedPolicyRate() on the year's inflation - and holds where it..._
-42. **L6239** `settleTreasury();` → [Game.settleTreasury](map/Game.md) (L10218)  
+42. **L6239** `settleTreasury();` → [Game.settleTreasury](map/Game.md) (L10234)  
    _The central bank settles with the treasury: last month's profit remitted, the advances' interest charged, repaid from cash above zero or advanced the shortfall._
-43. **L6247** `rollCentralBankAtIssue();` → [Game.rollCentralBankAtIssue](map/Game.md) (L9879)  
+43. **L6247** `rollCentralBankAtIssue();` → [Game.rollCentralBankAtIssue](map/Game.md) (L9895)  
    _The central bank's own maturing paper, replaced at issue by its add-on to what the city sold between the presses, par for par (0.7.15, round 2): after the settle, so its money waits for the maturit..._
-44. **L6252** `openMarketOperation();` → [Game.openMarketOperation](map/Game.md) (L9602)  
+44. **L6252** `openMarketOperation();` → [Game.openMarketOperation](map/Game.md) (L9618)  
    _The holdings dial (0.7.1): the central bank buys or sells the city's term paper toward its target, after the settle above and before the market is priced._
-45. **L6271** `payStudentGrants(studentGrantBill());` → [Game.payStudentGrants](map/Game.md) (L10332), [Game.studentGrantBill](map/Game.md) (L8420)  
+45. **L6271** `payStudentGrants(studentGrantBill());` → [Game.payStudentGrants](map/Game.md) (L10348), [Game.studentGrantBill](map/Game.md) (L8420)  
    _THE STUDENTS' GRANT, PAID IN THE MONTH IT IS CREDITED (0.7.1)._
-46. **L6285** `payEiBenefits();` → [Game.payEiBenefits](map/Game.md) (L10357)  
+46. **L6285** `payEiBenefits();` → [Game.payEiBenefits](map/Game.md) (L10373)  
    _...AND EI, THE SAME WAY (0.7.3)._
 47. **L6303** `economyManager.setBankTax(bank.chargeTax(bankProfitTaxRate()));` → [EconomyManager.setBankTax](map/EconomyManager.md) (L1004), [Bank.chargeTax](map/Bank.md) (L3809), [Game.bankProfitTaxRate](map/Game.md) (L2011)  
    _THE BANK PAYS ITS PROFIT TAX, on the month that has just finished._
@@ -76,7 +76,7 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 52. **L6309** `priceTheDebtMarket();` → [Game.priceTheDebtMarket](map/Game.md) (L7340)
 53. **L6313** `if (settleProbeForTest != null) settleProbeForTest.accept(false);`  
    _The paper sold between the presses settles to its holders: the households first, before the month's coupon (0.7.1)._
-54. **L6314** `householdsTakeTheirShare();` → [Game.householdsTakeTheirShare](map/Game.md) (L9508)
+54. **L6314** `householdsTakeTheirShare();` → [Game.householdsTakeTheirShare](map/Game.md) (L9524)
 55. **L6315** `if (settleProbeForTest != null) settleProbeForTest.accept(true);`
 56. **L6316** `debtManager.processAllDebts(this);` → [DebtManager.processAllDebts](map/DebtManager.md) (L908)
 57. **L6320** `strikeGovernmentBooks();` → [Game.strikeGovernmentBooks](map/Game.md) (L7362)  
@@ -189,12 +189,12 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 128. **L6798** `rateHistory[month % 12] = foreign.getRate();` → [ForeignAccounts.getRate](map/ForeignAccounts.md) (L807)  
    _A year of the rate, so next year can tell a drift from a run._
 129. **L6799** `if (rateHistoryFilled < 12) rateHistoryFilled++;`
-130. **L6801** `takeTreasuryMonth();` → [Game.takeTreasuryMonth](map/Game.md) (L10024)
+130. **L6801** `takeTreasuryMonth();` → [Game.takeTreasuryMonth](map/Game.md) (L10040)
 131. **L6803** `dataSave.setCash(cash);` → [DataSave.setCash](map/DataSave.md) (L472)
 132. **L6837** `postAuditDrift = 0;`  
    _================================================================= NOTHING AFTER THE AUDIT MAY MOVE A POOL._
 133. **L6838** `if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {` → [MoneyAudit.pools](map/MoneyAudit.md) (L317)
-134. **L6857** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L10152)
+134. **L6857** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L10168)
 135. **L6858** `recordMonth();` → [Game.recordMonth](map/Game.md) (L8832)
 
 ## Game.startOfMonthUpdate() - Game.java lines 6862-7108 (247 lines)
@@ -428,7 +428,7 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The two inputs to the rent price, which is a market now._
 6. **L133** `economyManager.setHousingSeekers(game.getFamilies().studioSeekers(),` → [EconomyManager.setHousingSeekers](map/EconomyManager.md) (L273), [Game.getFamilies](map/Game.md) (L7588)  
    _...and the same count split into the two segments the rent market now prices separately._
-7. **L137** `economyManager.setMarginalHousingCost(game.marginalHousingCost());` → [EconomyManager.setMarginalHousingCost](map/EconomyManager.md) (L270), [Game.marginalHousingCost](map/Game.md) (L10604)
+7. **L137** `economyManager.setMarginalHousingCost(game.marginalHousingCost());` → [EconomyManager.setMarginalHousingCost](map/EconomyManager.md) (L270), [Game.marginalHousingCost](map/Game.md) (L10620)
 8. **L139** `economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR)` → [EconomyManager.setSeniors](map/EconomyManager.md) (L1192), [Game.getCohorts](map/Game.md) (L7587)
 9. **L145** `economyManager.updateJobFillRate(populationManager.getJobFillRate());` → [EconomyManager.updateJobFillRate](map/EconomyManager.md) (L93), [PopulationManager.getJobFillRate](map/PopulationManager.md) (L755)  
    _The fill first: every sector's payroll is discounted by it, so it has to be current before the wages are set._

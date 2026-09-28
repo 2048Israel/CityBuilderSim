@@ -1,4 +1,4 @@
-# GameFiles.java - 401 lines · 31 methods · 7 constants · model
+# GameFiles.java - 412 lines · 35 methods · 7 constants · model
 
 `ham/citybuildersim/GameFiles.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
@@ -51,9 +51,9 @@
 |---:|---|
 | 59 | · slots |
 | 111 | · locations |
-| 203 | · migration |
-| 261 | · reading |
-| 318 | · writing |
+| 214 | · migration |
+| 272 | · reading |
+| 329 | · writing |
 
 ## Constants
 
@@ -73,15 +73,15 @@
 |---:|---|---|
 | 78 | `private final Path directory` |  |
 | 79 | `private final Path legacyDirectory` |  |
-| 328 | `public final boolean ok` |  |
-| 329 | `public final Path file` |  |
-| 330 | `public final String error` |  |
+| 339 | `public final boolean ok` |  |
+| 340 | `public final Path file` |  |
+| 341 | `public final String error` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 350 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
+| 52 | 361 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
 
 ### slots (lines 59-110)
 
@@ -91,7 +91,7 @@
 | 86 | 4 | `GameFiles(Path directory, Path legacyDirectory)` | For tests, which must never touch the real user's save folder. |
 | 102 | 8 | `public static GameFiles scratch(String label)` | A throwaway folder for a harness city. |
 
-### locations (lines 111-202)
+### locations (lines 111-213)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -103,40 +103,44 @@
 | 122 | 1 | `public Path historyFile(int slot)` |  |
 | 134 | 1 | `public Path yearBookFile()` | THE YEAR BOOK AND THE DECADE BOOK |
 | 135 | 1 | `public Path decadeBookFile()` |  |
-| 141 | 3 | `private static String stem(int slot)` | Zero-padded, so the folder sorts the way a person reads it and slot 10 does not land between 1 and 2. |
-| 145 | 3 | `public static boolean isValidSlot(int slot)` |  |
-| 150 | 3 | `public static String slotLabel(int slot)` | "Autosave", "Slot 1"... |
-| 154 | 7 | `public static Path defaultDirectory()` |  |
-| 162 | 3 | `public static Path defaultLegacyDirectory()` |  |
-| 174 | 24 | `static Path resolveDirectory(String osName, String appData, String xdgDataHome, String userHome)` | The convention for each platform, as a pure function of its inputs. |
-| 199 | 3 | `private static boolean notBlank(String s)` |  |
+| 143 | 1 | `public Path yearBookCsv()` | ...AND THEIR TABLES AS CSV (0.7.16), beside them under the same stem: each book's main table, and its WITHIN table of the [~] columns' worst and best months. |
+| 144 | 1 | `public Path yearBookWithinCsv()` |  |
+| 145 | 1 | `public Path decadeBookCsv()` |  |
+| 146 | 1 | `public Path decadeBookWithinCsv()` |  |
+| 152 | 3 | `private static String stem(int slot)` | Zero-padded, so the folder sorts the way a person reads it and slot 10 does not land between 1 and 2. |
+| 156 | 3 | `public static boolean isValidSlot(int slot)` |  |
+| 161 | 3 | `public static String slotLabel(int slot)` | "Autosave", "Slot 1"... |
+| 165 | 7 | `public static Path defaultDirectory()` |  |
+| 173 | 3 | `public static Path defaultLegacyDirectory()` |  |
+| 185 | 24 | `static Path resolveDirectory(String osName, String appData, String xdgDataHome, String userHome)` | The convention for each platform, as a pure function of its inputs. |
+| 210 | 3 | `private static boolean notBlank(String s)` |  |
 
-### migration (lines 203-260)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 213 | 30 | `public List<String> migrateLegacy()` | Brings saves over from the old folder. |
-| 244 | 16 | `private void copyIfAbsent(Path from, Path to, String description, List<String> copied)` |  |
-
-### reading (lines 261-317)
+### migration (lines 214-271)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 270 | 18 | `public SaveHeader readHeader(int slot)` | Reads just enough of a slot to label it, or null if the slot is empty. |
-| 290 | 3 | `public boolean slotIsEmpty(int slot)` | No file at all. |
-| 308 | 3 | `public boolean slotIsUnreadable(int slot)` | True when a slot holds a file the game cannot make sense of. |
-| 313 | 4 | `public boolean slotIsLoadable(int slot)` | Loadable: something is there, and it can be read. |
+| 224 | 30 | `public List<String> migrateLegacy()` | Brings saves over from the old folder. |
+| 255 | 16 | `private void copyIfAbsent(Path from, Path to, String description, List<String> copied)` |  |
 
-### writing (lines 318-401)
+### reading (lines 272-328)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 326 | 32 | **type** `public static final class Result` | What a write attempt did. |
-| 332 | 5 | `private Result(boolean ok, Path file, String error)` _(in GameFiles.Result)_ |  |
-| 338 | 1 | `static Result succeeded(Path file)` _(in GameFiles.Result)_ |  |
-| 341 | 3 | `static Result failed(Path file, String reason)` _(in GameFiles.Result)_ | For a failure that is not an exception - see DataSave.saveGame(). |
-| 345 | 6 | `static Result failed(Path file, Throwable cause)` _(in GameFiles.Result)_ |  |
-| 353 | 4 | `public String message()` _(in GameFiles.Result)_ | One line, fit to show a player. |
-| 359 | 34 | `public Result write(Path file, String contents)` |  |
-| 394 | 7 | `private static void deleteQuietly(Path path)` |  |
+| 281 | 18 | `public SaveHeader readHeader(int slot)` | Reads just enough of a slot to label it, or null if the slot is empty. |
+| 301 | 3 | `public boolean slotIsEmpty(int slot)` | No file at all. |
+| 319 | 3 | `public boolean slotIsUnreadable(int slot)` | True when a slot holds a file the game cannot make sense of. |
+| 324 | 4 | `public boolean slotIsLoadable(int slot)` | Loadable: something is there, and it can be read. |
+
+### writing (lines 329-412)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 337 | 32 | **type** `public static final class Result` | What a write attempt did. |
+| 343 | 5 | `private Result(boolean ok, Path file, String error)` _(in GameFiles.Result)_ |  |
+| 349 | 1 | `static Result succeeded(Path file)` _(in GameFiles.Result)_ |  |
+| 352 | 3 | `static Result failed(Path file, String reason)` _(in GameFiles.Result)_ | For a failure that is not an exception - see DataSave.saveGame(). |
+| 356 | 6 | `static Result failed(Path file, Throwable cause)` _(in GameFiles.Result)_ |  |
+| 364 | 4 | `public String message()` _(in GameFiles.Result)_ | One line, fit to show a player. |
+| 370 | 34 | `public Result write(Path file, String contents)` |  |
+| 405 | 7 | `private static void deleteQuietly(Path path)` |  |
 

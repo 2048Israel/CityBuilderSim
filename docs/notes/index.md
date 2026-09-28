@@ -24,6 +24,7 @@ What a session reads first, and the records of the whole.
 - `the-manual-at-0-7-3.md` - the manual artifact brought to 0.7.3 (version 8, 2026-09-22): the new central-bank section, eleven stale places reading the page found, how three Opus contexts made it, sixteen places the prose disagrees with the code, and `tools.ManualToMarkdown` — the manual in the repository as `docs/manual.md` and `docs/manual.html`, generated from the published page
 - `the-manual-at-0-6-7.md` - the manual artifact brought to 0.6.7 (version 7, 2026-09-18): the new transport section, what reading the published page found stale, how three contexts made it, and twenty places where the tree's prose disagrees with the code
 - `the-documentation-catches-up.md` - the manual artifact brought up to 0.5.15; what the manual is and how it is versioned
+- `the-year-book-as-csv.md` - 0.7.16 (2026-09-28): the year book's and decade book's tables written again as CSV beside the text from one `YearBook.Table` (four files, RFC 4180, the text's own strings, no BOM), why CSV and not xlsx, YearBookCheck section 15 and its seven-mutation test, and the small items left for Jerus
 - `the-year-book.md` - the year book and decade book the game writes so a run can be read without a save: FLOW/LEVEL/RATE rules, columns
 - `reading-slot-3.md` - the decade book of Jerus's slot-3 city read end to end: the founding currency collapse, the students' orphaned children, the decade-22 bust, the branch-capped bank
 - `reading-the-numbers.md` - how to read a playtest's figures without being misled by them

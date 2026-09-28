@@ -586,22 +586,131 @@ public final class YearBook {
     }
 
     /* ==================================================================
+       THE TABLES, ONCE, FOR THE TEXT AND THE CSV (0.7.16)
+
+       Jerus, 2026-09-28, asked whether the book should print "to an excel
+       file? with columns and rows?", and chose: "csv if its cheaper token
+       wise to read than xlsx, also keep the txt". So the export writes each
+       book's two tables again as CSV beside its text (Game.writeBooks()).
+
+       ONE TABLE, TWO SPELLINGS. Each table is built once, every cell already
+       the string the text prints (compact(), Locale.ROOT), and the text's
+       tab-separated block and the CSV file are both joins of that one
+       object. A CSV struck by a second pass over the history would be a
+       second number that could disagree with the first - the argument the
+       derived columns above are built on - and a reader holding both files
+       would have no way to tell which was right.
+
+       THE CSV IS THE TABLES AND NOTHING ELSE. The preamble, the column guide
+       and WHAT HAPPENED stay in the text: a spreadsheet wants rows under one
+       header. RFC 4180 - a comma between fields, one header row, CRLF after
+       every record, a field quoted only when it holds a comma, a quote or a
+       line break - and no byte-order mark, because every header and every
+       cell is plain ASCII and Excel reads an ASCII file without one.
+       ================================================================== */
+
+    /**
+     * One of the book's tables: its column names and its rows, each cell the
+     * string the text prints - an empty string where the text is blank.
+     */
+    public record Table(List<String> header, List<List<String>> rows) {
+
+        public Table {
+            header = List.copyOf(header);
+            List<List<String>> copied = new ArrayList<>(rows.size());
+            for (List<String> row : rows) copied.add(List.copyOf(row));
+            rows = List.copyOf(copied);
+        }
+
+        /** As the text prints it: a tab between cells and a newline after every line, the header first. */
+        String tabbed() {
+            StringBuilder out = new StringBuilder();
+            out.append(String.join("\t", header)).append('\n');
+            for (List<String> row : rows) out.append(String.join("\t", row)).append('\n');
+            return out.toString();
+        }
+
+        /** As RFC 4180 writes it: a comma between fields and CRLF after every record, the header first. */
+        public String csv() {
+            StringBuilder out = new StringBuilder();
+            csvRecord(out, header);
+            for (List<String> row : rows) csvRecord(out, row);
+            return out.toString();
+        }
+    }
+
+    private static void csvRecord(StringBuilder out, List<String> fields) {
+        for (int i = 0; i < fields.size(); i++) {
+            if (i > 0) out.append(',');
+            out.append(csvField(fields.get(i)));
+        }
+        out.append("\r\n");
+    }
+
+    /**
+     * One CSV field, quoted only when it has to be: a comma, a double quote or
+     * a line break inside it, and a quote inside is doubled. A space or a
+     * colon is no reason - "sharePrice:Real Estate" goes out as it is.
+     */
+    static String csvField(String s) {
+        boolean quote = s.indexOf(',') >= 0 || s.indexOf('"') >= 0
+                     || s.indexOf('\n') >= 0 || s.indexOf('\r') >= 0;
+        return quote ? '"' + s.replace("\"", "\"\"") + '"' : s;
+    }
+
+    /**
+     * A book, built once: the text the reader gets and the two tables in it.
+     *
+     * The tables are here even when the text prints none - a city that has
+     * lived no months, or a book with no [~] column and so no WITHIN block -
+     * as the header the text's table would have opened with and no rows. The
+     * export writes every file every time, so a CSV from an older export is
+     * not left beside a text that has moved on - unless its own write failed,
+     * which the export's message says.
+     */
+    public static final class Book {
+        private final String text;
+        private final Table table;
+        private final Table within;
+
+        private Book(String text, Table table, Table within) {
+            this.text = text;
+            this.table = table;
+            this.within = within;
+        }
+
+        /** The whole text file, exactly what years() and decades() return. */
+        public String text()  { return text; }
+        /** The YEARS (or DECADES) table: the row, mo, n and every column shown. */
+        public Table table()  { return table; }
+        /** The WITHIN table: the row, then each [~] column's worst and best month, .lo and .hi. */
+        public Table within() { return within; }
+    }
+
+    /* ==================================================================
        THE FILE
        ================================================================== */
 
     /** The book a year to the row, in the city's own money's name (0.7.10). */
-    public static String years(HistorySave h, Currency money)   { return write(h, MONTHS_A_YEAR, money); }
+    public static String years(HistorySave h, Currency money)   { return yearBook(h, money).text(); }
     /** ...and a decade to the row. */
-    public static String decades(HistorySave h, Currency money) { return write(h, MONTHS_A_DECADE, money); }
+    public static String decades(HistorySave h, Currency money) { return decadeBook(h, money).text(); }
 
-    private static String write(HistorySave history, int span, Currency money) {
+    /** The year book whole - its text and its tables - for an export that writes both (0.7.16). */
+    public static Book yearBook(HistorySave h, Currency money)   { return write(h, MONTHS_A_YEAR, money); }
+    /** ...and the decade book. */
+    public static Book decadeBook(HistorySave h, Currency money) { return write(h, MONTHS_A_DECADE, money); }
+
+    private static Book write(HistorySave history, int span, Currency money) {
         StringBuilder out = new StringBuilder(1 << 16);
         int months = history.months();
         String unit = span == MONTHS_A_YEAR ? "year" : "decade";
         String tag  = span == MONTHS_A_YEAR ? "yr" : "dec";
 
         if (months < 1) {
-            return GameVersion.title() + " - " + unit + " book\nThe city has lived no months yet.\n";
+            return new Book(GameVersion.title() + " - " + unit + " book\nThe city has lived no months yet.\n",
+                    new Table(List.of(tag, "mo", "n"), List.of()),
+                    new Table(List.of(tag), List.of()));
         }
 
         List<Column> cols = columns(history);
@@ -631,6 +740,40 @@ public final class YearBook {
             if (anything) { shown.add(c); folded.put(c.name, values); }
             else silent.add(c.name);
         }
+
+        /* ------- the two tables, every cell as the text prints it ------- */
+        List<String> header = new ArrayList<>(List.of(tag, "mo", "n"));
+        for (Column c : shown) header.add(c.name);
+        List<List<String>> body = new ArrayList<>(rows.size());
+        for (int r = 0; r < rows.size(); r++) {
+            int from = rows.get(r)[0], to = rows.get(r)[1];
+            List<String> row = new ArrayList<>(header.size());
+            row.add(String.valueOf(bucket(axis.get(from), span) + 1));
+            row.add(String.valueOf(axis.get(to)));
+            row.add(String.valueOf(to - from + 1));
+            for (Column c : shown) row.add(compact(folded.get(c.name)[r]));
+            body.add(row);
+        }
+        Table table = new Table(header, body);
+
+        List<Column> rates = new ArrayList<>();
+        for (Column c : shown) if (c.kind == Kind.RATE) rates.add(c);
+        List<String> withinHeader = new ArrayList<>(List.of(tag));
+        for (Column c : rates) { withinHeader.add(c.name + ".lo"); withinHeader.add(c.name + ".hi"); }
+        List<List<String>> withinBody = new ArrayList<>();
+        if (!rates.isEmpty()) {
+            for (int r = 0; r < rows.size(); r++) {
+                int from = rows.get(r)[0], to = rows.get(r)[1];
+                List<String> row = new ArrayList<>(withinHeader.size());
+                row.add(String.valueOf(bucket(axis.get(from), span) + 1));
+                for (Column c : rates) {
+                    row.add(compact(worst(c, from, to, false)));
+                    row.add(compact(worst(c, from, to, true)));
+                }
+                withinBody.add(row);
+            }
+        }
+        Table within = new Table(withinHeader, withinBody);
 
         /* ------------------------ the preamble ------------------------ */
         out.append(GameVersion.title()).append(" - the ").append(unit).append(" book\n");
@@ -682,39 +825,17 @@ public final class YearBook {
 
         /* --------------------------- the table --------------------------- */
         out.append('\n').append(unit.toUpperCase(Locale.ROOT)).append("S (tab separated)\n");
-        out.append(tag).append("\tmo\tn");
-        for (Column c : shown) out.append('\t').append(c.name);
-        out.append('\n');
-        for (int r = 0; r < rows.size(); r++) {
-            int from = rows.get(r)[0], to = rows.get(r)[1];
-            out.append(bucket(axis.get(from), span) + 1).append('\t')
-               .append(axis.get(to)).append('\t').append(to - from + 1);
-            for (Column c : shown) out.append('\t').append(compact(folded.get(c.name)[r]));
-            out.append('\n');
-        }
+        out.append(table.tabbed());
 
         /* ------------------------- the extremes ------------------------- */
-        List<Column> rates = new ArrayList<>();
-        for (Column c : shown) if (c.kind == Kind.RATE) rates.add(c);
         if (!rates.isEmpty()) {
             out.append("\nWITHIN THE ").append(unit.toUpperCase(Locale.ROOT))
                .append(" - the worst and best SINGLE MONTH inside each row, for the [~] columns only (tab separated)\n");
-            out.append(tag);
-            for (Column c : rates) out.append('\t').append(c.name).append(".lo\t").append(c.name).append(".hi");
-            out.append('\n');
-            for (int r = 0; r < rows.size(); r++) {
-                int from = rows.get(r)[0], to = rows.get(r)[1];
-                out.append(bucket(axis.get(from), span) + 1);
-                for (Column c : rates) {
-                    out.append('\t').append(compact(worst(c, from, to, false)))
-                       .append('\t').append(compact(worst(c, from, to, true)));
-                }
-                out.append('\n');
-            }
+            out.append(within.tabbed());
         }
 
         out.append('\n').append(whatHappened(history, cols));
-        return out.toString();
+        return new Book(out.toString(), table, within);
     }
 
     private static int bucket(int month, int span) { return (month - 1) / span; }

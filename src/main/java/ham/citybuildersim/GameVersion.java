@@ -1504,8 +1504,25 @@ public final class GameVersion {
      * its own and that paper's par, are appended to its save array;
      * an older save has done neither. A dial past a half saved by this build
      * and opened in an older one is held at the older build's half.
+     *
+     * 0.7.16 (2026-09-28) - THE YEAR BOOK AS CSV BESIDE THE TEXT. Jerus: "csv
+     * if its cheaper token wise to read than xlsx, also keep the txt". The
+     * export (Game.writeBooks()) writes year-book.txt and decade-book.txt as
+     * before, and beside each its YEARS or DECADES table as year-book.csv or
+     * decade-book.csv and its WITHIN table as year-book-within.csv or
+     * decade-book-within.csv (GameFiles.yearBookCsv() and the three beside
+     * it). RFC 4180, CRLF, a field quoted only when it must be, the header
+     * the text's own column names, every cell the string the text prints -
+     * a blank empty, a point for the decimal whatever the locale, no BOM.
+     * Each table is built once (YearBook.Table) and the text and the CSV are
+     * both written from it, so they cannot disagree; the text itself is the
+     * same bytes 0.7.15 wrote, but for this number in its first line.
+     * YearBookCheck section 15 reads both files back and compares them cell
+     * for cell.
+     *
+     * SAVE_FORMAT did not move. Nothing enters the save.
      */
-    public static final String VERSION = "0.7.15";
+    public static final String VERSION = "0.7.16";
 
     /**
      * The save shape.

@@ -9166,21 +9166,37 @@ public class Game {
     public GameFiles getGameFiles() { return gameFiles; }
 
     /**
-     * Writes the run out as plain text, one row a year and one row a decade.
+     * Writes the run out as plain text, one row a year and one row a decade,
+     * and each book's two tables again as CSV beside it (0.7.16).
      *
-     * Two files rather than one because they answer different questions: a
+     * Two books rather than one because they answer different questions: a
      * 333-year run is a quarter of a megabyte a year at a time and a tenth of
      * that by decade, and the reader who is short of room should not have to
      * throw away the detail to get the shape.
      *
-     * Returned rather than thrown, and in the order {year, decade}, because the
-     * screen has to say something either way - see GameFiles.Result.
+     * Each book is built once (YearBook.Book) and its text and its CSV files
+     * are written from that one object, so the files of one export cannot
+     * disagree with each other.
+     *
+     * Returned rather than thrown - one array a book, in the order {year,
+     * decade}, and each {text, table, within} - because the screen has to say
+     * something either way - see GameFiles.Result.
      */
-    public GameFiles.Result[] writeBooks() {
-        HistorySave book = getHistorySave();
-        return new GameFiles.Result[] {
-            gameFiles.write(gameFiles.yearBookFile(),   YearBook.years(book, getCurrency())),
-            gameFiles.write(gameFiles.decadeBookFile(), YearBook.decades(book, getCurrency()))
+    public GameFiles.Result[][] writeBooks() {
+        HistorySave history = getHistorySave();
+        YearBook.Book year   = YearBook.yearBook(history, getCurrency());
+        YearBook.Book decade = YearBook.decadeBook(history, getCurrency());
+        return new GameFiles.Result[][] {
+            {
+                gameFiles.write(gameFiles.yearBookFile(),      year.text()),
+                gameFiles.write(gameFiles.yearBookCsv(),       year.table().csv()),
+                gameFiles.write(gameFiles.yearBookWithinCsv(), year.within().csv())
+            },
+            {
+                gameFiles.write(gameFiles.decadeBookFile(),      decade.text()),
+                gameFiles.write(gameFiles.decadeBookCsv(),       decade.table().csv()),
+                gameFiles.write(gameFiles.decadeBookWithinCsv(), decade.within().csv())
+            }
         };
     }
     

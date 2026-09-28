@@ -134,6 +134,17 @@ public final class GameFiles {
     public Path yearBookFile()   { return directory.resolve("year-book.txt"); }
     public Path decadeBookFile() { return directory.resolve("decade-book.txt"); }
 
+    /*
+     * ...AND THEIR TABLES AS CSV (0.7.16), beside them under the same stem:
+     * each book's main table, and its WITHIN table of the [~] columns' worst
+     * and best months. The text's rules hold - one fixed name each,
+     * overwritten every export, and nothing loads them.
+     */
+    public Path yearBookCsv()         { return directory.resolve("year-book.csv"); }
+    public Path yearBookWithinCsv()   { return directory.resolve("year-book-within.csv"); }
+    public Path decadeBookCsv()       { return directory.resolve("decade-book.csv"); }
+    public Path decadeBookWithinCsv() { return directory.resolve("decade-book-within.csv"); }
+
     /**
      * Zero-padded, so the folder sorts the way a person reads it and slot 10
      * does not land between 1 and 2.

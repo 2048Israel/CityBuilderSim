@@ -559,7 +559,8 @@ final class HistoryScreen {
                 + "one row a year, and again one row a decade, with a list of what actually "
                 + "happened and when. Each column says whether it was added, taken at the end of "
                 + "the row or averaged, and what it means, so it can be handed to somebody - or "
-                + "something - that has never seen this city."));
+                + "something - that has never seen this city. The tables go out again beside it as "
+                + ".csv files, which Excel opens as columns and rows."));
         Button books = new Button("Write the year book  \u2192");
         books.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
                 + " -fx-background-color: " + Palette.CONFIRM + ";");
@@ -602,13 +603,31 @@ final class HistoryScreen {
      */
     String bookExportSaid;
 
+    /**
+     * Six files since 0.7.16 - each book's text and its two tables as CSV -
+     * all in one folder, so the folder is named once and each book is a line
+     * of file names; anything that failed says so on a line of its own.
+     */
     void writeTheBooks() {
-        StringBuilder said = new StringBuilder();
-        for (GameFiles.Result written : ui.game.writeBooks()) {
-            if (written.ok) said.append("Written: ").append(written.file).append('\n');
-            else said.append("Could not write ").append(written.file)
-                     .append(" - ").append(written.message()).append('\n');
+        StringBuilder wrote = new StringBuilder(), failed = new StringBuilder();
+        java.nio.file.Path folder = null;
+        for (GameFiles.Result[] book : ui.game.writeBooks()) {
+            StringBuilder names = new StringBuilder();
+            for (GameFiles.Result written : book) {
+                if (written.ok) {
+                    if (folder == null) folder = written.file.getParent();
+                    if (names.length() > 0) names.append("  \u00b7  ");
+                    names.append(written.file.getFileName());
+                } else {
+                    failed.append("Could not write ").append(written.file)
+                          .append(" - ").append(written.error).append('\n');
+                }
+            }
+            if (names.length() > 0) wrote.append("  ").append(names).append('\n');
         }
+        StringBuilder said = new StringBuilder();
+        if (folder != null) said.append("Written to ").append(folder).append('\n').append(wrote);
+        said.append(failed);
         bookExportSaid = said.toString().trim();
         showHistoryMenu();
     }

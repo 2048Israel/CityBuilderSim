@@ -72,6 +72,7 @@ public class YearBookCheck {
         theCurrencyNoteReadsTheRightWay();
         theBookAgreesWithTheModelOnAPlayedCity();
         theEpisodesAreTheOnesTheFixtureCaused();
+        theCsvIsTheTextsTables();
 
         System.out.printf("%n%d assertions: %s%n", checks,
                 fails == 0 ? "the year book folds every series by its own rule." : fails + " FAILED");
@@ -746,6 +747,295 @@ public class YearBookCheck {
         System.out.printf("  FAIL  no cell for column %s row %d%n", column, row);
         fails++;
         return "";
+    }
+
+    /* ==================================================================
+       15 - THE CSV IS THE TEXT'S TABLES, CELL FOR CELL (0.7.16)
+
+       Jerus, 2026-09-28: "csv if its cheaper token wise to read than xlsx,
+       also keep the txt". The export writes each book's two tables again as
+       CSV beside the text, and the one way that can go wrong that matters is
+       a CSV that says something the text does not. So everything here reads
+       BOTH files the way a reader reads them - the text's tab-separated
+       block by its title, the CSV by RFC 4180 - and compares what comes out.
+       Never the YearBook.Table they were both written from: that would be
+       comparing a thing with itself, and would pass on a CSV writer that
+       dropped every third cell.
+
+       The fixture carries everything the format has to survive: a flow that
+       started late (a blank), a level, two rates (a WITHIN table, and cells
+       with a decimal point), a column named with a comma and one named with
+       a quote. Then the export itself, on a city that has been played - the
+       files on disk, where the game put them, read back.
+       ================================================================== */
+    private static void theCsvIsTheTextsTables() {
+        HistorySave h = csvFixture();
+        YearBook.Book year = YearBook.yearBook(h, ARDEN), decade = YearBook.decadeBook(h, ARDEN);
+
+        /* ------------------- the tables, read both ways ------------------- */
+        same("the book's text is the text years() returns", year.text(), years(h));
+        sameTable("the year book's table", year.text(), "YEARS (tab separated)", year.table().csv());
+        sameTable("the year book's WITHIN table", year.text(), "WITHIN THE YEAR", year.within().csv());
+        sameTable("the decade book's table", decade.text(), "DECADES (tab separated)", decade.table().csv());
+        sameTable("the decade book's WITHIN table", decade.text(), "WITHIN THE DECADE", decade.within().csv());
+
+        /* ---------------------- a blank stays empty ---------------------- */
+        String csv = year.table().csv();
+        same("a flow row missing months is an empty field in the CSV", csvCell(csv, "stolen", 1), "");
+        same("...and the complete row is the sum, as the text writes it", csvCell(csv, "stolen", 2), "1200");
+        yes("a blank is never written as NaN", !csv.contains("NaN"));
+        yes("...and the text's own cell there is blank, so the two agree on what a blank is",
+                blank(year.text(), "stolen", 1));
+
+        /* ------------------ a French locale keeps the point ------------------ */
+        /*
+         * The book AND its CSV are both struck inside the French locale: the
+         * export turns a table into CSV at the moment it writes the file, on
+         * the player's machine, so a first cut that built the book in French
+         * and wrote the CSV after the locale was put back tested nothing - a
+         * writer that formatted its numbers by the locale passed it.
+         */
+        Locale was = Locale.getDefault();
+        String[] french;                // the year's table and WITHIN, then the decade's, as a French machine writes them
+        try {
+            Locale.setDefault(Locale.FRANCE);
+            YearBook.Book fy = YearBook.yearBook(h, ARDEN), fd = YearBook.decadeBook(h, ARDEN);
+            french = new String[] { fy.table().csv(), fy.within().csv(), fd.table().csv(), fd.within().csv() };
+        } finally {
+            Locale.setDefault(was);
+        }
+        same("under a French locale the CSV still writes 1.5 with a point", csvCell(french[0], "fxRate", 1), "1.5");
+        same("...and a small one, in the WITHIN table", csvCell(french[1], "sickRate.hi", 1), "0.0775");
+        same("the French year CSV is the other one, byte for byte", french[0], csv);
+        same("...and its WITHIN", french[1], year.within().csv());
+        same("...and the decade's", french[2], decade.table().csv());
+        same("...and the decade's WITHIN", french[3], decade.within().csv());
+        String[] which = { "year", "year WITHIN", "decade", "decade WITHIN" };
+        for (int t = 0; t < french.length; t++) {
+            boolean even = true;
+            List<List<String>> records = csvRecords(french[t]);
+            for (List<String> r : records) even &= r.size() == records.get(0).size();
+            yes("every French " + which[t] + " record has as many fields as its header,"
+                    + " which a decimal comma would break", even);
+        }
+
+        /* --------------- a name that needs quotes gets them, and only then --------------- */
+        String headerLine = "," + csv.substring(0, csv.indexOf("\r\n")) + ",";
+        yes("a column name with a comma is quoted in the header",
+                headerLine.contains(",\"" + HistorySave.priceKey(COMMA_CO) + "\","));
+        yes("...and reads back as the one name", csvRecords(csv).get(0).contains(HistorySave.priceKey(COMMA_CO)));
+        yes("...and its WITHIN columns are quoted too",
+                year.within().csv().contains(",\"" + HistorySave.priceKey(COMMA_CO) + ".lo\","));
+        yes("a column name with a quote is quoted, the quote doubled",
+                headerLine.contains(",\"" + HistorySave.priceKey(QUOTE_CO).replace("\"", "\"\"") + "\","));
+        yes("...and reads back as the name", csvRecords(csv).get(0).contains(HistorySave.priceKey(QUOTE_CO)));
+        same("a line break inside a field is quoted", YearBook.csvField("two\nlines"), "\"two\nlines\"");
+        same("a colon or a space alone is not", YearBook.csvField("sharePrice:Real Estate"), "sharePrice:Real Estate");
+        same("a number goes out as the text writes it", YearBook.csvField("1.23e9"), "1.23e9");
+        same("and an empty cell is an empty field", YearBook.csvField(""), "");
+
+        /* ------------------ the export, on a city that has been played ------------------ */
+        GameFiles files = GameFiles.scratch("year-book-csv");
+        Game game = new Game(files);
+        game.newGame();
+        for (int i = 0; i < 14; i++) game.toggleNextMonth();
+
+        java.nio.file.Path[] csvPaths = { files.yearBookCsv(), files.yearBookWithinCsv(),
+                                          files.decadeBookCsv(), files.decadeBookWithinCsv() };
+        for (java.nio.file.Path p : csvPaths) {
+            yes("the CSV path sits beside the year book: " + p.getFileName(),
+                    p.getParent().equals(files.yearBookFile().getParent())
+                    && p.getParent().equals(files.getDirectory()));
+        }
+
+        GameFiles.Result[][] written = game.writeBooks();
+        java.util.Set<java.nio.file.Path> distinct = new java.util.HashSet<>();
+        for (GameFiles.Result[] book : written) {
+            for (GameFiles.Result r : book) {
+                yes("the export wrote " + r.file.getFileName(), r.ok);
+                yes("...into the export folder, beside the text: " + r.file.getFileName(),
+                        r.file.getParent().equals(files.getDirectory())
+                        && java.nio.file.Files.isRegularFile(r.file));
+                distinct.add(r.file);
+            }
+        }
+        same("six files, none written twice", distinct.size(), 6.0);
+        same("the year's are the text, its table and its WITHIN, in that order",
+                written[0][0].file + " " + written[0][1].file + " " + written[0][2].file,
+                files.yearBookFile() + " " + files.yearBookCsv() + " " + files.yearBookWithinCsv());
+        same("...and the decade's", written[1][0].file + " " + written[1][1].file + " " + written[1][2].file,
+                files.decadeBookFile() + " " + files.decadeBookCsv() + " " + files.decadeBookWithinCsv());
+
+        String yearText = read(files.yearBookFile()), decadeText = read(files.decadeBookFile());
+        String yearCsv = read(files.yearBookCsv());
+        sameTable("on disk, the year book's CSV", yearText, "YEARS (tab separated)", yearCsv);
+        sameTable("on disk, the year book's WITHIN CSV", yearText, "WITHIN THE YEAR", read(files.yearBookWithinCsv()));
+        sameTable("on disk, the decade book's CSV", decadeText, "DECADES (tab separated)", read(files.decadeBookCsv()));
+        sameTable("on disk, the decade book's WITHIN CSV", decadeText, "WITHIN THE DECADE",
+                read(files.decadeBookWithinCsv()));
+        same("the text on disk is the book the city writes", yearText, YearBook.years(game.getHistorySave(), game.getCurrency()));
+
+        String spaced = null;
+        for (String name : csvRecords(yearCsv).get(0)) {
+            if (name.indexOf(':') >= 0 && name.indexOf(' ') >= 0) { spaced = name; break; }
+        }
+        yes("the premise: the played city's book has a column named with a colon and a space", spaced != null);
+        if (spaced != null) {
+            yes("...and it went out unquoted: " + spaced,
+                ("," + yearCsv.substring(0, yearCsv.indexOf("\r\n")) + ",").contains("," + spaced + ","));
+        }
+        boolean ascii = true;
+        for (char c : (yearCsv + read(files.yearBookWithinCsv()) + read(files.decadeBookCsv())
+                + read(files.decadeBookWithinCsv())).toCharArray()) ascii &= c < 128;
+        yes("every header and cell on disk is plain ASCII, so Excel needs no byte-order mark", ascii);
+        yes("...and the file opens with its header, not a mark", yearCsv.startsWith("yr,mo,n,"));
+    }
+
+    /** Two companies on the fixture's register, named the way a CSV has to quote. */
+    private static final String COMMA_CO = "Acme, Inc.";
+    /** ...and the second, with a double quote in its name, which the CSV doubles. */
+    private static final String QUOTE_CO = "The \"Good\" Co";
+
+    /**
+     * Thirty months, so a year book of two full years and a stub and a decade
+     * book of one row: gdp a ramp (a flow), stolen from month 13 only (a flow
+     * that started late, so year 1 is blank), population flat (a level),
+     * sickRate and fxRate (rates, with a decimal point in every cell), and
+     * the two companies' share prices (rates, so they are in the WITHIN
+     * table too). Built as saved history through Gson, as the rest are.
+     */
+    private static HistorySave csvFixture() {
+        double[] stolen = new double[18];
+        java.util.Arrays.fill(stolen, 100);
+        double[] sick = new double[30];
+        for (int i = 0; i < 30; i++) sick[i] = 0.05 + 0.0025 * i;
+        String[] names = { "gdp", "stolen", "population", "sickRate", "fxRate" };
+        double[][] values = { ramp(30), stolen, flat(30, 1000), sick, flat(30, 1.5) };
+
+        Gson gson = new Gson();
+        int[] axis = new int[30];
+        for (int m = 0; m < 30; m++) axis[m] = m + 1;
+        StringBuilder json = new StringBuilder("{\"month\":").append(gson.toJson(axis));
+        for (int s = 0; s < names.length; s++) {
+            json.append(",\"").append(names[s]).append("\":").append(gson.toJson(values[s]));
+        }
+        json.append(",\"sharePrice\":{").append(gson.toJson(COMMA_CO)).append(':').append(gson.toJson(ramp(30)))
+            .append(',').append(gson.toJson(QUOTE_CO)).append(':').append(gson.toJson(flat(30, 7))).append("}}");
+        return gson.fromJson(json.toString(), HistorySave.class);
+    }
+
+    /**
+     * Reads one of the text's tables by its title line and the CSV by RFC
+     * 4180, and requires the same header, the same rows and the same cells.
+     */
+    private static void sameTable(String what, String text, String title, String csv) {
+        List<List<String>> fromText = textTable(text, title);
+        int[] strays = { 0 };
+        List<List<String>> fromCsv = readCsv(csv, strays);
+
+        yes(what + ": the text has the table", !fromText.isEmpty());
+        same(what + ": every record ends CRLF, and no line break or quote stands alone", strays[0], 0.0);
+        yes(what + ": the header is the text table's header, name for name, in its order",
+                !fromText.isEmpty() && !fromCsv.isEmpty() && fromCsv.get(0).equals(fromText.get(0)));
+        same(what + ": the rows are the text's rows, as many and no more", fromCsv.size(), fromText.size());
+
+        int cells = 0;
+        String first = null;
+        for (int r = 0; r < Math.min(fromText.size(), fromCsv.size()); r++) {
+            List<String> a = fromText.get(r), b = fromCsv.get(r);
+            for (int c = 0; c < Math.max(a.size(), b.size()); c++) {
+                String x = c < a.size() ? a.get(c) : "<none>", y = c < b.size() ? b.get(c) : "<none>";
+                if (!x.equals(y) && first == null) {
+                    first = "record " + r + " field " + c + ": text \"" + x + "\", CSV \"" + y + "\"";
+                }
+                if (r > 0) cells++;
+            }
+        }
+        if (first != null) System.out.println("        first difference, " + what + " - " + first);
+        yes(what + ": every cell is the text's cell", first == null);
+        yes(what + ": ...and there were cells to compare", cells > 0);
+    }
+
+    /**
+     * The text's table under the line that starts with `title`: the header
+     * and every row down to the blank line that ends it, split on tabs.
+     */
+    private static List<List<String>> textTable(String text, String title) {
+        List<List<String>> out = new ArrayList<>();
+        String[] lines = text.split("\n", -1);
+        for (int i = 0; i < lines.length; i++) {
+            if (!lines[i].startsWith(title)) continue;
+            for (int j = i + 1; j < lines.length && !lines[j].isEmpty(); j++) {
+                out.add(List.of(lines[j].split("\t", -1)));
+            }
+            break;
+        }
+        return out;
+    }
+
+    /** A CSV's records, with nothing counted - for the assertions that read one cell. */
+    private static List<List<String>> csvRecords(String csv) {
+        return readCsv(csv, new int[] { 0 });
+    }
+
+    /** The field under `column` in the record whose first field is `row`, as the file holds it. */
+    private static String csvCell(String csv, String column, int row) {
+        List<List<String>> records = csvRecords(csv);
+        int col = records.isEmpty() ? -1 : records.get(0).indexOf(column);
+        for (int r = 1; col >= 0 && r < records.size(); r++) {
+            if (records.get(r).get(0).equals(String.valueOf(row))) {
+                return col < records.get(r).size() ? records.get(r).get(col) : "<none>";
+            }
+        }
+        System.out.printf("  FAIL  no CSV field for column %s row %d%n", column, row);
+        fails++;
+        return "<none>";
+    }
+
+    /**
+     * RFC 4180, read strictly: a record ends CRLF, a field in quotes may hold
+     * anything with its quotes doubled, and a CR, an LF or a quote anywhere
+     * else - or a last record with no CRLF - is counted in strays[0].
+     */
+    private static List<List<String>> readCsv(String csv, int[] strays) {
+        List<List<String>> records = new ArrayList<>();
+        List<String> record = new ArrayList<>();
+        StringBuilder field = new StringBuilder();
+        boolean inQuotes = false, wasQuoted = false;
+        int i = 0, n = csv.length();
+        while (i < n) {
+            char c = csv.charAt(i);
+            if (inQuotes) {
+                if (c == '"' && i + 1 < n && csv.charAt(i + 1) == '"') { field.append('"'); i += 2; continue; }
+                if (c == '"') { inQuotes = false; i++; continue; }
+                field.append(c); i++; continue;
+            }
+            if (c == '"' && field.length() == 0 && !wasQuoted) { inQuotes = true; wasQuoted = true; i++; continue; }
+            if (c == ',') { record.add(field.toString()); field.setLength(0); wasQuoted = false; i++; continue; }
+            if (c == '\r' && i + 1 < n && csv.charAt(i + 1) == '\n') {
+                record.add(field.toString()); field.setLength(0); wasQuoted = false;
+                records.add(record); record = new ArrayList<>();
+                i += 2; continue;
+            }
+            if (c == '\r' || c == '\n' || c == '"' || wasQuoted) strays[0]++;
+            field.append(c); i++;
+        }
+        if (inQuotes || field.length() > 0 || !record.isEmpty()) {
+            strays[0]++;
+            record.add(field.toString());
+            records.add(record);
+        }
+        return records;
+    }
+
+    private static String read(java.nio.file.Path p) {
+        try {
+            return java.nio.file.Files.readString(p);
+        } catch (java.io.IOException e) {
+            System.out.printf("  FAIL  could not read %s back: %s%n", p, e.getMessage());
+            fails++;
+            return "";
+        }
     }
 
     /* ----------------------------- assertions ----------------------------- */

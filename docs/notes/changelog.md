@@ -8,7 +8,35 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
-### THE MANUAL AT 0.7.15 — 2026-09-28, PUBLISHED as version 10; the tree copy (`docs/manual.md`, `docs/manual.html`) regenerated from it, TO DEPLOY with the next PC deploy, see `the-manual-at-0-7-15.md`
+### THE YEAR BOOK AS CSV BESIDE THE TEXT — 2026-09-28, 0.7.16, BUILT in the cloud, TO DEPLOY as tag 0928c, see `the-year-book-as-csv.md`
+
+- **Jerus:** "csv if its cheaper token wise to read than xlsx, also keep the txt". A CSV is plain text and never dearer to read than an xlsx (zipped XML), Excel opens it as columns without an import step, and it needs no library.
+- **Six files per export.** `year-book.txt` and `decade-book.txt` are unchanged apart from the version on line 1. Beside each go its main table and its WITHIN table as CSV:
+  - `year-book.csv`, `year-book-within.csv`;
+  - `decade-book.csv`, `decade-book-within.csv`;
+  - at `GameFiles.yearBookCsv()` and the three paths beside it, overwritten each export like the text.
+- **One source.** Each table is built once as `YearBook.Table`; the text's tab-separated block and the CSV are both joins of it, so the two files cannot disagree. `Game.writeBooks()` returns `Result[][]`.
+- **The format is RFC 4180:**
+  - CRLF line ends;
+  - a field quoted only for a comma, a quote or a line break;
+  - the text's own column names as the header;
+  - the text's own strings in the cells (three significant figures, a point whatever the locale, a blank empty);
+  - no BOM.
+- **The Reports tab** names the folder once and then each book's three files. A failure line no longer nests "Could not save to" inside "Could not write".
+- **Found and fixed on the way:** the locale test first passed a locale-formatting CSV writer, because it wrote the CSV after restoring the locale.
+- **YearBookCheck section 15:** 459 to 555 assertions. It reads every CSV back and compares it cell for cell with the text's table, and covers blanks, a French locale, names with commas and quotes, and a played city's export. A mutation test caught all seven broken writers tried. The docs pass gave `QUOTE_CO` its dial sentence.
+- **Verification:**
+  - `build.sh` and `build-ui.sh` silent;
+  - suite 63/64, HealthCheck the known red, BuildMenuCheck skipped in the cloud;
+  - `Stale` 0 firm, 89 soft (the same 89 as 0.7.15);
+  - the default playtest identical to 0.7.15 bar the wall clock;
+  - the text byte-identical to 0.7.15 bar the version, on four histories;
+  - a French-locale export identical to the default one;
+  - every file keeps its line endings.
+- **Left for Jerus, small:** an episodes CSV (not built); full precision in the CSV (it keeps the text's three figures); the Excel-lock failure line (long, and could say "close it in Excel"); a comma-decimal Excel opens a comma CSV as one column.
+- SAVE_FORMAT 27 unchanged; 64 harnesses; 226 files, ~177,850 lines.
+
+### THE MANUAL AT 0.7.15 — 2026-09-28, PUBLISHED as version 10; the tree copy (`docs/manual.md`, `docs/manual.html`) regenerated from it, DEPLOYED AND VERIFIED (tag 0928b, five files), see `the-manual-at-0-7-15.md`
 
 - **Twelve versions caught up at once** (0.7.4 to 0.7.15). Jerus: "Catch manual up".
   - Version 10 is published at the same URL, assembled from the published version 9 alone.

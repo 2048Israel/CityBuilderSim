@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-28 (0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy waiting on the next deploy; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-28 (0.7.16, the year book as CSV beside the text — four CSV files from one table, the text unchanged; deploying as tag 0928c; next is 0.7.17, Jerus's fixes from his 0.7.14 city in three rounds, then HealthCheck's own batch; before it 0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy deployed as tag 0928b; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -14,10 +14,98 @@ has been away reads the changelog's top block and section 0 here, then works.
 - ~~**NEXT: NOTES AND BONDS**~~ — shipped as 0.7.12 (tag 0926a), see
   `the-firms-sell-bonds.md`.
 - ~~**NEXT: THE MANUAL, FROM 0.7.3 TO 0.7.15**~~ — published 2026-09-28 as
-  version 10, see `the-manual-at-0-7-15.md`. `docs/manual.md` and
-  `docs/manual.html` are regenerated in the cloud tree and go to the PC with
-  the next deploy (the PC was offline), with the three `docs/notes/` copies.
-- **NEXT: HEALTHCHECK SHIPS RED — ITS OWN BATCH** (Jerus,
+  version 10, see `the-manual-at-0-7-15.md`. `docs/manual.md`,
+  `docs/manual.html` and the three `docs/notes/` copies deployed and verified
+  the same day as tag 0928b.
+- **FOUND IN JERUS'S 0.7.14 CITY** (his year book, 2026-09-28, copy in
+  the cloud at `runs/yb0714/year-book.txt`). The city ran 150 years to 1.05M
+  people with no bank failure; 0.7.15 would have played it the same unless the
+  holdings dial was above zero or the target above 10%. What it shows:
+  - **Jobs outran people.** 584,566 posts and 388,801 workers at year 149,
+    with unemployment at nothing for 120 years, so a third of all posts stood
+    empty. The unskilled premium sat at 3.6 of the 4.0 cap: an unskilled post
+    paid about $69k a month against a $30k average wage, so the ladder is
+    upside down.
+  - **That is the deficit.** Health $25.2B, schools $23.7B and the grant
+    $18.2B (a share of the unskilled wage) came to 88% of $76.3B revenue.
+    Deficits in most years since year 132, advances to $123B, and a
+    treasury crisis from 2129 to the end.
+  - **Housing stalled.** About 720 homes a year for fifty years (196,818 to
+    232,728) against 280k households. Arrivals were exactly zero in 24
+    whole calendar years, mostly alternate ones, from year 69 to 141: a
+    locked 24-month cycle, to trace.
+  - **Money piled up.** Household savings reached $5.94T, 31 years of GDP.
+    Bank deposits were pinned at $6B (24 branches x 250k), and the deposit
+    rate was nil because the policy rate sat at zero in 132 of 150 years.
+    Luxury Retail netted $25.8B a year, 2.5x any other sector.
+  - **Construction lost money every year from 114**, $6.5-6.8B a year by the
+    140s, while its capacity kept growing.
+  - **Materials and Mining died**; the food chain is a few hundred workers.
+  - **The currency went 1 to 4.6** despite a $54.7B trade surplus.
+  - **The Depression of 2089 was death care running out**: 19,905 unburied,
+    31% sick, real GDP down 18%, recovered the year the dead were buried. As
+    designed.
+  - **Traced the same day on a copy of his save** (0.7.15, 120 months forward,
+    hands off; the report is `runs/trace0714-notes.md` in the cloud, and its
+    findings go into 0.7.17's note). The causes:
+    - **The bottom rung is empty.** 586,214 posts for 400,856 workers at
+      month 1792. The allocator fills from the top down and no unskilled
+      migrant exists (`WageBand.NONE` arrival ceiling 0), so all 185,132
+      missing workers are empty unskilled posts: 8.5% staffed at $68.6k a
+      month, the city's highest wage (a doctor earns $60.4k). 69% of them are
+      the city's own services (childcare 54,508, buses 32,290).
+    - **The deficit is that wage.** Health, schools and the grant cost about
+      $15.7B a year more than at the band base, twice the year-149 deficit.
+      The advances ceiling had been raised to its 36-month maximum; nothing
+      was carried past it by promises.
+    - **The builders stand on that rung.** A depot is 70% unskilled posts, so
+      the builders ran at 36% staffing: 71k points a month of 259k capacity,
+      28k of it repairs. The rest is split equally per building type on site
+      (`BuildingManager.advanceConstruction`), so a one-depot order takes a
+      quarter and banks all but 400 points (7.82M points banked on idle
+      stacks), and the landlords, allowed one order, get about 250 homes a
+      month. Earlier, retirement read nameplate against the queue alone and
+      sold the builders from 232,000 to 56,800 points (months 912–1020): homes
+      sat flat for nine years.
+    - **Arrivals are not a 24-month cycle.** `Migration.crowdingFactor()`
+      returns 0 while any household is unplaced, then jumps to 0.63: one
+      month of 25–32k arrivals, then zero, every 9–23 months. Summed by
+      calendar year that alternates. A reload changes nothing.
+    - **Construction's loss:** payroll charged at the sector's average fill
+      (+$269M of its $600M a month; +$1,273M a month across all sectors, paid
+      by the firms and received by nobody), the labour part of every price in
+      founding dollars (`BuildingsTemplate.cashCost`), material priced at the
+      order month and bought at the draw month, and VAT on material passed
+      through at cost.
+    - **Luxury's margin is 2.65, not the cap:** it reads customers wanted at
+      the floor price, not served at the struck one. **Deposits:** 24 branches
+      × a founding-money $250k cap. **Materials and Mining** died of the
+      unskilled wage (160 of 250 and 45 of 60 posts unskilled).
+    - **Probes:** getting the builders' output to the housing sites (staffing
+      them, or sharing site work by buildings or by points) roughly triples
+      the homes built in ten years (+38k to +102–109k), and the unskilled
+      premium falls from 3.5 to about 1.1 with no other change.
+- **NEXT: 0.7.17 — JERUS'S FIXES FROM HIS CITY** (his answers, 2026-09-28,
+  verbatim). In rounds with a gate between each, measured on the eight-seed
+  ensembles and on a copy of his slot-10 city:
+  - **Round 1, the builders and housing:** "Share building work fairly
+    (Recommended), Builders count repairs and staffing, Landlords hold work,
+    not one order, Arrivals limited, not switched off"; and from the money
+    answers, "Pay wages by job type (Recommended)" — the payroll leak, since
+    the firms' bill and the households' pay must be one figure. He asked
+    "sick still get paid right?": yes, payroll counts filled posts and
+    sickness cuts output only; the fix keeps that.
+  - **Round 2, labour:** "Every planner checks staffing, Workers take the
+    best-paid job, Some unskilled migrants". Not chosen: showing the
+    staffable share before a service is built.
+  - **Round 3, prices:** "Builders' prices keep up, Grant follows prices, Bank
+    deposit cap rises with prices"; Luxury, "The customers actually served";
+    and the branches: "bank branch i think should be customers perhaps, but
+    make it be sustainable even if just account fees, aka one branch
+    maintence and operating costs should be less than the revenue it makes of
+    fees for that specific branch, that should always be true." Needs sourced
+    figures (customers per branch, a branch's running cost, account fees).
+- **AFTER 0.7.17: HEALTHCHECK SHIPS RED — ITS OWN BATCH** (Jerus,
   2026-09-25: "Ship with it red, flagged"). Read over its last 12 months (his
   change, "Read a year's average"), the dear-care twin is 8.4 points hungrier
   than the free one against a tolerance of 5, over since the bonds batch's
@@ -25,6 +113,23 @@ has been away reads the changelog's top block and section 0 here, then works.
   household row paid for (the documented shortcut in `HouseholdBalance`, THE
   PRICE AT THE CLINIC DOOR); 46% had money for food after their fixed bills
   and still planned less — untraced, and the first thing to trace.
+- **CHECK 0.7.16 BY EYE ON THE PC** (`the-year-book-as-csv.md`). Reports tab,
+  "Write the year book":
+  - the screen note's new sentence;
+  - the message: the folder once, then each book's three files (middle dots,
+    the indent, no wrap inside a file name), and it survives a month;
+  - six files in the game's folder, and `.bak`s beside them from the second
+    press;
+  - `year-book.csv` in Excel: columns split, numbers right-aligned (including
+    `1.23e9`), blanks empty;
+  - press again with the CSV open in Excel: that file fails; read the line's
+    wording (the docs pass expects Java's long "being used by another
+    process" text);
+  - a new city: header-only CSVs.
+
+  Jerus to decide, small: an episodes CSV (about 20 lines); full precision in
+  the CSV against the text's three figures; whether a failed `.csv` line says
+  "close it in Excel and write again".
 - **CHECK 0.7.15 BY EYE ON THE PC** (`the-central-bank-as-backstop.md`).
   - **The strip's inflation readout.**
     - At the default 2% target: 5% grey; 6% amber; 7.1% red (amber
@@ -950,6 +1055,14 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
   again by the reviewer, see `the-manual-at-0-7-15.md`: twenty-three sections,
   §13 *The bank* and §16 *Founding a city* new; its found-on-the-way list is
   under Housekeeping. The share pin (above) is still Jerus's.
+- **And 0.7.16 as of 2026-09-28: the year and decade books also write their
+  tables as CSV, four files beside the text, built from one table; 226 files,
+  ~177,850 lines; save format 27 unchanged; 64 harnesses.** What the manual
+  now says that is not so: the build line (0.7.15) and "struck from the tree
+  at 0.7.15". It never names the year book's files, so nothing there is
+  wrong; the Reports passage could say the export writes CSV too, and §20's
+  YearBookCheck row that each CSV is its text's table cell for cell. No open
+  question is closed.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build

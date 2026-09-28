@@ -4,7 +4,7 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 226 files, 177,379 lines, 7,029 methods, 997 constants. `GameVersion.VERSION` is "0.7.15", `SAVE_FORMAT` 27.
+**The tree:** 226 files, 177,853 lines, 7,051 methods, 999 constants. `GameVersion.VERSION` is "0.7.16", `SAVE_FORMAT` 27.
 
 ## model (112 files)
 
@@ -50,11 +50,11 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ForeignAccounts.java](ForeignAccounts.md) | 1,761 | 94 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 26 |
 | [Formats.java](Formats.md) | 56 | 6 | The few formats a sector needs to describe itself, without the toolkit. | 18 |
 | [Founding.java](Founding.md) | 405 | 30 | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. | 36 |
-| [Game.java](Game.md) | 12,363 | 459 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 105 |
-| [GameFiles.java](GameFiles.md) | 401 | 31 | Where the game keeps its files, and how it writes them. | 69 |
+| [Game.java](Game.md) | 12,379 | 459 | sections: THE FOUNDING RESERVE (2026-09-21), THE FOUNDING RECORD (0.7.10)... | 105 |
+| [GameFiles.java](GameFiles.md) | 412 | 35 | Where the game keeps its files, and how it writes them. | 69 |
 | [GameLog.java](GameLog.md) | 220 | 12 | Everything the game prints, written somewhere a player can find it. | 8 |
 | [GamePrefs.java](GamePrefs.md) | 176 | 13 | How the player likes the window, kept between runs. | 2 |
-| [GameVersion.java](GameVersion.md) | 1,999 | 4 | What build this is, and what shape its saves are. | 7 |
+| [GameVersion.java](GameVersion.md) | 2,016 | 4 | What build this is, and what shape its saves are. | 7 |
 | [Good.java](Good.md) | 863 | 18 | A thing that can be made, bought, held, imported and exported. | 64 |
 | [GoodsMarket.java](GoodsMarket.md) | 466 | 47 | Where one good clears between whoever makes it and whoever wants it. | 26 |
 | [Health.java](Health.md) | 403 | 20 | How much of the workforce is off sick this month. | 12 |
@@ -121,7 +121,7 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [WageBand.java](WageBand.md) | 152 | 7 | The four education bands the wage tax is set by. | 19 |
 | [WorkingHousehold.java](WorkingHousehold.md) | 50 | 7 | A household with an earner in it, at one pay tier. | 3 |
 | [WorldEconomy.java](WorldEconomy.md) | 422 | 18 | The rest of the world, which has its own inflation and did not use to. | 12 |
-| [YearBook.java](YearBook.md) | 1,132 | 51 | The run, one line a year - for READING rather than for drawing. | 4 |
+| [YearBook.java](YearBook.md) | 1,253 | 61 | The run, one line a year - for READING rather than for drawing. | 4 |
 
 ## sectors (15 files)
 
@@ -153,7 +153,7 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FinancesScreen.java](FinancesScreen.md) | 2,756 | 40 | The Finances tab: the position, the ladder of what the city owes, debt service, home and abroad, your rate taken apart, the book, buying back, and ... | 1 |
 | [FoundingScreen.java](FoundingScreen.md) | 399 | 16 | Found a city: its name, its money, what the founders leave in the treasury and the vault, and the world it is founded into. | 1 |
 | [GovernmentScreen.java](GovernmentScreen.md) | 1,695 | 42 | The government tab: the budget as two rings and a balance, what the treasury actually did against the size of the economy, the two lists - who pays... | 1 |
-| [HistoryScreen.java](HistoryScreen.md) | 2,484 | 66 | The Reports tab: the city as a shape over time. | 1 |
+| [HistoryScreen.java](HistoryScreen.md) | 2,503 | 66 | The Reports tab: the city as a shape over time. | 1 |
 | [Icons.java](Icons.md) | 156 | 1 | The rail's icons, as vector outlines. | 1 |
 | [Ladder.java](Ladder.md) | 225 | 16 | One dial, drawn the one way: a "−" worth one step, a slider that snaps to the step, a "+" worth one step, the reading, and a line under them saying... | 5 |
 | [LandScreen.java](LandScreen.md) | 722 | 7 | The land office: how the city pays and the city's position across the top, the plots on the market as tiles you can compare - price per square foot... | 1 |
@@ -239,7 +239,7 @@ Generated 2026-09-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TreasuryCheck.java](TreasuryCheck.md) | 717 | 12 | Plays a city and audits what the screens say the treasury did. | 0 |
 | [VanCheck.java](VanCheck.md) | 309 | 5 | The vans: what a sector needs, what it costs it, and what happens while it waits for them. | 0 |
 | [WaterCheck.java](WaterCheck.md) | 180 | 3 | Sanity harness for water production, demand, throttling and billing. | 0 |
-| [YearBookCheck.java](YearBookCheck.md) | 784 | 35 | Proves the year book folds each series the way that series has to be folded, and that the file says so. | 0 |
+| [YearBookCheck.java](YearBookCheck.md) | 1,074 | 43 | Proves the year book folds each series the way that series has to be folded, and that the file says so. | 0 |
 
 ## tools (11 files)
 
