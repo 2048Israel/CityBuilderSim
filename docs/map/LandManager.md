@@ -1,6 +1,6 @@
 # LandManager.java - 525 lines · 47 methods · 7 constants · model
 
-`ham/citybuildersim/LandManager.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandManager.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > The city's land: what it owns, what is built on, and what it sells.
 > 
@@ -42,7 +42,7 @@
 
 **Uses:** [LandParcel](LandParcel.md) (4), [LandMarket](LandMarket.md) (3), [ForeignAccounts](ForeignAccounts.md) (3)
 
-**Used by (12):** [BuildScreen](BuildScreen.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [ReadPathCheck](ReadPathCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (14):** [BuildScreen](BuildScreen.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [ReadPathCheck](ReadPathCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

@@ -11,9 +11,10 @@ package ham.citybuildersim;
  * since 0.7.1); every sector's cash, in Sectors.KEYS order; the
  * construction sector's order book (a build is paid for up front and earned
  * as the work is done, so the unearned part is money the builder holds and
- * has not yet booked); and the bank's cash, plus what it owes the central
+ * has not yet booked); the bank's cash, plus what it owes the central
  * bank's window and less what it still owes the treasury for the city's paper
- * (sold between two presses, paid for at the next settle). Everything else -
+ * (sold between two presses, paid for at the next settle); and, since 0.7.14,
+ * the city's fund's cash (TreasuryFund). Everything else -
  * households, other cities, the world and, since 0.7.0, the central bank - is
  * OUTSIDE, and money only ever crosses that boundary in a known set of ways:
  * wages out, shopping and rent in, imports out, exports in, loans in,
@@ -294,7 +295,8 @@ public final class MoneyAudit {
 
     /**
      * The pools, by name: the city, every sector in the registry's order, the
-     * builders' order book, the bank. SINCE THE SECTOR TEMPLATE (2026-09-11)
+     * builders' order book, the bank, and since 0.7.14 the city's fund (on
+     * the end, so every other pool keeps its place). SINCE THE SECTOR TEMPLATE (2026-09-11)
      * the sectors come from Sectors.KEYS rather than a literal, and the
      * "cheque in the post" pool is gone with the lag that needed it - a
      * trade is booked on both sides in the same strike now.
@@ -302,11 +304,12 @@ public final class MoneyAudit {
     static final String[] POOL_NAMES = poolNames();
 
     private static String[] poolNames() {
-        String[] names = new String[Sectors.KEYS.length + 3];
+        String[] names = new String[Sectors.KEYS.length + 4];
         names[0] = "city";
         for (int i = 0; i < Sectors.KEYS.length; i++) names[1 + i] = Sectors.KEYS[i].toLowerCase();
         names[Sectors.KEYS.length + 1] = "order book";
         names[Sectors.KEYS.length + 2] = "bank";
+        names[Sectors.KEYS.length + 3] = "fund";
         return names;
     }
 
@@ -356,13 +359,24 @@ public final class MoneyAudit {
          */
         pools[i++] = g.getBank().getCash() + g.getCentralBank().getAdvancesToBank()
                 - g.getCityPaperUnsettled();
+        /*
+         * THE CITY'S FUND (0.7.14), its cash: the government's, inside the
+         * city, and a pool of its own so the treasury's pool still reads the
+         * treasury. Money between the two - the dial's pay-in, the hand's pay
+         * in and draw out, the 3% transfer - is a pool paying a pool and
+         * cancels, as the resolution the treasury pays the bank does, and as a
+         * dividend, a coupon or a principal a company or the bank pays the
+         * fund does. What crosses the edge is what it trades with the
+         * households and the world, declared below. See TreasuryFund.
+         */
+        pools[i++] = g.getFund().getCash();
         return pools;
     }
 
     /**
      * Every dollar in the pools: the city's, its businesses', the builders'
      * order book, and the bank's - plus what it owes the window, less what it
-     * owes for the city's paper.
+     * owes for the city's paper - and the city's fund's (0.7.14).
      */
     public static double pooled(Game g) {
         double total = 0;
@@ -621,6 +635,10 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ desk SharesSoldToHouseholds", g.getExchange().getSoldToHouseholds(), Scope.DOMESTIC);
         in += credit.apply("+ desk SharesSoldAbroad", g.getExchange().getSoldAbroad(), Scope.FINANCIAL);
+        // ...and the city's fund selling (0.7.14): a household's money into
+        // its pool, or the world's, a financial inflow like the desk's.
+        in += credit.apply("+ fund SharesSoldToHouseholds", g.getExchange().getFundSoldToHouseholds(), Scope.DOMESTIC);
+        in += credit.apply("+ fund SharesSoldAbroad", g.getExchange().getFundSoldAbroad(), Scope.FINANCIAL);
         /*
          * The treasury selling reserves. Foreign money out, local money in - the
          * cash arrives in the city's pool from outside it, so it is declared.
@@ -638,14 +656,33 @@ public final class MoneyAudit {
         // Bank.openBranches(). Signed, because it goes either way.
         in += credit.apply("+ bank FoundingSettlement", g.getBank().getFoundingSettlement(), Scope.VALUATION);
         /*
-         * A failed bank's creditors absorbing the shortfall. They were the
-         * wholesale funders abroad until 0.7.0, so the money the city keeps
-         * and will not repay arrives here. It still does, though the bank's
-         * wholesale lender is the central bank's window now and the window is
-         * repaid out of this at the next settle - who absorbs a failed bank
-         * is Jerus's open question. See Bank.resolveIfFailed().
+         * A failed bank's creditors absorbing the shortfall - the line until
+         * 0.7.14, when "the creditors" were the central bank's window and the
+         * hole arrived here from outside. Nothing absorbs a hole now: the
+         * city resolves the bank for its shares and pays it, a pool paying a
+         * pool (Game.resolveBank(), Bank.resolveIfFailed()), so this reads
+         * nothing in this build - an older save's city included: its month's
+         * lines bring the figure back on load (Bank.restoreMonthLines(), the
+         * "absorbed" cause on that month's Capital & owners page), but
+         * Bank.startMonth() clears it before the next strike. What an older
+         * save keeps of it is the lifetime figure (Bank.getResolutionLoss()),
+         * which the Bank tab shows only when it is not nothing.
+         * It stays, reading nothing, until Jerus says whether it goes (todo.md,
+         * found by 0.7.14).
          */
         in += credit.apply("+ bank ResolutionLoss", g.getBank().getResolutionLossThisMonth(), Scope.VALUATION);
+        /*
+         * ...AND THE OLD OWNERS WIPED OUT AT A RESOLUTION (0.7.14), abroad: the
+         * world's shares in the bank pass to the city for nothing, so what the
+         * city owed the world on them - at their last price - is gone without
+         * a dollar moving. A valuation, as a write-off of the world's bonds is,
+         * declared as a pair that moves no pool: the credit is what the balance
+         * of payments reads (ForeignAccounts' "forgiven"), the debit keeps the
+         * cash identity whole. The households' shares go to the city the same
+         * way, but households are inside the country and outside the pools, so
+         * their loss is nobody's crossing and has no line.
+         */
+        in += credit.apply("+ bank OwnersWipedAbroad", g.getOwnersWipedAbroadThisMonth(), Scope.VALUATION);
         /*
          * A bankrupt sector's creditors absorbing its overdraft, the same
          * way. The bills were paid with money the sector did not have; the
@@ -875,6 +912,12 @@ public final class MoneyAudit {
         // desk's own tendered shares are a pool paying a pool.
         out += debit.apply("- desk SharesBoughtFromHouseholds", g.getExchange().getBoughtFromHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- desk SharesBoughtFromAbroad", g.getExchange().getBoughtFromAbroad(), Scope.FINANCIAL);
+        // ...and the city's fund buying (0.7.14), the same two ways.
+        out += debit.apply("- fund SharesBoughtFromHouseholds", g.getExchange().getFundBoughtFromHouseholds(), Scope.DOMESTIC);
+        out += debit.apply("- fund SharesBoughtFromAbroad", g.getExchange().getFundBoughtAbroad(), Scope.FINANCIAL);
+        // ...and the world's shares wiped out at a resolution (0.7.14): the
+        // other half of the pair above, no cash.
+        out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.DOMESTIC);
         out += debit.apply("- equity BuybackToHouseholds", g.getExchange().getBuybackToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",

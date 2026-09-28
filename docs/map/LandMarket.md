@@ -1,6 +1,6 @@
-# LandMarket.java - 806 lines · 27 methods · 18 constants · model
+# LandMarket.java - 809 lines · 28 methods · 18 constants · model
 
-`ham/citybuildersim/LandMarket.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMarket.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > The land office's window: nine plots on offer, and what the next one costs.
 > 
@@ -48,21 +48,21 @@
 
 **Uses:** [LandParcel](LandParcel.md) (22), [LandManager](LandManager.md) (4), [ForeignAccounts](ForeignAccounts.md) (1)
 
-**Used by (5):** [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md)
+**Used by (7):** [Founding](Founding.md), [FundCheck](FundCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 68 | · what the city pays |
-| 95 | · THE TWO PREMIUMS ADD, THEY DO NOT MULTIPLY |
-| 183 | · what businesses pay |
-| 235 | · how big a plot is |
-| 274 | · the parcels |
-| 304 | PRICING |
-| 396 | GENERATING A PARCEL |
-| 522 | THE LISTING |
-| 587 | SAVE AND RESTORE |
+| 98 | · THE TWO PREMIUMS ADD, THEY DO NOT MULTIPLY |
+| 186 | · what businesses pay |
+| 238 | · how big a plot is |
+| 277 | · the parcels |
+| 307 | PRICING |
+| 399 | GENERATING A PARCEL |
+| 525 | THE LISTING |
+| 590 | SAVE AND RESTORE |
 
 ## Constants
 
@@ -70,97 +70,101 @@
 |---:|---|---|---|
 | 66 | `LandMarket.LISTING_SIZE` | `9` | Plots on offer at any one time. |
 | 80 | `LandMarket.BASE_PRICE_PER_SQ_FT` | `.0007` | Ground price per square foot before any premium, in thousands of US dollars. |
-| 148 | `LandMarket.PREMIUM_PER_BLOCK_OWNED` | `.008` | Each block already owned makes the next offer this much dearer. |
-| 151 | `LandMarket.PREMIUM_PER_1000_PEOPLE` | `.05` | ...and so does each thousand residents. |
-| 166 | `LandMarket.IRON_PRICE_PER_TONNE` | `.0004` | What the seller charges for the ore, per tonne in the ground, in thousands of US dollars. |
-| 175 | `LandMarket.SQ_FT_PER_DEPOSIT` | `400_000` | Land a single mine occupies, and therefore the room one deposit needs. |
-| 178 | `LandMarket.EXTRA_DEPOSIT_CHANCE` | `.28` | Chance that a parcel with ore has one MORE site, each time it is asked. |
-| 181 | `LandMarket.MAX_DEPOSITS` | `4` | However big the tract, this many sites is the most it will ever carry. |
-| 218 | `LandMarket.SCARCITY_FLOOR` | `.65` | Multiplier on acquisition cost when land is abundant. |
-| 221 | `LandMarket.SCARCITY_CEILING` | `1.90` | Multiplier when there is effectively nothing left. |
-| 233 | `LandMarket.SCARCITY_MIDPOINT` | `4.0` | Pressure at which the curve is half way up. |
-| 247 | `LandMarket.MIN_BLOCKS` | `1` | The smallest thing the land office will sell, ever: one city block. |
-| 262 | `LandMarket.BLOCKS_PER_FLOOR_STEP` | `40` | Blocks the city must already own before the floor rises another block. |
-| 269 | `LandMarket.MAX_MIN_BLOCKS` | `15` | A ceiling on the floor. |
-| 282 | `LandMarket.SEED` | `705_398_211_733L` | Fixed seed. |
-| 598 | `LandMarket.FIELDS_PER_PARCEL` | `5` | Fields written per parcel. |
-| 614 | `LandMarket.LISTING_FORMAT_MARKER` | `- FIELDS_PER_PARCEL` | Marks a listing written with deposit counts, and says how wide it is - in LOCAL money, as every listing was until 0.7.6 (USD_LISTING_MARKER). |
-| 622 | `LandMarket.USD_LISTING_MARKER` | `- 100 - FIELDS_PER_PARCEL` | Marks a listing whose prices are US DOLLARS (0.7.6), as wide as the one before it. |
+| 151 | `LandMarket.PREMIUM_PER_BLOCK_OWNED` | `.008` | Each block already owned makes the next offer this much dearer. |
+| 154 | `LandMarket.PREMIUM_PER_1000_PEOPLE` | `.05` | ...and so does each thousand residents. |
+| 169 | `LandMarket.IRON_PRICE_PER_TONNE` | `.0004` | What the seller charges for the ore, per tonne in the ground, in thousands of US dollars. |
+| 178 | `LandMarket.SQ_FT_PER_DEPOSIT` | `400_000` | Land a single mine occupies, and therefore the room one deposit needs. |
+| 181 | `LandMarket.EXTRA_DEPOSIT_CHANCE` | `.28` | Chance that a parcel with ore has one MORE site, each time it is asked. |
+| 184 | `LandMarket.MAX_DEPOSITS` | `4` | However big the tract, this many sites is the most it will ever carry. |
+| 221 | `LandMarket.SCARCITY_FLOOR` | `.65` | Multiplier on acquisition cost when land is abundant. |
+| 224 | `LandMarket.SCARCITY_CEILING` | `1.90` | Multiplier when there is effectively nothing left. |
+| 236 | `LandMarket.SCARCITY_MIDPOINT` | `4.0` | Pressure at which the curve is half way up. |
+| 250 | `LandMarket.MIN_BLOCKS` | `1` | The smallest thing the land office will sell, ever: one city block. |
+| 265 | `LandMarket.BLOCKS_PER_FLOOR_STEP` | `40` | Blocks the city must already own before the floor rises another block. |
+| 272 | `LandMarket.MAX_MIN_BLOCKS` | `15` | A ceiling on the floor. |
+| 285 | `LandMarket.SEED` | `705_398_211_733L` | Fixed seed. |
+| 601 | `LandMarket.FIELDS_PER_PARCEL` | `5` | Fields written per parcel. |
+| 617 | `LandMarket.LISTING_FORMAT_MARKER` | `- FIELDS_PER_PARCEL` | Marks a listing written with deposit counts, and says how wide it is - in LOCAL money, as every listing was until 0.7.6 (USD_LISTING_MARKER). |
+| 625 | `LandMarket.USD_LISTING_MARKER` | `- 100 - FIELDS_PER_PARCEL` | Marks a listing whose prices are US DOLLARS (0.7.6), as wide as the one before it. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 93 | `private double basePricePerSqFt` | The same base in LOCAL money, reformed with every other price - what the inside price is struck from, and nothing else. |
-| 272 | `private double minBlocks` | Smallest parcel currently on offer, in blocks. |
-| 284 | `private final List<LandParcel> listing` |  |
-| 285 | `private int nextId` |  |
-| 292 | `private double marketPricePerSqFt` | Ground price per square foot right now, before any parcel's ore premium, in LOCAL money at the founding rate - the anchor the inside price is struck from (basePricePerSqFt), and since 0.7.6 nothing else. |
-| 299 | `private double groundUsdPerSqFt` | ...and what the world asks for the same ground, in thousands of US dollars (0.7.6): every parcel listed from now on is priced off this, and it is the figure the history keeps as landPrice. |
-| 302 | `private double salePricePerSqFt` | What businesses are charged. |
-| 629 | `private final java.util.Set<Integer> localIds` | Ids restored from an older listing whose prices are still LOCAL money, waiting for settleLocalPrices() to read them as dollars at the loading rate - which the load path has only once the foreign accounts are back. |
-| 632 | `private boolean groundFromLocal` | True when the price state came back without a dollar ground price (an older save). |
+| 96 | `private double basePricePerSqFt` | The same base in LOCAL money, reformed with every other price - what the inside price is struck from, and nothing else. |
+| 275 | `private double minBlocks` | Smallest parcel currently on offer, in blocks. |
+| 287 | `private final List<LandParcel> listing` |  |
+| 288 | `private int nextId` |  |
+| 295 | `private double marketPricePerSqFt` | Ground price per square foot right now, before any parcel's ore premium, in LOCAL money at the founding rate - the anchor the inside price is struck from (basePricePerSqFt), and since 0.7.6 nothing else. |
+| 302 | `private double groundUsdPerSqFt` | ...and what the world asks for the same ground, in thousands of US dollars (0.7.6): every parcel listed from now on is priced off this, and it is the figure the history keeps as landPrice. |
+| 305 | `private double salePricePerSqFt` | What businesses are charged. |
+| 632 | `private final java.util.Set<Integer> localIds` | Ids restored from an older listing whose prices are still LOCAL money, waiting for settleLocalPrices() to read them as dollars at the loading rate - which the load path has only once the foreign accounts are back. |
+| 635 | `private boolean groundFromLocal` | True when the price state came back without a dollar ground price (an older save). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 755 | **type** `public class LandMarket` | The land office's window: nine plots on offer, and what the next one costs. |
+| 52 | 758 | **type** `public class LandMarket` | The land office's window: nine plots on offer, and what the next one costs. |
 
-### what the city pays (lines 68-94)
-
-### THE TWO PREMIUMS ADD, THEY DO NOT MULTIPLY (lines 95-182)
-
-### what businesses pay (lines 183-234)
-
-### how big a plot is (lines 235-273)
-
-### the parcels (lines 274-303)
-
-### PRICING (lines 304-395)
+### what the city pays (lines 68-97)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 318 | 25 | `public void update(double ownedSqFt, double allocatedSqFt, int population)` | Re-prices the market and tops the listing back up to ten. |
-| 364 | 18 | `public double scarcityMultiplier(double ownedSqFt, double allocatedSqFt)` | How dear inside land is, as a multiple of what the ground cost outside. |
-| 388 | 1 | `public double getMarketPricePerSqFt()` | The inside price's anchor: the ground price per square foot in local money at the founding rate, in thousands. |
-| 391 | 1 | `public double getGroundUsdPerSqFt()` | Ground price per square foot the world asks today, in thousands of US dollars (0.7.6). |
-| 394 | 1 | `public double getSalePricePerSqFt()` | What a business pays the city per square foot, in thousands. |
+| 83 | 1 | `public static double openingUsdPerSqFt()` | The ground's price a square foot at the founding, in thousands of US dollars: BASE_PRICE_PER_SQ_FT, before any premium - what an Insane city owes for its starting land (Founding.landBondUsd(), 0.7.14). |
 
-### GENERATING A PARCEL (lines 396-521)
+### THE TWO PREMIUMS ADD, THEY DO NOT MULTIPLY (lines 98-185)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 406 | 17 | `private LandParcel generate(int id)` |  |
-| 439 | 12 | `private double rollSize(Random random)` | Plot sizes, as multiples of whatever the current floor is. |
-| 464 | 15 | `private int rollDeposits(Random random, double sizeSqFt)` | How many separate deposit sites are under this plot, if any. |
-| 488 | 8 | `private double rollTonnes(Random random, int deposits)` | Ore in the ground, in tonnes, pooled across the parcel's deposits. |
-| 497 | 3 | `private double round(double sqFt)` |  |
-| 515 | 6 | `private static long scramble(long value)` | Spreads consecutive ids into unrelated seeds. |
+### what businesses pay (lines 186-237)
 
-### THE LISTING (lines 522-586)
+### how big a plot is (lines 238-276)
+
+### the parcels (lines 277-306)
+
+### PRICING (lines 307-398)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 527 | 3 | `public List<LandParcel> getListing()` | The plots on offer, in the order they were listed. |
-| 531 | 6 | `public LandParcel find(int id)` |  |
-| 539 | 9 | `public LandParcel cheapest()` | The cheapest thing on offer, for a caller that just wants some land. |
-| 550 | 10 | `public LandParcel bestValue()` | The best value per square foot that carries no ore premium. |
-| 562 | 10 | `public LandParcel richestDeposit()` | The listed deposit with the most ore, or null if none is on offer. |
-| 579 | 7 | `public LandParcel take(int id)` | Removes a parcel from the window. |
+| 321 | 25 | `public void update(double ownedSqFt, double allocatedSqFt, int population)` | Re-prices the market and tops the listing back up to ten. |
+| 367 | 18 | `public double scarcityMultiplier(double ownedSqFt, double allocatedSqFt)` | How dear inside land is, as a multiple of what the ground cost outside. |
+| 391 | 1 | `public double getMarketPricePerSqFt()` | The inside price's anchor: the ground price per square foot in local money at the founding rate, in thousands. |
+| 394 | 1 | `public double getGroundUsdPerSqFt()` | Ground price per square foot the world asks today, in thousands of US dollars (0.7.6). |
+| 397 | 1 | `public double getSalePricePerSqFt()` | What a business pays the city per square foot, in thousands. |
 
-### SAVE AND RESTORE (lines 587-806)
+### GENERATING A PARCEL (lines 399-524)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 634 | 16 | `public double[] getListingState()` |  |
-| 667 | 30 | `public boolean restoreListingState(double[] state)` | Restores a listing written by this build OR by one before deposits existed. |
-| 710 | 15 | `public int settleLocalPrices(double rate)` | AN OLDER SAVE'S PRICES WERE LOCAL MONEY, and this reads them as US dollars at the rate of the day the save is loaded (0.7.6): each listed parcel's price over the rate, so the local cost the player saw is exactly what ... |
-| 727 | 1 | `public double getMinSqFt()` | Smallest parcel the office is currently willing to sell, in square feet: what the land office shows in square kilometres (0.7.13). |
-| 730 | 1 | `public double getMinBlocks()` | Smallest parcel the office is currently willing to sell, in blocks. |
-| 749 | 3 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
-| 753 | 12 | `public void restorePriceState(double[] state)` |  |
-| 766 | 10 | `public void reset()` |  |
-| 791 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
-| 802 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 409 | 17 | `private LandParcel generate(int id)` |  |
+| 442 | 12 | `private double rollSize(Random random)` | Plot sizes, as multiples of whatever the current floor is. |
+| 467 | 15 | `private int rollDeposits(Random random, double sizeSqFt)` | How many separate deposit sites are under this plot, if any. |
+| 491 | 8 | `private double rollTonnes(Random random, int deposits)` | Ore in the ground, in tonnes, pooled across the parcel's deposits. |
+| 500 | 3 | `private double round(double sqFt)` |  |
+| 518 | 6 | `private static long scramble(long value)` | Spreads consecutive ids into unrelated seeds. |
+
+### THE LISTING (lines 525-589)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 530 | 3 | `public List<LandParcel> getListing()` | The plots on offer, in the order they were listed. |
+| 534 | 6 | `public LandParcel find(int id)` |  |
+| 542 | 9 | `public LandParcel cheapest()` | The cheapest thing on offer, for a caller that just wants some land. |
+| 553 | 10 | `public LandParcel bestValue()` | The best value per square foot that carries no ore premium. |
+| 565 | 10 | `public LandParcel richestDeposit()` | The listed deposit with the most ore, or null if none is on offer. |
+| 582 | 7 | `public LandParcel take(int id)` | Removes a parcel from the window. |
+
+### SAVE AND RESTORE (lines 590-809)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 637 | 16 | `public double[] getListingState()` |  |
+| 670 | 30 | `public boolean restoreListingState(double[] state)` | Restores a listing written by this build OR by one before deposits existed. |
+| 713 | 15 | `public int settleLocalPrices(double rate)` | AN OLDER SAVE'S PRICES WERE LOCAL MONEY, and this reads them as US dollars at the rate of the day the save is loaded (0.7.6): each listed parcel's price over the rate, so the local cost the player saw is exactly what ... |
+| 730 | 1 | `public double getMinSqFt()` | Smallest parcel the office is currently willing to sell, in square feet: what the land office shows in square kilometres (0.7.13). |
+| 733 | 1 | `public double getMinBlocks()` | Smallest parcel the office is currently willing to sell, in blocks. |
+| 752 | 3 | `public double[] getPriceState()` | THE OFFICE'S PRICES ARE STATE, and the listing above did not carry them. |
+| 756 | 12 | `public void restorePriceState(double[] state)` |  |
+| 769 | 10 | `public void reset()` |  |
+| 794 | 5 | `public void redenominate(double scale)` | The office's LOCAL prices in the new unit - the inside price and the anchor it is struck from - and nothing else. |
+| 805 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

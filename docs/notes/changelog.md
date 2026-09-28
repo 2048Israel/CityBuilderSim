@@ -8,6 +8,110 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### VERSION 0.7.14 — THE CITY TAKES THE SHARES — 2026-09-27, DEPLOYED AND VERIFIED (tag 0927a), see `the-city-takes-the-shares.md`
+
+The treasury batch, on the todo since 0.7.12, with the Insane start Jerus
+added mid-batch. Two rounds from an Opus implementer, the orchestrating
+session keeping the gate, and an Opus docs pass.
+
+**Why.**
+- Jerus, on the owners of a failed bank: *"City takes the shares … but later
+  bank can dilute by issuing shares... we dont want commercial to be owned by
+  government fully in the long run"*.
+- Since 0.7.0 a failed bank's hole had been declared "absorbed from outside
+  the city" (MoneyAudit's "+ bank ResolutionLoss"), his open question.
+- *"on game start, add a new difficulty called Insane, which is just you
+  start with 0 cash, 0 vault, and a 20y bond 3% for the initial land cost …
+  if easier the starting debt is abroad in usd"*.
+
+**What shipped.**
+- **The city's fund** (`TreasuryFund`; Jerus: "Rule plus your hand", "Home
+  only").
+  - It holds a market book (company shares and bonds), a rescue book (a
+    resolved bank's shares, the preferred and its warrants) and cash. It is a
+    holder on the share register and on every `CorporateBond`, and a
+    participant on both order books. It never subscribes to a new issue and
+    never buys the city's own paper.
+  - The dial takes 0–300% of the year's surplus, default 0, paid in at
+    December's close, before the rollover nets; one ledger for both; never
+    below a month of the treasury's spending (Canada's prudential liquidity).
+  - Norway's rule: 70/30 shares to bonds, 10% of a company at most, rebalanced
+    past 74% or 4 points under 70% (GPFG mandate); 3% a year to the budget as
+    "Transfer from the fund", from its cash only.
+  - The hand: orders at fair value, pay-in and draw-out off the budget; a
+    Finances area of its own.
+- **A failed bank is resolved for its shares** (Jerus: "Treasury setting,
+  auto", "Central bank advances it").
+  - "When the bank fails": Automatic (new games) or Wait for my button (old
+    saves and the harness city).
+  - Every common share passes to the city (CDIC's bail-in regime; Northern
+    Rock 2008); the old owners get nothing; the city's preferred and warrants
+    are cancelled.
+  - The city pays the hole plus the exit capital as a promise
+    (`BANK_RESOLUTION`): cash first, the central bank advancing the rest.
+    Nothing enters from outside any more; a bank waiting for the button
+    carries its hole at the window.
+  - The stake falls only as the bank sells new shares (Jerus: "New issues
+    only").
+- **A bank under its minimum asks the city for TARP preferred** through the
+  inbox (Accept / Decline; again a quarter after either answer, Jerus:
+  "Quarter").
+  - 1–3% of risk-weighted assets, cumulative 5% then 9% from year five, paid
+    only from equity over target; no common dividend while any is unpaid; no
+    buybacks or dividend increases for three years; warrants for 15% of the
+    amount, ten years.
+  - Repaid at the third anniversary at par plus unpaid dividends, from spare
+    capital, then new common sold to the public (Jerus: "Sell new shares to
+    repay"); the warrants bought back at fair value after the last block.
+  - Short of cash, the offer shows the funding page (Jerus: "Keep as
+    built").
+  - A third equity line on the balance sheet, "Preferred shares (the city)".
+- **Insane**, a fifth founding preset, first: D$0, US$0, and a US$2,100k
+  20-year dollar bond at 3% owed abroad for the starting land. The play clock
+  refuses an empty treasury with no revenue behind it and says where to
+  borrow (Jerus: "Borrow first"); the founding card quotes day 0: the 20-year
+  bond at 13.90%, the 6-month note at 13.00%, the window abroad shut.
+- **A reloaded city's rate is the live city's:** the save carries the debt
+  market's four inputs and its rate.
+- **The playtest:** `-Dplaytest.rescue=AUTO|BUTTON`, `-Dplaytest.preferred`,
+  `-Dplaytest.fund`, `-Dplaytest.founding=insane`; the old monthly gift of up
+  to 25% of the treasury is gone.
+- `SAVE_FORMAT` stays 27; everything new is saved by name.
+
+**What it found (8 seeds a setup; the rescue automatic, offers accepted).**
+- At dial 0 every trace is 0.7.13's to the byte until the first month the
+  city puts capital into its bank (m182–m2143).
+
+| setup | failures 0.7.13 → 0.7.14 | capital into the bank | mean pop |
+|---|---|---:|---:|
+| default | 1 → 6 | $3.12B (gift) → $1.50B | 162,924 → 166,717 |
+| autopilot | 9 → 17 | $2.05B → $1.68B | 154,149 → 164,474 |
+| held 10% | 71 → 104 | $2.91B → $4.34B | 6,506 → 6,972 |
+| held 25% | 265 → 43 | $775M → $962T | 4,506 → 4,529 |
+| Lean | 5 → 11 | $2.36B → $2.53B | 138,398 → 140,522 |
+| Insane | – → 46 | $12.0T | 67,226 |
+
+- **The audit closed every month of every run.**
+- **Default preferred:** 45 blocks, $1.26B bought, $1.22B repaid at three
+  years ($996M by new shares), nothing outstanding at the end.
+- **The stake:** a median 72.8% five years after a resolution, 51.0% at ten,
+  58.8% at twenty-five (default).
+- **Held 25%** is the spiral Jerus kept: the city borrows from the bank to buy
+  the bank's preferred ($962T; advances peaking at $20.4 quadrillion).
+- **Insane:** 3 of 8 seeds become cities (148k–206k); 5 spiral on the city's
+  own paper.
+- **Dial 100%:** $15.3T paid in over 8 seeds, 94% of it still cash; 174k
+  people against 167k at dial 0.
+- Unemployment's end figures follow the playtest's police purchases, traced.
+- **The docs pass** found round 1's redemption rule still described in five
+  places, and four stale strings, fixed at the gate: the stake note (the
+  repayment dilutes too), "the land office's dollar offer" on the clock's
+  refusal and the Insane card (the window is shut on day 0), two harness
+  labels (three equity parts, "a resolution").
+
+**The tree:** 226 source files, ~176,000 lines, 994 dials, 64 harnesses (63
+green, HealthCheck red as shipped in 0.7.12).
+
 ### VERSION 0.7.13 — ROLLING WHAT FALLS DUE — 2026-09-26, DEPLOYED AND VERIFIED (tag 0926b), see `rolling-what-falls-due.md`
 
 A housekeeping batch Jerus asked for after 0.7.12: the land office, the

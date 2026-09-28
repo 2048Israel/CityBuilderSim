@@ -1,6 +1,6 @@
-# Equity.java - 940 lines · 80 methods · 17 constants · model
+# Equity.java - 1,054 lines · 90 methods · 18 constants · model
 
-`ham/citybuildersim/Equity.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Equity.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > The share register: who owns the city's companies, what they paid for them,
 > and what the companies pay them back.
@@ -66,7 +66,7 @@
 
 **Uses:** [HouseholdBalance](HouseholdBalance.md) (5), [Sectors](Sectors.md) (1)
 
-**Used by (30):** [AgricultureCheck](AgricultureCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (32):** [AgricultureCheck](AgricultureCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FoodProcessingCheck](FoodProcessingCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Household](Household.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -74,13 +74,13 @@
 |---:|---|
 | 123 | · the dials |
 | 205 | · a company |
-| 280 | THE RECORD |
-| 360 | HOW MUCH TO RAISE |
-| 410 | THE OFFERING |
-| 545 | THE DIVIDEND |
-| 684 | THE HOLDERS |
-| 781 | · reading |
-| 829 | · saving |
+| 291 | THE RECORD |
+| 371 | HOW MUCH TO RAISE |
+| 421 | THE OFFERING |
+| 556 | THE DIVIDEND |
+| 704 | THE HOLDERS |
+| 878 | · reading |
+| 926 | · saving |
 
 ## Enum constants
 
@@ -109,9 +109,10 @@
 | 181 | `Equity.HORIZON_YEARS` | `3` | In good times, the years of expansion a company raises for ahead. |
 | 184 | `Equity.UNDER_TARGET` | `.10` | Under target by this much before a normal year raises instead of borrows. |
 | 187 | `Equity.FOREIGN_PREMIUM` | `.03` | What the world wants over its own rate to buy a share here, annual. |
-| 837 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
-| 840 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
-| 843 | `Equity.SLOTS` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | The ring of dividends paid and its count, appended. |
+| 934 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
+| 937 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
+| 940 | `Equity.SLOTS_BEFORE_CITY` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. |
+| 943 | `Equity.SLOTS` | `SLOTS_BEFORE_CITY + 3` | The city's shares, its rescue book and what it has been paid, appended (0.7.14). |
 
 ## Fields (state)
 
@@ -122,28 +123,31 @@
 | 210 | `double shares` | in issue |
 | 211 | `double foreignShares` | in issue |
 | 212 | `double dealerShares` | of those, held abroad |
-| 213 | `double lastPrice` | ...and held by the bank's trading desk (never its own: those are cancelled) |
-| 214 | `final double[] income` | net income, a ring |
-| 215 | `final double[] spent` | net income, a ring |
-| 216 | `int months` | on buildings, a ring |
-| 217 | `double lifetimeRaisedHome, lifetimeRaisedAbroad` | recorded so far |
-| 218 | `double lifetimeDividendsHome, lifetimeDividendsAbroad` |  |
-| 219 | `int offerings` |  |
-| 228 | `final double[] paid` | THE DIVIDENDS IT ACTUALLY PAID, a ring of the last twelve months (0.7.12 round 2): the ordinary dividend every holder was paid, the desk's part and the world's included - the special dividends kept out while there wer... |
-| 229 | `int paidMonths` |  |
-| 230 | `double paidThisMonth` |  |
-| 233 | `double offered, raisedHome, raisedAbroad, dividendHome, dividendDesk, dividendAbroad` | this month |
-| 234 | `double boughtBackThisMonth, lifetimeBoughtBack` |  |
-| 235 | `Regime regime` |  |
-| 236 | `double targetShare` |  |
-| 274 | `private final Listing[] listings` |  |
-| 775 | `private double ordinaryPaidAtClose` | Every company's ordinary dividends at the last close (closeDividendMonth()): the month's, for the playtest. |
+| 220 | `double cityShares` | ...AND HELD BY THE CITY'S FUND (0.7.14, TreasuryFund): everything it holds, and of that the part it took in rescuing the bank - its rescue book, which its rule never sells and its 10% limit does not count. |
+| 221 | `double cityRescue` |  |
+| 222 | `double lastPrice` |  |
+| 223 | `final double[] income` | net income, a ring |
+| 224 | `final double[] spent` | net income, a ring |
+| 225 | `int months` | on buildings, a ring |
+| 226 | `double lifetimeRaisedHome, lifetimeRaisedAbroad` | recorded so far |
+| 227 | `double lifetimeDividendsHome, lifetimeDividendsAbroad` |  |
+| 228 | `int offerings` |  |
+| 237 | `final double[] paid` | THE DIVIDENDS IT ACTUALLY PAID, a ring of the last twelve months (0.7.12 round 2): the ordinary dividend every holder was paid, the desk's part and the world's included - the special dividends kept out while there wer... |
+| 238 | `int paidMonths` |  |
+| 239 | `double paidThisMonth` |  |
+| 242 | `double offered, raisedHome, raisedAbroad, dividendHome, dividendDesk, dividendAbroad` | this month |
+| 244 | `double dividendCity, lifetimeDividendsCity` | The city's fund's part of this month's dividend (0.7.14), and over its life. |
+| 245 | `double boughtBackThisMonth, lifetimeBoughtBack` |  |
+| 246 | `Regime regime` |  |
+| 247 | `double targetShare` |  |
+| 285 | `private final Listing[] listings` |  |
+| 872 | `private double ordinaryPaidAtClose` | Every company's ordinary dividends at the last close (closeDividendMonth()): the month's, for the playtest. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 105 | 836 | **type** `public class Equity` | The share register: who owns the city's companies, what they paid for them, and what the companies pay them back. |
+| 105 | 950 | **type** `public class Equity` | The share register: who owns the city's companies, what they paid for them, and what the companies pay them back. |
 | 110 | 7 | `static { ... }` |  |
 | 118 | 4 | `public static int indexOf(String company)` |  |
 
@@ -156,120 +160,130 @@
 | 199 | 3 | `public static double requiredYield(double worldRate)` | The earnings yield the market prices a company here on: what a dollar of its yearly income has to earn its owners for them to hold the share at book. |
 | 203 | 1 | **type** `public enum Regime` |  |
 
-### a company (lines 205-279)
+### a company (lines 205-290)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 208 | 65 | **type** `static final class Listing` | One listing. |
-| 238 | 1 | `Listing(String name)` _(in Equity.Listing)_ |  |
-| 241 | 1 | `double domesticShares()` _(in Equity.Listing)_ | Held by the city's households: what is neither abroad nor on the desk. |
-| 242 | 1 | `double raised()` _(in Equity.Listing)_ |  |
-| 243 | 1 | `double dividend()` _(in Equity.Listing)_ |  |
-| 245 | 5 | `void clearMonth()` _(in Equity.Listing)_ |  |
-| 251 | 6 | `double trailingIncome()` _(in Equity.Listing)_ |  |
-| 258 | 6 | `double trailingSpent()` _(in Equity.Listing)_ |  |
-| 266 | 6 | `double trailingPaid()` _(in Equity.Listing)_ | The ordinary dividends paid over the last twelve months. |
-| 276 | 3 | `public Equity()` |  |
+| 208 | 76 | **type** `static final class Listing` | One listing. |
+| 249 | 1 | `Listing(String name)` _(in Equity.Listing)_ |  |
+| 252 | 1 | `double domesticShares()` _(in Equity.Listing)_ | Held by the city's households: what is neither abroad nor on the desk - nor, since 0.7.14, the city's fund's. |
+| 253 | 1 | `double raised()` _(in Equity.Listing)_ |  |
+| 254 | 1 | `double dividend()` _(in Equity.Listing)_ |  |
+| 256 | 5 | `void clearMonth()` _(in Equity.Listing)_ |  |
+| 262 | 6 | `double trailingIncome()` _(in Equity.Listing)_ |  |
+| 269 | 6 | `double trailingSpent()` _(in Equity.Listing)_ |  |
+| 277 | 6 | `double trailingPaid()` _(in Equity.Listing)_ | The ordinary dividends paid over the last twelve months. |
+| 287 | 3 | `public Equity()` |  |
 
-### THE RECORD (lines 280-359)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 292 | 22 | `public void recordMonth(int company, double netIncome, double spentOnBuildings)` |  |
-| 316 | 3 | `public void startMonth()` | Clears the month's flows. |
-| 320 | 17 | `private static Regime regimeOf(Listing l)` |  |
-| 346 | 13 | `private static double targetEquityShareOf(Listing l)` | The share of the balance sheet a company wants as equity. |
-
-### HOW MUCH TO RAISE (lines 360-409)
+### THE RECORD (lines 291-370)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 376 | 33 | `public double raiseFor(int company, double assets, double equity, double planCost)` | What a company with this plan would raise from its owners first. |
+| 303 | 22 | `public void recordMonth(int company, double netIncome, double spentOnBuildings)` |  |
+| 327 | 3 | `public void startMonth()` | Clears the month's flows. |
+| 331 | 17 | `private static Regime regimeOf(Listing l)` |  |
+| 357 | 13 | `private static double targetEquityShareOf(Listing l)` | The share of the balance sheet a company wants as equity. |
 
-### THE OFFERING (lines 410-544)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 424 | 4 | `public double offer(int company, double amount, double bookEquity, HouseholdBalance households, double worldRate)` | Sells shares: to the households first, to the world for what is left. |
-| 434 | 53 | `public double offer(int company, double amount, double bookEquity, HouseholdBalance households, double worldRate, double market...` | there is no market: a listed company sells new shares at the market, not at the register's reckoning |
-| 509 | 7 | `private double priceOf(Listing l, double bookEquity, double worldRate)` | What one share sells for: the company's value over its shares. |
-| 529 | 9 | `public boolean listIfUnlisted(int company, double bookEquity, HouseholdBalance households)` | Lists a company that has equity and no owners: the founders' shares are issued against its book, as the first offering would have done. |
-| 540 | 4 | `public double bookPerShare(int company, double bookEquity)` | What one share is worth on the books today. |
-
-### THE DIVIDEND (lines 545-683)
+### HOW MUCH TO RAISE (lines 371-420)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 555 | 5 | `public double dividendDue(int company, double netIncome)` | What a company owes its owners on a month's result. |
-| 592 | 3 | `public double dividendDue(int company, double netIncome, double principalDue)` | ...PAID AFTER THE PRINCIPAL IT OWED (0.7.11, round 2): PAYOUT of the month's net income less the principal that fell due in it, and nothing when the principal is the larger. |
-| 602 | 3 | `public void noteDividendPaid(int company, double paid)` | The month's ordinary dividend, as paid - noted by Game.payDividends() beside payDividend(), which the special dividends went through too until round 4 removed them, so that only the ordinary one is a yield (0.7.12 rou... |
-| 607 | 11 | `public void closeDividendMonth()` | Files every company's month of dividends into its ring, paid or not: once a month, after the dividends. |
-| 629 | 10 | `public void followEmigrants(HouseholdBalance households)` | Shares that left the city with their holders this month are held abroad from now on. |
-| 648 | 31 | `public double payDividend(int company, double paid, HouseholdBalance households)` | Pays a dividend: the households' part into their savings, the rest to the shareholders abroad. |
-| 681 | 1 | `public double getDividendDeskThisMonth(int company)` | What the bank's trading desk was paid on its inventory this month. |
-| 682 | 1 | `public double getDividendDeskThisMonth()` |  |
+| 387 | 33 | `public double raiseFor(int company, double assets, double equity, double planCost)` | What a company with this plan would raise from its owners first. |
 
-### THE HOLDERS (lines 684-780)
+### THE OFFERING (lines 421-555)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 696 | 1 | `public double getDealerShares(int company)` | Shares the desk holds; negative when it has sold what it did not have. |
-| 699 | 4 | `public double getOutstanding(int company)` | Shares in the owners' hands: in issue less what the desk is long. |
-| 705 | 4 | `void moveDesk(int company, double n)` | The desk's holding moves by this many shares: bought, positive; sold, negative (0.7.12 round 2). |
-| 711 | 5 | `void moveForeign(int company, double n)` | ...and the world's: bought, positive; sold, negative - never under nothing. |
-| 718 | 3 | `void issueOwn(int company, double n)` | The bank issues its own shares through its desk: in issue by this many. |
-| 723 | 3 | `void cancelOwn(int company, double n)` | ...and buys them back, cancelled: out of issue by this many. |
-| 732 | 7 | `void retire(int company, double n)` | A company buys back and cancels shares it bought on the book - the seller's holding already moved by the exchange - out of issue, and on its record of buybacks. |
-| 745 | 10 | `void split(int company, double k)` | A split (k > 1) or a consolidation (k < 1): every count by k, the last price by its inverse. |
-| 756 | 1 | `public double getBoughtBackThisMonth(int company)` |  |
-| 757 | 1 | `public double getLifetimeBoughtBack(int company)` |  |
-| 764 | 3 | `public double fairValue(int company, double bookEquity, double worldRate)` | What a share is worth on the register's own reckoning: book or capitalised earnings, whichever is more, over the shares in issue. |
-| 769 | 4 | `public double dividendPerShareAnnual(int company)` | The dividend a share paid over the last twelve months - the ordinary dividend actually paid, since 0.7.12 round 2 (it was PAYOUT of the income before the principal, which nobody was paid). |
-| 776 | 1 | `public double getOrdinaryDividendsLastClose()` |  |
-| 779 | 1 | `public double getDividendsPaidOverYear(int company)` | The ordinary dividends paid over the last twelve months, the company's whole (0.7.12 round 2). |
+| 435 | 4 | `public double offer(int company, double amount, double bookEquity, HouseholdBalance households, double worldRate)` | Sells shares: to the households first, to the world for what is left. |
+| 445 | 53 | `public double offer(int company, double amount, double bookEquity, HouseholdBalance households, double worldRate, double market...` | there is no market: a listed company sells new shares at the market, not at the register's reckoning |
+| 520 | 7 | `private double priceOf(Listing l, double bookEquity, double worldRate)` | What one share sells for: the company's value over its shares. |
+| 540 | 9 | `public boolean listIfUnlisted(int company, double bookEquity, HouseholdBalance households)` | Lists a company that has equity and no owners: the founders' shares are issued against its book, as the first offering would have done. |
+| 551 | 4 | `public double bookPerShare(int company, double bookEquity)` | What one share is worth on the books today. |
 
-### reading (lines 781-828)
+### THE DIVIDEND (lines 556-703)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 783 | 1 | `public double getShares(int company)` |  |
-| 784 | 1 | `public double getForeignShares(int company)` |  |
-| 785 | 1 | `public double getDomesticShares(int company)` |  |
-| 786 | 1 | `public double getLastPrice(int company)` |  |
-| 787 | 1 | `public Regime getRegime(int company)` |  |
-| 788 | 1 | `public double getTargetEquityShare(int company)` |  |
-| 789 | 1 | `public int getMonthsRecorded(int company)` |  |
-| 790 | 1 | `public int getOfferings(int company)` |  |
-| 793 | 4 | `public double foreignShare(int company)` | Share of the company held abroad, 0-1. |
-| 799 | 4 | `public double deskShare(int company)` | Share of the company on the bank's trading desk, 0-1: what the desk is long over what is in issue - nothing while it is short. |
-| 804 | 1 | `public double getOfferedThisMonth(int company)` |  |
-| 805 | 1 | `public double getRaisedHomeThisMonth(int company)` |  |
-| 806 | 1 | `public double getRaisedAbroadThisMonth(int company)` |  |
-| 807 | 1 | `public double getDividendHomeThisMonth(int company)` |  |
-| 808 | 1 | `public double getDividendAbroadThisMonth(int company)` |  |
-| 809 | 1 | `public double getRaisedThisMonth(int company)` |  |
-| 810 | 1 | `public double getDividendThisMonth(int company)` |  |
-| 812 | 1 | `public double getLifetimeRaisedHome(int company)` |  |
-| 813 | 1 | `public double getLifetimeRaisedAbroad(int company)` |  |
-| 814 | 1 | `public double getLifetimeDividendsHome(int company)` |  |
-| 815 | 1 | `public double getLifetimeDividendsAbroad(int company)` |  |
-| 819 | 1 | `public double getRaisedHomeThisMonth()` | ---- the city, for MoneyAudit and the summary ---- |
-| 820 | 1 | `public double getRaisedAbroadThisMonth()` |  |
-| 821 | 1 | `public double getDividendHomeThisMonth()` |  |
-| 822 | 1 | `public double getDividendAbroadThisMonth()` |  |
-| 823 | 1 | `public double getLifetimeRaisedHome()` |  |
-| 824 | 1 | `public double getLifetimeRaisedAbroad()` |  |
-| 825 | 1 | `public double getLifetimeDividendsHome()` |  |
-| 826 | 1 | `public double getLifetimeDividendsAbroad()` |  |
-| 827 | 1 | `public int getOfferings()` |  |
+| 566 | 5 | `public double dividendDue(int company, double netIncome)` | What a company owes its owners on a month's result. |
+| 603 | 3 | `public double dividendDue(int company, double netIncome, double principalDue)` | ...PAID AFTER THE PRINCIPAL IT OWED (0.7.11, round 2): PAYOUT of the month's net income less the principal that fell due in it, and nothing when the principal is the larger. |
+| 613 | 3 | `public void noteDividendPaid(int company, double paid)` | The month's ordinary dividend, as paid - noted by Game.payDividends() beside payDividend(), which the special dividends went through too until round 4 removed them, so that only the ordinary one is a yield (0.7.12 rou... |
+| 618 | 11 | `public void closeDividendMonth()` | Files every company's month of dividends into its ring, paid or not: once a month, after the dividends. |
+| 640 | 10 | `public void followEmigrants(HouseholdBalance households)` | Shares that left the city with their holders this month are held abroad from now on. |
+| 659 | 36 | `public double payDividend(int company, double paid, HouseholdBalance households)` | Pays a dividend: the households' part into their savings, the rest to the shareholders abroad. |
+| 697 | 1 | `public double getDividendDeskThisMonth(int company)` | What the bank's trading desk was paid on its inventory this month. |
+| 700 | 1 | `public double getDividendCityThisMonth(int company)` | ...and the city's fund on what it holds (0.7.14), and over its life. |
+| 701 | 1 | `public double getLifetimeDividendsCity(int company)` |  |
+| 702 | 1 | `public double getDividendDeskThisMonth()` |  |
 
-### saving (lines 829-940)
+### THE HOLDERS (lines 704-877)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 845 | 1 | `public String[] keys()` |  |
-| 847 | 23 | `public double[] toSaveArray()` |  |
-| 872 | 47 | `public boolean restore(String[] keys, double[] saved)` |  |
-| 920 | 3 | `public void reset()` |  |
-| 928 | 12 | `public void redenominate(double scale)` | Everything in money, in the new unit. |
+| 717 | 1 | `public double getDealerShares(int company)` | Shares the desk holds; negative when it has sold what it did not have. |
+| 720 | 4 | `public double getOutstanding(int company)` | Shares in the owners' hands: in issue less what the desk is long. |
+| 726 | 4 | `void moveDesk(int company, double n)` | The desk's holding moves by this many shares: bought, positive; sold, negative (0.7.12 round 2). |
+| 732 | 5 | `void moveForeign(int company, double n)` | ...and the world's: bought, positive; sold, negative - never under nothing. |
+| 741 | 5 | `void moveCity(int company, double n)` | The fund's market book in this company moves by this many shares: bought, positive; sold, negative - never into its rescue book, never under nothing. |
+| 754 | 10 | `double sellCityByHand(int company, double n)` | The player's hand sells this many of the fund's shares: its market book first, then its rescue book (TreasuryFund - "the hand may sell anything the fund holds, including the rescue book"). |
+| 780 | 10 | `double[] takeAllForCity(int company, double ifNone)` | EVERY COMMON SHARE PASSES TO THE CITY: a failed bank's resolution (0.7.14; Jerus: "City takes the shares"). |
+| 792 | 7 | `void issueToCityRescue(int company, double n)` | New shares issued to the city's rescue book - warrants exercised at their expiry (0.7.14): in issue by this many, the city's by the same. |
+| 801 | 1 | `public double getCityShares(int company)` | Everything the city's fund holds of this company, both books. |
+| 803 | 1 | `public double getCityRescueShares(int company)` | ...of that, its rescue book. |
+| 805 | 1 | `public double getCityMarketShares(int company)` | ...and its market book: what its rule bought and may sell. |
+| 807 | 4 | `public double cityShare(int company)` | The city's stake in the company, 0-1: both books over what is in issue. |
+| 813 | 3 | `void issueOwn(int company, double n)` | The bank issues its own shares through its desk: in issue by this many. |
+| 818 | 3 | `void cancelOwn(int company, double n)` | ...and buys them back, cancelled: out of issue by this many. |
+| 827 | 7 | `void retire(int company, double n)` | A company buys back and cancels shares it bought on the book - the seller's holding already moved by the exchange - out of issue, and on its record of buybacks. |
+| 840 | 12 | `void split(int company, double k)` | A split (k > 1) or a consolidation (k < 1): every count by k, the last price by its inverse. |
+| 853 | 1 | `public double getBoughtBackThisMonth(int company)` |  |
+| 854 | 1 | `public double getLifetimeBoughtBack(int company)` |  |
+| 861 | 3 | `public double fairValue(int company, double bookEquity, double worldRate)` | What a share is worth on the register's own reckoning: book or capitalised earnings, whichever is more, over the shares in issue. |
+| 866 | 4 | `public double dividendPerShareAnnual(int company)` | The dividend a share paid over the last twelve months - the ordinary dividend actually paid, since 0.7.12 round 2 (it was PAYOUT of the income before the principal, which nobody was paid). |
+| 873 | 1 | `public double getOrdinaryDividendsLastClose()` |  |
+| 876 | 1 | `public double getDividendsPaidOverYear(int company)` | The ordinary dividends paid over the last twelve months, the company's whole (0.7.12 round 2). |
+
+### reading (lines 878-925)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 880 | 1 | `public double getShares(int company)` |  |
+| 881 | 1 | `public double getForeignShares(int company)` |  |
+| 882 | 1 | `public double getDomesticShares(int company)` |  |
+| 883 | 1 | `public double getLastPrice(int company)` |  |
+| 884 | 1 | `public Regime getRegime(int company)` |  |
+| 885 | 1 | `public double getTargetEquityShare(int company)` |  |
+| 886 | 1 | `public int getMonthsRecorded(int company)` |  |
+| 887 | 1 | `public int getOfferings(int company)` |  |
+| 890 | 4 | `public double foreignShare(int company)` | Share of the company held abroad, 0-1. |
+| 896 | 4 | `public double deskShare(int company)` | Share of the company on the bank's trading desk, 0-1: what the desk is long over what is in issue - nothing while it is short. |
+| 901 | 1 | `public double getOfferedThisMonth(int company)` |  |
+| 902 | 1 | `public double getRaisedHomeThisMonth(int company)` |  |
+| 903 | 1 | `public double getRaisedAbroadThisMonth(int company)` |  |
+| 904 | 1 | `public double getDividendHomeThisMonth(int company)` |  |
+| 905 | 1 | `public double getDividendAbroadThisMonth(int company)` |  |
+| 906 | 1 | `public double getRaisedThisMonth(int company)` |  |
+| 907 | 1 | `public double getDividendThisMonth(int company)` |  |
+| 909 | 1 | `public double getLifetimeRaisedHome(int company)` |  |
+| 910 | 1 | `public double getLifetimeRaisedAbroad(int company)` |  |
+| 911 | 1 | `public double getLifetimeDividendsHome(int company)` |  |
+| 912 | 1 | `public double getLifetimeDividendsAbroad(int company)` |  |
+| 916 | 1 | `public double getRaisedHomeThisMonth()` | ---- the city, for MoneyAudit and the summary ---- |
+| 917 | 1 | `public double getRaisedAbroadThisMonth()` |  |
+| 918 | 1 | `public double getDividendHomeThisMonth()` |  |
+| 919 | 1 | `public double getDividendAbroadThisMonth()` |  |
+| 920 | 1 | `public double getLifetimeRaisedHome()` |  |
+| 921 | 1 | `public double getLifetimeRaisedAbroad()` |  |
+| 922 | 1 | `public double getLifetimeDividendsHome()` |  |
+| 923 | 1 | `public double getLifetimeDividendsAbroad()` |  |
+| 924 | 1 | `public int getOfferings()` |  |
+
+### saving (lines 926-1054)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 945 | 1 | `public String[] keys()` |  |
+| 947 | 26 | `public double[] toSaveArray()` |  |
+| 975 | 57 | `public boolean restore(String[] keys, double[] saved)` |  |
+| 1033 | 3 | `public void reset()` |  |
+| 1041 | 13 | `public void redenominate(double scale)` | Everything in money, in the new unit. |
 

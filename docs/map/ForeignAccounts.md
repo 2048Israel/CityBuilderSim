@@ -1,6 +1,6 @@
-# ForeignAccounts.java - 1,759 lines · 94 methods · 14 constants · model
+# ForeignAccounts.java - 1,761 lines · 94 methods · 14 constants · model
 
-`ham/citybuildersim/ForeignAccounts.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignAccounts.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > The city's dealings with the rest of the world: the balance of payments, the
 > reserve position, and the exchange rate.
@@ -78,12 +78,12 @@
 | 815 | · the month's account |
 | 823 | · the position |
 | 825 | TWO NUMBERS THAT WERE ONE NUMBER |
-| 1041 | · reading |
-| 1043 | WHAT THE CITY OWES ABROAD |
-| 1175 | BUYING AND SELLING THE RESERVE |
-| 1254 | THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) |
-| 1370 | · what the currency did to the vault |
-| 1442 | · carrying |
+| 1043 | · reading |
+| 1045 | WHAT THE CITY OWES ABROAD |
+| 1177 | BUYING AND SELLING THE RESERVE |
+| 1256 | THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) |
+| 1372 | · what the currency did to the vault |
+| 1444 | · carrying |
 
 ## Constants
 
@@ -139,28 +139,28 @@
 | 919 | `private double importsTrailing` |  |
 | 920 | `private int monthsOfHistory` |  |
 | 981 | `private double openness` | How much of the economy actually crosses the border. |
-| 1066 | `private double foreignDebt` | local value of USD paper outstanding |
-| 1067 | `private double foreignDebtUsd` | local value of USD paper outstanding |
-| 1068 | `private double lastDebtRate` | ...and in the dollars it is owed in |
-| 1069 | `private double lastRevaluation` |  |
-| 1070 | `private double lifetimeRevaluation` |  |
-| 1170 | `private double repudiated` |  |
-| 1189 | `private double boughtThisMonth` |  |
-| 1190 | `private double soldThisMonth` |  |
-| 1296 | `private double landUsdOpen, landVaultUsdOpen` | The month in progress: dollars paid for land, and the part of them that came out of the vault. |
-| 1303 | `private double landLocalOpen, landVaultLocalOpen` | ...and their local price on the day, all of it and the vault's part: the part of the budget's land line bought abroad (the rest of that line is plots bought back from businesses, in local money), and the part of it no... |
-| 1305 | `private double landUsd, landVaultUsd, landLocal, landVaultLocal` | The month struck - what the screens show between two presses. |
-| 1307 | `private double landUsdLifetime, landVaultUsdLifetime` | ...and since founding (slots 33-34). |
-| 1390 | `private double lastVaultRate` |  |
-| 1391 | `private double lastVaultRevaluation` |  |
-| 1433 | `private double lifetimeIntervention` | What the treasury has bought and sold on its own account, since founding. |
-| 1440 | `private double lastValuation` |  |
+| 1068 | `private double foreignDebt` | local value of USD paper outstanding |
+| 1069 | `private double foreignDebtUsd` | local value of USD paper outstanding |
+| 1070 | `private double lastDebtRate` | ...and in the dollars it is owed in |
+| 1071 | `private double lastRevaluation` |  |
+| 1072 | `private double lifetimeRevaluation` |  |
+| 1172 | `private double repudiated` |  |
+| 1191 | `private double boughtThisMonth` |  |
+| 1192 | `private double soldThisMonth` |  |
+| 1298 | `private double landUsdOpen, landVaultUsdOpen` | The month in progress: dollars paid for land, and the part of them that came out of the vault. |
+| 1305 | `private double landLocalOpen, landVaultLocalOpen` | ...and their local price on the day, all of it and the vault's part: the part of the budget's land line bought abroad (the rest of that line is plots bought back from businesses, in local money), and the part of it no... |
+| 1307 | `private double landUsd, landVaultUsd, landLocal, landVaultLocal` | The month struck - what the screens show between two presses. |
+| 1309 | `private double landUsdLifetime, landVaultUsdLifetime` | ...and since founding (slots 33-34). |
+| 1392 | `private double lastVaultRate` |  |
+| 1393 | `private double lastVaultRevaluation` |  |
+| 1435 | `private double lifetimeIntervention` | What the treasury has bought and sold on its own account, since founding. |
+| 1442 | `private double lastValuation` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 1667 | **type** `public class ForeignAccounts` | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. |
+| 93 | 1669 | **type** `public class ForeignAccounts` | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. |
 
 ### the rate (lines 95-106)
 
@@ -208,7 +208,7 @@
 
 ### the position (lines 823-824)
 
-### TWO NUMBERS THAT WERE ONE NUMBER (lines 825-1040)
+### TWO NUMBERS THAT WERE ONE NUMBER (lines 825-1042)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -219,83 +219,83 @@
 | 965 | 1 | `public double monthlyFinancialAccount()` | The financial account, trailing: positive is money coming in. |
 | 983 | 1 | `public double getOpenness()` |  |
 | 985 | 3 | `public void takeMonth(MoneyAudit.Result month)` |  |
-| 999 | 41 | `public void takeMonth(MoneyAudit.Result month, double monthlyGdp)` | Takes the month off the audit that has just been struck. |
+| 999 | 43 | `public void takeMonth(MoneyAudit.Result month, double monthlyGdp)` | Takes the month off the audit that has just been struck. |
 
-### reading (lines 1041-1042)
+### reading (lines 1043-1044)
 
-### WHAT THE CITY OWES ABROAD (lines 1043-1174)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1076 | 8 | `public void takeForeignDebt(double usdOutstanding, double rateNow)` |  |
-| 1086 | 1 | `public double getForeignDebt()` | What the city owes abroad, in local money at today's rate. |
-| 1087 | 1 | `public double getForeignDebtUsd()` |  |
-| 1090 | 1 | `public double getLastRevaluation()` | What the currency did to that debt this month. |
-| 1091 | 1 | `public double getLifetimeRevaluation()` |  |
-| 1101 | 1 | `public double getReservesUsd()` | The reserve position in dollars - the stock itself. |
-| 1111 | 1 | `public double netForeignPosition()` | Claims abroad less what is owed abroad: the city's net position. |
-| 1114 | 1 | `public double getExports()` | Goods and services sold abroad. |
-| 1117 | 1 | `public double tradeImports()` | Goods bought abroad, interest excluded. |
-| 1120 | 1 | `public double getForeignInterest()` | Interest paid to foreign creditors. |
-| 1123 | 1 | `public double tradeBalance()` | Exports less imports. |
-| 1126 | 1 | `public double currentAccount()` | ...less what was paid to foreign lenders. |
-| 1128 | 1 | `public double getFinancialIn()` |  |
-| 1129 | 1 | `public double getFinancialOut()` |  |
-| 1130 | 1 | `public double financialAccount()` |  |
-| 1133 | 1 | `public double balance()` | The month's change in the city's foreign position. |
-| 1139 | 1 | `public double getReserves()` | What the treasury holds in foreign money, and could spend today - in local money, at today's rate. |
-| 1142 | 1 | `public double getCumulativeBalance()` | Every month's balance of payments since founding, added up. |
-| 1152 | 1 | `public boolean inDeficit()` | Whether the city owes the world more than it holds there. |
-| 1155 | 1 | `public double getForgiven()` | Claims the world has written off, cumulatively. |
-| 1164 | 5 | `public void forgiveDebt(double localAmount)` | Debt the city refused to pay, and its creditors will not see again. |
-| 1173 | 1 | `public double getRepudiated()` | What the city has walked away from, since founding. |
-
-### BUYING AND SELLING THE RESERVE (lines 1175-1253)
+### WHAT THE CITY OWES ABROAD (lines 1045-1176)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1193 | 4 | `public void startMonth()` | Clears the month's intervention. |
-| 1211 | 6 | `public void buyReserves(double localAmount)` | Local currency spent buying foreign money. |
-| 1241 | 9 | `public double sellReserves(double localAmount)` | Foreign money sold for local currency. |
-| 1252 | 1 | `public double sellableReserves()` | The most the treasury could sell right now, in local money at today's rate. |
+| 1078 | 8 | `public void takeForeignDebt(double usdOutstanding, double rateNow)` |  |
+| 1088 | 1 | `public double getForeignDebt()` | What the city owes abroad, in local money at today's rate. |
+| 1089 | 1 | `public double getForeignDebtUsd()` |  |
+| 1092 | 1 | `public double getLastRevaluation()` | What the currency did to that debt this month. |
+| 1093 | 1 | `public double getLifetimeRevaluation()` |  |
+| 1103 | 1 | `public double getReservesUsd()` | The reserve position in dollars - the stock itself. |
+| 1113 | 1 | `public double netForeignPosition()` | Claims abroad less what is owed abroad: the city's net position. |
+| 1116 | 1 | `public double getExports()` | Goods and services sold abroad. |
+| 1119 | 1 | `public double tradeImports()` | Goods bought abroad, interest excluded. |
+| 1122 | 1 | `public double getForeignInterest()` | Interest paid to foreign creditors. |
+| 1125 | 1 | `public double tradeBalance()` | Exports less imports. |
+| 1128 | 1 | `public double currentAccount()` | ...less what was paid to foreign lenders. |
+| 1130 | 1 | `public double getFinancialIn()` |  |
+| 1131 | 1 | `public double getFinancialOut()` |  |
+| 1132 | 1 | `public double financialAccount()` |  |
+| 1135 | 1 | `public double balance()` | The month's change in the city's foreign position. |
+| 1141 | 1 | `public double getReserves()` | What the treasury holds in foreign money, and could spend today - in local money, at today's rate. |
+| 1144 | 1 | `public double getCumulativeBalance()` | Every month's balance of payments since founding, added up. |
+| 1154 | 1 | `public boolean inDeficit()` | Whether the city owes the world more than it holds there. |
+| 1157 | 1 | `public double getForgiven()` | Claims the world has written off, cumulatively. |
+| 1166 | 5 | `public void forgiveDebt(double localAmount)` | Debt the city refused to pay, and its creditors will not see again. |
+| 1175 | 1 | `public double getRepudiated()` | What the city has walked away from, since founding. |
 
-### THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) (lines 1254-1369)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1317 | 7 | `public double buyAndSpendDollarsForLand(double usd)` | Buys exactly these dollars at today's rate and pays them to the land's seller, in one movement: the vault is untouched, and nothing a reserve purchase would leave behind is left (see THE LAND OFFICE IS PAID IN DOLLARS). |
-| 1332 | 13 | `public double spendReservesOnLand(double usd)` | Pays the land's seller out of the vault: at most what it holds, and everything it holds empties it exactly. |
-| 1347 | 7 | `public void strikeLandMonth()` | Strikes the land's month where the government's books strike its local cost. |
-| 1356 | 1 | `public double getLandUsdThisMonth()` | Dollars paid for land in the month last struck, both ways. |
-| 1358 | 1 | `public double getLandUsdFromVaultThisMonth()` | ...of which out of the vault. |
-| 1360 | 1 | `public double getLandLocalThisMonth()` | What the month's land from abroad cost in local money on the day, both ways - the budget's land line less the buybacks. |
-| 1362 | 1 | `public double getLandLocalFromVaultThisMonth()` | ...and the vault's part of it - the part of the budget's land line no cash paid. |
-| 1364 | 1 | `public double getLandUsdLifetime()` | Dollars paid for land since founding, both ways. |
-| 1366 | 1 | `public double getLandUsdFromVaultLifetime()` | ...of which out of the vault. |
-| 1368 | 1 | `public double getLandUsdPending()` | Dollars paid for land since the last strike - the month in progress. |
-
-### what the currency did to the vault (lines 1370-1441)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1394 | 5 | `public void revalueVault()` | Values the vault at today's rate. |
-| 1401 | 1 | `public double getLastVaultRevaluation()` | What the currency did to the vault this month, in local money. |
-| 1403 | 1 | `public double getBoughtThisMonth()` |  |
-| 1404 | 1 | `public double getSoldThisMonth()` |  |
-| 1406 | 1 | `public double getLifetimeExports()` |  |
-| 1407 | 1 | `public double getLifetimeImports()` |  |
-| 1408 | 1 | `public double getLifetimeInterest()` |  |
-| 1409 | 1 | `public double getLifetimeFinancial()` |  |
-| 1421 | 3 | `public double balanceFromFlows()` | The cumulative balance, rebuilt from the flows that made it. |
-| 1435 | 1 | `public double getLifetimeIntervention()` |  |
-| 1438 | 1 | `public double valuationChange()` | This month's part of that. |
-
-### carrying (lines 1442-1759)
+### BUYING AND SELLING THE RESERVE (lines 1177-1255)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1454 | 115 | `public double[] toSaveArray()` | A STOCK, so it is saved. |
-| 1570 | 75 | `public void restore(double[] saved)` |  |
-| 1646 | 43 | `public void reset()` |  |
-| 1713 | 45 | `public void redenominate(double scale)` | Every figure in the city's foreign accounts, in the new unit. |
+| 1195 | 4 | `public void startMonth()` | Clears the month's intervention. |
+| 1213 | 6 | `public void buyReserves(double localAmount)` | Local currency spent buying foreign money. |
+| 1243 | 9 | `public double sellReserves(double localAmount)` | Foreign money sold for local currency. |
+| 1254 | 1 | `public double sellableReserves()` | The most the treasury could sell right now, in local money at today's rate. |
+
+### THE LAND OFFICE IS PAID IN DOLLARS (0.7.6) (lines 1256-1371)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1319 | 7 | `public double buyAndSpendDollarsForLand(double usd)` | Buys exactly these dollars at today's rate and pays them to the land's seller, in one movement: the vault is untouched, and nothing a reserve purchase would leave behind is left (see THE LAND OFFICE IS PAID IN DOLLARS). |
+| 1334 | 13 | `public double spendReservesOnLand(double usd)` | Pays the land's seller out of the vault: at most what it holds, and everything it holds empties it exactly. |
+| 1349 | 7 | `public void strikeLandMonth()` | Strikes the land's month where the government's books strike its local cost. |
+| 1358 | 1 | `public double getLandUsdThisMonth()` | Dollars paid for land in the month last struck, both ways. |
+| 1360 | 1 | `public double getLandUsdFromVaultThisMonth()` | ...of which out of the vault. |
+| 1362 | 1 | `public double getLandLocalThisMonth()` | What the month's land from abroad cost in local money on the day, both ways - the budget's land line less the buybacks. |
+| 1364 | 1 | `public double getLandLocalFromVaultThisMonth()` | ...and the vault's part of it - the part of the budget's land line no cash paid. |
+| 1366 | 1 | `public double getLandUsdLifetime()` | Dollars paid for land since founding, both ways. |
+| 1368 | 1 | `public double getLandUsdFromVaultLifetime()` | ...of which out of the vault. |
+| 1370 | 1 | `public double getLandUsdPending()` | Dollars paid for land since the last strike - the month in progress. |
+
+### what the currency did to the vault (lines 1372-1443)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1396 | 5 | `public void revalueVault()` | Values the vault at today's rate. |
+| 1403 | 1 | `public double getLastVaultRevaluation()` | What the currency did to the vault this month, in local money. |
+| 1405 | 1 | `public double getBoughtThisMonth()` |  |
+| 1406 | 1 | `public double getSoldThisMonth()` |  |
+| 1408 | 1 | `public double getLifetimeExports()` |  |
+| 1409 | 1 | `public double getLifetimeImports()` |  |
+| 1410 | 1 | `public double getLifetimeInterest()` |  |
+| 1411 | 1 | `public double getLifetimeFinancial()` |  |
+| 1423 | 3 | `public double balanceFromFlows()` | The cumulative balance, rebuilt from the flows that made it. |
+| 1437 | 1 | `public double getLifetimeIntervention()` |  |
+| 1440 | 1 | `public double valuationChange()` | This month's part of that. |
+
+### carrying (lines 1444-1761)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1456 | 115 | `public double[] toSaveArray()` | A STOCK, so it is saved. |
+| 1572 | 75 | `public void restore(double[] saved)` |  |
+| 1648 | 43 | `public void reset()` |  |
+| 1715 | 45 | `public void redenominate(double scale)` | Every figure in the city's foreign accounts, in the new unit. |
 

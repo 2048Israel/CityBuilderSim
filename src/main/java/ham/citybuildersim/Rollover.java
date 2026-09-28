@@ -29,7 +29,10 @@ import java.util.List;
  *      never more than the treasury holds, never more than falls due. That is
  *      S (netting()). A deficit year nets nothing. What each rollover netted
  *      is kept here (the ledger), so two months in a row cannot net the same
- *      surplus twice.
+ *      surplus twice - and since 0.7.14 what the city's fund took of the
+ *      year's surplus (noteFundTook()), which goes first: through the year
+ *      the rollover also leaves the dial's share of the year so far alone
+ *      (Game.fundReservation(), nothing at a dial of 0).
  *   3. THE ISSUE: what falls due less S, each piece its share pro rata,
  *      sized so the cash it brings covers that share - what the treasury is
  *      lacking. SAME_STRUCTURE rolls each piece into its own instrument, term
@@ -124,8 +127,10 @@ public final class Rollover {
     /**
      * What the rollover does this month, worked out before it does it: the
      * setting; what falls due, and how much of it abroad; the surplus over
-     * the last year and what earlier rollovers netted of it; the treasury's
-     * cash; S, what is netted; and the issues. Every figure in local money.
+     * the last year and what is used of it - what earlier rollovers netted,
+     * and since 0.7.14 what the city's fund took and the dial's share kept
+     * for it; the treasury's cash; S, what is netted; and the issues. Every
+     * figure in local money.
      */
     public record Plan(Mode mode, double due, double dueAbroad, double surplus, double used,
                        double cash, double netted, List<Issue> issues) {
@@ -156,7 +161,7 @@ public final class Rollover {
 
     private Mode mode = Mode.MANUAL;
 
-    /** What each rollover netted, and the month it ran in: {month, netted}, oldest first, only the last NETTING_MONTHS kept. */
+    /** What each rollover netted, and since 0.7.14 what the city's fund took (noteFundTook()), and the month: {month, netted}, oldest first, only the last NETTING_MONTHS kept. */
     private final List<double[]> ledger = new ArrayList<>();
 
     /* The last rollover, and the run's: what the Finances page and the playtest read, saved (recordToSave()). */
@@ -169,22 +174,38 @@ public final class Rollover {
     public void setMode(Mode mode)  { this.mode = mode == null ? Mode.MANUAL : mode; }
 
     /**
-     * S: the surplus over the last year less what earlier rollovers netted in
-     * it, never below nothing, never more than the treasury's cash, never
-     * more than falls due. A deficit year nets nothing.
+     * S: the surplus over the last year less what is already used of it -
+     * what earlier rollovers netted in it, and since 0.7.14 the city's fund's
+     * part (Game.rolloverPlan()) - never below nothing, never more than the
+     * treasury's cash, never more than falls due. A deficit year nets nothing.
      */
     public static double netting(double surplusYear, double usedInYear, double cash, double due) {
         double unused = Math.max(0, surplusYear - Math.max(0, usedInYear));
         return Math.max(0, Math.min(unused, Math.min(Math.max(0, cash), Math.max(0, due))));
     }
 
-    /** What the rollovers run in the NETTING_MONTHS ending with this month netted between them. */
+    /** What the rollovers run in the NETTING_MONTHS ending with this month netted between them - and, since 0.7.14, what the city's fund took of the surplus in them (noteFundTook()). */
     public double usedInYear(int month) {
         double sum = 0;
         for (double[] entry : ledger) {
             if (entry[0] > month - NETTING_MONTHS && entry[0] <= month) sum += entry[1];
         }
         return sum;
+    }
+
+    /**
+     * THE CITY'S FUND TOOK PART OF THE YEAR'S SURPLUS (0.7.14): its year-end
+     * pay-in's share of the surplus, entered on this ledger in the month it
+     * was taken, so the rollover nets only what the fund did not take - the
+     * surplus is used once between them (TreasuryFund). The fund goes first:
+     * its pay-in is booked before the rollover runs at the same press, and
+     * through the year the rollover leaves the dial's share of the year so
+     * far alone (Game.rolloverPlan(), TreasuryFund.reservedFor()). Nothing at
+     * a dial of 0, which leaves this ledger 0.7.13's.
+     */
+    void noteFundTook(int month, double fromSurplus) {
+        if (fromSurplus > 0) ledger.add(new double[] { month, fromSurplus });
+        ledger.removeIf(e -> e[0] <= month - NETTING_MONTHS);
     }
 
     /** A rollover ran: what fell due, what it netted, the face its issues came to and the cash they raised, in the month it ran in. */

@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-26 (0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-27 (0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -8,19 +8,12 @@ has been away reads the changelog's top block and section 0 here, then works.
 
 ## 0. Do this week — costs nothing, saves weeks
 
-- **NEXT: THE TREASURY FUND AND RESCUE-FOR-SHARES** (Jerus, 2026-09-25, in
-  the bonds batch's first round: "Yes, next batch"). The treasury as a buyer
-  of bonds and shares on the order book, and a failed bank rescued for its
-  shares rather than written off to the city. It bears on what fails the bank
-  now: the young bank on its founding capital, before month 1000, on
-  Manufacturing or Automotive (`the-firms-sell-bonds.md` §5). With it, Jerus
-  2026-09-26 ("With the treasury batch"): **the bank's owners are wiped out at
-  a failure**, as in a real resolution — today they keep their shares and the
-  balance sheet shows an accumulated deficit after. Research and plan first,
-  then his answers, then the build.
+- ~~**NEXT: THE TREASURY FUND AND RESCUE-FOR-SHARES**~~ — shipped as 0.7.14
+  (tag 0927a), see `the-city-takes-the-shares.md`: the fund, resolution for
+  shares with the owners wiped out, TARP preferred, and the Insane start.
 - ~~**NEXT: NOTES AND BONDS**~~ — shipped as 0.7.12 (tag 0926a), see
   `the-firms-sell-bonds.md`.
-- **HEALTHCHECK SHIPS RED — ITS OWN BATCH AFTER THE TREASURY** (Jerus,
+- **NEXT: HEALTHCHECK SHIPS RED — ITS OWN BATCH, NOW THE TREASURY HAS SHIPPED** (Jerus,
   2026-09-25: "Ship with it red, flagged"). Read over its last 12 months (his
   change, "Read a year's average"), the dear-care twin is 8.4 points hungrier
   than the free one against a tolerance of 5, over since the bonds batch's
@@ -28,6 +21,51 @@ has been away reads the changelog's top block and section 0 here, then works.
   household row paid for (the documented shortcut in `HouseholdBalance`, THE
   PRICE AT THE CLINIC DOOR); 46% had money for food after their fixed bills
   and still planned less — untraced, and the first thing to trace.
+- **CHECK 0.7.14 BY EYE ON THE PC** (`the-city-takes-the-shares.md`). None of
+  it can run in the cloud; `build-ui.sh` compiling it is the only check it has
+  had.
+  - **Finances landing:** a sixth row, "The city's fund": its value, and last
+    month's transfer or its shortfall, or the dial.
+  - **The city's fund, Holdings:** the equity share against the aim; shares by
+    company (value, the share owned, the rescue book's part); bonds by issuer;
+    the rescue book (rescue shares, the preferred, its arrears, the warrants,
+    the stake); the dial (±10 and ±50 steps, the rules sentence, this year's
+    surplus, the reservation, the floor, the last pay-in); the transfer lines;
+    the rescue block.
+  - **The city's fund, By hand:** the amount stepper; Pay in and Draw out,
+    disabled at nothing; the company chips with fair value, holding, Buy, and
+    Sell a quarter / half / all; the issuer chips with each bond's line; the
+    orders waiting; a city with many bonds lists all of one issuer's.
+  - **Finances, both borrow pages:** "When the bank fails" under the rollover
+    block (two chips, the sentence, the alert and button while the bank
+    waits, the last resolution's note); the rollover block's "…netted already
+    this year, or kept for the fund" and the reservation line.
+  - **Bank landing:** the failed alert's new text; the resolution block and
+    "Resolve the bank for its shares - $X"; the preferred offer block while an
+    offer waits (Jerus's sentence, the capped note, the terms, the two funding
+    offers and the circular-capital alert when short, Accept lit only when the
+    treasury holds it, Decline).
+  - **Bank, Balance sheet:** "Preferred shares (the city)" above paid-in and
+    retained; it must still foot ("Not accounted for" absent).
+  - **Bank, Capital & owners:** four new causes in "How its equity moved"; the
+    city's stake and its note; "Its rescues" ("What the city has paid to
+    rescue it", the pre-0.7.14 absorbed line only when not nothing, the last
+    five resolutions); "The city's preferred" with "New shares it sold to
+    repay the city, over its life".
+  - **Government, Revenue:** "Transfer from the fund" at the end, and its
+    detail.
+  - **Inbox:** "The bank asks the city to buy its preferred shares" with
+    "Answer the bank →"; "The bank failed, and the city took it over" with
+    "See the bank's rescue →"; the offer pauses a running clock with
+    pause-on-events on.
+  - **The clock on an Insane city before it borrows:** pressing play shows the
+    refusal beside the button (the orange label is 220px against a long
+    sentence) and the clock stays stopped; after a bond it runs. A skip that
+    stops at an empty treasury shows "THE SKIP STOPPED AT MONTH n".
+  - **Found a city:** the Insane chip first; its card (D$0 in red, the
+    borrow-first note, the village, both day-0 quotes, the land bond in US$,
+    the vault); the first time Insane is picked a scratch city is founded to
+    strike the quotes (about a second).
 - **CHECK 0.7.13 BY EYE ON THE PC** (`rolling-what-falls-due.md`). None of it
   can run in the cloud.
   - **Land office tiles:**
@@ -815,6 +853,49 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
     ExchangeCheck §2b–2c and 7, HealthCheck's year);
   - §21's "A concentration limit on the bank" is answered by pricing, not a
     limit; the remaining failures are the young bank's.
+- **And 0.7.13 as of 2026-09-26 (deployed 2026-09-26, tag 0926b): the land office in the
+  paying currency and km², buying short and several at once; new games on the
+  autopilot; the treasury's rollover; the Bank tab's Balance sheet page; 224
+  files, ~171,000 lines; save format 27 unchanged; 63 harnesses.** What the
+  manual now says that is not so:
+  - the build line;
+  - §15's land office: the dollar price first, blocks, a plot the city cannot
+    afford refused; now the paying currency, km², the funding page, and
+    "Buy the next N";
+  - §12's borrowing: nothing refinances a maturity — now the rollover (by
+    hand / same structure / 12-month notes, net of last year's surplus,
+    sized to the cash);
+  - §13's dial: a new city founds by hand — now on the autopilot;
+  - §19's Bank tab has five pages — now six, with the balance sheet — and its
+    list of what went in without a bump (`rolloverMode`, `rolloverLedger`,
+    `rolloverRecord`, `bankSheetYear`, `bankPaidInOpening`,
+    `bankRetainedOpening`);
+  - §20's rows for LandCheck (14–16), TreasuryCheck (7), BankCheck (13) and
+    NewGameCheck (12);
+  - §21 gains the limit on a city's own paper and deposits on the bank's
+    books.
+- **And 0.7.14 as of 2026-09-27 (deployed 2026-09-27, tag 0927a): the city's
+  fund; a failed bank resolved for its shares; TARP preferred for a bank under
+  its minimum; the Insane start; 226 files, ~176,000 lines, 994 dials; save
+  format 27 unchanged; 64 harnesses.** What the manual now says that is not
+  so:
+  - the build line and the header's figures (64 harnesses);
+  - §9/§12's bank failure: the hole absorbed from outside and the owners
+    keeping their shares — now the city takes every share and pays the hole,
+    the central bank advancing what the treasury lacks, automatic or on the
+    button;
+  - §12's "The bank is somebody": a standing bank under its minimum topped
+    up — now it asks for TARP preferred by a popup, repaid at three years;
+  - §11's budget: the fund, its dial and "Transfer from the fund";
+  - §9's exchange and the bonds: the fund as a holder and participant;
+  - the founding screen's five presets and Insane; the clock's refusal;
+  - §19's list of what went in without a bump (`fund`, `bankPreferred`,
+    `bankPreferredRecord`, three register slots a company, the bonds' `city`
+    field, the bank's month lines, the debt market's inputs);
+  - §20's harness table (`FundCheck`, and the sections BankCheck,
+    TreasuryCheck, SaveFileCheck, NewGameCheck and ReadPathCheck gained);
+  - §21: "who absorbs a failed bank" is closed; the city's own paper at home
+    is still unlimited.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -874,27 +955,6 @@ Every confusing thing a new player will hit is that order being violated:
 - Private investment could sit land-blocked for **120 months** (now bannered —
   but that was one instance of a class). *And the banner is now itself suspect:
   `Game.isPrivateInvestmentLandLocked()` never clears — see the top entries.*
-- **And 0.7.13 as of 2026-09-26 (deployed 2026-09-26, tag 0926b): the land office in the
-  paying currency and km², buying short and several at once; new games on the
-  autopilot; the treasury's rollover; the Bank tab's Balance sheet page; 224
-  files, ~171,000 lines; save format 27 unchanged; 63 harnesses.** What the
-  manual now says that is not so:
-  - the build line;
-  - §15's land office: the dollar price first, blocks, a plot the city cannot
-    afford refused; now the paying currency, km², the funding page, and
-    "Buy the next N";
-  - §12's borrowing: nothing refinances a maturity — now the rollover (by
-    hand / same structure / 12-month notes, net of last year's surplus,
-    sized to the cash);
-  - §13's dial: a new city founds by hand — now on the autopilot;
-  - §19's Bank tab has five pages — now six, with the balance sheet — and its
-    list of what went in without a bump (`rolloverMode`, `rolloverLedger`,
-    `rolloverRecord`, `bankSheetYear`, `bankPaidInOpening`,
-    `bankRetainedOpening`);
-  - §20's rows for LandCheck (14–16), TreasuryCheck (7), BankCheck (13) and
-    NewGameCheck (12);
-  - §21 gains the limit on a city's own paper and deposits on the bank's
-    books.
 - **A city with no clinics loses 18% of everything, forever**, and the only place
   that says so is the People screen and one banner.
 
@@ -1555,6 +1615,45 @@ Ranked by how likely they are to read as "this game is broken".
   `Game.consider()` still files `canFundProject()`'s leverage refusal as a
   land shortage (`landBlockedSectors`) — only the capital refusal is split out
   (see the NEVER CLEARS item).
+- **FOUND BY 0.7.14, NOT ITS TO FIX** (`the-city-takes-the-shares.md` §8; the
+  implementer's record, `treasury-notes.md`):
+  - **The city keeps its bank for decades** (Jerus: "New issues only"): the
+    median stake is 58.8% twenty-five years after a default resolution,
+    91–100% in the autopilot and held setups. A sell-down (NatWest's
+    placements, trading plan and directed buybacks, 2015–2025) is his if he
+    wants one; the player can sell the rescue book by hand.
+  - **The preferred's funding page is circular capital** (Jerus: "Keep as
+    built"): held at 25%, the city borrows from the bank to buy the bank's
+    preferred, and each offer is bigger ($962T bought, the advances peaking at
+    $20.4 quadrillion). The KNOWN HOLE javadoc stays open for it. The limit on
+    the city's own paper at home (0.7.13's item) would close it.
+  - **Insane spirals in 5 of 8 seeds** on the same missing limit. The
+    playtest's player borrows exactly the village's invoice, so every Insane
+    seed runs on the central bank's advances from month 3.
+  - **The fund never pays for a rescue** (Jerus: "Keep as built"): at dial
+    300% all 66 months on advances were resolutions', with the fund holding
+    about $500B.
+  - **A second reload gap, 0.7.13's:** a bond's households' face is kept on
+    the bond and in the cells, and the two drift by parts per billion (17 of
+    Construction's bonds, Insane seed 0); the load resets the bond to the
+    cells past 1e-9, so a reloaded city differs by the drift. Find the
+    operation that parts them, or have the load keep the saved figure.
+  - **One month of negative GDP** in held 10% seeds 0 and 2 and dial 300% seed
+    1: that month's raw-material imports outweigh everything else. Untraced.
+  - **MoneyAudit's "+ bank ResolutionLoss" reads nothing** in this build, an
+    older save included (`Bank.startMonth()` clears the restored month figure
+    before the next strike). Whether the line goes is Jerus's.
+  - **The fund can pass 10% of a company without buying**, when a company's
+    buybacks shrink the shares under it and nobody bids at fair value for the
+    excess: 1.5% at most in the default runs, 33% at dial 100%.
+  - **Unemployment at the end follows the playtest's police purchases**: in
+    every build, seeds ending with coverage of 40% or more sit 5–19 points
+    higher. Crime stops pushing people out and the city outgrows its jobs.
+  - *(small)* TARP's $25B cap is left out (no source converts it); the hand
+    cannot sell the preferred or the warrants; the time skip still halts at
+    cash ≤ 0 while the play clock now refuses only with no revenue behind it
+    (0.7.0's item below); `Game.recapitaliseBank()` and its partial rescue are
+    gone (0.7.9's item).
 - **FOUND BY 0.7.13, NOT ITS TO FIX** (`rolling-what-falls-due.md` §6; the
   implementer's record):
   - **Nothing limits how much of its own paper a city can sell at home.**
@@ -1586,6 +1685,8 @@ Ranked by how likely they are to read as "this game is broken".
     Dividends that return excess capital are charged to retained, while the
     city's rescues sit in paid-in, and a buyback comes off paid-in at its
     whole cost. Jerus kept both; revisit with the owners' wipe-out.
+    *(0.7.14: a resolution writes the old owners' paid-in off to retained, and
+    the city's payment is paid in.)*
   - **A young city's first dollar land loan can shut the window abroad** for
     its next one ("owes dollars and sells nothing abroad"). A dollar note
     rolled in the same structure can shut it by the 45% service rule.
@@ -1704,7 +1805,7 @@ Ranked by how likely they are to read as "this game is broken".
   copy in `Claude outputs/bank-0.7.8-0.7.9-held/` is superseded and can be
   deleted *(2026-09-24: the `git rm` went to Jerus, and `Claude outputs/` is in
   `.gitignore`: a session's scratch on the PC is not the repository's)*. Rescue for shares, and the government bidding on the exchange,
-  stays a later batch.
+  stays a later batch *(built 2026-09-27 as 0.7.14)*.
 - **HELD AT 10%, SEED 2'S PRICES RAN TO 5.64× FOUNDING.** The recovered bank
   paid savers its chosen 3.5% over the world's 2%, the households brought
   their savings home (66% abroad to 0%, US$2.7bn into a city of about 2,000,
@@ -2170,7 +2271,10 @@ Ranked by how likely they are to read as "this game is broken".
   (`Game.getBuybackUnsettled()`) and declared the next month as `- city
   BuybackAbroad`, a financial outflow (`HoldersCheck` §8); and a domestic
   buyback pays every holder its share.
-- **A FAILED BANK'S HOLE STILL GOES ABROAD — JERUS'S QUESTION.**
+- ~~**A FAILED BANK'S HOLE STILL GOES ABROAD — JERUS'S QUESTION.**~~ — answered
+  and built 2026-09-27 (0.7.14): the city takes the shares and pays the hole,
+  the central bank advancing what the treasury lacks; nothing enters from
+  outside (`the-city-takes-the-shares.md` §3). Was:
   `Bank.resolveIfFailed()` and `MoneyAudit`'s `+ bank ResolutionLoss` still
   declare the shortfall as absorbed from outside the city, though the bank's
   wholesale lender is the central bank's window now, and the window is repaid

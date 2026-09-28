@@ -210,6 +210,15 @@ public class Equity {
         double shares;          // in issue
         double foreignShares;   // of those, held abroad
         double dealerShares;    // ...and held by the bank's trading desk (never its own: those are cancelled)
+        /**
+         * ...AND HELD BY THE CITY'S FUND (0.7.14, TreasuryFund): everything
+         * it holds, and of that the part it took in rescuing the bank - its
+         * rescue book, which its rule never sells and its 10% limit does
+         * not count. Zero on every company but the bank for the rescue
+         * book. A save from before 0.7.14 reads nothing.
+         */
+        double cityShares;
+        double cityRescue;
         double lastPrice = FOUNDING_PRICE;
         final double[] income = new double[RECORD_MONTHS];   // net income, a ring
         final double[] spent  = new double[RECORD_MONTHS];   // on buildings, a ring
@@ -231,20 +240,22 @@ public class Equity {
 
         // this month
         double offered, raisedHome, raisedAbroad, dividendHome, dividendDesk, dividendAbroad;
+        /** The city's fund's part of this month's dividend (0.7.14), and over its life. */
+        double dividendCity, lifetimeDividendsCity;
         double boughtBackThisMonth, lifetimeBoughtBack;
         Regime regime = Regime.NEW;
         double targetShare = NEW_EQUITY_SHARE;
 
         Listing(String name) { this.name = name; }
 
-        /** Held by the city's households: what is neither abroad nor on the desk. */
-        double domesticShares() { return shares - foreignShares - dealerShares; }
+        /** Held by the city's households: what is neither abroad nor on the desk - nor, since 0.7.14, the city's fund's. */
+        double domesticShares() { return shares - foreignShares - dealerShares - cityShares; }
         double raised()   { return raisedHome + raisedAbroad; }
         double dividend() { return dividendHome + dividendAbroad; }
 
         void clearMonth() {
             offered = 0; raisedHome = 0; raisedAbroad = 0;
-            dividendHome = 0; dividendDesk = 0; dividendAbroad = 0;
+            dividendHome = 0; dividendDesk = 0; dividendAbroad = 0; dividendCity = 0;
             boughtBackThisMonth = 0;
         }
 
@@ -662,15 +673,20 @@ public class Equity {
          * is open (the register and the cells are moved separately).
          */
         double held = households == null ? 0 : households.sharesHeld(company);
-        double perShare = paid / Math.max(l.shares, held + l.dealerShares + l.foreignShares);
+        double perShare = paid / Math.max(l.shares, held + l.dealerShares + l.foreignShares + l.cityShares);
         double home = households == null ? 0 : households.creditDividend(company, perShare);
         // The desk is paid on what it holds - and PAYS on what it is short,
         // like any short seller: the holders of the shares it sold and does
         // not have are paid in full, and the difference is the desk's.
         double desk = l.dealerShares * perShare;
-        double abroad = Math.max(0, paid - home - desk);
+        // ...and the city's fund on what it holds (0.7.14), never "abroad":
+        // its part is the caller's to hand to the fund (Game.payDividends()).
+        double city = l.cityShares * perShare;
+        double abroad = Math.max(0, paid - home - desk - city);
         l.dividendHome += home;
         l.dividendDesk += desk;
+        l.dividendCity += city;
+        l.lifetimeDividendsCity += city;
         l.dividendAbroad += abroad;
         l.lifetimeDividendsHome += home;
         l.lifetimeDividendsAbroad += abroad;
@@ -679,15 +695,20 @@ public class Equity {
 
     /** What the bank's trading desk was paid on its inventory this month. */
     public double getDividendDeskThisMonth(int company) { return listings[company].dividendDesk; }
+
+    /** ...and the city's fund on what it holds (0.7.14), and over its life. */
+    public double getDividendCityThisMonth(int company) { return listings[company].dividendCity; }
+    public double getLifetimeDividendsCity(int company) { return listings[company].lifetimeDividendsCity; }
     public double getDividendDeskThisMonth() { double s = 0; for (Listing l : listings) s += l.dividendDesk; return s; }
 
     /* =====================================================================
        THE HOLDERS
 
        The exchange moves shares between the holders - the households' cells,
-       the bank's desk, the world, a company buying its own back - and the
-       register keeps the count so the identity "in issue = households + desk
-       + abroad" lives in one place. See Exchange. The bank's OWN shares never
+       the bank's desk, the world, a company buying its own back, and since
+       0.7.14 the city's fund - and the register keeps the count so the
+       identity "in issue = households + desk + abroad + the city" lives in
+       one place. See Exchange. The bank's OWN shares never
        sit on the desk: bought, they are cancelled; sold, they are issued -
        which is what treasury stock is.
        ===================================================================== */
@@ -712,6 +733,80 @@ public class Equity {
         if (n == 0) return;
         Listing l = listings[company];
         l.foreignShares = Math.max(0, l.foreignShares + n);
+    }
+
+    /* ---- the city's fund (0.7.14) ---- */
+
+    /** The fund's market book in this company moves by this many shares: bought, positive; sold, negative - never into its rescue book, never under nothing. */
+    void moveCity(int company, double n) {
+        if (n == 0) return;
+        Listing l = listings[company];
+        l.cityShares = Math.max(l.cityRescue, l.cityShares + n);
+    }
+
+    /**
+     * The player's hand sells this many of the fund's shares: its market
+     * book first, then its rescue book (TreasuryFund - "the hand may sell
+     * anything the fund holds, including the rescue book").
+     *
+     * @return how many of them came out of the rescue book
+     */
+    double sellCityByHand(int company, double n) {
+        if (!(n > 0)) return 0;
+        Listing l = listings[company];
+        double market = Math.max(0, l.cityShares - l.cityRescue);
+        double fromRescue = Math.max(0, Math.min(l.cityRescue, n - market));
+        l.cityShares = Math.max(0, l.cityShares - n);
+        l.cityRescue = Math.max(0, l.cityRescue - fromRescue);
+        l.cityShares = Math.max(l.cityShares, l.cityRescue);
+        return fromRescue;
+    }
+
+    /**
+     * EVERY COMMON SHARE PASSES TO THE CITY: a failed bank's resolution
+     * (0.7.14; Jerus: "City takes the shares"). The households' and the
+     * world's are the city's now, and so is whatever the fund held of it on
+     * its market book - all of it the rescue book. The count in issue does
+     * not move; the old holders get nothing (CDIC, "How bail-in works": "all
+     * of the common shares ... are automatically transferred to CDIC, and
+     * the pre-existing common shareholders no longer own their common
+     * shares"). The households' cells are the caller's to empty
+     * (HouseholdBalance.surrenderShares()), before this. A company with no
+     * shares in issue is issued `ifNone` to the city - the founders' shares
+     * a company with a book and no owners is listed with (listIfUnlisted()).
+     *
+     * @return {the world's shares, the fund's market book's} before
+     */
+    double[] takeAllForCity(int company, double ifNone) {
+        Listing l = listings[company];
+        double world = l.foreignShares, market = Math.max(0, l.cityShares - l.cityRescue);
+        if (!(l.shares > 0) && ifNone > 0) l.shares = ifNone;
+        l.foreignShares = 0;
+        l.dealerShares = 0;
+        l.cityShares = l.shares;
+        l.cityRescue = l.shares;
+        return new double[] { world, market };
+    }
+
+    /** New shares issued to the city's rescue book - warrants exercised at their expiry (0.7.14): in issue by this many, the city's by the same. */
+    void issueToCityRescue(int company, double n) {
+        if (!(n > 0)) return;
+        Listing l = listings[company];
+        l.shares += n;
+        l.cityShares += n;
+        l.cityRescue += n;
+    }
+
+    /** Everything the city's fund holds of this company, both books. */
+    public double getCityShares(int company)       { return listings[company].cityShares; }
+    /** ...of that, its rescue book. */
+    public double getCityRescueShares(int company) { return listings[company].cityRescue; }
+    /** ...and its market book: what its rule bought and may sell. */
+    public double getCityMarketShares(int company) { return Math.max(0, listings[company].cityShares - listings[company].cityRescue); }
+    /** The city's stake in the company, 0-1: both books over what is in issue. */
+    public double cityShare(int company) {
+        Listing l = listings[company];
+        return l.shares > 0 ? l.cityShares / l.shares : 0;
     }
 
     /** The bank issues its own shares through its desk: in issue by this many. */
@@ -748,6 +843,8 @@ public class Equity {
         l.shares *= k;
         l.foreignShares *= k;
         l.dealerShares *= k;
+        l.cityShares *= k;
+        l.cityRescue *= k;
         l.lastPrice /= k;
         l.boughtBackThisMonth *= k;
         l.lifetimeBoughtBack *= k;
@@ -839,8 +936,11 @@ public class Equity {
     /** ...and before the dividends actually paid (0.7.12 round 2). */
     public static final int SLOTS_BEFORE_PAID = SLOTS_BEFORE_DESK + 2;
 
-    /** The ring of dividends paid and its count, appended. */
-    public static final int SLOTS = SLOTS_BEFORE_PAID + RECORD_MONTHS + 1;
+    /** ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. */
+    public static final int SLOTS_BEFORE_CITY = SLOTS_BEFORE_PAID + RECORD_MONTHS + 1;
+
+    /** The city's shares, its rescue book and what it has been paid, appended (0.7.14). */
+    public static final int SLOTS = SLOTS_BEFORE_CITY + 3;
 
     public String[] keys() { return COMPANIES.clone(); }
 
@@ -864,6 +964,9 @@ public class Equity {
             out[i++] = l.lifetimeBoughtBack;
             for (double v : l.paid) out[i++] = v;
             out[i++] = l.paidMonths;
+            out[i++] = l.cityShares;
+            out[i++] = l.cityRescue;
+            out[i++] = l.lifetimeDividendsCity;
         }
         return out;
     }
@@ -873,7 +976,8 @@ public class Equity {
         if (keys == null || saved == null || keys.length == 0) return false;
         int slots = saved.length / keys.length;
         if (saved.length != keys.length * slots
-                || (slots != SLOTS && slots != SLOTS_BEFORE_PAID && slots != SLOTS_BEFORE_DESK)) return false;
+                || (slots != SLOTS && slots != SLOTS_BEFORE_CITY && slots != SLOTS_BEFORE_PAID
+                    && slots != SLOTS_BEFORE_DESK)) return false;
         int i = 0;
         for (String key : keys) {
             int c = indexOf(key);
@@ -897,9 +1001,18 @@ public class Equity {
                 l.dealerShares      = saved[i++];
                 l.lifetimeBoughtBack = saved[i++];
             }
-            if (slots >= SLOTS) {
+            l.cityShares = 0;
+            l.cityRescue = 0;
+            l.lifetimeDividendsCity = 0;
+            if (slots >= SLOTS_BEFORE_CITY) {
                 for (int k = 0; k < RECORD_MONTHS; k++) l.paid[k] = saved[i++];
                 l.paidMonths = (int) Math.round(saved[i++]);
+                // ...and the city's (0.7.14): a save from before it holds none.
+                if (slots >= SLOTS) {
+                    l.cityShares = saved[i++];
+                    l.cityRescue = saved[i++];
+                    l.lifetimeDividendsCity = saved[i++];
+                }
             } else {
                 /*
                  * A SAVE FROM BEFORE THE RING has no record of what was paid,
@@ -935,6 +1048,7 @@ public class Equity {
             l.lifetimeDividendsHome *= scale;   l.lifetimeDividendsAbroad *= scale;
             l.offered *= scale;  l.raisedHome *= scale;  l.raisedAbroad *= scale;
             l.dividendHome *= scale;  l.dividendDesk *= scale;  l.dividendAbroad *= scale;
+            l.dividendCity *= scale;  l.lifetimeDividendsCity *= scale;
         }
     }
 }

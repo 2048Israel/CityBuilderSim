@@ -906,10 +906,12 @@ public class DataSave {
     public Exchange.State getExchangeState()           { return exchangeState; }
 
     /**
-     * How often the bank has failed, what its creditors ate, whether it is
-     * frozen right now, and - on the end since 0.7.9 - what the city has put
-     * into it in rescues over its life, which a shorter record counts from
-     * the load.
+     * How often the bank has failed, what its creditors ate (before 0.7.14,
+     * when nothing absorbs a hole any more), whether it is frozen right now,
+     * and - on the end since 0.7.9 - what the city has put into it in
+     * rescues over its life, which a shorter record counts from the load;
+     * and after that, since 0.7.14, the holes it failed with, which a
+     * shorter record reads as nothing.
      *
      * Not derivable from the sheet - see Bank.solvencyToSave(). Null on a save
      * written before 2026-09-10, which restores as a bank with no record, which
@@ -1056,6 +1058,40 @@ public class DataSave {
     public Double getBankPaidInOpening()             { return bankPaidInOpening; }
     public void setBankRetainedOpening(Double value) { this.bankRetainedOpening = value; }
     public Double getBankRetainedOpening()           { return bankRetainedOpening; }
+
+    /**
+     * The city's preferred in its bank (0.7.14), block by block - its par, the
+     * month it was issued, the dividend cap a share and its warrants - and
+     * the arrears with their record (Bank.preferredRecordToSave()). Null on
+     * an older save, whose city held none.
+     */
+    private java.util.List<Bank.Preferred> bankPreferred;
+    private double[] bankPreferredRecord;
+
+    public void setBankPreferred(java.util.List<Bank.Preferred> blocks, double[] record) {
+        this.bankPreferred = blocks;
+        this.bankPreferredRecord = record;
+    }
+    public java.util.List<Bank.Preferred> getBankPreferred() { return bankPreferred; }
+    public double[] getBankPreferredRecord()                 { return bankPreferredRecord; }
+
+    /**
+     * The city's fund (0.7.14), by name (TreasuryFund.State): its cash, its
+     * dial, the rescue setting, the bank's pending offer and its clocks, the
+     * rescues and the player's orders. Its shares ride the register and its
+     * bonds the bonds. Null on an older save, which loads a fund that has not
+     * begun - empty, the dial at 0, the rescue on the button.
+     */
+    private TreasuryFund.State fund;
+
+    public void setFund(TreasuryFund.State state) { this.fund = state; }
+    public TreasuryFund.State getFund()           { return fund; }
+
+    /** The city's debt market as it last struck its rate (0.7.14): DebtManager.marketToSave(). Null on an older save, whose load re-strikes it. */
+    private double[] debtMarket;
+
+    public void setDebtMarket(double[] market) { this.debtMarket = market; }
+    public double[] getDebtMarket()            { return debtMarket; }
 
     /**
      * The price basket, its weights, and a year of readings.

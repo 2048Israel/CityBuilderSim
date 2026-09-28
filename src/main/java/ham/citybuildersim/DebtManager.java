@@ -875,6 +875,30 @@ public class DebtManager {
     public void setAdvances(double owed) { this.advances = Math.max(0, owed); }
     public double getAdvances()          { return advances; }
 
+    /**
+     * THE MARKET'S LAST STRIKE, for the save (0.7.14): the four inputs it was
+     * last handed - a month's output, a month's tax, the overdraft, the
+     * advances - and the rate it struck on them. The month hands them in
+     * before its last price and the treasury's cash moves after it, so a
+     * reloaded city that re-struck them from the cash the save holds priced
+     * its own paper on a different overdraft than the live city it came
+     * from: a basis point apart on a city in deficit, and every curve rate,
+     * quote and mark read off it with it. Carried whole, it is the live one.
+     */
+    public double[] marketToSave() {
+        return new double[] { GDP, monthlyTaxRevenue, overdraft, advances, currentRate };
+    }
+
+    /** ...and back, over the load path's own strike; an older save has none and keeps that strike. */
+    public void restoreMarket(double[] saved) {
+        if (saved == null || saved.length < 5) return;
+        GDP = saved[0];
+        monthlyTaxRevenue = saved[1];
+        overdraft = saved[2];
+        advances = saved[3];
+        currentRate = saved[4];
+    }
+
     public List<Debt> getDebt() {
         return debts;
     }

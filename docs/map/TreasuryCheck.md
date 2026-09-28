@@ -1,6 +1,6 @@
-# TreasuryCheck.java - 713 lines · 12 methods · 1 constants · harnesses
+# TreasuryCheck.java - 717 lines · 12 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits what the screens say the treasury did. Not part of
 > the game.
@@ -78,9 +78,9 @@
 | 211 | · AND IT HAS TO SURVIVE A SAVE. |
 | 255 | · · and the first month back still has no gap |
 | 260 | · AND THE ROW OPENS. |
-| 423 | · 7. ROLLING WHAT FALLS DUE (0.7.13) |
-| 426 | · THE REPORT. |
-| 444 | 7. ROLLING WHAT FALLS DUE (0.7.13). |
+| 427 | · 7. ROLLING WHAT FALLS DUE (0.7.13) |
+| 430 | · THE REPORT. |
+| 448 | 7. ROLLING WHAT FALLS DUE (0.7.13). |
 
 ## Constants
 
@@ -98,22 +98,22 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 636 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 78 | 640 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
 | 85 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 95 | 4 | `static void check(String what, boolean ok)` | A fact that is either so or not, printed either way so the run reads as a list. |
 | 101 | 4 | `static TreasuryJournal.Entry line(java.util.List<TreasuryJournal.Entry> journal, String label)` | The journal line with this label, or null when the month has none. |
 | 107 | 4 | `static double amount(java.util.List<TreasuryJournal.Entry> journal, String label)` | The amount on the journal line with this label, or 0 when there is none. |
 | 112 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 119 | 324 | `public static void main(String[] args)` |  |
+| 119 | 328 | `public static void main(String[] args)` |  |
 
-### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 444-713)
+### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 448-717)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 474 | 5 | `static Game founded(String label)` | A city founded as a player founds one: newGame(), so it rolls in the same structure. |
-| 481 | 7 | `static String press(Game g)` | One press, its printing kept - the log is where a rollover says what it did. |
-| 490 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
-| 497 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
-| 506 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
-| 510 | 203 | `static void rolling()` |  |
+| 478 | 5 | `static Game founded(String label)` | A city founded as a player founds one: newGame(), so it rolls in the same structure. |
+| 485 | 7 | `static String press(Game g)` | One press, its printing kept - the log is where a rollover says what it did. |
+| 494 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
+| 501 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
+| 510 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
+| 514 | 203 | `static void rolling()` |  |
 

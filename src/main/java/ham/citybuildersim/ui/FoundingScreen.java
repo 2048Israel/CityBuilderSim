@@ -63,6 +63,10 @@ final class FoundingScreen {
     private VBox buysBox;
     private Button found;
 
+    /** An Insane city's day-0 quotes (Game.dayZeroQuotes()), kept while the world chosen is the one they were struck in: a scratch city is founded to strike them. */
+    private DebtQuote[] dayZero;
+    private double dayZeroMean = Double.NaN;
+
     /** From the main menu: a fresh page on the defaults, whatever was typed last time. */
     void show() {
         cityName = Founding.DEFAULT_CITY_NAME;
@@ -245,7 +249,9 @@ final class FoundingScreen {
         buysBox.getChildren().clear();
         double cash = cash(), usd = reserveUsd();
         String here = unnamed ? Currency.SYMBOL : money.qualifiedSymbol();
-        if (Double.isFinite(cash) && Double.isFinite(usd)
+        if (preset == Founding.Preset.INSANE) {
+            insaneBuys(here);
+        } else if (Double.isFinite(cash) && Double.isFinite(usd)
                 && Founding.cashProblem(cash) == null && Founding.reserveProblem(usd) == null) {
             Founding.Buys buys = ui.game.whatItBuys(cash, usd);
             buysBox.getChildren().add(statementLine("In the treasury", marked(here, money(cash)), Palette.TEXT_HEAD));
@@ -271,6 +277,47 @@ final class FoundingScreen {
         String problem = problem();
         found.setDisable(problem != null);
         whyNot.setText(problem == null ? "" : problem);
+    }
+
+    /**
+     * WHAT INSANE BUYS (0.7.14): nothing in cash. The village's invoice, the
+     * dollar bond the ground is owed on, and what a first bond for the
+     * village costs a city with no revenue and no output - the build
+     * screen's two offers, struck by the model's own quote functions on a
+     * city founded Insane and not yet played (Game.dayZeroQuotes()).
+     */
+    private void insaneBuys(String here) {
+        Founding.Buys buys = ui.game.whatItBuys(0, 0);
+        if (dayZero == null || dayZeroMean != mean) {
+            dayZero = Game.dayZeroQuotes(Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.INSANE, mean),
+                    buys.village());
+            dayZeroMean = mean;
+        }
+        DebtQuote bond = dayZero[0], note = dayZero[1];
+        buysBox.getChildren().add(statementLine("In the treasury", marked(here, money(0)), Palette.BAD));
+        buysBox.getChildren().add(statementNote("It buys nothing in cash. The clock will not run on an empty "
+                + "treasury: borrow first - the build screen's funding page, the Finances tab's borrowing, or "
+                + "the land office's funding page. The window abroad is shut to a city that owes dollars and "
+                + "sells nothing abroad, so the first loan is local."));
+        buysBox.getChildren().add(statementLine("...the founding village", marked(here, money(buys.village()))));
+        buysBox.getChildren().add(statementNote(village()));
+        buysBox.getChildren().add(statementLine("   a first " + Game.BUILD_BOND_YEARS + "-year bond for it, on day 0",
+                String.format("%s  \u00b7  %s of face", pct2(bond.marketRate()), marked(here, money(bond.faceValue()))),
+                Palette.WARN));
+        buysBox.getChildren().add(statementLine("   ...or the " + Game.BUILD_NOTE_MONTHS + "-month note",
+                String.format("%s  \u00b7  %s of face", pct2(note.marketRate()), marked(here, money(note.faceValue()))),
+                Palette.WARN));
+        buysBox.getChildren().add(statementNote("What the build screen would offer for the village the day the city "
+                + "is founded: a city with no revenue and no output is charged the whole of the spread on both "
+                + "measures the market prices its debt on."));
+        buysBox.getChildren().add(statementLine("Owed abroad for its ground", usd(Founding.landBondUsd()), Palette.BAD));
+        buysBox.getChildren().add(statementNote(String.format("A %d-year US-dollar bond at %.0f%%, issued abroad: every "
+                + "starting square foot at the land market's opening dollar price. Its proceeds paid the land's "
+                + "sellers, so no cash arrived; its coupon is paid as any dollar debt's is, from the vault if it "
+                + "holds dollars and converted from cash if not.", Founding.INSANE_LAND_YEARS,
+                Founding.INSANE_LAND_COUPON * 100)));
+        buysBox.getChildren().add(statementLine("In the vault", usd(0), Palette.TEXT_HEAD));
+        buysBox.getChildren().add(statementNote(buys.vaultSays()));
     }
 
     /** "60 houses, 5 convenience stores, ..." - the village, from the model's own list. */

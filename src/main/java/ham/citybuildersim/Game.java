@@ -229,6 +229,11 @@ public class Game {
         // economy each read the market. See BondMarket.
         bondMarket.reset();
         bondMarket.attach(bondReadings, householdBalance, bank, economyManager, outward);
+        // ...and the city's fund, a holder on both books (0.7.14).
+        fund.reset();
+        exchange.attachFund(fund);
+        bondMarket.attachFund(fund);
+        ownersWipedAbroadThisMonth = 0;
         economyManager.setBondMarket(bondMarket);
         economyManager.getBusinessDebtManager().setBondMarket(bondMarket, bondMarket);
         householdBalance.setBondMarket(bondMarket);
@@ -402,6 +407,8 @@ public class Game {
         foreign.buyReserves(foreign.toLocal(founding.getReserveUsd()));
         // ...and the record of it, which nothing changes after this line.
         this.founding = founding;
+        // ...and an Insane city's ground, owed abroad (0.7.14).
+        if (founding.getPreset() == Founding.Preset.INSANE) foundTheLandBond();
         this.population = 0;
         this.jobs = new int[JobType.values().length];
 
@@ -544,6 +551,13 @@ public class Game {
          */
         debtManager.setAutopilot(true);
         rollover.setMode(Rollover.Mode.SAME_STRUCTURE);
+        /*
+         * ...AND RESOLVES A FAILED BANK THE MONTH IT FAILS (0.7.14). Jerus:
+         * "Treasury setting, auto". The bare constructor city the harnesses
+         * and the playtest found keeps the button, and an older save loads on
+         * it, how it was played (TreasuryFund.reset(), the load path).
+         */
+        fund.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
     }
 
     /**
@@ -1966,16 +1980,26 @@ public class Game {
      * branch is bought on prospects; a later one on the bank's record, and a
      * bank the world will not fund opens its branch under-capitalised, which
      * is what a bank nobody will fund is.
+     *
+     * ...AND SINCE 0.7.14 WHAT THE BANK SELLS TO REPAY THE CITY: the
+     * preferred at its third anniversary, and the warrants after it
+     * (Bank.redeemDuePreferred(), repurchaseWarrants()), whatever its spare
+     * capital does not cover. The city is not among the subscribers, so the
+     * shares it holds are diluted by it.
+     *
+     * @return what was raised, home and abroad: the capital put in
      */
-    private void capitaliseBank(double wanted) {
-        if (wanted <= 0) return;
+    private double capitaliseBank(double wanted) {
+        if (wanted <= 0) return 0;
         double before = equity.getRaisedHomeThisMonth(Equity.BANK);
         double beforeAbroad = equity.getRaisedAbroadThisMonth(Equity.BANK);
         equity.offer(Equity.BANK, wanted, Math.max(0, bank.equity()),
                 householdBalance, DebtManager.WORLD_BASE_RATE,
                 exchange.hasTraded(Equity.BANK) ? exchange.price(Equity.BANK) : 0);
-        bank.injectCapital(equity.getRaisedHomeThisMonth(Equity.BANK) - before,
-                equity.getRaisedAbroadThisMonth(Equity.BANK) - beforeAbroad);
+        double home = equity.getRaisedHomeThisMonth(Equity.BANK) - before;
+        double abroad = equity.getRaisedAbroadThisMonth(Equity.BANK) - beforeAbroad;
+        bank.injectCapital(home, abroad);
+        return home + abroad;
     }
 
     /**
@@ -2091,15 +2115,24 @@ public class Game {
         }
         // Whoever left this month took their shares with them.
         equity.followEmigrants(householdBalance);
+        /*
+         * THE CITY'S PREFERRED IS PAID FIRST (0.7.14): its dividend ranks
+         * ahead of the common's, accrues when the bank cannot pay it, and
+         * while any is unpaid the common gets nothing (Bank.payPreferredDividends(),
+         * Bank.dividendDue()). What the bank pays goes to the city's fund.
+         */
+        fund.receivePreferredDividend(bank.payPreferredDividends());
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double paid;
             if (c == Equity.BANK) {
                 // On the profit AFTER the tax it will be charged, as every
                 // sector's owners are paid on theirs (0.7.7; it was the
                 // profit before tax) - and by the bank's own payout rule,
-                // which pays nothing failed or under its minimum (0.7.8).
+                // which pays nothing failed or under its minimum (0.7.8) -
+                // and, while the city's consent binds, no more a share than
+                // before it bought its preferred (0.7.14).
                 paid = equity.getShares(c) > 0
-                        ? bank.payOwners(bank.getProfitAfterTaxLastMonth(bankProfitTaxRate())) : 0;
+                        ? bank.payOwners(bank.getProfitAfterTaxLastMonth(bankProfitTaxRate()), equity.getShares(c)) : 0;
             } else {
                 String sector = Equity.COMPANIES[c];
                 double due = dividendDue(c);
@@ -2114,9 +2147,14 @@ public class Game {
             }
             if (paid > 0) {
                 double deskBefore = equity.getDividendDeskThisMonth(c);
+                double cityBefore = equity.getDividendCityThisMonth(c);
+                double cityHeld = equity.getCityShares(c);
+                double rescueShare = cityHeld > 0 ? equity.getCityRescueShares(c) / cityHeld : 0;
                 equity.payDividend(c, paid, householdBalance);
                 // The desk's inventory is paid like any holder: into the bank.
                 bank.receiveDividend(equity.getDividendDeskThisMonth(c) - deskBefore);
+                // ...and the city's fund on what it holds (0.7.14), its books apart.
+                fund.receiveDividend(equity.getDividendCityThisMonth(c) - cityBefore, rescueShare);
                 // ...and the register keeps what was paid: the yield every
                 // participant on the exchange values the share on (0.7.12
                 // round 2; Equity.dividendPerShareAnnual()).
@@ -2140,11 +2178,13 @@ public class Game {
                     : sectorBooks.get(Equity.COMPANIES[c]).equity();
         }
         exchange.takeMonth(equity, householdBalance, bank, exchangeCompanies, book,
-                DebtManager.WORLD_BASE_RATE, bank.depositRate(), month);
+                DebtManager.WORLD_BASE_RATE, bank.depositRate(), month, fundBondsValue());
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double k = exchange.getSplit(c);
             if (k > 1) GameLog.note(String.format("%s split its shares %,.0f for one.", Equity.COMPANIES[c], k));
             else if (k > 0) GameLog.note(String.format("%s consolidated its shares one for %,.0f.", Equity.COMPANIES[c], 1 / k));
+            // ...and the city's preferred's warrants and dividend cap follow the bank's shares (0.7.14).
+            if (c == Equity.BANK && k > 0) bank.splitShares(k);
         }
     }
 
@@ -2441,46 +2481,532 @@ public class Game {
         return out;
     }
 
-    /**
-     * The treasury puts capital into its bank.
-     *
-     * An insolvent bank has no capacity, so it cannot lend - no business can
-     * borrow to build or to cover a loss, and the families draw on their
-     * credit only for its interest (the maximum premium on every rate, until
-     * 0.7.7) - and nothing gets built. This is the lever out of that, and it
-     * is a real one - the money leaves the treasury and does not come back.
-     *
-     * SEE Bank.receiveBailout() for the hole in this that Jerus spotted while it
-     * was being written: the city's own borrowing is funded BY this bank, so a
-     * treasury that borrows in order to do this has the bank capitalise itself
-     * with its own loan. Waiting on a source of funds that is not this bank.
-     *
-     * @return what was actually put in, which is nothing if the city cannot pay
-     */
-    public double recapitaliseBank(double amount) {
-        double put = Math.max(0, Math.min(amount, cash));
-        if (put <= 0) return 0;
-        treasuryPays(TreasuryLine.BANK_CAPITAL, put);
-        treasuryJournal.record("Put capital into the bank", -put);
-        bank.receiveBailout(put);
-        GameLog.note(String.format("The city put $%,.0fk of capital into the bank.", put));
-        return put;
-    }
+    /* =====================================================================
+       THE CITY'S FUND AND THE BANK'S RESCUE (0.7.14)
 
-    /** What it would cost to put the bank back on its feet, right now. */
+       Jerus's answers, 2026-09-27 (TreasuryFund has them whole): "City takes
+       the shares", "Treasury setting, auto", "Preferred shares", "Rule plus
+       your hand", "New issues only", "Central bank advances it", the dial
+       "default 0, max 300%" of "the year's surplus", "Home only".
+
+       A FAILED BANK IS RESOLVED FOR ITS SHARES (resolveBank()): the month it
+       fails when the treasury's setting is automatic, at the Bank tab's
+       button otherwise. The city's preferred and warrants go with the hole;
+       the old owners are wiped out; the city pays the hole and the capital to
+       reopen (Bank.recapitalisationNeeded() - the shortfall plus
+       resolutionExitEquity(), the exit level it always had) as a promise,
+       the central bank advancing what the treasury lacks at the next settle;
+       and every share is the city's rescue book. The bank reopens the same
+       month. Its own new shares go to others, so the city's stake falls as
+       it rebuilds.
+
+       A STANDING BANK UNDER ITS MINIMUM ASKS FOR PREFERRED
+       (considerPreferredOffer()): an offer the player answers from the
+       inbox, TARP's terms (Bank, THE CITY'S CAPITAL). Accepted, the treasury
+       buys it, a purchase; a treasury short of it is offered the funding
+       page's local paper first. After either answer the bank asks again
+       only after a quarter (TreasuryFund.OFFER_AGAIN_MONTHS), while it is
+       still under. Each block is repaid whole at its third anniversary, from
+       the bank's capital over its target and then new shares sold to the
+       public, which dilute the city's (settleThePreferred(); Jerus: "Sell
+       new shares to repay"). During a time skip the offer waits:
+       the skip has never stopped for a notice (only the running clock pauses
+       on one, UserInterface.stopIfSomethingHappened()), so the skip's months
+       pass without the city's capital, as declined months would.
+
+       THE FUND'S DIAL (fundYearEnd()), ITS TRANSFER (settleTreasury()), ITS
+       RULE (Exchange.postFund(), BondMarket.postFund()) AND THE HAND
+       (fundBuyShares() and the rest, fundPayIn(), fundDrawOut()).
+       ===================================================================== */
+
+    /** The world's shares a resolution wiped out, at their last price: this month's valuation abroad, declared to MoneyAudit and cleared after the strike. */
+    private double ownersWipedAbroadThisMonth;
+
+    /** What the audit declares as the world's shares wiped out since its last strike (0.7.14). */
+    public double getOwnersWipedAbroadThisMonth() { return ownersWipedAbroadThisMonth; }
+
+    /** What it would cost to put the bank back on its feet, right now: the hole and the capital to reopen for a failed bank; what takes a standing one under its minimum back to its target. */
     public double bankRecapitalisationNeeded() {
         return bank.recapitalisationNeeded();
     }
 
+    /** What the central bank would advance of a resolution now: what the treasury's cash does not cover of it. */
+    public double bankResolutionAdvance() {
+        return Math.max(0, bank.recapitalisationNeeded() - Math.max(0, cash));
+    }
+
+    /** True while the bank is failed and waiting for the city: what the Bank tab's button is shown on, and what resolveBank() resolves. */
+    public boolean canResolveBank() {
+        return bank.getBranches() > 0 && bank.isInsolvent();
+    }
+
+    /** When the treasury's setting is automatic and the bank has failed, the city resolves it now. */
+    private void resolveIfAutomatic() {
+        if (fund.getRescueMode() == TreasuryFund.RescueMode.AUTOMATIC && canResolveBank()) resolveBank();
+    }
+
     /**
-     * True when the bank needs capital and the treasury holds all of it: the
-     * rescue button's guard (0.7.9), here so the screen and anything else
-     * that offers the rescue cannot disagree about it. recapitaliseBank()
-     * itself puts in what the treasury has, which a partial rescue would be.
+     * THE CITY RESOLVES A FAILED BANK FOR ITS SHARES: the Bank tab's button,
+     * and the automatic setting's month. The whole rescue - nothing to choose.
+     *
+     *   1. The city's preferred and its warrants, if any, are cancelled: the
+     *      hole took them (Bank.cancelPreferred()).
+     *   2. The old owners are wiped out: every cell's shares, the world's and
+     *      the fund's own market book pass to the city for nothing
+     *      (HouseholdBalance.surrenderShares(), Equity.takeAllForCity()), and
+     *      their paid-in capital is written off against the losses
+     *      (Bank.wipeOwners()). The world's, at its last price, is a
+     *      valuation across the border (getOwnersWipedAbroadThisMonth()); the
+     *      households', inside the country and outside the pools, has no
+     *      line.
+     *   3. The city pays the hole and the capital to reopen, as a promise
+     *      (TreasuryLine.BANK_RESOLUTION): from its cash first, and what it
+     *      lacks the central bank advances at the next settle, past its
+     *      ceiling if it must.
+     *   4. The bank reopens (Bank.takeResolutionCapital()), and the shares
+     *      are the fund's rescue book, at what the city paid.
+     *
+     * @return what the city paid; nothing when there was nothing to resolve
      */
-    public boolean canRecapitaliseBank() {
-        double needed = bank.recapitalisationNeeded();
-        return needed > 0 && cash >= needed;
+    public double resolveBank() {
+        if (!canResolveBank()) return 0;
+        double price = exchange.price(Equity.BANK);
+        double[] cancelled = bank.cancelPreferred();
+        bank.wipeOwners();
+        double households = householdBalance.surrenderShares(Equity.BANK);
+        double shortfall = Math.max(0, -bank.equity());
+        double exit = bank.resolutionExitEquity();
+        double amount = shortfall + exit;
+        double[] before = equity.takeAllForCity(Equity.BANK, amount / equity.foundingPrice());
+        double cashBefore = cash;
+        treasuryPays(TreasuryLine.BANK_RESOLUTION, amount);
+        double fromCash = Math.min(amount, Math.max(0, cashBefore));
+        treasuryJournal.record("Resolved the bank for its shares", -amount);
+        bank.takeResolutionCapital(amount);
+        ownersWipedAbroadThisMonth += before[0] * price;
+
+        TreasuryFund.Resolution r = TreasuryFund.newResolution(month);
+        r.paid = amount;
+        r.fromCash = fromCash;
+        r.advanced = amount - fromCash;
+        r.shortfall = shortfall;
+        r.exitCapital = exit;
+        r.shares = equity.getShares(Equity.BANK);
+        r.householdsShares = households;
+        r.householdsValue = households * price;
+        r.worldShares = before[0];
+        r.worldValue = before[0] * price;
+        r.fundShares = before[1];
+        r.fundValue = before[1] * price;
+        r.preferredCancelled = cancelled[0];
+        r.warrantsCancelled = cancelled[1];
+        fund.noteResolution(r);
+
+        String here = getCurrency().qualifiedSymbol();
+        GameLog.note(String.format("The bank failed. The city took all its shares; the old owners lost everything"
+                        + " (%s%,.0fk at the last price). The city put in %s%,.0fk: %s%,.0fk from its cash and"
+                        + " %s%,.0fk advanced by the central bank.",
+                here, r.ownersLost(), here, amount, here, fromCash, here, r.advanced));
+        return amount;
+    }
+
+    /** The city's last resolution, or null if it has never resolved the bank. */
+    public TreasuryFund.Resolution getLastResolution() {
+        java.util.List<TreasuryFund.Resolution> all = fund.getResolutions();
+        return all.isEmpty() ? null : all.get(all.size() - 1);
+    }
+
+    /** The city's stake in its bank, 0-1: both of the fund's books over the shares in issue. */
+    public double cityStakeInBank() { return equity.cityShare(Equity.BANK); }
+
+    /* ------------------------------ the preferred offer ------------------------------ */
+
+    /**
+     * A STANDING BANK UNDER ITS MINIMUM ASKS, AND AN ANSWERED OFFER WAITS A
+     * QUARTER: at the bottom of the month, once the bank's month is final.
+     * An offer still waiting lapses if the bank is back over its minimum on
+     * its own. Moves no money.
+     */
+    private void considerPreferredOffer() {
+        if (fund.isOfferPending()) {
+            if (!bank.wantsPreferred()) fund.noteLapsed();
+            return;
+        }
+        if (bank.wantsPreferred() && fund.mayOffer(month) && bank.preferredOfferSize() > 0) {
+            fund.noteOffered(month);
+            String here = getCurrency().qualifiedSymbol();
+            GameLog.note(String.format("The bank is under its minimum capital and asks the city to buy %s%,.0fk"
+                    + " of preferred shares.", here, bank.preferredOfferSize()));
+        }
+    }
+
+    /** True while the bank's offer waits for the player's answer. */
+    public boolean isPreferredOfferPending() { return fund.isOfferPending(); }
+
+    /** What the bank asks for now: Bank.preferredOfferSize(). */
+    public double preferredOfferSize() { return bank.preferredOfferSize(); }
+
+    /** The warrants' reach, in money at the strike: Bank.WARRANT_SHARE of the offer - "warrants on D$Y of its shares". */
+    public double preferredOfferWarrantValue() { return Bank.WARRANT_SHARE * bank.preferredOfferSize(); }
+
+    /** ...and their strike: a share at last month's price, the exchange's. */
+    public double preferredOfferStrike() { return exchange.price(Equity.BANK); }
+
+    /** What the treasury is short of the offer: what the funding page raises first. */
+    public double preferredOfferShortBy() { return Math.max(0, bank.preferredOfferSize() - cash); }
+
+    /**
+     * THE CITY ACCEPTS: the treasury buys the preferred, a purchase
+     * (TreasuryLine.BANK_CAPITAL), into the fund's rescue book. Not when the
+     * treasury is short of it - the page raises that on the funding page's
+     * paper first - and not when there is nothing pending.
+     *
+     * @return true if it was bought
+     */
+    public boolean acceptPreferredOffer() {
+        if (!fund.isOfferPending()) return false;
+        double size = bank.preferredOfferSize();
+        if (!(size > 0)) { fund.noteLapsed(); return false; }
+        if (cash < size) return false;
+        double paid = treasuryPays(TreasuryLine.BANK_CAPITAL, size);
+        if (paid < size) { cash += paid; return false; }
+        treasuryJournal.record("Bought the bank's preferred shares", -size);
+        double price = exchange.price(Equity.BANK);
+        double shares = equity.getShares(Equity.BANK);
+        double capPerShare = shares > 0 ? equity.getDividendsPaidOverYear(Equity.BANK) / shares / 12 : 0;
+        double warrants = bank.issuePreferred(size, price, capPerShare);
+        fund.noteAccepted(month, size);
+        String here = getCurrency().qualifiedSymbol();
+        GameLog.note(String.format("The city bought %s%,.0fk of the bank's preferred shares, %.0f%% a year for five"
+                        + " years then %.0f%%, with warrants on %,.0f of its shares at %s%,.3fk.",
+                here, size, Bank.PREFERRED_RATE * 100, Bank.PREFERRED_STEP_RATE * 100, warrants, here, price));
+        return true;
+    }
+
+    /** THE CITY DECLINES: the offer comes back after a quarter while the bank is still under its minimum. */
+    public void declinePreferredOffer() {
+        if (!fund.isOfferPending()) return;
+        fund.noteDeclined(month);
+        GameLog.note("The city declined the bank's preferred shares; it will ask again in "
+                + TreasuryFund.OFFER_AGAIN_MONTHS + " months if it is still under its minimum.");
+    }
+
+    /**
+     * THE PREFERRED'S MONTH, after the shares have traded (0.7.14; Jerus:
+     * "Sell new shares to repay"): every block at its third anniversary
+     * redeemed whole at par with its arrears (Bank.redeemDuePreferred()), from
+     * the bank's capital over its target and, for the rest, an offering of
+     * new common to the public (capitaliseBank()); once no preferred is left,
+     * the city's warrants bought back at their fair value the same way
+     * (Bank.repurchaseWarrants()); and warrants at their expiry, still out,
+     * exercised into new shares for the rescue book. Everything the bank pays
+     * goes to the fund. Package-private for FundCheck, which calls it between
+     * presses to size a repayment exactly.
+     */
+    void settleThePreferred() {
+        if (bank.getPreferred().isEmpty()) return;
+        double price = exchange.price(Equity.BANK);
+        java.util.function.DoubleUnaryOperator offering = this::capitaliseBank;
+        double[] redeemed = bank.redeemDuePreferred(offering);
+        fund.receivePreferredDividend(redeemed[0]);
+        fund.receiveRedemption(redeemed[1], 0);
+        double warrants = bank.repurchaseWarrants(exchange.price(Equity.BANK), bankVolatility(),
+                debtManager.getPolicyRate(), offering);
+        fund.receiveRedemption(0, warrants);
+        if (redeemed[1] > 0 || warrants > 0) {
+            String here = getCurrency().qualifiedSymbol();
+            GameLog.note(String.format("The bank repaid the city: %s%,.0fk of preferred at par, %s%,.0fk of its unpaid"
+                            + " dividends and %s%,.0fk for the warrants; %s%,.0fk of it raised by selling new shares.",
+                    here, redeemed[1], here, redeemed[0], here, warrants, here, bank.getRepaymentRaisedThisMonth()));
+        }
+        double shares = bank.exerciseExpiredWarrants(price);
+        if (shares > 0) {
+            equity.issueToCityRescue(Equity.BANK, shares);
+            fund.noteWarrantShares(shares);
+            GameLog.note(String.format("The city's warrants on the bank expired in the money: %,.0f new shares"
+                    + " for the city.", shares));
+        }
+    }
+
+    /** The bank share's volatility a year, off the history's monthly prices (TreasuryFund.annualVolatility()): the warrants' value reads it. */
+    public double bankVolatility() {
+        return TreasuryFund.annualVolatility(historySave.aligned(HistorySave.priceKey(Equity.COMPANIES[Equity.BANK])));
+    }
+
+    /* ------------------------------ what the fund is worth ------------------------------ */
+
+    /** Its shares, both books, at the exchange's price. */
+    public double fundSharesValue()       { return exchange.cityValue(equity); }
+    /** ...its market book's alone. */
+    public double fundMarketSharesValue() { return exchange.cityMarketValue(equity); }
+    /** ...its rescue book's shares. */
+    public double fundRescueSharesValue() {
+        double t = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) t += equity.getCityRescueShares(c) * exchange.price(c);
+        return t;
+    }
+    /** Its bonds, at the market's valuation. */
+    public double fundBondsValue()        { return bondMarket.valueHeld(CorporateBond::city, month); }
+    /** Its preferred, at par. */
+    public double fundPreferredValue()    { return bank.preferredOutstanding(); }
+    /** Its warrants, at Black-Scholes. */
+    public double fundWarrantsValue() {
+        return bank.warrantValue(exchange.price(Equity.BANK), bankVolatility(), debtManager.getPolicyRate());
+    }
+    /** Its rescue book: the rescue shares, the preferred and the warrants. */
+    public double fundRescueValue()       { return fundRescueSharesValue() + fundPreferredValue() + fundWarrantsValue(); }
+    /** Everything it holds, both books, and its cash: what its transfer is struck on. */
+    public double fundValue() {
+        return fund.getCash() + fundSharesValue() + fundBondsValue() + fundPreferredValue() + fundWarrantsValue();
+    }
+    /** Its market book's equity share, 0-1, of its market book and cash: what its rebalancing band reads. */
+    public double fundEquityShare() {
+        double v = fundMarketSharesValue() + fundBondsValue() + Math.max(0, fund.getCash());
+        return v > 0 ? fundMarketSharesValue() / v : 0;
+    }
+    /** What this month's transfer is on the fund as it stands: TreasuryFund.transferOn(fundValue()). */
+    public double fundTransferDue()       { return TreasuryFund.transferOn(fundValue()); }
+
+    /** One company's shares in the fund, both books, at the exchange's price: the Fund page's line for it. */
+    public double fundCompanyValue(int company) {
+        return equity.getCityShares(company) * exchange.price(company);
+    }
+    /** ...its rescue book's part. */
+    public double fundCompanyRescueValue(int company) {
+        return equity.getCityRescueShares(company) * exchange.price(company);
+    }
+    /** The share of a company the city owns, 0-1, both books over the shares in issue. */
+    public double fundCompanyShare(int company)  { return equity.cityShare(company); }
+    /** ...its market book's alone: what the rule's cap, TreasuryFund.OWNERSHIP_LIMIT, reads. */
+    public double fundCompanyMarketShare(int company) {
+        double shares = equity.getShares(company);
+        return shares > 0 ? equity.getCityMarketShares(company) / shares : 0;
+    }
+    /** One bond's face in the fund, at the market's valuation (BondMarket.modelPrice()). */
+    public double fundBondValue(CorporateBond b) {
+        return b == null || !(b.city() > 0) ? 0 : b.city() * bondMarket.modelPrice(b, month);
+    }
+    /** ...and one issuer's bonds in the fund, all of them. */
+    public double fundBondsValueOf(String issuer) {
+        double t = 0;
+        for (CorporateBond b : bondMarket.getBonds(issuer)) t += fundBondValue(b);
+        return t;
+    }
+
+    /* ------------------------------ the dial ------------------------------ */
+
+    /** The fund's dial, 0 to TreasuryFund.MAX_DIAL of the year's surplus. */
+    public double getFundDial()             { return fund.getDial(); }
+    public void setFundDial(double dial)    { fund.setDial(dial); }
+
+    /** The treasury's setting for a failed bank. */
+    public TreasuryFund.RescueMode getRescueMode()          { return fund.getRescueMode(); }
+    public void setRescueMode(TreasuryFund.RescueMode mode) { fund.setRescueMode(mode); }
+
+    /**
+     * ONE MONTH OF THE TREASURY'S OWN SPENDING: the budget's expenses over the
+     * last Rollover.NETTING_MONTHS, as the history keeps them (revenue less
+     * the surplus, month by month), a month's worth. The floor the fund's
+     * pay-in never takes the treasury under - Canada's Department of Finance
+     * holds liquidity for at least one month of net projected cash flows
+     * (Debt Management Report 2017-18, Part 1), the rollover's own source -
+     * so the fund is never what the central bank then advances.
+     */
+    public double monthOfSpending() {
+        double[] revenue = historySave.aligned("revenue");
+        double[] surplus = historySave.aligned("surplus");
+        int n = Math.min(revenue.length, surplus.length);
+        double sum = 0;
+        int months = 0;
+        for (int i = Math.max(0, n - Rollover.NETTING_MONTHS); i < n; i++) {
+            double r = revenue[revenue.length - n + i], s = surplus[surplus.length - n + i];
+            if (Double.isNaN(r) || Double.isNaN(s)) continue;
+            sum += r - s;
+            months++;
+        }
+        return months > 0 ? Math.max(0, sum / months) : 0;
+    }
+
+    /** The budget surplus of this calendar year's closed months so far, as the history keeps it: what the fund's year-end pay-in will read. */
+    public double surplusThisYearSoFar() {
+        double[] surplus = historySave.aligned("surplus");
+        int k = CityCalendar.monthOfYear(month);
+        double sum = 0;
+        for (int i = Math.max(0, surplus.length - k); i < surplus.length; i++) {
+            if (!Double.isNaN(surplus[i])) sum += surplus[i];
+        }
+        return sum;
+    }
+
+    /**
+     * WHAT THE ROLLOVER LEAVES FOR THE FUND, now: the dial's share of this
+     * calendar year's surplus so far (TreasuryFund.reservedFor()) - nothing
+     * once this year's pay-in is made, and nothing at a dial of 0.
+     */
+    public double fundReservation() {
+        if (fund.getLastPayInMonth() == month) return 0;
+        return TreasuryFund.reservedFor(fund.getDial(), surplusThisYearSoFar());
+    }
+
+    /**
+     * THE DIAL'S PAY-IN, ONCE A YEAR, AT THE CALENDAR'S YEAR END: the first
+     * press after December has closed, before the rollover runs.
+     *
+     * WHY A YEAR, AND ITS END. Jerus's unit is "the year's surplus", and "a
+     * deficit year saves nothing": a monthly pay-in on each month's surplus
+     * would save in the surplus months of a year in deficit. Appropriating a
+     * year's surplus at its end is a real practice - Canada applies a
+     * budgetary surplus to its debt when the fiscal year closes, and
+     * Singapore's reserves take a government's surpluses at the end of its
+     * term. (Norway's inflows are continuous because they follow the oil
+     * revenue as it arrives, which is not what this dial is a share of.) The
+     * year's surplus is the last Rollover.NETTING_MONTHS of the national
+     * accounts' balance (surplusOverLastYear(), the rollover's), which at the
+     * year end is the calendar year.
+     *
+     * THE FOUR RULES (TreasuryFund.payIn()): the dial's share first - before
+     * the rollover nets, which through the year has left the dial's share of
+     * the year so far alone (fundReservation()); the surplus used once, off
+     * the rollover's ledger, where this pay-in is entered too
+     * (Rollover.noteFundTook()); a deficit year saves nothing; past 100% the
+     * extra from the treasury's cash, and never below monthOfSpending().
+     */
+    private void fundYearEnd() {
+        if (!(fund.getDial() > 0)) return;
+        if (CityCalendar.monthOfYear(month) != 12 || fund.getLastPayInMonth() == month) return;
+        double year = surplusOverLastYear();
+        double unused = year - rollover.usedInYear(month);
+        double[] in = TreasuryFund.payIn(fund.getDial(), year, unused, cash, monthOfSpending());
+        double total = in[0] + in[1];
+        cash -= total;
+        fund.notePayIn(month, year, in[0], in[1]);
+        rollover.noteFundTook(month, in[0]);
+        if (total > 0) treasuryJournal.record("Paid into the fund (the dial)", -total);
+        String here = getCurrency().qualifiedSymbol();
+        GameLog.note(year > 0
+                ? String.format("THE FUND, year end: %.0f%% of the year's surplus of %s%,.0fk - %s%,.0fk from the surplus"
+                        + " and %s%,.0fk from the treasury's cash - paid in.", fund.getDial() * 100, here, year,
+                        here, in[0], here, in[1])
+                : String.format("THE FUND, year end: the year ran a deficit of %s%,.0fk, and saves nothing.", here, -year));
+    }
+
+    /* ------------------------------ the hand ------------------------------ */
+
+    /** The player pays into the fund from the treasury's cash: a transfer, journalled, not spending. @return what moved */
+    public double fundPayIn(double amount) {
+        double moved = Math.max(0, Math.min(amount, cash));
+        if (!(moved > 0)) return 0;
+        cash -= moved;
+        fund.notePaidInByHand(moved);
+        treasuryJournal.record("Paid into the fund", -moved);
+        GameLog.note(String.format("The city paid %s%,.0fk into its fund.", getCurrency().qualifiedSymbol(), moved));
+        return moved;
+    }
+
+    /** ...and draws out of it, what its cash holds: a transfer, journalled, not revenue. @return what moved */
+    public double fundDrawOut(double amount) {
+        double moved = Math.max(0, Math.min(amount, fund.getCash()));
+        if (!(moved > 0)) return 0;
+        cash += moved;
+        fund.noteDrawnOutByHand(moved);
+        treasuryJournal.record("Drawn from the fund", moved);
+        GameLog.note(String.format("The city drew %s%,.0fk from its fund.", getCurrency().qualifiedSymbol(), moved));
+        return moved;
+    }
+
+    /** Buys a company's shares with this much of the fund's cash, at fair value, at the next step: good for the month. */
+    public void fundBuyShares(int company, double money) {
+        fund.queue(new TreasuryFund.HandOrder(false, company, -1, true, Math.min(money, fund.getCash()), month));
+    }
+
+    /** Sells this many of the fund's shares of a company - its market book first, then its rescue book - at fair value, at the next step. */
+    public void fundSellShares(int company, double shares) {
+        fund.queue(new TreasuryFund.HandOrder(false, company, -1, false,
+                Math.min(shares, equity.getCityShares(company)), month));
+    }
+
+    /** Buys a bond with this much of the fund's cash, at its value, at the next step. */
+    public void fundBuyBond(int bondId, double money) {
+        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, true, Math.min(money, fund.getCash()), month));
+    }
+
+    /** Sells this much face of a bond the fund holds, at its value, at the next step. */
+    public void fundSellBond(int bondId, double face) {
+        CorporateBond b = bondMarket.bond(bondId);
+        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, false, b == null ? 0 : Math.min(face, b.city()), month));
+    }
+
+    /* ------------------------------ an Insane founding ------------------------------ */
+
+    /**
+     * AN INSANE CITY OWES THE WORLD FOR ITS GROUND (0.7.14): the model's own
+     * twenty-year dollar term loan, LongTermBond abroad, its coupon fixed at
+     * Founding.INSANE_LAND_COUPON (Jerus's 3%) on Founding.landBondUsd() -
+     * STARTING_SQ_FT at the land market's opening dollar price. The proceeds
+     * paid the land's sellers, so no cash arrives: booked on the debt and
+     * the foreign accounts' stock of it at the founding rate (the rate
+     * books no revaluation), and on no audited pool - the founding is before
+     * month one's window opens, as the founders' vault is. Its market value
+     * is whatever the world's curve makes of a 3% coupon
+     * (DebtManager.marketValue()), not par. Saved as ordinary debt; serviced
+     * as any dollar debt is - out of the vault if it holds dollars,
+     * converted from cash otherwise.
+     */
+    private void foundTheLandBond() {
+        double usd = Founding.landBondUsd();
+        if (!(usd > 0)) return;
+        debtManager.addLongTermBond(usd, Founding.INSANE_LAND_YEARS * 12, month, Founding.INSANE_LAND_COUPON, true);
+        foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
+    }
+
+    /**
+     * WHY THE CLOCK WILL NOT RUN, or null when it will (0.7.14, Jerus's
+     * "Borrow first"): the treasury is empty and nobody will advance it
+     * anything - its cash at or below nothing and the central bank's
+     * ceiling, months of revenue, nothing for a city that has had none. An
+     * Insane founding is that city. A city with revenue behind it runs on the
+     * central bank's advances as it always has; the time skip keeps its own
+     * refusal at an empty treasury (simulateMonths()).
+     */
+    public String clockRefusal() {
+        if (cash > 0 || centralBank.trailingRevenue() > 0) return null;
+        return treasuryEmptyWords();
+    }
+
+    /** The empty treasury, in the player's words, and where to borrow: what the clock and the time skip say when they will not run. */
+    public String treasuryEmptyWords() {
+        return "The treasury is empty. Borrow first: the build screen's funding page, the Finances tab's"
+                + " borrowing, or the land office's funding page.";
+    }
+
+    /** Why the last time skip stopped short, or null if it ran every month it was asked for. */
+    public String getSkipStoppedBecause() { return skipStoppedBecause; }
+    private String skipStoppedBecause;
+
+    /**
+     * WHAT A FIRST BOND COSTS A CITY WITH NOTHING (0.7.14): the build screen's
+     * two offers - the Game.BUILD_BOND_YEARS bond and the
+     * Game.BUILD_NOTE_MONTHS note - for `cashNeeded`, quoted on a city
+     * founded as given and not yet played, by the model's own quote
+     * functions: no revenue and no output, so DebtManager.spreadFor()
+     * charges the full spread on both measures. The Found a city screen's
+     * "what it buys" for Insane reads it. A scratch city, founded in a
+     * temporary folder and thrown away; nothing is written.
+     *
+     * @return {the bond's quote, the note's}
+     */
+    public static DebtQuote[] dayZeroQuotes(Founding founding, double cashNeeded) {
+        Game scratch = new Game(GameFiles.scratch("day-zero-quote"), founding);
+        java.io.PrintStream out = System.out;
+        try {
+            System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+            scratch.run();
+            return new DebtQuote[] {
+                    scratch.quoteLongBondForCash(cashNeeded, BUILD_BOND_YEARS, BUILD_BOND_GRANULE),
+                    scratch.quoteTBill(cashNeeded, BUILD_NOTE_MONTHS, BUILD_NOTE_GRANULE) };
+        } finally {
+            System.setOut(out);
+        }
     }
 
     /**
@@ -3773,6 +4299,7 @@ public class Game {
         reports = false;
 
         int completed = 0;
+        skipStoppedBecause = null;
 
         // Snapshot before anything moves. Everything the summary shows is a diff
         // against this or a count taken month by month below - see TimeSkipReport.
@@ -3784,6 +4311,9 @@ public class Game {
                 if (cash <= 0) {
                     System.out.println("Treasury empty - simulated " + completed
                             + " of " + months + " months.");
+                    // ...and said where the player reads it (0.7.14): the
+                    // skip's report and the clock, not only the log.
+                    skipStoppedBecause = treasuryEmptyWords();
                     break;
                 }
                 nextMonth();
@@ -5261,8 +5791,12 @@ public class Game {
            home and abroad;
          - the netting: surplusOverLastYear(), the national accounts' own
            balance over the last Rollover.NETTING_MONTHS, less what the ledger
-           says earlier rollovers netted in those months; S is
-           Rollover.netting() - never more than the cash, nor than falls due;
+           says earlier rollovers netted in those months - and, since 0.7.14,
+           what the city's fund took of it at a year end (one ledger,
+           Rollover.noteFundTook()) and the dial's share of this year so far,
+           which the fund's pay-in will take first (fundReservation(), nothing
+           at a dial of 0); S is Rollover.netting() - never more than the
+           cash, nor than falls due;
          - each piece's share of what falls due less S, pro rata, sized so
            its CASH covers it - Jerus's "issues what the treasury is
            lacking", which he chose over face for face knowing what it does
@@ -5369,7 +5903,11 @@ public class Game {
             if (paper.isForeign()) abroad += principal;
         }
         double surplus = surplusOverLastYear();
-        double used = rollover.usedInYear(month);
+        // What earlier rollovers netted and the city's fund took of it (one
+        // ledger since 0.7.14), and the dial's share of this year so far,
+        // which the fund's year-end pay-in will take first (fundReservation():
+        // nothing at a dial of 0, which is 0.7.13's netting to the byte).
+        double used = rollover.usedInYear(month) + fundReservation();
         double netted = mode == Rollover.Mode.MANUAL ? 0 : Rollover.netting(surplus, used, cash, due);
 
         java.util.List<Rollover.Issue> issues = new java.util.ArrayList<>();
@@ -5517,7 +6055,13 @@ public class Game {
          * in the gap between two presses, where a player's own issue lands,
          * so it settles to its buyers and crosses the audit window exactly as
          * one does. See ROLLING WHAT FALLS DUE.
+         *
+         * ...AFTER THE CITY'S FUND HAS TAKEN THE DIAL'S SHARE OF A YEAR'S
+         * SURPLUS (0.7.14): at the year's end, before the rollover nets - the
+         * player's explicit choice before the automatic netting. Nothing at a
+         * dial of 0. See fundYearEnd().
          */
+        fundYearEnd();
         rollMaturities();
 
         updateConstructionCost();
@@ -5531,6 +6075,10 @@ public class Game {
          */
         month++;
         monthsSinceAutosave++;
+        // The bank's clock, for its preferred's anniversaries, and the fund's
+        // month (0.7.14).
+        bank.setMonth(month);
+        fund.startMonth();
 
         // The register's month: nothing offered, nothing paid, until it is.
         equity.startMonth();
@@ -5886,9 +6434,11 @@ public class Game {
         centralBank.chargeWindow(bank.getFundingCost());
         centralBank.settleWindow(bank.getBranches() > 0 ? bank.wholesaleFunding() : 0);
 
-        // ...and if that left it owing more than it owns, it has failed. Its
-        // creditors take the hole; the city has a decision to make.
+        // ...and if that left it owing more than it owns, it has failed - and
+        // waits for the city, which resolves it now if its setting is
+        // automatic (0.7.14; resolveIfAutomatic()).
         bank.resolveIfFailed();
+        resolveIfAutomatic();
 
         // The month is final, so the figure next month's tax is charged on is
         // final too. Carried in the save - see Bank.getProfitLastMonth().
@@ -5966,6 +6516,16 @@ public class Game {
          */
         payDividends();
         tradeShares();
+        // ...and the city's preferred (0.7.14): every block at its third
+        // anniversary repaid whole at par with its unpaid dividends, from the
+        // bank's capital over its target and the rest by an offering of new
+        // common to the public; the warrants bought back once none is left;
+        // any still out at their expiry exercised. See settleThePreferred().
+        // It sits after payDividends(), so the capital over its target that it
+        // repays from is what the month's distributions left, and after
+        // tradeShares(), so the warrants' value and an expiring warrant's
+        // exercise read the price the month's trading struck.
+        settleThePreferred();
         /*
          * ...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their
          * holders, last month's orders withdrawn, every bond valued and every
@@ -5975,7 +6535,7 @@ public class Game {
          * bonds, so its book is re-read straight after. See BondMarket, THE
          * ORDERS ARE GOOD FOR A MONTH.
          */
-        bondMarket.takeMonth(month);
+        bondMarket.takeMonth(month, exchange.cityMarketValue(equity));
         strikeBankBonds();
 
         outward.takeMonth(bank.depositRate(), DebtManager.WORLD_BASE_RATE,
@@ -5994,11 +6554,18 @@ public class Game {
          * after resolveIfFailed() above, so a failure they caused showed a
          * month late - resolved at the next month's close, after a month of
          * lending as a standing bank. Asked again here, inside the audit's
-         * window (the resolution loss is its "+ bank ResolutionLoss") and
-         * before anything reads the bank for next month. The hot money below
-         * moves its cash and what it owes together, so it cannot break it.
+         * window - where a resolution's valuation is declared ("+ bank
+         * OwnersWipedAbroad" since 0.7.14; until then the hole itself, "+ bank
+         * ResolutionLoss") - and before anything reads the bank for next
+         * month. The hot money below moves its cash and what it owes
+         * together, so it cannot break it.
+         * ...AND RESOLVED THE SAME MONTH WHEN THE TREASURY'S SETTING IS
+         * AUTOMATIC (0.7.14), and a standing bank under its minimum asks the
+         * city for preferred (considerPreferredOffer()).
          */
         bank.resolveIfFailed();
+        resolveIfAutomatic();
+        considerPreferredOffer();
 
         /* =================================================================
            AND THE MONEY THAT IS HERE BECAUSE THE RATE IS GOOD.
@@ -6063,6 +6630,9 @@ public class Game {
         bank.setForeignDeposits(hotMoney.getStock());
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
+        // Declared (0.7.14): the valuation a resolution wiped off the world's
+        // shares is a month's, whether the month's or a press's before it.
+        ownersWipedAbroadThisMonth = 0;
 
         /*
          * ...AND THE SAME MONTH, READ AS A BALANCE OF PAYMENTS.
@@ -7878,6 +8448,16 @@ public class Game {
     private final BondMarket bondMarket = new BondMarket();
     public BondMarket getBondMarket() { return bondMarket; }
 
+    /**
+     * The city's fund (0.7.14): its cash, its dial and its rescue setting,
+     * the bank's preferred offer, its rescues and the player's orders. Its
+     * shares are on the register (Equity's city holding), its bonds on each
+     * CorporateBond, its preferred and warrants on the Bank. See TreasuryFund,
+     * and THE CITY'S FUND AND THE BANK'S RESCUE below.
+     */
+    private final TreasuryFund fund = new TreasuryFund();
+    public TreasuryFund getFund() { return fund; }
+
     /** What the bond market reads of the city, read live. */
     private final BondMarket.Readings bondReadings = new BondMarket.Readings() {
         @Override public int month()                { return month; }
@@ -8341,6 +8921,14 @@ public class Game {
         // by name; nothing on a bank loaded from a save that kept neither.
         dataSave.setBankPaidInOpening(bank.knowsEquitySplit() ? bank.paidInOpening() : null);
         dataSave.setBankRetainedOpening(bank.knowsEquitySplit() ? bank.retainedOpening() : null);
+        // ...and the city's preferred and its warrants (0.7.14), block by
+        // block, with the arrears and their record.
+        dataSave.setBankPreferred(new java.util.ArrayList<>(bank.getPreferred()), bank.preferredRecordToSave());
+        // ...and the city's fund: its cash, its dial, its rescue setting, the
+        // pending offer and its clocks, its rescues and the player's orders.
+        // Its shares ride the register, its bonds the bonds.
+        dataSave.setFund(fund.toState());
+        dataSave.setDebtMarket(debtManager.marketToSave());
         dataSave.setHousingOccupancy(new double[]{
                 getSectors().realEstate().getOccupiedHomes() });
         dataSave.setForeignAccounts(foreign.toSaveArray());
@@ -9262,6 +9850,17 @@ public class Game {
         cash += remitted;
         economyManager.setCentralBankLines(remitted, interest);
 
+        /*
+         * ...AND THE CITY'S FUND PAYS ITS TRANSFER (0.7.14): a twelfth of
+         * TreasuryFund.TRANSFER_RATE of all it is worth, from its cash only -
+         * Norway's fiscal rule - a revenue line beside the remittance. Before
+         * the advances are settled below, so a treasury it lifts over nothing
+         * repays them with it. Nothing from an empty fund.
+         */
+        double transfer = fund.payTransfer(fundValue(), CityCalendar.yearOf(month));
+        cash += transfer;
+        economyManager.setFundTransfer(transfer);
+
         if (cash > 0 && centralBank.getAdvancesToTreasury() > 0) {
             double repaid = centralBank.repayFromTreasury(cash);
             cash -= repaid;
@@ -10137,6 +10736,12 @@ public class Game {
             // lines, which carry the month's own causes. An older save kept
             // neither, and its bank shows its equity whole.
             bank.restoreEquitySplit(loaded.getBankPaidInOpening(), loaded.getBankRetainedOpening());
+            // ...and the city's preferred (0.7.14), on the bank's clock. An
+            // older save holds none, and its fund has not begun: empty, the
+            // dial at 0, the rescue on the button - as it was played.
+            bank.setMonth(month);
+            bank.restorePreferred(loaded.getBankPreferred(), loaded.getBankPreferredRecord());
+            fund.restore(loaded.getFund());
             /*
              * ...and the doors that were LET.
              *
@@ -11043,8 +11648,9 @@ public class Game {
          * processAllDebts(), which only nextMonth() calls either. So a freshly
          * loaded city priced every bond against a GDP of zero until the player
          * clicked next month: measured at five points over what the same city
-         * had quoted a moment before it was saved. The rate is not carried in
-         * the save because it is derived; deriving it needs these three lines.
+         * had quoted a moment before it was saved. Deriving it needs these
+         * three lines - and since 0.7.14 the market's last strike, carried in
+         * the save, is put back over them at the end (see below).
          *
          * The live path does all of this at the end of nextMonth(); this is
          * that same sequence, in that same order, at the end of the load.
@@ -11086,6 +11692,18 @@ public class Game {
         }
         pushCostOfFundsToTheDebtMarket();
         debtManager.updateInterest();
+        /*
+         * ...AND THE CITY'S OWN RATE AS THE MONTH LAST STRUCK IT (0.7.14). The
+         * lines above re-strike it from the cash the save holds, and the
+         * treasury's cash moves after the month's last strike: a reloaded
+         * city in deficit priced its own paper a basis point off the live
+         * city's (11.4945% against 11.4846%, a Lean city's month 1475), and
+         * every curve rate, quote and bond mark read off it with it. The
+         * market's inputs and its rate are carried whole
+         * (DebtManager.marketToSave()) and put back last, over the re-strike:
+         * the live city's, exactly. An older save keeps the re-strike.
+         */
+        if (restoredFlows != null) debtManager.restoreMarket(restoredFlows.getDebtMarket());
     }
 
     /** True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. */
@@ -11250,6 +11868,9 @@ public class Game {
         equity.redenominate(scale);
         exchange.redenominate(scale);
         bondMarket.redenominate(scale);
+        // ...and the city's fund (0.7.14): its cash, its record and its orders.
+        fund.redenominate(scale);
+        ownersWipedAbroadThisMonth *= scale;
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);
         priceIndex.redenominate(scale);

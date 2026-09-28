@@ -2650,6 +2650,16 @@ public class UserInterface extends Application {
 
         VBox column = new VBox(0);
 
+        // A skip the treasury stopped short (0.7.14): why, and where to borrow.
+        if (game.getSkipStoppedBecause() != null) {
+            VBox stopped = reportSection("THE SKIP STOPPED AT MONTH " + game.getMonth());
+            Label why = monoLabel("  " + game.getSkipStoppedBecause());
+            why.setWrapText(true);
+            why.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ffb454;");
+            stopped.getChildren().add(why);
+            column.getChildren().add(stopped);
+        }
+
         /*
          * If the simulation itself broke, say so first and say where to look.
          *
@@ -3776,6 +3786,8 @@ public class UserInterface extends Application {
             case "shedding":   return "Go to the builders →";
             case "landlock":   return "Go to the land office →";
             case "bank":       return "Go to the bank →";
+            case "preferred":  return "Answer the bank →";
+            case "resolved":   return "See the bank's rescue →";
             case "defaults":   return "See who owes the bank →";
             case "healthcare": return "Go and build healthcare →";
             default:           return "Deal with this →";
@@ -3804,6 +3816,14 @@ public class UserInterface extends Application {
                 break;
             case "bank":
                 bankScreen.showBankMenu();
+                break;
+            case "preferred":
+                // The offer's Accept and Decline are at the top of the landing (0.7.14).
+                bankScreen.bankArea = null;
+                bankScreen.showBankMenu();
+                break;
+            case "resolved":
+                bankScreen.openPage("Capital & owners");
                 break;
             case "defaults":
                 bankScreen.openPage("Lending");
@@ -3874,6 +3894,16 @@ public class UserInterface extends Application {
 
                 boolean landed = false;
                 while (monthProgress >= 1) {
+                    // Jerus's "Borrow first" (0.7.14): an empty treasury nobody will
+                    // advance anything stops the clock, and says why and where to borrow.
+                    String refused = game.clockRefusal();
+                    if (refused != null) {
+                        monthProgress = 0;
+                        clockRunning = false;
+                        pausedBecause = refused;
+                        redrawPending = true;
+                        break;
+                    }
                     monthProgress -= 1;
                     game.toggleNextMonth();
                     landed = true;
@@ -3962,6 +3992,11 @@ public class UserInterface extends Application {
                 clockRunning ? "Pause" : "Play");
         play.setOnAction(e -> {
             setClockRunning(!clockRunning);
+            // ...and a press on an empty treasury says so at once, rather than a frame later.
+            if (clockRunning && game != null && game.clockRefusal() != null) {
+                clockRunning = false;
+                pausedBecause = game.clockRefusal();
+            }
             redrawScreen.run();
         });
 

@@ -52,7 +52,18 @@ import java.util.List;
  * those and a line here would count them twice. Every `cash -=`/`cash +=` in
  * Game.java, as of 2026-09-18 and 0.7.0:
  *
- *   recapitaliseBank()        JOURNALLED  "Put capital into the bank" - no budget line
+ *   resolveBank() (0.7.14)    JOURNALLED  "Resolved the bank for its shares" - no budget
+ *                                         line: the city buys the failed bank's shares (it
+ *                                         was "Put capital into the bank", a gift, until
+ *                                         0.7.14)
+ *   acceptPreferredOffer()    JOURNALLED  "Bought the bank's preferred shares" - no budget line
+ *   fundYearEnd(), fundPayIn(), fundDrawOut() (0.7.14)
+ *                             JOURNALLED  "Paid into the fund (the dial)", "Paid into the
+ *                                         fund", "Drawn from the fund" - transfers between
+ *                                         the treasury and its fund, neither revenue nor
+ *                                         spending; the fund's 3% transfer to the budget IS
+ *                                         a budget line (NationalAccounts.getFundTransfer())
+ *                                         and is not journalled
  *   buyForeignCurrency()      JOURNALLED  "Bought reserves" - no budget line
  *   sellForeignCurrency()     JOURNALLED  "Sold reserves" - no budget line
  *   repurchaseDebt()          JOURNALLED  "Bought back a bond" - retire() is not a repayment

@@ -1012,9 +1012,11 @@ public class ForeignAccounts {
 
         /*
          * VALUATION CHANGES ARE NOT RESERVE FLOWS. A failed bank's foreign
-         * creditors absorbing its hole leaves the city better off against the
-         * world without anybody having earned a dollar, so it improves the
-         * position and does not fill the vault. Left in, the reserve swung from
+         * creditors absorbing its hole - until 0.7.14; since then a
+         * resolution wiping out the world's shares in it - leaves the city
+         * better off against the world without anybody having earned a
+         * dollar, so it improves the position and does not fill the vault.
+         * Left in, the reserve swung from
          * -$88M to +$50M on bank resolutions alone and said nothing at all about
          * whether the city was selling more than it was buying.
          */

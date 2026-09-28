@@ -37,7 +37,8 @@ import java.util.List;
  *
  *   NO TRADE WITH ONESELF. An incoming order passes over the same
  *   participant's resting orders (self-trade prevention, as every exchange
- *   runs it) and they keep their place.
+ *   runs it) and they keep their place - and, since 0.7.14, over any
+ *   counterparty the clearing refuses (Clearing.mayTrade()), the same way.
  *
  *   SETTLEMENT IS THE CALLER'S. The book matches; a Clearing moves the money
  *   and the instrument, and says beforehand how much each side can settle -
@@ -127,6 +128,16 @@ public class OrderBook {
 
         /** Moves the money and the instrument: `quantity` from the seller to the buyer at `price` a unit. Called only within both sides' capacity. */
         void settle(String buyer, String seller, double quantity, double price);
+
+        /**
+         * Whether these two may trade with each other at all (0.7.14): true
+         * unless the market that owns the book says otherwise. A pair it
+         * refuses is passed over like a participant's own resting order -
+         * the resting order keeps its place - so a rule that binds one
+         * participant against one counterparty (the city's fund never buying
+         * a new issue, Exchange) is the clearing's, not the book's.
+         */
+        default boolean mayTrade(String buyer, String seller) { return true; }
     }
 
     /** One trade, as the book reports it back to whoever submitted the order. */
@@ -196,6 +207,9 @@ public class OrderBook {
             double price0 = resting.price;
             String buyer = side == Side.BUY ? order.who : resting.who;
             String seller = side == Side.BUY ? resting.who : order.who;
+            // ...nor with a counterparty the clearing refuses (0.7.14): passed
+            // over, and it keeps its place, as its own orders do.
+            if (clearing != null && !clearing.mayTrade(buyer, seller)) continue;
             double restingCan = clearing == null ? resting.quantity
                     : Math.max(0, clearing.capacity(resting.who, resting.side, price0));
             if (restingCan < resting.quantity) {

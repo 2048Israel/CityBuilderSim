@@ -1,6 +1,6 @@
 # Investor.java - 44 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/Investor.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Investor.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > Whoever is paying for a building.
 > 

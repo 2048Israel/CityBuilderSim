@@ -769,7 +769,8 @@ final class GovernmentScreen {
         return java.util.List.of("Business tax", "Sales tax", "Wage tax",
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
-                "Student loan interest", "Central bank remittance", "Mortgage insurance premiums");
+                "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
+                "Transfer from the fund");
     }
 
     java.util.List<Double> revenueAmounts(EconomyManager em, NationalAccounts na) {
@@ -796,7 +797,9 @@ final class GovernmentScreen {
                 na.getCentralBankRemittance(),
                 // ...and the premiums the landlords paid on the mortgages the
                 // city insures (0.7.11), on the end for the same reason.
-                na.getMortgagePremiums());
+                na.getMortgagePremiums(),
+                // ...and 3% a year of the city's fund, a twelfth a month (0.7.14).
+                na.getFundTransfer());
     }
 
     static java.util.List<String> spendingNames() {
@@ -1120,8 +1123,24 @@ final class GovernmentScreen {
             case "Healthcare fees"      -> healthFeeDetail(amount);
             case "School fees"          -> schoolFeeDetail(amount);
             case "Mortgage insurance premiums" -> mortgageInsuranceDetail();
+            case "Transfer from the fund" -> fundTransferDetail();
             default                     -> null;
         };
+    }
+
+    /** THE TRANSFER FROM THE CITY'S FUND (0.7.14), opened from its line: due, paid and short this month, and the fund it is struck on. Every figure a getter. */
+    VBox fundTransferDetail() {
+        TreasuryFund fund = ui.game.getFund();
+        VBox box = new VBox(0);
+        box.getChildren().add(statementLine("Due on what the fund was worth", tightMoney(toDollars(fund.getTransferDue()), false)));
+        box.getChildren().add(statementLine("Paid from its cash", tightMoney(toDollars(fund.getTransferPaid()), false)));
+        box.getChildren().add(statementLine("Not paid, for want of cash", tightMoney(toDollars(fund.getTransferShort()), false),
+                fund.getTransferShort() > 0 ? Palette.WARN : null));
+        box.getChildren().add(statementLine("What the fund is worth now", tightMoney(toDollars(ui.game.fundValue()), false)));
+        box.getChildren().add(statementNote(String.format("A twelfth of %.0f%% of everything the city's fund holds, "
+                + "from its cash only - Norway's fiscal rule. The Finances tab has the fund.",
+                TreasuryFund.TRANSFER_RATE * 100)));
+        return box;
     }
 
     /**

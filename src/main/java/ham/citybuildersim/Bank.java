@@ -1373,6 +1373,11 @@ public class Bank {
         bailoutReceived = 0;
         foundingSettlement = 0;
         resolutionLossThisMonth = 0;
+        // ...and 0.7.14's: the hole it failed with, and the city's preferred.
+        shortfallThisMonth = 0;
+        preferredIn = preferredOut = preferredDividendsThisMonth = preferredAccruedThisMonth = 0;
+        warrantsBoughtBackThisMonth = ownersWiped = preferredCancelled = 0;
+        repaymentRaisedThisMonth = 0;
         /*
          * ...AND 0.7.8'S: the allowance each book opens the month holding,
          * which the month's write-offs are drawn against first; what each
@@ -1738,14 +1743,33 @@ public class Bank {
     /**
      * Failed, and not yet put back on its feet.
      *
-     * A STATE rather than a reading of today's equity, because the moment a bank
-     * fails its creditors absorb the shortfall and its equity is zero again -
-     * see resolveIfFailed(). Zero equity supports no lending, so a resolved bank
-     * is still frozen; what lifts the freeze is capital, and this is the flag
-     * that remembers the city owes it some.
+     * A STATE rather than a reading of today's equity: until 0.7.14 the
+     * moment a bank failed its creditors absorbed the shortfall and its
+     * equity was zero again, and zero equity supports no lending, so a
+     * resolved bank was still frozen. Since 0.7.14 nobody absorbs it: the
+     * bank carries its hole at the central bank's window until the city
+     * resolves it (Game.resolveBank()) - the month it fails when the
+     * treasury's setting is automatic, at the button otherwise - and this is
+     * the flag that says it is waiting.
      */
     private boolean inResolution;
     private int failures;
+
+    /**
+     * THE HOLE WHEN IT FAILED (0.7.14): its equity below nothing the month it
+     * went under, this month's and over its life - what the city's
+     * resolution then pays, with the capital to reopen. The failure's own
+     * record, now that nothing absorbs it (resolutionLossThisMonth stays for
+     * what creditors absorbed before 0.7.14).
+     */
+    private double shortfallThisMonth, shortfallLifetime;
+
+    /** The hole it failed with this month; nothing in a month it did not fail. */
+    public double getShortfallThisMonth() { return shortfallThisMonth; }
+    /** ...and over its life. */
+    public double getShortfallLifetime()  { return shortfallLifetime; }
+    /** True while it waits for the city: failed, frozen, not yet resolved. */
+    public boolean isInResolution()       { return inResolution; }
 
     /*
      * ONE FIELD WAS BEING ASKED TO BE A FLOW AND A STOCK. resolutionLoss was
@@ -1799,12 +1823,20 @@ public class Bank {
      * whole of the loss. Found when a 1,124-month city was asked how often its
      * bank had gone under and answered "never" while running a negative profit.
      *
+     * SINCE 0.7.14 NOTHING IS ABSORBED: resolveIfFailed() leaves the hole on
+     * the sheet and the city's resolution pays it (Game.resolveBank()), so
+     * `resolutionLoss` is what creditors ate before 0.7.14 and the holes
+     * themselves are `shortfallLifetime`, carried on the end. The reason
+     * stands: a resolved bank's sheet says nothing of how often it failed.
+     *
      * Null on an older save, which restores as no-op - those cities had no
      * record to lose, which is exactly what they will now report.
      */
     public double[] solvencyToSave() {
-        // ...and what the city has put in over its life (0.7.9), on the end.
-        return new double[]{ failures, resolutionLossLifetime, inResolution ? 1 : 0, bailoutsLifetime };
+        // ...and what the city has put in over its life (0.7.9), on the end,
+        // and the holes it failed with (0.7.14) after it.
+        return new double[]{ failures, resolutionLossLifetime, inResolution ? 1 : 0, bailoutsLifetime,
+                shortfallLifetime };
     }
 
     public void restoreSolvency(double[] state) {
@@ -1814,39 +1846,44 @@ public class Bank {
         inResolution           = state[2] != 0;
         // A save from before 0.7.9 counts the city's rescues from its load.
         bailoutsLifetime       = state.length > 3 ? state[3] : 0;
+        // ...and one from before 0.7.14, the holes: its creditors absorbed them.
+        shortfallLifetime      = state.length > 4 ? state[4] : 0;
     }
 
     /**
-     * The bank fails, and its creditors take the loss.
+     * The bank fails: it is frozen, and it waits for the city.
      *
-     * WHY THIS HAS TO EXIST. Without it an insolvent bank goes on being charged
-     * for wholesale funding it can neither repay nor shed, and the charge is a
-     * share of a balance that the charge itself is growing. It compounds:
-     * measured over four thousand months, a failed bank reached NEGATIVE
-     * 1.9 x 10^52 of equity, which is not a number about a city, it is a
-     * geometric series with a bad sign.
+     * WHY THIS HAS TO EXIST. Without it an insolvent bank goes on lending and
+     * being charged for wholesale funding it can neither repay nor shed, and
+     * the charge is a share of a balance that the charge itself is growing.
+     * It compounds: measured over four thousand months before 0.7.0, a failed
+     * bank reached NEGATIVE 1.9 x 10^52 of equity, which is not a number about
+     * a city, it is a geometric series with a bad sign. Frozen, it lends only
+     * to keep its borrowers going (lendsOnlyToKeepBorrowersGoing()).
      *
-     * What happens to a real failed bank is that somebody eats the hole. Here it
-     * is the wholesale creditors, who are outside the city and can afford to be
-     * abstract about it - so the loss is a real crossing of the audit boundary
-     * and is declared. The bank comes out of it owning nothing, owing nothing,
-     * and unable to lend a penny until it is given some capital.
-     *
-     * STILL DECLARED AS ABROAD SINCE 0.7.0, though the bank's wholesale
-     * lender is the central bank's window now, not creditors outside the
-     * city: the hole arrives as MoneyAudit's "+ bank ResolutionLoss" from
-     * outside, and the window is repaid out of it at the next settle. Who
-     * should absorb a failed bank now - the central bank as lender of last
-     * resort, the depositors, the treasury - is Jerus's question, open on the
-     * list (the-central-bank-opens.md section 4); the code is as it was.
+     * WHO EATS THE HOLE: THE CITY, FOR ITS SHARES (0.7.14). Until 0.7.14 the
+     * hole was "absorbed from outside" here - cash += shortfall, declared to
+     * MoneyAudit as "+ bank ResolutionLoss" - by creditors who were in fact
+     * the central bank's window, and who never lent the city anything. Jerus
+     * answered the question this javadoc had carried since 0.7.0: "City takes
+     * the shares". Nothing is absorbed here any more. The bank carries its
+     * hole - its cash further under nothing, which is borrowing at the
+     * window (borrowings()), advanced by the central bank at the next settle
+     * like any other - and Game.resolveBank() pays the hole and the capital
+     * to reopen, takes every common share for the city, and wipes the old
+     * owners out, as a real resolution does (CDIC, "How bail-in works").
+     * Automatic, that is the month it fails; on the button, whenever the
+     * player presses, and a bank left frozen carries its hole at the window's
+     * rate meanwhile. No money arrives from outside the city.
      */
     public void resolveIfFailed() {
         double shortfall = -equity();
         if (shortfall > 0) {
-            cash += shortfall;
-            resolutionLossThisMonth += shortfall;
-            resolutionLossLifetime  += shortfall;
-            if (!inResolution) failures++;
+            if (!inResolution) {
+                failures++;
+                shortfallThisMonth += shortfall;
+                shortfallLifetime  += shortfall;
+            }
             inResolution = true;
             return;
         }
@@ -1858,21 +1895,38 @@ public class Bank {
          * freeze meant a bank that had rebuilt its capital stayed shut anyway -
          * measured over four thousand months, one sat on $38M of equity, lent
          * nothing, and ordered 2,190 branches trying to fix a problem it had
-         * already fixed. The bailout is the fast way out, not the only one.
+         * already fixed. The city's capital - a resolution for its shares
+         * since 0.7.14 - is the fast way out, not the only one.
          */
-        if (inResolution && equity() >= resolutionExitEquity() - 1e-9) {
+        if (inResolution && equity() >= resolutionExitEquity() - exitTolerance(0)) {
             inResolution = false;
         }
+    }
+
+    /**
+     * How near its exit level a frozen bank's equity must be to count as
+     * there: a hair of the largest figure that struck it - its balance sheet,
+     * or the capital just paid in - what those sums round by. A fixed 1e-9
+     * was under the rounding of a hole in the trillions, so a resolution paid
+     * to exactly the exit level could leave the bank a hair short, still
+     * frozen - and resolved, and paid for, again in the same month (0.7.14,
+     * the Insane and held-25% ensembles). A numerical guard, not a policy.
+     */
+    private double exitTolerance(double moved) {
+        double scale = Math.max(Math.abs(moved), Math.max(Math.abs(resolutionExitEquity()), Math.abs(totalAssets())));
+        return Math.max(1e-9, 1e-12 * scale);
     }
 
     /**
      * The equity at which the freeze lifts, however the bank gets there.
      *
      * The required ratio times RESOLUTION_EXIT_BUFFER, and the SAME number
-     * recapitalisationNeeded() asks the city for, so a bailout sized by the
-     * one is exactly enough for the other. The first version lifted the freeze
-     * at the bare ratio and asked the city for the bare ratio, which is a bank
-     * with zero buffer - see RESOLUTION_EXIT_BUFFER.
+     * recapitalisationNeeded() asks the city to bring a failed bank's equity
+     * up to - since 0.7.14 over the hole it carries, which nobody absorbs -
+     * so a resolution sized by the one is exactly enough for the other. The
+     * first version lifted the freeze at the bare ratio and asked the city
+     * for the bare ratio, which is a bank with zero buffer - see
+     * RESOLUTION_EXIT_BUFFER.
      */
     public double resolutionExitEquity() {
         // The larger of the two minimums since round 2 of 0.7.11.
@@ -1903,7 +1957,9 @@ public class Bank {
      *
      * A FAILED bank is asked for resolutionExitEquity() - the minimum with
      * RESOLUTION_EXIT_BUFFER over it, never less than one branch's capital -
-     * which is what lifts the freeze.
+     * which is what lifts the freeze, and since 0.7.14 for the hole it
+     * carries under that, which nobody absorbs any more (resolveIfFailed()).
+     * Game.resolveBank() pays the two together.
      *
      * A STANDING bank is asked for nothing while it holds the city's minimum,
      * CAPITAL_RATIO of its weighted book - between the minimum and its own
@@ -2036,7 +2092,8 @@ public class Bank {
     public double getDividendsPaid() { return dividendsPaid; }
 
     /**
-     * The same money, from the TREASURY rather than from shareholders.
+     * The city's capital in a resolution (0.7.14): the treasury's money, for
+     * every common share (Game.resolveBank()).
      *
      * Kept apart from injectCapital() for one reason and it is not bookkeeping
      * fussiness: shareholders' capital arrives from outside the city and the
@@ -2044,33 +2101,561 @@ public class Bank {
      * from one pool inside the city to another and cancels. Declaring both the
      * same way would have the treasury printing money every time it did this.
      *
-     * ===================== A KNOWN HOLE, ON PURPOSE =====================
+     * It was a gift until 0.7.14 - a bailout, capital for no shares,
+     * the owners keeping theirs - and it is the price of the shares now: the
+     * register passes every one to the city in the same resolution
+     * (Game.resolveBank(), Equity.takeAllForCity()), and the old owners'
+     * paid-in capital is written off against the losses first (wipeOwners()).
      *
-     * Jerus, on being shown this: "i just realized something, bail out but city
-     * requires bank to lend... so for now yes thats bad, but dont worry we will
-     * add foreign debt or money printing next prompt."
+     * ===================== THE KNOWN HOLE, CLOSED FOR A RESOLUTION =====================
      *
-     * He is right and it is worth writing down. The city funds itself by
-     * selling paper, and the buyer of that paper is this bank. So a treasury
-     * with no cash that borrows in order to recapitalise its bank has the bank
-     * lend it the money the bank is about to be given: the bank's assets rise by
-     * a loan to the city and its equity rises by the same amount, and it has
-     * capitalised itself with its own credit. No money is created - the audit is
-     * untroubled, because both ends are inside the city - but CAPITAL is, and
-     * capital is the thing the ratio above is supposed to constrain.
+     * Jerus, on being shown the gift: "i just realized something, bail out but
+     * city requires bank to lend... so for now yes thats bad, but dont worry we
+     * will add foreign debt or money printing next prompt."
      *
-     * It is real, it has a name (circular capital), and it brought down real
-     * banks. It is left standing because the fix is a source of funds that is
-     * not this bank - foreign borrowing, or a printing press - and that is the
-     * next thing being built rather than something to bodge in here.
+     * He was right. The city funds itself by selling paper, and the buyer of
+     * that paper is this bank - so a treasury with no cash that borrowed to
+     * recapitalise its bank had the bank lend it the money the bank was about
+     * to be given, and the bank capitalised itself with its own credit
+     * (circular capital: no money created, but capital, which is what the
+     * ratio constrains). Since 0.7.14 A RESOLUTION IS PAID AS A PROMISE
+     * (TreasuryLine.BANK_RESOLUTION; Jerus: "Central bank advances it"): the
+     * treasury's cash first, and what it lacks the central bank advances at
+     * the next settle, past its ceiling if it must - money the central bank
+     * makes, not this bank's credit. The hole stays open for the PREFERRED
+     * (issuePreferred()): a purchase, and a treasury short of it is offered
+     * the funding page's local paper, which this bank may be the buyer of.
      */
-    public void receiveBailout(double amount) {
+    public void takeResolutionCapital(double amount) {
         if (amount <= 0) return;
         cash += amount;
         bailoutReceived += amount;
         bailoutsLifetime += amount;
-        // Back in business the moment it holds what it is required to hold.
+        // Back in business the moment it holds what it is required to hold -
+        // to within what the payment itself rounds by (exitTolerance()).
         resolveIfFailed();
+        if (inResolution && equity() >= resolutionExitEquity() - exitTolerance(amount)) inResolution = false;
+    }
+
+    /* =====================================================================
+       THE CITY'S CAPITAL (0.7.14): A RESOLUTION, AND THE PREFERRED
+
+       Two ways the city puts capital into its bank, and neither is a gift.
+
+       A FAILED BANK IS RESOLVED FOR ITS SHARES (Game.resolveBank()): the
+       preferred and its warrants, if the city holds any, are cancelled - they
+       were capital, and the hole took them (cancelPreferred()); the old
+       owners' paid-in capital is written off against the losses
+       (wipeOwners()) - losses fall on common shareholders first, and they
+       lose everything (CDIC, "How bail-in works"); and the city pays the hole
+       and the capital to reopen (takeResolutionCapital()) for every common
+       share. The UK's own, for scale: Northern Rock was taken into public
+       ownership in 2008 by transferring its shares to the Treasury, and RBS
+       took GBP 45.5bn (2008-09), the stake peaking at 84.4%, fully sold by 30
+       May 2025 for about GBP 35bn back (HM Treasury, "Government completes
+       exit from NatWest", 2025).
+
+       A STANDING BANK UNDER ITS MINIMUM ASKS FOR PREFERRED (Jerus:
+       "Preferred shares ... and its a popup message saying bank wants to
+       issue you shares"), on the TARP Capital Purchase Program's term sheet
+       (home.treasury.gov/system/files/136/termsheet.pdf):
+
+         SIZE        what takes it back to its target (recapitalisationNeeded()),
+                     held between PREFERRED_MIN_SHARE and PREFERRED_MAX_SHARE
+                     of its risk-weighted assets (getWeightedBook()) - "not less
+                     than 1% of its risk-weighted assets and not more than the
+                     lesser of (i) $25 billion and (ii) 3%". The $25 billion is
+                     a 2008 dollar figure for the largest US banks and is not
+                     carried; past 3% it asks for 3% and says so.
+         DIVIDENDS   cumulative, PREFERRED_RATE a year until the fifth
+                     anniversary, PREFERRED_STEP_RATE after, accrued monthly on
+                     each block and paid to the city's fund when the bank can -
+                     only from what it holds over its target, the line under
+                     which it pays its common owners nothing either
+                     (dividendDue()); what it cannot pay accrues on the block.
+                     No common dividend while any is unpaid.
+         CONSENT     for PREFERRED_CONSENT_MONTHS: no buyback of its own shares
+                     and no rise in the common dividend a share, the city
+                     consenting to neither - the bank simply does neither.
+         REDEMPTION  each block whole at its third anniversary
+                     (PREFERRED_REDEEM_MONTHS; Jerus, round 2: "Sell new shares
+                     to repay"), at the term sheet's price: "All redemptions of
+                     the Senior Preferred shall be at 100% of its issue price,
+                     plus (i) in the case of cumulative Senior Preferred, any
+                     accrued and unpaid dividends". Paid from what the bank
+                     holds over its target first; the rest by an offering of
+                     new common to the public, the branch openings' path
+                     (Game.capitaliseBank(), Equity.offer()) - the households
+                     past their cushion, the world for the rest - as many US
+                     banks sold shares to repay TARP in 2009. The city never
+                     subscribes, so whatever common it holds is diluted
+                     (redeemDuePreferred()).
+         WARRANTS    on common shares worth WARRANT_SHARE of the preferred at
+                     last month's price, struck at it (TARP's 20-trading-day
+                     average is about a month), for WARRANT_TERM_MONTHS. Once no
+                     preferred is left, the bank buys back every warrant the
+                     city holds at its fair value (TreasuryFund.callValue(),
+                     Black-Scholes) - "Following the redemption in whole of the
+                     Senior Preferred held by the UST, the QFI shall have the
+                     right to repurchase any other equity security of the QFI
+                     held by the UST at fair market value" - paid the same way,
+                     spare capital first, then an offering
+                     (repurchaseWarrants()). Unrepurchased at expiry, they are
+                     exercised if in the money, cashless - the city takes new
+                     shares worth what they are over the strike.
+         CAPITAL     it counts in equity for every ratio (TARP's counted as
+                     Tier 1) and ranks ahead of common: its dividend first, its
+                     loss at a failure first with the owners'.
+       ===================================================================== */
+
+    /** The least preferred the bank asks for, of its risk-weighted assets: 1%, TARP's "not less than 1% of its risk-weighted assets". */
+    public static final double PREFERRED_MIN_SHARE = .01;
+
+    /** ...and the most: 3%, TARP's "not more than ... 3% of its risk-weighted assets". */
+    public static final double PREFERRED_MAX_SHARE = .03;
+
+    /** The preferred's dividend, a year, until its fifth anniversary: 5%, TARP's "cumulative dividends at a rate of 5% per annum until the fifth anniversary". */
+    public static final double PREFERRED_RATE = .05;
+
+    /** ...and after it: 9%, TARP's "thereafter at a rate of 9% per annum". */
+    public static final double PREFERRED_STEP_RATE = .09;
+
+    /** The months to the step: the fifth anniversary. */
+    public static final int PREFERRED_STEP_MONTHS = 60;
+
+    /** The months the city's consent binds - no buyback, no rise in the common dividend a share: three years, TARP's "until the third anniversary". */
+    public static final int PREFERRED_CONSENT_MONTHS = 36;
+
+    /** When a block is redeemed whole: its third anniversary, the first TARP's term sheet allows it from anything but new common ("may not be redeemed for a period of three years ... except with the proceeds from a Qualified Equity Offering") - Jerus: "Sell new shares to repay". */
+    public static final int PREFERRED_REDEEM_MONTHS = 36;
+
+    /** The warrants' reach, of the preferred's amount: 15%, TARP's "aggregate market price equal to 15% of the Senior Preferred amount". */
+    public static final double WARRANT_SHARE = .15;
+
+    /** The warrants' term, in months: ten years, TARP's. */
+    public static final int WARRANT_TERM_MONTHS = 120;
+
+    /**
+     * One block of the city's senior preferred, as it was bought: what is
+     * outstanding at par, the dividends accrued on it and unpaid, the month
+     * it was issued, the common dividend a share a month it may not rise past
+     * while the consent binds, and its warrants - how many shares, at what
+     * strike, when they expire, and whether they are still out. A block
+     * redeemed with its warrants still out stays, at a par of nothing, until
+     * they are bought back or exercised. Saved by Gson as it stands.
+     */
+    public static final class Preferred {
+        double par;
+        double arrears;
+        int issued;
+        double capPerShare;
+        double warrantShares;
+        double strike;
+        int warrantsExpire;
+        boolean warrantsOut;
+
+        Preferred() { }
+
+        public double par()           { return par; }
+        public double arrears()       { return arrears; }
+        public int issued()           { return issued; }
+        public double capPerShare()   { return capPerShare; }
+        public double warrantShares() { return warrantShares; }
+        public double strike()        { return strike; }
+        public int warrantsExpire()   { return warrantsExpire; }
+        public boolean warrantsOut()  { return warrantsOut; }
+
+        /** Its dividend rate this month: PREFERRED_RATE, PREFERRED_STEP_RATE from the fifth anniversary. */
+        public double rate(int month) { return month - issued < PREFERRED_STEP_MONTHS ? PREFERRED_RATE : PREFERRED_STEP_RATE; }
+
+        /** True while the city's consent binds: outstanding, and under three years old. */
+        public boolean inConsent(int month) { return par > 0 && month - issued < PREFERRED_CONSENT_MONTHS; }
+
+        /** True once it is due to be redeemed: outstanding, at or past its third anniversary. */
+        public boolean due(int month) { return par > 0 && month - issued >= PREFERRED_REDEEM_MONTHS; }
+    }
+
+    private final java.util.List<Preferred> preferred = new java.util.ArrayList<>();
+
+
+    /** The city's month, for the preferred's anniversaries: set by Game at the top of each month and on load. */
+    private int month;
+
+    // The month's causes (0.7.14), cleared at startMonth(), saved with the month's lines.
+    private double preferredIn, preferredOut, preferredDividendsThisMonth, preferredAccruedThisMonth;
+    private double warrantsBoughtBackThisMonth, ownersWiped, preferredCancelled;
+    // ...and over its life.
+    private double preferredDividendsLifetime, preferredRedeemedLifetime, warrantsBoughtBackLifetime;
+    // What its offerings of new common raised to repay the city, this month and over its life, and
+    // the months a repayment - a due block, or the warrants - was left part-paid because the public did not take the whole.
+    private double repaymentRaisedThisMonth, repaymentRaisedLifetime;
+    private int repaymentShortLifetime;
+
+    /** The city's month, for the preferred's anniversaries. */
+    public void setMonth(int month) { this.month = month; }
+    public int getMonth()           { return month; }
+
+    /** The city's preferred outstanding at par, every block: an equity line of its own ("Preferred shares (the city)"). */
+    public double preferredOutstanding() {
+        double t = 0;
+        for (Preferred p : preferred) t += p.par;
+        return t;
+    }
+
+    /** Every block, oldest first. */
+    public java.util.List<Preferred> getPreferred() { return java.util.Collections.unmodifiableList(preferred); }
+
+    /** The preferred dividends owed and unpaid, every block together: not a liability on the sheet until paid, as preferred arrears are not. */
+    public double getPreferredArrears() {
+        double t = 0;
+        for (Preferred p : preferred) t += p.arrears;
+        return t;
+    }
+
+    /** True while any block's consent binds: no buyback, no rise in the common dividend a share. */
+    public boolean inConsentPeriod() {
+        for (Preferred p : preferred) if (p.inConsent(month)) return true;
+        return false;
+    }
+
+    /** True when a standing bank is under its minimum and would ask the city for preferred. */
+    public boolean wantsPreferred() {
+        if (branches <= 0 || isInsolvent()) return false;
+        double minimum = minimumEquity();
+        return minimum > 0 && equity() < minimum;
+    }
+
+    /** What it takes back to its target: recapitalisationNeeded() for a standing bank under its minimum. */
+    private double preferredNeed() { return wantsPreferred() ? recapitalisationNeeded() : 0; }
+
+    /**
+     * WHAT IT ASKS THE CITY FOR: what takes it back to its target, held
+     * between PREFERRED_MIN_SHARE and PREFERRED_MAX_SHARE of its
+     * risk-weighted assets (getWeightedBook()). Nothing when it is not
+     * asking.
+     */
+    public double preferredOfferSize() {
+        double need = preferredNeed();
+        if (!(need > 0)) return 0;
+        double rwa = Math.max(0, getWeightedBook());
+        return Math.max(PREFERRED_MIN_SHARE * rwa, Math.min(PREFERRED_MAX_SHARE * rwa, need));
+    }
+
+    /** True when 3% of its risk-weighted assets does not reach its target: it asks for 3%, and the rest is left to its own share issues. */
+    public boolean preferredOfferCapped() {
+        return preferredNeed() > PREFERRED_MAX_SHARE * Math.max(0, getWeightedBook());
+    }
+
+    /** ...and what the 3% leaves short of the target. */
+    public double preferredOfferShortOfTarget() {
+        return Math.max(0, preferredNeed() - preferredOfferSize());
+    }
+
+    /**
+     * THE CITY BUYS ITS PREFERRED: cash in at par, an equity line of its own,
+     * warrants on WARRANT_SHARE of the par at `price` - last month's price of
+     * a share, which is their strike - for WARRANT_TERM_MONTHS.
+     *
+     * @param capPerShare the common dividend a share a month it may not rise
+     *                    past while the consent binds: the year before this
+     *                    month's, a month's worth (Game)
+     * @return the number of shares its warrants are on
+     */
+    public double issuePreferred(double par, double price, double capPerShare) {
+        if (!(par > 0)) return 0;
+        Preferred p = new Preferred();
+        p.par = par;
+        p.issued = month;
+        p.capPerShare = Math.max(0, capPerShare);
+        p.strike = price > 0 ? price : 0;
+        p.warrantShares = price > 0 ? WARRANT_SHARE * par / price : 0;
+        p.warrantsExpire = month + WARRANT_TERM_MONTHS;
+        p.warrantsOut = p.warrantShares > 0;
+        preferred.add(p);
+        cash += par;
+        preferredIn += par;
+        resolveIfFailed();
+        return p.warrantShares;
+    }
+
+    /**
+     * THE MONTH'S PREFERRED DIVIDEND: every block accrues a twelfth of its
+     * rate on its par, into its own arrears, and the bank pays what it can of
+     * them, oldest block first - standing, and only from what it holds over
+     * its target, the line under which it pays its common owners nothing
+     * (dividendDue(): "under its target it keeps everything"). The bank's own
+     * rule for a distribution, applied to this one; ranking first, the
+     * preferred is paid from that room before any common dividend, which
+     * waits until the arrears are cleared. What it cannot pay stays owed on
+     * the block - cumulative, as TARP's is - and is paid with its par when
+     * the block is redeemed.
+     *
+     * WHY THE TARGET AND NOT THE MINIMUM (0.7.14). The first build paid it
+     * down to the minimum: a bank that had just asked for capital paid its
+     * preferred straight back out of it, sat on its minimum, and the next loss
+     * took it under - 22 failures in the default ensemble (8 seeds) against 8
+     * at the target, in the same build before the repayment at three years
+     * was added (6 with it).
+     *
+     * @return what it paid, to the city's fund
+     */
+    public double payPreferredDividends() {
+        double accrued = 0;
+        for (Preferred p : preferred) {
+            double a = p.par * p.rate(month) / 12;
+            p.arrears += a;
+            accrued += a;
+        }
+        preferredAccruedThisMonth += accrued;
+        double room = branches > 0 && !isInsolvent() ? Math.max(0, equity() - targetEquity()) : 0;
+        double paid = 0;
+        for (Preferred p : preferred) {
+            double pay = Math.max(0, Math.min(p.arrears, room - paid));
+            if (!(pay > 0)) continue;
+            p.arrears -= pay;
+            if (p.arrears < 1e-12) p.arrears = 0;
+            paid += pay;
+        }
+        if (paid > 0) {
+            cash -= paid;
+            preferredDividendsThisMonth += paid;
+            preferredDividendsLifetime += paid;
+        }
+        return paid;
+    }
+
+    /**
+     * THE BLOCKS AT THEIR THIRD ANNIVERSARY ARE REDEEMED WHOLE (0.7.14;
+     * Jerus: "Sell new shares to repay"), oldest first, at the term sheet's
+     * price - "All redemptions of the Senior Preferred shall be at 100% of its
+     * issue price, plus (i) in the case of cumulative Senior Preferred, any
+     * accrued and unpaid dividends": the block's par and its own arrears.
+     *
+     * HOW IT IS PAID. From what the bank holds over its target first; what
+     * that does not cover, `offering` raises - new common sold to the public
+     * (Game.capitaliseBank(), the branch openings' path: the households past
+     * their cushion, the world for the rest if the bank's record passes its
+     * test), which comes into this bank's capital and goes straight out to
+     * the city. So the repayment spends the capital over the target and no
+     * more: a bank under its target at the anniversary pays the whole from
+     * the offering and ends where it was, the offering not a recapitalisation.
+     * What the offering does not raise is not paid, and the block, part-paid,
+     * is due again the next month - the arrears first, then the par.
+     *
+     * WHAT IT MOVES. The arrears paid are a distribution, out of retained
+     * (preferredDividendsThisMonth, as the monthly dividend is); the par comes
+     * off the preferred's own line (preferredOut); the new common is paid in
+     * (injectCapital(), capitalFromHome and capitalInjected).
+     *
+     * A BANK THAT IS NOT STANDING REDEEMS NOTHING: in resolution, or with no
+     * branch, the due blocks wait - and a resolution cancels them - so no
+     * offering is ever made for a failed bank or for none.
+     *
+     * @param offering what an offering of new common raises for a sum asked:
+     *                 raised and put into this bank's capital, returned
+     * @return {the arrears paid, the par redeemed}, both to the city's fund
+     */
+    public double[] redeemDuePreferred(java.util.function.DoubleUnaryOperator offering) {
+        double arrearsPaid = 0, parPaid = 0;
+        if (branches <= 0 || isInsolvent()) return new double[] { 0, 0 };
+        for (Preferred p : preferred) {
+            if (!p.due(month)) continue;
+            double due = p.arrears + p.par;
+            double spare = Math.max(0, equity() - targetEquity());
+            double raised = 0;
+            if (due > spare && offering != null) {
+                raised = Math.max(0, offering.applyAsDouble(due - spare));
+                repaymentRaisedThisMonth += raised;
+                repaymentRaisedLifetime += raised;
+            }
+            double pay = Math.min(due, spare + raised);
+            if (!(pay > 0)) continue;
+            double toArrears = Math.min(p.arrears, pay);
+            double toPar = Math.min(p.par, pay - toArrears);
+            cash -= toArrears + toPar;
+            p.arrears -= toArrears;
+            p.par -= toPar;
+            if (p.arrears < 1e-9) p.arrears = 0;
+            if (p.par < 1e-9) p.par = 0;
+            preferredDividendsThisMonth += toArrears;
+            preferredDividendsLifetime += toArrears;
+            preferredOut += toPar;
+            preferredRedeemedLifetime += toPar;
+            arrearsPaid += toArrears;
+            parPaid += toPar;
+            if (p.par > 0) repaymentShortLifetime++;
+        }
+        preferred.removeIf(p -> !(p.par > 0) && !p.warrantsOut);
+        return new double[] { arrearsPaid, parPaid };
+    }
+
+    /**
+     * THE CITY'S WARRANTS BOUGHT BACK, once no preferred is left: every
+     * warrant still out, at its fair value (warrantValue(), Black-Scholes) -
+     * the term sheet's "Following the redemption in whole of the Senior
+     * Preferred held by the UST, the QFI shall have the right to repurchase
+     * any other equity security of the QFI held by the UST at fair market
+     * value". Paid as the preferred is, spare capital over the target first,
+     * then `offering`, and like the preferred's, everything raised is paid
+     * out: an offering that falls short buys back the share of the warrants
+     * it pays for - every block's cut by the same fraction, so their value
+     * falls by exactly what was paid - and the rest stay out, to be bought
+     * the next month. The offering is never left in the bank as capital. A
+     * buyback of an equity instrument, so off paid-in at all it cost, as the bank's own
+     * shares' is (warrantsBoughtBackThisMonth). Nothing while any preferred is
+     * outstanding, or while the bank is not standing.
+     *
+     * @return what it paid, to the city's fund
+     */
+    public double repurchaseWarrants(double price, double sigma, double riskFree,
+                                     java.util.function.DoubleUnaryOperator offering) {
+        if (branches <= 0 || isInsolvent() || preferredOutstanding() > 0) return 0;
+        boolean any = false;
+        for (Preferred p : preferred) any |= p.warrantsOut;
+        if (!any) return 0;
+        double value = Math.max(0, warrantValue(price, sigma, riskFree));
+        double spare = Math.max(0, equity() - targetEquity());
+        double raised = 0;
+        if (value > spare && offering != null) {
+            raised = Math.max(0, offering.applyAsDouble(value - spare));
+            repaymentRaisedThisMonth += raised;
+            repaymentRaisedLifetime += raised;
+        }
+        double pay = Math.min(value, spare + raised);
+        if (pay + 1e-9 < value) {
+            // Short: the share it can pay for, of every block alike.
+            if (!(pay > 0)) return 0;
+            double keep = 1 - pay / value;
+            for (Preferred p : preferred) if (p.warrantsOut) p.warrantShares *= keep;
+            repaymentShortLifetime++;
+        } else {
+            pay = value;
+            for (Preferred p : preferred) p.warrantsOut = false;
+            preferred.removeIf(p -> !(p.par > 0));
+        }
+        cash -= pay;
+        warrantsBoughtBackThisMonth += pay;
+        warrantsBoughtBackLifetime += pay;
+        return pay;
+    }
+
+    /** What the offerings to repay the city raised this month, and over the bank's life. */
+    public double getRepaymentRaisedThisMonth() { return repaymentRaisedThisMonth; }
+    public double getRepaymentRaisedLifetime()  { return repaymentRaisedLifetime; }
+    /** How often a repayment was left part-paid, the public not taking the whole offering: once a month for each due block short, and once for the warrants. */
+    public int getRepaymentShortLifetime()      { return repaymentShortLifetime; }
+
+    /**
+     * WARRANTS AT THEIR EXPIRY, still out: exercised if in the money,
+     * cashless - the city takes new shares worth what the warrants are over
+     * the strike, warrantShares x (price - strike) / price - and gone if not.
+     * No cash moves, so equity does not; the register issues the shares
+     * (Equity.issueToCityRescue()).
+     *
+     * @return the new shares the city takes
+     */
+    public double exerciseExpiredWarrants(double price) {
+        double shares = 0;
+        java.util.Iterator<Preferred> it = preferred.iterator();
+        while (it.hasNext()) {
+            Preferred p = it.next();
+            if (!p.warrantsOut || month < p.warrantsExpire) continue;
+            if (price > p.strike && p.warrantShares > 0) shares += p.warrantShares * (price - p.strike) / price;
+            p.warrantsOut = false;
+            if (!(p.par > 0)) it.remove();
+        }
+        return shares;
+    }
+
+    /** What one block's warrants are worth: Black-Scholes on the shares they reach, for the term they have left. */
+    private double warrantValue(Preferred p, double price, double sigma, double riskFree) {
+        if (!p.warrantsOut || !(p.warrantShares > 0)) return 0;
+        double years = Math.max(0, p.warrantsExpire - month) / 12.0;
+        return p.warrantShares * TreasuryFund.callValue(price, p.strike, riskFree, sigma, years);
+    }
+
+    /** Every block's warrants still out, at their value: the city's fund's mark on them. */
+    public double warrantValue(double price, double sigma, double riskFree) {
+        double t = 0;
+        for (Preferred p : preferred) t += warrantValue(p, price, sigma, riskFree);
+        return t;
+    }
+
+    /** How many shares the warrants still out reach. */
+    public double warrantSharesOut() {
+        double t = 0;
+        for (Preferred p : preferred) if (p.warrantsOut) t += p.warrantShares;
+        return t;
+    }
+
+    /**
+     * THE HOLE TOOK THEM: every block of preferred and its warrants cancelled
+     * at a failure - they were capital. Equity does not move (the preferred
+     * was inside it); its line goes to retained, the loss that took it.
+     *
+     * @return {the par cancelled, the warrants' shares cancelled}
+     */
+    public double[] cancelPreferred() {
+        double par = preferredOutstanding(), warrants = warrantSharesOut();
+        if (par > 0) preferredCancelled += par;
+        preferred.clear();
+        return new double[] { par, warrants };
+    }
+
+    /**
+     * THE OLD OWNERS ARE WIPED OUT: their paid-in capital is written off
+     * against the losses, before the city's capital goes in - losses fall on
+     * common shareholders first (CDIC). Equity does not move; paid in goes
+     * to nothing and retained takes it. Nothing on a bank that does not keep
+     * the split (an older save's).
+     */
+    public void wipeOwners() {
+        if (!splitKnown) return;
+        double paidIn = paidInCapital();
+        if (paidIn != 0) ownersWiped += paidIn;
+    }
+
+    /** A split or consolidation of its shares: the dividend cap a share and the warrants' strike by the inverse, their count by the factor. */
+    public void splitShares(double k) {
+        if (!(k > 0) || k == 1) return;
+        for (Preferred p : preferred) {
+            p.capPerShare /= k;
+            p.warrantShares *= k;
+            p.strike /= k;
+        }
+    }
+
+    public double getPreferredIn()                   { return preferredIn; }
+    public double getPreferredRedeemedThisMonth()    { return preferredOut; }
+    public double getPreferredDividendsThisMonth()   { return preferredDividendsThisMonth; }
+    public double getPreferredAccruedThisMonth()     { return preferredAccruedThisMonth; }
+    public double getWarrantsBoughtBackThisMonth()   { return warrantsBoughtBackThisMonth; }
+    public double getOwnersWipedThisMonth()          { return ownersWiped; }
+    public double getPreferredCancelledThisMonth()   { return preferredCancelled; }
+    public double getPreferredDividendsLifetime()    { return preferredDividendsLifetime; }
+    public double getPreferredRedeemedLifetime()     { return preferredRedeemedLifetime; }
+    public double getWarrantsBoughtBackLifetime()    { return warrantsBoughtBackLifetime; }
+
+    /** The preferred's record, for the save: the arrears (the blocks carry their own; this is their sum, for reading), the three lifetime figures and what its offerings to repay raised. */
+    public double[] preferredRecordToSave() {
+        return new double[] { getPreferredArrears(), preferredDividendsLifetime, preferredRedeemedLifetime,
+                warrantsBoughtBackLifetime, repaymentRaisedLifetime, repaymentShortLifetime };
+    }
+
+    /** ...and back, with the blocks. A save from before 0.7.14 holds none. */
+    public void restorePreferred(java.util.List<Preferred> blocks, double[] record) {
+        preferred.clear();
+        if (blocks != null) for (Preferred p : blocks) if (p != null) preferred.add(p);
+        preferredDividendsLifetime = preferredRedeemedLifetime = warrantsBoughtBackLifetime = 0;
+        repaymentRaisedLifetime = 0;
+        repaymentShortLifetime = 0;
+        if (record != null && record.length >= 4) {
+            preferredDividendsLifetime = record[1];
+            preferredRedeemedLifetime = record[2];
+            warrantsBoughtBackLifetime = record[3];
+            if (record.length >= 5) repaymentRaisedLifetime = record[4];
+            if (record.length >= 6) repaymentShortLifetime = (int) Math.round(record[5]);
+        }
     }
 
     private double capitalInjected;
@@ -2096,7 +2681,7 @@ public class Bank {
      */
     public double getCapitalFromHome() { return capitalFromHome; }
 
-    /** The treasury's money, from inside it. Internal, and deliberately not declared. */
+    /** The treasury's money - a resolution's since 0.7.14, a gift before - from inside it. Internal, and deliberately not declared. */
     public double getBailoutReceived() { return bailoutReceived; }
 
     /**
@@ -3887,6 +4472,10 @@ public class Bank {
      */
     public double dividendDue(double profitAfterTax) {
         if (branches <= 0 || isInsolvent()) return 0;
+        // ...and nothing while the city's preferred is owed a dividend
+        // (0.7.14): TARP's "no common dividend ... while preferred dividends
+        // are unpaid". The preferred's dividend ranks first.
+        if (getPreferredArrears() > 0) return 0;
         double overTarget = equity() - targetEquity();
         if (overTarget <= 0) return 0;
         double ordinary = profitAfterTax > 0 ? PAYOUT_IN_BAND * profitAfterTax : 0;
@@ -3901,10 +4490,27 @@ public class Bank {
      * @return what it paid
      */
     public double payOwners(double profitAfterTax) {
+        return payOwners(profitAfterTax, Double.NaN);
+    }
+
+    /**
+     * ...and with the shares in issue, for the city's consent (0.7.14): while
+     * a block of its preferred is under three years old the common dividend
+     * a share does not rise past what it was the year before the city bought
+     * it (Preferred.capPerShare - TARP's consent "for any increase in common
+     * dividends per share"; the city does not consent). NaN shares, no cap:
+     * a fixture's bank with no register.
+     */
+    public double payOwners(double profitAfterTax, double sharesInIssue) {
         payoutProfit = profitAfterTax;
         payoutExcess = excessCapital();
         payoutOverTarget = branches <= 0 || isInsolvent() ? 0 : Math.max(0, equity() - targetEquity());
         double due = dividendDue(profitAfterTax);
+        if (due > 0 && sharesInIssue >= 0 && inConsentPeriod()) {
+            double cap = Double.POSITIVE_INFINITY;
+            for (Preferred p : preferred) if (p.inConsent(month)) cap = Math.min(cap, p.capPerShare);
+            due = Math.min(due, cap * sharesInIssue);
+        }
         payDividend(due);
         return due;
     }
@@ -3970,6 +4576,9 @@ public class Bank {
      */
     public boolean buysBackOwnShares() {
         if (branches <= 0 || isInsolvent()) return false;
+        // ...and never while the city's consent binds (0.7.14): TARP's three
+        // years without its consent for "any share repurchase".
+        if (inConsentPeriod()) return false;
         return targetEquity() <= 0 || equity() >= targetEquity();
     }
 
@@ -4287,7 +4896,11 @@ public class Bank {
                 interestFromBusinesses, interestFromCity, interestFromHouseholds, discountAccreted,
                 treasuryBuybackGain, monthKnown ? 1 : 0,
                 // 0.7.12's: its bonds' month.
-                bondGains, underwritingFees, interestFromBonds };
+                bondGains, underwritingFees, interestFromBonds,
+                // 0.7.14's: the hole it failed with, and the city's capital.
+                shortfallThisMonth, preferredIn, preferredOut, preferredDividendsThisMonth,
+                preferredAccruedThisMonth, warrantsBoughtBackThisMonth, ownersWiped, preferredCancelled,
+                repaymentRaisedThisMonth };
     }
 
     /** ...and back. Nothing on an older save, whose Profit page reads zero for a month as it always did. */
@@ -4315,7 +4928,13 @@ public class Bank {
         monthKnown = v[i++] != 0;
         // ...and 0.7.12's; an older save's bonds' month is nothing.
         if (v.length < 53) return;
-        bondGains = v[i++]; underwritingFees = v[i++]; interestFromBonds = v[i];
+        bondGains = v[i++]; underwritingFees = v[i++]; interestFromBonds = v[i++];
+        // ...and 0.7.14's; an older save's city put nothing in this way.
+        if (v.length < 61) return;
+        shortfallThisMonth = v[i++]; preferredIn = v[i++]; preferredOut = v[i++];
+        preferredDividendsThisMonth = v[i++]; preferredAccruedThisMonth = v[i++];
+        warrantsBoughtBackThisMonth = v[i++]; ownersWiped = v[i++]; preferredCancelled = v[i++];
+        repaymentRaisedThisMonth = v.length > i ? v[i] : 0;
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -4671,6 +5290,13 @@ public class Bank {
         paidInOpening = 0;
         retainedOpening = equity();
         splitKnown = true;
+        // ...and 0.7.14's: no preferred, no holes.
+        preferred.clear();
+        preferredDividendsLifetime = preferredRedeemedLifetime = warrantsBoughtBackLifetime = 0;
+        repaymentRaisedThisMonth = repaymentRaisedLifetime = 0;
+        repaymentShortLifetime = 0;
+        shortfallLifetime = 0;
+        month = 0;
     }
 
     /*
@@ -4838,6 +5464,22 @@ public class Bank {
             interimBySector[i] *= scale;
         }
         interimBook *= scale;
+        // ...and 0.7.14's: the hole, the city's preferred - its par, the
+        // dividend cap a share and the warrants' strike - and its record.
+        shortfallThisMonth *= scale;
+        shortfallLifetime *= scale;
+        for (Preferred p : preferred) {
+            p.par *= scale;
+            p.arrears *= scale;
+            p.capPerShare *= scale;
+            p.strike *= scale;
+        }
+        repaymentRaisedThisMonth *= scale;
+        repaymentRaisedLifetime *= scale;
+        preferredIn *= scale; preferredOut *= scale;
+        preferredDividendsThisMonth *= scale; preferredAccruedThisMonth *= scale;
+        warrantsBoughtBackThisMonth *= scale; ownersWiped *= scale; preferredCancelled *= scale;
+        preferredDividendsLifetime *= scale; preferredRedeemedLifetime *= scale; warrantsBoughtBackLifetime *= scale;
     }
 
 
@@ -4869,7 +5511,7 @@ public class Bank {
        which did not foot; the equity's movement without the founding
        settlement; and, elsewhere, each company's share on the desk
        (Equity.deskShare()), the history's statistics (HistorySave) and the
-       rescue's guard on the treasury's cash (Game.canRecapitaliseBank()).
+       rescue's guard (Game.canResolveBank() since 0.7.14, which asks no cash).
        What it needed that nothing kept - last month's statement, the last
        twelve months', the interest by who paid it - is kept here and saved.
 
@@ -4939,9 +5581,9 @@ public class Bank {
     public double getAllowanceOpened() { return allowanceOpened; }
 
     /**
-     * What the city has put into it in rescues over its life
-     * (receiveBailout()), carried in the solvency record since 0.7.9 - a save
-     * from before counts from its load.
+     * What the city has put into it in rescues over its life - resolutions
+     * since 0.7.14 (takeResolutionCapital()), gifts before - carried in the
+     * solvency record since 0.7.9; a save from before counts from its load.
      */
     private double bailoutsLifetime;
     public double getBailoutsLifetime() { return bailoutsLifetime; }
@@ -5165,7 +5807,9 @@ public class Bank {
         LIABILITIES,
         EQUITY,
         HOUSEHOLD_DEPOSITS, SECTOR_DEPOSITS,
-        PAID_IN, RETAINED
+        PAID_IN, RETAINED,
+        /** The city's preferred at par (0.7.14): equity's third part, beside paid in and retained. */
+        PREFERRED
     }
 
     /** The asset lines, in the page's order: they sum to totalAssets(). */
@@ -5217,6 +5861,7 @@ public class Bank {
             case SECTOR_DEPOSITS    -> sectorDeposits;
             case PAID_IN            -> paidInCapital();
             case RETAINED           -> retainedEarnings();
+            case PREFERRED          -> preferredOutstanding();
         };
     }
 
@@ -5542,19 +6187,27 @@ public class Bank {
     public record EquityMovement(double opening, double kept, double fromShareholders, double fromCity,
                                  double founding, double dividends, double boughtBack, double issued,
                                  double absorbed, double treasuryBuyback, double allowanceOpened,
-                                 double closing) {
+                                 double preferredIn, double preferredOut, double preferredDividends,
+                                 double warrantsBoughtBack, double closing) {
         /** What none of the causes explains. */
         public double residual() {
             return closing - opening - kept - fromShareholders - fromCity - founding
-                    + dividends + boughtBack - issued - absorbed - treasuryBuyback + allowanceOpened;
+                    + dividends + boughtBack - issued - absorbed - treasuryBuyback + allowanceOpened
+                    - preferredIn + preferredOut + preferredDividends + warrantsBoughtBack;
         }
     }
 
-    /** The month's movement, as it stands. Meaningful when isMonthKnown(). */
+    /**
+     * The month's movement, as it stands. Meaningful when isMonthKnown().
+     * FROM THE CITY is its capital in a resolution since 0.7.14 (it was the
+     * gift before); the city's preferred bought, redeemed and paid, and the
+     * warrants bought back, are their own four causes.
+     */
     public EquityMovement equityMovement() {
         return new EquityMovement(openingEquity, getNetIncome(), capitalInjected + capitalFromHome,
                 bailoutReceived, foundingSettlement, dividendsPaid, sharesBoughtBack, sharesIssued,
-                resolutionLossThisMonth, treasuryBuybackGain, allowanceOpened, equity());
+                resolutionLossThisMonth, treasuryBuybackGain, allowanceOpened,
+                preferredIn, preferredOut, preferredDividendsThisMonth, warrantsBoughtBackThisMonth, equity());
     }
 
     /* ------------------------- its equity, in two parts ------------------------- */
@@ -5567,23 +6220,28 @@ public class Bank {
      * a branch's paid-in capital is sold that way, Game.capitaliseBank()),
      * the new shares it issued (issueOwnShares()), less its own shares bought
      * back (buyBackOwnShares() - Jerus's "less shares bought back", all of
-     * what it paid for them), and what the city put in in a rescue
-     * (receiveBailout(): cash into its equity, no loan and no shares - a
-     * contribution of capital, so paid in).
+     * what it paid for them), and what the city paid resolving it
+     * (takeResolutionCapital(): cash into its equity for every share, so paid
+     * in) - less, at a resolution, the old owners' paid-in, written off
+     * against the losses (wipeOwners()), and the warrants it bought back
+     * from the city. The city's preferred is a third line of its own
+     * (preferredOutstanding()).
      *
      * RETAINED is everything else that moves its equity: what it kept (its
-     * net income), less what it paid its owners; the founding settlement,
+     * net income), less what it paid its owners, the city's preferred
+     * dividends among it; the old owners' paid-in and the city's preferred,
+     * which a resolution writes off against the hole; the founding settlement,
      * which clears what a city with no bank accrued on its books so that its
      * first branch opens on its owners' capital; the shortfall its creditors
-     * absorbed when it failed, which lifts a negative equity back to nothing
-     * against the losses that took it there - the owners keep their shares
-     * (the register does not cancel them), so what they paid in stays paid
-     * in and the losses stay retained; the gain or loss on paper the treasury
+     * absorbed when it failed before 0.7.14, which lifted a negative equity
+     * back to nothing against the losses that took it there - the owners kept
+     * their shares then, so what they paid in stayed paid in and the losses
+     * stayed retained; the gain or loss on paper the treasury
      * bought back from it between two presses; and the allowance an older
      * save was given on load.
      *
      * Those are equityMovement()'s causes, every one, each routed to one of
-     * the two - so paid in and retained add up to equity() exactly whenever
+     * the two or to the preferred - so the three add up to equity() exactly whenever
      * the movement leaves nothing unexplained, which BankCheck asserts every
      * month. Two counters, carried at the top of the month
      * (paidInOpening(), retainedOpening()) and saved by name; the month's own
@@ -5600,15 +6258,31 @@ public class Bank {
     /** True when this bank has kept its equity in two parts since it was founded; false on a save from before 0.7.13's round 2. */
     public boolean knowsEquitySplit() { return splitKnown; }
 
-    /** What its owners and the city put in this month: its offerings at home and abroad, new shares, less shares bought back, and a rescue. */
+    /**
+     * What its owners and the city put in this month: its offerings at home
+     * and abroad, new shares, less shares bought back, and the city's capital
+     * in a resolution - and since 0.7.14, less the old owners' paid-in
+     * written off at a resolution (wipeOwners()) and less the warrants
+     * bought back, which is a buyback of what would have been shares.
+     */
     public double paidInThisMonth() {
-        return capitalFromHome + capitalInjected + sharesIssued - sharesBoughtBack + bailoutReceived;
+        return capitalFromHome + capitalInjected + sharesIssued - sharesBoughtBack + bailoutReceived
+                - ownersWiped - warrantsBoughtBackThisMonth;
     }
 
-    /** ...and everything else that moved its equity this month: its net income, less its dividend, the founding settlement, what its creditors absorbed, the treasury's buybacks, an older save's allowance. */
+    /**
+     * ...and everything else that moved its equity this month: its net
+     * income, less its dividend, the founding settlement, what its creditors
+     * absorbed (before 0.7.14), the treasury's buybacks, an older save's
+     * allowance - and since 0.7.14 the old owners' paid-in written off
+     * against the losses, the preferred the hole took, less the preferred's
+     * dividend. The preferred itself is its own line (preferredOutstanding()),
+     * so buying or redeeming it moves neither of these.
+     */
     public double retainedThisMonth() {
         return getNetIncome() - dividendsPaid + foundingSettlement + resolutionLossThisMonth
-                + treasuryBuybackGain - allowanceOpened;
+                + treasuryBuybackGain - allowanceOpened
+                + ownersWiped + preferredCancelled - preferredDividendsThisMonth;
     }
 
     /** Its paid-in capital as it stands. Nothing when !knowsEquitySplit(). */
@@ -5617,9 +6291,9 @@ public class Bank {
     /** Its retained earnings as they stand - the Balance sheet page's, not getRetained()'s month's payout. Nothing when !knowsEquitySplit(). */
     public double retainedEarnings() { return splitKnown ? retainedOpening + retainedThisMonth() : 0; }
 
-    /** What the two parts leave unexplained against equity(): nothing when every cause is routed, and nothing when !knowsEquitySplit(). */
+    /** What the parts leave unexplained against equity() - paid in, retained and, since 0.7.14, the city's preferred: nothing when every cause is routed, and nothing when !knowsEquitySplit(). */
     public double equitySplitResidual() {
-        return splitKnown ? paidInCapital() + retainedEarnings() - equity() : 0;
+        return splitKnown ? paidInCapital() + retainedEarnings() + preferredOutstanding() - equity() : 0;
     }
 
     /** Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). */

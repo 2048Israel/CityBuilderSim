@@ -1,6 +1,6 @@
-# HouseholdBalance.java - 4,111 lines · 208 methods · 43 constants · model
+# HouseholdBalance.java - 4,128 lines · 209 methods · 43 constants · model
 
-`ham/citybuildersim/HouseholdBalance.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdBalance.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > The households' balance sheet: what they have saved, what they owe, and what
 > happens in the month they cannot cover the shop.
@@ -64,7 +64,7 @@
 > 
 > ... (17 more lines in the source)
 
-**Uses:** [Household](Household.md) (188), [Equity](Equity.md) (14), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (11), [UnemployedHousehold](UnemployedHousehold.md) (7), [AgeBand](AgeBand.md) (7), [OutwardInvestment](OutwardInvestment.md) (5), [WorkingHousehold](WorkingHousehold.md) (4), [Bank](Bank.md) (4), [StudentHousehold](StudentHousehold.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [PrisonerHousehold](PrisonerHousehold.md) (3), [TaxPolicy](TaxPolicy.md) (2), [Restaurants](Restaurants.md) (2), [Exchange](Exchange.md) (2), [BondMarket](BondMarket.md) (2), [RetiredHousehold](RetiredHousehold.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [Household](Household.md) (189), [Equity](Equity.md) (14), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (11), [UnemployedHousehold](UnemployedHousehold.md) (7), [AgeBand](AgeBand.md) (7), [OutwardInvestment](OutwardInvestment.md) (5), [WorkingHousehold](WorkingHousehold.md) (4), [Bank](Bank.md) (4), [StudentHousehold](StudentHousehold.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [PrisonerHousehold](PrisonerHousehold.md) (3), [TaxPolicy](TaxPolicy.md) (2), [Restaurants](Restaurants.md) (2), [Exchange](Exchange.md) (2), [BondMarket](BondMarket.md) (2), [RetiredHousehold](RetiredHousehold.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
 **Used by (33):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CentralBankCheck](CentralBankCheck.md), [CityBasket](CityBasket.md), [CrimeCheck](CrimeCheck.md), [DenominationCheck](DenominationCheck.md), [EducationCheck](EducationCheck.md), [Equity](Equity.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryCounter](LuxuryCounter.md), [Motoring](Motoring.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [ShadowBasket](ShadowBasket.md), [TradeScreen](TradeScreen.md)
 
@@ -108,8 +108,8 @@
 | 3415 | · reading |
 | 3487 | THEFT (2026-09-11) |
 | 3547 | THE OFFER |
-| 3722 | · saving |
-| 3887 | · THE SLOT COUNT ALONE DOES NOT SAY WHAT THE SLOTS ARE (2026-09-12) |
+| 3739 | · saving |
+| 3904 | · THE SLOT COUNT ALONE DOES NOT SAY WHAT THE SLOTS ARE (2026-09-12) |
 
 ## Constants
 
@@ -148,16 +148,16 @@
 | 2824 | `HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE` | `.5` | ...and never more than this share of one issue: half, because a bond market with no bank in it is no longer the city's bank's market. |
 | 3561 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home a household keeps in the bank before it buys a share. |
 | 3564 | `HouseholdBalance.SHARE_OF_EXCESS` | `.30` | The share of what is past the cushion it puts into one offering. |
-| 3780 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
-| 3783 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
-| 3786 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
-| 3789 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
-| 3792 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
-| 3802 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
-| 3812 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
-| 3821 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
-| 3833 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim on the households' o... |
-| 3836 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_BONDS + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, t... |
+| 3797 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
+| 3800 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
+| 3803 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
+| 3806 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
+| 3809 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
+| 3819 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
+| 3829 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
+| 3838 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
+| 3850 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim on the households' o... |
+| 3853 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_BONDS + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, t... |
 
 ## Fields (state)
 
@@ -222,7 +222,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 4026 | **type** `public class HouseholdBalance` | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. |
+| 86 | 4043 | **type** `public class HouseholdBalance` | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. |
 
 ### the dials (lines 97-151)
 
@@ -532,48 +532,49 @@
 | 3529 | 14 | `public double creditByWeight(double total, double[] weight)` | Credits `total` to the cells in proportion to a weight per cell, in the cells' order - what the offenders' households took home. |
 | 3545 | 1 | `public double getDepositInterest()` | What the bank paid the city's savers this month. |
 
-### THE OFFER (lines 3547-3721)
+### THE OFFER (lines 3547-3738)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 3579 | 28 | `public double subscribe(int company, double offered, double price)` | Puts an offering to every household, and takes up what they will buy. |
 | 3618 | 10 | `public void grantFounders(int company, double shares)` | Hands out a company's founding shares to the people who founded it. |
 | 3634 | 15 | `public double creditDividend(int company, double perShare)` | Pays every household its dividend, straight into its savings. |
-| 3651 | 5 | `public double sharesHeld(int company)` | Shares of this company the city's households hold between them. |
-| 3658 | 5 | `public double totalDividends()` | What the households were paid in dividends this month. |
-| 3666 | 1 | `public double getSavings(int row)` | ---- the row, per household of it: what the screens and the fixtures read ---- |
-| 3669 | 1 | `public double getHouseholds(int row)` | Households this row was struck for - the multiplier on every per-row figure. |
-| 3670 | 1 | `public double getDebt(int row)` |  |
-| 3671 | 1 | `public double getAfterFixed(int row)` |  |
-| 3672 | 1 | `public double getInterest(int row)` |  |
-| 3673 | 1 | `public double getDrawn(int row)` |  |
-| 3676 | 1 | `public double getUnfunded(int row)` | What this row wanted, could not fund, and did not get. |
-| 3679 | 4 | `public boolean isCutOff(int row)` | True when the bank has stopped lending to any cell of this row - ceiling or lockout. |
-| 3683 | 1 | `public double getBorrowed(int row)` |  |
-| 3684 | 1 | `public double getRepaid(int row)` |  |
-| 3685 | 1 | `public double getBanked(int row)` |  |
-| 3686 | 1 | `public double getWant(int row)` |  |
-| 3687 | 1 | `public double getPlanned(int row)` |  |
-| 3688 | 1 | `public double getRate(int row)` |  |
-| 3691 | 4 | `public boolean isGoingShort(int row)` | True when this row is buying less food than it wants. |
-| 3697 | 1 | `public double totalSavings()` | City totals, for the headline lines on the screen. |
-| 3698 | 1 | `public double totalDebt()` |  |
-| 3699 | 1 | `public double totalInterest()` |  |
-| 3708 | 4 | `public double averageRate()` | What the families' credit lines cost them this month on average: each cell's rate weighted by what it owes - the bank's household rate plus RISK_SLOPE for every month of income owed, capped at MAX_RATE (Household.sett... |
-| 3714 | 1 | `public double totalBorrowed()` | New lending to families this month - the bank's money out the door. |
-| 3717 | 1 | `public double totalRepaid()` | ...and what came back. |
-| 3720 | 1 | `public double totalNetWorth()` | What every household in the city has, less what it owes. |
+| 3660 | 6 | `public double surrenderShares(int company)` | EVERY CELL GIVES UP ITS SHARES OF ONE COMPANY, for nothing: a failed bank's resolution (0.7.14; Equity.takeAllForCity() - the old owners are wiped out, CDIC). |
+| 3668 | 5 | `public double sharesHeld(int company)` | Shares of this company the city's households hold between them. |
+| 3675 | 5 | `public double totalDividends()` | What the households were paid in dividends this month. |
+| 3683 | 1 | `public double getSavings(int row)` | ---- the row, per household of it: what the screens and the fixtures read ---- |
+| 3686 | 1 | `public double getHouseholds(int row)` | Households this row was struck for - the multiplier on every per-row figure. |
+| 3687 | 1 | `public double getDebt(int row)` |  |
+| 3688 | 1 | `public double getAfterFixed(int row)` |  |
+| 3689 | 1 | `public double getInterest(int row)` |  |
+| 3690 | 1 | `public double getDrawn(int row)` |  |
+| 3693 | 1 | `public double getUnfunded(int row)` | What this row wanted, could not fund, and did not get. |
+| 3696 | 4 | `public boolean isCutOff(int row)` | True when the bank has stopped lending to any cell of this row - ceiling or lockout. |
+| 3700 | 1 | `public double getBorrowed(int row)` |  |
+| 3701 | 1 | `public double getRepaid(int row)` |  |
+| 3702 | 1 | `public double getBanked(int row)` |  |
+| 3703 | 1 | `public double getWant(int row)` |  |
+| 3704 | 1 | `public double getPlanned(int row)` |  |
+| 3705 | 1 | `public double getRate(int row)` |  |
+| 3708 | 4 | `public boolean isGoingShort(int row)` | True when this row is buying less food than it wants. |
+| 3714 | 1 | `public double totalSavings()` | City totals, for the headline lines on the screen. |
+| 3715 | 1 | `public double totalDebt()` |  |
+| 3716 | 1 | `public double totalInterest()` |  |
+| 3725 | 4 | `public double averageRate()` | What the families' credit lines cost them this month on average: each cell's rate weighted by what it owes - the bank's household rate plus RISK_SLOPE for every month of income owed, capped at MAX_RATE (Household.sett... |
+| 3731 | 1 | `public double totalBorrowed()` | New lending to families this month - the bank's money out the door. |
+| 3734 | 1 | `public double totalRepaid()` | ...and what came back. |
+| 3737 | 1 | `public double totalNetWorth()` | What every household in the city has, less what it owes. |
 
-### saving (lines 3722-4111)
+### saving (lines 3739-4128)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3742 | 36 | `public double[] toSaveArray()` | The row array an older build reads: ROWS*8+3, per household of the row. |
-| 3839 | 5 | `public String[] cellKeys()` | The name of every cell, in the order toCellSaveArray() writes them. |
-| 3846 | 27 | `public double[] toCellSaveArray()` | CELL_SLOTS per cell, in cellKeys() order, then the three city figures. |
-| 3885 | 121 | `public boolean restoreCells(String[] keys, double[] saved, String[] savedCompanies)` | Puts the cells back, by name. |
-| 4020 | 43 | `public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Puts a ROW array back, seeding every cell of the row with the row's position: the save from a build that kept the stocks per tier. |
-| 4065 | 1 | `public void restore(double[] saved)` | The row array alone, with no census: the cells wait for the plan to count them. |
-| 4067 | 24 | `public void reset()` |  |
-| 4098 | 12 | `public void redenominate(double scale)` | The households' stocks and this month's working, in the new unit. |
+| 3759 | 36 | `public double[] toSaveArray()` | The row array an older build reads: ROWS*8+3, per household of the row. |
+| 3856 | 5 | `public String[] cellKeys()` | The name of every cell, in the order toCellSaveArray() writes them. |
+| 3863 | 27 | `public double[] toCellSaveArray()` | CELL_SLOTS per cell, in cellKeys() order, then the three city figures. |
+| 3902 | 121 | `public boolean restoreCells(String[] keys, double[] saved, String[] savedCompanies)` | Puts the cells back, by name. |
+| 4037 | 43 | `public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Puts a ROW array back, seeding every cell of the row with the row's position: the save from a build that kept the stocks per tier. |
+| 4082 | 1 | `public void restore(double[] saved)` | The row array alone, with no census: the cells wait for the plan to count them. |
+| 4084 | 24 | `public void reset()` |  |
+| 4115 | 12 | `public void redenominate(double scale)` | The households' stocks and this month's working, in the new unit. |
 

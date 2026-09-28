@@ -1398,8 +1398,56 @@ public final class GameVersion {
      * older save rolls nothing, keeps its dial's hand, reads the year-ago
      * column as nothing until it has lived a year in this build, and shows
      * its bank's equity whole, without the split.
+     *
+     * 0.7.14 (2026-09-27) - THE CITY'S FUND, A FAILED BANK RESOLVED FOR ITS
+     * SHARES, THE BANK'S PREFERRED, AND THE INSANE START. From Jerus's
+     * answers (TreasuryFund has them whole).
+     *   - THE CITY'S FUND (TreasuryFund; Game, THE CITY'S FUND AND THE BANK'S
+     *     RESCUE): a market book of company shares and bonds, a rescue book
+     *     and cash. A dial, 0 to 300% of the year's surplus and 0 by default,
+     *     pays in once a year at December's close, before the rollover nets
+     *     it, never taking the treasury under a month of its spending; the
+     *     rule holds 70/30 on the market (Exchange.postFund(),
+     *     BondMarket.postFund()), never over 10% of a company, rebalancing
+     *     past 74% or 4 points under, and never a new issue; 3% of it a year
+     *     is paid to the treasury monthly from its cash, the revenue line
+     *     "Transfer from the fund". The hand buys and sells at fair value and
+     *     pays in and draws out, off the budget. A Finances tab area.
+     *   - A FAILED BANK IS RESOLVED FOR ITS SHARES (Game.resolveBank()):
+     *     automatic on a new game, the Bank tab's button on an older save or
+     *     a bare city. The old owners are wiped out; the city's preferred and
+     *     warrants are cancelled; the city pays the hole and the capital to
+     *     reopen as a promise (TreasuryLine.BANK_RESOLUTION), the central
+     *     bank advancing what the treasury lacks; the bank reopens that month
+     *     with every share the city's. Nobody outside the city pays: the
+     *     absorption into the bank's own cash is gone.
+     *   - THE BANK'S PREFERRED (Bank, THE CITY'S CAPITAL): a standing bank
+     *     under its minimum asks the city, through the inbox, to buy senior
+     *     preferred on TARP's term sheet - 1-3% of its risk-weighted book,
+     *     5% then 9% cumulative, three years of consent, each block repaid
+     *     whole at its third anniversary at par with its unpaid dividends -
+     *     from capital over the bank's target, then new shares sold to the
+     *     public, which dilute the city's - and warrants on 15% bought back
+     *     at Black-Scholes, the same way, once none is left (any still out
+     *     at ten years are exercised if in the money); an equity line of its
+     *     own on the balance sheet.
+     *   - A RELOADED CITY PRICES ITS PAPER AS THE LIVE ONE DID: the debt
+     *     market's last strike, its inputs and its rate, is carried whole
+     *     (DebtManager.marketToSave()), where the load re-struck it off the
+     *     cash the save holds.
+     *   - INSANE (Founding.Preset.INSANE): D$0, US$0, and a 20-year dollar
+     *     bond at 3% owed abroad for the ground. The clock will not run on an
+     *     empty treasury nobody advances (Game.clockRefusal()) and says
+     *     where to borrow.
+     *
+     * SAVE_FORMAT did not move. The fund, the preferred and its record, and
+     * the debt market's strike are new keys, the register's city shares ride
+     * three new slots a company and the bonds' city holding a new field; an
+     * older save loads with an empty fund, the dial at 0, the rescue on the
+     * button, no preferred and no city shares, and keeps the load's own
+     * strike of the debt market.
      */
-    public static final String VERSION = "0.7.13";
+    public static final String VERSION = "0.7.14";
 
     /**
      * The save shape.

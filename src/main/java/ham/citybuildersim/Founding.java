@@ -47,7 +47,29 @@ public final class Founding {
        shown with what it buys. Standard is the two constants on Game, which
        stay the named defaults the harnesses and the playtest read; Wealthy is
        the start every city had from 0.6.10 to 0.7.9.
+
+       ...AND A FIFTH, INSANE (0.7.14), first, the hardest. Jerus: "on game
+       start, add a new difficulty called Insane, which is just you start with
+       0 cash, 0 vault, and a 20y bond 3% for the initial land cost the city
+       starts with ... if easier the starting debt is abroad in usd". Nothing
+       in the treasury, nothing in the vault, and the city owes the world for
+       its ground: LandManager.STARTING_SQ_FT at the land market's opening
+       dollar price a square foot (LandMarket.openingUsdPerSqFt()), about
+       US$2.1M, on the model's own twenty-year dollar term loan with its
+       coupon fixed at Jerus's 3% (landBondUsd(), Game.foundTheLandBond()). A
+       founding of D$0 and US$0 reads back as Insane (Preset.of()).
        ===================================================================== */
+
+    /** Insane's coupon on the land it owes for, a year: 3%, Jerus's number. */
+    public static final double INSANE_LAND_COUPON = .03;
+
+    /** Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the five term loans (LongTermBond.MATURITIES). */
+    public static final int INSANE_LAND_YEARS = 20;
+
+    /** What an Insane city owes for its founding ground, in thousands of US dollars: every starting square foot at the land market's opening dollar price. */
+    public static double landBondUsd() {
+        return LandManager.STARTING_SQ_FT * LandMarket.openingUsdPerSqFt();
+    }
 
     /** Lean's treasury, in thousands: D$25M - three-quarters of the founding village at a new city's invoices, so the city borrows from its first months, for the rest of it and for every big work. */
     public static final double LEAN_CASH = 25_000;
@@ -61,8 +83,10 @@ public final class Founding {
     /** Wealthy's vault, in thousands of US dollars: US$1B - the old start's, which the playtest's defence took sixty-odd years to spend half of (month 739, the median of eight seeds). */
     public static final double WEALTHY_RESERVE_USD = 1_000_000;
 
-    /** The four choices of money; CUSTOM carries no figures of its own. */
+    /** The five choices of money, hardest first; CUSTOM carries no figures of its own. */
     public enum Preset {
+        /** Nothing in the treasury or the vault, and the founding ground owed abroad (0.7.14): the one preset under MIN_CASH, on purpose. */
+        INSANE("Insane", 0, 0),
         LEAN("Lean", LEAN_CASH, LEAN_RESERVE_USD),
         STANDARD("Standard", Game.FOUNDING_CASH, Game.FOUNDING_RESERVE_USD),
         WEALTHY("Wealthy", WEALTHY_CASH, WEALTHY_RESERVE_USD),
@@ -100,15 +124,21 @@ public final class Founding {
        richer than Wealthy, narrow enough that every figure inside them founds
        a city that runs (NewGameCheck founds one at each end and plays it).
 
-       NO EMPTY TREASURY. simulateMonths() will not run a month while cash is
-       at or below zero, and the clock's nextMonth() carries a broke city only
-       on the central bank's advances, whose ceiling is months of REVENUE - of
-       which a city with nothing built has none, so it cannot draw a dollar.
-       And every building is paid for out of cash or borrowed against, and a
-       city with no revenue cannot be quoted a bond it could service. A city
-       founded with nothing could not build its first house or live its first
-       month; that is not a hard start, it is not a city. The floor is a
-       hamlet's worth: ten houses and a shop, at a new city's invoices.
+       NO EMPTY TREASURY ON A CUSTOM FOUNDING - AND ONE PRESET WITH ONE, ON
+       PURPOSE. The floor is a hamlet's worth: ten houses and a shop at a new
+       city's invoices, the least a custom founding takes. Insane (0.7.14) is
+       the one preset under it: D$0, and Jerus's answer to what a city with
+       nothing does first is "Borrow first" - the clock stays stopped while
+       the treasury is empty and nobody will advance it anything
+       (Game.clockRefusal(): cash at or below nothing, and a central bank
+       whose ceiling, months of revenue, is nothing for a city with no
+       revenue), and the screen says why and where to borrow: the build
+       screen's funding page, the Finances tab's borrowing, the land office's
+       dollar offer. Every building is paid for out of cash or borrowed
+       against; the city with nothing borrows first. A day-0 city is quoted
+       its first bond at the full spread on both of the measures the price
+       reads - it has no revenue and no output to measure its debt against
+       (DebtManager.spreadFor()) - which is what Insane costs.
 
        AN EMPTY VAULT IS ALLOWED. Every city before 0.6.10 was founded with
        one and played its whole life that way: the central bank has nothing
@@ -167,7 +197,7 @@ public final class Founding {
         return named(DEFAULT_CITY_NAME, Preset.STANDARD, WorldEconomy.DEFAULT_MEAN_INFLATION);
     }
 
-    /** A city with its money named after it, on one of the three presets with figures. */
+    /** A city with its money named after it, on one of the four presets with figures. */
     public static Founding named(String cityName, Preset preset, double meanInflation) {
         if (preset == Preset.CUSTOM) throw new IllegalArgumentException("CUSTOM has no figures; use custom()");
         return new Founding(clean(cityName), Currency.fromCityName(clean(cityName)),
@@ -199,7 +229,7 @@ public final class Founding {
     public double getReserveUsd()      { return reserveUsd; }
     /** The world's average inflation it was founded into. */
     public double getMeanInflation()   { return meanInflation; }
-    /** Which of the four this is. */
+    /** Which of the five this is. */
     public Preset getPreset()          { return Preset.of(cash, reserveUsd); }
 
     /* ------------------------------------------------------------ is it a city */
@@ -241,10 +271,13 @@ public final class Founding {
         if (p != null) return p;
         if (currency == null) return "The currency's name or code will not do.";
         if (Currency.FOREIGN_CODE.equals(currency.code())) return Currency.codeProblem(currency.code());
-        p = cashProblem(cash);
-        if (p != null) return p;
-        p = reserveProblem(reserveUsd);
-        if (p != null) return p;
+        // Insane is the one founding under the custom bounds, on purpose (0.7.14).
+        if (getPreset() != Preset.INSANE) {
+            p = cashProblem(cash);
+            if (p != null) return p;
+            p = reserveProblem(reserveUsd);
+            if (p != null) return p;
+        }
         if (!(meanInflation >= WorldEconomy.MIN_MEAN_INFLATION && meanInflation <= WorldEconomy.MAX_MEAN_INFLATION)) {
             return "The world's inflation is outside what a city can be founded into.";
         }

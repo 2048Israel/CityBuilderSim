@@ -897,9 +897,10 @@ public class LongPlaytest {
         }
         // ...and a line for every month it went under, with the month's flows:
         // what took it there (the held-10 stress runs were read with this).
-        if (Boolean.getBoolean("playtest.capital") && bk.getResolutionLossThisMonth() > 0) {
+        // (The hole since 0.7.14 is the bank's own record of it: nothing absorbs it any more.)
+        if (Boolean.getBoolean("playtest.capital") && bk.getShortfallThisMonth() > 0) {
             out.printf("FAIL m%d br %.0f open %,.0f hole %,.0f | interest %,.0f trading %,.0f pbt %,.0f net %,.0f | prov %,.0f wo %,.0f used %,.0f allow %,.0f | div %,.0f bought %,.0f issued %,.0f | payroll %,.0f upkeep %,.0f | book %,.0f rwa %,.0f failures %d | securities %,.0f mark %,.0f%n",
-                    g.getMonth(), bk.getBranches(), bk.getOpeningEquity(), bk.getResolutionLossThisMonth(),
+                    g.getMonth(), bk.getBranches(), bk.getOpeningEquity(), bk.getShortfallThisMonth(),
                     bk.getInterestEarned(), bk.getTradingIncome(), bk.getProfitLastMonth(), bk.getNetIncome(),
                     bk.provisions(), bk.getWriteOffs(), bk.getAllowanceUsed(), bk.getAllowance(),
                     bk.getDividendsPaid(), bk.getSharesBoughtBack(), bk.getSharesIssued(),
@@ -925,7 +926,7 @@ public class LongPlaytest {
             boolean whole = false;
             for (String s : cr.sectors()) whole |= cr.wasRestructuredThisMonth(s);
             double open = bk.getOpeningEquity();
-            if (bk.getResolutionLossThisMonth() > 0 || whole || (open > 0 && bk.provisions() > .25 * open)) {
+            if (bk.getShortfallThisMonth() > 0 || whole || (open > 0 && bk.provisions() > .25 * open)) {
                 StringBuilder sb = new StringBuilder();
                 for (String s : cr.sectors()) {
                     double owed = cr.getPrincipal(s), wo = cr.getWrittenOffThisMonth(s);
@@ -938,7 +939,7 @@ public class LongPlaytest {
                             bk.getSectorAllowance(s)));
                 }
                 out.printf("DEF m%d %s eq open %,.0f -> %,.0f | wo %,.0f prov %,.0f allow %,.0f (open %,.0f) | book %,.0f rwa %,.0f%s%n",
-                        g.getMonth(), bk.getResolutionLossThisMonth() > 0 ? "FAILED" : whole ? "whole" : "provision",
+                        g.getMonth(), bk.getShortfallThisMonth() > 0 ? "FAILED" : whole ? "whole" : "provision",
                         open, bk.equity(), bk.getWriteOffs(), bk.provisions(), bk.getAllowance(), bk.getOpeningAllowance(),
                         bk.getBook(), bk.getWeightedBook(), sb);
             }
@@ -1766,6 +1767,13 @@ public class LongPlaytest {
        Danzik and the world the default, so the only thing the flag moves is
        the money. A run on wealthy is the 0.7.9 run to the byte, which is the
        proof that making the founding a choice changed nothing else.
+
+       ...AND insane (0.7.14): D$0 and US$0, the ground owed abroad on a
+       dollar bond. Its player borrows the village's invoice on the build
+       screen's bond before placing a house (borrowForTheVillage()), and
+       every later stage of the village the treasury is short of on the
+       funding page's bond (villageBuild()); every other founding builds its
+       village as before, to the byte.
        ===================================================================== */
 
     /** The founding preset under -Dplaytest.founding, standard when unset. */
@@ -1854,7 +1862,7 @@ public class LongPlaytest {
         }
         traceMonths.println("month,pop,cash,gdp,taxIncome,interest,cityDebt,foreignDebt,notes,advances,"
                 + "arrears,overdraft,rate,parity,atGuard,index,inflation,vaultUsd,defenceUsd,"
-                + "bankFails,policy,cityRate,refusedSkips,noMoney");
+                + "bankFails,policy,cityRate,refusedSkips,noMoney,stake,fundValue,fundCash,preferred");
         traceBorrow.println("month,type,kind,foreign,face,rate,rateIs,months,for");
         traceHouse.println("month,pop,homes,households,capacity,jobs,latent,pressure,rentF,rentS,reqF,reqS,"
                 + "breakEven,reCash,reAssets,rePrincipal,mortgages,mortgagePrincipal,bulletPrincipal,"
@@ -1893,7 +1901,7 @@ public class LongPlaytest {
             if (r.getKey().endsWith(": no money")) noMoney += r.getValue();
         }
         traceMonths.printf(java.util.Locale.ROOT,
-                "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d%n",
+                "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d,%.6f,%.3f,%.3f,%.3f%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(), g.getCash(),
                 g.getEconomyManager().getMonthGdp(), g.getEconomyManager().getTaxIncome(),
                 g.getEconomyManager().getNationalAccounts().getInterestExpense(),
@@ -1902,7 +1910,9 @@ public class LongPlaytest {
                 fx.getRate(), fx.getParity(), fx.getRate() >= fx.getMaxRate() * (1 - 1e-9) ? 1 : 0,
                 g.getPriceIndex().getIndex(), g.getPriceIndex().inflation(),
                 fx.getReservesUsd(), fx.getDefenceUsd(), g.getBank().getFailures(),
-                paper.getPolicyRate(), paper.getRate(), refusedSkips, noMoney);
+                paper.getPolicyRate(), paper.getRate(), refusedSkips, noMoney,
+                // ...and the city's bank and fund (0.7.14), on the end.
+                g.cityStakeInBank(), g.fundValue(), g.getFund().getCash(), g.getBank().preferredOutstanding());
         traceHouse(g);
         tracePop(g);
     }
@@ -1984,6 +1994,44 @@ public class LongPlaytest {
      */
     static final Rollover.Mode ROLLOVER = Rollover.Mode.valueOf(
             System.getProperty("playtest.rollover", "SAME_STRUCTURE").trim().toUpperCase(java.util.Locale.ROOT));
+
+    /* =====================================================================
+       THE CITY'S FUND AND THE BANK'S RESCUE, STATED (0.7.14)
+
+       -Dplaytest.rescue=AUTO|BUTTON, AUTO when unset - what a new game has
+       (Game.newGame()): the city resolves a failed bank for its shares the
+       month it fails. BUTTON presses the Bank tab's button the month the
+       bank is found frozen, which is the same resolution a month's lag
+       later. Either replaces the loop this harness ran until 0.7.14, which
+       every month put min(needed, a quarter of the treasury) into a failed
+       bank or a standing one under its minimum as a gift: the quarter cap
+       is gone with the gift - a resolution is a promise, paid whole and
+       advanced by the central bank past the treasury's cash, and the
+       preferred is bought whole, the funding page's bond raising what the
+       treasury lacks first.
+
+       -Dplaytest.preferred=ACCEPT|DECLINE, ACCEPT when unset: what the
+       player answers when a standing bank under its minimum asks the city to
+       buy its preferred.
+
+       -Dplaytest.fund=<dial>, 0 when unset: the fund's dial as a share of
+       the year's surplus - 1 for 100%, 3 for 300% ("100%" reads 1).
+       ===================================================================== */
+
+    /** The rescue setting under -Dplaytest.rescue, AUTO when unset. */
+    static final boolean RESCUE_AUTO = !"BUTTON".equalsIgnoreCase(System.getProperty("playtest.rescue", "AUTO").trim());
+
+    /** The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. */
+    static final boolean PREFERRED_ACCEPT = !"DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT").trim());
+
+    /** The fund's dial under -Dplaytest.fund, 0 when unset. */
+    static final double FUND_DIAL = fundDial(System.getProperty("playtest.fund", "0"));
+
+    static double fundDial(String s) {
+        String t = s.trim();
+        if (t.endsWith("%")) return Double.parseDouble(t.substring(0, t.length() - 1).trim()) / 100;
+        return Double.parseDouble(t);
+    }
 
     /* =====================================================================
        WAGES AGAINST THE INDEX (2026-09-21)
@@ -2715,6 +2763,11 @@ public class LongPlaytest {
         return t == null ? 0 : g.getBuildingManager().getQuantity(t.getId());
     }
 
+    /** The founding village's builds: build(), and on an Insane founding the funding page's bond for a stage the treasury is short of (0.7.14). Every other founding, build() to the byte. */
+    static boolean villageBuild(Game g, String name, int quantity) {
+        return FOUNDING == Founding.Preset.INSANE ? buildOnTheFundingPage(g, name, quantity) : build(g, name, quantity);
+    }
+
     /**
      * Orders a building the way the screens do: check land, buy some if short,
      * borrow if the treasury cannot cover it, then place the order.
@@ -2962,29 +3015,23 @@ public class LongPlaytest {
             lifetimeHouseholdWriteOffs += g.getHouseholdBalance().getWrittenOff();
 
             /*
-             * THE PLAYER RECAPITALISES ITS BANK, because a player would.
-             *
-             * A frozen bank means no credit, and no credit means nothing gets
-             * built - so a treasury sitting on billions while its banking system
-             * is shut is not a simulated player, it is a simulated bystander.
-             * This exercises the one lever the failure mechanic has, which is
-             * otherwise never pulled in four thousand months.
-             *
-             * Capped at a quarter of the treasury so it stays a decision with a
-             * cost rather than a reflex.
+             * THE PLAYER RESOLVES A FAILED BANK AND ANSWERS ITS OFFER (0.7.14),
+             * because a player would - a frozen bank means no credit, and no
+             * credit means nothing gets built. On the button (-Dplaytest.rescue=
+             * BUTTON) it presses the month it finds the bank frozen; automatic,
+             * the month did it. A standing bank under its minimum asks the city
+             * for preferred, and the player answers (-Dplaytest.preferred). See
+             * THE CITY'S FUND AND THE BANK'S RESCUE, STATED.
              */
-            double needed = g.bankRecapitalisationNeeded();
-            if (needed > 0 && g.getCash() > 0) {
-                double put = g.recapitaliseBank(Math.min(needed, g.getCash() * .25));
-                if (put > 0) lifetimeBailouts += put;
-                if (put > 0 && Boolean.getBoolean("playtest.fx")) {
-                    Bank b = g.getBank();
-                    out.printf("   bank m%-4d put %,.0f (%s) | equity now %,.0f, weighted book %,.0f, loans %,.0f, securities %,.0f | month: net income %,.0f trading %,.0f write-offs %,.0f dividend %,.0f | failed %d times, lifetime %,.0f%n",
-                        g.getMonth(), put, b.getFailures() > failuresSeen ? "FAILED" : "topped up", b.equity(), b.getWeightedBook(), b.getBook(), b.getSecurities(),
-                        b.getNetIncome(), b.getTradingIncome(), b.getWriteOffs(), b.getDividendsPaid(), b.getFailures(), lifetimeBailouts);
-                    failuresSeen = b.getFailures();
-                }
+            if (!RESCUE_AUTO && g.canResolveBank()) {
+                double paid = g.resolveBank();
+                if (paid > 0) buttonPresses++;
             }
+            if (g.isPreferredOfferPending()) {
+                if (PREFERRED_ACCEPT) acceptTheOffer(g);
+                else g.declinePreferredOffer();
+            }
+            watchTheStake(g);
 
             // ...and its equity's two parts (0.7.13, round 2): how low paid in
             // runs - a buyback comes off it at all it cost - and the most the
@@ -3227,6 +3274,34 @@ public class LongPlaytest {
         for (CorporateBond b : bondsWas.getBonds()) restingWas += bondsWas.bookOf(b).bids().size() + bondsWas.bookOf(b).asks().size();
         for (CorporateBond b : bondsNow.getBonds()) restingNow += bondsNow.bookOf(b).bids().size() + bondsNow.bookOf(b).asks().size();
         same(month, "...and the orders resting on their books", restingNow, restingWas);
+        // The city's fund and the bank's preferred (0.7.14): the fund's cash, its settings and what
+        // it is worth, the register's city shares in both books, the bonds' city face, the preferred
+        // with its arrears and warrants, and the budget's line for the transfer.
+        TreasuryFund fundWas = g.getFund(), fundNow = back.getFund();
+        same(month, "the city's fund's cash across a save", fundNow.getCash(), fundWas.getCash());
+        same(month, "...its dial", fundNow.getDial(), fundWas.getDial());
+        if (fundNow.getRescueMode() != fundWas.getRescueMode() || fundNow.isOfferPending() != fundWas.isOfferPending()
+                || fundNow.getResolutions().size() != fundWas.getResolutions().size()) {
+            flag(month, "the fund's RESCUE SETTING, OFFER OR RESCUES did not survive the save",
+                    fundWas.getRescueMode() + "/" + fundWas.isOfferPending() + "/" + fundWas.getResolutions().size() + " -> "
+                    + fundNow.getRescueMode() + "/" + fundNow.isOfferPending() + "/" + fundNow.getResolutions().size());
+        }
+        same(month, "...what it is worth", back.fundValue(), g.fundValue());
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            same(month, Equity.COMPANIES[c] + ": the city's shares across a save",
+                    back.getEquity().getCityShares(c), g.getEquity().getCityShares(c));
+            same(month, "...its rescue book's", back.getEquity().getCityRescueShares(c), g.getEquity().getCityRescueShares(c));
+        }
+        same(month, "the bonds' city face across a save", bondsNow.faceHeldByCity(), bondsWas.faceHeldByCity());
+        same(month, "the bank's preferred across a save", back.getBank().preferredOutstanding(), g.getBank().preferredOutstanding());
+        same(month, "...its arrears", back.getBank().getPreferredArrears(), g.getBank().getPreferredArrears());
+        same(month, "...its warrants' shares", back.getBank().warrantSharesOut(), g.getBank().warrantSharesOut());
+        same(month, "the fund's transfer on the budget across a save",
+                now.getNationalAccounts().getFundTransfer(), was.getNationalAccounts().getFundTransfer());
+        // ...and the city's own rate and its curve, which the fund's bonds are marked on (0.7.14): the
+        // debt market's last strike, carried whole (DebtManager.marketToSave()). In millionths of a point.
+        same(month, "the city's rate across a save", back.getDebtManager().getRate() * 1e6, g.getDebtManager().getRate() * 1e6);
+        same(month, "...and its ten-year rate", back.getDebtManager().curveRate(120) * 1e6, g.getDebtManager().curveRate(120) * 1e6);
         // The long sick (2026-09-11): the ring is a stock, and so is who it killed last month.
         double[] ringNow = back.getSickness().getState(), ringWas = g.getSickness().getState();
         for (int i = 0; i < ringWas.length; i++) {
@@ -3289,12 +3364,147 @@ public class LongPlaytest {
     /* =================================================================== */
 
     static double lifetimeWriteOffs;
-    static double lifetimeBailouts;
-    static int failuresSeen;
     /** The bank's paid-in capital at its lowest, the month, and the most its two parts were ever off its equity (0.7.13, round 2). */
     static double lowestPaidIn = Double.POSITIVE_INFINITY, worstSplitOff;
     static int lowestPaidInMonth = -1;
     static double lifetimeHouseholdWriteOffs;
+
+    /* ---------------- the city's fund and the bank's rescue (0.7.14) ---------------- */
+
+    /** Presses of the Bank tab's button that resolved the bank (-Dplaytest.rescue=BUTTON). */
+    static int buttonPresses;
+    /** Offers accepted after borrowing for them on the funding page's bond, and what that bond raised. */
+    static int offersFunded;
+    static double offerFundingRaised;
+
+    /**
+     * ACCEPTS THE BANK'S OFFER, the way the page lets a player: a treasury
+     * short of it takes the funding page's first offer - the build screen's
+     * twenty-year bond, sized to the gap - and then pays. If it still cannot,
+     * the offer waits for next month.
+     */
+    static void acceptTheOffer(Game g) {
+        double gap = g.preferredOfferShortBy();
+        if (gap > 0) {
+            double before = g.getCash();
+            g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            notePaper(g, "the bank's preferred (the offer's funding page)");
+            if (g.getCash() > before) { offersFunded++; offerFundingRaised += g.getCash() - before; }
+        }
+        g.acceptPreferredOffer();
+    }
+
+    /**
+     * THE CITY'S STAKE IN ITS BANK AFTER EACH RESCUE: at the resolution, then
+     * five, ten and twenty-five years on, and the first months it is under
+     * half and under a tenth - until the next resolution takes it back to
+     * everything. One row a resolution.
+     */
+    static final class Stake {
+        int month;
+        double at = Double.NaN, five = Double.NaN, ten = Double.NaN, twentyFive = Double.NaN;
+        int under50 = -1, under10 = -1, endedBy = -1;
+        double lowest = 1;
+    }
+    static final List<Stake> stakes = new ArrayList<>();
+    static int resolutionsSeen;
+    /** The fund's value, its cash and the most of any company its market book held, over the run. */
+    static double fundPeak, fundCashShareSum;
+    static int fundMonths;
+    /** The warrants' shares taken at expiry, at the price the month they were taken (share counts move with the exchange's splits, so the count alone does not add up across a run). */
+    static double warrantSharesSeen, warrantValueTaken;
+    static int warrantExercises;
+    static final double[] mostHeld = new double[Equity.COMPANIES.length];
+
+    static void watchTheStake(Game g) {
+        List<TreasuryFund.Resolution> all = g.getFund().getResolutions();
+        while (resolutionsSeen < all.size()) {
+            if (!stakes.isEmpty() && stakes.get(stakes.size() - 1).endedBy < 0) {
+                stakes.get(stakes.size() - 1).endedBy = all.get(resolutionsSeen).month();
+            }
+            Stake s = new Stake();
+            s.month = all.get(resolutionsSeen).month();
+            stakes.add(s);
+            resolutionsSeen++;
+        }
+        double stake = g.cityStakeInBank();
+        double taken = g.getFund().getWarrantSharesTaken();
+        if (taken > warrantSharesSeen) {
+            warrantValueTaken += (taken - warrantSharesSeen) * g.getExchange().price(Equity.BANK);
+            warrantExercises++;
+            warrantSharesSeen = taken;
+        }
+        if (!stakes.isEmpty()) {
+            Stake s = stakes.get(stakes.size() - 1);
+            int since = g.getMonth() - s.month;
+            if (Double.isNaN(s.at)) s.at = stake;
+            if (since >= 60 && Double.isNaN(s.five)) s.five = stake;
+            if (since >= 120 && Double.isNaN(s.ten)) s.ten = stake;
+            if (since >= 300 && Double.isNaN(s.twentyFive)) s.twentyFive = stake;
+            if (stake < .5 && s.under50 < 0) s.under50 = g.getMonth();
+            if (stake < .1 && s.under10 < 0) s.under10 = g.getMonth();
+            s.lowest = Math.min(s.lowest, stake);
+        }
+        double value = g.fundValue();
+        if (value > 0) {
+            fundPeak = Math.max(fundPeak, value);
+            fundCashShareSum += g.getFund().getCash() / value;
+            fundMonths++;
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                double shares = g.getEquity().getShares(c);
+                if (shares > 0) mostHeld[c] = Math.max(mostHeld[c], g.getEquity().getCityMarketShares(c) / shares);
+            }
+        }
+    }
+
+    /** A stake, in words: "84.4%", or "-" before it was read. */
+    static String pct(double v) { return Double.isNaN(v) ? "-" : String.format("%.1f%%", v * 100); }
+
+    /* ---------------- an Insane founding (0.7.14) ---------------- */
+
+    /** What an Insane city was quoted on day 0 for its village, and what it borrowed in its first year. */
+    static DebtQuote dayZeroBond, dayZeroNote;
+    static double villageInvoice, firstYearBorrowed;
+    static int insaneBorrowings;
+
+    /**
+     * THE PLAYER OF AN INSANE CITY BORROWS FIRST: the build screen's
+     * twenty-year bond, sized to the village's invoice at a new city's prices
+     * (Founding.whatItBuys()), before it places a house - the treasury holds
+     * nothing and the clock will not run. What the day-0 quote was is kept
+     * for the report.
+     */
+    static void borrowForTheVillage(Game g) {
+        villageInvoice = Founding.whatItBuys(g.getBuildingManager().getTemplates(), 0, 0).village();
+        dayZeroBond = g.quoteLongBondForCash(villageInvoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        dayZeroNote = g.quoteTBill(villageInvoice, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        double before = g.getCash();
+        g.handleLongBondForCash(villageInvoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        notePaper(g, "the village, borrowed for first (Insane)");
+        firstYearBorrowed += Math.max(0, g.getCash() - before);
+        insaneBorrowings++;
+    }
+
+    /**
+     * ...AND BUILDS THE REST OF IT THE SAME WAY: a stage the treasury is
+     * short of is borrowed for on the funding page's bond, sized to the gap
+     * (Game.buildFundingGap()), and placed - the page a player is shown,
+     * where the advisor's own rule (canService()) will not lend to a city
+     * with no revenue. Only for an Insane founding's hand-built village.
+     */
+    static boolean buildOnTheFundingPage(Game g, String name, int quantity) {
+        if (build(g, name, quantity)) return true;
+        BuildingsTemplate t = template(g, name);
+        if (t == null) return false;
+        double gap = g.buildFundingGap(t, quantity);
+        if (!(gap > 0)) return false;
+        double before = g.getCash();
+        g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        notePaper(g, quantity + " x " + name + " (the funding page, Insane)");
+        if (g.getMonth() <= 13) firstYearBorrowed += Math.max(0, g.getCash() - before);
+        insaneBorrowings++;
+        return build(g, name, quantity);
+    }
 
     public static void main(String[] args) throws Exception {
 
@@ -3330,6 +3540,10 @@ public class LongPlaytest {
              */
             g.getDebtManager().setAutopilot(AUTOPILOT);
             g.setRolloverMode(ROLLOVER);
+            // ...and the rescue setting and the fund's dial (0.7.14), as the
+            // flags say: the constructor founds on the button at 0.
+            g.setRescueMode(RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
+            g.setFundDial(FUND_DIAL);
             if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
             if (INFLATION_TARGET != null) g.getDebtManager().setInflationTarget(INFLATION_TARGET);
 
@@ -3397,8 +3611,10 @@ public class LongPlaytest {
             }
             educationSet = tuitionScale != null || grantBasis != null || grantAmount != null
                     || loanRate != null || SCHOOLS;
-            build(g, "House", 40 + seed % 4);
-            build(g, "Convenience Store", 3);
+            // An Insane city borrows first (0.7.14): see borrowForTheVillage().
+            if (FOUNDING == Founding.Preset.INSANE) borrowForTheVillage(g);
+            villageBuild(g, "House", 40 + seed % 4);
+            villageBuild(g, "Convenience Store", 3);
             /*
              * AND A FIELD, SINCE 2026-09-13. A town is founded where there is
              * food, and since the tenth sector exists the mills the advisor
@@ -3410,12 +3626,12 @@ public class LongPlaytest {
              * and six city blocks, which is what a founding settlement can
              * afford and roughly what it would do.
              */
-            build(g, "Mixed Farm", 2);
+            villageBuild(g, "Mixed Farm", 2);
             run(g, 3 + (seed / 4) % 3);
-            build(g, "House", 20 + (seed / 12) % 3);
+            villageBuild(g, "House", 20 + (seed / 12) % 3);
             run(g, 4);
-            build(g, "Convenience Store", 2);
-            build(g, "Construction Depot", 1);
+            villageBuild(g, "Convenience Store", 2);
+            villageBuild(g, "Construction Depot", 1);
             run(g, 5);
             advise(g);
             run(g, 6);
@@ -4133,8 +4349,87 @@ public class LongPlaytest {
                 Math.min(999, bnk.capitalRatio()) * 100, Bank.CAPITAL_RATIO * 100);
         out.printf("  written off over the run: $%,.0fk, of which $%,.0fk was families%n",
                 lifetimeWriteOffs, lifetimeHouseholdWriteOffs);
-        out.printf("  it failed %d time(s); the city put $%,.0fk of capital back in%n",
-                bnk.getFailures(), lifetimeBailouts);
+        /*
+         * THE CITY'S CAPITAL IN ITS BANK, ITS STAKE AND ITS FUND (0.7.14),
+         * each line stating its setting, as the rollover's does.
+         */
+        TreasuryFund fundEnd = g.getFund();
+        double resolvedPaid = 0, resolvedFromCash = 0, resolvedAdvanced = 0, ownersLostHh = 0, ownersLostWorld = 0,
+                ownersLostFund = 0;
+        for (TreasuryFund.Resolution r : fundEnd.getResolutions()) {
+            resolvedPaid += r.paid(); resolvedFromCash += r.fromCash(); resolvedAdvanced += r.advanced();
+            ownersLostHh += r.householdsValue(); ownersLostWorld += r.worldValue(); ownersLostFund += r.fundValue();
+        }
+        out.printf("  it failed %d time(s); the city put $%,.0fk of capital back in: $%,.0fk resolving it and $%,.0fk"
+                        + " of preferred%n",
+                bnk.getFailures(), resolvedPaid + fundEnd.getPreferredBought(), resolvedPaid, fundEnd.getPreferredBought());
+        out.printf("  the rescues over the run (%s): %d resolution(s)%s paid $%,.0fk, $%,.0fk from the treasury's cash"
+                        + " and $%,.0fk for the central bank to advance; the old owners lost $%,.0fk at the last price"
+                        + " (households $%,.0fk, abroad $%,.0fk, the fund's own $%,.0fk); holes $%,.0fk in all%n",
+                RESCUE_AUTO ? "AUTOMATIC" : "BUTTON", fundEnd.getResolutions().size(),
+                RESCUE_AUTO ? "" : String.format(" (%d press(es) of the button)", buttonPresses),
+                resolvedPaid, resolvedFromCash, resolvedAdvanced, ownersLostHh + ownersLostWorld + ownersLostFund,
+                ownersLostHh, ownersLostWorld, ownersLostFund, bnk.getShortfallLifetime());
+        {
+            StringBuilder st = new StringBuilder();
+            for (Stake s : stakes) {
+                st.append(String.format(" m%d %s -> 5y %s, 10y %s, 25y %s, lowest %s%s%s%s;", s.month, pct(s.at),
+                        pct(s.five), pct(s.ten), pct(s.twentyFive), pct(s.lowest),
+                        s.under50 >= 0 ? String.format(", under half m%d", s.under50) : ", never under half",
+                        s.under10 >= 0 ? String.format(", under a tenth m%d", s.under10) : ", never under a tenth",
+                        s.endedBy >= 0 ? String.format(" (resolved again m%d)", s.endedBy) : ""));
+            }
+            out.printf("  the city's stake in the bank: %s at the end, %,.3f of %,.3f shares;%s%n",
+                    pct(g.cityStakeInBank()), g.getEquity().getCityShares(Equity.BANK), g.getEquity().getShares(Equity.BANK),
+                    stakes.isEmpty() ? " never rescued" : st.toString());
+        }
+        out.printf("  the preferred over the run (%s): %d offer(s), %d accepted (%d after borrowing $%,.0fk on the"
+                        + " funding page), %d declined; bought $%,.0fk; dividends $%,.0fk paid, $%,.0fk in arrears at"
+                        + " the end; redeemed $%,.0fk; warrants bought back $%,.0fk, exercised %d time(s) into shares"
+                        + " worth $%,.0fk when taken; new shares sold to repay $%,.0fk (%d repayment(s) left part-paid for a month);"
+                        + " $%,.0fk outstanding at the end%n",
+                PREFERRED_ACCEPT ? "ACCEPT" : "DECLINE", fundEnd.getOffersMade(), fundEnd.getOffersAccepted(),
+                offersFunded, offerFundingRaised, fundEnd.getOffersDeclined(), fundEnd.getPreferredBought(),
+                fundEnd.getPreferredDividends(), bnk.getPreferredArrears(), fundEnd.getPreferredRedeemed(),
+                fundEnd.getWarrantsBoughtBack(), warrantExercises, warrantValueTaken, bnk.getRepaymentRaisedLifetime(),
+                bnk.getRepaymentShortLifetime(), bnk.preferredOutstanding());
+        {
+            StringBuilder book = new StringBuilder();
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                double shares = g.getEquity().getShares(c);
+                double now = shares > 0 ? g.getEquity().getCityMarketShares(c) / shares : 0;
+                if (now > 0 || mostHeld[c] > 0) {
+                    book.append(String.format(" %s %.1f%% (most %.1f%%);", Equity.COMPANIES[c], now * 100, mostHeld[c] * 100));
+                }
+            }
+            out.printf("  the city's fund over the run (dial %.0f%%): worth $%,.0fk at the end (cash $%,.0fk, shares"
+                            + " $%,.0fk, bonds $%,.0fk, the rescue book $%,.0fk), at most $%,.0fk; paid in $%,.0fk from"
+                            + " the surplus and $%,.0fk from the treasury's cash; the 3%% transfer $%,.0fk paid and"
+                            + " $%,.0fk short; dividends $%,.0fk (the rescue book's $%,.0fk), coupons $%,.0fk; bought"
+                            + " shares $%,.0fk and bonds $%,.0fk, sold $%,.0fk and $%,.0fk; its cash a mean %.1f%% of"
+                            + " its value; its market book at the end:%s%n",
+                    FUND_DIAL * 100, g.fundValue(), fundEnd.getCash(), g.fundMarketSharesValue(), g.fundBondsValue(),
+                    g.fundRescueValue(), fundPeak, fundEnd.getPaidInFromSurplus(), fundEnd.getPaidInFromCash(),
+                    fundEnd.getTransfersPaid(), fundEnd.getTransfersShort(),
+                    fundEnd.getDividendsMarket() + fundEnd.getDividendsRescue(), fundEnd.getDividendsRescue(),
+                    fundEnd.getCoupons(), fundEnd.getSharesBought(), fundEnd.getBondsBought(),
+                    fundEnd.getSharesSold(), fundEnd.getBondsSold(),
+                    fundMonths > 0 ? fundCashShareSum / fundMonths * 100 : 0,
+                    book.length() > 0 ? book.toString() : " nothing");
+        }
+        if (FOUNDING == Founding.Preset.INSANE) {
+            out.printf("  the Insane founding: the land bond US$%,.0fk at %.0f%% for %d years; the village invoiced"
+                            + " $%,.0fk; the day-0 quote for it: the %d-year bond %s, the %d-month note %s; borrowed"
+                            + " $%,.0fk in its first year in %d issue(s) on the funding page%n",
+                    Founding.landBondUsd(), Founding.INSANE_LAND_COUPON * 100, Founding.INSANE_LAND_YEARS,
+                    villageInvoice, Game.BUILD_BOND_YEARS,
+                    dayZeroBond == null ? "-" : String.format("at %.2f%% for $%,.0fk of face, bringing $%,.0fk",
+                            dayZeroBond.marketRate() * 100, dayZeroBond.faceValue(), dayZeroBond.cashReceived()),
+                    Game.BUILD_NOTE_MONTHS,
+                    dayZeroNote == null ? "-" : String.format("at %.2f%% for $%,.0fk of face, bringing $%,.0fk",
+                            dayZeroNote.marketRate() * 100, dayZeroNote.faceValue(), dayZeroNote.cashReceived()),
+                    firstYearBorrowed, insaneBorrowings);
+        }
         out.printf("  its equity at the end: paid in $%,.0fk, retained $%,.0fk; paid in at its lowest $%,.0fk (m%d);"
                         + " the two off its equity by at most $%.6fk%n",
                 bnk.paidInCapital(), bnk.retainedEarnings(),

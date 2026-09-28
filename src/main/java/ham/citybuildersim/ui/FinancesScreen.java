@@ -23,11 +23,14 @@ import static ham.citybuildersim.ui.Levers.*;
  * service, home and abroad, your rate taken apart, the book, buying back,
  * and borrowing - at home or in somebody else's money - and, since 0.7.0,
  * the money itself: the central bank's books, M0 and M2; since 0.7.12
- * the businesses' bond market beside the city's own; and since 0.7.13, at
- * the top of both borrow pages, the treasury's rollover of what falls due.
+ * the businesses' bond market beside the city's own; since 0.7.13, at
+ * the top of both borrow pages, the treasury's rollover of what falls due;
+ * and since 0.7.14 the city's fund, with the treasury's setting for a failed
+ * bank beside the rollover.
  *
- * Split out of UserInterface on 2026-09-18: the eleven banners from FINANCES
- * to BORROW exactly as they were, the shell's members reached through ui. The
+ * Split out of UserInterface on 2026-09-18: what are now the twelve banners
+ * from FINANCES to BORROW - all but THE CITY'S FUND (0.7.14) exactly as they
+ * were then - the shell's members reached through ui. The
  * shell still reads which page and area are open (financePage, financeArea)
  * for the rail and the scroll memory. THE DEBT RESULT - what a debt decision
  * did, shown after it - had sat at the tail of the build cards and came here
@@ -68,6 +71,8 @@ final class FinancesScreen {
                         and M2 with a year of each (0.7.0).
          THE BOND       the businesses' bonds, not the city's (0.7.12): every
          MARKET         issue, who holds it, and one bond's order book.
+         THE CITY'S     what the treasury saves (0.7.14): its books, its dial,
+         FUND           its 3% transfer, the bank's rescue, and the hand.
 
        THE BANK IS NOT HERE ANY MORE. Jerus: "i think we are going to have 11
        rails, bank is its own thing." It is a rail tab now.
@@ -86,6 +91,8 @@ final class FinancesScreen {
     static final String[] MONEY_PAGES  = {"Money"};
     /** The businesses' bonds: every issue, and one bond's order book (0.7.12). */
     static final String[] BOND_PAGES   = {"Every issue", "A bond's book"};
+    /** The city's fund: what it holds and its rules, and the player's own orders (0.7.14). */
+    static final String[] FUND_PAGES   = {"Holdings", "By hand"};
 
     /**
      * One kind of paper the city can sell.
@@ -212,6 +219,16 @@ final class FinancesScreen {
                 businessDebt > 0 ? String.format("%.0f%% of what the businesses owe", bondFace / businessDebt * 100)
                         : "the businesses owe nothing",
                 Palette.TEXT_HEAD, "The bond market", "Every issue"));
+
+        TreasuryFund fund = ui.game.getFund();
+        double fundValue = ui.game.fundValue();
+        column.getChildren().add(financeRow("The city's fund",
+                "its shares and bonds, the bank's rescue, the dial, and the 3% it pays the treasury",
+                fundValue > 0 ? money(fundValue) + " held" : "empty",
+                fund.getTransferShort() > 0 ? money(fund.getTransferShort()) + " of its transfer unpaid last month"
+                        : fund.getTransferPaid() > 0 ? money(fund.getTransferPaid()) + " paid to the treasury last month"
+                        : String.format("the dial at %.0f%% of the year's surplus", fund.getDial() * 100),
+                fund.getTransferShort() > 0 ? Palette.WARN : Palette.TEXT_HEAD, "The city's fund", "Holdings"));
 
         /* ------------------------- the standing warnings ------------------------- */
         if (ledger.getOverdraft() > 0) {
@@ -353,6 +370,7 @@ final class FinancesScreen {
             case "Borrow"   -> BORROW_PAGES;
             case "Money"    -> MONEY_PAGES;
             case "The bond market" -> BOND_PAGES;
+            case "The city's fund" -> FUND_PAGES;
             default         -> POSITION_PAGES;
         };
 
@@ -382,6 +400,10 @@ final class FinancesScreen {
             case "The bond market" -> {
                 if ("A bond's book".equals(financePage)) bondBookPage(column);
                 else                                     bondMarketPage(column);
+            }
+            case "The city's fund" -> {
+                if ("By hand".equals(financePage)) fundHandPage(column);
+                else                               fundPage(column);
             }
             default -> {
                 switch (financePage) {
@@ -1403,8 +1425,12 @@ final class FinancesScreen {
             column.getChildren().add(statementLine("Last year's surplus", marked(here, money(plan.surplus())),
                     plan.surplus() < 0 ? Palette.WARN : null));
             if (plan.used() > 0) {
-                column.getChildren().add(statementLine("...of it netted already this year",
+                column.getChildren().add(statementLine("...of it netted already this year, or kept for the fund",
                         marked(here, money(plan.used())), Palette.TEXT_MUTED));
+            }
+            if (game.fundReservation() > 0) {
+                column.getChildren().add(statementLine("...of which kept for the fund's pay-in at the year end",
+                        marked(here, money(game.fundReservation())), Palette.TEXT_MUTED));
             }
             if (mode != Rollover.Mode.MANUAL) {
                 column.getChildren().add(statementLine("Netted from it", marked(here, money(plan.netted()))));
@@ -1447,6 +1473,340 @@ final class FinancesScreen {
                 + "advance."));
     }
 
+    /* ---------------------- WHEN THE BANK FAILS (0.7.14) ----------------------
+     *
+     * Jerus: "Treasury setting, auto". Beside the rollover, on both borrow
+     * pages and on the fund's own: the two chips, what each does, the button
+     * while the bank waits frozen, and the last resolution. The rescue is
+     * Game.resolveBank() whichever way it is triggered.
+     */
+    static final String[] RESCUE_CHIPS = { "Automatic", "Wait for my button" };
+
+    void rescueBlock(VBox column) {
+        Game game = ui.game;
+        String here = game.getCurrency().qualifiedSymbol();
+        TreasuryFund.RescueMode mode = game.getRescueMode();
+
+        column.getChildren().add(statementHead("When the bank fails"));
+        column.getChildren().add(chipStrip(RESCUE_CHIPS, RESCUE_CHIPS[mode.ordinal()], Palette.SIZE_BODY,
+                picked -> {
+                    for (int i = 0; i < RESCUE_CHIPS.length; i++) {
+                        if (RESCUE_CHIPS[i].equals(picked)) game.setRescueMode(TreasuryFund.RescueMode.values()[i]);
+                    }
+                    showFinanceMenu();
+                }));
+        column.getChildren().add(sentence(mode == TreasuryFund.RescueMode.AUTOMATIC
+                ? "The month the bank fails, the city resolves it: its owners lose everything, the city pays "
+                        + "the hole and the capital to reopen - from the treasury's cash first, and what that "
+                        + "lacks the central bank advances - and every share goes to the fund's rescue book. "
+                        + "The bank reopens that month."
+                : "A failed bank stays frozen, carrying its hole and lending nothing new, until you press the "
+                        + "button here or on the Bank tab. The resolution is then the same as the automatic one.",
+                Palette.TEXT_BODY));
+
+        if (game.canResolveBank()) {
+            column.getChildren().add(alert("The bank has failed and waits for the city",
+                    String.format("Resolving it costs %s: the hole and the capital to reopen. Its owners lose "
+                            + "everything and every share becomes the city's.",
+                            marked(here, money(game.bankRecapitalisationNeeded())))));
+            Button resolve = new Button("Resolve the bank - " + marked(here, money(game.bankRecapitalisationNeeded())));
+            resolve.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
+                    + " -fx-padding: 8 18 8 18;");
+            resolve.setOnAction(e -> {
+                game.resolveBank();
+                showFinanceMenu();
+            });
+            HBox act = new HBox(resolve);
+            act.setAlignment(Pos.CENTER_LEFT);
+            act.setStyle("-fx-padding: 8 0 4 0;");
+            column.getChildren().add(act);
+        }
+
+        TreasuryFund.Resolution last = game.getLastResolution();
+        if (last != null) {
+            column.getChildren().add(statementNote(String.format("The last, in %s: the city put in %s, %s from "
+                    + "the treasury's cash and %s advanced by the central bank; the old owners lost %s at the "
+                    + "last price.", CityCalendar.format(last.month()),
+                    marked(here, money(last.paid())), marked(here, money(last.fromCash())),
+                    marked(here, money(last.advanced())), marked(here, money(last.ownersLost())))));
+        }
+    }
+
+    /* =====================================================================
+       THE CITY'S FUND (0.7.14)
+
+       Jerus: "Rule plus your hand". What it holds, book by book and line by
+       line; the dial and its four rules; the 3% it pays the treasury; the
+       bank's rescue setting. The hand is its own page. Every figure is the
+       model's (Game's fund getters, TreasuryFund's record).
+       ===================================================================== */
+
+    /** What the player's hand is asking for on the fund's page: money to move or spend, and the company or bond picked. */
+    double fundAsk = 0;
+    int fundCompany = Equity.BANK;
+    String fundIssuer = null;
+
+    /** A share, 0-1, as "x.x%". */
+    static String percentOf(double s) { return String.format("%.1f%%", s * 100); }
+
+    void fundPage(VBox column) {
+        Game game = ui.game;
+        TreasuryFund fund = game.getFund();
+        Bank bank = game.getBank();
+        String here = game.getCurrency().qualifiedSymbol();
+
+        /* ------------------------------ what it holds ------------------------------ */
+        column.getChildren().add(statementHead("What it holds"));
+        column.getChildren().add(statementLine("Its cash", marked(here, money(fund.getCash()))));
+        column.getChildren().add(statementLine("Company shares, its market book",
+                marked(here, money(game.fundMarketSharesValue()))));
+        column.getChildren().add(statementLine("Company bonds", marked(here, money(game.fundBondsValue()))));
+        column.getChildren().add(statementLine("The rescue book", marked(here, money(game.fundRescueValue()))));
+        column.getChildren().add(statementTotal("What it is worth", marked(here, money(game.fundValue())),
+                Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("Shares, of its market book and cash",
+                percentOf(game.fundEquityShare()) + "   (the rule's aim " + percentOf(TreasuryFund.EQUITY_WEIGHT) + ")"));
+        column.getChildren().add(statementNote(String.format("Shares at the exchange's price, bonds at the "
+                + "market's valuation, the preferred at par and its warrants at their Black-Scholes value. The "
+                + "rule keeps %s of its market book and cash in shares and the rest in bonds, and trades back "
+                + "when shares pass %s or fall %.0f points under the aim. It buys only on the market - never a "
+                + "new issue, never the city's own paper - and what does not fit waits as cash, which earns "
+                + "nothing, as the treasury's own does not.",
+                percentOf(TreasuryFund.EQUITY_WEIGHT), percentOf(TreasuryFund.REBALANCE_OVER),
+                TreasuryFund.REBALANCE_UNDER * 100)));
+
+        column.getChildren().add(subHead("Shares, by company"));
+        boolean any = false;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double v = game.fundCompanyValue(c);
+            if (!(v > 0)) continue;
+            any = true;
+            double rescue = game.fundCompanyRescueValue(c);
+            column.getChildren().add(statementLine(Equity.COMPANIES[c], marked(here, money(v)) + "  ·  "
+                    + percentOf(game.fundCompanyShare(c)) + " of it"
+                    + (rescue > 0 ? "  ·  " + marked(here, money(rescue)) + " in the rescue book" : "")));
+        }
+        if (!any) column.getChildren().add(statementLine("None", "", Palette.TEXT_MUTED));
+        column.getChildren().add(statementNote(String.format("Each company in proportion to its value on the "
+                + "exchange, and never more than %s of one in the market book; the rescue book is outside the cap.",
+                percentOf(TreasuryFund.OWNERSHIP_LIMIT))));
+
+        column.getChildren().add(subHead("Bonds, by issuer"));
+        any = false;
+        for (String issuer : Sectors.KEYS) {
+            double v = game.fundBondsValueOf(issuer);
+            if (!(v > 0)) continue;
+            any = true;
+            column.getChildren().add(statementLine(issuer, marked(here, money(v))));
+        }
+        if (!any) column.getChildren().add(statementLine("None", "", Palette.TEXT_MUTED));
+
+        column.getChildren().add(subHead("The rescue book"));
+        column.getChildren().add(statementLine("Shares it took in a resolution, or from its warrants",
+                marked(here, money(game.fundRescueSharesValue()))));
+        column.getChildren().add(statementLine("The bank's preferred, at par", marked(here, money(game.fundPreferredValue()))));
+        column.getChildren().add(statementLine("...its dividends owed and unpaid", marked(here, money(bank.getPreferredArrears())),
+                bank.getPreferredArrears() > 0 ? Palette.WARN : null));
+        column.getChildren().add(statementLine("The warrants on its shares", marked(here, money(game.fundWarrantsValue()))));
+        column.getChildren().add(statementLine("The city's stake in its bank", percentOf(game.cityStakeInBank())));
+        column.getChildren().add(statementNote("What the city holds from rescuing its bank: the shares it took when "
+                + "it resolved it, which the rule never sells, and the preferred and warrants it bought when the "
+                + "bank was under its minimum. By hand, any of it the exchange trades may be sold."));
+
+        /* -------------------------------- the dial -------------------------------- */
+        column.getChildren().add(statementHead("The dial"));
+        Label dial = new Label(String.format("%.0f%% of the year's surplus", fund.getDial() * 100));
+        dial.setStyle(Palette.figure(Palette.SIZE_TITLE, fund.getDial() > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+        column.getChildren().add(dial);
+        javafx.scene.layout.FlowPane steps = new javafx.scene.layout.FlowPane(6, 6);
+        steps.setMaxWidth(STATEMENT);
+        for (double step : new double[] {-.5, -.1, .1, .5}) {
+            steps.getChildren().add(stepChip(String.format("%+.0f points", step * 100), () -> {
+                game.setFundDial(Math.max(0, Math.min(TreasuryFund.MAX_DIAL, fund.getDial() + step)));
+                showFinanceMenu();
+            }, step < 0));
+        }
+        column.getChildren().add(steps);
+        column.getChildren().add(sentence(String.format("Once a year, when December closes, the fund takes the "
+                + "dial's share of the year's surplus - before the rollover nets it, and the surplus is used once "
+                + "between them. A year in deficit saves nothing. Past 100%% the rest comes from the treasury's "
+                + "cash, never taking it under a month of its spending. Up to %.0f%%.", TreasuryFund.MAX_DIAL * 100),
+                Palette.TEXT_BODY));
+        column.getChildren().add(statementLine("This year's surplus so far", marked(here, money(game.surplusThisYearSoFar())),
+                game.surplusThisYearSoFar() < 0 ? Palette.WARN : null));
+        column.getChildren().add(statementLine("...kept for the fund from the rollover", marked(here, money(game.fundReservation()))));
+        column.getChildren().add(statementLine("A month of the treasury's spending, the floor", marked(here, money(game.monthOfSpending()))));
+        column.getChildren().add(statementLine("The last pay-in", fund.getLastPayInMonth() >= 0
+                ? String.format("%s: %s from the surplus, %s from cash", CityCalendar.format(fund.getLastPayInMonth()),
+                        marked(here, money(fund.getLastPayInFromSurplus())), marked(here, money(fund.getLastPayInFromCash())))
+                : "never"));
+        column.getChildren().add(statementLine("Paid in by the dial, over its life",
+                marked(here, money(fund.getPaidInFromSurplus() + fund.getPaidInFromCash()))));
+        column.getChildren().add(statementLine("...and by hand, in and out", marked(here, money(fund.getHandPaidIn()))
+                + " in  ·  " + marked(here, money(fund.getHandDrawnOut())) + " out"));
+
+        /* ------------------------------ the transfer ------------------------------ */
+        column.getChildren().add(statementHead("Its 3% to the treasury"));
+        column.getChildren().add(statementLine("Last month's, on what it was worth", marked(here, money(fund.getTransferDue()))));
+        column.getChildren().add(statementLine("...paid from its cash", marked(here, money(fund.getTransferPaid())), Palette.GOOD));
+        column.getChildren().add(statementLine("...not paid, for want of cash", marked(here, money(fund.getTransferShort())),
+                fund.getTransferShort() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("This year so far", marked(here, money(fund.getTransfersThisYear()))
+                + (fund.getTransferShortThisYear() > 0 ? "  ·  " + marked(here, money(fund.getTransferShortThisYear()))
+                        + " not paid" : "")));
+        column.getChildren().add(statementLine("Next month's, on what it is worth now", marked(here, money(game.fundTransferDue()))));
+        column.getChildren().add(statementNote(String.format("A twelfth of %.0f%% of everything the fund holds, "
+                + "every month, as the budget's revenue line \"Transfer from the fund\" - Norway's fiscal rule. "
+                + "It is paid from the fund's cash only: the rule never sells to pay it, and what the cash cannot "
+                + "cover is not paid.", TreasuryFund.TRANSFER_RATE * 100)));
+
+        column.getChildren().add(subHead("What came in last month"));
+        column.getChildren().add(statementLine("Dividends", marked(here, money(fund.getMonthDividends()))));
+        column.getChildren().add(statementLine("Coupons", marked(here, money(fund.getMonthCoupons()))));
+        column.getChildren().add(statementLine("Bonds repaid", marked(here, money(fund.getMonthPrincipal()))));
+        column.getChildren().add(statementLine("Bought and sold", marked(here, money(fund.getMonthBought())) + " bought  ·  "
+                + marked(here, money(fund.getMonthSold())) + " sold"));
+
+        rescueBlock(column);
+    }
+
+    /**
+     * THE HAND (0.7.14): pay in and draw out, and orders on the two books.
+     * An order posts at the next month's step, at the price the rule's own
+     * post at - a share at the exchange's fair value, a bond at the market's
+     * valuation - and is good for that month.
+     */
+    void fundHandPage(VBox column) {
+        Game game = ui.game;
+        TreasuryFund fund = game.getFund();
+        Equity register = game.getEquity();
+        Exchange exchange = game.getExchange();
+        BondMarket market = game.getBondMarket();
+        String here = game.getCurrency().qualifiedSymbol();
+
+        /* ------------------------------ how much ------------------------------ */
+        column.getChildren().add(statementHead("How much"));
+        Label ask = new Label(fundAsk <= 0 ? "nothing asked for yet" : marked(here, moneyFull(fundAsk)));
+        ask.setStyle(Palette.figure(Palette.SIZE_TITLE, fundAsk > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+        column.getChildren().add(ask);
+        double[] amounts = {1_000, 10_000, 100_000, 1_000_000};
+        javafx.scene.layout.FlowPane up = new javafx.scene.layout.FlowPane(6, 6);
+        up.setMaxWidth(STATEMENT);
+        javafx.scene.layout.FlowPane down = new javafx.scene.layout.FlowPane(6, 6);
+        down.setMaxWidth(STATEMENT);
+        for (double step : amounts) {
+            up.getChildren().add(stepChip("+" + money(step), () -> { fundAsk += step; showFinanceMenu(); }, false));
+            down.getChildren().add(stepChip("−" + money(step), () -> {
+                fundAsk = Math.max(0, fundAsk - step);
+                showFinanceMenu();
+            }, false));
+        }
+        down.getChildren().add(stepChip("clear", () -> { fundAsk = 0; showFinanceMenu(); }, true));
+        column.getChildren().addAll(up, down);
+
+        /* ------------------------------ pay in, draw out ------------------------------ */
+        column.getChildren().add(statementHead("Pay in, draw out"));
+        column.getChildren().add(statementLine("The treasury holds", marked(here, money(game.getCash()))));
+        column.getChildren().add(statementLine("The fund's cash", marked(here, money(fund.getCash()))));
+        Button payIn = new Button("Pay " + marked(here, money(fundAsk)) + " in");
+        payIn.setDisable(!(fundAsk > 0) || !(game.getCash() > 0));
+        payIn.setOnAction(e -> { game.fundPayIn(fundAsk); showFinanceMenu(); });
+        Button drawOut = new Button("Draw " + marked(here, money(fundAsk)) + " out");
+        drawOut.setDisable(!(fundAsk > 0) || !(fund.getCash() > 0));
+        drawOut.setOnAction(e -> { game.fundDrawOut(fundAsk); showFinanceMenu(); });
+        HBox moves = new HBox(8, payIn, drawOut);
+        moves.setAlignment(Pos.CENTER_LEFT);
+        moves.setStyle("-fx-padding: 8 0 4 0;");
+        column.getChildren().add(moves);
+        column.getChildren().add(statementNote("A transfer between the treasury and its own fund: not revenue and "
+                + "not spending, so the budget and its surplus do not see it. The treasury journal carries it, as "
+                + "\"Paid into the fund\" or \"Drawn from the fund\". Only the fund's cash can be drawn, and only "
+                + "the treasury's paid in; sell first to draw more."));
+
+        /* ------------------------------ shares ------------------------------ */
+        column.getChildren().add(statementHead("Shares"));
+        javafx.scene.layout.FlowPane companies = chipStrip(Equity.COMPANIES, Equity.COMPANIES[fundCompany],
+                Palette.SIZE_CAPTION, pick -> {
+                    for (int c = 0; c < Equity.COMPANIES.length; c++) if (Equity.COMPANIES[c].equals(pick)) fundCompany = c;
+                    showFinanceMenu();
+                });
+        companies.setAlignment(Pos.CENTER_LEFT);
+        companies.setMaxWidth(STATEMENT);
+        column.getChildren().add(companies);
+        int c = fundCompany;
+        column.getChildren().add(statementLine("Its fair value, a share", marked(here, unitPrice(exchange.fair(c)))));
+        column.getChildren().add(statementLine("The fund holds", marked(here, money(game.fundCompanyValue(c)))
+                + "  ·  " + percentOf(game.fundCompanyShare(c)) + " of it"));
+        column.getChildren().add(statementLine("...of it the rescue book", marked(here, money(game.fundCompanyRescueValue(c)))));
+        Button buy = new Button("Buy with " + marked(here, money(fundAsk)) + " of its cash");
+        buy.setDisable(!(fundAsk > 0) || !(fund.getCash() > 0));
+        buy.setOnAction(e -> { game.fundBuyShares(c, fundAsk); showFinanceMenu(); });
+        HBox trades = new HBox(8, buy);
+        double held = register.getCityShares(c);
+        for (double part : new double[] {.25, .5, 1}) {
+            Button sell = new Button(part == 1 ? "Sell all" : part == .5 ? "Sell half" : "Sell a quarter");
+            sell.setDisable(!(held > 0));
+            sell.setOnAction(e -> { game.fundSellShares(c, held * part); showFinanceMenu(); });
+            trades.getChildren().add(sell);
+        }
+        trades.setAlignment(Pos.CENTER_LEFT);
+        trades.setStyle("-fx-padding: 8 0 4 0;");
+        column.getChildren().add(trades);
+        column.getChildren().add(statementNote("The order goes on the exchange's book at the next month's step, at "
+                + "the company's fair value - the price the rule's own orders post at - and is good for that "
+                + "month; what does not fill by then lapses. A sale takes the market book first, then the "
+                + "rescue book: the rule never sells the rescue book, your hand may."));
+
+        /* ------------------------------ bonds ------------------------------ */
+        column.getChildren().add(statementHead("Bonds"));
+        java.util.List<String> issuers = new java.util.ArrayList<>();
+        for (String key : Sectors.KEYS) if (!market.getBonds(key).isEmpty()) issuers.add(key);
+        if (issuers.isEmpty()) {
+            column.getChildren().add(sentence("No company has a bond outstanding.", Palette.TEXT_MUTED));
+        } else {
+            if (fundIssuer == null || !issuers.contains(fundIssuer)) fundIssuer = issuers.get(0);
+            javafx.scene.layout.FlowPane who = chipStrip(issuers.toArray(new String[0]), fundIssuer,
+                    Palette.SIZE_CAPTION, pick -> { fundIssuer = pick; showFinanceMenu(); });
+            who.setAlignment(Pos.CENTER_LEFT);
+            who.setMaxWidth(STATEMENT);
+            column.getChildren().add(who);
+            int month = game.getMonth();
+            for (CorporateBond b : market.getBonds(fundIssuer)) {
+                if (b.isMatured(month)) continue;
+                column.getChildren().add(statementLine(String.format("#%d, %.2f%%, due %s", b.id(), b.coupon() * 100,
+                        CityCalendar.format(b.maturityMonth())),
+                        String.format("%.2f of par  ·  the fund holds %s of face, %s",
+                                market.modelPrice(b, month), marked(here, money(b.city())),
+                                marked(here, money(game.fundBondValue(b))))));
+                Button buyBond = new Button("Buy with " + marked(here, money(fundAsk)));
+                buyBond.setDisable(!(fundAsk > 0) || !(fund.getCash() > 0));
+                buyBond.setOnAction(e -> { game.fundBuyBond(b.id(), fundAsk); showFinanceMenu(); });
+                Button sellBond = new Button("Sell what it holds");
+                sellBond.setDisable(!(b.city() > 0));
+                sellBond.setOnAction(e -> { game.fundSellBond(b.id(), b.city()); showFinanceMenu(); });
+                HBox row = new HBox(8, buyBond, sellBond);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setStyle("-fx-padding: 2 0 6 0;");
+                column.getChildren().add(row);
+            }
+            column.getChildren().add(statementNote("On the bond's own book at the next step, at the market's "
+                    + "valuation, good for that month."));
+        }
+
+        /* ------------------------------ waiting ------------------------------ */
+        column.getChildren().add(statementHead("Waiting for the next month"));
+        if (fund.getHandOrders().isEmpty()) {
+            column.getChildren().add(sentence("Nothing: no order of yours is waiting.", Palette.TEXT_MUTED));
+        }
+        for (TreasuryFund.HandOrder o : fund.getHandOrders()) {
+            String what = o.bond() ? "bond #" + o.bondId() : Equity.COMPANIES[o.company()] + " shares";
+            column.getChildren().add(statementLine((o.buy() ? "Buy " : "Sell ") + what,
+                    o.buy() ? marked(here, money(o.amount())) + " of the fund's cash"
+                            : o.bond() ? marked(here, money(o.amount())) + " of face"
+                            : String.format("%,.3f shares", o.amount())));
+        }
+    }
+
     /* =====================================================================
        BORROW
 
@@ -1469,6 +1829,7 @@ final class FinancesScreen {
         DebtManager ledger = ui.game.getDebtManager();
 
         rolloverBlock(column);
+        rescueBlock(column);
 
         if (foreign && !ledger.foreignWindowOpen()) {
             column.getChildren().add(statementHead("The window abroad is shut"));

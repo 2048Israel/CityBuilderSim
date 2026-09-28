@@ -74,6 +74,21 @@ public class Inbox {
                 "The bank has failed",
                 bankBody(game));
 
+        // The city resolved it this month (0.7.14): what happened, in the
+        // log's words, read once and kept two years like any settled notice.
+        TreasuryFund.Resolution resolved = game.getLastResolution();
+        take(game, month, "resolved",
+                resolved != null && resolved.month() == month,
+                "The bank failed, and the city took it over",
+                resolvedBody(game, resolved));
+
+        // ...and a standing bank under its minimum asks for preferred: the
+        // popup Jerus asked for, answered on the Bank tab.
+        take(game, month, "preferred",
+                game.isPreferredOfferPending(),
+                "The bank asks the city to buy its preferred shares",
+                preferredBody(game));
+
         List<String> defaults = defaultsBody(game);
         take(game, month, "defaults",
                 !defaults.isEmpty(),
@@ -255,20 +270,71 @@ public class Inbox {
         Bank bank = game.getBank();
         if (!bank.isInsolvent()) return lines;
 
-        lines.add("It lost more than it owned. Its creditors have absorbed the");
-        lines.add("loss, but a bank with no capital cannot lend - no business");
-        lines.add("can borrow to build or to cover a loss, the families can");
-        lines.add("draw on their credit only for its interest, and the private");
-        lines.add("sector has stopped building.");
+        // Since 0.7.14 nobody absorbs the hole: the bank carries it at the
+        // central bank's window and waits for the city - this notice is only
+        // ever live on the button, since automatic resolves it the same month.
+        lines.add("It lost more than it owned, and it is frozen: no business can");
+        lines.add("borrow to build or to cover a loss, the families can draw on");
+        lines.add("their credit only for its interest, and the private sector");
+        lines.add("has stopped building. It carries its hole at the central");
+        lines.add("bank's window meanwhile, at the window's rate.");
         lines.add("");
         // TIMES A THOUSAND: the model counts in thousands and this was the one
         // place in the inbox that printed the raw figure with a dollar sign.
-        lines.add(String.format("To recapitalise:    $%,.0f",
+        lines.add(String.format("To resolve it:      $%,.0f",
                 bank.recapitalisationNeeded() * 1000));
         lines.add(String.format("The treasury holds: $%,.0f", game.getCash() * 1000));
         lines.add("");
-        lines.add("It can rebuild its capital out of profits on the loans it");
-        lines.add("still holds, but that takes years. Credit is shut until then.");
+        lines.add("Resolving it pays the hole and the capital to reopen, from");
+        lines.add("the treasury's cash and the rest advanced by the central");
+        lines.add("bank. The city takes every share; the old owners lose");
+        lines.add("everything.");
+        return lines;
+    }
+
+    /** The month the city resolved the bank (0.7.14): the log's sentence, with its figures. */
+    private static List<String> resolvedBody(Game game, TreasuryFund.Resolution r) {
+        List<String> lines = new ArrayList<>();
+        if (r == null || r.month() != game.getMonth()) return lines;
+        lines.add("The bank failed. The city took all its shares; the old owners");
+        lines.add(String.format("lost everything (%s at the last price).", money(r.ownersLost())));
+        lines.add("");
+        lines.add(String.format("The city put in:    %s", money(r.paid())));
+        lines.add(String.format("  from its cash     %s", money(r.fromCash())));
+        lines.add(String.format("  advanced by the   %s", money(r.advanced())));
+        lines.add("  central bank");
+        lines.add(String.format("The hole:           %s", money(r.shortfall())));
+        lines.add(String.format("Capital to reopen:  %s", money(r.exitCapital())));
+        if (r.preferredCancelled() > 0) {
+            lines.add(String.format("The city's preferred, %s, went with the hole.", money(r.preferredCancelled())));
+        }
+        lines.add("");
+        lines.add("It reopened the same month. Its new shares go to others, so");
+        lines.add("the city's stake falls as it rebuilds.");
+        return lines;
+    }
+
+    /** The bank's offer (0.7.14): the popup's sentence, TARP's terms. */
+    private static List<String> preferredBody(Game game) {
+        List<String> lines = new ArrayList<>();
+        if (!game.isPreferredOfferPending()) return lines;
+        Bank bank = game.getBank();
+        lines.add("The bank is under its minimum capital and asks the city to");
+        lines.add(String.format("buy %s of preferred shares: %.0f%% a year for five", money(game.preferredOfferSize()),
+                Bank.PREFERRED_RATE * 100));
+        lines.add(String.format("years, then %.0f%%, repayable at par after three years;",
+                Bank.PREFERRED_STEP_RATE * 100));
+        lines.add(String.format("with warrants on %s of its shares at %s.",
+                money(game.preferredOfferWarrantValue()), money(game.preferredOfferStrike())));
+        if (bank.preferredOfferCapped()) {
+            lines.add("");
+            lines.add("That is 3% of its risk-weighted assets, the most it may ask;");
+            lines.add(String.format("the other %s it leaves to its own share issues.",
+                    money(bank.preferredOfferShortOfTarget())));
+        }
+        lines.add("");
+        lines.add("Accept or decline it on the Bank tab. Declined, it asks again");
+        lines.add("in three months if it is still under its minimum.");
         return lines;
     }
 

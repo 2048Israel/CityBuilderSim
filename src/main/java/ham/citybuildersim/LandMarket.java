@@ -79,6 +79,9 @@ public class LandMarket {
      */
     private static final double BASE_PRICE_PER_SQ_FT = .0007;
 
+    /** The ground's price a square foot at the founding, in thousands of US dollars: BASE_PRICE_PER_SQ_FT, before any premium - what an Insane city owes for its starting land (Founding.landBondUsd(), 0.7.14). */
+    public static double openingUsdPerSqFt() { return BASE_PRICE_PER_SQ_FT; }
+
     /**
      * The same base in LOCAL money, reformed with every other price - what
      * the inside price is struck from, and nothing else.

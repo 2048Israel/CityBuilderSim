@@ -290,10 +290,14 @@ public class TreasuryCheck {
         check("fixture: the city paid for ten houses",
                 opened.buildStack(house, 10, true) == Game.BuildResult.SUCCESS);
 
-        double capitalPut = opened.recapitaliseBank(5_000);
+        // Into the city's fund (0.7.14), where capital into the bank went until
+        // the gift went: a movement of the treasury's between presses that is
+        // neither a budget line nor paper, and so the journal's, as the
+        // reserves bought and sold below are.
+        double capitalPut = opened.fundPayIn(5_000);
         double reservesBought = opened.buyForeignCurrency(2_000) + opened.buyForeignCurrency(1_000);
         double reservesSold = opened.sellForeignCurrency(500);
-        check("fixture: capital went into the bank and reserves were bought twice and sold once",
+        check("fixture: 5,000 went into the city's fund and reserves were bought twice and sold once",
                 capitalPut == 5_000 && reservesBought == 3_000 && reservesSold == 500);
 
         // Two issues, so the raised row has something to carry and the
@@ -330,8 +334,8 @@ public class TreasuryCheck {
                 line(journal, "Paid for buildings") == null);
 
         /* ---- what is not on the budget is in the journal, by name, signed as the treasury saw it ---- */
-        near("the journal carries the capital put into the bank", m,
-                amount(journal, "Put capital into the bank"), -capitalPut);
+        near("the journal carries what was paid into the city's fund", m,
+                amount(journal, "Paid into the fund"), -capitalPut);
         near("...the reserves bought, two purchases folded into one line", m,
                 amount(journal, "Bought reserves"), -reservesBought);
         near("...the reserves sold, on a line of their own", m,

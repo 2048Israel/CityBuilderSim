@@ -41,8 +41,9 @@ import java.nio.file.Path;
  *      0.7.13 the Balance sheet page too: its lines are what totalAssets()
  *      and totalLiabilities() sum, it foots this month and a year ago, and
  *      the year ago survives a save; and its equity's two parts, paid in
- *      and retained, add up to it to the cent every month and move by
- *      exactly their own causes, and an older save does not invent them.
+ *      and retained - and since 0.7.14 the city's preferred, a third - add
+ *      up to it to the cent every month and move by exactly their own
+ *      causes, and an older save does not invent them.
  *   7. Does the desk keep to the bank's capital (0.7.8, section 17)? It buys
  *      the bank's own shares back only with what the bank holds over its
  *      target, and other companies' only while the bank would still hold its
@@ -118,13 +119,19 @@ public class BankCheck {
      * Everything that moves the bank's equity that is not its net income:
      * capital put in (both halves), the treasury's, the founding settlement,
      * less its dividend - and since 0.7.8 its own shares, issued or bought
-     * back, which moved it through the desk's "trading income" before.
+     * back, which moved it through the desk's "trading income" before; and
+     * since 0.7.14 the city's preferred, bought and redeemed, its dividend
+     * and its warrants bought back.
      */
     static double capitalMoved(Bank b) {
         return b.getCapitalInjected() + b.getCapitalFromHome()
                 + b.getBailoutReceived() + b.getFoundingSettlement()
                 - b.getDividendsPaid()
-                + b.getSharesIssued() - b.getSharesBoughtBack();
+                + b.getSharesIssued() - b.getSharesBoughtBack()
+                // ...and since 0.7.14 the city's preferred: bought, redeemed,
+                // its dividend, and its warrants bought back.
+                + b.getPreferredIn() - b.getPreferredRedeemedThisMonth()
+                - b.getPreferredDividendsThisMonth() - b.getWarrantsBoughtBackThisMonth();
     }
 
     static double deskParts(Game game) {
@@ -1891,7 +1898,7 @@ public class BankCheck {
                         + failed.runningCostRate() + failed.expectedLossRate()
                         + failed.capitalCharge(.03, Bank.PRIME_TERM_MONTHS, Bank.RISK_BUSINESS), 1e-15);
 
-        bust.receiveBailout(bust.recapitalisationNeeded());
+        bust.takeResolutionCapital(bust.recapitalisationNeeded());
         assertTrue("recapitalised, it is solvent again", !bust.isInsolvent());
         assertTrue("...and lending again", bust.capacity() > 0);
         assertTrue("...and above the ratio it is required to hold, by at least the exit buffer",
@@ -1918,7 +1925,7 @@ public class BankCheck {
         close("fixture: ...and has no book left to strike a ratio on", hollow.getBook(), 0, 1e-9);
         assertTrue("a failed bank with no book is still asked for one branch's capital",
                 hollow.recapitalisationNeeded() >= Bank.PAID_IN_PER_BRANCH - 1e-9);
-        hollow.receiveBailout(hollow.recapitalisationNeeded());
+        hollow.takeResolutionCapital(hollow.recapitalisationNeeded());
         assertTrue("...and can lend again once it has it", hollow.capacity() > 0);
 
         theBankPaysForTheCitysPaper();
@@ -2765,11 +2772,13 @@ public class BankCheck {
        four parts are its prime, at every dial; the weight table foots to the
        weighted book, term and desk included; and the equity's movement
        leaves nothing unexplained, every month of a played city from its
-       founding month, with a treasury buyback and a rescue between two
-       presses in it. And the figures nothing kept before: the interest by who paid
-       it, last month's statement and the year's, a branch's reach in
-       today's money after a reform, the bank's state in a sentence, and the
-       rescue's guard on the treasury's cash.
+       founding month, with a treasury buyback and the city's capital (its
+       preferred since 0.7.14, a gift before) between two presses in it. And
+       the figures nothing kept before: the interest by who paid it, last
+       month's statement and the year's, a branch's reach in today's money
+       after a reform, the bank's state in a sentence, and the rescue's guard
+       - on the treasury's cash until 0.7.14, and since then on the bank
+       alone (Game.canResolveBank()), what the treasury lacks advanced.
        ================================================================= */
     static void whatTheBankTabReads() throws Exception {
 
@@ -2994,9 +3003,12 @@ public class BankCheck {
                     buybackGain = bank.getTreasuryBuybackGain();
                     worstBetween = Math.max(worstBetween, Math.abs(bank.equityMovement().residual()));
                 }
-                // ...and the city puts capital into a bank that stands, between two presses.
+                // ...and the city puts capital into a bank that stands, between two
+                // presses - its preferred since 0.7.14, the gift before it gone:
+                // the treasury buys it, a purchase, and the bank issues it.
                 if (m == 45) {
-                    rescued = city.recapitaliseBank(500);
+                    rescued = city.treasuryPays(TreasuryLine.BANK_CAPITAL, 500);
+                    bank.issuePreferred(rescued, city.getExchange().price(Equity.BANK), 0);
                     worstBetween = Math.max(worstBetween, Math.abs(bank.equityMovement().residual()));
                 }
                 // Its equity's two parts after the presses' decisions too, and
@@ -3004,8 +3016,11 @@ public class BankCheck {
                 worstSplit = Math.max(worstSplit, Math.abs(bank.equitySplitResidual()));
                 splitAll &= bank.knowsEquitySplit();
                 Bank.EquityMovement ended = bank.equityMovement();
-                paidInCauses += ended.fromShareholders() + ended.fromCity() + ended.issued() - ended.boughtBack();
+                paidInCauses += ended.fromShareholders() + ended.fromCity() + ended.issued() - ended.boughtBack()
+                        - ended.warrantsBoughtBack() - bank.getOwnersWipedThisMonth();
                 retainedCauses += ended.kept() - ended.dividends() + ended.founding() + ended.absorbed()
+                        - ended.preferredDividends() + bank.getOwnersWipedThisMonth()
+                        + bank.getPreferredCancelledThisMonth()
                         + ended.treasuryBuyback() - ended.allowanceOpened();
 
                 // The Balance sheet page (0.7.13), read after the month and
@@ -3098,7 +3113,7 @@ public class BankCheck {
         assertTrue("a save from before 0.7.13 has no year ago - the page reads it as \"\u2014\"",
                 !sheetOld.getBank().knowsYearAgo() && sheetOld.getBank().yearAgo(Bank.Sheet.EQUITY) == 0);
 
-        out.println("\n--- (13) its equity in two parts: paid in and retained add up to it, to the cent, every month ---");
+        out.println("\n--- (13) its equity in parts: paid in, retained and the city's preferred add up to it, to the cent, every month ---");
         out.printf("   paid in $%,.2fk -> $%,.2fk, retained $%,.2fk -> $%,.2fk; offerings in %d months, its own shares"
                 + " bought back in %d, a loss in %d%n", paidInStart, bank.paidInCapital(), retainedStart,
                 bank.retainedEarnings(), offeringMonths, buybackMonths, lossMonths);
@@ -3107,9 +3122,9 @@ public class BankCheck {
         assertTrue("fixture: it paid a dividend", dividendMonths > 0);
         assertTrue("fixture: it lost money in a month", lossMonths > 0);
         assertTrue("a bank founded in this build keeps the split, every month", splitAll);
-        close("paid in and retained add up to its equity, to the cent, every month and between two presses",
+        close("paid in, retained and the preferred add up to its equity, to the cent, every month and between two presses",
                 worstSplit, 0, 1e-5);
-        close("paid in moved by what its owners and the city put in: offerings, new shares, a rescue, less buybacks",
+        close("paid in moved by what its owners and the city put in: offerings, new shares, a resolution, less buybacks",
                 bank.paidInCapital() - paidInStart, paidInCauses, 1e-6);
         close("...and retained by everything else: what it kept, less dividends, and the rest of the causes",
                 bank.retainedEarnings() - retainedStart, retainedCauses, 1e-6);
@@ -3117,8 +3132,9 @@ public class BankCheck {
                 && Math.abs(sheetBack.getBank().paidInCapital() - bank.paidInCapital()) < 1e-6
                 && Math.abs(sheetBack.getBank().retainedEarnings() - bank.retainedEarnings()) < 1e-6);
         close("...and still add up to the reloaded bank's equity", sheetBack.getBank().equitySplitResidual(), 0, 1e-5);
-        close("...and the page's lines read them", sheetBack.getBank().sheet(Bank.Sheet.PAID_IN)
-                + sheetBack.getBank().sheet(Bank.Sheet.RETAINED), sheetBack.getBank().sheet(Bank.Sheet.EQUITY), 1e-5);
+        close("...and the page's lines read them - with the city's preferred, equity's third part since 0.7.14",
+                sheetBack.getBank().sheet(Bank.Sheet.PAID_IN) + sheetBack.getBank().sheet(Bank.Sheet.RETAINED)
+                        + sheetBack.getBank().sheet(Bank.Sheet.PREFERRED), sheetBack.getBank().sheet(Bank.Sheet.EQUITY), 1e-5);
         assertTrue("a save from before them keeps neither: the page shows its equity whole, the parts \"\u2014\"",
                 !sheetOld.getBank().knowsEquitySplit() && sheetOld.getBank().paidInCapital() == 0
                         && sheetOld.getBank().retainedEarnings() == 0 && sheetOld.getBank().equitySplitResidual() == 0);
@@ -3131,17 +3147,25 @@ public class BankCheck {
         }
         assertTrue("...and a month played does not invent them", !sheetOld.getBank().knowsEquitySplit());
 
+        /*
+         * THE GUARD CHANGED WITH JERUS'S RULE (0.7.14): a resolution is a
+         * promise the central bank advances what the treasury lacks of
+         * ("Central bank advances it"), so a treasury holding half of it
+         * resolves the bank - it asserted "...a treasury holding half of what
+         * it needs cannot rescue it" and "...one holding all of it can" while
+         * the rescue was a gift paid out of cash. FundCheck proves the rest.
+         */
         out.println("\n--- (13) the rescue's guard is the model's ---");
         assertTrue("fixture: the bank stands and needs nothing", !bank.isInsolvent() && bank.recapitalisationNeeded() == 0);
-        assertTrue("a bank that needs nothing is not offered a rescue", !city.canRecapitaliseBank());
+        assertTrue("a bank that needs nothing is not offered a rescue", !city.canResolveBank());
         bank.setCash(bank.getCash() - bank.equity() - 1_000);          // a thousand under water
         double needed = bank.recapitalisationNeeded();
         city.setCashForTest(needed / 2);
         assertTrue("fixture: the bank is under water", bank.isInsolvent() && needed > 0);
-        assertTrue("...a treasury holding half of what it needs cannot rescue it", !city.canRecapitaliseBank());
-        city.setCashForTest(needed * 2);
-        assertTrue("...one holding all of it can", city.canRecapitaliseBank());
-        city.recapitaliseBank(needed);
+        assertTrue("...a treasury holding half of what it needs resolves it all the same", city.canResolveBank());
+        close("...paying the hole and the capital to reopen, the whole of what it is asked", city.resolveBank(), needed, 1e-6);
+        close("...half of it from its cash and the rest for the central bank to advance",
+                city.getLastResolution().advanced(), needed / 2, 1e-6);
         assertTrue("...and doing it stands the bank back up", !bank.isInsolvent());
     }
 

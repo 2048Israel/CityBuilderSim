@@ -61,8 +61,10 @@ import java.util.Map;
  * round 2 each cell holds its own face of the bond, Household.bondFace, and
  * this is the cells' sum; round 1 held one pool with a claim per cell), the
  * bank (with what it paid, its cost), each company that bought it by sector,
- * and the world. The four always add up to the face outstanding; a default
- * writes every one of them down by the same share (writeDown()).
+ * and the world - and since 0.7.14 a fifth, the city's fund (TreasuryFund),
+ * which buys on the book and never at issue. They always add up to the face
+ * outstanding; a default writes every one of them down by the same share
+ * (writeDown()). A save from before 0.7.14 has no `city` and reads nothing.
  *
  * WHAT IT IS WORTH is priceAtYield() at the city's curve for the months left
  * plus the issuer's expected loss for a bondholder - BondMarket.modelYield().
@@ -93,6 +95,8 @@ public class CorporateBond {
     /** What the bank paid for what it holds - its carrying value, written down with the face. */
     double bankCost;
     double world;
+    /** The city's fund's face (0.7.14): bought on the book by its rule or the player's hand, never at issue. */
+    double city;
     Map<String, Double> companies = new LinkedHashMap<>();
 
     /** Face written off by defaults over its life. */
@@ -121,6 +125,8 @@ public class CorporateBond {
     public double bank()        { return bank; }
     public double bankCost()    { return bankCost; }
     public double world()       { return world; }
+    /** The city's fund's face (0.7.14). */
+    public double city()        { return city; }
     public double writtenOff()  { return writtenOff; }
     public double company(String sector) { return companies.getOrDefault(sector, 0.0); }
     public Map<String, Double> companies() { return java.util.Collections.unmodifiableMap(companies); }
@@ -143,8 +149,8 @@ public class CorporateBond {
     /** True once its maturity month has come. */
     public boolean isMatured(int month) { return month >= maturityMonth; }
 
-    /** What the four holder classes hold, added up: the face outstanding, to the dust. */
-    public double held() { return households + bank + world + companiesTotal(); }
+    /** What the holder classes hold, added up - the city's fund among them since 0.7.14: the face outstanding, to the dust. */
+    public double held() { return households + bank + world + city + companiesTotal(); }
 
     /* ============================== its value ============================== */
 
@@ -205,6 +211,7 @@ public class CorporateBond {
         bank *= keep;
         bankCost *= keep;
         world *= keep;
+        city *= keep;
         companies.replaceAll((k, v) -> v * keep);
         writtenOff += before - face;
         return before - face;
@@ -218,6 +225,7 @@ public class CorporateBond {
         bank *= scale;
         bankCost *= scale;
         world *= scale;
+        city *= scale;
         writtenOff *= scale;
         companies.replaceAll((k, v) -> v * scale);
     }

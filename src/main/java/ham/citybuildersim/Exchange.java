@@ -90,6 +90,13 @@ import java.util.List;
  *     chases yield). Each cell posts its own orders (0.7.12 round 2, "Each
  *     household type trades"): the household types are participants, not
  *     one pool.
+ *   - THE CITY'S FUND (0.7.14, TreasuryFund), last, so it takes what the
+ *     others left: by its rule, under FUND, a bid at fair value for the gap
+ *     to its mix, never past TreasuryFund.OWNERSHIP_LIMIT of a company, and
+ *     an ask at fair value for an excess; then the player's hand, at fair
+ *     value, under FUND_HAND. It never buys the bank's new shares, and its
+ *     two names never trade with each other (Settle.mayTrade()). See
+ *     postFund().
  *
  * And out of order, in the middle of the month: a HOUSEHOLD CELL SHORT OF
  * MONEY sells in the waterfall (Household.settle(): savings, the city's
@@ -312,7 +319,14 @@ public class Exchange {
     public static final String EMIGRANTS = "emigrants";
     /** One household cell: this, then its key (the bond market's prefix, deliberately). */
     public static final String CELL = BondMarket.CELL;
+    /** The city's fund, by its rule (0.7.14; TreasuryFund) - the bond market's name, deliberately. */
+    public static final String FUND = BondMarket.FUND;
+    /** ...and by the player's hand: its own name, so the two never trade with each other and the hand's sale can reach the rescue book. */
+    public static final String FUND_HAND = BondMarket.FUND_HAND;
     // A company buying its own shares back posts under its own name (Equity.COMPANIES[c]).
+
+    /** True for either of the fund's names. */
+    static boolean isFund(String who) { return FUND.equals(who) || FUND_HAND.equals(who); }
 
     /* ------------------------------- the state ------------------------------- */
 
@@ -343,6 +357,11 @@ public class Exchange {
     private final double[] householdsBoughtAbroad = new double[n];// the world or emigrants -> cells
     private final double[] householdsSoldAbroad = new double[n];  // cells -> the world
     private final double[] betweenHouseholds = new double[n];     // cell -> cell
+    // ...and the city's fund (0.7.14): a pool, so what crosses is with the cells and the world
+    private final double[] fundBoughtFromHouseholds = new double[n]; // cells -> the fund
+    private final double[] fundBoughtAbroad = new double[n];      // the world or emigrants -> the fund
+    private final double[] fundSoldToHouseholds = new double[n];  // the fund -> cells
+    private final double[] fundSoldAbroad = new double[n];        // the fund -> the world
     private final double[] volume = new double[n];                // shares
     private final double[] split = new double[n];                 // this month's split factor, 0 if none
     private final int[] betweenHouseholdsTrades = new int[n];
@@ -361,6 +380,13 @@ public class Exchange {
     private Bank dealer;
     private Companies companies;
     private int month;
+    /** The city's fund (0.7.14), attached at the founding and on the load path; null in a fixture with none. */
+    private TreasuryFund fund;
+    /** What the fund's bonds are worth at this step, for its 70/30 (BondMarket.valueHeld()). */
+    private double fundBondsValue;
+
+    /** The city's fund, which posts on the book by its rule and its hand (0.7.14). */
+    public void attachFund(TreasuryFund fund) { this.fund = fund; }
 
     public Exchange() {
         for (int c = 0; c < n; c++) books[c] = new OrderBook(Equity.COMPANIES[c]);
@@ -381,6 +407,7 @@ public class Exchange {
             soldAbroad[c] = 0; boughtFromAbroad[c] = 0; emigrantsPaid[c] = 0;
             buybackToHouseholds[c] = 0; buybackToDesk[c] = 0; buybackAbroad[c] = 0;
             householdsBoughtAbroad[c] = 0; householdsSoldAbroad[c] = 0; betweenHouseholds[c] = 0;
+            fundBoughtFromHouseholds[c] = 0; fundBoughtAbroad[c] = 0; fundSoldToHouseholds[c] = 0; fundSoldAbroad[c] = 0;
             volume[c] = 0;
             split[c] = 0;
             betweenHouseholdsTrades[c] = 0;
@@ -494,6 +521,18 @@ public class Exchange {
     public void takeMonth(Equity register, HouseholdBalance households, Bank bank,
                           Companies companies, double[] book, double worldRate,
                           double depositRate, int month) {
+        takeMonth(register, households, bank, companies, book, worldRate, depositRate, month, 0);
+    }
+
+    /**
+     * ...with what the city's fund's bonds are worth this month (0.7.14), for
+     * its mix: its orders are posted last, after the households', by its rule
+     * and then its hand (postFund()).
+     */
+    public void takeMonth(Equity register, HouseholdBalance households, Bank bank,
+                          Companies companies, double[] book, double worldRate,
+                          double depositRate, int month, double fundBondsValue) {
+        this.fundBondsValue = Math.max(0, fundBondsValue);
         attach(register, households, bank, companies, month);
 
         /* ---- the orders of last month go, and the sellers who waited are counted ---- */
@@ -523,6 +562,7 @@ public class Exchange {
         postWorld(worldRate);
         postCompanies();
         postHouseholds(depositRate);
+        postFund();
 
         splitWhatNeedsIt();
         if (bank != null) bank.markSecurities(markToMarket(register));
@@ -979,6 +1019,83 @@ public class Exchange {
         return best;
     }
 
+    /* ---------------------------------- the city's fund (0.7.14) ---------------------------------- */
+
+    /**
+     * THE CITY'S FUND, BY ITS RULE AND THEN BY THE PLAYER'S HAND
+     * (TreasuryFund). Posted last, so it takes what the others left on
+     * offer. The rule's market book - everything but the rescue book - is
+     * TreasuryFund.EQUITY_WEIGHT of the fund's market book and cash in shares,
+     * spread over the companies by market value (marketCap()), never past
+     * TreasuryFund.OWNERSHIP_LIMIT of a company's shares; it bids for the gap
+     * at fair value and takes what is asked at or under it, and what rests
+     * waits at fair value for the month. Over TreasuryFund.REBALANCE_OVER it
+     * asks fair value for the excess instead, the desk's rule for an excess
+     * (postDesk()); and a holding a company's buyback has lifted past the
+     * limit is asked at fair value down to it, whatever the mix. The hand's
+     * orders go on after, at fair value too, under
+     * FUND_HAND. It never buys the bank's new shares: the desk's asks in them
+     * are an issue, and the clearing refuses them to the fund (Settle.mayTrade()).
+     */
+    private void postFund() {
+        if (fund == null || register == null) return;
+        double held = 0;
+        for (int c = 0; c < n; c++) held += register.getCityMarketShares(c) * price(c);
+        double cash = Math.max(0, fund.getCash());
+        double value = held + fundBondsValue + cash;
+        if (value > 0) {
+            double excess = TreasuryFund.sharesOver(held, fundBondsValue, cash);
+            // OVER THE LIMIT without buying (0.7.14): a company's buyback, or the bank's,
+            // retires shares under the fund and lifts its share past OWNERSHIP_LIMIT. The
+            // rule sells what it holds over the limit at fair value - the desk's own rule
+            // for a holding over its cap - with its rebalancing sale, whichever is larger;
+            // and while it rebalances it buys no shares.
+            for (int c = 0; c < n; c++) {
+                double mine = register.getCityMarketShares(c);
+                if (!(mine > 0) || fair[c] <= minFair) continue;
+                double over = mine - TreasuryFund.OWNERSHIP_LIMIT * register.getShares(c);
+                double rebalance = excess > 0 && held > 0 ? mine * excess / held : 0;
+                double q = Math.min(mine, Math.max(over, rebalance));
+                if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
+            }
+            if (!(excess > 0) && cash > 0) {
+                double target = TreasuryFund.EQUITY_WEIGHT * value;
+                double caps = 0;
+                for (int c = 0; c < n; c++) {
+                    if (register.getShares(c) > 0 && fair[c] > minFair) caps += marketCap(register, c);
+                }
+                for (int c = 0; c < n; c++) {
+                    if (!(caps > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+                    double want = target * marketCap(register, c) / caps;
+                    double mine = register.getCityMarketShares(c);
+                    double room = TreasuryFund.OWNERSHIP_LIMIT * register.getShares(c) - mine;
+                    double q = Math.min((want - mine * price(c)) / fair[c], room);
+                    if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.BUY, fair[c], q);
+                }
+            }
+        }
+        for (TreasuryFund.HandOrder o : fund.takeHandOrders(false)) {
+            int c = o.company();
+            if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+            if (o.buy()) submit(c, FUND_HAND, OrderBook.Side.BUY, fair[c], o.amount() / fair[c]);
+            else submit(c, FUND_HAND, OrderBook.Side.SELL, fair[c], Math.min(o.amount(), register.getCityShares(c)));
+        }
+    }
+
+    /** What the city's fund holds of every company, both books, at the price: the fund's shares' mark. */
+    public double cityValue(Equity register) {
+        double total = 0;
+        for (int c = 0; c < n; c++) total += register.getCityShares(c) * price(c);
+        return total;
+    }
+
+    /** ...its market book alone. */
+    public double cityMarketValue(Equity register) {
+        double total = 0;
+        for (int c = 0; c < n; c++) total += register.getCityMarketShares(c) * price(c);
+        return total;
+    }
+
     /* =====================================================================
        A HOUSEHOLD SHORT OF MONEY SELLS, mid-month, in the waterfall
        ===================================================================== */
@@ -1074,12 +1191,13 @@ public class Exchange {
         books[c].submit(who, side, limit, left, month, clearing(c));
     }
 
-    /** Who sells, by class: the desk, the world, the leavers, a household cell - for the fill rate by seller. */
-    public static final int BY_DESK = 0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3;
+    /** Who sells, by class: the desk, the world, the leavers, a household cell, and since 0.7.14 the city's fund - for the fill rate by seller. */
+    public static final int BY_DESK = 0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4;
     private static int classOf(String who) {
         if (DESK.equals(who)) return BY_DESK;
         if (WORLD.equals(who)) return BY_WORLD;
         if (EMIGRANTS.equals(who)) return BY_EMIGRANTS;
+        if (isFund(who)) return BY_FUND;
         return BY_HOUSEHOLDS;
     }
     /**
@@ -1088,7 +1206,7 @@ public class Exchange {
      * happened - so the ratio is a fill rate, as the book's own is, and not
      * a comparison of a seller's floor with the bid it was paid.
      */
-    private final double[] lifePostedSellBy = new double[4], lifeFilledSellBy = new double[4];
+    private final double[] lifePostedSellBy = new double[5], lifeFilledSellBy = new double[5];
 
     /** Company-months each of the desk's limits held its bid, in BOUND_ order: the last step's and the city's life (round 3). */
     private final int[] lastDeskBound = new int[4], lifeDeskBound = new int[4];
@@ -1118,6 +1236,8 @@ public class Exchange {
                     double cash = h == buying ? Math.min(buyingBudget, spareOf(h)) : spareOf(h);
                     return Math.max(0, cash) / price;
                 }
+                // The city's fund, rule or hand (0.7.14): what its cash buys.
+                if (isFund(who)) return fund == null ? 0 : Math.max(0, fund.getCash()) / price;
                 if (companies == null || !who.equals(Equity.COMPANIES[c])) return 0;
                 return Math.max(0, Math.min(buybackBudget[c], companies.till(c))) / price;
             }
@@ -1128,7 +1248,23 @@ public class Exchange {
                 Household h = cellOf(who);
                 return h == null ? 0 : Math.max(0, h.shares[c] * h.households());
             }
+            // ...its rule sells its market book only; its hand, anything it holds.
+            if (FUND.equals(who)) return register.getCityMarketShares(c);
+            if (FUND_HAND.equals(who)) return register.getCityShares(c);
             return 0;
+        }
+
+        /**
+         * THE FUND NEVER BUYS A NEW ISSUE (0.7.14, Jerus's "new issues
+         * only"): the desk's asks in the bank's own shares are new shares the
+         * bank issues (deskHolding(), Bank.issuesOwnShares()), so they are
+         * passed over for the fund, which keeps them for others - the city's
+         * stake falls as the bank rebuilds. And the fund's rule and its hand
+         * never trade with each other.
+         */
+        @Override public boolean mayTrade(String buyer, String seller) {
+            if (isFund(buyer) && isFund(seller)) return false;
+            return !(c == Equity.BANK && DESK.equals(seller) && isFund(buyer));
         }
 
         @Override public void settle(String buyer, String seller, double q, double price) {
@@ -1137,6 +1273,7 @@ public class Exchange {
             boolean abroadSells = WORLD.equals(seller) || EMIGRANTS.equals(seller);
             boolean deskSells = DESK.equals(seller), deskBuys = DESK.equals(buyer);
             boolean companyBuys = companies != null && buyer.equals(Equity.COMPANIES[c]) && c != Equity.BANK;
+            boolean fundBuys = isFund(buyer) && fund != null, fundSells = isFund(seller) && fund != null;
 
             /* ---- the seller gives up the shares and is paid ---- */
             if (deskSells) {
@@ -1164,6 +1301,14 @@ public class Exchange {
                 } else {
                     h.savings += cash / h.households();
                 }
+            } else if (FUND.equals(seller)) {
+                register.moveCity(c, -q);
+                fund.noteSold(cash, false);
+            } else if (FUND_HAND.equals(seller)) {
+                double rescueBefore = register.getCityRescueShares(c);
+                double fromRescue = register.sellCityByHand(c, q);
+                fund.noteSold(cash, false);
+                fund.noteRescueSold(fromRescue, rescueBefore, cash * fromRescue / q);
             }
 
             /* ---- the buyer pays and takes them ---- */
@@ -1187,6 +1332,9 @@ public class Exchange {
                 companies.payBuyback(c, cash);
                 register.retire(c, q);
                 buybackBudget[c] = Math.max(0, buybackBudget[c] - cash);
+            } else if (fundBuys) {
+                register.moveCity(c, q);
+                fund.noteBought(cash, false);
             }
 
             /* ---- and what crossed the pools' edge, for the audit ---- */
@@ -1199,6 +1347,11 @@ public class Exchange {
             if (abroadSells && companyBuys) buybackAbroad[c] += cash;
             if (abroadSells && cellBuys) householdsBoughtAbroad[c] += cash;
             if (cellSells && WORLD.equals(buyer)) householdsSoldAbroad[c] += cash;
+            // ...and the city's fund, a pool (0.7.14): with a cell, or the world.
+            if (cellSells && fundBuys) fundBoughtFromHouseholds[c] += cash;
+            if (abroadSells && fundBuys) fundBoughtAbroad[c] += cash;
+            if (fundSells && cellBuys) fundSoldToHouseholds[c] += cash;
+            if (fundSells && WORLD.equals(buyer)) fundSoldAbroad[c] += cash;
             if (cellSells && cellBuys) {
                 betweenHouseholds[c] += cash;
                 betweenHouseholdsTrades[c]++;
@@ -1341,6 +1494,12 @@ public class Exchange {
     public double getBuybackAbroad()        { return sum(buybackAbroad); }
     public double getVolume()               { return sum(volume); }
 
+    /** The city's fund with the cells and the world this month (0.7.14): what it paid them and what they paid it - MoneyAudit's four lines. */
+    public double getFundBoughtFromHouseholds() { return sum(fundBoughtFromHouseholds); }
+    public double getFundBoughtAbroad()         { return sum(fundBoughtAbroad); }
+    public double getFundSoldToHouseholds()     { return sum(fundSoldToHouseholds); }
+    public double getFundSoldAbroad()           { return sum(fundSoldAbroad); }
+
     /* ------------------------------- saving ------------------------------- */
 
     /** Slots per company in the old dealer's array before the split factor joined (the exchange's first night): its quote, fair value and demand. */
@@ -1377,7 +1536,9 @@ public class Exchange {
                 lifePostedSellBy[0], lifePostedSellBy[1], lifePostedSellBy[2], lifePostedSellBy[3],
                 lifeFilledSellBy[0], lifeFilledSellBy[1], lifeFilledSellBy[2], lifeFilledSellBy[3],
                 lifeDeskBound[0], lifeDeskBound[1], lifeDeskBound[2], lifeDeskBound[3], lifeRebalanceSold,
-                lifeExcessOffered, lifeExcessSold };
+                lifeExcessOffered, lifeExcessSold,
+                // ...and the city's fund as a seller (0.7.14).
+                lifePostedSellBy[BY_FUND], lifeFilledSellBy[BY_FUND] };
         s.last = new double[] { lastPostedSellValue, lastFilledValue, lastSellsPosted, lastSellsWaited, lastTrades,
                 lastDeskBound[0], lastDeskBound[1], lastDeskBound[2], lastDeskBound[3] };
         return s;
@@ -1413,6 +1574,7 @@ public class Exchange {
             }
             if (s.life.length >= 24) lifeRebalanceSold = s.life[23];
             if (s.life.length >= 26) { lifeExcessOffered = s.life[24]; lifeExcessSold = s.life[25]; }
+            if (s.life.length >= 28) { lifePostedSellBy[BY_FUND] = s.life[26]; lifeFilledSellBy[BY_FUND] = s.life[27]; }
         }
         if (s.last != null && s.last.length >= 5) {
             lastPostedSellValue = s.last[0]; lastFilledValue = s.last[1];
@@ -1490,11 +1652,14 @@ public class Exchange {
             soldAbroad[c] *= scale; boughtFromAbroad[c] *= scale; emigrantsPaid[c] *= scale;
             buybackToHouseholds[c] *= scale; buybackToDesk[c] *= scale; buybackAbroad[c] *= scale;
             householdsBoughtAbroad[c] *= scale; householdsSoldAbroad[c] *= scale; betweenHouseholds[c] *= scale;
+            fundBoughtFromHouseholds[c] *= scale; fundBoughtAbroad[c] *= scale;
+            fundSoldToHouseholds[c] *= scale; fundSoldAbroad[c] *= scale;
         }
+        fundBondsValue *= scale;
         lastPostedSellValue *= scale; lastFilledValue *= scale;
         lifePostedSellValue *= scale; lifeFilledValue *= scale; lifeBetweenHouseholds *= scale; lifeTurnover *= scale;
         lifeEmigrantsOffered *= scale; lifeEmigrantsPaid *= scale;
-        for (int k = 0; k < 4; k++) { lifePostedSellBy[k] *= scale; lifeFilledSellBy[k] *= scale; }
+        for (int k = 0; k < lifePostedSellBy.length; k++) { lifePostedSellBy[k] *= scale; lifeFilledSellBy[k] *= scale; }
         lifeRebalanceSold *= scale;
         lifeExcessOffered *= scale; lifeExcessSold *= scale;
         if (buying != null) buyingBudget *= scale;

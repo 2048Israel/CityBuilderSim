@@ -70,7 +70,10 @@ final class BankScreen {
 
        THE ACTION STAYS AS IT WAS. Jerus: rescue on failure only. Putting
        capital in whenever you like is a lever the city does not have, and
-       adding one is a game change rather than a screen change.
+       adding one is a game change rather than a screen change. Since 0.7.14
+       the rescue is a resolution for the bank's shares (bankRescue()), and
+       a standing bank under its minimum asks the city to buy preferred
+       (preferredOffer()) - both at the top of the landing while they wait.
        ===================================================================== */
 
     String bankArea = null;                  // null is the landing; BANK_PAGES, the pages behind it
@@ -152,10 +155,14 @@ final class BankScreen {
 
         if (bank.isInsolvent()) {
             column.getChildren().add(alert("The bank has failed",
-                    "It lost more than it owned, so it may lend nothing new. It can be "
-                    + "recapitalised here, or earn its way back out, slowly, on the book it "
-                    + "already has."));
+                    "It lost more than it owned. Frozen, it lends nothing new and carries its hole "
+                    + "until the city resolves it - here, or the month it fails when the treasury's "
+                    + "setting is automatic - or until it earns its way back out, slowly, on the book "
+                    + "it already has."));
             column.getChildren().add(bankRescue());
+        }
+        if (ui.game.isPreferredOfferPending()) {
+            column.getChildren().add(preferredOffer());
         }
 
         ladder(column, bank);
@@ -1096,25 +1103,36 @@ final class BankScreen {
         column.getChildren().add(subHead("What is left for its owners"));
         Equity register = ui.game.getEquity();
         boolean split = bank.knowsEquitySplit();
+        // The city's preferred, ahead of the common (0.7.14): a line of its own, in the equity.
+        column.getChildren().add(bookLine("Preferred shares (the city)",
+                bank.sheet(Bank.Sheet.PREFERRED), bank.yearAgo(Bank.Sheet.PREFERRED), known, null,
+                said(String.format("The senior preferred the city bought when the bank was under its minimum, "
+                        + "at par: %s in %d block(s), ranking ahead of the common. It counts in the bank's "
+                        + "capital. Its cumulative dividend owed and unpaid is %s, which is not on the sheet "
+                        + "until it is paid.", moneyFull(bank.preferredOutstanding()), bank.getPreferred().size(),
+                        moneyFull(bank.getPreferredArrears()))), "what", openLines));
         column.getChildren().add(bookLine("Paid-in capital",
                 split ? bank.sheet(Bank.Sheet.PAID_IN) : Double.NaN,
                 split ? bank.yearAgo(Bank.Sheet.PAID_IN) : Double.NaN, known, null,
                 said(String.format("What its owners and the city have put in: the capital its shareholders paid "
                         + "at its offerings - %s at home and %s abroad over its life, a new branch's capital "
                         + "among it - and the new shares it issued, less what it paid for its own shares bought "
-                        + "back, and %s the city put in in rescues, which bought no shares.",
+                        + "back, and %s the city paid in resolutions, for every share. A resolution writes "
+                        + "the old owners' paid-in capital off against the losses.",
                         moneyFull(register.getLifetimeRaisedHome(Equity.BANK)),
                         moneyFull(register.getLifetimeRaisedAbroad(Equity.BANK)),
                         moneyFull(bank.getBailoutsLifetime()))), "what", openLines));
         column.getChildren().add(bookLine("Retained earnings",
                 split ? bank.sheet(Bank.Sheet.RETAINED) : Double.NaN,
                 split ? bank.yearAgo(Bank.Sheet.RETAINED) : Double.NaN, known, null,
-                said(String.format("Everything else: the profit it has kept, less its dividends and its losses; "
-                        + "the %s its creditors absorbed when it failed, which lifted its equity back to nothing "
-                        + "while its owners kept their shares; the gains and losses on the city's paper the "
-                        + "treasury bought back from it; and the settlement that opened its first branch on "
-                        + "its owners' capital. The Capital & owners page has this month's movement, cause by "
-                        + "cause.", moneyFull(bank.getResolutionLoss()))), "what", openLines));
+                said(String.format("Everything else: the profit it has kept, less its dividends - the city's "
+                        + "preferred's among them - and its losses; the old owners' paid-in capital and the "
+                        + "city's preferred, written off against the hole when a resolution wiped them out; "
+                        + "the %s its creditors absorbed in a failure before 0.7.14, while its owners kept their "
+                        + "shares; the gains and losses on the city's paper the treasury bought back from it; "
+                        + "and the settlement that opened its first branch on its owners' capital. The Capital "
+                        + "& owners page has this month's movement, cause by cause.",
+                        moneyFull(bank.getResolutionLoss()))), "what", openLines));
         column.getChildren().add(bookTotal("Its equity", bank.sheet(Bank.Sheet.EQUITY),
                 bank.yearAgo(Bank.Sheet.EQUITY), known, bank.isInsolvent() ? Palette.BAD : null));
         if (!split) {
@@ -1963,7 +1981,11 @@ final class BankScreen {
             column.getChildren().add(statementLine("What it kept", signed(m.kept(), false),
                     m.kept() < 0 ? Palette.BAD : Palette.GOOD));
             moved(column, "Capital from its shareholders", m.fromShareholders(), Palette.GOOD);
-            moved(column, "Capital from the city, in a rescue", m.fromCity(), Palette.GOOD);
+            moved(column, "Capital from the city, resolving it", m.fromCity(), Palette.GOOD);
+            moved(column, "The city's preferred, bought", m.preferredIn(), Palette.GOOD);
+            moved(column, "The city's preferred, redeemed", -m.preferredOut(), Palette.WARN);
+            moved(column, "Dividends on the city's preferred", -m.preferredDividends(), Palette.WARN);
+            moved(column, "The city's warrants, bought back", -m.warrantsBoughtBack(), Palette.WARN);
             moved(column, "The founding settlement, taking over the city's loans", m.founding(), null);
             moved(column, "Paid to its shareholders", -m.dividends(), Palette.WARN);
             moved(column, "Its own shares bought back", -m.boughtBack(), Palette.WARN);
@@ -1992,30 +2014,65 @@ final class BankScreen {
         /* -------------------------------- its owners -------------------------------- */
         // the sector screen's block, borrowed: it reads the game and is not a pure piece
         ui.sectorScreen.ownersBlock(column, Equity.BANK, bank.equity(), bank.getNetIncome());
+        column.getChildren().add(statementLine("The city's stake, its fund's shares", share(ui.game.cityStakeInBank()),
+                Palette.TEXT_HEAD));
         column.getChildren().add(statementNote(
-                "The treasury holds none of its shares: capital the city puts in during a rescue is given, "
-                + "not bought."));
+                "A resolution makes every share the city's, in its fund's rescue book, which its rule never "
+                + "sells. The bank's new shares go to others: those it sells to rebuild under its target, and "
+                + "those it sells to repay the city's preferred, so the stake falls with both. Warrants the "
+                + "bank has not bought back add to it at their expiry, if they are worth anything."));
 
         /* -------------------------------- its rescues -------------------------------- */
         column.getChildren().add(statementHead("Its rescues"));
         column.getChildren().add(statementLine("Times it has failed", String.valueOf(bank.getFailures()),
                 bank.getFailures() > 0 ? Palette.BAD : Palette.GOOD));
-        column.getChildren().add(statementLine("What its creditors absorbed", moneyFull(bank.getResolutionLoss()),
-                bank.getResolutionLoss() > 0 ? Palette.BAD : null));
-        column.getChildren().add(statementLine("What the city has put in", moneyFull(bank.getBailoutsLifetime())));
-        // TODO(docs): since 0.7.0 the bank's wholesale lender is the central
-        // bank's window, not creditors outside the city; the loss is still
-        // booked as crossing the edge (MoneyAudit's "+ bank ResolutionLoss").
-        // Who absorbs a failed bank now is Jerus's open question, and this
-        // sentence follows his answer.
+        column.getChildren().add(statementLine("What the city has paid to rescue it", moneyFull(bank.getBailoutsLifetime())));
+        if (bank.getResolutionLoss() > 0) {
+            column.getChildren().add(statementLine("What its creditors absorbed, before 0.7.14",
+                    moneyFull(bank.getResolutionLoss()), Palette.BAD));
+        }
+        java.util.List<TreasuryFund.Resolution> all = ui.game.getFund().getResolutions();
+        for (int i = all.size() - 1; i >= 0 && i >= all.size() - 5; i--) {
+            TreasuryFund.Resolution r = all.get(i);
+            column.getChildren().add(statementLine("   " + CityCalendar.format(r.month()),
+                    String.format("%s paid (%s from cash, %s advanced)  ·  owners lost %s",
+                            money(r.paid()), money(r.fromCash()), money(r.advanced()), money(r.ownersLost()))));
+        }
+        if (all.size() > 5) {
+            column.getChildren().add(statementNote((all.size() - 5) + " earlier resolution(s) are in the treasury journal."));
+        }
         column.getChildren().add(statementNote(
-                "When a bank loses more than it owns, somebody eats the hole: here it is booked to its "
-                + "creditors outside the city. It comes out owning nothing, and may not lend until it has "
-                + "capital again - from a rescue, or from its own profit."));
+                "When a bank loses more than it owns, the city resolves it: the old owners lose everything, the "
+                + "city's preferred and warrants go with the hole, and the city pays the hole and the capital to "
+                + "reopen - from the treasury's cash, and what that lacks the central bank advances. Nobody "
+                + "outside the city pays. It reopens the same month."));
+
+        /* -------------------------------- the city's preferred -------------------------------- */
+        column.getChildren().add(statementHead("The city's preferred"));
+        column.getChildren().add(statementLine("Outstanding, at par", moneyFull(bank.preferredOutstanding())));
+        column.getChildren().add(statementLine("...its dividends owed and unpaid", moneyFull(bank.getPreferredArrears()),
+                bank.getPreferredArrears() > 0 ? Palette.WARN : null));
+        column.getChildren().add(statementLine("Dividends paid on it, over its life", moneyFull(bank.getPreferredDividendsLifetime())));
+        column.getChildren().add(statementLine("Redeemed, over its life", moneyFull(bank.getPreferredRedeemedLifetime())));
+        column.getChildren().add(statementLine("Warrants bought back, over its life", moneyFull(bank.getWarrantsBoughtBackLifetime())));
+        column.getChildren().add(statementLine("New shares it sold to repay the city, over its life",
+                moneyFull(bank.getRepaymentRaisedLifetime())));
+        column.getChildren().add(statementLine("Warrants still out, on this many shares", String.format("%,.3f", bank.warrantSharesOut())));
+        column.getChildren().add(statementLine("The consent binds - no buyback, no higher dividend a share",
+                bank.inConsentPeriod() ? "yes" : "no"));
+        column.getChildren().add(statementNote(String.format(
+                "Each block is repaid whole at its %d-month anniversary, at par with its unpaid dividends: from what "
+                + "the bank holds over its target first, and the rest by selling new shares to the public - the "
+                + "households, then the world - which dilutes the city's own. Once none is left it buys the city's "
+                + "warrants back at their value, the same way. No common dividend is paid while any preferred "
+                + "dividend is owed.", Bank.PREFERRED_REDEEM_MONTHS)));
 
         if (bank.isInsolvent()) {
             column.getChildren().add(statementHead("The bank has failed"));
             column.getChildren().add(bankRescue());
+        }
+        if (ui.game.isPreferredOfferPending()) {
+            column.getChildren().add(preferredOffer());
         }
     }
 
@@ -2034,33 +2091,39 @@ final class BankScreen {
        sheet."
 
        ONE block used in TWO places - the top of the landing, where a failed
-       bank is the only thing worth reading, and the Capital page. The guard
-       on the treasury's cash is the model's (Game.canRecapitaliseBank(),
-       since 0.7.9), so the two cannot drift apart and nothing else can offer
-       the rescue on a different rule.
+       bank is the only thing worth reading, and the Capital page. Since
+       0.7.14 the button is the whole rescue, nothing to choose: the
+       resolution (Game.resolveBank()) the treasury's automatic setting runs
+       the month the bank fails. Shown only while the bank waits frozen
+       (Game.canResolveBank()), so the two places cannot drift apart. It
+       needs no cash in hand: what the treasury lacks, the central bank
+       advances.
        ===================================================================== */
     VBox bankRescue() {
 
+        Bank bank = ui.game.getBank();
         double needed = ui.game.bankRecapitalisationNeeded();
-        double cash = ui.game.getCash();
-        boolean can = ui.game.canRecapitaliseBank();
+        boolean can = ui.game.canResolveBank();
 
         VBox block = new VBox(0);
         block.setMaxWidth(Region.USE_PREF_SIZE);
 
-        block.getChildren().add(statementLine("To put it back on its feet", moneyFull(needed), Palette.BAD));
-        block.getChildren().add(statementLine("The treasury holds", moneyFull(cash),
-                can ? Palette.GOOD : Palette.BAD));
+        block.getChildren().add(statementLine("To resolve it: the hole and the capital to reopen", moneyFull(needed),
+                Palette.BAD));
+        block.getChildren().add(statementLine("...of it the capital to reopen", moneyFull(bank.resolutionExitEquity())));
+        block.getChildren().add(statementLine("The treasury holds", moneyFull(ui.game.getCash())));
+        block.getChildren().add(statementLine("...what the central bank would advance", moneyFull(ui.game.bankResolutionAdvance()),
+                ui.game.bankResolutionAdvance() > 0 ? Palette.WARN : null));
 
-        Button rescue = new Button("Recapitalise the bank — " + money(needed));
+        Button rescue = new Button("Resolve the bank for its shares - " + money(needed));
         rescue.setDisable(!can);
         if (can) {
             rescue.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                     + " -fx-padding: 8 18 8 18;");
         }
         rescue.setOnAction(e -> {
-            if (!ui.game.canRecapitaliseBank()) return;
-            ui.game.recapitaliseBank(ui.game.bankRecapitalisationNeeded());
+            if (!ui.game.canResolveBank()) return;
+            ui.game.resolveBank();
             ui.innerScrollAt.remove("showBankMenu:body");
             showBankMenu();
         });
@@ -2070,22 +2133,110 @@ final class BankScreen {
         act.setStyle("-fx-padding: 10 0 4 0;");
         block.getChildren().add(act);
 
-        if (!can) {
-            block.getChildren().add(statementNote(
-                    "The treasury cannot cover it today, so the button is dead until it can. The bank can "
-                    + "still earn its way back out on the book it already has - slower, and it costs the "
-                    + "city nothing."));
+        block.getChildren().add(statementNote(
+                "Its owners lose everything: the households' shares and the world's pass to the city for "
+                + "nothing, and the city's own preferred and warrants go with the hole. The city pays from the "
+                + "treasury's cash first, and what that lacks the central bank advances at the next settle, past "
+                + "its ceiling if it must. The bank reopens this month, and every share is the city's fund's "
+                + "rescue book. With the treasury's setting on automatic (Finances, When the bank fails) it "
+                + "happens the month the bank fails."));
+        return block;
+    }
+
+    /* =====================================================================
+       THE BANK ASKS FOR PREFERRED (0.7.14)
+
+       Jerus: "its a popup message saying bank wants to issue you shares or
+       something". The game asks its questions through the inbox: the
+       notice's button opens the Bank tab, and this block is the answer - at
+       the top of the landing and on the Capital page while the offer waits.
+       Accept buys it through the treasury (Game.acceptPreferredOffer()); a
+       treasury short of it is offered the build screen's two local offers
+       first, the land office's pattern (0.7.13), then buys. Decline, and the
+       bank asks again in a quarter while it is still under its minimum.
+       ===================================================================== */
+    VBox preferredOffer() {
+
+        Game game = ui.game;
+        Bank bank = game.getBank();
+        String here = game.getCurrency().qualifiedSymbol();
+        double size = game.preferredOfferSize();
+        double shortBy = game.preferredOfferShortBy();
+
+        VBox block = new VBox(0);
+        block.setMaxWidth(Region.USE_PREF_SIZE);
+
+        block.getChildren().add(alert("The bank asks the city for capital", String.format(
+                "The bank is under its minimum capital and asks the city to buy %s of preferred shares: "
+                + "%.0f%% a year for five years, then %.0f%%, repayable at par after three years; with warrants "
+                + "on %s of its shares at %s.", marked(here, money(size)), Bank.PREFERRED_RATE * 100,
+                Bank.PREFERRED_STEP_RATE * 100, marked(here, money(game.preferredOfferWarrantValue())),
+                marked(here, unitPrice(game.preferredOfferStrike())))));
+        if (bank.preferredOfferCapped()) {
+            block.getChildren().add(statementNote(String.format("That is %.0f%% of its risk-weighted book, the "
+                    + "most it may ask; the %s it is still short of its target is left to its own share issues.",
+                    Bank.PREFERRED_MAX_SHARE * 100, marked(here, money(bank.preferredOfferShortOfTarget())))));
+        }
+        block.getChildren().add(statementNote(String.format("The terms: its dividend is cumulative - what the "
+                + "bank cannot pay accrues - and no common dividend is paid while any is owed. For three years it "
+                + "buys back none of its shares and raises no dividend a share. It counts in the bank's capital, "
+                + "ahead of its common. At its third anniversary the bank repays it at par with any dividends still "
+                + "owed - from its capital over its target, and the rest by selling new shares to the public. Once "
+                + "no preferred is left it buys the warrants back at their value, or they are taken as shares at ten "
+                + "years if they are worth anything. In a failure the preferred and its warrants go with the hole.")));
+        block.getChildren().add(statementLine("The treasury holds", marked(here, money(game.getCash())),
+                shortBy > 0 ? Palette.BAD : Palette.GOOD));
+
+        if (shortBy > 0) {
+            block.getChildren().add(statementLine("Funding required", marked(here, money(shortBy)), Palette.BAD));
+            DebtQuote bond = game.quoteLongBondForCash(shortBy, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            DebtQuote note = game.quoteTBill(shortBy, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+            block.getChildren().add(ui.buildScreen.fundingOffer(Game.BUILD_BOND_YEARS + "-year bond", bond,
+                    pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
+                    String.format("Paid over %d years: the coupon every month, then the whole %s at the end.",
+                            bond.duration(), money(bond.faceValue())),
+                    "Issue the " + Game.BUILD_BOND_YEARS + "-year bond and accept",
+                    () -> {
+                        game.handleLongBondForCash(game.preferredOfferShortBy(), Game.BUILD_BOND_YEARS,
+                                Game.BUILD_BOND_GRANULE);
+                        game.acceptPreferredOffer();
+                        showBankMenu();
+                    }));
+            block.getChildren().add(ui.buildScreen.fundingOffer(Game.BUILD_NOTE_MONTHS + "-month note", note,
+                    pct2(note.marketRate()) + " a year, taken as a discount",
+                    String.format(game.getRollover().getMode() == Rollover.Mode.MANUAL
+                                    ? "Falls due in %d months: the whole %s at once, out of the treasury."
+                                    : "Falls due in %d months: the whole %s at once, refinanced then by the treasury's rollover.",
+                            note.duration(), money(note.faceValue())),
+                    "Issue the " + Game.BUILD_NOTE_MONTHS + "-month note and accept",
+                    () -> {
+                        game.handleTBillLogic(game.preferredOfferShortBy(), Game.BUILD_NOTE_MONTHS,
+                                Game.BUILD_NOTE_GRANULE);
+                        game.acceptPreferredOffer();
+                        showBankMenu();
+                    }));
+            block.getChildren().add(alert("Borrowing for it has the bank capitalise itself",
+                    "The city borrows FROM this bank. Paper issued to buy its preferred is paper the bank buys, "
+                    + "so the cash comes back to it as capital and its balance sheet has grown on both sides "
+                    + "without anybody putting anything in."));
         }
 
-        /*
-         * SAID OUT LOUD, because a player who borrows to do this is doing
-         * something that looks free and is not. See Bank.receiveBailout().
-         */
-        block.getChildren().add(alert("Borrowing to do it has the bank capitalise itself",
-                "The city borrows FROM this bank. Issuing paper to raise the rescue money means the "
-                + "bank buys the bond, the cash comes back to it as capital, and its balance sheet has "
-                + "grown on both sides without anybody putting anything in. It works on the screen and "
-                + "it is not a rescue."));
+        Button accept = new Button("Accept - buy " + marked(here, money(size)));
+        accept.setDisable(shortBy > 0);
+        if (!(shortBy > 0)) {
+            accept.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
+                    + " -fx-padding: 8 18 8 18;");
+        }
+        accept.setOnAction(e -> { game.acceptPreferredOffer(); showBankMenu(); });
+        Button decline = new Button("Decline");
+        decline.setOnAction(e -> { game.declinePreferredOffer(); showBankMenu(); });
+        HBox act = new HBox(8, accept, decline);
+        act.setAlignment(Pos.CENTER_LEFT);
+        act.setStyle("-fx-padding: 10 0 4 0;");
+        block.getChildren().add(act);
+        block.getChildren().add(statementNote(String.format("Declined, it asks again in %d months if it is still "
+                + "under its minimum. Left unanswered it waits, and a time skip passes without the city's capital.",
+                TreasuryFund.OFFER_AGAIN_MONTHS)));
         return block;
     }
 

@@ -1,6 +1,6 @@
-# GovernmentScreen.java - 1,676 lines · 41 methods · 1 constants · interface
+# GovernmentScreen.java - 1,695 lines · 42 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > The government tab: the budget as two rings and a balance, what the
 > treasury actually did against the size of the economy, the two lists - who
@@ -13,7 +13,7 @@
 > the shell touches is govPage, which the income dome sets to Overview before
 > it opens the tab.
 
-**Uses:** [Palette](Palette.md) (179), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (11), [NationalAccounts](NationalAccounts.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (6), [EducationType](EducationType.md) (6), [TreasuryJournal](TreasuryJournal.md) (5), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [UserInterface](UserInterface.md) (2), [TreasuryLine](TreasuryLine.md) (2), [CityCalendar](CityCalendar.md) (2), [BuildingManager](BuildingManager.md) (2), [CentralBank](CentralBank.md) (1), [SectorBooks](SectorBooks.md) (1), [Healthcare](Healthcare.md) (1), [Education](Education.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Mortgage](Mortgage.md) (1), [Debt](Debt.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [Palette](Palette.md) (180), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (11), [NationalAccounts](NationalAccounts.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (6), [EducationType](EducationType.md) (6), [TreasuryJournal](TreasuryJournal.md) (5), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [UserInterface](UserInterface.md) (2), [TreasuryLine](TreasuryLine.md) (2), [CityCalendar](CityCalendar.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [CentralBank](CentralBank.md) (1), [SectorBooks](SectorBooks.md) (1), [Healthcare](Healthcare.md) (1), [Education](Education.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Mortgage](Mortgage.md) (1), [Debt](Debt.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -31,17 +31,17 @@
 | 549 | · ...AND WHAT IT OWES ITS CENTRAL BANK (0.7.0) |
 | 599 | · · against the size of the economy |
 | 755 | THE TWO LISTS. |
-| 947 | · WHO PAYS WHAT |
-| 1160 | · WHAT IT SPENDS |
-| 1205 | WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON |
-| 1301 | · · and the money that is not on this statement |
-| 1412 | · WHAT THE DEBT IS COSTING |
-| 1461 | · · the term loans |
-| 1488 | · · when the budget line disagrees with the paper |
-| 1534 | · · the two services, as businesses |
-| 1557 | · · the pension gap |
-| 1570 | · THE OUTPUT |
-| 1632 | · · and growth |
+| 950 | · WHO PAYS WHAT |
+| 1179 | · WHAT IT SPENDS |
+| 1224 | WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON |
+| 1320 | · · and the money that is not on this statement |
+| 1431 | · WHAT THE DEBT IS COSTING |
+| 1480 | · · the term loans |
+| 1507 | · · when the budget line disagrees with the paper |
+| 1553 | · · the two services, as businesses |
+| 1576 | · · the pension gap |
+| 1589 | · THE OUTPUT |
+| 1651 | · · and growth |
 
 ## Constants
 
@@ -61,7 +61,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 1643 | **type** `final class GovernmentScreen` | The government tab: the budget as two rings and a balance, what the treasury actually did against the size of the economy, the two lists - who pays what and what it spends, every revenue line opening into who paid it ... |
+| 34 | 1662 | **type** `final class GovernmentScreen` | The government tab: the budget as two rings and a balance, what the treasury actually did against the size of the economy, the two lists - who pays what and what it spends, every revenue line opening into who paid it ... |
 | 39 | 1 | `GovernmentScreen(UserInterface ui)` |  |
 
 ### THE GOVERNMENT. (lines 41-68)
@@ -94,56 +94,57 @@
 | 697 | 44 | `int bridgeDisclosure(javafx.scene.layout.GridPane table, int line, String label, double amount, double change, String tone, jav...` | The bridge's last row as a disclosure: closed, the row as it always was; opened, the journal's lines under it in the same three columns, and a last line "Not accounted for" carrying the residual. |
 | 743 | 11 | `int shareRow(javafx.scene.layout.GridPane table, int line, String label, double monthly, double annual, String tone)` | One row of the share table: a month, a year, and a percentage of GDP. |
 
-### THE TWO LISTS. (lines 755-946)
+### THE TWO LISTS. (lines 755-949)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 768 | 6 | `static java.util.List<String> revenueNames()` |  |
-| 775 | 26 | `java.util.List<Double> revenueAmounts(EconomyManager em, NationalAccounts na)` |  |
-| 802 | 5 | `static java.util.List<String> spendingNames()` |  |
-| 819 | 24 | `java.util.List<Double> spendingAmounts(EconomyManager em, NationalAccounts na)` | REPAIRS JOINED THIS LIST ON 2026-09-09, and it is a real line rather than a nicety. |
-| 851 | 4 | `VBox budgetLine(String label, double amount, double total, double annual, String colour, VBox detail)` | A line of the budget that opens into whoever paid it. |
-| 861 | 61 | `VBox budgetLine(String label, double amount, double total, double annual, String colour, VBox detail, String word)` | city pays interest. |
-| 924 | 13 | `HBox budgetHead(String left)` | The heading over a budget list: what the three right-hand columns are. |
-| 938 | 8 | `Label head(String text, double width)` |  |
+| 768 | 7 | `static java.util.List<String> revenueNames()` |  |
+| 776 | 28 | `java.util.List<Double> revenueAmounts(EconomyManager em, NationalAccounts na)` |  |
+| 805 | 5 | `static java.util.List<String> spendingNames()` |  |
+| 822 | 24 | `java.util.List<Double> spendingAmounts(EconomyManager em, NationalAccounts na)` | REPAIRS JOINED THIS LIST ON 2026-09-09, and it is a real line rather than a nicety. |
+| 854 | 4 | `VBox budgetLine(String label, double amount, double total, double annual, String colour, VBox detail)` | A line of the budget that opens into whoever paid it. |
+| 864 | 61 | `VBox budgetLine(String label, double amount, double total, double annual, String colour, VBox detail, String word)` | city pays interest. |
+| 927 | 13 | `HBox budgetHead(String left)` | The heading over a budget list: what the three right-hand columns are. |
+| 941 | 8 | `Label head(String text, double width)` |  |
 
-### WHO PAYS WHAT (lines 947-1159)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 950 | 19 | `VBox businessTaxDetail(double total)` | Business tax, by the companies that pay it - every sector, and the bank. |
-| 971 | 15 | `VBox salesTaxDetail(double total)` | Sales tax, by the sector that remitted it. |
-| 988 | 16 | `VBox wageTaxDetail(double total)` | Wage tax, by the pay tier that earned the wages. |
-| 1006 | 13 | `VBox contributionsDetail(double total)` | Pension contributions, by the tier that paid them. |
-| 1021 | 16 | `VBox propertyTaxDetail(double total)` | Property tax, by the sector it is assessed on. |
-| 1039 | 19 | `VBox healthFeeDetail(double total)` | Healthcare fees, by the kind of care that charged them. |
-| 1060 | 17 | `VBox schoolFeeDetail(double total)` | School fees, by the course. |
-| 1078 | 34 | `void revenuePage(VBox column, EconomyManager em, NationalAccounts na)` |  |
-| 1113 | 13 | `VBox revenueDetail(String name, double amount)` |  |
-| 1133 | 26 | `VBox mortgageInsuranceDetail()` | THE CITY'S MORTGAGE INSURANCE (0.7.11), opened from either of its two lines: the premiums taken this month and what they were on, what the insurance paid the bank, and the book over the city's life - does the city mak... |
-
-### WHAT IT SPENDS (lines 1160-1204)
+### WHO PAYS WHAT (lines 950-1178)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1163 | 19 | `VBox healthSpendDetail(double total)` | Healthcare spending, by the kind of care it is spent on. |
-| 1184 | 20 | `VBox educationSpendDetail(double total)` | Education spending, by the school it is spent on. |
+| 953 | 19 | `VBox businessTaxDetail(double total)` | Business tax, by the companies that pay it - every sector, and the bank. |
+| 974 | 15 | `VBox salesTaxDetail(double total)` | Sales tax, by the sector that remitted it. |
+| 991 | 16 | `VBox wageTaxDetail(double total)` | Wage tax, by the pay tier that earned the wages. |
+| 1009 | 13 | `VBox contributionsDetail(double total)` | Pension contributions, by the tier that paid them. |
+| 1024 | 16 | `VBox propertyTaxDetail(double total)` | Property tax, by the sector it is assessed on. |
+| 1042 | 19 | `VBox healthFeeDetail(double total)` | Healthcare fees, by the kind of care that charged them. |
+| 1063 | 17 | `VBox schoolFeeDetail(double total)` | School fees, by the course. |
+| 1081 | 34 | `void revenuePage(VBox column, EconomyManager em, NationalAccounts na)` |  |
+| 1116 | 14 | `VBox revenueDetail(String name, double amount)` |  |
+| 1132 | 13 | `VBox fundTransferDetail()` | THE TRANSFER FROM THE CITY'S FUND (0.7.14), opened from its line: due, paid and short this month, and the fund it is struck on. |
+| 1152 | 26 | `VBox mortgageInsuranceDetail()` | THE CITY'S MORTGAGE INSURANCE (0.7.11), opened from either of its two lines: the premiums taken this month and what they were on, what the insurance paid the bank, and the book over the city's life - does the city mak... |
 
-### WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON (lines 1205-1569)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1236 | 2 | **type** `record PaperKind(String name, int count, double principal, double coupon, String note)` | One kind of paper, totalled. |
-| 1239 | 27 | `java.util.List<PaperKind> paperKinds()` |  |
-| 1268 | 6 | `PaperKind paperKind(String name)` | One kind's row, or an empty one. |
-| 1281 | 48 | `VBox debtServiceDetail(double total)` | The interest line, opened into the paper it is charged on. |
-| 1331 | 16 | `VBox pensionDetail(double total)` | Pensions, and who they go to. |
-| 1356 | 20 | `VBox landSpendDetail(double total)` | The land line, opened (0.7.6): the land office is paid in US dollars, and the budget carries it at what it cost in local money on the day - paid by converting cash, or out of the vault with no cash moving at all (the ... |
-| 1377 | 192 | `void spendingPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
-
-### THE OUTPUT (lines 1570-1676)
+### WHAT IT SPENDS (lines 1179-1223)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1572 | 104 | `void outputPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
+| 1182 | 19 | `VBox healthSpendDetail(double total)` | Healthcare spending, by the kind of care it is spent on. |
+| 1203 | 20 | `VBox educationSpendDetail(double total)` | Education spending, by the school it is spent on. |
+
+### WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON (lines 1224-1588)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1255 | 2 | **type** `record PaperKind(String name, int count, double principal, double coupon, String note)` | One kind of paper, totalled. |
+| 1258 | 27 | `java.util.List<PaperKind> paperKinds()` |  |
+| 1287 | 6 | `PaperKind paperKind(String name)` | One kind's row, or an empty one. |
+| 1300 | 48 | `VBox debtServiceDetail(double total)` | The interest line, opened into the paper it is charged on. |
+| 1350 | 16 | `VBox pensionDetail(double total)` | Pensions, and who they go to. |
+| 1375 | 20 | `VBox landSpendDetail(double total)` | The land line, opened (0.7.6): the land office is paid in US dollars, and the budget carries it at what it cost in local money on the day - paid by converting cash, or out of the vault with no cash moving at all (the ... |
+| 1396 | 192 | `void spendingPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
+
+### THE OUTPUT (lines 1589-1695)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1591 | 104 | `void outputPage(VBox column, EconomyManager em, NationalAccounts na)` |  |
 

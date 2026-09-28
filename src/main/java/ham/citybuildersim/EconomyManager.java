@@ -1094,6 +1094,12 @@ public class EconomyManager {
     public double getCentralBankRemittance() { return centralBankRemittance; }
     public double getCentralBankInterest()   { return centralBankInterest; }
 
+    /** THE TRANSFER FROM THE CITY'S FUND (0.7.14), set by Game where the treasury settles, for the central bank's lines' reason: Game moves the cash there. See NationalAccounts.setFundTransfer(). */
+    private double fundTransfer;
+
+    public void setFundTransfer(double transfer) { this.fundTransfer = Math.max(0, transfer); }
+    public double getFundTransfer()              { return fundTransfer; }
+
     /** Sets the month's student-loan interest, the treasury's. See Game.getStudentLoanInterest(). */
     public void setStudentLoanInterest(double interest) { this.studentLoanInterest = Math.max(0, interest); }
 
@@ -1343,6 +1349,7 @@ public class EconomyManager {
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
+        nationalAccounts.setFundTransfer(fundTransfer);
         setMortgageInsuranceLines();
 
         GDP = nationalAccounts.getGdp();
@@ -1369,6 +1376,7 @@ public class EconomyManager {
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
+        nationalAccounts.setFundTransfer(fundTransfer);
         setMortgageInsuranceLines();
     }
 
@@ -1601,6 +1609,7 @@ public class EconomyManager {
         totalEiPremiums *= scale;  eiBenefits *= scale;  studentGrants *= scale;
         totalHealthPremiums *= scale;  studentLoanInterest *= scale;
         centralBankRemittance *= scale;  centralBankInterest *= scale;
+        fundTransfer *= scale;
         exchangeRate *= scale;
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;

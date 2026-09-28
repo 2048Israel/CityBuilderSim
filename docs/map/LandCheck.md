@@ -1,6 +1,6 @@
 # LandCheck.java - 1,176 lines · 11 methods · 0 constants · harnesses
 
-`ham/citybuildersim/LandCheck.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > Verifies the land ledger: what the city owns, what it can allocate, what it
 > charges, and that the three numbers never drift apart.

@@ -72,6 +72,15 @@ public enum TreasuryLine {
      */
     MORTGAGE_INSURANCE_CLAIMS("Mortgage insurance claims", true, false),
 
+    /**
+     * A failed bank's resolution (0.7.14): the hole and the capital to reopen,
+     * for every common share (Game.resolveBank()). A promise - Jerus: "Central
+     * bank advances it" - so the treasury's cash pays first and the central
+     * bank advances the rest at the next settle, past its ceiling if it must,
+     * as it does for a coupon. A bank left failed stops the city's lending.
+     */
+    BANK_RESOLUTION("A failed bank's resolution", true, false),
+
     /** The standing policy's top-up of the builders to break-even - the construction subsidy. */
     CONSTRUCTION_SUBSIDY("Construction subsidy", false, false),
 
@@ -90,7 +99,7 @@ public enum TreasuryLine {
     /** Buildings the city orders; refused, they are not ordered. */
     BUILDINGS("Building purchases", false, true),
 
-    /** Capital put into the commercial bank. */
+    /** Capital put into the commercial bank: since 0.7.14 the preferred a standing bank under its minimum asks the city for (Game.acceptPreferredOffer()); refused, it is not bought. */
     BANK_CAPITAL("Capital into the bank", false, true),
 
     /** Foreign currency bought for the vault. */

@@ -313,9 +313,15 @@ public class CentralBankCheck {
         /* ================= 1 and 5. every kind of flow ================= */
         out.println("\n--- 1. money made less money destroyed is the change in M0 ---");
 
-        // Reserves: the treasury capitalises the bank until it has spare cash.
+        // Reserves: shareholders capitalise the bank until it has spare cash -
+        // the treasury did, by a gift, until 0.7.14, when the gift went (the
+        // city's capital is a resolution's or the preferred's now, and neither
+        // is on offer to a standing bank over its minimum).
         final double[] putIn = new double[1];
-        quietly(() -> putIn[0] = city.recapitaliseBank(bank.borrowings() + 150_000));
+        quietly(() -> {
+            putIn[0] = bank.borrowings() + 150_000;
+            bank.injectCapital(0, putIn[0]);
+        });
         double put = putIn[0];
         assertTrue("fixture: the bank has spare cash to be paid on", put > 0 && bank.cashReserves() > 0);
         play(city);
@@ -474,7 +480,7 @@ public class CentralBankCheck {
         quietly(() -> built[0] = city.buildStack(template(city, "Gravel Road"), 1, false));
         assertTrue("...a building the treasury cannot pay for is not ordered",
                 built[0] != Game.BuildResult.SUCCESS && city.getCash() == cashNow);
-        close("...nor capital put into the bank", city.recapitaliseBank(1_000), 0, 0);
+        close("...nor capital put into the bank", city.treasuryPays(TreasuryLine.BANK_CAPITAL, 1_000), 0, 0);
         close("...nor reserves bought", city.buyForeignCurrency(1_000), 0, 0);
 
         play(city);

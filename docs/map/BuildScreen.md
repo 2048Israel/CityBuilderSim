@@ -1,6 +1,6 @@
 # BuildScreen.java - 1,945 lines · 43 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-09-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
 
 > The build tab: the strip of categories across the top, the constraints bar
 > that says what stops a build, the line that says who builds these, and every

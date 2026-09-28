@@ -583,6 +583,23 @@ public class NationalAccounts {
 
     /** The premiums the landlords paid the city's insurance this month - a revenue line. */
     public double getMortgagePremiums() { return mortgagePremiums; }
+
+    /**
+     * THE TRANSFER FROM THE CITY'S FUND (0.7.14): a twelfth of
+     * TreasuryFund.TRANSFER_RATE of the fund's value, paid from its cash -
+     * Norway's fiscal rule - in, a revenue line beside the central bank's
+     * remittance, with its own setter for the same reason. Game moves the
+     * cash where the treasury settles at the top of the month. It is part of
+     * the budget's balance, and so of the surplus the fund's dial takes a
+     * share of: the loop is intended - a fund that grows pays the budget
+     * more, and a bigger surplus puts more back into it.
+     */
+    private double fundTransfer;
+
+    public void setFundTransfer(double transfer) { this.fundTransfer = Math.max(0, transfer); }
+
+    /** What the city's fund paid the budget this month - a revenue line. */
+    public double getFundTransfer() { return fundTransfer; }
     /** What the city's insurance paid the bank this month on insured mortgages written down - a spending line. */
     public double getMortgageClaims()   { return mortgageClaims; }
 
@@ -685,17 +702,22 @@ public class NationalAccounts {
             // ...and the mortgage insurance's two, appended in 0.7.11: an
             // older save reads zero, which is what a city that insured no
             // mortgage took in and paid out.
-            mortgagePremiums, mortgageClaims };
+            mortgagePremiums, mortgageClaims,
+            // ...and the transfer from the city's fund, appended in 0.7.14:
+            // an older save reads zero, a city with no fund.
+            fundTransfer };
     }
 
     void restoreGovernment(double[] saved) {
-        // Twenty-seven since the mortgage insurance; twenty-five since the
-        // central bank; twenty-three since the student loan interest;
-        // twenty-two since the health premium; twenty-one since the police;
-        // twenty since EI and the grants; seventeen from a save before them.
+        // Twenty-eight since the city's fund; twenty-seven since the mortgage
+        // insurance; twenty-five since the central bank; twenty-three since
+        // the student loan interest; twenty-two since the health premium;
+        // twenty-one since the police; twenty since EI and the grants;
+        // seventeen from a save before them.
         if (saved == null || (saved.length != 17 && saved.length != 20
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
-                && saved.length != 25 && saved.length != 27)) return;
+                && saved.length != 25 && saved.length != 27 && saved.length != 28)) return;
+        fundTransfer          = saved.length >= 28 ? saved[27] : 0;
         centralBankRemittance = saved.length >= 25 ? saved[23] : 0;
         centralBankInterest   = saved.length >= 25 ? saved[24] : 0;
         mortgagePremiums      = saved.length >= 27 ? saved[25] : 0;
@@ -821,7 +843,9 @@ public class NationalAccounts {
                 // financing, like paper raised, and are not here either.
                 + centralBankRemittance
                 // ...and the premiums on the mortgages it insures (0.7.11).
-                + mortgagePremiums;
+                + mortgagePremiums
+                // ...and the transfer from the city's fund (0.7.14).
+                + fundTransfer;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -910,6 +934,7 @@ public class NationalAccounts {
         healthPremiums *= scale;  studentLoanInterest *= scale;
         centralBankRemittance *= scale;  centralBankInterest *= scale;
         mortgagePremiums *= scale;  mortgageClaims *= scale;
+        fundTransfer *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

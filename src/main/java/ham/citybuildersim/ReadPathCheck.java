@@ -150,6 +150,26 @@ public class ReadPathCheck {
         into.put("credit.insuredRationed", cr.isInsuredRationed() ? 1.0 : 0.0);
         into.put("budget.mortgagePremiums", g.getEconomyManager().getNationalAccounts().getMortgagePremiums());
         into.put("budget.mortgageClaims", g.getEconomyManager().getNationalAccounts().getMortgageClaims());
+        // ...and 0.7.14's: the city's fund - its cash, its settings, its orders waiting, its holdings on
+        // the register and on the bonds - the bank's preferred, and the budget's line for the transfer.
+        TreasuryFund fund = g.getFund();
+        into.put("fund.cash", fund.getCash());
+        into.put("fund.dial", fund.getDial());
+        into.put("fund.rescue", (double) fund.getRescueMode().ordinal());
+        into.put("fund.offerPending", fund.isOfferPending() ? 1.0 : 0.0);
+        into.put("fund.handOrders", (double) fund.getHandOrders().size());
+        into.put("fund.transferDue", fund.getTransferDue());
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            into.put("fund.shares" + c, g.getEquity().getCityShares(c));
+            into.put("fund.rescueShares" + c, g.getEquity().getCityRescueShares(c));
+        }
+        into.put("fund.bondsFace", g.getBondMarket().faceHeldByCity());
+        into.put("bank.preferred", b.preferredOutstanding());
+        into.put("bank.preferredArrears", b.getPreferredArrears());
+        into.put("bank.repaymentRaised", b.getRepaymentRaisedLifetime());
+        double[] market = g.getDebtManager().marketToSave();
+        for (int i = 0; i < market.length; i++) into.put("debtMarket" + i, market[i]);
+        into.put("budget.fundTransfer", g.getEconomyManager().getNationalAccounts().getFundTransfer());
         // ...and 0.7.12's: every bond and who holds it, every book and what
         // rests on it, the market's month and life, the cells' own bonds,
         // the bank's bonds and its concentration, each sector's mix.
@@ -523,7 +543,66 @@ public class ReadPathCheck {
         g.getBranchesClosed();
         bk.equityMovement().residual();
         bk.solvencyToSave();
-        g.canRecapitaliseBank();
+        g.canResolveBank();
+        // ...and 0.7.14's fund, its rescue and the bank's preferred: the Finances tab's fund
+        // pages and rescue block, the Bank tab's rescue, offer, sheet line and capital page,
+        // the founding screen's Insane lines and the clock's refusal.
+        g.bankRecapitalisationNeeded(); g.bankResolutionAdvance(); g.getLastResolution(); g.cityStakeInBank();
+        g.getOwnersWipedAbroadThisMonth();
+        g.isPreferredOfferPending(); g.preferredOfferSize(); g.preferredOfferWarrantValue(); g.preferredOfferStrike();
+        g.preferredOfferShortBy(); g.bankVolatility();
+        g.fundSharesValue(); g.fundMarketSharesValue(); g.fundRescueSharesValue(); g.fundBondsValue();
+        g.fundPreferredValue(); g.fundWarrantsValue(); g.fundRescueValue(); g.fundValue(); g.fundEquityShare();
+        g.fundTransferDue(); g.getFundDial(); g.getRescueMode(); g.monthOfSpending(); g.surplusThisYearSoFar();
+        g.fundReservation(); g.clockRefusal(); g.treasuryEmptyWords(); g.getSkipStoppedBecause();
+        for (int company = 0; company < Equity.COMPANIES.length; company++) {
+            g.fundCompanyValue(company); g.fundCompanyRescueValue(company); g.fundCompanyShare(company);
+            g.fundCompanyMarketShare(company);
+            g.getEquity().getCityShares(company); g.getEquity().getCityRescueShares(company);
+            g.getEquity().getCityMarketShares(company); g.getEquity().cityShare(company);
+            g.getEquity().getDividendCityThisMonth(company); g.getEquity().getLifetimeDividendsCity(company);
+        }
+        for (String key : Sectors.KEYS) g.fundBondsValueOf(key);
+        for (CorporateBond x : g.getBondMarket().getBonds()) { g.fundBondValue(x); x.city(); }
+        g.getBondMarket().faceHeldByCity();
+        g.getExchange().cityValue(g.getEquity()); g.getExchange().cityMarketValue(g.getEquity());
+        g.getExchange().getFundBoughtFromHouseholds(); g.getExchange().getFundBoughtAbroad();
+        g.getExchange().getFundSoldToHouseholds(); g.getExchange().getFundSoldAbroad();
+        TreasuryFund fund = g.getFund();
+        fund.getCash(); fund.getDial(); fund.getRescueMode(); fund.getTransferDue(); fund.getTransferPaid();
+        fund.getTransferShort(); fund.getTransfersThisYear(); fund.getTransferShortThisYear(); fund.getRescueCost();
+        fund.isOfferPending(); fund.getOfferMonth(); fund.getDeclinedMonth(); fund.getAcceptedMonth();
+        fund.mayOffer(g.getMonth()); fund.getOffersMade(); fund.getOffersAccepted(); fund.getOffersDeclined();
+        fund.getHandOrders(); fund.getLastPayInMonth(); fund.getLastPayInYearSurplus(); fund.getLastPayInFromSurplus();
+        fund.getLastPayInFromCash(); fund.getPaidInFromSurplus(); fund.getPaidInFromCash(); fund.getHandPaidIn();
+        fund.getHandDrawnOut(); fund.getTransfersPaid(); fund.getTransfersShort(); fund.getDividendsMarket();
+        fund.getDividendsRescue(); fund.getCoupons(); fund.getPrincipal(); fund.getBondFaceLost();
+        fund.getPreferredBought(); fund.getPreferredDividends(); fund.getPreferredRedeemed();
+        fund.getWarrantsBoughtBack(); fund.getWarrantSharesTaken(); fund.getSharesBought(); fund.getSharesSold();
+        fund.getBondsBought(); fund.getBondsSold(); fund.getRescueSold(); fund.getMonthDividends();
+        fund.getMonthCoupons(); fund.getMonthPrincipal(); fund.getMonthBought(); fund.getMonthSold(); fund.isEmpty();
+        for (TreasuryFund.Resolution r : fund.getResolutions()) {
+            r.month(); r.paid(); r.fromCash(); r.advanced(); r.shortfall(); r.exitCapital(); r.shares();
+            r.householdsShares(); r.householdsValue(); r.worldShares(); r.worldValue(); r.fundShares(); r.fundValue();
+            r.preferredCancelled(); r.warrantsCancelled(); r.ownersLost();
+        }
+        bk.getShortfallThisMonth(); bk.getShortfallLifetime(); bk.isInResolution(); bk.resolutionExitEquity();
+        bk.preferredOutstanding(); bk.getPreferred(); bk.getPreferredArrears(); bk.inConsentPeriod();
+        bk.wantsPreferred(); bk.preferredOfferSize(); bk.preferredOfferCapped(); bk.preferredOfferShortOfTarget();
+        bk.warrantSharesOut(); bk.warrantValue(1, .3, .02); bk.getPreferredIn(); bk.getPreferredRedeemedThisMonth();
+        bk.getPreferredDividendsThisMonth(); bk.getPreferredAccruedThisMonth(); bk.getOwnersWipedThisMonth();
+        bk.getPreferredCancelledThisMonth(); bk.getPreferredDividendsLifetime(); bk.getPreferredRedeemedLifetime();
+        bk.getWarrantsBoughtBackLifetime(); bk.sheet(Bank.Sheet.PREFERRED); bk.yearAgo(Bank.Sheet.PREFERRED);
+        bk.equityMovement().preferredIn(); bk.equityMovement().warrantsBoughtBack(); bk.preferredRecordToSave();
+        for (Bank.Preferred block : bk.getPreferred()) {
+            block.par(); block.issued(); block.capPerShare(); block.warrantShares(); block.strike();
+            block.warrantsExpire(); block.warrantsOut(); block.rate(g.getMonth()); block.inConsent(g.getMonth());
+            block.arrears(); block.due(g.getMonth());
+        }
+        bk.getRepaymentRaisedThisMonth(); bk.getRepaymentRaisedLifetime(); bk.getRepaymentShortLifetime();
+        g.getDebtManager().marketToSave(); g.getDebtManager().getAdvances();
+        g.getEconomyManager().getNationalAccounts().getFundTransfer();
+        Founding.landBondUsd();
         g.getHouseholdBalance().averageRate();
         for (int company = 0; company < Equity.COMPANIES.length; company++) g.getEquity().deskShare(company);
         g.getExchange().deskSoldToHouseholds();
@@ -793,6 +872,12 @@ public class ReadPathCheck {
             lender.setInsuredMortgageRate(g.getBank().insuredMortgageRate(g.getDebtManager().getPolicyRate()));
             lender.issueMortgage(Sectors.REAL_ESTATE, 50_000, g.getMonth());
 
+            // ...and the city's fund at work (0.7.14): the dial at the year's surplus and a
+            // sum paid in by hand, so the reads below take in every figure the Fund pages show
+            // on a fund that holds shares and bonds.
+            g.setFundDial(1);
+            g.fundPayIn(20_000);
+
             g.simulateMonths(24);
             // ...and a bond on the books (0.7.12): the builders five million
             // short, set between months, borrow it in the next - a bond where
@@ -805,6 +890,8 @@ public class ReadPathCheck {
         }
         assertTrue("fixture: the businesses owe bonds, and orders rest on their books",
                 !g.getBondMarket().getBonds().isEmpty() && restingOrders(g.getBondMarket()) > 0);
+        assertTrue("fixture: the city's fund holds shares and bonds",
+                g.fundMarketSharesValue() > 0 && g.fundBondsValue() > 0);
 
         out.printf("   month %d, %d people, $%,.0fk cash, %d stacks%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(),

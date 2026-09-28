@@ -2651,7 +2651,8 @@ public class BusinessDebtManager {
          * (2026-09-10): the hole is written off, declared, and the record
          * shows it. Game collects the figure through takeOverdraftForgiven()
          * and puts the money back, from outside the city's pools, the same
-         * way the bank's creditors absorb a failed bank.
+         * way the bank's creditors absorbed a failed bank until 0.7.14 (the
+         * city resolves it for its shares now: Game.resolveBank()).
          */
         double overdraft = Math.max(0, -getCash(sector));
         if (writeOff <= 0 && overdraft <= 0) {

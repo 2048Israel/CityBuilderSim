@@ -408,7 +408,10 @@ public class NewGameCheck {
              them; every preset and a custom founding opens with exactly its
              figures, the vault bought at the opening rate, and lives its
              first month with the audit closed; a city at either end of the
-             custom bounds runs; a founding outside them is refused;
+             custom bounds runs; a founding outside them is refused - but
+             for Insane (0.7.14), D$0 and US$0, the one founding under them,
+             whose clock will not run until it borrows and which, borrowing
+             the village's invoice first, runs two years audited;
           7. the name, the money and the founding survive a save and a load,
              and a save from before 0.7.10 loads as Danzik, the Danzik dollar,
              D$2.5B and US$1B;
@@ -465,7 +468,7 @@ public class NewGameCheck {
         cities.add(Founding.custom("Arden", 37_500, 5_000, WorldEconomy.DEFAULT_MEAN_INFLATION));
         cities.add(Founding.custom("Arden", Founding.MIN_CASH, Founding.MIN_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION));
         cities.add(Founding.custom("Arden", Founding.MAX_CASH, Founding.MAX_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION));
-        boolean opened = true, atTheRate = true, lived = true;
+        boolean opened = true, atTheRate = true, lived = true, borrowedFirst = true;
         for (Founding f : cities) {
             assertTrue("   fixture: " + f.getPreset().label() + " is a founding", f.problem() == null);
             Game g = quietly(() -> { Game c = new Game(files, f); c.run(); return c; });
@@ -474,6 +477,15 @@ public class NewGameCheck {
                     && g.getFoundingCash() == f.getCash() && g.getFoundingReserveUsd() == f.getReserveUsd();
             boolean rate = fx.getRate() == ForeignAccounts.OPENING_RATE
                     && fx.getLifetimeIntervention() == f.getReserveUsd() * ForeignAccounts.OPENING_RATE;
+            if (f.getPreset() == Founding.Preset.INSANE) {
+                // Jerus's "Borrow first" (0.7.14): an Insane city's clock will not run on an empty
+                // treasury, so its player borrows the village's invoice on the build screen's bond first.
+                quietly(() -> g.simulateMonths(1));
+                borrowedFirst &= g.clockRefusal() != null && g.getMonth() == 1;
+                double invoice = Founding.whatItBuys(g.getBuildingManager().getTemplates(), 0, 0).village();
+                quietly(() -> g.handleLongBondForCash(invoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+                borrowedFirst &= g.getCash() > 0 && g.clockRefusal() == null;
+            }
             quietly(() -> g.simulateMonths(1));
             boolean month = g.getMonth() == 2 && audited(g);
             System.out.printf("   %-8s $%,12.0fk and US$%,10.0fk: opened %s, month one %s%n",
@@ -485,6 +497,7 @@ public class NewGameCheck {
         }
         assertTrue("each preset and a custom founding opens with exactly its treasury and vault", opened);
         assertTrue("...the vault bought at the opening rate, booked as the purchase it is", atTheRate);
+        assertTrue("...an Insane one's clock will not run until it borrows, and runs once it has", borrowedFirst);
         assertTrue("...and lives its first month with the audit closed", lived);
 
         // The ends of the bounds, played: every figure inside them founds a city that runs.
@@ -507,6 +520,32 @@ public class NewGameCheck {
             assertTrue("...and runs two years, every month audited", g.getMonth() == 25 && everyMonth);
         }
 
+        // ...and Insane, the one founding under them (0.7.14): nothing to place a house with until it
+        // borrows - the build screen's bond for the village's invoice, as a player would - then the same
+        // ten houses and a shop, and the same two years.
+        {
+            Founding f = Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.INSANE, WorldEconomy.DEFAULT_MEAN_INFLATION);
+            Game g = quietly(() -> { Game c = new Game(files, f); c.run(); return c; });
+            boolean refused = g.buildStack(template(g, "House"), 10, false) != Game.BuildResult.SUCCESS;
+            double invoice = Founding.whatItBuys(g.getBuildingManager().getTemplates(), 0, 0).village();
+            quietly(() -> g.handleLongBondForCash(invoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+            boolean placed = g.buildStack(template(g, "House"), 10, false) == Game.BuildResult.SUCCESS
+                    && g.buildStack(template(g, "Convenience Store"), 1, false) == Game.BuildResult.SUCCESS;
+            boolean everyMonth = true;
+            for (int m = 0; m < 24; m++) {
+                quietly(() -> g.simulateMonths(1));
+                everyMonth &= audited(g);
+            }
+            System.out.printf("   Insane: borrowed $%,.0fk for the village's invoice; ten houses and a shop %s; month %d,"
+                            + " %d people, $%,.0fk left, owing $%,.0fk%n", invoice, placed ? "placed" : "REFUSED",
+                    g.getMonth(), g.getPopulationManager().getPopulation(), g.getCash(),
+                    g.getDebtManager().getAllPrincipal());
+            assertTrue("an Insane city places nothing before it borrows", refused);
+            assertTrue("...borrows the village's invoice on the build screen's bond and places ten houses and a shop",
+                    placed);
+            assertTrue("...and runs two years, every month audited", g.getMonth() == 25 && everyMonth);
+        }
+
         Game again = quietly(() -> { Game g = new Game(files); g.run(); g.newGame(cities.get(0)); return g; });
         assertTrue("newGame() with a founding - the menu's door - founds exactly it",
                 again.getCash() == cities.get(0).getCash()
@@ -514,12 +553,15 @@ public class NewGameCheck {
 
         boolean refused;
         try {
-            new Game(files, Founding.custom("Arden", 0, Founding.MIN_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION));
+            new Game(files, Founding.custom("Arden", 0, Founding.LEAN_RESERVE_USD, WorldEconomy.DEFAULT_MEAN_INFLATION));
             refused = false;
         } catch (IllegalArgumentException e) {
             refused = true;
         }
-        assertTrue("an empty treasury is not a city: refused at the door", refused);
+        assertTrue("an empty treasury is not a custom city: refused at the door", refused);
+        Founding nothing = Founding.custom("Arden", 0, 0, WorldEconomy.DEFAULT_MEAN_INFLATION);
+        assertTrue("...but nothing at all is the Insane preset, the one founding under the bounds",
+                nothing.getPreset() == Founding.Preset.INSANE && nothing.problem() == null);
         assertTrue("...as is one under the floor or over the ceiling",
                 Founding.custom("Arden", Founding.MIN_CASH * .99, 0, WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null
                         && Founding.custom("Arden", Founding.MAX_CASH * 1.01, 0, WorldEconomy.DEFAULT_MEAN_INFLATION).problem() != null);

@@ -3647,6 +3647,23 @@ public class HouseholdBalance {
         return paid;
     }
 
+    /**
+     * EVERY CELL GIVES UP ITS SHARES OF ONE COMPANY, for nothing: a failed
+     * bank's resolution (0.7.14; Equity.takeAllForCity() - the old owners
+     * are wiped out, CDIC). Nothing is paid, so no cash moves: the loss is a
+     * valuation, and the households are outside the audited pools, so the
+     * audit has nothing to see. What this month's leavers took with them is
+     * the world's now, and goes with the world's.
+     *
+     * @return the shares the households held, all cells together
+     */
+    public double surrenderShares(int company) {
+        double gone = sharesHeld(company);
+        for (Household c : cells) c.shares[company] = 0;
+        lastSharesTakenAway[company] = 0;
+        return gone;
+    }
+
     /** Shares of this company the city's households hold between them. */
     public double sharesHeld(int company) {
         double total = 0;

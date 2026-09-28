@@ -100,6 +100,16 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
          it at PANIC_EXIT while the money is running. Its purchases are a
          capital inflow the currency sees, its coupons an income outflow.
 
+         THE CITY'S FUND (0.7.14, TreasuryFund), last: by its rule, under
+         FUND, the rest of its market book and cash past its shares' weight
+         in bonds, spread over them by market value and bid for at each
+         bond's value - not a marginal unit, the valuation every participant
+         bids around - and an ask at that value for its excess when its
+         shares are under their band and its bonds over their weight; then
+         the player's hand under
+         FUND_HAND. Never at issue, and its two names never trade with each
+         other. See postFund().
+
        EACH ORDER IS PRICED AT ITS MARGINAL UNIT: a buyer bids the price at
        which the return on the last unit it buys still meets its rule, a
        seller asks the price at which the last unit it sells still does. So
@@ -113,6 +123,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     public static final String WORLD = "world";
     /** One household cell on the book - bidding, asking, or selling in the waterfall: this, then its key. */
     public static final String CELL = "household:";
+    /** The city's fund, by its rule (0.7.14; TreasuryFund). */
+    public static final String FUND = "city";
+    /** ...and by the player's hand. */
+    public static final String FUND_HAND = "city:hand";
+
+    /** True for either of the fund's names. */
+    static boolean isFund(String who) { return FUND.equals(who) || FUND_HAND.equals(who); }
 
     /**
      * THE LEAST A DEFAULT RATE IS READ AT: the through-the-cycle default rate
@@ -172,6 +189,16 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         this.economy = economy;
         this.outward = outward;
     }
+
+    /** The city's fund (0.7.14), a holder and a participant; null in a fixture with none. */
+    private TreasuryFund fund;
+    /** What the fund's market book's shares are worth at this step, for its 70/30 (Exchange.cityMarketValue()). */
+    private double fundSharesValue;
+    /** The fund's coupons struck at the top of the month, paid at the step (not saved, like the others'). */
+    private double dueCity;
+
+    /** Wires the city's fund in (0.7.14). */
+    public void attachFund(TreasuryFund fund) { this.fund = fund; }
 
     /* ================================ state ================================ */
 
@@ -340,8 +367,9 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         List<Integer> ids = new ArrayList<>();
         for (CorporateBond b : bonds) {
             if (!b.issuer.equals(sector)) continue;
-            double hh = b.households, bk = b.bank, cost = b.bankCost, w = b.world, co = b.companiesTotal();
+            double hh = b.households, bk = b.bank, cost = b.bankCost, w = b.world, co = b.companiesTotal(), ci = b.city;
             gone += b.writeDown(keep);
+            if (fund != null) fund.noteBondLoss(ci - b.city);
             double hhLost = hh - b.households;
             ids.add(b.id);
             lossHouseholds += hhLost;
@@ -890,7 +918,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** Strikes this month's coupons by who holds each bond now: the record date. */
     public void strikeCoupons() {
-        dueHouseholds = dueBank = dueWorld = 0;
+        dueHouseholds = dueBank = dueWorld = dueCity = 0;
         dueCompanies.clear();
         dueByIssuer.clear();
         dueCells.clear();
@@ -916,6 +944,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             dueHouseholds += b.households * c;
             dueBank += b.bank * c;
             dueWorld += b.world * c;
+            dueCity += b.city * c;
             for (Map.Entry<String, Double> e : b.companies.entrySet()) {
                 if (e.getValue() > 0) dueCompanies.merge(e.getKey(), e.getValue() * c, Double::sum);
             }
@@ -965,6 +994,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 principalToCompanies += v;
             }
             if (b.world > 0) principalAbroad += b.world;
+            // ...and the city's fund (0.7.14): issuer's till to the fund, a pool to a pool.
+            if (b.city > 0 && fund != null) fund.receivePrincipal(b.city);
             OrderBook book = books.remove(b.instrument());
             if (book != null) { book.withdrawAll(); noteBook(book); }
             it.remove();
@@ -994,7 +1025,9 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         }
         couponsToBank += dueBank;
         lifeCouponsBank += dueBank;
-        dueHouseholds = dueBank = dueWorld = 0;
+        // ...and the city's fund (0.7.14): its coupons stay in it.
+        if (dueCity > 0 && fund != null) fund.receiveCoupon(dueCity);
+        dueHouseholds = dueBank = dueWorld = dueCity = 0;
         dueCompanies.clear();
     }
 
@@ -1050,6 +1083,12 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
      * withdrawn, every bond valued, and every participant's orders posted.
      */
     public void takeMonth(int month) {
+        takeMonth(month, 0);
+    }
+
+    /** ...with what the city's fund's shares are worth this month (0.7.14), for its mix; its orders are posted last (postFund()). */
+    public void takeMonth(int month, double fundSharesValue) {
+        this.fundSharesValue = Math.max(0, fundSharesValue);
         payCoupons();
         lastPostedBuy = lastPostedSell = lastFilled = lastSellQuantityWaited = 0;
         lastSellsPosted = lastSellsWaited = lastTrades = 0;
@@ -1084,6 +1123,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         postWorld(month, el);
         postCompanies(month, el);
         postHouseholds(month, el);
+        postFund(month, value);
     }
 
     /** Adds a book's month, as it closed, to the market's record. */
@@ -1291,6 +1331,66 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private Household posting;
     private double postingBudget;
 
+    /* ------------------------------ the city's fund (0.7.14) ------------------------------ */
+
+    /**
+     * THE CITY'S FUND (TreasuryFund), BY ITS RULE AND THEN BY THE PLAYER'S
+     * HAND, last: the rest of the fund's market book and cash in bonds - the
+     * share Exchange's rule leaves, 1 - TreasuryFund.EQUITY_WEIGHT - spread
+     * over the bonds by market value (face at `value`), each bid for the gap
+     * at its value, the valuation every participant bids around, and taking
+     * what is asked at or under it. When the fund's shares are more than
+     * TreasuryFund.REBALANCE_UNDER under their weight and its bonds are over
+     * theirs, it asks each bond's value for its excess instead. Never at
+     * issue: the bookbuild's bidders do not include it (Bidders). Its shares'
+     * value is the step's (fundSharesValue, Exchange.cityMarketValue()).
+     */
+    private void postFund(int month, double[] value) {
+        if (fund == null) return;
+        double held = 0, weights = 0;
+        for (int i = 0; i < bonds.size(); i++) {
+            CorporateBond b = bonds.get(i);
+            held += b.city * value[i];
+            if (b.remainingMonths(month) > 0 && b.face > 0) weights += b.face * value[i];
+        }
+        double cash = Math.max(0, fund.getCash());
+        double total = fundSharesValue + held + cash;
+        if (total > 0) {
+            double target = (1 - TreasuryFund.EQUITY_WEIGHT) * total;
+            double excess = TreasuryFund.bondsOver(fundSharesValue, held, cash);
+            if (excess > 0) {
+                for (int i = 0; i < bonds.size(); i++) {
+                    CorporateBond b = bonds.get(i);
+                    if (b.city > dust && held > 0) submit(b, FUND, OrderBook.Side.SELL, value[i], b.city * excess / held, month);
+                }
+            } else if (cash > 0 && weights > 0) {
+                for (int i = 0; i < bonds.size(); i++) {
+                    CorporateBond b = bonds.get(i);
+                    if (b.remainingMonths(month) <= 0 || !(b.face > 0) || !(value[i] > 0)) continue;
+                    double want = target * b.face * value[i] / weights;
+                    double q = Math.min((want - b.city * value[i]) / value[i], b.face - b.city);
+                    if (q > dust) submit(b, FUND, OrderBook.Side.BUY, value[i], q, month);
+                }
+            }
+        }
+        for (TreasuryFund.HandOrder o : fund.takeHandOrders(true)) {
+            int i = indexOf(o.bondId());
+            if (i < 0 || !(value[i] > 0)) continue;
+            CorporateBond b = bonds.get(i);
+            if (o.buy()) submit(b, FUND_HAND, OrderBook.Side.BUY, value[i], o.amount() / value[i], month);
+            else submit(b, FUND_HAND, OrderBook.Side.SELL, value[i], Math.min(o.amount(), b.city), month);
+        }
+    }
+
+    /** Where a bond is in the list, by its id, or -1. */
+    private int indexOf(int id) {
+        for (int i = 0; i < bonds.size(); i++) if (bonds.get(i).id == id) return i;
+        return -1;
+    }
+
+    /** The city's fund's face in every bond, together (0.7.14). */
+    public double faceHeldByCity() { double t = 0; for (CorporateBond b : bonds) t += b.city; return t; }
+
     /* =====================================================================
        A HOUSEHOLD SHORT OF MONEY SELLS
 
@@ -1396,6 +1496,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             if (side == OrderBook.Side.BUY) {
                 if (WORLD.equals(who)) return Double.POSITIVE_INFINITY;
                 if (BANK.equals(who)) return bankBuys() ? Double.POSITIVE_INFINITY : 0;
+                // The city's fund (0.7.14): what its cash buys.
+                if (isFund(who)) return fund == null ? 0 : Math.max(0, fund.getCash()) / price;
                 if (who.startsWith(CELL)) {
                     Household c = cellOf(who);
                     if (c == null) return 0;
@@ -1407,11 +1509,17 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             }
             if (WORLD.equals(who)) return b.world;
             if (BANK.equals(who)) return b.bank;
+            if (isFund(who)) return b.city;
             if (who.startsWith(CELL)) {
                 Household c = cellOf(who);
                 return c == null ? 0 : Math.min(b.households, c.bondFace(b.id) * c.households());
             }
             return b.company(who);
+        }
+
+        /** The fund's rule and its hand never trade with each other (0.7.14). */
+        @Override public boolean mayTrade(String buyer, String seller) {
+            return !(isFund(buyer) && isFund(seller));
         }
 
         @Override public void settle(String buyer, String seller, double q, double price) {
@@ -1434,6 +1542,9 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 }
             } else if (worldSells) {
                 b.world -= q;
+            } else if (isFund(seller)) {
+                b.city -= q;
+                fund.noteSold(cash, true);
             } else if (BANK.equals(seller)) {
                 double basis = b.bank > 0 ? b.bankCost * Math.min(1, q / b.bank) : 0;
                 b.bank -= q;
@@ -1454,6 +1565,9 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 if (c == posting) postingBudget -= cash;
             } else if (worldBuys) {
                 b.world += q;
+            } else if (isFund(buyer)) {
+                b.city += q;
+                fund.noteBought(cash, true);
             } else if (BANK.equals(buyer)) {
                 b.bank += q;
                 b.bankCost += cash;
@@ -1524,7 +1638,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             double held = households.bondFaceHeld(b.id);
             if (Math.abs(held - b.households) <= 1e-9 * Math.max(1, Math.abs(b.households))) continue;
             b.households = held;
-            b.face = b.households + b.bank + b.world + b.companiesTotal();
+            b.face = b.households + b.bank + b.world + b.city + b.companiesTotal();
         }
     }
 
@@ -1756,7 +1870,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         dueCells.clear();
         lastPostedBuy = lastPostedSell = lastFilled = lastSellQuantityWaited = 0;
         lastSellsPosted = lastSellsWaited = lastTrades = 0;
-        dueHouseholds = dueBank = dueWorld = 0;
+        dueHouseholds = dueBank = dueWorld = dueCity = 0;
         dueCompanies.clear();
         dueByIssuer.clear();
         lastIssue = null;
@@ -1784,7 +1898,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         companiesSoldShort *= scale;
         bankLossTaken.replaceAll((k, v) -> v * scale);
         lastIssueFace *= scale;
-        dueHouseholds *= scale; dueBank *= scale; dueWorld *= scale;
+        dueHouseholds *= scale; dueBank *= scale; dueWorld *= scale; dueCity *= scale;
+        fundSharesValue *= scale;
         dueCompanies.replaceAll((k, v) -> v * scale);
         dueCells.replaceAll((k, v) -> v * scale);
         dueByIssuer.replaceAll((k, v) -> v * scale);

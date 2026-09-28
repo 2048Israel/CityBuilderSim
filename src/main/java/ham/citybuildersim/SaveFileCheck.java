@@ -1549,6 +1549,129 @@ public class SaveFileCheck {
                     early.getEconomyManager().getSectorCash(k));
         }
 
+        /* ============ the city's fund, its rescue setting and the bank's preferred (0.7.14) ============ */
+        System.out.println("\n--- and the city's fund, its rescue setting and the bank's preferred ---");
+
+        /*
+         * Everything new is saved by name: the fund's cash and its hand's
+         * orders, the dial, the rescue setting, a pending offer and its
+         * clocks, the preferred with its arrears, anniversary and warrants,
+         * and the city's shares on the register (FundCheck section 11 plays
+         * a fund that has traded through a save). The fixture sets every
+         * one away from what a city founds with, so the round trip can fail.
+         */
+        Game fundCity = back;
+        Bank fb = fundCity.getBank();
+        assertTrue("fixture: the city has a bank to ask it for preferred", fb.getBranches() > 0);
+        fundCity.setFundDial(1.5);
+        fundCity.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+        fundCity.setCashForTest(fundCity.getCash() + 50_000);
+        fundCity.fundPayIn(20_000);
+        fb.setCash(fb.getCash() - (fb.equity() - .9 * fb.minimumEquity()));
+        fundCity.getFund().noteOffered(fundCity.getMonth());
+        assertTrue("fixture: the bank is under its minimum and its offer waits",
+                fb.wantsPreferred() && fundCity.isPreferredOfferPending());
+        assertTrue("saved it with the offer waiting", fundCity.saveGame(3, "offer").ok);
+        Game waiting = new Game(fundCity.getGameFiles());
+        waiting.loadGameSave(3);
+        assertTrue("a pending offer survives a save, with the month it was made",
+                waiting.isPreferredOfferPending()
+                        && waiting.getFund().getOfferMonth() == fundCity.getFund().getOfferMonth());
+        same("...asking for the same", waiting.preferredOfferSize(), fundCity.preferredOfferSize());
+
+        assertTrue("fixture: the city bought the preferred", fundCity.acceptPreferredOffer());
+        fundCity.fundBuyShares(0, 1_000);
+        assertTrue("saved it with the preferred bought and an order waiting", fundCity.saveGame(4, "preferred").ok);
+        Game bought = new Game(fundCity.getGameFiles());
+        bought.loadGameSave(4);
+        assertTrue("the dial and the rescue setting survive a save",
+                bought.getFundDial() == 1.5 && bought.getRescueMode() == TreasuryFund.RescueMode.AUTOMATIC);
+        same("...the fund's cash", bought.getFund().getCash(), fundCity.getFund().getCash());
+        same("...what the hand paid in", bought.getFund().getHandPaidIn(), fundCity.getFund().getHandPaidIn());
+        assertTrue("...the hand's order, waiting for the step", bought.getFund().getHandOrders().size() == 1
+                && bought.getFund().getHandOrders().get(0).amount() == fundCity.getFund().getHandOrders().get(0).amount());
+        assertTrue("...the answer and its month", !bought.isPreferredOfferPending()
+                && bought.getFund().getAcceptedMonth() == fundCity.getFund().getAcceptedMonth()
+                && bought.getFund().getOffersAccepted() == fundCity.getFund().getOffersAccepted());
+        same("...the preferred outstanding", bought.getBank().preferredOutstanding(), fb.preferredOutstanding());
+        same("...its arrears", bought.getBank().getPreferredArrears(), fb.getPreferredArrears());
+        Bank.Preferred was = fb.getPreferred().get(0), is = bought.getBank().getPreferred().get(0);
+        assertTrue("...its anniversary, its cap on the dividend and its warrants",
+                is.issued() == was.issued() && is.capPerShare() == was.capPerShare()
+                        && is.warrantShares() == was.warrantShares() && is.strike() == was.strike()
+                        && is.warrantsExpire() == was.warrantsExpire() && is.warrantsOut() == was.warrantsOut());
+        same("...and the bank's equity with it in", bought.getBank().equity(), fb.equity());
+        same("...its three parts still adding up", bought.getBank().equitySplitResidual(), fb.equitySplitResidual());
+        same("...and what the fund is worth", bought.fundValue(), fundCity.fundValue());
+
+        /*
+         * THE CITY'S OWN RATE AS THE MONTH LAST STRUCK IT (0.7.14). The debt
+         * market is handed its inputs and strikes the rate inside the month,
+         * and the treasury's cash can move after that - here by the fixture's
+         * hand, into a deficit, between presses. A reload that re-struck the
+         * market off the saved cash would price the city's paper on an
+         * overdraft the live city never priced on.
+         */
+        double struckRate = fundCity.getDebtManager().getRate();
+        double struckTen = fundCity.getDebtManager().curveRate(120);
+        fundCity.setCashForTest(-fundCity.getEconomyManager().getMonthGdp() * 60);
+        assertTrue("saved it with its treasury gone into deficit since the market's strike", fundCity.saveGame(6, "rate").ok);
+        Game rated = new Game(fundCity.getGameFiles());
+        rated.loadGameSave(6);
+        com.google.gson.JsonObject restrike = com.google.gson.JsonParser
+                .parseString(Files.readString(fundCity.getGameFiles().saveFile(6))).getAsJsonObject();
+        restrike.remove("debtMarket");
+        Files.writeString(fundCity.getGameFiles().saveFile(7), new com.google.gson.Gson().toJson(restrike));
+        Game restruck = new Game(fundCity.getGameFiles());
+        restruck.loadGameSave(7);
+        assertTrue("fixture: re-struck off the saved cash, the city's rate would come back different",
+                Math.abs(restruck.getDebtManager().getRate() - struckRate) > 1e-9);
+        same("the city's rate comes back as the month struck it", rated.getDebtManager().getRate(), struckRate);
+        same("...and its ten-year rate, which the fund's bonds are marked on", rated.getDebtManager().curveRate(120), struckTen);
+        same("...and the overdraft the market priced", rated.getDebtManager().getOverdraft(),
+                fundCity.getDebtManager().getOverdraft());
+
+        /*
+         * AN OLDER SAVE: the city's first save above, with what 0.7.14 added
+         * taken out - the fund, the preferred and its record, the register's
+         * three city slots a company, and the city's face on each bond - and
+         * loaded OVER the city that has all of them, so a loader that left a
+         * missing key alone would leave that city's fund where it was.
+         */
+        com.google.gson.JsonObject before = com.google.gson.JsonParser
+                .parseString(Files.readString(full.getGameFiles().saveFile(1))).getAsJsonObject();
+        before.remove("fund");
+        before.remove("bankPreferred");
+        before.remove("bankPreferredRecord");
+        com.google.gson.JsonArray keys = before.getAsJsonArray("equityKeys");
+        com.google.gson.JsonArray slots = before.getAsJsonArray("equity");
+        com.google.gson.JsonArray register = new com.google.gson.JsonArray();
+        for (int k = 0; k < keys.size(); k++) {
+            for (int s = 0; s < Equity.SLOTS_BEFORE_CITY; s++) register.add(slots.get(k * Equity.SLOTS + s));
+        }
+        before.add("equity", register);
+        for (com.google.gson.JsonElement b : before.getAsJsonObject("bondMarket").getAsJsonArray("bonds")) {
+            b.getAsJsonObject().remove("city");
+        }
+        assertTrue("fixture: the register was saved at this build's length",
+                slots.size() == keys.size() * Equity.SLOTS);
+        Files.writeString(fundCity.getGameFiles().saveFile(5), new com.google.gson.Gson().toJson(before));
+        fundCity.loadGameSave(5);
+        assertTrue("an older save loads with an empty fund, the dial at 0 and the rescue on the button",
+                fundCity.getFund().isEmpty() && fundCity.getFundDial() == 0
+                        && fundCity.getRescueMode() == TreasuryFund.RescueMode.BUTTON
+                        && !fundCity.isPreferredOfferPending() && fundCity.getFund().getHandOrders().isEmpty());
+        assertTrue("...no preferred and nothing owed on it",
+                fundCity.getBank().getPreferred().isEmpty() && fundCity.getBank().preferredOutstanding() == 0
+                        && fundCity.getBank().getPreferredArrears() == 0);
+        boolean noShares = fundCity.getBondMarket().faceHeldByCity() == 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            noShares &= fundCity.getEquity().getCityShares(c) == 0 && fundCity.getEquity().getCityRescueShares(c) == 0;
+        }
+        assertTrue("...and no city shares or bonds", noShares);
+        same("...and its register otherwise the save's: the bank's shares in issue",
+                fundCity.getEquity().getShares(Equity.BANK), full.getEquity().getShares(Equity.BANK));
+
         cleanUp(root);
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
