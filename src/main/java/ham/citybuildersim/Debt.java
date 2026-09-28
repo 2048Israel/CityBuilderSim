@@ -178,6 +178,31 @@ public abstract class Debt {
     void moveToCentralBank(double face) { centralBankPrincipal = Math.max(0, centralBankPrincipal + face); }
 
     /**
+     * THE CENTRAL BANK'S ADD-ON (0.7.15, round 2): this much more face of the
+     * same paper, on the same terms, for the central bank, which holds it
+     * from issue - its non-competitive bid, which the Federal Reserve Bank of
+     * New York's "FAQs: Treasury Rollovers" says is "treated as add-ons to
+     * announced auction sizes" (Game, THE CENTRAL BANK ROLLS ITS OWN, AT
+     * ISSUE). The piece grows in proportion, as a change of unit scales it
+     * (redenominate()): its face, its principal, its schedule and its
+     * discount, because the add-on is sold at the issue's price and so
+     * carries the same discount on each unit of face. What the market still
+     * owes for its own part (settleDue) and the households' holding do not
+     * move. Domestic paper only.
+     */
+    void addOnForCentralBank(double face) {
+        double out = outstandingPrincipal;
+        if (foreign || !(face > 0) || !(out > 0)) return;
+        double k = (out + face) / out;
+        faceValue *= k;
+        outstandingPrincipal = out + face;
+        issueDiscount *= k;
+        discountLeft *= k;
+        redenominateSchedule(k);
+        centralBankPrincipal += face;
+    }
+
+    /**
      * The unaccreted discount that rides on this much face - the part a
      * holder gives up, or takes on, when that face changes hands.
      */

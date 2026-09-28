@@ -1,6 +1,6 @@
 # CapitalFlowCheck.java - 487 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Hot money: does it come for the right reason, and does it leave for one?
 > 

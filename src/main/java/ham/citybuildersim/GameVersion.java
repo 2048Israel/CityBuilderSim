@@ -1446,8 +1446,66 @@ public final class GameVersion {
      * older save loads with an empty fund, the dial at 0, the rescue on the
      * button, no preferred and no city shares, and keeps the load's own
      * strike of the debt market.
+     *
+     * 0.7.15 (2026-09-27) - THE DIALS: INSANE RUNS FROM DAY ONE, THE SKIP
+     * RUNS ON AN EMPTY TREASURY, THE TARGET TO 20%, THE HOLDINGS TO 100%.
+     * From Jerus's answers.
+     *   - PLAY RUNS ON ADVANCES ("Play works from day one. The central bank
+     *     covers what the treasury must pay, which starts with just the land
+     *     bond's coupon; optional spending is refused."): 0.7.14's stop on
+     *     the play clock is gone. An Insane city's promises take its
+     *     treasury under nothing and the next settle advances the shortfall;
+     *     anything discretionary is refused while it has no cash and no
+     *     revenue behind it. Borrowing is how it builds.
+     *   - THE SKIP RUNS TOO ("Same rule as play"): Game.simulateMonths() no
+     *     longer stops at an empty treasury, only at a month that throws;
+     *     its report says what the central bank advanced over it and what
+     *     is owed at the end (TimeSkipReport.getAdvancedDuringSkip()).
+     *   - THE INFLATION TARGET goes to 20% (DebtManager.MAX_INFLATION_TARGET,
+     *     Jerus's number), and the strip's colours read from the target:
+     *     grey within 3 points of it either side, amber further off, red
+     *     more than 5 points over it (Jerus: "Red at target + 5 points";
+     *     UserInterface.STRIP_INFLATION_OVER_TARGET) - not above 10% flat -
+     *     or with prices falling more than 10% a year, whatever the target
+     *     (STRIP_DEFLATION_ALARM).
+     *   - THE HOLDINGS DIAL goes to 100% (CentralBank.MAX_QE_SHARE), a
+     *     backstop for when the bank and investors will not hold the city's
+     *     paper or the bank is in trouble: the central bank buys the bank's
+     *     term paper first and then the households' (Game
+     *     .buyPaperFromHouseholds()), selling only to the bank. The
+     *     compression stays whole from half the paper
+     *     (CentralBank.FULL_COMPRESSION_SHARE), and the city's rate floor is
+     *     split by who holds the paper: the central bank's share at the
+     *     policy rate, the rest at the bank's floor (DebtManager.floorRate()).
+     *   - THE CENTRAL BANK ROLLS ITS OWN (Jerus: "Build the rollover
+     *     fix", the way the Fed does): what it holds of a piece
+     *     falling due it takes again at issue, par for par - a
+     *     non-competitive add-on on top of what the city sells between the
+     *     presses, pro rata to their face, at the issue's price (Federal
+     *     Reserve Bank of New York, "FAQs: Treasury Rollovers";
+     *     Debt.addOnForCentralBank(), CentralBank.buyAtIssue()). The rollover
+     *     sizes the market's part; with nothing sold for the market and the
+     *     rollover on, its par is issued it alone; by hand with nothing
+     *     sold, it runs off. Last year's surplus pays the market's part
+     *     first and then the central bank's par, which rolls only what is
+     *     left (Jerus: "Surplus pays everyone"), so a city in surplus
+     *     clears its paper whoever holds it. Holding more than its dial
+     *     (QT), what it holds past the dial runs off and the rest is rolled
+     *     (the FOMC's QT caps, the distance to the dial for the cap). The
+     *     holdings step reads the book net of the month's maturity, trades
+     *     no piece paying principal that month, and sells settled paper
+     *     only. A surplus that pays only part of the central bank's par
+     *     can leave it over its dial, and the step then sells the excess
+     *     to the bank that month - left as built (Jerus: "Leave it (as
+     *     built)").
+     *
+     * SAVE_FORMAT did not move. What the central bank has paid the
+     * households for their paper, and what it has paid at issue rolling
+     * its own and that paper's par, are appended to its save array;
+     * an older save has done neither. A dial past a half saved by this build
+     * and opened in an older one is held at the older build's half.
      */
-    public static final String VERSION = "0.7.14";
+    public static final String VERSION = "0.7.15";
 
     /**
      * The save shape.

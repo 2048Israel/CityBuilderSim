@@ -35,7 +35,14 @@ import java.util.List;
  *      (Game.fundReservation(), nothing at a dial of 0).
  *   3. THE ISSUE: what falls due less S, each piece its share pro rata,
  *      sized so the cash it brings covers that share - what the treasury is
- *      lacking. SAME_STRUCTURE rolls each piece into its own instrument, term
+ *      lacking. Since 0.7.15, what the central bank holds of it and rolls
+ *      itself is not the treasury's to raise: it takes that par of the new
+ *      paper at issue, on top (Game, THE CENTRAL BANK ROLLS ITS OWN, AT
+ *      ISSUE), so the issue is sized for the market's part less S. S is
+ *      still struck on all of what falls due, and (Jerus: "Surplus pays
+ *      everyone") it pays the market's part first and then the central
+ *      bank's par, which then rolls only what S left of it.
+ *      SAME_STRUCTURE rolls each piece into its own instrument, term
  *      and currency (Jerus: "dollars into dollars"; with the window abroad
  *      shut, dollar paper rolls at home, and the log says so);
  *      TWELVE_MONTH_BILL rolls every piece into a local note of BILL_MONTHS.
@@ -131,11 +138,32 @@ public final class Rollover {
      * and since 0.7.14 what the city's fund took and the dial's share kept
      * for it; the treasury's cash; S, what is netted; and the issues. Every
      * figure in local money.
+     *
+     * ...AND THE CENTRAL BANK'S OWN (0.7.15, round 2): its par in what falls
+     * due (centralBankDue), what of it last year's surplus pays off
+     * (centralBankNetted), and what it rolls at issue
+     * (centralBankPar). Past its dial, what it holds past the dial runs off
+     * first (centralBankRunsOff()). S is struck on all of what falls due and
+     * pays the market's part first - that part being what falls due less
+     * what the central bank would roll - and only what is left of it pays
+     * down the central bank's par (Jerus, round 3: "Surplus pays
+     * everyone"); the issues are sized for the market's part less S (Game,
+     * THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE). The eight-figure form is a
+     * plan with nothing of the central bank's in it.
      */
     public record Plan(Mode mode, double due, double dueAbroad, double surplus, double used,
-                       double cash, double netted, List<Issue> issues) {
-        /** What falls due less what is netted: the cash the issues must bring between them, before any too small to be worth arranging (Game.minimumIssueSize()). */
-        public double toRoll() { return Math.max(0, due - netted); }
+                       double cash, double netted, List<Issue> issues,
+                       double centralBankDue, double centralBankPar, double centralBankNetted) {
+
+        public Plan(Mode mode, double due, double dueAbroad, double surplus, double used,
+                    double cash, double netted, List<Issue> issues) {
+            this(mode, due, dueAbroad, surplus, used, cash, netted, issues, 0, 0, 0);
+        }
+
+        /** What falls due, less what the central bank rolls itself, less what is netted: the cash the issues must bring between them, before any too small to be worth arranging (Game.minimumIssueSize()). */
+        public double toRoll() { return Math.max(0, due - centralBankPar - netted); }
+        /** What falls due that the central bank holds past its dial: repaid it, and raised from the market or netted with the rest. */
+        public double centralBankRunsOff() { return Math.max(0, centralBankDue - centralBankPar - centralBankNetted); }
         /** The cash the issues are sized to bring between them. */
         public double toRaise() {
             double sum = 0;

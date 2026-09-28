@@ -1,6 +1,6 @@
-# CentralBankCheck.java - 919 lines · 11 methods · 2 constants · harnesses
+# CentralBankCheck.java - 1,435 lines · 19 methods · 3 constants · harnesses
 
-`ham/citybuildersim/CentralBankCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBankCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Proves the central bank's books: that money is made and destroyed on them
 > and nowhere else, every price 0.7.0 hangs off the policy rate, and its two
@@ -62,74 +62,101 @@
 >  15. A hundred-to-one reform scales the holdings and not the dial.
 > 
 > And since 0.7.2, the ceiling as a dial - batch B found six months of
-> ... (13 more lines in the source)
+> ... (57 more lines in the source)
 
-**Uses:** [Game](Game.md) (29), [CentralBank](CentralBank.md) (25), [DebtManager](DebtManager.md) (14), [Bank](Bank.md) (12), [TreasuryLine](TreasuryLine.md) (9), [Debt](Debt.md) (6), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [ShortTermTBill](ShortTermTBill.md) (2), [MoneyAudit](MoneyAudit.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Founding](Founding.md) (1)
+**Uses:** [Game](Game.md) (56), [CentralBank](CentralBank.md) (36), [Debt](Debt.md) (36), [DebtManager](DebtManager.md) (23), [Bank](Bank.md) (14), [Rollover](Rollover.md) (11), [GameFiles](GameFiles.md) (9), [TreasuryLine](TreasuryLine.md) (9), [MediumTermBond](MediumTermBond.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [TreasuryJournal](TreasuryJournal.md) (2), [ShortTermTBill](ShortTermTBill.md) (2), [MoneyAudit](MoneyAudit.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [Founding](Founding.md) (1), [LongTermBond](LongTermBond.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 118 | ONE MONTH, AUDITED - the identity section 1 asserts, held on every |
-| 171 | · 2. reserves earn the policy rate |
-| 204 | · 3. the window |
-| 255 | · 4. the city's paper |
-| 284 | · the city |
-| 313 | · 1 and 5. every kind of flow |
-| 444 | · 6. the ceiling and the arrears |
-| 510 | · 7. the autopilot |
-| 546 | · 9. the save |
-| 577 | · 8. a currency reform |
-| 601 | · 10. an old save |
-| 649 | 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. |
-| 819 | 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road |
+| 162 | ONE MONTH, AUDITED - the identity section 1 asserts, held on every |
+| 215 | · 2. reserves earn the policy rate |
+| 248 | · 3. the window |
+| 299 | · 4. the city's paper |
+| 328 | · the city |
+| 357 | · 1 and 5. every kind of flow |
+| 488 | · 6. the ceiling and the arrears |
+| 554 | · 7. the autopilot |
+| 590 | · 9. the save |
+| 621 | · 8. a currency reform |
+| 645 | · 10. an old save |
+| 697 | 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. |
+| 867 | 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road |
+| 968 | 17-18. THE WHOLE BOOK AND THE SPLIT FLOOR (0.7.15), on bare debt |
+| 1064 | 19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a |
+| 1312 | 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 123 | `CentralBankCheck.KINDS` | `{ "interest on reserves", "lent at the window", "repaid at the window", "the ...` |  |
-| 126 | `CentralBankCheck.seen` | `new boolean [ KINDS.length ]` |  |
+| 167 | `CentralBankCheck.KINDS` | `{ "interest on reserves", "lent at the window", "repaid at the window", "the ...` |  |
+| 170 | `CentralBankCheck.seen` | `new boolean [ KINDS.length ]` |  |
+| 1072 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 87 | `static int fails` |  |
-| 88 | `static PrintStream out` |  |
-| 89 | `static PrintStream quiet` |  |
-| 127 | `static int monthsPlayed, monthsBroken, mostKindsInAMonth` |  |
-| 128 | `static double worstResidual` |  |
+| 131 | `static int fails` |  |
+| 132 | `static PrintStream out` |  |
+| 133 | `static PrintStream quiet` |  |
+| 171 | `static int monthsPlayed, monthsBroken, mostKindsInAMonth` |  |
+| 172 | `static double worstResidual` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 835 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
-| 91 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 96 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 106 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 113 | 4 | `static void quietly(Runnable r)` |  |
+| 129 | 1307 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 135 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 140 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 150 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 157 | 4 | `static void quietly(Runnable r)` |  |
 
-### ONE MONTH, AUDITED - the identity section 1 asserts, held on every (lines 118-648)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 130 | 10 | `static int kindsThisMonth(CentralBank cb)` |  |
-| 142 | 23 | `static int play(Game g)` | Plays a month and holds it to the identities. |
-| 166 | 482 | `public static void main(String[] args) throws Exception` |  |
-
-### 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. (lines 649-818)
+### ONE MONTH, AUDITED - the identity section 1 asserts, held on every (lines 162-696)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 654 | 1 | `static double shape20(DebtManager m)` | The long end's shape over the note: the premium at twenty years less what the holdings compress. |
-| 656 | 162 | `static void theHoldingsDial(GameFiles files) throws Exception` |  |
+| 174 | 10 | `static int kindsThisMonth(CentralBank cb)` |  |
+| 186 | 23 | `static int play(Game g)` | Plays a month and holds it to the identities. |
+| 210 | 486 | `public static void main(String[] args) throws Exception` |  |
 
-### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 819-919)
+### 11-15. THE HOLDINGS DIAL (0.7.1) - QE and QT, on a city of its own. (lines 697-866)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 825 | 86 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
-| 913 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
+| 702 | 1 | `static double shape20(DebtManager m)` | The long end's shape over the note: the premium at twenty years less what the holdings compress. |
+| 704 | 162 | `static void theHoldingsDial(GameFiles files) throws Exception` |  |
+
+### 16. THE CEILING AS A DIAL (0.7.2) - on a city of its own, with no road (lines 867-967)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 873 | 86 | `static void theCeilingDial(GameFiles files) throws Exception` |  |
+| 961 | 6 | `static double journalAmount(Game g, String label)` | The amount on last month's journal line with this label, or 0. |
+
+### 17-18. THE WHOLE BOOK AND THE SPLIT FLOOR (0.7.15), on bare debt (lines 968-1063)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 974 | 27 | `static void theWholeBook()` |  |
+| 1002 | 61 | `static void theSplitFloor()` |  |
+
+### 19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a (lines 1064-1311)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1075 | 6 | `static Debt fixtureSerial(Game g, int soldIn)` | The serial the fixture sold: the one piece of the city's paper that is a serial and started before the month the fixture saved in. |
+| 1083 | 7 | `static java.util.List<Debt> soldAtTheLastPress(Game g)` | The city's own paper sold at the last press or between it and the one before - started the month before this one. |
+| 1092 | 3 | `static double issuePricePerFace(Debt d)` | What the central bank paid a unit of face for a piece at its issue: what the treasury was paid for it over its face, which the add-on does not move. |
+| 1097 | 7 | `static Game toTheSlice(GameFiles files, int soldIn)` | The fixture as saved, loaded fresh, and played to the gap before its first slice. |
+| 1105 | 206 | `static void theRolloverAtIssue() throws Exception` |  |
+
+### 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a (lines 1312-1435)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1319 | 116 | `static void theSurplusPaysEveryone() throws Exception` |  |
 

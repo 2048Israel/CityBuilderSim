@@ -2108,8 +2108,10 @@ final class PolicyScreen {
          * manipulate the rate accordingly?" Beside the price, the quantity:
          * the share of the city's term paper the central bank aims to hold,
          * bought from the bank with money it makes (CentralBank, THE
-         * HOLDINGS DIAL). Applied at once, like the autopilot toggle above; it
-         * moves the book a quarter of the way a month from the next press.
+         * HOLDINGS DIAL), and since 0.7.15 up to all of it, from the
+         * households once the bank has none left. Applied at once, like the
+         * autopilot toggle above; it moves the book a quarter of the way a
+         * month from the next press. Eleven chips, 0 to 100% in tens.
          */
         CentralBank cb = ui.game.getCentralBank();
         column.getChildren().add(statementHead("How much of the city's paper it holds"));
@@ -2133,13 +2135,22 @@ final class PolicyScreen {
                 .current(cb.getTargetShare())
                 .appliesAtOnce(v -> { cb.setTargetShare(Math.round(v * 100) / 100.0); showPolicyMenu(); })
                 .build());
+        // Since 0.7.15 the dial reaches the whole of the paper (MAX_QE_SHARE), bought
+        // from the households once the bank has none left, and the premium is gone at
+        // FULL_COMPRESSION_SHARE, where it always was; and it rolls its own maturing
+        // paper at issue (Game, THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE).
         column.getChildren().add(statementNote(String.format(
                 "Buying creates the money that pays for it and takes the paper off the bank's "
-                + "book; the long end of the curve bends down in proportion - at %.0f%% the "
-                + "term premium is gone. The thirty-year rate is %.2f points lower for what it "
-                + "holds now. Selling destroys the money again. It never buys from the "
-                + "treasury: that is printing, and it is the advances' line.",
-                CentralBank.MAX_QE_SHARE * 100, market.compression(360) * 100)));
+                + "book, then off the households' once the bank has none left to sell; the long "
+                + "end of the curve bends down in proportion - at %.0f%% the term premium is "
+                + "gone, and holding more takes no more off it. The thirty-year rate is %.2f "
+                + "points lower for what it holds now. Selling destroys the money again, and "
+                + "sells to the bank. From the treasury it buys only to replace what it holds of "
+                + "a maturing piece, par for par, on top of what the market is sold and at the "
+                + "market's price, as the Fed rolls its own. What it holds past its dial is repaid "
+                + "instead, and so is what last year's surplus pays off. It never lends the treasury "
+                + "new money that way: that is the advances' line.",
+                CentralBank.FULL_COMPRESSION_SHARE * 100, market.compression(360) * 100)));
 
         /* ------------------- THE CEILING, AS A DIAL (0.7.2) -------------------
          * Batch B: "the ceiling is small in a small city" - six months of

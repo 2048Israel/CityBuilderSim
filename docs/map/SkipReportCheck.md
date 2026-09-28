@@ -1,6 +1,6 @@
-# SkipReportCheck.java - 248 lines · 4 methods · 0 constants · harnesses
+# SkipReportCheck.java - 323 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/SkipReportCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SkipReportCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Verifies the fast-forward summary.
 > 
@@ -10,7 +10,7 @@
 > problem - so the episode counters have to be sampled, and a sampling bug
 > would silently report a smooth century on a city that spent it starving.
 
-**Uses:** [TimeSkipReport](TimeSkipReport.md) (14)
+**Uses:** [TimeSkipReport](TimeSkipReport.md) (15), [Founding](Founding.md) (3), [Game](Game.md) (3), [GameFiles](GameFiles.md) (2), [WorldEconomy](WorldEconomy.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
 ## Sections
 
@@ -21,9 +21,10 @@
 | 104 | · 3. a century that went badly |
 | 146 | · 4. the headlines |
 | 178 | · 5. stopping early |
-| 195 | · 5b. the central bank's advances (0.7.1) |
-| 214 | · 6. nothing to report |
-| 234 | · 7. beginSkip clears the last one |
+| 199 | · 5a. an empty treasury, on the advances (0.7.15) |
+| 204 | · 5b. the central bank's advances (0.7.1) |
+| 223 | · 6. nothing to report |
+| 243 | · 7. beginSkip clears the last one |
 
 ## Fields (state)
 
@@ -35,9 +36,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16 | 233 | **type** `public class SkipReportCheck` | Verifies the fast-forward summary. |
+| 16 | 308 | **type** `public class SkipReportCheck` | Verifies the fast-forward summary. |
 | 20 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 27 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 32 | 7 | `static Map<String, Integer> buildings(Object...pairs)` |  |
-| 40 | 208 | `public static void main(String[] args)` |  |
+| 40 | 217 | `public static void main(String[] args)` |  |
+| 266 | 57 | `static void emptyTreasury()` | Jerus, of the time skip: "Same rule as play: the central bank covers the treasury, and the skip only stops for the things that already stop it." An Insane city - nothing in the treasury, no revenue behind it - skipped... |
 

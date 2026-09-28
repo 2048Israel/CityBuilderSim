@@ -1,6 +1,6 @@
 # TreasuryLine.java - 128 lines · 2 methods · 0 constants · model
 
-`ham/citybuildersim/TreasuryLine.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryLine.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Every kind of payment the treasury makes, and whether it is a promise.
 > 
@@ -26,7 +26,7 @@
 > named in TreasuryJournal's list), which reads these two flags and nothing
 > else. A constant's sentence says why it sits on its side.
 
-**Used by (5):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LongPlaytest](LongPlaytest.md)
+**Used by (6):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LongPlaytest](LongPlaytest.md)
 
 ## Enum constants
 

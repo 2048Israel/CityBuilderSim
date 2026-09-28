@@ -28,7 +28,8 @@ import java.util.Map;
  *   households went short - and since 0.7.1 how many months the treasury
  *   lived on the central bank's advances and how many of those at their
  *   ceiling, which is what replaced the emergency debt this line once said it
- *   counted (it never did; the note is gone since 0.7.0). These cannot be
+ *   counted (it never did; the note is gone since 0.7.0), and since 0.7.15
+ *   what those advances came to over the skip. These cannot be
  *   reconstructed from the endpoints, because a
  *   city that starves for fifty months and recovers looks identical at both
  *   ends to one that never had a problem.
@@ -90,6 +91,15 @@ public class TimeSkipReport {
     private int monthsOnAdvances;
     private int monthsAtCeiling;
 
+    /**
+     * What the central bank advanced the treasury over the skip, and what the
+     * treasury owed it when the last month closed (0.7.15): a skip runs
+     * through an empty treasury on the advances since Jerus's "Skip runs
+     * too", so the report says what they came to, not only for how long.
+     */
+    private double advancedDuringSkip;
+    private double advancesOwedAtEnd;
+
     private double worstEnergyRatio = 1;
     private double worstRoadRatio = 1;
     private int peakPopulation;
@@ -107,6 +117,8 @@ public class TimeSkipReport {
         monthsNothingBuilt = 0;
         monthsOnAdvances = 0;
         monthsAtCeiling = 0;
+        advancedDuringSkip = 0;
+        advancesOwedAtEnd = 0;
         worstEnergyRatio = 1;
         worstRoadRatio = 1;
         peakPopulation = 0;
@@ -241,8 +253,23 @@ public class TimeSkipReport {
         if (onAdvances && atCeiling) monthsAtCeiling++;
     }
 
+    /**
+     * ...and since 0.7.15 what the central bank advanced the treasury this
+     * month (CentralBank.getAdvancedToTreasury(), at the month's settle) and
+     * what the treasury owes it at the month's end.
+     */
+    public void sampleTreasury(boolean onAdvances, boolean atCeiling, double advanced, double owed) {
+        sampleTreasury(onAdvances, atCeiling);
+        if (advanced > 0) advancedDuringSkip += advanced;
+        advancesOwedAtEnd = Math.max(0, owed);
+    }
+
     public int getMonthsOnAdvances() { return monthsOnAdvances; }
     public int getMonthsAtCeiling()  { return monthsAtCeiling; }
+    /** What the central bank advanced the treasury over the skip - printed for it. */
+    public double getAdvancedDuringSkip() { return advancedDuringSkip; }
+    /** ...and what the treasury owed it in advances when the skip's last month closed. */
+    public double getAdvancesOwedAtEnd()  { return advancesOwedAtEnd; }
 
     /* ------------------------------- deltas ------------------------------- */
 
@@ -438,9 +465,11 @@ public class TimeSkipReport {
             return lines;
         }
 
+        // A skip runs through an empty treasury since 0.7.15, so the one thing
+        // that stops it short is a month that threw - the window's SOMETHING
+        // WENT WRONG says what (Game.takeSkipFailure()).
         if (stoppedEarly()) {
-            lines.add("Stopped after " + completed + " of " + requested
-                    + " months - the treasury ran empty.");
+            lines.add("Stopped after " + completed + " of " + requested + " months.");
         }
 
         if (monthsOnAdvances > 0) {

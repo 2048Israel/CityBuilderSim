@@ -1,6 +1,6 @@
-# HoldersCheck.java - 411 lines · 8 methods · 0 constants · harnesses
+# HoldersCheck.java - 543 lines · 10 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HoldersCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HoldersCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought
@@ -34,44 +34,60 @@
 >   8. A dollar bond bought back is money leaving the country: none of the
 >      price reaches the bank or the households, and the next month declares
 >      all of it abroad (until 0.7.1 it left the treasury for nowhere).
+>   9. The holdings dial at the whole of the paper (0.7.15, Jerus: "central
+>      bank bond holding can ve 100% if one wants"): the central bank buys
+>      the bank's term paper first, and only once the bank has none left
+>      the households', at the curve's market value, their face onto its
+>      book and the price made for them - the audit closing and M0 moving by
+>      exactly the money made - until it holds all of it; a save and load
+>      in the middle keeps the dial, the holdings and the pace, and both
+>      cities buy the same from the households the month after.
 > 
 > Each fixture causes its condition rather than finding a city in it.
 
-**Uses:** [Game](Game.md) (12), [MoneyAudit](MoneyAudit.md) (6), [HouseholdBalance](HouseholdBalance.md) (5), [Debt](Debt.md) (5), [Household](Household.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (2), [GameFiles](GameFiles.md) (2), [DebtManager](DebtManager.md) (2), [CentralBank](CentralBank.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [Bank](Bank.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [OutwardInvestment](OutwardInvestment.md) (1)
+**Uses:** [Game](Game.md) (18), [Debt](Debt.md) (10), [MoneyAudit](MoneyAudit.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [DebtManager](DebtManager.md) (5), [CentralBank](CentralBank.md) (5), [Household](Household.md) (5), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Bank](Bank.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [OutwardInvestment](OutwardInvestment.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 125 | · 1. at the settle |
-| 174 | · 2. the coupon |
-| 188 | · 3. the waterfall |
-| 221 | · 4. selling after the curve rose |
-| 251 | · 5. a buyback |
-| 288 | · 6. the save |
-| 330 | · 7. an old save |
-| 378 | · 8. a dollar bond bought back |
+| 133 | · 1. at the settle |
+| 182 | · 2. the coupon |
+| 196 | · 3. the waterfall |
+| 229 | · 4. selling after the curve rose |
+| 259 | · 5. a buyback |
+| 296 | · 6. the save |
+| 338 | · 7. an old save |
+| 386 | · 8. a dollar bond bought back |
+| 422 | 9. the whole of the paper (0.7.15) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 47 | `static int fails` |  |
-| 48 | `static PrintStream out` |  |
-| 49 | `static PrintStream quiet` |  |
-| 87 | `static int closedMonths, brokenMonths` |  |
+| 55 | `static int fails` |  |
+| 56 | `static PrintStream out` |  |
+| 57 | `static PrintStream quiet` |  |
+| 95 | `static int closedMonths, brokenMonths` |  |
 
-## Methods, in file order
+## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 367 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
-| 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 56 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 66 | 4 | `static void quietly(Runnable r)` |  |
-| 71 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 78 | 1 | `static double savings(Game g)` |  |
-| 81 | 5 | `static boolean booksAgree(Game g)` | The two books of the households' paper agree: the cells, and the paper. |
-| 90 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
-| 101 | 310 | `public static void main(String[] args) throws Exception` |  |
+| 53 | 491 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 64 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 74 | 4 | `static void quietly(Runnable r)` |  |
+| 79 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 86 | 1 | `static double savings(Game g)` |  |
+| 89 | 5 | `static boolean booksAgree(Game g)` | The two books of the households' paper agree: the cells, and the paper. |
+| 98 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
+| 109 | 312 | `public static void main(String[] args) throws Exception` |  |
+
+### 9. the whole of the paper (0.7.15) (lines 422-543)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 425 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
+| 431 | 112 | `static void theWholeBook() throws Exception` |  |
 

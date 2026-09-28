@@ -546,7 +546,7 @@ public class ReadPathCheck {
         g.canResolveBank();
         // ...and 0.7.14's fund, its rescue and the bank's preferred: the Finances tab's fund
         // pages and rescue block, the Bank tab's rescue, offer, sheet line and capital page,
-        // the founding screen's Insane lines and the clock's refusal.
+        // and the founding screen's Insane lines (the clock's refusal went in 0.7.15).
         g.bankRecapitalisationNeeded(); g.bankResolutionAdvance(); g.getLastResolution(); g.cityStakeInBank();
         g.getOwnersWipedAbroadThisMonth();
         g.isPreferredOfferPending(); g.preferredOfferSize(); g.preferredOfferWarrantValue(); g.preferredOfferStrike();
@@ -554,7 +554,9 @@ public class ReadPathCheck {
         g.fundSharesValue(); g.fundMarketSharesValue(); g.fundRescueSharesValue(); g.fundBondsValue();
         g.fundPreferredValue(); g.fundWarrantsValue(); g.fundRescueValue(); g.fundValue(); g.fundEquityShare();
         g.fundTransferDue(); g.getFundDial(); g.getRescueMode(); g.monthOfSpending(); g.surplusThisYearSoFar();
-        g.fundReservation(); g.clockRefusal(); g.treasuryEmptyWords(); g.getSkipStoppedBecause();
+        g.fundReservation();
+        // ...and 0.7.15's skip report on the central bank's advances, as the skip's screen reads it.
+        g.getSkipReport().getAdvancedDuringSkip(); g.getSkipReport().getAdvancesOwedAtEnd();
         for (int company = 0; company < Equity.COMPANIES.length; company++) {
             g.fundCompanyValue(company); g.fundCompanyRescueValue(company); g.fundCompanyShare(company);
             g.fundCompanyMarketShare(company);
@@ -718,6 +720,24 @@ public class ReadPathCheck {
         debt.bankUnearnedDiscount();
         debt.termPrincipal();
         debt.centralBankShareOfTerm();
+        // ...and 0.7.15's floor split by who holds the paper, as the rate page and the playtest read it
+        debt.centralBankShareOfPaper();
+        debt.floorRate();
+        debt.bankFloorRate();
+        debt.baseComponent();
+        debt.rateAtPolicy(debt.getPolicyRate() + .01);
+        g.getCentralBank().getBoughtFromHouseholds();
+        g.getCentralBank().getBoughtFromHouseholdsLifetime();
+        // ...and 0.7.15's rollover at issue, as the Finances tab's rollover block and the playtest read it
+        g.getCentralBank().getBoughtAtIssue();
+        g.getCentralBank().getParAtIssue();
+        g.getCentralBank().getBoughtAtIssueLifetime();
+        g.getCentralBank().getParAtIssueLifetime();
+        g.centralBankParFallingDue();
+        g.centralBankOverItsDial();
+        g.rolloverPlan().centralBankRunsOff();
+        // ...and what last year's surplus pays of the central bank's par
+        g.rolloverPlan().centralBankNetted();
         debt.getTotalMarketValue();
         for (Debt paper : debt.getDebt()) debt.marketValue(paper);
         g.getHouseholdBalance().totalPaper();

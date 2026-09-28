@@ -96,13 +96,16 @@ public final class CentralBank {
     /** How many months of the treasury's revenue the ceiling is averaged over. */
     public static final int REVENUE_MONTHS = 12;
 
-    /** The most of the city's term paper the holdings dial may aim at: past half the market the central bank IS the market. */
-    public static final double MAX_QE_SHARE = .5;
+    /** The most of the city's term paper the holdings dial may aim at: all of it since 0.7.15, half before - Jerus: "central bank bond holding can ve 100% if one wants", a backstop for when the bank and investors will not hold the city's paper, or the bank is in trouble and should not be made to. */
+    public static final double MAX_QE_SHARE = 1.0;
+
+    /** The holding at which the term premium is wholly compressed: half the term paper, where it has been since 0.7.1 - MAX_QE_SHARE's value until the dial went past it (DebtManager.compression()). */
+    public static final double FULL_COMPRESSION_SHARE = .5;
 
     /** The most it moves its book in a month: this share of the larger of the dial and the setting before it, of the term paper outstanding - a quarter, so a move from one setting to another, buying toward a new target or selling an old book, takes four months at most, and exactly four from nothing or to nothing; the Fed does not buy its whole target in a month. */
     public static final double QE_SPEED = .25;
 
-    /** How much of the term premium the maximum holding takes away: all of it, at 1. */
+    /** How much of the term premium a holding of FULL_COMPRESSION_SHARE takes away: all of it, at 1. */
     public static final double QE_COMPRESSION = 1.0;
 
     /* ------------------------------------------------------------------ the balance sheet */
@@ -124,8 +127,9 @@ public final class CentralBank {
     /**
      * The holdings dial (0.7.1): the share of the city's outstanding domestic
      * TERM paper - serials and term loans, not notes - this bank aims to hold,
-     * 0 to MAX_QE_SHARE. The player's, on the monetary page; saved under its
-     * own key (DataSave.qeTargetShare), and an old save reads 0.
+     * 0 to MAX_QE_SHARE (a half until 0.7.15, all of it since). The player's,
+     * on the monetary page; saved under its own key (DataSave.qeTargetShare),
+     * and an old save reads 0.
      */
     private double targetShare;
 
@@ -187,6 +191,10 @@ public final class CentralBank {
     private double remitted;
     /** The holdings' month (0.7.1): paid for paper and received for it, the coupons and principal on it, what a buyback redeemed, and the gains and losses against face. */
     private double boughtPaper, soldPaper, paperCoupons, paperRedeemed, boughtBack, paperGains;
+    /** ...and of what it paid for paper, what it paid the households for theirs (0.7.15): money made and paid straight into their savings. */
+    private double boughtFromHouseholds;
+    /** ...and what it paid the treasury at issue, and the par it took, rolling its own maturing paper (0.7.15, round 2): money made into the treasury's cash. */
+    private double boughtAtIssue, parAtIssue;
     /** The defence's month (0.7.2): the local price of the vault's dollars sold at this month's reprice - equity spent, not money destroyed. */
     private double defendedThisMonth;
 
@@ -197,6 +205,10 @@ public final class CentralBank {
     private double issuedLifetime, retiredLifetime, remittedLifetime;
     /** Paid for the city's paper and received for it since founding (0.7.1). Appended to the save; zero on an old one. */
     private double boughtPaperLifetime, soldPaperLifetime;
+    /** ...and of what it paid, what it paid the households since founding (0.7.15). Appended to the save; zero on an old one. */
+    private double boughtFromHouseholdsLifetime;
+    /** ...and what it paid at issue for its own maturing paper rolled, and the par, since founding (0.7.15, round 2). Appended to the save; zero on an old one. */
+    private double boughtAtIssueLifetime, parAtIssueLifetime;
     /** Spent defending the currency since founding (0.7.2): the vault's dollars at the rates they were sold at. Appended to the save; zero on an old one. */
     private double defendedLifetime;
 
@@ -221,6 +233,8 @@ public final class CentralBank {
         interestOnReserves = windowInterest = advancesInterest = 0;
         remitted = 0;
         boughtPaper = soldPaper = paperCoupons = paperRedeemed = boughtBack = paperGains = 0;
+        boughtFromHouseholds = 0;
+        boughtAtIssue = parAtIssue = 0;
         defendedThisMonth = 0;
     }
 
@@ -376,9 +390,38 @@ public final class CentralBank {
      * holding toward it by at most stepFor() (Game's THE HOLDINGS DIAL, AT THE
      * TOP OF THE MONTH). BUYING is from the commercial bank,
      * at the curve's market value, in money made for it - reserves up, M0 up,
-     * the commercial bank's book down by the face. SELLING is the reverse, and
-     * destroys the money. Never at issue: a central bank buying from its own
-     * treasury is monetisation, which is the advances' line, not this one.
+     * the commercial bank's book down by the face - and since 0.7.15, once the
+     * bank has no more to sell, from the households, at the same value, the
+     * money paid into their savings (buyPaperFromHouseholds()), so the dial's
+     * whole range, MAX_QE_SHARE, can be reached. SELLING is to the commercial
+     * bank only, the reverse, and destroys the money.
+     *
+     * AT ISSUE ONLY TO ROLL ITS OWN (0.7.15, round 2). Until 0.7.15 this read
+     * "Never at issue: a central bank buying from its own treasury is
+     * monetisation, which is the advances' line, not this one." It still never
+     * lends the treasury new money at issue. But what it holds of a piece
+     * falling due is replaced at issue, par for par, as the Federal Reserve
+     * rolls its own - the Federal Reserve Bank of New York, "FAQs: Treasury
+     * Rollovers": "the Desk rolls over the SOMA's maturing Treasury security
+     * holdings by replacing maturing holdings with securities issued at
+     * Treasury auctions ... by placing non-competitive bids at Treasury
+     * auctions equal in par amount to the value of holdings maturing on the
+     * issue date of the securities being auctioned, allocated proportionally
+     * across those securities by announced offering amount"; the bids "are
+     * treated as add-ons to announced auction sizes", and "Noncompetitive
+     * bidders receive the stop-out rate, yield or discount margin determined
+     * by the competitive auction process." Until then the treasury repaid its
+     * maturing par, the rollover sold the replacement to the commercial bank,
+     * and this bank bought it back from the bank over the months after - and
+     * a bank whose paper it had bought held nothing else and funded the whole
+     * issue at the window, and failed on it (0.7.15's round 1 ensembles). So
+     * buyAtIssue(): the par of its maturing holding, at the issue's own price,
+     * in money made for it, on top of what the market is sold - while its
+     * dial is at or above what it holds; over its dial, as the Fed's QT let
+     * it, the part it holds past the dial runs off; and less what the
+     * treasury's surplus pays off once the market's part is paid
+     * (Jerus: "Surplus pays everyone"; Game, THE CENTRAL BANK ROLLS ITS OWN,
+     * AT ISSUE).
      *
      * AT FACE, and the difference is profit. The paper is carried at its
      * principal, like every holder's; what it paid under face is a gain the
@@ -398,6 +441,43 @@ public final class CentralBank {
         boughtPaperLifetime += price;
         paperGains += face - price;
         return price;
+    }
+
+    /**
+     * Buys this much face from the households for this price, in money made
+     * for them (0.7.15): the paper the bank could not sell it. The same
+     * purchase as buyPaper() - the money made, the face on the book at face,
+     * the gain against face into the month's profit - and counted apart, so
+     * MoneyAudit can declare the money made arriving (MONEY, with the rest of
+     * boughtPaper) and leaving the pools for the households' savings
+     * (DOMESTIC), as a sale of theirs to the desk leaves them.
+     */
+    public double buyPaperFromHouseholds(double price, double face) {
+        double paid = buyPaper(price, face);
+        boughtFromHouseholds += paid;
+        boughtFromHouseholdsLifetime += paid;
+        return paid;
+    }
+
+    /**
+     * Its add-on at issue (0.7.15, round 2): this much face of the city's new
+     * paper for this price - the issue's own price on each unit of face -
+     * paid to the treasury in money made for it. The same purchase as
+     * buyPaper(): the money made, the face on the book at face, the gain
+     * against face into the month's profit and so back to the treasury as
+     * the remittance. Counted apart, for the playtest and the screens.
+     * MoneyAudit's "+ centralbank BoughtPaper" carries it with the rest: the
+     * money arrives in the treasury's pool, and nothing else is declared.
+     */
+    public double buyAtIssue(double price, double face) {
+        double paid = buyPaper(price, face);
+        if (paid > 0) {
+            boughtAtIssue += paid;
+            parAtIssue += face;
+            boughtAtIssueLifetime += paid;
+            parAtIssueLifetime += face;
+        }
+        return paid;
     }
 
     /** ...and sells it back, which destroys the price. */
@@ -630,6 +710,18 @@ public final class CentralBank {
     public double getPaperGains()         { return paperGains; }
     public double getBoughtPaperLifetime() { return boughtPaperLifetime; }
     public double getSoldPaperLifetime()   { return soldPaperLifetime; }
+    /** Of what it paid for paper this month, what it paid the households (0.7.15); the treasury at issue, getBoughtAtIssue() (round 2); the rest it paid the bank. */
+    public double getBoughtFromHouseholds()         { return boughtFromHouseholds; }
+    /** ...and since founding. */
+    public double getBoughtFromHouseholdsLifetime() { return boughtFromHouseholdsLifetime; }
+    /** What it paid the treasury this month for its add-ons at issue, rolling its own maturing paper (0.7.15, round 2). */
+    public double getBoughtAtIssue()                { return boughtAtIssue; }
+    /** ...their par: what of its maturing paper it rolled this month. */
+    public double getParAtIssue()                   { return parAtIssue; }
+    /** ...and since founding, what it paid. */
+    public double getBoughtAtIssueLifetime()        { return boughtAtIssueLifetime; }
+    /** ...and the par. */
+    public double getParAtIssueLifetime()           { return parAtIssueLifetime; }
 
     public double getPrintedLifetime()    { return printedLifetime; }
     public double getIssuedLifetime()     { return issuedLifetime; }
@@ -646,13 +738,15 @@ public final class CentralBank {
      * the revenue ring's position and fill, then the ring itself; and since
      * 0.7.1, appended after the ring, the redemption and its gain still due,
      * paper bought and sold since founding, and the dial's previous setting;
-     * and since 0.7.2 what the defence has spent since founding. A
+     * since 0.7.2 what the defence has spent since founding; and since
+     * 0.7.15 what it has paid the households for their paper, and (round 2)
+     * what it has paid at issue rolling its own paper, and that paper's par. A
      * slot appended later reads zero from an older save, which is a bank that
      * has not done that yet. A save without the key founds an empty bank. The
      * two dials, the holdings and the ceiling, are under keys of their own.
      */
     public double[] toSaveArray() {
-        double[] out = new double[13 + REVENUE_MONTHS + 6];
+        double[] out = new double[13 + REVENUE_MONTHS + 9];
         int i = 0;
         out[i++] = advancesToBank;
         out[i++] = advancesToTreasury;
@@ -674,6 +768,9 @@ public final class CentralBank {
         out[i++] = soldPaperLifetime;
         out[i++] = previousTarget;
         out[i++] = defendedLifetime;
+        out[i++] = boughtFromHouseholdsLifetime;
+        out[i++] = boughtAtIssueLifetime;
+        out[i++] = parAtIssueLifetime;
         return out;
     }
 
@@ -703,6 +800,11 @@ public final class CentralBank {
         if (i < saved.length) previousTarget      = saved[i++];
         // 0.7.2's: an older save has spent nothing in a defence.
         if (i < saved.length) defendedLifetime    = Math.max(0, saved[i++]);
+        // 0.7.15's: an older save has bought nothing from the households.
+        if (i < saved.length) boughtFromHouseholdsLifetime = Math.max(0, saved[i++]);
+        // ...and round 2's: an older save has rolled nothing at issue.
+        if (i < saved.length) boughtAtIssueLifetime = Math.max(0, saved[i++]);
+        if (i < saved.length) parAtIssueLifetime    = Math.max(0, saved[i++]);
     }
 
     /** An empty bank: nothing lent, nothing made. */
@@ -713,6 +815,8 @@ public final class CentralBank {
         printedLifetime = issuedLifetime = retiredLifetime = remittedLifetime = 0;
         redemptionDue = redemptionGainDue = 0;
         boughtPaperLifetime = soldPaperLifetime = 0;
+        boughtFromHouseholdsLifetime = 0;
+        boughtAtIssueLifetime = parAtIssueLifetime = 0;
         defendedLifetime = 0;
         targetShare = previousTarget = 0;
         advancesCeilingMonths = DEFAULT_ADVANCES_MONTHS;
@@ -740,6 +844,9 @@ public final class CentralBank {
         redemptionDue *= scale;  redemptionGainDue *= scale;
         boughtPaperLifetime *= scale;  soldPaperLifetime *= scale;
         boughtPaper *= scale;  soldPaper *= scale;  paperCoupons *= scale;
+        boughtFromHouseholds *= scale;  boughtFromHouseholdsLifetime *= scale;
+        boughtAtIssue *= scale;  parAtIssue *= scale;
+        boughtAtIssueLifetime *= scale;  parAtIssueLifetime *= scale;
         paperRedeemed *= scale;  boughtBack *= scale;  paperGains *= scale;
         defendedThisMonth *= scale;  defendedLifetime *= scale;
         for (int r = 0; r < REVENUE_MONTHS; r++) revenue[r] *= scale;

@@ -1,6 +1,6 @@
 # TreasuryJournal.java - 241 lines · 16 methods · 0 constants · model
 
-`ham/citybuildersim/TreasuryJournal.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryJournal.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > The treasury's journal: every movement of the city's cash that is neither a
 > budget line nor paper raised or repaid, recorded by name as it happens, so

@@ -1,6 +1,6 @@
 # BankScreen.java - 2,340 lines · 38 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > The bank tab: whether the city's bank is healthy and why, on one landing -
 > a sentence, a scorecard and the ladder of its rates - with its profit, its

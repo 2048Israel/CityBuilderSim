@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-27 (0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-28 (0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy waiting on the next deploy; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -13,7 +13,11 @@ has been away reads the changelog's top block and section 0 here, then works.
   shares with the owners wiped out, TARP preferred, and the Insane start.
 - ~~**NEXT: NOTES AND BONDS**~~ — shipped as 0.7.12 (tag 0926a), see
   `the-firms-sell-bonds.md`.
-- **NEXT: HEALTHCHECK SHIPS RED — ITS OWN BATCH, NOW THE TREASURY HAS SHIPPED** (Jerus,
+- ~~**NEXT: THE MANUAL, FROM 0.7.3 TO 0.7.15**~~ — published 2026-09-28 as
+  version 10, see `the-manual-at-0-7-15.md`. `docs/manual.md` and
+  `docs/manual.html` are regenerated in the cloud tree and go to the PC with
+  the next deploy (the PC was offline), with the three `docs/notes/` copies.
+- **NEXT: HEALTHCHECK SHIPS RED — ITS OWN BATCH** (Jerus,
   2026-09-25: "Ship with it red, flagged"). Read over its last 12 months (his
   change, "Read a year's average"), the dear-care twin is 8.4 points hungrier
   than the free one against a tolerance of 5, over since the bonds batch's
@@ -21,6 +25,39 @@ has been away reads the changelog's top block and section 0 here, then works.
   household row paid for (the documented shortcut in `HouseholdBalance`, THE
   PRICE AT THE CLINIC DOOR); 46% had money for food after their fixed bills
   and still planned less — untraced, and the first thing to trace.
+- **CHECK 0.7.15 BY EYE ON THE PC** (`the-central-bank-as-backstop.md`).
+  - **The strip's inflation readout.**
+    - At the default 2% target: 5% grey; 6% amber; 7.1% red (amber
+      before); −1.5% amber; −11% red.
+    - At a 15% target: 14% grey; 19% amber; 21% red; 11% amber; 5% amber.
+    - The tooltip's line on the colours.
+  - **Policy tab, money page:** the target's ladder "0% to 20%", + to 20%,
+    the rule's sentence and the "rule disagrees" alert at a 15–20% target.
+  - **Policy tab, holdings:**
+    - eleven chips 0–100% (check the row wraps at `SIZE_CAPTION`);
+    - the ladder to 100%;
+    - the note's last sentences: rolling its own, runoff past its dial,
+      what the surplus pays.
+  - **Finances, "Your rate":** with the central bank holding paper while
+    the bank is at the window, the floor row reads "the dial, and the
+    bank's cost on the rest", with a note naming the share. With no holding
+    the page is as before.
+  - **Figures that now read the split floor:** "A spotless city would pay",
+    the Policy tab's floor lines, the credit rating letter, the build
+    screen's quote colouring.
+  - **Finances, "Rolling what falls due":**
+    - "...of it the central bank's";
+    - "...which it rolls itself, at issue" / "...which is repaid it";
+    - "...which last year's surplus pays off";
+    - the plan's sentence with the central bank's par on top, or "issued
+      it alone".
+  - **Finances, the book page, "Who holds it":** the note on the
+    households selling to the central bank.
+  - **Insane:** play runs before borrowing, with no orange refusal; the
+    founding card's new note.
+  - **The time skip's result:** no "THE SKIP STOPPED" section, an amber
+    "Central bank $X advanced, $Y owed at the end" line, and "Stopped after
+    n of N months" only when a month threw.
 - **CHECK 0.7.14 BY EYE ON THE PC** (`the-city-takes-the-shares.md`). None of
   it can run in the cloud; `build-ui.sh` compiling it is the only check it has
   had.
@@ -58,10 +95,8 @@ has been away reads the changelog's top block and section 0 here, then works.
     "Answer the bank →"; "The bank failed, and the city took it over" with
     "See the bank's rescue →"; the offer pauses a running clock with
     pause-on-events on.
-  - **The clock on an Insane city before it borrows:** pressing play shows the
-    refusal beside the button (the orange label is 220px against a long
-    sentence) and the clock stays stopped; after a bond it runs. A skip that
-    stops at an empty treasury shows "THE SKIP STOPPED AT MONTH n".
+  - ~~**The clock on an Insane city before it borrows**~~ — the refusal and
+    "THE SKIP STOPPED AT MONTH n" are gone since 0.7.15; see its list.
   - **Found a city:** the Insane chip first; its card (D$0 in red, the
     borrow-first note, the village, both day-0 quotes, the land bond in US$,
     the vault); the first time Insane is picked a scratch city is founded to
@@ -896,6 +931,25 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
     TreasuryCheck, SaveFileCheck, NewGameCheck and ReadPathCheck gained);
   - §21: "who absorbs a failed bank" is closed; the city's own paper at home
     is still unlimited.
+- **And 0.7.15 as of 2026-09-28 (deployed 2026-09-28, tag 0928a): Insane
+  from day one; the time skip through an empty treasury; the inflation target
+  to 20% and the strip's colours from it; the holdings dial to 100%, the
+  central bank buying households' paper and rolling its own at issue, the
+  rate floor split by holder; ~177,000 lines; save format 27; 64
+  harnesses.** What the manual now says that is not so:
+  - §13's holdings dial: 0–50% of the term paper, bought from the bank
+    only, compression over `MAX_QE_SHARE` (`docs/manual.md` L717, L720,
+    L780) — now 0–100%, the households after the bank, compression full at
+    `FULL_COMPRESSION_SHARE`, and rolled at issue;
+  - §12's floor ("never less than the money costs the bank") — now split by
+    who holds the paper;
+  - the target dial's 0–10% — now 0–20%; the strip's colours;
+  - the time skip stopping at an empty treasury.
+- **CAUGHT UP 2026-09-28 at 0.7.15 / format 27, version 10** — every item in
+  the twelve entries above (0.7.4 to 0.7.15) was walked by the implementer and
+  again by the reviewer, see `the-manual-at-0-7-15.md`: twenty-three sections,
+  §13 *The bank* and §16 *Founding a city* new; its found-on-the-way list is
+  under Housekeeping. The share pin (above) is still Jerus's.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -1556,7 +1610,9 @@ Ranked by how likely they are to read as "this game is broken".
   2026-09-22 (struck late; 0.7.0 closed it):** `Game.minimumIssueSize()`
   replaced the silent floor and the borrow page states the rounding ("Issues
   round to …").
-- **A broke city cannot skip, only step.** The emergency is exactly where the
+- ~~**A broke city cannot skip, only step.**~~ It can since 0.7.15: the skip
+  runs through an empty treasury on the central bank's advances (found stale
+  by the manual pass, 2026-09-28). The emergency is exactly where the
   game is slowest to play. (backlog 22)
 - **"Fill %" means job fill, not occupancy.**
 - **The middle column does not scroll.** Wrapping `rootMenu` in a `ScrollPane`
@@ -1615,6 +1671,18 @@ Ranked by how likely they are to read as "this game is broken".
   `Game.consider()` still files `canFundProject()`'s leverage refusal as a
   land shortage (`landBlockedSectors`) — only the capital refusal is split out
   (see the NEVER CLEARS item).
+- **FOUND BY 0.7.15, NOT ITS TO FIX** (`the-central-bank-as-backstop.md` §6;
+  the implementer's record, `dials-notes.md`):
+  - **The dial at 100% doesn't limit the city's paper at home.** It makes
+    the central bank the buyer when nobody else is. Held at 25%, the city
+    ends at 1,047 people. The limit is still 0.7.13's item.
+  - **A 0.7.15 save with the dial past 50%, opened in 0.7.14, loads at
+    50%** (Jerus left it).
+  - **The central bank can end a roll month over its dial** when a surplus
+    pays only part of its par, and the holdings step then sells the excess
+    to the bank (Jerus: "Leave it (as built)").
+  - **One month of negative GDP** in Lean at dial 50% and 100%, of 0.7.14's
+    untraced kind.
 - **FOUND BY 0.7.14, NOT ITS TO FIX** (`the-city-takes-the-shares.md` §8; the
   implementer's record, `treasury-notes.md`):
   - **The city keeps its bank for decades** (Jerus: "New issues only"): the
@@ -2317,7 +2385,9 @@ Ranked by how likely they are to read as "this game is broken".
   §7 reads the closing month and the month after. A 0.7.2 save pays one
   month's EI twice on its first month. The premiums may carry the same lag —
   the new line below.
-- **A TIME SKIP HALTS AT CASH ≤ 0** (`Game.java` ~L2481, `SkipReportCheck` "an
+- ~~**A TIME SKIP HALTS AT CASH ≤ 0**~~ — closed 2026-09-28 (0.7.15): the
+  skip runs on the central bank's advances, as the play clock does (Jerus:
+  "Skip runs too"). Was: (`Game.java` ~L2481, `SkipReportCheck` "an
   empty treasury"), but since 0.7.0 `settleTreasury()` advances a broke
   treasury's shortfall, so the skip stops a city the month would carry. Stop
   at the ceiling, at arrears, or not at all — Jerus's call. Same note.
@@ -2647,6 +2717,23 @@ each one Jerus's call, in the order they pay back:
   116 at 0.7.3 (§2's "two quarters" sentence is corrected in place). In this
   list: three items §3 carried after 0.7.0 closed them are struck tonight.
   Full list with lines in `the-manual-at-0-7-3.md` §4.
+- **FOUND BY THE MANUAL PASS, 2026-09-28 — eight places**, none fixed:
+  - `buildings.json` L61 `"nextId": 69` while the ids run to 72;
+  - this list's 0.7.12 save entry types interim loans "INTERIM" (the code's
+    type is "INTERIM-LOAN");
+  - `changelog.md`'s 0.7.7 block gives the capital charge with 11% (since
+    0.7.8 it is the bank's own target, floored by the leverage ratio);
+  - `Household.java` L869 "Sold at the bid to the bank's desk", of shares — no
+    dealer since 0.7.12;
+  - `TreasuryFund.java` L44–48 "The hand may", of the rescue book, leaves out
+    that the preferred and its warrants cannot be sold;
+  - the playtest prints "ill for 301 months of 4001" for a 4,002-month run
+    (the outbreak counter starts at month 2);
+  - `GameVersion.java`'s version headings are titled and dated a little
+    differently from this changelog's blocks;
+  - every screen but the Bank tab snaps an opened statement line shut on the
+    month's redraw (`Statement.opens()` is used by the Bank tab alone).
+  Full list in `the-manual-at-0-7-15.md` §4.
 - **Do not move the harnesses to their own package yet**: about twenty
   package-private model members at seventy-odd call sites would need a seam.
 - **Sixteen classes no harness names** (`docs/harnesses.md`, as of

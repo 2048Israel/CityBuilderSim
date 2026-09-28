@@ -2959,29 +2959,22 @@ public class Game {
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
     }
 
-    /**
-     * WHY THE CLOCK WILL NOT RUN, or null when it will (0.7.14, Jerus's
-     * "Borrow first"): the treasury is empty and nobody will advance it
-     * anything - its cash at or below nothing and the central bank's
-     * ceiling, months of revenue, nothing for a city that has had none. An
-     * Insane founding is that city. A city with revenue behind it runs on the
-     * central bank's advances as it always has; the time skip keeps its own
-     * refusal at an empty treasury (simulateMonths()).
+    /*
+     * AN INSANE CITY RUNS FROM DAY ONE (0.7.15). Jerus: "Play works from day
+     * one. The central bank covers what the treasury must pay, which starts
+     * with just the land bond's coupon; optional spending is refused." 0.7.14
+     * stopped the play clock on an empty treasury with no revenue behind it,
+     * and the time skip at any empty treasury; both stops are gone, the
+     * skip's by his "Skip runs too" (simulateMonths()). What an Insane city
+     * must pay - its promises (TreasuryLine): on day 0 the land bond's
+     * dollar coupon, converted from cash (payForeignInterest()), and the
+     * founding residents' pensions - takes its cash under nothing, and the
+     * next settle advances the shortfall (settleTreasury()), past a ceiling
+     * of no revenue if it must. Anything discretionary is refused: a
+     * ceiling of nothing and no cash leave discretionaryRoom() nothing.
+     * Borrowing is how it builds - the build screen's, the land office's and
+     * the Finances tab's funding pages quote it at D$0 (dayZeroQuotes()).
      */
-    public String clockRefusal() {
-        if (cash > 0 || centralBank.trailingRevenue() > 0) return null;
-        return treasuryEmptyWords();
-    }
-
-    /** The empty treasury, in the player's words, and where to borrow: what the clock and the time skip say when they will not run. */
-    public String treasuryEmptyWords() {
-        return "The treasury is empty. Borrow first: the build screen's funding page, the Finances tab's"
-                + " borrowing, or the land office's funding page.";
-    }
-
-    /** Why the last time skip stopped short, or null if it ran every month it was asked for. */
-    public String getSkipStoppedBecause() { return skipStoppedBecause; }
-    private String skipStoppedBecause;
 
     /**
      * WHAT A FIRST BOND COSTS A CITY WITH NOTHING (0.7.14): the build screen's
@@ -4264,8 +4257,16 @@ public class Game {
     
     
     /**
-     * Runs up to {@code months} monthly cycles, stopping early if the treasury is
-     * empty. Returns how many months actually ran.
+     * Runs up to {@code months} monthly cycles, stopping early only if a month
+     * throws (below). Returns how many months actually ran.
+     *
+     * AN EMPTY TREASURY NO LONGER STOPS IT (0.7.15, Jerus: "Skip runs too").
+     * It broke at cash <= 0 from its first version until 0.7.14, which also
+     * said why on the skip's report; the play clock never did, and the skip now
+     * runs on the central bank's advances as play does - the settle at the
+     * top of each month advances the shortfall (settleTreasury()), and the
+     * report counts the months on advances and what was advanced
+     * (TimeSkipReport.sampleTreasury()).
      *
      * NOTE: replaces the terminal-era handleMultipleMonths(), which read its month
      * count from the stubbed getInput() (always 0, so the loop never executed) and
@@ -4299,7 +4300,6 @@ public class Game {
         reports = false;
 
         int completed = 0;
-        skipStoppedBecause = null;
 
         // Snapshot before anything moves. Everything the summary shows is a diff
         // against this or a count taken month by month below - see TimeSkipReport.
@@ -4308,14 +4308,6 @@ public class Game {
 
         try {
             for (int i = 0; i < months; i++) {
-                if (cash <= 0) {
-                    System.out.println("Treasury empty - simulated " + completed
-                            + " of " + months + " months.");
-                    // ...and said where the player reads it (0.7.14): the
-                    // skip's report and the clock, not only the log.
-                    skipStoppedBecause = treasuryEmptyWords();
-                    break;
-                }
                 nextMonth();
                 completed++;
 
@@ -4333,9 +4325,11 @@ public class Game {
                         health.getWorkRatio(),
                         health.isOutbreak(),
                         healthcare.getUnburied());
-                // ...and the treasury's month with its central bank (0.7.1).
+                // ...and the treasury's month with its central bank (0.7.1):
+                // since 0.7.15 what it advanced, and what the treasury owes it.
                 skipReport.sampleTreasury(centralBank.getAdvancesToTreasury() > 0,
-                        centralBank.ceilingBound());
+                        centralBank.ceilingBound(), centralBank.getAdvancedToTreasury(),
+                        centralBank.getAdvancesToTreasury());
             }
 
         } catch (RuntimeException e) {
@@ -5823,7 +5817,17 @@ public class Game {
          - pieces rolling into the same paper are one issue, and an issue
            under minimumIssueSize() - the smallest deal worth arranging, which
            the Finances tab already holds a player to - is not arranged: its
-           share is paid out of cash with the rest of the maturity.
+           share is paid out of cash with the rest of the maturity;
+         - since 0.7.15, what the central bank holds of what falls due is
+           its own to roll: it takes that par of the new paper at issue, on
+           top of what the market is sold, while its dial is at or above what
+           it holds (THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE, below). So the
+           issues are sized for what falls due less the par it would roll -
+           the market's part - less S. S is struck on all of what falls due,
+           as before, and (Jerus: "Surplus pays everyone") pays the market's
+           part first and then the central bank's par, which rolls only what
+           S left of it. With none of its in what falls due, all of it is the
+           market's, to the byte.
 
        WHAT IT IS NOT: a treasury short of cash for its spending is the
        central bank's (settleTreasury(), unchanged); the surplus nets only up
@@ -5894,32 +5898,54 @@ public class Game {
         double due = 0, abroad = 0;
         java.util.List<Debt> falling = new java.util.ArrayList<>();
         java.util.List<Double> owed = new java.util.ArrayList<>();
+        // ...and of each piece, the central bank's par (0.7.15, round 2): what
+        // it holds of it, which it rolls itself at issue unless it runs off.
+        // See THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE.
+        java.util.List<Double> its = new java.util.ArrayList<>();
+        double itsDue = 0;
         for (Debt paper : debtManager.getDebt()) {
             double principal = paper.principalDueNextMonth();
             if (!(principal > 0)) continue;
             falling.add(paper);
             owed.add(principal);
+            double c = centralBankShareOf(paper, principal);
+            its.add(c);
+            itsDue += c;
             due += principal;
             if (paper.isForeign()) abroad += principal;
         }
+        // What it would roll - its par less what it holds past its dial - and
+        // so the market's part: the rest, all of what falls due when it holds
+        // none.
+        double itsRolls = centralBankRolls(itsDue);
+        double market = due - itsRolls;
         double surplus = surplusOverLastYear();
         // What earlier rollovers netted and the city's fund took of it (one
         // ledger since 0.7.14), and the dial's share of this year so far,
         // which the fund's year-end pay-in will take first (fundReservation():
         // nothing at a dial of 0, which is 0.7.13's netting to the byte).
         double used = rollover.usedInYear(month) + fundReservation();
+        // S on all of what falls due. It pays the market's part first, and
+        // what is left of it pays down the central bank's par (round 3, Jerus:
+        // "Surplus pays everyone"), which then rolls only the rest.
         double netted = mode == Rollover.Mode.MANUAL ? 0 : Rollover.netting(surplus, used, cash, due);
+        // All of it when S covers all of what falls due, so nothing is left
+        // to roll to the last bit.
+        double itsNetted = netted >= due ? itsRolls : Math.max(0, netted - market);
+        double itsPar = itsRolls - itsNetted;
 
         java.util.List<Rollover.Issue> issues = new java.util.ArrayList<>();
-        if (mode != Rollover.Mode.MANUAL && due > netted) {
-            double toRoll = due - netted;
+        if (mode != Rollover.Mode.MANUAL && market > netted) {
+            double toRoll = market - netted;
             boolean windowOpen = debtManager.foreignWindowOpen();
             java.util.Map<RollsInto, double[]> byPaper = new java.util.LinkedHashMap<>();
             for (int i = 0; i < falling.size(); i++) {
                 RollsInto into = rollsInto(falling.get(i), mode, windowOpen);
                 RollsInto key = new RollsInto(into.type(), into.term(), into.foreign(), false);
                 double[] sum = byPaper.computeIfAbsent(key, k -> new double[3]);
-                sum[0] += owed.get(i) / due * toRoll;       // its share of the cash, pro rata
+                // The piece's market part: what falls due less what the central bank would roll of it.
+                double part = itsRolls > 0 ? owed.get(i) - its.get(i) * (itsRolls / itsDue) : owed.get(i);
+                sum[0] += part / market * toRoll;            // its share of the cash, pro rata
                 sum[1] += 1;                                 // pieces
                 sum[2] += into.atHomeForDollars() ? 1 : 0;   // dollar pieces rolled at home
             }
@@ -5934,19 +5960,34 @@ public class Game {
                         sum[0], face, (int) sum[1], (int) sum[2]));
             }
         }
-        return new Rollover.Plan(mode, due, abroad, surplus, used, cash, netted, issues);
+        return new Rollover.Plan(mode, due, abroad, surplus, used, cash, netted, issues, itsDue, itsPar, itsNetted);
     }
 
     /** The rollover, at the press: rolloverPlan() booked, issue by issue, through the existing quotes, and printed to the log. */
     private void rollMaturities() {
-        if (rollover.getMode() == Rollover.Mode.MANUAL) return;
+        // What the central bank rolls of its own at issue this month (0.7.15,
+        // round 2), struck on the book the plan reads, before the rollover
+        // books anything: the plan's figure, which S has already paid down;
+        // by hand, where nothing is netted, its par less what it
+        // holds past its dial. See THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE.
+        centralBankAlone.clear();
+        centralBankTender = 0;
+        if (rollover.getMode() == Rollover.Mode.MANUAL) {
+            centralBankTender = centralBankRolls(centralBankParFallingDue());
+            return;
+        }
         Rollover.Plan plan = rolloverPlan();
+        centralBankTender = plan.centralBankPar();
         if (!(plan.due() > 0)) return;
 
         String here = getCurrency().qualifiedSymbol();
         GameLog.note(String.format("THE ROLLOVER, %s: %s%,.0fk falls due next month; last year's surplus"
-                        + " nets %s%,.0fk of it; %s%,.0fk to roll.", Rollover.words(plan.mode()),
-                here, plan.due(), here, plan.netted(), here, plan.toRoll()));
+                        + " nets %s%,.0fk of it; %s%,.0fk to roll.%s", Rollover.words(plan.mode()),
+                here, plan.due(), here, plan.netted(), here, plan.toRoll(),
+                plan.centralBankDue() > 0 ? String.format(" The central bank holds %s%,.0fk of it: the surplus"
+                        + " pays %s%,.0fk of that, it rolls %s%,.0fk at issue, and %s%,.0fk runs off past its dial.",
+                        here, plan.centralBankDue(), here, plan.centralBankNetted(), here, plan.centralBankPar(),
+                        here, plan.centralBankRunsOff()) : ""));
         double raised = 0, faced = 0;
         int issued = 0, atHome = 0;
         for (Rollover.Issue issue : plan.issues()) {
@@ -5973,6 +6014,9 @@ public class Game {
                     + " (%s%,.0fk), and is paid out of cash.", here, plan.toRoll(), here, minimumIssueSize()));
         }
         rollover.record(month, plan.due(), plan.netted(), faced, raised, issued, atHome);
+        // None of the city's term paper sold between the presses for the
+        // central bank's par to be added on to: its par alone (0.7.15, round 2).
+        if (centralBankTender > 0 && !termPaperSoldBetweenPresses()) strikeParAlone();
     }
 
     /**
@@ -6193,6 +6237,14 @@ public class Game {
         // dollar it makes or destroys is one the month declares. See
         // settleTreasury().
         settleTreasury();
+
+        // The central bank's own maturing paper, replaced at issue by its
+        // add-on to what the city sold between the presses, par for par
+        // (0.7.15, round 2): after the settle, so its money waits for the
+        // maturity as the market's does; before the holdings step, which then
+        // reads a book carrying the replacement. See THE CENTRAL BANK ROLLS
+        // ITS OWN, AT ISSUE.
+        rollCentralBankAtIssue();
 
         // The holdings dial (0.7.1): the central bank buys or sells the city's
         // term paper toward its target, after the settle above and before the
@@ -9468,19 +9520,23 @@ public class Game {
             double take = Math.min(wanted, spare);
             if (take > 0) {
                 // The face per dollar is the mix they buy: every settling
-                // piece in proportion to what they want of it.
+                // piece in proportion to what they want of it - of the face
+                // the market bought, the central bank's add-on at issue being
+                // its own and paid for (0.7.15, round 2; the whole face on a
+                // piece it took none of).
                 double face = 0;
                 for (Debt d : settling) {
                     double cash = take * HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate)
                             * d.getSettleDue() / wanted;
-                    face += d.getOustandingPrincipal() * cash / d.getSettleDue();
+                    face += (d.getOustandingPrincipal() - d.centralBankPrincipal()) * cash / d.getSettleDue();
                 }
                 paid = householdBalance.buyAtIssue(take, face / take);
                 double scale = take > 0 ? paid / take : 0;
                 for (Debt d : settling) {
                     double cash = take * HouseholdBalance.paperShareAt(d.getIssueYield(), depositRate)
                             * d.getSettleDue() / wanted;
-                    d.moveToHouseholds(d.getOustandingPrincipal() * cash / d.getSettleDue() * scale);
+                    d.moveToHouseholds((d.getOustandingPrincipal() - d.centralBankPrincipal()) * cash
+                            / d.getSettleDue() * scale);
                 }
             }
         }
@@ -9506,12 +9562,60 @@ public class Game {
        (getSettleDue()) is not offered; and before the market is priced, so
        this month's quotes carry the compression it buys. Pro rata across the
        bank's term paper when buying and across its own when selling, at the
-       curve's market value.
+       curve's market value - settled paper either way, since what it took at
+       issue this month (0.7.15, round 2, just before this step) is still owed
+       for by the market until the settle.
+
+       ...READ AS THE BOOK STANDS ONCE THE MONTH'S MATURITY IS PAID (0.7.15,
+       round 2). In a month a piece falls due the book carries both the
+       maturing principal, paid at the bottom of the month
+       (processAllDebts()), and its replacement, sold at the press and, for
+       the central bank's par, added on at issue just before this step (THE
+       CENTRAL BANK ROLLS ITS OWN, AT ISSUE) - on the issue date the Fed's
+       book holds one or the other, never both. Counted twice, a central
+       bank holding more or less of a maturing piece than its dial would
+       sell the difference to the bank that month and buy it back the next.
+       So the target and the holding are read net of the principal the month
+       pays, the central bank's share of it off its holding; the pace is
+       struck on the paper outstanding, as before. And a piece paying
+       principal this month is not traded - neither from the bank nor from
+       the households, nor sold: its payment is split by the holders it
+       opened the month with (holderShares()), so face bought of it would
+       come back as principal before the month was out and leave the book
+       under the dial it was bought toward. A month with nothing falling due
+       reads and trades exactly as it did.
+
+       ...AND FROM THE HOUSEHOLDS, ONCE THE BANK HAS NONE TO SELL (0.7.15).
+       Jerus lifted the dial to the whole of the paper (CentralBank
+       .MAX_QE_SHARE), and the households hold up to half of every issue
+       (HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE), so a dial past what the
+       bank holds could not be reached from the bank alone. What the step
+       still wants once the bank's settled term paper is gone it buys from the
+       households' term paper, pro rata across the pieces, at the same curve's
+       market value, and the cells give up their paper and take the price
+       into their savings pro rata, by the path a buyback's households' share
+       takes (HouseholdBalance.creditPaperBuyback()). The money is made for
+       it, as for the bank's: MoneyAudit sees it made (+ centralbank
+       BoughtPaper) and paid out to the households (- centralbank
+       BoughtFromHouseholds). SELLING stays as it was: to the bank only.
        ====================================================================== */
     private void openMarketOperation() {
+        // Nothing to aim at and nothing held: no move, as it always read.
+        if (!(centralBank.getTargetShare() > 0) && !(centralBank.getPaperHeld() > 0)) return;
         double term = debtManager.termPrincipal();
-        double held = centralBank.getPaperHeld();
-        double target = centralBank.getTargetShare() * term;
+        // What this month's processAllDebts() repays of the term paper, and
+        // the central bank's share of it (0.7.15, round 2): nothing in a month
+        // with nothing falling due.
+        double dueTerm = 0, dueHeld = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d)) continue;
+            double principal = d.principalDueNextMonth();
+            if (!(principal > 0)) continue;
+            dueTerm += principal;
+            dueHeld += centralBankShareOf(d, principal);
+        }
+        double held = centralBank.getPaperHeld() - dueHeld;
+        double target = centralBank.getTargetShare() * (term - dueTerm);
         double step = centralBank.stepFor(term);
         double move = Math.max(-step, Math.min(step, target - held));
         if (Math.abs(move) <= 1e-9 * Math.max(1, term)) return;
@@ -9519,36 +9623,309 @@ public class Game {
         double pool = 0;
         for (Debt d : debtManager.getDebt()) {
             if (!DebtManager.isTermPaper(d)) continue;
-            double available = move > 0
-                    ? (d.getSettleDue() > 0 ? 0 : d.bankPrincipal())
-                    : d.centralBankPrincipal();
+            double available = d.getSettleDue() > 0 || d.principalDueNextMonth() > 0 ? 0
+                    : move > 0 ? d.bankPrincipal() : d.centralBankPrincipal();
             if (available <= 0) continue;
             pieces.add(d);
             pool += available;
         }
         double face = Math.min(Math.abs(move), pool);
+        if (face > 0) {
+            double price = 0, unearned = 0;
+            double[] faceOf = new double[pieces.size()];
+            for (int i = 0; i < pieces.size(); i++) {
+                Debt d = pieces.get(i);
+                double available = move > 0 ? d.bankPrincipal() : d.centralBankPrincipal();
+                double f = face >= pool ? available : face * available / pool;
+                faceOf[i] = f;
+                double out = d.getOustandingPrincipal();
+                price += debtManager.marketValue(d) * f / out;
+                unearned += d.unaccretedOn(f);
+            }
+            for (int i = 0; i < pieces.size(); i++) {
+                pieces.get(i).moveToCentralBank(move > 0 ? faceOf[i] : -faceOf[i]);
+            }
+            if (move > 0) {
+                centralBank.buyPaper(price, face);
+                bank.sellPaperToCentralBank(price, face, unearned);
+            } else {
+                centralBank.sellPaper(price, face);
+                bank.buyPaperFromCentralBank(price, face, unearned);
+            }
+        }
+        if (move > 0 && face < move) buyPaperFromHouseholds(move - Math.max(0, face));
+    }
+
+    /**
+     * The rest of a purchase the bank could not fill, from the households'
+     * term paper (0.7.15; see THE HOLDINGS DIAL, AT THE TOP OF THE MONTH):
+     * pro rata across the pieces they hold that are settled and pay no
+     * principal this month (round 2), at the curve's market value, off their
+     * cells pro rata into their savings.
+     */
+    private void buyPaperFromHouseholds(double wanted) {
+        java.util.List<Debt> pieces = new java.util.ArrayList<>();
+        double pool = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d) || d.getSettleDue() > 0 || d.principalDueNextMonth() > 0) continue;
+            double available = d.householdPrincipal();
+            if (available <= 0) continue;
+            pieces.add(d);
+            pool += available;
+        }
+        double face = Math.min(wanted, pool);
         if (!(face > 0)) return;
-        double price = 0, unearned = 0;
+        double price = 0;
         double[] faceOf = new double[pieces.size()];
         for (int i = 0; i < pieces.size(); i++) {
             Debt d = pieces.get(i);
-            double available = move > 0 ? d.bankPrincipal() : d.centralBankPrincipal();
+            double available = d.householdPrincipal();
             double f = face >= pool ? available : face * available / pool;
             faceOf[i] = f;
-            double out = d.getOustandingPrincipal();
-            price += debtManager.marketValue(d) * f / out;
-            unearned += d.unaccretedOn(f);
+            price += debtManager.marketValue(d) * f / d.getOustandingPrincipal();
         }
         for (int i = 0; i < pieces.size(); i++) {
-            pieces.get(i).moveToCentralBank(move > 0 ? faceOf[i] : -faceOf[i]);
+            pieces.get(i).moveToHouseholds(-faceOf[i]);
+            pieces.get(i).moveToCentralBank(faceOf[i]);
         }
-        if (move > 0) {
-            centralBank.buyPaper(price, face);
-            bank.sellPaperToCentralBank(price, face, unearned);
+        centralBank.buyPaperFromHouseholds(price, face);
+        householdBalance.creditPaperBuyback(face, price);
+    }
+
+    /* ------------- THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) -------------
+
+       Jerus chose "Build the rollover fix" for round 1's Needs Jerus 2, "the
+       way the Fed does". Until then a central bank holding the city's paper
+       was repaid its share of a maturing piece, the rollover sold the
+       replacement to the commercial bank - the residual buyer - and the
+       holdings dial bought it back from the bank over the months after. A
+       bank whose paper the central bank had bought held little else, so it
+       funded the whole issue at the window, charged before the first coupon
+       against a month's straight-line accretion, and failed on it (held 25%,
+       dial 100%, seed 5, m2668: $44.1B of face for $14.7B on $69.8M of
+       equity). In 0.7.15's first ensembles 51 of the 76 failures the dial
+       added at 100% fell in or just after a month the city issued paper at
+       home, and all 134 it added at 50% - though 71 of those 134 were next
+       to paper the playtest sold to fund the bank's preferred, not a roll.
+
+       THE RULE, the Federal Reserve Bank of New York's "FAQs: Treasury
+       Rollovers": "the Desk rolls over the SOMA's maturing Treasury security
+       holdings by replacing maturing holdings with securities issued at
+       Treasury auctions ... by placing non-competitive bids at Treasury
+       auctions equal in par amount to the value of holdings maturing on the
+       issue date of the securities being auctioned, allocated proportionally
+       across those securities by announced offering amount"; "Bids at
+       Treasury auctions are placed as non-competitive tenders and are treated
+       as add-ons to announced auction sizes"; "Noncompetitive bidders receive
+       the stop-out rate, yield or discount margin determined by the
+       competitive auction process." And what they roll into: "SOMA holdings
+       of Treasury notes, bonds, ... are exchanged at auction across all
+       Treasury notes, bonds, TIPS, and FRNs issued on that day" - coupon
+       paper into coupon paper, which here is term paper into term paper, the
+       only paper the dial holds (DebtManager.isTermPaper()).
+
+         - WHAT: its par in what falls due - each maturing piece's principal
+           times the share of it the central bank holds, the split the payment
+           itself makes (holderShares()) - less what runs off past its dial
+           and what last year's surplus pays off (both below).
+         - WHEN: struck at the press (rollMaturities(), before the rollover
+           books anything, on the book rolloverPlan() reads) and taken in the
+           month the maturity is paid - the issue date - inside the audit's
+           window (rollCentralBankAtIssue()): after the treasury's settle with
+           its central bank, so the money waits for the maturity as the
+           market's proceeds do rather than repaying advances the maturity
+           then draws again; before the holdings step, which reads the book as
+           it stands once the month's maturity is paid - the replacement in,
+           the maturing slice out (openMarketOperation()); and before
+           processAllDebts() pays it the maturing par as it always has
+           (payDomesticPrincipal(), money destroyed).
+         - ON TOP: the rollover sizes its issues for the rest (rolloverPlan():
+           what falls due less its par, less S), and its par is
+           added on to the city's own term paper sold between the two presses
+           - the rollover's issues, and any the player sold by hand, which is
+           the same situation - pro rata to their face, the Fed's "by
+           announced offering amount" (Debt.addOnForCentralBank()), each at
+           its issue's price on each unit of face (what the treasury was paid
+           over the face the market bought), in money made for it
+           (CentralBank.buyAtIssue()). MoneyAudit's "+ centralbank
+           BoughtPaper" sees it arrive in the treasury's pool, and nothing
+           else is declared. What it paid under par is its gain against face,
+           in the month's profit and back to the treasury as the remittance.
+         - NOTHING TO ADD IT ON TO: with the rollover on and none of the
+           city's term paper sold between the presses - its dial at 100%,
+           where the market's part is nothing, or the rest too small to
+           arrange, or rolled into notes - its par is the issue's whole size:
+           the paper each maturing piece rolls into in the same structure,
+           priced at the rollover's own quote for it at the press, held by it
+           from issue (strikeParAlone()). The source has no auction without a
+           public part; this is the add-on on top of a market sized at
+           nothing. A par whose quote brings nothing is not arranged. With the
+           rollover by hand and nothing sold there is no issue at all, and its
+           holding runs off: the treasury repays it out of cash, as it pays
+           what falls due by hand.
+         - ONLY WHILE ITS DIAL IS AT OR ABOVE WHAT IT HOLDS. Under its QT - the
+           dial below what it holds - the maturing holding runs off, as the
+           Fed's did: the FOMC's "Plans for Reducing the Size of the Federal
+           Reserve's Balance Sheet" (May 4, 2022), "principal payments from
+           securities held in the SOMA will be reinvested to the extent that
+           they exceed monthly caps". Read at the margin with the dial for
+           the cap: what it holds past the dial's share of the term paper
+           (past the holdings step's own tolerance) runs off, up to its whole
+           par, and the rest is rolled (centralBankRolls()) - so a holding a
+           dollar over its dial lets a dollar run off, not its whole par, and
+           is not left under its dial to buy the rest back from the bank.
+         - THE SURPLUS PAYS EVERYONE (round 3). Jerus: "Surplus pays
+           everyone". Last year's surplus, S, is struck on all of what falls
+           due (Rollover.netting(), one ledger, so it is used once) and pays
+           the market's part first - what falls due less what the central
+           bank would roll - and then the central bank's par. What it pays of
+           the par is repaid it at the maturity out of the treasury's cash,
+           and the add-on is what is left (rolloverPlan(), Rollover.Plan
+           .centralBankNetted()). A surplus the size of what falls due pays it
+           all and no add-on is issued, so a city in surplus clears its paper
+           whoever holds it. A surplus that pays only part of the central
+           bank's par shrinks the paper under what it rolls, so it can end the
+           month over its dial, and the holdings step sells the excess to the
+           bank as it sells any holding over the dial - left as built, Jerus:
+           "Leave it (as built)".
+       ------------------------------------------------------------------------------ */
+
+    /** What the central bank rolls of its own this month: struck at the press (rollMaturities()), taken in the window (rollCentralBankAtIssue()). Not saved - both happen inside one nextMonth(), and a press strikes it afresh. */
+    private double centralBankTender;
+
+    /** ...and, with none of the city's term paper sold to add it on to, its par alone, quoted at the press: one issue per paper. */
+    private final java.util.List<ParAlone> centralBankAlone = new java.util.ArrayList<>();
+
+    /** Its par alone in one paper, on the terms of the rollover's quote for it. */
+    private record ParAlone(RollsInto into, double par, DebtQuote quote) { }
+
+    /** Its share of a payment of this much principal on this paper: the principal times what it holds over what is outstanding - the split the payment makes (holderShares()). */
+    private static double centralBankShareOf(Debt paper, double principal) {
+        double held = paper.centralBankPrincipal(), out = paper.getOustandingPrincipal();
+        if (paper.isForeign() || !(held > 0) || !(out > 0) || !(principal > 0)) return 0;
+        return principal * held / out;
+    }
+
+    /** The central bank's par in what falls due next month, whether it rolls it or not. */
+    public double centralBankParFallingDue() {
+        if (!(centralBank.getPaperHeld() > 0)) return 0;
+        double par = 0;
+        for (Debt paper : debtManager.getDebt()) par += centralBankShareOf(paper, paper.principalDueNextMonth());
+        return par;
+    }
+
+    /**
+     * How far the central bank's holding is over its dial: what it holds past
+     * the dial's share of the term paper, or nothing within the holdings
+     * step's own tolerance (openMarketOperation()).
+     */
+    public double centralBankOverItsDial() {
+        double term = debtManager.termPrincipal();
+        double over = centralBank.getPaperHeld() - centralBank.getTargetShare() * term;
+        return over > 1e-9 * Math.max(1, term) ? over : 0;
+    }
+
+    /** Of this much par of its own falling due, what it rolls at issue: all of it, less what it holds over its dial. */
+    private double centralBankRolls(double par) {
+        if (!(par > 0)) return 0;
+        return par - Math.min(par, centralBankOverItsDial());
+    }
+
+    /** True if any of the city's own term paper has been sold between the presses and not yet settled: what the central bank's par is added on to. */
+    private boolean termPaperSoldBetweenPresses() {
+        for (Debt d : debtManager.getDebt()) if (DebtManager.isTermPaper(d) && d.getSettleDue() > 0) return true;
+        return false;
+    }
+
+    /**
+     * At the press, with nothing to add its par on to: the paper each maturing
+     * piece it holds part of rolls into in the same structure (rollsInto(),
+     * at home), its par in each, priced at the rollover's quote for that
+     * paper at that size - struck for the par's worth of cash, then again for
+     * what a unit of face brings, so the quote is for a face of about its
+     * par. Books nothing; rollCentralBankAtIssue() books it in the window.
+     */
+    private void strikeParAlone() {
+        double itsDue = 0;
+        java.util.Map<RollsInto, Double> byPaper = new java.util.LinkedHashMap<>();
+        for (Debt paper : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(paper)) continue;
+            double c = centralBankShareOf(paper, paper.principalDueNextMonth());
+            if (!(c > 0)) continue;
+            RollsInto into = rollsInto(paper, Rollover.Mode.SAME_STRUCTURE, false);
+            byPaper.merge(new RollsInto(into.type(), into.term(), false, false), c, Double::sum);
+            itsDue += c;
+        }
+        if (!(itsDue > 0)) return;
+        for (java.util.Map.Entry<RollsInto, Double> e : byPaper.entrySet()) {
+            RollsInto into = e.getKey();
+            double par = centralBankTender == itsDue ? e.getValue() : e.getValue() * centralBankTender / itsDue;
+            DebtQuote first = rolloverQuote(into.type(), into.term(), false, par);
+            if (first == null || first.isEmpty() || !(first.faceValue() > 0) || !(first.cashReceived() > 0)) continue;
+            DebtQuote quote = rolloverQuote(into.type(), into.term(), false,
+                    par * first.cashReceived() / first.faceValue());
+            if (quote == null || quote.isEmpty() || !(quote.faceValue() > 0) || !(quote.cashReceived() > 0)) continue;
+            centralBankAlone.add(new ParAlone(into, par, quote));
+        }
+    }
+
+    /**
+     * THE CENTRAL BANK'S ADD-ON, inside the month's window: the par struck at
+     * the press, added on to the city's term paper sold between the presses,
+     * pro rata to its face, each at its issue's price on each unit of face;
+     * or its par alone, as struck at the press; or, with neither, nothing -
+     * its holding runs off. The treasury is paid in money made for it.
+     */
+    private void rollCentralBankAtIssue() {
+        double par = centralBankTender;
+        centralBankTender = 0;
+        java.util.List<ParAlone> alone = new java.util.ArrayList<>(centralBankAlone);
+        centralBankAlone.clear();
+        if (!(par > 0)) return;
+        double paid = 0, took = 0;
+        if (!alone.isEmpty()) {
+            for (ParAlone a : alone) {
+                DebtQuote q = a.quote();
+                double price = a.par() * q.cashReceived() / q.faceValue();
+                Debt paper = "Serial".equals(a.into().type())
+                        ? debtManager.addMediumTermBond(a.par(), a.into().term() * 12, month - 1, q.marketRate())
+                        : debtManager.addLongTermBond(a.par(), q.duration() * 12, month - 1, q.couponRate());
+                paper.markIssued(price, q.marketRate());
+                paper.settled();
+                paper.moveToCentralBank(a.par());
+                paid += centralBank.buyAtIssue(price, a.par());
+                took += a.par();
+            }
         } else {
-            centralBank.sellPaper(price, face);
-            bank.buyPaperFromCentralBank(price, face, unearned);
+            java.util.List<Debt> sold = new java.util.ArrayList<>();
+            double faces = 0;
+            for (Debt d : debtManager.getDebt()) {
+                if (!DebtManager.isTermPaper(d) || !(d.getSettleDue() > 0)) continue;
+                double face = d.getOustandingPrincipal() - d.centralBankPrincipal();
+                if (!(face > 0)) continue;
+                sold.add(d);
+                faces += face;
+            }
+            for (Debt d : sold) {
+                double face = d.getOustandingPrincipal() - d.centralBankPrincipal();
+                double addOn = sold.size() == 1 ? par : par * face / faces;
+                double price = addOn * d.getSettleDue() / face;
+                d.addOnForCentralBank(addOn);
+                paid += centralBank.buyAtIssue(price, addOn);
+                took += addOn;
+            }
         }
+        String here = getCurrency().qualifiedSymbol();
+        if (took < par * (1 - 1e-12)) {
+            GameLog.note(String.format("The central bank's %s%,.0fk falling due runs off: nothing was issued"
+                    + " to add it on to.", here, par - took));
+        }
+        if (!(paid > 0)) return;
+        cash += paid;
+        treasuryRaisedSoFar += paid;
+        debtManager.updateInterest();
+        GameLog.note(String.format("The central bank rolled %s%,.0fk of its own falling due into new paper"
+                + " at issue, paying the treasury %s%,.0fk.", here, took, here, paid));
     }
 
     /* ----------------------- a buyback's holders outside the pools ----------------------- */

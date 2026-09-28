@@ -1,6 +1,6 @@
 # TreasuryCheck.java - 717 lines · 12 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits what the screens say the treasury did. Not part of
 > the game.

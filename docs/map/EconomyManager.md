@@ -1,6 +1,6 @@
 # EconomyManager.java - 1,643 lines · 196 methods · 3 constants · model
 
-`ham/citybuildersim/EconomyManager.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EconomyManager.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > The private economy: every sector, every market, the credit desk, the
 > tax policy and the national accounts, and the month they run in.

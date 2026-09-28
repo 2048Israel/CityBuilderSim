@@ -255,6 +255,14 @@ public class MonetaryCheck {
         aims.setInflationTarget(.5);
         close("the dial stops at MAX_INFLATION_TARGET", aims.getInflationTarget(),
                 DebtManager.MAX_INFLATION_TARGET, 0);
+        // Jerus's "up to 20%" (0.7.15): MAX_INFLATION_TARGET is his number, 10% before.
+        close("...which is Jerus's 20%", DebtManager.MAX_INFLATION_TARGET, .20, 0);
+        aims.setInflationTarget(.15);
+        close("a target of 15%, past the old stop at 10%, is kept", aims.getInflationTarget(), .15, 0);
+        close("...and the rule aims at it: on it, neutral", aims.ruleRate(.15), DebtManager.NEUTRAL_RATE, 1e-12);
+        aims.setInflationTarget(.25);
+        close("...and 25% is held at MAX_INFLATION_TARGET", aims.getInflationTarget(),
+                DebtManager.MAX_INFLATION_TARGET, 0);
         aims.setInflationTarget(-.03);
         close("...and at MIN_INFLATION_TARGET below", aims.getInflationTarget(),
                 DebtManager.MIN_INFLATION_TARGET, 0);

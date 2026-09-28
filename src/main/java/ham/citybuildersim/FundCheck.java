@@ -57,10 +57,16 @@ import java.io.PrintStream;
  *      surplus.
  *  11. Every piece round-trips through a save; an older save loads empty.
  *  12. Insane: nothing in the treasury or the vault; one dollar bond abroad at
- *      3% for twenty years at the land's value; the clock and the time skip
- *      refuse until the city borrows; a day-0 city is quoted both of the
- *      build screen's offers, and the build screen and the land office ask
- *      for funding at D$0; borrowed, it runs and its audit closes.
+ *      3% for twenty years at the land's value; a day-0 city is quoted both
+ *      of the build screen's offers, and the build screen and the land office
+ *      ask for funding at D$0; borrowed, it runs and its audit closes.
+ *  13. Insane, never borrowing (0.7.15, Jerus: "Play runs on advances"): at
+ *      day 0 its ceiling is nothing, so a purchase and a discretionary line
+ *      are refused and a promise is paid past it; the time skip runs it a
+ *      year, the audit closing every month; month one pays the land bond's
+ *      coupon from nothing and month two's settle advances the whole
+ *      shortfall; nothing discretionary is spent past the room it had; and
+ *      what it owes the central bank at the end is printed.
  *
  * @author Jerus
  */
@@ -160,6 +166,7 @@ public class FundCheck {
         theHand();
         theSave();
         insane();
+        insaneOnAdvances();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -874,10 +881,10 @@ public class FundCheck {
         out.printf("   the land bond: US$%,.0fk face, worth US$%,.0fk on the world's curve; the window abroad: %s%n",
                 bond.principalInCurrency(), g.getDebtManager().marketValue(bond) / Math.max(1e-9, g.getForeignAccounts().getRate()),
                 g.foreignWindowOpen() ? "open" : "shut - " + g.foreignWindowReason());
-        check("the clock refuses an empty treasury with nothing behind it", g.clockRefusal() != null);
+        // 0.7.14 asserted here that the clock and the time skip refused this city until it
+        // borrowed; Jerus's "Play runs on advances" and "Skip runs too" (0.7.15) took both
+        // stops out, and section 13 runs it unborrowed instead.
         final int[] ran = new int[1];
-        quietly(() -> ran[0] = g.simulateMonths(1));
-        check("...and so does the time skip, and says why", ran[0] == 0 && g.getSkipStoppedBecause() != null);
         double village = Founding.whatItBuys(g.getBuildingManager().getTemplates(), 0, 0).village();
         DebtQuote quote = g.quoteLongBondForCash(village, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
         out.printf("   day 0: the village invoiced $%,.0fk; the %d-year bond for it at %.2f%%, $%,.0fk of face%n",
@@ -896,10 +903,83 @@ public class FundCheck {
                         && !g.quoteLongBondForCash(g.landCashGap(plot), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE).isEmpty()
                         && !g.quoteTBill(g.landCashGap(plot), Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE).isEmpty());
         quietly(() -> g.handleLongBondForCash(village, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
-        check("borrowed, the clock runs", g.getCash() > 0 && g.clockRefusal() == null);
+        check("borrowed, the treasury holds cash", g.getCash() > 0);
         quietly(() -> ran[0] = g.simulateMonths(1));
         check("...a month", ran[0] == 1);
         MoneyAudit.Result r = g.getLastMoneyAudit();
         check("...and its audit closes", Math.abs(r.residual) <= .01 || r.relative() <= 1e-7);
+    }
+
+    /* ================= 13. Insane, never borrowing (0.7.15) ================= */
+
+    /**
+     * Jerus, asked whether play should work before the city borrows: "Play
+     * works from day one. The central bank covers what the treasury must pay,
+     * which starts with just the land bond's coupon; optional spending is
+     * refused." And of the time skip, "Skip runs too". So an Insane city that
+     * never borrows is played a year through the skip, as a player leaving it
+     * alone would.
+     */
+    static void insaneOnAdvances() {
+        out.println("\n--- 13. Insane, never borrowing: play runs on the central bank's advances ---");
+        Founding insane = Founding.named("Insane", Founding.Preset.INSANE, WorldEconomy.DEFAULT_MEAN_INFLATION);
+        Game g = new Game(GameFiles.scratch("fundcheck-insane-advances"), insane);
+        quietly(g::run);
+        CentralBank cb = g.getCentralBank();
+        check("day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing",
+                g.getCash() == 0 && cb.ceiling() == 0);
+        check("...and nothing that is not a promise may be spent", g.discretionaryRoom() == 0);
+        Game twin = new Game(GameFiles.scratch("fundcheck-insane-twin"), insane);
+        quietly(twin::run);
+        check("...a purchase asked of it is refused whole, and nothing is owed for it",
+                twin.treasuryPays(TreasuryLine.BUILDINGS, 1_000) == 0 && twin.getCash() == 0 && twin.getArrearsTotal() == 0);
+        check("...a discretionary line is refused, and owed as arrears",
+                twin.treasuryPays(TreasuryLine.CITY_REPAIRS, 1_000) == 0 && twin.getCash() == 0
+                        && twin.getArrearsTotal() == 1_000);
+        check("...and a promise is paid past it, taking the treasury under nothing",
+                twin.treasuryPays(TreasuryLine.PENSIONS, 1_000) == 1_000 && twin.getCash() == -1_000);
+
+        LongTermBond land = (LongTermBond) g.getDebtManager().getDebt().get(0);
+        double couponUsd = Founding.landBondUsd() * Founding.INSANE_LAND_COUPON / 12;
+        int monthsLeft = land.getRemainingMonths();
+        boolean everyMonthRan = true, everyAuditClosed = true, everyCoupon = true, withinRoom = true;
+        double cashAfterOne = Double.NaN, paidInOne = Double.NaN, rateInOne = Double.NaN, advancedInTwo = Double.NaN;
+        double mostOwed = 0;
+        int mostOwedMonth = 0;
+        final int[] ran = new int[1];
+        for (int m = 1; m <= 12; m++) {
+            double rate = g.getForeignAccounts().getRate();
+            double room = g.discretionaryRoom();
+            quietly(() -> ran[0] = g.simulateMonths(1));
+            everyMonthRan &= ran[0] == 1;
+            MoneyAudit.Result r = g.getLastMoneyAudit();
+            everyAuditClosed &= (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7)
+                    && Math.abs(g.getPostAuditDrift()) <= .01;
+            double paid = g.getForeignInterestPaidThisMonth();
+            everyCoupon &= Math.abs(paid - couponUsd * rate) <= 1e-9 * Math.max(1, paid);
+            NationalAccounts books = g.getEconomyManager().getNationalAccounts();
+            double discretionary = books.getCapitalSpending() + books.getLandPurchases()
+                    + books.getStudentGrants() + books.getSubsidies();
+            withinRoom &= discretionary <= room + 1e-9;
+            if (m == 1) { cashAfterOne = g.getCash(); paidInOne = paid; rateInOne = rate; }
+            if (m == 2) advancedInTwo = cb.getAdvancedToTreasury();
+            if (cb.getAdvancesToTreasury() > mostOwed) { mostOwed = cb.getAdvancesToTreasury(); mostOwedMonth = g.getMonth(); }
+        }
+        check("an Insane city that never borrowed runs twelve months through the time skip", everyMonthRan && g.getMonth() == 13);
+        check("...and the audit closes every month, nothing moving after it", everyAuditClosed);
+        close("month one pays the land bond's coupon, a twelfth of INSANE_LAND_COUPON on its face at the month's rate",
+                paidInOne, couponUsd * rateInOne, 1e-9);
+        check("...from a treasury that held nothing, which the month leaves overdrawn", cashAfterOne < 0);
+        close("month two's settle: the central bank advances the whole shortfall", advancedInTwo, -cashAfterOne, 1e-9);
+        check("every month's coupon is paid, the land bond owed whole and never missed",
+                everyCoupon && land.getRemainingMonths() == monthsLeft - 12
+                        && land.principalInCurrency() == Founding.landBondUsd()
+                        && g.getDebtManager().getDefaultScar() == 0);
+        check("nothing that is not a promise was spent past the room the month opened with", withinRoom);
+        check("...and it borrowed nothing: the land bond is still all it owes",
+                g.getDebtManager().getDebt().size() == 1);
+        out.printf("   after a year: owes the central bank $%,.2fk (at most $%,.2fk, m%d); the treasury holds $%,.0fk;"
+                        + " %d people%n", cb.getAdvancesToTreasury(), mostOwed, mostOwedMonth, g.getCash(),
+                g.getPopulationManager().getPopulation());
     }
 }

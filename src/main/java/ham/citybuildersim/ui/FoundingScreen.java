@@ -295,10 +295,12 @@ final class FoundingScreen {
         }
         DebtQuote bond = dayZero[0], note = dayZero[1];
         buysBox.getChildren().add(statementLine("In the treasury", marked(here, money(0)), Palette.BAD));
-        buysBox.getChildren().add(statementNote("It buys nothing in cash. The clock will not run on an empty "
-                + "treasury: borrow first - the build screen's funding page, the Finances tab's borrowing, or "
-                + "the land office's funding page. The window abroad is shut to a city that owes dollars and "
-                + "sells nothing abroad, so the first loan is local."));
+        buysBox.getChildren().add(statementNote("It buys nothing in cash. It runs from day one on the central "
+                + "bank's advances, which cover what the treasury must pay - the land bond's coupon first - while "
+                + "anything optional is refused until it has cash or revenue behind it. Borrowing is how it "
+                + "builds: the build screen's funding page, the Finances tab's borrowing, or the land office's "
+                + "funding page. The window abroad is shut to a city that owes dollars and sells nothing abroad, "
+                + "so the first loan is local."));
         buysBox.getChildren().add(statementLine("...the founding village", marked(here, money(buys.village()))));
         buysBox.getChildren().add(statementNote(village()));
         buysBox.getChildren().add(statementLine("   a first " + Game.BUILD_BOND_YEARS + "-year bond for it, on day 0",

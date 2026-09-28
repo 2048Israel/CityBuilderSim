@@ -1,6 +1,6 @@
 # DataSave.java - 1,775 lines · 286 methods · 0 constants · model
 
-`ham/citybuildersim/DataSave.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DataSave.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 

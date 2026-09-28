@@ -1433,8 +1433,11 @@ public class UserInterface extends Application {
     /** Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads in the quiet grey. */
     static final double STRIP_INFLATION_QUIET = .03;
 
-    /** Inflation past this, or deflation past its negative, reads red: prices are running away, or collapsing. */
-    static final double STRIP_INFLATION_ALARM = .10;
+    /** Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. Jerus's number (0.7.15, round 3: "Red at target + 5 points"), in place of red above 10% flat. */
+    static final double STRIP_INFLATION_OVER_TARGET = .05;
+
+    /** Deflation past this reads red, whatever the target: prices collapsing. The lower half of the 10% alarm the strip had until 0.7.15; Jerus ruled on the upper half only. */
+    static final double STRIP_DEFLATION_ALARM = .10;
 
     /** The currency within this of its parity (ForeignAccounts.deviationFromParity) reads grey, and so does one stronger than parity by any amount. */
     static final double STRIP_RATE_QUIET = .05;
@@ -1645,8 +1648,11 @@ public class UserInterface extends Application {
         Tooltip.install(pricesBox, new Tooltip(String.format(
                 "Prices: what a household's month costs against what it cost at founding.%n"
                 + "Under it, inflation over the last twelve months. The target is %s a year"
-                + " - yours, on the Policy tab's money page.",
-                DebtManager.targetWords(target))));
+                + " - yours, on the Policy tab's money page.%n"
+                + "Grey within %.0f points of it, amber further off, red more than %.0f points"
+                + " over it or with prices falling more than %.0f%% a year.",
+                DebtManager.targetWords(target), STRIP_INFLATION_QUIET * 100,
+                STRIP_INFLATION_OVER_TARGET * 100, STRIP_DEFLATION_ALARM * 100)));
 
         /*
          * THE RATE BOTH WAYS, in the currency's own names. "US$1 = D$100.00"
@@ -1794,11 +1800,28 @@ public class UserInterface extends Application {
         return line;
     }
 
-    /** Grey near the player's target, amber off it, red once prices run or collapse. See STRIP_INFLATION_QUIET. */
+    /**
+     * Grey near the player's target, amber off it, red once prices run past
+     * it or collapse. Since 0.7.15, every colour is read from the
+     * target:
+     *   - within STRIP_INFLATION_QUIET of it, either side: grey;
+     *   - over it by more than that, up to STRIP_INFLATION_OVER_TARGET:
+     *     amber; past that: red (Jerus's "Red at target + 5 points");
+     *   - under it by more than the quiet band: amber, and red once prices
+     *     fall faster than STRIP_DEFLATION_ALARM a year, whatever the target.
+     *
+     * NEAR THE TARGET IS GREY FIRST (0.7.15). Until then the red test came
+     * first, against 10% flat, and a city on a target past 10% - which the
+     * dial now allows - would have read red for doing what it was told. Now
+     * the red is measured over the target too, so the grey band always sits
+     * inside it. At the default 2% target, inflation from 7% to 10% read
+     * amber and now reads red.
+     */
     private static String inflationColour(double inflation, double target) {
-        if (Math.abs(inflation) > STRIP_INFLATION_ALARM) return "#ff6b6b";
-        if (Math.abs(inflation - target) > STRIP_INFLATION_QUIET) return "#ffb454";
-        return STRIP_QUIET;
+        if (Math.abs(inflation - target) <= STRIP_INFLATION_QUIET) return STRIP_QUIET;
+        if (inflation - target > STRIP_INFLATION_OVER_TARGET) return "#ff6b6b";
+        if (inflation < -STRIP_DEFLATION_ALARM) return "#ff6b6b";
+        return "#ffb454";
     }
 
     /** Grey near parity or stronger, amber weaker, red well below it. See STRIP_RATE_QUIET. */
@@ -2650,16 +2673,6 @@ public class UserInterface extends Application {
 
         VBox column = new VBox(0);
 
-        // A skip the treasury stopped short (0.7.14): why, and where to borrow.
-        if (game.getSkipStoppedBecause() != null) {
-            VBox stopped = reportSection("THE SKIP STOPPED AT MONTH " + game.getMonth());
-            Label why = monoLabel("  " + game.getSkipStoppedBecause());
-            why.setWrapText(true);
-            why.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ffb454;");
-            stopped.getChildren().add(why);
-            column.getChildren().add(stopped);
-        }
-
         /*
          * If the simulation itself broke, say so first and say where to look.
          *
@@ -2727,6 +2740,15 @@ public class UserInterface extends Application {
         // exactly that much, so the sign stays honest and only the colour flips.
         addChangeLine(econ, "City debt", skip.getCityDebtChange(), true, false);
         addChangeLine(econ, "Business debt", skip.getBusinessDebtChange(), true, false);
+
+        // What the central bank advanced the treasury over the skip (0.7.15): a
+        // skip runs through an empty treasury on its advances, as play does.
+        if (skip.getAdvancedDuringSkip() > 0 || skip.getAdvancesOwedAtEnd() > 0) {
+            Label adv = monoLabel(String.format("%-20s%s advanced, %s owed at the end",
+                    "Central bank", money(skip.getAdvancedDuringSkip()), money(skip.getAdvancesOwedAtEnd())));
+            adv.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ffb454;");
+            econ.getChildren().add(adv);
+        }
 
         if (skip.getWriteOffsDuringSkip() > 0) {
             // Firms default a slice at a time since 0.7.8, so there is a
@@ -3894,16 +3916,6 @@ public class UserInterface extends Application {
 
                 boolean landed = false;
                 while (monthProgress >= 1) {
-                    // Jerus's "Borrow first" (0.7.14): an empty treasury nobody will
-                    // advance anything stops the clock, and says why and where to borrow.
-                    String refused = game.clockRefusal();
-                    if (refused != null) {
-                        monthProgress = 0;
-                        clockRunning = false;
-                        pausedBecause = refused;
-                        redrawPending = true;
-                        break;
-                    }
                     monthProgress -= 1;
                     game.toggleNextMonth();
                     landed = true;
@@ -3992,11 +4004,6 @@ public class UserInterface extends Application {
                 clockRunning ? "Pause" : "Play");
         play.setOnAction(e -> {
             setClockRunning(!clockRunning);
-            // ...and a press on an empty treasury says so at once, rather than a frame later.
-            if (clockRunning && game != null && game.clockRefusal() != null) {
-                clockRunning = false;
-                pausedBecause = game.clockRefusal();
-            }
             redrawScreen.run();
         });
 

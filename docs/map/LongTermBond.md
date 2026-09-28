@@ -1,13 +1,13 @@
 # LongTermBond.java - 136 lines · 12 methods · 2 constants · model
 
-`ham/citybuildersim/LongTermBond.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongTermBond.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > A term loan: a coupon every month on the whole face, and the whole face at
 > the end - issued only at the five maturities in MATURITIES (0.7.1).
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (9):** [BankCheck](BankCheck.md), [CreditCheck](CreditCheck.md), [DebtManager](DebtManager.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md)
+**Used by (10):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [DebtManager](DebtManager.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md)
 
 ## Sections
 

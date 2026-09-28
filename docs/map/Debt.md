@@ -1,6 +1,6 @@
-# Debt.java - 492 lines · 46 methods · 0 constants · model
+# Debt.java - 517 lines · 47 methods · 0 constants · model
 
-`ham/citybuildersim/Debt.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Debt.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > One piece of city paper.
 > 
@@ -36,11 +36,11 @@
 |---:|---|
 | 37 | WHICH MONEY THIS PAPER IS WRITTEN IN |
 | 95 | WHO HOLDS IT (0.7.1) |
-| 213 | · what a subclass declares, in its own currency |
-| 230 | · ...and what the city's books see |
-| 245 | · and the same figures, in dollars |
-| 256 | · what the next month repays (0.7.13) |
-| 275 | · paying for it |
+| 238 | · what a subclass declares, in its own currency |
+| 255 | · ...and what the city's books see |
+| 270 | · and the same figures, in dollars |
+| 281 | · what the next month repays (0.7.13) |
+| 300 | · paying for it |
 
 ## Fields (state)
 
@@ -65,7 +65,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 465 | **type** `public abstract class Debt` | One piece of city paper. |
+| 28 | 490 | **type** `public abstract class Debt` | One piece of city paper. |
 
 ### WHICH MONEY THIS PAPER IS WRITTEN IN (lines 37-94)
 
@@ -76,7 +76,7 @@
 | 86 | 3 | `void setExchangeRate(double rate)` | Told to it by DebtManager, every month and on the load path. |
 | 91 | 3 | `protected double inLocal(double own)` | USD into local money, for foreign paper; the identity for domestic. |
 
-### WHO HOLDS IT (0.7.1) (lines 95-212)
+### WHO HOLDS IT (0.7.1) (lines 95-237)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -91,60 +91,61 @@
 | 174 | 1 | `void settled()` | The settle has taken place: nothing is owed for this paper any more. |
 | 177 | 1 | `void moveToHouseholds(double face)` | Moves face between the holders: positive to the households or the central bank from the bank, negative back to it. |
 | 178 | 1 | `void moveToCentralBank(double face)` |  |
-| 184 | 4 | `public double unaccretedOn(double face)` | The unaccreted discount that rides on this much face - the part a holder gives up, or takes on, when that face changes hands. |
-| 196 | 6 | `double accrete()` | This month's accretion: what is left of the discount over the months left, taken off what is left. |
-| 203 | 1 | `public abstract void processMonth(Game game)` |  |
-| 205 | 1 | `public abstract double getIssuePrice()` |  |
-| 207 | 1 | `public abstract int getMaturityMonth()` |  |
-| 209 | 1 | `public abstract boolean isMatured()` |  |
-| 211 | 1 | `public abstract String getType()` |  |
+| 193 | 11 | `void addOnForCentralBank(double face)` | THE CENTRAL BANK'S ADD-ON (0.7.15, round 2): this much more face of the same paper, on the same terms, for the central bank, which holds it from issue - its non-competitive bid, which the Federal Reserve Bank of New Y... |
+| 209 | 4 | `public double unaccretedOn(double face)` | The unaccreted discount that rides on this much face - the part a holder gives up, or takes on, when that face changes hands. |
+| 221 | 6 | `double accrete()` | This month's accretion: what is left of the discount over the months left, taken off what is left. |
+| 228 | 1 | `public abstract void processMonth(Game game)` |  |
+| 230 | 1 | `public abstract double getIssuePrice()` |  |
+| 232 | 1 | `public abstract int getMaturityMonth()` |  |
+| 234 | 1 | `public abstract boolean isMatured()` |  |
+| 236 | 1 | `public abstract String getType()` |  |
 
-### what a subclass declares, in its own currency (lines 213-229)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 216 | 1 | `protected abstract double principalOwed()` | Principal still owed, in the currency the paper is written in. |
-| 219 | 1 | `protected abstract double couponOwed()` | This month's coupon, in its own currency. |
-| 228 | 1 | `protected abstract double[] scheduleOwed()` | Every payment still owed, in order, starting with next month's, in its own currency. |
-
-### ...and what the city's books see (lines 230-244)
+### what a subclass declares, in its own currency (lines 238-254)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 232 | 1 | `public final double getOustandingPrincipal()` |  |
-| 235 | 1 | `public final double getMonthlyInterestExpense()` | This month's coupon, in local money. |
-| 237 | 7 | `public final double[] remainingCashFlows()` |  |
+| 241 | 1 | `protected abstract double principalOwed()` | Principal still owed, in the currency the paper is written in. |
+| 244 | 1 | `protected abstract double couponOwed()` | This month's coupon, in its own currency. |
+| 253 | 1 | `protected abstract double[] scheduleOwed()` | Every payment still owed, in order, starting with next month's, in its own currency. |
 
-### and the same figures, in dollars (lines 245-255)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 248 | 1 | `public final double principalInCurrency()` | Principal still owed, in the currency written on the paper. |
-| 251 | 1 | `public final double faceInCurrency()` | Face value in the currency written on the paper. |
-| 254 | 1 | `public final double couponInCurrency()` | This month's coupon in the currency written on the paper. |
-
-### what the next month repays (0.7.13) (lines 256-274)
+### ...and what the city's books see (lines 255-269)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 267 | 4 | `public final double principalDueNextMonthInCurrency()` | The principal the next month's payment repays, in the currency written on the paper: the first payment of its own schedule less that month's coupon - a note's or a term bond's whole face in its last month, a serial bo... |
-| 273 | 1 | `public final double principalDueNextMonth()` | ...and in local money, at the rate the paper is valued at. |
+| 257 | 1 | `public final double getOustandingPrincipal()` |  |
+| 260 | 1 | `public final double getMonthlyInterestExpense()` | This month's coupon, in local money. |
+| 262 | 7 | `public final double[] remainingCashFlows()` |  |
 
-### paying for it (lines 275-492)
+### and the same figures, in dollars (lines 270-280)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 288 | 4 | `protected void payPrincipal(Game game, double owed)` | A repayment of principal, routed by the currency it is owed in. |
-| 297 | 4 | `protected void payCoupon(Game game, double owed)` | A coupon, likewise - and at home, split by who holds the paper (0.7.1): see Game.payDomesticCoupon(). |
-| 303 | 3 | `public int getRemainingMonths()` | Months of payments still to run. |
-| 308 | 3 | `public final double getFaceValue()` | What it says on the bond, in local money. |
-| 312 | 3 | `public int getDuration()` |  |
-| 316 | 3 | `public int getMonthStarted()` |  |
-| 349 | 17 | `public double getMarketValue(double annualMarketRate)` | What this paper is worth today, to somebody buying it. |
-| 368 | 25 | `static double presentValue(double[] cashFlows, double annualRate)` | PV of a monthly schedule at an annual nominal rate. |
-| 412 | 30 | `public double getYieldToMaturity(double price)` | The yield a buyer earns at a given price - the bond's true cost to the city, as opposed to the coupon printed on it. |
-| 444 | 3 | `public double getCurrentYield(double annualMarketRate)` | Yield at what the market would actually pay today. |
-| 455 | 5 | `public double getPriceAsPercentOfPar(double annualMarketRate)` | Where this bond trades against par, as a percentage of face. |
-| 470 | 15 | `public void redenominate(double scale)` | The instrument in the new unit. |
-| 490 | 1 | `protected void redenominateSchedule(double scale)` | Anything a subclass carries in its own currency - a coupon, an amortisation schedule - in the new unit. |
+| 273 | 1 | `public final double principalInCurrency()` | Principal still owed, in the currency written on the paper. |
+| 276 | 1 | `public final double faceInCurrency()` | Face value in the currency written on the paper. |
+| 279 | 1 | `public final double couponInCurrency()` | This month's coupon in the currency written on the paper. |
+
+### what the next month repays (0.7.13) (lines 281-299)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 292 | 4 | `public final double principalDueNextMonthInCurrency()` | The principal the next month's payment repays, in the currency written on the paper: the first payment of its own schedule less that month's coupon - a note's or a term bond's whole face in its last month, a serial bo... |
+| 298 | 1 | `public final double principalDueNextMonth()` | ...and in local money, at the rate the paper is valued at. |
+
+### paying for it (lines 300-517)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 313 | 4 | `protected void payPrincipal(Game game, double owed)` | A repayment of principal, routed by the currency it is owed in. |
+| 322 | 4 | `protected void payCoupon(Game game, double owed)` | A coupon, likewise - and at home, split by who holds the paper (0.7.1): see Game.payDomesticCoupon(). |
+| 328 | 3 | `public int getRemainingMonths()` | Months of payments still to run. |
+| 333 | 3 | `public final double getFaceValue()` | What it says on the bond, in local money. |
+| 337 | 3 | `public int getDuration()` |  |
+| 341 | 3 | `public int getMonthStarted()` |  |
+| 374 | 17 | `public double getMarketValue(double annualMarketRate)` | What this paper is worth today, to somebody buying it. |
+| 393 | 25 | `static double presentValue(double[] cashFlows, double annualRate)` | PV of a monthly schedule at an annual nominal rate. |
+| 437 | 30 | `public double getYieldToMaturity(double price)` | The yield a buyer earns at a given price - the bond's true cost to the city, as opposed to the coupon printed on it. |
+| 469 | 3 | `public double getCurrentYield(double annualMarketRate)` | Yield at what the market would actually pay today. |
+| 480 | 5 | `public double getPriceAsPercentOfPar(double annualMarketRate)` | Where this bond trades against par, as a percentage of face. |
+| 495 | 15 | `public void redenominate(double scale)` | The instrument in the new unit. |
+| 515 | 1 | `protected void redenominateSchedule(double scale)` | Anything a subclass carries in its own currency - a coupon, an amortisation schedule - in the new unit. |
 

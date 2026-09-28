@@ -73,12 +73,56 @@ import java.util.List;
  *      setting survives a save, a save from before it reads the default, and
  *      a reform does not move it.
  *
+ * And since 0.7.15, the dial to the whole of the paper - Jerus: "central bank
+ * bond holding can ve 100% if one wants" - and the floor split by who holds
+ * it, on bare debt markets whose holdings are set exactly (HoldersCheck 9
+ * plays the purchase from the households):
+ *
+ *  17. The dial takes MAX_QE_SHARE, all of it, and no more; the compression
+ *      at a quarter is what it was, half the premium, and at 50%, 75% and
+ *      100% the whole premium - 0.7.14's full compression, nothing more.
+ *  18. With the bank at the window (its money costing the policy rate and
+ *      the penalty), the floor with the central bank holding nothing is
+ *      0.7.14's to the bit; holding all of the paper, the policy rate;
+ *      between, proportional to its share of all the city's paper - the
+ *      notes it never buys counted - and the short end moves with it.
+ *
+ * And since 0.7.15, the central bank rolling its own - Jerus,
+ * "Build the rollover fix", the way the Federal Reserve Bank of New York's
+ * "FAQs: Treasury Rollovers" says the Desk does - on a city with a two-year
+ * serial the households, the bank and the central bank hold part of:
+ *
+ *  19. At its dial, the par it holds of a maturing slice is added on to the
+ *      rollover's issue, at the issue's price, the issue sized for the rest;
+ *      the bank's book of the new paper excludes it, the market paid for its
+ *      own part only, and the treasury repaid it its maturing par, so it
+ *      holds what it held - and a month on buys its dial's share of what the
+ *      roll capitalised, not its par back. A player's issue in the gap
+ *      carries its par the same way; by hand with nothing sold, and under
+ *      its dial (QT), its holding runs off; a little over its dial, that much
+ *      runs off and the rest is rolled; holding all of the paper, its par is
+ *      issued it alone. Every month closes the audit, and a save and load
+ *      keeps the new paper's holders and its book.
+ *
+ * And last year's surplus paying it too - Jerus's "Surplus pays everyone" -
+ * on a city whose two-year serial is small against the surplus it runs, the
+ * central bank at its dial:
+ *
+ *  20. Last year's surplus nets all of what falls due, the market's part
+ *      first and then the central bank's par: a surplus the size of the
+ *      slice pays it all, the central bank's par repaid and no add-on
+ *      issued; a smaller one, past the market's part, leaves the central
+ *      bank the remainder to roll, issued it alone - which leaves it over
+ *      its dial, and the holdings step sells the excess to the bank. The
+ *      one ledger carries what was netted once; every month closes the
+ *      audit; a save and load keeps the paper, the book and the ledger.
+ *
  * The numbers are labels, not the running order. The run prints 2, 3 and 4
  * first, on bare objects; then it builds a city, where 1 is held on every
  * month the harness plays and its closing assertions - every kind of flow
  * seen, every month closed - print after 5, which supplies the treasury's
  * kinds; then 6, 7, 9 and 8, because 8's reform scales the advances and
- * arrears 9's fixture leaves behind; then 10; and 11 to 16 last, in order.
+ * arrears 9's fixture leaves behind; then 10; and 11 to 20 last, in order.
  *
  * @author Jerus
  */
@@ -641,6 +685,10 @@ public class CentralBankCheck {
 
         theHoldingsDial(files);
         theCeilingDial(files);
+        theWholeBook();
+        theSplitFloor();
+        theRolloverAtIssue();
+        theSurplusPaysEveryone();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
@@ -719,9 +767,9 @@ public class CentralBankCheck {
         close("...and the central bank its own against face, into the month's profit",
                 cb.getPaperGains(), face - price, 1e-6);
         double share = cb.getPaperHeld() / ledger.termPrincipal();
-        close("compression(240) is the twenty-year premium times the share held over the most it may hold",
+        close("compression(240) is the twenty-year premium times the share held over the share it is whole at",
                 ledger.compression(240),
-                DebtManager.TERM_PREMIUM_20Y * share / CentralBank.MAX_QE_SHARE * CentralBank.QE_COMPRESSION, 1e-12);
+                DebtManager.TERM_PREMIUM_20Y * share / CentralBank.FULL_COMPRESSION_SHARE * CentralBank.QE_COMPRESSION, 1e-12);
         close("the twenty-year rate sits exactly compression(240) under the table",
                 shape20(ledger), DebtManager.TERM_PREMIUM_20Y - ledger.compression(240), 1e-12);
         close("...and the note carries none of it", ledger.compression(6), 0, 0);
@@ -915,5 +963,473 @@ public class CentralBankCheck {
             if (e.label().equals(label)) return e.amount();
         }
         return 0;
+    }
+
+    /* =====================================================================
+       17-18. THE WHOLE BOOK AND THE SPLIT FLOOR (0.7.15), on bare debt
+       markets whose holdings are set to the exact share - the paper's own
+       holder field, moved as the open-market operation moves it.
+       ===================================================================== */
+
+    static void theWholeBook() {
+        out.println("\n--- 17. the dial takes the whole of the paper, and the compression is whole from half ---");
+        CentralBank bare = new CentralBank();
+        bare.setTargetShare(1.0);
+        close("the dial takes MAX_QE_SHARE", bare.getTargetShare(), CentralBank.MAX_QE_SHARE, 0);
+        close("...which is all of the term paper, Jerus's 100%", CentralBank.MAX_QE_SHARE, 1.0, 0);
+        bare.setTargetShare(1.5);
+        close("...and no more", bare.getTargetShare(), CentralBank.MAX_QE_SHARE, 0);
+        bare.restoreTargetShare(1.0);
+        close("...as the load path restores it, unclamped at a half", bare.getTargetShare(), 1.0, 0);
+
+        DebtManager market = new DebtManager();
+        Debt bond = market.addLongTermBond(1_000, 240, 1, .05);
+        double full = DebtManager.termPremium(240) * CentralBank.QE_COMPRESSION;
+        close("fixture: twenty-year paper carries the table's twenty-year premium",
+                DebtManager.termPremium(240), DebtManager.TERM_PREMIUM_20Y, 0);
+        bond.moveToCentralBank(250);
+        close("at a quarter held, half the premium, as it always was",
+                market.compression(240), full * .25 / CentralBank.FULL_COMPRESSION_SHARE, 0);
+        for (double held : new double[] { .5, .75, 1.0 }) {
+            bond.moveToCentralBank(1_000 * held - bond.centralBankPrincipal());
+            close(String.format("at %.0f%% held, the whole premium: 0.7.14's full compression", held * 100),
+                    market.compression(240), full, 0);
+        }
+        close("...so the long end over the note is flat at the whole book",
+                market.curveRate(240) - market.curveRate(6), 0, 1e-15);
+    }
+
+    static void theSplitFloor() {
+        out.println("\n--- 18. the floor is split by who holds the paper ---");
+        double policy = .05;
+        // A bank at the window: its money costs the policy rate and the window's penalty.
+        double costOfFunds = policy + CentralBank.WINDOW_PENALTY;
+        double bankFloor = Math.max(policy, costOfFunds + Bank.MIN_MARGIN);   // the floor until 0.7.15
+        DebtManager market = new DebtManager();
+        market.setPolicyRate(policy);
+        market.setGDP(9_068);
+        market.setTaxRevenue(1_916);
+        market.setCashPosition(0);
+        market.setCostOfFunds(costOfFunds);
+        Debt term = market.addLongTermBond(750, 240, 1, .05);
+        Debt note = market.addShortTermTBill(250, 6, 1);
+        market.updateInterest();
+        assertTrue("fixture: the bank at the window - its cost of funds over the policy rate",
+                market.getCostOfFunds() > market.getPolicyRate());
+        close("the central bank holding nothing, the floor is 0.7.14's, to the bit",
+                market.floorRate(), bankFloor, 0);
+        close("...and so is the bank's own floor beside it", market.bankFloorRate(), bankFloor, 0);
+        double shortEndBefore = market.curveRate(6) - market.gdpSpread() - market.revenueSpread();
+
+        term.moveToCentralBank(750);
+        close("fixture: it holds all the term paper", market.centralBankShareOfTerm(), 1, 0);
+        close("...which is three quarters of the city's paper, the note the bank's",
+                market.centralBankShareOfPaper(), .75, 0);
+        close("the floor is the policy rate on its share and the bank's on the rest",
+                market.floorRate(), policy + .25 * (bankFloor - policy), 1e-15);
+        close("...and the bank's own floor has not moved", market.bankFloorRate(), bankFloor, 0);
+        close("the short end moves with it: the note sits on the split floor",
+                market.curveRate(6) - market.gdpSpread() - market.revenueSpread(), market.floorRate(), 1e-15);
+        assertTrue("...lower than it was with the bank holding everything",
+                market.floorRate() < shortEndBefore);
+        close("what another dial would be quoted splits the same way",
+                market.rateAtPolicy(.06) - market.gdpSpread() - market.revenueSpread(),
+                .06 + .25 * (Math.max(.06, costOfFunds + Bank.MIN_MARGIN) - .06), 1e-15);
+
+        boolean proportional = true;
+        for (double held : new double[] { .25, .5, .75 }) {
+            term.moveToCentralBank(1_000 * held - term.centralBankPrincipal());
+            double s = market.centralBankShareOfPaper();
+            proportional &= s == held
+                    && Math.abs(market.floorRate() - (policy + (1 - s) * (bankFloor - policy))) <= 1e-15;
+        }
+        assertTrue("in between, proportional: a quarter, a half and three quarters held", proportional);
+
+        // All of the paper: no note outstanding, and the central bank holding every term piece.
+        DebtManager whole = new DebtManager();
+        whole.setPolicyRate(policy);
+        whole.setGDP(9_068);
+        whole.setTaxRevenue(1_916);
+        whole.setCashPosition(0);
+        whole.setCostOfFunds(costOfFunds);
+        Debt only = whole.addLongTermBond(1_000, 240, 1, .05);
+        only.moveToCentralBank(1_000);
+        close("the central bank holding all of it, the floor is the policy rate",
+                whole.floorRate(), policy, 0);
+        close("...whatever the bank's money costs it", whole.bankFloorRate(), bankFloor, 0);
+        whole.setCostOfFunds(costOfFunds + .10);
+        close("...even ten points dearer", whole.floorRate(), policy, 0);
+    }
+
+    /* =====================================================================
+       19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a
+       city with a two-year serial the households, the bank and the central
+       bank each hold part of, saved three months before its first slice and
+       played to it once for every case, each from that save.
+       ===================================================================== */
+
+    /** The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. */
+    static final int ROLL_SLOT = 10;
+
+    /** The serial the fixture sold: the one piece of the city's paper that is a serial and started before the month the fixture saved in. */
+    static Debt fixtureSerial(Game g, int soldIn) {
+        for (Debt d : g.getDebtManager().getDebt()) {
+            if (d instanceof MediumTermBond && !d.isForeign() && d.getMonthStarted() == soldIn) return d;
+        }
+        return null;
+    }
+
+    /** The city's own paper sold at the last press or between it and the one before - started the month before this one. */
+    static java.util.List<Debt> soldAtTheLastPress(Game g) {
+        java.util.List<Debt> sold = new java.util.ArrayList<>();
+        for (Debt d : g.getDebtManager().getDebt()) {
+            if (!d.isForeign() && d.getMonthStarted() == g.getMonth() - 1) sold.add(d);
+        }
+        return sold;
+    }
+
+    /** What the central bank paid a unit of face for a piece at its issue: what the treasury was paid for it over its face, which the add-on does not move. */
+    static double issuePricePerFace(Debt d) {
+        return 1 - d.getIssueDiscount() / d.getOustandingPrincipal();
+    }
+
+    /** The fixture as saved, loaded fresh, and played to the gap before its first slice. */
+    static Game toTheSlice(GameFiles files, int soldIn) {
+        Game g = new Game(files);
+        quietly(() -> g.loadGameSave(ROLL_SLOT));
+        Debt serial = fixtureSerial(g, soldIn);
+        while (!(serial.principalDueNextMonth() > 0)) play(g);
+        return g;
+    }
+
+    static void theRolloverAtIssue() throws Exception {
+        out.println("\n--- 19. what the central bank holds of a maturing piece it takes again at issue, par for par ---");
+        GameFiles files = GameFiles.scratch("centralbankcheck-rollover");
+        Game city = new Game(files);
+        quietly(() -> {
+            city.run();
+            city.getForeignAccounts().pinRate(1.0);
+            city.buildStack(template(city, "Gravel Road"), 6, true);
+            city.buildStack(template(city, "House"), 300, false);
+            city.buildStack(template(city, "Convenience Store"), 6, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
+            city.buildStack(template(city, "Construction Depot"), 4, false);
+            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            city.buildStack(template(city, "Commercial Bank"), 1, false);
+            city.simulateMonths(60);
+        });
+        city.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
+        final int soldIn = city.getMonth();
+        quietly(() -> city.handleMediumBondLogic(20_000, 2, 100));
+        Debt serial = fixtureSerial(city, soldIn);
+        assertTrue("fixture: the treasury sold a two-year serial", serial != null);
+        play(city);                                        // the settle: the households take their share
+        double dial = .5;
+        city.getCentralBank().setTargetShare(dial);
+        while (serial.getRemainingMonths() > 16) play(city);
+        assertTrue("fixture: the households, the bank and the central bank each hold part of it",
+                serial.householdPrincipal() > 0 && serial.bankPrincipal() > 0 && serial.centralBankPrincipal() > 0);
+        close("fixture: ...the central bank its dial's share of the term paper, and no more",
+                city.getCentralBank().getPaperHeld(), dial * city.getDebtManager().termPrincipal(), 1e-6);
+        quietly(() -> city.saveGame(ROLL_SLOT, "three months before the slice"));
+        out.printf("   m%d: the serial $%,.0fk - the households $%,.0fk, the bank $%,.0fk, the central bank $%,.0fk%n",
+                city.getMonth(), serial.getOustandingPrincipal(), serial.householdPrincipal(),
+                serial.bankPrincipal(), serial.centralBankPrincipal());
+
+        /* ---- at its dial: its par added on to the rollover's issue ---- */
+        Game a = toTheSlice(files, soldIn);
+        Debt sa = fixtureSerial(a, soldIn);
+        CentralBank cba = a.getCentralBank();
+        a.setCashForTest(0);                               // no cash for S to net: the market's part is issued
+        double slice = sa.principalDueNextMonth();
+        double itsPar = slice * sa.centralBankPrincipal() / sa.getOustandingPrincipal();
+        double heldBefore = cba.getPaperHeld();
+        Rollover.Plan plan = a.rolloverPlan();
+        assertTrue("fixture: a slice falls due next month and the central bank holds part of it",
+                itsPar > 0 && itsPar < slice && a.centralBankOverItsDial() == 0);
+        close("the plan names its par in what falls due", plan.centralBankDue(), itsPar, 1e-9);
+        close("...and, at its dial, rolls all of it", plan.centralBankPar(), itsPar, 0);
+        close("...so the market's issue is sized for the rest, less what is netted", plan.toRoll(),
+                slice - itsPar - plan.netted(), 1e-9);
+        assertTrue("fixture: ...nothing netted, and the rest is issued", plan.netted() == 0 && plan.issues().size() == 1);
+        play(a);
+        java.util.List<Debt> sold = soldAtTheLastPress(a);
+        assertTrue("the rollover sold one piece, a serial like the one falling due",
+                sold.size() == 1 && sold.get(0) instanceof MediumTermBond);
+        Debt fresh = sold.get(0);
+        close("it holds exactly its maturing par of the new paper, from issue", fresh.centralBankPrincipal(), itsPar, 1e-6);
+        close("...which is what its books say it rolled", cba.getParAtIssue(), itsPar, 1e-6);
+        close("...paid at the issue's price on each unit of face", cba.getBoughtAtIssue(),
+                itsPar * issuePricePerFace(fresh), 1e-6);
+        assertTrue("...under par, as the market paid", cba.getBoughtAtIssue() < itsPar);
+        close("the bank's book of the new issue excludes its par: the bank and the households hold the market's face",
+                fresh.bankPrincipal() + fresh.householdPrincipal(), fresh.getOustandingPrincipal() - itsPar, 1e-6);
+        assertTrue("...and the households took part of it", fresh.householdPrincipal() > 0);
+        close("...for which they and the bank paid what the rollover raised, and no more",
+                a.getCityPaperSettled() + a.getHouseholdsBoughtPaper(), a.getRollover().getLastRaised(), 1e-6);
+        close("...which is what the bank's own book carries", a.getBank().getCityBook(),
+                a.getDebtManager().bankBook(), 1e-6);
+        close("...and the households' cells hold what the paper says they do",
+                a.getHouseholdBalance().totalPaper(), a.getDebtManager().householdPrincipal(), 1e-6);
+        close("the treasury repaid it its maturing par, as it always has", cba.getPaperRedeemed(), itsPar, 1e-6);
+        close("so it holds what it held: the replacement in, the maturing par out", cba.getPaperHeld(), heldBefore, 1e-6);
+        double termNow = a.getDebtManager().termPrincipal();
+        double capitalised = fresh.getOustandingPrincipal() - slice;
+        double heldNow = cba.getPaperHeld();
+        play(a);
+        close("a month on it buys its dial's share of what the roll capitalised, and not its par back",
+                cba.getPaperHeld() - heldNow, dial * capitalised, 1e-6);
+        close("...which puts it at its dial of the term paper", cba.getPaperHeld(), dial * termNow, 1e-6);
+
+        /* ---- by hand: an issue in the gap carries its par on top ---- */
+        Game h = toTheSlice(files, soldIn);
+        h.setRolloverMode(Rollover.Mode.MANUAL);
+        Debt sh = fixtureSerial(h, soldIn);
+        double handPar = sh.principalDueNextMonth() * sh.centralBankPrincipal() / sh.getOustandingPrincipal();
+        close("by hand, the plan still names its par", h.rolloverPlan().centralBankPar(), handPar, 1e-9);
+        quietly(() -> h.handleLongBondLogic(5_000, 20, 100));
+        play(h);
+        java.util.List<Debt> byHand = soldAtTheLastPress(h);
+        assertTrue("fixture: by hand, the one term loan the player sold in the gap",
+                byHand.size() == 1 && byHand.get(0) instanceof LongTermBond);
+        close("the player's issue the month its holding falls due carries its par on top",
+                byHand.get(0).centralBankPrincipal(), handPar, 1e-6);
+        close("...at that issue's price on each unit of face", h.getCentralBank().getBoughtAtIssue(),
+                handPar * issuePricePerFace(byHand.get(0)), 1e-6);
+
+        /* ---- by hand, nothing sold: no issue, and it runs off ---- */
+        Game m = toTheSlice(files, soldIn);
+        m.setRolloverMode(Rollover.Mode.MANUAL);
+        Debt sm = fixtureSerial(m, soldIn);
+        double offPar = sm.principalDueNextMonth() * sm.centralBankPrincipal() / sm.getOustandingPrincipal();
+        double heldM = m.getCentralBank().getPaperHeld();
+        play(m);
+        close("by hand with nothing sold, there is nothing to add it on to", m.getCentralBank().getParAtIssue(), 0, 0);
+        close("...and its holding runs off, repaid it", m.getCentralBank().getPaperRedeemed(), offPar, 1e-6);
+        close("...off its book", heldM - m.getCentralBank().getPaperHeld(), offPar, 1e-6);
+
+        /* ---- its QT: the dial under what it holds, and it runs off ---- */
+        Game q = toTheSlice(files, soldIn);
+        q.getCentralBank().setTargetShare(0);
+        Debt sq = fixtureSerial(q, soldIn);
+        q.setCashForTest(0);
+        double qtSlice = sq.principalDueNextMonth();
+        double qtPar = qtSlice * sq.centralBankPrincipal() / sq.getOustandingPrincipal();
+        assertTrue("fixture: its dial under what it holds, by more than its par in the slice",
+                q.centralBankOverItsDial() >= qtPar && qtPar > 0);
+        Rollover.Plan qtPlan = q.rolloverPlan();
+        close("in its QT the plan rolls nothing of its own", qtPlan.centralBankPar(), 0, 0);
+        close("...all of its par runs off", qtPlan.centralBankRunsOff(), qtPar, 1e-9);
+        close("...and the market's issue is sized for all of what falls due, less what is netted",
+                qtPlan.toRoll(), qtSlice - qtPlan.netted(), 1e-9);
+        play(q);
+        close("it takes nothing at issue", q.getCentralBank().getParAtIssue(), 0, 0);
+        double qtOnNew = 0;
+        for (Debt d : soldAtTheLastPress(q)) qtOnNew += d.centralBankPrincipal();
+        close("...holds none of the new paper", qtOnNew, 0, 0);
+        close("...and what it held of the slice is repaid it", q.getCentralBank().getPaperRedeemed(), qtPar, 1e-6);
+
+        /* ---- at the margin: a little over its dial, that much runs off ---- */
+        Game p = toTheSlice(files, soldIn);
+        Debt sp = fixtureSerial(p, soldIn);
+        p.setCashForTest(0);
+        double pSlice = sp.principalDueNextMonth();
+        double pPar = pSlice * sp.centralBankPrincipal() / sp.getOustandingPrincipal();
+        double pHeld = p.getCentralBank().getPaperHeld();
+        p.getCentralBank().setTargetShare((pHeld - pPar / 2) / p.getDebtManager().termPrincipal());
+        double over = p.centralBankOverItsDial();
+        assertTrue("fixture: over its dial by less than its par in the slice", over > 0 && over < pPar);
+        Rollover.Plan pPlan = p.rolloverPlan();
+        close("over its dial, it rolls its par less how far over it is", pPlan.centralBankPar(), pPar - over, 1e-6);
+        close("...that much runs off", pPlan.centralBankRunsOff(), over, 1e-6);
+        close("...and the market's issue is sized for the rest", pPlan.toRoll(),
+                pSlice - pPlan.centralBankPar() - pPlan.netted(), 1e-9);
+        play(p);
+        double pOnNew = 0;
+        for (Debt d : soldAtTheLastPress(p)) pOnNew += d.centralBankPrincipal();
+        close("it holds that much of the new paper", pOnNew, pPar - over, 1e-6);
+        close("...so what it held past its dial ran off, and the rest was rolled",
+                p.getCentralBank().getPaperHeld(), pHeld - over, 1e-6);
+
+        /* ---- all of the paper: nothing for the market, its par alone ---- */
+        Game w = toTheSlice(files, soldIn);
+        Debt sw = fixtureSerial(w, soldIn);
+        w.getCentralBank().setTargetShare(1.0);
+        w.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
+        // The dial at the whole of it from here, played to the next slice, a year on.
+        play(w);
+        while (!(sw.principalDueNextMonth() > 0)) play(w);
+        w.setCashForTest(0);
+        close("fixture: it holds all of the term paper", w.getDebtManager().centralBankShareOfTerm(), 1, 1e-12);
+        double allPar = sw.principalDueNextMonth();
+        double wHeld = w.getCentralBank().getPaperHeld();
+        Rollover.Plan wPlan = w.rolloverPlan();
+        close("the plan rolls all of what falls due as its own", wPlan.centralBankPar(), allPar, 1e-9);
+        assertTrue("...so there is nothing for the market to be sold", wPlan.issues().isEmpty() && wPlan.toRoll() == 0);
+        play(w);
+        java.util.List<Debt> alone = soldAtTheLastPress(w);
+        assertTrue("the rollover issues it one serial like the one falling due",
+                alone.size() == 1 && alone.get(0) instanceof MediumTermBond
+                        && alone.get(0).getDuration() == sw.getDuration());
+        close("...its par exactly, all of it the central bank's", alone.get(0).centralBankPrincipal(), allPar, 1e-6);
+        close("...none of it the bank's", alone.get(0).bankPrincipal(), 0, 1e-9);
+        close("...paid for at its quote's price on each unit of face", w.getCentralBank().getBoughtAtIssue(),
+                allPar * issuePricePerFace(alone.get(0)), 1e-6);
+        assertTrue("...under par, and settled: nobody owes for it", w.getCentralBank().getBoughtAtIssue() < allPar
+                && alone.get(0).getSettleDue() == 0);
+        close("so it holds what it held, the whole of the term paper", w.getCentralBank().getPaperHeld(), wHeld, 1e-6);
+        close("...all of it", w.getDebtManager().centralBankShareOfTerm(), 1, 1e-12);
+
+        /* ---- a save and load after the roll: it keeps it all, and both go on the same ---- */
+        final Game[] back = new Game[1];
+        quietly(() -> {
+            a.saveGame(ROLL_SLOT, "rolled at issue");
+            back[0] = new Game(files);
+            back[0].loadGameSave(ROLL_SLOT);
+        });
+        Game twin = back[0];
+        Debt freshBack = null;
+        for (Debt d : twin.getDebtManager().getDebt()) {
+            if (d.getMonthStarted() == fresh.getMonthStarted() && d instanceof MediumTermBond) freshBack = d;
+        }
+        assertTrue("through a save: the new paper is there", freshBack != null);
+        close("...the central bank's par in it", freshBack.centralBankPrincipal(), fresh.centralBankPrincipal(), 0);
+        close("...the households'", freshBack.householdPrincipal(), fresh.householdPrincipal(), 0);
+        close("...its discount still to accrete", freshBack.getDiscountLeft(), fresh.getDiscountLeft(), 0);
+        close("...the central bank's book", twin.getCentralBank().getPaperHeld(), cba.getPaperHeld(), 0);
+        close("...what it has rolled at issue since founding", twin.getCentralBank().getParAtIssueLifetime(),
+                cba.getParAtIssueLifetime(), 0);
+        close("...and paid for it", twin.getCentralBank().getBoughtAtIssueLifetime(), cba.getBoughtAtIssueLifetime(), 0);
+        play(a);
+        play(twin);
+        close("a month on, both hold the same", twin.getCentralBank().getPaperHeld(), cba.getPaperHeld(), 1e-9);
+        close("...and have made the same money", twin.getCentralBank().m0(), cba.m0(), 1e-6);
+
+        assertTrue(String.format("every month of the rollover's branches closed the audit, and M0"
+                + " moved by exactly the money made (%d months in all)", monthsPlayed), monthsBroken == 0);
+    }
+
+    /* =====================================================================
+       20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a
+       two-year serial small against the surplus it runs, the central bank
+       at its dial, saved at the press before the first slice; each case
+       from that save.
+       ===================================================================== */
+
+    static void theSurplusPaysEveryone() throws Exception {
+        out.println("\n--- 20. last year's surplus pays the market's part first, then the central bank's par ---");
+        GameFiles files = GameFiles.scratch("centralbankcheck-surplus");
+        Game city = new Game(files);
+        quietly(() -> {
+            city.run();
+            city.getForeignAccounts().pinRate(1.0);
+            city.buildStack(template(city, "Gravel Road"), 6, true);
+            city.buildStack(template(city, "House"), 300, false);
+            city.buildStack(template(city, "Convenience Store"), 6, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
+            city.buildStack(template(city, "Construction Depot"), 4, false);
+            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            city.buildStack(template(city, "Commercial Bank"), 1, false);
+            city.simulateMonths(60);
+        });
+        city.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
+        final int soldIn = city.getMonth();
+        quietly(() -> city.handleMediumBondLogic(400, 2, 100));
+        Debt serial = fixtureSerial(city, soldIn);
+        assertTrue("fixture: the treasury sold a small two-year serial", serial != null);
+        play(city);
+        double dial = .5;
+        city.getCentralBank().setTargetShare(dial);
+        while (!(serial.principalDueNextMonth() > 0)) play(city);
+        double slice = serial.principalDueNextMonth();
+        double itsPar = slice * serial.centralBankPrincipal() / serial.getOustandingPrincipal();
+        double market = slice - itsPar;
+        double unused = city.surplusOverLastYear() - city.getRollover().usedInYear(city.getMonth())
+                - city.fundReservation();
+        out.printf("   m%d: the slice $%,.1fk, the central bank's par in it $%,.1fk; last year's surplus unused $%,.1fk%n",
+                city.getMonth(), slice, itsPar, unused);
+        assertTrue("fixture: the central bank at its dial holds part of the slice",
+                itsPar > 0 && itsPar < slice && city.centralBankOverItsDial() == 0);
+        assertTrue("fixture: last year's surplus, unused, is more than all of the slice", unused >= slice);
+        quietly(() -> city.saveGame(ROLL_SLOT, "at the press before the slice"));
+
+        /* ---- a surplus the size of the slice pays it all ---- */
+        Game big = new Game(files);
+        quietly(() -> big.loadGameSave(ROLL_SLOT));
+        Debt sb = fixtureSerial(big, soldIn);
+        CentralBank cbb = big.getCentralBank();
+        big.setCashForTest(10 * slice);                    // the cash no bound: S is the slice
+        Rollover.Plan bigPlan = big.rolloverPlan();
+        close("S nets all of what falls due", bigPlan.netted(), slice, 1e-9);
+        close("...the market's part first, then all of the central bank's par", bigPlan.centralBankNetted(), itsPar, 1e-9);
+        close("...so it rolls nothing at issue", bigPlan.centralBankPar(), 0, 0);
+        assertTrue("...and nothing is sold to the market", bigPlan.issues().isEmpty() && bigPlan.toRoll() == 0);
+        double heldBig = cbb.getPaperHeld();
+        play(big);
+        close("no add-on is issued", cbb.getParAtIssue(), 0, 0);
+        assertTrue("...nor any other paper", soldAtTheLastPress(big).isEmpty());
+        close("its maturing par is paid off, repaid it at the maturity", cbb.getPaperRedeemed(), itsPar, 1e-6);
+        close("...and off its book", heldBig - cbb.getPaperHeld(), itsPar, 1e-6);
+        close("the one ledger carries what was netted, once", big.getRollover().getLastNetted(), slice, 1e-9);
+        close("...and the serial is down by the slice", sb.getOustandingPrincipal(), serial.getOustandingPrincipal() - slice, 1e-6);
+
+        /* ---- a smaller surplus: the market's part, then part of the central bank's ---- */
+        Game small = new Game(files);
+        quietly(() -> small.loadGameSave(ROLL_SLOT));
+        CentralBank cbs = small.getCentralBank();
+        double s = market + itsPar / 2;
+        small.setCashForTest(s);                           // the cash the bound: S is the market's part and half the par
+        Rollover.Plan smallPlan = small.rolloverPlan();
+        close("with less, S is what the treasury can net", smallPlan.netted(), s, 1e-9);
+        close("...the market's part netted first, then what is left of S off the central bank's par",
+                smallPlan.centralBankNetted(), s - market, 1e-9);
+        close("...and it rolls the remainder", smallPlan.centralBankPar(), itsPar - (s - market), 1e-9);
+        assertTrue("...with nothing sold to the market", smallPlan.issues().isEmpty() && smallPlan.toRoll() == 0);
+        double heldSmall = cbs.getPaperHeld();
+        play(small);
+        close("the add-on is the remainder", cbs.getParAtIssue(), itsPar - (s - market), 1e-6);
+        java.util.List<Debt> alone = soldAtTheLastPress(small);
+        assertTrue("...issued it alone, one serial like the one falling due",
+                alone.size() == 1 && alone.get(0) instanceof MediumTermBond);
+        close("...its face the remainder", alone.get(0).getOustandingPrincipal(), itsPar - (s - market), 1e-6);
+        close("...all of it the central bank's but what the step then sold on to the bank",
+                alone.get(0).centralBankPrincipal() + alone.get(0).bankPrincipal(), itsPar - (s - market), 1e-6);
+        close("...at its quote's price on each unit of face", cbs.getBoughtAtIssue(),
+                (itsPar - (s - market)) * issuePricePerFace(alone.get(0)), 1e-6);
+        close("its whole maturing par is repaid it", cbs.getPaperRedeemed(), itsPar, 1e-6);
+        // The market's part paid down, the paper is smaller and the remainder leaves the
+        // central bank over its dial; the holdings step sells the excess to the bank, as it
+        // sells any holding over the dial.
+        assertTrue("with the market's part paid down, the remainder left it over its dial, and the step sold to the bank",
+                cbs.getSoldPaper() > 0);
+        close("...back to its dial's share of the term paper", cbs.getPaperHeld(),
+                dial * small.getDebtManager().termPrincipal(), 1e-6);
+        close("...its book what it held, less the part of its par the surplus paid, less what it sold",
+                cbs.getPaperHeld(), heldSmall - (s - market) - (alone.get(0).bankPrincipal()), 1e-6);
+        close("the one ledger carries S, once", small.getRollover().getLastNetted(), s, 1e-9);
+
+        /* ---- a save and load after it ---- */
+        final Game[] back = new Game[1];
+        quietly(() -> {
+            small.saveGame(ROLL_SLOT, "the surplus paid part of it");
+            back[0] = new Game(files);
+            back[0].loadGameSave(ROLL_SLOT);
+        });
+        Game twin = back[0];
+        Debt aloneBack = soldAtTheLastPress(twin).isEmpty() ? null : soldAtTheLastPress(twin).get(0);
+        assertTrue("through a save: the paper issued it alone is there", aloneBack != null);
+        close("...its par the central bank's", aloneBack.centralBankPrincipal(), alone.get(0).centralBankPrincipal(), 0);
+        close("...the central bank's book", twin.getCentralBank().getPaperHeld(), cbs.getPaperHeld(), 0);
+        close("...what it has rolled at issue since founding", twin.getCentralBank().getParAtIssueLifetime(),
+                cbs.getParAtIssueLifetime(), 0);
+        close("...and the ledger: what the year's surplus has paid",
+                twin.getRollover().usedInYear(twin.getMonth()), small.getRollover().usedInYear(small.getMonth()), 0);
+        play(small);
+        play(twin);
+        close("a month on, both hold the same", twin.getCentralBank().getPaperHeld(), cbs.getPaperHeld(), 1e-9);
+        close("...and have made the same money", twin.getCentralBank().m0(), cbs.m0(), 1e-6);
+
+        assertTrue(String.format("every month of the surplus's branches closed the audit, and M0"
+                + " moved by exactly the money made (%d months in all)", monthsPlayed), monthsBroken == 0);
     }
 }

@@ -1,6 +1,6 @@
 # MediumTermBond.java - 203 lines · 14 methods · 0 constants · model
 
-`ham/citybuildersim/MediumTermBond.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MediumTermBond.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > A serial bond: the workhorse of municipal finance.
 > 
@@ -34,7 +34,7 @@
 
 **Uses:** [Debt](Debt.md) (1), [Game](Game.md) (1)
 
-**Used by (4):** [BankCheck](BankCheck.md), [DebtManager](DebtManager.md), [Game](Game.md), [RestructureCheck](RestructureCheck.md)
+**Used by (5):** [BankCheck](BankCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtManager](DebtManager.md), [Game](Game.md), [RestructureCheck](RestructureCheck.md)
 
 ## Fields (state)
 

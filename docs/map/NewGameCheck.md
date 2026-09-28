@@ -1,6 +1,6 @@
-# NewGameCheck.java - 976 lines · 13 methods · 2 constants · harnesses
+# NewGameCheck.java - 977 lines · 13 methods · 2 constants · harnesses
 
-`ham/citybuildersim/NewGameCheck.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewGameCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -31,7 +31,7 @@
 > founding screen's doors - while a city built bare keeps the hand on the
 > dial and rolls nothing, and a save keeps whatever it saved.
 
-**Uses:** [Game](Game.md) (123), [Founding](Founding.md) (93), [Currency](Currency.md) (39), [WorldEconomy](WorldEconomy.md) (23), [Rollover](Rollover.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [DebtQuote](DebtQuote.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Debt](Debt.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [Game](Game.md) (121), [Founding](Founding.md) (92), [Currency](Currency.md) (39), [WorldEconomy](WorldEconomy.md) (23), [Rollover](Rollover.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [DebtQuote](DebtQuote.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Debt](Debt.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
 **Used by (1):** [ReadPathCheck](ReadPathCheck.md)
 
@@ -47,20 +47,20 @@
 | 388 | · 6-11. FOUNDING A CITY (0.7.10) |
 | 391 | · 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
 | 400 | 6-11. FOUNDING A CITY (0.7.10) |
-| 432 | · · 6 |
-| 577 | · · 7 |
-| 630 | · · 8 |
-| 685 | · · 9 |
-| 702 | · · 10 |
-| 728 | · · 11 |
-| 880 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 435 | · · 6 |
+| 578 | · · 7 |
+| 631 | · · 8 |
+| 686 | · · 9 |
+| 703 | · · 10 |
+| 729 | · · 11 |
+| 881 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 955 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 956 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 956 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 957 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
 
 ## Fields (state)
 
@@ -72,28 +72,28 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 939 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
+| 38 | 940 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 55 | 159 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
 | 215 | 184 | `public static void main(String[] args) throws Exception` |  |
 
-### 6-11. FOUNDING A CITY (0.7.10) (lines 400-879)
+### 6-11. FOUNDING A CITY (0.7.10) (lines 400-880)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 430 | 426 | `static void founding(GameFiles files) throws Exception` |  |
-| 858 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
-| 864 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
-| 874 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
+| 433 | 424 | `static void founding(GameFiles files) throws Exception` |  |
+| 859 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
+| 865 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
+| 875 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
 
-### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 880-976)
+### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 881-977)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 897 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
-| 948 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 959 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
-| 964 | 4 | `static void quietly(Runnable work)` |  |
-| 969 | 7 | `static void cleanUp(Path root)` |  |
+| 898 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
+| 949 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 960 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
+| 965 | 4 | `static void quietly(Runnable work)` |  |
+| 970 | 7 | `static void cleanUp(Path root)` |  |
 

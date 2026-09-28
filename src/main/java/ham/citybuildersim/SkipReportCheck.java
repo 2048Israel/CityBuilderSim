@@ -176,7 +176,11 @@ public class SkipReportCheck {
                 good.get(0).startsWith("Nothing went wrong"));
 
         /* ==================== 5. stopping early ==================== */
-        System.out.println("\n--- an empty treasury ---");
+        // Until 0.7.14 an empty treasury stopped a skip, and this fixture was that skip.
+        // Since 0.7.15 (Jerus: "Skip runs too") the one thing that stops one short is a
+        // month that threw (Game.takeSkipFailure()), and the headline no longer names the
+        // treasury; section 5a runs a skip through an empty treasury.
+        System.out.println("\n--- a skip that stopped short ---");
 
         TimeSkipReport broke = new TimeSkipReport();
         broke.beginSkip(100);
@@ -190,7 +194,12 @@ public class SkipReportCheck {
         check("only twelve ran", broke.getCompleted(), 12);
         assertTrue("flagged as short", broke.stoppedEarly());
         assertTrue("and said so first",
-                broke.getHeadlines().get(0).contains("treasury ran empty"));
+                broke.getHeadlines().get(0).startsWith("Stopped after 12 of 100 months"));
+
+        /* ============ 5a. an empty treasury, on the advances (0.7.15) ============ */
+        System.out.println("\n--- an empty treasury: the skip runs on the central bank's advances ---");
+
+        emptyTreasury();
 
         /* ============ 5b. the central bank's advances (0.7.1) ============ */
         System.out.println("\n--- a treasury on the central bank's advances ---");
@@ -244,5 +253,71 @@ public class SkipReportCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /**
+     * Jerus, of the time skip: "Same rule as play: the central bank covers the
+     * treasury, and the skip only stops for the things that already stop it."
+     * An Insane city - nothing in the treasury, no revenue behind it - skipped
+     * a year, and its twin stepped the same year a month at a time, the play
+     * clock's way, with every month's audit held: the skip's months are the
+     * twin's months, so the audit closed in each.
+     */
+    static void emptyTreasury() {
+        Founding insane = Founding.named("Insane", Founding.Preset.INSANE, WorldEconomy.DEFAULT_MEAN_INFLATION);
+        java.io.PrintStream out = System.out;
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        Game skipped, stepped;
+        int ran;
+        double printedBefore;
+        boolean closed = true;
+        double advancedStepped = 0;
+        int onAdvances = 0;
+        try {
+            skipped = new Game(GameFiles.scratch("skipreport-skipped"), insane);
+            skipped.run();
+            stepped = new Game(GameFiles.scratch("skipreport-stepped"), insane);
+            stepped.run();
+            System.setOut(out);
+            assertTrue("fixture: an empty treasury with no revenue behind it",
+                    skipped.getCash() == 0 && skipped.getCentralBank().ceiling() == 0);
+            System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+            printedBefore = skipped.getCentralBank().getPrintedLifetime();
+            ran = skipped.simulateMonths(12);
+            for (int m = 0; m < 12; m++) {
+                stepped.toggleNextMonth();
+                MoneyAudit.Result r = stepped.getLastMoneyAudit();
+                closed &= (Math.abs(r.residual) <= .01 || r.relative() <= 1e-7)
+                        && Math.abs(stepped.getPostAuditDrift()) <= .01;
+                advancedStepped += stepped.getCentralBank().getAdvancedToTreasury();
+                if (stepped.getCentralBank().getAdvancesToTreasury() > 0) onAdvances++;
+            }
+        } finally {
+            System.setOut(out);
+        }
+        TimeSkipReport report = skipped.getSkipReport();
+        check("a twelve-month skip from an empty treasury runs all twelve", ran, 12);
+        assertTrue("...and does not stop short", !report.stoppedEarly() && skipped.takeSkipFailure() == null);
+        assertTrue("its twin, stepped a month at a time, closes the audit every month", closed);
+        assertTrue("...and ends where the skip did, to the cent",
+                stepped.getMonth() == skipped.getMonth() && stepped.getCash() == skipped.getCash()
+                        && stepped.getCentralBank().getAdvancesToTreasury()
+                                == skipped.getCentralBank().getAdvancesToTreasury());
+        assertTrue("fixture: the central bank advanced it something", advancedStepped > 0);
+        check("the report says what the central bank advanced over the skip", report.getAdvancedDuringSkip(),
+                advancedStepped);
+        check("...which is what it printed for the treasury in those months", report.getAdvancedDuringSkip(),
+                skipped.getCentralBank().getPrintedLifetime() - printedBefore);
+        check("...and what the treasury owed it when the skip ended", report.getAdvancesOwedAtEnd(),
+                skipped.getCentralBank().getAdvancesToTreasury());
+        check("...and how many months it lived on them", report.getMonthsOnAdvances(), onAdvances);
+        boolean says = false;
+        for (String line : report.getHeadlines()) {
+            if (line.startsWith("The treasury lived on the central bank's advances for " + onAdvances + " month")) says = true;
+        }
+        assertTrue("...which its headline says", says);
+        System.out.printf("   an Insane city skipped a year: $%,.2fk advanced, $%,.2fk owed at the end, $%,.0fk in the"
+                        + " treasury, %d people%n", report.getAdvancedDuringSkip(), report.getAdvancesOwedAtEnd(),
+                skipped.getCash(), skipped.getPopulationManager().getPopulation());
     }
 }

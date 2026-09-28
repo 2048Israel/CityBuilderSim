@@ -1,6 +1,6 @@
 # Inbox.java - 521 lines · 21 methods · 1 constants · model
 
-`ham/citybuildersim/Inbox.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Inbox.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > Everything the city has had to say for itself, newest first.
 > 

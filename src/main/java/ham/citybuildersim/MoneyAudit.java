@@ -725,7 +725,16 @@ public final class MoneyAudit {
         in += credit.apply("+ centralbank AdvancedToTreasury", cb.getAdvancedToTreasury(), Scope.MONEY);
         in += credit.apply("+ centralbank Remittance", cb.getRemitted(), Scope.MONEY);
         // ...and what it paid the bank for the city's paper it bought, in
-        // money made for it: the holdings dial (0.7.1).
+        // money made for it: the holdings dial (0.7.1). Since 0.7.15 this is
+        // also what it paid the households for theirs, once the bank had none
+        // left to sell it: money made all the same, declared here as made and
+        // below as paid out to the households (- centralbank BoughtFromHouseholds).
+        // And, also since 0.7.15, what it paid the treasury at issue for its
+        // add-on, rolling its own maturing paper par for par (Game, THE CENTRAL
+        // BANK ROLLS ITS OWN, AT ISSUE; CentralBank.buyAtIssue()): money made
+        // into the treasury's pool inside the window, and nothing more to
+        // declare - the maturing par it is repaid leaves by "- centralbank
+        // PaperRedeemed", as it always has.
         in += credit.apply("+ centralbank BoughtPaper", cb.getBoughtPaper(), Scope.MONEY);
 
         double out = 0;
@@ -779,6 +788,15 @@ public final class MoneyAudit {
          * month after the button was pressed. See Game's THE HOLDERS ARE PAID.
          */
         out += debit.apply("- desk PaperBoughtFromHouseholds", g.getBank().getPaperBoughtFromHouseholds(), Scope.DOMESTIC);
+        /*
+         * ...AND THE CENTRAL BANK BUYING THEIR TERM PAPER (0.7.15), once the
+         * bank has none left to sell it: money it made for them, declared made
+         * with the rest of its purchases (+ centralbank BoughtPaper, MONEY) and
+         * leaving here for their savings, as the desk's purchase does - so the
+         * month's money made is still M0's change to the cent, and no pool
+         * moves. See Game.buyPaperFromHouseholds().
+         */
+        out += debit.apply("- centralbank BoughtFromHouseholds", g.getCentralBank().getBoughtFromHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- city CouponsToHouseholds", g.getCouponsToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- city PrincipalToHouseholds", g.getPrincipalToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- city BuybackToHouseholds", g.getBuybackToHouseholds(), Scope.DOMESTIC);

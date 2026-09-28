@@ -1,6 +1,6 @@
-# UserInterface.java - 4,333 lines · 75 methods · 18 constants · interface
+# UserInterface.java - 4,340 lines · 75 methods · 19 constants · interface
 
-`ham/citybuildersim/ui/UserInterface.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/UserInterface.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > The window: the stage and its theme, the clock and the speed ladder, the two
 > strips, the rail down the left and the inbox, the left panel and the
@@ -43,31 +43,31 @@
 | 909 | · HOLD THE PAGE'S HEIGHT WHILE IT IS REBUILT, so the position is |
 | 991 | A WHEEL NOTCH IS WORTH THE SAME EVERY TIME |
 | 1423 | THE TWO STRIPS |
-| 1991 | · WHAT "RESUME" MEANS DEPENDS ON WHETHER THERE IS ANYTHING TO RESUME |
-| 2068 | THE SAVE SYSTEM |
-| 2342 | SETTINGS. |
-| 2456 | THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. |
-| 2478 | ECONOMY IS GONE, AND IT SPLIT IN TWO. |
-| 2495 | THE SCROLLER |
-| 2554 | · WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and |
-| 2565 | SIMULATE MULTIPLE MONTHS |
-| 2686 | · · headlines |
-| 2702 | · · deltas |
-| 2743 | · · land |
-| 2751 | · · buildings |
-| 2767 | · · demolitions |
-| 2791 | · · health |
-| 2835 | · · households |
-| 2995 | CONSTRUCTION PANEL |
-| 3210 | THE RAIL |
-| 3400 | THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF |
-| 3568 | THE INBOX |
-| 3609 | · · the envelope |
-| 3639 | · · the one line an urgent notice gets |
-| 3664 | · · the list |
-| 3839 | TIME, AND WHAT THE MONTH IS WORTH |
-| 4079 | TWELVE PIPS, AND ONE OF THEM MOVES. |
-| 4218 | · ...AND WHAT THE BALANCE ACTUALLY DID |
+| 2014 | · WHAT "RESUME" MEANS DEPENDS ON WHETHER THERE IS ANYTHING TO RESUME |
+| 2091 | THE SAVE SYSTEM |
+| 2365 | SETTINGS. |
+| 2479 | THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. |
+| 2501 | ECONOMY IS GONE, AND IT SPLIT IN TWO. |
+| 2518 | THE SCROLLER |
+| 2577 | · WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and |
+| 2588 | SIMULATE MULTIPLE MONTHS |
+| 2699 | · · headlines |
+| 2715 | · · deltas |
+| 2765 | · · land |
+| 2773 | · · buildings |
+| 2789 | · · demolitions |
+| 2813 | · · health |
+| 2857 | · · households |
+| 3017 | CONSTRUCTION PANEL |
+| 3232 | THE RAIL |
+| 3422 | THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF |
+| 3590 | THE INBOX |
+| 3631 | · · the envelope |
+| 3661 | · · the one line an urgent notice gets |
+| 3686 | · · the list |
+| 3861 | TIME, AND WHAT THE MONTH IS WORTH |
+| 4086 | TWELVE PIPS, AND ONE OF THEM MOVES. |
+| 4225 | · ...AND WHAT THE BALANCE ACTUALLY DID |
 
 ## Constants
 
@@ -81,16 +81,17 @@
 | 1020 | `UserInterface.WHEEL_STEP` | `48` | The least the first wheel event of a gesture may move the page, in pixels (since 2026-09-18 the first only; see scrollPageBy). |
 | 1418 | `UserInterface.WHEEL_GESTURE_GAP_NANOS` | `150_000_000L` | A wheel event this long after the last one starts a new gesture; a burst is closer than this. |
 | 1434 | `UserInterface.STRIP_INFLATION_QUIET` | `.03` | Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads in the quiet grey. |
-| 1437 | `UserInterface.STRIP_INFLATION_ALARM` | `.10` | Inflation past this, or deflation past its negative, reads red: prices are running away, or collapsing. |
-| 1440 | `UserInterface.STRIP_RATE_QUIET` | `.05` | The currency within this of its parity (ForeignAccounts.deviationFromParity) reads grey, and so does one stronger than parity by any amount. |
-| 1443 | `UserInterface.STRIP_RATE_ALARM` | `.25` | Weaker than parity by more than this reads red: a currency well below what its basket is worth abroad is the thing the player should notice. |
-| 1768 | `UserInterface.STRIP_QUIET` | `"#78909c"` | The strip's quiet colour: the cash trend's muted grey. |
-| 1771 | `UserInterface.STRIP_FIGURE` | `"-fx-font-family: 'Courier New'; -fx-font-size: 14px;" + " -fx-font-weight: b...` | A small figure on the strip: Courier, so the digits hold their columns, at the population's weight. |
-| 1775 | `UserInterface.STRIP_CAPTION` | `"-fx-font-family: 'Courier New'; -fx-font-size: 11px;"` | ...and the caption under it, at the size of the anchors' own captions. |
-| 2080 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
-| 3215 | `UserInterface.RAIL_WIDTH` | `46` | Wide enough for a glyph and its highlight, narrow enough to be an edge. |
-| 3218 | `UserInterface.STRIP_HEIGHT` | `72` | The strip under the stage that holds the dome and the time controls. |
-| 3590 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 1437 | `UserInterface.STRIP_INFLATION_OVER_TARGET` | `.05` | Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. |
+| 1440 | `UserInterface.STRIP_DEFLATION_ALARM` | `.10` | Deflation past this reads red, whatever the target: prices collapsing. |
+| 1443 | `UserInterface.STRIP_RATE_QUIET` | `.05` | The currency within this of its parity (ForeignAccounts.deviationFromParity) reads grey, and so does one stronger than parity by any amount. |
+| 1446 | `UserInterface.STRIP_RATE_ALARM` | `.25` | Weaker than parity by more than this reads red: a currency well below what its basket is worth abroad is the thing the player should notice. |
+| 1774 | `UserInterface.STRIP_QUIET` | `"#78909c"` | The strip's quiet colour: the cash trend's muted grey. |
+| 1777 | `UserInterface.STRIP_FIGURE` | `"-fx-font-family: 'Courier New'; -fx-font-size: 14px;" + " -fx-font-weight: b...` | A small figure on the strip: Courier, so the digits hold their columns, at the population's weight. |
+| 1781 | `UserInterface.STRIP_CAPTION` | `"-fx-font-family: 'Courier New'; -fx-font-size: 11px;"` | ...and the caption under it, at the size of the anchors' own captions. |
+| 2103 | `UserInterface.SAVED_AT` | `java.time.format.DateTimeFormatter.ofPattern("d MMM HH:mm")` |  |
+| 3237 | `UserInterface.RAIL_WIDTH` | `46` | Wide enough for a glyph and its highlight, narrow enough to be an edge. |
+| 3240 | `UserInterface.STRIP_HEIGHT` | `72` | The strip under the stage that holds the dome and the time controls. |
+| 3612 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
 
 ## Fields (state)
 
@@ -145,17 +146,17 @@
 | 1065 | `final java.util.Map<String, Double> innerScrollAt` | Where a scroller inside the CURRENT screen was left, by name. |
 | 1075 | `private final java.util.Map<String, Double> panelScrollAt` | The same, for the two side panels - and this one is NEVER emptied. |
 | 1421 | `private long lastWheelNanos` | When the last wheel event moved the page; see scrollPageBy. |
-| 2323 | `GamePrefs prefs` | How the player likes the window. |
-| 3495 | `private boolean railJump` | Set for exactly one clearMenu, by goHome(). |
-| 3593 | `private boolean inboxOpen` | Whether the list is dropped down. |
-| 3596 | `private String inboxExpanded` | Which notice's body is unfolded, by key. |
-| 4077 | `private int dialAt` | The month the dial is currently showing, so it only pops when it moves. |
+| 2346 | `GamePrefs prefs` | How the player likes the window. |
+| 3517 | `private boolean railJump` | Set for exactly one clearMenu, by goHome(). |
+| 3615 | `private boolean inboxOpen` | Whether the list is dropped down. |
+| 3618 | `private String inboxExpanded` | Which notice's body is unfolded, by key. |
+| 4084 | `private int dialAt` | The month the dial is currently showing, so it only pops when it moves. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 4284 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the clock and the speed ladder, the two strips, the rail down the left and the inbox, the left panel and the construction panel, the save and settings dialogs, the time-skip dialog... |
+| 50 | 4291 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the clock and the speed ladder, the two strips, the rail down the left and the inbox, the left panel and the construction panel, the save and settings dialogs, the time-skip dialog... |
 
 ### THE SCREENS, one class each since 2026-09-18, in the order the rail (lines 54-74)
 
@@ -198,126 +199,126 @@
 | 1370 | 14 | `private void wheelToPage(javafx.scene.input.ScrollEvent wheel)` | A wheel turn nothing else wanted, spent on the page. |
 | 1405 | 11 | `private void scrollPageBy(double deltaY, double span)` | Move the page by one wheel event's worth, with a floor under the FIRST event of a gesture and the rest taken as they come. |
 
-### THE TWO STRIPS (lines 1423-2067)
+### THE TWO STRIPS (lines 1423-2090)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1458 | 308 | `private void refreshDateBar()` | Date, month number, cash and population across the top - and, since 2026-09-21, prices and the exchange rate between the last two, and since 0.7.4 the three rates beside them. |
-| 1781 | 8 | `private VBox stripPanel(Label...lines)` | One of the strip's inset panels, in the anchors' shape at a smaller size: figure over caption, or since 0.7.4 three rate lines stacked. |
-| 1791 | 5 | `private static Label stripRateLine(String word, String figure, String colour)` | One line of the price-of-money panel: a word, then the figure, at the caption's size, so the three figures hold one column. |
-| 1798 | 5 | `private static String inflationColour(double inflation, double target)` | Grey near the player's target, amber off it, red once prices run or collapse. |
-| 1805 | 6 | `private static String rateColour(ForeignAccounts fx)` | Grey near parity or stronger, amber weaker, red well below it. |
-| 1814 | 6 | `private Label flowChip(String text, String colour)` | One small coloured figure on the population strip. |
-| 1836 | 94 | `private void refreshDebtBar()` | The next five city debts to come due, and what the city owes altogether. |
-| 1932 | 25 | `private VBox maturityChip(Debt debt, int currentMonth)` | One maturity on the bottom strip: amount, type, date, how far off. |
-| 1958 | 109 | `void showMainMenu()` |  |
+| 1461 | 311 | `private void refreshDateBar()` | Date, month number, cash and population across the top - and, since 2026-09-21, prices and the exchange rate between the last two, and since 0.7.4 the three rates beside them. |
+| 1787 | 8 | `private VBox stripPanel(Label...lines)` | One of the strip's inset panels, in the anchors' shape at a smaller size: figure over caption, or since 0.7.4 three rate lines stacked. |
+| 1797 | 5 | `private static Label stripRateLine(String word, String figure, String colour)` | One line of the price-of-money panel: a word, then the figure, at the caption's size, so the three figures hold one column. |
+| 1820 | 6 | `private static String inflationColour(double inflation, double target)` | Grey near the player's target, amber off it, red once prices run past it or collapse. |
+| 1828 | 6 | `private static String rateColour(ForeignAccounts fx)` | Grey near parity or stronger, amber weaker, red well below it. |
+| 1837 | 6 | `private Label flowChip(String text, String colour)` | One small coloured figure on the population strip. |
+| 1859 | 94 | `private void refreshDebtBar()` | The next five city debts to come due, and what the city owes altogether. |
+| 1955 | 25 | `private VBox maturityChip(Debt debt, int currentMonth)` | One maturity on the bottom strip: amount, type, date, how far off. |
+| 1981 | 109 | `void showMainMenu()` |  |
 
-### THE SAVE SYSTEM (lines 2068-2341)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2084 | 31 | `private String slotSummary(int slot)` | One line describing what is in a slot, or that it is empty. |
-| 2116 | 7 | `private String slotTitle(int slot)` |  |
-| 2125 | 25 | `private VBox slotRow(int slot, java.util.function.IntConsumer onPick, boolean disableEmpty)` | A slot row: the label on the button, the city underneath it. |
-| 2151 | 22 | `private void showSavingMenu()` |  |
-| 2180 | 39 | `private void showSaveSlotConfirm(int slot)` | Confirms one slot, and takes the optional name. |
-| 2220 | 20 | `private void showLoadMenu()` |  |
-| 2241 | 22 | `private void loadSlot(int slot)` |  |
-| 2271 | 10 | `private void openCity()` | Where a city opens. |
-| 2283 | 4 | `void foundCity(Founding choices)` | The founding screen's last step: found the city as chosen, and open it. |
-| 2288 | 33 | `private void showSaveResult(GameFiles.Result result)` |  |
-| 2332 | 9 | `private void toggleFullScreen()` | In and out of full screen, and remembered. |
-
-### SETTINGS. (lines 2342-2455)
+### THE SAVE SYSTEM (lines 2091-2364)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2350 | 65 | `private void showSettingsMenu()` |  |
-| 2426 | 29 | `private VBox toggleRow(String label, boolean on, String what, Runnable flip)` | A setting: what it is, what it does, and a switch that says which way it is set without having to read the word next to it. |
+| 2107 | 31 | `private String slotSummary(int slot)` | One line describing what is in a slot, or that it is empty. |
+| 2139 | 7 | `private String slotTitle(int slot)` |  |
+| 2148 | 25 | `private VBox slotRow(int slot, java.util.function.IntConsumer onPick, boolean disableEmpty)` | A slot row: the label on the button, the city underneath it. |
+| 2174 | 22 | `private void showSavingMenu()` |  |
+| 2203 | 39 | `private void showSaveSlotConfirm(int slot)` | Confirms one slot, and takes the optional name. |
+| 2243 | 20 | `private void showLoadMenu()` |  |
+| 2264 | 22 | `private void loadSlot(int slot)` |  |
+| 2294 | 10 | `private void openCity()` | Where a city opens. |
+| 2306 | 4 | `void foundCity(Founding choices)` | The founding screen's last step: found the city as chosen, and open it. |
+| 2311 | 33 | `private void showSaveResult(GameFiles.Result result)` |  |
+| 2355 | 9 | `private void toggleFullScreen()` | In and out of full screen, and remembered. |
 
-### THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. (lines 2456-2477)
-
-### ECONOMY IS GONE, AND IT SPLIT IN TWO. (lines 2478-2494)
-
-### THE SCROLLER (lines 2495-2553)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2505 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column)` | A left-aligned column inside a scroll pane, which these screens all want. |
-| 2516 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome)` | this scroller - a title alone is about 150; a title with a vitals bar and two strips pinned over it is a good deal more, and getting it wrong is a scrollbar that appears when there is nothing to scroll. |
-| 2525 | 28 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome, boolean fromBottom)` | The same, with the position kept from the bottom of the page instead of as a fraction (fromBottom) - for a page that grows and shrinks ABOVE the controls the player is using; see keptScrollerFromBottom. |
-
-### WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and (lines 2554-2564)
+### SETTINGS. (lines 2365-2478)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2560 | 1 | `public List<String> whatItDoes(BuildingsTemplate t)` |  |
-| 2561 | 1 | `public List<String> whatCareItGives(BuildingsTemplate t)` |  |
-| 2562 | 1 | `public String jobLabel(JobType job)` |  |
+| 2373 | 65 | `private void showSettingsMenu()` |  |
+| 2449 | 29 | `private VBox toggleRow(String label, boolean on, String what, Runnable flip)` | A setting: what it is, what it does, and a switch that says which way it is set without having to read the word next to it. |
 
-### SIMULATE MULTIPLE MONTHS (lines 2565-2994)
+### THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. (lines 2479-2500)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 2573 | 53 | `private void showSimulateMonthsMenu()` |  |
-| 2638 | 223 | `private void showSimulateResultMenu(int requested, int completed)` | What happened while the player was not watching. |
-| 2863 | 10 | `private void addSkipLine(VBox section, String label, double start, double end, double change, boolean isMoney)` | "Population  192 -> 664  (+472)", coloured by direction. |
-| 2882 | 22 | `private void addChangeLine(VBox section, String label, double change, boolean isMoney, boolean higherIsBetter)` | A signed change, coloured by whether it is good news. |
-| 2906 | 3 | `void showSectorReport(String title, VBox column, Runnable back)` | Shared scaffolding for the sector report screens. |
-| 2916 | 77 | `void showSectorReport(String title, VBox column, Runnable back, Button extra)` | somewhere else - e.g. the industrial report linking to its financial statements. |
+### ECONOMY IS GONE, AND IT SPLIT IN TWO. (lines 2501-2517)
 
-### CONSTRUCTION PANEL (lines 2995-3209)
+### THE SCROLLER (lines 2518-2576)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3008 | 87 | `private void refreshConstructionPanel()` |  |
-| 3106 | 47 | `private void addDemolitionLog()` | What the city has lost lately, under what it is building. |
-| 3166 | 42 | `private void addBuildLog()` | What the city has GAINED lately, above what it has lost. |
+| 2528 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column)` | A left-aligned column inside a scroll pane, which these screens all want. |
+| 2539 | 3 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome)` | this scroller - a title alone is about 150; a title with a vitals bar and two strips pinned over it is a good deal more, and getting it wrong is a scrollbar that appears when there is nothing to scroll. |
+| 2548 | 28 | `javafx.scene.control.ScrollPane scrolled(VBox column, double chrome, boolean fromBottom)` | The same, with the position kept from the bottom of the page instead of as a fraction (fromBottom) - for a page that grows and shrinks ABOVE the controls the player is using; see keptScrollerFromBottom. |
 
-### THE RAIL (lines 3210-3399)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3230 | 1 | **type** `private record Tab(String key, String svg, String name, Runnable go)` | One destination. |
-| 3262 | 54 | `private Tab[] tabs()` | The rail, in the order a city is actually run. |
-| 3327 | 49 | `private String tabFor(String screen)` | Which tab owns the screen that is showing. |
-| 3377 | 22 | `private void refreshTabRail()` |  |
-
-### THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF (lines 3400-3567)
+### WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and (lines 2577-2587)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3443 | 5 | `private void goHome(Tab tab)` | Press a tab: forget where you were inside it, and land at the top. |
-| 3468 | 18 | `private void resetSection(String key)` | A section's own idea of where you were, forgotten. |
-| 3512 | 55 | `private StackPane railButton(String svg, String name, boolean active, Runnable go)` | One icon on the rail. |
+| 2583 | 1 | `public List<String> whatItDoes(BuildingsTemplate t)` |  |
+| 2584 | 1 | `public List<String> whatCareItGives(BuildingsTemplate t)` |  |
+| 2585 | 1 | `public String jobLabel(JobType job)` |  |
 
-### THE INBOX (lines 3568-3838)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3598 | 113 | `private void refreshInbox()` |  |
-| 3725 | 58 | `private VBox noticeRow(Notice notice)` | One notice: its title, and its body when it is unfolded. |
-| 3784 | 12 | `private String dealLabel(String key)` |  |
-| 3806 | 32 | `private void deal(Notice notice)` | Take the player to the control that answers it. |
-
-### TIME, AND WHAT THE MONTH IS WORTH (lines 3839-4078)
+### SIMULATE MULTIPLE MONTHS (lines 2588-3016)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3857 | 69 | `private void startClock()` | Starts the frame loop. |
-| 3934 | 4 | `private void paintDay()` | The day, repainted in place. |
-| 3952 | 11 | `private boolean stopIfSomethingHappened()` | Stops the clock when the city has something to say, if the player wants that. |
-| 3965 | 7 | `private void setClockRunning(boolean run)` | Play, or pause. |
-| 3973 | 50 | `private void refreshTimeControls()` |  |
-| 4036 | 33 | `private HBox speedSlider()` | The speed, as a slider that sticks to the ladder. |
-| 4071 | 4 | `private static String speedLabel(int index)` | "0.25x", "1x", "10x" - no trailing zeros on the round ones. |
+| 2596 | 53 | `private void showSimulateMonthsMenu()` |  |
+| 2661 | 222 | `private void showSimulateResultMenu(int requested, int completed)` | What happened while the player was not watching. |
+| 2885 | 10 | `private void addSkipLine(VBox section, String label, double start, double end, double change, boolean isMoney)` | "Population  192 -> 664  (+472)", coloured by direction. |
+| 2904 | 22 | `private void addChangeLine(VBox section, String label, double change, boolean isMoney, boolean higherIsBetter)` | A signed change, coloured by whether it is good news. |
+| 2928 | 3 | `void showSectorReport(String title, VBox column, Runnable back)` | Shared scaffolding for the sector report screens. |
+| 2938 | 77 | `void showSectorReport(String title, VBox column, Runnable back, Button extra)` | somewhere else - e.g. the industrial report linking to its financial statements. |
 
-### TWELVE PIPS, AND ONE OF THEM MOVES. (lines 4079-4333)
+### CONSTRUCTION PANEL (lines 3017-3231)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4104 | 36 | `private VBox yearDial()` |  |
-| 4142 | 11 | `private static void popPip(Region pip)` | A quarter second of "that landed", on the pip the month just filled. |
-| 4155 | 26 | `private Button roundButton(String glyph, double size, String fill, String tip)` | A circle with a glyph in it. |
-| 4199 | 134 | `private void refreshIncomeDome()` | The half circle at the foot of the stage. |
+| 3030 | 87 | `private void refreshConstructionPanel()` |  |
+| 3128 | 47 | `private void addDemolitionLog()` | What the city has lost lately, under what it is building. |
+| 3188 | 42 | `private void addBuildLog()` | What the city has GAINED lately, above what it has lost. |
+
+### THE RAIL (lines 3232-3421)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3252 | 1 | **type** `private record Tab(String key, String svg, String name, Runnable go)` | One destination. |
+| 3284 | 54 | `private Tab[] tabs()` | The rail, in the order a city is actually run. |
+| 3349 | 49 | `private String tabFor(String screen)` | Which tab owns the screen that is showing. |
+| 3399 | 22 | `private void refreshTabRail()` |  |
+
+### THE RAIL GOES TO THE TOP OF ITS SECTION, NOT TO WHERE YOU LEFT OFF (lines 3422-3589)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3465 | 5 | `private void goHome(Tab tab)` | Press a tab: forget where you were inside it, and land at the top. |
+| 3490 | 18 | `private void resetSection(String key)` | A section's own idea of where you were, forgotten. |
+| 3534 | 55 | `private StackPane railButton(String svg, String name, boolean active, Runnable go)` | One icon on the rail. |
+
+### THE INBOX (lines 3590-3860)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3620 | 113 | `private void refreshInbox()` |  |
+| 3747 | 58 | `private VBox noticeRow(Notice notice)` | One notice: its title, and its body when it is unfolded. |
+| 3806 | 12 | `private String dealLabel(String key)` |  |
+| 3828 | 32 | `private void deal(Notice notice)` | Take the player to the control that answers it. |
+
+### TIME, AND WHAT THE MONTH IS WORTH (lines 3861-4085)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3879 | 59 | `private void startClock()` | Starts the frame loop. |
+| 3946 | 4 | `private void paintDay()` | The day, repainted in place. |
+| 3964 | 11 | `private boolean stopIfSomethingHappened()` | Stops the clock when the city has something to say, if the player wants that. |
+| 3977 | 7 | `private void setClockRunning(boolean run)` | Play, or pause. |
+| 3985 | 45 | `private void refreshTimeControls()` |  |
+| 4043 | 33 | `private HBox speedSlider()` | The speed, as a slider that sticks to the ladder. |
+| 4078 | 4 | `private static String speedLabel(int index)` | "0.25x", "1x", "10x" - no trailing zeros on the round ones. |
+
+### TWELVE PIPS, AND ONE OF THEM MOVES. (lines 4086-4340)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4111 | 36 | `private VBox yearDial()` |  |
+| 4149 | 11 | `private static void popPip(Region pip)` | A quarter second of "that landed", on the pip the month just filled. |
+| 4162 | 26 | `private Button roundButton(String glyph, double size, String fill, String tip)` | A circle with a glyph in it. |
+| 4206 | 134 | `private void refreshIncomeDome()` | The half circle at the foot of the stage. |
 

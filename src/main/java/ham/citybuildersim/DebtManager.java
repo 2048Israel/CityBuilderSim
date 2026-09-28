@@ -24,7 +24,8 @@ public class DebtManager {
        This was a constant, and it was the most load-bearing constant in the
        game without anybody having decided anything about it. Every price of
        money in the city is built on it: floorRate() IS it (never less than the
-       bank's own cost of funds), ceilingRate() is it plus both spreads, and
+       bank's own cost of funds, on the share of the city's paper the central
+       bank does not hold - 0.7.15), ceilingRate() is it plus both spreads, and
        the city's own borrowing rate sits between them. Since 0.7.0 it is the
        rate the CENTRAL BANK pays on the commercial bank's reserves, so
        Bank.fundToCover() is handed it directly: the bank's spare cash earns
@@ -121,8 +122,8 @@ public class DebtManager {
     /** Where the inflation target opens, and what a save from before the dial reads: two per cent, the constant it was until 0.7.4. */
     public static final double DEFAULT_INFLATION_TARGET = .02;
 
-    /** The top of the target's dial: past ten per cent a year a target stops anchoring anything. */
-    public static final double MAX_INFLATION_TARGET = .10;
+    /** The top of the target's dial: 20% a year, Jerus's number (0.7.15: "inflation target can be higher tgan 10%, up yo 20%"); it was 10% from 0.7.4. */
+    public static final double MAX_INFLATION_TARGET = .20;
 
     /** The bottom of the target's dial: stable prices to the letter - no central bank aims at falling ones. */
     public static final double MIN_INFLATION_TARGET = 0;
@@ -132,8 +133,9 @@ public class DebtManager {
      * at, which the rule below aims at and the strip's colour reads. It was
      * the constant INFLATION_TARGET, 2%. Jerus: "i want to have the dial not
      * target 0 inflation, set it so that you can choose what is your
-     * inflation target." The player's, in half points from 0 to 10% on the
-     * monetary page, applied at once like the autopilot beside it; saved
+     * inflation target." The player's, in half points from 0 to
+     * MAX_INFLATION_TARGET on the monetary page - 10% until 0.7.15, 20% since,
+     * Jerus's - applied at once like the autopilot beside it; saved
      * under its own key (DataSave.inflationTarget), and an older save reads
      * DEFAULT_INFLATION_TARGET - the constant it was.
      */
@@ -1087,9 +1089,10 @@ public class DebtManager {
        whole curve up in parallel and a city that over-borrows pays more at
        every point of it. THE COMPRESSION is what the central bank's holdings
        buy (CentralBank, THE HOLDINGS DIAL): the premium times the share of
-       the city's term paper it holds, over the most it may hold. It never
-       touches the short end, which has no premium to compress, and at the
-       maximum holding the premium is gone.
+       the city's term paper it holds, over CentralBank.FULL_COMPRESSION_SHARE
+       - half, the most it could hold until 0.7.15. It never touches the short
+       end, which has no premium to compress, and at half the paper and past
+       it the premium is gone.
 
        EVERY PRICE OF CITY PAPER GOES THROUGH curveRate() or quoteRate() at a
        maturity: the three quotes hand their duration in, a buyback and the
@@ -1138,16 +1141,22 @@ public class DebtManager {
     /**
      * What the central bank's holdings take off the premium at this many
      * months: the premium, times the share of the city's term paper it
-     * actually holds (not its target) over CentralBank.MAX_QE_SHARE, times
-     * CentralBank.QE_COMPRESSION. Nothing at the short end, which has no
-     * premium; the whole premium at the maximum holding.
+     * actually holds (not its target) over CentralBank.FULL_COMPRESSION_SHARE,
+     * times CentralBank.QE_COMPRESSION. Nothing at the short end, which has no
+     * premium; the whole premium at half the term paper and past it.
+     *
+     * OVER FULL_COMPRESSION_SHARE, NOT THE DIAL'S TOP, SINCE 0.7.15. The two
+     * were one constant, MAX_QE_SHARE, at a half, until Jerus let the dial
+     * reach the whole of the paper; the compression keeps the half it always
+     * had, so every holding up to half prices exactly as it did, and holding
+     * more takes nothing more off the long end - the premium is gone already.
      */
     public double compression(int months) {
         double premium = termPremium(months);
         if (premium <= 0) return 0;
         double held = centralBankShareOfTerm();
         if (held <= 0) return 0;
-        return premium * Math.min(1, held / CentralBank.MAX_QE_SHARE) * CentralBank.QE_COMPRESSION;
+        return premium * Math.min(1, held / CentralBank.FULL_COMPRESSION_SHARE) * CentralBank.QE_COMPRESSION;
     }
 
     /** The premium less the compression: the curve's shape over the short end. */
@@ -1199,6 +1208,26 @@ public class DebtManager {
             held += d.centralBankPrincipal();
         }
         return term > 0 ? held / term : 0;
+    }
+
+    /**
+     * The central bank's share of ALL the city's own paper outstanding, at
+     * face, every maturity - the notes it never buys in the denominator - the
+     * floor's measure (0.7.15, floorRate()). Not the term share, because the
+     * floor prices every maturity: a note is the bank's paper and priced at
+     * its floor, so a city that funds itself on notes has its floor set by
+     * the bank however much of its term paper the central bank holds. The
+     * dollar paper is not in it; it is priced on the world's curve. Zero with
+     * none outstanding.
+     */
+    public double centralBankShareOfPaper() {
+        double paper = 0, held = 0;
+        for (Debt d : debts) {
+            if (d.isForeign()) continue;
+            paper += d.getOustandingPrincipal();
+            held += d.centralBankPrincipal();
+        }
+        return paper > 0 ? held / paper : 0;
     }
 
     /* ---------------------- who holds it (0.7.1) ---------------------- */
@@ -1321,14 +1350,18 @@ public class DebtManager {
      * PURE. Reads the same spreads priceAt() reads and sets nothing.
      */
     public double rateAtPolicy(double policy) {
-        double floor   = Math.max(MIN_RATE,
-                Math.max(policy, costOfFunds + Bank.MIN_MARGIN));
+        double floor   = floorAt(policy);
         double ceiling = policy + 2 * MAX_SPREAD_PER_MEASURE;
         double rate = floor + gdpSpread() + revenueSpread();
         return Math.max(MIN_RATE, Math.min(rate, ceiling));
     }
 
-    /** The floor everybody pays: the policy rate, or the bank's cost of funds if that is higher. */
+    /**
+     * The floor everybody pays: the policy rate, or the bank's cost of funds
+     * if that is higher - on the share of the city's paper the bank and the
+     * households hold, since 0.7.15; the central bank's share is priced at
+     * the policy rate (floorRate()).
+     */
     public double baseComponent() { return floorRate(); }
 
     /** What the debt costs against the size of the economy. */
@@ -1387,10 +1420,53 @@ public class DebtManager {
      * five points, exactly as gentle as Jerus asked for them - a city can
      * still borrow a large multiple of its economy without being priced as
      * distressed. What it can no longer do is borrow below cost.
+     *
+     * SPLIT BY WHO HOLDS THE PAPER (0.7.15). The bank's cost is a floor
+     * because the bank is who lends: it will not hold the city's paper for
+     * less than its money costs it. The central bank's money costs it
+     * nothing but the policy rate, so the share of the paper it holds is
+     * priced there, and only the rest at the bank's floor:
+     *
+     *     floor = max(MIN_RATE, policy + (1 - s) x max(0, costOfFunds + MIN_MARGIN - policy))
+     *
+     * s being the central bank's share of the city's own paper outstanding,
+     * every maturity (centralBankShareOfPaper()). At s = 0 it is the floor
+     * above to the bit; at s = 1 the policy rate, whatever the bank's state.
+     * Jerus, lifting the holdings dial to 100%: "Its for later, for when
+     * banks and investors dont want government bonds, its also f bank is in
+     * dire state, to not harm it further, also make it so that if bank is in
+     * a pickle, and central bank is at 100% then your debt isnt priced at tge
+     * bank, ira proportional". A bank in trouble - at the window, its cost of
+     * funds over the policy rate - makes the city's borrowing dearer only on
+     * the share it and the households still hold.
      */
     public double floorRate() {
-        return Math.max(MIN_RATE,
-                Math.max(baseRate, costOfFunds + Bank.MIN_MARGIN));
+        return floorAt(baseRate);
+    }
+
+    /**
+     * ...at a policy rate of the caller's: the one definition floorRate() and
+     * rateAtPolicy() both read, so the Policy tab's "what moving the dial
+     * does" splits the floor as the market does. At s = 0 it is exactly
+     * max(MIN_RATE, max(policy, costOfFunds + Bank.MIN_MARGIN)), the floor
+     * until 0.7.15.
+     */
+    private double floorAt(double policy) {
+        double floor = Math.max(policy, costOfFunds + Bank.MIN_MARGIN);
+        double s = Math.min(1, centralBankShareOfPaper());
+        if (s > 0) floor = policy + (1 - s) * (floor - policy);
+        return Math.max(MIN_RATE, floor);
+    }
+
+    /**
+     * The bank's floor, unsplit: the policy rate, or the bank's cost of funds
+     * plus Bank.MIN_MARGIN if that is higher - what the share of the city's
+     * paper the central bank does not hold is priced at, and the whole floor
+     * until 0.7.15. For the Finances tab's rate page; floorRate() is what
+     * prices.
+     */
+    public double bankFloorRate() {
+        return Math.max(MIN_RATE, Math.max(baseRate, costOfFunds + Bank.MIN_MARGIN));
     }
 
     /** What a hopeless one pays - both measures maxed out. */

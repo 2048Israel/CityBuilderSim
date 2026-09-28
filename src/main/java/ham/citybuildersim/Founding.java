@@ -127,18 +127,25 @@ public final class Founding {
        NO EMPTY TREASURY ON A CUSTOM FOUNDING - AND ONE PRESET WITH ONE, ON
        PURPOSE. The floor is a hamlet's worth: ten houses and a shop at a new
        city's invoices, the least a custom founding takes. Insane (0.7.14) is
-       the one preset under it: D$0, and Jerus's answer to what a city with
-       nothing does first is "Borrow first" - the clock stays stopped while
-       the treasury is empty and nobody will advance it anything
-       (Game.clockRefusal(): cash at or below nothing, and a central bank
-       whose ceiling, months of revenue, is nothing for a city with no
-       revenue), and the screen says why and where to borrow: the build
-       screen's funding page, the Finances tab's borrowing, the land office's
-       dollar offer. Every building is paid for out of cash or borrowed
-       against; the city with nothing borrows first. A day-0 city is quoted
-       its first bond at the full spread on both of the measures the price
-       reads - it has no revenue and no output to measure its debt against
-       (DebtManager.spreadFor()) - which is what Insane costs.
+       the one preset under it: D$0, and since 0.7.15 it runs from day one on
+       the central bank's advances. Jerus: "Play works from day one. The
+       central bank covers what the treasury must pay, which starts with just
+       the land bond's coupon; optional spending is refused." What it must
+       pay - its promises, on day 0 the land bond's coupon and the pensions
+       of the residents it is founded with - is paid, taking the treasury
+       under nothing, and the next settle advances the shortfall
+       (Game.settleTreasury()). Anything discretionary is refused: the
+       central bank's ceiling is months of revenue, nothing for a city that
+       has had none, so the treasury may spend only cash it has
+       (Game.discretionaryRoom()). BORROWING IS HOW IT BUILDS. Every building
+       is paid for out of cash or borrowed against, and a city with no cash
+       borrows for it: the build screen's funding page, the Finances tab's
+       borrowing, the land office's funding page. A day-0 city is quoted its
+       first bond at the full spread on both of the measures the price reads
+       - it has no revenue and no output to measure its debt against
+       (DebtManager.spreadFor()) - which is what Insane costs. (0.7.14 held
+       the play clock until the city borrowed, Jerus's "Borrow first" then;
+       0.7.15 took the stop out, and the time skip's with it.)
 
        AN EMPTY VAULT IS ALLOWED. Every city before 0.6.10 was founded with
        one and played its whole life that way: the central bank has nothing

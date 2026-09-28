@@ -37,6 +37,14 @@ import java.nio.file.Files;
  *   8. A dollar bond bought back is money leaving the country: none of the
  *      price reaches the bank or the households, and the next month declares
  *      all of it abroad (until 0.7.1 it left the treasury for nowhere).
+ *   9. The holdings dial at the whole of the paper (0.7.15, Jerus: "central
+ *      bank bond holding can ve 100% if one wants"): the central bank buys
+ *      the bank's term paper first, and only once the bank has none left
+ *      the households', at the curve's market value, their face onto its
+ *      book and the price made for them - the audit closing and M0 moving by
+ *      exactly the money made - until it holds all of it; a save and load
+ *      in the middle keeps the dial, the holdings and the pace, and both
+ *      cities buy the same from the households the month after.
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
@@ -402,10 +410,134 @@ public class HoldersCheck {
         close("...so nothing is carried any more", city.getBuybackUnsettled(), 0, 1e-9);
         assertTrue("the audit closes on it", Math.abs(abroad.residual) <= .01);
 
+        theWholeBook();
+
         assertTrue(String.format("every month this harness played closed the audit (%d)",
                 closedMonths + brokenMonths), brokenMonths == 0);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
+    }
+
+    /* ================= 9. the whole of the paper (0.7.15) ================= */
+
+    /** The one piece of term paper a city holds, or null. */
+    static Debt termPiece(DebtManager ledger) {
+        Debt found = null;
+        for (Debt d : ledger.getDebt()) if (DebtManager.isTermPaper(d)) found = d;
+        return found;
+    }
+
+    static void theWholeBook() throws Exception {
+        out.println("\n--- 9. the dial at the whole of the paper buys the households' once the bank's is gone ---");
+        GameFiles files = GameFiles.scratch("holderscheck-whole");
+        Game city = new Game(files);
+        quietly(() -> {
+            city.run();
+            city.getForeignAccounts().pinRate(1.0);
+            city.buildStack(template(city, "Gravel Road"), 6, true);
+            city.buildStack(template(city, "House"), 300, false);
+            city.buildStack(template(city, "Convenience Store"), 6, false);
+            city.buildStack(template(city, "Industrial Bakery"), 2, false);
+            city.buildStack(template(city, "Construction Depot"), 4, false);
+            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            city.buildStack(template(city, "Commercial Bank"), 1, false);
+            city.simulateMonths(60);
+        });
+        HouseholdBalance hb = city.getHouseholdBalance();
+        DebtManager ledger = city.getDebtManager();
+        Bank bank = city.getBank();
+        CentralBank cb = city.getCentralBank();
+        double ask = Math.max(100, hb.spareForPaper() * .2);
+        quietly(() -> city.handleLongBondLogic(ask, 20, 100));
+        play(city);                                        // the settle: the households take their share
+        Debt bond = termPiece(ledger);
+        double face = bond.getOustandingPrincipal();
+        assertTrue("fixture: one twenty-year bond, the households holding part and the bank the rest",
+                bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.centralBankPrincipal() == 0
+                        && bond.getSettleDue() == 0);
+        out.printf("   the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
+                bond.householdPrincipal(), face, bond.bankPrincipal());
+
+        cb.setTargetShare(1.0);
+        close("the dial takes 100%, MAX_QE_SHARE", cb.getTargetShare(), CentralBank.MAX_QE_SHARE, 0);
+        boolean bankFirst = true;
+        int months = 0;
+        while (bond.bankPrincipal() > 1e-9 * face && months < 8) {
+            play(city);
+            months++;
+            if (bond.bankPrincipal() > 1e-9 * face) bankFirst &= cb.getBoughtFromHouseholds() == 0;
+        }
+        out.printf("   the bank's paper gone in %d month(s); the central bank holds %.1f%% of the term paper%n",
+                months, ledger.centralBankShareOfTerm() * 100);
+        assertTrue("while the bank has term paper to sell, it is all the central bank buys", bankFirst);
+        assertTrue("...until it has none: the dial past the bank's holding took all of it",
+                bond.bankPrincipal() <= 1e-9 * face && ledger.centralBankShareOfTerm() < 1);
+
+        // A month the step comes from the households alone, struck at the market value the
+        // operation will see at the top of the month.
+        double term = ledger.termPrincipal();
+        double heldBefore = cb.getPaperHeld();
+        double move = Math.min(cb.stepFor(term), cb.getTargetShare() * term - heldBefore);
+        double fromBank = Math.min(move, bond.bankPrincipal());
+        double fromHouseholds = Math.min(move - fromBank, bond.householdPrincipal());
+        double expectedPrice = ledger.marketValue(bond) * fromHouseholds / bond.getOustandingPrincipal();
+        double hhBefore = bond.householdPrincipal(), cellsBefore = hb.totalPaper();
+        double m0Before = cb.m0();
+        MoneyAudit.Result r = play(city);
+        assertTrue("fixture: the desk bought none of the households' paper that month",
+                bank.getPaperBoughtFromHouseholds() == 0);
+        assertTrue("fixture: ...and the step came from the households", fromHouseholds > 0);
+        close("the central bank took the rest of its step off the households' face",
+                hhBefore - bond.householdPrincipal(), fromHouseholds, 1e-6);
+        close("...the cells' paper by the same, pro rata", cellsBefore - hb.totalPaper(), fromHouseholds, 1e-6);
+        close("...onto its own book, at face", cb.getPaperHeld() - heldBefore, fromBank + fromHouseholds, 1e-6);
+        close("it paid them the curve's market value", cb.getBoughtFromHouseholds(), expectedPrice, 1e-6);
+        close("...its gain against face in the month's profit", cb.getPaperGains(),
+                fromBank + fromHouseholds - cb.getBoughtPaper(), 1e-6);
+        assertTrue("the money it made for them is declared: the audit closes", Math.abs(r.residual) <= .01);
+        assertTrue("...and M0 moved by exactly the money made, the audit's MONEY lines the same",
+                Math.abs((cb.m0() - m0Before) - (cb.getIssued() - cb.getRetired())) <= .005
+                        && Math.abs(r.moneyMade() - (cb.getIssued() - cb.getRetired())) <= .005);
+        assertTrue("...and the two books of the households' paper agree", booksAgree(city));
+
+        // ...and a save and load in the middle: the dial, the holdings, the pace.
+        assertTrue("fixture: in the middle - the households still hold some",
+                bond.householdPrincipal() > 0 && ledger.centralBankShareOfTerm() < 1);
+        final Game[] back = new Game[1];
+        quietly(() -> {
+            city.saveGame(5, "the whole book");
+            back[0] = new Game(files);
+            back[0].loadGameSave(5);
+        });
+        Game twin = back[0];
+        CentralBank cb2 = twin.getCentralBank();
+        Debt bond2 = termPiece(twin.getDebtManager());
+        close("through a save: the dial at 100%, not held at the old half", cb2.getTargetShare(), 1.0, 0);
+        close("...the book at face", cb2.getPaperHeld(), cb.getPaperHeld(), 0);
+        close("...what it has paid the households since founding", cb2.getBoughtFromHouseholdsLifetime(),
+                cb.getBoughtFromHouseholdsLifetime(), 0);
+        assertTrue("...the paper's holders, piece by piece",
+                bond2.householdPrincipal() == bond.householdPrincipal()
+                        && bond2.centralBankPrincipal() == bond.centralBankPrincipal());
+        double[] was = hb.toCellSaveArray(), is = twin.getHouseholdBalance().toCellSaveArray();
+        boolean cellsSame = was.length == is.length;
+        for (int i = 0; cellsSame && i < was.length; i++) cellsSame = was[i] == is[i];
+        assertTrue("...and every cell's paper", cellsSame);
+        close("...so it steps at the same pace", cb2.stepFor(twin.getDebtManager().termPrincipal()),
+                cb.stepFor(term), 1e-9);
+        play(city);
+        play(twin);
+        close("a month on, both cities buy the same from the households",
+                cb2.getBoughtFromHouseholds(), cb.getBoughtFromHouseholds(), 1e-9);
+        close("...and hold the same", cb2.getPaperHeld(), cb.getPaperHeld(), 1e-9);
+
+        for (int m = 0; m < 4 && ledger.centralBankShareOfTerm() < 1 - 1e-12; m++) play(city);
+        close("the dial is reached: it holds all of the term paper", ledger.centralBankShareOfTerm(), 1, 1e-12);
+        close("...the households none of it", bond.householdPrincipal(), 0, 1e-9);
+        out.printf("   m%d: the central bank holds $%,.2fk, paid the households $%,.2fk for theirs; the floor %.3f%%,"
+                        + " the policy rate %.3f%%, the bank's floor %.3f%%%n", city.getMonth(), cb.getPaperHeld(),
+                cb.getBoughtFromHouseholdsLifetime(), ledger.floorRate() * 100, ledger.getPolicyRate() * 100,
+                ledger.bankFloorRate() * 100);
     }
 }

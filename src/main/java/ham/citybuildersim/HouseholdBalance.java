@@ -2810,7 +2810,11 @@ public class HouseholdBalance {
        no more than the bank pays - sends it home at OutwardInvestment's
        HOME_SPEED, the pace the dollars come home at; and a household leaving
        the city, which sells on the way out rather than carrying the city's
-       paper off to wherever it went.
+       paper off to wherever it went. And since 0.7.15 the central bank,
+       whose holdings dial reaches past what the bank holds: what the bank
+       cannot sell it, the households do, pro rata across the cells at the
+       curve's market value, by the path a buyback takes
+       (creditPaperBuyback()).
 
        THE SUM OF EVERY CELL'S PAPER IS DebtManager.householdPrincipal(),
        exactly: every one of these moves the cells and the paper by the same
@@ -2974,7 +2978,13 @@ public class HouseholdBalance {
         }
     }
 
-    /** A bond bought back: this much of their face off the paper, this much of the price into savings, pro rata. */
+    /**
+     * A bond bought back: this much of their face off the paper, this much of
+     * the price into savings, pro rata. Since 0.7.15 also the central bank's
+     * purchase of their term paper once the bank has none left to sell it
+     * (Game.buyPaperFromHouseholds()): a sale of theirs, pro rata across the
+     * cells, at the curve's market value - the same move, so there is one.
+     */
     public void creditPaperBuyback(double face, double price) {
         double held = totalPaper();
         if (held <= 0 || !(face > 0)) return;

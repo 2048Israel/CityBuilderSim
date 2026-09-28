@@ -1788,7 +1788,7 @@ public class LongPlaytest {
     /* =====================================================================
        THE TRACE, BESIDE THE REPORT (0.7.10)
 
-       -Dplaytest.trace=<prefix> writes five files (two at 0.7.10, the rest
+       -Dplaytest.trace=<prefix> writes six files (two at 0.7.10, the rest
        below) and never a line of the report, so a traced run's report is
        the untraced run's to the byte:
        <prefix>-month.csv, one row a month - the treasury, its debt and what
@@ -1819,6 +1819,9 @@ public class LongPlaytest {
        and both targets and which requirement binds, its stance, its
        branches and the months they have not paid, and the insured rate's
        parts (countLeverage()).
+
+       ...AND A SIXTH, <prefix>-bonds.csv (0.7.12): a row a month of THE
+       BONDS (countBonds()).
        ===================================================================== */
 
     /** The trace's prefix under -Dplaytest.trace, or null. */
@@ -1862,7 +1865,9 @@ public class LongPlaytest {
         }
         traceMonths.println("month,pop,cash,gdp,taxIncome,interest,cityDebt,foreignDebt,notes,advances,"
                 + "arrears,overdraft,rate,parity,atGuard,index,inflation,vaultUsd,defenceUsd,"
-                + "bankFails,policy,cityRate,refusedSkips,noMoney,stake,fundValue,fundCash,preferred");
+                + "bankFails,policy,cityRate,refusedSkips,noMoney,stake,fundValue,fundCash,preferred,"
+                + "floor,bankFloor,cbPaperShare,cbHeld,m0,cbBoughtHH,"
+                + "cbParAtIssue,cbPaidAtIssue,cbBought,cbSold,bankPaidForPaper");
         traceBorrow.println("month,type,kind,foreign,face,rate,rateIs,months,for");
         traceHouse.println("month,pop,homes,households,capacity,jobs,latent,pressure,rentF,rentS,reqF,reqS,"
                 + "breakEven,reCash,reAssets,rePrincipal,mortgages,mortgagePrincipal,bulletPrincipal,"
@@ -1901,7 +1906,8 @@ public class LongPlaytest {
             if (r.getKey().endsWith(": no money")) noMoney += r.getValue();
         }
         traceMonths.printf(java.util.Locale.ROOT,
-                "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d,%.6f,%.3f,%.3f,%.3f%n",
+                "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d,%.6f,%.3f,%.3f,%.3f,"
+                + "%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(), g.getCash(),
                 g.getEconomyManager().getMonthGdp(), g.getEconomyManager().getTaxIncome(),
                 g.getEconomyManager().getNationalAccounts().getInterestExpense(),
@@ -1912,7 +1918,19 @@ public class LongPlaytest {
                 fx.getReservesUsd(), fx.getDefenceUsd(), g.getBank().getFailures(),
                 paper.getPolicyRate(), paper.getRate(), refusedSkips, noMoney,
                 // ...and the city's bank and fund (0.7.14), on the end.
-                g.cityStakeInBank(), g.fundValue(), g.getFund().getCash(), g.getBank().preferredOutstanding());
+                g.cityStakeInBank(), g.fundValue(), g.getFund().getCash(), g.getBank().preferredOutstanding(),
+                // ...and the floor split by who holds the paper (0.7.15): the floor, the
+                // bank's unsplit, the central bank's share of all the city's paper, its
+                // book at face, M0, and what it paid the households for theirs this month.
+                paper.floorRate(), paper.bankFloorRate(), paper.centralBankShareOfPaper(),
+                g.getCentralBank().getPaperHeld(), g.getCentralBank().m0(),
+                g.getCentralBank().getBoughtFromHouseholds(),
+                // ...and (0.7.15, round 2) the par it rolled of its own at issue this
+                // month and what it paid for it, all it bought and sold this month,
+                // and what the bank paid for the city's paper at this month's settle.
+                g.getCentralBank().getParAtIssue(), g.getCentralBank().getBoughtAtIssue(),
+                g.getCentralBank().getBoughtPaper(), g.getCentralBank().getSoldPaper(),
+                g.getCityPaperSettled());
         traceHouse(g);
         tracePop(g);
     }
@@ -3047,14 +3065,19 @@ public class LongPlaytest {
 
             if (g.getMonth() == before) {
                 /*
-                 * simulateMonths() refuses to run at all while cash <= 0, but
-                 * the Next Month button calls nextMonth() directly, which
-                 * draws the central bank's advance (an emergency note, before
-                 * 0.7.0) and carries on. So a broke player can
-                 * step but cannot skip - and stepping is exactly what they
-                 * would do next. Doing the same here rather than giving up,
+                 * A SKIP THAT DID NOT RUN THE MONTH. Until 0.7.14 this was the
+                 * empty treasury: simulateMonths() refused to run while cash
+                 * <= 0, the play clock ran on (nextMonth(), drawing the
+                 * central bank's advance), and this stepped as a player would,
                  * because a city that cannot pay its bills is a state the game
-                 * has to keep working in, not one to stop testing at.
+                 * has to keep working in, not one to stop testing at. Since
+                 * 0.7.15 the skip runs through an empty treasury on the
+                 * advances, as play does (Jerus: "Skip runs too"), so the
+                 * month the playtest ran is the month a skip runs, and this is
+                 * left for a skip that ran nothing at all - a month that threw
+                 * inside it (Game.takeSkipFailure()), stepped again below where
+                 * nothing catches it. The count stays in the trace; 0.7.14's
+                 * ensembles had thousands of these, in Insane and at a held 25%.
                  */
                 refusedSkips++;
                 g.toggleNextMonth();
@@ -3801,7 +3824,7 @@ public class LongPlaytest {
         }
 
         out.println();
-        out.println("  months a skip refused to run (treasury empty, stepped instead): "
+        out.println("  months a skip did not run (stepped instead; an empty treasury until 0.7.15): "
                 + refusedSkips);
         out.printf("  most crowded the city ever got: %.0f%% of what its buildings"
                 + " comfortably hold (month %d)%n", worstCrowding * 100, worstCrowdingMonth);
@@ -4766,6 +4789,17 @@ public class LongPlaytest {
         out.printf("  the holdings at their most: %.3f points off the 50-year (m%d, holding %.1f%% of the"
                 + " term paper, the 50-year at %.2f%%)%n",
                 peakCompression * 100, peakCompressionMonth, heldShareAtPeak * 100, longRateAtPeak * 100);
+        // ...and the floor split by who holds the paper (0.7.15): the central bank's
+        // share at the policy rate, the rest at the bank's floor (DebtManager.floorRate()).
+        out.printf("  the floor at the end: %.2f%% (the policy rate %.2f%%, the bank's floor %.2f%%; the central"
+                + " bank holds %.1f%% of all the city's paper); it paid the households $%,.0fk for their paper"
+                + " over the run, of the $%,.0fk it paid for paper%n",
+                dm.floorRate() * 100, dm.getPolicyRate() * 100, dm.bankFloorRate() * 100,
+                dm.centralBankShareOfPaper() * 100, holder.getBoughtFromHouseholdsLifetime(),
+                holder.getBoughtPaperLifetime());
+        // ...and its own maturing paper, rolled at issue (0.7.15, round 2).
+        out.printf("  the central bank rolled $%,.0fk of its own maturing par at issue over the run, paying"
+                + " $%,.0fk%n", holder.getParAtIssueLifetime(), holder.getBoughtAtIssueLifetime());
 
         /*
          * THE CENTRAL BANK (0.7.0): its balance sheet at the end, the money

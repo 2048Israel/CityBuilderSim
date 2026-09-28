@@ -8,6 +8,135 @@ list; new batches go at the top of this file in the same shape (`### TITLE —
 date, state, see doc.md`), and the list stays a list. `index.md` maps the notes
 by subsystem. The top block is the state of the tree.
 
+### THE MANUAL AT 0.7.15 — 2026-09-28, PUBLISHED as version 10; the tree copy (`docs/manual.md`, `docs/manual.html`) regenerated from it, TO DEPLOY with the next PC deploy, see `the-manual-at-0-7-15.md`
+
+- **Twelve versions caught up at once** (0.7.4 to 0.7.15). Jerus: "Catch manual up".
+  - Version 10 is published at the same URL, assembled from the published version 9 alone.
+  - Version 9 was checked byte-identical to the tree's copy before the work began.
+- **The page, before and after:**
+  - 21 sections become 23.
+  - 41,815 words become 58,917.
+  - 1,352 of version 9's 1,544 sentences survive word for word.
+  - Open questions go from 34 to 43: four answered, eleven rewritten, thirteen new.
+- **"Debt & the bank" is split in two.**
+  - §12 *The city's borrowing* keeps `#debt` and gains *Rolling what falls due*.
+  - §13 *The bank* is new (`#bank`), covering 0.7.7 to 0.7.14:
+    - pricing;
+    - savers and fees;
+    - capital;
+    - a sector as many firms;
+    - how a firm that cannot pay ends;
+    - mortgages;
+    - resolution and TARP preferred;
+    - the Bank tab.
+- **Other structural changes:**
+  - §16 *Founding a city* is new (`#founding`).
+  - §9 is renamed *The owners, the bonds & the exchange*.
+  - §11 gains *The city's fund*.
+  - §1 has fifteen steps.
+- **Every headline number re-struck from tag 0928a:**
+  - 226 files, 177,379 lines;
+  - `Game.java` at 12,363 lines and 34 banners;
+  - 997 dials;
+  - 5,807 labelled assertions;
+  - 64 harnesses in 263 s, with HealthCheck red as shipped;
+  - the playtest at 4,002 months.
+  - Every "22 September" reading now sits beside a 28 September one.
+- **Two Opus contexts made it.**
+  - The implementer took 50 minutes and 352 calls. The todo's 94 "not so" items were its checklist.
+  - The reviewer took 22 minutes and 175 calls:
+    - 686 numbers traced and 16 rules read against the code;
+    - five harnesses rerun, all matching the page;
+    - 184 removed sentences judged, four restored;
+    - 16 edits.
+  - Eight judgement items went to the gate: four were accepted, four left as they were. Two more edits were made at the gate.
+- **Reading version 9 found six places wrong in it**, none of them a batch's doing:
+  - saves before format 21 are refused;
+  - only the Bank tab keeps opened lines;
+  - nine plots, not ten;
+  - the bank's capacity has a capital limit;
+  - the bank's rate is not at the dial;
+  - the window is a quarter point, not a point.
+- **Found on the way, in the tree and the records** (none fixed): eight places. They are in the note's §4 and the todo's housekeeping.
+- **The GitHub copy:** `docs/manual.html` (1,714 lines) and `docs/manual.md` (1,420 lines) are the tool's output from the published bytes.
+  - Nothing unknown; strict parse; 75 links to 23 ids.
+  - The style block is byte-identical to version 9's.
+  - `Stale` 0 firm, 89 soft; `StaleCheck` green.
+- **Still Jerus's:** the share pin, which still shows viewers of the share link version 1.
+
+### VERSION 0.7.15 — THE CENTRAL BANK AS BACKSTOP — 2026-09-27/28, DEPLOYED AND VERIFIED (tag 0928a), see `the-central-bank-as-backstop.md`
+
+Three dials Jerus asked for after 0.7.14, with the time skip and the strip
+changed alongside them. It took three implementer rounds; the first
+implementer was stopped overnight and a fresh one finished the batch. Then
+came the gate and an Opus docs pass.
+
+**Why.** Jerus: *"inflation target can be higher tgan 10%, up yo 20%, also
+central bank bond holding can ve 100% if one wants"*. The 100% is a backstop
+*"for when banks and investors dont want government bonds, its also f bank
+is in dire state, to not harm it further ... then your debt isnt priced at
+tge bank, ira proportional"*. On Insane: "Play runs on advances"; on the
+skip: "Skip runs too".
+
+**What shipped.**
+- **Insane runs from day one.** The 0.7.14 play-clock refusal is gone. An
+  unborrowed Insane city pays its land coupon and first pensions on the
+  central bank's advances; its private sector pays tax from month two, and
+  after a year the treasury holds $7.1M.
+- **The time skip runs on an empty treasury.** It stops only when a month
+  throws, and its report says what the central bank advanced. This closes
+  the 0.7.0 item.
+- **The inflation target runs to 20%** (Jerus's number). The strip's
+  colours now read from the target:
+  - grey within 3 points either side;
+  - amber 3–5 points over, or more than 3 under;
+  - red more than 5 points over it (Jerus: "Red at target + 5 points"), or
+    prices falling faster than 10% a year.
+- **The holdings dial runs to 100%.**
+  - The central bank buys the bank's term paper first, then the
+    households'.
+  - Compression stays full from 50% (`FULL_COMPRESSION_SHARE`).
+  - The city's rate floor is split by holder: policy + (1 − s) × the
+    bank's excess, where s is the central bank's share of all the city's
+    paper.
+  - It rolls what it holds at issue, par for par at the issue's price, as
+    the Fed does ("Build the rollover fix"; FRBNY, *FAQs: Treasury
+    Rollovers*). Past its dial it runs off. At 100% it takes the whole
+    issue when the market's part is nothing ("Yes, the backstop").
+- **Last year's surplus pays everyone:** the market's part of what falls
+  due first, then the central bank's par ("Surplus pays everyone").
+- **A playtest bug fixed:** an offer answered on an overdrawn month was a
+  step late, and that month's write-offs were miscounted. `SAVE_FORMAT`
+  stays 27.
+
+**What it found (8 seeds a setup).**
+- Default and autopilot are byte-identical to 0.7.14. The default city
+  never owes paper at home, so the dial can't be measured on it.
+
+| setup | failures | mean pop |
+|---|---:|---:|
+| Lean, dial 50% | 12 | 159,372 |
+| Lean, dial 100% | 11 | 156,877 |
+| held 25%, dial 0 | 43 | 4,529 |
+| held 25%, dial 50% | 105 | 5,626 |
+| held 25%, dial 100% | 61 | 1,047 |
+
+- **Round 1** found the rollover selling the central bank's maturing
+  paper to the bank, which then failed. Rolling at issue took held 25% at
+  100% from 109 failures to 61. The failures left there are the preferred's
+  circular capital, which Jerus kept.
+- **Round 1's better 25% city at 100%** (9,476 people) was a loop: the bank
+  bought about three times the face, and the central bank bought it back
+  below face. Par for par ends it.
+- **The audit closed every month of every run.**
+- **The docs pass** brought 13 files' prose to one account. It found two
+  stale player-facing notes, both fixed at the gate: the Finances "Who holds
+  it" note (the households sell to the central bank too) and the Policy
+  tab's runoff condition, which was backwards.
+
+**The tree:** 226 source files, ~177,000 lines, 64 harnesses (63 green,
+HealthCheck red as shipped in 0.7.12).
+
 ### VERSION 0.7.14 — THE CITY TAKES THE SHARES — 2026-09-27, DEPLOYED AND VERIFIED (tag 0927a), see `the-city-takes-the-shares.md`
 
 The treasury batch, on the todo since 0.7.12, with the Insane start Jerus

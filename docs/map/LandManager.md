@@ -1,6 +1,6 @@
 # LandManager.java - 525 lines · 47 methods · 7 constants · model
 
-`ham/citybuildersim/LandManager.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandManager.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > The city's land: what it owns, what is built on, and what it sells.
 > 

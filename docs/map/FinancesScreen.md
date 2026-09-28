@@ -1,6 +1,6 @@
-# FinancesScreen.java - 2,695 lines · 40 methods · 11 constants · interface
+# FinancesScreen.java - 2,756 lines · 40 methods · 11 constants · interface
 
-`ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-09-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
 
 > The Finances tab: the position, the ladder of what the city owes, debt
 > service, home and abroad, your rate taken apart, the book, buying back,
@@ -19,7 +19,7 @@
 > did, shown after it - had sat at the tail of the build cards and came here
 > the same day, because it is this tab's.
 
-**Uses:** [Palette](Palette.md) (336), [DebtManager](DebtManager.md) (16), [TreasuryFund](TreasuryFund.md) (16), [CityCalendar](CityCalendar.md) (14), [Debt](Debt.md) (12), [CorporateBond](CorporateBond.md) (11), [Equity](Equity.md) (9), [Rollover](Rollover.md) (7), [Currency](Currency.md) (6), [Bank](Bank.md) (6), [OrderBook](OrderBook.md) (6), [BondMarket](BondMarket.md) (4), [Game](Game.md) (4), [NationalAccounts](NationalAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (3), [UserInterface](UserInterface.md) (2), [CentralBank](CentralBank.md) (2), [Sectors](Sectors.md) (2), [DebtQuote](DebtQuote.md) (2), [ForeignAccounts](ForeignAccounts.md) (1), [Exchange](Exchange.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [HistorySave](HistorySave.md) (1), [BankScreen](BankScreen.md) (1)
+**Uses:** [Palette](Palette.md) (340), [DebtManager](DebtManager.md) (16), [TreasuryFund](TreasuryFund.md) (16), [CityCalendar](CityCalendar.md) (14), [Debt](Debt.md) (12), [CorporateBond](CorporateBond.md) (11), [Equity](Equity.md) (9), [Rollover](Rollover.md) (8), [Currency](Currency.md) (6), [Bank](Bank.md) (6), [OrderBook](OrderBook.md) (6), [BondMarket](BondMarket.md) (4), [Game](Game.md) (4), [NationalAccounts](NationalAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (3), [UserInterface](UserInterface.md) (2), [CentralBank](CentralBank.md) (2), [Sectors](Sectors.md) (2), [DebtQuote](DebtQuote.md) (2), [ForeignAccounts](ForeignAccounts.md) (1), [Exchange](Exchange.md) (1), [HouseholdBalance](HouseholdBalance.md) (1), [HistorySave](HistorySave.md) (1), [BankScreen](BankScreen.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -43,40 +43,40 @@
 | 879 | HOME AND ABROAD |
 | 918 | · · the foreign half |
 | 962 | YOUR RATE, TAKEN APART |
-| 1048 | · · how far each measure has run |
-| 1127 | THE BOOK |
-| 1194 | · · who holds it (0.7.1) |
-| 1225 | BUY BACK |
-| 1379 | · ROLLING WHAT FALLS DUE (0.7.13) |
-| 1476 | · WHEN THE BANK FAILS (0.7.14) |
-| 1535 | THE CITY'S FUND (0.7.14) |
-| 1558 | · · what it holds |
-| 1616 | · · the dial |
-| 1648 | · · the transfer |
-| 1687 | · · how much |
-| 1707 | · · pay in, draw out |
-| 1726 | · · shares |
-| 1760 | · · bonds |
-| 1796 | · · waiting |
-| 1810 | BORROW |
-| 1851 | · · what to sell |
-| 1872 | · · the curve (0.7.1) |
-| 1902 | · · for how long |
-| 1926 | · · how much |
-| 1978 | · · the quote |
-| 2038 | · · the ladder, with this bond in it |
-| 2046 | · · who is buying it |
-| 2049 | · · and where the dollars go |
-| 2066 | · · the button |
-| 2261 | MONEY (0.7.0) |
-| 2278 | · · in two sentences |
-| 2312 | · · the balance sheet |
-| 2360 | · · this month |
-| 2390 | · · M0 and M2 |
-| 2430 | THE BOND MARKET (0.7.12) |
-| 2527 | · · the month |
-| 2559 | · · the order books |
-| 2656 | THE DEBT RESULT |
+| 1070 | · · how far each measure has run |
+| 1149 | THE BOOK |
+| 1216 | · · who holds it (0.7.1) |
+| 1250 | BUY BACK |
+| 1404 | · ROLLING WHAT FALLS DUE (0.7.13) |
+| 1537 | · WHEN THE BANK FAILS (0.7.14) |
+| 1596 | THE CITY'S FUND (0.7.14) |
+| 1619 | · · what it holds |
+| 1677 | · · the dial |
+| 1709 | · · the transfer |
+| 1748 | · · how much |
+| 1768 | · · pay in, draw out |
+| 1787 | · · shares |
+| 1821 | · · bonds |
+| 1857 | · · waiting |
+| 1871 | BORROW |
+| 1912 | · · what to sell |
+| 1933 | · · the curve (0.7.1) |
+| 1963 | · · for how long |
+| 1987 | · · how much |
+| 2039 | · · the quote |
+| 2099 | · · the ladder, with this bond in it |
+| 2107 | · · who is buying it |
+| 2110 | · · and where the dollars go |
+| 2127 | · · the button |
+| 2322 | MONEY (0.7.0) |
+| 2339 | · · in two sentences |
+| 2373 | · · the balance sheet |
+| 2421 | · · this month |
+| 2451 | · · M0 and M2 |
+| 2491 | THE BOND MARKET (0.7.12) |
+| 2588 | · · the month |
+| 2620 | · · the order books |
+| 2717 | THE DEBT RESULT |
 
 ## Constants
 
@@ -91,8 +91,8 @@
 | 95 | `FinancesScreen.FUND_PAGES` | `{ "Holdings", "By hand" }` | The city's fund: what it holds and its rules, and the player's own orders (0.7.14). |
 | 114 | `FinancesScreen.INSTRUMENTS` | `{ new Instrument("Note", "Notes", "NOTE", 3, 12, 1, 1000, "months", "No coupo...` |  |
 | 543 | `FinancesScreen.LADDER_YEARS` | `12` | How many years out the ladder is drawn before it gives up and totals. |
-| 1391 | `FinancesScreen.ROLLOVER_CHIPS` | `{ "By hand", "Same structure", "12-month notes" }` |  |
-| 1483 | `FinancesScreen.RESCUE_CHIPS` | `{ "Automatic", "Wait for my button" }` |  |
+| 1416 | `FinancesScreen.ROLLOVER_CHIPS` | `{ "By hand", "Same structure", "12-month notes" }` |  |
+| 1544 | `FinancesScreen.RESCUE_CHIPS` | `{ "Automatic", "Wait for my button" }` |  |
 
 ## Fields (state)
 
@@ -105,16 +105,16 @@
 | 144 | `int borrowTerm` |  |
 | 145 | `double borrowAsk` |  |
 | 146 | `boolean borrowHold` |  |
-| 1545 | `double fundAsk` | What the player's hand is asking for on the fund's page: money to move or spend, and the company or bond picked. |
-| 1546 | `int fundCompany` |  |
-| 1547 | `String fundIssuer` |  |
-| 2578 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
+| 1606 | `double fundAsk` | What the player's hand is asking for on the fund's page: money to move or spend, and the company or bond picked. |
+| 1607 | `int fundCompany` |  |
+| 1608 | `String fundIssuer` |  |
+| 2639 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 2657 | **type** `final class FinancesScreen` | The Finances tab: the position, the ladder of what the city owes, debt service, home and abroad, your rate taken apart, the book, buying back, and borrowing - at home or in somebody else's money - and, since 0.7.0, th... |
+| 39 | 2718 | **type** `final class FinancesScreen` | The Finances tab: the position, the ladder of what the city owes, debt service, home and abroad, your rate taken apart, the book, buying back, and borrowing - at home or in somebody else's money - and, since 0.7.0, th... |
 | 44 | 1 | `FinancesScreen(UserInterface ui)` |  |
 
 ### FINANCES (lines 46-147)
@@ -168,77 +168,77 @@
 |---:|---:|---|---|
 | 883 | 78 | `void homeAndAbroadPage(VBox column)` |  |
 
-### YOUR RATE, TAKEN APART (lines 962-1126)
+### YOUR RATE, TAKEN APART (lines 962-1148)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 966 | 106 | `void yourRatePage(VBox column)` |  |
-| 1073 | 10 | `int rateRow(javafx.scene.layout.GridPane table, int line, String label, double rate, String lever)` |  |
-| 1085 | 41 | `VBox stressRow(String label, double stress)` | How much of one measure's worst case the city has used up. |
+| 966 | 128 | `void yourRatePage(VBox column)` |  |
+| 1095 | 10 | `int rateRow(javafx.scene.layout.GridPane table, int line, String label, double rate, String lever)` |  |
+| 1107 | 41 | `VBox stressRow(String label, double stress)` | How much of one measure's worst case the city has used up. |
 
-### THE BOOK (lines 1127-1224)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1131 | 93 | `void theBookPage(VBox column)` |  |
-
-### BUY BACK (lines 1225-1378)
+### THE BOOK (lines 1149-1249)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1248 | 45 | `void buyBackPage(VBox column)` | Buying the city's own debt back, one bond at a time. |
-| 1295 | 83 | `VBox buyBackRow(Debt debt, double rate, int month)` | One bond, with what it would cost to clear and what that saves. |
+| 1153 | 96 | `void theBookPage(VBox column)` |  |
 
-### ROLLING WHAT FALLS DUE (0.7.13) (lines 1379-1475)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1393 | 82 | `void rolloverBlock(VBox column)` |  |
-
-### WHEN THE BANK FAILS (0.7.14) (lines 1476-1534)
+### BUY BACK (lines 1250-1403)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1485 | 49 | `void rescueBlock(VBox column)` |  |
+| 1273 | 45 | `void buyBackPage(VBox column)` | Buying the city's own debt back, one bond at a time. |
+| 1320 | 83 | `VBox buyBackRow(Debt debt, double rate, int month)` | One bond, with what it would cost to clear and what that saves. |
 
-### THE CITY'S FUND (0.7.14) (lines 1535-1809)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1550 | 1 | `static String percentOf(double s)` | A share, 0-1, as "x.x%". |
-| 1552 | 120 | `void fundPage(VBox column)` |  |
-| 1679 | 130 | `void fundHandPage(VBox column)` | THE HAND (0.7.14): pay in and draw out, and orders on the two books. |
-
-### BORROW (lines 1810-2260)
+### ROLLING WHAT FALLS DUE (0.7.13) (lines 1404-1536)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1827 | 264 | `void borrowPage(VBox column, boolean foreign)` |  |
-| 2099 | 43 | `double[] proposedSchedule(String type, DebtQuote quote, int term, boolean foreign)` | The payment schedule the proposed bond would add, month by month. |
-| 2154 | 41 | `VBox bankAppetite()` | WHO IS BUYING THIS, AND WHAT IT DOES TO EVERYONE ELSE. |
-| 2197 | 11 | `VBox foreignDoor()` | The door marked do not open. |
-| 2216 | 44 | `void showForeignDefaultMenu()` | Asking twice, with the bill written out. |
+| 1418 | 118 | `void rolloverBlock(VBox column)` |  |
 
-### MONEY (0.7.0) (lines 2261-2429)
+### WHEN THE BANK FAILS (0.7.14) (lines 1537-1595)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2273 | 150 | `void moneyPage(VBox column)` |  |
-| 2425 | 4 | `static double[] lastYear(double[] series)` | The last twelve months of a series, or all of it if the city is younger. |
+| 1546 | 49 | `void rescueBlock(VBox column)` |  |
 
-### THE BOND MARKET (0.7.12) (lines 2430-2655)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2443 | 6 | `double businessDebt()` | What every business owes, bank loans and bonds together. |
-| 2451 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
-| 2455 | 121 | `void bondMarketPage(VBox column)` |  |
-| 2580 | 75 | `void bondBookPage(VBox column)` |  |
-
-### THE DEBT RESULT (lines 2656-2695)
+### THE CITY'S FUND (0.7.14) (lines 1596-1870)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2667 | 8 | `String executeDebtLogic(String type, double amount, int duration, double rounding)` |  |
-| 2677 | 18 | `void showDebtResultMenu(String summary)` | Shows the terms the player just agreed to. |
+| 1611 | 1 | `static String percentOf(double s)` | A share, 0-1, as "x.x%". |
+| 1613 | 120 | `void fundPage(VBox column)` |  |
+| 1740 | 130 | `void fundHandPage(VBox column)` | THE HAND (0.7.14): pay in and draw out, and orders on the two books. |
+
+### BORROW (lines 1871-2321)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1888 | 264 | `void borrowPage(VBox column, boolean foreign)` |  |
+| 2160 | 43 | `double[] proposedSchedule(String type, DebtQuote quote, int term, boolean foreign)` | The payment schedule the proposed bond would add, month by month. |
+| 2215 | 41 | `VBox bankAppetite()` | WHO IS BUYING THIS, AND WHAT IT DOES TO EVERYONE ELSE. |
+| 2258 | 11 | `VBox foreignDoor()` | The door marked do not open. |
+| 2277 | 44 | `void showForeignDefaultMenu()` | Asking twice, with the bill written out. |
+
+### MONEY (0.7.0) (lines 2322-2490)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2334 | 150 | `void moneyPage(VBox column)` |  |
+| 2486 | 4 | `static double[] lastYear(double[] series)` | The last twelve months of a series, or all of it if the city is younger. |
+
+### THE BOND MARKET (0.7.12) (lines 2491-2716)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2504 | 6 | `double businessDebt()` | What every business owes, bank loans and bonds together. |
+| 2512 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
+| 2516 | 121 | `void bondMarketPage(VBox column)` |  |
+| 2641 | 75 | `void bondBookPage(VBox column)` |  |
+
+### THE DEBT RESULT (lines 2717-2756)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2728 | 8 | `String executeDebtLogic(String type, double amount, int duration, double rounding)` |  |
+| 2738 | 18 | `void showDebtResultMenu(String summary)` | Shows the terms the player just agreed to. |
 

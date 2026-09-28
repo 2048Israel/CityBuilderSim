@@ -989,9 +989,15 @@ final class FinancesScreen {
                                             javafx.geometry.HPos.LEFT});
         gridHead(t, "", "points", "   what moves it");
 
+        // The floor split by who holds the paper (0.7.15): the central bank's share
+        // at the dial, the rest at the bank's floor - DebtManager.floorRate().
+        double heldByCentralBank = ledger.centralBankShareOfPaper();
+        boolean split = heldByCentralBank > 0
+                && ledger.bankFloorRate() > ledger.getPolicyRate() + 1e-9;
         int line = 1;
         line = rateRow(t, line, "The floor everybody pays", floor,
-                floor > ledger.getPolicyRate() + 1e-9
+                split ? "the dial, and the bank's cost on the rest"
+                        : floor > ledger.getPolicyRate() + 1e-9
                         ? "what the bank's money costs it"
                         : "the " + pct2(ledger.getPolicyRate()) + " dial");
         line = rateRow(t, line, "Debt against a year of output", gdpPart,
@@ -1044,6 +1050,22 @@ final class FinancesScreen {
                 + "still - so it is the floor here too. Everything below it is the city's "
                 + "own record.",
                 pct2(ledger.getPolicyRate()))));
+        /*
+         * ...AND WHO HOLDS THE PAPER (0.7.15): the central bank's share of it is
+         * priced at the dial, and only the rest at what the bank's money costs
+         * it - Jerus's "your debt isnt priced at tge bank, ira proportional".
+         * Said only while it holds some.
+         */
+        if (heldByCentralBank > 0) {
+            column.getChildren().add(statementNote(String.format(
+                    "The central bank holds %.0f%% of the city's paper, and that share is priced "
+                    + "at the dial, %s. Only the rest is priced at the bank's floor, %s - what its "
+                    + "money costs it plus its margin, or the dial if that is higher - so the floor "
+                    + "is %s. The more the central bank holds, the less the bank's own state can "
+                    + "raise what the city pays.",
+                    heldByCentralBank * 100, pct2(ledger.getPolicyRate()), pct2(ledger.bankFloorRate()),
+                    pct2(floor))));
+        }
 
         /* --------------------- how far each measure has run --------------------- */
         column.getChildren().add(statementHead("How much each measure has left to say"));
@@ -1212,8 +1234,11 @@ final class FinancesScreen {
             column.getChildren().add(statementNote(
                     "The households buy their share when an issue settles and it pays them "
                     + "better than a deposit, and sell to the bank's desk when they are short. "
-                    + "The central bank buys and sells the bank's term paper with money it "
-                    + "makes - the holdings dial on the Policy tab. The bank holds the rest. "
+                    + "The central bank buys the bank's term paper with money it makes, then the "
+                    + "households' once the bank has none left, and sells to the bank - the "
+                    + "holdings dial on the Policy tab. It replaces what it holds of a maturing "
+                    + "piece with the same par of the new paper, at issue, less what it holds past "
+                    + "its dial and what last year's surplus pays off. The bank holds the rest. "
                     + "Dollar paper is held abroad."));
         }
 
@@ -1422,6 +1447,37 @@ final class FinancesScreen {
             column.getChildren().add(statementLine("Falls due next month", marked(here, money(plan.due()))
                     + (plan.dueAbroad() > 0
                             ? "  \u00b7  " + marked(here, money(plan.dueAbroad())) + " of it abroad" : "")));
+            // The central bank's own par in it (0.7.15, round 2): rolled by it at issue on
+            // top of what is sold, or, past its dial, repaid it; and what last year's
+            // surplus pays off once the market's part is paid. See Game, THE
+            // CENTRAL BANK ROLLS ITS OWN, AT ISSUE.
+            if (plan.centralBankDue() > 0) {
+                column.getChildren().add(statementLine("...of it the central bank's",
+                        marked(here, money(plan.centralBankDue())), Palette.TEXT_MUTED));
+                if (plan.centralBankPar() > 0) {
+                    column.getChildren().add(statementLine("...which it rolls itself, at issue",
+                            marked(here, money(plan.centralBankPar())), Palette.TEXT_MUTED));
+                }
+                if (plan.centralBankNetted() > 0) {
+                    column.getChildren().add(statementLine("...which last year's surplus pays off",
+                            marked(here, money(plan.centralBankNetted())), Palette.TEXT_MUTED));
+                }
+                if (plan.centralBankRunsOff() > 0) {
+                    column.getChildren().add(statementLine("...which is repaid it: it holds more than its dial",
+                            marked(here, money(plan.centralBankRunsOff())), Palette.TEXT_MUTED));
+                }
+                column.getChildren().add(statementNote(mode == Rollover.Mode.MANUAL
+                        ? "The central bank replaces what it holds of the paper falling due with the same par "
+                        + "of whatever term paper the treasury sells before it falls due, at that paper's price, "
+                        + "on top of it. Sell none and its holding is repaid it out of the treasury's cash."
+                        : "The central bank replaces what it holds of the paper falling due with the same par of "
+                        + "the new paper, at the price the market pays, on top of what is sold - so the issue is "
+                        + "sized for the rest, and with nothing to sell the market its par is issued it alone. "
+                        + "What it pays under par comes back as its remittance. Last year's surplus pays the "
+                        + "market's part first and then the central bank's, so a surplus the size of what falls "
+                        + "due pays it all. While it holds more than its dial, what it holds past the dial is "
+                        + "repaid it instead, and raised with the rest - as the Fed let its holdings run off in QT."));
+            }
             column.getChildren().add(statementLine("Last year's surplus", marked(here, money(plan.surplus())),
                     plan.surplus() < 0 ? Palette.WARN : null));
             if (plan.used() > 0) {
@@ -1449,11 +1505,16 @@ final class FinancesScreen {
                                 marked(here, money(plan.due())), marked(here, money(plan.netted())),
                                 plan.toRoll() > 0 ? marked(here, money(plan.toRoll()))
                                         + " is under the smallest deal worth arranging, so the cash pays it"
+                                        : plan.centralBankPar() > 0 ? "nothing is sold to the market: the "
+                                        + "central bank's own " + marked(here, money(plan.centralBankPar()))
+                                        + " is issued it alone"
                                         : "nothing is issued")
                         : String.format("%s falls due, last year's surplus nets %s, %s will be raised as %s: "
-                                        + "about %s of new face.",
+                                        + "about %s of new face%s.",
                                 marked(here, money(plan.due())), marked(here, money(plan.netted())),
-                                marked(here, money(plan.toRaise())), as, marked(here, money(plan.issued()))),
+                                marked(here, money(plan.toRaise())), as, marked(here, money(plan.issued())),
+                                plan.centralBankPar() > 0 ? ", and the central bank's own "
+                                        + marked(here, money(plan.centralBankPar())) + " of face on top" : ""),
                         Palette.TEXT_BODY));
             }
         }
