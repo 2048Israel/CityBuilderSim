@@ -264,50 +264,246 @@ public abstract class Sector {
      * of that exactly as the wage does.
      */
     public double staffableShare(BuildingsTemplate t) {
-        if (t == null || game == null) return 1;
+        return staffing(t).share;
+    }
+
+    /* =======================================================================
+       EVERY PLANNER THAT BUILDS POSTS ASKS, AND THE FIFTH IT LEAVES IS FRICTION
+       (0.7.18)
+
+       Jerus: "Construction, Retail, Restaurants, Luxury and the makers check
+       whether they can staff a building before building it (the check four
+       sectors already use), and the 20% it allows can't be jobs nobody can
+       fill."
+
+       WHY. Only Manufacturing, Automotive, Rail and Business Services asked
+       (and Construction since 0.7.17); the shops, the kitchens, the luxury
+       counters and every maker built posts without looking. And the question
+       the four asked let a fifth of a building be posts NO band could fill:
+       in Jerus's year-149 city a Machine Works with 30 unskilled posts of 173
+       passed at 82.7% while the unskilled rung stood 8.5% filled, and its 30
+       posts joined the 185,132 empty ones.
+
+       THE RULE. A building passes at MIN_STAFFABLE_TO_ORDER of its posts
+       fillable from the city's spare workers, as before - AND none of the
+       rest may be posts nobody can fill. "Spare" is the one definition
+       PopulationManager.fillByBand() gives: a band's workers, and everyone
+       above them the fill would put in its posts, less the posts already
+       there - so a graduate counts toward a lower band's posts exactly as far
+       as workers taking the best-paid job would send them there, and a band
+       joined in a shortage with the band above it has nothing spare.
+
+       WHAT "NOBODY CAN FILL" MEANS - JERUS'S ANSWER, "Truly unfillable only":
+       "A band counts as 'nobody can fill' only when it has no spare workers,
+       nobody above who can step down into it, and no migrants who come for
+       it... The rule stays in the code for any band that ever has no way
+       in." All three, not the first alone. The first reading - any band with
+       no spare - failed every building with a college post in every city
+       without a college, because college workers are always short there and
+       nearly every shop, bakery and plant has two or three college posts: the
+       default city ended at a twelfth of its size (the round's notes). A band
+       short this month but with graduates above who can step down, or
+       migrants who come for its wage, is friction the fifth is there for.
+       Since NONE's arrival ceiling is the world's share of migrants with no
+       diploma, every band has migrants who come for it, so in play the rule
+       does not bind; it stands for a band that ever has no way in
+       (InvestCheck causes one).
+       ======================================================================= */
+
+    /** Whether the city could staff one of a building, and if not, why not (0.7.18). */
+    public static final class Staffing {
+        /** The share of its posts the city's spare workers could fill. */
+        public final double share;
+        /** A band it has posts in that nobody can fill (see passes()), or null. */
+        public final WageBand unfillable;
+
+        /** Always staffable: a building with no posts, or nobody to ask. */
+        static final Staffing ANY = new Staffing(1, new double[0], new double[0], new double[0], new boolean[0]);
+
+        /**
+         * @param wanted   the building's posts per band
+         * @param spare    each band's supply less its posts, from the fill
+         * @param above    the workers of every band above each band
+         * @param comeFor  whether any migrant comes for each band (Migration.admits())
+         */
+        Staffing(double share, double[] wanted, double[] spare, double[] above, boolean[] comeFor) {
+            this.share = share;
+            WageBand none = null;
+            for (int b = 0; b < wanted.length && none == null; b++) {
+                if (wanted[b] > 0 && nobodyCanFill(spare[b], above[b], comeFor[b])) none = WageBand.values()[b];
+            }
+            this.unfillable = none;
+        }
+
+        /**
+         * THE ONE DEFINITION OF "NOBODY CAN FILL" (Jerus, "Truly unfillable
+         * only"): "A band counts as 'nobody can fill' only when it has no spare
+         * workers, nobody above who can step down into it, and no migrants who
+         * come for it." No spare after the cascade; no worker in any band above
+         * it (any of them may take its posts - a worker may hold any post at or
+         * below their band - so one above is somebody who can step down); and
+         * no migrant who comes for it. All three.
+         */
+        static boolean nobodyCanFill(double spare, double workersAbove, boolean migrantsComeForIt) {
+            return spare <= 0 && workersAbove <= 0 && !migrantsComeForIt;
+        }
+
+        /**
+         * Staffable enough to order: MIN_STAFFABLE_TO_ORDER of its posts
+         * fillable from spare workers, and none of the rest in a band nobody
+         * can fill. "The 20% it allows can't be jobs nobody can fill."
+         */
+        public boolean passes() {
+            return unfillable == null && share >= MIN_STAFFABLE_TO_ORDER;
+        }
+
+        /** Why not, as the advisor's hold reason, for a building of this name. */
+        public String why(String building) {
+            String a = building != null && !building.isEmpty()
+                    && "AEIOUaeiou".indexOf(building.charAt(0)) >= 0 ? "an" : "a";
+            return unfillable != null
+                    ? String.format("no one could staff %s %s's %s posts", a, building, postsWord(unfillable))
+                    : String.format("the city could staff %.0f%% of %s %s; it wants %.0f%%",
+                            share * 100, a, building, MIN_STAFFABLE_TO_ORDER * 100);
+        }
+    }
+
+    /** What the advisor calls a band's posts. */
+    static String postsWord(WageBand band) {
+        return switch (band) {
+            case NONE -> "unskilled";
+            case DIPLOMA -> "diploma";
+            case COLLEGE -> "college";
+            case UNIVERSITY -> "university";
+        };
+    }
+
+    /** The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. */
+    public Staffing staffing(BuildingsTemplate t) {
+        return staffing(t, 1);
+    }
+
+    /**
+     * The largest order of up to {@code wanted} of these that still passes,
+     * counted as one building of that many times the posts; 0 when not even
+     * one does (0.7.18). An order of ten grocery stores is ten stores' posts,
+     * and the planners that order more than one at a time - the shops, the
+     * kitchens, the luxury counters and the makers - are held to all of them.
+     * The share falls as the order grows and the unfillable band does not
+     * depend on it, so the answer is found by halving.
+     */
+    public int staffableCount(BuildingsTemplate t, int wanted) {
+        if (wanted <= 0 || !staffing(t, 1).passes()) return 0;
+        int lo = 1, hi = wanted;
+        while (lo < hi) {
+            int mid = (lo + hi + 1) >>> 1;
+            if (staffing(t, mid).passes()) lo = mid; else hi = mid - 1;
+        }
+        return lo;
+    }
+
+    /** The same test for {@code count} of these at once. */
+    public Staffing staffing(BuildingsTemplate t, int count) {
+        if (t == null || game == null) return Staffing.ANY;
         PopulationManager people = game.getPopulationManager();
-        double[] supply = people.supplyByBand();
         double[] posts  = people.staffablePostsByBand();
-        if (supply == null || posts == null) return 1;
+        if (posts == null) return Staffing.ANY;
+        // ...every post, the builders' laid-off crews included (0.7.17): the
+        // people laid off for want of work go back to those posts when the
+        // work comes, so they are not spare for a new building. See
+        // BuildingManager.getPostsWithheld().
+        BuildingManager bm = game.getBuildingManager();
+        if (bm != null && bm.getPostsWithheld() > 0) {
+            posts = posts.clone();
+            for (JobType job : JobType.values()) posts[WageBand.of(job).ordinal()] += bm.getPostsWithheld(job);
+        }
+        double[] supply = people.supplyByBand(posts);
+        if (supply == null) return Staffing.ANY;
 
         double[] wanted = new double[WageBand.values().length];
         double total = 0;
         for (JobType job : JobType.values()) {
-            int n = t.getJobs(job);
+            double n = t.getJobs(job) * (double) Math.max(1, count);
             if (n <= 0) continue;
             wanted[WageBand.of(job).ordinal()] += n;
             total += n;
         }
-        if (total <= 0) return 1;
+        if (total <= 0) return Staffing.ANY;
 
-        double fillable = 0;
-        for (int b = 0; b < wanted.length; b++) {
-            if (wanted[b] <= 0) continue;
-            double spare = Math.max(0, supply[b] - posts[b]);
-            fillable += Math.min(wanted[b], spare);
+        int bands = WageBand.values().length;
+        double[] own = people.workforceByBand();
+        double[] spare = new double[bands], above = new double[bands];
+        boolean[] comeFor = new boolean[bands];
+        Migration migration = game.getMigration();
+        double fillable = 0, higher = 0;
+        for (int b = bands - 1; b >= 0; b--) {
+            WageBand band = WageBand.values()[b];
+            spare[b] = supply[b] - posts[b];
+            above[b] = higher;
+            higher += Math.max(0, own[b]);
+            comeFor[b] = migration != null ? migration.admits(band) : band.arrivalCeiling() > 0;
+            if (wanted[b] > 0) fillable += Math.min(wanted[b], Math.max(0, spare[b]));
         }
-        return fillable / total;
-    }
-
-    /** What the staffed posts cost this month. Staffing, not sickness - the sick are paid. */
-    public double getPayroll() {
-        double total = 0;
-        for (double tier : wages) total += tier;
-        return total * averageFill * payrollScale();
+        // The lowest band nobody can fill is the one named: it is the one the fill runs out of first.
+        return new Staffing(fillable / total, wanted, spare, above, comeFor);
     }
 
     /**
-     * A sector that pays less than its full staffed payroll in a slack month
-     * says so here. Construction keeps a core crew when there is nothing to
-     * build; everyone else pays the people it employs.
+     * What the staffed posts cost this month: each job type's wage for the
+     * posts of that type actually filled. Staffing, not sickness - the sick
+     * are paid: a post is filled whether or not the one in it is off sick this
+     * month, and sickness cuts OUTPUT (the health ratio in getOperatingRate()),
+     * never this.
+     *
+     * JOB TYPE BY JOB TYPE since 0.7.17 (Jerus: "businesses pay each job
+     * type's wage for the jobs actually filled, which is what households
+     * receive"). It was the whole schedule times the sector's AVERAGE fill,
+     * which charged an empty post at the average of the posts beside it: a
+     * depot whose unskilled posts were 8.5% filled and its skilled ones full
+     * paid the dearest wage in the city on posts nobody held. The households
+     * are paid per type (PopulationManager.getStaffedWagePerType()), so the
+     * difference left the sectors as payroll and reached nobody - $1,273M a
+     * month in Jerus's year-149 city, Construction's $269M of it. Measured by
+     * the tracer (the project's trace0714 notes); LabourCheck now asserts
+     * that every employer's bill is what its workers are paid.
      */
-    protected double payrollScale() { return 1; }
+    public double getPayroll() {
+        double total = 0;
+        for (double tier : getStaffedPayrollPerType()) total += tier;
+        return total;
+    }
 
-    /** The staffed payroll by tier, for the banded wage tax. */
+    /**
+     * The same bill with every post it offers filled - what the unfilled
+     * posts would cost as well, for the operations page's note (0.7.17); the
+     * builders' laid-off posts are not offered and not in it. Not the
+     * payroll: nobody is paid for a post nobody holds.
+     */
+    public double getPayrollAtFullStaffing() {
+        double total = 0;
+        for (double tier : wages) total += tier;
+        return total;
+    }
+
+    /*
+     * NO SECTOR PAYS LESS THAN ITS FILLED POSTS (0.7.17). There was a
+     * payrollScale() here, which only the builders overrode: an idle builder
+     * kept every post filled and paid a quarter of its wages. Once the
+     * payroll became what the workers receive, that quarter was what they
+     * were paid, and Jerus chose instead that the builders lay the idle
+     * crews off (sectors.Construction, THE CREWS THE WORK NEEDS). A post a
+     * sector does not want is a post it does not offer; every post it
+     * offers and fills it pays in full.
+     */
+
+    /**
+     * The staffed payroll by tier, for the banded wage tax: each tier's wage
+     * bill at that tier's own fill (0.7.17 - it was the average fill, see
+     * getPayroll()).
+     */
     public double[] getStaffedPayrollPerType() {
         double[] out = new double[wages.length];
-        double scale = averageFill * payrollScale();
-        for (int i = 0; i < wages.length; i++) out[i] = wages[i] * scale;
+        for (int i = 0; i < wages.length; i++) out[i] = wages[i] * fill[i];
         return out;
     }
 
@@ -323,6 +519,14 @@ public abstract class Sector {
         for (int posts : jobs) total += posts;
         return total;
     }
+
+    /**
+     * ...per job type: its buildings' posts (postsPerTier()) less any it has
+     * laid off this month - only the builders do (0.7.17; sectors
+     * .Construction, THE CREWS THE WORK NEEDS). The posts the payroll is
+     * struck on.
+     */
+    public int[] postsOfferedPerTier() { return jobs.clone(); }
 
     /**
      * The posts filled - its workers (0.7.4, for the sector list): the posts
@@ -801,6 +1005,19 @@ public abstract class Sector {
          */
         public double paidEarlier;
 
+        /**
+         * ...AND BUILDINGS IT BOUGHT FROM ANOTHER BUSINESS, by the supplier's
+         * key (0.7.19): the builders' contract work on its own premises and
+         * the material escalation on it, as the builders bill them. Not an
+         * input - it was paid for as a building (spentOnBuildings) - so not in
+         * purchases(); held only so the sales tax on it is credited at the
+         * SUPPLIER's rate, as real VAT credits capital property (see
+         * EconomyManager.settleSalesTax()). A landlord's rebate on a new
+         * rental home (revised) is held here too, as the share of the work
+         * the rebate reaches (Game.settleSiteContracts()).
+         */
+        public final Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
+
         public Split soldOf(Good g)   { return sold.computeIfAbsent(g, k -> new Split()); }
         public Split boughtOf(Good g) { return bought.computeIfAbsent(g, k -> new Split()); }
         /** Sold to households in particular - consumption, in the national accounts. */
@@ -817,6 +1034,7 @@ public abstract class Sector {
         void clear() {
             localSales = exports = otherRevenue = imports = salesToHouseholds = paidEarlier = 0;
             purchasesBySupplier.clear();
+            capitalBySupplier.clear();
             unitsSold.clear();
             unitsBought.clear();
             sold.clear();
@@ -834,6 +1052,7 @@ public abstract class Sector {
             localSales *= s; exports *= s; otherRevenue *= s; imports *= s; salesToHouseholds *= s;
             paidEarlier *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
+            capitalBySupplier.replaceAll((k, v) -> v * s);
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
             otherInputs.replaceAll((k, v) -> v * s);
@@ -1024,6 +1243,16 @@ public abstract class Sector {
     }
 
     /**
+     * ...and a price given back (0.7.19): the builders' refund of material
+     * escalation to an owner whose material cost less when it was drawn than
+     * its quote allowed. Less revenue in the month it is given, as a price
+     * reduction is - see Game, MATERIAL AT THE PRICE WHEN IT IS USED.
+     */
+    protected final void bookRevenueRefund(double amount) {
+        if (amount > 0 && Double.isFinite(amount)) pending.otherRevenue -= amount;
+    }
+
+    /**
      * A SERVICE BOUGHT FROM ANOTHER BUSINESS IN THE CITY, billed by the
      * business that performed it. Haulage, today - see sectors.Rail.
      *
@@ -1051,6 +1280,18 @@ public abstract class Sector {
         if (!(amount > 0) || !Double.isFinite(amount)) return;
         if (supplier != null) pending.purchasesBySupplier.merge(supplier, amount, Double::sum);
         pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
+    }
+
+    /**
+     * A building bought from another business in the city (0.7.19): the
+     * builders' work on this sector's own premises, billed as they do it, and
+     * any escalation on it - negative for a refund. Recorded only so the
+     * sales tax on it is credited back (Ledger.capitalBySupplier); the money
+     * moved when it was paid for, as a building.
+     */
+    public final void recordCapitalPurchase(String supplier, double amount) {
+        if (supplier == null || !Double.isFinite(amount) || amount == 0) return;
+        pending.capitalBySupplier.merge(supplier, amount, Double::sum);
     }
 
     /**
@@ -1127,6 +1368,16 @@ public abstract class Sector {
         public Map<String, Double> otherInputs = new LinkedHashMap<>();
         /** The part of inputs drawn from stock paid for in an earlier month - see Ledger.paidEarlier. In inputs, and added back to the cash at bank(). */
         public double paidEarlier;
+        /** Buildings bought from other businesses this month, by supplier (0.7.19) - see Ledger.capitalBySupplier. */
+        public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
+        /**
+         * The sales tax credited back on them (0.7.19): inside the net the
+         * ledger settled, and NOT in salesTax - it was capitalised with the
+         * building, not expensed, so crediting it through the tax line would
+         * have made it profit, taxed. bank() hands it to the cash apart, and
+         * the month's building spending is net of it (Game, after the strike).
+         */
+        public double capitalTaxCredit;
 
         void scale(double s) {
             revenue *= s; inputs *= s; payroll *= s; electricity *= s; water *= s; maintenance *= s;
@@ -1134,8 +1385,9 @@ public abstract class Sector {
             operatingIncome *= s; interest *= s; propertyTax *= s; salesTax *= s;
             preTaxIncome *= s; profitTax *= s; netIncome *= s;
             localSales *= s; exports *= s; otherRevenue *= s; salesToHouseholds *= s;
-            localPurchases *= s; imports *= s;
+            localPurchases *= s; imports *= s; capitalTaxCredit *= s;
             purchasesBySupplier.replaceAll((k, v) -> v * s);
+            capitalBySupplier.replaceAll((k, v) -> v * s);
             for (Split x : sold.values())   { x.atHome *= s; x.abroad *= s; }
             for (Split x : bought.values()) { x.atHome *= s; x.abroad *= s; }
             otherParts.replaceAll((k, v) -> v * s);
@@ -1168,6 +1420,8 @@ public abstract class Sector {
         s.imports = pending.imports;
         s.localPurchases = pending.purchases() - pending.imports;
         s.purchasesBySupplier = new LinkedHashMap<>(pending.purchasesBySupplier);
+        s.capitalBySupplier = new LinkedHashMap<>(pending.capitalBySupplier);
+        s.capitalTaxCredit = 0;
         s.sold = copyOf(pending.sold);
         s.bought = copyOf(pending.bought);
         s.otherInputs = new LinkedHashMap<>(pending.otherInputs);
@@ -1197,14 +1451,30 @@ public abstract class Sector {
      * is then cleared for the month that is starting.
      */
     public void bank(double salesTaxRemitted) {
+        bank(salesTaxRemitted, 0);
+    }
+
+    /**
+     * ...with the part of that net which is the tax credited back on
+     * buildings it bought (0.7.19): remitted net of it, but charged on the
+     * statement without it, and handed to the cash apart - see
+     * Statement.capitalTaxCredit.
+     */
+    public void bank(double salesTaxRemitted, double capitalTaxCredit) {
         Statement s = statement;
-        s.salesTax = salesTaxRemitted;
+        s.capitalTaxCredit = capitalTaxCredit;
+        // ...added only when there is one: a zero added is not always nothing
+        // in floating point (-0.0 + 0.0 is 0.0), and a month with no credit
+        // is struck exactly as it was before there were any.
+        s.salesTax = capitalTaxCredit != 0 ? salesTaxRemitted + capitalTaxCredit : salesTaxRemitted;
         s.preTaxIncome = s.operatingIncome - s.interest - s.propertyTax - s.salesTax;
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
         // ...less nothing twice: stock paid for when it was bought is a cost
-        // this month and no cash this month (Ledger.paidEarlier).
+        // this month and no cash this month (Ledger.paidEarlier); and the tax
+        // credited back on a building is cash back on the building.
         cash += s.netIncome + s.paidEarlier;
+        if (s.capitalTaxCredit != 0) cash += s.capitalTaxCredit;
         pending.clear();
         rShelfShort = rShelfShortValue = 0;
         for (Output o : outputs.values()) {
@@ -1243,6 +1513,9 @@ public abstract class Sector {
         s.otherInputs = saved.otherInputs == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherInputs);
         s.paidEarlier = saved.paidEarlier;
+        s.capitalBySupplier = saved.capitalBySupplier == null
+                ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.capitalBySupplier);
+        s.capitalTaxCredit = saved.capitalTaxCredit;
     }
 
     /* ===================================================================

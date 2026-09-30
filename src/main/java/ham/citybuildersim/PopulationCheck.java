@@ -53,6 +53,20 @@ public class PopulationCheck {
                 label, actual, expected, ok ? "OK" : "FAIL");
     }
 
+    /**
+     * One month's arrivals into a city of these people and households against
+     * this door census, with this many posts pulling - the census handed to
+     * migration the way Game hands it (Migration.setDoors()).
+     */
+    static double arrivalsFrom(Migration mig, PopulationCohorts people, FamilyModel households,
+                               int totalJobs, int[] census) {
+        int doors = 0;
+        for (int n : census) doors += n;
+        mig.setDoors(census);
+        mig.monthlyNet((int) people.total(), totalJobs, (int) people.total(), doors, households, ADULT_MIX);
+        return mig.getLastArrivals();
+    }
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
@@ -579,10 +593,16 @@ public class PopulationCheck {
                 mig.crowdingFactor(between, spacious) > 0);
 
         /*
-         * AND THE WALL ITSELF, asked of the placement rather than of the
-         * arithmetic - see Migration.crowdingFactor(). A city that could not
-         * place somebody last month takes nobody this month, whatever the
-         * household totals say about how much room it has.
+         * NO ROOM LEFT, ASKED OF THE PLACEMENT (0.7.17). REWRITTEN: this was
+         * the wall - "a city that left somebody nowhere last month takes
+         * nobody now" - which Jerus replaced ("Each month's arrivals are
+         * capped at the households the city can actually place, instead of
+         * stopping completely whenever one household went unhoused"). What
+         * stops arrivals now is a placement with no room left: no door free
+         * that the arrivals' households could take and nothing left in the
+         * doubling valve - the damper at its floor and the bound at nothing,
+         * the same point. The same fixture causes it, and the assertion is
+         * of the new rule.
          */
         FamilyModel overfull = new FamilyModel();
         overfull.rebuild(crowd, mix);
@@ -595,9 +615,73 @@ public class PopulationCheck {
         assertTrue("fixture: too few doors, and studios at that, really does leave"
                 + " somebody nowhere",
                 overfull.getStillUnplaced() > 0);
-        check("a city that left somebody nowhere last month takes nobody now",
-                mig.crowdingFactor((int) Math.ceil(overfull.totalHouseholds()), overfull),
-                0, 1e-9);
+        FamilyModel.Room none = overfull.roomLeft(tooFewStudios);
+        System.out.printf("   no room left: %,.0f family doors and %,.0f studios free, %,.0f households of doubling room%n",
+                none.familyDoorsFree, none.studiosFree, none.doublingRoom);
+        check("a city whose placement has no room left takes nobody: the bound",
+                none.people(), 0, 1e-9);
+        check("...and the damper, at the same point",
+                mig.crowdingFactor((int) Math.ceil(overfull.totalHouseholds()), overfull, none), 0, 1e-9);
+        check("...so the month's arrivals are none, however many jobs are going",
+                arrivalsFrom(mig, crowd, overfull, 100_000, tooFewStudios), 0, 1e-9);
+
+        /* ------------- limited, not switched off (0.7.17) -------------
+         *
+         * The wall is gone: a city with households doubled up but room left
+         * in the placement still takes people, as many as the placement has
+         * room for and no more. The room is the placement's own - the match
+         * run again against the door census, touching nothing
+         * (FamilyModel.roomLeft()) - in households of the arrivals' mix, a
+         * share of them with a child a studio will not take, and in people
+         * at the arrivals' own people to a household.
+         */
+        FamilyModel doubled = new FamilyModel();
+        doubled.rebuild(crowd, mix);
+        int[] shortOfDoors = new int[7];
+        shortOfDoors[6] = (int) Math.floor(doubled.totalHouseholds()) - 200;   // family doors, two hundred short
+        doubled.squeezeUnplaced(doubled.house(shortOfDoors));
+        doubled.noteUnplaced(doubled.house(shortOfDoors));
+        assertTrue("fixture: households doubled up, and nobody with nowhere",
+                doubled.getDoubledUpHouseholds() > 0 && doubled.getStillUnplaced() == 0);
+        FamilyModel.Room left = doubled.roomLeft(shortOfDoors);
+        double households = Math.min(left.familyDoorsFree + left.studiosFree + left.doublingRoom,
+                (left.familyDoorsFree + left.doublingRoom) / left.withDependants);
+        System.out.printf("   room left: %,.0f family doors + %,.0f studios free, %,.0f doubling;"
+                        + " %.1f%% of arrivals' households with a child, %.2f people each -> %,.0f households, %,.0f people%n",
+                left.familyDoorsFree, left.studiosFree, left.doublingRoom, left.withDependants * 100,
+                left.peoplePerHousehold, left.households(), left.people());
+        check("the room is the smaller of every door and the valve, and what the households with a child can take",
+                left.households(), households, 1e-9);
+        check("...in people at the arrivals' own people to a household", left.people(),
+                households * left.peoplePerHousehold, 1e-9);
+        double took = arrivalsFrom(mig, crowd, doubled, 100_000, shortOfDoors);
+        assertTrue("a city with households doubled up and room left still takes people", took > 0);
+        check("...as many as the placement has room for, when the jobs would bring more",
+                took, left.people(), 1e-9 * left.people());
+        assertTrue("...which is fewer than the damper alone would have let in",
+                took < (mig.getLastTarget() - crowd.total()) * Migration.ARRIVAL_RATE * mig.getLastCrowding());
+
+        /*
+         * DOUBLED-UP HOUSEHOLDS COUNT AS CROWDING (0.7.17). A door count that
+         * says one home each is not room when the doors are the wrong size:
+         * the same households against the same number of doors, as family
+         * homes and then as studios. The ramp read both as room to spare;
+         * read against the households with a door of their own, the studio
+         * city is crowded - and the family city still reads one.
+         */
+        int[] familyHomes = new int[7], studioHomes = new int[7];
+        FamilyModel fam = new FamilyModel(), stu = new FamilyModel();
+        fam.rebuild(crowd, mix);
+        stu.rebuild(crowd, mix);
+        int enough = (int) Math.ceil(fam.totalHouseholds());
+        familyHomes[6] = enough;
+        studioHomes[2] = enough;
+        double famFactor = mig.crowdingFactor(enough, fam, fam.roomLeft(familyHomes));
+        double stuFactor = mig.crowdingFactor(enough, stu, stu.roomLeft(studioHomes));
+        System.out.printf("   one door each: as family homes %.2f, as studios %.2f%n", famFactor, stuFactor);
+        check("a door each, every household behind one: nothing damps", famFactor, 1, 1e-9);
+        assertTrue("...the same count of doors that leaves families doubled up damps arrivals",
+                stuFactor < 1);
 
         /*
          * JERUS'S RULE: "if a city is full but has jobs, they'll still move in."

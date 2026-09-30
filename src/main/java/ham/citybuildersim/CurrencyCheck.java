@@ -587,7 +587,16 @@ public class CurrencyCheck {
         try {
             city.run();
             city.buildStack(ForeignCheck.template(city, "House"), 200, false);
-            city.buildStack(ForeignCheck.template(city, "Convenience Store"), 4, false);
+            /*
+             * THE SHOPS STAND FROM THE START (0.7.17): the index is a year of
+             * the city's own prices, and a city with no shop has none. Ordered
+             * beside two hundred houses they shared the builders with them
+             * (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE) and
+             * opened later, and in month forty-one the index did not hold the
+             * year this section restores into (it held fifteen months before;
+             * measured again on the rule as shipped: no year, no 45%).
+             */
+            city.buildStack(ForeignCheck.template(city, "Convenience Store"), 4, true);
             city.simulateMonths(40);
         } finally {
             System.setOut(out);

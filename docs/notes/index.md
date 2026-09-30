@@ -136,6 +136,7 @@ The sector template, each sector's own note, private investment and the rebalanc
 - `private-investment.md` - how a sector decides to expand
 - `investment-brake-and-forecasts.md` - the brake on investment and the forecasts it reads
 - `real-estate-foresight.md` - real estate builds ahead of demand, within limits
+- `the-crew-a-building-can-use.md` - 0.7.17 (2026-09-28/29), round 1 of Jerus's fixes from his 0.7.14 city: every building gets the crew it can use (Bromilow's exponent 0.70, water-filled, nothing parked), one wait an order would have for every planner and the build quote, the builders counting repairs and staffing, the landlords holding 12 months of work and stepping down to a smaller home, arrivals bounded by the placement's room, payroll by job type with idle crews laid off; four versions and why V3 shipped over Jerus's hybrid; what is open
 - `the-exchange.md` - the stock exchange: listings, the company index
 - `the-owners.md` - who owns the firms; dividends
 - `every-building-pays-to-stand.md` - maintenance on every building
@@ -194,6 +195,8 @@ The pyramid, the households and their books, the labour market, the schools, the
 - `labour-market-design.md` - the labour market's design: bands, premiums, the floor
 - `labour-market-built.md` - the labour market built
 - `labour-mobility.md` - who moves between jobs and cities
+- `the-price-keeps-up.md` - 0.7.19 (2026-09-29/30), round 3 of Jerus's fixes from his 0.7.14 city: the builders' labour at today's wages, an escalation clause, the sales tax in the quote with business credits and the rental rebates; the grant a real amount at the price index; the bank's branches by their customers with the charter exempt from the fee rule and its upkeep, the deposit cap gone, the one-month lag; Luxury's markup on the buyers at its price; three passes and why; his city and the ensembles; the held-25% city
+- `workers-take-the-best-paid-job.md` - 0.7.18 (2026-09-29), round 2 of Jerus's fixes from his 0.7.14 city, labour: every planner that builds posts checks staffing (80% from spare workers, no band nobody can fill on his "Truly unfillable only"), workers take the best-paid job they qualify for (one market at one wage; Beaudry, Green and Sand 2016), some unskilled migrants for a dear wage (7.5% at the ceiling); the literal first pass and why it was replaced; his city and the ensembles; what is open
 - `arrivals-have-diplomas.md` - migrants arrive with an education
 - `education-built.md` - schools, tuition, who goes
 - `the-price-of-a-place.md` - the student grant as a menu (a share of the wage, a fixed sum, a share of last month's surplus, a share of tuition; one rule), a rate on the student loan in the Canadian shape, and a price on a place (0-5x), 2026-09-21, 0.6.9; the default playtest that never built a school, the schools' books missing from the load path, the treasury overdraft with no floor

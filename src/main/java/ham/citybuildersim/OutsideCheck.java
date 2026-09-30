@@ -450,7 +450,18 @@ public class OutsideCheck {
                 // and one mill whose closing takes posts that are filled.
                 g.buildStack(t(g, "House"), 400, false);
                 g.buildStack(t(g, "Small Grocery Store"), 2, false);
-                g.buildStack(t(g, "Industrial Bakery"), 2, false);
+                /*
+                 * THE MILLS STAND FROM THE START (0.7.17). The closing below is
+                 * of the business with the most filled posts, meant to be a
+                 * mill. Since every building gets the crew it can use
+                 * (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE) the
+                 * bakeries on site beside the coal plant and the water works
+                 * had not opened by month sixty; the biggest employer was the
+                 * bank's branch, and closing it moved no bill a month's lag
+                 * would show. Standing, the mills are the closing the premise
+                 * describes; the houses, the shops and the works are still built.
+                 */
+                g.buildStack(t(g, "Industrial Bakery"), 2, true);
                 g.buildStack(t(g, "Coal Power Plant"), 1, false);
                 g.buildStack(t(g, "Water Treatment Plant"), 1, false);
                 g.buildStack(t(g, "Paved Road"), 4, false);
@@ -569,7 +580,7 @@ public class OutsideCheck {
             double[] finishedBefore = new double[1];
             // The students and the wage each month OPENS with: the grant is
             // struck on them and paid at the top of the month (0.7.1).
-            double[] grantStudents = new double[1], grantWage = new double[1];
+            double[] grantStudents = new double[1], grantWage = new double[1], grantIndex = new double[1];
             quietly(() -> {
                 g.newGame();
                 g.getGovernmentInvestor().spend(-900_000_000);
@@ -612,6 +623,7 @@ public class OutsideCheck {
                     double studentsBefore = g.getHouseholdBalance().students().households();
                     grantStudents[0] = g.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
                     grantWage[0] = g.getPopulationManager().getWagesPerType()[JobType.NO_DIPLOMA.ordinal()];
+                    grantIndex[0] = g.getPriceIndex().getIndex();
                     g.simulateMonths(1);
                     double carried = g.getHouseholdBalance().getLastGraduated();
                     graduatedEver[0] += carried;
@@ -637,9 +649,16 @@ public class OutsideCheck {
             // ...every student the month opened with, at the wage it opened on:
             // the grant is struck and paid at the top of the month, where the
             // students are credited it (0.7.1).
-            check("the grant is the dial times the unskilled wage, for every student",
-                    e.getStudentGrants(), grantStudents[0] * e.getTaxPolicy().getStudentGrantShare()
-                            * grantWage[0], 1e-6);
+            // REWRITTEN FOR 0.7.19: the grant's default basis is a fixed amount
+            // in founding money at the month's prices (Jerus, "Grant follows
+            // prices"; TaxPolicy.DEFAULT_GRANT_BASIS). It was the dial times the
+            // unskilled wage, the basis before.
+            assertTrue("fixture: the grant is on its default basis, a fixed amount at today's prices",
+                    e.getTaxPolicy().getGrantBasis() == TaxPolicy.GrantBasis.FIXED
+                            && e.getTaxPolicy().getGrantAmount() == TaxPolicy.DEFAULT_FIXED_GRANT);
+            check("the grant is the fixed amount at the month's prices, for every student",
+                    e.getStudentGrants(), grantStudents[0] * e.getTaxPolicy().getGrantAmount()
+                            * grantIndex[0], 1e-6);
             check("the students pay the tuition (Jerus: \"students pay it\")",
                     books.getRowTuition(HouseholdAccounts.STUDENTS), books.getTuition(), 1e-9);
             check("...and no family does", books.getRowTuition(PayTier.UNSKILLED.ordinal()), 0, 0);

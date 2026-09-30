@@ -312,6 +312,9 @@ public class LongPlaytest {
     /** The landlords' month in a word, off the advisor's line: what built it, or what stopped it. */
     static String houseReason(String line) {
         if (line == null || line.isEmpty()) return "not asked";
+        // A smaller home than the best, because the best would not fit (0.7.17).
+        if (line.startsWith("Built") && line.contains("would not fit in"))
+            return line.contains("on an insured mortgage") ? "built a smaller home, on a mortgage" : "built a smaller home, paid for";
         if (line.startsWith("Built") && line.contains("on an insured mortgage")) return "built on a mortgage";
         if (line.startsWith("Built")) return "built, paid for";
         if (line.contains("down payment")) return "held: the down payment";
@@ -320,6 +323,7 @@ public class LongPlaytest {
         if (line.contains("rent does not cover")) return "held: rent under the hurdle";
         if (line.contains("housing ahead of jobs")) return "held: housing ahead of jobs";
         if (line.contains("already building")) return "held: already building";
+        if (line.contains("months of work on site")) return "held: months of work on site";
         if (line.contains("no land") || line.startsWith("Could not build")) return "held: no land";
         if (line.contains("borrowing ban")) return "held: borrowing ban";
         if (line.contains("short of capital against everything")) return "held: the bank's leverage";
@@ -376,7 +380,8 @@ public class LongPlaytest {
         if (traceBank != null) {
             double pol = g.getDebtManager().getPolicyRate();
             traceBank.printf(java.util.Locale.ROOT,
-                    "%d,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.3f,%.3f,%s,%d,%d,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d%n",
+                    "%d,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.3f,%.3f,%s,%d,%d,%d,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,"
+                            + "%.1f,%.3f,%.3f,%.3f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%s%n",
                     g.getMonth(), bk.equity(), bk.exposure(), bk.getWeightedBook(),
                     Math.min(99, bk.leverageRatio()), Math.min(99, bk.capitalRatio()), bk.leverageBinds() ? 1 : 0,
                     bk.minimumEquity(), bk.targetEquity(), bk.payoutStance(), standing, bk.getUncoveredMonths(),
@@ -384,7 +389,18 @@ public class LongPlaytest {
                     bk.fundsTransferPrice(pol, Mortgage.MORTGAGE_TERM_MONTHS), bk.runningCostRate(),
                     bk.capitalCharge(pol, Mortgage.MORTGAGE_TERM_MONTHS, Bank.RISK_INSURED_MORTGAGE),
                     bk.prime(pol), pol, bk.getFailures(), bk.leverageTarget(), bk.capitalTarget(),
-                    bk.getMortgageBook(), bk.getNetIncome(), cr.isInsuredRationed() ? 1 : 0);
+                    bk.getMortgageBook(), bk.getNetIncome(), cr.isInsuredRationed() ? 1 : 0,
+                    // ...and (0.7.19) the branches by their customers: the fee-paying
+                    // households, their fees, what the branches cost to run this month and
+                    // the cover; the savings it can lend against, all of them, against the
+                    // households' whole savings; its capacity and what it owes the window.
+                    bk.getCustomers(), bk.getAccountFees(), bk.getPayroll() + bk.getUpkeep(),
+                    bk.getOperatingCost(), Math.min(1e6, bk.feeCover()), bk.getDeposits(),
+                    g.getHouseholdBalance().totalSavings(), bk.capacity(),
+                    g.getCentralBank().getAdvancesToBank(),
+                    // ...and (revised) what a branch past the charter cost last month, which the rule reads.
+                    bk.laterBranchCost(),
+                    String.valueOf(g.getLastInvestment("Bank")).replace(',', ';'));
         }
     }
 
@@ -1788,7 +1804,7 @@ public class LongPlaytest {
     /* =====================================================================
        THE TRACE, BESIDE THE REPORT (0.7.10)
 
-       -Dplaytest.trace=<prefix> writes six files (two at 0.7.10, the rest
+       -Dplaytest.trace=<prefix> writes eight files (two at 0.7.10, the rest
        below) and never a line of the report, so a traced run's report is
        the untraced run's to the byte:
        <prefix>-month.csv, one row a month - the treasury, its debt and what
@@ -1822,11 +1838,30 @@ public class LongPlaytest {
 
        ...AND A SIXTH, <prefix>-bonds.csv (0.7.12): a row a month of THE
        BONDS (countBonds()).
+
+       ...AND A SEVENTH, <prefix>-build.csv (0.7.17): the builders, the
+       doors and the wage bill - the homes against the households who want
+       a door, who is doubled up and who has none, the unskilled premium,
+       the builders' plant, staffing, output, repairs, what the sites were
+       left and how much of it they used, their month's result, the
+       landlords' orders on site, output parked on a stack past what it
+       owes, every employer's payroll against what the households were
+       paid, and the builders' posts offered against their posts and the
+       need they were struck on (traceBuild()). Round 1 of 0.7.17 is read
+       off it.
+
+       ...AND AN EIGHTH, <prefix>-labour.csv (0.7.18): the labour market by
+       band - posts offered, the band's own workers, the supply the wage is
+       priced against, posts filled, tightness, multiple and premium - the
+       graduates holding unskilled posts, the month's arrivals and the
+       unskilled among them, and the city's own hospitals' and schools'
+       posts and how many of them are staffed (traceLabour()). Round 2 of
+       0.7.18 is read off it.
        ===================================================================== */
 
     /** The trace's prefix under -Dplaytest.trace, or null. */
     static final String TRACE = System.getProperty("playtest.trace");
-    static java.io.PrintWriter traceMonths, traceBorrow, traceHouse, tracePop, traceBank, traceBonds;
+    static java.io.PrintWriter traceMonths, traceBorrow, traceHouse, tracePop, traceBank, traceBonds, traceBuild, traceLabour;
     /** The paper already written to the borrow file, by identity. */
     static final java.util.Set<Debt> paperSeen =
             java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
@@ -1860,6 +1895,8 @@ public class LongPlaytest {
             tracePop = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-pop.csv")));
             traceBank = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-bank.csv")));
             traceBonds = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-bonds.csv")));
+            traceBuild = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-build.csv")));
+            traceLabour = new java.io.PrintWriter(Files.newBufferedWriter(Path.of(TRACE + "-labour.csv")));
         } catch (java.io.IOException e) {
             throw new IllegalStateException("cannot write the trace at " + TRACE, e);
         }
@@ -1867,7 +1904,8 @@ public class LongPlaytest {
                 + "arrears,overdraft,rate,parity,atGuard,index,inflation,vaultUsd,defenceUsd,"
                 + "bankFails,policy,cityRate,refusedSkips,noMoney,stake,fundValue,fundCash,preferred,"
                 + "floor,bankFloor,cbPaperShare,cbHeld,m0,cbBoughtHH,"
-                + "cbParAtIssue,cbPaidAtIssue,cbBought,cbSold,bankPaidForPaper");
+                + "cbParAtIssue,cbPaidAtIssue,cbBought,cbSold,bankPaidForPaper,"
+                + "grant,revenue,luxNet,luxRevenue,luxMargin,sectorsPreTax");
         traceBorrow.println("month,type,kind,foreign,face,rate,rateIs,months,for");
         traceHouse.println("month,pop,homes,households,capacity,jobs,latent,pressure,rentF,rentS,reqF,reqS,"
                 + "breakEven,reCash,reAssets,rePrincipal,mortgages,mortgagePrincipal,bulletPrincipal,"
@@ -1878,7 +1916,8 @@ public class LongPlaytest {
                 + "familyHomes,studioHomes,familyPressure,studioPressure,jobs,unemployment,households");
         traceBank.println("month,equity,exposure,weighted,leverage,capitalRatio,levBinds,minimum,target,stance,"
                 + "branches,uncovered,closed,insuredRate,insFtp,insRun,insCap,prime,policy,failures,levTarget,"
-                + "capTarget,mortgageBook,netIncome,insuredRationed");
+                + "capTarget,mortgageBook,netIncome,insuredRationed,"
+                + "customers,accountFees,runCost,operating,feeCover,deposits,savings,capacity,window,laterCost,bankWhy");
         StringBuilder bondsHeader = new StringBuilder("month,bonds,face,faceHH,faceBank,faceCo,faceWorld,loans,issues,"
                 + "issuedFace,avgCoupon,couponsHH,couponsBank,couponsCo,couponsAbroad,principalHH,principalBank,"
                 + "principalCo,principalAbroad,lossHH,lossBank,lossCo,lossWorld,worldBought,worldSold,hhBought,hhSold,"
@@ -1888,6 +1927,18 @@ public class LongPlaytest {
             bondsHeader.append(String.format(",L%d,B%d,rate%d,cpn%d,yld%d,conc%d,dL%d,dB%d,woL%d,woB%d", i, i, i, i, i, i, i, i, i, i));
         }
         traceBonds.println(bondsHeader);
+        traceBuild.println("month,homes,households,seeking,doubledUp,stillUnplaced,arrivals,crowding,"
+                + "unskFill,uPremium,consCap,consFill,consOut,maint,siteOut,consUtil,remainingPts,"
+                + "consNet,consPayroll,depots,reOnSite,reOwed,banked,empPayroll,hhWage,consPostsOffered,consPosts,consNeed,"
+                + "consRevenue,consPreTax,consSalesTax,escalation,workPricePerPoint,labourIndex,repairsBill,"
+                + "rentalRebate,reInvested,cityOrderTax");
+        StringBuilder labourHeader = new StringBuilder("month,labourForce,unemployment,arrivals,arrivalsNone,gradsInNone");
+        for (WageBand band : WageBand.values()) {
+            int b = band.ordinal();
+            labourHeader.append(String.format(",posts%d,own%d,supply%d,filled%d,tight%d,mult%d,prem%d,wage%d", b, b, b, b, b, b, b, b));
+        }
+        labourHeader.append(",wageDoctor,healthPosts,healthFilled,schoolPosts,schoolFilled");
+        traceLabour.println(labourHeader);
         // Closed however the run ends - a finding exits early too.
         Runtime.getRuntime().addShutdownHook(new Thread(LongPlaytest::traceClose));
     }
@@ -1907,7 +1958,7 @@ public class LongPlaytest {
         }
         traceMonths.printf(java.util.Locale.ROOT,
                 "%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.6f,%.6f,%d,%.6f,%.6f,%.3f,%.3f,%d,%.6f,%.6f,%d,%d,%.6f,%.3f,%.3f,%.3f,"
-                + "%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f%n",
+                + "%.6f,%.6f,%.6f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.4f,%.3f%n",
                 g.getMonth(), g.getPopulationManager().getPopulation(), g.getCash(),
                 g.getEconomyManager().getMonthGdp(), g.getEconomyManager().getTaxIncome(),
                 g.getEconomyManager().getNationalAccounts().getInterestExpense(),
@@ -1930,9 +1981,149 @@ public class LongPlaytest {
                 // and what the bank paid for the city's paper at this month's settle.
                 g.getCentralBank().getParAtIssue(), g.getCentralBank().getBoughtAtIssue(),
                 g.getCentralBank().getBoughtPaper(), g.getCentralBank().getSoldPaper(),
-                g.getCityPaperSettled());
+                g.getCityPaperSettled(),
+                // ...and (0.7.19) the student grant against the city's revenue, Luxury's
+                // month and markup, and every sector's month before profit tax.
+                g.getEconomyManager().getStudentGrants(),
+                g.getEconomyManager().getNationalAccounts().getTotalRevenue(),
+                g.getSectors().luxuryRetail().statement().preTaxIncome,
+                g.getSectors().luxuryRetail().statement().revenue,
+                g.getSectors().luxuryRetail().getMargin(), sectorsPreTax(g));
         traceHouse(g);
         tracePop(g);
+        traceBuild(g);
+        traceLabour(g);
+    }
+
+    /**
+     * The labour market's month, one row of <prefix>-labour.csv (0.7.18).
+     * Posts are the posts offered, by band; filled is each job type's posts
+     * times its fill, summed over the band; a band's wage is its first
+     * ungated job type's (LabourMarket.bandPremium() reads the same one).
+     * The graduates in unskilled posts are the unskilled posts filled less
+     * the unskilled workers in them - an unskilled worker can hold no other
+     * post, and the posts take them first.
+     */
+    static void traceLabour(Game g) {
+        if (traceLabour == null) return;
+        PopulationManager p = g.getPopulationManager();
+        LabourMarket lm = g.getLabourMarket();
+        int[] jobs = p.getJobs();
+        double[] fill = p.getJobFillRate();
+        double[] own = p.workforceByBand();
+        double[] supply = p.supplyByBand();
+        int nb = WageBand.values().length;
+        double[] posts = new double[nb], filled = new double[nb], wage = new double[nb];
+        for (JobType j : JobType.values()) {
+            int b = WageBand.of(j).ordinal();
+            posts[b] += jobs[j.ordinal()];
+            filled[b] += jobs[j.ordinal()] * fill[j.ordinal()];
+        }
+        for (WageBand band : WageBand.values()) {
+            for (JobType j : JobType.values()) {
+                if (WageBand.of(j) == band && !LabourMarket.isGated(j)) { wage[band.ordinal()] = lm.getWage(j); break; }
+            }
+        }
+        int none = WageBand.NONE.ordinal();
+        double grads = Math.max(0, filled[none] - Math.min(own[none], filled[none]));
+        double[] mix = g.getMigration().getLastArrivalMix();
+        double[] cat = new double[4];
+        int[] hp = g.getBuildingManager().getJobArrayPerCategory(BuildingType.HEALTHCARE);
+        int[] ep = g.getBuildingManager().getJobArrayPerCategory(BuildingType.EDUCATION);
+        for (int i = 0; i < hp.length && i < fill.length; i++) {
+            cat[0] += hp[i]; cat[1] += hp[i] * fill[i];
+            cat[2] += ep[i]; cat[3] += ep[i] * fill[i];
+        }
+        StringBuilder row = new StringBuilder();
+        row.append(String.format(java.util.Locale.ROOT, "%d,%.1f,%.5f,%.2f,%.2f,%.1f", g.getMonth(), p.getLabourForce(),
+                p.getUnemploymentRate(), g.getMigration().getLastArrivals(),
+                mix == null || mix.length == 0 ? 0 : mix[none], grads));
+        for (WageBand band : WageBand.values()) {
+            int b = band.ordinal();
+            row.append(String.format(java.util.Locale.ROOT, ",%.1f,%.1f,%.1f,%.1f,%.5f,%.5f,%.5f,%.5f", posts[b], own[b],
+                    supply[b], filled[b], lm.getTightness(band), lm.getBandMultiple(band), lm.bandPremium(band), wage[b]));
+        }
+        row.append(String.format(java.util.Locale.ROOT, ",%.5f,%.1f,%.1f,%.1f,%.1f", lm.getWage(JobType.UNIV_DOCTOR),
+                cat[0], cat[1], cat[2], cat[3]));
+        traceLabour.println(row);
+    }
+
+    /**
+     * The builders, the doors and the wage bill, one row of <prefix>-build.csv
+     * (0.7.17). The employers' payroll is every payer's own figure as it
+     * stands - the sectors, the bank, the utilities and the four services
+     * the city staffs - and the households' is the wage bill they are paid
+     * off, both read at the same moment so the two are the same month's.
+     */
+    static void traceBuild(Game g) {
+        if (traceBuild == null) return;
+        BuildingManager b = g.getBuildingManager();
+        FamilyModel fm = g.getFamilies();
+        PopulationManager p = g.getPopulationManager();
+        ham.citybuildersim.sectors.Construction c = g.getSectors().construction();
+        String reKey = g.getSectors().realEstate().key();
+        int reOnSite = 0;
+        double reOwed = 0, banked = 0;
+        for (BuildingsStacks s : b.getStacksUnderConstruction()) {
+            if (!reKey.equals(s.getBuilding().getSector())) continue;
+            reOnSite += s.getUnderConstruction();
+            reOwed += s.getUnderConstruction() * (double) s.getBuilding().getConstructionPoints()
+                    - s.getConstructionProgress();
+        }
+        for (BuildingsTemplate t : b.getTemplates()) {
+            BuildingsStacks s = b.getStack(t);
+            if (s == null) continue;
+            banked += Math.max(0, s.getConstructionProgress()
+                    - s.getUnderConstruction() * (double) t.getConstructionPoints());
+        }
+        double[] wages = p.getWagesPerType();
+        double[] fill = p.getJobFillRate();
+        double employers = g.getEconomyManager().getBankPayroll()
+                + g.getServicesManager().getUtilitiesHandler().getUtilityPayroll();
+        for (Sector s : g.getSectors().all()) employers += s.getPayroll();
+        for (BuildingType cat : new BuildingType[] { BuildingType.HEALTHCARE, BuildingType.EDUCATION,
+                BuildingType.SAFETY, BuildingType.INFRASTRUCTURE }) {
+            employers += b.getCategoryPayroll(cat, wages, fill);
+        }
+        traceBuild.printf(java.util.Locale.ROOT,
+                "%d,%d,%.2f,%.2f,%.3f,%.3f,%.2f,%.5f,%.5f,%.5f,%d,%.5f,%d,%.2f,%d,%.5f,%.1f,%.3f,%.3f,%d,%d,%.1f,%.1f,%.3f,%.3f,%d,%d,%.4f,"
+                        + "%.3f,%.3f,%.3f,%.3f,%.5f,%.5f,%.3f,%.3f,%.3f,%.3f%n",
+                g.getMonth(), b.getTotalHomes(), fm.totalHouseholds(), fm.householdsSeekingDoors(),
+                fm.getDoubledUpHouseholds(), fm.getStillUnplaced(), g.getMigration().getLastArrivals(),
+                g.getMigration().getLastCrowding(), fill[JobType.NO_DIPLOMA.ordinal()],
+                g.getLabourMarket().premium(JobType.NO_DIPLOMA),
+                b.getTotalConstructionCapacity(), c.getAverageFill(), g.getConstructionOutput(),
+                g.getMaintenancePoints(), g.getBuildingOutput(), c.getUtilisation(),
+                b.getRemainingConstructionPoints(), c.statement().netIncome, c.statement().payroll,
+                b.countByName("Construction Depot"), reOnSite, reOwed, banked, employers, p.getTotalWage(),
+                c.getPostsOffered(), c.getPostsStanding(), c.getCrewsNeeded(),
+                // ...and (0.7.19) their month before tax, the tax they remitted, the owners'
+                // material escalation, what a point of work is paid beyond material and tax,
+                // their wage index and the city's repair bill.
+                c.statement().revenue, c.statement().preTaxIncome, c.statement().salesTax,
+                c.getEscalationThisMonth(), b.nonMaterialPricePerPoint(), b.buildersWageIndex(),
+                g.getEconomyManager().getMaintenanceBillTotal(),
+                // ...and (revised) the landlords' rebate on their new homes this month, what
+                // they spent on buildings net of it, and the tax in the city's own orders
+                // that the builders have not yet billed.
+                g.getSectors().realEstate().statement().capitalTaxCredit,
+                g.getInvestedThisMonth(g.getSectors().realEstate().key()), cityOrderTax(g));
+    }
+
+    /** The builders' tax in the city's orders still on site - paid with the order, not yet billed (revised 0.7.19). */
+    static double cityOrderTax(Game g) {
+        double value = 0;
+        for (BuildingManager.ContractRecord r : g.getBuildingManager().getContractRecords()) {
+            if ("City".equals(r.payer)) value += r.value;
+        }
+        return value * g.getEconomyManager().buildersSalesRate();
+    }
+
+    /** Every sector's month before profit tax, summed - what Luxury's share of the city's profit is read against (0.7.19). */
+    static double sectorsPreTax(Game g) {
+        double t = 0;
+        for (Sector s : g.getSectors().all()) t += s.statement().preTaxIncome;
+        return t;
     }
 
     /**
@@ -1992,7 +2183,9 @@ public class LongPlaytest {
         if (tracePop != null) tracePop.close();
         if (traceBank != null) traceBank.close();
         if (traceBonds != null) traceBonds.close();
-        traceMonths = traceBorrow = traceHouse = tracePop = traceBank = traceBonds = null;
+        if (traceBuild != null) traceBuild.close();
+        if (traceLabour != null) traceLabour.close();
+        traceMonths = traceBorrow = traceHouse = tracePop = traceBank = traceBonds = traceBuild = traceLabour = null;
     }
 
     /**
@@ -4052,7 +4245,7 @@ public class LongPlaytest {
                     + " interest $%,.1fk last month and $%,.0fk over the run; schools %,.0f fees, %,.0f forgiven, hunger %.1f%%%n",
                     dials.getTuitionScale(), dials.getGrantBasis(),
                     dials.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
-                            ? String.format("$%,.0f", dials.getGrantAmount() * 1000)
+                            ? String.format("$%,.0f at founding prices", dials.getGrantAmount() * 1000)
                             : String.format("%.0f%%", dials.getGrantAmount() * 100),
                     dials.getStudentLoanRate() * 100,
                     studying, graduated,

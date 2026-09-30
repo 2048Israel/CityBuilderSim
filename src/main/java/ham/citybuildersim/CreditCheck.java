@@ -950,10 +950,34 @@ public class CreditCheck {
            ------------------------------------------------------------------- */
         banned.getGovernmentInvestor().spend(-5_000_000);
         banned.getLandManager().setOwnedSqFt(200_000_000);
-        banned.buildStack(template(banned, "House"), 2500, false);
-        banned.buildStack(template(banned, "Industrial Bakery"), 3, false);
-        banned.buildStack(template(banned, "Construction Depot"), 4, false);
-        banned.buildStack(template(banned, "Coal Power Plant"), 1, false);
+        /*
+         * THE HOUSES STAND FROM THE START (0.7.17), and the city grows into
+         * them. They were ordered on site, and since the site output is
+         * shared among everything on site (BuildingManager, EVERY BUILDING
+         * GETS THE CREW IT CAN USE) the starting city's one queued shop was
+         * one of two and a half thousand buildings and had not opened when
+         * the ban came - so retail sat on "already building" through the
+         * fixture, the third reason the opening spell below exists to clear
+         * (measured on the rule as shipped, with the plant below standing:
+         * still so). Standing houses give the shop the sites; the city still
+         * grows into them, and coverage still stands still behind it.
+         */
+        banned.buildStack(template(banned, "House"), 2500, true);
+        /*
+         * ...AND SO DO THE BAKERIES, THE DEPOTS AND THE POWER (0.7.17). The
+         * opening spell below exists so the shop the starting city already
+         * has in the queue opens before the ban. Since every building gets
+         * the crew it can use (BuildingManager, EVERY BUILDING GETS THE CREW
+         * IT CAN USE) a shop of a hundred and twenty points beside a coal
+         * plant of a hundred and twenty thousand gets under a hundredth of
+         * the crews, and twelve months on it was still on site: retail's
+         * refusal read "already building", the third reason. Standing, they
+         * leave the shop the sites; the premise - a banned retailer behind
+         * a growing city - is untouched.
+         */
+        banned.buildStack(template(banned, "Industrial Bakery"), 3, true);
+        banned.buildStack(template(banned, "Construction Depot"), 4, true);
+        banned.buildStack(template(banned, "Coal Power Plant"), 1, true);
         // ...and somewhere to put a shop, or the refusal is about land and the
         // ban is still never reached.
         BusinessDebtManager ledger = banned.getEconomyManager().getBusinessDebtManager();
@@ -1375,6 +1399,19 @@ public class CreditCheck {
             LongPlaytest.build(town, "Coal Power Plant", 1);
             LongPlaytest.build(town, "Water Treatment Plant", 1);
             LongPlaytest.build(town, "Paved Road", 6);
+            /*
+             * ...THE KITCHENS' AND THE RAILWAY'S PLANNERS HELD WHILE IT FOUNDS
+             * (0.7.17). The premise is two sectors that have owned and owed
+             * nothing when their first plant is handed over. This town's own
+             * kitchens planner had ordered a Diner by month three, and since
+             * every building gets the crew it can use (BuildingManager, EVERY
+             * BUILDING GETS THE CREW IT CAN USE) it was still on site behind
+             * the coal plant, so Restaurants held a site and the fixture read
+             * it as owning something. Held, neither orders anything; the plant
+             * below is handed over by hand, as it always was.
+             */
+            town.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
+            town.getBusinessInvestment().holdSector(Sectors.RAIL);
             town.simulateMonths(3);
         });
         BusinessDebtManager lender = town.getEconomyManager().getBusinessDebtManager();
@@ -1692,6 +1729,22 @@ public class CreditCheck {
         });
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         String X = Sectors.CONSTRUCTION;
+        /*
+         * A TILL WORTH ITS PLANT, SET (0.7.17). The claims below are sized on
+         * the builders' till and plant, and the section was written against
+         * builders who reached month twenty-five with a till of about two
+         * fifths of their plant. Since the builders read repairs and staffing
+         * and lay idle crews off (sectors.Construction), this city's builders
+         * reach it idle, one depot lighter and with a small till against
+         * their plant - so the claim that falls due is nearly all plant, the
+         * month's cash-flow slice writes off most of what they owe, and the
+         * interim lender reads them back under the line: the interim loan's
+         * case, which section 13 proves, and not the backstop's, which this
+         * one does (measured again on the rule as shipped: still so). Set
+         * between months, before the claims, so the month the audit reads
+         * opens with it: no money moves inside the window.
+         */
+        g.getEconomyManager().setSectorCash(X, credit.getAssets(X) - credit.getCash(X));
         double till0 = g.getEconomyManager().getSectorCash(X);
         double plant = credit.getAssets(X) - credit.getCash(X);
         assertTrue("fixture: the city's builders have plant and a till, and a standing bank",

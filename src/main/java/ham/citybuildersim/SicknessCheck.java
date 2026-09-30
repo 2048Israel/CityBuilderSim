@@ -233,6 +233,21 @@ public class SicknessCheck {
             clinicCity.run();
             clinicCity.setCashForTest(Founding.WEALTHY_CASH);   // ...and its twin, for the same reason
             stock(clinicCity);
+            /*
+             * ...AND CARE FREE AT THE DOOR IN BOTH (0.7.18, re-caused). Coverage is
+             * the places over the people AND the share who can pay the fee
+             * (Game.careAffordability(), 2026-09-19). Two hospitals are forty
+             * thousand places each against three and a half thousand people, so
+             * the clinic city's coverage was the fee's: 88% could pay before
+             * 0.7.18. Its planners wait for staff now and its workers take the
+             * best-paid job, the town's pay spreads differently, and 83% can -
+             * thirteen points over the city with no hospitals (70%), against the
+             * twenty asked.
+             * The question here is what illness does with and without care, not
+             * who can afford it, so both twins waive the fee.
+             */
+            bareCity.getEconomyManager().getTaxPolicy().setHealthFeeScale(0);
+            clinicCity.getEconomyManager().getTaxPolicy().setHealthFeeScale(0);
             BuildingManager cb = clinicCity.getBuildingManager();
             cb.addStack(cb.getTemplateByName("General Hospital"), 2, true);
             for (int m = 0; m < 48; m++) {

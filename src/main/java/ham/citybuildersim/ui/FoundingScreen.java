@@ -267,7 +267,8 @@ final class FoundingScreen {
             }
             buysBox.getChildren().add(statementNote(
                     "Each of the first works on its own, after the village, at what a new city is "
-                    + "invoiced for it - the building and the material it takes, bought abroad. What "
+                    + "invoiced for it - the building and the material it takes, bought abroad, with the "
+                    + "builders' sales tax on both. What "
                     + "the treasury cannot pay for, the city borrows from the build screen, on a "
                     + Game.BUILD_BOND_YEARS + "-year bond or a " + Game.BUILD_NOTE_MONTHS + "-month note."));
             buysBox.getChildren().add(statementLine("In the vault", usd(usd), Palette.TEXT_HEAD));

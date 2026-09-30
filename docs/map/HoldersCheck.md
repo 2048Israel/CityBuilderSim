@@ -1,6 +1,6 @@
-# HoldersCheck.java - 543 lines · 10 methods · 0 constants · harnesses
+# HoldersCheck.java - 583 lines · 10 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HoldersCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HoldersCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought
@@ -45,21 +45,21 @@
 > 
 > Each fixture causes its condition rather than finding a city in it.
 
-**Uses:** [Game](Game.md) (18), [Debt](Debt.md) (10), [MoneyAudit](MoneyAudit.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [DebtManager](DebtManager.md) (5), [CentralBank](CentralBank.md) (5), [Household](Household.md) (5), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Bank](Bank.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [OutwardInvestment](OutwardInvestment.md) (1)
+**Uses:** [Game](Game.md) (18), [Debt](Debt.md) (10), [MoneyAudit](MoneyAudit.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [DebtManager](DebtManager.md) (5), [CentralBank](CentralBank.md) (5), [Household](Household.md) (5), [GameFiles](GameFiles.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [Bank](Bank.md) (2), [WorkingHousehold](WorkingHousehold.md) (2), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [OutwardInvestment](OutwardInvestment.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 133 | · 1. at the settle |
-| 182 | · 2. the coupon |
-| 196 | · 3. the waterfall |
-| 229 | · 4. selling after the curve rose |
-| 259 | · 5. a buyback |
-| 296 | · 6. the save |
-| 338 | · 7. an old save |
-| 386 | · 8. a dollar bond bought back |
-| 422 | 9. the whole of the paper (0.7.15) |
+| 151 | · 1. at the settle |
+| 200 | · 2. the coupon |
+| 214 | · 3. the waterfall |
+| 247 | · 4. selling after the curve rose |
+| 277 | · 5. a buyback |
+| 314 | · 6. the save |
+| 356 | · 7. an old save |
+| 404 | · 8. a dollar bond bought back |
+| 440 | 9. the whole of the paper (0.7.15) |
 
 ## Fields (state)
 
@@ -74,7 +74,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 491 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 53 | 531 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 64 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 74 | 4 | `static void quietly(Runnable r)` |  |
@@ -82,12 +82,12 @@
 | 86 | 1 | `static double savings(Game g)` |  |
 | 89 | 5 | `static boolean booksAgree(Game g)` | The two books of the households' paper agree: the cells, and the paper. |
 | 98 | 10 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit. |
-| 109 | 312 | `public static void main(String[] args) throws Exception` |  |
+| 109 | 330 | `public static void main(String[] args) throws Exception` |  |
 
-### 9. the whole of the paper (0.7.15) (lines 422-543)
+### 9. the whole of the paper (0.7.15) (lines 440-583)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 425 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
-| 431 | 112 | `static void theWholeBook() throws Exception` |  |
+| 443 | 5 | `static Debt termPiece(DebtManager ledger)` | The one piece of term paper a city holds, or null. |
+| 449 | 134 | `static void theWholeBook() throws Exception` |  |
 

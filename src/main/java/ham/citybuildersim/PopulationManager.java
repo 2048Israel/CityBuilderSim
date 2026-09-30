@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Locale;
 
 /**
+ * The working population: the workforce by skill band, the city's posts and
+ * their wages by job type, and who fills which post (fillByBand()).
  *
  * @author Jerus
  */
@@ -315,64 +317,39 @@ public class PopulationManager {
      * staffed 220 doctor posts at 100% while its factories went empty, and the
      * eleven job types were a demand-side fiction.
      *
-     * It now allocates by BAND, top down, cascading each band's surplus into
+     * It then allocated by BAND, top down, cascading each band's surplus into
      * the bands below it. Downward substitution only: a graduate can labour, a
-     * labourer cannot doctor. Within a band the workers are fungible, so a
-     * short band's posts are filled proportionally rather than in enum order -
-     * which matters, because enum order is arbitrary and would otherwise decide
-     * that the city staffs its lawyers before its doctors.
+     * labourer cannot doctor. That is still the rule, but the top-down order is
+     * not (0.7.18): how many of each band's posts are filled is now
+     * fillByBand()'s - workers take the best-paid posts they qualify for - and
+     * this spreads each band's count over its job types. Within a band the
+     * workers are fungible and the posts pay alike, so a short band's posts
+     * are filled proportionally rather than in enum order - which matters,
+     * because enum order is arbitrary and would otherwise decide that the city
+     * staffs its lawyers before its doctors.
      */
     public int[] getJobVacancy() {
 
         int[] vacancy = new int[totalWagePerType.length];
-        double[] supply = workforceByBand();
+        BandFill fill = fillByBand(staffablePostsByBand());
 
-        // Highest band first: a graduate takes graduate work if there is any,
-        // and only labours with what is left over.
-        double carried = 0;
-        for (int b = WageBand.values().length - 1; b >= 0; b--) {
+        for (int b = 0; b < WageBand.values().length; b++) {
 
-            double available = carried + supply[b];
-
-            /*
-             * GATED JOBS FIRST, AND ONLY FROM PEOPLE WHO HOLD THE LICENCE.
-             *
-             * A medical post can be filled by a doctor and by nobody else. It
-             * is not enough to be a university graduate - that is precisely the
-             * within-a-band fungibility the professional schools exist to
-             * remove, and without this loop a city with no medical school would
-             * go on staffing its hospitals out of the general graduate pool,
-             * which is the 220-doctors bug wearing a different hat.
-             *
-             * Taken off `available` because a licence holder IS one of the
-             * band's workers - the licence is a second fact about the same
-             * person, not a second person. A surplus of licence holders stays
-             * in `available` and competes for the ungated posts like anybody
-             * else, which is right: a doctor with no hospital can do research.
-             */
-            double gatedPosts = 0;
+            // The gated posts' holders were booked first, whole people; see fillByBand().
+            double gatedTaken = 0;
             for (JobType job : JobType.values()) {
-                if (WageBand.of(job).ordinal() != b) continue;
-                if (!isGated(job)) continue;
-
+                if (WageBand.of(job).ordinal() != b || !isGated(job)) continue;
                 int i = job.ordinal();
-                double staffed = Math.min(jobs[i], Math.min(licensed[i], available));
-                // Rounded ONCE, and the same rounded figure taken off the pool.
-                // Booking a fractional person against `available` while filling
-                // a whole one leaves half a worker behind on every gated type.
-                int taken = (int) Math.round(staffed);
-                vacancy[i] = Math.max(0, jobs[i] - taken);
-                available -= taken;
-                gatedPosts += jobs[i];
+                vacancy[i] = Math.max(0, jobs[i] - fill.licensedIn[i]);
+                gatedTaken += fill.licensedIn[i];
             }
 
-            double posts = 0;
+            double openPosts = 0;
             for (JobType job : JobType.values()) {
-                if (WageBand.of(job).ordinal() == b) posts += jobs[job.ordinal()];
+                if (WageBand.of(job).ordinal() == b && !isGated(job)) openPosts += jobs[job.ordinal()];
             }
-            double openPosts = posts - gatedPosts;
 
-            double filled = Math.min(Math.max(available, 0), openPosts);
+            double filled = Math.min(Math.max(fill.placed[b] - gatedTaken, 0), openPosts);
             double share = openPosts > 0 ? filled / openPosts : 1;
 
             /*
@@ -401,11 +378,307 @@ public class PopulationManager {
                 givenSoFar += give;
                 vacancy[i] = Math.max(0, jobs[i] - (int) give);
             }
-
-            carried = Math.max(0, available - filled);
         }
 
         return vacancy;
+    }
+
+    /* =====================================================================
+       WORKERS TAKE THE BEST-PAID JOB THEY QUALIFY FOR (0.7.18)
+
+       Jerus: "Workers take the best-paid job they qualify for, instead of
+       skilled jobs being filled first. Unskilled pay could then never pass
+       diploma pay, but hospitals and schools would lose some staff."
+
+       WHAT IT REPLACED. The bands were filled from the top down and only a
+       band's SURPLUS went down the ladder. So a city short of hands put the
+       whole shortage on its bottom rung, whatever that rung paid: in Jerus's
+       year-149 city all 185,132 missing workers were empty unskilled posts,
+       8.5% staffed at $68.6k a month - more than a doctor's $60.4k - while
+       182,209 diploma holders filled diploma posts at $25.5k. Nobody takes
+       the $25.5k job with the $68.6k one open to them. The rule people
+       actually follow is occupational choice with skill downgrading: take
+       the best-paid work you are qualified for, and when the lower rung pays
+       as well, the better-qualified move down the ladder and push the
+       shortage up it (Beaudry, Green and Sand 2016, "The Great Reversal in
+       the Demand for Skill and Cognitive Tasks", Journal of Labor Economics
+       34(S1): S199-S247, on graduates moving into the jobs the less educated
+       used to hold). No number is taken from it; it is the rule.
+
+       THE RULE. A worker may hold any post at or below their band. Posts are
+       filled so that no worker holds a lower-paid post while a better-paid
+       post they qualify for is empty, at the wages this month's scarcity
+       sets - each band's base times LabourMarket.multipleAt() of its
+       tightness, which is what the wages walk toward.
+
+       THE FORM. Bands are filled from the top, as before, and any band that
+       still has empty posts and would pay MORE than the band above it is
+       joined to it: the two are one market, filled together at one wage,
+       lambda. The pooled workers are split so that each band's posts pay
+       exactly lambda - a band with base b and P posts holds P x
+       tightnessAt(lambda / b)^-1 of them, or all P when that is more, when it
+       is full and the workers it queues price it at lambda. A joined market
+       that now out-pays the band above it joins that too (pool-adjacent
+       violators, the standard way to put an order back into a sequence).
+       Then a band left full keeps its price no lower than the best-paid band
+       below it that is still hiring: its members could go there, so the ones
+       queueing for it are only the ones who would still take its posts.
+
+       WHY NOT SORT THE POSTS BY THE WAGE THEY PAID LAST MONTH, the simplest
+       form: the fill would then decide the wage and the wage the fill, a
+       month apart, with nothing continuous between them. Whichever band paid
+       least would take the whole shortage, its wage would climb past the
+       other's, the order would flip, and in Jerus's city 185,000 missing
+       workers would move between the unskilled and the diploma posts every
+       month or two, and so would the hospitals' staff. The joined market is
+       where that sequence settles, so it is filled there.
+
+       WHY IT HAS THE PROPERTY. (i) Inside a joined market every post pays
+       lambda. (ii) A market with an empty post absorbs its whole pool, so
+       nobody is carried past it to a lower post. (iii) A band that is short
+       pays at least its base, and a full band pays at most its own, lower
+       one, so a short band never sits above a band that out-pays it and is
+       still hiring without the two having been joined. (iv) A full band pays
+       no less than any band below it that is hiring. So nobody is in a
+       lower-paid post while a better-paid one they could hold is empty.
+       Lowest-qualified first: an unskilled post takes the unskilled before
+       anyone, so the graduates in unskilled posts are the posts filled less
+       the unskilled workers.
+
+       WHAT DOES NOT CHANGE. How many are employed: every worker a short band
+       could use is used either way, so unemployment is the same; only WHICH
+       posts stand empty moves. Where the wages already fall with the ladder -
+       every city without a shortage at the bottom - nothing is joined and
+       this is the top-down fill. Gated posts still go to licence holders
+       alone, first: they pay more than anything else their holders could
+       take. A worker in a post is paid the post's wage, whatever their band.
+       ===================================================================== */
+
+    /**
+     * Each band's base as a multiple of the unskilled floor: what its ungated
+     * posts pay at the going rate (LabourMarket.ratioOf()). The minimum wage
+     * and the cost of living multiply every band alike, so this is all the
+     * ladder the allocator needs to compare wages on.
+     */
+    private static final double[] BAND_BASE = bandBases();
+
+    private static double[] bandBases() {
+        double[] base = new double[WageBand.values().length];
+        java.util.Arrays.fill(base, Double.MAX_VALUE);
+        for (JobType job : JobType.values()) {
+            if (isGated(job)) continue;
+            int b = WageBand.of(job).ordinal();
+            base[b] = Math.min(base[b], LabourMarket.ratioOf(job));
+        }
+        for (int b = 0; b < base.length; b++) if (base[b] == Double.MAX_VALUE) base[b] = 1;
+        return base;
+    }
+
+    /**
+     * One month's workers against one count of posts, by band (0.7.18) - the
+     * single definition of who can fill a post. getJobVacancy() spreads it
+     * over the job types, supplyByBand() hands the market its supply, and
+     * Sector.staffing() asks it what a new building could be given.
+     */
+    public static final class BandFill {
+        /** Workers holding each band's posts. */
+        public final double[] placed;
+        /** Each band's supply: its posts over this are its tightness, the figure LabourMarket prices. */
+        public final double[] supply;
+        /** Licence holders in each gated job type's posts, by JobType ordinal: whole people, booked first. */
+        public final int[] licensedIn;
+        /** The highest band of the market each band was filled in: its own when alone, the top of the tie when joined. */
+        public final int[] market;
+
+        BandFill(int bands, int types) {
+            placed = new double[bands];
+            supply = new double[bands];
+            licensedIn = new int[types];
+            market = new int[bands];
+        }
+
+        /** Whether this band was filled as one market with the band above it. */
+        public boolean joinedAbove(WageBand band) {
+            int b = band.ordinal();
+            return b + 1 < market.length && market[b] == market[b + 1];
+        }
+    }
+
+    /**
+     * The fill against this month's posts offered.
+     */
+    public BandFill fillByBand() {
+        return fillByBand(staffablePostsByBand());
+    }
+
+    /**
+     * The fill against a given count of staffable posts per band: this
+     * month's (staffablePostsByBand()), or a planner's, which also counts the
+     * posts no employer offers this month (Sector.staffing()).
+     */
+    public BandFill fillByBand(double[] posts) {
+        int bands = WageBand.values().length;
+        BandFill f = new BandFill(bands, jobs.length);
+        double[] own = workforceByBand();
+
+        /*
+         * GATED JOBS FIRST, AND ONLY FROM PEOPLE WHO HOLD THE LICENCE.
+         *
+         * A medical post can be filled by a doctor and by nobody else. It
+         * is not enough to be a university graduate - that is precisely the
+         * within-a-band fungibility the professional schools exist to
+         * remove, and without this a city with no medical school would go on
+         * staffing its hospitals out of the general graduate pool, which is
+         * the 220-doctors bug wearing a different hat.
+         *
+         * Taken off the band's pool because a licence holder IS one of the
+         * band's workers - the licence is a second fact about the same
+         * person, not a second person. A surplus of licence holders stays in
+         * the pool and competes for the ungated posts like anybody else,
+         * which is right: a doctor with no hospital can do research. Booked
+         * before anything is joined, because a gated post pays its band's
+         * multiple times the licence premium on the dearest bases in the game
+         * (15.6 and 9.6 against 8.2 for the band's other posts), so a
+         * licence holder is never better paid elsewhere while one is empty.
+         */
+        double[] gated = new double[bands];
+        double[] left = own.clone();
+        for (JobType job : JobType.values()) {
+            if (!isGated(job)) continue;
+            int b = WageBand.of(job).ordinal(), i = job.ordinal();
+            double staffed = Math.min(jobs[i], Math.min(licensed[i], Math.max(0, left[b])));
+            // Rounded ONCE, and the same rounded figure taken off the pool.
+            // Booking a fractional person against the pool while filling a
+            // whole one leaves half a worker behind on every gated type.
+            int taken = (int) Math.round(staffed);
+            f.licensedIn[i] = taken;
+            left[b] -= taken;
+            gated[b] += taken;
+        }
+
+        // The chain, from the top: a stack of markets, each a run of bands.
+        int[] top = new int[bands], bottom = new int[bands];
+        double[] wage = new double[bands], carriedIn = new double[bands];
+        int n = 0;
+        double carried = 0;
+        for (int b = bands - 1; b >= 0; b--) {
+            top[n] = b;
+            bottom[n] = b;
+            carriedIn[n] = carried;
+            carried = fillMarket(f, b, b, carried, posts, own, gated, wage, n);
+            n++;
+            // A market still hiring that out-pays the one above it is joined to it.
+            while (n >= 2 && hiring(f, posts, top[n - 1], bottom[n - 1]) && wage[n - 1] > wage[n - 2]) {
+                bottom[n - 2] = bottom[n - 1];
+                n--;
+                carried = fillMarket(f, top[n - 1], bottom[n - 1], carriedIn[n - 1], posts, own, gated, wage, n - 1);
+            }
+        }
+
+        /*
+         * A FULL BAND IS PAID NO LESS THAN THE BEST-PAID BAND BELOW IT THAT IS
+         * STILL HIRING. Its members could take those posts, so the ones queueing
+         * for its own are only the ones who would still take them: its supply is
+         * what prices it at that wage, never more than it had.
+         */
+        double best = Double.NEGATIVE_INFINITY;
+        for (int b = 0; b < bands; b++) {
+            if (posts[b] <= 0) continue;
+            double w = BAND_BASE[b] * LabourMarket.multipleAt(posts[b] / Math.max(f.supply[b], 1));
+            boolean hiringHere = f.placed[b] < posts[b] - 1e-9;
+            if (!hiringHere && w < best) {
+                double t = Math.min(1, LabourMarket.tightnessAt(best / BAND_BASE[b]));
+                f.supply[b] = Math.min(f.supply[b], posts[b] / t);
+                w = BAND_BASE[b] * LabourMarket.multipleAt(posts[b] / Math.max(f.supply[b], 1));
+            }
+            if (hiringHere) best = Math.max(best, w);
+        }
+        return f;
+    }
+
+    /** Whether any band in a market has posts it has not filled. */
+    private static boolean hiring(BandFill f, double[] posts, int hi, int lo) {
+        for (int b = lo; b <= hi; b++) {
+            if (posts[b] > 0 && f.placed[b] < posts[b] - 1e-9) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Fills bands hi down to lo as one market: sets what each holds, its
+     * supply and the market it is in, puts the market's wage in wage[k] (as a
+     * multiple of the unskilled base; minus infinity for a market with no
+     * posts, which never out-pays anything) and returns the workers it leaves
+     * for the bands below.
+     */
+    private static double fillMarket(BandFill f, int hi, int lo, double carriedIn, double[] posts,
+                                     double[] own, double[] gated, double[] wage, int k) {
+        double pool = carriedIn;
+        double room = 0;
+        for (int b = lo; b <= hi; b++) {
+            pool += own[b];
+            room += Math.max(0, posts[b]);
+            f.market[b] = hi;
+        }
+
+        if (hi == lo || pool >= room) {
+            // Alone, or with no empty post among them: the cascade, band by band.
+            double c = carriedIn;
+            double best = Double.NEGATIVE_INFINITY;
+            for (int b = hi; b >= lo; b--) {
+                double w = c + own[b];
+                f.placed[b] = Math.max(gated[b], Math.min(Math.max(0, posts[b]), w));
+                f.supply[b] = w;
+                if (posts[b] > 0) {
+                    best = Math.max(best, BAND_BASE[b] * LabourMarket.multipleAt(posts[b] / Math.max(w, 1)));
+                }
+                c = Math.max(0, w - f.placed[b]);
+            }
+            wage[k] = best;
+            return c;
+        }
+
+        // One market, one wage: the lambda at which the bands' posts take the pool.
+        double low = Double.MAX_VALUE, high = 0;
+        for (int b = lo; b <= hi; b++) {
+            low = Math.min(low, BAND_BASE[b]);
+            high = Math.max(high, BAND_BASE[b]);
+        }
+        low *= 1e-3;
+        high *= 1e6;
+        for (int it = 0; it < 200 && high / low > 1 + 1e-15; it++) {
+            double mid = Math.sqrt(low * high);
+            if (heldAt(mid, hi, lo, posts, gated) > pool) low = mid; else high = mid;
+        }
+        double lambda = Math.sqrt(low * high);
+
+        double held = 0;
+        for (int b = hi; b >= lo; b--) {
+            if (posts[b] <= 0) {
+                f.placed[b] = 0;
+                f.supply[b] = own[b] + (b == hi ? carriedIn : 0);
+                continue;
+            }
+            double t = LabourMarket.tightnessAt(lambda / BAND_BASE[b]);
+            double take = Math.max(gated[b], Math.min(posts[b], posts[b] / t));
+            f.placed[b] = take;
+            // Short: priced on the workers it holds. Full: on the queue that puts it at lambda.
+            f.supply[b] = take < posts[b] ? take : posts[b] / Math.min(1, t);
+            held += take;
+        }
+        wage[k] = lambda;
+        return Math.max(0, pool - held);
+    }
+
+    /** The workers bands hi down to lo would hold if every one of their posts paid lambda. */
+    private static double heldAt(double lambda, int hi, int lo, double[] posts, double[] gated) {
+        double held = 0;
+        for (int b = lo; b <= hi; b++) {
+            if (posts[b] <= 0) continue;
+            double t = LabourMarket.tightnessAt(lambda / BAND_BASE[b]);
+            held += Math.max(gated[b], Math.min(posts[b], posts[b] / t));
+        }
+        return held;
     }
 
     /**
@@ -538,27 +811,30 @@ public class PopulationManager {
     }
 
     /**
-     * Workers actually available to each band, cascade included.
+     * Workers actually available to each band: what the labour market prices
+     * against, a band's staffable posts over this being its tightness.
      *
-     * What the labour market prices against. NOT the same as workforceByBand():
-     * a band's supply is its own workers PLUS everyone above it who could not
-     * find work at their own level, which is what makes an oversupply of
-     * graduates depress the diploma wage rather than sitting in a separate
-     * pool being unemployed on its own.
+     * NOT the same as workforceByBand(): a band's supply is its own workers
+     * PLUS everyone above it who could not find work at their own level, which
+     * is what makes an oversupply of graduates depress the diploma wage rather
+     * than sitting in a separate pool being unemployed on its own.
+     *
+     * AND SINCE 0.7.18 IT IS READ OFF THE FILL ITSELF (fillByBand()): a band
+     * joined to the band above it is supplied what the joined market gives
+     * it, so a band whose workers have gone down the ladder for better pay is
+     * short, and priced short, and a full band's queue holds only the ones who
+     * would still take its posts. Where nothing is joined this is the cascade
+     * it always was.
      *
      * Cascades against STAFFABLE posts, not posts - see above.
      */
     public double[] supplyByBand() {
-        double[] own = workforceByBand();
-        double[] posts = staffablePostsByBand();
-        double[] out = new double[own.length];
+        return fillByBand(staffablePostsByBand()).supply;
+    }
 
-        double carried = 0;
-        for (int b = own.length - 1; b >= 0; b--) {
-            out[b] = carried + own[b];
-            carried = Math.max(0, out[b] - posts[b]);
-        }
-        return out;
+    /** The same fill against a given count of posts per band - a planner's, which counts posts no employer offers this month (0.7.17; Sector.staffing()). */
+    public double[] supplyByBand(double[] posts) {
+        return fillByBand(posts).supply;
     }
 
     /**

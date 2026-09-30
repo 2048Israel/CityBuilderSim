@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-28 (0.7.16, the year book as CSV beside the text — four CSV files from one table, the text unchanged; deploying as tag 0928c; next is 0.7.17, Jerus's fixes from his 0.7.14 city in three rounds, then HealthCheck's own batch; before it 0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy deployed as tag 0928b; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-09-30 (0.7.19, the price keeps up — round 3 of Jerus's fixes: the builders' labour at today's wages with an escalation clause and the sales tax in the quote (business credits, the purpose-built rental rebate, the city's tax coming home), the grant a real amount at the price index for new cities, the bank's branches by their customers with the charter exempt from the fee rule and its upkeep and the deposit cap gone, Luxury's markup on the buyers at its price; built and gated, to deploy as tag 0930a; the held-25% city's collapse is Jerus's call; before it 0.7.18, workers take the best-paid job — round 2 of Jerus's fixes: every planner that builds posts checks staffing, "truly unfillable" bands only, workers taking the best-paid job they qualify for, some unskilled migrants for a dear wage; deployed and verified with 0.7.17 as one commit, tag 0929a (287 files); round 3 (0.7.19, prices) is built and measured badly, waiting on Jerus's decisions; before it 0.7.17, the crew a building can use — round 1 of Jerus's fixes from his 0.7.14 city: Bromilow-weighted crews and nothing parked, the builders counting repairs and staffing, the landlords holding 12 months of work, arrivals bounded by room, payroll by job type with idle crews laid off; before it 0.7.16, the year book as CSV beside the text — four CSV files from one table, the text unchanged; deployed and verified as tag 0928c; next is 0.7.17, Jerus's fixes from his 0.7.14 city in three rounds, then HealthCheck's own batch; before it 0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy deployed as tag 0928b; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -85,8 +85,9 @@ has been away reads the changelog's top block and section 0 here, then works.
       them, or sharing site work by buildings or by points) roughly triples
       the homes built in ten years (+38k to +102–109k), and the unskilled
       premium falls from 3.5 to about 1.1 with no other change.
-- **NEXT: 0.7.17 — JERUS'S FIXES FROM HIS CITY** (his answers, 2026-09-28,
-  verbatim). In rounds with a gate between each, measured on the eight-seed
+- **NEXT: JERUS'S FIXES FROM HIS CITY, IN THREE VERSIONS** (his answers,
+  2026-09-28, verbatim). One version a round (round 1 is 0.7.17, round 2
+  0.7.18, round 3 0.7.19), each gated and measured on the eight-seed
   ensembles and on a copy of his slot-10 city:
   - **Round 1, the builders and housing:** "Share building work fairly
     (Recommended), Builders count repairs and staffing, Landlords hold work,
@@ -105,6 +106,112 @@ has been away reads the changelog's top block and section 0 here, then works.
     maintence and operating costs should be less than the revenue it makes of
     fees for that specific branch, that should always be true." Needs sourced
     figures (customers per branch, a branch's running cost, account fees).
+  - ~~**Round 1 built in the cloud 2026-09-28, HELD on Jerus's answers**
+    (implementer's record `runs/r1-notes.md`; the tree `/home/claude/cbs`,
+    0.7.16 snapshot `cbs-b12`). His city, 120 months: homes +38k → +117k,
+    arrivals in 117 months of 120, the unskilled premium 1.98 → 1.11, the
+    $1.26B payroll gap gone, 7.8M parked points cleared. But the suite is
+    62/64 (MonetaryCheck newly red by 0.01 points) and held-25% bank failures
+    went 43 → 134, both from one choice: households now get what employers
+    pay, so the builders' 25% idle-pay floor reaches them. Asked: what idle
+    crews get; how site work is shared (by buildings starved industry in
+    the default seeds: −9% population, failures 6 → 9); and the landlords'
+    fallback to a smaller building.
+  - **Jerus answered, 2026-09-28:** "Lay off idle crews (Recommended)" (the
+    builders keep a core crew of a quarter and lay the rest off; they are
+    unemployed, draw EI, take other jobs, and are hired back when work
+    returns); "By work left (Recommended)" (each site's crew in proportion to
+    the work it still needs, still no parked points); "Try a smaller home
+    (Recommended)" (landlords order the next smaller home type that fits in
+    12 months of work). Homes on site count as the landlords' supply (told
+    him; no objection). Round 1 is being revised to these and re-measured.~~
+    — **shipped as 0.7.17, 2026-09-29, see `the-crew-a-building-can-use.md`.**
+    "By work left" hung every site's last building (a crew shrinking
+    geometrically with what it owes), so the sharing went through four
+    versions: crews by full size, one crew a building, crews by size to
+    Bromilow's 0.70 (V3), and Jerus's own hybrid ("every order has atleast
+    one crew, and then spare crews... like a pyramid"), which cleared every
+    small-building failure but gave 13 bank failures against V3's 4; by the
+    rule he left as he went to sleep, V3 ships and small orders wait.
+  - **Round 2 (0.7.18) built 2026-09-29** (`runs/r5-notes.md`): every planner
+    runs the 80% staffing test; workers take the best-paid job they qualify
+    for (Beaudry, Green & Sand 2016), a band still hiring that would out-pay
+    the band above joined to it at one wage; unskilled migrants at 7.5% of
+    arrivals at every band's ceiling (2021 Census, Ontario, 2016–2021 arrivals
+    aged 25–54 — a Canada-wide figure would replace it). Read literally, "the
+    20% it allows can't be jobs nobody can fill" shrank default cities to 14k
+    (0.7.17: 163k). **Jerus, 2026-09-29: "Truly unfillable only
+    (Recommended)"** — a band is "nobody can fill" only with no spare workers,
+    nobody above to step down and no migrants who come for it. Being revised
+    to that; EducationCheck §11's rewrite (netting the unskilled it bought,
+    gross, which made it pass trivially) is being restored to full strength.
+    — **shipped as 0.7.18, 2026-09-29, see
+    `workers-take-the-best-paid-job.md`.** The rule never binds in play (every
+    band now has migrants); EducationCheck §11 is back exactly, with unskilled
+    arrivals held in its pair.
+  - **Round 3 (0.7.19), prices, is next:** "Builders' prices keep up, Grant
+    follows prices, Bank deposit cap rises with prices"; Luxury, "The
+    customers actually served"; the branches by customers, each branch's fee
+    revenue covering its own running cost; the builders' profit estimate
+    with wages; and the branch's 29 posts asking the staffing test.
+    - **Stopped at the branch rule, 2026-09-29** (`runs/r6-notes.md`): a
+      29-staff branch costs ~$130–180k a month; at the model's $12 fee it needs
+      ~11–14k households, and every city starts with one branch and 59 (0.4%
+      cover). His city passes (24 branches, fees 1.41× cost). Canada has 2,743
+      households a branch (StatCan 2021 / CBA 2024); TD ~16,000 clients a branch.
+    - **Jerus answered, 2026-09-29:** "First branch exempt (Recommended)" — the
+      founding branch is the charter; every later branch opens only while its
+      customers' fees would cover it and closes when they don't (~16,000
+      customers a branch); "Drop it: online banking (Recommended)" for the
+      deposit cap (fall back to indexing it if it measures badly); "Businesses
+      claim it back (Recommended)" — an input tax credit on buildings and
+      repairs a business uses; only the city and households bear it.
+    - **Built 2026-09-30; it measured badly** (`runs/r6-notes.md`, Final).
+      Across 8 seeds cities ended ~30% smaller (default 166,607 → 115,002;
+      schools 170,432 → 118,566), bank failures went 6 → 11 and 4 → 12, and
+      the held-25% city fell 8,168 → 158. Most of it was the builders'
+      sales tax that the city and the landlords couldn't claim back (−18%
+      default, −32% schools on its own); the branches' upkeep and staffing
+      test added the rest. In his city it did what he asked: builders went
+      from −$47.0B to +$7.6B over the decade, the $73B window debt was repaid
+      in month 1, every branch covered its costs, and Luxury's margin went
+      2.66 → 2.26.
+    - **Jerus answered, 2026-09-30:**
+      - "Both rebates (Recommended)": the city gets its 100% municipal GST
+        rebate (CRA, public service bodies' rebate), and landlords get the
+        100% rebate on new purpose-built rental housing (CRA RC4231).
+        Businesses keep their input tax credits.
+      - "Keep, re-measure (Recommended)": the branch keeps its upkeep and the
+        80% staffing test. Re-measure after the tax fix, and go back to him
+        if the branches still cause extra bank failures.
+      - "Accept the lag (Recommended)": the branch rule decides on last
+        month's cost, and the next month closes a branch that no longer
+        pays. No unsourced margin is added.
+      - "Old saves keep theirs (Recommended)": a save keeps its grant basis;
+        the basis is a lever on the Policy screen.
+    - **Revised 2026-09-30** (`runs/r6-notes.md`, revision section). The
+      landlords' rebate (RC4231 for 4+ unit rentals; the NRRP 36% below
+      $450k) brought the population back: default 159,530 (p 0.505 against
+      0.7.18's 166,607), schools 178,830. The city's rebate adds no line,
+      because the city already collects the tax on its own works. Landlords
+      get back about 15% of what they spend on building. But the branch rule
+      still brought the extra bank failures (default 10 against 3 without
+      it, p 0.033; schools 8 against 3). The cause is the first branch's
+      template upkeep draining a village bank around month 120. With the
+      rule, the held-25% city was 908; without it, 7,160.
+    - **Jerus answered, 2026-09-30:**
+      - "Exempt first branch (Recommended)": the charter branch pays its
+        wages and repairs but not the template upkeep. Later branches pay
+        all three. Re-measure; ship without asking again if bank failures
+        return to 0.7.18's level.
+      - "Leave as the law has it (Recommended)": landlords' repairs keep
+        paying the tax (rent is exempt).
+    — **built and gated as 0.7.19, 2026-09-30, see `the-price-keeps-up.md`;
+    to deploy as tag 0930a.** With the charter exempt, bank failures are back
+    at 0.7.18's level (default 6 → 4, schools 4 → 4) and end populations
+    within the seeds' spread (169,978 and 173,280). The held-25% city still
+    collapses (8,168 → 428): it lived on the deposit cap's strain and the
+    window, both removed on purpose. Whether it must live is Jerus's call.
 - **AFTER 0.7.17: HEALTHCHECK SHIPS RED — ITS OWN BATCH** (Jerus,
   2026-09-25: "Ship with it red, flagged"). Read over its last 12 months (his
   change, "Read a year's average"), the dear-care twin is 8.4 points hungrier
@@ -113,6 +220,70 @@ has been away reads the changelog's top block and section 0 here, then works.
   household row paid for (the documented shortcut in `HouseholdBalance`, THE
   PRICE AT THE CLINIC DOOR); 46% had money for food after their fixed bills
   and still planned less — untraced, and the first thing to trace.
+- **CHECK 0.7.19 BY EYE ON THE PC** (`the-price-keeps-up.md` §7).
+  - The Build tab: a card's price row shows the work, then the price all in; a
+    dialled city order reads "$X with $Y sales tax, back to the treasury as it
+    is built"; the Commercial Bank card, "Another opens only while there are
+    more than 16,000 customers for each one standing".
+  - The Construction page: "Material escalation", "Paid a point of work", the
+    How it bills note.
+  - The Bank tab: "What it can lend against" (all deposits); customers a
+    branch "against the 16,000 one serves"; a branch's fees against what a
+    branch past the first cost last month; the charter note ("…pays its staff
+    and repairs but no running costs"); "Do its branches still pay?" and the
+    lag's sentence. Near break-even, see whether "the fees would cover another"
+    sits beside a per-branch figure under the cost (found by the docs pass).
+  - The Government tab's arrears can show "Material escalation on the city's
+    building contracts".
+  - The Schools page: a new game starts on FIXED (amount × the price index);
+    his save stays on its own basis, switchable on the Policy screen.
+  - The Luxury page: "who would buy at the price charged".
+  - The founding screen: invoices "with the builders' sales tax on both"; the
+    custom floor $6M.
+- **CHECK 0.7.18 BY EYE ON THE PC** (`workers-take-the-best-paid-job.md`).
+  - Every sector's investment line: "the city could staff X% of a Y; it wants
+    80%", now also on Retail, Luxury Retail, Restaurants, Industry, Materials,
+    Agriculture, Food Processing, Heavy Industry and Mining; Construction's
+    "N months of work queued, but the city could staff…". "No one could staff
+    a Y's Z posts" should never appear.
+  - A new city's first months: the first shop and bakery wait for spare hands.
+  - People screen, skill ladder, in a short city: "<bands> fill as one market
+    this month, their wages headed for the same level: … (N over-qualified
+    workers hold unskilled posts)"; the queue note's "…less any drawn further
+    down by better pay".
+  - People screen, "Why people come": "…every band above one is paid the going
+    rate or less…" (it lists no labourers).
+  - People screen, "Moved in": the No-diploma row lit when labourers are paid
+    over the going rate; the note "A diploma is what an ordinary arrival
+    has…".
+  - Services tab, High school: "…unless a dear unskilled wage brought them
+    in".
+  - The summary's "N% have no diploma — only a dear unskilled wage brings them
+    in…".
+  - Wages in a short city: unskilled and diploma wages converge, hospitals'
+    diploma posts empty first, the first year costs more.
+- **CHECK 0.7.17 BY EYE ON THE PC** (`the-crew-a-building-can-use.md`).
+  - **First, play a new city that orders its depots beside a coal plant.**
+    Under the shipped rule the depots get a fiftieth of the plant's crew and
+    ForeignCheck's founding sat at about 1,000 people for 15 years. Say
+    whether "small orders wait" is acceptable as a player sees it.
+  - Construction's operations page: "Crews kept on: X of Y posts" (amber at
+    the core crew), "Staffed", the note.
+  - A sector's wages detail: the posts the payroll is struck on, and "N of its
+    M posts are laid off this month…".
+  - Real Estate's investment page: "One order at a time: no"; "Work it holds
+    on site: N months, of 12 it may hold"; the step-down note. Every other
+    sector's page: "…finished inside 12 months at the share of the builders it
+    would get…".
+  - The construction panel: "Output: … (crews kept on: X of Y posts)"; "N
+    site(s), M building(s): S after repairs, crews by what each building can
+    use"; each site's "~N mo".
+  - The build screen's quote: "under a month", "~N mo" or "stalled" — long in
+    a city with a long queue.
+  - The advisor: "a X would not fit in 12 months of work on site, a Y does";
+    "N months of work on site already, of the builders' output".
+  - Loading an old save: the log prints "Cleared N construction points parked
+    on sites past what they owe."
 - **CHECK 0.7.16 BY EYE ON THE PC** (`the-year-book-as-csv.md`). Reports tab,
   "Write the year book":
   - the screen note's new sentence;
@@ -1063,6 +1234,71 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
   wrong; the Reports passage could say the export writes CSV too, and §20's
   YearBookCheck row that each CSV is its text's table cell for cell. No open
   question is closed.
+- **And 0.7.17 as of 2026-09-29: round 1 of Jerus's fixes — the builders'
+  crews by Bromilow's weights with nothing parked, the builders counting
+  repairs and staffing, the landlords holding 12 months of work and stepping
+  down, arrivals bounded by the placement's room, payroll by job type with
+  idle crews laid off; ~180,280 lines, 1,000 dials; save format 27
+  unchanged; 64 harnesses.** What the manual now says that is not so:
+  - the build line;
+  - §1 step 10: no crews struck before the posts are counted;
+  - §2 Migration: no cap at the placement's room, and the crowding ramp
+    reads homes against households rather than households with a door;
+  - §4 "payroll = wages × fill" (per job type now, each at its own fill);
+  - §6 a sector's payroll discounted by the fill, and "a 25% idle floor" (a
+    core crew of 25% of posts, paid in full, the rest laid off onto EI);
+  - §8 one order at a time and twelve months of the whole city's output (the
+    landlords hold 12 months of the builders' site output and step down;
+    everyone else's order opens within 12 months at its share); §8's table
+    for Construction and Real Estate;
+  - §19 "Construction output" (depots at the share of posts kept on, the
+    sites shared by crew weights);
+  - §21's list of what went in without a bump (Construction's extras
+    `postsOfferedShare`, `crewsNeeded`, `fillStruckOn`; parked points cleared
+    on load);
+  - §22's rows for Invest, Labour, Population and Infrastructure and the
+    re-caused fixtures; §23 gains the founding stall, the unemployment swing
+    and held 25%.
+- **And 0.7.18 as of 2026-09-29: round 2 — every planner that builds posts
+  checks staffing (80% from spare workers, no band nobody can fill), workers
+  take the best-paid job they qualify for, some unskilled migrants for a dear
+  wage; ~181,440 lines, 1,002 dials; save format 27 unchanged; 64
+  harnesses.** What the manual now says that is not so:
+  - the build line and the header's figures;
+  - §2 Migration's skill mix "drawn from a world with far more labourers than
+    graduates": at the going rate every arrival has a diploma, and labourers,
+    like graduates, come only for a premium (7.5% at every band's ceiling);
+  - §6's job fill ("the allocator spends the workforce across the posts"):
+    the best-paid post a worker qualifies for, bands joined as one market;
+  - §8: the staffing test named only for Business Services — every planner
+    that builds posts asks it now, an order is held to all its buildings, the
+    advisor's wording; the table rows;
+  - §10's "a band's surplus cascades into the one below": one fill for the
+    allocator, the wage, migration and the planners;
+  - §22's LabourCheck·EducationCheck row, InvestCheck §18, the re-caused
+    fixtures; §23 gains the dear first year, the late-building young town and
+    the dormant band rule. No open question is closed.
+- **And 0.7.19 as of 2026-09-30: round 3 — the builders' price at today's
+  wages with an escalation clause and the tax in the quote, the rebates, the
+  grant FIXED at the price index for new cities, the branches by customers
+  with the charter exempt, the deposit cap gone, Luxury on the buyers at its
+  price; 183,937 lines; save format 27 unchanged; 64 harnesses.** What the
+  manual now says that is not so (the docs pass's list, with what each should
+  say, in `runs/r6-docs-pass.md`, "The manual"):
+  - §13 the bank: capacity from every deposit, the branch rule and the
+    charter, the lag, the fees paragraph, the Bank tab;
+  - §6 and §1 steps 5 and 10: repairs at today's wages with the tax; the
+    builders' quote, the escalation clause, the depot's estimate with wages;
+  - §11 VAT: the tax in the quote, business credits, the rental rebates, the
+    city's tax coming home, the branch bearing it;
+  - §10 the grant's default (FIXED × the price index; saves keep theirs);
+  - §7 and §8 Luxury: the buyers at the struck price, not the queue at the
+    door;
+  - §16 founding: the invoices with the tax (water plant D$129.0M, village
+    D$38.8M), the Lean start about two-thirds of the village, the custom floor
+    D$6M, the bond example re-measured;
+  - §22's MortgageCheck, BankCheck and InvestCheck rows. No open question is
+    closed.
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -1784,6 +2020,60 @@ Ranked by how likely they are to read as "this game is broken".
   `Game.consider()` still files `canFundProject()`'s leverage refusal as a
   land shortage (`landBlockedSectors`) — only the capital refusal is split out
   (see the NEVER CLEARS item).
+- **FOUND BY 0.7.19, NOT ITS TO FIX** (`the-price-keeps-up.md` §6, §8):
+  - **The held-25% city collapses** (8,168 → 428): 0.7.18's lived on the
+    deposit cap's strain opening branches with outside capital and on the
+    window ($181.9 trillion at a median seed). Keeping it alive needs a way in
+    for money from outside that the model does not have. Jerus's call.
+  - **The Bank tab's and the planner's break-even figures** leave out the
+    charter's exemption, which the rule counts.
+  - **Rebated rents against taxed repairs:** an oversupplied city's landlords
+    sell empty buildings (53 of 120 Low-Rise in EducationCheck's free-tuition
+    city). Jerus: "Leave as the law has it".
+  - **A House mostly bears its tax** (about $454k at founding, past the NRRP's
+    $450k).
+  - **A default city runs on its charter branch all its life:** the staffing
+    test held the advisor 1,562 months, at ~79,500 customers a branch.
+  - *(small)* `Bank.lastKept` saved and read by nothing;
+    `BuildingManager.structureCost()` never called; `Game.grantAmountAs(FIXED)`
+    returns 0 with no one studying; BankCheck s.4 and FundCheck s.6 may no
+    longer need their first-pass re-causes; the repairs dial's "about $34 a
+    home a month" predates the batch.
+- **FOUND BY 0.7.18, NOT ITS TO FIX** (`workers-take-the-best-paid-job.md` §6, §8):
+  - **Food Processing is held on staffing all 120 months of Jerus's city**,
+    against its own banner's old measurement that an 80% floor is wrong for
+    four-post plants (`TODO(docs)` in `FoodProcessing.java`). Jerus's call.
+  - **The first year of a short city costs more** (his: −$9.87B against
+    −$5.10B): the fill moves at once, the wage walks at `ADJUST_RATE`.
+  - **A young town that waits for staff builds late, then grows fast.**
+  - **Default cities are short of college workers all their life** (median
+    fill 0.57).
+  - **The 7.5% unskilled share is Ontario's**; a Canada-wide figure would
+    replace it.
+  - *(small)* LabourCheck's new section sits inside "who moves in"; the
+    People screen's "What it would take" omits labourers; "Anyone can do any
+    job" in the fakes list; Automotive's and Manufacturing's "largest hiring"
+    claims.
+- **FOUND BY 0.7.17, NOT ITS TO FIX** (`the-crew-a-building-can-use.md` §6, §8):
+  - **A founding that orders its depots beside a coal plant stalls for
+    years** (the first thing to try on the PC, above).
+  - **Industry waits behind a long queue:** in Jerus's city the lead-time gate
+    refused Industry 94 and Materials 99 sector-months behind his 47 care
+    complexes.
+  - **Unemployment moves about twice as much a month** (p95 0.81 → 1.93
+    points, default), from the builders hiring and laying off.
+  - **Held 25%:** smaller (4,452 → 3,018, p 0.08), households with no home in
+    every seed; two collapsed seeds show save/reload differences at the 6th–8th
+    significant figure and the households' paper books apart by 1e-6.
+    Untraced.
+  - DenominationCheck's twin drifts 1e-6 to 1e-5 a decade on with the layoffs
+    alone (not the shipped configuration): floating-point noise in one cell's
+    share sales.
+  - *(small)* three members nothing calls (`siteShareOfSector()`,
+    `getBankedClearedAtLoad()`, `getStandingCostPerCapacity()`);
+    `IDLE_PAYROLL_FLOOR` is a share of posts now, not of payroll;
+    `getConstructionOutputAtEveryPost()` repeats the output arithmetic; the
+    builders' profit estimate still counts no wages (round 3).
 - **FOUND BY 0.7.15, NOT ITS TO FIX** (`the-central-bank-as-backstop.md` §6;
   the implementer's record, `dials-notes.md`):
   - **The dial at 100% doesn't limit the city's paper at home.** It makes
@@ -2279,7 +2569,8 @@ Ranked by how likely they are to read as "this game is broken".
   *This is probably half of the retail item in section 2.*
 - **Retail's trend estimator is still wrong, just bounded.**
 - **One sector can claim a year of the whole city's builders.** (H1)
-- **Construction capacity splits per stack, not per work remaining.** (backlog 2)
+- ~~**Construction capacity splits per stack, not per work remaining.** (backlog 2)~~
+  — done 2026-09-29 (0.7.17): every building gets the crew it can use.
 - ~~**Why is a Construction Materials Plant almost never built?** Twice in 4,000
   months, against 58 depots. (D1)~~ *Answered twice. At $2,000 a unit it made
   $800k of material a month with $969k of wages. Since the template the plant

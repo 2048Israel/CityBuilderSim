@@ -1521,8 +1521,202 @@ public final class GameVersion {
      * for cell.
      *
      * SAVE_FORMAT did not move. Nothing enters the save.
+     *
+     * 0.7.17 (2026-09-29) - ROUND 1 OF JERUS'S FIXES FROM HIS CITY: THE
+     * BUILDERS, THE HOUSING, THE ARRIVALS AND THE PAYROLL. From his answers
+     * after a tracer ran a copy of his 150-year, 1.05-million city forward.
+     *   - EVERY BUILDING GETS THE CREW IT CAN USE ("Share building work
+     *     fairly"; "a university gets a bigger crew than a house"): the
+     *     sites' output after the repairs is shared by each stack's
+     *     buildings on site times their construction points to
+     *     CREW_SCALE_EXPONENT, 0.70 - one less Bromilow's B, the exponent of
+     *     the time-cost law T = K x C^0.30 - water-filled, no stack taking
+     *     more than it still owes; what nobody can use is idle, never banked
+     *     (BuildingManager.siteShares()). A save's progress past what a stack
+     *     owes is cleared on load; it moves no money
+     *     (BuildingManager.clearBankedProgress()). Every planner's lead time
+     *     and order size, and the build screen's months to finish, read the
+     *     wait an order would have at those shares (BuildingManager
+     *     .waitFor(), Game.quoteMonths()). Jerus's own hybrid - a crew for
+     *     every order first, the spare by size - was built and measured and
+     *     is not what shipped (the round's notes).
+     *   - THE BUILDERS COUNT REPAIRS AND STAFFING ("Builders count repairs
+     *     and staffing"): Construction's months of queued work are read
+     *     against what the sites are left after the repairs, a depot is
+     *     ordered only if the city could staff it (Sector.staffableShare()
+     *     at MIN_STAFFABLE_TO_ORDER, as the four sectors that already ask
+     *     use it), and the spare-capacity rule weighs the repairs and the
+     *     queue against the depots' staffed output, not their nameplate
+     *     (sectors.Construction.retirementDemandAndCapacity()).
+     *   - THE LANDLORDS HOLD MONTHS OF WORK, NOT ONE ORDER ("Landlords hold
+     *     work, not one order"): Real Estate may keep ordering while what its
+     *     sites owe, the order included, is at most MAX_ORDER_MONTHS of the
+     *     builders' site output after the repairs, each order sized to stay
+     *     inside it (BusinessInvestment.withinMonthsOfWork()); it counts its
+     *     own homes on site as supply; and when its best home would not fit
+     *     it orders the next smaller one that does (sectors.RealEstate.plan()).
+     *     Every other sector keeps one order at a time.
+     *   - ARRIVALS LIMITED, NOT SWITCHED OFF ("Arrivals limited, not switched
+     *     off"): the wall that stopped all arrivals while anybody was left
+     *     with nowhere is gone. A month's arrivals are capped at the room the
+     *     placement has left - free doors by size and the doubling valve's
+     *     room, asked of the match against today's doors and converted at
+     *     the arrivals' own household mix (FamilyModel.roomLeft()) - and the
+     *     crowding damper reads the households with a door of their own, so
+     *     it falls as households double up (Migration.crowdingFactor()).
+     *   - PAYROLL BY JOB TYPE, AND IDLE CREWS LAID OFF ("Pay wages by job
+     *     type"; "Lay off idle crews"): every sector's and the utilities'
+     *     payroll is each job type's wage for the posts of that type filled,
+     *     not the whole schedule times the average fill, and the households
+     *     are paid what the employers paid. The builders keep the crews
+     *     their work needs - the repairs and what the sites owe, less the
+     *     city's own works, over their depots' full-staffing output, over
+     *     their own fill - never fewer than IDLE_PAYROLL_FLOOR of their
+     *     posts, and lay the rest off: unemployed, on EI, free to take any
+     *     other work, hired back when the work returns
+     *     (sectors.Construction.strikeCrews()). The city counts only the
+     *     posts offered; the planners and the landlords count every post,
+     *     because a laid-off post comes back with the work
+     *     (BuildingManager.getPostsWithheld()). The sick are still paid:
+     *     sickness cuts output, never payroll. LabourCheck asserts both.
+     *   - FOUND ON THE WAY: a company's share price and its dividend read a
+     *     cancellation residue - a book or a payout a few picodollars from
+     *     zero - as a value, by its sign; both now read nothing under the
+     *     market's floor (Equity.priceOf(), dividendPerShareAnnual()).
+     *     DenominationCheck's twin cities parted on them.
+     *
+     * SAVE_FORMAT did not move. The builders' share, need and fill ride in
+     * their sector's extras (an old save offers every post until its first
+     * month strikes them); a save's parked construction points are dropped
+     * on load, which moves no money.
+     *
+     * 0.7.18 (2026-09-29) - ROUND 2 OF JERUS'S FIXES FROM HIS CITY: LABOUR.
+     * From his answers to "Labour: which of these should it build?".
+     *   - EVERY PLANNER CHECKS STAFFING ("Every planner checks staffing"):
+     *     Retail, Luxury Retail, Restaurants, the makers' rule
+     *     (BusinessInvestment.planMaker(): Industry, Materials, Agriculture),
+     *     Food Processing, Heavy Industry and Mining ask Sector.staffing()
+     *     before they order, as Construction, Manufacturing, Automotive, Rail
+     *     and Business Services already did, and an order of several is held
+     *     to all of them (Sector.staffableCount()). A building passes at
+     *     MIN_STAFFABLE_TO_ORDER of its posts fillable from spare workers, and
+     *     "the 20% it allows can't be jobs nobody can fill" - Jerus, "Truly
+     *     unfillable only": a band counts as nobody can fill "only when it has
+     *     no spare workers, nobody above who can step down into it, and no
+     *     migrants who come for it" (Sector.Staffing.nobodyCanFill(),
+     *     Migration.admits()). Every band has migrants who come for it, so in
+     *     play the rule never binds; it stays for any band that ever has no way
+     *     in, and InvestCheck causes it with a harness-only hold on arrivals
+     *     (Migration.holdArrivals()). The advisor says which: "the city could
+     *     staff X% of a Y; it wants 80%" or "no one could staff a Y's Z posts".
+     *     Real Estate's homes carry no posts.
+     *   - WORKERS TAKE THE BEST-PAID JOB ("Workers take the best-paid job"):
+     *     a worker may hold any post at or below their band, and no worker
+     *     holds a lower-paid post while a better-paid one they qualify for is
+     *     empty (PopulationManager, WORKERS TAKE THE BEST-PAID JOB THEY
+     *     QUALIFY FOR; Beaudry, Green and Sand 2016). Bands are filled from the
+     *     top and a band still hiring that would pay more than the band above
+     *     it is joined to it - one market at one wage, its workers split so
+     *     every post in it pays the same (fillByBand()); a full band is priced
+     *     no lower than the best-paid band below it still hiring. The market's
+     *     supply, Migration's chance of work and the planners' spare read the
+     *     same fill, so the unskilled wage can no longer pass the diploma wage
+     *     while diploma holders are free to take unskilled posts, and a
+     *     shortage spreads up the ladder. Unemployment is unchanged: only
+     *     which posts stand empty moves. LabourMarket.multipleAt() and
+     *     tightnessAt() are the curve in one place.
+     *   - SOME UNSKILLED MIGRANTS ("Some unskilled migrants"): WageBand.NONE's
+     *     arrival ceiling is the world's share of working-age migrants with
+     *     no diploma, 7.5% (2021 Census, 2016-2021 immigrants aged 25-54,
+     *     Statistics Canada table 98-10-0309-01, Ontario), read the way the
+     *     graduate ceilings are, and the band is bought through the same
+     *     reach() of its premium and chance of work: none at the going rate.
+     *   - THE PEOPLE SCREEN says which bands filled as one market and how
+     *     many over-qualified workers hold unskilled posts; its arrivals note
+     *     says nobody arrives without a diploma only in a month nobody did,
+     *     and the summary's no-diploma note no longer says it.
+     *
+     * SAVE_FORMAT did not move. Nothing enters the save: the fill is a
+     * function of the posts, the workers and the licences, all saved already.
+     *
+     * 0.7.19 (2026-09-29) - ROUND 3 OF JERUS'S FIXES FROM HIS CITY: PRICES,
+     * THE GRANT, THE BANK'S BRANCHES, LUXURY. From his answers to "Money and
+     * prices: which of these?" and "Luxury Retail's markup: what should it
+     * answer to?".
+     *   - BUILDERS' PRICES KEEP UP ("Builders' prices keep up"): the labour in
+     *     every building and repair price is at today's builders' wages - a
+     *     template's points at a Construction Depot's founding wage bill a
+     *     point, its own labour content, scaled by that depot's wage bill
+     *     today over at the founding ladder - and the rest of its cash cost
+     *     stays at its founding value (BuildingManager, THE LABOUR IN A PRICE
+     *     KEEPS UP WITH WAGES). The quote carries the sales tax the builders
+     *     remit, passed on: (work + imports + plant x (1 - rM)) / (1 - rB), so
+     *     the tax falls on the owner once (Game, THE BUILDERS' PRICE). The
+     *     owner pays the quote up front, as before, and as the crews draw the
+     *     material pays what it cost them that month less what the quote
+     *     allowed for it, or is refunded (MATERIAL AT THE PRICE WHEN IT IS
+     *     USED; FAR 52.216-4's economic price adjustment) - the city on its
+     *     own line, TreasuryLine.BUILDING_ESCALATION, owed to the builders as
+     *     arrears when the ceiling binds. A business that makes taxable
+     *     supplies claims the tax on its buildings and repairs back
+     *     ("Businesses claim it back"; CRA RC4022, capital real property). And
+     *     ("Both rebates", 2026-09-30) a landlord's new apartment building -
+     *     four homes or more - gets all the tax on it back as purpose-built
+     *     rental housing (CRA RC4231; ETA s. 256.2), and any other new home
+     *     the new residential rental property rebate where its value allows
+     *     ($6,300 at most, gone at $450,000, in founding money at the price
+     *     index: a House mostly bears its tax), claimed at the strike after
+     *     the work is billed; no rebate reaches a repair. The city's own
+     *     rebate (CRA RC4034, municipalities 100%) is the tax coming home: the
+     *     builders remit it to the treasury as they bill the work, so no line
+     *     is added. The bank's branches bear it
+     *     (EconomyManager, THE REBATES ON A NEW HOME, AND THE CITY'S). A depot's profit estimate
+     *     counts the posts it would fill at today's wages. Book values and
+     *     property assessments are as they were.
+     *   - THE GRANT FOLLOWS PRICES ("Grant follows prices"): the default basis
+     *     is a fixed amount in founding money at the month's price index,
+     *     equal at founding to the old default (TaxPolicy.DEFAULT_FIXED_GRANT).
+     *     A save keeps the basis it was played on; an older save's fixed
+     *     amount is read at the price index it loads at.
+     *   - THE BANK'S BRANCHES BY THEIR CUSTOMERS (Jerus: "one branch maintence
+     *     and operating costs should be less than the revenue it makes of fees
+     *     for that specific branch, that should always be true"; "First branch
+     *     exempt"): the founding branch is the city's charter and stays; every
+     *     other opens only while there are more than CUSTOMERS_PER_BRANCH
+     *     customers for each branch standing (16,000, TD's clients per branch)
+     *     and the month's account fees would cover every branch with it, and
+     *     closes - as many at once as it takes - when they do not. It decides
+     *     on last month's cost ("Accept the lag", 2026-09-30): a month whose
+     *     wages rise can run a branch short once, and the next month closes
+     *     it. The charter pays its staff and repairs but not its template's
+     *     operating cost ("Exempt first branch", 2026-09-30); every later
+     *     branch pays all three, and the rule reads what a later branch
+     *     carries. A later branch costs its payroll, its repairs and its
+     *     template's operating cost, which the bank pays since this version,
+     *     and the planner asks Sector.staffing() of it like every other
+     *     planner. The deposit cap a branch is gone ("Drop it: online
+     *     banking"): the bank lends against all of its customers' savings
+     *     (Bank, THE DEPOSITS ARE NOT CAPPED BY BRANCHES).
+     *   - LUXURY'S MARKUP READS THE CUSTOMERS AT ITS PRICE ("The customers
+     *     actually served"): the margin is struck on the shoppers who would buy
+     *     at the price it charges - a fixed point - not a queue counted at the
+     *     floor (sectors.LuxuryRetail.strikeMargin()).
+     *   - Founding.MIN_CASH is D$6M: ten houses and a shop at a new city's
+     *     invoices, D$5.37M with the builders' tax in them.
+     *
+     * SAVE_FORMAT did not move: what enters the save is read as absent from an
+     * older one - each payer's contract on site (DataSave.contractRecords; an
+     * older save's contract is its template owner's - Game, OLD CONTRACTS),
+     * the sectors' capital purchases in the month's ledger and statement, the
+     * builders' escalation in their extras, the bank's customers and operating
+     * cost in its month's lines, last month's operating cost and what a later
+     * branch carried of it (two slots appended to the bank's last month; an
+     * older save's last month paid none), the share of the tax each payer's
+     * contract gets back (ContractRecord.recovered; an older record reads it
+     * off creditable), and the grant's marker that its fixed amount is real
+     * (one slot appended to TaxPolicy's state).
      */
-    public static final String VERSION = "0.7.16";
+    public static final String VERSION = "0.7.19";
 
     /**
      * The save shape.

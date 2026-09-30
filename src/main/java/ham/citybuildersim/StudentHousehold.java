@@ -10,10 +10,12 @@ package ham.citybuildersim;
  *
  * WHAT A STUDENT LIVES ON, per Jerus: their own savings, a grant, and a
  * student loan. The grant is the Canada Student Grant ($525 a month of study,
- * 2026-27) as a share of the unskilled wage, paid by the treasury - by
- * default; since 2026-09-21 it is whatever TaxPolicy's grant basis and
- * amount strike (a share of the wage, a fixed sum, a share of last month's
- * surplus, a share of the course's tuition). The loan is the treasury's too
+ * 2026-27), paid by the treasury - by default as a share of the unskilled
+ * wage until 0.7.19, and since then as that $525 in founding money kept up
+ * with the price index (TaxPolicy, THE GRANT FOLLOWS PRICES); since
+ * 2026-09-21 it is whatever TaxPolicy's grant basis and amount strike (a
+ * share of the wage, a fixed sum, a share of last month's surplus, a share
+ * of the course's tuition). The loan is the treasury's too
  * and, for now, it never runs out - "can't run out, for now" - so where a
  * family would go to the bank's credit line and then go without, a student
  * draws a loan for whatever is still short. They pay their own tuition. The

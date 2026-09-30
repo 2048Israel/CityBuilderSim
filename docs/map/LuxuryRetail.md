@@ -1,6 +1,6 @@
-# LuxuryRetail.java - 408 lines · 16 methods · 2 constants · sectors
+# LuxuryRetail.java - 490 lines · 17 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The luxury shops. THE FOURTEENTH SECTOR (2026-09-17, Jerus's call).
 > 
@@ -66,66 +66,68 @@
 | line | section |
 |---:|---|
 | 74 | THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT |
-| 101 | WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG |
-| 169 | THE SALE |
-| 275 | PLANNING - the queue at a door that is not there |
-| 374 | THE SCREEN |
+| 111 | WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG |
+| 179 | THE SALE |
+| 337 | PLANNING - the queue at a door that is not there |
+| 455 | THE SCREEN |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 86 | `LuxuryRetail.MARGIN_FLOOR` | `1.25` | What a shop with nobody in it charges over what the piece cost it. |
-| 96 | `LuxuryRetail.MARGIN_CEILING` | `4.0` | ...and what a shop with a queue charges. |
+| 92 | `LuxuryRetail.MARGIN_FLOOR` | `1.25` | What a shop charges over what the piece cost it when nobody would buy at its price: the mark-up at a position of nothing, and the lowest the margin can strike (0.7.19: the position is the buyers AT THE PRICE CHARGED -... |
+| 106 | `LuxuryRetail.MARGIN_CEILING` | `4.0` | ...and what a shop charges as the buyers at its price outnumber its counters without limit: the position's limit of one. |
+| 235 | `LuxuryRetail.MARGIN_STEPS` | `60` | Bisection steps for the margin's fixed point: 2.75 / 2^60 is far below a cent's grain on any landed cost. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 99 | `private double sellPrice` | What one shop's counter is worth a month, before anybody has told it anything. |
-| 149 | `private double rMargin` | The month's reading, for the screen and the harness. |
+| 109 | `private double sellPrice` | What one shop's counter is worth a month, before anybody has told it anything. |
+| 159 | `private double rMargin` | The month's reading, for the screen and the harness. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 337 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
+| 72 | 419 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
 
-### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-100)
+### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-110)
 
-### WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG (lines 101-168)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 142 | 5 | `public static double landedCost(GoodsMarket wholesale)` | What one piece costs the shop to bring in: the local price when the city has luxuries on offer, the import price when it has none. |
-| 151 | 17 | `public LuxuryRetail()` |  |
-
-### THE SALE (lines 169-274)
+### WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG (lines 111-178)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 174 | 4 | `public int coverage()` | People the shops can serve a month, off their buildings. |
-| 179 | 1 | `public double getMargin()` |  |
-| 180 | 1 | `public double getWanted()` |  |
-| 181 | 1 | `public double getServed()` |  |
-| 182 | 1 | `public double getCoverage()` |  |
-| 183 | 1 | `public double getLanded()` |  |
-| 184 | 1 | `public double getSellPrice()` |  |
-| 199 | 22 | `public double strikeMargin(Markets markets, double wanted)` | Strikes the margin against the queue and returns what a piece will cost this month. |
-| 232 | 18 | `public double serve(Markets markets, double pieces)` | ...and sells what the counter and the shelf can actually get through. |
-| 252 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
-| 270 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
+| 152 | 5 | `public static double landedCost(GoodsMarket wholesale)` | What one piece costs the shop to bring in: the local price when the city has luxuries on offer, the import price when it has none. |
+| 161 | 17 | `public LuxuryRetail()` |  |
 
-### PLANNING - the queue at a door that is not there (lines 275-373)
+### THE SALE (lines 179-336)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 300 | 46 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who CAME, not against a sales record. |
-| 363 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
+| 184 | 4 | `public int coverage()` | People the shops can serve a month, off their buildings. |
+| 189 | 1 | `public double getMargin()` |  |
+| 190 | 1 | `public double getWanted()` |  |
+| 191 | 1 | `public double getServed()` |  |
+| 192 | 1 | `public double getCoverage()` |  |
+| 193 | 1 | `public double getLanded()` |  |
+| 194 | 1 | `public double getSellPrice()` |  |
+| 244 | 32 | `public double strikeMargin(Markets markets, java.util.function.DoubleUnaryOperator buyersAt)` | Strikes the margin against the buyers at the price it charges and returns what a piece will cost this month. |
+| 278 | 5 | `private static double excess(java.util.function.DoubleUnaryOperator buyersAt, double landed, int cover, double margin)` | The rule's gap at a margin: the margin less what the buyers at its price would strike. |
+| 294 | 18 | `public double serve(Markets markets, double pieces)` | ...and sells what the counter and the shelf can actually get through. |
+| 314 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
+| 332 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### THE SCREEN (lines 374-408)
+### PLANNING - the queue at a door that is not there (lines 337-454)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 379 | 29 | `public List<Line> operations(Game game)` |  |
+| 365 | 62 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
+| 444 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
+
+### THE SCREEN (lines 455-490)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 460 | 30 | `public List<Line> operations(Game game)` |  |
 

@@ -1,6 +1,6 @@
-# Rail.java - 800 lines · 32 methods · 9 constants · sectors
+# Rail.java - 803 lines · 32 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/Rail.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Rail.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The railway. THE TWELFTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -76,9 +76,9 @@
 | 477 | · the fleet |
 | 508 | · what it is doing, for everyone else |
 | 563 | PLANNING - the freight nobody is carrying |
-| 679 | · the books |
-| 698 | · the screen |
-| 743 | · save/load |
+| 682 | · the books |
+| 701 | · the screen |
+| 746 | · save/load |
 
 ## Constants
 
@@ -108,7 +108,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 119 | 682 | **type** `public final class Rail extends Sector` | The railway. |
+| 119 | 685 | **type** `public final class Rail extends Sector` | The railway. |
 | 269 | 17 | `public Rail()` |  |
 
 ### THE MONTH (lines 287-476)
@@ -146,34 +146,34 @@
 | 548 | 11 | `public void reapplyBand()` | Puts the band back where the saved month left it. |
 | 561 | 1 | `public double lorryRatePerTonne()` | What a tonne of the city's own freight costs by lorry, this month. |
 
-### PLANNING - the freight nobody is carrying (lines 563-678)
+### PLANNING - the freight nobody is carrying (lines 563-681)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 583 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more line would earn: the freight it could pick up, at today's quote, less what it costs to run and to stand. |
-| 599 | 66 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
-| 672 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
-| 677 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
+| 599 | 69 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
+| 675 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
+| 680 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
 
-### the books (lines 679-697)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 687 | 7 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
-| 696 | 1 | `public String inputLabel()` |  |
-
-### the screen (lines 698-742)
+### the books (lines 682-700)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 701 | 41 | `public List<Sector.Line> operations(Game game)` |  |
+| 690 | 7 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
+| 699 | 1 | `public String inputLabel()` |  |
 
-### save/load (lines 743-800)
+### the screen (lines 701-745)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 746 | 14 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 762 | 15 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 779 | 6 | `protected void resetExtras()` |  |
-| 795 | 5 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
+| 704 | 41 | `public List<Sector.Line> operations(Game game)` |  |
+
+### save/load (lines 746-803)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 749 | 14 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 765 | 15 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 782 | 6 | `protected void resetExtras()` |  |
+| 798 | 5 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
 

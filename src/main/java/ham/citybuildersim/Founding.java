@@ -71,7 +71,7 @@ public final class Founding {
         return LandManager.STARTING_SQ_FT * LandMarket.openingUsdPerSqFt();
     }
 
-    /** Lean's treasury, in thousands: D$25M - three-quarters of the founding village at a new city's invoices, so the city borrows from its first months, for the rest of it and for every big work. */
+    /** Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from its first months, for the rest of it and for every big work. */
     public static final double LEAN_CASH = 25_000;
 
     /** Lean's vault, in thousands of US dollars: US$10M - a few months to two years of a young city's imports. */
@@ -154,8 +154,8 @@ public final class Founding {
        default anyway.
        ===================================================================== */
 
-    /** The least a city may be founded with in its treasury, in thousands: D$5M, ten houses and a shop at a new city's invoices. */
-    public static final double MIN_CASH = 5_000;
+    /** The least a city may be founded with in its treasury, in thousands: D$6M, ten houses and a shop at a new city's invoices - D$5.37M since the builders' sales tax went into them (0.7.19; it was D$5M, over D$4.56M). */
+    public static final double MIN_CASH = 6_000;
 
     /** The most, in thousands: D$10B, four times the Wealthy start. Testing room, not policy. */
     public static final double MAX_CASH = 10_000_000;
@@ -299,12 +299,14 @@ public final class Founding {
 
        AT THE INVOICE, NOT THE STICKER. What the treasury is charged for an
        order is its cash cost and the material it takes beyond what the yard
-       holds, bought abroad at the world's price (Game.quoteBuild()); at the
-       founding there is no plant in the city, the rate is the opening rate
-       and the world's price level is one, so that is a closed form - and the
+       holds, bought abroad at the world's price, with the builders' sales tax
+       on both since 0.7.19 (Game.quoteBuild()); at the founding there is no
+       plant in the city, no wage has moved, the rate is the opening rate and
+       the world's price level is one, so that is a closed form - and the
        sticker alone would promise a water plant for D$65.8M that is invoiced
-       at D$109.6M. NewGameCheck founds a city, places the village and holds
-       this to what it was actually charged.
+       at D$129.0M (D$109.6M before the tax went in). NewGameCheck founds a
+       city, places the village and holds this to what it was actually
+       charged.
 
        THE VILLAGE is the playtest's own, placed by hand before its advisor
        takes over: sixty houses, five shops, two farms and a depot. THE FIRST
@@ -353,15 +355,22 @@ public final class Founding {
         return Good.MATERIALS.worldImportPrice() * ForeignAccounts.OPENING_RATE;
     }
 
+    /** The builders' sales tax on a new city: what a fresh policy charges them (0.7.19; Game, THE BUILDERS' PRICE). */
+    public static double foundingBuildersRate() {
+        return new TaxPolicy().effectiveSalesRate("Construction");
+    }
+
     /**
      * An order's invoice on a new city with `yard` units of material in the
-     * yard: its cash cost, and whatever material the yard does not hold at
-     * foundingMaterialPrice(). Game.quoteBuild() on a city that has just
-     * been founded, as a closed form.
+     * yard: its cash cost - no wage has been paid yet, so its labour is at
+     * the founding ladder - and whatever material the yard does not hold at
+     * foundingMaterialPrice(), with the builders' sales tax passed on (0.7.19).
+     * Game.quoteBuild() on a city that has just been founded, as a closed form.
      */
     public static double orderCost(BuildingsTemplate t, int quantity, double yard) {
         double needed = t.constructionMaterials * (double) quantity;
-        return t.getCashCost() * quantity + Math.max(0, needed - yard) * foundingMaterialPrice();
+        return (t.getCashCost() * quantity + Math.max(0, needed - yard) * foundingMaterialPrice())
+                / (1 - foundingBuildersRate());
     }
 
     /** What these two figures buy, over this catalogue. See the banner above. */

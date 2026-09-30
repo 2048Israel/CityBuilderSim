@@ -200,12 +200,28 @@ public class UtilitiesHandler {
         return billedWaterDraw * waterRatio * pricePerWaterUnit;
     }
 
+    /*
+     * PER JOB TYPE since 0.7.17, as every employer's payroll is: each type's
+     * wage for the posts of that type filled, which is what the households in
+     * them are paid. It was the wage bill times the utilities' AVERAGE fill -
+     * see Sector.getPayroll() for what that charged and who it paid. The
+     * average stays where it belongs, on what the plants produce
+     * (updateUtilitiesHandler()).
+     */
     public double getElectricityPayroll() {
-        return sum(electricityWages) * averageUtilityFill;
+        return staffed(electricityWages);
     }
 
     public double getWaterPayroll() {
-        return sum(waterWages) * averageUtilityFill;
+        return staffed(waterWages);
+    }
+
+    /** A wage bill by job type, at each type's own fill. */
+    private double staffed(double[] bill) {
+        double total = 0;
+        if (bill == null) return 0;
+        for (int i = 0; i < bill.length && i < fillRate.length; i++) total += bill[i] * fillRate[i];
+        return total;
     }
 
     public double getElectricityIncome() {

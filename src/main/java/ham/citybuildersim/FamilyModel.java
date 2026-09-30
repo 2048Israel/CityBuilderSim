@@ -1135,7 +1135,24 @@ public class FamilyModel {
         if (homesBySize == null || homesBySize.length < 2) return totalHouseholds();
         lastHomesBySize = homesBySize.clone();
 
-        double[] free = new double[homesBySize.length];
+        java.util.Arrays.fill(unplacedByShape, 0);
+        java.util.Arrays.fill(seekersUnplaced, 0);
+        java.util.Arrays.fill(seekersUnplacedHomes, 0);
+        return match(homesBySize, new double[homesBySize.length], true)[0];
+    }
+
+    /**
+     * The match itself: house() when it records, and the room the placement
+     * has left when it does not (roomLeft(), 0.7.17) - one loop, so the two
+     * cannot come to disagree about who fits where.
+     *
+     * @param free   filled in with the doors of each size nobody is behind
+     * @param record whether to book the lets, the crowding and who went
+     *               without; false touches nothing
+     * @return households with nowhere at all, then the part of them that
+     *         were the matrix's, then the seekers' (as doors count them)
+     */
+    private double[] match(int[] homesBySize, double[] free, boolean record) {
         for (int s = 1; s < homesBySize.length; s++) free[s] = homesBySize[s];
         int widest = homesBySize.length - 1;
 
@@ -1143,10 +1160,7 @@ public class FamilyModel {
         FamilyStructure[] order = FamilyStructure.values().clone();
         java.util.Arrays.sort(order, (x, y) -> Integer.compare(y.size(), x.size()));
 
-        double unplaced = 0;
-        java.util.Arrays.fill(unplacedByShape, 0);
-        java.util.Arrays.fill(seekersUnplaced, 0);
-        java.util.Arrays.fill(seekersUnplacedHomes, 0);
+        double unplaced = 0, unplacedOwn = 0;
 
         for (FamilyStructure shape : order) {
             double own = totalOf(shape);
@@ -1199,7 +1213,7 @@ public class FamilyModel {
                 if (take <= 0) continue;
                 free[s] -= take;
                 need -= take;
-                bill(s, take);
+                if (record) bill(s, take);
             }
 
             // 2. crowd into whatever is left, biggest first - but never a child
@@ -1210,11 +1224,15 @@ public class FamilyModel {
                 if (take <= 0) continue;
                 free[s] -= take;
                 need -= take;
+                if (!record) continue;
                 crowdedHouseholds += take;
                 bill(s, take);
             }
 
-            if (need > 0) {
+            if (need > 0 && !record) {
+                unplaced += need;
+                unplacedOwn += need * own / asked;
+            } else if (need > 0) {
                 // What is left could not be housed at all. If the only empty
                 // doors are studios and this household has a child, say so:
                 // that is a different problem from a city with no doors, and
@@ -1235,9 +1253,10 @@ public class FamilyModel {
                     seekersUnplaced[g] += shape == FamilyStructure.SHARED_ADULTS
                             ? households * 5 : households;
                 }
+                unplacedOwn += need * own / asked;
             }
         }
-        return unplaced;
+        return new double[] { unplaced, unplacedOwn, unplaced - unplacedOwn };
     }
 
     /**
@@ -1453,6 +1472,126 @@ public class FamilyModel {
                 unhousedByShape[s] = matrixStill * unplacedByShape[s] / unplacedTotal;
             }
         }
+    }
+
+    /* =====================================================================
+       THE ROOM THE PLACEMENT HAS LEFT (0.7.17)
+
+       Jerus: "Each month's arrivals are capped at the households the city
+       can actually place, instead of stopping completely whenever one
+       household went unhoused. Doubled-up households count as crowding."
+
+       Migration used to ask this class one yes-or-no question - was anybody
+       left with nowhere last month? - and stopped arrivals dead on a yes.
+       In Jerus's year-149 city that made a relay: the month the last
+       household was placed, 30,000 people arrived at once, could not be
+       placed, and the wall shut again for nine to twenty-three months. It
+       asks for a figure now, and the figure is the placement's own: the
+       match run again, touching nothing, on the households this class holds
+       against the doors standing today - which counts the doors finished
+       since the month's placement and is the same answer on a reloaded city,
+       because both are saved.
+
+         free doors   the doors of each size nobody would be behind, split
+                      into the two the studio rule cares about - a door a
+                      child may enter, and a studio, which takes a
+                      household with no dependant and nobody else;
+         doubling     what the families' valve still has: its ceiling (half
+                      the households, and one for rounding - noteUnplaced())
+                      less the households the match leaves to it;
+         with a door  the households, and the seekers as doors count them,
+                      that have a door of their own - the crowding
+                      migration's damper reads.
+
+       And the arrivals' mix, because the doors have sizes: arrivals are the
+       pyramid in miniature (PopulationCohorts.migrate() adds to every band
+       in proportion), and this month they are formed into the family matrix
+       by the same builder - they look for work next month - so they come as
+       the matrix's households do: this share with a dependant, this many
+       people to a household, the orphans the builder leaves counted in with
+       the people.
+       ===================================================================== */
+
+    /** What the placement could still take, and the arithmetic it was struck from. */
+    public static final class Room {
+        /** Doors of size three and up, and studios, that nobody would be behind. */
+        public final double familyDoorsFree, studiosFree;
+        /** Households the families' doubling valve could still take. */
+        public final double doublingRoom;
+        /** Households that want a door (householdsSeekingDoors()), and those that would have one of their own. */
+        public final double seeking, withADoor;
+        /** The arrivals' mix: the share of their households with a dependant, and people to a household. */
+        public final double withDependants, peoplePerHousehold;
+
+        Room(double familyDoorsFree, double studiosFree, double doublingRoom, double seeking,
+             double withADoor, double withDependants, double peoplePerHousehold) {
+            this.familyDoorsFree = familyDoorsFree;
+            this.studiosFree = studiosFree;
+            this.doublingRoom = doublingRoom;
+            this.seeking = seeking;
+            this.withADoor = withADoor;
+            this.withDependants = withDependants;
+            this.peoplePerHousehold = peoplePerHousehold;
+        }
+
+        /**
+         * Households of the arrivals' mix the placement could still take.
+         * A household with a dependant needs a family door or the valve; one
+         * without takes a studio, a family door or the valve. Filling in
+         * that order, k households fit exactly when both
+         *
+         *     k            <= family doors + studios + doubling room
+         *     share x k    <= family doors + doubling room
+         *
+         * hold (the first is every door and the valve; the second is the
+         * households a studio refuses), so the room is the smaller of the
+         * two bounds.
+         */
+        public double households() {
+            double all = familyDoorsFree + studiosFree + doublingRoom;
+            double families = withDependants > 0 ? (familyDoorsFree + doublingRoom) / withDependants
+                    : Double.MAX_VALUE;
+            return Math.max(0, Math.min(all, families));
+        }
+
+        /** ...and as people, at the arrivals' own people to a household. */
+        public double people() {
+            return households() * peoplePerHousehold;
+        }
+    }
+
+    /**
+     * The room the placement has left against a door census, asked of the
+     * match rather than worked out from totals (see the banner above).
+     * Touches nothing. Null before the model has any households, or with no
+     * census to match against.
+     */
+    public Room roomLeft(int[] homesBySize) {
+        double households = totalHouseholds();
+        if (homesBySize == null || homesBySize.length < 2 || households <= 0) return null;
+
+        double[] free = new double[homesBySize.length];
+        double[] left = match(homesBySize, free, false);
+        double studios = 0, familyDoors = 0;
+        for (int s = 1; s < free.length; s++) {
+            if (s <= STUDIO_MAX_SIZE) studios += free[s];
+            else familyDoors += free[s];
+        }
+
+        double ceiling = households / 2 + 1;
+        double doubling = Math.max(0, ceiling - left[1]);
+        double seeking = householdsSeekingDoors();
+
+        double withChild = 0, people = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            double n = totalOf(shape);
+            if (shape.dependants() > 0) withChild += n;
+            people += n * shape.size();
+        }
+        people += getOrphansTotal();
+
+        return new Room(familyDoors, studios, doubling, seeking, Math.max(0, seeking - left[0]),
+                withChild / households, people / households);
     }
 
     /* =====================================================================

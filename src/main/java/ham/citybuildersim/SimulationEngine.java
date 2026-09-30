@@ -2,6 +2,8 @@
 package ham.citybuildersim;
 
 /**
+ * The order the month runs in: the sites advance, the roads, the posts and
+ * the wages, the people, then the economy and the services.
  *
  * @author Jerus
  */
@@ -34,10 +36,11 @@ public class SimulationEngine {
          * congestion.
          *
          * Asked of Game rather than worked out here, because the same figure is
-         * also what the screen shows and what construction is PAID for in
-         * startOfMonthUpdate(). This used to be a second copy of the arithmetic
-         * and the two drifted the moment roads were added - the sites crawled
-         * while the sector still billed for a full month. One definition now.
+         * also what the screen shows and what construction is PAID for, a few
+         * lines below (recogniseSiteWork()). This used to be a second copy of
+         * the arithmetic and the two drifted the moment roads were added - the
+         * sites crawled while the sector still billed for a full month. One
+         * definition now.
          *
          * Both discounts are a month stale, deliberately. The fill rate is
          * whatever the construction sector last computed, since this month's
@@ -56,9 +59,9 @@ public class SimulationEngine {
          * getBuildingOutput(), not getConstructionOutput(): the second is what
          * the sector can do in a month, the first is what is left for the
          * SITES once the standing housing stock has had its repairs. Same
-         * figure recogniseWork() is paid on, one line apart in
-         * startOfMonthUpdate(), so the sites advance by exactly the work the
-         * sector is paid for. See Game.getBuildingOutput().
+         * figure recogniseWork() is paid on, a few lines below, so the sites
+         * advance by exactly the work the sector is paid for. See
+         * Game.getBuildingOutput().
          */
         int siteOutput = game.getBuildingOutput();
         game.recordCompletions(buildingManager.advanceConstruction(siteOutput));
@@ -66,9 +69,16 @@ public class SimulationEngine {
         // itself recognised on the same figure the sites advanced by. The
         // plant's sale, the builders' purchase and the builders' revenue are
         // all booked into this month's ledger and struck at the top of the
-        // next. See Game.drawSiteMaterials() and recogniseSiteWork().
+        // next. See Game.drawSiteMaterials() and recogniseSiteWork(). The
+        // points the sites actually took beside the points they were offered
+        // (0.7.17): what no site could use was idle, not banked.
         game.drawSiteMaterials(buildingManager.takeMaterialsDue());
-        game.recogniseSiteWork(buildingManager.takeRevenueDue(), siteOutput);
+        game.recogniseSiteWork(buildingManager.takeRevenueDue(), buildingManager.getPointsBuilt(), siteOutput);
+        // ...and each owner pays the material its work drew at the price it
+        // was drawn at, less what its quote allowed (0.7.19): the escalation
+        // clause, settled on the same month's work. See Game, MATERIAL AT THE
+        // PRICE WHEN IT IS USED.
+        game.settleSiteContracts(buildingManager.takeContractsDue());
 
         // Roads, before anything reads them. Capacity and load are both pure
         // functions of what is standing, and what is standing just changed:
@@ -107,6 +117,11 @@ public class SimulationEngine {
     }
 
     public void updatePopulation(Game game) {
+        // The builders strike their crews before the posts are counted
+        // (0.7.17): the work ahead says how many of their posts they offer,
+        // and the labour market fills what is offered. See
+        // sectors.Construction, THE CREWS THE WORK NEEDS.
+        game.strikeBuildersCrews();
         game.updatePopulation();
         populationManager.updateJobs(game.getJobs());
         // Between these two on purpose: the market prices against this month's

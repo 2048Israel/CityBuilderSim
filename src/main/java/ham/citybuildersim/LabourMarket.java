@@ -151,6 +151,27 @@ public class LabourMarket {
     public static final double MIN_MULTIPLE = .70;
 
     /**
+     * THE CURVE ITSELF, in one place (0.7.18): the multiple a band's wage
+     * aims at when its posts stand at this tightness against its supply.
+     * advanceMonth() prices every band on it, and the allocator reads it
+     * (PopulationManager.fillByBand()) to know which posts pay best - two
+     * copies of this line would be the same curve until somebody tuned one.
+     */
+    public static double multipleAt(double tightness) {
+        return clamp(Math.pow(tightness, ELASTICITY), MIN_MULTIPLE, MAX_MULTIPLE);
+    }
+
+    /**
+     * ...and the curve read backwards: the tightness at which a band's wage
+     * aims at this multiple of its base, clamps aside. A band tied with
+     * another at one wage holds the workers that put it there
+     * (PopulationManager.fillByBand()).
+     */
+    public static double tightnessAt(double multiple) {
+        return Math.pow(multiple, 1 / ELASTICITY);
+    }
+
+    /**
      * How much of the gap to its target a wage closes each month.
      *
      * Jerus: "just supply vs demand but lagged". At .12 a wage covers about
@@ -425,7 +446,7 @@ public class LabourMarket {
              */
             multiple[b] = open <= 0
                     ? MIN_MULTIPLE
-                    : clamp(Math.pow(tightness[b], ELASTICITY), MIN_MULTIPLE, MAX_MULTIPLE);
+                    : multipleAt(tightness[b]);
         }
 
         System.arraycopy(multiple, 0, bandMultiple, 0, multiple.length);

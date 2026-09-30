@@ -15,7 +15,10 @@ package ham.citybuildersim;
  * actually had, take the money. What is different is that the seller here
  * strikes its price against the QUEUE rather than reading it off a market
  * band - the world has no shortage of watches, so the scarce thing is the
- * shop, and the shop is what a player builds. See LuxuryRetail.
+ * shop, and the shop is what a player builds. See LuxuryRetail. Since 0.7.19
+ * the boutiques' queue is the households who would buy at the price they
+ * charge, struck as one fixed point (LuxuryRetail.strikeMargin()); the
+ * kitchens still ask at the floor and then at the price (dine()).
  *
  * ==================== WHERE IT CAME FROM ====================
  *
@@ -53,11 +56,12 @@ public final class LuxuryCounter {
     /**
      * The month's dining out. Was Game.diningOut(); the body is that one, through Game's getters.
      *
-     * THE SHAPE IS shop()'s, and deliberately: ask the households at
-     * the margin's FLOOR to measure the queue, strike the margin on it, ask
-     * again at what was struck, serve what the tables and the larder allow,
-     * take the money. Every market in this game breaks the circle between a
-     * price and the demand for it the same way.
+     * THE SHAPE WAS shop()'s until 0.7.19, and still is here: ask the
+     * households at the margin's FLOOR to measure the queue, strike the
+     * margin on it, ask again at what was struck, serve what the tables and
+     * the larder allow, take the money. The boutiques now strike on the
+     * buyers at the price they charge (LuxuryRetail.strikeMargin()); Jerus's
+     * choice was for Luxury Retail's markup, and the kitchens keep theirs.
      *
      * WHAT IS DIFFERENT IS THE FOOD. A boutique's stock comes off a ship and
      * the city can have as much as it will pay for; a kitchen's comes out of
@@ -107,10 +111,10 @@ public final class LuxuryCounter {
     /** ...what one went for... */
     public double getLuxuryPrice()   { return luxuryPrice; }
 
-    /** ...and how many they came for, which in a city short of shops is more. */
+    /** ...and how many would buy at the price the shops struck (0.7.19; at the margin's floor until then), which in a city short of shops is more than were served. */
     public double getLuxuryWanted()  { return luxuryWanted; }
 
-    /** The month's shopping. Was Game.luxuryShopping(); the body is that one, through Game's getters. */
+    /** The month's shopping. Was Game.luxuryShopping(), and the body was that one, through Game's getters, until 0.7.19 struck the margin on the buyers at its price. */
     void shop(Game game) {
         HouseholdBalance householdBalance = game.getHouseholdBalance();
 
@@ -123,26 +127,23 @@ public final class LuxuryCounter {
         if (shops == null) return;
 
         /*
-         * THE QUEUE IS MEASURED IN MONEY AND THE STRIKE NEEDS IT IN PIECES, so
-         * it is asked at the margin's FLOOR - the cheapest the shops could
-         * possibly be. That is the largest honest reading of how many people
-         * came, which is what the position wants: a queue is a queue whatever
-         * the shop ends up charging it.
+         * THE SHOPPERS WHO BUY AT THE PRICE ACTUALLY CHARGED (0.7.19). The
+         * queue was asked at the margin's FLOOR until then - the largest
+         * reading of who came, at a price nobody is charged - and the margin
+         * struck on it. Now the margin is struck on the households who would
+         * buy at the margin it strikes, which is one question with one answer
+         * (LuxuryRetail.strikeMargin()): the demand curve is handed over and
+         * the shops find the margin its buyers put them at. What a piece costs
+         * the shop is read inside, the way it always was (landedCost()).
          */
-        // What a piece costs the shop, read the way the shop reads it. See
-        // LuxuryRetail.landedCost() for the month this used to read half of.
-        double landed = ham.citybuildersim.sectors.LuxuryRetail.landedCost(
-                game.getMarkets().get(Good.LUXURIES));
-        double atTheFloor = landed * ham.citybuildersim.sectors.LuxuryRetail.MARGIN_FLOOR;
-        luxuryWanted = householdBalance.luxuriesWanted(atTheFloor);
-
-        double price = shops.strikeMargin(game.getMarkets(), luxuryWanted);
+        double price = shops.strikeMargin(game.getMarkets(), householdBalance::luxuriesWanted);
+        luxuryWanted = shops.getWanted();
         if (!(price > 0)) return;
         luxuryPrice = price;
 
-        // ...and now at what was actually struck, which is less than came at
-        // the floor: a dear shop is a shop some people walk out of.
-        double affordable = householdBalance.luxuriesWanted(price);
+        // ...and they are the ones sold to, as far as the counters, the staff
+        // and the shelf reach (serve()).
+        double affordable = luxuryWanted;
         if (!(affordable > 0)) return;
 
         double sold = shops.serve(game.getMarkets(), affordable);

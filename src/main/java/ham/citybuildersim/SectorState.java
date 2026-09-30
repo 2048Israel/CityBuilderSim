@@ -97,6 +97,8 @@ public final class SectorState {
         public Map<String, Double> otherInputs = new LinkedHashMap<>();
         /** Sector.Ledger.paidEarlier (0.7.8); an older save reads none. */
         public double paidEarlier;
+        /** Sector.Ledger.capitalBySupplier (0.7.19): the builders' work on its premises this month, which the tax credit is struck on at the next strike. An older save reads none. */
+        public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
 
         static LedgerState of(Sector.Ledger l) {
             LedgerState s = new LedgerState();
@@ -112,6 +114,7 @@ public final class SectorState {
             s.bought = splitsOf(l.bought);
             s.otherInputs = new LinkedHashMap<>(l.otherInputs);
             s.paidEarlier = l.paidEarlier;
+            s.capitalBySupplier = new LinkedHashMap<>(l.capitalBySupplier);
             return s;
         }
 
@@ -135,6 +138,7 @@ public final class SectorState {
             l.bought.putAll(splitsTo(bought));
             if (otherInputs != null) l.otherInputs.putAll(otherInputs);
             l.paidEarlier = paidEarlier;
+            if (capitalBySupplier != null) l.capitalBySupplier.putAll(capitalBySupplier);
             return l;
         }
     }
@@ -152,6 +156,9 @@ public final class SectorState {
         public Map<String, Double> otherInputs = new LinkedHashMap<>();
         /** Sector.Statement.paidEarlier (0.7.8); an older save reads none. */
         public double paidEarlier;
+        /** Sector.Statement.capitalBySupplier and capitalTaxCredit (0.7.19); an older save reads none. */
+        public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
+        public double capitalTaxCredit;
 
         static StatementState of(Sector.Statement t) {
             StatementState s = new StatementState();
@@ -168,6 +175,8 @@ public final class SectorState {
             s.otherParts = new LinkedHashMap<>(t.otherParts);
             s.otherInputs = new LinkedHashMap<>(t.otherInputs);
             s.paidEarlier = t.paidEarlier;
+            s.capitalBySupplier = new LinkedHashMap<>(t.capitalBySupplier);
+            s.capitalTaxCredit = t.capitalTaxCredit;
             return s;
         }
 
@@ -187,6 +196,8 @@ public final class SectorState {
             t.otherParts = otherParts == null ? new LinkedHashMap<>() : new LinkedHashMap<>(otherParts);
             t.otherInputs = otherInputs == null ? new LinkedHashMap<>() : new LinkedHashMap<>(otherInputs);
             t.paidEarlier = paidEarlier;
+            t.capitalBySupplier = capitalBySupplier == null ? new LinkedHashMap<>() : new LinkedHashMap<>(capitalBySupplier);
+            t.capitalTaxCredit = capitalTaxCredit;
             return t;
         }
     }

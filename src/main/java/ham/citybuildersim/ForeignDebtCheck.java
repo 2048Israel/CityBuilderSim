@@ -68,6 +68,28 @@ public class ForeignDebtCheck {
         throw new IllegalStateException("no template named " + name);
     }
 
+    /**
+     * THE PLANT THE TRADING CITY EARNS WITH, STANDING (0.7.17): the builders'
+     * depots, the power, the water and the two bakeries whose bread is what
+     * it sells abroad. They were ordered on site beside four hundred houses
+     * and thirty roads, and since the site output is shared among
+     * everything on site (BuildingManager, EVERY BUILDING GETS THE CREW IT
+     * CAN USE) the bakeries waited behind the coal plant and the houses:
+     * measured under round 1's first rule, at month sixty neither had
+     * opened, the city had sold nothing abroad, and the dollar paper this
+     * file prices was serviced out of a vault nothing refilled - its
+     * currency was at 1,710 to the dollar by the reload below; on the rule
+     * as shipped the same three assertions fail without it. A city that
+     * earns abroad is the premise, so the plant it earns with stands from
+     * the start; the houses, the shops and the roads are still built.
+     */
+    static void tradingPlant(Game g) {
+        g.buildStack(template(g, "Construction Depot"), 4, true);
+        g.buildStack(template(g, "Coal Power Plant"), 1, true);
+        g.buildStack(template(g, "Water Treatment Plant"), 1, true);
+        g.buildStack(template(g, "Industrial Bakery"), 2, true);
+    }
+
     /** A small city that has been going long enough to have a credit record. */
     static Game tradingCity(Path dir) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
@@ -79,10 +101,7 @@ public class ForeignDebtCheck {
         g.getLandManager().setOwnedSqFt(30_000_000);
         g.buildStack(template(g, "House"), 400, false);
         g.buildStack(template(g, "Convenience Store"), 6, false);
-        g.buildStack(template(g, "Construction Depot"), 4, false);
-        g.buildStack(template(g, "Coal Power Plant"), 1, false);
-        g.buildStack(template(g, "Water Treatment Plant"), 1, false);
-        g.buildStack(template(g, "Industrial Bakery"), 2, false);
+        tradingPlant(g);
         g.buildStack(template(g, "Paved Road"), 30, false);
         g.simulateMonths(60);
         return g;
@@ -157,10 +176,8 @@ public class ForeignDebtCheck {
             city.getLandManager().setOwnedSqFt(30_000_000);
             city.buildStack(template(city, "House"), 400, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.buildStack(template(city, "Water Treatment Plant"), 1, false);
-            city.buildStack(template(city, "Industrial Bakery"), 2, false);
+            // The plant it earns with, standing (0.7.17): see tradingPlant().
+            tradingPlant(city);
             city.buildStack(template(city, "Paved Road"), 30, false);
 
             /*

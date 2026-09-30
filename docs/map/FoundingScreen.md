@@ -1,6 +1,6 @@
-# FoundingScreen.java - 399 lines · 16 methods · 1 constants · interface
+# FoundingScreen.java - 400 lines · 16 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Found a city: its name, its money, what the founders leave in the treasury and the vault, and the world it is founded into.
 > 
@@ -42,7 +42,7 @@
 | 179 | · · the world |
 | 193 | · · found it |
 | 235 | WHAT A KEYSTROKE CHANGES |
-| 335 | THE CHOICES, AS THE MODEL READS THEM |
+| 336 | THE CHOICES, AS THE MODEL READS THEM |
 
 ## Constants
 
@@ -71,7 +71,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 360 | **type** `final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, and the world it is founded into. |
+| 40 | 361 | **type** `final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, and the world it is founded into. |
 | 48 | 1 | `FoundingScreen(UserInterface ui)` |  |
 
 ### the choices, between redraws (lines 50-59)
@@ -89,25 +89,25 @@
 | 87 | 133 | `void draw()` |  |
 | 222 | 12 | `private Button worldChip(double m)` | One choice of world, shown as what it is. |
 
-### WHAT A KEYSTROKE CHANGES (lines 235-334)
+### WHAT A KEYSTROKE CHANGES (lines 235-335)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 238 | 43 | `private void refresh()` |  |
-| 289 | 35 | `private void insaneBuys(String here)` | WHAT INSANE BUYS (0.7.14): nothing in cash. |
-| 326 | 8 | `private static String village()` | "60 houses, 5 convenience stores, ..." - the village, from the model's own list. |
+| 238 | 44 | `private void refresh()` |  |
+| 290 | 35 | `private void insaneBuys(String here)` | WHAT INSANE BUYS (0.7.14): nothing in cash. |
+| 327 | 8 | `private static String village()` | "60 houses, 5 convenience stores, ..." - the village, from the model's own list. |
 
-### THE CHOICES, AS THE MODEL READS THEM (lines 335-399)
+### THE CHOICES, AS THE MODEL READS THEM (lines 336-400)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 340 | 4 | `private Currency currency()` | The money as chosen, or null when a typed pair does not pass. |
-| 346 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
-| 351 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
-| 356 | 13 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse. |
-| 371 | 4 | `private Founding choices()` | The founding as chosen. |
-| 377 | 5 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
-| 383 | 8 | `private static double millions(String typed)` |  |
-| 392 | 3 | `private static String trim(double v)` |  |
-| 396 | 3 | `private static String percent(double m)` |  |
+| 341 | 4 | `private Currency currency()` | The money as chosen, or null when a typed pair does not pass. |
+| 347 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
+| 352 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
+| 357 | 13 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse. |
+| 372 | 4 | `private Founding choices()` | The founding as chosen. |
+| 378 | 5 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
+| 384 | 8 | `private static double millions(String typed)` |  |
+| 393 | 3 | `private static String trim(double v)` |  |
+| 397 | 3 | `private static String percent(double m)` |  |
 

@@ -522,7 +522,28 @@ public class Equity {
         double dividendValue = Math.max(0, l.trailingPaid())
                 / (Math.max(0, worldRate) + FOREIGN_PREMIUM);
         double value = Math.max(bookEquity, dividendValue);
-        return value > 0 ? value / l.shares : l.lastPrice;
+        /*
+         * NEITHER BOOK NOR DIVIDENDS MEANS NOTHING A SHARE COULD BE PRICED ON,
+         * NOT A VALUE ABOVE ZERO (0.7.17). A company's book is its assets less
+         * what it owes, and a sector that has just listed on a book of nothing
+         * reports a few picodollars either side of zero, not zero - the sign
+         * of a cancellation. Read as "value > 0" that residue priced its
+         * shares at a picodollar over fifty-nine thousand of them, the exchange
+         * floored them at Exchange.MIN_FAIR and treated the company as
+         * worthless, where a residue on the other side of zero sold at the
+         * last price. DenominationCheck's twin cities parted on it: the same
+         * Automotive listing, book 0 in one and 1.1e-13 in the other, the desk
+         * holding its shares in one city and the world in the other, and a
+         * decade later the bank 0.3% and the output 4% apart. So a value that
+         * comes to no more than that floor a share - MIN_FAIR in today's money,
+         * the same yardstick the exchange floors fair value at - is no value.
+         */
+        return value > noValue() * l.shares ? value / l.shares : l.lastPrice;
+    }
+
+    /** A share's worth at the market's floor, in today's money: Exchange.MIN_FAIR, seeded by the unit. What a residue of a cancellation comes to less than, a share at a time. See priceOf() and dividendPerShareAnnual(). */
+    private double noValue() {
+        return Exchange.MIN_FAIR * (foundingPrice / FOUNDING_PRICE);
     }
 
     /**
@@ -865,7 +886,18 @@ public class Equity {
     /** The dividend a share paid over the last twelve months - the ordinary dividend actually paid, since 0.7.12 round 2 (it was PAYOUT of the income before the principal, which nobody was paid). What the exchange's participants value a share on (Exchange.yieldAt()). */
     public double dividendPerShareAnnual(int company) {
         Listing l = listings[company];
-        return l.shares > 0 ? Math.max(0, l.trailingPaid()) / l.shares : 0;
+        /*
+         * ...AND NOTHING WHEN WHAT WAS PAID IS A RESIDUE (0.7.17). A year's
+         * dividends that come to less than a share at the market's floor
+         * (noValue()) a share are the arithmetic's dust - a payout struck on
+         * an income a few picodollars from zero - not a dividend, and every
+         * reader of this asks "does it pay?" by its sign: a cell short of
+         * money asked the price at which that dust yields its borrowing rate,
+         * 5e-17 a share, and sold a Real Estate holding for nothing in one of
+         * DenominationCheck's twin cities and at nine dollars in the other.
+         */
+        double paid = Math.max(0, l.trailingPaid());
+        return l.shares > 0 && paid > noValue() * l.shares ? paid / l.shares : 0;
     }
 
     /** Every company's ordinary dividends at the last close (closeDividendMonth()): the month's, for the playtest. */

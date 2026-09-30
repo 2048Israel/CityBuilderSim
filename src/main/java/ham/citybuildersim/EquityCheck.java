@@ -325,7 +325,21 @@ public class EquityCheck {
              * The founders' rule itself is tested in section 6 above. What
              * is asserted here is that Retail is listed, and that the
              * shares that exist are owned by somebody.
+             *
+             * ...ONCE IT HAS A BOOK (0.7.18, re-caused). Retail had ordered its
+             * first shop by month two, before anybody was there to staff it.
+             * Every planner that builds posts asks the city for the workers
+             * first now (Jerus: "Retail, Restaurants, Luxury and the makers
+             * check whether they can staff a building before building it"), and
+             * the first shop waits for the first spare hands, so the city is
+             * played on, a month at a time and bounded, until Retail owns one.
              */
+            System.setOut(quiet);
+            for (int m = 0; m < 36 && city.getSectors().retail().postsPerTier() != null
+                    && java.util.Arrays.stream(city.getSectors().retail().postsPerTier()).sum() == 0; m++) {
+                city.simulateMonths(1);
+            }
+            System.setOut(out);
             assertTrue("retail is listed once it has a book",
                     register.getShares(RETAIL) > 0);
             close("...and every share of it is held, at home or abroad",

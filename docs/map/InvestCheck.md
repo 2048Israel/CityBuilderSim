@@ -1,6 +1,6 @@
-# InvestCheck.java - 546 lines · 6 methods · 0 constants · harnesses
+# InvestCheck.java - 1,386 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/InvestCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InvestCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Verifies the private investment engine: forecasting, the demand tests, and
 > the brake. Not part of the game.
@@ -15,26 +15,31 @@
 > fixture pinned - the trend, the lead time, the order size, the brake, the
 > costing, the land cap - is still asked of BusinessInvestment directly.
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (28), [BuildingsTemplate](BuildingsTemplate.md) (8), [Game](Game.md) (8), [BuildingManager](BuildingManager.md) (7), [Construction](Construction.md) (7), [Sector](Sector.md) (5), [EconomyManager](EconomyManager.md) (4), [BuildingType](BuildingType.md) (4), [Good](Good.md) (3), [GameFiles](GameFiles.md) (2), [GoodsMarket](GoodsMarket.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [Retail](Retail.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (44), [BuildingsTemplate](BuildingsTemplate.md) (28), [BuildingManager](BuildingManager.md) (27), [Sector](Sector.md) (20), [BuildingsStacks](BuildingsStacks.md) (20), [Game](Game.md) (18), [Construction](Construction.md) (15), [Good](Good.md) (9), [EconomyManager](EconomyManager.md) (8), [WageBand](WageBand.md) (5), [GameFiles](GameFiles.md) (4), [BuildingType](BuildingType.md) (4), [PopulationManager](PopulationManager.md) (4), [GoodsMarket](GoodsMarket.md) (2), [JobType](JobType.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Retail](Retail.md) (1), [TaxPolicy](TaxPolicy.md) (1), [Sectors](Sectors.md) (1), [Founding](Founding.md) (1), [PayTier](PayTier.md) (1), [Markets](Markets.md) (1), [RealEstate](RealEstate.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 83 | · 1. the trend |
-| 99 | · 2. lead time |
-| 119 | · 3. real estate reads JOBS |
-| 160 | · 4. retail |
-| 181 | · 5. industry |
-| 231 | · 6. THE BRAKE |
-| 256 | · 7. costing matches the build path |
-| 265 | · 8. order sizing |
-| 305 | · 9. construction expands itself |
-| 343 | · 10. construction earns as it builds |
-| 404 | · 11. idle payroll is floored, not full |
-| 428 | · 12. land is the one thing that can say no |
-| 476 | · 13. land is part of what a building costs |
-| 492 | · 14. distress |
+| 91 | · 1. the trend |
+| 107 | · 2. lead time |
+| 127 | · 3. real estate reads JOBS |
+| 186 | · 4. retail |
+| 226 | · 5. industry |
+| 288 | · 6. THE BRAKE |
+| 313 | · 7. costing matches the build path |
+| 329 | · 8. order sizing |
+| 372 | · 9. construction expands itself |
+| 450 | · 10. construction earns as it builds |
+| 511 | · 11. an idle builder keeps a core crew, not full crews |
+| 571 | · 12. land is the one thing that can say no |
+| 718 | · 13. land is part of what a building costs |
+| 737 | · 14. distress |
+| 788 | · 15. every building gets the crew it can use |
+| 880 | · 16. the landlords hold months of work |
+| 940 | · 17. the builders keep what their repairs and queue need |
+| 989 | · 18. a band nobody can fill (0.7.18) |
+| 1052 | · 19. the builders' price (0.7.19) |
 
 ## Fields (state)
 
@@ -47,11 +52,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 525 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
+| 22 | 1365 | **type** `public class InvestCheck` | Verifies the private investment engine: forecasting, the demand tests, and the brake. |
 | 27 | 6 | `static void check(String label, double actual, double expected)` |  |
-| 34 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 39 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 44 | 14 | `static Game city(Path root, String name)` | A fresh city, currency and world pinned, land by fiat. |
-| 60 | 4 | `static void month(Game g)` | One month, quietly. |
-| 65 | 481 | `public static void main(String[] args) throws Exception` |  |
+| 35 | 6 | `static void check(String label, double actual, double expected, double tolerance)` | The same, within a stated tolerance - for sums of shares, whose rounding scales with the output. |
+| 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 47 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 52 | 14 | `static Game city(Path root, String name)` | A fresh city, currency and world pinned, land by fiat. |
+| 68 | 4 | `static void month(Game g)` | One month, quietly. |
+| 73 | 1313 | `public static void main(String[] args) throws Exception` |  |
 

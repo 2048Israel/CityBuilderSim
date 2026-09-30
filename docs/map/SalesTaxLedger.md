@@ -1,6 +1,6 @@
-# SalesTaxLedger.java - 215 lines · 21 methods · 1 constants · model
+# SalesTaxLedger.java - 228 lines · 22 methods · 1 constants · model
 
-`ham/citybuildersim/SalesTaxLedger.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SalesTaxLedger.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The month's sales tax, as tax payable less input tax credits.
 > 
@@ -46,8 +46,8 @@
 | line | section |
 |---:|---|
 | 58 | WHAT HAPPENED THIS MONTH |
-| 116 | WHAT IT COMES TO |
-| 157 | · save and restore |
+| 129 | WHAT IT COMES TO |
+| 170 | · save and restore |
 
 ## Constants
 
@@ -61,52 +61,53 @@
 |---:|---|---|
 | 46 | `private final Map<String, double[]> rows` |  |
 | 52 | `private double totalRemitted` |  |
-| 161 | `public String sector` |  |
-| 162 | `public double taxableSales, importTax, zeroRated, creditedInput, payable, credit` |  |
-| 166 | `public double totalRemitted` |  |
-| 167 | `public List<Row> rows` |  |
+| 174 | `public String sector` |  |
+| 175 | `public double taxableSales, importTax, zeroRated, creditedInput, payable, credit` |  |
+| 179 | `public double totalRemitted` |  |
+| 180 | `public List<Row> rows` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 172 | **type** `public class SalesTaxLedger` | The month's sales tax, as tax payable less input tax credits. |
+| 44 | 185 | **type** `public class SalesTaxLedger` | The month's sales tax, as tax payable less input tax credits. |
 | 54 | 3 | `private double[] row(String sector)` |  |
 
-### WHAT HAPPENED THIS MONTH (lines 58-115)
+### WHAT HAPPENED THIS MONTH (lines 58-128)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 63 | 4 | `public void recordSales(String sector, double revenue)` | Sales to anyone inside the city. |
 | 73 | 4 | `public void recordExport(String sector, double revenue)` | Sales out of the city. |
 | 84 | 4 | `public void recordInputTax(String sector, double taxPaid)` | Tax the sector actually PAID on its inputs, recoverable in full. |
-| 94 | 7 | `public double chargeImport(String sector, double landedCost, TaxPolicy policy)` | Tax on goods bought from outside the city, at the BUYER's rate: charged on the way in and credited, which nets to zero for a sector that resells locally - the tax lands on the final sale either way. |
-| 103 | 12 | `public String deepestRefund()` | The sector in the biggest refund position this month, or null if none is. |
+| 97 | 4 | `public void recordCapitalInputTax(String sector, double taxPaid)` | Tax credited back on BUILDINGS bought from another business (0.7.19), at the supplier's rate: an input credit like recordInputTax(), except that it may be negative - a builder's refund of material escalation is a pric... |
+| 107 | 7 | `public double chargeImport(String sector, double landedCost, TaxPolicy policy)` | Tax on goods bought from outside the city, at the BUYER's rate: charged on the way in and credited, which nets to zero for a sector that resells locally - the tax lands on the final sale either way. |
+| 116 | 12 | `public String deepestRefund()` | The sector in the biggest refund position this month, or null if none is. |
 
-### WHAT IT COMES TO (lines 116-156)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 121 | 12 | `public double settle(TaxPolicy policy)` | Strikes the month's tax. |
-| 134 | 1 | `public double getTotalRemitted()` |  |
-| 135 | 1 | `public double getPayable(String s)` |  |
-| 136 | 1 | `public double getCredit(String s)` |  |
-| 137 | 1 | `public double getNet(String s)` |  |
-| 138 | 1 | `public double getTaxableSales(String s)` |  |
-| 139 | 1 | `public double getZeroRated(String s)` |  |
-| 140 | 1 | `public double getImportTax(String s)` |  |
-| 142 | 1 | `private boolean has(String s)` |  |
-| 145 | 1 | `public boolean isInRefund(String s)` | True when the city owes this sector rather than the other way round. |
-| 152 | 4 | `public void startMonth()` | Clears the month. |
-
-### save and restore (lines 157-215)
+### WHAT IT COMES TO (lines 129-169)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 160 | 4 | **type** `public static final class Row` | One sector's row, as the save carries it. |
-| 165 | 4 | **type** `public static final class State` |  |
-| 170 | 17 | `public State toState()` |  |
-| 189 | 16 | `public boolean restore(State s)` |  |
-| 206 | 1 | `public void reset()` |  |
-| 209 | 6 | `public void redenominate(double scale)` | The month's VAT working, in the new unit. |
+| 134 | 12 | `public double settle(TaxPolicy policy)` | Strikes the month's tax. |
+| 147 | 1 | `public double getTotalRemitted()` |  |
+| 148 | 1 | `public double getPayable(String s)` |  |
+| 149 | 1 | `public double getCredit(String s)` |  |
+| 150 | 1 | `public double getNet(String s)` |  |
+| 151 | 1 | `public double getTaxableSales(String s)` |  |
+| 152 | 1 | `public double getZeroRated(String s)` |  |
+| 153 | 1 | `public double getImportTax(String s)` |  |
+| 155 | 1 | `private boolean has(String s)` |  |
+| 158 | 1 | `public boolean isInRefund(String s)` | True when the city owes this sector rather than the other way round. |
+| 165 | 4 | `public void startMonth()` | Clears the month. |
+
+### save and restore (lines 170-228)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 173 | 4 | **type** `public static final class Row` | One sector's row, as the save carries it. |
+| 178 | 4 | **type** `public static final class State` |  |
+| 183 | 17 | `public State toState()` |  |
+| 202 | 16 | `public boolean restore(State s)` |  |
+| 219 | 1 | `public void reset()` |  |
+| 222 | 6 | `public void redenominate(double scale)` | The month's VAT working, in the new unit. |
 

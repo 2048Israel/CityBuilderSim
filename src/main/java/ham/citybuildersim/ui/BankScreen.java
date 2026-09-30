@@ -1641,13 +1641,14 @@ final class BankScreen {
     /* =====================================================================
        FUNDING
 
-       What the city has banked with it and how much of that its branches
-       reach, in today's money (the founding constants, until 0.7.9 - a
-       hundred times out after a currency reform); what it pays savers and
-       why; its account at the central bank; how its lending is funded; what
-       it can carry; and its branches, with the model's own verdict on
-       another one and, since round 2 of 0.7.11, on whether the ones
-       standing still pay.
+       What the city has banked with it and what of it the bank can lend
+       against - all of it since 0.7.19; until then, how much of it its
+       branches reached, in today's money (the founding constants, until
+       0.7.9 - a hundred times out after a currency reform); what it pays
+       savers and why; its account at the central bank; how its lending is
+       funded; what it can carry; and its branches, with the model's own
+       verdict on another one and, since round 2 of 0.7.11, on whether the
+       ones standing still pay.
        ===================================================================== */
 
     void fundingPage(VBox column) {
@@ -1673,24 +1674,16 @@ final class BankScreen {
                 bank.getForeignDeposits() > 0 ? Palette.WARN : null));
         column.getChildren().add(statementTotal("Deposits", moneyFull(bank.getDeposits()), Palette.TEXT_HEAD));
 
-        /* ---------------------------- what it can reach ---------------------------- */
-        column.getChildren().add(statementHead("What its branches can reach"));
-        column.getChildren().add(statementLine("One branch reaches", moneyFull(bank.getDepositsPerBranch())));
-        column.getChildren().add(statementLine(String.format("...so its %s reach",
-                bank.getBranches() == 1 ? "one branch" : formatter.format(Math.round(bank.getBranches())) + " branches"),
-                moneyFull(bank.branchReach())));
+        /* ---------------------------- what it can lend against (0.7.19) ---------------------------- */
+        column.getChildren().add(statementHead("What it can lend against"));
         column.getChildren().add(statementLine("The city's own savings with it", moneyFull(bank.localDeposits())));
-        column.getChildren().add(statementLine("...within its branches' reach", moneyFull(bank.localDepositsReached()),
-                Palette.GOOD));
-        column.getChildren().add(statementLine("...beyond it", moneyFull(bank.localDepositsBeyondReach()),
-                bank.localDepositsBeyondReach() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
-        column.getChildren().add(statementLine("...and money from abroad, which needs no branch",
-                moneyFull(bank.getForeignDeposits())));
+        column.getChildren().add(statementLine("...and money from abroad", moneyFull(bank.getForeignDeposits())));
         column.getChildren().add(statementTotal("Deposits it can lend against", moneyFull(bank.depositsGathered()),
                 Palette.TEXT_HEAD));
         column.getChildren().add(statementNote(
-                "A bank cannot lend savings its counters cannot reach. Money wired from abroad needs no "
-                + "counter - and can leave as fast as it came."));
+                "Savings reach the bank wherever its branches are - online - so it lends against everything "
+                + "the city has banked with it, not what its counters reach. Money wired from abroad can leave "
+                + "as fast as it came."));
 
         if (bank.getForeignDeposits() > 0) {
             double hot = bank.hotFundingShare();
@@ -1776,58 +1769,61 @@ final class BankScreen {
         column.getChildren().add(statementNote(bank.isInsolvent()
                 ? "A failed bank may lend nothing new, so it can carry nothing until it has capital again."
                 : bank.capitalBound()
-                ? "Its capital is the limit: another branch helps only by the capital its owners open it with."
-                : "Its deposits are the limit: another branch reaches more of the city's savings."));
+                ? "Its capital is the limit: it lends more as it earns, or as its owners or the city put more in."
+                : "Its deposits are the limit: the city has not banked enough with it to lend more."));
 
         branches(column, bank);
     }
 
     /**
-     * ITS BRANCHES, and whether another would pay - the model's own verdict,
-     * both halves of Bank.wantsBranch(): does it relieve anything (the book
-     * spilling past what the bank comfortably carries), and would it earn its
-     * keep (last month's book per branch at its kept margin, against what a
-     * branch costs to run). Worked out on the screen until 0.7.9, and not the
-     * same way the model did.
+     * ITS BRANCHES, BY THEIR CUSTOMERS (0.7.19) - the model's own verdict:
+     * Bank.wantsBranch() and Bank.branchesToClose(), on the month's fees
+     * against what a branch cost last month. Every branch after the first
+     * answers to its customers' account fees, decided on last month's cost
+     * and closed the next month when they no longer cover it; the first is
+     * the city's charter
+     * (Bank, THE BRANCHES, BY THEIR CUSTOMERS). Until 0.7.19 this read the
+     * book a branch would carry and the strain it was built at.
      */
     void branches(VBox column, Bank bank) {
 
         BuildingsTemplate branch = ui.game.getBuildingManager().getTemplateByName("Commercial Bank");
+        int standing = ui.game.getBuildingManager().countByName("Commercial Bank");
 
         column.getChildren().add(statementHead("Its branches"));
-        column.getChildren().add(statementLine("Standing", formatter.format(Math.round(bank.getBranches()))));
-        column.getChildren().add(statementLine("One more would add", moneyFull(bank.capacityAnotherBranchWouldAdd())
-                + " of what it can carry", bank.capacityAnotherBranchWouldAdd() > 0 ? Palette.GOOD : Palette.TEXT_SPENT));
+        column.getChildren().add(statementLine("Standing", formatter.format(standing)));
+        column.getChildren().add(statementLine("Its customers, the households paying its fee",
+                formatter.format(Math.round(bank.getCustomers()))));
+        column.getChildren().add(statementLine("...a branch", formatter.format(Math.round(bank.customersPerBranch()))
+                + ", against the " + formatter.format(Math.round(Bank.CUSTOMERS_PER_BRANCH)) + " one serves"));
+        column.getChildren().add(statementLine("A branch's fees this month", moneyFull(bank.feesPerBranch()),
+                standing <= 1 || bank.feesPerBranch() >= bank.laterBranchCost() ? Palette.GOOD : Palette.WARN));
+        column.getChildren().add(statementLine("...against what a branch past the first cost to run last month",
+                moneyFull(bank.laterBranchCost())));
+        column.getChildren().add(statementNote("A branch's cost is its staff, its repairs and its running costs - "
+                + "rent, systems and supplies. Every branch after the first has to be paid for by its customers' "
+                + "account fees; the first is the city's charter, stays open however few it serves, and pays its "
+                + "staff and repairs but no running costs."));
         if (branch != null) {
-            column.getChildren().add(statementLine("...costs to build", moneyFull(branch.getCashCost())));
+            column.getChildren().add(statementLine("Another costs to build", moneyFull(ui.game.quoteBuild(branch, 1).total)));
         }
         column.getChildren().add(statementLine("...and its owners put in", moneyFull(bank.getPaidInPerBranch()),
                 Palette.GOOD));
-        column.getChildren().add(statementLine("A branch cost to run last month",
-                moneyFull(bank.runningCostPerBranch())));
-        column.getChildren().add(statementLine("...and its share of what the book kept",
-                moneyFull(bank.keptPerBranch()),
-                bank.branchWouldPayForItself() ? Palette.GOOD : Palette.WARN));
 
         column.getChildren().add(subHead("Would another one pay?"));
-        boolean relieves = bank.bookAnotherBranchWouldCarry() > 0;
-        column.getChildren().add(statementLine("Is anything spilling over?",
-                bank.overflowPastComfortable() > 0
-                        ? "yes - " + money(bank.overflowPastComfortable()) + " of the book"
-                        : "no", relieves ? Palette.GOOD : Palette.TEXT_MUTED));
-        column.getChildren().add(statementNote(String.format(
-                "The weighed book past %.0f%% of what it can carry; one more branch would take %s of it "
-                + "onto the bank's own account.", Bank.EASY_STRAIN * 100, money(bank.bookAnotherBranchWouldCarry()))));
-        column.getChildren().add(statementLine("Would it earn its keep?",
-                bank.branchWouldPayForItself() ? "yes" : "no",
-                bank.branchWouldPayForItself() ? Palette.GOOD : Palette.WARN));
-        column.getChildren().add(statementLine(String.format("Is the bank past %.0f%% of what it can carry?",
-                Bank.BUILD_AT_STRAIN * 100), bank.strain() > Bank.BUILD_AT_STRAIN ? "yes" : "no",
-                bank.strain() > Bank.BUILD_AT_STRAIN ? Palette.GOOD : Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Are there customers for it?",
+                bank.customersForAnother(standing) ? "yes" : "no",
+                bank.customersForAnother(standing) ? Palette.GOOD : Palette.TEXT_MUTED));
+        column.getChildren().add(statementLine("Would its share of the fees cover it?",
+                bank.feesWouldCoverAnother(standing)
+                        ? "yes - " + money(bank.feesPerBranchWithAnother(standing)) + " a branch"
+                        : "no - " + money(bank.feesPerBranchWithAnother(standing)) + " a branch",
+                bank.feesWouldCoverAnother(standing) ? Palette.GOOD : Palette.WARN));
 
         String verdict;
         String tone;
-        if (bank.wantsBranch()) {
+        String hold = bank.branchHoldReason(standing);
+        if (bank.wantsBranch(standing)) {
             verdict = "Yes. The city's own investors run the same test, and build one when it passes.";
             tone = Palette.GOOD;
         } else if (bank.isInsolvent()) {
@@ -1838,36 +1834,26 @@ final class BankScreen {
             verdict = "No: it is under its minimum, and a bank under its minimum is put back by its owners "
                     + "or the city, not by opening branches for the capital they bring.";
             tone = Palette.BAD;
-        } else if (bank.capacityAnotherBranchWouldAdd() <= 0) {
-            verdict = "No: its branches already reach every dollar the city has banked. A counter cannot "
-                    + "fix a shortage of savings.";
-            tone = Palette.TEXT_MUTED;
-        } else if (!relieves) {
-            verdict = "Not yet: nothing is spilling over, so nothing is waiting for the room.";
-            tone = Palette.TEXT_MUTED;
-        } else if (!bank.branchWouldPayForItself()) {
-            verdict = "No: a branch would cost more to run than its share of the book keeps.";
-            tone = Palette.WARN;
         } else {
-            verdict = String.format("Not yet: it builds ahead of being full, from %.0f%% of what it can carry.",
-                    Bank.BUILD_AT_STRAIN * 100);
+            verdict = "No: " + (hold == null ? "nothing wants one." : hold + ".");
             tone = Palette.TEXT_MUTED;
         }
         column.getChildren().add(sentence(verdict, tone));
 
-        /* ---------------- ...and whether one should close (0.7.11, round 2) ---------------- */
+        /* ---------------- ...and whether one should close (0.7.19) ---------------- */
         column.getChildren().add(subHead("Do its branches still pay?"));
-        column.getChildren().add(statementLine("Has the book kept its branches' staff?",
-                bank.branchesCoverTheirStaff() ? "yes, last month"
+        column.getChildren().add(statementLine("Have its fees covered its branches?",
+                bank.getUncoveredMonths() == 0 ? "yes, last month"
                         : String.format("not for %d month%s", bank.getUncoveredMonths(),
                                 bank.getUncoveredMonths() == 1 ? "" : "s"),
-                bank.branchesCoverTheirStaff() ? Palette.GOOD : Palette.WARN));
+                bank.getUncoveredMonths() == 0 ? Palette.GOOD : Palette.WARN));
         column.getChildren().add(statementNote(String.format(
-                "The same test run the other way: when what the book keeps has not paid the branches' staff for "
-                + "%d months in a row, the bank closes one a month until it does, never its last. The building "
-                + "is sold as any retired building is - the plot back to the city, the material to the builders - "
+                "The same test run the other way: when a month's fees do not cover what its branches cost "
+                + "at last month's cost, the branches past what they cover close, never the first. It decides "
+                + "on last month's cost, so a month whose wages rise can run a branch short once; the next "
+                + "month's test closes it. The building is sold "
+                + "as any retired building is - the plot back to the city, the material to the builders - "
                 + "and what the bank was founded with stays in it.%s",
-                Bank.BRANCH_CLOSE_MONTHS,
                 ui.game.getBranchesClosed() > 0
                         ? String.format(" It has closed %d this session.", ui.game.getBranchesClosed()) : "")));
 

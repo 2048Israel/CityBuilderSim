@@ -238,7 +238,18 @@ public class InfrastructureCheck {
          * working as intended, and the fix is to ask the city what its work
          * ratio is rather than to assume it is 1.
          */
-        double undiscounted = city.getBuildingManager().getTotalConstructionCapacity()
+        /*
+         * ...AND THE CREWS KEPT ON (0.7.17), for the same reason. The builders
+         * lay off the crews their work does not need (sectors.Construction,
+         * THE CREWS THE WORK NEEDS), and this city's six depots, built for
+         * their lorries, have little to build: they keep a share of their
+         * posts, and their capacity works at that share - the city's own
+         * works department, which has no posts, whole. The copy missed it and
+         * read 191 against 383: the crews laid off counted as working.
+         */
+        double depots = city.getBuildingManager().getTotalConstructionCapacity() - BuildingManager.BASE_CONSTRUCTION;
+        double undiscounted = (city.getBuildingManager().getTotalConstructionCapacity()
+                        - depots * (1 - city.getSectors().construction().getPostsOfferedShare()))
                 * city.getSectors().construction().getAverageFill()
                 * city.getHealth().getWorkRatio();
         assertTrue("the builders are slowed by it too",

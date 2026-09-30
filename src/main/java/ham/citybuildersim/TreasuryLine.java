@@ -92,6 +92,13 @@ public enum TreasuryLine {
 
     /** The city's share of the repair bill on its own buildings: work done, and owed to the builders if it cannot be paid. */
     CITY_REPAIRS("Repairs to the city's own buildings", false, false),
+    /**
+     * The material the crews drew for the city's own orders, at the price the
+     * month they drew it, less what the quote allowed for it (0.7.19; Game,
+     * MATERIAL AT THE PRICE WHEN IT IS USED): the material was used, so it
+     * is owed to the builders if it cannot be paid, as a repair is.
+     */
+    BUILDING_ESCALATION("Material escalation on the city's building contracts", false, false),
 
     /** Land the city buys, from the land office or back from a sector; refused, it stays unbought. */
     LAND("Land purchases", false, true),

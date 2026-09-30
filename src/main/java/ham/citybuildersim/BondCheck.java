@@ -244,8 +244,28 @@ public class BondCheck {
         out.println("\n--- 2. bookbuilding: the coupon is the lowest yield that fills the issue, and the rest is a bank loan ---");
         BondMarket bm = g.getBondMarket();
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
-        int m = g.getMonth();
         double amount = 5_000;
+        /*
+         * ...IN A MONTH THE BANK'S PRICES AGREE WITH EACH OTHER (0.7.17). The
+         * bank would take the bond only at its loan-equivalent yield, read
+         * off the policy rate as it stands, and the loan is priced off the
+         * prime the bank struck at the top of the month. In a month the rate
+         * moved between the two they part: this city's month twenty-five,
+         * since every building gets the crew it can use (BuildingManager,
+         * EVERY BUILDING GETS THE CREW IT CAN USE), is one - the policy rate
+         * cut after prime was struck, the bank's yield read 5.15% against the
+         * loan's 5.44%, and the bank took the whole bond - where the months
+         * either side of it read as the fixture describes. So the section
+         * steps on, a month at a time and a year at most, to a month that
+         * does; the premise is the bank's two prices, not which month.
+         */
+        for (int wait = 0; wait < 12; wait++) {
+            double lr0 = credit.projectRate(ISSUER, amount);
+            BusinessDebtManager.Plan p0 = bm.plan(ISSUER, amount, lr0, amount, amount, amount, g.getMonth());
+            if (bm.new Demand(ISSUER, p0.bondFace(), p0.offered(), p0.dealDebt(), p0.extraAssets()).bankYield > p0.loanAllIn()) break;
+            play(g);
+        }
+        int m = g.getMonth();
         double lr = credit.projectRate(ISSUER, amount);
         BusinessDebtManager.Plan p = bm.plan(ISSUER, amount, lr, amount, amount, amount, m);
         out.printf("   %s borrowing $%,.0fk at the bank's %.2f%% (%.2f%% all-in): a bond of $%,.1fk at %.3f%% (%.3f%% all-in), $%,.1fk from the bank%n",
@@ -430,6 +450,14 @@ public class BondCheck {
 
         // The households: the city's paper's rule on the expected return.
         double floor = dm.el + dm.deposit;
+        // RE-CAUSED (revised 0.7.19): the rule subtracts the loss and the
+        // deposit rate from the return, and (el + deposit) - el - deposit can
+        // come out a hair above nothing - it did at this city's rates since
+        // the charter branch is exempt from its operating cost, and the
+        // households bid a trillionth of the issue at a return that is, to the
+        // rule's own arithmetic, over the deposit rate. The return tested is
+        // the highest the rule itself reads as no more than it.
+        while (floor - dm.el - dm.deposit > 0) floor = Math.nextDown(floor);
         close("households bid nothing where a bond's expected return is no more than the deposit rate",
                 dm.households(floor), 0, 0);
         close("...a point over it, the paper's rule: HOUSEHOLD_PAPER_APPETITE a unit of spread of the issue",
@@ -763,6 +791,24 @@ public class BondCheck {
         String R = Sectors.RETAIL;
         ham.citybuildersim.sectors.Retail shops = g.getSectors().retail();
         g.getBusinessInvestment().holdSector(R);
+        /*
+         * ...AND THE CITY'S SECOND BRANCH COME AND GONE FIRST, RE-CAUSED
+         * (0.7.19). city() puts up a second branch, and since 0.7.19 a branch
+         * past the first stands only while its customers' fees cover what it
+         * cost last month (Bank,
+         * THE BRANCHES, BY THEIR CUSTOMERS): this town's do not, so it closes
+         * the month after it opens, and the shops, whose building a branch is,
+         * sell its plot and its material (Game.closeBranches()) - $3.9M into
+         * their till in the month this section took a claim of 1.2 times what
+         * they owned, which left them owing 0.69 times, under the ceiling the
+         * section is about. So the section starts once the branch has come and
+         * gone.
+         */
+        for (int i = 0; i < 24 && g.getBuildingManager().underConstructionByName("Commercial Bank") > 0; i++) play(g);
+        play(g);
+        assertTrue("fixture: the city's second branch has opened and closed, and one stands",
+                g.getBranchesClosed() >= 1 && g.getBuildingManager().countByName("Commercial Bank") == 1
+                        && g.getBuildingManager().underConstructionByName("Commercial Bank") == 0);
 
         // UNDER ITS CEILING: its shelf cut, between months, to a month and a
         // fifth of what it sells, so the month's sales are whole and its

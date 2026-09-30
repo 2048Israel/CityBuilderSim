@@ -119,7 +119,7 @@ public final class FoodProcessing extends Sector {
        same structural reason (see Manufacturing, Business Services), and the
        shape here is Manufacturing's: score every template the sector owns,
        take the best one that clears the floors, say plainly why when none
-       does. The floors are two -
+       does. The floors are two, and since 0.7.18 three -
 
          FULLNESS, the rule below: nobody builds a food plant on exports.
 
@@ -127,8 +127,10 @@ public final class FoodProcessing extends Sector {
          estimatedMonthlyProfit(), which this sector also overrides, for why
          the generic estimate is not good enough here.
 
-       AND NOT THE STAFFING FLOOR, which is the one borrowed rule this sector
-       does NOT take, and it was measured before it was dropped. Sector's
+         STAFF, since 0.7.18: Sector.staffing(), asked between the two.
+
+       AND NOT THE STAFFING FLOOR, UNTIL 0.7.18: the one borrowed rule this
+       sector did NOT take, and it was measured before it was dropped. Sector's
        MIN_STAFFABLE_TO_ORDER asks the city for eighty percent of a building's
        posts in people who are not already working, and its own header says
        what it is for: "any building whose posts are a large step against the
@@ -145,6 +147,18 @@ public final class FoodProcessing extends Sector {
        keeps these plants honest is that the city has to be eating what one
        makes and the plant has to clear its own payroll at the price it will
        actually get, and both of those are tested above.
+
+       SINCE 0.7.18 IT TAKES IT, on Jerus's word: "Construction, Retail,
+       Restaurants, Luxury and the makers check whether they can staff a
+       building before building it (the check four sectors already use), and
+       the 20% it allows can't be jobs nobody can fill." plan() asks
+       Sector.staffing() after the fullness floor and before the profit one,
+       and names it when that is the wall the sector hit. TODO(docs): nothing
+       says what answers the measurement above - a four-post plant read at 25%
+       for 250 months in a city at full employment - under the new test; in
+       Jerus's city 0.7.18 held this sector on staffing in all 120 months
+       played (the project's workers-take-the-best-paid-job.md). Whether that
+       is the rule's intended cost is the author's to say.
        ===================================================================== */
 
     /* ---------------------------------------------------------------------
@@ -212,12 +226,23 @@ public final class FoodProcessing extends Sector {
         String fullest = null;
         String unprofitable = null;
         boolean unprofitableEatsMeat = false;
+        Staffing staffingHold = null;
+        String staffingHoldName = null;
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
 
             double fill = fillFor(t);
             if (fill < FILLED) {
                 if (fill >= bestFill) { bestFill = fill; fullest = t.getName(); }
+                continue;
+            }
+            // ...and one the city could staff (0.7.18; see Sector.staffing()).
+            Staffing staffing = staffing(t);
+            if (!staffing.passes()) {
+                if (staffingHold == null || staffing.share > staffingHold.share) {
+                    staffingHold = staffing;
+                    staffingHoldName = t.getName();
+                }
                 continue;
             }
 
@@ -246,6 +271,9 @@ public final class FoodProcessing extends Sector {
                                 unprofitable, Formats.INSTANCE.cash(getMeatPrice()))
                         : String.format("a %s would not clear its own costs at the price "
                                 + "it would get for what it makes", unprofitable));
+            }
+            if (staffingHold != null) {
+                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
             }
             if (fullest != null) {
                 return BusinessInvestment.Decision.no(sector, String.format(

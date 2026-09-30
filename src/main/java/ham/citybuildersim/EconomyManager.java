@@ -333,13 +333,19 @@ public class EconomyManager {
      */
     public double housingCarry(BuildingsTemplate t) {
         if (t == null || buildingManager == null) return 0;
-        double structure = t.getCashCost()
-                + t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
+        double materials = t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
+        double structure = t.getCashCost() + materials;
         double land = t.getLandSqFt() * Math.max(0, landPricePerSqFt);
         double full = structure + land;
         if (full <= 0) return 0;
         double monthlyPropertyRate = taxPolicy.effectiveMonthlyPropertyRate(sectors.realEstate());
-        return structure * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12
+        // The repairs as the builders bill them (0.7.19): the labour at
+        // today's wages and the tax a landlord cannot claim back - see
+        // maintenanceBillFor(). The property tax on the roll's value, which
+        // is the structure's book value (BuildingManager) and its plot.
+        double repairBase = ownersRepairCost(t, sectors.realEstate().key(),
+                buildingManager.nonMaterialCost(t) + materials);
+        return repairBase * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12
                 + full * monthlyPropertyRate;
     }
 
@@ -350,7 +356,10 @@ public class EconomyManager {
         double bestFull = 0, bestStructure = 0, bestLand = 0, bestStudio = 0, bestFamily = 0;
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
             if (t == null || !re.key().equals(t.getSector()) || t.getCapacity() <= 0) continue;
-            double structure = (t.getCashCost() + t.getConstructionMaterials() * materialPrice) / t.getCapacity();
+            // ...at what the landlord pays the builders for it (0.7.19), less
+            // the rebate on a new rental home (THE REBATES ON A NEW HOME).
+            double structure = ownersBuildCost(t, re.key(),
+                    buildingManager.nonMaterialCost(t) + t.getConstructionMaterials() * materialPrice) / t.getCapacity();
             double land = t.getLandSqFt() * Math.max(0, landPricePerSqFt) / t.getCapacity();
             double full = structure + land;
             if (full <= 0) continue;
@@ -532,20 +541,229 @@ public class EconomyManager {
 
     private static final double MAINTENANCE_RATE = ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
 
-    /** The month's repair bill for one sector, in money - materials priced in. */
+    /*
+     * THE REPAIR BILL KEEPS UP TOO (0.7.19; Game, THE BUILDERS' PRICE). Its
+     * non-material part is the buildings' cash cost with its labour at
+     * today's builders' wages (BuildingManager.nonMaterialCost()) - it was
+     * the founding cash cost, and in Jerus's city the $119.5M a month of it
+     * was 13.5 times short of the crews' wages by month 1793 - and the bill
+     * carries the sales tax the builders remit on it (withBuildersTax()). A
+     * business that makes taxable supplies claims that tax back, as an input
+     * (settleSalesTax()); the city, the bank and the landlords bear it - the
+     * landlords' rebates are on new homes, not on repairs to them (see THE
+     * REBATES ON A NEW HOME, AND THE CITY'S).
+     */
+
+    /** The month's repair bill for one sector, in money - materials priced in, and the builders' sales tax. */
     public double maintenanceBillFor(Sector s, double materialPrice) {
-        double cash = buildingManager.totalBySector(s.key(), BuildingsTemplate::getCashCost) * MAINTENANCE_RATE;
+        double cash = buildingManager.totalBySector(s.key(), buildingManager::nonMaterialCost) * MAINTENANCE_RATE;
         double mats = buildingManager.totalBySector(s.key(), BuildingsTemplate::getConstructionMaterials) * MAINTENANCE_RATE;
-        double bill = cash + mats * Math.max(0, materialPrice);
+        double bill = withBuildersTax(cash + mats * Math.max(0, materialPrice));
         return Double.isFinite(bill) && bill > 0 ? bill : 0;
     }
 
     /** The same for a city-owned category. */
     public double maintenanceBillFor(BuildingType category, double materialPrice) {
-        double cash = buildingManager.getTotalByCategoryDouble(category, t -> t.isOwnedBySector() ? 0 : t.getCashCost()) * MAINTENANCE_RATE;
+        double cash = buildingManager.getTotalByCategoryDouble(category, t -> t.isOwnedBySector() ? 0 : buildingManager.nonMaterialCost(t)) * MAINTENANCE_RATE;
         double mats = buildingManager.getTotalByCategoryDouble(category, t -> t.isOwnedBySector() ? 0 : t.getConstructionMaterials()) * MAINTENANCE_RATE;
-        double bill = cash + mats * Math.max(0, materialPrice);
+        double bill = withBuildersTax(cash + mats * Math.max(0, materialPrice));
         return Double.isFinite(bill) && bill > 0 ? bill : 0;
+    }
+
+    /* ------------------------ the builders' sales tax ------------------------ */
+
+    /** What the builders charge their sales tax at. */
+    public double buildersSalesRate() {
+        return Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, taxPolicy.effectiveSalesRate(sectors.construction())));
+    }
+
+    /**
+     * A price before the builders' sales tax, with it passed on (0.7.19): the
+     * builders remit their rate on what they bill, so what they bill for a
+     * price p that is theirs to keep is p / (1 - rate). See Game, THE
+     * BUILDERS' PRICE.
+     */
+    public double withBuildersTax(double beforeTax) {
+        return beforeTax / (1 - buildersSalesRate());
+    }
+
+    /**
+     * WHETHER AN OWNER CLAIMS THE TAX ON ITS BUILDINGS BACK (0.7.19). Jerus:
+     * "Businesses claim it back: input tax credits on buildings and repairs
+     * for businesses; the city and households bear the tax." The GST/HST
+     * rule: a registrant claims an input tax credit for the tax paid on
+     * capital real property it uses primarily in its commercial activities
+     * (CRA, Guide RC4022, "Claiming ITCs for capital real property"; Excise
+     * Tax Act s. 169(1)), and a "commercial activity" excludes the making of
+     * exempt supplies (ETA s. 123(1)), so property used to make them earns
+     * no credit. Repairs are an input, credited the same way. Here: a sector that makes a taxable
+     * good claims; the landlords, whose residential rent is an exempt supply
+     * (Good.taxExempt(); ETA Schedule V, Part I), do not; nor the bank's
+     * branch, which retail pays for but the bank uses to supply financial
+     * services, exempt too (ETA Schedule V, Part VII); nor the city. (The
+     * landlords' rebates on a new home, since the revision, are not a
+     * credit and are apart: THE REBATES ON A NEW HOME, AND THE CITY'S.)
+     */
+    public boolean claimsTaxOnBuildings(String owner, BuildingsTemplate t) {
+        if (t != null && "Commercial Bank".equals(t.getName())) return false;
+        Sector s = owner == null ? null : sectors.byKey(owner);
+        return s != null && makesTaxableSupplies(s);
+    }
+
+    /** A sector with a good the sales tax touches. */
+    private static boolean makesTaxableSupplies(Sector s) {
+        for (Good g : s.goodsMade()) if (!g.taxExempt()) return true;
+        return false;
+    }
+
+    /**
+     * What a building's price before the builders' tax costs this owner in
+     * the end: the price, and whatever of the tax on it the owner does not
+     * get back - none of it for a business that claims it, none for a
+     * landlord's purpose-built rental, the tax less a new rental's rebate
+     * for any other home, all of it for everyone else. See
+     * taxRecoveredShare().
+     */
+    public double ownersBuildCost(BuildingsTemplate t, String owner, double beforeTax) {
+        double gross = withBuildersTax(beforeTax);
+        double share = taxRecoveredShare(owner, t, gross - beforeTax);
+        if (share <= 0) return gross;
+        if (share >= 1) return beforeTax;
+        return beforeTax + (gross - beforeTax) * (1 - share);
+    }
+
+    /**
+     * ...and a REPAIR bill's (0.7.19, revised): the bill itself when the
+     * owner claims the tax on it back as an input, the bill with the tax
+     * when it cannot. No rebate reaches a repair: a landlord's rent is an
+     * exempt supply, so the tax on keeping a rental up is the landlord's to
+     * bear (CRA RC4231 counts only a substantial renovation - "generally,
+     * 90% or more of the interior ... removed or replaced" - as new housing).
+     */
+    public double ownersRepairCost(BuildingsTemplate t, String owner, double beforeTax) {
+        return claimsTaxOnBuildings(owner, t) ? beforeTax : withBuildersTax(beforeTax);
+    }
+
+    /* =====================================================================
+       THE REBATES ON A NEW HOME, AND THE CITY'S (0.7.19, revised)
+
+       Jerus, 2026-09-30: "Both rebates (Recommended)". The builders' tax on
+       a new home, and on the city's own works, is given back as Canada gives
+       it back.
+
+       THE LANDLORDS. A new rental building that is PURPOSE-BUILT RENTAL
+       HOUSING gets 100% of the GST (or the federal part of the HST) back:
+       "at least 4 residential units each with a private kitchen, a private
+       bathroom, and a private living area", or "at least 10 residential
+       units", "at least 90%" of them held for long-term rental (CRA, "GST/HST
+       purpose-built rental housing rebate", 2026-06-21; Excise Tax Act
+       s. 256.2(3.1)-(3.2); RC4231). A home here is a household's own
+       dwelling - it cooks, washes and lives in it - and every home the
+       landlords own is let, so the test is the template's dwellings: a
+       building of PBRH_MIN_UNITS or more qualifies (Studio Apartments, 80;
+       Low-Rise Apartments, 63) and a House, one, does not. The rebate's
+       window - construction begun after September 13, 2023 and before 2031 -
+       is not read off the calendar, which is presentation only (CityCalendar):
+       the rebate is the city's law for as long as the game runs.
+
+       A home that is not purpose-built rental gets the NEW RESIDENTIAL RENTAL
+       PROPERTY rebate, where its value allows (RC4231; ETA s. 256.2(3)(a)):
+       A x ($450,000 - B) / $100,000 a unit, A the lesser of $6,300 and 36% of
+       the tax on the unit, B the greater of $350,000 and the unit's fair
+       market value - "the value of the building, the applicable land, and
+       all other structures", without the tax. The dollar figures are
+       founding money at the month's price index in today's unit, as every
+       sourced figure here is (the law has held them since 2000, but a
+       figure that inflation erodes to nothing over a game's centuries would
+       be a date, not a rule). A House's structure and plot are about $454k
+       at founding, past the $450k where the rebate is gone, so a House
+       mostly bears its tax, as a single house does.
+
+       Either is claimed AFTER THE TAX IS PAID, on what was paid: the source
+       gives the landlord two years from the month the tax becomes payable,
+       and here it is claimed at the first strike after each part of the work
+       is billed - the capital credit's path (settleSalesTax()), the earliest
+       the source allows. The treasury pays it out of the sales tax it
+       collects, so it is declared where the tax is. No rebate reaches the
+       landlords' repairs (ownersRepairCost()).
+
+       THE CITY. A municipality gets 100% of the GST back on what it buys
+       (CRA RC4034, "GST/HST public service bodies' rebate", 2025-05-29:
+       municipalities, 100% of the GST or the federal part of the HST - 57.14%
+       of the provincial part in Nova Scotia, 78% in Ontario), claimed after
+       the claim period in which the tax was paid. Here the city IS the
+       taxing authority: the builders remit the tax on the city's own work,
+       its escalation and its repairs to the treasury, at the strike after
+       the work is billed - the same money at the same time a rebate claimed
+       after paying would bring back. So the city's rebate is already how the
+       money moves, and no line is added for it: one would be the treasury
+       paying itself. What the city does carry is the tax on an order it has
+       paid for and the builders have not yet billed, as every owner carries
+       it (the order pays its whole quote up front).
+       ===================================================================== */
+
+    /** A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). */
+    public static final int PBRH_MIN_UNITS = 4;
+    /** The new residential rental property rebate's share of the tax on a unit: 36% (Excise Tax Act section 256.2(3)(a); CRA RC4231). */
+    public static final double NRRP_SHARE = .36;
+    /** ...and its most a unit, in founding thousands: $6,300. */
+    public static final double NRRP_CAP = 6.3;
+    /** ...in full for a unit worth up to this, in founding thousands: $350,000. */
+    public static final double NRRP_FULL_BELOW = 350;
+    /** ...and none for a unit worth this or more: $450,000. */
+    public static final double NRRP_NONE_FROM = 450;
+
+    /** Today's money for a founding dollar: the month's price index over the unit. Supplied by Game; one without it. */
+    private java.util.function.DoubleSupplier foundingToToday = () -> 1;
+    public void setFoundingToToday(java.util.function.DoubleSupplier s) { if (s != null) foundingToToday = s; }
+
+    /** Whether this building is one of the landlords' homes. */
+    public boolean isLandlordsHome(String owner, BuildingsTemplate t) {
+        return t != null && t.getDwellings() > 0 && owner != null && owner.equals(sectors.realEstate().key());
+    }
+
+    /** Whether a home of this template is purpose-built rental housing. See THE REBATES ON A NEW HOME. */
+    public static boolean isPurposeBuiltRental(BuildingsTemplate t) {
+        return t != null && t.getDwellings() >= PBRH_MIN_UNITS;
+    }
+
+    /**
+     * The new residential rental property rebate on one building of this
+     * template, on this much tax paid on it, in today's money: A x ($450,000
+     * - B) / $100,000 a unit (THE REBATES ON A NEW HOME). The unit's value is
+     * its structure at today's price before the tax, and its plot.
+     */
+    public double rentalPropertyRebate(BuildingsTemplate t, double taxPerBuilding) {
+        int units = t == null ? 0 : t.getDwellings();
+        if (units <= 0 || !(taxPerBuilding > 0)) return 0;
+        double scale = Math.max(0, foundingToToday.getAsDouble());
+        if (!(scale > 0)) return 0;
+        double structure = buildingManager.nonMaterialCost(t)
+                + t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
+        double value = (structure + t.getLandSqFt() * Math.max(0, landPricePerSqFt)) / units;
+        double a = Math.min(NRRP_CAP * scale, NRRP_SHARE * taxPerBuilding / units);
+        double b = Math.max(NRRP_FULL_BELOW * scale, value);
+        double rebate = a * (NRRP_NONE_FROM * scale - b) / ((NRRP_NONE_FROM - NRRP_FULL_BELOW) * scale);
+        return Double.isFinite(rebate) && rebate > 0 ? rebate * units : 0;
+    }
+
+    /**
+     * The share of the builders' tax on a new building that its owner gets
+     * back (0.7.19, revised): all of it for a business that claims it as a
+     * credit (claimsTaxOnBuildings()) and for a landlord's purpose-built
+     * rental; the new rental property rebate's share of it for any other
+     * home the landlords build; none for the bank's branch, and none for the
+     * city, whose rebate is the tax coming home (THE REBATES ON A NEW HOME,
+     * AND THE CITY'S).
+     *
+     * @param taxPerBuilding the builders' tax paid on one building
+     */
+    public double taxRecoveredShare(String owner, BuildingsTemplate t, double taxPerBuilding) {
+        if (claimsTaxOnBuildings(owner, t)) return 1;
+        if (!isLandlordsHome(owner, t)) return 0;
+        if (isPurposeBuiltRental(t)) return 1;
+        if (!(taxPerBuilding > 0)) return 0;
+        return Math.max(0, Math.min(1, rentalPropertyRebate(t, taxPerBuilding) / taxPerBuilding));
     }
 
     /** The material UNITS the whole city's repairs consume this month. */
@@ -590,7 +808,8 @@ public class EconomyManager {
         BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
         if (branch != null) {
             int n = buildingManager.getQuantity(branch.getId());
-            double bill = n * (branch.getCashCost() + branch.getConstructionMaterials() * Math.max(0, materialPrice)) * MAINTENANCE_RATE;
+            double bill = withBuildersTax(n * (buildingManager.nonMaterialCost(branch)
+                    + branch.getConstructionMaterials() * Math.max(0, materialPrice)) * MAINTENANCE_RATE);
             if (Double.isFinite(bill) && bill > 0) {
                 bankMaintenanceBill = bill;
                 maintenanceBillTotal += bill;
@@ -606,6 +825,34 @@ public class EconomyManager {
     public double getCityMaintenanceBill()       { return cityMaintenanceBill; }
     /** The share the bank pays, for its branches. */
     public double getBankMaintenanceBill()       { return bankMaintenanceBill; }
+    /**
+     * ...AND WHAT THESE BRANCHES COST TO RUN (0.7.19): the template's upkeep,
+     * a branch's rent, systems and supplies, which was charged to nobody
+     * until then. Not a repair, so not the builders': the bank pays it with
+     * its staff at the settle (Bank.payRunning()), on the branches standing
+     * THEN - so a branch the fee rule closed this month (Game.closeBranches())
+     * is not paid for, as its staff are not. The repairs were billed at the
+     * top of the month, on the buildings that stood for the builders to
+     * repair.
+     *
+     * THE CHARTER PAYS NONE OF IT (revised; Jerus, 2026-09-30, "Exempt first
+     * branch"): of the branches standing, one is the charter - they are a
+     * count, not named buildings - and the operating cost is the rest's. See
+     * Bank, THE BRANCHES, BY THEIR CUSTOMERS.
+     */
+    public double bankOperatingCost(int branches) {
+        if (branches <= 1) return 0;
+        double running = (branches - 1) * bankOperatingCostPerLaterBranch();
+        return Double.isFinite(running) && running > 0 ? running : 0;
+    }
+
+    /** ...what one branch past the charter carries of it: the template's upkeep. */
+    public double bankOperatingCostPerLaterBranch() {
+        BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
+        if (branch == null) return 0;
+        double upkeep = branch.getUpkeep();
+        return Double.isFinite(upkeep) && upkeep > 0 ? upkeep : 0;
+    }
     /** Material UNITS, not money - the yard has to find these. */
     public double getMaintenanceMaterialsTotal() { return maintenanceMaterialsTotal; }
     /** Builders' time, which comes straight off what the city can put up. */
@@ -640,6 +887,7 @@ public class EconomyManager {
     public double settleSalesTax() {
 
         salesTaxLedger.startMonth();
+        Map<String, Double> capitalCredit = new LinkedHashMap<>();
 
         for (Sector s : sectors.all()) {
             Sector.Statement st = s.statement();
@@ -652,6 +900,31 @@ public class EconomyManager {
                 salesTaxLedger.recordInputTax(s.key(), e.getValue() * rate);
             }
             salesTaxLedger.chargeImport(s.key(), st.imports, taxPolicy);
+            /*
+             * THE TAX ON A BUILDING IS CLAIMED BACK (0.7.19), by a business
+             * that makes taxable supplies (claimsTaxOnBuildings()): on the
+             * builders' work on its premises and the escalation on it, as the
+             * work is billed, at the builders' rate - a capital credit, handed
+             * to the till apart (Sector.bank()) - and on its repair bill, an
+             * input like any other. A landlord's rebate on a new rental home
+             * (revised) comes the same way, without the repairs: the share of
+             * the work the rebate reaches is recorded as its capital purchase
+             * (Game.settleSiteContracts()) and credited here at the builders'
+             * rate.
+             */
+            double capital = 0;
+            for (Map.Entry<String, Double> e : st.capitalBySupplier.entrySet()) {
+                Sector supplier = sectors.byKey(e.getKey());
+                double rate = supplier == null ? 0 : taxPolicy.effectiveSalesRate(supplier);
+                capital += e.getValue() * rate;
+            }
+            if (capital != 0) {
+                salesTaxLedger.recordCapitalInputTax(s.key(), capital);
+                capitalCredit.put(s.key(), capital);
+            }
+            if (makesTaxableSupplies(s)) {
+                salesTaxLedger.recordInputTax(s.key(), st.maintenance * buildersSalesRate());
+            }
         }
 
         salesTax = salesTaxLedger.settle(taxPolicy);
@@ -659,7 +932,9 @@ public class EconomyManager {
         // AND THE SECTORS PAY IT, ON THEIR OWN INCOME STATEMENTS, and bank
         // the month net of both taxes - one movement, one place, one set of
         // numbers.
-        for (Sector s : sectors.all()) s.bank(salesTaxLedger.getNet(s.key()));
+        for (Sector s : sectors.all()) {
+            s.bank(salesTaxLedger.getNet(s.key()), capitalCredit.getOrDefault(s.key(), 0.0));
+        }
 
         return salesTax;
     }
@@ -697,6 +972,14 @@ public class EconomyManager {
             double rate = supplier == null ? 0 : taxPolicy.effectiveSalesRate(supplier);
             if (e.getValue() > 0) due -= e.getValue() * rate;
         }
+        // ...and the credits on its buildings and its repairs (0.7.19), which
+        // settleSalesTax() nets inside the same remittance.
+        for (Map.Entry<String, Double> e : p.capitalBySupplier.entrySet()) {
+            Sector supplier = sectors.byKey(e.getKey());
+            double rate = supplier == null ? 0 : taxPolicy.effectiveSalesRate(supplier);
+            due -= e.getValue() * rate;
+        }
+        if (makesTaxableSupplies(s)) due -= s.getMaintenanceExpense() * buildersSalesRate();
         return due;
     }
 

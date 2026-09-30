@@ -480,19 +480,19 @@ public class ReadPathCheck {
         bk.isMonthKnown();
         bk.getHouseholdDeposits();
         bk.getSectorDeposits();
-        bk.getDepositsPerBranch();
         bk.getPaidInPerBranch();
-        bk.branchReach();
+        bk.getPaidInPerBranch();
+        bk.getCustomers();
         bk.localDeposits();
-        bk.localDepositsReached();
-        bk.localDepositsBeyondReach();
+        bk.feesPerBranch();
+        bk.feesPerBranchWithAnother();
         bk.fundingLimit();
         bk.capacityAnotherBranchWouldAdd();
-        bk.overflowPastComfortable();
+        bk.customersPerBranch();
         bk.runningCostPerBranch();
-        bk.keptPerBranch();
-        bk.branchWouldPayForItself();
-        bk.bookAnotherBranchWouldCarry();
+        bk.branchesTheFeesCover();
+        bk.feesWouldCoverAnother();
+        bk.customersForAnother();
         bk.wantsBranch();
         // ...and round 2 of 0.7.11's: the leverage ratio and the branch test
         // in reverse, as the Bank tab reads them.
@@ -536,7 +536,7 @@ public class ReadPathCheck {
         g.quoteForeignForCash("Note", gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
         g.quoteMediumBondForCash(gap, 5, Game.BUILD_BOND_GRANULE);
         bk.capitalPerDollar(Bank.RISK_INSURED_MORTGAGE);
-        bk.branchesCoverTheirStaff();
+        bk.feeCover();
         bk.closesBranch();
         bk.getUncoveredMonths();
         bk.status();
@@ -905,6 +905,20 @@ public class ReadPathCheck {
             // bond pages, the Bank tab and the Trade tab show.
             g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, -5_000);
             g.simulateMonths(2);
+            /*
+             * ...AND PLAYED ON UNTIL THE FUND HOLDS A BOND (0.7.18, re-caused).
+             * The fund buys bonds only on the book, at fair value, from a
+             * holder who offers one - never at an issue - so the month it
+             * first holds one is whenever a holder first sells at its bid.
+             * On 0.7.17 that was month 27, this fixture's last, and $4.0k of
+             * bonds; in 0.7.18's city (planners that wait for staff, workers
+             * that take the best-paid job) it is month 29. A history, not a
+             * cause: so the city is played on, a month at a time and bounded
+             * at a year, until its fund holds a bond. RE-CAUSED (revised
+             * 0.7.19): with the charter branch exempt from its operating cost
+             * it is month 74, past the year, so the bound is five years.
+             */
+            for (int more = 0; more < 60 && !(g.fundBondsValue() > 0); more++) g.simulateMonths(1);
         } finally {
             System.setOut(out);
         }
@@ -1128,8 +1142,17 @@ public class ReadPathCheck {
         double lowRate = econ.getTaxRate();
         double lowTake = c.getProfitTax() + landlords.getProfitTax();
 
+        // RE-CAUSED (revised 0.7.19, Jerus: "Both rebates"): the profit rate
+        // alone is doubled. This doubled every income base at once, the
+        // builders' sales rate with them, and since 0.7.19 the landlords'
+        // repairs carry that tax and no rebate: doubled, it took their month
+        // from $122k to $75k before the profit tax was struck (from $168k to
+        // $129k before the rebate, which lowered their rent), and the two
+        // companies' take rose 1.23 times - the landlords' profit moving, not
+        // the rate arriving late. The profit base alone reaches the treasury
+        // the same month or it does not, which is the question.
         System.setOut(quiet);
-        econ.getTaxPolicy().setIncomeTaxRate(lowRate * 2);
+        econ.getTaxPolicy().setProfitTaxRate(lowRate * 2);
         g.simulateMonths(1);
         System.setOut(out);
 

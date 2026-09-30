@@ -215,6 +215,23 @@ public class Game {
         // Every sector gets a handle on the city, for the few hooks that need
         // more than the buildings and the markets - the mines and the ground.
         economyManager.getSectors().attachGame(this);
+        // ...and the builders offer only the posts their work needs (0.7.17):
+        // the city's job count reads their share through the buildings, so
+        // the posts they lay off are nobody's (sectors.Construction, THE
+        // CREWS THE WORK NEEDS; BuildingManager, THE POSTS A SECTOR OFFERS).
+        ham.citybuildersim.sectors.Construction builders = economyManager.getSectors().construction();
+        buildingManager.setOfferedShare(key -> key.equals(builders.key()) ? builders.getPostsOfferedShare() : 1);
+        // ...and what their crews cost a point, today and at founding, which
+        // the labour in every price follows (0.7.19; BuildingManager, THE
+        // LABOUR IN A PRICE KEEPS UP WITH WAGES).
+        buildingManager.setBuildersWages(buildersWages);
+        // ...and what a founding dollar is today, which the rebate on a new
+        // rental home is struck in (0.7.19, revised; EconomyManager, THE
+        // REBATES ON A NEW HOME, AND THE CITY'S).
+        economyManager.setFoundingToToday(() -> {
+            double unit = denomination.getUnit();
+            return priceIndex.getIndex() / (unit > 0 ? unit : 1);
+        });
         economyManager.setOutwardInvestment(outward);
         economyManager.setEquity(equity);
         householdBalance.setMarket(exchange, equity, bank);
@@ -234,6 +251,7 @@ public class Game {
         exchange.attachFund(fund);
         bondMarket.attachFund(fund);
         ownersWipedAbroadThisMonth = 0;
+        bankedClearedAtLoad = 0;
         economyManager.setBondMarket(bondMarket);
         economyManager.getBusinessDebtManager().setBondMarket(bondMarket, bondMarket);
         householdBalance.setBondMarket(bondMarket);
@@ -1841,6 +1859,11 @@ public class Game {
             // outside the pools and declared; and the fee on what they drew,
             // added to what they owe, which moves no cash at all.
             bank.takeAccountFees(householdBalance.totalAccountFees());
+            // ...and who paid them: the bank's customers, whom its branches
+            // share (0.7.19, Bank's THE BRANCHES, BY THEIR CUSTOMERS) - the
+            // fees over the month's fee, so customers x fee is the fees taken.
+            double feeEach = householdBalance.getAccountFee();
+            bank.setCustomers(feeEach > 0 ? householdBalance.totalAccountFees() / feeEach : 0);
             bank.bookLoanFees(householdBalance.totalLoanFees());
 
             /*
@@ -3122,36 +3145,45 @@ public class Game {
         }
 
         /*
-         * ...AND THE BANK'S BRANCHES (0.7.11, round 2): the branch test run
-         * in reverse. When the bank's book has not kept its branches' staff
-         * for Bank.BRANCH_CLOSE_MONTHS closed months in a row, one branch
-         * closes, one a month while that holds, never the last
-         * (Bank.closesBranch()). The branch is retail's building - retail
-         * paid for it (BusinessInvestment.planBank()) - so it leaves by
+         * ...AND THE BANK'S BRANCHES (0.7.19; 0.7.11's book test until then):
+         * every branch past the first whose customers' fees this month do not
+         * cover what a branch cost last month closes now, as many at once as
+         * it takes, never the first (Bank.branchesToClose(), THE BRANCHES, BY
+         * THEIR CUSTOMERS). Asked after the month's fees are taken
+         * (updateHouseholdAccounts(), above this in the month) and before any
+         * branch's staff are hired for the month, so the branches the month
+         * pays are the ones its fees covered at last month's cost - a month
+         * whose wages rise can find them short, and the next month's rule
+         * closes the one that no longer pays (Jerus, "Accept the lag"). The
+         * branch is retail's building -
+         * retail paid for it (BusinessInvestment.planBank()) - so it leaves by
          * retail's path above: the plot back to the city, the material to the
          * builders. What the bank was founded with stays in the bank.
          */
-        if (bank.closesBranch()) closeBranch();
+        int branchesStanding = buildingManager.countByName("Commercial Bank");
+        if (bank.closesBranch(branchesStanding)) closeBranches(bank.branchesToClose(branchesStanding));
     }
 
     /**
-     * Closes one of the bank's branches (0.7.11, round 2): the building
-     * retired by the path any retired building takes (retire()), sold by
-     * its owner, retail. The count is for the run, like the lender's
+     * Closes branches (0.7.19: as many as the rule says, at once; one at a
+     * time from 0.7.11 round 2 until then): the buildings retired by the
+     * path any retired building takes (retire()), sold by their owner,
+     * retail. Never the last. The count is for the run, like the lender's
      * renewals.
      */
-    private void closeBranch() {
+    private void closeBranches(int wanted) {
         BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
-        if (branch == null || buildingManager.countByName("Commercial Bank") <= 1) return;
+        int standing = buildingManager.countByName("Commercial Bank");
+        int n = Math.min(wanted, standing - 1);
+        if (branch == null || n <= 0) return;
         String owner = getSectors().retail().key();
-        int closed = retire(new BusinessInvestment.Decision(owner, branch, 1,
-                String.format("the bank's book has not kept its branches' staff for %d months",
-                        bank.getUncoveredMonths()), true),
+        String why = String.format("its customers' fees of $%,.1fk a branch do not cover the $%,.1fk a branch past the first costs",
+                bank.feesPerBranch(), bank.laterBranchCost());
+        int closed = retire(new BusinessInvestment.Decision(owner, branch, n, why, true),
                 sectorInvestor(owner), false);
         if (closed > 0) {
             branchesClosed += closed;
-            GameLog.note(String.format("The bank closed a branch: its book has not kept its branches'"
-                    + " staff for %d months.", bank.getUncoveredMonths()));
+            GameLog.note(String.format("The bank closed %d branch%s: %s.", closed, closed == 1 ? "" : "es", why));
         }
     }
 
@@ -4000,6 +4032,16 @@ public class Game {
         };
     }
 
+    /**
+     * Construction points the last load cleared from stacks that carried
+     * them past what they owed (0.7.17; see the load path and
+     * BuildingManager.clearBankedProgress()). Zero for a new city and for any
+     * save written since. Reported, not saved.
+     */
+    private double bankedClearedAtLoad;
+
+    public double getBankedClearedAtLoad() { return bankedClearedAtLoad; }
+
     /** Read-only access for the utilities and construction screens. */
     public ServicesManager getServicesManager(){
         return servicesManager;
@@ -4010,8 +4052,10 @@ public class Game {
      * by how well it is staffed and by what the roads will carry.
      *
      * THE ONE DEFINITION. SimulationEngine.simulateMonth() calls this rather
-     * than working it out again, and startOfMonthUpdate() hands the same figure
-     * to ConstructionHandler.recogniseWork() as the month's revenue. Those three
+     * than working it out again (through getBuildingOutput(), less the
+     * repairs), and hands the same figure to Construction.recogniseWork() for
+     * the month's work (recogniseSiteWork(); startOfMonthUpdate() did until
+     * 2026-09-11). Those three
      * numbers have to be the same number: the second is what the sites actually
      * advance by and the third is what the sector is paid for, so a copy that
      * drifts from the original books revenue for work nobody did.
@@ -4022,8 +4066,21 @@ public class Game {
      * third of a month's work.
      */
     public int getConstructionOutput(){
-        double constructionFillRate = getSectors().construction().getAverageFill();
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        double constructionFillRate = builders.getAverageFill();
         double roadRatio = servicesManager.getRoadRatio();
+
+        /*
+         * THE CREWS KEPT ON (0.7.17): the depots' capacity at the share of
+         * their posts the builders offered this month, the city's own works
+         * department whole - it has no posts to lay off. See
+         * sectors.Construction, THE CREWS THE WORK NEEDS. With every post
+         * offered this is the figure it always was
+         * (getConstructionOutputAtEveryPost()).
+         */
+        double capacity = buildingManager.getTotalConstructionCapacity();
+        double depots = Math.max(0, capacity - BuildingManager.BASE_CONSTRUCTION);
+        double working = capacity - depots * (1 - builders.getPostsOfferedShare());
 
         /*
          * Sickness slows the sites too, and construction is where a player
@@ -4035,8 +4092,46 @@ public class Game {
          * sites' and the sector's revenue, so it belongs here rather than being
          * applied in one of the three.
          */
+        return (int) Math.round(working * constructionFillRate * roadRatio * health.getWorkRatio());
+    }
+
+    /**
+     * What the builders would do this month with every post offered, at the
+     * city's fill (0.7.17): the figure getConstructionOutput() was before the
+     * builders laid idle crews off. For whoever is weighing an ORDER - the
+     * builders' own planner and retirement, the landlords' months of work,
+     * every sector's lead time and the build quote - because an order is
+     * work, and work hires the crews back the month after it is placed.
+     */
+    public int getConstructionOutputAtEveryPost() {
         return (int) Math.round(buildingManager.getTotalConstructionCapacity()
-                * constructionFillRate * roadRatio * health.getWorkRatio());
+                * getSectors().construction().getAverageFill()
+                * servicesManager.getRoadRatio() * health.getWorkRatio());
+    }
+
+    /** ...and what that leaves for the sites after the repairs: getBuildingOutput() with every post offered. */
+    public int getBuildingOutputAtEveryPost() {
+        return (int) Math.max(0,
+                Math.round(getConstructionOutputAtEveryPost() - getMaintenancePoints()));
+    }
+
+    /**
+     * The builders strike the month's crews (0.7.17): the work ahead - the
+     * repairs of the city standing now and every point still owed on site
+     * after this month's advance - against what their depots and the city's
+     * works department would do with every post filled. Called once a month
+     * from SimulationEngine.updatePopulation(), before the jobs are counted
+     * and the labour market allocates them. See sectors.Construction, THE
+     * CREWS THE WORK NEEDS, for why there and what a reload does.
+     */
+    void strikeBuildersCrews() {
+        double atFullStaffing = servicesManager.getRoadRatio() * health.getWorkRatio();
+        double capacity = buildingManager.getTotalConstructionCapacity();
+        double depots = Math.max(0, capacity - BuildingManager.BASE_CONSTRUCTION);
+        getSectors().construction().strikeCrews(
+                getMaintenancePoints() + buildingManager.getRemainingConstructionPoints(),
+                (capacity - depots) * atFullStaffing,
+                depots * atFullStaffing);
     }
 
     /**
@@ -4220,7 +4315,10 @@ public class Game {
             cityMaintenancePaid = 0;
         }
 
-        // ...AND THE BANK ITS BRANCHES, out of its own cash, with its payroll.
+        // ...AND THE BANK ITS BRANCHES, out of its own cash, with its payroll -
+        // and since 0.7.19 their templates' operating cost beside the repairs,
+        // the charter's excepted, struck at the settle
+        // (EconomyManager.bankOperatingCost()).
         bankMaintenanceDue = economyManager.getBankMaintenanceBill();
 
         builders.receiveMaintenance(bill - repairsOwed);
@@ -4424,15 +4522,33 @@ public class Game {
         public final double materialsImported;
         public final double materialsPrice;
         public final double importCost;
+        /**
+         * The sales tax in the price (0.7.19): what the builders remit on it,
+         * less what they claim back on the plant's material - passed on, as a
+         * shop's shelf price passes it on. See quoteBuild().
+         */
+        public final double salesTax;
+        /**
+         * What the price allows for the material beyond the yard (0.7.19): the
+         * plant's and the world's at today's prices, net of the credit on the
+         * plant's and with the builders' tax on it - the part of the total an
+         * escalation clause trues up as the crews draw it.
+         */
+        public final double allowance;
         public final double total;
         public final double landNeeded;
         public final double landFree;
-        /** Months at today's construction output, or NaN when there is none. */
+        /**
+         * Months to finish at this month's shares of the site output, the
+         * planners' own reading (quoteMonths()), or NaN when the builders
+         * have no site output.
+         */
         public final double months;
 
         BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
-                   double landNeeded, double landFree, double output, double points) {
+                   double landNeeded, double landFree, double months,
+                   double buildersRate, double plantRate) {
             this.quantity = quantity;
             this.sticker = sticker;
             this.materialsNeeded = materialsNeeded;
@@ -4443,22 +4559,163 @@ public class Game {
             this.materialsImported = boughtIn.imported();
             this.materialsPrice = materialsPrice;
             this.importCost = boughtIn.importCost();
-            this.total = sticker + plantCost + importCost;
+            double gross = 1 / (1 - Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersRate)));
+            double plantNet = plantCost * (1 - Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, plantRate)));
+            this.allowance = (importCost + plantNet) * gross;
+            // Summed in the order the price always was - the work, the plant's,
+            // the world's - so an untaxed quote is the old one to the last bit.
+            this.total = sticker * gross + plantNet * gross + importCost * gross;
+            this.salesTax = total - sticker - plantCost - importCost;
             this.landNeeded = landNeeded;
             this.landFree = landFree;
-            this.months = output > 0 ? points / output : Double.NaN;
+            this.months = months;
         }
 
         /** What had to be bought beyond the yard - the plant's and the world's together. */
         public double boughtInCost() { return plantCost + importCost; }
+
+        /** The material units the crews will draw beyond the yard, which the allowance was priced on. */
+        public double unitsBeyondYard() { return materialsFromPlant + materialsImported; }
+    }
+
+    /* =====================================================================
+       THE BUILDERS' PRICE (0.7.19)
+
+       Jerus chose "Builders' prices keep up": "The labour part of building
+       and repair prices rises with wages, materials are paid at the price
+       when they're used, and sales tax is in the builder's quote."
+
+       THE LABOUR. The non-material part of the price is the template's cash
+       cost with its labour at today's builders' wages
+       (BuildingManager.nonMaterialCost()); the wage bill a point is read
+       here, off a Construction Depot's posts - buildersWages.
+
+       THE SALES TAX IS IN THE QUOTE, as a shop's shelf price has it. The
+       model's VAT rules (SalesTaxLedger): a seller remits its rate on its
+       gross sales; a buyer is credited what its local supplier charged, at
+       the supplier's rate; an import is charged and credited to the
+       importer, and nets to nothing. So a builder whose price is G remits
+       rB x G and claims rM x the plant's material back, and what it keeps
+       for the work is G(1 - rB) - imports - plant(1 - rM). For it to keep
+       the non-material price N:
+
+           G = (N + imports + plant x (1 - rM)) / (1 - rB)
+
+       and the tax falls on the owner - on the value the builders added and
+       on the material alike, once. Until 0.7.19 the price was N + imports +
+       plant and the builders remitted 16% of all of it out of the work: in
+       Jerus's city 108.6 of 150.2 of their tax fell on material passed
+       through at cost (the trace's Q5). An owner that makes taxable supplies
+       claims the tax back as the work is billed (EconomyManager,
+       settleSalesTax(), THE TAX ON A BUILDING IS CLAIMED BACK). The
+       landlords, whose rent is exempt, claim no credit, but since the
+       revision ("Both rebates") get the tax on a new rental home back by a
+       rebate - all of it on an apartment building, little or none on a House
+       - and the city's own rebate is the tax coming home to its treasury as
+       the builders remit it (EconomyManager, THE REBATES ON A NEW HOME, AND
+       THE CITY'S). The bank's branch bears it.
+
+       THE MATERIAL, AT THE PRICE WHEN IT IS USED: an escalation clause. The
+       quote still prices the material at today's rates - the ALLOWANCE - and
+       the owner still pays the whole quote up front, so what it borrows at
+       the order is the quote, as before. As the crews draw it, the owner
+       pays what the month's draw cost the builders, grossed up the same way,
+       less the allowance for those units - or is refunded the difference
+       (settleSiteContracts()). An economic price adjustment on material is
+       a standard contract clause - the US Federal Acquisition Regulation's
+       is FAR 52.216-4, "Economic Price Adjustment - Labor and Material"
+       (acquisition.gov/far/52.216-4), which adjusts the price by the change
+       in the material's cost - and this is its material half; the labour
+       half is the index above, struck when the order is priced.
+       ===================================================================== */
+
+    /**
+     * Who ordered a building of this kind, for a save that did not say
+     * (OLD CONTRACTS): its sector; retail for the bank's branch, as it pays
+     * for them (BusinessInvestment.planBank()); the city for the rest.
+     */
+    private String ownerOfOrder(BuildingsTemplate t) {
+        if (t == null) return "City";
+        if ("Commercial Bank".equals(t.getName())) return getSectors().retail().key();
+        return t.isOwnedBySector() && getSectors().byKey(t.getSector()) != null ? t.getSector() : "City";
+    }
+
+    /** Set by the load path when a save carries no payers, and read once the land price is back. */
+    private boolean contractsToInfer;
+
+    /**
+     * ...and the share of the tax on it that owner gets back, for the same
+     * save (revised 0.7.19): on the tax a building of it carries at today's
+     * price (EconomyManager.taxRecoveredShare()).
+     */
+    private double recoveredOnOldContract(String payer, BuildingsTemplate t) {
+        if (t == null) return 0;
+        double before = buildingManager.nonMaterialCost(t)
+                + t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
+        return economyManager.taxRecoveredShare(payer, t, economyManager.withBuildersTax(before) - before);
+    }
+
+    /** What the builders' crews cost a point, today and at founding. See THE BUILDERS' PRICE. */
+    private final BuildingManager.BuildersWages buildersWages = new BuildingManager.BuildersWages() {
+        @Override public double perPointToday()      { return depotWageBillPerPoint(true); }
+        @Override public double perPointAtFounding() { return depotWageBillPerPoint(false); }
+    };
+
+    /**
+     * A Construction Depot's posts - the builders' own job mix - at today's
+     * wages or at the founding ladder (PayTier, in today's unit), over the
+     * points it makes. Zero when there is no depot to read, or no wage yet
+     * for one of its posts today.
+     */
+    private double depotWageBillPerPoint(boolean today) {
+        BuildingsTemplate depot = buildingManager == null ? null
+                : buildingManager.getTemplateByName("Construction Depot");
+        double points = depot == null ? 0 : depot.makes(Good.BUILDING_WORK);
+        if (!(points > 0)) return 0;
+        double[] wages = today ? economyManager.getWageRates() : null;
+        double unit = denomination.getUnit() > 0 ? denomination.getUnit() : 1;
+        double bill = 0;
+        for (JobType job : JobType.values()) {
+            double posts = depot.getJobs(job);
+            if (posts <= 0) continue;
+            double wage = !today ? PayTier.wageOf(job) / unit
+                    : job.ordinal() < wages.length ? wages[job.ordinal()] : 0;
+            if (!(wage > 0)) return 0;
+            bill += posts * wage;
+        }
+        return bill / points;
+    }
+
+    /** The builders' sales tax rate, and the materials plant's: the two the quote is grossed up and credited at. */
+    private double buildersSalesRate() {
+        return economyManager.getTaxPolicy().effectiveSalesRate(getSectors().construction());
+    }
+    private double plantSalesRate() {
+        return economyManager.getTaxPolicy().effectiveSalesRate(getSectors().materials());
+    }
+
+    /**
+     * What a draw of material cost the builders, as they bill it on (0.7.19):
+     * the salvage at what they paid for it, the plant's net of the credit
+     * they claim on it, the world's at its landed cost (its tax is charged
+     * and credited), all grossed up by the tax they remit on the bill. The
+     * quote's allowance is the same arithmetic at the order's prices.
+     */
+    private double billableMaterial(double salvageCost, double plantCost, double importCost) {
+        double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersSalesRate()));
+        double rM = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, plantSalesRate()));
+        return (salvageCost + plantCost * (1 - rM) + importCost) / (1 - rB);
     }
 
     /**
      * THE INVOICE. The material is priced as if drawn today - the yard's
      * share free, the plant's at the market, the rest imported - and that is
-     * what the order is charged. The crews then draw it month by month as
-     * they build (see drawSiteMaterials()), at whatever it costs then; the
-     * builders carry the difference, as a fixed-price contractor does.
+     * what the order is charged up front. The crews then draw it month by
+     * month as they build (see drawSiteMaterials()), and since 0.7.19 the
+     * owner pays what it cost then, less what this allowed for it
+     * (settleSiteContracts()). The work itself is its labour at today's
+     * builders' wages and the rest of its cash cost, and the price carries
+     * the sales tax the builders pass on. See THE BUILDERS' PRICE.
      */
     public BuildQuote quoteBuild(BuildingsTemplate selected, int quantity) {
         double needed = selected.constructionMaterials * (double) quantity;
@@ -4467,7 +4724,7 @@ public class Game {
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, beyondYard, getSectors());
         return new BuildQuote(
                 quantity,
-                selected.getCashCost() * quantity,
+                buildingManager.nonMaterialCost(selected) * quantity,
                 needed,
                 yard,
                 boughtIn,
@@ -4475,8 +4732,23 @@ public class Game {
                 buildingManager.getConstructionMaterialPrice(),
                 selected.getLandSqFt() * (double) quantity,
                 landManager.getAvailableSqFt(),
-                getConstructionOutput(),
-                selected.getConstructionPoints() * (double) quantity);
+                quoteMonths(selected, quantity),
+                buildersSalesRate(),
+                plantSalesRate());
+    }
+
+    /**
+     * Months an order would take to finish (0.7.17): the wait every planner
+     * reads for its lead time and order size - BuildingManager.waitFor(), the
+     * order's points over the share of the site output it would get beside
+     * everything on site, at the builders' site output after the repairs
+     * with every post offered (getBuildingOutputAtEveryPost()). It was the
+     * order's points over the builders' whole output, repairs included, as
+     * though the order had them to itself. NaN when there is no site output.
+     */
+    public double quoteMonths(BuildingsTemplate template, int quantity) {
+        double months = buildingManager.waitFor(template, quantity, getBuildingOutputAtEveryPost());
+        return months == Double.MAX_VALUE ? Double.NaN : months;
     }
 
     /**
@@ -4485,7 +4757,9 @@ public class Game {
      * then the world. THE BUILDERS BUY IT - every draw is the construction
      * sector's purchase, booked in its ledger, credited at the plant's rate
      * or charged at its own, and billed on to whoever ordered the building
-     * inside the order price. See Markets.draw().
+     * inside the order price - and since 0.7.19, for the sites' draw, what it
+     * cost past what that price allowed for it, or refunded what it cost
+     * less (settleSiteContracts()). See Markets.draw().
      *
      * AS THE WORK IS DONE, since 2026-09-11 - not the day the order is
      * placed. See BuildingsStacks.materialsOwed for what the order-day draw
@@ -4531,7 +4805,83 @@ public class Game {
      * the figure a materials plant can be sized to.
      */
     public void drawSiteMaterials(double units) {
-        if (units > 0) drawMaterials(units, false);
+        siteDrawBillable = 0;
+        if (!(units > 0)) return;
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        double salvageBefore = builders.getSalvageCost();
+        Markets.Draw d = drawMaterials(units, false);
+        double salvage = Math.max(0, salvageBefore - builders.getSalvageCost());
+        siteDrawBillable = billableMaterial(salvage, d.localCost(), d.importCost());
+    }
+
+    /**
+     * What the month's site draw cost the builders, as they bill it on
+     * (billableMaterial()): what the owners' escalation is struck against.
+     * Set by drawSiteMaterials(), read by settleSiteContracts() a line later
+     * in the same tick. Not saved.
+     */
+    private double siteDrawBillable;
+
+    /* =====================================================================
+       MATERIAL AT THE PRICE WHEN IT IS USED (0.7.19)
+
+       The escalation clause (see THE BUILDERS' PRICE). Each order's share of
+       the month's work was taken off its contract on its stack
+       (BuildingsStacks.Contract): the price it earned, the material units it
+       drew and the allowance its quote had in it for them. Its owner pays
+       its share of what the draw cost the builders, by units, less that
+       allowance - or is refunded it - and the builders earn it, beside the
+       work (Construction.recogniseEscalation()): revenue, taxed like the
+       rest, and investment, as the work it pays for is.
+
+       The CITY pays out of the treasury, on its own line
+       (TreasuryLine.BUILDING_ESCALATION): discretionary, and owed to the
+       builders as arrears when the ceiling has bound, because the material
+       was used. A refund comes back into the treasury. Both are the city's
+       capital spending, as the order was. A SECTOR pays out of its till as
+       it paid for the building (sectorInvestor(): spentOnBuildings), and a
+       sector that gets the tax on its buildings back - a business's credit,
+       or (revised) a landlord's rebate on a new rental home - is recorded as
+       having bought the month's work and its escalation from the builders,
+       at the share of it that comes back, which is what the credit is
+       struck on (Sector.recordCapitalPurchase()).
+       ===================================================================== */
+
+    /**
+     * Settles the month's site work with the owners who ordered it. Called by
+     * SimulationEngine right after the work is recognised, so the escalation
+     * lands in the builders' ledger in the same month as the draw it pays for.
+     */
+    public void settleSiteContracts(java.util.List<BuildingsStacks.Due> dues) {
+        if (dues == null || dues.isEmpty()) return;
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        double units = 0;
+        for (BuildingsStacks.Due d : dues) units += Math.max(0, d.units);
+        double billable = Math.max(0, siteDrawBillable);
+        for (BuildingsStacks.Due d : dues) {
+            double material = units > 0 ? billable * Math.max(0, d.units) / units : 0;
+            double escalation = material - d.allowance;
+            if (!Double.isFinite(escalation)) escalation = 0;
+            Sector owner = "City".equals(d.payer) ? null : getSectors().byKey(d.payer);
+            double settled;
+            if (owner == null) {
+                if (escalation > 0) {
+                    settled = treasuryPays(TreasuryLine.BUILDING_ESCALATION, escalation);
+                } else {
+                    settled = escalation;
+                    cash -= escalation;
+                }
+                cityCapitalSpending += settled;
+            } else {
+                settled = escalation;
+                sectorInvestor(owner.key()).spend(escalation);
+                // ...and the share of the tax on it the owner gets back - a
+                // business's credit, a landlord's rebate on a new rental home -
+                // struck at the next strike, as the tax is paid (revised).
+                if (d.recovered > 0) owner.recordCapitalPurchase(builders.key(), (d.revenue + escalation) * d.recovered);
+            }
+            builders.recogniseEscalation(settled);
+        }
     }
 
     /**
@@ -4539,11 +4889,12 @@ public class Game {
      * placed - the units the quote priced as free (see quoteBuild), taken
      * off what the sites still owe so the monthly draws buy only the rest.
      */
-    private void deliverYardToSites(BuildingsTemplate template, double needed) {
+    private double deliverYardToSites(BuildingsTemplate template, double needed) {
         int fromYard = buildingManager.takeFromYard((int) Math.round(needed));
-        if (fromYard <= 0) return;
+        if (fromYard <= 0) return 0;
         buildingManager.deliverToSites(template, fromYard);
         materialsConsumed += fromYard;
+        return fromYard;
     }
 
     /**
@@ -4551,11 +4902,18 @@ public class Game {
      * into the same ledger. The BUILDING output, not the gross: the crews
      * that spent part of the month on repairs did not spend it on sites - see
      * getBuildingOutput(). The statement struck at the top of next month
-     * then carries the month's work and the month's material together, and
-     * the payroll is scaled by the month's own utilisation.
+     * then carries the month's work and the month's material together. (The
+     * payroll was scaled by the month's utilisation until 0.7.17; now the
+     * builders lay off the crews the work does not need - sectors
+     * .Construction, THE CREWS THE WORK NEEDS - and utilisation is only
+     * the operations page's "Busy".)
+     *
+     * @param pointsBuilt     what the sites took of it (0.7.17): no site takes
+     *                        more than it owes, and the rest was idle
+     * @param pointsAvailable the month's site output
      */
-    public void recogniseSiteWork(double earned, double pointsDelivered) {
-        getSectors().construction().recogniseWork(earned, pointsDelivered);
+    public void recogniseSiteWork(double earned, double pointsBuilt, double pointsAvailable) {
+        getSectors().construction().recogniseWork(earned, pointsBuilt, pointsAvailable);
     }
     /**
      * @param noConstruction put the buildings up immediately instead of queueing
@@ -4628,12 +4986,21 @@ public class Game {
 
             // The order. The yard's share goes to the sites now, free, as the
             // quote priced it; the rest is drawn by the crews as they build -
-            // see drawSiteMaterials() - at whatever it costs then, and the
-            // builders carry the difference, as a contractor does.
+            // see drawSiteMaterials() - at whatever it costs then, and since
+            // 0.7.19 the city pays the difference from what the quote allowed,
+            // or is refunded it (MATERIAL AT THE PRICE WHEN IT IS USED); the
+            // builders carried it until then, as a fixed-price contractor does.
             buildingManager.addStack(selected, quantity, noConstruction);
             if (!noConstruction) {
-                deliverYardToSites(selected, totalMaterialsRequired);
-                buildingManager.bookContract(selected, totalCost);
+                double fromYard = deliverYardToSites(selected, totalMaterialsRequired);
+                // ...booked to the city, which claims no tax back - its rebate
+                // is the tax coming home to the treasury as the builders remit
+                // it (EconomyManager, THE REBATES ON A NEW HOME, AND THE
+                // CITY'S) - with the material the crews will draw for it and
+                // what the price allowed for that (0.7.19; see MATERIAL AT THE
+                // PRICE WHEN IT IS USED).
+                buildingManager.bookContract(selected, "City", 0, totalCost,
+                        Math.max(0, totalMaterialsRequired - fromYard), quote.allowance);
             }
 
             // 4. Subtract everything at once
@@ -4791,8 +5158,16 @@ public class Game {
         cash += landPrice;
 
         buildingManager.addStack(template, quantity, false);
-        deliverYardToSites(template, quote.materialsNeeded);
-        buildingManager.bookContract(template, totalCost - landPrice);
+        double fromYard = deliverYardToSites(template, quote.materialsNeeded);
+        // ...booked to the business that ordered it, with the share of the
+        // tax on it that it gets back - a credit, or a landlord's rebate on a
+        // new rental home, on the tax a building of it was charged (0.7.19;
+        // see MATERIAL AT THE PRICE WHEN IT IS USED and
+        // EconomyManager.taxRecoveredShare()).
+        double taxPerBuilding = (totalCost - landPrice) * economyManager.buildersSalesRate() / Math.max(1, quantity);
+        buildingManager.bookContract(template, payer.getName(),
+                economyManager.taxRecoveredShare(payer.getName(), template, taxPerBuilding),
+                totalCost - landPrice, Math.max(0, quote.materialsNeeded - fromYard), quote.allowance);
 
         // Construction is paid for the building work only - the land was the
         // city's, not theirs to be paid for. The material beyond the yard is
@@ -6392,7 +6767,12 @@ public class Game {
          * statements with an operating-expense line on them. The wages are
          * carved out in CommercialHandler and charged here.
          */
-        bank.payRunning(economyManager.getBankPayroll(), bankMaintenanceDue);
+        // ...and what its branches cost to run, the ones standing now (0.7.19),
+        // the charter exempt from the operating cost (revised), with what a
+        // later branch carries of it for the branch rule to read.
+        bank.payRunning(economyManager.getBankPayroll(), bankMaintenanceDue,
+                economyManager.bankOperatingCost(buildingManager.countByName("Commercial Bank")),
+                economyManager.bankOperatingCostPerLaterBranch());
         bankMaintenanceDue = 0;
 
         /*
@@ -7016,6 +7396,13 @@ public class Game {
          * hand-written ledger.
          */
         economyManager.strikeSectors();
+        // ...and the sales tax a business claimed back on the buildings it
+        // bought reached its till at the bank (Sector.bank()) as cash back on
+        // them, so the month's building spending is net of it (0.7.19).
+        for (Sector s : getSectors().all()) {
+            double credit = s.statement().capitalTaxCredit;
+            if (credit != 0 && Double.isFinite(credit)) sectorInvested.merge(s.key(), -credit, Double::sum);
+        }
 
         economyManager.updateNationalAccounts(
                 constructionWorkDone,
@@ -7069,6 +7456,9 @@ public class Game {
         monthlyMaterialImports = 0;
         monthlyMaterialImportBill = 0;
 
+        // The households' month - and with it the bank's account fees and
+        // (0.7.19) its customers, the fees over the fee, which the branch rule
+        // in runPrivateInvestment() below reads.
         updateHouseholdAccounts();
 
         /*
@@ -7100,7 +7490,9 @@ public class Game {
         // whichever sector the month left short.
         economyManager.settleBusinessCredit(month);
 
-        // Businesses get their turn: look at demand, forecast it forward, and
+        // Businesses get their turn: shrink first - where the bank's branches
+        // past what this month's fees cover at last month's cost close (0.7.19,
+        // runRetirement()) - then look at demand, forecast it forward, and
         // expand if the new capacity would carry its own debt.
         runPrivateInvestment();
 
@@ -7797,6 +8189,11 @@ public class Game {
         // Migration.crimePull(): "like dear rent", Jerus.
         migration.setCrimeVsCanada(crime.getRateVsCanada());
 
+        // ...and the doors standing today, which the room the placement has
+        // left is asked against (0.7.17): arrivals are bounded by it. See
+        // Migration.monthlyNet() and FamilyModel.roomLeft().
+        migration.setDoors(buildingManager.homesBySize());
+
         cohorts.migrate(migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),
@@ -8426,7 +8823,7 @@ public class Game {
     public double studentGrantBillUnder(TaxPolicy.GrantBasis basis, double amount) {
         return TaxPolicy.grantBill(basis, amount,
                 families.getSeekers(FamilyModel.Seeker.STUDENT), unskilledWage(),
-                treasurySurplus, education.studentBodyTuition());
+                priceIndex.getIndex(), treasurySurplus, education.studentBodyTuition());
     }
 
     /** What that comes to per student - the bill over this month's students, or nothing with none. */
@@ -8449,7 +8846,7 @@ public class Game {
         if (basis == null) basis = TaxPolicy.DEFAULT_GRANT_BASIS;
         double base;
         switch (basis) {
-            case FIXED:         base = 1; break;
+            case FIXED:         base = priceIndex.getIndex(); break;   // a real amount (0.7.19)
             case SURPLUS_SHARE: base = students > 0 ? Math.max(0, treasurySurplus) / students : 0; break;
             case TUITION_SHARE: base = students > 0 ? education.studentBodyTuition() / students : 0; break;
             default:            base = unskilledWage(); break;
@@ -8916,6 +9313,8 @@ public class Game {
                 buildingManager.getConstructionProgressById(),
                 buildingManager.getMaterialsOwedById(),
                 buildingManager.getContractValueById());
+        // ...and who placed each part of it (0.7.19; see OLD CONTRACTS).
+        dataSave.setContractRecords(buildingManager.getContractRecords());
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed
@@ -10396,6 +10795,7 @@ public class Game {
         if (colon >= 0) return getSectors().byKey(key.substring(colon + 1));
         TreasuryLine line = arrearsLine(key);
         return line == TreasuryLine.CONSTRUCTION_SUBSIDY || line == TreasuryLine.CITY_REPAIRS
+                || line == TreasuryLine.BUILDING_ESCALATION
                 ? getSectors().construction() : null;
     }
 
@@ -10626,8 +11026,11 @@ public class Game {
            if (t == null || t.getCategory() != BuildingType.RESIDENTIAL) continue;
            if (t.getCapacity() <= 0) continue;
 
-           double cost = t.getCashCost()
-                   + t.getConstructionMaterials() * Math.max(0, materialPrice);
+           // ...at what the landlord pays the builders for it (0.7.19): its
+           // labour at today's wages and the sales tax it cannot claim back.
+           double cost = economyManager.ownersBuildCost(t, t.getSector(),
+                   buildingManager.nonMaterialCost(t)
+                           + t.getConstructionMaterials() * Math.max(0, materialPrice));
            double perCapacity = cost / t.getCapacity();
            if (perCapacity <= 0) continue;
            if (cheapest <= 0 || perCapacity < cheapest) cheapest = perCapacity;
@@ -11191,6 +11594,10 @@ public class Game {
             debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());
             debtManager.restoreForeignStanding(loaded.getForeignStanding());
             priceIndex.restore(loaded.getPriceIndex());
+            // An older save's FIXED grant was nominal; read it as the real
+            // amount that pays the same at this index (0.7.19). See
+            // TaxPolicy.realiseFixedGrant().
+            economyManager.getTaxPolicy().realiseFixedGrant(priceIndex.getIndex());
             world.restore(loaded.getWorldEconomy());
             /*
              * ...AND HOW IT WAS FOUNDED (0.7.10), after the world, whose mean
@@ -11474,6 +11881,45 @@ public class Game {
             }
 
             /*
+             * OUTPUT PARKED ON A STACK IS NOT KEPT (0.7.17). A save from before
+             * every building got a crew can carry progress past what a stack
+             * owes - on a stack with nothing on site, all of it: 7.82M points
+             * in Jerus's year-149 city. Under the rule it could never have
+             * built up, so it goes, and no money with it - see
+             * BuildingManager.clearBankedProgress(). What went is kept for
+             * the tools that report it; a save written since carries none.
+             */
+            bankedClearedAtLoad = buildingManager.clearBankedProgress();
+            if (bankedClearedAtLoad > 0) {
+                System.out.printf("Cleared %,.0f construction points parked on sites past what they owe.%n",
+                        bankedClearedAtLoad);
+            }
+
+            /*
+             * WHO ORDERED THE WORK ON SITE (0.7.19), for the escalation clause
+             * and the tax credit (MATERIAL AT THE PRICE WHEN IT IS USED). A
+             * save since carries every payer's contract on every stack.
+             *
+             * OLD CONTRACTS. An older save carries each stack's contract and
+             * the material its sites still owe, but not who ordered them, nor
+             * what the price allowed for the material. So each stack's whole
+             * contract is read as its owner's - the template's sector, retail
+             * for the bank's branch as it pays for them, the city for
+             * everything else - and its allowance as the contract left less
+             * the work still owed at the cash cost it was priced at, the rest
+             * being what it priced the material at. From the load on, the
+             * owner pays the material at the price when it is drawn, less
+             * that allowance: the escalation starts where the save is.
+             */
+            if (loaded.getContractRecords() != null) {
+                buildingManager.restoreContractRecords(loaded.getContractRecords());
+            } else {
+                // ...once the land price is back (below), which the share of
+                // the tax a landlord's home gets back reads (revised 0.7.19).
+                contractsToInfer = true;
+            }
+
+            /*
              * Land, after the buildings, because the allocation is derived from
              * them rather than stored. A save from before land existed has
              * landOwned 0; that is not a city with no land, it is a save that
@@ -11692,6 +12138,13 @@ public class Game {
          * report, and those reports have to see the expense.
          */
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
+
+        // An older save's contracts, read as their owners' (OLD CONTRACTS),
+        // now the land price the rebate on a new rental home reads is back.
+        if (contractsToInfer) {
+            contractsToInfer = false;
+            buildingManager.inferContracts(this::ownerOfOrder, this::recoveredOnOldContract);
+        }
 
         /*
          * The property tax each sector was charged came back inside its own

@@ -16,7 +16,18 @@ package ham.citybuildersim;
  */
 public enum WageBand {
 
-    NONE      ("No diploma",  .00),
+    /*
+     * NONE's ceiling (0.7.18) is the share of working-age migrants with no
+     * certificate, diploma or degree, read the way the graduate ceilings are
+     * read: at every band's ceiling it is that share of a month's arrivals.
+     * 7.5% of the immigrants who landed in 2016-2021 and were 25-54 at the
+     * 2021 Census had no certificate, diploma or degree (Statistics Canada,
+     * table 98-10-0309-01, Ontario, as tabulated by the Financial
+     * Accountability Office of Ontario, "Labour Market Outcomes of Immigrants
+     * in Ontario and its Major Cities", 2024). So x / (x + 1.00 + .35 + .12)
+     * = .075, which is x = .075 / (1 - .075) x 1.47, about .12.
+     */
+    NONE      ("No diploma",  .075 / (1 - .075) * (1.00 + .35 + .12)),
     DIPLOMA   ("Diploma",    1.00),
     COLLEGE   ("College",     .35),
     UNIVERSITY("University",  .12);
@@ -64,12 +75,19 @@ public enum WageBand {
      * the whole model, and it replaces an attainment mix that kept losing this
      * argument. Three properties fall out of it:
      *
-     * NOBODY ARRIVES WITHOUT A DIPLOMA. NONE is 0.00. The only people in the
-     * unskilled band are the ones this city failed to put through school -
-     * children born here, and the children of migrants, who aged out of the
-     * teen band while the high schools were full or absent. So the unskilled
-     * band is a REPORT CARD rather than an import, and a city that builds its
-     * schools genuinely stops producing unskilled adults.
+     * SOME ARRIVE WITHOUT A DIPLOMA, AND ONLY FOR THE WAGE (0.7.18). NONE
+     * was 0.00 - nobody arrived without a diploma, so the unskilled band was
+     * a REPORT CARD on the schools and never an import. Jerus's year-149 city
+     * showed what that costs: 185,132 empty unskilled posts, the unskilled
+     * wage at 3.6x its base, and not one migrant who would take the work.
+     * Jerus: "Allow arrivals without a diploma when the unskilled wage is
+     * high." So NONE is now competed for exactly as the graduate bands are -
+     * nothing at the going rate, its ceiling at 4x, through the same reach()
+     * and opportunity as everyone above it - and its ceiling is the world's
+     * own share of migrants with no diploma (see the constant). At the going
+     * rate the band is still a report card: a city paying its unskilled the
+     * going rate imports none of them, and a city that builds its schools
+     * still stops making its own.
      *
      * A DIPLOMA IS THE BASE, at 1.00 and unconditional. It is not competed for
      * and does not respond to a premium: it is what an ordinary person moving

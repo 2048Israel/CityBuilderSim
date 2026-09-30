@@ -1,6 +1,6 @@
-# Manufacturing.java - 279 lines · 11 methods · 0 constants · sectors
+# Manufacturing.java - 282 lines · 11 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > What the city makes out of its own steel, and ships.
 > 
@@ -70,13 +70,13 @@
 |---:|---|
 | 86 | · reading |
 | 137 | · plan |
-| 227 | · the screen |
+| 230 | · the screen |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 208 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
+| 72 | 211 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
 | 74 | 11 | `public Manufacturing()` |  |
 
 ### reading (lines 86-136)
@@ -91,16 +91,16 @@
 | 129 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
 | 135 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
 
-### plan (lines 137-226)
+### plan (lines 137-229)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 167 | 48 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 225 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 167 | 51 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 228 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
 
-### the screen (lines 227-279)
+### the screen (lines 230-282)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 230 | 49 | `public List<Sector.Line> operations(Game game)` |  |
+| 233 | 49 | `public List<Sector.Line> operations(Game game)` |  |
 

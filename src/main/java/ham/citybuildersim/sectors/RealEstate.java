@@ -468,13 +468,19 @@ public final class RealEstate extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
 
-        int totalJobs = game.getPopulationManager().getTotalJobs();
+        /*
+         * NOT ONE ORDER AT A TIME (0.7.17): the landlords hold orders while
+         * what their sites owe is at most MAX_ORDER_MONTHS of the builders'
+         * site output, and size each one to stay inside it - see
+         * BusinessInvestment.withinMonthsOfWork(), below where the order is
+         * sized.
+         */
+        // Every post, the builders' laid-off crews included (0.7.17): a post
+        // laid off for want of work is a job that comes back with the work -
+        // see BuildingManager.getPostsWithheld().
+        int totalJobs = game.getPopulationManager().getTotalJobs() + buildings.getPostsWithheld();
         int housingCapacity = game.getHouseholdCapacity();
-        double output = game.getConstructionOutput();
 
         /*
          * Population is min(housing, jobs x 2.25), so housing demand IS the
@@ -485,20 +491,38 @@ public final class RealEstate extends Sector {
          */
         int jobsComing = buildings.getJobsUnderConstruction();
         double latentDemand = (totalJobs + jobsComing) * 2.25;
-        double headShortfall = latentDemand - housingCapacity * (1 + BusinessInvestment.TARGET_HEADROOM);
+        /*
+         * ...AND SO DO THE HOMES ON SITE (0.7.17), for the same reason and now
+         * that there can be more than one order of them. With one order at a
+         * time nothing of the landlords' was ever on site when they planned,
+         * so the standing stock was the whole supply; holding work by the
+         * month, a planner that did not count its own orders would order the
+         * same shortage again every month until the first one opened - the
+         * hog cycle BuildingManager.productionUnderConstruction() describes.
+         */
+        double comingCapacity = capacityOnSite();
+        double headShortfall = latentDemand
+                - (housingCapacity + comingCapacity) * (1 + BusinessInvestment.TARGET_HEADROOM);
 
         // A shortage of family doors is its own reason to build, and one that
         // building more studios cannot answer.
-        double familyShortfall = doorShortfall(true);
+        double familyShortfall = doorsWanted(true);
 
         if (headShortfall <= 0 && familyShortfall <= 0) {
-            return BusinessInvestment.Decision.no(sector, String.format(
-                    "housing ahead of jobs (%d now, %d coming)", totalJobs, jobsComing));
+            return BusinessInvestment.Decision.no(sector, comingCapacity > 0
+                    ? String.format("housing ahead of jobs (%d now, %d coming), homes for %,.0f on site",
+                            totalJobs, jobsComing, comingCapacity)
+                    : String.format("housing ahead of jobs (%d now, %d coming)", totalJobs, jobsComing));
         }
 
         BuildingsTemplate best = null;
         double bestScore = 0, bestDoors = 0;
         String blocked = null;
+        // Every template that passed the tests below, with the doors it would
+        // let - what a smaller home is chosen from (0.7.17; see TRY A SMALLER
+        // HOME, where the order is sized).
+        java.util.List<BuildingsTemplate> eligible = new java.util.ArrayList<>();
+        java.util.Map<BuildingsTemplate, Double> doorsOf = new java.util.HashMap<>();
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.getCapacity() <= 0) continue;
@@ -524,6 +548,8 @@ public final class RealEstate extends Sector {
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double score = income / cost;
+            eligible.add(t);
+            doorsOf.put(t, doors);
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
@@ -536,10 +562,65 @@ public final class RealEstate extends Sector {
         }
 
         // Sized on whichever shortage is the bigger.
-        double byHeads = latentDemand - housingCapacity;
+        double byHeads = latentDemand - housingCapacity - comingCapacity;
         double byDoors = bestDoors * FamilyModel.rentWeightOf(best.homeSize());
-        int quantity = plans.orderSize(Math.max(byHeads, byDoors), best.getCapacity(), best, output);
-        if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
+        double gap = Math.max(byHeads, byDoors);
+        int wanted = best.getCapacity() > 0 ? Math.max(1, (int) Math.ceil(gap / best.getCapacity())) : 1;
+        int plots = plans.plotsAvailableFor(best);
+        if (plots < 1) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
+
+        // ...and held to MAX_ORDER_MONTHS of the builders' output for the
+        // sites, counting what the landlords already owe on site (0.7.17;
+        // BusinessInvestment.withinMonthsOfWork()), not to twelve months of
+        // the whole city's output with nothing on site (orderSize()).
+        double siteOutput = game.getBuildingOutputAtEveryPost();
+        int quantity = plans.withinMonthsOfWork(sector, best, Math.min(wanted, plots), siteOutput);
+
+        /*
+         * TRY A SMALLER HOME (0.7.17, revised to Jerus's answer: "They order
+         * the next smaller home type that does fit, instead of waiting").
+         * When not one of the best fits inside MAX_ORDER_MONTHS of the
+         * builders' site output, with what they owe on site counted, the
+         * landlords go down the templates that
+         * passed every test above - somebody would live in it, the rent
+         * clears the hurdle, it has a cost - from the next smaller down,
+         * SMALLER BY CONSTRUCTION POINTS, and order the first that fits:
+         * points are what the months are made of (what their sites owe plus
+         * the order, over the site output), so the next one down in points
+         * is the nearest thing to their own choice that the rule can take.
+         * Each is sized on its own doors and its own plots exactly as the
+         * best was, and the order goes on to every per-order gate as any
+         * order does - financing, the down payment, the lender's cover,
+         * land. None fits: they hold, as before.
+         */
+        if (quantity <= 0) {
+            int bestPoints = best.getConstructionPoints();
+            eligible.sort((a, b) -> Integer.compare(b.getConstructionPoints(), a.getConstructionPoints()));
+            for (BuildingsTemplate t : eligible) {
+                if (t.getConstructionPoints() >= bestPoints || t.getCapacity() <= 0) continue;
+                double doorsT = doorsOf.getOrDefault(t, 0.0);
+                double gapT = Math.max(byHeads, doorsT * FamilyModel.rentWeightOf(t.homeSize()));
+                int wantedT = Math.max(1, (int) Math.ceil(gapT / t.getCapacity()));
+                int plotsT = plans.plotsAvailableFor(t);
+                if (plotsT < 1) continue;
+                int fits = plans.withinMonthsOfWork(sector, t, Math.min(wantedT, plotsT), siteOutput);
+                if (fits > 0) {
+                    return new BusinessInvestment.Decision(sector, t, fits, String.format(
+                            "%s; a %s would not fit in %.0f months of work on site, a %s does",
+                            familyShortfall > 0 && headShortfall <= 0
+                                    ? String.format("%,.0f households need a door a child is allowed in", familyShortfall)
+                                    : String.format("%,.0f unhoused demand against %,d units", byHeads, housingCapacity),
+                            best.getName(), BusinessInvestment.MAX_ORDER_MONTHS, t.getName()), true);
+                }
+            }
+        }
+        if (quantity <= 0) {
+            double months = plans.monthsOfWorkOnSite(sector, siteOutput);
+            return BusinessInvestment.Decision.no(sector, Double.isNaN(months)
+                    ? String.format("a %s would not fit in %.0f months of work on site, nor anything smaller",
+                            best.getName(), BusinessInvestment.MAX_ORDER_MONTHS)
+                    : String.format("%.1f months of work on site already, of the builders' output", months));
+        }
 
         return new BusinessInvestment.Decision(sector, best, quantity,
                 familyShortfall > 0 && headShortfall <= 0
@@ -553,6 +634,44 @@ public final class RealEstate extends Sector {
         return family ? familySeekers - familyHomes : studioSeekers - studioHomes;
     }
 
+    /**
+     * The same shortfall as a planner reads it: less the doors of that
+     * segment already on the landlords' sites (0.7.17) - see plan(), "AND SO
+     * DO THE HOMES ON SITE". Standing doors only for whether a door may be
+     * sold (hasDoorsToSpare()): a site is not a home anybody lives in.
+     */
+    private double doorsWanted(boolean family) {
+        return doorShortfall(family) - doorsOnSite(family);
+    }
+
+    /** Doors of one segment on the landlords' sites. */
+    private double doorsOnSite(boolean family) {
+        double doors = 0;
+        if (buildings == null) return 0;
+        for (ham.citybuildersim.BuildingsStacks s : buildings.getStacksUnderConstruction()) {
+            BuildingsTemplate t = s.getBuilding();
+            if (!key().equals(t.getSector()) || t.getCapacity() <= 0) continue;
+            if ((t.homeSize() > FamilyModel.STUDIO_MAX_SIZE) != family) continue;
+            int units = t.getDwellings() > 0 ? t.getDwellings() : Math.max(1, t.getCapacity() / 4);
+            doors += s.getUnderConstruction() * (double) units;
+        }
+        return doors;
+    }
+
+    /** People of capacity on the landlords' sites. */
+    private double capacityOnSite() {
+        return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.getCapacity());
+    }
+
+    /**
+     * Months of the builders' site output the landlords' sites owe (0.7.17),
+     * for the investor page. NaN with nothing on site.
+     */
+    public double monthsOfWorkOnSite() {
+        if (game == null || game.getBusinessInvestment() == null) return Double.NaN;
+        return game.getBusinessInvestment().monthsOfWorkOnSite(key(), game.getBuildingOutputAtEveryPost());
+    }
+
     /** Whether the segment this template belongs to has spare doors. */
     private boolean hasDoorsToSpare(BuildingsTemplate t) {
         boolean family = t.homeSize() > FamilyModel.STUDIO_MAX_SIZE;
@@ -561,10 +680,11 @@ public final class RealEstate extends Sector {
 
     /** The head shortage plan() would see if it were asked right now - for the credit check. */
     private double latentHeadShortfall() {
-        int standing = 0;
+        int standing = buildings.getPostsWithheld();   // every post, as plan() reads them (0.7.17)
         for (int n : buildings.getTotalJobs()) standing += n;
         double latent = (standing + buildings.getJobsUnderConstruction()) * 2.25;
-        return latent - buildings.getTotalHouseCapacity() * (1 + BusinessInvestment.TARGET_HEADROOM);
+        return latent - (buildings.getTotalHouseCapacity() + capacityOnSite())
+                * (1 + BusinessInvestment.TARGET_HEADROOM);
     }
 
     /**
@@ -589,7 +709,7 @@ public final class RealEstate extends Sector {
      * are already standing before they need new ones.
      */
     private double doorsNeeded(boolean family, double headShortfall) {
-        double here = doorShortfall(family);
+        double here = doorsWanted(family);
         if (headShortfall <= 0) return Math.max(0, here);
         double heads = studioSeekerHeads + familySeekerHeads;
         double share = heads > 0 ? (family ? familySeekerHeads : studioSeekerHeads) / heads : .5;

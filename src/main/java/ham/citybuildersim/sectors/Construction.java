@@ -22,15 +22,20 @@ import java.util.Map;
  *               builders look enormously profitable in a boom and ruinous
  *               for the year after, doing work they had been paid for. So
  *               the price goes into an ORDER BOOK and is earned as the points
- *               are delivered - except the material that had to be bought
- *               in, which is delivered to site the month it is bought and
- *               earned at the next strike (see bill()).
- *   inputs      building material, DRAWN when an order is placed rather than
- *               bid for monthly: the city's yard first, then the builders'
- *               own stock of scrapped plant's material (0.7.8), the materials
- *               plant next, the world last. See Markets.draw().
- *   payroll     a firm with no work keeps a core crew and its yard and pays
- *               a quarter of its wages, not all of them and not none.
+ *               are delivered, its material with them (see bill(); until
+ *               2026-09-11 the material bought in was earned at the next
+ *               strike). Since 0.7.19 the price carries the sales tax they
+ *               remit, and the owners' material escalation is earned beside
+ *               the work (recogniseEscalation()).
+ *   inputs      building material, DRAWN as the work is done (since
+ *               2026-09-11; when an order was placed until then) rather than
+ *               bid for monthly: the city's yard, delivered to the sites the
+ *               day the order is placed, then the builders' own stock of
+ *               scrapped plant's material (0.7.8), the materials plant next,
+ *               the world last. See Markets.draw().
+ *   payroll     a firm with less work than crews lays the rest off and keeps
+ *               a core crew - a quarter of its posts - and its yard; the
+ *               posts it keeps it pays in full (THE CREWS THE WORK NEEDS).
  *   planning    off the order book, not off population: it expands when the
  *               queue is deeper than BACKLOG_MONTHS_BEFORE_EXPANDING.
  *
@@ -42,10 +47,13 @@ import java.util.Map;
 public final class Construction extends Sector {
 
     /**
-     * The smallest share of payroll construction pays when it has no work.
-     * Not zero: a firm keeps a core crew and its yard. But paying four
-     * depots' worth of full wages with nothing on site is what turned an idle
-     * construction sector into a $500,000 debt spiral.
+     * The core crew: the smallest share of its posts construction keeps on
+     * when it has no work, and lays the rest off. Not zero: a firm keeps a
+     * core crew and its yard. But paying four depots' worth of full wages
+     * with nothing on site is what turned an idle construction sector into a
+     * $500,000 debt spiral. Until 0.7.17 it was the share of its WAGES an
+     * idle builder paid, with every post still filled - see THE CREWS THE
+     * WORK NEEDS for why that became posts.
      */
     public static final double IDLE_PAYROLL_FLOOR = .25;
 
@@ -64,8 +72,135 @@ public final class Construction extends Sector {
     /** How much of the crew had something to do this month. */
     private double utilisation = 1;
 
+    /*
+     * THE CREWS THE WORK NEEDS (0.7.17, revised to Jerus's answer: "Builders
+     * keep a core crew (a quarter) and lay the rest off; those workers become
+     * unemployed, draw EI and can take other jobs, and are hired back when
+     * work returns").
+     *
+     * WHAT IT REPLACED. An idle builder kept every post filled and paid a
+     * quarter of the wages (the idle floor on the payroll). Once the round
+     * made every employer's bill what its workers receive, that quarter was
+     * what the crews were paid - a cut of a fifth to a quarter of the wage
+     * income of a small city whose builders stand idle, which turned
+     * MonetaryCheck's reading of the rate over and tripled the held-25%
+     * bank failures (the round's notes). Now the posts follow the work.
+     *
+     * THE RULE. Before the labour market allocates the month's workers
+     * (Game.strikeBuildersCrews(), from SimulationEngine.updatePopulation()),
+     * the builders strike the share of their depots' posts the work ahead
+     * needs: the repairs the standing city takes plus every point still owed
+     * on site, less what the city's own works department does on its own
+     * (BuildingManager.BASE_CONSTRUCTION has no posts), over what the depots
+     * would do at full staffing - the road and health ratios in, every post
+     * filled. They offer that need over their fill, never less than the
+     * core crew (IDLE_PAYROLL_FLOOR) and never more than all of them
+     * (strikeCrews()).
+     *
+     * OVER THE FILL, so the crews that come are the crews the work needs.
+     * Offering the need alone brought need x fill of them: a builder that
+     * fills nine posts in ten and needs a quarter of its crews for the work
+     * got nine fortieths, the repairs took what they took first, and the
+     * sites got the difference. In Jerus's city the last of forty-seven care
+     * complexes crept in at 480 points a month for a year under the core
+     * crew (the round's notes). The fill is the sector's own (getAverageFill()):
+     * the share of the posts it kept on last month that were filled, set
+     * when last month's wages were struck - the latest figure there is when
+     * this month's crews are struck, before the labour market has filled
+     * them. The posts not offered are not filled: the city counts
+     * fewer jobs (BuildingManager.getTotalJobs(), THE POSTS A SECTOR OFFERS),
+     * the workers who held them are unemployed through the ordinary path
+     * and draw EI, and the allocator gives them any other post it has. The
+     * posts kept on are paid in full, sick or not, like every other
+     * employer's; the output is the crews kept on at the sector's fill
+     * (Game.getConstructionOutput()).
+     *
+     * THE REPAIRS COUNT. A builder whose crews spend the month repointing
+     * the standing city is not idle, whatever the sites owe - so the work is
+     * the repairs plus the site points, where utilisation (below) counts the
+     * sites alone.
+     *
+     * WHEN, AND WHY THEN. Struck once a month, just before the allocator,
+     * after the month's sites have advanced: the repairs are those of the
+     * city standing now, finished buildings included, and the site points
+     * are what the next advance will face. The crews hired now are the ones
+     * next month's sites are built by (the fill set this month is the fill
+     * getConstructionOutput() reads at the next advance) and the ones next
+     * month's statement pays. Orders placed at the top of next month join
+     * the month after - they are hired for then.
+     *
+     * ON A RELOAD. The share is saved with the sector (the extras) and put
+     * back before the load path recounts the jobs, so a reloaded city offers
+     * the posts the live one did. A save from before this has none and
+     * offers every post until its first month strikes one, which is what
+     * that city was doing when it was saved.
+     */
+
+    /** The share of the depots' posts offered this month: the work's need over the fill, floored at the core crew. */
+    private double postsOfferedShare = 1;
+
+    /** ...and the need it was struck from, unfloored: the work over the depots' output at full staffing. */
+    private double crewsNeeded = 1;
+
+    /**
+     * Strikes the month's crews.
+     *
+     * @param work       points the crews face: the repairs plus everything owed on site
+     * @param cityWorks  what the city's own works department does of it at full staffing
+     * @param depots     what the depots would do with every post filled
+     */
+    public void strikeCrews(double work, double cityWorks, double depots) {
+        if (!(depots > 0)) {
+            crewsNeeded = 0;
+            postsOfferedShare = 1;
+            return;
+        }
+        crewsNeeded = Math.max(0, work - Math.max(0, cityWorks)) / depots;
+        // ...over last month's fill, so the crews that come are the crews the work needs.
+        double fill = getAverageFill();
+        fillStruckOn = fill;
+        double offered = crewsNeeded <= 0 ? 0 : fill > 0 ? crewsNeeded / fill : 1;
+        postsOfferedShare = Math.min(1, Math.max(IDLE_PAYROLL_FLOOR, offered));
+    }
+
+    /** The share of the depots' posts on offer this month. */
+    public double getPostsOfferedShare() { return postsOfferedShare; }
+
+    /** The work over the depots' full-staffing output, as struck - above 1 when the work is more than they can do. */
+    public double getCrewsNeeded() { return crewsNeeded; }
+
+    /** The fill the share was struck on: the sector's own, as last month's wages left it (0.7.17). */
+    private double fillStruckOn = 1;
+
+    /** The fill the month's share was struck on - see strikeCrews(). */
+    public double getFillStruckOn() { return fillStruckOn; }
+
+    /** The posts its depots have, offered or not. */
+    public int getPostsStanding() {
+        int total = 0;
+        for (int p : postsPerTier()) total += p;
+        return total;
+    }
+
+    /** The wage bill on the posts it offers: its depots' posts at the struck share, rounded as the city counts them. */
+    @Override
+    public void updateWages(double[] wagePerType, int[] posts) {
+        if (posts == null) { super.updateWages(wagePerType, null); return; }
+        int[] offered = new int[posts.length];
+        for (int i = 0; i < posts.length; i++) offered[i] = BuildingManager.postsOffered(posts[i], postsOfferedShare);
+        super.updateWages(wagePerType, offered);
+    }
+
     /** What the month last struck recognised, for the national accounts' investment line. */
     private double recognisedThisMonth;
+
+    /**
+     * ...of which the owners' material escalation (0.7.19): what they paid
+     * for the material the month's work drew, at the price it was drawn at,
+     * less what their quotes allowed for it - negative for a refund. See
+     * Game, MATERIAL AT THE PRICE WHEN IT IS USED. Saved with the rest.
+     */
+    private double escalationThisMonth;
 
     /**
      * Repairs billed in the month last struck, apart from the building work
@@ -108,11 +243,31 @@ public final class Construction extends Sector {
      *                        BuildingManager.advanceConstruction(); see
      *                        BuildingsStacks.contractValue for why not a share
      *                        of the whole book by the point
-     * @param pointsDelivered construction points actually completed this month
+     * @param pointsDelivered construction points delivered this month, the
+     *                        order book's own points taken as the work done
      */
     public void recogniseWork(double earned, double pointsDelivered) {
+        recogniseWork(earned, Math.min(Math.max(0, pointsDelivered), Math.max(0, backlogPoints)),
+                pointsDelivered);
+    }
+
+    /**
+     * The same, with the points the sites actually took beside the points
+     * they were offered (0.7.17). No site takes more than it owes
+     * (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE),
+     * so what the sites could not use was the crews standing idle - and
+     * that is what utilisation is, the work done over the site output, not
+     * the order book's own points. The order book comes down by the points
+     * built; it used to come down by the whole output, the parked points
+     * with it, and drift below what the sites still owed.
+     *
+     * @param pointsBuilt     points the sites took
+     * @param pointsAvailable the month's site output, after repairs
+     */
+    public void recogniseWork(double earned, double pointsBuilt, double pointsAvailable) {
 
         recognisedThisMonth = 0;
+        escalationThisMonth = 0;
 
         double take = Math.max(0, Math.min(earned, unearnedRevenue));
         if (take > 0) {
@@ -121,17 +276,35 @@ public final class Construction extends Sector {
             unearnedRevenue -= take;
         }
 
-        if (backlogPoints <= 0 || pointsDelivered <= 0) {
+        if (pointsAvailable <= 0) {
             utilisation = 0;
             return;
         }
 
-        double done = Math.min(pointsDelivered, backlogPoints);
-        backlogPoints -= done;
+        double done = Math.max(0, Math.min(pointsBuilt, pointsAvailable));
+        backlogPoints = Math.max(0, backlogPoints - done);
 
         // Full crews only when there was a full month's work to do.
-        utilisation = Math.min(1, done / pointsDelivered);
+        utilisation = Math.min(1, done / pointsAvailable);
     }
+
+    /**
+     * The owners' material escalation on the month's work (0.7.19): earned
+     * beside it, in the same month and on the same line of the accounts -
+     * it is the price of the material the work was built with - or, for a
+     * refund, given back out of it. Called after recogniseWork(), once for
+     * each owner the work was for (Game.settleSiteContracts()).
+     */
+    public void recogniseEscalation(double amount) {
+        if (!Double.isFinite(amount) || amount == 0) return;
+        if (amount > 0) bookOtherRevenue(amount);
+        else bookRevenueRefund(-amount);
+        recognisedThisMonth += amount;
+        escalationThisMonth += amount;
+    }
+
+    /** ...this month's, for the screens. */
+    public double getEscalationThisMonth() { return escalationThisMonth; }
 
     /**
      * The repair order for the month, from every owner of a standing
@@ -181,23 +354,24 @@ public final class Construction extends Sector {
        WHAT IT COSTS TO STAND
        =================================================================== */
 
-    /** ...and by how much work there was. Staffing is whether the jobs are filled; this is whether the staff have anything to do. */
-    @Override
-    protected double payrollScale() {
-        return Math.max(IDLE_PAYROLL_FLOOR, utilisation);
-    }
-
     /**
      * What it costs to keep one point of capacity standing for a month.
-     * Payroll only, and the UNDISCOUNTED payroll on purpose: the crews are
-     * there whether or not anyone orders anything, which is exactly the cost
-     * a subsidy is offsetting.
+     * Payroll only. It was the UNDISCOUNTED payroll on purpose - every post
+     * at the average fill, not the idle floor - because the crews were there
+     * whether or not anyone ordered anything, which is exactly the cost a
+     * subsidy offsets. Since 0.7.17 an idle builder lays its crews off to
+     * the core crew (THE CREWS THE WORK NEEDS) and the wage bill is struck on
+     * the posts it keeps, so this is the payroll on those posts, each tier at
+     * its own fill: getPayroll() over the capacity. TODO(docs): nothing in
+     * the tree calls this; whether a subsidy should offset the crews kept on
+     * or every post the depots have is not said.
      */
     public double getStandingCostPerCapacity(double capacity) {
         if (capacity <= 0) return 0;
-        double full = 0;
-        for (double tier : wages) full += tier;
-        return (full * averageFill) / capacity;
+        // Each tier at its own fill, as the payroll is struck (0.7.17).
+        double staffed = 0;
+        for (int i = 0; i < wages.length; i++) staffed += wages[i] * fill[i];
+        return staffed / capacity;
     }
 
     /** Points a month the depots and the city's own works could deliver, before staffing and roads. */
@@ -281,6 +455,23 @@ public final class Construction extends Sector {
      * Everyone else's lead times are its output, so when the queue gets long
      * it is the constraint on the whole city. Measured as months of backlog
      * rather than demand, because construction's demand IS the backlog.
+     *
+     * THE MONTHS AT THE PACE THE SITES ACTUALLY GET, AND A DEPOT IT CAN STAFF
+     * (0.7.17; Jerus: "Construction's own planner counts repairs and how well
+     * it can staff a depot, both when it adds depots and when it sells them
+     * off"). The queue was read against the builders' whole output, repairs
+     * and all - forty percent of a mature city's - so a queue read shorter
+     * than it was; and a depot was ordered on the queue alone, so a city
+     * whose depots stood at 36% staffed because they are 70% unskilled posts
+     * and the unskilled rung was 8.5% filled ordered one a month, each adding
+     * about a hundred and forty points. Now the months are the points owed
+     * over what is left for the sites after the repairs, at the builders'
+     * staffed output with every post offered (Game.getBuildingOutputAtEveryPost()
+     * - crews laid off for want of work would be hired back for a queue), and a depot is ordered only
+     * if the city could staff it: its staffable share at
+     * MIN_STAFFABLE_TO_ORDER, floored and weighted exactly as Manufacturing,
+     * Automotive, Rail and Business Services use it - since 0.7.18 through
+     * Sector.staffing(), the one test every planner that builds posts asks.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
@@ -290,9 +481,12 @@ public final class Construction extends Sector {
             return BusinessInvestment.Decision.no(sector, "already building");
         }
 
-        double output = game.getConstructionOutput();
+        // ...at every post (0.7.17): a builder that has laid crews off for
+        // want of work is not short of crews for the queue it is weighing.
+        double forSites = game.getBuildingOutputAtEveryPost();
         double remaining = buildings.getRemainingConstructionPoints();
-        double backlogMonths = output > 0 ? remaining / output : Double.MAX_VALUE;
+        double backlogMonths = forSites > 0 ? remaining / forSites
+                : remaining > 0 ? Double.MAX_VALUE : 0;
 
         if (backlogMonths < BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING) {
             return BusinessInvestment.Decision.no(sector,
@@ -301,19 +495,44 @@ public final class Construction extends Sector {
 
         BuildingsTemplate best = null;
         double bestScore = 0;
+        Staffing staffingHold = null;
+        String staffingHoldName = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             double points = t.makes(Good.BUILDING_WORK);
             if (points <= 0) continue;
+
+            // Every post fillable at MIN_STAFFABLE_TO_ORDER, and none in a band
+            // nobody could fill (0.7.18; see Sector.staffing()).
+            Staffing staffing = staffing(t);
+            double staffable = staffing.share;
+            if (!staffing.passes()) {
+                if (staffingHold == null || staffing.share > staffingHold.share) {
+                    staffingHold = staffing;
+                    staffingHoldName = t.getName();
+                }
+                continue;
+            }
+
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double score = points / cost;
+            // Still discounted as well as floored: the floor says whether any
+            // of them is worth opening, the weight says which.
+            double score = points * staffable / cost;
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
             }
         }
 
-        if (best == null) return BusinessInvestment.Decision.no(sector, "nothing that adds capacity");
+        if (best == null) {
+            if (staffingHold != null) {
+                return BusinessInvestment.Decision.no(sector, String.format(
+                        "%s months of work queued, but %s",
+                        backlogMonths == Double.MAX_VALUE ? "endless" : String.format("%.1f", backlogMonths),
+                        staffingHold.why(staffingHoldName)));
+            }
+            return BusinessInvestment.Decision.no(sector, "nothing that adds capacity");
+        }
 
         // Construction is not exempt from land. The way out of a construction
         // bottleneck runs through the land the player has not bought.
@@ -322,29 +541,75 @@ public final class Construction extends Sector {
         }
 
         return new BusinessInvestment.Decision(sector, best, 1,
-                String.format("%.1f months of work queued", backlogMonths), true);
+                backlogMonths == Double.MAX_VALUE ? "the repairs take every crew it has"
+                        : String.format("%.1f months of work queued", backlogMonths), true);
     }
 
     /**
-     * A depot's extra output is billable work. Valued at the materials
-     * price as a rough per-point rate - construction bills the whole build
-     * cost, of which materials are the larger part.
+     * WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). Its points,
+     * at the share of its posts the city could staff (Sector.staffing()), at
+     * what the builders are paid for a point of work beyond its material and
+     * tax - the work on site's non-material price
+     * (BuildingManager.nonMaterialPricePerPoint()), which is what they keep
+     * of a price once the material is bought and the tax remitted (Game,
+     * THE BUILDERS' PRICE) - less the posts it would fill at today's wages,
+     * its power and water, and its repairs and property tax
+     * (BusinessInvestment.standingCostOf()). Planned only with months of
+     * work queued (plan()), so at full work.
+     *
+     * It was the depot's points at the price of a unit of material: no
+     * wages, and a price for a point that no point was ever paid - in
+     * Jerus's city 400 x 93.7 = $37.5M a month for one depot, against work
+     * billed at 4.25 a point (the trace's Q5).
      */
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        return t.makes(Good.BUILDING_WORK) * buildings.getConstructionMaterialPrice();
+        double points = t.makes(Good.BUILDING_WORK);
+        if (!(points > 0)) return 0;
+        double share = Math.max(0, Math.min(1, staffing(t).share));
+        double wages = plans.wageBillFor(t);
+        double utilities = Math.max(0, plans.runningCostOf(t) - wages);
+        return points * share * buildings.nonMaterialPricePerPoint()
+                - wages * share - utilities - plans.standingCostOf(this, t);
     }
 
     /**
-     * Its demand is the queue: work ordered and not yet done, capped at what
-     * its plant could deliver in a month, and never less than what the city
-     * has undertaken to keep alive - a subsidised depot has a customer.
+     * Its demand is the repairs and the queue: the city's repair order and
+     * the work ordered and not yet done, the queue capped at what the sites
+     * could take this month, and never less than what the city has
+     * undertaken to keep alive - a subsidised depot has a customer.
+     *
+     * IN STAFFED OUTPUT, AND THE REPAIRS COUNTED (0.7.17). It compared the
+     * depots' NAMEPLATE with the queue alone: a builder whose repairs took
+     * forty percent of its month and whose depots were a third staffed read
+     * its whole nameplate as spare whenever the queue was short, and sold it
+     * a quarter at a time while it lost money - 232,000 points a month to
+     * 56,800 in Jerus's city between months 912 and 1020, after which its
+     * homes sat flat for nine years. Now the need is the repairs plus the
+     * month's site work, at most what the sites are left, against what the
+     * depots actually deliver staffed, with every post offered
+     * (Game.getConstructionOutputAtEveryPost()): crews laid off for want of
+     * work are exactly what is spare, so the need is judged against what the
+     * depots would do hiring every post, not against the crews kept on. The
+     * rule's own margin (BusinessInvestment.RETIREMENT_SLACK) applies to
+     * those. Both figures are handed back in nameplate - the need scaled by
+     * nameplate over staffed output - because planRetirement() sheds whole
+     * depots, counted in nameplate (unitsOf()); the comparison is the same
+     * comparison either way up. With nobody on the crews there is no
+     * staffed output to judge and nothing is spare.
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
         double capacity = buildings.getTotalConstructionCapacity();
-        double workAvailable = Math.min(buildings.getRemainingConstructionPoints(), capacity);
-        double demand = Math.max(workAvailable, game == null ? 0 : game.protectedConstructionCapacity());
+        if (game == null) {
+            return new double[] { Math.min(buildings.getRemainingConstructionPoints(), capacity), capacity };
+        }
+        double staffed = game.getConstructionOutputAtEveryPost();
+        double repairs = game.getMaintenancePoints();
+        double siteWork = Math.min(buildings.getRemainingConstructionPoints(), Math.max(0, staffed - repairs));
+        double need = repairs + siteWork;
+        double demand = staffed > 0 ? need * capacity / staffed : capacity;
+        demand = Math.max(demand, game.protectedConstructionCapacity());
         return new double[] { demand, capacity };
     }
 
@@ -371,7 +636,9 @@ public final class Construction extends Sector {
     @Override
     protected java.util.Map<String, Double> nameOtherRevenue() {
         java.util.Map<String, Double> parts = new java.util.LinkedHashMap<>();
-        if (Math.abs(recognisedThisMonth) > 0) parts.put("Building work recognised", recognisedThisMonth);
+        double work = recognisedThisMonth - escalationThisMonth;
+        if (Math.abs(work) > 0) parts.put("Building work recognised", work);
+        if (Math.abs(escalationThisMonth) > 0) parts.put("Material escalation", escalationThisMonth);
         if (Math.abs(repairsThisMonth) > 0) parts.put("Repairs billed", repairsThisMonth);
         return parts.isEmpty() ? super.nameOtherRevenue() : parts;
     }
@@ -385,7 +652,20 @@ public final class Construction extends Sector {
         lines.add(Line.of("Output", f.count(output) + " pts a month"));
         lines.add(Line.of("Busy", f.pct(utilisation),
                 utilisation > .95 ? Line.Tone.WARN : utilisation < .3 ? Line.Tone.WARN : Line.Tone.GOOD));
+        int standing = getPostsStanding(), offered = getPostsOffered();
+        if (standing > 0 && offered < standing) {
+            lines.add(Line.of("Crews kept on", f.count(offered) + " of " + f.count(standing) + " posts",
+                    postsOfferedShare <= IDLE_PAYROLL_FLOOR + 1e-9 ? Line.Tone.WARN : Line.Tone.NONE));
+        }
         lines.add(Line.of("Staffed", f.pct(averageFill), averageFill < .9 ? Line.Tone.WARN : Line.Tone.NONE));
+        if (standing > 0 && offered < standing) {
+            lines.add(Line.note(String.format("The work ahead - the repairs and what the sites still owe - "
+                    + "needs %.0f%% of the depots' crews at full staffing. They keep that over how well their posts "
+                    + "fill, so the crews that come are the crews the work needs, and lay the rest off: unemployed, "
+                    + "drawing EI and free to take other work, and hired back when the work returns. The core crew, "
+                    + "%.0f%% of the posts, is never laid off. Staffed is the share of the posts kept on that are filled.",
+                    Math.min(100, crewsNeeded * 100), IDLE_PAYROLL_FLOOR * 100)));
+        }
         lines.add(Line.of("Order book", f.count(backlogPoints) + " pts",
                 backlogPoints > 0 ? Line.Tone.HEAD : Line.Tone.MUTED));
 
@@ -412,11 +692,19 @@ public final class Construction extends Sector {
 
         lines.add(Line.head("How it bills"));
         lines.add(Line.of("Billed but not yet earned", f.cash(unearnedRevenue)));
+        if (escalationThisMonth != 0) {
+            lines.add(Line.of("Material escalation", f.cash(escalationThisMonth),
+                    escalationThisMonth > 0 ? Line.Tone.NONE : Line.Tone.MUTED));
+        }
+        lines.add(Line.of("Paid a point of work", f.cash(buildings == null ? 0 : buildings.nonMaterialPricePerPoint())
+                + " beyond the material and the tax"));
         lines.add(Line.note("Every build order is invoiced up front, material priced at the day's "
-                + "rates, and recognised as the work is done - which is why this business can "
-                + "hold cash it has not earned, and why it carries the material price between "
-                + "the invoice and the draw. It is the only sector in the city with a liability "
-                + "of that shape."));
+                + "rates and the sales tax in the price, and recognised as the work is done - "
+                + "which is why this business can hold cash it has not earned. The labour in the "
+                + "price is at today's builders' wages. As the crews draw the material, whoever "
+                + "ordered the building pays what it cost that month less what the invoice allowed "
+                + "for it, or is refunded the difference. It is the only sector in the city with "
+                + "a liability of that shape."));
         if (game != null && game.getSubsidyPaid(this) > 0) {
             lines.add(Line.of("Subsidy this month", f.cash(game.getSubsidyPaid(this)), Line.Tone.GOOD));
             lines.add(Line.note("You are keeping crews alive that the order book would not. Set on the policy screen."));
@@ -434,8 +722,12 @@ public final class Construction extends Sector {
         extras.put("backlogPoints", backlogPoints);
         extras.put("utilisation", utilisation);
         extras.put("recognisedThisMonth", recognisedThisMonth);
+        extras.put("escalationThisMonth", escalationThisMonth);
         extras.put("repairsThisMonth", repairsThisMonth);
         extras.put("salvageCost", salvageCost);
+        extras.put("postsOfferedShare", postsOfferedShare);
+        extras.put("crewsNeeded", crewsNeeded);
+        extras.put("fillStruckOn", fillStruckOn);
     }
 
     @Override
@@ -444,15 +736,20 @@ public final class Construction extends Sector {
         backlogPoints = extras.getOrDefault("backlogPoints", 0.0);
         utilisation = extras.getOrDefault("utilisation", 1.0);
         recognisedThisMonth = extras.getOrDefault("recognisedThisMonth", 0.0);
+        escalationThisMonth = extras.getOrDefault("escalationThisMonth", 0.0);
         repairsThisMonth = extras.getOrDefault("repairsThisMonth", 0.0);
         salvageCost = extras.getOrDefault("salvageCost", 0.0);
+        postsOfferedShare = extras.getOrDefault("postsOfferedShare", 1.0);
+        crewsNeeded = extras.getOrDefault("crewsNeeded", 1.0);
+        fillStruckOn = extras.getOrDefault("fillStruckOn", 1.0);
     }
 
     @Override
     protected void resetExtras() {
         unearnedRevenue = backlogPoints = 0;
         utilisation = 1;
-        recognisedThisMonth = repairsThisMonth = salvageCost = 0;
+        recognisedThisMonth = repairsThisMonth = salvageCost = escalationThisMonth = 0;
+        postsOfferedShare = crewsNeeded = fillStruckOn = 1;
     }
 
     /** Points and the utilisation are work, not money; the book is money. */
@@ -460,6 +757,7 @@ public final class Construction extends Sector {
     protected void redenominateExtras(double scale) {
         unearnedRevenue *= scale;
         recognisedThisMonth *= scale;
+        escalationThisMonth *= scale;
         repairsThisMonth *= scale;
         salvageCost *= scale;
     }

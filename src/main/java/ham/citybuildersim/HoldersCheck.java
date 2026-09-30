@@ -115,6 +115,24 @@ public class HoldersCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            /*
+             * THE TREASURY AND THE GROUND THIS FIXTURE WAS WRITTEN AGAINST
+             * (0.7.17), as the suite's other founding fixtures have been given
+             * since 0.7.10: a city founds on D$100M, and its three hundred
+             * houses, four depots and coal plant came back NO_LAND, so it was
+             * a town of fourteen people around a bank, a shop and a bakery.
+             * Since every building gets the crew it can use (BuildingManager,
+             * EVERY BUILDING GETS THE CREW IT CAN USE) that town's month after
+             * the issue had a household short of money, which sold a sliver of
+             * its paper to the bank's desk - $0.0116k - and the shares the
+             * coupon is paid on moved under the reading (section 2), and in
+             * section 9 the bank held a sliver again, the central bank's next
+             * step took the households' last half with it, and the middle the
+             * save is made in never came. Given the money and the ground, the
+             * city is the one the fixture describes.
+             */
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
@@ -434,6 +452,9 @@ public class HoldersCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
+            // The treasury and the ground it was written against (0.7.17): see main().
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
@@ -443,7 +464,26 @@ public class HoldersCheck {
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(60);
+            /*
+             * ...AND NOBODY LEAVING WHILE IT IS WATCHED, RE-CAUSED (0.7.19). A
+             * household that leaves sells its city paper to the bank's desk on
+             * the way out (HouseholdBalance, THE CITY'S PAPER IS SOLD ON THE
+             * WAY OUT), which puts paper back on the bank's book after the
+             * central bank has taken it, and moves the households' face by
+             * more than the central bank's step. Since 0.7.19 this town has a
+             * pay tier in decline through months 60 to 68 - its diploma
+             * workers leaving a fraction a month (Migration's decline rule) -
+             * and in the section's second month they sold the desk $8.6k of
+             * face: the bank ended that month holding paper the central bank
+             * had already cleared from it, and every later month was one step
+             * out. So the town is played on until no tier is in decline before
+             * the bond is written, as the town the section was written against
+             * was.
+             */
+            for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
+        assertTrue("fixture: no pay tier in the town is in decline, so nobody leaves while the paper is watched",
+                city.getMigration().getLastDecliningShare() == 0);
         HouseholdBalance hb = city.getHouseholdBalance();
         DebtManager ledger = city.getDebtManager();
         Bank bank = city.getBank();

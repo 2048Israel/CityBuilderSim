@@ -124,6 +124,32 @@ public class FundCheck {
         bank.setCash(bank.getCash() - (bank.equity() - equity));
     }
 
+    /**
+     * ...TO A LEVEL OF ITS OWN MEASURE, AS THE MOVE LEAVES IT - RE-CAUSED
+     * (0.7.19). The loss is taken out of the bank's cash, and cash is in the
+     * leverage ratio's exposure (Bank.exposure()): where that minimum binds,
+     * taking the bank to 95% of its minimum lowers the minimum with it, and
+     * the bank can end over the new one - equity $561k against a minimum of
+     * $436k, measured, in this town's month 73. It binds here since 0.7.19:
+     * the bank gathers all its customers' deposits (Bank, THE DEPOSITS ARE
+     * NOT CAPPED BY BRANCHES), and the town's risk-weighted assets came to
+     * $5,454k against $8,047k at 0.7.18, so the leverage measure ($591k)
+     * took over from the risk-weighted one ($644k then). So every fixture
+     * that takes the bank to a multiple of its own minimum or target takes it
+     * there as the move leaves them: again and again until it stands still -
+     * the measure moves by a few percent of what the cash does, so it closes
+     * in a handful of steps. The levels, and every assertion on them, are as
+     * they were.
+     */
+    static void takeEquityToOwn(Bank bank, java.util.function.ToDoubleFunction<Bank> level) {
+        for (int i = 0; i < 500; i++) {
+            double want = level.applyAsDouble(bank);
+            if (Math.abs(bank.equity() - want) <= 1e-12 * Math.max(1, Math.abs(want))) return;
+            takeEquityTo(bank, want);
+        }
+        throw new IllegalStateException("fixture: the bank's equity did not settle at its own level");
+    }
+
     public static void main(String[] args) {
         out = System.out;
         quiet = new PrintStream(OutputStream.nullOutputStream());
@@ -294,6 +320,31 @@ public class FundCheck {
             if (!cell.isEmpty()) cell.savings += 1_000;
         }
         g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 1_000_000L);
+        /*
+         * ...AND A BRANCH THIS TOWN'S FEES COVER, RE-CAUSED (0.7.19). Every
+         * branch past the first stands only while its customers' account fees
+         * cover what it cost to run last month, and closes when they do not (Bank,
+         * THE BRANCHES, BY THEIR CUSTOMERS): this town's few hundred
+         * households pay a sliver of a branch's staff, so the second branch
+         * put up below closed the next month, before it was capitalised, and
+         * no share was sold. The question here is who buys a new branch's
+         * shares, so the town's branches are made cheap enough for its fees
+         * to carry two - no posts, no operating cost, a building a hundredth
+         * the size - as BankCheck section 19 makes its own, and a month is
+         * played so the cost the rule reads is theirs.
+         */
+        BuildingsTemplate cheap = g.getBuildingManager().getTemplateByName("Commercial Bank");
+        for (JobType j : JobType.values()) cheap.setJobs(j, 0);
+        cheap.setUpkeep(0);
+        // ...a thousandth the size since the rebates (revised 0.7.19): the
+        // landlords' lower rent left this town 16 fee-paying households at
+        // month 77 against 30, and fees of $0.20k against a hundredth-size
+        // branch's repairs of $0.18k covered one branch, not two.
+        cheap.setCashCost(cheap.getCashCost() / 1000);
+        cheap.setConstructionMaterials(cheap.getConstructionMaterials() / 1000);
+        play(g);
+        before = register.getShares(Equity.BANK);
+        check("fixture: the town's fees would cover a second branch", g.getBank().branchesTheFeesCover() >= 2);
         final Game.BuildResult[] built = new Game.BuildResult[1];
         quietly(() -> built[0] = g.buildStack(g.getBuildingManager().getTemplateByName("Commercial Bank"), 1, true));
         check("fixture: a second branch stands", built[0] == Game.BuildResult.SUCCESS);
@@ -332,7 +383,7 @@ public class FundCheck {
         out.println("\n--- 4. the preferred: TARP's terms ---");
         Game g = copy();
         Bank bank = g.getBank();
-        takeEquityTo(bank, .95 * bank.minimumEquity());
+        takeEquityToOwn(bank, own -> .95 * own.minimumEquity());
         check("fixture: a standing bank under its minimum", bank.wantsPreferred());
         double rwa = bank.getWeightedBook();
         double size = bank.preferredOfferSize();
@@ -345,7 +396,7 @@ public class FundCheck {
                 Math.max(Bank.PREFERRED_MIN_SHARE * rwa, Math.min(Bank.PREFERRED_MAX_SHARE * rwa, need)), 1e-9);
         // Deeper under: 3% does not reach the target, and it says so.
         double keep = bank.getCash();
-        takeEquityTo(bank, .2 * bank.minimumEquity());
+        takeEquityToOwn(bank, own -> .2 * own.minimumEquity());
         check("deeper under, it asks for 3% and says the rest is its own share issues'",
                 bank.preferredOfferCapped() && Math.abs(bank.preferredOfferSize() - Bank.PREFERRED_MAX_SHARE * rwa) < 1e-9
                         && bank.preferredOfferShortOfTarget() > 0);
@@ -372,11 +423,11 @@ public class FundCheck {
         int m0 = p.issued();
         bank.setMonth(m0 + 1);
         check("fixture: its target is over its minimum", bank.targetEquity() > bank.minimumEquity());
-        takeEquityTo(bank, .5 * (bank.minimumEquity() + bank.targetEquity()));
+        takeEquityToOwn(bank, own -> .5 * (own.minimumEquity() + own.targetEquity()));
         double paid = bank.payPreferredDividends();
         close("a month over its minimum but under its target pays the preferred nothing", paid, 0, 0);
         close("...and owes a twelfth of 5% of its par", bank.getPreferredArrears(), size * Bank.PREFERRED_RATE / 12, 1e-9);
-        takeEquityTo(bank, 2 * bank.targetEquity());
+        takeEquityToOwn(bank, own -> 2 * own.targetEquity());
         check("with a dividend unpaid, the common gets nothing however much it holds", bank.dividendDue(1_000_000) == 0);
         bank.setMonth(m0 + 2);
         paid = bank.payPreferredDividends();
@@ -439,14 +490,14 @@ public class FundCheck {
         bank.setMonth(m - Bank.PREFERRED_REDEEM_MONTHS);
         bank.issuePreferred(par, price, 0);
         bank.setMonth(m - 1);
-        takeEquityTo(bank, bank.targetEquity());
+        takeEquityToOwn(bank, own -> own.targetEquity());
         bank.payPreferredDividends();
         double arrears = bank.getPreferredArrears();
         bank.setMonth(m);
         check("fixture: a block three years old, a month's dividend on it unpaid",
                 arrears > 0 && bank.getPreferred().get(0).due(m) && !bank.getPreferred().get(0).due(m - 1));
         double warrants = bank.warrantValue(price, g.bankVolatility(), g.getDebtManager().getPolicyRate());
-        takeEquityTo(bank, bank.targetEquity() + 2 * (par + arrears + warrants));
+        takeEquityToOwn(bank, own -> own.targetEquity() + 2 * (par + arrears + warrants));
         double equityBefore = bank.equity(), sharesBefore = g.getEquity().getShares(Equity.BANK);
         double fundBefore = g.getFund().getCash(), split = bank.equitySplitResidual();
         g.settleThePreferred();
@@ -481,7 +532,7 @@ public class FundCheck {
         for (Household cell : h.getHouseholdBalance().cellsForMarket()) {
             if (!cell.isEmpty()) cell.savings += 1_000;
         }
-        takeEquityTo(hb, hb.targetEquity());
+        takeEquityToOwn(hb, own -> own.targetEquity());
         double hWarrants = hb.warrantValue(h.getExchange().price(Equity.BANK), h.bankVolatility(),
                 h.getDebtManager().getPolicyRate());
         double s0 = reg.getShares(Equity.BANK), city0 = reg.getCityShares(Equity.BANK);
@@ -517,7 +568,7 @@ public class FundCheck {
         for (Household cell : w.getHouseholdBalance().cellsForMarket()) {
             if (!cell.isEmpty()) cell.savings += 1_000;
         }
-        takeEquityTo(wb, .8 * wb.targetEquity());
+        takeEquityToOwn(wb, own -> .8 * own.targetEquity());
         double wWarrants = wb.warrantValue(w.getExchange().price(Equity.BANK), w.bankVolatility(),
                 w.getDebtManager().getPolicyRate());
         double wEquity = wb.equity();
@@ -538,7 +589,7 @@ public class FundCheck {
         for (Household cell : p.getHouseholdBalance().cellsForMarket()) {
             if (!cell.isEmpty()) cell.savings += 1_000;
         }
-        takeEquityTo(pb, pb.targetEquity());
+        takeEquityToOwn(pb, own -> own.targetEquity());
         quietly(() -> p.saveGame(4));
         Game q = new Game(files);
         quietly(() -> q.loadGameSave(4));
@@ -561,7 +612,7 @@ public class FundCheck {
         u.setMonth(100);
         u.issuePreferred(1_000, 2.0, 0);
         u.setMonth(100 + Bank.PREFERRED_REDEEM_MONTHS);
-        takeEquityTo(u, u.targetEquity());
+        takeEquityToOwn(u, own -> own.targetEquity());
         double[] half = u.redeemDuePreferred(x -> { u.injectCapital(0, x / 2); return x / 2; });
         close("an offering half taken up repays half", half[1], 500, 1e-9);
         check("...and the rest stays due, to be repaid the next month", Math.abs(u.preferredOutstanding() - 500) < 1e-9
@@ -599,19 +650,55 @@ public class FundCheck {
 
     static void theOffer() {
         out.println("\n--- 6. the offer: in the inbox, a quarter after it is declined, and through a save ---");
+        /*
+         * ...AT HALF ITS MINIMUM AS THE MONTH WILL LEAVE IT (0.7.17). The bank
+         * was taken to half its minimum at the top of the month, and the
+         * month did the rest. Since every building gets the crew it can use
+         * (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE) this
+         * town's month seventy-four provisions $613k against a borrower's
+         * loans, a one-off - it was $1k to $4k a month either side - and at
+         * half its minimum that took the bank under water: insolvent, which
+         * is sections 1 and 2's case, not an offer. So the same month is run
+         * first on a copy, and the bank is taken to half its minimum as that
+         * month leaves it. The premise - a standing bank under its minimum
+         * asks - is untouched.
+         */
+        Game dry = copy();
+        double dryBefore = dry.getBank().equity();
+        play(dry);
+        double monthMoves = dry.getBank().equity() - dryBefore;
         Game g = copy();
         Bank bank = g.getBank();
-        takeEquityTo(bank, .5 * bank.minimumEquity());
+        takeEquityToOwn(bank, own -> .5 * own.minimumEquity() - Math.min(0, monthMoves));
         play(g);
+        check("fixture: the bank stands, under its minimum, at the month's end",
+                bank.getBranches() >= 1 && !bank.isInsolvent() && bank.equity() > 0 && bank.equity() < bank.minimumEquity());
         check("a standing bank under its minimum asks, at the month's end", g.isPreferredOfferPending()
                 && g.getFund().getOfferMonth() == g.getMonth());
         check("...and the inbox has it, the popup Jerus asked for", g.getInbox().live("preferred") != null);
         g.declinePreferredOffer();
         int declined = g.getMonth();
-        play(g);
-        play(g);
+        /*
+         * ...AND KEPT STANDING THROUGH THE QUARTER, RE-CAUSED (0.7.19). Its
+         * branch paid its template's operating cost in 0.7.19's first pass
+         * (Bank, payRunning()), and at this size the bank lost about $210k a
+         * month (measured then): from half its minimum it was insolvent the
+         * month after the city declined - a failed bank, sections 1 and 2's
+         * case, which asks for nothing. So each month of the quarter starts
+         * it where the first did, at half its minimum less a month of what
+         * the month does to it, and it stands under its minimum through all
+         * three. (Since the revision, "Exempt first branch", the charter pays
+         * none of that cost; the quarter is kept as it was re-caused.)
+         */
+        boolean stoodUnder = true;
+        for (int i = 0; i < 2; i++) {
+            takeEquityToOwn(bank, own -> .5 * own.minimumEquity() - Math.min(0, monthMoves));
+            play(g);
+            stoodUnder &= !bank.isInsolvent() && bank.equity() > 0 && bank.equity() < bank.minimumEquity();
+        }
+        check("fixture: it stood, under its minimum, at the end of both months", stoodUnder);
         check("declined, it does not ask for two months", !g.isPreferredOfferPending());
-        takeEquityTo(bank, .5 * bank.minimumEquity());
+        takeEquityToOwn(bank, own -> .5 * own.minimumEquity() - Math.min(0, monthMoves));
         play(g);
         check("...and asks again a quarter after", g.isPreferredOfferPending() && g.getMonth() - declined == TreasuryFund.OFFER_AGAIN_MONTHS);
         quietly(() -> g.saveGame(2));
@@ -813,10 +900,10 @@ public class FundCheck {
         g.fundPayIn(60_000);
         play(g);
         Bank bank = g.getBank();
-        takeEquityTo(bank, .9 * bank.minimumEquity());
+        takeEquityToOwn(bank, own -> .9 * own.minimumEquity());
         quietly(() -> g.getFund().noteOffered(g.getMonth()));
         g.acceptPreferredOffer();
-        takeEquityTo(bank, bank.minimumEquity());
+        takeEquityToOwn(bank, own -> own.minimumEquity());
         bank.payPreferredDividends();
         g.fundBuyShares(0, 500);
         quietly(() -> g.saveGame(3));
@@ -863,7 +950,7 @@ public class FundCheck {
         Founding insane = Founding.named("Insane", Founding.Preset.INSANE, WorldEconomy.DEFAULT_MEAN_INFLATION);
         check("D$0 and US$0 read back as Insane", Founding.Preset.of(0, 0) == Founding.Preset.INSANE
                 && insane.problem() == null);
-        check("...and a custom founding still takes at least D$5M", Founding.cashProblem(Founding.MIN_CASH - 1) != null);
+        check("...and a custom founding still takes at least D$6M", Founding.cashProblem(Founding.MIN_CASH - 1) != null);
         Game g = new Game(GameFiles.scratch("fundcheck-insane"), insane);
         quietly(g::run);
         check("the treasury holds nothing and the vault nothing",

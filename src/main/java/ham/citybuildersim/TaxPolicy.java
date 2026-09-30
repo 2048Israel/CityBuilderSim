@@ -208,9 +208,24 @@ public class TaxPolicy {
     /**
      * The Canada Student Grant, $525 a month of study (2026-27), as a share of
      * the $3,460 unskilled median the ladder is anchored on - so it moves with
-     * the wage it was measured against and with a currency reform.
+     * the wage it was measured against and with a currency reform. The
+     * WAGE_SHARE basis's own default share, and the founding rule until 0.7.19.
      */
     public static final double DEFAULT_STUDENT_GRANT_SHARE = 525.0 / 3_460;
+
+    /**
+     * THE GRANT FOLLOWS PRICES (0.7.19): the default grant as a FIXED amount,
+     * in founding thousands - $525 a month, the Canada Student Grant (2026-27)
+     * this basis's share was read off, so at founding, when the price index
+     * is one and the unskilled wage is PayTier's $3,460, it pays exactly what
+     * DEFAULT_STUDENT_GRANT_SHARE of that wage did. Kept up with the city's
+     * cost of living by the price index (grantBill()), the way Canada's
+     * grants are fixed dollar amounts reviewed against the cost of living
+     * rather than a share of any wage (the full-time grant was $3,000 a year
+     * to 2021 and $4,200 from 2023-24, set by budget, not by a wage - see
+     * the banner at DEFAULT_GRANT_BASIS).
+     */
+    public static final double DEFAULT_FIXED_GRANT = DEFAULT_STUDENT_GRANT_SHARE * PayTier.UNSKILLED.getMonthlyWage();
 
     /** A premium past a tenth of a wage is a second income tax. */
     public static final double MAX_EI_PREMIUM = .10;
@@ -236,7 +251,7 @@ public class TaxPolicy {
     public void setEiPremiumRate(double rate)     { eiPremiumRate = clamp(rate, MAX_EI_PREMIUM); }
     public void setEiBenefitRate(double share)    { eiBenefitRate = clamp(share, MAX_EI_BENEFIT); }
 
-    /** The grant as a share of the unskilled wage - the founding basis, at this share. */
+    /** The grant as a share of the unskilled wage - the founding basis until 0.7.19, at this share. */
     public void setStudentGrantShare(double share) {
         grantBasis = GrantBasis.WAGE_SHARE;
         grantAmount = clamp(share, MAX_STUDENT_GRANT);
@@ -325,9 +340,9 @@ public class TaxPolicy {
 
     /** How the student grant is struck: what the one amount is a share of, or is. */
     public enum GrantBasis {
-        /** A share of the unskilled wage, per student per month - the founding rule, and the default. */
+        /** A share of the unskilled wage, per student per month - the founding rule until 0.7.19, and what an older save that chose nothing keeps. */
         WAGE_SHARE,
-        /** A fixed amount per student per month, in thousands: money, so a currency reform scales it. */
+        /** A fixed REAL amount per student per month, in founding thousands, kept up with the price index (0.7.19; a nominal amount until then) - the default since 0.7.19. Money, so a currency reform scales it. */
         FIXED,
         /** A share of last month's budget surplus as ONE POOL, split evenly over this month's students; a deficit month pays nothing. */
         SURPLUS_SHARE,
@@ -335,8 +350,41 @@ public class TaxPolicy {
         TUITION_SHARE
     }
 
-    /** Where the grant starts: the founding rule, a share of the unskilled wage. */
-    public static final GrantBasis DEFAULT_GRANT_BASIS = GrantBasis.WAGE_SHARE;
+    /*
+     * THE GRANT FOLLOWS PRICES (0.7.19). Jerus, on "Money and prices: which of
+     * these?", chose "Grant follows prices": "The student grant follows the
+     * cost of living (or the median wage) instead of the unskilled wage."
+     *
+     * WHAT IT REPLACED. The default was WAGE_SHARE: a share of the unskilled
+     * wage, which tracks the SCARCEST wage in a city short of labourers. In
+     * Jerus's 0.7.14 city the grant was 0.1517 x 146,615 students x a $68.30k
+     * unskilled wage - $1,519.4M a month, of which $1,092.0M (72%) was the
+     * wage's scarcity multiple, not the cost of living (the trace's Q2).
+     *
+     * THE BASIS ALREADY EXISTED: FIXED, a fixed amount a month. It is now a
+     * REAL amount - in founding thousands, times the price index the city
+     * already keeps (PriceIndex, what a month costs a household against
+     * founding) - so it keeps what it buys, and it is the default, at
+     * DEFAULT_FIXED_GRANT: at founding, the old default's bill to the cent.
+     * The source is the grant's own shape. Canada Student Grants are fixed
+     * dollar amounts per year of study set in the federal budget and
+     * reviewed against costs (the full-time grant: $3,000 a year to 2021,
+     * $4,200 from 2023-24 - ESDC, Canada Student Financial Assistance
+     * Program), not a share of any wage.
+     *
+     * OLD SAVES KEEP THE BASIS THEY CHOSE. A save carries its basis, so a
+     * city on WAGE_SHARE - chosen or left at the old default, which the save
+     * cannot tell apart - stays on it; only a new game starts on FIXED. A
+     * save from before the basis existed (2026-09-21) carries no choice at
+     * all and reads WAGE_SHARE at the share its slot carried, as it always
+     * did: the rule it was played under. A FIXED grant in a save from before
+     * 0.7.19 was a NOMINAL amount; it is read as the real amount that pays
+     * the same the month it is loaded (realiseFixedGrant()), so the grant
+     * does not jump on the load and keeps up with prices from there.
+     */
+
+    /** Where the grant starts: a fixed real amount, kept up with the price index (0.7.19; the founding rule, a share of the unskilled wage, until then). */
+    public static final GrantBasis DEFAULT_GRANT_BASIS = GrantBasis.FIXED;
 
     /** A fixed grant of more than one unskilled wage a month is a wage: the FIXED ceiling, in founding unskilled wages, struck against that wage in today's money. */
     public static final double MAX_FIXED_GRANT_WAGES = 1.00;
@@ -367,11 +415,14 @@ public class TaxPolicy {
 
     /**
      * The grant's one number, in the basis's own unit: a share of the wage, a
-     * fixed amount in thousands, a share of the surplus, or a share of the
-     * tuition. An old save reads its wage share into this, from the slot that
-     * always carried it.
+     * fixed real amount in founding thousands, a share of the surplus, or a
+     * share of the tuition. An old save reads its wage share into this, from
+     * the slot that always carried it.
      */
-    private double grantAmount = DEFAULT_STUDENT_GRANT_SHARE;
+    private double grantAmount = DEFAULT_FIXED_GRANT;
+
+    /** True while a FIXED amount read from a save before 0.7.19 is still nominal, until realiseFixedGrant() reads it at the load month's price index. Never saved. */
+    private boolean fixedGrantNominal;
 
     /** Annual interest on the treasury's student loans. An old save reads none. */
     private double studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
@@ -434,8 +485,8 @@ public class TaxPolicy {
     /**
      * The ceiling on the amount under a basis: a share of a wage up to one
      * wage, a fixed amount up to an unskilled wage (the founding wage in
-     * today's money, which pensionWageBase carries), the whole surplus, twice
-     * the tuition.
+     * today's unit, which pensionWageBase carries - a real amount against a
+     * real one since 0.7.19), the whole surplus, twice the tuition.
      */
     public double maxGrantAmount(GrantBasis basis) {
         if (basis == null) return MAX_STUDENT_GRANT;
@@ -489,9 +540,10 @@ public class TaxPolicy {
      * the students' income and the Schools page's preview cannot disagree.
      *
      *   WAGE_SHARE     students x amount x the unskilled wage, in that order:
-     *                  the founding expression, and at the founding share it
-     *                  is bit for bit the bill it always was.
-     *   FIXED          students x amount.
+     *                  the founding expression until 0.7.19, and at the
+     *                  founding share it is bit for bit the bill it always was.
+     *   FIXED          students x amount x the price index: a real amount,
+     *                  kept up with the cost of living (0.7.19).
      *   SURPLUS_SHARE  amount x last month's surplus, as ONE pool - a deficit
      *                  is a pool of nothing - and nothing at all with nobody
      *                  to split it over. Per student it is the pool over the
@@ -503,17 +555,19 @@ public class TaxPolicy {
      *
      * @param students           full-time students this month
      * @param unskilledWage      what an unskilled post pays a month, today
+     * @param priceIndex         what a month costs a household against founding
+     *                           (PriceIndex.getIndex()), for the FIXED basis
      * @param lastSurplus        last month's budget balance, as the Government
      *                           tab shows it; negative in a deficit month
      * @param studentBodyTuition the whole adult student body's tuition a month
      *                           at today's price, before the subsidy
      */
     public static double grantBill(GrantBasis basis, double amount, double students,
-                                   double unskilledWage, double lastSurplus,
+                                   double unskilledWage, double priceIndex, double lastSurplus,
                                    double studentBodyTuition) {
         if (basis == null) basis = DEFAULT_GRANT_BASIS;
         switch (basis) {
-            case FIXED:         return students * amount;
+            case FIXED:         return students * amount * Math.max(0, priceIndex);
             case SURPLUS_SHARE: return students > 0 ? amount * Math.max(0, lastSurplus) : 0;
             case TUITION_SHARE: return amount * Math.max(0, studentBodyTuition);
             default:            return students * amount * unskilledWage;
@@ -615,9 +669,12 @@ public class TaxPolicy {
         /*
          * AND A FIXED GRANT (2026-09-21), for the fare's reason: it is dollars
          * a student a month, not a share of anything, and a reform that left
-         * it alone would hand every student a hundred times the grant. The
-         * grant's other three bases are shares and do not move; nor do the
-         * loan rate and the tuition scale, which are ratios.
+         * it alone would hand every student a hundred times the grant. Real
+         * since 0.7.19 - founding dollars, in today's unit - and the price
+         * index it is multiplied by is a ratio a reform does not move, so the
+         * amount alone scales. The grant's other three bases are shares and
+         * do not move; nor do the loan rate and the tuition scale, which are
+         * ratios.
          */
         if (grantBasis == GrantBasis.FIXED) grantAmount *= scale;
     }
@@ -964,8 +1021,11 @@ public class TaxPolicy {
     /** ...and one from before the tuition scale split by school (0.7.6): the profit, sales and wage bases on top, each its own slot since 0.7.4. */
     public static final int STATE_BEFORE_SCHOOLS = STATE_BEFORE_SPLIT + 3;
 
-    /** This build's array: a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. */
-    public static final int STATE_SLOTS = STATE_BEFORE_SCHOOLS + EducationType.values().length - 1;
+    /** ...and one from before the real FIXED grant (0.7.19): a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. */
+    public static final int STATE_BEFORE_REAL_GRANT = STATE_BEFORE_SCHOOLS + EducationType.values().length - 1;
+
+    /** This build's array: one slot on top saying the FIXED amount is real, in founding money (0.7.19) - see realiseFixedGrant(). */
+    public static final int STATE_SLOTS = STATE_BEFORE_REAL_GRANT + 1;
 
     /**
      * The city rates and the wage-band offsets as one array, city rates
@@ -1040,6 +1100,10 @@ public class TaxPolicy {
         // all nine as the one scale its slot above carries, which is the
         // city it was.
         for (EducationType type : SCHOOL_KINDS) state[i++] = tuitionScales[type.ordinal()];
+        // The real FIXED grant of 0.7.19, on the end: 1 says the amount above
+        // is in founding money. An older save is one slot shorter, and a FIXED
+        // amount in it was nominal - see realiseFixedGrant().
+        state[i++] = 1;
         return state;
     }
 
@@ -1065,8 +1129,13 @@ public class TaxPolicy {
         for (WageBand b : WageBand.values()) setWageOffset(b, state[i++]);
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
-        grantBasis = DEFAULT_GRANT_BASIS;
+        // THE RULE AN OLDER SAVE WAS PLAYED UNDER, not the new default
+        // (0.7.19): every save carried a wage share, and one from before the
+        // grant's dials carries no choice at all - it keeps the founding
+        // rule it had. A save with a basis overrides this below.
+        grantBasis = GrantBasis.WAGE_SHARE;
         grantAmount = DEFAULT_STUDENT_GRANT_SHARE;
+        fixedGrantNominal = false;
         farmlandRelief = DEFAULT_FARMLAND_RELIEF;
         transitFare = DEFAULT_TRANSIT_FARE;
         healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
@@ -1099,7 +1168,24 @@ public class TaxPolicy {
         for (EducationType type : SCHOOL_KINDS) {
             if (i < state.length) setTuitionScaleOf(type, state[i++]);
         }
+        // A FIXED amount is real only in an array that says so (0.7.19).
+        boolean real = i < state.length && state[i++] > 0;
+        fixedGrantNominal = grantBasis == GrantBasis.FIXED && !real;
         return true;
+    }
+
+    /**
+     * An older save's FIXED grant, read as the real amount that pays the same
+     * at the load month's price index (0.7.19): its nominal amount over the
+     * index, so the bill the month after the load is the bill the save was
+     * paying, and it keeps up with prices from there. Nothing for any other
+     * basis, a save from 0.7.19 on, or a second call. Game's load path calls
+     * it once the price index is restored.
+     */
+    public void realiseFixedGrant(double priceIndex) {
+        if (!fixedGrantNominal) return;
+        fixedGrantNominal = false;
+        if (priceIndex > 0) grantAmount = grantAmount / priceIndex;
     }
 
     /** One sector's three offsets, as the save carries them. */
@@ -1148,7 +1234,8 @@ public class TaxPolicy {
         eiPremiumRate = Unemployment.DEFAULT_PREMIUM_RATE;
         eiBenefitRate = Unemployment.DEFAULT_BENEFIT_RATE;
         grantBasis = DEFAULT_GRANT_BASIS;
-        grantAmount = DEFAULT_STUDENT_GRANT_SHARE;
+        grantAmount = DEFAULT_FIXED_GRANT;
+        fixedGrantNominal = false;
         studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
         setTuitionScale(DEFAULT_TUITION_SCALE);
         farmlandRelief = DEFAULT_FARMLAND_RELIEF;

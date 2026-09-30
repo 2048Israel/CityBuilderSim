@@ -700,7 +700,9 @@ final class SectorScreen {
         VBox box = new VBox(0);
         if (sector == null) return box;
         double[] pay = sector.getStaffedPayrollPerType();
-        int[] posts = sector.postsPerTier();
+        // The posts the payroll is struck on: the builders' laid-off posts
+        // are not in it (0.7.17, sectors.Construction, THE CREWS THE WORK NEEDS).
+        int[] posts = sector.postsOfferedPerTier();
         if (pay == null) return box;
 
         java.util.List<Integer> order = new java.util.ArrayList<>();
@@ -717,19 +719,29 @@ final class SectorScreen {
         }
         /*
          * AND WHAT THE UNFILLED POSTS WOULD COST, when there are any. The
-         * payroll on the statement is the STAFFED payroll - a sector at 70%
-         * fill pays 70% of its wage bill - and a player looking at a cheap
-         * wage line on a half-staffed sector is reading a saving that is
-         * really a shortage. See Sector.getPayroll().
+         * payroll on the statement is the STAFFED payroll - each job type's
+         * wage for the posts of that type filled, since 0.7.17 - and a player
+         * looking at a cheap wage line on a half-staffed sector is reading a
+         * saving that is really a shortage. See Sector.getPayroll(). The full
+         * bill is the model's own figure (getPayrollAtFullStaffing()), not the
+         * staffed one scaled up by the average fill, which it no longer is.
          */
         if (!box.getChildren().isEmpty() && sector.getAverageFill() < .999) {
-            double staffed = 0;
-            for (double p : pay) staffed += p;
-            double full = sector.getAverageFill() > 0 ? staffed / sector.getAverageFill() : staffed;
+            double full = sector.getPayrollAtFullStaffing();
             box.getChildren().add(bookDetailNote(String.format(
                     "These posts are %.0f%% filled. Fully staffed the wage bill would be %s, "
                     + "and the business would be making what its buildings can make.",
                     sector.getAverageFill() * 100, tightMoney(toDollars(full), false))));
+        }
+        int standing = 0;
+        for (int p : sector.postsPerTier()) standing += p;
+        int offered = sector.getPostsOffered();
+        if (!box.getChildren().isEmpty() && offered < standing) {
+            box.getChildren().add(bookDetailNote(String.format(
+                    "%,d of its %,d posts are laid off this month: its work does not need them. "
+                    + "Nobody is paid for them; the workers are unemployed, free to take other "
+                    + "work, and hired back when the work returns.",
+                    standing - offered, standing)));
         }
         return box;
     }
@@ -1541,12 +1553,35 @@ final class SectorScreen {
                 trend >= 0 ? "+" : "-", people(Math.abs(trend)))));
         column.getChildren().add(statementLine("It builds toward", String.format(
                 "%.0f%% spare capacity", BusinessInvestment.TARGET_HEADROOM * 100)));
-        column.getChildren().add(statementLine("One order at a time",
-                BusinessInvestment.MAX_CONCURRENT_ORDERS == 1 ? "yes" : "no"));
-        column.getChildren().add(statementNote(String.format(
-                "And never more than %.0f months of the city's construction output in one "
-                + "order — a business cannot jam the queue for everybody else.",
-                BusinessInvestment.MAX_ORDER_MONTHS)));
+        /*
+         * THE LANDLORDS HOLD WORK, NOT ONE ORDER (0.7.17): as many orders as
+         * keep what their sites owe within MAX_ORDER_MONTHS of the builders'
+         * site output - see BusinessInvestment.withinMonthsOfWork(). Everybody
+         * else still waits for one order to open before placing the next,
+         * and sizes it to open inside MAX_ORDER_MONTHS at the share of the
+         * builders it would get (BusinessInvestment.orderSize()).
+         */
+        if (sector == ui.game.getSectors().realEstate()) {
+            double months = ui.game.getSectors().realEstate().monthsOfWorkOnSite();
+            column.getChildren().add(statementLine("One order at a time", "no"));
+            column.getChildren().add(statementLine("Work it holds on site", Double.isNaN(months)
+                    ? "none"
+                    : String.format("%.1f months, of %.0f it may hold", months, BusinessInvestment.MAX_ORDER_MONTHS)));
+            column.getChildren().add(statementNote(String.format(
+                    "It may keep ordering while what its sites owe, the next order included, is at most "
+                    + "%.0f months of what the builders have left after the repairs. Each order is sized "
+                    + "to stay inside that, and when its best home would not fit it orders the next "
+                    + "smaller one that does.",
+                    BusinessInvestment.MAX_ORDER_MONTHS)));
+        } else {
+            column.getChildren().add(statementLine("One order at a time",
+                    BusinessInvestment.MAX_CONCURRENT_ORDERS == 1 ? "yes" : "no"));
+            column.getChildren().add(statementNote(String.format(
+                    "And never more in one order than would be finished inside %.0f months at the "
+                    + "share of the builders it would get beside everything already on site — a "
+                    + "business cannot jam the queue for everybody else.",
+                    BusinessInvestment.MAX_ORDER_MONTHS)));
+        }
 
         /* ------------------------- and what stops it ------------------------- */
         column.getChildren().add(statementHead("What stops it"));

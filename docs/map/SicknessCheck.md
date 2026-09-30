@@ -1,6 +1,6 @@
-# SicknessCheck.java - 291 lines · 5 methods · 0 constants · harnesses
+# SicknessCheck.java - 306 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/SicknessCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SicknessCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The long sick: who stays sick, and who it kills.
 > 
@@ -21,7 +21,7 @@
 | 134 | · 4. each age's chance, and the steady state |
 | 198 | · 5. the pyramid |
 | 216 | · 6. a city |
-| 267 | · 7. a save, and a save from before |
+| 282 | · 7. a save, and a save from before |
 
 ## Fields (state)
 
@@ -33,10 +33,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14 | 278 | **type** `public class SicknessCheck` | The long sick: who stays sick, and who it kills. |
+| 14 | 293 | **type** `public class SicknessCheck` | The long sick: who stays sick, and who it kills. |
 | 18 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 25 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 30 | 5 | `static void quietly(Runnable work)` |  |
 | 42 | 10 | `static void stock(Game g)` | A city three times the size its founding doctor was meant for, so that without hospitals its general care is thin. |
-| 53 | 238 | `public static void main(String[] args) throws Exception` |  |
+| 53 | 253 | `public static void main(String[] args) throws Exception` |  |
 

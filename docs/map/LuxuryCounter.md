@@ -1,6 +1,6 @@
-# LuxuryCounter.java - 154 lines · 10 methods · 0 constants · model
+# LuxuryCounter.java - 155 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/LuxuryCounter.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LuxuryCounter.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The households' discretionary spending: the boutiques and the restaurants,
 > each striking its price against the queue.
@@ -16,7 +16,10 @@
 > actually had, take the money. What is different is that the seller here
 > strikes its price against the QUEUE rather than reading it off a market
 > band - the world has no shortage of watches, so the scarce thing is the
-> shop, and the shop is what a player builds. See LuxuryRetail.
+> shop, and the shop is what a player builds. See LuxuryRetail. Since 0.7.19
+> the boutiques' queue is the households who would buy at the price they
+> charge, struck as one fixed point (LuxuryRetail.strikeMargin()); the
+> kitchens still ask at the floor and then at the price (dine()).
 > 
 > ==================== WHERE IT CAME FROM ====================
 > 
@@ -34,7 +37,7 @@
 > month. The interface went the same way the same day. See the project's
 > splitting-game.md.
 
-**Uses:** [LuxuryRetail](LuxuryRetail.md) (3), [Game](Game.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Restaurants](Restaurants.md) (2), [Good](Good.md) (1)
+**Uses:** [Game](Game.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [Restaurants](Restaurants.md) (2), [LuxuryRetail](LuxuryRetail.md) (1)
 
 **Used by (1):** [Game](Game.md)
 
@@ -42,22 +45,22 @@
 
 | line | field | says |
 |---:|---|---|
-| 38 | `private double luxuriesSold, luxurySpend, luxuryPrice, luxuryWanted` |  |
-| 39 | `private double mealsServed, mealSpend, mealPrice, mealsWanted` |  |
+| 41 | `private double luxuriesSold, luxurySpend, luxuryPrice, luxuryWanted` |  |
+| 42 | `private double mealsServed, mealSpend, mealPrice, mealsWanted` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 119 | **type** `public final class LuxuryCounter` | The households' discretionary spending: the boutiques and the restaurants, each striking its price against the queue. |
-| 42 | 1 | `public double getMealsServed()` | Meals the kitchens served the households this month. |
-| 45 | 1 | `public double getMealSpend()` | ...and what the households paid for them. |
-| 48 | 1 | `public double getMealPrice()` | ...at this price a meal, struck against the queue at the door. |
-| 51 | 1 | `public double getMealsWanted()` | ...against this many meals they came for. |
-| 68 | 31 | `void dine(Game game)` | The month's dining out. |
-| 102 | 1 | `public double getLuxuriesSold()` | Pieces the households bought over a counter this month. |
-| 105 | 1 | `public double getLuxurySpend()` | ...what they paid for them... |
-| 108 | 1 | `public double getLuxuryPrice()` | ...what one went for... |
-| 111 | 1 | `public double getLuxuryWanted()` | ...and how many they came for, which in a city short of shops is more. |
-| 114 | 40 | `void shop(Game game)` | The month's shopping. |
+| 39 | 117 | **type** `public final class LuxuryCounter` | The households' discretionary spending: the boutiques and the restaurants, each striking its price against the queue. |
+| 45 | 1 | `public double getMealsServed()` | Meals the kitchens served the households this month. |
+| 48 | 1 | `public double getMealSpend()` | ...and what the households paid for them. |
+| 51 | 1 | `public double getMealPrice()` | ...at this price a meal, struck against the queue at the door. |
+| 54 | 1 | `public double getMealsWanted()` | ...against this many meals they came for. |
+| 72 | 31 | `void dine(Game game)` | The month's dining out. |
+| 106 | 1 | `public double getLuxuriesSold()` | Pieces the households bought over a counter this month. |
+| 109 | 1 | `public double getLuxurySpend()` | ...what they paid for them... |
+| 112 | 1 | `public double getLuxuryPrice()` | ...what one went for... |
+| 115 | 1 | `public double getLuxuryWanted()` | ...and how many would buy at the price the shops struck (0.7.19; at the margin's floor until then), which in a city short of shops is more than were served. |
+| 118 | 37 | `void shop(Game game)` | The month's shopping. |
 

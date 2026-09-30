@@ -520,6 +520,31 @@ public class MonetaryCheck {
         LongPlaytest.build(g, "House", 40);
         LongPlaytest.build(g, "Convenience Store", 3);
         LongPlaytest.build(g, "Mixed Farm", 2);
+        /*
+         * ...AND THE BAKERY, THE DINER AND THE BOUTIQUE ITS PLANNERS USED TO
+         * ORDER (0.7.18, re-caused). Before 0.7.18 this town's food industry,
+         * luxury counters and kitchens ordered a Bakery, a Boutique and a Diner
+         * in months four to six, before anybody was there to staff them, and
+         * through the window (months 25 to 60, the dial at 3%) the town went
+         * from 314 people to 341. Every planner that builds posts asks the
+         * city for the workers first now (Jerus: "the makers check whether
+         * they can staff a building before building it"), and a town of fifty
+         * has none spare: the Bakery never came, the Boutique and the Diner
+         * came at month sixteen and a Bottling Plant on a bank loan at
+         * eighteen, and through the same window the town grew from 302 people
+         * to 628, its unemployed from 13 to 117. It inflated at 14.3% a year
+         * on the 3% dial (5.0% before), and holding the dial a month late
+         * moved the 10% row by 0.133 points against the 0.100 allowance. The premise
+         * is a steady town, so the town is given what its planners used to
+         * build: out of the fixture's pocket, the treasury put back where it
+         * stood, as the hospital below is.
+         */
+        double before = g.getCash();
+        g.setCashForTest(before + 1e9);
+        LongPlaytest.build(g, "Bakery", 1);
+        LongPlaytest.build(g, "Diner", 1);
+        LongPlaytest.build(g, "Boutique", 1);
+        g.setCashForTest(before);
         for (int m = 0; m < 3; m++) step(g, Double.NaN);
         LongPlaytest.build(g, "House", 20);
         for (int m = 0; m < 4; m++) step(g, Double.NaN);
@@ -527,9 +552,37 @@ public class MonetaryCheck {
         LongPlaytest.build(g, "Construction Depot", 1);
         for (int m = 0; m < 5; m++) step(g, Double.NaN);
         LongPlaytest.advise(g);
+        /*
+         * ...AND WORK FOR ITS BUILDERS THROUGH THE WINDOW (0.7.17). The
+         * premise is that the rate's effect on inflation is readable in a
+         * steady town. This town was steady only because its one depot, idle
+         * from the founding's last house to the end of the run, kept every
+         * crew on while nobody paid them. Builders lay idle crews off now
+         * (sectors.Construction, THE CREWS THE WORK NEEDS - Jerus's answer),
+         * and here that was 37 of the depot's 49 posts, a fifth of the town's
+         * jobs, out of work for the whole window. Measured with the layoffs
+         * alone: its unemployed doubled, its wages fell a fifth, and it lost
+         * 54 people at a dial of 3% and 16 at 10% - a town shrinking at a
+         * rate the dial happened to set, which read 10% as dearer than 3% by
+         * 0.32 points. So the founding orders a
+         * General Hospital, 52,000 points, once its houses and shops are up:
+         * work for every crew from here to past month 60, where it is still
+         * on site. The fixture pays for it and for its ground - the
+         * treasury is put back where it stood - because the town's own
+         * cash would not cover it, and borrowing would put a second hand on
+         * the city that moves with the dial. The premise and the allowance
+         * are untouched; heldRun() asserts the crews were kept on.
+         */
+        double treasury = g.getCash();
+        g.setCashForTest(treasury + 1e9);
+        LongPlaytest.build(g, "General Hospital", 1);
+        g.setCashForTest(treasury);
         while (g.getMonth() < HELD_FROM) step(g, Double.NaN);
         return g;
     }
+
+    /** The fewest of its posts the builders offered in any held month of the runs since the last reset (0.7.17). */
+    static double fewestCrews = 1;
 
     /** What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. */
     static double[] fingerprint(Game g) {
@@ -552,7 +605,10 @@ public class MonetaryCheck {
             Game g = founding(root, label);
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
             double indexFrom = g.getPriceIndex().getIndex();
-            while (g.getMonth() <= MEASURED_MONTHS) step(g, rate, heldFrom);
+            while (g.getMonth() <= MEASURED_MONTHS) {
+                step(g, rate, heldFrom);
+                fewestCrews = Math.min(fewestCrews, g.getSectors().construction().getPostsOfferedShare());
+            }
             if (city != null) city[0] = g;
             return Math.pow(g.getPriceIndex().getIndex() / indexFrom,
                     12.0 / (MEASURED_MONTHS - HELD_FROM + 1)) - 1;
@@ -568,6 +624,7 @@ public class MonetaryCheck {
         double[][] prints = new double[n][10];
         double[] inflation = new double[n];
         boolean dialsHeld = true;
+        fewestCrews = 1;
         for (int r = 0; r < n; r++) {
             Game[] held = new Game[1];
             inflation[r] = heldRun(root, "rate-" + r, HELD_RATES[r], HELD_FROM, prints[r], held);
@@ -625,6 +682,8 @@ public class MonetaryCheck {
         }
         assertTrue("the runs differ by the dial and by nothing else",
                 oneFounding && dialsHeld);
+        assertTrue("fixture: the builders kept every crew on through every run's window",
+                fewestCrews == 1);
         assertTrue("...and a month's delay in the hand moves them less than the allowance",
                 noise <= MEASUREMENT_NOISE);
         for (int r = 1; r < n; r++) {

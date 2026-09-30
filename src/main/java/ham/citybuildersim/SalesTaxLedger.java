@@ -87,6 +87,19 @@ public class SalesTaxLedger {
     }
 
     /**
+     * Tax credited back on BUILDINGS bought from another business (0.7.19),
+     * at the supplier's rate: an input credit like recordInputTax(), except
+     * that it may be negative - a builder's refund of material escalation is
+     * a price reduction, and the credit claimed on it comes back. A
+     * landlord's rebate on a new rental home (revised) is struck here too,
+     * on the share of the work it reaches.
+     */
+    public void recordCapitalInputTax(String sector, double taxPaid) {
+        if (sector == null || !Double.isFinite(taxPaid) || taxPaid == 0) return;
+        row(sector)[CREDITED_INPUT] += taxPaid;
+    }
+
+    /**
      * Tax on goods bought from outside the city, at the BUYER's rate: charged
      * on the way in and credited, which nets to zero for a sector that
      * resells locally - the tax lands on the final sale either way.

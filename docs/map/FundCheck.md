@@ -1,6 +1,6 @@
-# FundCheck.java - 985 lines · 21 methods · 0 constants · harnesses
+# FundCheck.java - 1,072 lines · 22 methods · 0 constants · harnesses
 
-`ham/citybuildersim/FundCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). Not part of the game.
 > 
@@ -64,25 +64,25 @@
 >      year, the audit closing every month; month one pays the land bond's
 > ... (3 more lines in the source)
 
-**Uses:** [Game](Game.md) (52), [Equity](Equity.md) (50), [Bank](Bank.md) (42), [TreasuryFund](TreasuryFund.md) (39), [Founding](Founding.md) (16), [OrderBook](OrderBook.md) (12), [Exchange](Exchange.md) (12), [Household](Household.md) (6), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [MoneyAudit](MoneyAudit.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2), [DebtQuote](DebtQuote.md) (2), [TreasuryJournal](TreasuryJournal.md) (1), [CityCalendar](CityCalendar.md) (1), [Sectors](Sectors.md) (1), [LandManager](LandManager.md) (1), [LandMarket](LandMarket.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [Game](Game.md) (53), [Equity](Equity.md) (51), [Bank](Bank.md) (44), [TreasuryFund](TreasuryFund.md) (39), [Founding](Founding.md) (16), [OrderBook](OrderBook.md) (12), [Exchange](Exchange.md) (12), [Household](Household.md) (6), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [MoneyAudit](MoneyAudit.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2), [DebtQuote](DebtQuote.md) (2), [TreasuryJournal](TreasuryJournal.md) (1), [CityCalendar](CityCalendar.md) (1), [Sectors](Sectors.md) (1), [LandManager](LandManager.md) (1), [LandMarket](LandMarket.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 131 | · the city |
-| 175 | 1. automatic |
-| 250 | 2. the button, and 3. dilution |
-| 329 | 4. the preferred |
-| 422 | 5. the repayment |
-| 598 | 6. the offer |
-| 625 | 7. the dial |
-| 667 | 8. the rule |
-| 755 | 9. the transfer |
-| 779 | 10. the hand |
-| 805 | 11. the save |
-| 859 | 12. Insane |
-| 913 | 13. Insane, never borrowing (0.7.15) |
+| 157 | · the city |
+| 201 | 1. automatic |
+| 276 | 2. the button, and 3. dilution |
+| 380 | 4. the preferred |
+| 473 | 5. the repayment |
+| 649 | 6. the offer |
+| 712 | 7. the dial |
+| 754 | 8. the rule |
+| 842 | 9. the transfer |
+| 866 | 10. the hand |
+| 892 | 11. the save |
+| 946 | 12. Insane |
+| 1000 | 13. Insane, never borrowing (0.7.15) |
 
 ## Fields (state)
 
@@ -97,7 +97,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 913 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
+| 73 | 1000 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
 | 79 | 4 | `static void check(String label, boolean ok)` |  |
 | 84 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 94 | 4 | `static void quietly(Runnable r)` |  |
@@ -105,78 +105,79 @@
 | 107 | 5 | `static boolean play(Game g)` | One month, pressed, and whether its audit closed: the playtest's own test (LongPlaytest.audit()). |
 | 116 | 5 | `static Game copy()` | A copy of the fixture city, loaded from its save: every scenario starts from the same city. |
 | 123 | 3 | `static void takeEquityTo(Bank bank, double equity)` | Takes the bank to `equity` by losing money between two presses - a loss nobody is paid for, which the next strike does not see. |
-| 127 | 47 | `public static void main(String[] args)` |  |
+| 144 | 8 | `static void takeEquityToOwn(Bank bank, java.util.function.ToDoubleFunction<Bank> level)` | ...TO A LEVEL OF ITS OWN MEASURE, AS THE MOVE LEAVES IT - RE-CAUSED (0.7.19). |
+| 153 | 47 | `public static void main(String[] args)` |  |
 
-### 1. automatic (lines 175-249)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 177 | 65 | `static void resolvedAutomatically()` |  |
-| 243 | 6 | `static boolean journalHas(Game g, String label, double amount)` |  |
-
-### 2. the button, and 3. dilution (lines 250-328)
+### 1. automatic (lines 201-275)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 252 | 76 | `static void resolvedOnTheButton()` |  |
+| 203 | 65 | `static void resolvedAutomatically()` |  |
+| 269 | 6 | `static boolean journalHas(Game g, String label, double amount)` |  |
 
-### 4. the preferred (lines 329-421)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 331 | 90 | `static void thePreferred()` |  |
-
-### 5. the repayment (lines 422-597)
+### 2. the button, and 3. dilution (lines 276-379)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 430 | 167 | `static void theRepayment()` | THE PREFERRED REPAID AT ITS THIRD ANNIVERSARY (Jerus: "Sell new shares to repay"): whole, at par with its unpaid dividends, from the bank's capital over its target and then an offering of new common to the public; the... |
+| 278 | 101 | `static void resolvedOnTheButton()` |  |
 
-### 6. the offer (lines 598-624)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 600 | 24 | `static void theOffer()` |  |
-
-### 7. the dial (lines 625-666)
+### 4. the preferred (lines 380-472)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 627 | 39 | `static void theDial()` |  |
+| 382 | 90 | `static void thePreferred()` |  |
 
-### 8. the rule (lines 667-754)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 669 | 85 | `static void theRule()` |  |
-
-### 9. the transfer (lines 755-778)
+### 5. the repayment (lines 473-648)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 757 | 21 | `static void theTransfer()` |  |
+| 481 | 167 | `static void theRepayment()` | THE PREFERRED REPAID AT ITS THIRD ANNIVERSARY (Jerus: "Sell new shares to repay"): whole, at par with its unpaid dividends, from the bank's capital over its target and then an offering of new common to the public; the... |
 
-### 10. the hand (lines 779-804)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 781 | 23 | `static void theHand()` |  |
-
-### 11. the save (lines 805-858)
+### 6. the offer (lines 649-711)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 807 | 51 | `static void theSave()` |  |
+| 651 | 60 | `static void theOffer()` |  |
 
-### 12. Insane (lines 859-912)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 861 | 51 | `static void insane()` |  |
-
-### 13. Insane, never borrowing (0.7.15) (lines 913-985)
+### 7. the dial (lines 712-753)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 923 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
+| 714 | 39 | `static void theDial()` |  |
+
+### 8. the rule (lines 754-841)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 756 | 85 | `static void theRule()` |  |
+
+### 9. the transfer (lines 842-865)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 844 | 21 | `static void theTransfer()` |  |
+
+### 10. the hand (lines 866-891)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 868 | 23 | `static void theHand()` |  |
+
+### 11. the save (lines 892-945)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 894 | 51 | `static void theSave()` |  |
+
+### 12. Insane (lines 946-999)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 948 | 51 | `static void insane()` |  |
+
+### 13. Insane, never borrowing (0.7.15) (lines 1000-1072)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1010 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
 

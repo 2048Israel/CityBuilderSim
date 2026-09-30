@@ -531,8 +531,28 @@ public class TreasuryCheck {
         System.out.println("\n--- a city in surplus, two notes falling due in a row ---");
 
         Game same = founded("treasury-roll-same");
+        /*
+         * ...WITH THE BAKERY ITS MAKERS USED TO ORDER (0.7.18, re-caused). The
+         * last section asks this city to roll a dollar note, which it may only
+         * do while it sells abroad, and it sold abroad because its food industry
+         * ordered a bakery in month five, before anybody was there to staff it,
+         * and shipped what the town could not eat. Every planner that builds
+         * posts asks the city for the workers first now (Jerus: "the makers
+         * check whether they can staff a building before building it"), and a
+         * town of fifty has none spare, so nothing was made or sold abroad by
+         * month twenty. The questions here are the treasury's, not the
+         * bakery's, so the city puts up on its first day, finished, out of its
+         * own cash, what its planners ordered in its first half-year before
+         * 0.7.18 - the bakery, a diner and a boutique - and so do its two
+         * twins, which must stay the same city.
+         */
         Game bills = founded("treasury-roll-bills");
         Game byHand = founded("treasury-roll-hand");
+        for (Game g : new Game[] { same, bills, byHand }) {
+            for (String early : new String[] { "Bakery", "Diner", "Boutique" }) {
+                quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName(early), 1, true));
+            }
+        }
         check("fixture: a new game rolls in the same structure",
                 same.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
         bills.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
@@ -689,6 +709,26 @@ public class TreasuryCheck {
         quietly(() -> same.handleForeignLogic("Note", 500, 6, Game.BUILD_NOTE_GRANULE, false));
         Debt abroad = paper(same, "NOTE", 6, same.getMonth(), true);
         check("fixture: it owes a dollar note", abroad != null);
+        while (abroad != null && abroad.getRemainingMonths() > 2) press(same);
+        /*
+         * ...AND THE YEAR'S SURPLUS SPENT BEFORE IT FALLS DUE (0.7.18,
+         * re-caused). Rolled whole needs nothing of the year's surplus left to
+         * net, and this city had netted its surplus in month fifteen and run a
+         * shrinking one since - a history, not a cause. Its founding is
+         * different now (the bakery above, and planners that wait for staff),
+         * its surplus grows, and a hundred-odd thousand of it was left to net
+         * in month twenty-five. So the month before, the city spends what it
+         * has not netted, and twice what it made last month besides, on an
+         * elevated highway or as many as that takes - public works with no
+         * posts, on ground it is given for them.
+         */
+        double leftToNet = Math.max(0, same.surplusOverLastYear() - same.getRollover().usedInYear(same.getMonth()))
+                + 2 * Math.abs(same.getEconomyManager().getNationalAccounts().getBalance());
+        BuildingsTemplate spendOn = template(same, "Elevated Highway");
+        int spent = Math.max(1, (int) Math.ceil(leftToNet / spendOn.getCashCost()));
+        same.getLandManager().setOwnedSqFt(same.getLandManager().getOwnedSqFt() + spendOn.getLandSqFt() * spent);
+        Game.BuildResult spending = same.buildStack(spendOn, spent, true);
+        check("fixture: the city spent the year's surplus it had not netted", spending == Game.BuildResult.SUCCESS);
         while (abroad != null && abroad.getRemainingMonths() > 1) press(same);
         Rollover.Plan pd = same.rolloverPlan();
         Rollover.Issue inDollars = null;

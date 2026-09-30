@@ -1,6 +1,6 @@
-# BusinessServices.java - 267 lines · 8 methods · 0 constants · sectors
+# BusinessServices.java - 270 lines · 8 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Somebody else's work, done here, paid for from outside.
 > 
@@ -67,29 +67,29 @@
 | line | section |
 |---:|---|
 | 119 | · plan |
-| 226 | · the screen |
+| 229 | · the screen |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 197 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
+| 71 | 200 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
 | 73 | 11 | `public BusinessServices()` |  |
 | 86 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
 | 99 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
 | 110 | 8 | `public double payrollShare()` | Payroll as a share of revenue, at the wages the city is paying now. |
 
-### plan (lines 119-225)
+### plan (lines 119-228)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 135 | 67 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 209 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
-| 215 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
+| 135 | 70 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the same reason Mining and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 212 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 218 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
 
-### the screen (lines 226-267)
+### the screen (lines 229-270)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 229 | 38 | `public List<Line> operations(Game game)` |  |
+| 232 | 38 | `public List<Line> operations(Game game)` |  |
 

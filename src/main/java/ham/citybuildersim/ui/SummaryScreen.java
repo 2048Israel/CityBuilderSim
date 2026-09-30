@@ -1260,20 +1260,20 @@ final class SummaryScreen {
                                 + " and only as many as the jobs attract"));
                     }
                     /*
-                     * The other half of the same question, and the one the new
-                     * arrival rules make askable: the unskilled band is no
-                     * longer an import at all. Nobody moves here without a
-                     * diploma, so a big No-diploma row is this city's own
-                     * children, and it is a school problem rather than a
-                     * migration one.
+                     * The other half of the same question, and the one the
+                     * arrival rules make askable: the unskilled band is mostly
+                     * not an import. Nobody moves here without a diploma at the
+                     * going rate (0.7.18: only for a dear unskilled wage), so a
+                     * big No-diploma row is mostly this city's own children,
+                     * and a school problem rather than a migration one.
                      */
                     double unskilled = own[WageBand.NONE.ordinal()];
                     double banded = 0;
                     for (double v : own) banded += v;
                     if (banded > 0 && unskilled / banded > .2) {
                         b.getChildren().add(panelNote(String.format(
-                                "%.0f%% have no diploma — nobody arrives that way,"
-                                + " so these are children the schools missed",
+                                "%.0f%% have no diploma — only a dear unskilled wage"
+                                + " brings them in, so most are children the schools missed",
                                 unskilled / banded * 100)));
                     }
                     return b;

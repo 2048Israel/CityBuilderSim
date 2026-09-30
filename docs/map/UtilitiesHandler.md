@@ -1,6 +1,6 @@
-# UtilitiesHandler.java - 487 lines · 44 methods · 3 constants · model
+# UtilitiesHandler.java - 503 lines · 45 methods · 3 constants · model
 
-`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
@@ -13,9 +13,9 @@
 | 22 | WATER SUPPLY |
 | 107 | · READ-ONLY ACCESSORS for the utilities screen. printUtilitiesInfo() is |
 | 127 | · Split books. The two utilities share one workforce and one fill rate, but |
-| 374 | · · ELECTRIC POWER |
-| 405 | · · WATER |
-| 441 | · · CONSOLIDATED |
+| 390 | · · ELECTRIC POWER |
+| 421 | · · WATER |
+| 457 | · · CONSOLIDATED |
 
 ## Constants
 
@@ -23,7 +23,7 @@
 |---:|---|---|---|
 | 39 | `UtilitiesHandler.BASE_WATER_SUPPLY` | `8000` | What the city can draw before it builds anything: the legacy wells and the old municipal intake. |
 | 49 | `UtilitiesHandler.WATER_PER_PERSON` | `.3` | Per-resident draw, in units of 10,000 gallons/month. |
-| 468 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+| 484 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
 
 ## Fields (state)
 
@@ -57,7 +57,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 473 | **type** `public class UtilitiesHandler` |  |
+| 15 | 489 | **type** `public class UtilitiesHandler` |  |
 
 ### WATER SUPPLY (lines 22-106)
 
@@ -86,7 +86,7 @@
 | 124 | 1 | `public double getWaterRatio()` |  |
 | 125 | 1 | `public double getPricePerWaterUnit()` |  |
 
-### Split books. The two utilities share one workforce and one fill rate, but (lines 127-487)
+### Split books. The two utilities share one workforce and one fill rate, but (lines 127-503)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -96,26 +96,27 @@
 | 187 | 1 | `public double getBilledElectricityDraw()` |  |
 | 188 | 3 | `public double getUnbilledElectricityDraw()` |  |
 | 198 | 4 | `public double getWaterRevenue()` | Only the billed slice, and only the fraction actually delivered - during rationing customers receive waterRatio of what they asked for and are charged for that, which is also exactly what the commercial and industrial... |
-| 203 | 3 | `public double getElectricityPayroll()` |  |
-| 207 | 3 | `public double getWaterPayroll()` |  |
-| 211 | 3 | `public double getElectricityIncome()` |  |
-| 215 | 3 | `public double getWaterIncome()` |  |
-| 219 | 5 | `private static double sum(double[] a)` |  |
-| 225 | 3 | `public double getUtilityPayroll()` |  |
-| 229 | 3 | `public double getUtilityRevenue()` |  |
-| 234 | 3 | `public void setWattsProduction(double watts)` | setters |
-| 238 | 4 | `public void setWattsConsumption(double watts)` |  |
-| 243 | 3 | `public void setWaterProduction(double water)` |  |
-| 248 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
-| 253 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
-| 262 | 3 | `public void setPopulation(int population)` | The people. |
-| 266 | 3 | `public void setPricePerWaterUnit(double price)` |  |
-| 272 | 6 | `public void updateEnergyRatio()` | passers calculators |
-| 279 | 16 | `public void updateWaterRatio()` |  |
-| 300 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
-| 311 | 52 | `public void updateUtilitiyWages(double[] wages, int[] electricityJobs, int[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
-| 364 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
-| 370 | 96 | `public void printUtilitiesInfo()` | printers |
-| 470 | 4 | `static { ... }` |  |
-| 477 | 9 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
+| 211 | 3 | `public double getElectricityPayroll()` | PER JOB TYPE since 0.7.17, as every employer's payroll is: each type's wage for the posts of that type filled, which is what the households in them are paid. |
+| 215 | 3 | `public double getWaterPayroll()` |  |
+| 220 | 6 | `private double staffed(double[] bill)` | A wage bill by job type, at each type's own fill. |
+| 227 | 3 | `public double getElectricityIncome()` |  |
+| 231 | 3 | `public double getWaterIncome()` |  |
+| 235 | 5 | `private static double sum(double[] a)` |  |
+| 241 | 3 | `public double getUtilityPayroll()` |  |
+| 245 | 3 | `public double getUtilityRevenue()` |  |
+| 250 | 3 | `public void setWattsProduction(double watts)` | setters |
+| 254 | 4 | `public void setWattsConsumption(double watts)` |  |
+| 259 | 3 | `public void setWaterProduction(double water)` |  |
+| 264 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
+| 269 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
+| 278 | 3 | `public void setPopulation(int population)` | The people. |
+| 282 | 3 | `public void setPricePerWaterUnit(double price)` |  |
+| 288 | 6 | `public void updateEnergyRatio()` | passers calculators |
+| 295 | 16 | `public void updateWaterRatio()` |  |
+| 316 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
+| 327 | 52 | `public void updateUtilitiyWages(double[] wages, int[] electricityJobs, int[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
+| 380 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
+| 386 | 96 | `public void printUtilitiesInfo()` | printers |
+| 486 | 4 | `static { ... }` |  |
+| 493 | 9 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
 

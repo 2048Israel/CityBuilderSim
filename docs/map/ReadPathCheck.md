@@ -1,6 +1,6 @@
-# ReadPathCheck.java - 1,155 lines · 7 methods · 0 constants · harnesses
+# ReadPathCheck.java - 1,178 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ReadPathCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReadPathCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Reading the city must not change the city.
 > 
@@ -43,11 +43,11 @@
 | line | section |
 |---:|---|
 | 860 | · a city with money moving in every sector |
-| 927 | · the FIRST read, which is the hard one |
-| 1004 | · read it, and read it again |
-| 1033 | · and the specific one item 7 was about |
-| 1101 | · the tax the city takes is the tax it shows |
-| 1118 | · a rate change reaches the treasury at once |
+| 941 | · the FIRST read, which is the hard one |
+| 1018 | · read it, and read it again |
+| 1047 | · and the specific one item 7 was about |
+| 1115 | · the tax the city takes is the tax it shows |
+| 1132 | · a rate change reaches the treasury at once |
 
 ## Fields (state)
 
@@ -61,12 +61,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 1111 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 45 | 1134 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 56 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 68 | 143 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
 | 213 | 5 | `static int restingOrders(BondMarket bm)` | What rests on every bond's book. |
 | 227 | 624 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 852 | 295 | `public static void main(String[] args) throws Exception` |  |
-| 1148 | 7 | `static void cleanUp(Path root)` |  |
+| 852 | 318 | `public static void main(String[] args) throws Exception` |  |
+| 1171 | 7 | `static void cleanUp(Path root)` |  |
 

@@ -1,6 +1,6 @@
-# MoneyAudit.java - 1,010 lines · 24 methods · 2 constants · model
+# MoneyAudit.java - 1,017 lines · 24 methods · 2 constants · model
 
-`ham/citybuildersim/MoneyAudit.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyAudit.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Where the money went this month, and whether it all went somewhere.
 > 
@@ -50,7 +50,7 @@
 
 **Uses:** [Sectors](Sectors.md) (8), [Sector](Sector.md) (6), [Game](Game.md) (4), [Equity](Equity.md) (2), [EconomyManager](EconomyManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Healthcare](Healthcare.md) (1), [Education](Education.md) (1), [BondMarket](BondMarket.md) (1), [CentralBank](CentralBank.md) (1)
 
-**Used by (19):** [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [CurrencyCheck](CurrencyCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [NewGameCheck](NewGameCheck.md), [OutsideCheck](OutsideCheck.md), [SkipReportCheck](SkipReportCheck.md)
+**Used by (20):** [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [CurrencyCheck](CurrencyCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [NewGameCheck](NewGameCheck.md), [OutsideCheck](OutsideCheck.md), [SkipReportCheck](SkipReportCheck.md)
 
 ## Enum constants
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 961 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
+| 50 | 968 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
 | 53 | 155 | **type** `public static final class Result` | One month's strike. |
 | 113 | 1 | `public double moneyMade()` _(in MoneyAudit.Result)_ | What the month did to M0, as the audit saw it cross the edge. |
 | 116 | 1 | `public double tradeBalance()` _(in MoneyAudit.Result)_ | Exports less imports. |
@@ -128,5 +128,5 @@
 | 317 | 58 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
 | 381 | 5 | `public static double pooled(Game g)` | Every dollar in the pools: the city's, its businesses', the builders' order book, and the bank's - plus what it owes the window, less what it owes for the city's paper - and the city's fund's (0.7.14). |
 | 395 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
-| 400 | 610 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
+| 400 | 617 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
 

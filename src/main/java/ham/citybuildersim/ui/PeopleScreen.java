@@ -215,10 +215,10 @@ final class PeopleScreen {
          * needs to know whether the thirty-four people who arrived were
          * labourers or graduates, and until now the screen would not say.
          *
-         * Also the only place the arrival rules are legible: nobody arrives
-         * without a diploma, and every band above one is bought at a premium.
-         * Both are visible here as a zero row and as a set of rows that appear
-         * only when the city is paying for them.
+         * Also the only place the arrival rules are legible: a diploma is the
+         * base, and every other band - above it, and since 0.7.18 below it -
+         * is bought at a premium. Visible here as rows that sit greyed at zero
+         * unless the city is paying for them.
          * ---------------------------------------------------------------- */
         double[] inMix = migration.getLastArrivalMix();
         double[] inLic = migration.getLastArrivalLicences();
@@ -250,11 +250,13 @@ final class PeopleScreen {
         inDetail.getChildren().add(statementNote(anyLicence
                         || inMix[WageBand.COLLEGE.ordinal()] > 0
                         || inMix[WageBand.UNIVERSITY.ordinal()] > 0
-                ? "Nobody arrives without a diploma — the unskilled band is only ever "
-                  + "this city's own children. Anything above a diploma is bought: those "
-                  + "rows are here because the city is paying over the going rate for them."
+                        || inMix[WageBand.NONE.ordinal()] > 0
+                ? "A diploma is what an ordinary arrival has. Anything else is bought: "
+                  + "those rows are here because the city is paying over the going rate "
+                  + "for them — labourers without a diploma for a dear unskilled wage, "
+                  + "graduates for a dear graduate one."
                 : "Nobody arrives without a diploma, and nobody above one either — at the "
-                  + "going rate a graduate has no reason to prefer this city. Bid a band's "
+                  + "going rate nobody has a reason to prefer this city. Bid a band's "
                   + "wage up, or build the school."));
 
         column.getChildren().add(statementDisclosure("Moved in",
@@ -649,14 +651,27 @@ final class PeopleScreen {
            has college-trained residents. That cascade is the reason an
            oversupply of graduates depresses the diploma wage instead of sitting
            in a pool of its own.
+
+           AND A SHORTAGE GOES UP THE LADDER (0.7.18). Workers take the
+           best-paid post they qualify for, so when the unskilled posts pay what
+           the diploma posts do, diploma holders take them and the two bands
+           fill as one market (PopulationManager.fillByBand()). The note under
+           the table names the bands filling together and how many
+           over-qualified workers hold unskilled posts - the numbers that say
+           why a hospital's diploma posts are emptying. The queue column is that
+           fill's supply too, so a band whose own workers went down for better
+           pay queues fewer than it has.
            ----------------------------------------------------------------- */
         column.getChildren().add(subHead("The skill ladder"));
         column.getChildren().add(ladderTable(pm, market, ui.game.getEducation().getStudying()));
         column.getChildren().add(statementNote(
                 "open = posts this band can be put into (licensed posts are below). "
                 + "queue = its own workers plus everyone over-qualified who came down for "
-                + "the same jobs. chance = open/queue, which is what decides whether "
+                + "the same jobs, less any drawn further down by better pay. "
+                + "chance = open/queue, which is what decides whether "
                 + "anybody in this band moves here at all."));
+        String oneMarket = oneMarketNote(pm);
+        if (oneMarket != null) column.getChildren().add(statementNote(oneMarket));
 
         /*
          * WHAT IT WOULD TAKE TO ATTRACT ONE.
@@ -680,7 +695,7 @@ final class PeopleScreen {
         column.getChildren().add(statementNote(pulled.length() > 0
                 ? "Paying over the going rate is pulling " + pulled + ". At the going rate "
                   + "the pull is nothing at all, which is why a school is the other answer."
-                : "Nobody above a diploma is being drawn here: every band is paid the going "
+                : "Nobody above a diploma is being drawn here: every band above one is paid the going "
                   + "rate or less, and the going rate is what that trade costs everywhere. "
                   + "Bid a band up or build the school that makes your own."));
 
@@ -1035,6 +1050,36 @@ final class PeopleScreen {
         return table;
     }
 
+    /**
+     * The bands this month's fill joined into one market, in a sentence, or
+     * null when none were (0.7.18): workers take the best-paid post they
+     * qualify for, so bands paying the same share the shortage.
+     */
+    String oneMarketNote(PopulationManager pm) {
+        PopulationManager.BandFill fill = pm.fillByBand();
+        StringBuilder names = new StringBuilder();
+        WageBand[] bands = WageBand.values();
+        for (int b = bands.length - 1; b >= 0; b--) {
+            if (!fill.joinedAbove(bands[b])) continue;
+            // A run of joined bands, named from the top down.
+            java.util.List<String> run = new java.util.ArrayList<>();
+            run.add(bands[b + 1].label());
+            while (b >= 0 && fill.joinedAbove(bands[b])) run.add(bands[b--].label());
+            b++;
+            if (names.length() > 0) names.append("; ");
+            for (int i = 0; i < run.size(); i++) {
+                names.append(i == 0 ? "" : i == run.size() - 1 ? " and " : ", ").append(run.get(i));
+            }
+        }
+        if (names.length() == 0) return null;
+        int none = WageBand.NONE.ordinal();
+        double own = pm.workforceByBand()[none];
+        double down = Math.max(0, fill.placed[none] - Math.min(own, fill.placed[none]));
+        return names + " fill as one market this month, their wages headed for the same level: workers take the "
+                + "best-paid post they qualify for, so the shortage is shared up the ladder"
+                + (down >= 1 ? String.format(" (%s over-qualified workers hold unskilled posts).", people(down)) : ".");
+    }
+
     /** The skill ladder: what each band has, what it can take, and what it costs. */
     javafx.scene.layout.GridPane ladderTable(PopulationManager pm,
                                                      LabourMarket market,
@@ -1064,7 +1109,8 @@ final class PeopleScreen {
              * CHANCE is the number that decides who moves here, and it is not
              * the wage. It is this band's open posts against everybody queueing
              * for them - its own people PLUS every over-qualified worker who
-             * came down a rung - which is why a city full of graduates doing
+             * came down a rung, less (0.7.18) any drawn further down by better
+             * pay - which is why a city full of graduates doing
              * diploma work is not a city an incoming diploma-holder wants.
              */
             double chance = queue[b] > 0 ? Math.min(1, open[b] / queue[b]) : 1;

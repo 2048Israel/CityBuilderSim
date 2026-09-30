@@ -1,6 +1,6 @@
-# ForeignDebtCheck.java - 678 lines · 6 methods · 0 constants · harnesses
+# ForeignDebtCheck.java - 695 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Borrowing in somebody else's money.
 > 
@@ -36,7 +36,7 @@
 >      the city moving does not; and a dollar issue is priced on the same
 >      curve it is then valued on.
 
-**Uses:** [DebtManager](DebtManager.md) (17), [Game](Game.md) (12), [Debt](Debt.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [DebtQuote](DebtQuote.md) (2), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [DebtManager](DebtManager.md) (17), [Game](Game.md) (13), [Debt](Debt.md) (4), [GameFiles](GameFiles.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Founding](Founding.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [DebtQuote](DebtQuote.md) (2), [MoneyAudit](MoneyAudit.md) (1)
 
 **Used by (1):** [RestructureCheck](RestructureCheck.md)
 
@@ -44,15 +44,15 @@
 
 | line | section |
 |---:|---|
-| 96 | · 1. the instrument speaks two currencies |
-| 144 | · 2. and the world is cheaper, to begin with |
-| 228 | · 3. the books balance with dollars on them |
-| 291 | · 4. original sin |
-| 355 | · 4b. and where the dollars actually went |
-| 429 | · 5. the window shuts |
-| 453 | · 6. and the price of walking away |
-| 504 | · 7. across a reload |
-| 616 | 8. the world's paper on the world's curve (0.7.2) |
+| 115 | · 1. the instrument speaks two currencies |
+| 163 | · 2. and the world is cheaper, to begin with |
+| 245 | · 3. the books balance with dollars on them |
+| 308 | · 4. original sin |
+| 372 | · 4b. and where the dollars actually went |
+| 446 | · 5. the window shuts |
+| 470 | · 6. and the price of walking away |
+| 521 | · 7. across a reload |
+| 633 | 8. the world's paper on the world's curve (0.7.2) |
 
 ## Fields (state)
 
@@ -66,16 +66,17 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 636 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
+| 43 | 653 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
 | 49 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 54 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 64 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 72 | 18 | `static Game tradingCity(Path dir) throws Exception` | A small city that has been going long enough to have a credit record. |
-| 91 | 524 | `public static void main(String[] args) throws Exception` |  |
+| 86 | 6 | `static void tradingPlant(Game g)` | THE PLANT THE TRADING CITY EARNS WITH, STANDING (0.7.17): the builders' depots, the power, the water and the two bakeries whose bread is what it sells abroad. |
+| 94 | 15 | `static Game tradingCity(Path dir) throws Exception` | A small city that has been going long enough to have a credit record. |
+| 110 | 522 | `public static void main(String[] args) throws Exception` |  |
 
-### 8. the world's paper on the world's curve (0.7.2) (lines 616-678)
+### 8. the world's paper on the world's curve (0.7.2) (lines 633-695)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 617 | 61 | `static void theWorldsCurve(Path dir) throws Exception` |  |
+| 634 | 61 | `static void theWorldsCurve(Path dir) throws Exception` |  |
 

@@ -748,6 +748,13 @@ public final class MoneyAudit {
          */
         out += debit.apply("- bank Payroll", g.getBank().getPayroll(), Scope.DOMESTIC);
         /*
+         * ...and its branches' operating cost (0.7.19): the template's upkeep,
+         * inside the bank's upkeep beside its repairs. The repairs reach the
+         * builders, a pool; this leaves the audited system the way the city's
+         * own services' upkeep does ("- care Upkeep" below).
+         */
+        out += debit.apply("- bank Operating", g.getBank().getOperatingCost(), Scope.DOMESTIC);
+        /*
          * Interest paid to SAVERS, since the bank started paying for its
          * deposits, and it goes to three different places.
          *

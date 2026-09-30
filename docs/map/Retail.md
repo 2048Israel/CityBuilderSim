@@ -1,6 +1,6 @@
-# Retail.java - 635 lines · 46 methods · 7 constants · sectors
+# Retail.java - 651 lines · 46 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/Retail.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Retail.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The shops. Buy food on the food market, keep it on a shelf, sell it to the
 > households as groceries at a price they strike themselves.
@@ -42,8 +42,8 @@
 | 164 | INPUTS FROM THE CITY |
 | 260 | THE SALE, at the bottom of the month |
 | 452 | PLANNING - customers against coverage |
-| 511 | THE SCREEN |
-| 570 | SAVE, RESET, THE REFORM |
+| 527 | THE SCREEN |
+| 586 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 590 | **type** `public final class Retail extends Sector` | The shops. |
+| 46 | 606 | **type** `public final class Retail extends Sector` | The shops. |
 
 ### THE THIRTEEN THINGS ON THE SHELF (lines 92-163)
 
@@ -132,28 +132,28 @@
 | 413 | 10 | `public void repriceShelf(double localUnits, double localPrice, double importUnits, double importPrice, double plannedUnits, dou...` | What the shops charge, and this is where prices learned to ration. |
 | 434 | 17 | `public void repriceShelf(double blendedCost, double plannedUnits, double deliveredUnits)` | The same rule, told what one unit cost instead of working it out. |
 
-### PLANNING - customers against coverage (lines 452-510)
+### PLANNING - customers against coverage (lines 452-526)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 457 | 42 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` |  |
-| 502 | 3 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | Gross margin on a full store: every covered customer buys a unit a month. |
-| 507 | 3 | `public double[] retirementDemandAndCapacity(Game game)` |  |
+| 457 | 58 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` |  |
+| 518 | 3 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | Gross margin on a full store: every covered customer buys a unit a month. |
+| 523 | 3 | `public double[] retirementDemandAndCapacity(Game game)` |  |
 
-### THE SCREEN (lines 511-569)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 516 | 1 | `public String inputLabel()` |  |
-| 519 | 50 | `public List<Line> operations(Game game)` |  |
-
-### SAVE, RESET, THE REFORM (lines 570-635)
+### THE SCREEN (lines 527-585)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 575 | 22 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 599 | 12 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 613 | 9 | `protected void resetExtras()` |  |
-| 624 | 6 | `protected void redenominateExtras(double scale)` |  |
-| 632 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 532 | 1 | `public String inputLabel()` |  |
+| 535 | 50 | `public List<Line> operations(Game game)` |  |
+
+### SAVE, RESET, THE REFORM (lines 586-651)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 591 | 22 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 615 | 12 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 629 | 9 | `protected void resetExtras()` |  |
+| 640 | 6 | `protected void redenominateExtras(double scale)` |  |
+| 648 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

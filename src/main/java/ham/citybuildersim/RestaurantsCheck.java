@@ -171,7 +171,17 @@ public class RestaurantsCheck {
                 kitchens.strikeMargin(game.getMarkets(), 0) / food, Restaurants.MARGIN_FLOOR, 1e-9);
 
         quietly(() -> {
-            LongPlaytest.build(game, DINER, 1);
+            /*
+             * THE DINER STANDS (0.7.17). The question is what a Diner's
+             * tables do, not how long one waits on site. Since every building
+             * gets the crew it can use (BuildingManager, EVERY BUILDING GETS
+             * THE CREW IT CAN USE) a Diner ordered beside this town's coal
+             * plant and water works got a sliver of their crews and had not
+             * opened nine months later - 0 meals of tables. So it is built
+             * standing, bought like the town's other buildings; the months
+             * after are the months it serves.
+             */
+            game.buildStack(diner, 1, true);
             game.simulateMonths(9);
         });
 
@@ -424,6 +434,18 @@ public class RestaurantsCheck {
             LongPlaytest.build(hungry, "Mixed Farm", 3);
             LongPlaytest.build(hungry, "Coal Power Plant", 1);
             LongPlaytest.build(hungry, "Water Treatment Plant", 1);
+            /*
+             * ...WITH THE KITCHENS' PLANNER HELD WHILE IT FOUNDS (0.7.17). The
+             * question below is put to a sector with no kitchen and none on
+             * site. This town's own planner ordered a Diner in month four, and
+             * since every building gets the crew it can use (BuildingManager,
+             * EVERY BUILDING GETS THE CREW IT CAN USE) it was still on site
+             * behind the coal plant when the question was asked, so the
+             * answer was "already building". Held through the founding, the
+             * sector comes to the question as the premise has it; plan() is
+             * asked directly below, which a hold does not touch.
+             */
+            hungry.getBusinessInvestment().holdSector(Sectors.RESTAURANTS);
             hungry.simulateMonths(4);
         });
         Restaurants none = hungry.getSectors().restaurants();
@@ -437,6 +459,19 @@ public class RestaurantsCheck {
         // ...and now a queue, measured the way LuxuryCounter.dine() measures it:
         // at the margin's floor, before anybody has been told a price.
         none.strikeMargin(hungry.getMarkets(), 500_000);
+        /*
+         * ...AND HANDS FOR THE KITCHEN (0.7.18, re-caused). The kitchens ask
+         * the city for staff before they order one now (Sector.staffing(); Jerus:
+         * "Retail, Restaurants, Luxury and the makers check whether they can
+         * staff a building before building it"), and a town four months old
+         * has almost nobody spare. The question here is the queue, so the
+         * town is handed two hundred workers, a hundred with a diploma, as
+         * InvestCheck hands its builders theirs.
+         */
+        hungry.getPopulationManager().restoreWorkforce(200);
+        hungry.getPopulationManager().restoreSkilledHeads(new double[] { 0, 100, 0, 0 });
+        Sector.Staffing dinerStaff = none.staffing(hungry.getBuildingManager().getTemplateByName("Diner"));
+        report("fixture: the town could staff a diner", dinerStaff.passes(), dinerStaff.why("Diner"));
         BusinessInvestment.Decision wanted = none.plan(hungry.getBusinessInvestment(), hungry);
         report("...but a queue at a door that is not there is a reason to build one",
                 wanted.build, wanted.reason);

@@ -1,6 +1,6 @@
-# Automotive.java - 266 lines · 6 methods · 1 constants · sectors
+# Automotive.java - 269 lines · 6 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/Automotive.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Automotive.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The automobile industry. THE THIRTEENTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -69,7 +69,7 @@
 | line | section |
 |---:|---|
 | 125 | PLANNING - can the city supply it, and then is it worth it |
-| 233 | · the screen |
+| 236 | · the screen |
 
 ## Constants
 
@@ -81,21 +81,21 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 194 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 73 | 197 | **type** `public final class Automotive extends Sector` | The automobile industry. |
 | 111 | 13 | `public Automotive()` |  |
 
-### PLANNING - can the city supply it, and then is it worth it (lines 125-232)
+### PLANNING - can the city supply it, and then is it worth it (lines 125-235)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 130 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
 | 135 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
-| 148 | 68 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with HeavyIndustry's supply gate in front of it. |
-| 231 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
+| 148 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with HeavyIndustry's supply gate in front of it. |
+| 234 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
 
-### the screen (lines 233-266)
+### the screen (lines 236-269)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 236 | 30 | `public List<Sector.Line> operations(Game game)` |  |
+| 239 | 30 | `public List<Sector.Line> operations(Game game)` |  |
 

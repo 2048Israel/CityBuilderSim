@@ -1,6 +1,6 @@
-# RestaurantsCheck.java - 515 lines · 6 methods · 2 constants · harnesses
+# RestaurantsCheck.java - 550 lines · 6 methods · 2 constants · harnesses
 
-`ham/citybuildersim/RestaurantsCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RestaurantsCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > A meal out is food, and it is the same food.
 > 
@@ -33,7 +33,7 @@
 > 
 > Every fixture CAUSES its condition rather than waiting for it.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (20), [Restaurants](Restaurants.md) (19), [Household](Household.md) (14), [LongPlaytest](LongPlaytest.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (9), [PayTier](PayTier.md) (8), [FamilyStructure](FamilyStructure.md) (7), [Retail](Retail.md) (6), [Game](Game.md) (5), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [JobType](JobType.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sectors](Sectors.md) (1), [Equity](Equity.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (20), [Restaurants](Restaurants.md) (19), [Household](Household.md) (14), [LongPlaytest](LongPlaytest.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (9), [PayTier](PayTier.md) (8), [FamilyStructure](FamilyStructure.md) (7), [Retail](Retail.md) (6), [Game](Game.md) (5), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [Sectors](Sectors.md) (2), [JobType](JobType.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [Sector](Sector.md) (1), [Equity](Equity.md) (1)
 
 ## Sections
 
@@ -41,11 +41,11 @@
 |---:|---|
 | 86 | · 1. a meal is a ninetieth of a person-month |
 | 128 | · 2. the margin, struck against the tables |
-| 239 | · 3. a meal eaten is food, at the grocer's price |
-| 331 | · 3b. appetite, not money, is the ceiling |
-| 366 | · 4. the kitchens eat the city's own food |
-| 398 | · 5. the bootstrap |
-| 455 | · and the save |
+| 249 | · 3. a meal eaten is food, at the grocer's price |
+| 341 | · 3b. appetite, not money, is the ceiling |
+| 376 | · 4. the kitchens eat the city's own food |
+| 408 | · 5. the bootstrap |
+| 490 | · and the save |
 
 ## Constants
 
@@ -66,11 +66,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 473 | **type** `public class RestaurantsCheck` | A meal out is food, and it is the same food. |
+| 43 | 508 | **type** `public class RestaurantsCheck` | A meal out is food, and it is the same food. |
 | 49 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 54 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 59 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 65 | 5 | `static void quietly(Runnable r)` |  |
 | 74 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 81 | 434 | `public static void main(String[] args) throws Exception` |  |
+| 81 | 469 | `public static void main(String[] args) throws Exception` |  |
 

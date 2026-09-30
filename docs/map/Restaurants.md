@@ -1,6 +1,6 @@
-# Restaurants.java - 446 lines · 18 methods · 5 constants · sectors
+# Restaurants.java - 462 lines · 18 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The kitchens. THE FIFTEENTH SECTOR (2026-09-18, Jerus's call).
 > 
@@ -64,7 +64,7 @@
 | 89 | THE MARGIN, AND WHY ITS FLOOR IS SO MUCH HIGHER THAN A BOUTIQUE'S |
 | 174 | THE SALE |
 | 318 | PLANNING - the queue at a door that is not there |
-| 402 | THE SCREEN |
+| 418 | THE SCREEN |
 
 ## Constants
 
@@ -88,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 380 | **type** `public class Restaurants extends Sector` | The kitchens. |
+| 67 | 396 | **type** `public class Restaurants extends Sector` | The kitchens. |
 
 ### WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING (lines 69-88)
 
@@ -117,16 +117,16 @@
 | 263 | 23 | `public double serve(Markets markets, double meals)` | ...and serves what the tables and the larder can actually get through. |
 | 297 | 20 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### PLANNING - the queue at a door that is not there (lines 318-401)
+### PLANNING - the queue at a door that is not there (lines 318-417)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 332 | 45 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
-| 390 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
+| 332 | 61 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
+| 406 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
 
-### THE SCREEN (lines 402-446)
+### THE SCREEN (lines 418-462)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 407 | 39 | `public List<Line> operations(Game game)` |  |
+| 423 | 39 | `public List<Line> operations(Game game)` |  |
 

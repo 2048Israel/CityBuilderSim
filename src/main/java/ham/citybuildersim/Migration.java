@@ -128,17 +128,20 @@ public class Migration {
        be short of DOCTORS, only of people - which is why PopulationManager was
        able to staff two hundred doctor posts out of a pool of labourers.
 
-       Now everybody who moves in has a high school diploma and nothing more
-       comes free: every band above it starts at zero and is BOUGHT, at a
+       Now what comes free is a high school diploma and nothing more:
+       every band above it starts at zero and is BOUGHT, at a
        premium over the going rate, out of a world that has few graduates to
        spare (WageBand.arrivalCeiling). A small city can import its doctor while
        a big one cannot import two hundred at any price. That is the whole
        reason schools are worth building, and it needs no rule to enforce it.
 
-       And nobody arrives WITHOUT a diploma either. The unskilled band is fed
-       only by this city's own children ageing out of the teen band while the
-       high schools were full or missing - so it is a report card on the
-       schools, not an import.
+       And until 0.7.18 nobody arrived WITHOUT a diploma either: the
+       unskilled band was fed only by this city's own children ageing out of
+       the teen band while the high schools were full or missing - a report
+       card on the schools, not an import. Now it is bought like the graduate
+       bands, for the wage: nobody at the going rate, the world's own share of
+       migrants with no diploma at the ceiling (WageBand.arrivalCeiling()).
+       A city that pays its labourers the going rate still grows its own.
        ===================================================================== */
 
     /**
@@ -427,6 +430,9 @@ public class Migration {
     private double lastSeniorPull = 1;
     private double lastResidentsPerJob = residentsPerJob(0);
 
+    /** The people the placement had room for, the month's bound on arrivals (0.7.17); NaN with no census. */
+    private double lastRoom = Double.NaN;
+
     /* ------------------------------- reading ------------------------------- */
 
     public double getLastTarget()         { return lastTarget; }
@@ -439,6 +445,8 @@ public class Migration {
     public double[] getLastDepartureMix() { return lastDepartureMix; }
     public double getLastDepartures()     { return lastDepartures; }
     public double getLastCrowding()       { return lastCrowding; }
+    /** People the placement had room for this month, which arrivals may not exceed; NaN when it was not asked. */
+    public double getLastRoom()           { return lastRoom; }
     public double getLastDecliningShare() { return lastDecliningShare; }
     public double getLastResidentsPerJob() { return lastResidentsPerJob; }
     public double getLastNet()            { return lastArrivals - lastDepartures; }
@@ -673,9 +681,36 @@ public class Migration {
      * Between one-home-each and that floor it falls off linearly. There is no
      * defence of linear beyond its being the shape that makes the endpoints mean
      * what they say; the endpoints are the part that matters.
+     *
+     * THE DOORS THE HOUSEHOLDS ACTUALLY HAVE, NOT THE DOORS THE CITY HAS
+     * (0.7.17; Jerus: "doubled-up households count as crowding"). The ramp
+     * read the city's door count against its households, which says nothing
+     * once doors have sizes: Jerus's year-149 city had homes enough by the
+     * count, read 0.63, and had 143,443 households living in somebody else's
+     * home because the doors were the wrong size. So the ramp reads the
+     * households that have a door of their own - the placement's figure,
+     * asked of the match run against the doors standing today
+     * (FamilyModel.roomLeft()), or, with no census to match, last month's
+     * placement less whoever it doubled up or left with nowhere - capped at
+     * the doors there are. Every household doubled up is a door the ramp no
+     * longer counts, so it falls as they double up and not only as the door
+     * count falls behind the household count. Both ends mean what they did:
+     * 1 with every household behind a door of its own, 0 at the floor. And
+     * one-home-each is every household that wants a door
+     * (FamilyModel.householdsSeekingDoors()) - the out of work and the
+     * students too, as the floor already counted them - where it was the
+     * family matrix alone.
      */
     public double crowdingFactor(int homes, FamilyModel families) {
-        double comfortable = families.totalHouseholds();
+        return crowdingFactor(homes, families, null);
+    }
+
+    /**
+     * The same, read against the room the placement has left (the Game's
+     * path), or against last month's placement when that is null.
+     */
+    public double crowdingFactor(int homes, FamilyModel families, FamilyModel.Room room) {
+        double comfortable = families.householdsSeekingDoors();
         if (comfortable <= 0) return 1;               // nobody here yet
 
         /*
@@ -690,22 +725,41 @@ public class Migration {
          * while every family in it has nowhere to go.
          *
          * The floor term handles the APPROACH, damping arrivals as the doors
-         * that can help run short. This handles the wall. FamilyModel has
-         * already run house() and the squeeze and knows the answer as a fact
-         * rather than an estimate: if anybody was left with nowhere after both
-         * valves, the city is full, whatever the totals say.
+         * that can help run short. The wall handled the rest: FamilyModel had
+         * already run house() and the squeeze and knew the answer as a fact
+         * rather than an estimate - if anybody was left with nowhere after
+         * both valves, the city was full, whatever the totals said.
          *
-         * One month behind, because migration is settled before the month's
-         * placement - which is the correct direction for a damper: a city that
-         * could not place people last month stops taking them this month.
+         * THE WALL IS GONE (0.7.17). It returned 0 whenever last month's
+         * placement had left anybody with nowhere, and jumped straight back
+         * to the ramp the month it had not: in Jerus's city a month of
+         * 25-32 thousand arrivals and then nothing, every nine to twenty-three
+         * months. The packing question the wall answered is now asked twice
+         * and answered with figures: here, by the households that have a door
+         * of their own, and in monthlyNet(), by the room the placement has
+         * left, which arrivals may not exceed.
          */
-        if (families.getStillUnplaced() > 0) return 0;
+        double withADoor = room != null ? room.withADoor
+                : Math.max(0, comfortable - families.getDoubledUpHouseholds() - families.getStillUnplaced());
+        double occupied = Math.min(homes, withADoor);
 
         double floor = families.minimumHomesTolerable();
-        if (homes >= comfortable) return 1;
-        if (homes <= floor) return 0;
+        if (occupied >= comfortable) return 1;
+        if (occupied <= floor) return 0;
 
-        return (homes - floor) / (comfortable - floor);
+        return (occupied - floor) / (comfortable - floor);
+    }
+
+    /**
+     * The door census this month's migration is asked against (0.7.17): the
+     * homes standing, by size. Set by Game before monthlyNet() and consumed
+     * by it, like the other pushes and pulls - a month that forgot to set it
+     * reads last month's placement rather than last month's doors.
+     */
+    private int[] doors;
+
+    public void setDoors(int[] homesBySize) {
+        this.doors = homesBySize == null ? null : homesBySize.clone();
     }
 
     /**
@@ -750,7 +804,9 @@ public class Migration {
         lastDecliningShare = 0;
 
         double gap = lastTarget - population;
-        lastCrowding = crowdingFactor(homes, families);
+        FamilyModel.Room room = families == null ? null : families.roomLeft(doors);
+        doors = null;
+        lastCrowding = crowdingFactor(homes, families, room);
 
         /*
          * GROSS FLOWS, NOT NET. The two directions are computed independently
@@ -771,6 +827,20 @@ public class Migration {
          * out looks like from the inside.
          */
         lastArrivals = gap > 0 ? gap * ARRIVAL_RATE * lastCrowding : 0;
+
+        /*
+         * AND NEVER MORE THAN THE PLACEMENT CAN TAKE (0.7.17). The room is the
+         * placement's own (FamilyModel.roomLeft()): the free doors by size and
+         * what the doubling valve still has, in households of the arrivals'
+         * mix - so many with a child, who a studio refuses - and in people at
+         * the arrivals' own people to a household. This is what answers the
+         * packing question the wall was built for: sized doors make "is there
+         * room" a question no total can answer, so it is asked of the match,
+         * and the month's arrivals are capped at its answer rather than
+         * stopped because last month's was not zero.
+         */
+        lastRoom = room == null ? Double.NaN : room.people();
+        if (room != null) lastArrivals = Math.min(lastArrivals, Math.max(0, lastRoom));
 
         /*
          * And the push. A city with more people than jobs is NOT by itself a
@@ -935,6 +1005,33 @@ public class Migration {
         return OPPORTUNITY_FLOOR + (1 - OPPORTUNITY_FLOOR) * chance;
     }
 
+    /** Bands a harness has closed to arrivals, by ordinal; see holdArrivals(). Never saved. */
+    private final boolean[] closed = new boolean[WageBand.values().length];
+
+    /**
+     * Harnesses only: nobody of this band arrives for the rest of the run,
+     * whatever it is paid - the way BusinessInvestment.holdSector() holds a
+     * sector out of the investment loop. A fixture that must measure what a
+     * city makes of its own people with the city's imports of them out of
+     * the way (EducationCheck, the unskilled band as a report card on the
+     * schools), or that needs a band nobody can come for (InvestCheck, the
+     * staffing test's band with no way in). The game never calls it.
+     */
+    public void holdArrivals(WageBand band) {
+        if (band != null) closed[band.ordinal()] = true;
+    }
+
+    /**
+     * Whether any migrant can come for this band at all (0.7.18): it has an
+     * arrival ceiling above zero and no harness has closed it. Every band
+     * has one since NONE's became the world's share of migrants with no
+     * diploma, so in play this is always true; it is the third leg of the
+     * staffing test's "nobody can fill" (Sector.Staffing.passes()).
+     */
+    public boolean admits(WageBand band) {
+        return band != null && band.arrivalCeiling() > 0 && !closed[band.ordinal()];
+    }
+
     /**
      * Splits this month's arrivals across the skill bands.
      *
@@ -996,16 +1093,18 @@ public class Migration {
              * shortage of them anywhere to bid for. Every band above it starts
              * at ZERO and is bought: reach() is 0 at the going rate, so a city
              * paying the market rate for graduates receives none, which is the
-             * entire point of the rewrite. Below it there is nothing to buy -
-             * NONE's ceiling is 0, and the unskilled band is fed only by the
-             * city's own children ageing out of school. See
+             * entire point of the rewrite. Below it the same holds since
+             * 0.7.18 (Jerus: "allow arrivals without a diploma when the
+             * unskilled wage is high"): NONE is bought exactly as the graduate
+             * bands are, on its premium and its chance of work, up to the
+             * world's share of migrants with no diploma. See
              * WageBand.arrivalCeiling().
              */
             double pull = band == WageBand.DIPLOMA
                     ? 1
                     : reach(market == null ? 1 : market.bandPremium(band));
 
-            weight[b] = band.arrivalCeiling() * pull * opportunity;
+            weight[b] = admits(band) ? band.arrivalCeiling() * pull * opportunity : 0;
             total += weight[b];
         }
 
@@ -1037,7 +1136,7 @@ public class Migration {
             JobType job = type.licenses();
             if (job == null) continue;
 
-            double pull = reach(market == null ? 1 : market.licencePremium(job));
+            double pull = admits(WageBand.UNIVERSITY) ? reach(market == null ? 1 : market.licencePremium(job)) : 0;
             double w = WageBand.UNIVERSITY.arrivalCeiling()
                     * type.worldLicenceShare()
                     * pull;
@@ -1098,6 +1197,8 @@ public class Migration {
         lastArrivals = 0;
         lastDepartures = 0;
         lastCrowding = 1;
+        lastRoom = Double.NaN;
+        doors = null;
         lastDecliningShare = 0;
         lastSeniorPull = 1;
         lastResidentsPerJob = residentsPerJob(0);

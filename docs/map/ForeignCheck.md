@@ -1,6 +1,6 @@
-# ForeignCheck.java - 1,524 lines · 12 methods · 0 constants · harnesses
+# ForeignCheck.java - 1,541 lines · 12 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ForeignCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The balance of payments, and whether the boundary it is drawn on is honest.
 > 
@@ -50,20 +50,20 @@
 |---:|---|
 | 83 | · 1. the rate is pinned |
 | 94 | · 2. a city that trades |
-| 259 | · 3. across a reload |
-| 315 | · 4. nothing behaves differently |
-| 347 | · 5. every unit that leaves the shelf is paid for |
-| 463 | · 5b. reserves you sell are reserves you no longer have |
-| 562 | · 6. the rate is bounded, and moves the right way |
-| 640 | · 7. and it comes home |
-| 677 | · 8. a devaluation improves the current account |
-| 884 | · 9. the vault is held in dollars |
-| 958 | · 10. and the move is not money anybody moved |
-| 996 | · 11. a reform does not reach the dollars |
-| 1025 | · 12. an older save |
-| 1109 | · 13. the vault defends, it does not hold down |
-| 1202 | 14. land bought by conversion pushes as reserves would |
-| 1404 | · ...AND THE SHOPS AND THE KITCHENS, HELD OUT FOR REAL ESTATE'S OWN |
+| 271 | · 3. across a reload |
+| 327 | · 4. nothing behaves differently |
+| 359 | · 5. every unit that leaves the shelf is paid for |
+| 475 | · 5b. reserves you sell are reserves you no longer have |
+| 574 | · 6. the rate is bounded, and moves the right way |
+| 652 | · 7. and it comes home |
+| 689 | · 8. a devaluation improves the current account |
+| 896 | · 9. the vault is held in dollars |
+| 970 | · 10. and the move is not money anybody moved |
+| 1008 | · 11. a reform does not reach the dollars |
+| 1037 | · 12. an older save |
+| 1121 | · 13. the vault defends, it does not hold down |
+| 1214 | 14. land bought by conversion pushes as reserves would |
+| 1416 | · ...AND THE SHOPS AND THE KITCHENS, HELD OUT FOR REAL ESTATE'S OWN |
 
 ## Fields (state)
 
@@ -73,28 +73,28 @@
 | 50 | `static PrintStream out` |  |
 | 51 | `static PrintStream quiet` |  |
 | 54 | `static double scrappedPlantBuiltWith` | What the last devaluationCity() built from its own scrapped plant, in dollars at the landed price. |
-| 1505 | `static double lastCash` |  |
+| 1522 | `static double lastCash` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 1478 | **type** `public class ForeignCheck` | The balance of payments, and whether the boundary it is drawn on is honest. |
+| 47 | 1495 | **type** `public class ForeignCheck` | The balance of payments, and whether the boundary it is drawn on is honest. |
 | 56 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 61 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 71 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 78 | 791 | `public static void main(String[] args) throws Exception` |  |
-| 882 | 202 | `static void vaultInDollars() throws Exception` | Sections 9 to 12: the vault kept in dollars (2026-09-21). |
-| 1107 | 94 | `static void reserveDefends()` | Section 13: the vault damps a fall and nothing else (2026-09-21). |
+| 78 | 803 | `public static void main(String[] args) throws Exception` |  |
+| 894 | 202 | `static void vaultInDollars() throws Exception` | Sections 9 to 12: the vault kept in dollars (2026-09-21). |
+| 1119 | 94 | `static void reserveDefends()` | Section 13: the vault damps a fall and nothing else (2026-09-21). |
 
-### 14. land bought by conversion pushes as reserves would (lines 1202-1524)
+### 14. land bought by conversion pushes as reserves would (lines 1214-1541)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1215 | 68 | `static void landByConversion()` |  |
-| 1285 | 6 | `static MoneyAudit.Result intervention(double soldIn, double boughtOut)` | A month whose only foreign flow is the treasury working its own vault. |
-| 1298 | 6 | `static MoneyAudit.Result month(double exports, double imports)` | A synthetic month, which is the only honest way to test the rate rule. |
-| 1310 | 166 | `static Game devaluationCity(Path dir, double rate, double[] food) throws Exception` | The same city twice, differing only in what its currency is worth. |
-| 1478 | 26 | `static double worldFoodPrice(double rate) throws Exception` | What a foreign basket costs in local money at a given rate. |
-| 1508 | 16 | `static int run(Path dir) throws Exception` | One deterministic city, played the same way twice. |
+| 1227 | 68 | `static void landByConversion()` |  |
+| 1297 | 6 | `static MoneyAudit.Result intervention(double soldIn, double boughtOut)` | A month whose only foreign flow is the treasury working its own vault. |
+| 1310 | 6 | `static MoneyAudit.Result month(double exports, double imports)` | A synthetic month, which is the only honest way to test the rate rule. |
+| 1322 | 171 | `static Game devaluationCity(Path dir, double rate, double[] food) throws Exception` | The same city twice, differing only in what its currency is worth. |
+| 1495 | 26 | `static double worldFoodPrice(double rate) throws Exception` | What a foreign basket costs in local money at a given rate. |
+| 1525 | 16 | `static int run(Path dir) throws Exception` | One deterministic city, played the same way twice. |
 

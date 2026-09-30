@@ -1,6 +1,6 @@
-# SectorScreen.java - 1,637 lines · 27 methods · 6 constants · interface
+# SectorScreen.java - 1,672 lines · 27 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SectorScreen.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The sector economy: the businesses as a list, and each one's five pages -
 > operations, the income statement with last month beside it, the balance
@@ -14,7 +14,7 @@
 > the scroll memory, and other screens open a sector's books through
 > openSectorBooks().
 
-**Uses:** [Palette](Palette.md) (175), [Sector](Sector.md) (29), [SectorBooks](SectorBooks.md) (18), [BusinessInvestment](BusinessInvestment.md) (13), [BusinessDebtManager](BusinessDebtManager.md) (8), [CityCalendar](CityCalendar.md) (6), [Equity](Equity.md) (6), [OrderBook](OrderBook.md) (6), [Mortgage](Mortgage.md) (6), [HistorySave](HistorySave.md) (4), [Good](Good.md) (4), [JobType](JobType.md) (3), [Exchange](Exchange.md) (3), [Bank](Bank.md) (3), [UserInterface](UserInterface.md) (2), [Statement](Statement.md) (2), [BankScreen](BankScreen.md) (2), [SalesTaxLedger](SalesTaxLedger.md) (1), [BondMarket](BondMarket.md) (1), [Game](Game.md) (1)
+**Uses:** [Palette](Palette.md) (175), [Sector](Sector.md) (29), [SectorBooks](SectorBooks.md) (18), [BusinessInvestment](BusinessInvestment.md) (15), [BusinessDebtManager](BusinessDebtManager.md) (8), [CityCalendar](CityCalendar.md) (6), [Equity](Equity.md) (6), [OrderBook](OrderBook.md) (6), [Mortgage](Mortgage.md) (6), [HistorySave](HistorySave.md) (4), [Good](Good.md) (4), [JobType](JobType.md) (3), [Exchange](Exchange.md) (3), [Bank](Bank.md) (3), [UserInterface](UserInterface.md) (2), [Statement](Statement.md) (2), [BankScreen](BankScreen.md) (2), [SalesTaxLedger](SalesTaxLedger.md) (1), [BondMarket](BondMarket.md) (1), [Game](Game.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -27,16 +27,16 @@
 | 448 | A STATEMENT LINE THAT OPENS |
 | 528 | · THE INCOME STATEMENT |
 | 535 | · what the two big lines open into |
-| 859 | · · and the ratios |
-| 891 | · THE BALANCE SHEET |
-| 951 | · · the ratios |
-| 1138 | · CASH AND CREDIT |
-| 1273 | · · credit |
-| 1442 | · THE INVESTORS |
-| 1462 | · · what it decided |
-| 1495 | · · the conditions |
-| 1551 | · · and what stops it |
-| 1604 | · WHAT IT DOES |
+| 871 | · · and the ratios |
+| 903 | · THE BALANCE SHEET |
+| 963 | · · the ratios |
+| 1150 | · CASH AND CREDIT |
+| 1285 | · · credit |
+| 1454 | · THE INVESTORS |
+| 1474 | · · what it decided |
+| 1507 | · · the conditions |
+| 1586 | · · and what stops it |
+| 1639 | · WHAT IT DOES |
 
 ## Constants
 
@@ -62,7 +62,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 1607 | **type** `final class SectorScreen` | The sector economy: the businesses as a list, and each one's five pages - operations, the income statement with last month beside it, the balance sheet, cash and credit, and what its investors decided - every line of ... |
+| 31 | 1642 | **type** `final class SectorScreen` | The sector economy: the businesses as a list, and each one's five pages - operations, the income statement with last month beside it, the balance sheet, cash and credit, and what its investors decided - every line of ... |
 | 36 | 1 | `SectorScreen(UserInterface ui)` |  |
 
 ### THE SECTOR ECONOMY. (lines 38-364)
@@ -99,40 +99,40 @@
 |---:|---:|---|---|
 | 531 | 3 | `static String inputLabel(Sector sector)` | What this sector's direct cost is actually called - the sector says. |
 
-### what the two big lines open into (lines 535-890)
+### what the two big lines open into (lines 535-902)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 548 | 64 | `VBox revenueDetail(Sector sector)` | Revenue, by good, each split into what the city took and what was shipped. |
 | 624 | 73 | `VBox inputsDetail(Sector sector)` | The cost of sales, by good, each split into what the city grew or made and what was landed. |
-| 699 | 37 | `VBox wagesDetail(Sector sector)` | Wages by pay tier - which kind of worker this business is actually paying. |
-| 748 | 45 | `VBox salesTaxDetail(Sector sector)` | The sales tax, as the ledger actually strikes it: charged on what was sold here, credited for what suppliers already remitted, and the difference remitted. |
-| 794 | 96 | `void incomePage(VBox column, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` |  |
+| 699 | 49 | `VBox wagesDetail(Sector sector)` | Wages by pay tier - which kind of worker this business is actually paying. |
+| 760 | 45 | `VBox salesTaxDetail(Sector sector)` | The sales tax, as the ledger actually strikes it: charged on what was sold here, credited for what suppliers already remitted, and the difference remitted. |
+| 806 | 96 | `void incomePage(VBox column, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` |  |
 
-### THE BALANCE SHEET (lines 891-1137)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 893 | 84 | `void balancePage(VBox column, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` |  |
-| 987 | 120 | `void ownersBlock(VBox column, int company, double bookEquity, double netIncome)` | Who owns a company, what a share is worth, and what it pays. |
-| 1113 | 24 | `void sharePriceChart(VBox column, int company)` | One company's share price over the city's life: the last trade (the desk's quote until 0.7.12 round 2) against what the register says a share is worth, both per founding share. |
-
-### CASH AND CREDIT (lines 1138-1441)
+### THE BALANCE SHEET (lines 903-1149)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1140 | 301 | `void cashAndDebtPage(VBox column, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` |  |
+| 905 | 84 | `void balancePage(VBox column, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` |  |
+| 999 | 120 | `void ownersBlock(VBox column, int company, double bookEquity, double netIncome)` | Who owns a company, what a share is worth, and what it pays. |
+| 1125 | 24 | `void sharePriceChart(VBox column, int company)` | One company's share price over the city's life: the last trade (the desk's quote until 0.7.12 round 2) against what the register says a share is worth, both per founding share. |
 
-### THE INVESTORS (lines 1442-1603)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1455 | 148 | `void investorPage(VBox column, Sector sector, SectorBooks.SectorMonth now)` |  |
-
-### WHAT IT DOES (lines 1604-1637)
+### CASH AND CREDIT (lines 1150-1453)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1614 | 10 | `void operationsPage(VBox column, Sector sector)` |  |
-| 1626 | 11 | `static String toneColour(Sector.Line.Tone tone)` | The palette colour a sector's line asked for, or none. |
+| 1152 | 301 | `void cashAndDebtPage(VBox column, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then)` |  |
+
+### THE INVESTORS (lines 1454-1638)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1467 | 171 | `void investorPage(VBox column, Sector sector, SectorBooks.SectorMonth now)` |  |
+
+### WHAT IT DOES (lines 1639-1672)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1649 | 10 | `void operationsPage(VBox column, Sector sector)` |  |
+| 1661 | 11 | `static String toneColour(Sector.Line.Tone tone)` | The palette colour a sector's line asked for, or none. |
 

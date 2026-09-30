@@ -1,6 +1,6 @@
-# TreasuryCheck.java - 717 lines · 12 methods · 1 constants · harnesses
+# TreasuryCheck.java - 757 lines · 12 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits what the screens say the treasury did. Not part of
 > the game.
@@ -64,7 +64,7 @@
 > 
 > ... (11 more lines in the source)
 
-**Uses:** [Game](Game.md) (43), [Rollover](Rollover.md) (24), [Debt](Debt.md) (11), [TreasuryJournal](TreasuryJournal.md) (10), [GameFiles](GameFiles.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [Game](Game.md) (47), [Rollover](Rollover.md) (24), [Debt](Debt.md) (11), [TreasuryJournal](TreasuryJournal.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (5), [GameFiles](GameFiles.md) (5), [Sectors](Sectors.md) (1), [LandParcel](LandParcel.md) (1), [ShortTermTBill](ShortTermTBill.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 ## Sections
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 640 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 78 | 680 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
 | 85 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 95 | 4 | `static void check(String what, boolean ok)` | A fact that is either so or not, printed either way so the run reads as a list. |
 | 101 | 4 | `static TreasuryJournal.Entry line(java.util.List<TreasuryJournal.Entry> journal, String label)` | The journal line with this label, or null when the month has none. |
@@ -106,7 +106,7 @@
 | 112 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 119 | 328 | `public static void main(String[] args)` |  |
 
-### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 448-717)
+### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 448-757)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -115,5 +115,5 @@
 | 494 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
 | 501 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
 | 510 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
-| 514 | 203 | `static void rolling()` |  |
+| 514 | 243 | `static void rolling()` |  |
 

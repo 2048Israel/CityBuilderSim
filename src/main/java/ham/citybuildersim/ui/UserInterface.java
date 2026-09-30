@@ -3021,10 +3021,14 @@ public class UserInterface extends Application {
        "0/1 Coal Power Plant(s) finished construction. 177 month(s)." line - into
        a panel that's visible from every screen.
 
-       It also surfaces something that was previously invisible: construction
-       capacity is divided evenly between *sites* (stacks), not weighted by work
-       remaining, so every extra building type you queue slows down everything
-       already in progress. The "N sites, X pts each" line makes that legible.
+       It also surfaces something that was previously invisible: how the
+       builders' output is divided between sites. It was divided evenly between
+       *sites* (stacks), so every extra building type you queued slowed down
+       everything already in progress; since 0.7.17 what the sites are left
+       after the repairs goes to each building by the crew it can use
+       (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE), and each
+       site's months are read at its own share. The "N site(s), M building(s)"
+       line and each site's months make that legible.
        ===================================================================== */
 
     private void refreshConstructionPanel() {
@@ -3040,9 +3044,22 @@ public class UserInterface extends Application {
 
         int output = game.getConstructionOutput();
         int siteCount = buildingManager.getUnderConstruction();
-        double perSite = buildingManager.outputPerSite(output);
+        // What the sites are left after the repairs, shared by the crew each
+        // building can use (0.7.17): each site's own share, which a site owed
+        // less than its crews could do is capped at. See BuildingManager,
+        // EVERY BUILDING GETS THE CREW IT CAN USE.
+        int forSites = game.getBuildingOutput();
+        int buildingsOnSite = 0;
+        for (BuildingsStacks s : sites) buildingsOnSite += s.getUnderConstruction();
 
-        Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo");
+        // ...and the crews kept on, when the builders have laid some off
+        // (sectors.Construction, THE CREWS THE WORK NEEDS).
+        ham.citybuildersim.sectors.Construction builders = game.getSectors().construction();
+        int postsStanding = builders.getPostsStanding(), postsKept = builders.getPostsOffered();
+        Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo"
+                + (postsStanding > 0 && postsKept < postsStanding
+                        ? " (crews kept on: " + formatter.format(postsKept) + " of " + formatter.format(postsStanding) + " posts)"
+                        : ""));
         capacity.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
         constructionPanel.getChildren().add(capacity);
 
@@ -3055,7 +3072,8 @@ public class UserInterface extends Application {
             return;
         }
 
-        Label split = monoLabel(siteCount + " site(s), " + formatter.format(perSite) + " each");
+        Label split = monoLabel(siteCount + " site(s), " + formatter.format(buildingsOnSite)
+                + " building(s): " + formatter.format(forSites) + " after repairs, crews by what each building can use");
         split.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
         constructionPanel.getChildren().add(split);
 
@@ -3086,6 +3104,7 @@ public class UserInterface extends Application {
             // zero-output case (fully unstaffed construction) that would otherwise
             // divide by zero and render as 2147483647.
             String eta;
+            double perSite = buildingManager.shareOf(site, forSites);
             if (perSite <= 0) {
                 // Two things can stall a site now, and they want different
                 // words: nobody to do the work, or nothing able to reach it.

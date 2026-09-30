@@ -31,8 +31,10 @@ import java.nio.file.Path;
  *    220-doctors bug in a new hat.
  *
  * 4. A GRANT STRUCK ON THE WRONG THING looks like a grant (2026-09-21). Four
- *    bases share one rule, and the founding one has to be the founding bill
- *    to the bit, a share of the surplus has to read the surplus the bridge
+ *    bases share one rule, and the default one - a fixed amount kept up with
+ *    the price index since 0.7.19, a share of the unskilled wage until then -
+ *    has to be its own bill to the bit and, at founding prices, the old
+ *    default's; a share of the surplus has to read the surplus the bridge
  *    shows and nothing in a deficit, and a share of tuition has to follow
  *    the price - each of them a number that would look plausible wrong.
  *
@@ -343,6 +345,23 @@ public class EducationCheck {
 
         Game free = city(null);
         Game paid = city(null);
+        /*
+         * RE-CAUSED (revised 0.7.19, Jerus: "Both rebates"). The two cities
+         * are the same but for tuition, on 120 Low-Rise buildings the fixture
+         * puts up - more homes than either has households. With the rebate on
+         * a new rental home the landlords' rent falls back towards its
+         * untaxed level while their repairs still carry the builders' tax,
+         * and in the free city, whose students earn nothing, the landlords'
+         * month fell to $71k by month 49 and they sold 53 of the empty
+         * buildings (7,560 homes to 4,221 by month 61): a housing crash in one
+         * city and not the other, which left it with 4,623 graduates against
+         * the paid city's 5,166. That is the landlords' planner deciding the
+         * comparison, not tuition, so both are held (BusinessInvestment
+         * .holdSector(), as RailCheck holds its fixture's): the homes stay
+         * the ones the fixture built, in both.
+         */
+        free.getBusinessInvestment().holdSector(free.getSectors().realEstate().key());
+        paid.getBusinessInvestment().holdSector(paid.getSectors().realEstate().key());
         quietly(() -> {
             schools(free);
             free.getEducation().setTuitionSubsidy(1.0);
@@ -363,6 +382,9 @@ public class EducationCheck {
         System.out.printf("   and the bill:  $%,.0f            $%,.0f%n",
                 free.getEducation().getGrossCost(), paid.getEducation().getGrossCost());
 
+        assertTrue("fixture: both cities kept the homes the fixture built",
+                free.getBuildingManager().getTotalHomes() == paid.getBuildingManager().getTotalHomes()
+                        && free.getBuildingManager().getTotalHomes() >= 7_560);
         assertTrue("paying for it yourself keeps people out", freeGrads > paidGrads);
         assertTrue("...and free education costs the city more",
                 free.getEducation().getSubsidy() > paid.getEducation().getSubsidy());
@@ -541,14 +563,27 @@ public class EducationCheck {
            Which makes the unskilled share a direct read on the schools, and
            this asserts exactly that: the same city, same jobs, same everything,
            schooled and unschooled.
+
+           SINCE 0.7.18 SOME DO ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (Jerus:
+           "allow arrivals without a diploma when the unskilled wage is high";
+           WageBand.arrivalCeiling()), and a schooled city short of labourers
+           buys some. The claim here is about the schools, not the migrants, so
+           the pair are played with unskilled arrivals held closed
+           (Migration.holdArrivals(), harnesses only) and every assertion below
+           keeps its premise and its factor. The new rule is asserted apart, on
+           the same two cities played again with arrivals open: nobody arrives
+           unskilled while the city pays the going rate for them, and a city
+           paying over it buys some.
            ================================================================= */
         System.out.println("\n--- the unskilled band is a report card on the schools ---");
 
         Game[] pair = new Game[2];
         quietly(() -> {
             pair[0] = city(GameFiles.scratch("educheck-none-a"));
+            pair[0].getMigration().holdArrivals(WageBand.NONE);
             pair[0].simulateMonths(300);
             pair[1] = city(GameFiles.scratch("educheck-none-b"));
+            pair[1].getMigration().holdArrivals(WageBand.NONE);
             schools(pair[1]);
             pair[1].simulateMonths(300);
         });
@@ -604,6 +639,41 @@ public class EducationCheck {
                 unschooled.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0
                         && schooled.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0);
 
+        /*
+         * ...AND THE NEW RULE, WITH ARRIVALS OPEN (0.7.18). The same two cities
+         * played again a month at a time. Every month an unskilled wage at the
+         * going rate or under draws nobody without a diploma; months paying
+         * over it draw some.
+         */
+        Game[] arrivalsOpen = new Game[2];
+        int[] goingRateMonths = new int[1], boughtAtGoingRate = new int[1];
+        int[] premiumMonths = new int[1], boughtAtPremium = new int[1];
+        quietly(() -> {
+            arrivalsOpen[0] = city(GameFiles.scratch("educheck-none-open-a"));
+            arrivalsOpen[1] = city(GameFiles.scratch("educheck-none-open-b"));
+            schools(arrivalsOpen[1]);
+            for (int m = 0; m < 300; m++) {
+                for (Game g : arrivalsOpen) {
+                    g.simulateMonths(1);
+                    double none = g.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()];
+                    if (g.getLabourMarket().bandPremium(WageBand.NONE) <= 1) {
+                        goingRateMonths[0]++;
+                        if (none > 0) boughtAtGoingRate[0]++;
+                    } else if (g.getMigration().getLastArrivals() > 0) {
+                        premiumMonths[0]++;
+                        if (none > 0) boughtAtPremium[0]++;
+                    }
+                }
+            }
+        });
+        System.out.printf("   arrivals open: %d city-months at the going rate, %d of them with unskilled arrivals;"
+                + " %d paying over it with somebody arriving, %d of them with unskilled arrivals%n",
+                goingRateMonths[0], boughtAtGoingRate[0], premiumMonths[0], boughtAtPremium[0]);
+        assertTrue("fixture: the open pair spent months at the going rate and months over it",
+                goingRateMonths[0] > 0 && premiumMonths[0] > 0);
+        assertTrue("nobody arrives unskilled into a city paying the going rate", boughtAtGoingRate[0] == 0);
+        assertTrue("...and a city paying over it for them buys some", boughtAtPremium[0] > 0);
+
         /* ============ 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED ============
 
            Jerus, 2026-09-07: "demand isn't just those who don't have a diploma
@@ -617,6 +687,22 @@ public class EducationCheck {
            empty, out of the same city in the same month.
 
            The schooled fixture is exactly that city, so it can say so.
+
+           ONE BAND UP SINCE 0.7.18 (re-caused). Workers take the best-paid job
+           they qualify for now (PopulationManager, fillByBand()), and this
+           city's unskilled posts - its schools make diploma-holders of nearly
+           everyone - are short of hands and pay more than its diploma posts.
+           So the graduates who come down pass through the diploma jobs into
+           the unskilled ones, and the diploma queue is only the workers who
+           would still take a diploma post at that wage: 4,634 for 4,467 posts
+           against 6,430 for 4,848 on 0.7.17. Read against its own 2,744
+           holders or against that queue, the chance is 1.00 or 0.97, not the
+           .15 apart the premise asks for (0.7.17: 1.00 or 0.79). The flood
+           this section is about is still in the city, one band up: its
+           university graduates, 7,143 of them for 680 university posts, queue
+           for the college jobs, 7,923 for 5,113 posts against 2,009
+           college-holders of their own. So the section reads the college band.
+           Every assertion and every factor is the one it had.
            ==================================================================== */
         System.out.println("\n--- the queue for a job includes the overqualified ---");
 
@@ -624,13 +710,13 @@ public class EducationCheck {
         double[] ownHeads = schooled.getPopulationManager().workforceByBand();
         double[] open = schooled.getPopulationManager().staffablePostsByBand();
         double[] chance = schooled.getMigration().getLastOpportunity();
-        int dip = WageBand.DIPLOMA.ordinal();
+        int dip = WageBand.COLLEGE.ordinal();   // the band the graduates flood (see above)
 
-        System.out.printf("   diploma jobs %,.0f - %,.0f diploma-holders, but %,.0f in the queue"
+        System.out.printf("   college jobs %,.0f - %,.0f college-holders, but %,.0f in the queue"
                 + " once the graduates come down.  opportunity %.2f%n",
                 open[dip], ownHeads[dip], queue[dip], chance[dip]);
 
-        assertTrue("fixture: graduates really have come down into diploma work",
+        assertTrue("fixture: graduates really have come down into college work",
                 queue[dip] > ownHeads[dip] * 1.2);
 
         /* -------------------------------------------------------------------
@@ -688,6 +774,20 @@ public class EducationCheck {
            default share has to be the bill it always was to the bit - the
            seed-0 playtest is byte-identical on it, and this is the same fact
            asserted where it can name itself.
+
+           REWRITTEN FOR 0.7.19, because Jerus replaced the rule the first two
+           assertions encoded ("Grant follows prices": "The student grant
+           follows the cost of living ... instead of the unskilled wage"). Old:
+           "a new city grants a share of the unskilled wage, the founding rule"
+           and "...at that basis and share the bill is bit for bit the founding
+           expression" (students x DEFAULT_STUDENT_GRANT_SHARE x the unskilled
+           wage). New: a new city grants a FIXED real amount, and the bill is
+           students x DEFAULT_FIXED_GRANT x the price index, to the bit; and in
+           a city at founding - the index at one, the wage PayTier's - it is
+           the old default's bill, which is the brief's "set so that at
+           founding it equals today's default", asserted on a real city rather
+           than on the constant. A FIXED grant pays the amount at the price
+           index, where it paid the amount.
            ================================================================= */
         System.out.println("\n--- the grant, on four bases ---");
 
@@ -704,30 +804,56 @@ public class EducationCheck {
         double wage = menu.getUnskilledWage();
         assertTrue("fixture: somebody is studying, and the wage is a wage", students > 10 && wage > 0);
 
-        assertTrue("a new city grants a share of the unskilled wage, the founding rule",
-                dials.getGrantBasis() == TaxPolicy.DEFAULT_GRANT_BASIS
-                        && dials.getGrantAmount() == TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE
-                        && dials.getStudentGrantShare() == TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE);
-        assertTrue("...and at that basis and share the bill is bit for bit the founding expression",
-                menu.studentGrantBill() == students * TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * wage);
+        double index = menu.getPriceIndex().getIndex();
+        assertTrue("a new city grants a fixed real amount, the grant that follows prices (0.7.19)",
+                dials.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
+                        && dials.getGrantAmount() == TaxPolicy.DEFAULT_FIXED_GRANT
+                        && dials.getStudentGrantShare() == 0);
+        assertTrue("...and the bill is the students, the amount and the price index, bit for bit",
+                menu.studentGrantBill() == students * TaxPolicy.DEFAULT_FIXED_GRANT * index);
+        assertTrue("fixture: prices here have moved off founding, so the index is a factor and not a one",
+                Math.abs(index - 1) > 1e-6);
+        // ...and at founding prices it is the old default's bill at the
+        // founding wage: a young city whose basket is not based yet (the
+        // index is one) grants its first students what the wage share did of
+        // PayTier's unskilled wage. Played on a month at a time, bounded,
+        // until somebody is studying.
+        Game founded = city(GameFiles.scratch("educheck-grant-founded"));
+        quietly(() -> schools(founded));
+        for (int m = 0; m < 23 && founded.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT) < 1; m++) {
+            quietly(() -> founded.simulateMonths(1));
+        }
+        double foundedStudents = founded.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
+        assertTrue("fixture: a young city with students, its prices still at founding (an index of one)",
+                foundedStudents >= 1 && founded.getPriceIndex().getIndex() == 1);
+        double foundedFixed = founded.studentGrantBill();
+        double foundedShare = foundedStudents * TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * PayTier.UNSKILLED.getMonthlyWage();
+        System.out.printf("   at founding prices: %,.1f students, the fixed grant's bill $%,.4fk against the old wage share's at the founding wage $%,.4fk%n",
+                foundedStudents, foundedFixed, foundedShare);
+        assertTrue("...where the fixed grant's bill is the old wage-share default's at the founding wage, to a part in a billion",
+                Math.abs(foundedFixed - foundedShare) <= 1e-9 * foundedShare);
         assertTrue("...which is the bill the month struck and the treasury carries",
                 mm.getStudentGrants() == openingBill);
         assertTrue("...and what the students' row was handed, the same month (0.7.1: it was the"
                 + " month before)", menu.getHouseholds().getStudentGrants() == mm.getStudentGrants());
 
         // FIXED: an amount a student a month, whoever the wage is paid to - to
-        // the students the month opens with (0.7.1).
+        // the students the month opens with (0.7.1) - at the price index the
+        // month opens on (0.7.19): the grant is struck before the month's own
+        // prices are.
         dials.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
         double fixedStudents = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
+        double fixedIndex = menu.getPriceIndex().getIndex();
         quietly(() -> menu.simulateMonths(1));
-        assertTrue("a fixed grant pays the amount per student",
-                mm.getStudentGrants() == fixedStudents * .4
-                        && menu.grantPerStudentUnder(TaxPolicy.GrantBasis.FIXED, .4) == .4);
+        assertTrue("a fixed grant pays the amount at the price index per student",
+                mm.getStudentGrants() == fixedStudents * .4 * fixedIndex
+                        && Math.abs(menu.grantPerStudentUnder(TaxPolicy.GrantBasis.FIXED, .4)
+                                - .4 * menu.getPriceIndex().getIndex()) < 1e-12);
         StudentHousehold paidStudents = menu.getHouseholdBalance().students();
         assertTrue("...and it reaches the students as their income",
                 paidStudents.households() > 0
                         && Math.abs(paidStudents.disposable() * paidStudents.households()
-                                - fixedStudents * .4) < 1e-6);
+                                - fixedStudents * .4 * fixedIndex) < 1e-6);
         TaxPolicy reformed = new TaxPolicy();
         reformed.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
         reformed.setStudentLoanRate(.05);
@@ -742,7 +868,7 @@ public class EducationCheck {
         shares.redenominate(.01);
         assertTrue("...and a share of tuition does not move either",
                 shares.getGrantAmount() == .5);
-        assertTrue("the fixed ceiling is an unskilled wage",
+        assertTrue("the fixed ceiling is an unskilled wage at founding prices",
                 new TaxPolicy().maxGrantAmount(TaxPolicy.GrantBasis.FIXED)
                         == TaxPolicy.MAX_FIXED_GRANT_WAGES * PayTier.UNSKILLED.getMonthlyWage());
 
@@ -766,9 +892,9 @@ public class EducationCheck {
                 poolStudents > 0 && Math.abs(menu.grantPerStudentUnder(TaxPolicy.GrantBasis.SURPLUS_SHARE, .10)
                         - .10 * Math.max(0, menu.getTreasurySurplus()) / poolStudents) < 1e-9);
         assertTrue("a deficit month pays nothing",
-                TaxPolicy.grantBill(TaxPolicy.GrantBasis.SURPLUS_SHARE, .5, 100, wage, -1_000, 50) == 0);
+                TaxPolicy.grantBill(TaxPolicy.GrantBasis.SURPLUS_SHARE, .5, 100, wage, 1, -1_000, 50) == 0);
         assertTrue("...and so does a surplus with nobody to split it over",
-                TaxPolicy.grantBill(TaxPolicy.GrantBasis.SURPLUS_SHARE, .5, 0, wage, 1_000, 0) == 0);
+                TaxPolicy.grantBill(TaxPolicy.GrantBasis.SURPLUS_SHARE, .5, 0, wage, 1, 1_000, 0) == 0);
 
         // TUITION_SHARE: a share of each student's OWN course fee, at today's price.
         dials.setGrant(TaxPolicy.GrantBasis.TUITION_SHARE, .5);
@@ -797,7 +923,7 @@ public class EducationCheck {
                 mm.getStudentGrants() == .5 * bodyAtTwo);
         dials.setTuitionScale(TaxPolicy.DEFAULT_TUITION_SCALE);
         dials.setStudentGrantShare(TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE);
-        assertTrue("the wage share puts the founding basis back",
+        assertTrue("the wage share puts the old founding basis back",
                 dials.getGrantBasis() == TaxPolicy.GrantBasis.WAGE_SHARE
                         && dials.getStudentGrantShare() == TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE);
 
@@ -907,6 +1033,14 @@ public class EducationCheck {
         Game lender = city(loanFiles);
         lender.getEconomyManager().getTaxPolicy().setGrant(TaxPolicy.GrantBasis.FIXED, .05);
         quietly(() -> { schools(lender); lender.simulateMonths(150); });
+        // ...AND PLAYED ON TO A MONTH IN WHICH STUDENTS BORROW (revised 0.7.19,
+        // re-caused). The lending read below is the month's, and month 150 of
+        // this city, since the charter branch is exempt from its operating
+        // cost (Bank, THE BRANCHES, BY THEIR CUSTOMERS), is a month in which
+        // nobody drew the loan though the graduates owe $28M. A history, not a
+        // cause: the city is played on, a month at a time and bounded at two
+        // years, to the next month that lends.
+        for (int more = 0; more < 24 && !(lender.getStudentLoansLent() > 0); more++) quietly(() -> lender.simulateMonths(1));
         assertTrue("fixture: at a $50 grant the students borrowed, and the graduates owe the treasury",
                 lender.getHouseholdBalance().totalGraduateDebt() > 0
                         && lender.getStudentLoansLent() > 0);
@@ -1068,7 +1202,7 @@ public class EducationCheck {
         double[] older = java.util.Arrays.copyOf(kp.getPolicyState(), TaxPolicy.STATE_BEFORE_EDUCATION);
         TaxPolicy fromBefore = new TaxPolicy();
         assertTrue("a policy array from before the dials is still read", fromBefore.restorePolicyState(older));
-        assertTrue("...as the founding basis at the share its own slot carried, no interest, the founding price",
+        assertTrue("...as the old founding basis at the share its own slot carried, no interest, the founding price",
                 fromBefore.getGrantBasis() == TaxPolicy.GrantBasis.WAGE_SHARE
                         && fromBefore.getGrantAmount() == older[TaxPolicy.STATE_BEFORE_EI + 2]
                         && fromBefore.getStudentLoanRate() == TaxPolicy.DEFAULT_STUDENT_LOAN_RATE
@@ -1082,6 +1216,25 @@ public class EducationCheck {
                 readsShare.getGrantAmount() == .25 && readsShare.getStudentGrantShare() == .25);
         assertTrue("a wrong shape is still refused whole",
                 !new TaxPolicy().restorePolicyState(new double[TaxPolicy.STATE_SLOTS + 1]));
+        // THE REAL FIXED GRANT ON A LOAD (0.7.19): a FIXED amount in a save
+        // from before it was nominal, and is read as the real amount that pays
+        // the same at the load month's index; one from 0.7.19 on is real already.
+        TaxPolicy fixedThen = new TaxPolicy();
+        fixedThen.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
+        double[] beforeReal = java.util.Arrays.copyOf(fixedThen.getPolicyState(), TaxPolicy.STATE_BEFORE_REAL_GRANT);
+        TaxPolicy readsOld = new TaxPolicy();
+        assertTrue("an array from before the real grant is still read", readsOld.restorePolicyState(beforeReal));
+        readsOld.realiseFixedGrant(2.5);
+        assertTrue("...and its fixed grant, nominal then, pays at the load month's index what it paid",
+                readsOld.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
+                        && Math.abs(readsOld.getGrantAmount() * 2.5 - .4) < 1e-15);
+        readsOld.realiseFixedGrant(2.5);
+        assertTrue("...once", Math.abs(readsOld.getGrantAmount() * 2.5 - .4) < 1e-15);
+        TaxPolicy readsNew = new TaxPolicy();
+        readsNew.restorePolicyState(fixedThen.getPolicyState());
+        readsNew.realiseFixedGrant(2.5);
+        assertTrue("...while a save from 0.7.19 on carries a real amount, and it is left alone",
+                readsNew.getGrantBasis() == TaxPolicy.GrantBasis.FIXED && readsNew.getGrantAmount() == .4);
 
         /* ============ 17. A PRICE PER SCHOOL (0.7.6) ============
 

@@ -1,6 +1,6 @@
-# TreasuryLine.java - 128 lines · 2 methods · 0 constants · model
+# TreasuryLine.java - 135 lines · 2 methods · 0 constants · model
 
-`ham/citybuildersim/TreasuryLine.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryLine.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Every kind of payment the treasury makes, and whether it is a promise.
 > 
@@ -50,25 +50,26 @@
 | 88 | `TreasuryLine.BUSINESS_SUBSIDIES` | The standing policy's top-up of any other protected sector to break-even. |
 | 91 | `TreasuryLine.STUDENT_GRANTS` | Grants to students: a policy the city chose and can owe. |
 | 94 | `TreasuryLine.CITY_REPAIRS` | The city's share of the repair bill on its own buildings: work done, and owed to the builders if it cannot be paid. |
-| 97 | `TreasuryLine.LAND` | Land the city buys, from the land office or back from a sector; refused, it stays unbought. |
-| 100 | `TreasuryLine.BUILDINGS` | Buildings the city orders; refused, they are not ordered. |
-| 103 | `TreasuryLine.BANK_CAPITAL` | Capital put into the commercial bank: since 0.7.14 the preferred a standing bank under its minimum asks the city for (Game.acceptPreferredOffer()); refused, it is not bought. |
-| 106 | `TreasuryLine.RESERVE_PURCHASES` | Foreign currency bought for the vault. |
-| 109 | `TreasuryLine.BUYBACKS` | A bond bought back before it is due. |
+| 101 | `TreasuryLine.BUILDING_ESCALATION` | The material the crews drew for the city's own orders, at the price the month they drew it, less what the quote allowed for it (0.7.19; Game, MATERIAL AT THE PRICE WHEN IT IS USED): the material was used, so it is owe... |
+| 104 | `TreasuryLine.LAND` | Land the city buys, from the land office or back from a sector; refused, it stays unbought. |
+| 107 | `TreasuryLine.BUILDINGS` | Buildings the city orders; refused, they are not ordered. |
+| 110 | `TreasuryLine.BANK_CAPITAL` | Capital put into the commercial bank: since 0.7.14 the preferred a standing bank under its minimum asks the city for (Game.acceptPreferredOffer()); refused, it is not bought. |
+| 113 | `TreasuryLine.RESERVE_PURCHASES` | Foreign currency bought for the vault. |
+| 116 | `TreasuryLine.BUYBACKS` | A bond bought back before it is due. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 112 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
-| 115 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
-| 118 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
+| 119 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
+| 122 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
+| 125 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 101 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
-| 120 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
-| 127 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
+| 28 | 108 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
+| 127 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
+| 134 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
 

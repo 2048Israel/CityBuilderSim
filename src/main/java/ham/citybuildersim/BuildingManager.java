@@ -9,6 +9,10 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 
 /**
+ * The city's buildings: the catalogue of templates, the stacks standing and
+ * on site with the contracts the builders are working to and who placed
+ * them, the yard's material, and what the work costs today
+ * (nonMaterialCost(), since 0.7.19).
  *
  * @author Jerus
  */
@@ -52,6 +56,139 @@ public class BuildingManager {
      */
     public static final double MATERIALS_WORLD_PRICE = 18;
     private double materialsCost = MATERIALS_WORLD_PRICE;
+
+    /* =====================================================================
+       THE LABOUR IN A PRICE KEEPS UP WITH WAGES (0.7.19)
+
+       Jerus chose "Builders' prices keep up": "The labour part of building
+       and repair prices rises with wages, materials are paid at the price
+       when they're used, and sales tax is in the builder's quote."
+
+       WHAT IT REPLACED. The non-material part of every contract and repair
+       bill was the template's cashCost, in founding dollars, moved only by a
+       currency reform. In Jerus's 0.7.14 city the builders were paid 4.25 a
+       point for a Low-Rise against a labour cost of 5.28, and lost $600M a
+       month (the trace's Q5).
+
+       WHAT MOVES, AND WHAT DOES NOT. Only the LABOUR in cashCost: a building's
+       points at what the builders' own crews cost a point. A Construction
+       Depot's jobs (35 unskilled, 15 diploma) paid the founding ladder
+       (PayTier) cost $188.6k a month for 400 points - 0.47 a point - and
+       that much of a template's cashCost per point is its labour, at
+       founding; today it is the same posts at today's wages. The rest of
+       cashCost - the overhead, the equipment and the margin, most of it
+       (Low-Rise: all but 1,132 of 10,196) - stays at its founding value. Indexing
+       the whole of cashCost by the wage index was measured by hand first
+       and rejected: in Jerus's city it would have been 13.5 times cashCost
+       in month 1793 - a windfall, not a price.
+
+       THE SPLIT IS THE MODEL'S OWN. StatCan's Building Construction Price
+       Index is an OUTPUT price index - contractors' selling prices for model
+       buildings, "materials, labour, equipment, ... taxes, and contractor's
+       overhead and profit" - and its technical note publishes no labour and
+       material weights ("Weights are derived from detailed cost analysis of
+       each structure", Statistics Canada 62-007-X, non-residential building
+       construction price indexes, technical note). So the index family
+       followed is the input-cost escalation of the labour component alone -
+       the labour term of a price-adjustment formula, the way StatCan's
+       construction union wage rate index is the labour input - with the
+       builders' own wages as the index and their own founding wage bill a
+       point as the weight.
+
+       WHERE IT IS READ: what a building costs to put up or to repair - the
+       builders' quote (Game.quoteBuild()), the repair bills
+       (EconomyManager.maintenanceBillFor()), and the planners' costing of
+       both. NOT the book values below, which carry a building at its cash
+       cost and its materials at market as they did: a valuation is not a
+       price the builders charge, and moving it would move every balance
+       sheet, collateral and assessment in the city with it.
+
+       A REFORM IS A CHANGE OF UNITS: the founding wage bill is struck in
+       today's unit (the unit supplied beside it), so the index is a ratio a
+       reform does not move, and cashCost is reformed with the templates.
+       ===================================================================== */
+
+    /** What the builders' crews cost a point of output, today and at the founding ladder, both in today's money. Supplied by Game; a manager with none prices every template at its cash cost. */
+    public interface BuildersWages {
+        /** A depot's posts at today's wages, over its points. */
+        double perPointToday();
+        /** ...and at the founding ladder, PayTier, in today's unit. */
+        double perPointAtFounding();
+    }
+
+    private BuildersWages buildersWages;
+
+    public void setBuildersWages(BuildersWages wages) { this.buildersWages = wages; }
+
+    /** The builders' labour index: their wage bill a point today over at founding. One with no wages to read. */
+    public double buildersWageIndex() {
+        if (buildersWages == null) return 1;
+        double then = buildersWages.perPointAtFounding();
+        double now = buildersWages.perPointToday();
+        // Before the labour market has priced anybody (a city not yet stepped)
+        // there is no wage today to read, and the price is the founding one.
+        return then > 0 && now > 0 && Double.isFinite(now) ? now / then : 1;
+    }
+
+    /**
+     * The non-material part of what one of these costs to build today (0.7.19):
+     * its cash cost, with its labour - its points at the builders' founding
+     * wage bill a point, never more than the whole cash cost - at today's
+     * builders' wages. The rest is its founding value. See THE LABOUR IN A
+     * PRICE KEEPS UP WITH WAGES.
+     */
+    public double nonMaterialCost(BuildingsTemplate t) {
+        double cash = t.getCashCost();
+        if (buildersWages == null) return cash;
+        double then = buildersWages.perPointAtFounding();
+        if (!(then > 0)) return cash;
+        double labourThen = Math.min(cash, t.getConstructionPoints() * then);
+        return cash - labourThen + labourThen * buildersWageIndex();
+    }
+
+    /** ...its labour part alone, at today's wages. */
+    public double labourCost(BuildingsTemplate t) {
+        double cash = t.getCashCost();
+        if (buildersWages == null) return 0;
+        double then = buildersWages.perPointAtFounding();
+        if (!(then > 0)) return 0;
+        return Math.min(cash, t.getConstructionPoints() * then) * buildersWageIndex();
+    }
+
+    /** ...and with its materials at the world's price today: what it would cost to put up now, before the sales tax. The repair bill's shape (EconomyManager.maintenanceBillFor() prices the material at the price it is handed); nothing calls it yet. */
+    public double structureCost(BuildingsTemplate t) {
+        return nonMaterialCost(t) + t.getConstructionMaterials() * materialsCost;
+    }
+
+    /**
+     * What the builders are paid for a point of work, beyond its material and
+     * its sales tax (0.7.19): the non-material price of the work on site,
+     * averaged over the points still owed; with nothing on site, of the
+     * repairs - the standing city's mix, which is the work a depot does when
+     * there is no queue. What a depot's profit estimate earns a point
+     * (sectors.Construction.estimatedMonthlyProfit()). Zero with nothing
+     * standing and nothing on site.
+     */
+    public double nonMaterialPricePerPoint() {
+        double value = 0, points = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            int per = t.getConstructionPoints();
+            if (stack.getUnderConstruction() <= 0 || per <= 0) continue;
+            double owed = stack.getUnderConstruction() * (double) per - stack.getConstructionProgress();
+            if (owed <= 0) continue;
+            value += owed * nonMaterialCost(t) / per;
+            points += owed;
+        }
+        if (points > 0) return value / points;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (stack.getQuantity() <= 0 || t.getConstructionPoints() <= 0) continue;
+            value += stack.getQuantity() * nonMaterialCost(t);
+            points += stack.getQuantity() * (double) t.getConstructionPoints();
+        }
+        return points > 0 ? value / points : 0;
+    }
 
     public void setExchangeRate(double rate) {
         this.materialsCost = MATERIALS_WORLD_PRICE * (rate > 0 ? rate : 1);
@@ -2093,7 +2230,10 @@ public class BuildingManager {
 
            Still a substantial white-collar employer, and still an employer whose
            business case needs a loan book worth banking - which is the decision
-           this building is meant to be.
+           this building is meant to be. Since 0.7.19 the case for a branch past
+           the first is its customers' account fees instead (Bank, THE BRANCHES,
+           BY THEIR CUSTOMERS), and DEPOSITS_PER_BRANCH is retired: every deposit
+           reaches the bank, online.
            ===================================================================== */
         bank.setJobs(JobType.NO_DIPLOMA, 2);
         bank.setJobs(JobType.DIPLOMA, 9);
@@ -2868,14 +3008,245 @@ public class BuildingManager {
         instances.add(new BuildingInstance(template));
     }
 
+    /* =====================================================================
+       EVERY BUILDING GETS THE CREW IT CAN USE (0.7.17)
+
+       Jerus: "Builders' output split by buildings on site (every site gets a
+       crew), and no more parking points on building types with nothing left
+       to build" - and then, told what one crew a building did to his
+       universities, "a university gets a bigger crew than a house".
+
+       WHAT IT WAS: an equal share per building TYPE on site (backlog item 2,
+       "per stack, not per work remaining"). In Jerus's year-149 city four
+       types were on site - the builders' own one-depot order, 219 Low-Rise
+       blocks, 47 care complexes and 7 universities - so the depot, owed 400
+       points, took a quarter of the sites' output, about 10,700 points, and
+       carried the other 10,300 as progress on a stack with nothing left on
+       it. The landlords' 219 blocks got the same quarter as the one depot:
+       about 250 homes a month. 7.82M points sat parked like that on stacks
+       with nothing on site - a hundred and eighty months of the sites'
+       output - and the next order on such a stack opened on its first month
+       on points nobody had worked that month (the tracer's notes, Q3).
+
+       WHAT IT IS: the month's site output, after the repairs, shared by the
+       CREW EACH BUILDING CAN USE - its buildings on site times the points one
+       of them takes to build raised to CREW_SCALE_EXPONENT, the whole
+       building and not what it still owes (weightOf()). A bigger building
+       gets a bigger crew, but less than in proportion to its size: a
+       university, 26,000 points, has about eighteen times the crew of a
+       depot's 400 (sixty-five times its points), and a stack of two hundred
+       houses of ten points has two hundred houses' crews. No stack takes
+       more than it still owes (its buildings on site times their points,
+       less the progress it has); what a satisfied stack does not take goes
+       to the others by the same rule, until the output is spent or every
+       site has what it owes: water-filling, one rate a unit of weight,
+       capped per stack. Output no site can use this month is IDLE - the
+       crews had nothing to do, and Construction reads it as utilisation
+       (recogniseWork()) - and never banked.
+
+       WHY THAT EXPONENT. Bromilow's time-cost law: a building's construction
+       time grows with its cost as T = K x C^B, with B about 0.30 (Bromilow,
+       Australian building contracts; 0.32 for Malaysian public projects,
+       Chan 1999, International Journal of Project Management). The crew a
+       building can use is its work over its time, C / T, which grows as
+       C^(1 - B). Only the exponent is taken, as the weight the output is
+       shared by: K, the natural pace a building could go at alone, is not
+       modelled, and nothing caps a site's crew at it.
+
+       WHY THE WHOLE BUILDING AND NOT WHAT IS LEFT OF IT. The rule was
+       briefly the points each stack still owed, and a crew that shrinks with
+       the work it has left never finishes: a stack's last building got its
+       remainder times the output over everything owed, so it lost the same
+       fraction every month and finished only in a month whose output
+       covered every site in the city. In Jerus's city twelve sites sat one
+       building from done for years, his last university among them. A crew
+       the size of the building does not shrink as the building nears
+       completion; the last building of a stack finishes in its share's own
+       time.
+
+       THE FIRST VERSION of this section gave every building one crew,
+       whatever its size: a lone university beside two hundred blocks of
+       flats got one block's share, and took ninety months in Jerus's city
+       where it had taken twenty-one. The second gave every building a crew
+       in proportion to its points, and a coal plant of 120,000 points on
+       site beside a founding's six shops of 120 took all but a
+       four-hundredth of the output: the shops did not open for a decade.
+       One crew a building and a crew in proportion are the exponent at 0
+       and at 1; Bromilow's sits between them.
+
+       AND NOT A CREW EVERY ORDER FIRST. Jerus's own hybrid - "every order
+       has at least one crew, and then spare crews are assigned ... sort of
+       like a pyramid": a depot's worth of the site output to every building
+       on site, the rest by these weights - was built and measured against
+       this rule (the round's notes, fourth revision). It cleared every small
+       building a large order starved in the checks, and in the default city
+       it did what one crew a building did: the builders bought depots for
+       the small orders that rushed through, then stood laid off to the core
+       crew for most of the run - thirteen banks failed over eight cities
+       against four, and unemployment moved half as much again in a month
+       (p95 2.6 points against 1.9). His call was this rule if it held,
+       small orders waiting behind large ones accepted; it held.
+       ===================================================================== */
+
     /**
-     * What each site gets of the month's output. The engine splits evenly
-     * per stack (backlog item 2 - per stack, not per work remaining), and the
-     * construction panel used to re-derive this split beside it. One place.
+     * The power of a building's construction points its crew grows by: 1 -
+     * Bromilow's B. Bromilow's time-cost law, T = K x C^B, puts a building's
+     * construction time at its cost to the power B = 0.30 (Bromilow,
+     * Australian building contracts; 0.32 for Malaysian public projects,
+     * Chan 1999, Int. J. Project Management); the crew it can use is C / T,
+     * which grows as C^(1 - B). See EVERY BUILDING GETS THE CREW IT CAN USE.
      */
-    public double outputPerSite(int constructionOutput) {
-        int sites = getUnderConstruction();
-        return sites > 0 ? (double) constructionOutput / sites : constructionOutput;
+    public static final double CREW_SCALE_EXPONENT = 0.70;
+
+    /**
+     * Each stack's share of the month's site output, in the order of the
+     * stacks, by the rule above.
+     *
+     * @param siteOutput  the points the sites have this month, after repairs
+     * @param extra       a template to count as if ordered too, or null - what
+     *                    a sector's sites would get WITH the order it is
+     *                    weighing (siteShareOfSector(), the only caller that
+     *                    passes one)
+     * @param extraCount  how many of it
+     * @return one share per stack, and one more at the end for the extra
+     *         template when it has no stack yet
+     */
+    public double[] siteShares(double siteOutput, BuildingsTemplate extra, int extraCount) {
+        int n = stacks.size();
+        boolean extraHasStack = false;
+        double[] weight = new double[n + 1];
+        double[] owed = new double[n + 1];
+        for (int k = 0; k < n; k++) {
+            BuildingsStacks s = stacks.get(k);
+            int building = s.getUnderConstruction();
+            double points = s.getBuilding().getConstructionPoints();
+            if (extra != null && extraCount > 0 && s.getBuilding() == extra) {
+                extraHasStack = true;
+                building += extraCount;
+                owed[k] = extraCount * points;
+            }
+            if (building <= 0) continue;
+            owed[k] += Math.max(0, s.getUnderConstruction() * points - s.getConstructionProgress());
+            weight[k] = weightOf(s.getBuilding(), building);
+        }
+        if (extra != null && extraCount > 0 && !extraHasStack) {
+            owed[n] = extraCount * (double) extra.getConstructionPoints();
+            weight[n] = weightOf(extra, extraCount);
+        }
+        return waterFill(Math.max(0, siteOutput), weight, owed);
+    }
+
+    /** The month's site output by the rule above, one share per stack. */
+    public double[] siteShares(double siteOutput) {
+        double[] withExtra = siteShares(siteOutput, null, 0);
+        return java.util.Arrays.copyOf(withExtra, stacks.size());
+    }
+
+    /**
+     * One rate per unit of weight, each claimant capped at what it is owed,
+     * and what a capped claimant leaves shared among the rest by the same
+     * rule - the order a claimant runs out in is the order of owed over
+     * weight, so they are taken in that order.
+     */
+    static double[] waterFill(double output, double[] weight, double[] owed) {
+        int n = weight.length;
+        double[] share = new double[n];
+        Integer[] order = new Integer[n];
+        int live = 0;
+        double weights = 0;
+        for (int k = 0; k < n; k++) {
+            if (weight[k] > 0 && owed[k] > 0) {
+                order[live++] = k;
+                weights += weight[k];
+            }
+        }
+        Integer[] claim = java.util.Arrays.copyOf(order, live);
+        java.util.Arrays.sort(claim, (a, b) -> Double.compare(owed[a] / weight[a], owed[b] / weight[b]));
+        double left = output;
+        for (int i = 0; i < claim.length && left > 0 && weights > 0; i++) {
+            int k = claim[i];
+            double rate = left / weights;
+            double take = Math.min(owed[k], rate * weight[k]);
+            share[k] = take;
+            left -= take;
+            weights -= weight[k];
+        }
+        return share;
+    }
+
+    /** A stack's crew by the rule above: its buildings on site times the crew one of them can use, its points to CREW_SCALE_EXPONENT. */
+    static double weightOf(BuildingsTemplate t, int buildingsOnSite) {
+        return buildingsOnSite * Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT);
+    }
+
+    /**
+     * Months an order would wait at this month's shares (0.7.17): what its
+     * stack would owe with it - the order's points, and whatever of the same
+     * building is on site ahead of it - over the share that stack would get
+     * of the site output with the order counted, BEFORE any cap. That is the
+     * rule's own arithmetic held steady: the stack's points over its weight's
+     * share of everything on site plus the order, by weightOf(). Output freed by a site
+     * finishing would make it sooner, orders placed later would make it
+     * later; neither is guessed at. For every planner's lead time and order
+     * size (BusinessInvestment.leadTime(), orderSize()) and the build quote
+     * (Game.quoteMonths()). MAX_VALUE with no output.
+     */
+    public double waitFor(BuildingsTemplate t, int quantity, double siteOutput) {
+        if (t == null || quantity < 1) return 0;
+        if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        double others = 0, aheadOwed = 0;
+        int aheadUnits = 0;
+        for (BuildingsStacks s : stacks) {
+            int on = s.getUnderConstruction();
+            if (on <= 0) continue;
+            if (s.getBuilding() == t) {
+                aheadUnits = on;
+                aheadOwed = Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress());
+            } else {
+                others += weightOf(s.getBuilding(), on);
+            }
+        }
+        double mine = weightOf(t, aheadUnits + quantity);
+        if (!(mine > 0)) return 0;
+        double owedWith = aheadOwed + quantity * (double) t.getConstructionPoints();
+        return owedWith * (others + mine) / (siteOutput * mine);
+    }
+
+    /** One stack's share of the month's site output, by the rule above. */
+    public double shareOf(BuildingsStacks site, double siteOutput) {
+        int k = stacks.indexOf(site);
+        return k < 0 ? 0 : siteShares(siteOutput)[k];
+    }
+
+    /**
+     * What one sector's sites would get of the month's site output, with an
+     * order counted as though it were already on site (0.7.17). Written as
+     * the pace the landlords held their orders by; nothing reads it as
+     * shipped - their months are the builders' whole site output against
+     * what their own sites owe (BusinessInvestment.withinMonthsOfWork(),
+     * pointsOwedBySector(); see "MONTHS OF THE BUILDERS' WORK, NOT OF THE
+     * LANDLORDS' PACE" there). TODO(docs): whether it is kept for a reader
+     * to come or left over from the round's earlier reading is not said.
+     */
+    public double siteShareOfSector(String sector, double siteOutput, BuildingsTemplate extra, int extraCount) {
+        double[] share = siteShares(siteOutput, extra, extraCount);
+        double total = 0;
+        for (int k = 0; k < stacks.size(); k++) {
+            if (sector.equals(stacks.get(k).getBuilding().getSector())) total += share[k];
+        }
+        if (extra != null && sector.equals(extra.getSector())) total += share[stacks.size()];
+        return total;
+    }
+
+    /** Points one sector's sites still owe (0.7.17). */
+    public double pointsOwedBySector(String sector) {
+        double total = 0;
+        for (BuildingsStacks s : stacks) {
+            if (s.getUnderConstruction() <= 0 || !sector.equals(s.getBuilding().getSector())) continue;
+            total += Math.max(0, s.getUnderConstruction() * (double) s.getBuilding().getConstructionPoints()
+                    - s.getConstructionProgress());
+        }
+        return total;
     }
 
     /**
@@ -2908,13 +3279,20 @@ public class BuildingManager {
         java.util.List<Completion> finished = new java.util.ArrayList<>();
         materialsDue = 0;
         revenueDue = 0;
+        pointsBuilt = 0;
+        contractsDue.clear();
 
         if (getUnderConstruction() != 0) {
-            double outputPerStack = (double) constructionOutput / getUnderConstruction();
-            for (BuildingsStacks stack : stacks) {
-                stack.advanceConstruction(outputPerStack);
+            // Every building gets the crew it can use, and no stack more than
+            // it owes - see EVERY BUILDING GETS THE CREW IT CAN USE above.
+            double[] share = siteShares(constructionOutput);
+            for (int k = 0; k < stacks.size(); k++) {
+                BuildingsStacks stack = stacks.get(k);
+                stack.advanceConstruction(share[k]);
+                pointsBuilt += stack.getLastApplied();
                 materialsDue += stack.getMaterialsDue();
                 revenueDue += stack.getRevenueDue();
+                contractsDue.addAll(stack.getDues());
                 if (stack.getLastFinished() > 0) {
                     finished.add(new Completion(
                             stack.getBuilding().getName(), stack.getLastFinished()));
@@ -2945,9 +3323,88 @@ public class BuildingManager {
     /** ...and what the same work earned of the builders' contracts. See BuildingsStacks.contractValue. */
     private double revenueDue;
 
+    /**
+     * The points this month's advance actually put into buildings (0.7.17):
+     * the site output less what no site could use. Construction reads it as
+     * the month's work, and the rest as its crews standing idle.
+     */
+    private double pointsBuilt;
+
+    public double getPointsBuilt() { return pointsBuilt; }
+
+    /* ---------------------------------------------------------------------
+       THE POSTS A SECTOR OFFERS (0.7.17, revised to Jerus's answer): the
+       builders lay off crews their work does not need
+       (sectors.Construction, THE CREWS THE WORK NEEDS), so the posts the
+       labour market is offered are fewer than their depots have. Both counts
+       of those posts - the city's (getTotalJobs()) and the sector's own wage
+       bill (Construction.updateWages()) - take the same whole number per
+       job type through postsOffered(), or the households would be paid for
+       posts no employer pays for. A sector the hook says nothing about
+       offers every post.
+       --------------------------------------------------------------------- */
+
+    /** The share of a sector's posts it offers this month; null offers every post. */
+    private java.util.function.ToDoubleFunction<String> offeredShare;
+
+    public void setOfferedShare(java.util.function.ToDoubleFunction<String> offeredShare) {
+        this.offeredShare = offeredShare;
+    }
+
+    /** The whole posts offered of a job type's posts at a share: rounded once, the same way everywhere. */
+    public static int postsOffered(int posts, double share) {
+        if (!(share < 1)) return posts;
+        return (int) Math.round(posts * Math.max(0, share));
+    }
+
+    /** A sector's share of its posts on offer: 1 without the hook. */
+    public double offeredShareOf(String sector) {
+        if (offeredShare == null || sector == null) return 1;
+        double share = offeredShare.applyAsDouble(sector);
+        return share >= 0 ? Math.min(1, share) : 1;
+    }
+
+    /** The posts a sector offers this month, per job type - its buildings' posts at its share. */
+    public int[] getPostsOfferedBySector(String sector) {
+        int[] posts = getJobArrayBySector(sector);
+        double share = offeredShareOf(sector);
+        for (int i = 0; i < posts.length; i++) posts[i] = postsOffered(posts[i], share);
+        return posts;
+    }
+
+    /**
+     * Clears progress a stack carries past what it owes - all of it on a
+     * stack with nothing on site - and says how many points that was (0.7.17).
+     *
+     * FOR THE LOAD PATH. A save written before every building got a crew can
+     * carry output parked on a stack: the equal share per type gave a
+     * one-building order far more than it owed, and the stack kept the rest
+     * as progress. Under the rule it could never have been built up, so it
+     * is not kept. It MOVES NO MONEY: material is drawn and contracts are
+     * earned by a stack on the points it is owed (BuildingsStacks
+     * .advanceConstruction() caps both at them), so parked points drew no
+     * material, earned no revenue and are in no contract; the order book,
+     * the work-in-progress valuation and the audit's pools never read
+     * progress. Only points go.
+     */
+    public double clearBankedProgress() {
+        double cleared = 0;
+        for (BuildingsStacks stack : stacks) cleared += stack.clearBankedProgress();
+        return cleared;
+    }
+
     public double takeRevenueDue() {
         double d = revenueDue;
         revenueDue = 0;
+        return d;
+    }
+
+    /** ...and payer by payer (0.7.19): each order's share of the month's work, units and allowance. See BuildingsStacks.Contract. */
+    private final java.util.List<BuildingsStacks.Due> contractsDue = new java.util.ArrayList<>();
+
+    public java.util.List<BuildingsStacks.Due> takeContractsDue() {
+        java.util.List<BuildingsStacks.Due> d = new java.util.ArrayList<>(contractsDue);
+        contractsDue.clear();
         return d;
     }
 
@@ -3168,14 +3625,50 @@ public class BuildingManager {
     }
 
     public int getTotalJobs(JobType type) {
+        // ...less the posts a sector does not offer this month (0.7.17): see
+        // THE POSTS A SECTOR OFFERS.
+        return getTotalJobsAtEveryPost(type) - getPostsWithheld(type);
+    }
+
+    /** Every post of a job type the city's buildings have, offered this month or not (0.7.17). */
+    public int getTotalJobsAtEveryPost(JobType type) {
         int total = 0;
-        for (BuildingsStacks stack : stacks) {
-            total += stack.getTotalJobs(type);
-        }
-        for (BuildingInstance inst : instances) {
-            total += inst.getJobs(type);
-        }
+        for (BuildingsStacks stack : stacks) total += stack.getTotalJobs(type);
+        for (BuildingInstance inst : instances) total += inst.getJobs(type);
         return total;
+    }
+
+    /**
+     * The posts of a job type the sectors are not offering this month (0.7.17):
+     * the builders' laid-off crews. Summed per sector first, so the rounding
+     * is postsOffered()'s on the sector's own count, the one its wage bill
+     * takes.
+     *
+     * A PLANNER COUNTS THEM AS JOBS. A post laid off for want of work is a
+     * job that comes back with the work, so what the city's planners weigh -
+     * the landlords' jobs (sectors.RealEstate), the staff a new building could
+     * find (Sector.staffableShare()) - is every post, these included; only
+     * the labour market and the wage bills take the posts offered.
+     */
+    public int getPostsWithheld(JobType type) {
+        if (offeredShare == null) return 0;
+        java.util.Map<String, Integer> bySector = new java.util.HashMap<>();
+        for (BuildingsStacks stack : stacks) {
+            int posts = stack.getTotalJobs(type);
+            if (posts != 0) bySector.merge(stack.getBuilding().getSector(), posts, Integer::sum);
+        }
+        int withheld = 0;
+        for (java.util.Map.Entry<String, Integer> e : bySector.entrySet()) {
+            withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey()));
+        }
+        return withheld;
+    }
+
+    /** getPostsWithheld() over every job type. */
+    public int getPostsWithheld() {
+        int withheld = 0;
+        for (JobType type : JobType.values()) withheld += getPostsWithheld(type);
+        return withheld;
     }
 
     /**
@@ -4119,6 +4612,78 @@ public class BuildingManager {
     public void bookContract(BuildingsTemplate template, double amount) {
         BuildingsStacks stack = getStack(template);
         if (stack != null) stack.bookContract(amount);
+    }
+
+    /** ...and who placed it, with the material units it will draw beyond the yard and the allowance priced in for them (0.7.19), and the share of the tax on it the payer gets back (EconomyManager.taxRecoveredShare()). */
+    public void bookContract(BuildingsTemplate template, String payer, double recovered,
+                             double amount, double units, double allowance) {
+        BuildingsStacks stack = getStack(template);
+        if (stack != null) stack.bookContract(payer, recovered, amount, units, allowance);
+    }
+
+    /** One payer's contract on one template's sites, as the save carries it (0.7.19). */
+    public static final class ContractRecord {
+        public int templateId;
+        public String payer;
+        public boolean creditable;
+        /** The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. */
+        public Double recovered;
+        public double value, units, allowance;
+    }
+
+    /** Every payer's contract on site, for the save. */
+    public java.util.List<ContractRecord> getContractRecords() {
+        java.util.List<ContractRecord> out = new java.util.ArrayList<>();
+        for (BuildingsStacks stack : stacks) {
+            for (BuildingsStacks.Contract c : stack.getContracts()) {
+                ContractRecord r = new ContractRecord();
+                r.templateId = stack.getBuilding().getId();
+                r.payer = c.payer;
+                r.creditable = c.creditable;
+                r.recovered = c.getRecovered();
+                r.value = c.getValue();
+                r.units = c.getUnits();
+                r.allowance = c.getAllowance();
+                out.add(r);
+            }
+        }
+        return out;
+    }
+
+    /** ...and back onto the stacks the load path has put up. */
+    public void restoreContractRecords(java.util.List<ContractRecord> records) {
+        if (records == null) return;
+        for (ContractRecord r : records) {
+            if (r == null || r.payer == null) continue;
+            BuildingsTemplate t = getTemplate(r.templateId);
+            BuildingsStacks stack = t == null ? null : getStack(t);
+            double recovered = r.recovered != null ? r.recovered : (r.creditable ? 1 : 0);
+            if (stack != null) stack.restoreContract(r.payer, recovered, r.value, r.units, r.allowance);
+        }
+    }
+
+    /**
+     * Every stack's contract read as one payer's, for a save from before the
+     * payers were kept (0.7.19; Game, OLD CONTRACTS): the whole contract
+     * left, the material its sites still owe, and an allowance of the
+     * contract less the work still owed at the cash cost it was priced at,
+     * and the share of the tax its payer gets back on a building of it.
+     * A stack that already has its payers is left alone.
+     */
+    public void inferContracts(java.util.function.Function<BuildingsTemplate, String> payerOf,
+                               java.util.function.ToDoubleBiFunction<String, BuildingsTemplate> recovers) {
+        for (BuildingsStacks stack : stacks) {
+            if (!stack.getContracts().isEmpty()) continue;
+            double left = stack.getContractValue();
+            double units = stack.getMaterialsOwed();
+            if (left <= 0 && units <= 0) continue;
+            BuildingsTemplate t = stack.getBuilding();
+            int per = t.getConstructionPoints();
+            double owed = stack.getUnderConstruction() * (double) per - stack.getConstructionProgress();
+            double work = per > 0 ? t.getCashCost() * Math.max(0, owed) / per : 0;
+            String payer = payerOf.apply(t);
+            stack.restoreContract(payer, recovers.applyAsDouble(payer, t), left, units, Math.max(0, left - work));
+        }
     }
 
     /** One order book, spread over the sites by the points they still owe. For a save from before the book was kept per stack. */

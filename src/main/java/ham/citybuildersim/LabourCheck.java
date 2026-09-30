@@ -231,8 +231,9 @@ public class LabourCheck {
          *
          * Staffed posts in a band can never exceed the workers who could hold
          * them - their own, plus anyone from ABOVE who could not find work at
-         * their own level. Before this, the number on the left was 220 and the
-         * number on the right was zero.
+         * their own level or, since 0.7.18, would be better paid here. Before
+         * this, the number on the left was 220 and the number on the right was
+         * zero.
          */
         double[] supply = people.supplyByBand();
         for (WageBand b : WageBand.values()) {
@@ -573,8 +574,13 @@ public class LabourCheck {
          * Jerus, on a fresh run: "way too many very well educated people come
          * in", with no demand for them and no schools to explain them. The
          * world is now universal high school and nothing else for free -
-         * a diploma is the base, NONE is zero, and every band above the
-         * diploma is bought at a premium or does not come.
+         * a diploma is the base, and every band above the diploma is bought
+         * at a premium or does not come. Since 0.7.18 every band BELOW it
+         * too (Jerus: "allow arrivals without a diploma when the unskilled
+         * wage is high"): NONE was zero, and the two assertions that said so
+         * now say the new rule - none at the going rate, the world's share of
+         * migrants with no diploma at the ceiling. The section after this one
+         * causes a dear unskilled wage and asserts the arrivals it buys.
          *
          * These four assertions are the whole feature. The first two are the
          * spec; the third is the reason the old model could not be tuned into
@@ -594,10 +600,58 @@ public class LabourCheck {
                 pct(mixShort, WageBand.UNIVERSITY, arrivalsTotal));
 
         assertTrue("fixture: somebody moved in at all", arrivalsTotal > 1);
-        assertTrue("NOBODY ARRIVES WITHOUT A DIPLOMA",
+        assertTrue("fixture: this city pays its labourers no more than the going rate",
+                m2.bandPremium(WageBand.NONE) <= 1);
+        assertTrue("NOBODY ARRIVES WITHOUT A DIPLOMA into a city paying the going rate for them",
                 mixShort[WageBand.NONE.ordinal()] == 0);
-        assertTrue("...so the unskilled band is only ever home-grown",
-                WageBand.NONE.arrivalCeiling() == 0);
+        double ceilings = 0;
+        for (WageBand b : WageBand.values()) ceilings += b.arrivalCeiling();
+        System.out.printf("   at every band's ceiling, %.1f%% of arrivals have no diploma%n",
+                WageBand.NONE.arrivalCeiling() / ceilings * 100);
+        assertTrue("...and at the ceiling they are the world's share of migrants with no diploma, 7.5%",
+                Math.abs(WageBand.NONE.arrivalCeiling() / ceilings - .075) < 1e-12);
+
+        /* ------------------------------------------------------------------
+         * SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18).
+         *
+         * Caused, not found: a town with a bus network's worth of labouring
+         * posts and nobody born here to fill them. Its unskilled wage climbs
+         * past the going rate, and the labourers it buys come through the
+         * same two terms every graduate band's do - reach() of the premium
+         * and the chance of work at their own level - against the diploma
+         * band's unconditional 1.00. Not a multiplier of their own.
+         * ------------------------------------------------------------------ */
+        System.out.println("\n--- some arrive without a diploma, for the wage ---");
+        Game buses = new Game(GameFiles.scratch("labourcheck-buses"));
+        quietly(() -> {
+            buses.newGame();
+            buses.getGovernmentInvestor().spend(-50_000_000);
+            buses.getLandManager().setOwnedSqFt(buses.getLandManager().getOwnedSqFt() + 100_000_000);
+            buses.buildStack(t(buses, "Low-Rise Apartments"), 10, true);
+            buses.buildStack(t(buses, "Bus Network"), 8, true);
+            buses.buildStack(t(buses, "Coal Power Plant"), 1, true);
+            buses.buildStack(t(buses, "Water Treatment Plant"), 1, true);
+            buses.buildStack(t(buses, "Paved Road"), 12, true);
+            buses.simulateMonths(36);
+            // ...and on to a month somebody moved in, bounded, as the city above is.
+            for (int i = 0; i < 120 && buses.getMigration().getLastArrivals() <= 0; i++) buses.simulateMonths(1);
+        });
+        LabourMarket busWages = buses.getLabourMarket();
+        double[] busMix = buses.getMigration().getLastArrivalMix();
+        double[] busChance = buses.getMigration().getLastOpportunity();
+        double nonePremium = busWages.bandPremium(WageBand.NONE);
+        System.out.printf("   unskilled premium %.2f, chance of unskilled work %.2f; arrivals %.1f of whom %.2f with no diploma, %.2f with one%n",
+                nonePremium, busChance[WageBand.NONE.ordinal()], buses.getMigration().getLastArrivals(),
+                busMix[WageBand.NONE.ordinal()], busMix[WageBand.DIPLOMA.ordinal()]);
+        assertTrue("fixture: the town pays its labourers over the going rate", nonePremium > 1);
+        assertTrue("fixture: somebody moved in", buses.getMigration().getLastArrivals() > 0);
+        assertTrue("a dear unskilled wage brings arrivals without a diploma", busMix[WageBand.NONE.ordinal()] > 0);
+        double noneOverDiploma = WageBand.NONE.arrivalCeiling() * Migration.reach(nonePremium)
+                * busChance[WageBand.NONE.ordinal()] / busChance[WageBand.DIPLOMA.ordinal()];
+        assertTrue("...against the diploma arrivals, the ceiling times reach() times the chance of work - the graduates' own terms",
+                busMix[WageBand.DIPLOMA.ordinal()] > 0
+                        && Math.abs(busMix[WageBand.NONE.ordinal()] / busMix[WageBand.DIPLOMA.ordinal()] - noneOverDiploma)
+                                < 1e-9 * Math.max(1, noneOverDiploma));
 
         /*
          * THE DETACH. This city is short of doctors and NOT short of graduates
@@ -653,6 +707,7 @@ public class LabourCheck {
                         && WageBand.UNIVERSITY.arrivalCeiling() < WageBand.COLLEGE.arrivalCeiling());
 
         wagesAgainstTheIndex();
+        payrollByJobType();
 
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -742,7 +797,17 @@ public class LabourCheck {
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 200_000_000L);
             LongPlaytest.build(city, "House", 200);
             LongPlaytest.build(city, "Convenience Store", 10);
-            LongPlaytest.build(city, "Construction Depot", 4);
+            /*
+             * THE BUILDERS' DEPOTS STAND FROM THE START (0.7.17). The basket
+             * is based on what a city that shops spends, and its shops have to
+             * open for that. Since every building gets the crew it can use
+             * (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE) the
+             * depots on site beside the coal plant got about a fiftieth of its
+             * crew and the builders stayed the city's works department alone,
+             * so the shops had not opened when the basket was due: no index to
+             * chase. With the depots standing everything else is still built.
+             */
+            city.buildStack(t(city, "Construction Depot"), 4, true);
             LongPlaytest.build(city, "Coal Power Plant", 1);
             LongPlaytest.build(city, "Water Treatment Plant", 1);
             LongPlaytest.build(city, "Industrial Bakery", 2);
@@ -832,6 +897,204 @@ public class LabourCheck {
                 reloaded.worstTarget, 0, 1e-12);
         close("...a DRIFT_PER_MONTH at a time", reloaded.worstStep, 0, 1e-12);
         assertTrue("...inside the lag's window", reloaded.outsideWindow == 0);
+    }
+
+    /* ============ 13. PAYROLL BY JOB TYPE (0.7.17) ============
+
+       Jerus: "Businesses pay each job type's wage for the jobs actually
+       filled, which is what households receive" - and, of the sick, "sick
+       still get paid right? if yes then good". Every employer's bill was the
+       whole schedule times its AVERAGE fill (Sector.getPayroll(), the
+       utilities the same), while the households were paid each type's wage
+       for its own filled posts; in Jerus's year-149 city the firms paid
+       $1,273M a month nobody received. On a played city whose job types fill
+       unevenly:
+         (a) every employer's payroll adds to what the households are paid,
+             and so it does when the builders have laid idle crews off -
+             Jerus's answer to the idle floor: they offer the posts their
+             work needs, never fewer than the core crew, the rest are
+             nobody's posts, and a month with work hires them back;
+         (b) a sector's payroll does not move when the city falls sick with
+             its fill held - sickness is output, never payroll;
+         (c) the average-fill figure is not the payroll there, so the fixture
+             causes what (a) is about.
+       ============================================================ */
+    static void payrollByJobType() {
+        System.out.println("\n--- every employer pays each job type's wage for the posts filled, the sick included ---");
+
+        Game g = new Game(GameFiles.scratch("labourcheck-payroll"));
+        quietly(() -> {
+            g.newGame();
+            g.getGovernmentInvestor().spend(-50_000_000);
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000);
+            g.buildStack(t(g, "Low-Rise Apartments"), 60, true);
+            g.buildStack(t(g, "General Hospital"), 2, true);
+            g.buildStack(t(g, "Steel Mini-Mill"), 4, true);
+            g.buildStack(t(g, "Small Grocery Store"), 8, true);
+            g.buildStack(t(g, "Construction Depot"), 6, true);
+            g.buildStack(t(g, "Coal Power Plant"), 2, true);
+            g.buildStack(t(g, "Water Treatment Plant"), 2, true);
+            g.buildStack(t(g, "Paved Road"), 30, true);
+            g.buildStack(t(g, "Bus Network"), 2, true);
+            g.buildStack(t(g, "Police Station"), 2, true);
+            g.simulateMonths(120);
+        });
+        PopulationManager people = g.getPopulationManager();
+        EconomyManager econ = g.getEconomyManager();
+        BuildingManager b = g.getBuildingManager();
+        int[] posts = people.getJobs();
+        double[] fill = people.getJobFillRate();
+        double lo = 1, hi = 0;
+        for (int i = 0; i < posts.length; i++) {
+            if (posts[i] <= 0) continue;
+            lo = Math.min(lo, fill[i]);
+            hi = Math.max(hi, fill[i]);
+        }
+        System.out.printf("   month %d, %,d people, %,d posts; job types filled from %.1f%% to %.1f%%%n",
+                g.getMonth(), people.getPopulation(), people.getTotalJobs(), lo * 100, hi * 100);
+        assertTrue("fixture: the city's job types fill unevenly", hi - lo > .10);
+
+        double households = people.getTotalWage();
+        double sectors = 0, averageFill = 0;
+        for (Sector s : econ.getSectors().all()) {
+            sectors += s.getPayroll();
+            averageFill += s.getPayrollAtFullStaffing() * s.getAverageFill();
+        }
+        double employers = sectors + everyOtherEmployer(g);
+        System.out.printf("   every employer %,.3f against the households' %,.3f; the sectors at their average fill %,.3f against %,.3f%n",
+                employers, households, averageFill, sectors);
+        close("(a) every employer's payroll is what the households are paid", employers / households, 1, 1e-9);
+        assertTrue("(c) ...and the average-fill figure is not the sectors' payroll on this city",
+                Math.abs(averageFill - sectors) > 1e-3 * sectors);
+
+        // (a) each sector's own, too: its posts at the households' wage and fill.
+        double[] wage = people.getWagesPerType();
+        boolean each = true;
+        for (Sector s : econ.getSectors().all()) {
+            int[] own = s.postsOfferedPerTier();
+            double bill = 0;
+            for (int i = 0; i < own.length && i < wage.length; i++) bill += own[i] * wage[i] * fill[i];
+            if (Math.abs(s.getPayroll() - bill) > 1e-9 * Math.max(1, bill)) each = false;
+        }
+        assertTrue("(a) ...and each sector's payroll is its filled posts at the households' wage", each);
+
+        // (b) the city falls sick, its fill held.
+        double[] before = new double[econ.getSectors().all().size()];
+        double[] rateBefore = new double[before.length];
+        int k = 0;
+        for (Sector s : econ.getSectors().all()) { before[k] = s.getPayroll(); rateBefore[k++] = s.getOperatingRate(); }
+        econ.setHealthRatio(.5);
+        boolean paid = true, slowed = true;
+        k = 0;
+        for (Sector s : econ.getSectors().all()) {
+            if (s.getPayroll() != before[k]) paid = false;
+            if (rateBefore[k] > 0 && !(s.getOperatingRate() < rateBefore[k])) slowed = false;
+            k++;
+        }
+        assertTrue("(b) half the city off sick, fill held: no sector's payroll moves", paid);
+        assertTrue("...while every working sector's output falls with it", slowed);
+        close("...and the households are paid what they were", people.getTotalWage(), households, 1e-9 * households);
+        econ.setHealthRatio(g.getHealth().getWorkRatio());
+
+        /*
+         * (a) WHEN THE BUILDERS HAVE LAID CREWS OFF (0.7.17, revised: Jerus
+         * chose "Lay off idle crews" over the idle floor on wages). The city
+         * above keeps its builders busy, so a second one is founded whose
+         * four depots stand beside a finished town with little to build: the
+         * work ahead needs a share of their crews, they offer that share of
+         * their posts, never fewer than the core crew, and the posts not
+         * offered are not in the city's count - nobody's job, so nobody's
+         * pay. Then a month with work hires them back.
+         */
+        Game town = new Game(GameFiles.scratch("labourcheck-layoffs"));
+        quietly(() -> {
+            town.newGame();
+            town.buildStack(t(town, "House"), 80, true);
+            town.buildStack(t(town, "Small Grocery Store"), 3, true);
+            town.buildStack(t(town, "Construction Depot"), 4, true);
+            town.simulateMonths(24);
+            /*
+             * ...AND ON TO A MONTH THEY DO LAY CREWS OFF (0.7.18, re-caused).
+             * Month 24 was where the builders happened to have nothing on
+             * site. Since every planner asks for staff before it orders, the
+             * town's orders land in other months, and month 24 found work on
+             * site - 3.6 crews' worth - and all 50 of the builders' posts
+             * offered. The condition is caused by stepping to it, bounded, as
+             * the arrivals are above.
+             */
+            for (int i = 0; i < 60 && town.getSectors().construction().getPostsOffered()
+                    >= town.getSectors().construction().getPostsStanding(); i++) {
+                town.simulateMonths(1);
+            }
+        });
+        people = town.getPopulationManager();
+        econ = town.getEconomyManager();
+        b = town.getBuildingManager();
+        ham.citybuildersim.sectors.Construction crews = econ.getSectors().construction();
+        int[] standingPosts = crews.postsPerTier(), kept = crews.postsOfferedPerTier();
+        double share = crews.getPostsOfferedShare();
+        int standing = crews.getPostsStanding(), offered = crews.getPostsOffered();
+        System.out.printf("   the builders: %,d posts, %,d offered - a share of %.3f, the work needing %.3f%n",
+                standing, offered, share, crews.getCrewsNeeded());
+        assertTrue("fixture: the builders have less work than crews, and lay some off", share < 1 && offered < standing);
+        // REWRITTEN (0.7.17, fourth revision): the need over the fill the
+        // share was struck on, so the crews that come are the crews the work
+        // needs - it was the need alone.
+        close("...offering the share of their posts the work needs over their fill, never fewer than the core crew",
+                share, Math.min(1, Math.max(ham.citybuildersim.sectors.Construction.IDLE_PAYROLL_FLOOR,
+                        crews.getCrewsNeeded() / crews.getFillStruckOn())), 1e-12);
+        boolean rounded = true;
+        for (int i = 0; i < standingPosts.length; i++) {
+            if (kept[i] != BuildingManager.postsOffered(standingPosts[i], share)) rounded = false;
+        }
+        assertTrue("...each job type's posts at that share, rounded once", rounded);
+        int counted = 0, everyPost = 0;
+        for (int n : people.getJobs()) counted += n;
+        b.setOfferedShare(null);
+        for (int n : b.getTotalJobs()) everyPost += n;
+        b.setOfferedShare(key -> key.equals(crews.key()) ? crews.getPostsOfferedShare() : 1);
+        close("the posts not offered are not in the city's count", counted, everyPost - (standing - offered), .5);
+        double townEmployers = everyOtherEmployer(town);
+        for (Sector s : econ.getSectors().all()) townEmployers += s.getPayroll();
+        close("(a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay",
+                townEmployers / people.getTotalWage(), 1, 1e-9);
+
+        quietly(() -> {
+            // ...the city paying for it, on ground it is given.
+            town.getGovernmentInvestor().spend(-50_000_000);
+            town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 400_000_000);
+            town.buildStack(t(town, "Low-Rise Apartments"), 400, false);
+            town.simulateMonths(1);
+        });
+        people = town.getPopulationManager();
+        System.out.printf("   with 400 blocks of flats on site: %,d of %,d posts offered, the work needing %.2f%n",
+                crews.getPostsOffered(), crews.getPostsStanding(), crews.getCrewsNeeded());
+        assertTrue("a month with the work for them hires every crew back",
+                crews.getPostsOfferedShare() == 1 && crews.getPostsOffered() == crews.getPostsStanding());
+        double busyEmployers = everyOtherEmployer(town);
+        for (Sector s : econ.getSectors().all()) busyEmployers += s.getPayroll();
+        close("(a) ...and the households are paid what the employers paid, that month too",
+                busyEmployers / people.getTotalWage(), 1, 1e-9);
+    }
+
+    /** Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. */
+    static double everyOtherEmployer(Game g) {
+        PopulationManager people = g.getPopulationManager();
+        double[] wage = people.getWagesPerType(), fill = people.getJobFillRate();
+        BuildingManager b = g.getBuildingManager();
+        double total = g.getEconomyManager().getBankPayroll()
+                + g.getServicesManager().getUtilitiesHandler().getUtilityPayroll();
+        for (BuildingType cat : new BuildingType[] { BuildingType.HEALTHCARE, BuildingType.EDUCATION,
+                BuildingType.SAFETY, BuildingType.INFRASTRUCTURE }) {
+            total += b.getCategoryPayroll(cat, wage, fill);
+        }
+        return total;
+    }
+
+    static double sum(double[] a) {
+        double t = 0;
+        for (double v : a) t += v;
+        return t;
     }
 
     static double pct(double[] mix, WageBand band, double total) {

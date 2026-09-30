@@ -86,6 +86,8 @@ public class DataSave {
     private double[] materialsOwedById;
     /** The builders' contract still on each template's sites, by id. Absent on a save from before the book was kept per stack. */
     private double[] contractValueById;
+    /** ...and who placed each part of it, with its material still to draw and the allowance priced in for it (0.7.19). Absent on an older save - see Game, OLD CONTRACTS. */
+    private java.util.List<BuildingManager.ContractRecord> contractRecords;
 
     /*
      * The property tax the city CHARGED this month, rather than a figure
@@ -619,6 +621,10 @@ public class DataSave {
     /** False on a save that kept one order book for the whole city. */
     public boolean hasContractsById() { return contractValueById != null; }
 
+    public void setContractRecords(java.util.List<BuildingManager.ContractRecord> records) { this.contractRecords = records; }
+    /** Null on a save from before 0.7.19. */
+    public java.util.List<BuildingManager.ContractRecord> getContractRecords() { return contractRecords; }
+
     /** False for a save written before the format changed. */
     public boolean hasConstructionById() {
         return underConstructionById != null && constructionProgressById != null;
@@ -948,9 +954,12 @@ public class DataSave {
      *
      * Read by the investment advisor when it asks whether another branch would
      * pay for itself, which it asks in the gap between a month opening and
-     * anything moving through it - so the live fields are all zero there. See
-     * Bank.closeMonth(). Null on an older save, which leaves the advisor with
-     * nothing to judge on for one month, exactly as before this existed.
+     * anything moving through it - so the live fields are all zero there;
+     * since 0.7.19 its last two slots are the month's operating cost and
+     * what a branch past the charter carried of it, which the branch rule
+     * reads (Bank.laterBranchCost()). See Bank.closeMonth(). Null on an
+     * older save, which leaves the advisor with nothing to judge on for one
+     * month, exactly as before this existed.
      */
     private double[] bankLastMonth;
 

@@ -345,7 +345,9 @@ public class Restaurants extends Sector {
             return BusinessInvestment.Decision.no(sector, "no margin in it");
         }
 
-        double output = game.getConstructionOutput();
+        double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
+        Staffing staffingHold = null;
+        String staffingHoldName = null;
         BuildingsTemplate best = null;
         double bestScore = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
@@ -357,6 +359,15 @@ public class Restaurants extends Sector {
              * would value it at three times what it is worth.
              */
             double monthlyIncome = t.getCoverage() * (sellPrice - rFoodCost);
+            // ...and one the city could staff (0.7.18; see Sector.staffing()).
+            Staffing staffing = staffing(t);
+            if (!staffing.passes()) {
+                if (staffingHold == null || staffing.share > staffingHold.share) {
+                    staffingHold = staffing;
+                    staffingHoldName = t.getName();
+                }
+                continue;
+            }
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double score = monthlyIncome / cost;
@@ -365,10 +376,15 @@ public class Restaurants extends Sector {
                 best = t;
             }
         }
-        if (best == null) return BusinessInvestment.Decision.no(sector, "nothing worth building");
+        if (best == null) {
+            return BusinessInvestment.Decision.no(sector, staffingHold != null
+                    ? staffingHold.why(staffingHoldName) : "nothing worth building");
+        }
 
         int quantity = plans.orderSize(queue - seats, best.getCoverage(), best, output);
         if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
+        // No more of them than the city could staff together (0.7.18).
+        quantity = staffableCount(best, quantity);
 
         return new BusinessInvestment.Decision(sector, best, quantity,
                 String.format("%,.0f meals a month came against %,d the kitchens can serve", queue, seats),

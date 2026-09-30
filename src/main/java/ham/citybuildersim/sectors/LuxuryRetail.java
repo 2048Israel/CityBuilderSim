@@ -82,16 +82,26 @@ public class LuxuryRetail extends Sector {
        not add a fixed number of dollars to a watch.
        ===================================================================== */
 
-    /** What a shop with nobody in it charges over what the piece cost it. */
+    /**
+     * What a shop charges over what the piece cost it when nobody would buy
+     * at its price: the mark-up at a position of nothing, and the lowest the
+     * margin can strike (0.7.19: the position is the buyers AT THE PRICE
+     * CHARGED - see strikeMargin() - so this is where a shop sits that
+     * nobody would pay even this for).
+     */
     public static final double MARGIN_FLOOR = 1.25;
 
     /**
-     * ...and what a shop with a queue charges.
+     * ...and what a shop charges as the buyers at its price outnumber its
+     * counters without limit: the position's limit of one.
      *
      * FOUR TIMES THE LANDED COST is roughly where real luxury retail sits, and
      * the gap between this and the floor is the whole of the player's signal:
      * a city short of shops watches its margin climb toward here and its
      * luxury sector turn profitable, which is what makes the investor build.
+     * Since 0.7.19 it is approached only by buyers who would pay the margin
+     * it charges, so a city has to be genuinely short of counters - not of
+     * counters at a floor price nobody is charged - to see it.
      */
     public static final double MARGIN_CEILING = 4.0;
 
@@ -183,40 +193,92 @@ public class LuxuryRetail extends Sector {
     public double getLanded()    { return rLanded; }
     public double getSellPrice() { return sellPrice; }
 
-    /**
-     * Strikes the margin against the queue and returns what a piece will cost
-     * this month. Nothing is sold yet - the households have to be asked at
-     * this price before they can answer.
+    /*
+     * THE MARKUP READS THE CUSTOMERS ACTUALLY SERVED (0.7.19). Jerus, on
+     * "Luxury Retail's markup: what should it answer to?": "The markup reads
+     * the shoppers who buy at the price actually charged, not a queue
+     * counted at the lowest price."
      *
-     * THE TWO-PASS SHAPE IS THE HOUSE'S, for the reason written at
-     * HouseholdBalance.clearUsedCars(): demand depends on the price and the
-     * price depends on demand, and every market in this game breaks that
-     * circle the same way - strike off the demand that arrived, then sell at
-     * what was struck. LuxuryCounter.shop() runs the two halves.
+     * WHAT IT REPLACED. The position was struck on the pieces the households
+     * would take at MARGIN_FLOOR - a price nobody is ever charged - against
+     * the counters. In Jerus's city that queue was 179,854 against 174,400
+     * counters, so the margin sat at 2.646; at 2.646 only 50,692 were served,
+     * and the planner's "counters ahead of customers" read the same floor
+     * queue. The signal was measured at one price and the shop charged
+     * another, so it neither closed nor widened, and the sector earned $25.8B
+     * a year, 2.5 times any other (the trace's Q6).
      *
-     * @param wanted pieces the households came for, before any cap
+     * THE RULE NOW. The same form, the same two constants: margin = FLOOR +
+     * (CEILING - FLOOR) x wanted / (wanted + counters). What changed is what
+     * "wanted" is: the pieces the households would buy AT THE MARGIN IT
+     * STRIKES - the shoppers who buy at the price actually charged, before
+     * the counters, the staff and the shelf cap how many of them are served
+     * (serve()). A dearer margin loses buyers, so the rule is a fixed point:
+     * one margin at which the buyers it leaves put it exactly there. The
+     * right-hand side falls as the margin rises and the left rises, so there
+     * is exactly one, and strikeMargin() finds it by bisection on the
+     * households' own demand (HouseholdBalance.luxuriesWanted()), the curve
+     * the counter already sells on. It is the equilibrium the two-pass shape
+     * approximated with a floor reading; nothing is smoothed and nothing is
+     * carried from last month.
+     *
+     * WHY THE BUYERS AT THE PRICE, AND NOT THE PIECES SERVED. Served is
+     * capped by the counters (serve()), so a position on served against the
+     * counters could never pass a half, and a planner test on it - "more
+     * served than there are counters" - could never fire: no boutique would
+     * ever be built again. The buyers at the charged price are the ones a
+     * counter would serve if it were there, which is what both the margin
+     * and the planner are asking about.
      */
-    public double strikeMargin(Markets markets, double wanted) {
+
+    /** Bisection steps for the margin's fixed point: 2.75 / 2^60 is far below a cent's grain on any landed cost. */
+    private static final int MARGIN_STEPS = 60;
+
+    /**
+     * Strikes the margin against the buyers at the price it charges and
+     * returns what a piece will cost this month. Nothing is sold yet.
+     *
+     * @param buyersAt pieces the households would buy at a given price a
+     *                 piece - HouseholdBalance.luxuriesWanted(), before any cap
+     */
+    public double strikeMargin(Markets markets, java.util.function.DoubleUnaryOperator buyersAt) {
         int cover = coverage();
         rCoverage = cover;
-        rWanted = Math.max(0, wanted);
-        wanted = rWanted;
 
         double landed = landedCost(markets.get(Good.LUXURIES));
         rLanded = landed;
 
         /*
-         * THE POSITION, ON GoodsMarket.strike()'s OWN TERMS. Nobody at the
-         * door is a shop at its floor; a queue round the block is a shop at
-         * its ceiling; and with no shops at all there is nothing to strike, so
-         * the margin sits where it opened and no one is served.
+         * THE POSITION, ON GoodsMarket.strike()'s OWN TERMS, at the price the
+         * margin charges. Nobody who would pay it is a shop at its floor; a
+         * queue round the block at that price is a shop near its ceiling; and
+         * with no shops at all anyone who would pay is a queue with no door,
+         * the ceiling, and no one is served.
          */
-        double position = wanted + cover <= 0 ? 0 : wanted / (wanted + cover);
-        rMargin = MARGIN_FLOOR + (MARGIN_CEILING - MARGIN_FLOOR) * position;
+        double lo = MARGIN_FLOOR, hi = MARGIN_CEILING;
+        if (excess(buyersAt, landed, cover, lo) >= 0) {
+            hi = lo;
+        } else if (excess(buyersAt, landed, cover, hi) <= 0) {
+            lo = hi;
+        } else {
+            for (int i = 0; i < MARGIN_STEPS; i++) {
+                double mid = (lo + hi) / 2;
+                if (excess(buyersAt, landed, cover, mid) >= 0) hi = mid; else lo = mid;
+            }
+        }
+        rMargin = hi;
         sellPrice = landed * rMargin;
+        rWanted = Math.max(0, buyersAt.applyAsDouble(sellPrice));
 
         rServed = 0;
         return sellPrice;
+    }
+
+    /** The rule's gap at a margin: the margin less what the buyers at its price would strike. Rises with the margin. */
+    private static double excess(java.util.function.DoubleUnaryOperator buyersAt, double landed, int cover, double margin) {
+        double buyers = Math.max(0, buyersAt.applyAsDouble(landed * margin));
+        double position = buyers + cover <= 0 ? 0 : buyers / (buyers + cover);
+        return margin - (MARGIN_FLOOR + (MARGIN_CEILING - MARGIN_FLOOR) * position);
     }
 
     /**
@@ -277,7 +339,9 @@ public class LuxuryRetail extends Sector {
        =================================================================== */
 
     /**
-     * Builds against the customers who CAME, not against a sales record.
+     * Builds against the customers who came AT ITS PRICE, not against a sales
+     * record (0.7.19: the buyers at the margin it struck - see strikeMargin() -
+     * where it read the queue at the floor price until then).
      *
      * WHY THE DEFAULT COULD NOT WORK, and it was measured before this was
      * written. `planMaker()` scores a sector on what it has been selling, and
@@ -290,11 +354,12 @@ public class LuxuryRetail extends Sector {
      * went first.
      *
      * THE SIGNAL IS THE QUEUE. `rWanted` is measured whether or not there is
-     * anywhere to spend it - LuxuryCounter.shop() asks the households at the
-     * margin's floor before it asks the shops anything - so it is exactly the
-     * demand a shop that does not exist yet would serve. Retail's plan() does
-     * the same thing against population; this does it against money that
-     * turned up and found the door locked.
+     * anywhere to spend it - the households who would pay the margin the
+     * shops struck (strikeMargin()), before the counters cap them - so it is
+     * exactly the demand a shop that does not exist yet would serve at the
+     * price it would charge. Retail's plan() does the same thing against
+     * population; this does it against money that turned up and found the
+     * door locked.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
@@ -313,7 +378,9 @@ public class LuxuryRetail extends Sector {
             return BusinessInvestment.Decision.no(sector, "no margin in it");
         }
 
-        double output = game.getConstructionOutput();
+        double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
+        Staffing staffingHold = null;
+        String staffingHoldName = null;
         BuildingsTemplate best = null;
         double bestScore = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
@@ -326,6 +393,15 @@ public class LuxuryRetail extends Sector {
              * many of them.
              */
             double monthlyIncome = t.getCoverage() * (sellPrice - rLanded);
+            // ...and one the city could staff (0.7.18; see Sector.staffing()).
+            Staffing staffing = staffing(t);
+            if (!staffing.passes()) {
+                if (staffingHold == null || staffing.share > staffingHold.share) {
+                    staffingHold = staffing;
+                    staffingHoldName = t.getName();
+                }
+                continue;
+            }
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double score = monthlyIncome / cost;
@@ -334,10 +410,15 @@ public class LuxuryRetail extends Sector {
                 best = t;
             }
         }
-        if (best == null) return BusinessInvestment.Decision.no(sector, "nothing worth building");
+        if (best == null) {
+            return BusinessInvestment.Decision.no(sector, staffingHold != null
+                    ? staffingHold.why(staffingHoldName) : "nothing worth building");
+        }
 
         int quantity = plans.orderSize(queue - cover, best.getCoverage(), best, output);
         if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
+        // No more of them than the city could staff together (0.7.18).
+        quantity = staffableCount(best, quantity);
 
         return new BusinessInvestment.Decision(sector, best, quantity,
                 String.format("%,.0f customers came against %,d the shops can serve", queue, cover),
@@ -382,7 +463,7 @@ public class LuxuryRetail extends Sector {
 
         lines.add(Line.head("THE COUNTER"));
         lines.add(Line.of("People the shops can serve", f.count(rCoverage)));
-        lines.add(Line.of("...who came", f.count(rWanted),
+        lines.add(Line.of("...who would buy at the price charged", f.count(rWanted),
                 rWanted > rCoverage ? Line.Tone.WARN : Line.Tone.GOOD));
         lines.add(Line.of("...and who was served", f.count(rServed)));
         if (rWanted > rCoverage + .5) {
@@ -391,13 +472,14 @@ public class LuxuryRetail extends Sector {
                     + " them is money the city cannot spend."));
         }
 
-        lines.add(Line.head("THE MARGIN, STRUCK AGAINST THE QUEUE"));
+        lines.add(Line.head("THE MARGIN, STRUCK AGAINST THE BUYERS AT ITS PRICE"));
         lines.add(Line.of("What a piece cost the shop", f.cash(rLanded)));
         lines.add(Line.of("...and what it sold for", f.cash(sellPrice)));
         lines.add(Line.of("The mark-up", String.format("%.2fx", rMargin),
                 rMargin > (MARGIN_FLOOR + MARGIN_CEILING) / 2 ? Line.Tone.WARN : Line.Tone.GOOD));
         lines.add(Line.note(String.format(
-                "A quiet shop charges %.2fx what it paid and a crowded one %.2fx."
+                "A quiet shop charges %.2fx what it paid and a crowded one up to %.2fx,"
+                + " counting only the shoppers who would pay the mark-up it charges."
                 + " Build shops and the mark-up falls; leave them unbuilt and it climbs"
                 + " until somebody else builds them.", MARGIN_FLOOR, MARGIN_CEILING)));
 

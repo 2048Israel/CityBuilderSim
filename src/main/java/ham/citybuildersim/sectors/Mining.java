@@ -76,8 +76,19 @@ public final class Mining extends Sector {
 
         BuildingsTemplate best = null;
         double bestScore = 0;
+        Staffing staffingHold = null;
+        String staffingHoldName = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.makes(Good.IRON) <= 0) continue;
+            // ...and one the city could staff (0.7.18; see Sector.staffing()).
+            Staffing staffing = staffing(t);
+            if (!staffing.passes()) {
+                if (staffingHold == null || staffing.share > staffingHold.share) {
+                    staffingHold = staffing;
+                    staffingHoldName = t.getName();
+                }
+                continue;
+            }
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             double score = estimatedMonthlyProfit(t, plans) / cost;
@@ -87,7 +98,10 @@ public final class Mining extends Sector {
             }
         }
 
-        if (best == null) return BusinessInvestment.Decision.no(sector, "nothing worth sinking");
+        if (best == null) {
+            return BusinessInvestment.Decision.no(sector, staffingHold != null
+                    ? staffingHold.why(staffingHoldName) : "nothing worth sinking");
+        }
         if (plans.plotsAvailableFor(best) < 1) {
             return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         }

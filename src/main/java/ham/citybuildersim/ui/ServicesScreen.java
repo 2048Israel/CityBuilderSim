@@ -1630,9 +1630,9 @@ final class ServicesScreen {
                 flowText(diplomas), diplomas > 0 ? Palette.GOOD : Palette.WARN));
         column.getChildren().add(statementNote(
                 "Teens age out at a steady rate and the ones who were in school leave with "
-                + "a diploma. Every arrival to this city already has one — the unskilled "
-                + "band is only ever your own children, so this line is the only thing that "
-                + "grows it."));
+                + "a diploma. Every arrival to this city already has one unless a dear "
+                + "unskilled wage brought them in — otherwise the unskilled band is only "
+                + "ever your own children, so this line is the only thing that grows it."));
         column.getChildren().add(statementLine("Diploma-holders ever taught",
                 people(schools.getEverGraduated()[WageBand.DIPLOMA.ordinal()])));
 

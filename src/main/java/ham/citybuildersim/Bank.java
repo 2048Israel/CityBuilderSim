@@ -30,8 +30,16 @@ package ham.citybuildersim;
  *   households' savings and the sectors' cash. A city with no savings is a city
  *   with nothing to lend, whatever it has built.
  *
- *   BRANCHES. One building can only carry so much of a loan book. A city with
- *   deep savings and one branch is a city queueing at one counter.
+ *   BRANCHES were the second limit until 0.7.19: one branch reached
+ *   DEPOSITS_PER_BRANCH of the city's savings, a founding-money constant, so
+ *   a city with deep savings and one branch was a city queueing at one
+ *   counter. Savings reach the bank wherever its branches are since then
+ *   (online banking, Jerus's choice) - the limit is what the city has banked
+ *   with it - and a branch is a counter for its CUSTOMERS, each one past
+ *   the first, the city's charter, paying for itself from their fees (THE
+ *   BRANCHES, BY THEIR CUSTOMERS). The second limit now is its CAPITAL, the
+ *   book its equity carries (capitalLimit(); WHAT ACTUALLY CONSTRAINS A
+ *   BANK, below).
  *
  * Past the tighter of the two the bank does not refuse - it funds the rest
  * at the central bank's window (abroad, until 0.7.0) and prices what that
@@ -91,9 +99,10 @@ public class Bank {
      *   rather than a bad month. Basel says eight percent; so does this.
      *
      *   FUNDING. It can only lend money it has, and what it has is what the city
-     *   has banked with it, levered. Branches are what let it reach that money -
-     *   which is what branches are actually FOR, rather than being a cap on the
-     *   book.
+     *   has banked with it, levered. Branches were what let it reach that money
+     *   until 0.7.19 - which was what branches were FOR, rather than being a cap
+     *   on the book; since then a bank with one branch reaches all of it (THE
+     *   DEPOSITS ARE NOT CAPPED BY BRANCHES).
      *
      * The pleasing part is that this makes the bank's own profitability the
      * thing that lets the city borrow more. Nothing had to be invented to get
@@ -133,21 +142,29 @@ public class Bank {
      */
     public static final double LEVERAGE_RATIO_MIN = .03;
 
-    /**
-     * How much of a city's savings one branch can gather.
+    /*
+     * THE DEPOSITS ARE NOT CAPPED BY BRANCHES (0.7.19). Jerus, on "Bank deposit
+     * cap rises with prices", chose "Drop it: online banking": "Savings reach
+     * the bank wherever its branches are, so it funds its loans from deposits
+     * rather than the central bank's window. Real deposits aren't capped by
+     * branch count."
      *
-     * $253M, which is US deposits over US branches - about $18tn across roughly
-     * 71,000 of them. It was $60M, and the four-fold gap was one half of a
-     * measured problem: over 1,202 months the bank's PAYROLL came to 180% of
-     * every dollar of interest it ever earned. A real bank's whole non-interest
-     * expense is 55-65% of revenue. See the note on the Commercial Bank's
-     * staffing in BuildingManager for the other half and for the third anchor
-     * that reconciles them.
+     * WHAT IT REPLACED. DEPOSITS_PER_BRANCH, $250M a branch (US deposits over
+     * US branches, about $18tn across roughly 71,000), capped what the bank
+     * could gather at branches x that - a founding-money constant that moved
+     * only with a currency reform. In Jerus's 0.7.14 city $1.24 trillion was
+     * banked and 24 branches gathered $6.0B of it; the bank's capacity sat at
+     * $36B from year ninety and its $86.5B book was funded at the central
+     * bank's window, $72.95B of advances, while the savings earned the
+     * deposit rate on money the bank could not lend (the trace's Q6).
+     *
+     * WHAT LIMITS DEPOSITS NOW is what the city has banked: every household's
+     * savings and every business's cash (depositsGathered()), the same figure
+     * the savers are paid on. The funding limit is that, levered
+     * (fundingLimit()), and it almost never binds past the first years:
+     * CAPITAL does (capitalLimit()), and the window funds only what the
+     * city's own deposits do not.
      */
-    public static final double DEPOSITS_PER_BRANCH = 250_000;
-
-    /** The same, in today's money - reformed with every other figure. */
-    private double depositsPerBranch = DEPOSITS_PER_BRANCH;
 
     /**
      * What the shareholders put up when a branch opens.
@@ -254,25 +271,16 @@ public class Bank {
         return SHORTEST_WEIGHT + (1 - SHORTEST_WEIGHT) * travelled;
     }
 
-    /** How much of its capacity the bank lends before it counts itself full: the carry trade is lent only the room below it, and a branch is worth what it adds below it. It set where the strain premium began until 0.7.7. */
+    /** How much of its capacity the bank lends before it counts itself full: the carry trade is lent only the room below it. It set where the strain premium began until 0.7.7, and what a branch was worth until 0.7.19. */
     public static final double EASY_STRAIN = .80;
 
-    /**
-     * Where the private sector starts building, which is BEFORE the bank is
-     * full.
-     *
-     * A branch takes months to put up, so an advisor that waited until the
-     * bank was full would leave the city at the window for the whole of the
-     * lead time, every time (until 0.7.7, paying the strain premium for it).
-     * Ten points of strain ahead of EASY_STRAIN is about one branch's worth of
-     * building at the rate a growing city adds loans.
-     *
-     * Deliberately a strain threshold rather than a forecast off the book's
-     * recent growth: the growth is a flow, it would have to be carried in the
-     * save, and a dial that is one number the player can be told beats a
-     * projection nobody can see.
+    /*
+     * BUILD_AT_STRAIN, 0.70, was where the private sector started building a
+     * branch, ahead of the bank filling its capacity, until 0.7.19: a branch
+     * reached savings then, so a strained bank needed one. It reaches
+     * customers now (THE BRANCHES, BY THEIR CUSTOMERS), and strain() is a
+     * measure the Bank tab reads.
      */
-    public static final double BUILD_AT_STRAIN = .70;
 
     /* ------------------------------ the position ------------------------------ */
 
@@ -1365,6 +1373,9 @@ public class Bank {
         paperBoughtFromHouseholds = 0;
         paperSoldToCentralBank = paperBoughtFromCentralBank = 0;
         accountFees = loanFeesPaid = loanFeesOwed = 0;
+        operatingCost = 0;
+        upkeepPerLater = 0;
+        charterExempt = false;
         // ...and its bonds' month (0.7.12).
         bondGains = underwritingFees = interestFromBonds = 0;
         hotMoneyIn = 0;
@@ -1609,7 +1620,8 @@ public class Bank {
      * The TIGHTER of the two limits above. They fail differently and the player
      * fixes them with different things: a bank short of CAPITAL needs to stop
      * losing money (or be recapitalised), and a bank short of FUNDING needs
-     * branches, or a city with more savings in it.
+     * a city with more savings in it (or, until 0.7.19, branches to reach
+     * them).
      */
     public double capacity() {
         // Frozen until recapitalised. The whole consequence of failing.
@@ -1625,21 +1637,21 @@ public class Bank {
     }
 
     /**
-     * What the branches let it gather, out of what the city has to bank -
-     * PLUS whatever the world has parked here, which needed no branch at all.
+     * What the bank has gathered: everything the city has banked with it -
+     * the households' savings and the businesses' cash - PLUS whatever the
+     * world has parked here. Not capped by its branches since 0.7.19 (THE
+     * DEPOSITS ARE NOT CAPPED BY BRANCHES): a saver reaches the bank online
+     * wherever its counters are. With no branch there is no bank, and it has
+     * gathered nothing.
      *
-     * FOREIGN MONEY ARRIVES WHOLESALE. A saver down the road needs a counter to
-     * queue at; a fund in another country moves a hundred million by wire. So
-     * hot money is not subject to the branch cap, and that asymmetry is the
-     * point rather than an oversight: it is why foreign funding can lift a
-     * bank's capacity far past anything its own branch network could support,
-     * and why the capacity vanishes when the money does. The bank cannot build
-     * its way out of a sudden stop.
+     * FOREIGN MONEY ARRIVES WHOLESALE, as it always did: it is why foreign
+     * funding can lift a bank's capacity past what the city's own savings
+     * support, and why the capacity vanishes when the money does. The bank
+     * cannot build its way out of a sudden stop.
      */
     public double depositsGathered() {
-        double local = Math.min(Math.max(0, deposits - foreignDeposits),
-                branches * depositsPerBranch);
-        return local + Math.max(0, foreignDeposits);
+        if (branches <= 0) return Math.max(0, foreignDeposits);
+        return Math.max(0, deposits - foreignDeposits) + Math.max(0, foreignDeposits);
     }
 
     private double foreignDeposits;
@@ -2739,7 +2751,8 @@ public class Bank {
 
     /**
      * Book over capacity. Infinite in a city with no bank. A MEASURE since
-     * 0.7.7, not a price: the branch decisions read it (wantsBranch()) and
+     * 0.7.7, not a price: the branch decisions read it until 0.7.19
+     * (wantsBranch(); they read the customers and their fees since) and
      * the Bank tab shows it - 0.7.8's capital rule does not read it; until
      * 0.7.7 ratePremium() turned it into up to
      * eighteen points on every rate in the city, the loop WHAT A LOAN COSTS
@@ -2973,12 +2986,54 @@ public class Bank {
         householdWrittenOff += amount;
     }
 
-    /** Wages and running costs, which are real money leaving. */
+    /** Wages and running costs, which are real money leaving. The upkeep is all of the buildings' costs; see the three-part form. */
     public void payRunning(double payroll, double upkeep) {
+        payRunning(payroll, upkeep, 0);
+    }
+
+    /**
+     * ...and with the operating cost one LATER branch carries (0.7.19,
+     * revised: the charter is exempt from it - see THE BRANCHES, BY THEIR
+     * CUSTOMERS). The game pays this way; the three-part form is a bank whose
+     * branches all paid alike, as a hand-built one's do.
+     */
+    public void payRunning(double payroll, double repairs, double operating, double operatingPerLaterBranch) {
+        payRunning(payroll, repairs, operating);
+        this.upkeepPerLater = Math.max(0, operatingPerLaterBranch);
+        this.charterExempt = true;
+    }
+
+    /** This month's operating cost a later branch carries, and whether the month's operating cost left the charter out. See closeMonth(). */
+    private double upkeepPerLater;
+    private boolean charterExempt;
+
+    /**
+     * Wages, the branches' repairs and their operating costs (0.7.19):
+     * upkeep is the repairs and the running costs together, which is what
+     * every reader of it - the profit, the running-cost rate a loan is
+     * priced on, the branch rule - means by what the buildings cost.
+     *
+     * THE OPERATING COST WAS CHARGED TO NOBODY until 0.7.19. The Commercial
+     * Bank's template has always carried upkeep - 190 a month in founding
+     * thousands, its rent, systems and supplies - and nothing read it, so a
+     * branch cost its payroll and its repairs and no more. Jerus's branch
+     * rule is "maintenance and operating costs", so it is paid now, here,
+     * as the city's own services pay their templates' upkeep: a real
+     * outflow, declared to the audit as "- bank Operating".
+     *
+     * @param repairs   the branches' repair bill, paid to the builders
+     * @param operating their templates' operating cost, paid out of the city
+     */
+    public void payRunning(double payroll, double repairs, double operating) {
         this.payroll = Math.max(0, payroll);
-        this.upkeep = Math.max(0, upkeep);
+        this.operatingCost = Math.max(0, operating);
+        this.upkeep = Math.max(0, repairs) + this.operatingCost;
         cash -= this.payroll + this.upkeep;
     }
+
+    /** The branches' operating cost this month, inside getUpkeep(): what leaves the audited pools rather than reaching the builders. */
+    private double operatingCost;
+    public double getOperatingCost() { return operatingCost; }
 
     /* =====================================================================
        FEES (0.7.7)
@@ -3030,6 +3085,11 @@ public class Bank {
         cash += amount;
         accountFees += amount;
     }
+
+    /** The households paying this month's account fee (0.7.19): the bank's customers, whom its branches share. Set by Game with the fees; a count, so a reform leaves it. */
+    private double customers;
+    public void setCustomers(double households) { this.customers = Math.max(0, households); }
+    public double getCustomers() { return customers; }
 
     /** Loan fees a business paid out of its proceeds: cash from another pool. Internal. */
     public void takeLoanFees(double amount) {
@@ -3665,9 +3725,17 @@ public class Bank {
         lastInterest = interestEarned;
         lastBook     = getBook();
         lastKept     = netInterestIncome() + feeIncome();
-        // A month the book did not keep its branches' staff, on those same
-        // figures: the branch test in reverse (0.7.11, round 2; closesBranch()).
-        uncoveredMonths = branchesCoverTheirStaff() ? 0 : uncoveredMonths + 1;
+        // A month the fees did not cover its branches past the first, on this
+        // month's figures (0.7.19; the book not keeping their staff until
+        // then): a count for the Bank tab, carried in the save. The rule
+        // itself does not wait on it - branchesToClose().
+        uncoveredMonths = branches <= 1 || accountFees >= payroll + upkeep ? 0 : uncoveredMonths + 1;
+        // ...and what the charter was exempt from (revised 0.7.19): the month's
+        // operating cost, which the charter's left out, and what a later
+        // branch carried - the cost the branch rule reads next month
+        // (laterBranchCost()). A month paid the three-part way left nobody out.
+        lastOperating      = charterExempt ? operatingCost : 0;
+        lastUpkeepPerLater = charterExempt ? upkeepPerLater : 0;
         // The year of losses the capital target is sized on (0.7.8), before
         // the prices, whose capital charge reads the target.
         recordLosses();
@@ -3719,7 +3787,10 @@ public class Bank {
      * ------------------------------------------------------------------------ */
     private double lastPayroll, lastUpkeep, lastInterest, lastBook;
 
-    /** Last month's interest margin and fees - what its book KEPT, which the branch test asks of a counter since 0.7.7. */
+    /** Last month's operating cost and what one later branch carried of it (revised 0.7.19): see laterBranchCost(). */
+    private double lastOperating, lastUpkeepPerLater;
+
+    /** Last month's interest margin and fees - what its book KEPT, which the branch test asked of a counter from 0.7.7 to 0.7.18; still struck and saved, and read by no rule since. */
     private double lastKept;
 
     public double[] lastMonthToSave() {
@@ -3729,8 +3800,13 @@ public class Bank {
                              // two struck parts of every loan's price.
                              lastKept, lastWindowShare, lastRunningCost,
                              // ...and round 2 of 0.7.11's: how long the book
-                             // has not kept its branches' staff.
-                             uncoveredMonths };
+                             // has not kept its branches' staff (since 0.7.19,
+                             // how long the fees have not covered them).
+                             uncoveredMonths,
+                             // ...and 0.7.19's (revised): what the charter was
+                             // exempt from last month, and what a later branch
+                             // carried - the cost the branch rule reads.
+                             lastOperating, lastUpkeepPerLater };
     }
 
     /*
@@ -3772,9 +3848,14 @@ public class Bank {
         if (state.length < 9) return;
         lastWindowShare = state[7];
         lastRunningCost = state[8];
-        // A save from before round 2 of 0.7.11 starts the count again: its
-        // bank waits the fuse out from the load.
+        // A save from before round 2 of 0.7.11 starts the count again. (Its
+        // bank waited the fuse out from the load until 0.7.19; the count is
+        // the Bank tab's since, and the rule does not wait on it.)
         uncoveredMonths = state.length < 10 ? 0 : (int) state[9];
+        // A save from before the charter's exemption: its last month paid no
+        // operating cost anywhere, which is the month the rule reads.
+        lastOperating      = state.length < 12 ? 0 : state[10];
+        lastUpkeepPerLater = state.length < 12 ? 0 : state[11];
     }
 
     /** Restored from the save, so next month taxes the right figure. */
@@ -4900,7 +4981,9 @@ public class Bank {
                 // 0.7.14's: the hole it failed with, and the city's capital.
                 shortfallThisMonth, preferredIn, preferredOut, preferredDividendsThisMonth,
                 preferredAccruedThisMonth, warrantsBoughtBackThisMonth, ownersWiped, preferredCancelled,
-                repaymentRaisedThisMonth };
+                repaymentRaisedThisMonth,
+                // 0.7.19's: the branches' operating cost inside upkeep, and the customers.
+                operatingCost, customers };
     }
 
     /** ...and back. Nothing on an older save, whose Profit page reads zero for a month as it always did. */
@@ -4934,7 +5017,11 @@ public class Bank {
         shortfallThisMonth = v[i++]; preferredIn = v[i++]; preferredOut = v[i++];
         preferredDividendsThisMonth = v[i++]; preferredAccruedThisMonth = v[i++];
         warrantsBoughtBackThisMonth = v[i++]; ownersWiped = v[i++]; preferredCancelled = v[i++];
-        repaymentRaisedThisMonth = v.length > i ? v[i] : 0;
+        repaymentRaisedThisMonth = v.length > i ? v[i++] : 0;
+        // ...and 0.7.19's; an older save's upkeep was its repairs alone, and
+        // its customers are counted again with the next month's fees.
+        operatingCost = v.length > i ? v[i++] : 0;
+        customers = v.length > i ? v[i] : 0;
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -4964,15 +5051,111 @@ public class Bank {
         return profitBeforeTax() - taxPaid;
     }
 
+    /* =====================================================================
+       THE BRANCHES, BY THEIR CUSTOMERS (0.7.19)
+
+       Jerus: "bank branch i think should be customers perhaps, but make it be
+       sustainable even if just account fees, aka one branch maintence and
+       operating costs should be less than the revenue it makes of fees for
+       that specific branch, that should always be true." And on the founding
+       branch, "First branch exempt": "The founding branch is the city's
+       charter and stays open. Every later branch opens only while its
+       customers' fees would cover it, and closes when they don't."
+
+       WHAT IT REPLACED. A branch opened past BUILD_AT_STRAIN, when the book it
+       would carry paid its staff (branchWouldPayForItself()), and closed when
+       the book had not kept its branches' staff for BRANCH_CLOSE_MONTHS
+       (0.7.11). Branches followed the LENDING, because a branch reached
+       DEPOSITS_PER_BRANCH of the savings; with savings reaching the bank
+       online they follow the CUSTOMERS.
+
+       THE RULE, every branch but the first:
+         customers  the households paying the month's account fee (Game sets
+                    them with the fees: HouseholdBalance.totalAccountFees()
+                    over the fee), shared evenly over the branches;
+         its fees   the month's account fees over the branches - the only fee
+                    the model charges a customer as such (a household's
+                    LOAN_FEE is a fee on a loan, and came to nothing in the
+                    measured cities; a business's is on a business);
+         its cost   what a LATER branch cost last month - its share of the
+                    payroll and the repairs, and its template's operating
+                    cost (laterBranchCost()); the charter's is the same less
+                    the operating cost it is exempt from (below).
+         OPENING    another branch only while there are customers for it -
+                    more than CUSTOMERS_PER_BRANCH for each branch standing -
+                    and the month's fees would still cover every branch with
+                    it at what each carries: fees >= the charter's cost +
+                    branches x a later branch's (wantsBranch()).
+         CLOSING    whenever the month's fees do not cover the branches
+                    standing, as many close at once as it takes: down to the
+                    most the fees cover, the charter at its cost and the rest
+                    at a later branch's, never the first (branchesToClose()).
+       Both read the month's own fees - struck before the planner runs - and
+       the cost the month before struck, which is the latest there is before
+       this month's wages are set; and both count the branches STANDING, as
+       the city's buildings count them (Game passes the count), not the
+       count the bank last refreshed - so a branch that opened last month is
+       a branch, and one placed by hand is closed before its staff are paid.
+
+       DECIDED ON LAST MONTH'S COST, CLOSED THE NEXT MONTH. Jerus, 2026-09-30,
+       "Accept the lag": the rule keeps a branch on last month's cost, and the
+       payroll this month pays is struck on this month's wages, after the rule
+       has run. So a month whose wages rise can find the fees short of the
+       branches it kept - in the schools ensemble, 11 of the 13,646 months its
+       eight seeds stood more than one branch, the least at 0.958 of their
+       cost (measured on the round's second revision, the build as it
+       ships) - and the next month's rule closes the branch that no longer
+       pays. No margin is added for the month's wage move: none could be
+       sourced. So the fees cover the branches as the rule last read them,
+       not in every month without exception.
+
+       THE FIRST BRANCH IS THE CITY'S CHARTER. A founding village of 59
+       fee-paying households pays $708 a month for a branch that costs
+       $180,800 (the round's notes, measured on 0.7.18), and a default city
+       needs 150 years to reach the 13,000 a branch needs, so no rule that
+       held the first branch to its fees could have a bank in it. The first
+       stands however few customers it has - as the last branch never closed
+       under the 0.7.11 rule - and every branch after it answers to its
+       customers' fees, on last month's cost.
+
+       ...AND PAYS NO OPERATING COST. Jerus, 2026-09-30, "Exempt first branch":
+       the charter pays its staff and its repairs, not its template's upkeep,
+       as it is exempt from the fee rule; every later branch pays all three.
+       The upkeep - 190 a month in founding thousands - was what failed the
+       young bank: with it, a village's charter lost $287k a month against
+       $80k and ran through its founding capital by month 119-128 in six of
+       the default ensemble's eight seeds (the round's notes). Branches are a
+       COUNT on the Commercial Bank's stack, not buildings with names, so the
+       exempt one is not a particular building: of the branches standing, one
+       is the charter, and the bank pays the operating cost of the rest
+       (EconomyManager.bankOperatingCost()). A save carries the count, so a
+       loaded city exempts the same one; the rule never closes below it.
+       ===================================================================== */
+
     /**
-     * True when the city should be opening another counter.
+     * The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate information, as of April 30 2026).
      *
-     * A city with loans and no bank at all always wants one - every dollar of
-     * them is funded at the window. Otherwise it is a question about the
-     * strain, asked slightly early so the building is finished before the
-     * bank is full rather than after.
+     * A bank's clients per branch rather than Canada's households per branch
+     * (14,978,941 private households in the 2021 Census over the CBA's 5,460
+     * branches of the eight major banks in October 2024: 2,743), because
+     * this city has one bank: every household is one of its customers, and
+     * what one of its counters serves is what one of a real bank's does. At
+     * 2,743 a branch no branch's fees would cover its cost at any account fee
+     * a Canadian bank charges (the cost-recovery fee would be $56-58 a month,
+     * against RBC's $4-30 - the round's notes).
      */
-    public boolean wantsBranch() {
+    public static final double CUSTOMERS_PER_BRANCH = 16_000;
+
+    /**
+     * True when the city should be opening another counter: a city with
+     * loans and no bank at all always wants its first, the charter; after
+     * that, only while there are customers for another and their fees would
+     * cover it - see THE BRANCHES, BY THEIR CUSTOMERS.
+     */
+    public boolean wantsBranch() { return wantsBranch(branches); }
+
+    /** ...counting these branches standing - see THE BRANCHES, BY THEIR CUSTOMERS. */
+    public boolean wantsBranch(double standing) {
         /*
          * A COUNTER CANNOT FIX A SHORTAGE OF SAVINGS.
          *
@@ -4985,190 +5168,158 @@ public class Bank {
          * enormous, and MiningCheck's control city quietly grew a second bank
          * whose five hundred jobs came out of the foundry's shift.
          *
-         * bookAnotherBranchWouldCarry() is zero in exactly that case, so this is
-         * one question rather than two.
+         * bookAnotherBranchWouldCarry() was zero in exactly that case, so it was
+         * one question rather than two - until 0.7.19, when a branch stopped
+         * reaching savings at all and the test became its customers' fees (THE
+         * BRANCHES, BY THEIR CUSTOMERS).
          */
         /*
          * A FAILED BANK NEEDS CAPITAL, NOT COUNTERS.
          *
          * While it is frozen its capacity is zero, so its strain is infinite,
-         * so every test below says "build another branch" - and it did, 2,190
-         * of them, none of which could help, each of which took capital from
-         * shareholders and jobs from the city. Branches are for gathering
-         * deposits; a bank that may not lend has no use for more of them.
+         * so every strain test of the time said "build another branch" - and
+         * it did, 2,190 of them, none of which could help, each of which took
+         * capital from shareholders and jobs from the city. Branches were for
+         * gathering deposits then, and are for customers since 0.7.19; a bank
+         * that may not lend has no use for more of them either way.
          */
         if (inResolution) return false;
         /*
          * ...AND A BANK UNDER ITS MINIMUM NEEDS CAPITAL, NOT COUNTERS EITHER
-         * (0.7.11, round 2). The trap branchWouldPayForItself() describes was
-         * still open. A bank under its minimum is bound by its capital, so
-         * its strain is past 1 and every branch it opens is worth the
-         * PAID_IN_PER_BRANCH the opening brings (capacityWith()). The test
-         * below then passed whenever the book it had kept its staff: the
-         * owners were recapitalising a bank one building at a time. A bank
+         * (0.7.11, round 2). The trap branchWouldPayForItself() described (the
+         * 0.7.7 test, gone since 0.7.19) was still open. A bank under its
+         * minimum is bound by its capital, so its strain is past 1 and every
+         * branch it opens is worth the PAID_IN_PER_BRANCH the opening brings
+         * (capacityWith()). The book test of the time then passed whenever
+         * the book it had kept its staff: the owners were recapitalising a
+         * bank one building at a time. A bank
          * under its minimum is put back by its owners (issuesOwnShares())
          * or the city (recapitalisationNeeded()), not by building branches.
          * The minimum is the larger of the two, the leverage one included.
          */
         if (lendsOnlyToKeepBorrowersGoing()) return false;
-        if (bookAnotherBranchWouldCarry() <= 0) return false;
-        if (branches <= 0) return getWeightedBook() > 0;
-        if (!branchWouldPayForItself()) return false;
-        return strain() > BUILD_AT_STRAIN;
+        if (standing <= 0) return getWeightedBook() > 0;
+        return customersForAnother(standing) && feesWouldCoverAnother(standing);
+    }
+
+    /** Whether there are customers for another branch: more than CUSTOMERS_PER_BRANCH for every branch standing. */
+    public boolean customersForAnother() { return customersForAnother(branches); }
+    public boolean customersForAnother(double standing) {
+        return customers > standing * CUSTOMERS_PER_BRANCH;
     }
 
     /**
-     * Whether the counter earns more than it costs to keep open.
-     *
-     * THE TEST THAT WAS MISSING, and its absence was the third reason this bank
-     * kept failing. The two above ask whether a branch would RELIEVE anything;
-     * neither asks whether it is worth having.
-     *
-     * That mattered because of how capacityWith() works, which is correct and
-     * is also a trap. Opening a branch is an equity injection - PAID_IN_PER_BRANCH
-     * of capital, which at CAPITAL_RATIO supports about $400M of lending - so
-     * while CAPITAL is what binds, one more branch always raises capacity and
-     * bookAnotherBranchWouldCarry() is always positive. A bank that is losing
-     * money is short of capital by definition, so it always wants another
-     * branch, and every branch it opens brings a wage bill it is already unable
-     * to cover. The city recapitalises its bank one building at a time and the
-     * hole gets deeper with each one.
-     *
-     * Measured: 1,049 branches by month 4,000, holding $124bn of deposits
-     * against a $7.6bn book - $10,553 of book per branch where one branch's
-     * capital supports $400,000 of it, and $510 of equity left per branch out
-     * of the $32,000 each put in. It had burned 98% of its capital and gone on
-     * building.
-     *
-     * A REAL BANK SHORT OF CAPITAL RAISES CAPITAL; it does not open branches.
-     * There is nothing to invent for the test - the bank already knows what its
-     * book yields, what it passes to savers, and what a counter costs, because
-     * all three are on this month's income statement.
+     * Whether the month's fees would still cover every branch with one more,
+     * at what each carries (revised 0.7.19): the charter's cost and a later
+     * branch's for each of the rest - fees >= (branches + 1) x a later
+     * branch's cost, less the operating cost the charter is exempt from.
+     * False with nothing known to cost yet.
      */
-    public boolean branchWouldPayForItself() {
-        if (branches <= 0) return true;          // the first one is a different question
-
-        double runningCost = runningCostPerBranch();
-        if (runningCost <= 0) return true;       // nothing known to cost yet
-
-        double book = lastBook;
-        if (book <= 0) return false;
-
-        /*
-         * WHAT THE BOOK KEPT, since 0.7.7: last month's interest less what
-         * savers and the window were paid, plus its fees, over the book. It
-         * was the interest times (1 - DEPOSIT_PASS_THROUGH), when what savers
-         * were paid was a fixed share of it.
-         */
-        // (lastKept / book: see keptPerBranch(), which is the product below)
-
-        /*
-         * ON WHAT A BRANCH ACTUALLY CARRIES, not on what one more is worth.
-         *
-         * The first version of this asked bookAnotherBranchWouldCarry() and was
-         * a test that could never fail: that figure is the CAPACITY a branch
-         * unlocks - about $320M once the 80% strain allowance is taken - and
-         * $320M of book at any plausible margin dwarfs one branch's wages by a
-         * factor of eight. It passed every month of a four-thousand-month run
-         * and changed not one number in it.
-         *
-         * The capacity is not the book. Over that same run the bank's branches
-         * carried $10,553 of book EACH, against the $400,000 their capital was
-         * supposed to support - because the capital that arrived with each
-         * branch was written off long before it could be lent. Asking what a
-         * branch is entitled to carry, in a bank that has never once managed
-         * it, is asking the wrong question in the confident direction.
-         *
-         * So: the branches standing carry this much book apiece, another will
-         * carry about the same, and the question is whether that pays a
-         * counter's wages. Self-correcting in both directions - a bank whose
-         * book per branch recovers starts wanting branches again.
-         */
-        return keptPerBranch() > runningCost;
+    public boolean feesWouldCoverAnother() { return feesWouldCoverAnother(branches); }
+    public boolean feesWouldCoverAnother(double standing) {
+        double cost = laterBranchCost();
+        return cost > 0 && accountFees + lastUpkeepPerLater >= (standing + 1) * cost;
     }
 
-    /* ----------------- a branch that does not pay is closed (0.7.11, round 2) ----------------- */
+    /**
+     * What a LATER branch cost last month (revised 0.7.19): a branch's share
+     * of the payroll and the repairs, and the operating cost each branch but
+     * the charter carries. The charter's cost is this less that operating
+     * cost. The same as runningCostPerBranch() for a bank whose branches all
+     * paid alike.
+     */
+    public double laterBranchCost() {
+        return branches > 0 ? (lastPayroll + lastUpkeep - lastOperating) / branches + lastUpkeepPerLater : 0;
+    }
+
+    /** What one branch takes in fees this month: the month's account fees over the branches standing. Nothing with none. */
+    public double feesPerBranch() { return branches > 0 ? accountFees / branches : 0; }
+
+    /** ...and another branch would, with it standing: the fees over one more. */
+    public double feesPerBranchWithAnother() { return feesPerBranchWithAnother(branches); }
+    public double feesPerBranchWithAnother(double standing) { return accountFees / (Math.max(0, standing) + 1); }
+
+    /** The customers one branch serves this month: the customers over the branches standing. */
+    public double customersPerBranch() { return branches > 0 ? customers / branches : 0; }
 
     /**
-     * Closed months in a row the book must fail to keep its branches' staff
-     * before the bank closes one: BusinessInvestment.DISTRESS_LOSS_MONTHS,
-     * the two years a landlord or a maker loses money before it sells
-     * plant it is using - the city's distress fuse, not a new number.
+     * The most branches the month's fees cover at what each cost last month:
+     * the charter at its cost, the rest at a later branch's (revised 0.7.19) -
+     * n of them cost n later branches less the charter's exempt operating
+     * cost - whole. The first branch is the charter, so never under one;
+     * unbounded with nothing known to cost.
      */
-    public static final int BRANCH_CLOSE_MONTHS = BusinessInvestment.DISTRESS_LOSS_MONTHS;
+    public double branchesTheFeesCover() {
+        double cost = laterBranchCost();
+        if (!(cost > 0)) return Double.MAX_VALUE;
+        return Math.max(1, Math.floor((accountFees + lastUpkeepPerLater) / cost));
+    }
 
-    /** Closed months in a row the book has not kept its branches' staff (branchesCoverTheirStaff()); struck at closeMonth(), carried in lastMonthToSave(). */
+    /**
+     * How many branches close this month (0.7.19): every one past what the
+     * month's fees cover, at once, and never the first. The branch rule's
+     * closing half - see THE BRANCHES, BY THEIR CUSTOMERS.
+     */
+    public int branchesToClose() { return branchesToClose(branches); }
+
+    /** ...counting these branches standing. */
+    public int branchesToClose(double standing) {
+        if (standing <= 1 || inResolution) return 0;
+        return (int) Math.max(0, standing - branchesTheFeesCover());
+    }
+
+    /**
+     * Why no branch is opening, in the investment advisor's words (0.7.19),
+     * or null when one would.
+     */
+    public String branchHoldReason() { return branchHoldReason(branches); }
+    public String branchHoldReason(double standing) {
+        if (inResolution) return "the bank has failed - it needs capital, not counters";
+        if (lendsOnlyToKeepBorrowersGoing()) return "the bank is under its minimum - it needs capital, not counters";
+        if (standing <= 0) return getWeightedBook() > 0 ? null : "nobody is borrowing yet";
+        if (!customersForAnother(standing)) {
+            return String.format("%,.0f customers at %,.0f branch%s - a branch serves %,.0f, so there are none for another",
+                    customers, standing, standing == 1 ? "" : "es", CUSTOMERS_PER_BRANCH);
+        }
+        if (!feesWouldCoverAnother(standing)) {
+            return String.format("another branch's customers would pay $%,.1fk a month in fees against the $%,.1fk a branch costs",
+                    feesPerBranchWithAnother(standing), laterBranchCost());
+        }
+        return null;
+    }
+
+    /** ...and the case for one that would: its customers and its fees against its cost. */
+    public String branchOpenReason(double standing) {
+        if (standing <= 0) return "nowhere in the city to bank - its credit comes from outside, at the window's price";
+        return String.format("%,.0f customers - another branch's fees of $%,.1fk a month would cover the $%,.1fk it costs",
+                customers, feesPerBranchWithAnother(standing), laterBranchCost());
+    }
+
+    /* ----------------- a branch whose fees do not cover it is closed (0.7.19) -----------------
+
+       The 0.7.11 rule closed a branch after BRANCH_CLOSE_MONTHS (two years)
+       of closed months in which the BOOK had not kept its branches' staff -
+       its interest margin and fees against their payroll and upkeep - one a
+       month, never the last. It is reconciled into Jerus's rule rather than
+       kept beside it: a branch past the first answers to its customers'
+       fees alone (branchesToClose()), so a branch the fees cover is not
+       closed for a thin month of lending, and one they do not is closed
+       that month, not two years on. What it kept stays kept: the last - the
+       first, the charter - never closes, and nothing moves on the capital
+       (openBranches() counts past branchesCapitalised, so a branch opened
+       later where one closed brings no new capital; returning it is the
+       payout rule's business, dividendDue()).
+       ------------------------------------------------------------------------------------------ */
+
+    /** Closed months in a row the fees have not covered the branches past the first; struck at closeMonth(), carried in lastMonthToSave(). A count for the Bank tab since 0.7.19 - the rule does not wait on it. */
     private int uncoveredMonths;
 
-    /**
-     * Whether what the book kept last month covers what its branches cost -
-     * branchWouldPayForItself()'s own two inputs, keptPerBranch() against
-     * runningCostPerBranch(), read the other way. True with no branch, or
-     * with nothing known to cost yet.
-     */
-    public boolean branchesCoverTheirStaff() {
-        if (branches <= 0) return true;
-        double runningCost = runningCostPerBranch();
-        if (runningCost <= 0) return true;
-        return keptPerBranch() >= runningCost;
-    }
+    /** Whether any branch closes this month: see branchesToClose(). */
+    public boolean closesBranch() { return branchesToClose() > 0; }
+    public boolean closesBranch(double standing) { return branchesToClose(standing) > 0; }
 
-    /**
-     * THE BRANCH TEST RUN IN REVERSE, AND IT WAS MISSING. Jerus: "Close
-     * losing branches." Opening a branch asks whether the book the branches
-     * carry pays a counter's staff (branchWouldPayForItself()). Nothing ever
-     * asked it again, so a branch opened on a book that later shrank stood
-     * forever. Round 1 of this batch measured it: seed 3's bank had opened
-     * 85 branches while its capital was short. Its book then fell to $1.4bn,
-     * 93% of it insured mortgages. The branches' $13.9M a month of payroll
-     * stood against $2.0M of interest, and it failed every three months
-     * with no loan lost.
-     *
-     * So the same inputs are read each month at the close. When the book has
-     * not kept the branches' staff for BRANCH_CLOSE_MONTHS closed months in a
-     * row, a branch closes. Game.runRetirement() closes one a month for as
-     * long as that holds, by the path any retired building takes: the plot
-     * back to the city and the material to the builders. The payroll and
-     * one branch's reach of the city's savings go with it.
-     *
-     * NOTHING MOVES ON THE CAPITAL: what the branch was founded with is not
-     * handed back, and returning capital is the payout rule's business
-     * (dividendDue()). So a branch opened later where one closed brings no
-     * new capital (openBranches() counts past branchesCapitalised) - the
-     * closed one's never left.
-     *
-     * THE LAST BRANCH IS NEVER CLOSED while the bank stands: a bank is a
-     * branch.
-     */
-    public boolean closesBranch() {
-        return branches > 1 && uncoveredMonths >= BRANCH_CLOSE_MONTHS;
-    }
-
-    /** Closed months in a row the book has not kept its branches' staff. */
+    /** Closed months in a row the fees have not covered the branches past the first. */
     public int getUncoveredMonths() { return uncoveredMonths; }
-
-    /**
-     * The loan book one more branch would take onto the bank's own account.
-     *
-     * What a branch is WORTH, and the reason the advisor can price one at all.
-     * A bank building has no coverage and sells nothing, so every profit
-     * estimate in BusinessInvestment returned zero for it and a branch could
-     * only ever be paid for in cash - which a city whose credit has gone dear
-     * is exactly the city least likely to have.
-     *
-     * It is the OVERFLOW it absorbs, not a flat BOOK_PER_BRANCH: the loans
-     * already exist and are already earning: what the branch changes is whether
-     * they are funded by the city's deposits or at the central bank's window
-     * (abroad, until 0.7.0). Zero when the bank is comfortably inside
-     * itself, which is what stops the advisor building banks it does not need.
-     */
-    public double bookAnotherBranchWouldCarry() {
-        // What one more counter is actually worth in capacity, which is nothing
-        // at all when the deposits are the limit rather than the building.
-        double gain = capacityAnotherBranchWouldAdd();
-        double overflow = overflowPastComfortable();
-        return Math.min(gain * EASY_STRAIN, overflow);
-    }
 
     /**
      * Capacity this bank would have with a given number of branches.
@@ -5178,15 +5329,15 @@ public class Bank {
      * branches has no capital, and with no capital it can lend nothing, and if
      * this asked what it could lend on the capital it has TODAY then the first
      * branch would always be worth exactly nothing and no city would ever build
-     * one. Opening a branch is an equity injection; that is what makes it worth
-     * opening.
+     * one. Opening a branch is an equity injection. The funding side does not
+     * depend on the count since 0.7.19 - every deposit reaches the bank - so
+     * with a branch at all it is everything banked, levered.
      */
     public double capacityWith(double branchCount) {
         double newBranches = Math.max(0, branchCount - branchesCapitalised);
         double equityThen = equity() + newBranches * paidInPerBranch;
         double capital = weightedBookSupportedBy(equityThen);
-        double funding = Math.min(Math.max(0, deposits),
-                Math.max(0, branchCount) * depositsPerBranch) * LEVERAGE;
+        double funding = branchCount > 0 ? Math.max(0, deposits) * LEVERAGE : 0;
         return Math.min(capital, funding);
     }
 
@@ -5319,7 +5470,6 @@ public class Bank {
      * branches is a COUNT and does not move. Nor do the rates.
      */
     public void redenominate(double scale) {
-        depositsPerBranch    *= scale;
         paidInPerBranch      *= scale;
         domesticCapitalScale *= scale;
 
@@ -5372,6 +5522,10 @@ public class Bank {
         writeOffs         *= scale;
         payroll           *= scale;
         upkeep            *= scale;
+        operatingCost     *= scale;
+        upkeepPerLater    *= scale;
+        lastOperating     *= scale;
+        lastUpkeepPerLater *= scale;
         lentToHouseholds  *= scale;
         repaidByHouseholds *= scale;
         fundingCost       *= scale;
@@ -5410,9 +5564,10 @@ public class Bank {
         /*
          * ...AND LAST MONTH'S FIGURES, since 0.7.8. They were left in the old
          * unit on the argument that the branch test only ever divides them by
-         * each other (branchWouldPayForItself()), which it does - so scaling
-         * them moves no decision - but any absolute comparison with this
-         * month's was a hundredfold out for the month after a reform.
+         * each other (branchWouldPayForItself()), which it did until 0.7.19
+         * - so scaling them moves no decision - but any absolute comparison
+         * with this month's was a hundredfold out for the month after a
+         * reform.
          */
         lastPayroll       *= scale;
         lastUpkeep        *= scale;
@@ -5485,7 +5640,6 @@ public class Bank {
 
     /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
     public void seedConstants(double unit) {
-        depositsPerBranch    = DEPOSITS_PER_BRANCH / unit;
         paidInPerBranch      = PAID_IN_PER_BRANCH / unit;
         domesticCapitalScale = DOMESTIC_CAPITAL_SCALE / unit;
         accountFeeBase       = ACCOUNT_FEE / unit;
@@ -6129,42 +6283,27 @@ public class Bank {
     /** ...and what the businesses hold in credit. getDeposits() is these two and getForeignDeposits(). */
     public double getSectorDeposits()    { return sectorDeposits; }
 
-    /** How much of a city's savings one branch reaches, in today's money: DEPOSITS_PER_BRANCH, reformed with every other figure. */
-    public double getDepositsPerBranch() { return depositsPerBranch; }
     /** What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed. */
     public double getPaidInPerBranch()   { return paidInPerBranch; }
 
-    /** How much of the city's own savings its branches can reach: the branches standing times getDepositsPerBranch(). */
-    public double branchReach() { return branches * depositsPerBranch; }
-    /** The city's own savings with it: everything banked, less the world's. */
+    /** The city's own savings with it: everything banked, less the world's - all of it gathered since 0.7.19 (depositsGathered()). */
     public double localDeposits() { return Math.max(0, deposits - foreignDeposits); }
-    /** ...the part its branches reach - which, with the world's, is depositsGathered(). */
-    public double localDepositsReached() { return Math.min(localDeposits(), branchReach()); }
-    /** ...and the part they do not: savings only another branch would reach. */
-    public double localDepositsBeyondReach() { return localDeposits() - localDepositsReached(); }
 
-    /** What its funding would carry: what its branches gathered, lent LEVERAGE times over - the second of capacity()'s two limits. */
+    /** What its funding would carry: what it gathered, lent LEVERAGE times over - the second of capacity()'s two limits. */
     public double fundingLimit() { return depositsGathered() * LEVERAGE; }
 
     /* ---------------------------- another branch ---------------------------- */
 
-    /** The capacity one more branch would add, the capital it would open with counted: nothing when the deposits are the limit and the branches already reach them all. */
+    /** The capacity one more branch would add: the capital it would open with, since 0.7.19 - it brings no deposits the bank does not already reach. */
     public double capacityAnotherBranchWouldAdd() { return Math.max(0, capacityWith(branches + 1) - capacity()); }
 
-    /** The weighted book past what the bank comfortably carries, EASY_STRAIN of its capacity: what another branch could take onto its own account. */
-    public double overflowPastComfortable() { return Math.max(0, getWeightedBook() - capacity() * EASY_STRAIN); }
-
-    /** What one branch cost to run last month: its payroll and upkeep over the branches standing. Nothing with none. */
+    /** What a branch cost to run last month on average: the payroll, the repairs and (since 0.7.19) the operating cost the branches past the charter paid, over the branches standing. Nothing with none. The branch rule reads laterBranchCost(). */
     public double runningCostPerBranch() { return branches > 0 ? (lastPayroll + lastUpkeep) / branches : 0; }
 
-    /**
-     * What one branch's share of the book kept last month: its book per
-     * branch at last month's kept margin (net interest and fees over the
-     * book) - what branchWouldPayForItself() weighs against
-     * runningCostPerBranch(). Nothing with no branch or no book.
-     */
-    public double keptPerBranch() {
-        return branches > 0 && lastBook > 0 ? lastBook / branches * (lastKept / lastBook) : 0;
+    /** This month's fees against this month's running costs, over every branch: what each branch past the first is held to (0.7.19). Infinite with nothing to cost. */
+    public double feeCover() {
+        double cost = payroll + upkeep;
+        return cost > 0 ? accountFees / cost : Double.POSITIVE_INFINITY;
     }
 
     /* --------------------------- how its equity moved --------------------------- */

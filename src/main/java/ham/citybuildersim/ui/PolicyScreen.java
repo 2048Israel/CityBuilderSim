@@ -2549,7 +2549,7 @@ final class PolicyScreen {
     static String grantWords(TaxPolicy.GrantBasis basis, double amount) {
         if (basis == null) basis = TaxPolicy.DEFAULT_GRANT_BASIS;
         return switch (basis) {
-            case FIXED         -> moneyFull(amount) + " a month";
+            case FIXED         -> moneyFull(amount) + " a month at founding prices, kept up with the cost of living";
             case SURPLUS_SHARE -> String.format("%.0f%% of last month's surplus, shared out", amount * 100);
             case TUITION_SHARE -> String.format("%.0f%% of their course's tuition", amount * 100);
             default            -> String.format("%.0f%% of an unskilled wage a month", amount * 100);
@@ -2559,7 +2559,7 @@ final class PolicyScreen {
     /** What a basis is called on its chip. */
     static String basisName(TaxPolicy.GrantBasis basis) {
         return switch (basis) {
-            case FIXED         -> "a fixed amount";
+            case FIXED         -> "a fixed amount, kept up with prices";
             case SURPLUS_SHARE -> "a share of last month's surplus";
             case TUITION_SHARE -> "a share of tuition";
             default            -> "a share of the unskilled wage";
@@ -2568,7 +2568,7 @@ final class PolicyScreen {
 
     /** How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. */
     static String amountWords(TaxPolicy.GrantBasis basis, double amount) {
-        return basis == TaxPolicy.GrantBasis.FIXED ? moneyFull(amount)
+        return basis == TaxPolicy.GrantBasis.FIXED ? moneyFull(amount) + " at founding prices"
                 : String.format("%.0f%%", amount * 100);
     }
 

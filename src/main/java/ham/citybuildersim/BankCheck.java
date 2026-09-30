@@ -60,6 +60,12 @@ import java.nio.file.Path;
  *      firm by firm; the backstop takes only a sector with nothing left; a
  *      failing sector's plant is sold to the builders for its material; and
  *      the bank reads a borrower from its last quarter.
+ *  10. Does a branch answer to its customers (0.7.19, sections 1 and 19)?
+ *      The founding branch, the charter, never closes on the rule and pays
+ *      no operating cost; another opens only with the customers and the
+ *      fees for it, and a branch the month's fees do not cover closes at
+ *      once - a month late when what a branch costs has just risen, the lag
+ *      Jerus accepted.
  *
  * Each of those is measured by CAUSING the condition, never by finding a city
  * that happens to be in it.
@@ -151,12 +157,27 @@ public class BankCheck {
          * be "what banks do". The invented BOOK_PER_BRANCH ceiling is gone.
          */
 
+        /*
+         * REWRITTEN FOR 0.7.19, because Jerus replaced the rule it encoded
+         * ("Drop it: online banking": "Savings reach the bank wherever its
+         * branches are ... Real deposits aren't capped by branch count").
+         * Old: "a well capitalised bank is limited by what it can gather",
+         * one branch's DEPOSITS_PER_BRANCH x LEVERAGE out of 10,000,000
+         * banked. New: it is limited by everything banked with it, levered,
+         * and a second bank with fifty branches and the same savings can
+         * carry no more - the branches are no part of the funding limit.
+         */
         Bank rich = new Bank();
-        // Plenty of capital, one branch: what it can GATHER binds.
+        // Plenty of capital, one branch: what the city has banked binds.
         rich.refresh(1, 10_000_000, 0, 0, 0, 0);
         rich.injectCapital(10_000_000);
-        close("a well capitalised bank is limited by what it can gather",
-                rich.capacity(), Bank.DEPOSITS_PER_BRANCH * Bank.LEVERAGE, 1e-9);
+        close("a well capitalised bank is limited by what the city has banked with it",
+                rich.capacity(), 10_000_000 * Bank.LEVERAGE, 1e-9);
+        Bank manyCounters = new Bank();
+        manyCounters.refresh(50, 10_000_000, 0, 0, 0, 0);
+        manyCounters.injectCapital(10_000_000);
+        close("...and fifty branches on the same savings carry no more: the branches are no part of it",
+                manyCounters.capacity(), rich.capacity(), 1e-9);
 
         Bank thin = new Bank();
         // Branches everywhere, a city with savings, and no capital at all.
@@ -273,67 +294,55 @@ public class BankCheck {
         assertTrue("...and no more than the window charges it",
                 opening.depositRate() <= .03 + CentralBank.WINDOW_PENALTY + 1e-12);
 
-        // What the branch fixtures below lend and earn.
-        double savings = 10_000_000;
-        double branchesEnough = savings / Bank.DEPOSITS_PER_BRANCH;   // it can reach all of it
-        double earned = 5_000;
-        double insideItsDeposits = savings / 2;
-
         /* ---------------- ...and it does not open counters either ----------------
          *
-         * WHY THIS IS ASSERTED ON A CLOSED MONTH AND NOT A LIVE ONE, which is
-         * the whole finding and cost two silent iterations to learn.
-         *
-         * Opening a branch is an equity injection - see capacityWith() - so
-         * while CAPITAL binds, one more branch always raises capacity and
-         * bookAnotherBranchWouldCarry() is always positive. A bank losing money
-         * is short of capital by definition, so it always wanted another
-         * branch, and every branch brought a wage bill it already could not
-         * cover: 1,049 counters by month 4,000, carrying $10,553 of book apiece
-         * where one branch's capital supports $400,000 of it.
-         *
-         * branchWouldPayForItself() closes that, and it has to read LAST
-         * month's figures, because startMonth() zeroes every flow and the
-         * advisor asks between the two. Written against the live fields it is
-         * inert - a four-thousand-month playtest came back byte-identical
-         * twice, which is what a test that never fires looks like. So this
-         * fixture runs a whole month and CLOSES it, exactly as the game does,
-         * or it would assert nothing at all.
+         * REWRITTEN FOR 0.7.19, because Jerus replaced the rule it encoded.
+         * Old: a bank with 40 times the branches it needed, a closed month on
+         * a loss, "whose counters do not pay for themselves wants no more"
+         * (branchWouldPayForItself(): its book per branch at its kept margin
+         * against a branch's running cost) "...so it does not ask for one",
+         * and the same bank with a real book "...where a counter carrying a
+         * real book is worth opening". New: a branch past the first answers
+         * to its CUSTOMERS' FEES (Bank, THE BRANCHES, BY THEIR CUSTOMERS), and
+         * this asserts both halves of that rule, and that it is read on a
+         * CLOSED month - the rule's lesson of 0.7.7 stands: startMonth()
+         * zeroes every flow, so the cost is last month's, struck at the close,
+         * and the fees are the month's own, taken before the planner asks.
          */
-        Bank overbuilt = new Bank();
-        double manyBranches = branchesEnough * 40;      // far more counters than book
-        overbuilt.refresh(manyBranches, savings, 0, insideItsDeposits / 50, 0, 0);
-        overbuilt.injectCapital(200_000);
-        overbuilt.startMonth();
-        overbuilt.takeInterest(earned / 50);
-        overbuilt.payRunning(earned, 0);                // a wage bill it cannot cover
-        overbuilt.closeMonth();
-
-        System.out.printf("   %,.0f branches carrying %,.0f of book"
-                + " against %,.0f of wages%n",
-                overbuilt.getBranches(), overbuilt.getBook(), earned);
-
-        assertTrue("fixture: the month really did close on a loss",
-                overbuilt.getProfitLastMonth() < 0);
-        assertTrue("a bank whose counters do not pay for themselves wants no more",
-                !overbuilt.branchWouldPayForItself());
-        assertTrue("...so it does not ask for one", !overbuilt.wantsBranch());
-
-        /*
-         * ...and the same bank with a book worth banking says yes. Nothing
-         * changes but how much is lent through the same counters, which is what
-         * the test is supposed to be about.
-         */
-        Bank worthIt = new Bank();
-        worthIt.refresh(branchesEnough, savings, 0, insideItsDeposits, 0, 0);
-        worthIt.injectCapital(200_000);
-        worthIt.startMonth();
-        worthIt.takeInterest(earned);
-        worthIt.payRunning(earned / 50, 0);
-        worthIt.closeMonth();
-
-        assertTrue("...where a counter carrying a real book is worth opening",
-                worthIt.branchWouldPayForItself());
+        Bank counters = new Bank();
+        counters.injectCapital(1_000_000);
+        counters.refresh(2, 10_000_000, 0, 500_000, 0, 0);
+        counters.startMonth();
+        counters.payRunning(300, 20, 40);                     // two branches, 180 each
+        counters.closeMonth();
+        double perBranch = counters.runningCostPerBranch();
+        close("fixture: a branch cost what the closed month paid over the two standing",
+                perBranch, 180, 1e-9);
+        counters.startMonth();
+        counters.setCustomers(2.5 * Bank.CUSTOMERS_PER_BRANCH);
+        counters.takeAccountFees(3.2 * perBranch);
+        assertTrue("a bank with customers for a third branch, whose fees would cover all three, opens it",
+                counters.wantsBranch() && counters.customersForAnother() && counters.feesWouldCoverAnother());
+        counters.setCustomers(1.9 * Bank.CUSTOMERS_PER_BRANCH);
+        assertTrue("...but not without the customers for it, whatever the fees",
+                !counters.wantsBranch() && !counters.customersForAnother() && counters.feesWouldCoverAnother());
+        counters.startMonth();
+        counters.setCustomers(2.5 * Bank.CUSTOMERS_PER_BRANCH);
+        counters.takeAccountFees(2.9 * perBranch);
+        assertTrue("...nor when a third's share of the fees would not cover a branch",
+                !counters.wantsBranch() && counters.customersForAnother() && !counters.feesWouldCoverAnother());
+        assertTrue("...though the two it has are covered, so neither closes",
+                counters.branchesToClose() == 0 && !counters.closesBranch());
+        counters.startMonth();
+        counters.takeAccountFees(2.5 * perBranch);
+        assertTrue("three standing on fees that cover two: the third closes",
+                counters.branchesToClose(3) == 1);
+        counters.startMonth();
+        counters.takeAccountFees(.4 * perBranch);
+        assertTrue("...and on fees that cover none, every branch but the first closes, at once",
+                counters.branchesToClose(3) == 2 && counters.branchesToClose(2) == 1);
+        assertTrue("the first branch never closes on the rule: a bank is its charter",
+                counters.branchesToClose(1) == 0 && !counters.closesBranch(1));
 
         /* ================= 2. STRAIN IS NOT A PRICE (0.7.7) =================
 
@@ -357,7 +366,9 @@ public class BankCheck {
          * binds and the strain is a fact about the book.
          */
         int branches = 4;
-        double deposits = branches * Bank.DEPOSITS_PER_BRANCH;
+        // A million banked, levered LEVERAGE times: its funding limit
+        // (DEPOSITS_PER_BRANCH, $250k, times the four branches until 0.7.19).
+        double deposits = 1_000_000;
         double room = deposits * Bank.LEVERAGE;
         Bank calm = new Bank(), stretched = new Bank();
         for (Bank b : new Bank[] { calm, stretched }) {
@@ -754,6 +765,22 @@ public class BankCheck {
              * fixture causes the condition rather than inheriting it.
              */
             city.getDebtManager().setPolicyRate(DebtManager.MIN_POLICY_RATE);
+            /*
+             * ...AND ITS BRANCHES RUN AT WHAT THEY COST UNTIL 0.7.19, RE-CAUSED.
+             * The branch's template operating cost (190 founding $k a month)
+             * was charged to the bank for every branch in 0.7.19's first pass
+             * (Bank.payRunning()), and in a town this size it more than
+             * doubled the bank's running-cost rate - 0.6% of what it can
+             * carry to 1.3%, measured then - so the carry trade's price, 1.3%
+             * of capital charge on top of it, went from under the world's 2%
+             * to 2.65%, and nobody borrowed. The question here is how the
+             * carry book is kept, not what a branch costs to run, so this
+             * town's branches are run without it, as they were when the
+             * fixture was written. (Since the revision, "Exempt first
+             * branch", the charter pays none of it, and this town stands on
+             * one branch at the month it is read.)
+             */
+            template(city, "Commercial Bank").setUpkeep(0);
             city.buildStack(template(city, "House"), 300, false);
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
@@ -1103,6 +1130,27 @@ public class BankCheck {
                 branchesBuilt,
                 unattended.getBank().prime(unattended.getDebtManager().getPolicyRate()) * 100,
                 unattended.getDebtManager().getPolicyRate() * 100);
+        /*
+         * ...AND PEOPLE TO STAFF ONE, RE-CAUSED (0.7.19). The branch asks the
+         * city for its twenty-nine posts since 0.7.19 (Sector.staffing()),
+         * and a town of four hundred houses has four finance graduates to
+         * find nowhere: it could staff 31% of one, measured, and the advisor
+         * held on that - a true answer to a question this fixture is not
+         * asking. It asks whether a city with no bank wants one, so the town
+         * is handed the workers as InvestCheck hands its town theirs: two
+         * thousand more hands, a hundred of them with a diploma, a hundred
+         * with college and fifty with a degree. They stand until the next
+         * month is played, which this town never is again.
+         */
+        PopulationManager tellers = unattended.getPopulationManager();
+        tellers.restoreWorkforce(tellers.getWorkforce() + 2_000);
+        double[] heads = tellers.getSkilledHeads().clone();
+        heads[WageBand.DIPLOMA.ordinal()] += 100;
+        heads[WageBand.COLLEGE.ordinal()] += 100;
+        heads[WageBand.UNIVERSITY.ordinal()] += 50;
+        tellers.restoreSkilledHeads(heads);
+        assertTrue("fixture: the town could staff a branch",
+                unattended.getSectors().retail().staffing(template(unattended, "Commercial Bank")).passes());
         BusinessInvestment.Decision wanted = unattended.getBusinessInvestment().planBank();
         out.printf("   the advisor wants one: %s - \"%s\"%n", wanted.build, wanted.reason);
         out.printf("   ...and could not have it: %s%n", unattended.getLastInvestment("Bank"));
@@ -1268,19 +1316,40 @@ public class BankCheck {
         /*
          * ...AND STOPS. An advisor that builds a branch because it wants one and
          * then still wants one has built a factory for bank branches.
+         *
+         * REWRITTEN FOR 0.7.19, because Jerus replaced the rule these encoded:
+         * a branch followed the LENDING - wanted past BUILD_AT_STRAIN, and
+         * worth the book it would carry (bookAnotherBranchWouldCarry()). Old:
+         * "a bank with room to spare does not ask for another counter / ...and
+         * prices one at nothing" at a book of a tenth of its capacity, and
+         * "a bank lent out past itself does ask / ...and a branch is worth real
+         * money to it" at 140%. New: a branch follows its CUSTOMERS, paying
+         * for itself from their fees - a bank whose one branch serves all its
+         * customers does not ask, and another would take less in fees than a
+         * branch costs; one with the customers and the fees for another does,
+         * and another would take more. Caused on a closed month, the way
+         * the game reads it: last month's running cost, this month's fees.
          */
         Bank sated = new Bank();
         sated.injectCapital(10_000_000);
-        sated.refresh(1, 10_000_000, 0, Bank.DEPOSITS_PER_BRANCH * Bank.LEVERAGE * .10, 0, 0);
-        assertTrue("a bank with room to spare does not ask for another counter",
+        sated.refresh(1, 10_000_000, 0, 1_000_000, 0, 0);
+        sated.startMonth();
+        sated.payRunning(150, 10, 20);                       // a branch that cost 180 to run
+        sated.closeMonth();
+        sated.startMonth();
+        sated.takeAccountFees(Bank.CUSTOMERS_PER_BRANCH * .5 * .012);
+        sated.setCustomers(Bank.CUSTOMERS_PER_BRANCH * .5);  // half what one branch serves
+        assertTrue("a bank whose one branch serves all its customers does not ask for another counter",
                 !sated.wantsBranch());
-        close("...and prices one at nothing, so nobody would build it",
-                sated.bookAnotherBranchWouldCarry(), 0, 1e-9);
+        assertTrue("...and another branch's share of their fees would not pay for it, so nobody would build it",
+                sated.feesPerBranchWithAnother() < sated.runningCostPerBranch());
 
-        sated.refresh(1, 10_000_000, 0, Bank.DEPOSITS_PER_BRANCH * Bank.LEVERAGE * 1.4, 0, 0);
-        assertTrue("a bank lent out past itself does ask", sated.wantsBranch());
-        assertTrue("...and a branch is worth real money to it",
-                sated.bookAnotherBranchWouldCarry() > 0);
+        sated.startMonth();
+        sated.takeAccountFees(Bank.CUSTOMERS_PER_BRANCH * 3 * .012);
+        sated.setCustomers(Bank.CUSTOMERS_PER_BRANCH * 3);   // three branches' worth
+        assertTrue("a bank with the customers for another, and their fees to pay for it, does ask", sated.wantsBranch());
+        assertTrue("...and a branch is worth real money to it: its fees over what it costs",
+                sated.feesPerBranchWithAnother() > sated.runningCostPerBranch());
 
         /* ============ 8. the accounting identities, on a played city ============ */
         out.println("\n--- and its books actually balance ---");
@@ -1937,6 +2006,7 @@ public class BankCheck {
         aFailingSectorsPlantIsSoldToTheBuilders();
         theBankReadsTheQuarter();
         theDeskIsHeldToTheBanksCapital();
+        theBranchesByTheirCustomers();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2404,6 +2474,26 @@ public class BankCheck {
                         city.getBusinessInvestment().getLossMonthsState());
                 streaks.put(RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
                 city.getBusinessInvestment().restoreLossMonths(streaks);
+                /*
+                 * ...AND THE SAME LOSSES ON THE REGISTER'S RECORD (0.7.18,
+                 * re-caused). The shops the city lost are counted over the
+                 * month of the sale, so the fixture stands on retail not
+                 * buying a shop back that month, and what stopped it was the
+                 * borrowing ban by a hundred dollars: the owners are asked
+                 * first (Game.consider(), Equity.raiseFor()), a sector owing
+                 * past what it owns raises the whole plan in shares, the till
+                 * after the month's credit sat $0.1k under zero, and a banned
+                 * sector builds only what its cash covers. 0.7.18's city (its
+                 * planners wait for staff, its workers take the best-paid
+                 * job) leaves the till at zero, the shares cover the shop, and
+                 * retail bought one back in the month it sold one - 1 shop
+                 * retired, 0 lost. So the two years of losses the planner's
+                 * record is handed are handed to the register's too, as
+                 * twelve losing months: in its BAD regime the owners raise
+                 * nothing, and the ban holds the shop off as it did.
+                 */
+                int registerIndex = Equity.indexOf(RET);
+                for (int k = 0; k < Equity.RECORD_MONTHS; k++) city.getEquity().recordMonth(registerIndex, -1, 0);
                 double tillWas = econ.getSectorCash(RET);
                 econ.setSectorCash(RET, Math.min(tillWas, -2 * shop.getCashCost()));
                 overdrawnBy = econ.getSectorCash(RET) - tillWas;
@@ -2493,6 +2583,32 @@ public class BankCheck {
         close("...and no cash: the cash flow adds it back", builtBooks.paidEarlier(), built.paidEarlier, 1e-9);
         close("...and closes", builtBooks.unexplained(), 0, 1e-6);
         assertTrue("...and that month's money audit closes, to the cent", Math.abs(nextAudit.residual) < .01);
+
+        /*
+         * ...AND A SHOP OF ITS OWN TO RETIRE (0.7.17, re-caused). The founding
+         * town's four depots are idle from its last house on, and since the
+         * builders lay idle crews off (sectors.Construction, THE CREWS THE
+         * WORK NEEDS) about a hundred of its 340 jobs go with them:
+         * unemployment rises from about a third to past a half, retail sells
+         * less, and its spare-capacity rule retires a shop more than it did -
+         * so with the distress sales above, retail came to this fixture with
+         * no convenience store and the distress rule had nothing to scrap.
+         * Measured with the layoffs alone and under one crew a building
+         * ("retired plant again" FAIL); with the tree's rule it came with one
+         * to spare. So the city builds retail a store, standing, before the
+         * test: the condition - a failing sector with plant, and builders who
+         * cannot pay for it - is caused here, not left to what the months
+         * before happened to leave. The assertions are unchanged.
+         */
+        Game.BuildResult spareShop;
+        System.setOut(quiet);
+        try {
+            spareShop = city.buildStack(shop, 1, true);
+        } finally {
+            System.setOut(out);
+        }
+        assertTrue("fixture: retail owns a shop of its own to retire",
+                spareShop == Game.BuildResult.SUCCESS && city.getBuildingManager().getQuantity(shop.getId()) > 0);
 
         // A builder that cannot pay buys nothing: the building is scrapped
         // for nothing, as it always was.
@@ -2609,6 +2725,213 @@ public class BankCheck {
                         + r.getRecordSurcharge(IND), 1e-15);
         assertTrue("...which is far under what the quarter before the backstop would have charged",
                 r.getRate(IND) < .05 + BusinessDebtManager.expectedLossSpread(1.8));
+    }
+
+    /* ============ 19. THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) ============
+
+       Jerus: "one branch maintence and operating costs should be less than
+       the revenue it makes of fees for that specific branch, that should
+       always be true" - and "First branch exempt": the founding branch is the
+       city's charter and stays open; every later one opens only while its
+       customers' fees cover it and closes when they do not. The rule's two
+       halves are asserted on hand-built banks in section 1 (the counters);
+       this is the rule in a PLAYED CITY, through the month's own order.
+
+       CAUSED, in three parts, on section 8's working town:
+         1. THE CHARTER. The town's one branch, at the Commercial Bank's own
+            cost - twenty-nine posts and its repairs - against a town's fees:
+            it covers a sliver of its cost every month, and it never closes.
+            And (revised, Jerus 2026-09-30, "Exempt first branch") it is
+            charged no operating cost, though its template carries one.
+         2. BRANCHES PAST WHAT THE FEES COVER. A town of this size has
+            nowhere near CUSTOMERS_PER_BRANCH customers, so no planner will
+            ever open a second branch in it; the fixture puts four up by
+            hand, on a branch with no posts, its repairs, and an operating
+            cost struck so that the fees cover two of the five - the charter
+            at its repairs, the other at its repairs and that operating cost.
+            The next month's rule closes the three at once, BEFORE the month
+            pays their staff and running costs; and the month pays the
+            operating cost of ONE branch, the second, not the charter's, and
+            closes the audit.
+         3. DECIDED ON LAST MONTH'S COST, CLOSED THE NEXT MONTH, for two
+            years after. REWRITTEN (Jerus, 2026-09-30, "Accept the lag"): it
+            asserted that every month a branch past the first stood, its
+            fees covered what the branches cost to run that month. The rule
+            keeps a branch on last month's cost, and a month's payroll is
+            struck after it on the month's wages, so in the schools ensemble
+            11 of the 13,646 months its eight seeds stood two or more
+            branches fell short (the least 0.958, measured on the second
+            revision) and the next month's rule closed the branch. Now:
+            while what a branch costs holds still, the fees cover the
+            branches the rule keeps; then, six months in, the second
+            branch's operating cost rises after the rule has kept two - the
+            month's fees fall short of them (the lag, caused) - and the
+            next month's rule, reading that cost, closes the one the fees no
+            longer cover; and every month that fell short was followed by a
+            closure.
+       ================================================================= */
+    static void theBranchesByTheirCustomers() throws Exception {
+        out.println("\n--- (19) the branches, by their customers ---");
+        Game town = new Game(GameFiles.scratch("bankcheck-branches"));
+        System.setOut(quiet);
+        double worstCharterCover = 0, charterOperating = 0, charterTemplateUpkeep = 0;
+        int charterMonths = 0, charterStood = 0;
+        double auditAfterResidual = Double.NaN, auditAfterRelative = Double.NaN;
+        double feesBefore;
+        int closedBefore, standingAfter, closedAfter, placed;
+        double coverPlaced;
+        double operatingAfter, operatingOne;
+        int coveredMonths = 0, twoStood = 0, invariantMonths = 0;
+        double worstCover = Double.MAX_VALUE;
+        final int riseMonth = 6;
+        int coveredBeforeRise = 0, twoBeforeRise = 0, shortMonths = 0, shortThenClosed = 0;
+        int standingAtRise = 0, standingAfterRise = 0;
+        double coverAtRise = Double.NaN;
+        try {
+            town.run();
+            town.setCashForTest(Founding.WEALTHY_CASH);
+            town.getForeignAccounts().pinRate(1.0);
+            town.getLandManager().setOwnedSqFt(30_000_000);
+            town.buildStack(template(town, "House"), 400, true);
+            town.buildStack(template(town, "Convenience Store"), 8, true);
+            town.buildStack(template(town, "Small Grocery Store"), 2, true);
+            town.buildStack(template(town, "Bakery"), 1, true);
+            town.buildStack(template(town, "Paved Road"), 20, true);
+            town.buildStack(template(town, "Industrial Bakery"), 2, true);
+            town.buildStack(template(town, "Construction Depot"), 4, true);
+            town.buildStack(template(town, "Coal Power Plant"), 1, true);
+            town.buildStack(template(town, "Water Treatment Plant"), 1, true);
+            town.simulateMonths(12);
+
+            // 1. The charter, at the branch's own cost.
+            Bank b = town.getBank();
+            for (int m = 0; m < 24; m++) {
+                town.simulateMonths(1);
+                if (town.getBuildingManager().countByName("Commercial Bank") == 1) charterStood++;
+                charterMonths++;
+                worstCharterCover = Math.max(worstCharterCover, b.feeCover());
+                charterOperating = Math.max(charterOperating, b.getOperatingCost());
+                charterTemplateUpkeep = template(town, "Commercial Bank").getUpkeep();
+            }
+
+            // 2. A branch with no posts, a building a hundredth the size - its
+            // repairs, with the builders' wages and tax in them since 0.7.19,
+            // came to more than the old two-fifths of the fees on their own -
+            // and an operating cost struck so that the fees cover two: the
+            // charter at its repairs r, each other at r and the operating cost
+            // u, so n cost n(r + u) - u, and (fees + u) / (r + u) = 2.5 when
+            // u = (fees - 2.5r) / 1.5. RE-CAUSED (revised 0.7.19, "Exempt
+            // first branch"): it was two-fifths of the fees a branch, which
+            // with the charter exempt covers three. A month at the small
+            // building first, so the repair bill read below is its own.
+            BuildingsTemplate branch = template(town, "Commercial Bank");
+            for (JobType j : JobType.values()) branch.setJobs(j, 0);
+            branch.setUpkeep(0);
+            branch.setCashCost(branch.getCashCost() / 100);
+            branch.setConstructionMaterials(branch.getConstructionMaterials() / 100);
+            town.simulateMonths(1);
+            feesBefore = b.getAccountFees();
+            double repairsEach = town.getEconomyManager().getBankMaintenanceBill()
+                    / Math.max(1, town.getBuildingManager().countByName("Commercial Bank"));
+            branch.setUpkeep(Math.max(0, (feesBefore - 2.5 * repairsEach) / 1.5));
+            town.simulateMonths(1);                 // a month at the new cost, so the rule has struck it
+            closedBefore = town.getBranchesClosed();
+            town.buildStack(branch, 4, true);
+            placed = town.getBuildingManager().countByName("Commercial Bank");
+            coverPlaced = b.branchesTheFeesCover();
+            town.simulateMonths(1);
+            standingAfter = town.getBuildingManager().countByName("Commercial Bank");
+            closedAfter = town.getBranchesClosed();
+            operatingAfter = b.getOperatingCost();
+            operatingOne = branch.getUpkeep();
+            MoneyAudit.Result auditAfter = town.getLastMoneyAudit();
+            auditAfterResidual = auditAfter.residual;
+            auditAfterRelative = auditAfter.relative();
+
+            // 3. Two years after: the cost held still, then risen after the
+            // rule has kept the branches (the lag), and the month after.
+            int prevStanding = town.getBuildingManager().countByName("Commercial Bank");
+            boolean prevShort = false;
+            for (int m = 0; m < 24; m++) {
+                if (m == riseMonth) {
+                    // the second branch's operating cost risen so that the two -
+                    // the charter at its repairs, the other at its repairs and
+                    // this - cost a fifth more than the fees (revised: the
+                    // charter pays none of it)
+                    branch.setUpkeep(Math.max(0, 1.2 * b.getAccountFees() - 2 * repairsEach));
+                }
+                town.simulateMonths(1);
+                int standing = town.getBuildingManager().countByName("Commercial Bank");
+                if (prevShort && standing < prevStanding) shortThenClosed++;
+                prevShort = false;
+                if (standing >= 2) {
+                    twoStood++;
+                    double cover = b.feeCover();
+                    if (cover >= 1) coveredMonths++; else { shortMonths++; prevShort = true; }
+                    if (m < riseMonth) {
+                        twoBeforeRise++;
+                        worstCover = Math.min(worstCover, cover);
+                        if (cover >= 1) coveredBeforeRise++;
+                    }
+                    invariantMonths++;
+                }
+                if (m == riseMonth) { standingAtRise = standing; coverAtRise = standing >= 2 ? b.feeCover() : Double.NaN; }
+                if (m == riseMonth + 1) standingAfterRise = standing;
+                prevStanding = standing;
+            }
+        } finally {
+            System.setOut(out);
+        }
+        out.printf("   the charter: %d of %d months standing alone, its fees at most %.4f of its cost%n",
+                charterStood, charterMonths, worstCharterCover);
+        out.printf("   five branches on fees of $%,.2fk that cover two: %d standing a month later, %d closed; "
+                + "the month paid %,.2f of operating cost at %,.2f a branch%n",
+                feesBefore, standingAfter, closedAfter - closedBefore, operatingAfter, operatingOne);
+        out.printf("   two years after: two or more standing in %d months, covered in %d; before the rise %d of %d, the worst cover %.3f%n",
+                twoStood, coveredMonths, coveredBeforeRise, twoBeforeRise, twoBeforeRise > 0 ? worstCover : Double.NaN);
+        out.printf("   the cost risen after the rule kept %d: the month's cover %.3f; the month after, %d standing;"
+                + " %d short month(s), %d followed by a closure%n",
+                standingAtRise, coverAtRise, standingAfterRise, shortMonths, shortThenClosed);
+
+        assertTrue("fixture: the charter's fees covered under a tenth of its cost, every month",
+                charterMonths == 24 && worstCharterCover < .1);
+        assertTrue("the founding branch never closes on the rule, however far its fees are from its cost",
+                charterStood == 24);
+        out.printf("   the charter alone: operating cost charged at most %.4f, its template's upkeep %.1f%n",
+                charterOperating, charterTemplateUpkeep);
+        assertTrue("fixture: the charter's template carries an operating cost",
+                charterTemplateUpkeep > 0);
+        assertTrue("...and the charter, standing alone, is charged none of it",
+                charterOperating == 0);
+        // RE-CAUSED (revised 0.7.19): this read "no branch closed after the
+        // month the rule closed three" off the closure count at the end, which
+        // held while part 3 closed nothing. Part 3 now closes one on purpose
+        // (the lag), so the fixture is read where it is made: five standing,
+        // on fees that cover two at the cost the rule will read.
+        assertTrue("fixture: five branches stood on fees that cover two",
+                placed == 5 && coverPlaced == 2 && feesBefore > 0);
+        assertTrue("fixture: the branch's operating cost is what makes the fees cover two, not nothing",
+                operatingOne > 0);
+        assertTrue("every branch past what the fees cover closed at once, the month after: two stand",
+                standingAfter == 2 && closedAfter - closedBefore == 3);
+        // REWRITTEN (revised 0.7.19, "Exempt first branch"): "it ran two
+        // branches, not five" read the operating cost of two; the charter's is
+        // exempt, so it is one's.
+        close("...before the month paid them: it ran two branches, not five, and paid the operating cost of"
+                        + " one - the second; the charter's is exempt",
+                operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
+        assertTrue("...and that month closes the audit, the operating cost in it",
+                Math.abs(auditAfterResidual) <= .01 || auditAfterRelative <= 1e-7);
+        assertTrue("fixture: two branches stood every month until what a branch costs rose",
+                twoBeforeRise == riseMonth);
+        assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
+                coveredBeforeRise == twoBeforeRise);
+        assertTrue("fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them",
+                standingAtRise == 2 && coverAtRise < 1);
+        assertTrue("...and the next month the rule, reading that cost, closed the one the fees no longer cover",
+                standingAfterRise == 1);
+        assertTrue("every month the fees fell short of the branches standing, the next month's rule closed one",
+                shortMonths > 0 && shortThenClosed == shortMonths);
     }
 
     /* ============ 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) ============
@@ -2842,21 +3165,27 @@ public class BankCheck {
         assertTrue("...where face times risk, with no term and no desk, did not foot",
                 Math.abs(oldTable - weighed.getWeightedBook()) > 1);
 
-        out.println("\n--- (13) a branch's reach is in today's money after a reform ---");
+        /*
+         * REWRITTEN FOR 0.7.19: there is no branch reach to reform. Old: three
+         * branches reach three times DEPOSITS_PER_BRANCH, a hundredth of it
+         * after a hundred-for-one reform, and reached and beyond reach add up
+         * to the savings. New: three branches gather ALL the city's savings,
+         * a reform makes that a hundredth, and the owners' capital for a
+         * branch is today's money too.
+         */
+        out.println("\n--- (13) what it gathers is in today's money after a reform ---");
 
         Bank reformed = new Bank();
         reformed.refresh(3, 1_000_000, 0, 0, 0, 0);
-        close("three branches reach three times DEPOSITS_PER_BRANCH", reformed.branchReach(),
-                3 * Bank.DEPOSITS_PER_BRANCH, 1e-9);
+        close("three branches gather all the city has banked, whatever their number", reformed.depositsGathered(),
+                1_000_000, 1e-9);
         reformed.redenominate(.01);
-        close("...and after a hundred-for-one reform, a hundredth of it", reformed.getDepositsPerBranch(),
-                Bank.DEPOSITS_PER_BRANCH * .01, 1e-12);
-        close("...so what they reach of the city's savings is too - not the founding figure the screen used",
-                reformed.localDepositsReached(), Math.min(1_000_000 * .01, 3 * Bank.DEPOSITS_PER_BRANCH * .01), 1e-9);
+        close("...and after a hundred-for-one reform, a hundredth of it", reformed.depositsGathered(),
+                1_000_000 * .01, 1e-9);
+        close("...which is the city's own savings with it, all of them", reformed.depositsGathered(),
+                reformed.localDeposits(), 1e-9);
         close("...and their owners' capital for a branch", reformed.getPaidInPerBranch(),
                 Bank.PAID_IN_PER_BRANCH * .01, 1e-12);
-        close("...and reached and beyond reach add up to the city's own savings",
-                reformed.localDepositsReached() + reformed.localDepositsBeyondReach(), reformed.localDeposits(), 1e-9);
 
         out.println("\n--- (13) the bank's state in a sentence, with the figure that decides it ---");
 

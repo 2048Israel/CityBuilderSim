@@ -141,8 +141,8 @@ public final class BusinessServices extends Sector {
 
         BuildingsTemplate best = null;
         double bestScore = 0;
-        boolean sawStaffingWall = false;
-        double bestStaffable = 0;
+        Staffing staffingHold = null;
+        String staffingHoldName = null;
         boolean sawLicenceWall = false;
         JobType wanted = null;
         double shortBy = 0;
@@ -161,10 +161,15 @@ public final class BusinessServices extends Sector {
                 continue;
             }
 
-            double staffable = staffableShare(t);
-            if (staffable < MIN_STAFFABLE_TO_ORDER) {
-                if (staffable > bestStaffable) bestStaffable = staffable;
-                sawStaffingWall = true;
+            // Every post fillable at MIN_STAFFABLE_TO_ORDER, and none in a band
+            // nobody could fill (0.7.18; see Sector.staffing()).
+            Staffing staffing = staffing(t);
+            double staffable = staffing.share;
+            if (!staffing.passes()) {
+                if (staffingHold == null || staffing.share > staffingHold.share) {
+                    staffingHold = staffing;
+                    staffingHoldName = t.getName();
+                }
                 continue;
             }
 
@@ -185,10 +190,8 @@ public final class BusinessServices extends Sector {
                         "%,.0f more %s before a practice could open",
                         Math.ceil(shortBy), licenceLabel(wanted)));
             }
-            if (sawStaffingWall) {
-                return BusinessInvestment.Decision.no(sector, String.format(
-                        "the city could staff %.0f%% of a practice; it wants %.0f%%",
-                        bestStaffable * 100, MIN_STAFFABLE_TO_ORDER * 100));
+            if (staffingHold != null) {
+                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
             }
             return BusinessInvestment.Decision.no(sector,
                     "the wage bill is above what the world pays for the work");

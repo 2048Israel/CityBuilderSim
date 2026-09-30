@@ -1,6 +1,6 @@
 # Exchange.java - 1,667 lines · 141 methods · 25 constants · model
 
-`ham/citybuildersim/Exchange.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Exchange.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The stock exchange: one order book per company, where every share that
 > changes hands meets its buyer, and the price is the last trade.
@@ -66,7 +66,7 @@
 
 **Uses:** [Equity](Equity.md) (55), [OrderBook](OrderBook.md) (48), [Household](Household.md) (13), [HouseholdBalance](HouseholdBalance.md) (8), [Bank](Bank.md) (7), [TreasuryFund](TreasuryFund.md) (7), [BondMarket](BondMarket.md) (3), [OutwardInvestment](OutwardInvestment.md) (2)
 
-**Used by (15):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (16):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [Equity](Equity.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

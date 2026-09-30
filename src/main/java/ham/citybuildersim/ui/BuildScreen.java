@@ -513,8 +513,11 @@ final class BuildScreen {
                                    EnumSet<BuildingType> categories) {
 
         String key = template.getName();
-        double sticker = template.getCashCost();
-        double allIn = ui.game.calculateTotalCost(template, 1);
+        // The work, and the price all in - material and the builders' sales
+        // tax (0.7.19) - both off the quote that charges.
+        Game.BuildQuote one = ui.game.quoteBuild(template, 1);
+        double sticker = one.sticker;
+        double allIn = one.total;
         boolean importing = allIn > sticker + .5;
         boolean afford = allIn <= ui.game.getCash();
 
@@ -629,7 +632,10 @@ final class BuildScreen {
                 tone = Palette.GOOD;
                 verdict = eta;
             }
-            quoted.setText(money(q.total) + "  ·  " + verdict);
+            // The city's rebate is the tax coming home (revised 0.7.19; EconomyManager,
+            // THE REBATES ON A NEW HOME, AND THE CITY'S): the builders remit it to the
+            // treasury as they bill the work.
+            quoted.setText(money(q.total) + " with " + money(q.salesTax) + " sales tax, back to the treasury as it is built  ·  " + verdict);
             quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
         };
 
@@ -1114,12 +1120,12 @@ final class BuildScreen {
 
             case COMMERCIAL:
                 // The one commercial building no sector owns: the bank's counters.
-                out.add(String.format("A branch of the city's bank. Gathers up to %s of "
-                        + "deposits and brings %s of shareholders' capital with it, which "
-                        + "is what lets the bank lend.",
-                        money(Bank.DEPOSITS_PER_BRANCH), money(Bank.PAID_IN_PER_BRANCH)));
-                out.add("A bank past its capacity has no room for the city's next "
-                        + "borrower; a branch is what makes room.");
+                out.add(String.format("A branch of the city's bank. Another opens only while there are "
+                        + "more than %,.0f customers for each one standing, and each brings %s of "
+                        + "shareholders' capital with it, which is what lets the bank lend.",
+                        Bank.CUSTOMERS_PER_BRANCH, money(Bank.PAID_IN_PER_BRANCH)));
+                out.add("Every branch after the first has to be paid for by its customers' "
+                        + "account fees - its staff, its repairs and its running costs - or it closes.");
                 break;
 
             case ELECTRICITY:

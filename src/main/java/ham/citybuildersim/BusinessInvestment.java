@@ -22,8 +22,10 @@ import java.util.List;
  *      against store coverage. A maker looks at what its market wants
  *      against what it can make.
  *
- *   2. LEAD TIME. A building takes constructionPoints / cityOutput months to
- *      finish, so demand is projected to completion plus a planning horizon.
+ *   2. LEAD TIME. A building takes as long as its share of the builders'
+ *      site output needs to finish it (leadTime(), BuildingManager.waitFor();
+ *      constructionPoints / cityOutput until 0.7.17), so demand is projected
+ *      to completion plus a planning horizon.
  *
  *   3. THE BRAKE. Businesses here borrow freely, so something has to stop a
  *      loss-making expansion spiral: a project must service its own debt.
@@ -53,7 +55,7 @@ public class BusinessInvestment {
     /** A project must clear its interest by this much to be worth doing. */
     public static final double PROFIT_OVER_INTEREST = 1.25;
 
-    /** Never start a second order for a sector while one is still on site. */
+    /** Never start a second order for a sector while one is still on site - every sector but the landlords, who hold work by the month (0.7.17; withinMonthsOfWork()). */
     public static final int MAX_CONCURRENT_ORDERS = 1;
 
     /* =====================================================================
@@ -89,10 +91,14 @@ public class BusinessInvestment {
     public boolean isHeld(String key) { return key != null && held.contains(key); }
 
     /**
-     * The largest order a sector will place, expressed as months of the city's
-     * whole construction output. An order still has to be deliverable: sizing
+     * The largest order a sector will place, in months of the builders' work.
+     * Since 0.7.17 an order is no more than would open inside it at the wait
+     * leadTime() reads (orderSize(); it was months of the city's whole
+     * construction output). An order still has to be deliverable: sizing
      * purely to the demand gap would have real estate ordering six hundred
-     * houses and monopolising the queue for decades.
+     * houses and monopolising the queue for decades. The landlords' since
+     * 0.7.17 is months of the builders' site output that their own sites may
+     * owe, orders on site included - see withinMonthsOfWork().
      */
     public static final double MAX_ORDER_MONTHS = 12;
 
@@ -195,33 +201,105 @@ public class BusinessInvestment {
                 + buildingManager.getHouseCapacityUnderConstruction();
     }
 
-    /** Months before a building of this size would actually open. */
-    public double leadTime(BuildingsTemplate template, int quantity, double cityConstructionOutput) {
-        if (cityConstructionOutput <= 0) return Double.MAX_VALUE;
-        return (template.getConstructionPoints() * (double) quantity) / cityConstructionOutput;
+    /**
+     * Months before an order of this building would actually open: the wait
+     * it would have at this month's shares of the site output
+     * (BuildingManager.waitFor() - everything on site plus the order, by
+     * the crew each can use, under EVERY BUILDING GETS THE CREW IT CAN USE).
+     *
+     * THE REAL WAIT, NOT THE ORDER'S OWN POINTS (0.7.17). It was the order's
+     * points over the builders' whole output, repairs and all, as though the
+     * order had the builders to itself; with the output shared among
+     * everything on site, a plant ordered into a long queue waited for years
+     * while the planner read months. With nothing else on site the two are
+     * the same figure.
+     *
+     * @param siteOutput the builders' output for the sites after the repairs,
+     *                   with every post offered (Game.getBuildingOutputAtEveryPost())
+     */
+    public double leadTime(BuildingsTemplate template, int quantity, double siteOutput) {
+        if (siteOutput <= 0) return Double.MAX_VALUE;
+        return buildingManager.waitFor(template, quantity, siteOutput);
     }
 
     /**
      * How many of a building to order: enough to close the gap, but no more
-     * than the city's builders could deliver in MAX_ORDER_MONTHS, and never
-     * more plots than the city has land to sell. Floored at one, because a
-     * sector that has decided it is short should place an order even when
-     * the builders are backed up. Land is the exception and the only thing
-     * that can return zero.
+     * than would open inside MAX_ORDER_MONTHS at the wait leadTime() reads
+     * (0.7.17: it was twelve months of the builders' whole output, as though
+     * the order had them to itself), and never more plots than the city has
+     * land to sell. Floored at one, because a sector that has decided it is
+     * short should place an order even when the builders are backed up. Land
+     * is the exception and the only thing that can return zero.
      */
     public int orderSize(double shortfall, double capacityPerUnit,
-                         BuildingsTemplate template, double cityConstructionOutput) {
+                         BuildingsTemplate template, double siteOutput) {
 
         int needed = (capacityPerUnit > 0) ? (int) Math.ceil(shortfall / capacityPerUnit) : 1;
 
-        double points = template.getConstructionPoints();
-        int deliverable = Integer.MAX_VALUE;
-        if (points > 0 && cityConstructionOutput > 0) {
-            deliverable = (int) Math.floor((cityConstructionOutput * MAX_ORDER_MONTHS) / points);
+        // The wait only grows with the order (each building adds its points
+        // and its crew), so count up until it passes.
+        int deliverable = 0;
+        if (template.getConstructionPoints() > 0 && siteOutput > 0) {
+            for (int n = 1; n <= needed; n++) {
+                if (leadTime(template, n, siteOutput) > MAX_ORDER_MONTHS) break;
+                deliverable = n;
+            }
+        } else {
+            deliverable = needed;
         }
 
         int size = Math.max(1, Math.min(needed, deliverable));
         return Math.min(size, plotsAvailableFor(template));
+    }
+
+    /*
+     * THE LANDLORDS HOLD WORK, NOT ONE ORDER (0.7.17). Jerus: "Landlords may
+     * hold orders worth a number of months of building work, instead of one
+     * order at a time sized on the whole city's output."
+     *
+     * One order at a time, sized on twelve months of the WHOLE city's output,
+     * was delivered at the pace the landlords' sites actually got: in Jerus's
+     * year-149 city a quarter of what the sites were left, about 250 homes a
+     * month, with the next order held "already building" for fifty months.
+     * So the landlords may keep ordering while the points their sites owe,
+     * the order being weighed included, are at most MAX_ORDER_MONTHS of the
+     * builders' output for the sites after the repairs - "orders worth a
+     * number of months of building work", read as he wrote it - and each
+     * order is sized to stay inside that. Every other sector keeps
+     * MAX_CONCURRENT_ORDERS.
+     *
+     * MONTHS OF THE BUILDERS' WORK, NOT OF THE LANDLORDS' PACE. An earlier
+     * reading held them to twelve months at the share their own sites got.
+     * Under a rule that shares the output by what each site still owed, that
+     * came to the whole city's queue - everything on site over the output -
+     * and in Jerus's city it held them in fifty-five months of a hundred and
+     * twenty behind forty-seven care complexes. The output is read at every
+     * post (Game.getBuildingOutputAtEveryPost()): builders who have laid
+     * crews off for want of work hire them back for the order.
+     */
+
+    /**
+     * The largest order of up to {@code wanted} buildings a sector may add to
+     * its sites and still owe no more than MAX_ORDER_MONTHS of the builders'
+     * site output, the order counted; 0 when not even one fits.
+     *
+     * @param siteOutput the month's site output, after the repairs, at every post
+     */
+    public int withinMonthsOfWork(String sector, BuildingsTemplate t, int wanted, double siteOutput) {
+        if (t == null || wanted < 1 || siteOutput <= 0) return 0;
+        double points = t.getConstructionPoints();
+        double room = MAX_ORDER_MONTHS * siteOutput - buildingManager.pointsOwedBySector(sector);
+        if (!(points > 0)) return room >= 0 ? wanted : 0;
+        return (int) Math.max(0, Math.min(wanted, Math.floor(room / points)));
+    }
+
+    /**
+     * Months of the builders' site output a sector's sites owe (0.7.17): the
+     * points owed over the output. NaN with nothing on site or no output.
+     */
+    public double monthsOfWorkOnSite(String sector, double siteOutput) {
+        double owed = buildingManager.pointsOwedBySector(sector);
+        return owed > 0 && siteOutput > 0 ? owed / siteOutput : Double.NaN;
     }
 
     /** How many of these the city currently has room for. */
@@ -263,8 +341,10 @@ public class BusinessInvestment {
      * Months of losses before a sector that is overdrawn and refused credit
      * starts liquidating plant it is actually using. Two years: the runway a
      * firm burns before it is wound up, and the time a founding plant needs
-     * for the city to grow into it. Since 0.7.11 it is also the bank's fuse
-     * for closing a branch that does not pay (Bank.BRANCH_CLOSE_MONTHS).
+     * for the city to grow into it. From 0.7.11 to 0.7.18 it was also the
+     * bank's fuse for closing a branch whose book did not keep its staff;
+     * since 0.7.19 a branch answers to its customers' fees, at once
+     * (Bank.branchesToClose()).
      */
     public static final int DISTRESS_LOSS_MONTHS = 24;
 
@@ -486,7 +566,10 @@ public class BusinessInvestment {
         GoodsMarket market = economyManager.getMarkets().get(good);
         double price = market.getLocalPrice();
         double costPerUnit = knownCost(sector.getCostPerUnit(good));
-        double output = game.getConstructionOutput();
+        // The sites' output after the repairs, at every post (0.7.17): what an
+        // order's wait is read against (leadTime()), and an order is work the
+        // builders hire back for; see Game.getBuildingOutputAtEveryPost().
+        double output = game.getBuildingOutputAtEveryPost();
 
         /*
          * WHAT IS ALREADY COMING COUNTS AS SUPPLY. Without the pipeline the
@@ -539,6 +622,8 @@ public class BusinessInvestment {
         BuildingsTemplate best = null;
         double bestScore = 0;
         double demandAtOpening = 0;
+        Sector.Staffing staffingHold = null;
+        String staffingHoldName = null;
 
         /*
          * THE FORECAST IS CAPPED BY WHERE THE PEOPLE COULD LIVE, exactly as
@@ -592,6 +677,16 @@ public class BusinessInvestment {
 
             if (projected <= currentOutput * (1 + TARGET_HEADROOM)) continue;
 
+            // ...and one the city could staff (0.7.18; see Sector.staffing()).
+            Sector.Staffing staffing = sector.staffing(t);
+            if (!staffing.passes()) {
+                if (staffingHold == null || staffing.share > staffingHold.share) {
+                    staffingHold = staffing;
+                    staffingHoldName = t.getName();
+                }
+                continue;
+            }
+
             double monthlyIncome = sector.estimatedMonthlyProfit(t, this);
             double cost = totalCostOf(t, 1);
             if (cost <= 0 || monthlyIncome <= 0) continue;
@@ -604,10 +699,15 @@ public class BusinessInvestment {
             }
         }
 
-        if (best == null) return Decision.no(key, "output ahead of demand");
+        if (best == null) {
+            return staffingHold != null ? Decision.no(key, staffingHold.why(staffingHoldName))
+                    : Decision.no(key, "output ahead of demand");
+        }
 
         int quantity = orderSize(demandAtOpening - currentOutput, best.makes(good), best, output);
         if (quantity <= 0) return Decision.noLand(key, landReason(best));
+        // No more of them than the city could staff together (0.7.18).
+        quantity = sector.staffableCount(best, quantity);
         /*
          * A FIRST PLANT IS ONE PLANT. A sector with nothing running has no
          * month of its own to size an order by; the first long run's
@@ -723,8 +823,15 @@ public class BusinessInvestment {
      */
     public double standingCostOf(Sector sector, BuildingsTemplate t) {
         double materialPrice = Math.max(0, buildingManager.getConstructionMaterialPrice());
-        double structure = t.getCashCost() + t.getConstructionMaterials() * materialPrice;
-        double repairs = structure * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
+        double materials = t.getConstructionMaterials() * materialPrice;
+        double structure = t.getCashCost() + materials;
+        // The repairs as the builders bill them, net of the tax the owner
+        // claims back (0.7.19; EconomyManager.maintenanceBillFor(),
+        // ownersRepairCost() - no rebate reaches a repair); the property tax
+        // on the roll's value, below.
+        double repairs = economyManager.ownersRepairCost(t, sector.key(),
+                buildingManager.nonMaterialCost(t) + materials)
+                * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
         // The land half at whatever share of it the roll carries for this
         // sector - one for everybody but the fields. A planner that ignored the
         // farmland relief would refuse to sink a farm the city had just voted
@@ -745,13 +852,20 @@ public class BusinessInvestment {
      * lived inside the shops' decision as an early return, and a young city
      * that wanted one and could not afford it simply stopped building shops.
      * It is still RETAIL's money - a bank is a commercial building - but it
-     * no longer spends retail's one decision a month. Built on the STRAIN
-     * and slightly ahead of the premium, see Bank.BUILD_AT_STRAIN.
+     * no longer spends retail's one decision a month. Built for its
+     * CUSTOMERS since 0.7.19: only while there are more than
+     * Bank.CUSTOMERS_PER_BRANCH for every branch standing and the month's
+     * fees would cover every branch with another (Bank.wantsBranch(), THE
+     * BRANCHES, BY THEIR CUSTOMERS); on the strain until then.
      *
      * NEVER FOR A BANK UNDER ITS MINIMUM since round 2 of 0.7.11 - the
      * larger of its two minimums (Bank.wantsBranch()). And the other way is
-     * not planned here: a branch whose book does not keep its staff is
-     * closed in Game.runRetirement() (Bank.closesBranch()).
+     * not planned here: a branch whose fees do not cover it is closed in
+     * Game.runRetirement() (Bank.branchesToClose()).
+     *
+     * AND A BRANCH THE CITY COULD STAFF (0.7.19), like every other planner
+     * that builds posts (Sector.staffing(), asked of retail, whose money it
+     * is): its twenty-nine posts went up without the question until then.
      */
     public Decision planBank() {
 
@@ -762,23 +876,27 @@ public class BusinessInvestment {
         if (buildingManager.underConstructionByName("Commercial Bank") > 0) {
             return Decision.no(sector, "a branch is already going up");
         }
-        if (!bank.wantsBranch()) {
-            return Decision.no(sector, bank.getBranches() <= 0
-                    ? "nobody is borrowing yet"
-                    : String.format("the bank is %.0f%% lent out - room enough", bank.strain() * 100));
+        // The branches STANDING, as the city counts them - one that opened
+        // last month included (Bank, THE BRANCHES, BY THEIR CUSTOMERS).
+        int standing = buildingManager.countByName("Commercial Bank");
+        if (!bank.wantsBranch(standing)) {
+            String why = bank.branchHoldReason(standing);
+            return Decision.no(sector, why == null ? "no branch wanted" : why);
         }
 
         BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
         if (branch == null) return Decision.no(sector, "no branch to build");
 
+        // ...and one the city could staff (0.7.18's test, asked of the branch
+        // since 0.7.19; see Sector.staffing()).
+        Sector.Staffing staffing = economyManager.getSectors().retail().staffing(branch);
+        if (!staffing.passes()) return Decision.no(sector, staffing.why(branch.getName()));
+
         // With no bank the city's credit is lent from outside it, priced as the
         // central bank's window money since 0.7.7 - not at a punitive rate,
         // which is what this said until it was pointed out (the 0.7.7 docs
-        // pass); what a branch buys is the city's own savings to lend.
-        return new Decision(sector, branch, 1, bank.getBranches() <= 0
-                ? "nowhere in the city to bank - its credit comes from outside, at the window's price"
-                : String.format("the bank is %.0f%% lent out - opening a branch", bank.strain() * 100),
-                true);
+        // pass).
+        return new Decision(sector, branch, 1, bank.branchOpenReason(standing), true);
     }
 
     /* =====================================================================
@@ -823,20 +941,18 @@ public class BusinessInvestment {
     /**
      * Rough monthly profit a finished building would add - the screening
      * number the interest test is struck on. The bank's branch is priced
-     * here, on the book it would carry net of its staff; every other
-     * building is priced by its sector.
+     * here, on the fees its customers would pay against what a branch costs
+     * (0.7.19; the book it would carry net of its staff until then); every
+     * other building is priced by its sector.
      */
     public double estimatedMonthlyProfit(String sector, BuildingsTemplate t) {
 
         if (bank != null && t != null && "Commercial Bank".equals(t.getName())) {
-            double carried = bank.bookAnotherBranchWouldCarry();
-            double annual = economyManager.getBusinessDebtManager().getRate(sector);
-            double interest = carried * Math.max(0, annual) / 12;
-            // NET OF THE STAFF: a branch's interest income is not its profit.
-            double staff = economyManager.getBankPayroll();
-            double perBranch = bank.getBranches() > 0 ? staff / bank.getBranches() : staff;
-            if (perBranch <= 0) perBranch = wageBillFor(t);
-            return interest - perBranch;
+            // ...at what a branch past the charter carries, its operating cost
+            // with it (revised 0.7.19: the charter is exempt from that).
+            double cost = bank.laterBranchCost();
+            if (cost <= 0) cost = wageBillFor(t) + t.getUpkeep();
+            return bank.feesPerBranchWithAnother(buildingManager.countByName("Commercial Bank")) - cost;
         }
 
         Sector s = economyManager.getSectors().byKey(sector);
@@ -870,16 +986,19 @@ public class BusinessInvestment {
     }
 
     /**
-     * Cash price of a building, matching what Game charges: the cash cost
-     * plus any materials that have to be bought beyond the city's yard, at
-     * the market price, plus the land.
+     * Cash price of a building, matching what Game charges: the builders'
+     * price for the work - its labour at today's wages (0.7.19) - plus any
+     * materials that have to be bought beyond the city's yard, at the
+     * market price, with the builders' sales tax on both, plus the land.
+     * What the owner pays up front and finances: the tax a business claims
+     * back comes back as the work is billed, after the loan is written.
      */
     private double totalCostOf(BuildingsTemplate t, int quantity) {
         double stock = buildingManager.getConstructionMaterials();
         double required = t.getConstructionMaterials() * (double) quantity;
         double shortfall = Math.max(required - stock, 0);
-        return t.getCashCost() * quantity
-                + shortfall * buildingManager.getConstructionMaterialPrice()
+        return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity
+                        + shortfall * buildingManager.getConstructionMaterialPrice())
                 + t.getLandSqFt() * quantity * landPricePerSqFt;
     }
 

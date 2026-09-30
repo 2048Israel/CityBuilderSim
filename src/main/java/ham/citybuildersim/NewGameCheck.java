@@ -243,6 +243,20 @@ public class NewGameCheck {
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
         // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
         used.setCashForTest(Founding.WEALTHY_CASH);
+        /*
+         * ...AND ITS BUILDERS CHARGE NO SALES TAX, RE-CAUSED (0.7.19). The
+         * builders' tax is in their quote since 0.7.19, and a landlord, whose
+         * rent is exempt, cannot claim it back on a House (the rebates on a
+         * new rental home need four homes, or are gone at a House's founding
+         * value - revised 0.7.19): a House costs 17.6% more at the founding,
+         * and in this city's 123 months its landlords, housed
+         * ahead by the city's two hundred, never met the lender's test and
+         * never borrowed - so the sweep below of the lender's and the
+         * insurance's records proved 0 == 0. The tax is dialled to nothing
+         * here (TaxPolicy's sector offset, a player's lever, which the new
+         * game must sweep too), so the landlords borrow as they did.
+         */
+        used.getEconomyManager().getTaxPolicy().setSalesOffset(used.getSectors().construction(), -TaxPolicy.DEFAULT_INCOME_TAX);
         used.buildStack(template(used, "House"), 200, false);
         used.buildStack(template(used, "Convenience Store"), 5, false);
         used.buildStack(template(used, "Industrial Bakery"), 2, false);

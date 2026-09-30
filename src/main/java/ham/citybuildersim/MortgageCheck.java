@@ -57,11 +57,14 @@ import java.util.List;
  *      stop at the leverage requirement when that is the larger, and its
  *      lending tightens on it. A bank under it opens no branch for the
  *      capital, and its weight table still foots.
- *  11. A BRANCH THAT DOES NOT PAY IS CLOSED: after Bank.BRANCH_CLOSE_MONTHS
- *      of a book that does not keep its branches' staff, and not before; a
- *      covered bank closes nothing; the last branch stays; in a played city
- *      the closure is a retired building, and the bank's equity and the
- *      money audit close through it.
+ *  11. A BRANCH THAT DOES NOT PAY IS CLOSED (rewritten for 0.7.19): every
+ *      branch past what the month's fees cover closes that month, with no
+ *      fuse to wait out; a bank whose fees cover its branches closes
+ *      nothing; the last branch stays; in a played city the closure is a
+ *      retired building, and the bank's equity and the money audit close
+ *      through it; and what the rule reads survives a save. (Until 0.7.19:
+ *      after Bank.BRANCH_CLOSE_MONTHS of a book that did not keep its
+ *      branches' staff, and not before.)
  *  12. PAYOUTS AFTER PRINCIPAL: a landlord with a mortgage pays Equity.PAYOUT
  *      of its income less the principal it repaid, and nothing when the
  *      principal is the larger (the cushion that counts the payments is
@@ -128,6 +131,11 @@ public class MortgageCheck {
      * short of doors from the first month, so they order at once.
      */
     static Game landlordCity(Path root, String name) {
+        return landlordCity(root, name, false);
+    }
+
+    /** ...with its works standing from the start when asked: see payoutsAfterPrincipal(). */
+    static Game landlordCity(Path root, String name, boolean worksStanding) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
         quietly(() -> {
@@ -136,6 +144,16 @@ public class MortgageCheck {
             // bought out of cash, the Wealthy preset's, explicitly.
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 50_000_000L);
+            if (worksStanding) {
+                // ...all but the depots, which a city with nobody living in it
+                // yet could not staff: they are built, by the city's own works.
+                for (String[] w : new String[][] { { "Industrial Bakery", "3" }, { "Coal Power Plant", "1" },
+                        { "Water Treatment Plant", "1" }, { "Commercial Bank", "1" }, { "Convenience Store", "4" } }) {
+                    g.buildStack(template(g, w[0]), Integer.parseInt(w[1]), true);
+                }
+                LongPlaytest.build(g, "Construction Depot", 4);
+                return;
+            }
             LongPlaytest.build(g, "Industrial Bakery", 3);
             LongPlaytest.build(g, "Construction Depot", 4);
             LongPlaytest.build(g, "Coal Power Plant", 1);
@@ -779,6 +797,25 @@ public class MortgageCheck {
         EconomyManager econ = g.getEconomyManager();
         BuildingsTemplate house = template(g, "House");
         /*
+         * ...AT THE PRICE THIS SECTION WAS WRITTEN AGAINST, RE-CAUSED (0.7.19).
+         * The builders' sales tax is in their quote since 0.7.19 (Game, THE
+         * BUILDERS' PRICE), and a landlord, whose rent is an exempt supply,
+         * cannot claim it back as a credit - nor, on a House, by a rebate:
+         * the purpose-built rental rebate needs four homes, and the new-home
+         * rebate is gone at a House's founding value (revised 0.7.19;
+         * EconomyManager, THE REBATES ON A NEW HOME, AND THE CITY'S): the
+         * House went from $446k to $524.7k, and at the founding city's rent
+         * the lender's test read 1.06x against its 1.20 - a true answer about
+         * a question this section is not asking.
+         * It asks whether the old rule refused a House the lender's test
+         * passes, so the builders' tax is dialled to nothing in this city (a
+         * lever the player holds, TaxPolicy's sector offset) and the House
+         * costs what it did.
+         */
+        econ.getTaxPolicy().setSalesOffset(g.getSectors().construction(), -TaxPolicy.DEFAULT_INCOME_TAX);
+        assertTrue("fixture: the builders charge no sales tax in this city",
+                econ.buildersSalesRate() == 0);
+        /*
          * ITS OWN RISK, WHICH A NEW LANDLORD CANNOT AVOID. Owning nothing yet
          * and borrowing all of its first building, it is left at exactly 1.0
          * times its assets - the building is all it owns and all it owes -
@@ -899,19 +936,26 @@ public class MortgageCheck {
 
         Bank under = mortgageBank(25_000);
         // A month that kept its staff, so a branch would pay for itself.
+        // RE-CAUSED FOR 0.7.19: a branch answers to its customers' fees since
+        // then (Bank, THE BRANCHES, BY THEIR CUSTOMERS), so the month also
+        // has the customers for another branch and the fees to pay for it,
+        // where it had a book spilling past its capital and the strain it
+        // built at. The assertion below is unchanged: a bank under its
+        // minimum opens no branch for the capital it would bring.
         under.startMonth();
         under.takeInterest(50_000);
         under.payRunning(1_000, 100);
         under.closeMonth();
+        under.setCustomers((under.getBranches() + 2) * Bank.CUSTOMERS_PER_BRANCH);
+        under.takeAccountFees(10 * (under.getBranches() + 1) * under.runningCostPerBranch());
         under.setCash(25_000 - 1_000_000);
         assertTrue("fixture: at 2.5% of what it has lent it is under its minimum",
                 under.payoutStance() == Bank.Payout.UNDER_MINIMUM && under.lendsOnlyToKeepBorrowersGoing());
         close("...and the city is asked for what takes it back to its target", under.recapitalisationNeeded(),
                 under.targetEquity() - under.equity(), 1e-9);
-        assertTrue("fixture: every other part of the branch test says open one - the book spills over what "
-                        + "its capital carries, a branch would pay, and it is past the strain it builds at",
-                under.bookAnotherBranchWouldCarry() > 0 && under.branchWouldPayForItself()
-                        && under.strain() > Bank.BUILD_AT_STRAIN);
+        assertTrue("fixture: every other part of the branch test says open one - there are customers for "
+                        + "another, and their fees would cover it",
+                under.customersForAnother() && under.feesWouldCoverAnother());
         assertTrue("...but a bank under its minimum opens no branch for the capital it would bring",
                 !under.wantsBranch());
 
@@ -937,7 +981,22 @@ public class MortgageCheck {
                 paying.status().contains("everything it has lent"));
     }
 
-    /* ================== 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2) ================== */
+    /* ================== 11. A BRANCH THAT DOES NOT PAY IS CLOSED (round 2; 0.7.19) ==================
+
+       REWRITTEN FOR 0.7.19, because Jerus replaced the rule it encoded. Old
+       (0.7.11 round 2): a branch closed after BRANCH_CLOSE_MONTHS - the
+       city's two-year distress fuse - of closed months in which the BOOK had
+       not kept its branches' staff, one a month, never the last; the played
+       city's six extra branches closed one at a time, the first only once the
+       streak reached the fuse, and the streak survived a save. New (Bank,
+       THE BRANCHES, BY THEIR CUSTOMERS): every branch past the first whose
+       customers' fees do not cover what a branch costs closes at once, the
+       month the fees are taken, as many as it takes, never the first; the
+       played city's six close the month after they stand, all together, by
+       the same retired-building path, with the same capital and audit
+       assertions; and what the rule reads - the customers and the month's
+       running costs - survives a save.
+       ========================================================================================== */
 
     /** One closed month of a hand-built bank: this interest, these costs. */
     static void closeAMonth(Bank b, double interest, double payroll) {
@@ -948,32 +1007,32 @@ public class MortgageCheck {
     }
 
     static void branchesClose(Path root) {
-        out.println("\n--- 11. a branch that does not pay is closed: after the fuse, and never the last ---");
+        out.println("\n--- 11. a branch whose fees do not cover it is closed: at once, and never the last ---");
 
         Bank three = new Bank();
         three.refresh(3, 5_000_000, 0, 100_000, 0, 0);
-        for (int m = 1; m < Bank.BRANCH_CLOSE_MONTHS; m++) closeAMonth(three, 10, 300);
-        assertTrue("fixture: its book has not kept its three branches' staff for a month short of the fuse",
-                !three.branchesCoverTheirStaff() && three.getUncoveredMonths() == Bank.BRANCH_CLOSE_MONTHS - 1);
-        assertTrue("...and it closes nothing yet", !three.closesBranch());
         closeAMonth(three, 10, 300);
-        assertTrue("at BRANCH_CLOSE_MONTHS it closes one", three.closesBranch());
-        close("...the fuse being the city's distress fuse", Bank.BRANCH_CLOSE_MONTHS, BusinessInvestment.DISTRESS_LOSS_MONTHS, 0);
-        closeAMonth(three, 10_000, 300);
-        assertTrue("a month the book keeps its staff resets the count and closes nothing",
-                three.branchesCoverTheirStaff() && three.getUncoveredMonths() == 0 && !three.closesBranch());
+        double cost = three.runningCostPerBranch();
+        three.startMonth();
+        three.takeAccountFees(2.2 * cost);
+        assertTrue("fixture: the month's fees cover two of its three branches",
+                cost > 0 && three.branchesTheFeesCover() == 2);
+        assertTrue("...and it closes the third that month, with no fuse to wait out",
+                three.closesBranch() && three.branchesToClose() == 1);
+        three.startMonth();
+        three.takeAccountFees(3.1 * cost);
+        assertTrue("a month whose fees cover all three closes nothing", !three.closesBranch());
 
         Bank one = new Bank();
         one.refresh(1, 5_000_000, 0, 100_000, 0, 0);
-        for (int m = 0; m < 2 * Bank.BRANCH_CLOSE_MONTHS; m++) closeAMonth(one, 10, 300);
-        assertTrue("the last branch stays, however long its book has not kept it",
-                one.getUncoveredMonths() == 2 * Bank.BRANCH_CLOSE_MONTHS && !one.closesBranch());
+        for (int m = 0; m < 48; m++) closeAMonth(one, 10, 300);
+        assertTrue("the last branch stays, however long its fees have not covered it",
+                one.getUncoveredMonths() == 0 && !one.closesBranch() && one.getAccountFees() == 0);
 
         /*
          * ...AND IN A PLAYED CITY: the landlords' city with six more branches
-         * standing from the founding than its young book can keep. The
-         * streak runs from the month their staff outgrow what the book
-         * keeps, and a branch closes the month after it reaches the fuse.
+         * standing from the founding than its fees can cover. The month after
+         * they stand, the rule closes all six at once.
          */
         Game g = landlordCity(root, "branches");
         BuildingsTemplate branch = template(g, "Commercial Bank");
@@ -982,21 +1041,22 @@ public class MortgageCheck {
             g.getLandManager().allocate(branch.getLandSqFt() * 6);
         });
         Bank bank = g.getBank();
-        int closedAt = -1, streakWhenClosed = -1, before = -1;
+        int closedAt = -1, before = -1, after = -1, firstCostKnown = -1, closedIn = -1;
         double equityResidual = Double.NaN, audit = Double.NaN, capitalisedBefore = 0, capitalisedAfter = 0;
         String said = null;
-        boolean early = false;
         for (int m = 0; m < 90 && closedAt < 0; m++) {
             int standing = g.getBuildingManager().countByName("Commercial Bank");
-            int streak = bank.getUncoveredMonths();
             double capitalised = bank.getBranchesCapitalised();
+            // The rule reads what a branch cost the month before; a bank that
+            // has closed no month with its branches standing has none to read.
+            if (firstCostKnown < 0 && bank.runningCostPerBranch() > 0) firstCostKnown = m;
             quietly(() -> g.simulateMonths(1));
             int now = g.getBuildingManager().countByName("Commercial Bank");
             if (now < standing) {
+                closedIn = m;
                 closedAt = g.getMonth();
                 before = standing;
-                streakWhenClosed = streak;
-                early = streak < Bank.BRANCH_CLOSE_MONTHS;
+                after = now;
                 equityResidual = bank.equityMovement().residual();
                 audit = g.getLastMoneyAudit().residual;
                 for (DemolitionLog.Entry e : g.getDemolitionLog().recent(g.getMonth())) {
@@ -1008,26 +1068,34 @@ public class MortgageCheck {
                 capitalisedAfter = bank.getBranchesCapitalised();
             }
         }
-        assertTrue("fixture: the played bank closed a branch", closedAt > 0);
-        assertTrue("...not before its book had failed its staff for BRANCH_CLOSE_MONTHS",
-                !early && streakWhenClosed >= Bank.BRANCH_CLOSE_MONTHS);
-        close("...one branch", before - g.getBuildingManager().countByName("Commercial Bank"), 1, 0);
-        same("...sold as a retired building, by its owner - on the city's list of what came down", said,
-                Sectors.RETAIL + " sold 1");
+        assertTrue("fixture: the played bank closed its branches", closedAt > 0);
+        assertTrue("...in the first month its rule had a branch's cost to read", closedIn >= 0 && closedIn == firstCostKnown);
+        close("...all six past the first, at once - the town's fees cover none of them", before - after, 6, 0);
+        same("...sold as retired buildings, by their owner - on the city's list of what came down", said,
+                Sectors.RETAIL + " sold 6");
         close("...its founding capital left where it was", capitalisedAfter, capitalisedBefore, 0);
         close("the bank's equity moved by its income and its named causes that month", equityResidual, 0, 1e-6);
         close("...and the month's money audit closes through the closure", audit, 0, .01);
 
-        // ...and the count is carried in the save: a reload does not start
-        // the fuse again (Bank.lastMonthToSave()).
-        assertTrue("fixture: the streak is running when the city is saved", bank.getUncoveredMonths() > 0);
+        // ...and what the rule reads is carried in the save: the customers and
+        // the month's running costs (Bank.monthLinesToSave(), 0.7.19).
+        // REWRITTEN (revised 0.7.19, Jerus: "Exempt first branch"): it read
+        // the month's operating cost, which a bank standing on its charter
+        // alone no longer pays, so its reload compared nothing with nothing.
+        // The cost the rule reads - what a branch past the charter carries,
+        // its operating cost in it, from last month's figures - is what the
+        // save must carry now.
+        quietly(() -> g.simulateMonths(1));
+        assertTrue("fixture: the bank has customers, and a branch past the charter would carry an operating cost the charter does not",
+                bank.getCustomers() > 0 && bank.laterBranchCost() > bank.runningCostPerBranch() && bank.getOperatingCost() == 0);
         final boolean[] saved = { false };
         quietly(() -> saved[0] = g.saveGame(1, "branch city").ok);
         GameFiles files = new GameFiles(root.resolve("branches"), root.resolve("branches-no-legacy"));
         Game back = new Game(files);
         quietly(() -> back.loadGameSave(1));
-        close("a reloaded bank has run the same months of its streak", back.getBank().getUncoveredMonths(),
-                bank.getUncoveredMonths(), 0);
+        close("a reloaded bank has the same customers", back.getBank().getCustomers(), bank.getCustomers(), 0);
+        close("...the same cost a branch past the charter carries, the operating cost in it",
+                back.getBank().laterBranchCost(), bank.laterBranchCost(), 0);
         close("...and stands the same branches", back.getBank().getBranches(), bank.getBranches(), 0);
     }
 
@@ -1036,7 +1104,20 @@ public class MortgageCheck {
     static void payoutsAfterPrincipal(Path root) {
         out.println("\n--- 12. payouts after principal: a share of what the month leaves once the lender is paid ---");
 
-        Game g = landlordCity(root, "payout");
+        /*
+         * THE CITY'S WORKS STAND FROM THE START (0.7.17). The fixture needs
+         * landlords who earn more than their mortgages take in one month and
+         * less in another. Since every building gets the crew it can use
+         * (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE) this
+         * city's bakeries, bank and shops waited on site behind its coal plant
+         * for years, the jobs they bring did not come, the landlords held on
+         * "housing ahead of jobs" and lost money every month of the ten years
+         * searched - neither month was found. With the works standing (all
+         * but the depots, which a city nobody lives in yet cannot staff) the
+         * jobs are there, the landlords build for them and earn; their homes
+         * are still built, on mortgages, as the premise has it.
+         */
+        Game g = landlordCity(root, "payout", true);
         Equity register = g.getEquity();
         int landlords = Equity.indexOf(RE);
         boolean everPastIt = false, foundPaid = false, foundNothing = false;

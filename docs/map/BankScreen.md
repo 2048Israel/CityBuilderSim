@@ -1,6 +1,6 @@
-# BankScreen.java - 2,340 lines · 38 methods · 4 constants · interface
+# BankScreen.java - 2,326 lines · 38 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankScreen.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The bank tab: whether the city's bank is healthy and why, on one landing -
 > a sentence, a scorecard and the ladder of its rates - with its profit, its
@@ -30,7 +30,7 @@
 > scroll position (UserInterface.scrolled()) and the lines the player has
 > opened (openLines) all survive a redraw.
 
-**Uses:** [Palette](Palette.md) (363), [Bank](Bank.md) (177), [BusinessDebtManager](BusinessDebtManager.md) (19), [Equity](Equity.md) (13), [Game](Game.md) (13), [Sectors](Sectors.md) (9), [Mortgage](Mortgage.md) (9), [Exchange](Exchange.md) (7), [Ladder](Ladder.md) (4), [CorporateBond](CorporateBond.md) (4), [HistorySave](HistorySave.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [CentralBank](CentralBank.md) (3), [CityCalendar](CityCalendar.md) (3), [TreasuryFund](TreasuryFund.md) (3), [UserInterface](UserInterface.md) (2), [BondMarket](BondMarket.md) (2), [OrderBook](OrderBook.md) (2), [DebtQuote](DebtQuote.md) (2), [DebtManager](DebtManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [BuildingType](BuildingType.md) (1), [Rollover](Rollover.md) (1)
+**Uses:** [Palette](Palette.md) (353), [Bank](Bank.md) (172), [BusinessDebtManager](BusinessDebtManager.md) (19), [Equity](Equity.md) (13), [Game](Game.md) (13), [Sectors](Sectors.md) (9), [Mortgage](Mortgage.md) (9), [Exchange](Exchange.md) (7), [Ladder](Ladder.md) (4), [CorporateBond](CorporateBond.md) (4), [HistorySave](HistorySave.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [CentralBank](CentralBank.md) (3), [CityCalendar](CityCalendar.md) (3), [TreasuryFund](TreasuryFund.md) (3), [UserInterface](UserInterface.md) (2), [BondMarket](BondMarket.md) (2), [OrderBook](OrderBook.md) (2), [DebtQuote](DebtQuote.md) (2), [DebtManager](DebtManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [BuildingType](BuildingType.md) (1), [Rollover](Rollover.md) (1)
 
 **Used by (3):** [FinancesScreen](FinancesScreen.md), [SectorScreen](SectorScreen.md), [UserInterface](UserInterface.md)
 
@@ -68,24 +68,24 @@
 | 1564 | · · the businesses' bonds it holds (0.7.12) |
 | 1593 | · · what concentration costs (0.7.12) |
 | 1641 | FUNDING |
-| 1659 | · · what is banked |
-| 1676 | · · what it can reach |
-| 1705 | · · what it pays savers |
-| 1728 | · · its account at the central bank |
-| 1745 | · · how it is funded |
-| 1760 | · · what it can carry |
-| 1858 | · · ...and whether one should close (0.7.11, round 2) |
-| 1883 | CAPITAL & OWNERS |
-| 1900 | · · its capital |
-| 1918 | · · ...and against everything it has lent (0.7.11, round 2) |
-| 1945 | · · what it does with its profit |
-| 1973 | · · how its equity moved |
-| 2014 | · · its owners |
-| 2025 | · · its rescues |
-| 2050 | · · the city's preferred |
-| 2085 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
-| 2146 | THE BANK ASKS FOR PREFERRED (0.7.14) |
-| 2243 | HISTORY |
+| 1660 | · · what is banked |
+| 1677 | · · what it can lend against (0.7.19) |
+| 1698 | · · what it pays savers |
+| 1721 | · · its account at the central bank |
+| 1738 | · · how it is funded |
+| 1753 | · · what it can carry |
+| 1843 | · · ...and whether one should close (0.7.19) |
+| 1869 | CAPITAL & OWNERS |
+| 1886 | · · its capital |
+| 1904 | · · ...and against everything it has lent (0.7.11, round 2) |
+| 1931 | · · what it does with its profit |
+| 1959 | · · how its equity moved |
+| 2000 | · · its owners |
+| 2011 | · · its rescues |
+| 2036 | · · the city's preferred |
+| 2071 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
+| 2132 | THE BANK ASKS FOR PREFERRED (0.7.14) |
+| 2229 | HISTORY |
 
 ## Constants
 
@@ -109,7 +109,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 2287 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and why, on one landing - a sentence, a scorecard and the ladder of its rates - with its profit, its balance sheet (0.7.13), its lending, its funding, its capital and o... |
+| 54 | 2273 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and why, on one landing - a sentence, a scorecard and the ladder of its rates - with its profit, its balance sheet (0.7.13), its lending, its funding, its capital and o... |
 | 59 | 1 | `BankScreen(UserInterface ui)` |  |
 
 ### THE BANK AT A GLANCE (lines 61-91)
@@ -179,35 +179,35 @@
 | 1201 | 425 | `void lendingPage(VBox column)` |  |
 | 1628 | 12 | `static String bookName(Bank.Book book)` | What the weight table calls each book. |
 
-### FUNDING (lines 1641-1882)
+### FUNDING (lines 1641-1868)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1653 | 131 | `void fundingPage(VBox column)` |  |
-| 1793 | 89 | `void branches(VBox column, Bank bank)` | ITS BRANCHES, and whether another would pay - the model's own verdict, both halves of Bank.wantsBranch(): does it relieve anything (the book spilling past what the bank comfortably carries), and would it earn its keep... |
+| 1654 | 123 | `void fundingPage(VBox column)` |  |
+| 1788 | 80 | `void branches(VBox column, Bank bank)` | ITS BRANCHES, BY THEIR CUSTOMERS (0.7.19) - the model's own verdict: Bank.wantsBranch() and Bank.branchesToClose(), on the month's fees against what a branch cost last month. |
 
-### CAPITAL & OWNERS (lines 1883-2084)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1895 | 183 | `void capitalPage(VBox column)` |  |
-| 2080 | 4 | `void moved(VBox column, String label, double amount, String tone)` | One cause of the equity's movement, printed only when it moved it. |
-
-### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 2085-2145)
+### CAPITAL & OWNERS (lines 1869-2070)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2102 | 43 | `VBox bankRescue()` |  |
+| 1881 | 183 | `void capitalPage(VBox column)` |  |
+| 2066 | 4 | `void moved(VBox column, String label, double amount, String tone)` | One cause of the equity's movement, printed only when it moved it. |
 
-### THE BANK ASKS FOR PREFERRED (0.7.14) (lines 2146-2242)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2158 | 84 | `VBox preferredOffer()` |  |
-
-### HISTORY (lines 2243-2340)
+### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 2071-2131)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2259 | 81 | `void historyPage(VBox column)` |  |
+| 2088 | 43 | `VBox bankRescue()` |  |
+
+### THE BANK ASKS FOR PREFERRED (0.7.14) (lines 2132-2228)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2144 | 84 | `VBox preferredOffer()` |  |
+
+### HISTORY (lines 2229-2326)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2245 | 81 | `void historyPage(VBox column)` |  |
 

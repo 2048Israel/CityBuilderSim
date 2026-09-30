@@ -1,6 +1,6 @@
 # GovernmentScreen.java - 1,695 lines · 42 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The government tab: the budget as two rings and a balance, what the
 > treasury actually did against the size of the economy, the two lists - who

@@ -112,7 +112,19 @@ public class ForeignCheck {
             city.buildStack(template(city, "House"), 500, false);
             city.buildStack(template(city, "Convenience Store"), 8, false);
             city.buildStack(template(city, "Small Grocery Store"), 3, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
+            /*
+             * THE BUILDERS' DEPOTS STAND FROM THE START (0.7.17). Since every
+             * building gets the crew it can use (BuildingManager, EVERY
+             * BUILDING GETS THE CREW IT CAN USE) a depot of 400 points on site
+             * beside a coal plant of 120,000 gets about a fiftieth of its crew,
+             * and the depots that would have multiplied the builders never
+             * opened: after fifteen years one was still on site, with the coal
+             * plant, the water works, a bakery and a dozen houses, the city
+             * was a thousand people and its last year's trade gap $3.1bn - a
+             * city that never got built, not one with something to sell. The
+             * depots stand; everything the city sells and buys is still built.
+             */
+            city.buildStack(template(city, "Construction Depot"), 4, true);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Water Treatment Plant"), 1, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
@@ -1431,7 +1443,12 @@ public class ForeignCheck {
         g.buildStack(template(g, "House"), 500, false);
         g.buildStack(template(g, "Convenience Store"), 8, false);
         g.buildStack(template(g, "Small Grocery Store"), 3, false);
-        g.buildStack(template(g, "Construction Depot"), 4, false);
+        // The builders' depots stand, as in section 2 and for its reason
+        // (0.7.17): on site beside the programme's coal plant they got a
+        // fiftieth of its crew, and the programme was not finished in either
+        // city by the end of the run. The programme - the plants, the roads,
+        // the clinics - is still bought, and bought whole.
+        g.buildStack(template(g, "Construction Depot"), 4, true);
         g.buildStack(template(g, "Coal Power Plant"), 1, false);
         g.buildStack(template(g, "Water Treatment Plant"), 1, false);
         g.buildStack(template(g, "Industrial Bakery"), 2, false);

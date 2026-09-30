@@ -1,6 +1,6 @@
-# Mining.java - 139 lines · 6 methods · 0 constants · sectors
+# Mining.java - 153 lines · 6 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/Mining.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Mining.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > Iron mines. Its own sector because the ore has a price.
 > 
@@ -24,11 +24,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 111 | **type** `public final class Mining extends Sector` | Iron mines. |
+| 29 | 125 | **type** `public final class Mining extends Sector` | Iron mines. |
 | 31 | 7 | `public Mining()` |  |
 | 41 | 5 | `protected double groundLimit(Good g, double asked)` | The ground, not the mine, decides what comes up. |
 | 48 | 3 | `public double getPotentialOutput()` | What the mines could lift this month if the ground allowed it. |
-| 62 | 36 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine. |
-| 115 | 8 | `public double[] retirementDemandAndCapacity(Game game)` | A price-taking exporter always sells what it lifts: it shrinks on distress only - WHILE THERE IS ORE. |
-| 125 | 14 | `public List<Line> operations(Game game)` |  |
+| 62 | 50 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine. |
+| 129 | 8 | `public double[] retirementDemandAndCapacity(Game game)` | A price-taking exporter always sells what it lifts: it shrinks on distress only - WHILE THERE IS ORE. |
+| 139 | 14 | `public List<Line> operations(Game game)` |  |
 

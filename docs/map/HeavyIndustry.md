@@ -1,6 +1,6 @@
-# HeavyIndustry.java - 105 lines · 6 methods · 0 constants · sectors
+# HeavyIndustry.java - 119 lines · 6 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-09-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
 
 > The mills. Buy iron - local ore first, imported scrap for the rest - and
 > sell steel abroad, because nothing in the city buys steel.
@@ -15,7 +15,7 @@
 > HeavyIndustryHandler's note, which still holds: the return on a steel
 > mill is the city that grows around it.
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Mining](Mining.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (9), [Game](Game.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Mining](Mining.md) (1)
 
 **Used by (1):** [Sectors](Sectors.md)
 
@@ -23,11 +23,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 82 | **type** `public final class HeavyIndustry extends Sector` | The mills. |
+| 24 | 96 | **type** `public final class HeavyIndustry extends Sector` | The mills. |
 | 26 | 8 | `public HeavyIndustry()` |  |
 | 36 | 3 | `public double getOreDemand()` | Tonnes of iron the mills want this month, at the rate they are running. |
 | 41 | 3 | `public double getScrapPricePerTonne()` | What a tonne of imported scrap costs - the mills' fallback, and the ore market's ceiling. |
 | 46 | 8 | `public double getConversionMargin()` | What a tonne of steel fetches over what the iron in it cost. |
-| 65 | 36 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to build another mill. |
-| 104 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price-taking exporter always sells what it makes: it shrinks on distress only. |
+| 65 | 50 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to build another mill. |
+| 118 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price-taking exporter always sells what it makes: it shrinks on distress only. |
 
