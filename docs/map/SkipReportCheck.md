@@ -1,6 +1,6 @@
 # SkipReportCheck.java - 323 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/SkipReportCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SkipReportCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > Verifies the fast-forward summary.
 > 

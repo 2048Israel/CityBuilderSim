@@ -159,9 +159,7 @@ final class FinancesScreen {
 
         DebtManager ledger = ui.game.getDebtManager();
 
-        Label title = new Label("FINANCES");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("FINANCES");
 
         Label lead = new Label("What the city holds, what it owes, and what money costs it.");
         lead.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED)
@@ -179,7 +177,8 @@ final class FinancesScreen {
         column.getChildren().add(financeRow("The position",
                 "what the city holds, what it owes, and why the rate is the rate",
                 money(principal) + " owed",
-                annual > 0 ? String.format("%.0f%% of a year of output", principal / annual * 100)
+                annual > 0 ? String.format("%.0f%% %s", principal / annual * 100,
+                                   ofAnnualGdp(ui.game.getEconomyManager().getNationalAccounts()))
                            : "no output to compare",
                 principal > 0 && annual > 0 && principal / annual > 1.2 ? Palette.BAD
                         : Palette.TEXT_HEAD,
@@ -327,7 +326,7 @@ final class FinancesScreen {
                 limitCell("TREASURY", money(cash), moved,
                         cash < 0 ? Palette.BAD : Palette.GOOD),
                 limitCell("OWED", money(principal),
-                        annual > 0 ? String.format("%.0f%% of annual GDP", principal / annual * 100)
+                        annual > 0 ? String.format("%.0f%% %s", principal / annual * 100, ofAnnualGdp(na))
                                    : "no output to compare",
                         annual > 0 && principal / annual > 1.2 ? Palette.BAD
                                 : annual > 0 && principal / annual > .6 ? Palette.WARN
@@ -374,9 +373,7 @@ final class FinancesScreen {
             default         -> POSITION_PAGES;
         };
 
-        Label title = new Label(financeArea.toUpperCase());
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle(financeArea.toUpperCase());
 
         javafx.scene.layout.FlowPane strip =
                 chipStrip(pages, financePage, Palette.SIZE_LABEL, name -> {
@@ -1367,7 +1364,7 @@ final class FinancesScreen {
         buy.setMinWidth(92);
         buy.setDisable(!affordable);
         if (affordable) {
-            buy.setStyle("-fx-background-color: " + "#2f7d52"
+            buy.setStyle("-fx-background-color: " + Palette.CONFIRM
                     + "; -fx-text-fill: white;");
         }
         buy.setOnAction(e -> {
@@ -1466,7 +1463,11 @@ final class FinancesScreen {
                     column.getChildren().add(statementLine("...which is repaid it: it holds more than its dial",
                             marked(here, money(plan.centralBankRunsOff())), Palette.TEXT_MUTED));
                 }
+                // In two layers since 0.7.22 (the text cut): the line, and the whole rule behind its (i).
                 column.getChildren().add(statementNote(mode == Rollover.Mode.MANUAL
+                        ? "It rolls what it holds at issue, beside what you sell."
+                        : "It rolls what it holds at issue; last year's surplus pays first.",
+                        mode == Rollover.Mode.MANUAL
                         ? "The central bank replaces what it holds of the paper falling due with the same par "
                         + "of whatever term paper the treasury sells before it falls due, at that paper's price, "
                         + "on top of it. Sell none and its holding is repaid it out of the treasury's cash."
@@ -2129,7 +2130,7 @@ final class FinancesScreen {
                 ? "Issue " + Currency.FOREIGN_CODE + " " + kit.name().toLowerCase()
                         + " for " + money(quote.cashReceived())
                 : "Issue for " + money(quote.cashReceived()));
-        confirm.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;"
+        confirm.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                 + " -fx-padding: 8 18 8 18;");
         confirm.setOnAction(e -> {
             String summary = foreign
@@ -2281,7 +2282,7 @@ final class FinancesScreen {
 
         Label title = new Label("DEFAULT ON THE FOREIGN DEBT");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;"
-                + " -fx-text-fill: #ff8a7a;");
+                + " -fx-text-fill: " + Palette.BAD_SOFT + ";");
 
         VBox column = new VBox(2);
         column.getChildren().addAll(
@@ -2294,8 +2295,8 @@ final class FinancesScreen {
                 bookRule());
 
         Label cost = monoLabel("  AND WHAT IT COSTS");
-        cost.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-text-fill: #ff8a7a;");
+        cost.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD_SOFT + ";");
         column.getChildren().add(cost);
         column.getChildren().addAll(
                 bookNote("no lender abroad will take this city's paper for five years"),
@@ -2471,14 +2472,17 @@ final class FinancesScreen {
         HistorySave h = ui.game.getHistorySave();
         if (h.months() >= 2) {
             column.getChildren().add(statementHead("The last year"));
-            column.getChildren().add(trendChart(
+            column.getChildren().add(trendChart(lastYear(h.getMonth()),
                     new String[] {"M2", "M0"},
                     new double[][] {lastYear(h.aligned("m2")), lastYear(h.aligned("m0"))},
-                    new String[] {Palette.ACCENT, Palette.WARN}));
-            column.getChildren().add(trendChart(
+                    // Two categories, not a verdict (0.7.21): M0 was amber.
+                    new String[] {Palette.ACCENT, Palette.PEOPLE}));
+            // One line, so the money area's colour (0.7.21): it was red, and a
+            // chart's line is not a verdict.
+            column.getChildren().add(trendChart(lastYear(h.getMonth()),
                     new String[] {"Advanced to the treasury"},
                     new double[][] {lastYear(h.aligned("advancesToTreasury"))},
-                    new String[] {Palette.BAD}));
+                    new String[] {Palette.MONEY}));
         }
     }
 
@@ -2486,6 +2490,11 @@ final class FinancesScreen {
     static double[] lastYear(double[] series) {
         int from = Math.max(0, series.length - 12);
         return java.util.Arrays.copyOfRange(series, from, series.length);
+    }
+
+    /** ...and the same twelve months of the history's axis, for the chart's years (0.7.23). */
+    static List<Integer> lastYear(List<Integer> months) {
+        return months.subList(Math.max(0, months.size() - 12), months.size());
     }
 
     /* =====================================================================
@@ -2742,11 +2751,11 @@ final class FinancesScreen {
         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
 
         Label terms = new Label(summary);
-        terms.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;");
+        terms.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 12px;");
 
         Label rate = new Label(String.format("New market rate: %.2f%%",
                 ui.game.getInterestRate() * 100));
-        rate.setStyle("-fx-text-fill: #8fa3b0; -fx-padding: 10 0 0 0;");
+        rate.setStyle("-fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 10 0 0 0;");
 
         Button back = new Button("Back to Finance");
         back.setOnAction(e -> showFinanceMenu());

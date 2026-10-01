@@ -34,6 +34,18 @@ public final class Levers {
         return box;
     }
 
+    /** The same, in two layers (0.7.21): one short line under the figure, and the whole of it behind an (i). */
+    public static VBox leverHead(String figure, String shown, String whole) {
+
+        Label big = new Label(figure);
+        big.setStyle(Palette.figure(Palette.SIZE_TITLE, Palette.TEXT_HEAD));
+
+        VBox box = new VBox(0, big, infoLine(shown, whole, true, Palette.SIZE_CAPTION, Palette.TEXT_LABEL, STATEMENT));
+        box.setMaxWidth(STATEMENT);
+        box.setStyle("-fx-padding: 2 0 10 0;");
+        return box;
+    }
+
     public static double snapped(double value, double min, double step) {
         return step <= 0 ? value : min + Math.round((value - min) / step) * step;
     }

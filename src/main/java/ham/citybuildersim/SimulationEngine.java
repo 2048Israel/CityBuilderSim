@@ -73,12 +73,22 @@ public class SimulationEngine {
         // points the sites actually took beside the points they were offered
         // (0.7.17): what no site could use was idle, not banked.
         game.drawSiteMaterials(buildingManager.takeMaterialsDue());
-        game.recogniseSiteWork(buildingManager.takeRevenueDue(), buildingManager.getPointsBuilt(), siteOutput);
+        // The site output the crews had: what the sites were left after the
+        // repairs, and - on the city's rushed sites (0.7.22) - the hours
+        // they worked over it, or the hours a tired crew lost.
+        double overtime = buildingManager.getOvertimePoints();
+        game.recogniseSiteWork(buildingManager.takeRevenueDue(), buildingManager.getPointsBuilt(),
+                overtime == 0 ? siteOutput : siteOutput + overtime);
         // ...and each owner pays the material its work drew at the price it
         // was drawn at, less what its quote allowed (0.7.19): the escalation
         // clause, settled on the same month's work. See Game, MATERIAL AT THE
         // PRICE WHEN IT IS USED.
         game.settleSiteContracts(buildingManager.takeContractsDue());
+        // ...and what the player's hand on the queue left (0.7.22): the
+        // overtime on the city's rushed sites paid and paid out as wages, a
+        // cancelled order's refund, and a finished demolition's material and
+        // ground. See Game, THE PLAYER'S HAND ON THE QUEUE.
+        game.settleConstructionControl(buildingManager.takeControlEvents());
 
         // Roads, before anything reads them. Capacity and load are both pure
         // functions of what is standing, and what is standing just changed:

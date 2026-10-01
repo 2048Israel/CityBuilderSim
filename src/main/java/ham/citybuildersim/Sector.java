@@ -1944,6 +1944,8 @@ public abstract class Sector {
 
         public static Line head(String text)  { return new Line(Kind.HEAD, text, "", Tone.NONE); }
         public static Line note(String text)  { return new Line(Kind.NOTE, text, "", Tone.NONE); }
+        /** A note in two layers (0.7.21): `shown` on the page, and `whole` one click away, behind an (i). */
+        public static Line note(String shown, String whole) { return new Line(Kind.NOTE, shown, whole, Tone.NONE); }
         public static Line of(String label, String value) { return new Line(Kind.LINE, label, value, Tone.NONE); }
         public static Line of(String label, String value, Tone tone) { return new Line(Kind.LINE, label, value, tone); }
     }
@@ -2053,9 +2055,9 @@ public abstract class Sector {
             lines.add(Line.of("Sold at home", f.units(o.soldLocal, g)));
             if (o.exported > 0) lines.add(Line.of("Exported", f.units(o.exported, g), Line.Tone.GOOD));
             if (m != null) {
-                lines.add(Line.of("Price", f.cash(m.getLocalPrice())));
+                lines.add(Line.of("Price", f.amount(m.getLocalPrice())));
                 boolean costed = Double.isFinite(o.costPerUnit) && o.costPerUnit < Double.MAX_VALUE;
-                lines.add(Line.of("Cost to make one", costed ? f.cash(o.costPerUnit) : "no plant",
+                lines.add(Line.of("Cost to make one", costed ? f.amount(o.costPerUnit) : "no plant",
                         costed && o.costPerUnit > m.getLocalPrice() ? Line.Tone.BAD
                                 : costed ? Line.Tone.NONE : Line.Tone.MUTED));
             }
@@ -2079,7 +2081,7 @@ public abstract class Sector {
             if (in.imported > 0) lines.add(Line.of("Imported instead", f.units(in.imported, g), Line.Tone.WARN));
             if (m != null && m.good().importable()) {
                 lines.add(Line.note(String.format("Local %s is %s a %s and imported %s. Both work; one keeps the margin here.",
-                        g.label().toLowerCase(), f.cash(m.getLocalPrice()), g.unit(), f.cash(m.netImportPrice()))));
+                        g.label().toLowerCase(), f.amount(m.getLocalPrice()), g.unit(), f.amount(m.netImportPrice()))));
             }
             if (hasPantry(g)) lines.add(Line.of("On hand", f.units(getPantry(g), g)));
         }

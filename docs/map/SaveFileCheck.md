@@ -1,6 +1,6 @@
 # SaveFileCheck.java - 1,696 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/SaveFileCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveFileCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > Verifies where saves go and how they are written.
 > 

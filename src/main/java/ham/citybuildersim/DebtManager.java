@@ -17,6 +17,16 @@ import java.util.Locale;
  */
 public class DebtManager {
 
+    /** Where the player's change to the policy rate, the rule or the inflation target is written (DecisionLog, 0.7.23); null for one no city holds. Never saved: the city wires it. */
+    private transient DecisionLog decisions;
+
+    /** Wires this to its city's decision log (Game.buildWorld()). */
+    public void recordTo(DecisionLog log) { decisions = log; }
+
+    private void decided(String kind, String label) {
+        if (decisions != null) decisions.record(kind, label);
+    }
+
     /* =======================================================================
        THE POLICY RATE
        =======================================================================
@@ -104,7 +114,13 @@ public class DebtManager {
     private boolean autopilot;
 
     public boolean isAutopilot()              { return autopilot; }
-    public void setAutopilot(boolean on)      { this.autopilot = on; }
+    public void setAutopilot(boolean on) {
+        if (on != autopilot) {
+            decided(DecisionLog.CENTRAL_BANK, on ? "Central bank rate handed to the rule"
+                                                 : "Central bank rate taken back by hand");
+        }
+        this.autopilot = on;
+    }
 
     /**
      * The player moves the dial by hand, which takes it back from the rule.
@@ -112,8 +128,13 @@ public class DebtManager {
      * call, and leaves the toggle alone.
      */
     public void takeTheDial(double rate) {
+        boolean wasRule = autopilot;
+        double was = baseRate;
         autopilot = false;
         setPolicyRate(rate);
+        if (wasRule || DecisionLog.moved(was, baseRate)) {
+            decided(DecisionLog.CENTRAL_BANK, "Central bank rate to " + DecisionLog.pct2(baseRate));
+        }
     }
 
     /** Where the rate sits when nobody is leaning on it either way. */
@@ -147,7 +168,11 @@ public class DebtManager {
     /** Sets the target, held between MIN_INFLATION_TARGET and MAX_INFLATION_TARGET; not a number leaves it where it was. */
     public void setInflationTarget(double target) {
         if (Double.isNaN(target)) return;
+        double was = inflationTarget;
         inflationTarget = Math.max(MIN_INFLATION_TARGET, Math.min(MAX_INFLATION_TARGET, target));
+        if (DecisionLog.moved(was, inflationTarget)) {
+            decided(DecisionLog.CENTRAL_BANK, "Inflation target to " + DecisionLog.pct(inflationTarget));
+        }
     }
 
     /** A target as the screens write it: "2%", or "2.5%" on a half point. */

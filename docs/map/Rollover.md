@@ -1,6 +1,6 @@
 # Rollover.java - 340 lines · 31 methods · 2 constants · model
 
-`ham/citybuildersim/Rollover.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Rollover.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > What falls due next month, refinanced: the treasury's rollover setting and the ledger of the surplus it has netted (0.7.13).
 > 
@@ -64,7 +64,7 @@
 > for $284.1 trillion of cash. The central bank advanced $652.6 trillion
 > ... (13 more lines in the source)
 
-**Used by (11):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CentralBankCheck](CentralBankCheck.md), [DataSave](DataSave.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (12):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [DataSave](DataSave.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md)
 
 ## Enum constants
 

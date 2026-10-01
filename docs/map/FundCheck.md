@@ -1,6 +1,6 @@
 # FundCheck.java - 1,072 lines · 22 methods · 0 constants · harnesses
 
-`ham/citybuildersim/FundCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). Not part of the game.
 > 

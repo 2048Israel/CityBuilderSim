@@ -134,18 +134,45 @@ public class BuildMenuCheck {
            equal: it shows one figure when the yard covers the materials and two
            when it does not, and if that test disagreed with the arithmetic the
            player would see "$1,400" and be charged $3,200.
+
+           AND THE ARITHMETIC IS THE TAXED PRICE (0.7.21; Jerus: "Update to the
+           taxed price"). Since 0.7.19 the quote carries the builders' sales
+           tax, grossed up so the builders keep exactly the work (Game, THE
+           BUILDERS' PRICE; the project's the-price-keeps-up.md, section 2):
+
+               G = (N + imports + plant x (1 - rM)) / (1 - rB)
+
+           N the work - the template's cash cost with its labour at today's
+           builders' wages (BuildingManager.nonMaterialCost()); the material
+           beyond the yard, split between the plant and the world as the
+           market would sell it (Markets.quote()); rB and rM the builders' and
+           the plant's effective sales rates, each held to [0,
+           TaxPolicy.MAX_INCOME_TAX] as the quote holds them. Worked here from
+           those inputs, never read back off the quote it tests - a check that
+           reads the answer it tests checks nothing. Until 0.7.21 the
+           expectation was the sticker plus the material at the import price,
+           and every building failed it from 0.7.19 on (73 checks).
            ----------------------------------------------------------------- */
         System.out.println("\n=== THE PRICE COLUMN ===");
         double stock = bm.getConstructionMaterials();
         double price = bm.getConstructionMaterialPrice();
         System.out.printf("  yard holds %,.0f materials at $%.2f%n%n", stock, price);
 
+        TaxPolicy tax = game.getEconomyManager().getTaxPolicy();
+        double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX,
+                tax.effectiveSalesRate(game.getSectors().construction())));
+        double rM = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX,
+                tax.effectiveSalesRate(game.getSectors().materials())));
+        System.out.printf("  the builders' sales rate %.2f%%, the plant's %.2f%%%n%n", rB * 100, rM * 100);
+
         int twoPrices = 0;
         for (BuildingsTemplate t : bm.getTemplates()) {
             double sticker = t.getCashCost();
             double allIn = game.calculateTotalCost(t, 1);
-            double expected = sticker
-                    + Math.max(t.getConstructionMaterials() - stock, 0) * price;
+            double work = bm.nonMaterialCost(t);
+            double beyond = Math.max(t.getConstructionMaterials() - stock, 0);
+            Markets.Draw bought = game.getMarkets().quote(Good.MATERIALS, beyond, game.getSectors());
+            double expected = (work + bought.importCost() + bought.localCost() * (1 - rM)) / (1 - rB);
 
             check(Math.abs(allIn - expected) < 1e-9,
                     t.getName() + ": quoted " + allIn + ", arithmetic says " + expected);

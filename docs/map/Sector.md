@@ -1,6 +1,6 @@
-# Sector.java - 2,223 lines · 176 methods · 8 constants · model
+# Sector.java - 2,225 lines · 177 methods · 8 constants · model
 
-`ham/citybuildersim/Sector.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sector.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > One business in the city, and the template every sector extends.
 > 
@@ -64,7 +64,7 @@
 
 **Uses:** [Good](Good.md) (107), [WageBand](WageBand.md) (10), [Statement](Statement.md) (9), [Game](Game.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [GoodsMarket](GoodsMarket.md) (7), [Trade](Trade.md) (7), [SectorState](SectorState.md) (7), [BuildingManager](BuildingManager.md) (4), [Markets](Markets.md) (4), [JobType](JobType.md) (4), [BuildingType](BuildingType.md) (3), [BalanceSheet](BalanceSheet.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Formats](Formats.md) (2), [PopulationManager](PopulationManager.md) (1), [Migration](Migration.md) (1), [EconomyManager](EconomyManager.md) (1)
 
-**Used by (56):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HeavyIndustry](HeavyIndustry.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HousingCheck](HousingCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [MoneyAudit](MoneyAudit.md), [NewGameCheck](NewGameCheck.md), [PolicyCheck](PolicyCheck.md), [PolicyScreen](PolicyScreen.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [ServicesScreen](ServicesScreen.md), [ShadowBasket](ShadowBasket.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md), [VanCheck](VanCheck.md), [WaterCheck](WaterCheck.md)
+**Used by (59):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [ChartCheck](ChartCheck.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HeavyIndustry](HeavyIndustry.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HousingCheck](HousingCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [MoneyAudit](MoneyAudit.md), [NewGameCheck](NewGameCheck.md), [PolicyCheck](PolicyCheck.md), [PolicyScreen](PolicyScreen.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [ServicesScreen](ServicesScreen.md), [ShadowBasket](ShadowBasket.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md), [VanCheck](VanCheck.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 
@@ -89,7 +89,7 @@
 | 1592 | WHOSE COST IS IT, WHEN ONE LINE MAKES TWO THINGS |
 | 1842 | PLANNING - the decision to grow, and to shrink |
 | 1932 | THE SCREENS |
-| 2089 | SAVE AND RESTORE |
+| 2091 | SAVE AND RESTORE |
 
 ## Enum constants
 
@@ -208,7 +208,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 2151 | **type** `public abstract class Sector` | One business in the city, and the template every sector extends. |
+| 73 | 2153 | **type** `public abstract class Sector` | One business in the city, and the template every sector extends. |
 
 ### IDENTITY AND DECLARATION (lines 75-135)
 
@@ -460,35 +460,36 @@
 | 1925 | 1 | `public boolean mayRetire(BuildingsTemplate t)` | Whether a holding of this template may be sold back this month. |
 | 1928 | 3 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything. |
 
-### THE SCREENS (lines 1932-2088)
+### THE SCREENS (lines 1932-2090)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1941 | 9 | **type** `public record Line(Kind kind, String label, String value, Tone tone)` | One line of the operations page. |
+| 1941 | 11 | **type** `public record Line(Kind kind, String label, String value, Tone tone)` | One line of the operations page. |
 | 1942 | 1 | **type** `public enum Kind` _(in Sector.Line)_ |  |
 | 1943 | 1 | **type** `public enum Tone` _(in Sector.Line)_ |  |
 | 1945 | 1 | `public static Line head(String text)` _(in Sector.Line)_ |  |
 | 1946 | 1 | `public static Line note(String text)` _(in Sector.Line)_ |  |
-| 1947 | 1 | `public static Line of(String label, String value)` _(in Sector.Line)_ |  |
-| 1948 | 1 | `public static Line of(String label, String value, Tone tone)` _(in Sector.Line)_ |  |
-| 1952 | 9 | `public String inputLabel()` | What the sector's direct-cost line is called on its income statement. |
-| 1978 | 1 | `public Map<String, Double> otherRevenueParts()` | The parts of this sector's revenue that are not the sale of a good, named, for the lines inside an opened Revenue. |
-| 1988 | 1 | `public Map<String, Double> otherInputParts()` | ...and the same for the cost line: what is in Inputs that is not a good. |
-| 2008 | 5 | `protected Map<String, Double> nameOtherRevenue()` | ...and where those names come from, read off the sector's LIVE fields at the moment the month is struck. |
-| 2014 | 74 | `public List<Line> operations(Game game)` |  |
+| 1948 | 1 | `public static Line note(String shown, String whole)` _(in Sector.Line)_ | A note in two layers (0.7.21): `shown` on the page, and `whole` one click away, behind an (i). |
+| 1949 | 1 | `public static Line of(String label, String value)` _(in Sector.Line)_ |  |
+| 1950 | 1 | `public static Line of(String label, String value, Tone tone)` _(in Sector.Line)_ |  |
+| 1954 | 9 | `public String inputLabel()` | What the sector's direct-cost line is called on its income statement. |
+| 1980 | 1 | `public Map<String, Double> otherRevenueParts()` | The parts of this sector's revenue that are not the sale of a good, named, for the lines inside an opened Revenue. |
+| 1990 | 1 | `public Map<String, Double> otherInputParts()` | ...and the same for the cost line: what is in Inputs that is not a good. |
+| 2010 | 5 | `protected Map<String, Double> nameOtherRevenue()` | ...and where those names come from, read off the sector's LIVE fields at the moment the month is struck. |
+| 2016 | 74 | `public List<Line> operations(Game game)` |  |
 
-### SAVE AND RESTORE (lines 2089-2223)
+### SAVE AND RESTORE (lines 2091-2225)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2094 | 18 | `public SectorState toState()` | Everything about this sector that a save has to carry. |
-| 2113 | 47 | `public void restore(SectorState s)` |  |
-| 2162 | 7 | `public void restoreBills(SectorState s)` | The bills of the month back, over whatever a rebuild re-derived. |
-| 2171 | 1 | `protected void saveExtras(Map<String, Double> extras)` | A sector with state of its own - a price it walks, an order book - writes it here by name. |
-| 2174 | 1 | `protected void restoreExtras(Map<String, Double> extras)` | ...and reads it back. |
-| 2177 | 18 | `public void reset()` | Everything back to a founding sector. |
-| 2196 | 1 | `protected void resetExtras()` |  |
-| 2202 | 16 | `public void redenominate(double scale)` | Its money in the new unit. |
-| 2219 | 1 | `protected void redenominateExtras(double scale)` |  |
-| 2222 | 1 | `public String toString()` |  |
+| 2096 | 18 | `public SectorState toState()` | Everything about this sector that a save has to carry. |
+| 2115 | 47 | `public void restore(SectorState s)` |  |
+| 2164 | 7 | `public void restoreBills(SectorState s)` | The bills of the month back, over whatever a rebuild re-derived. |
+| 2173 | 1 | `protected void saveExtras(Map<String, Double> extras)` | A sector with state of its own - a price it walks, an order book - writes it here by name. |
+| 2176 | 1 | `protected void restoreExtras(Map<String, Double> extras)` | ...and reads it back. |
+| 2179 | 18 | `public void reset()` | Everything back to a founding sector. |
+| 2198 | 1 | `protected void resetExtras()` |  |
+| 2204 | 16 | `public void redenominate(double scale)` | Its money in the new unit. |
+| 2221 | 1 | `protected void redenominateExtras(double scale)` |  |
+| 2224 | 1 | `public String toString()` |  |
 

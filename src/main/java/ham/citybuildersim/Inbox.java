@@ -107,7 +107,59 @@ public class Inbox {
                 "Crime is running above Canada's",
                 crime);
 
+        // The player's hand on the queue (0.7.22): a rushed site going into
+        // its third month on overtime, when a month on it starts to do LESS
+        // than a normal month for more pay - said the month before, while it
+        // can still be stopped - and a demolition done.
+        List<String> overtime = overtimeBody(game);
+        take(game, month, "overtime",
+                !overtime.isEmpty(),
+                "Overtime now costs more than it gains",
+                overtime);
+
+        List<String> demolished = demolishedBody(game);
+        take(game, month, "demolished",
+                !demolished.isEmpty(),
+                "A demolition is done",
+                demolished);
+
         cull(month);
+    }
+
+    /**
+     * Every city's site on overtime whose next month is its third or later
+     * (ConstructionControl, B. RUSH): from the third month on a 50-hour week
+     * does less than a 40-hour one and still costs 1.375 times the wages.
+     */
+    private static List<String> overtimeBody(Game game) {
+        List<String> lines = new ArrayList<>();
+        BuildingManager b = game.getBuildingManager();
+        for (ConstructionControl.Rush r : b.getControl().rushes()) {
+            if (!r.on || r.months < 2) continue;
+            int next = r.months + 1;
+            lines.add(String.format("%s: month %d on overtime next - %.2fx a normal month's work for %.3fx the wages.",
+                    b.nameOfSite(r.key), next, ConstructionControl.overtimeOutput(next),
+                    ConstructionControl.OVERTIME_WAGE_BILL));
+        }
+        if (!lines.isEmpty()) {
+            lines.add("");
+            lines.add("Stop the rush on the construction page to go back to a normal week.");
+        }
+        return lines;
+    }
+
+    /** The demolitions that finished this month: the material sold to the builders, the ground freed. */
+    private static List<String> demolishedBody(Game game) {
+        List<String> lines = new ArrayList<>();
+        // Each site's own sale, off its event (Game.settleConstructionControl()),
+        // not looked up by its building and count: two demolitions of one
+        // building and count finishing in one month are two sales.
+        for (ConstructionControl.Completed c : game.getControlThisMonth().completed) {
+            ConstructionControl.Demolition d = c.site();
+            lines.add(String.format("%,d %s gone: %,.0f units of material to the builders for %s, %,.0f sq ft back to the city.",
+                    d.buildings, d.building, c.unitsSold(), money(c.paid()), d.landSqFt));
+        }
+        return lines;
     }
 
     /**
@@ -158,6 +210,10 @@ public class Inbox {
 
     /**
      * The one that interrupts: newest unread notice whose condition still holds.
+     * Until 0.7.20 its title was the line under the envelope; since then the
+     * window toasts every urgent notice once (Notice.isUrgent(); the
+     * interface's TOASTS), and this one turns the envelope red and is what
+     * the clock stops for when the player has asked it to.
      *
      * Null most of the time, which is the point - an inbox that always has
      * something shouting in it is an inbox nobody opens.

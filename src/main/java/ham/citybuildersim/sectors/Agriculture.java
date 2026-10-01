@@ -344,7 +344,7 @@ public final class Agriculture extends Sector {
         double acres = getLandSqFt() / 43560;
         lines.add(Line.of("Under cultivation", String.format("%,.0f acres", acres)));
         lines.add(Line.of("What that ground is worth",
-                f.cash(getLandValue(game.getEconomyManager()))));
+                f.amount(getLandValue(game.getEconomyManager()))));
         double ground = groundShare(), pay = payrollShare();
         Line.Tone tone = ground <= 0 ? Line.Tone.MUTED
                 : ground < .25 ? Line.Tone.GOOD

@@ -99,6 +99,12 @@ public enum TreasuryLine {
      * is owed to the builders if it cannot be paid, as a repair is.
      */
     BUILDING_ESCALATION("Material escalation on the city's building contracts", false, false),
+    /**
+     * The overtime premium on the city's rushed sites (0.7.22;
+     * ConstructionControl, B. RUSH): the crews worked the hours, so it is
+     * owed to the builders if it cannot be paid, as the escalation is.
+     */
+    BUILDING_OVERTIME("Overtime on the city's rushed sites", false, false),
 
     /** Land the city buys, from the land office or back from a sector; refused, it stays unbought. */
     LAND("Land purchases", false, true),

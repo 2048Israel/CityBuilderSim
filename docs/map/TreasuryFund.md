@@ -1,6 +1,6 @@
 # TreasuryFund.java - 761 lines · 115 methods · 9 constants · model
 
-`ham/citybuildersim/TreasuryFund.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryFund.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > The city's fund: the government's holding of its own city's companies and their bonds, bought on the order book by a rule and by the player's hand, and the bank it took over in a rescue (0.7.14).
 > 
@@ -64,7 +64,7 @@
 >   year at the calendar's year end (Game.fundYearEnd() says why that
 > ... (24 more lines in the source)
 
-**Used by (13):** [Bank](Bank.md), [BankScreen](BankScreen.md), [BondMarket](BondMarket.md), [DataSave](DataSave.md), [Exchange](Exchange.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (14):** [Bank](Bank.md), [BankScreen](BankScreen.md), [BondMarket](BondMarket.md), [ChartCheck](ChartCheck.md), [DataSave](DataSave.md), [Exchange](Exchange.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # CityCalendar.java - 145 lines · 13 methods · 4 constants · model
 
-`ham/citybuildersim/CityCalendar.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityCalendar.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > Turns the month counter into a date a person can hold in their head.
 > 
@@ -23,7 +23,7 @@
 > they floor at the epoch rather than counting backwards into 1999. A date is
 > cosmetic; crashing the status bar over one is not.
 
-**Used by (14):** [BankScreen](BankScreen.md), [CalendarCheck](CalendarCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (18):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CalendarCheck](CalendarCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 
@@ -54,7 +54,7 @@
 | 66 | 3 | `public static boolean isLeapYear(int year)` | Whether a calendar year is a leap year, by the Gregorian rule. |
 | 71 | 5 | `public static int daysIn(int gameMonth)` | How many days this game month actually has. |
 | 83 | 5 | `public static int dayOf(int gameMonth, double progress)` | The day of the month a given share of the way through it. |
-| 90 | 3 | `public static String formatDay(int gameMonth, double progress)` | "14 March 2031" - the date bar's line while the clock is running. |
+| 90 | 3 | `public static String formatDay(int gameMonth, double progress)` | "14 March 2031" - the date in the header's clock (the date bar's line until 0.7.21) while the clock is running. |
 | 95 | 3 | `private static int elapsed(int gameMonth)` | Months since the epoch, floored at zero. |
 | 99 | 3 | `public static int yearOf(int gameMonth)` |  |
 | 104 | 3 | `public static int monthOfYear(int gameMonth)` | 1-12, the way a person counts months rather than the way an array does. |

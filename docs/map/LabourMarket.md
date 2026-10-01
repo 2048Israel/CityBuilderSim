@@ -1,6 +1,6 @@
-# LabourMarket.java - 750 lines · 38 methods · 12 constants · model
+# LabourMarket.java - 764 lines · 40 methods · 12 constants · model
 
-`ham/citybuildersim/LabourMarket.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourMarket.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > What labour costs, and why it costs that.
 > 
@@ -52,7 +52,7 @@
 > what Migration's surplus departures now model. The player sets the number and
 > lives with which of the two costs they would rather pay.
 
-**Uses:** [JobType](JobType.md) (23), [WageBand](WageBand.md) (17), [PayTier](PayTier.md) (5), [EducationType](EducationType.md) (2)
+**Uses:** [JobType](JobType.md) (23), [WageBand](WageBand.md) (17), [DecisionLog](DecisionLog.md) (5), [PayTier](PayTier.md) (5), [EducationType](EducationType.md) (2)
 
 **Used by (11):** [Education](Education.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
@@ -60,132 +60,135 @@
 
 | line | section |
 |---:|---|
-| 56 | THE DIAL |
-| 69 | THE BOUNDS ARE MULTIPLES OF THE GOING WAGE, NOT DOLLAR FIGURES. |
-| 125 | THE CURVE |
-| 243 | THE LADDER |
-| 262 | THE COST OF LIVING |
-| 394 | THE MONTH |
-| 505 | READING AND SETTING |
-| 557 | THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS. |
-| 652 | SAVE AND RESTORE |
+| 66 | THE DIAL |
+| 79 | THE BOUNDS ARE MULTIPLES OF THE GOING WAGE, NOT DOLLAR FIGURES. |
+| 135 | THE CURVE |
+| 253 | THE LADDER |
+| 272 | THE COST OF LIVING |
+| 404 | THE MONTH |
+| 515 | READING AND SETTING |
+| 567 | THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS. |
+| 666 | SAVE AND RESTORE |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 67 | `LabourMarket.DEFAULT_MINIMUM_WAGE` | `PayTier.UNSKILLED.getMonthlyWage()` | Where the minimum wage starts, and therefore what the whole ladder is anchored to on month one. |
-| 96 | `LabourMarket.MIN_SETTABLE_SHARE` | `.25` | The lowest the dial goes, as a share of the unskilled wage. |
-| 99 | `LabourMarket.MAX_SETTABLE_MULTIPLE` | `5.0` | The highest the dial goes, as a multiple of the unskilled wage. |
-| 102 | `LabourMarket.MIN_SETTABLE` | `PayTier.UNSKILLED.getMonthlyWage() * MIN_SETTABLE_SHARE` | Bounds on the dial, so the screen cannot ask for a negative wage. |
-| 104 | `LabourMarket.MAX_SETTABLE` | `PayTier.UNSKILLED.getMonthlyWage() * MAX_SETTABLE_MULTIPLE` |  |
-| 137 | `LabourMarket.ELASTICITY` | `.5` | How hard a shortage pushes the wage. |
-| 148 | `LabourMarket.MAX_MULTIPLE` | `4.0` | How far above base a wage can climb. |
-| 151 | `LabourMarket.MIN_MULTIPLE` | `.70` | ...and how far below, before the minimum wage catches it anyway. |
-| 182 | `LabourMarket.ADJUST_RATE` | `.12` | How much of the gap to its target a wage closes each month. |
-| 192 | `LabourMarket.PINNED_TOLERANCE` | `.02` | How far from its floor a wage counts as PINNED. |
-| 318 | `LabourMarket.COST_OF_LIVING_PASS_THROUGH` | `1.0` | How much of a rise in prices wages eventually chase. |
-| 334 | `LabourMarket.DRIFT_PER_MONTH` | `1.0 / 24` | How fast they chase it. |
+| 77 | `LabourMarket.DEFAULT_MINIMUM_WAGE` | `PayTier.UNSKILLED.getMonthlyWage()` | Where the minimum wage starts, and therefore what the whole ladder is anchored to on month one. |
+| 106 | `LabourMarket.MIN_SETTABLE_SHARE` | `.25` | The lowest the dial goes, as a share of the unskilled wage. |
+| 109 | `LabourMarket.MAX_SETTABLE_MULTIPLE` | `5.0` | The highest the dial goes, as a multiple of the unskilled wage. |
+| 112 | `LabourMarket.MIN_SETTABLE` | `PayTier.UNSKILLED.getMonthlyWage() * MIN_SETTABLE_SHARE` | Bounds on the dial, so the screen cannot ask for a negative wage. |
+| 114 | `LabourMarket.MAX_SETTABLE` | `PayTier.UNSKILLED.getMonthlyWage() * MAX_SETTABLE_MULTIPLE` |  |
+| 147 | `LabourMarket.ELASTICITY` | `.5` | How hard a shortage pushes the wage. |
+| 158 | `LabourMarket.MAX_MULTIPLE` | `4.0` | How far above base a wage can climb. |
+| 161 | `LabourMarket.MIN_MULTIPLE` | `.70` | ...and how far below, before the minimum wage catches it anyway. |
+| 192 | `LabourMarket.ADJUST_RATE` | `.12` | How much of the gap to its target a wage closes each month. |
+| 202 | `LabourMarket.PINNED_TOLERANCE` | `.02` | How far from its floor a wage counts as PINNED. |
+| 328 | `LabourMarket.COST_OF_LIVING_PASS_THROUGH` | `1.0` | How much of a rise in prices wages eventually chase. |
+| 344 | `LabourMarket.DRIFT_PER_MONTH` | `1.0 / 24` | How fast they chase it. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 117 | `private double minSettable` | The same bounds, in TODAY's money. |
-| 118 | `private double maxSettable` |  |
-| 123 | `private double minimumWage` |  |
-| 194 | `private final double[] wage` |  |
-| 206 | `private final double[] tightness` | Scarcity per BAND, not per job type. |
-| 227 | `private final double[] licenceTightness` | THE LICENCE PREMIUM (2026-09-06). |
-| 228 | `private final double[] licenceMultiple` |  |
-| 229 | `private final double[] bandMultiple` |  |
-| 336 | `private double costOfLiving` |  |
-| 337 | `private double livingTarget` |  |
-| 583 | `private double minimumWageAdjustment` | What the player has added to or taken off the floor, as a share. |
+| 57 | `private transient DecisionLog decisions` | Where the player's change to the wage floor is written (DecisionLog, 0.7.23); null for one no city holds. |
+| 127 | `private double minSettable` | The same bounds, in TODAY's money. |
+| 128 | `private double maxSettable` |  |
+| 133 | `private double minimumWage` |  |
+| 204 | `private final double[] wage` |  |
+| 216 | `private final double[] tightness` | Scarcity per BAND, not per job type. |
+| 237 | `private final double[] licenceTightness` | THE LICENCE PREMIUM (2026-09-06). |
+| 238 | `private final double[] licenceMultiple` |  |
+| 239 | `private final double[] bandMultiple` |  |
+| 346 | `private double costOfLiving` |  |
+| 347 | `private double livingTarget` |  |
+| 593 | `private double minimumWageAdjustment` | What the player has added to or taken off the floor, as a share. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 697 | **type** `public class LabourMarket` | What labour costs, and why it costs that. |
+| 54 | 711 | **type** `public class LabourMarket` | What labour costs, and why it costs that. |
+| 60 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |
+| 62 | 3 | `private void decided(String kind, String label)` |  |
 
-### THE DIAL (lines 56-68)
+### THE DIAL (lines 66-78)
 
-### THE BOUNDS ARE MULTIPLES OF THE GOING WAGE, NOT DOLLAR FIGURES. (lines 69-124)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 120 | 1 | `public double getMinSettable()` |  |
-| 121 | 1 | `public double getMaxSettable()` |  |
-
-### THE CURVE (lines 125-242)
+### THE BOUNDS ARE MULTIPLES OF THE GOING WAGE, NOT DOLLAR FIGURES. (lines 79-134)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 160 | 3 | `public static double multipleAt(double tightness)` | THE CURVE ITSELF, in one place (0.7.18): the multiple a band's wage aims at when its posts stand at this tightness against its supply. |
-| 170 | 3 | `public static double tightnessAt(double multiple)` | ...and the curve read backwards: the tightness at which a band's wage aims at this multiple of its base, clamps aside. |
-| 232 | 6 | `public static boolean isGated(JobType job)` | True for a job that only a licence holder can fill - see EducationType. |
-| 239 | 3 | `public LabourMarket()` |  |
+| 130 | 1 | `public double getMinSettable()` |  |
+| 131 | 1 | `public double getMaxSettable()` |  |
 
-### THE LADDER (lines 243-261)
+### THE CURVE (lines 135-252)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 257 | 4 | `public static double ratioOf(JobType job)` | What this job pays relative to the unskilled floor. |
+| 170 | 3 | `public static double multipleAt(double tightness)` | THE CURVE ITSELF, in one place (0.7.18): the multiple a band's wage aims at when its posts stand at this tightness against its supply. |
+| 180 | 3 | `public static double tightnessAt(double multiple)` | ...and the curve read backwards: the tightness at which a band's wage aims at this multiple of its base, clamps aside. |
+| 242 | 6 | `public static boolean isGated(JobType job)` | True for a job that only a licence holder can fill - see EducationType. |
+| 249 | 3 | `public LabourMarket()` |  |
 
-### THE COST OF LIVING (lines 262-393)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 348 | 5 | `public void updateCostOfLiving(double priceIndex)` | A REAL index since phase 5 - see PriceIndex. |
-| 355 | 1 | `public double getCostOfLiving()` | What wages have been lifted by, chasing the cost of living. |
-| 358 | 1 | `public double getLivingTarget()` | Where they are heading. |
-| 360 | 3 | `public void setCostOfLiving(double value)` |  |
-| 365 | 28 | `public double baseWage(JobType job)` | What this job would pay in a city with exactly enough people for it. |
-
-### THE MONTH (lines 394-504)
+### THE LADDER (lines 253-271)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 406 | 3 | `public void advanceMonth(double[] bandPosts, double[] bandSupply)` | Re-prices every job type against how hard it is to staff. |
-| 414 | 60 | `public void advanceMonth(double[] bandPosts, double[] bandSupply, int[] jobPosts, double[] licensedHeads)` |  |
-| 482 | 10 | `public boolean isPinned(WageBand band)` | True when this job's wage has fallen as far as the market will let it and there is still nowhere for those workers to go. |
-| 494 | 6 | `public final void resetToBase()` | Puts every wage back on its base. |
-| 501 | 3 | `private static double clamp(double v, double lo, double hi)` |  |
+| 267 | 4 | `public static double ratioOf(JobType job)` | What this job pays relative to the unskilled floor. |
 
-### READING AND SETTING (lines 505-556)
+### THE COST OF LIVING (lines 272-403)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 509 | 1 | `public double[] getWages()` |  |
-| 510 | 1 | `public double getWage(JobType job)` |  |
-| 511 | 1 | `public double getTightness(WageBand band)` |  |
-| 513 | 1 | `public double getLicenceTightness(JobType job)` | Posts over licence holders for a gated job; 0 for an ungated one or one with no posts. |
-| 515 | 1 | `public double getLicenceMultiple(JobType job)` | The licence premium's target multiple this month, 1 when there is none. |
-| 517 | 1 | `public double getBandMultiple(WageBand band)` | The band's own multiple this month, without any licence premium on top. |
-| 535 | 5 | `public double licencePremium(JobType job)` | What a licensed profession is paid OVER ITS OWN BAND, as actually paid. |
-| 548 | 9 | `public double bandPremium(WageBand band)` | The premium the BAND is paying, read off an ungated job in it. |
+| 358 | 5 | `public void updateCostOfLiving(double priceIndex)` | A REAL index since phase 5 - see PriceIndex. |
+| 365 | 1 | `public double getCostOfLiving()` | What wages have been lifted by, chasing the cost of living. |
+| 368 | 1 | `public double getLivingTarget()` | Where they are heading. |
+| 370 | 3 | `public void setCostOfLiving(double value)` |  |
+| 375 | 28 | `public double baseWage(JobType job)` | What this job would pay in a city with exactly enough people for it. |
 
-### THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS. (lines 557-651)
+### THE MONTH (lines 404-514)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 586 | 1 | `public double getMinimumWage()` | The real floor, in founding money. |
-| 589 | 1 | `public double getMinimumWageBase()` | The same figure. |
-| 592 | 1 | `public double getMinimumWageAdjustment()` | The player's nudge, as a share. |
-| 605 | 3 | `public double cashMinimumWage()` | The floor in TODAY'S money: the real floor, lifted by the cost of living. |
-| 610 | 3 | `public void setMinimumWageAdjustment(double share)` | Moves the percentage. |
-| 615 | 4 | `public double premium(JobType job)` | How far above its base a job is paying - 1.00 is the going rate. |
-| 643 | 3 | `public void setMinimumWage(double value)` | Moves the dial. |
-| 648 | 3 | `public void setMinimumWageBase(double value)` | Sets the real floor, in founding money. |
+| 416 | 3 | `public void advanceMonth(double[] bandPosts, double[] bandSupply)` | Re-prices every job type against how hard it is to staff. |
+| 424 | 60 | `public void advanceMonth(double[] bandPosts, double[] bandSupply, int[] jobPosts, double[] licensedHeads)` |  |
+| 492 | 10 | `public boolean isPinned(WageBand band)` | True when this job's wage has fallen as far as the market will let it and there is still nowhere for those workers to go. |
+| 504 | 6 | `public final void resetToBase()` | Puts every wage back on its base. |
+| 511 | 3 | `private static double clamp(double v, double lo, double hi)` |  |
 
-### SAVE AND RESTORE (lines 652-750)
+### READING AND SETTING (lines 515-566)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 662 | 26 | `public double[] state()` |  |
-| 689 | 3 | `private int diagnosticsLength()` |  |
-| 701 | 27 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded - the same rule the health and healthcare arrays follow. |
-| 736 | 6 | `public void redenominate(double scale)` | Wages and the floor, in the new unit. |
-| 745 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 519 | 1 | `public double[] getWages()` |  |
+| 520 | 1 | `public double getWage(JobType job)` |  |
+| 521 | 1 | `public double getTightness(WageBand band)` |  |
+| 523 | 1 | `public double getLicenceTightness(JobType job)` | Posts over licence holders for a gated job; 0 for an ungated one or one with no posts. |
+| 525 | 1 | `public double getLicenceMultiple(JobType job)` | The licence premium's target multiple this month, 1 when there is none. |
+| 527 | 1 | `public double getBandMultiple(WageBand band)` | The band's own multiple this month, without any licence premium on top. |
+| 545 | 5 | `public double licencePremium(JobType job)` | What a licensed profession is paid OVER ITS OWN BAND, as actually paid. |
+| 558 | 9 | `public double bandPremium(WageBand band)` | The premium the BAND is paying, read off an ungated job in it. |
+
+### THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS. (lines 567-665)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 596 | 1 | `public double getMinimumWage()` | The real floor, in founding money. |
+| 599 | 1 | `public double getMinimumWageBase()` | The same figure. |
+| 602 | 1 | `public double getMinimumWageAdjustment()` | The player's nudge, as a share. |
+| 615 | 3 | `public double cashMinimumWage()` | The floor in TODAY'S money: the real floor, lifted by the cost of living. |
+| 620 | 3 | `public void setMinimumWageAdjustment(double share)` | Moves the percentage. |
+| 625 | 4 | `public double premium(JobType job)` | How far above its base a job is paying - 1.00 is the going rate. |
+| 653 | 7 | `public void setMinimumWage(double value)` | Moves the dial. |
+| 662 | 3 | `public void setMinimumWageBase(double value)` | Sets the real floor, in founding money. |
+
+### SAVE AND RESTORE (lines 666-764)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 676 | 26 | `public double[] state()` |  |
+| 703 | 3 | `private int diagnosticsLength()` |  |
+| 715 | 27 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded - the same rule the health and healthcare arrays follow. |
+| 750 | 6 | `public void redenominate(double scale)` | Wages and the floor, in the new unit. |
+| 759 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

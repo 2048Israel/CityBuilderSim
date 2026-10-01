@@ -20,7 +20,8 @@ import java.util.List;
  *
  * MERGED BY BUILDING AND MONTH, WHICH DEMOLITIONS DO NOT NEED
  *
- * Demolitions come from planRetirement, one sector at a time, a handful a year.
+ * Demolitions come from planRetirement, one sector at a time, a handful a year
+ * - and since 0.7.22 from the player's own orders, one row an order.
  * Completions come from advanceConstruction, which can finish several stacks in
  * a single month in a large city and does it every month forever. Recording
  * them one row per stack per month would push anything older than a year or two

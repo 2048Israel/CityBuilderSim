@@ -120,6 +120,11 @@ public class BuildingManager {
 
     public void setBuildersWages(BuildersWages wages) { this.buildersWages = wages; }
 
+    /** What the builders' crews cost a point today (a depot's posts at today's wages, over its points): the bill a rushed site's overtime premium is struck on (0.7.22). Zero with no wages to read. */
+    public double buildersWagePerPoint() {
+        return buildersWages == null ? 0 : Math.max(0, buildersWages.perPointToday());
+    }
+
     /** The builders' labour index: their wage bill a point today over at founding. One with no wages to read. */
     public double buildersWageIndex() {
         if (buildersWages == null) return 1;
@@ -3086,6 +3091,13 @@ public class BuildingManager {
        against four, and unemployment moved half as much again in a month
        (p95 2.6 points against 1.9). His call was this rule if it held,
        small orders waiting behind large ones accepted; it held.
+
+       AND THE PLAYER'S HAND ON IT (0.7.22). The rule stays everyone's, but
+       the player may set the order the city's own sites take the city's
+       share in, top down, and put one of them on overtime; nobody else's
+       share moves by either. Its demolitions are sites like any other,
+       crewed by this rule (demolitionWeight()). See THE PLAYER'S HAND ON THE
+       QUEUE, below.
        ===================================================================== */
 
     /**
@@ -3108,14 +3120,21 @@ public class BuildingManager {
      *                    weighing (siteShareOfSector(), the only caller that
      *                    passes one)
      * @param extraCount  how many of it
-     * @return one share per stack, and one more at the end for the extra
-     *         template when it has no stack yet
+     * @return one share per stack, and one more after them for the extra
+     *         template when it has no stack yet - then, since 0.7.22, one
+     *         for each of the city's demolitions on site
      */
     public double[] siteShares(double siteOutput, BuildingsTemplate extra, int extraCount) {
         int n = stacks.size();
         boolean extraHasStack = false;
-        double[] weight = new double[n + 1];
-        double[] owed = new double[n + 1];
+        // ...and after the extra's slot, the city's demolitions on site
+        // (0.7.22; ConstructionControl, D. DEMOLISH), served by the same rule.
+        // None in a city that has ordered none, and the arrays are then the
+        // rule's own, to the bit.
+        java.util.List<ConstructionControl.Demolition> demolitions = control.demolitions();
+        int d = demolitions.size();
+        double[] weight = new double[n + 1 + d];
+        double[] owed = new double[n + 1 + d];
         for (int k = 0; k < n; k++) {
             BuildingsStacks s = stacks.get(k);
             int building = s.getUnderConstruction();
@@ -3133,7 +3152,22 @@ public class BuildingManager {
             owed[n] = extraCount * (double) extra.getConstructionPoints();
             weight[n] = weightOf(extra, extraCount);
         }
+        for (int j = 0; j < d; j++) {
+            ConstructionControl.Demolition site = demolitions.get(j);
+            owed[n + 1 + j] = site.owed();
+            weight[n + 1 + j] = demolitionWeight(site);
+        }
         return waterFill(Math.max(0, siteOutput), weight, owed);
+    }
+
+    /**
+     * A demolition's crew by the rule above (0.7.22): its buildings times the
+     * crew one of them can use, by the points its own demolition is - the
+     * whole of them, as a building's crew is struck on the whole building.
+     */
+    static double demolitionWeight(ConstructionControl.Demolition site) {
+        if (site == null || site.buildings <= 0 || !(site.points > 0)) return 0;
+        return site.buildings * Math.pow(site.points / site.buildings, CREW_SCALE_EXPONENT);
     }
 
     /** The month's site output by the rule above, one share per stack. */
@@ -3193,6 +3227,24 @@ public class BuildingManager {
      */
     public double waitFor(BuildingsTemplate t, int quantity, double siteOutput) {
         if (t == null || quantity < 1) return 0;
+        return waitWith(t, quantity, siteOutput);
+    }
+
+    /**
+     * Months what is already on site of one building would wait at this
+     * month's shares (0.7.20): waitFor()'s rule with no order added - the
+     * stack's own points still owed over its weight's share of everything on
+     * site. For the build card's "N on site", the Needs-you line and the
+     * construction panel, so a site and an order are timed by one
+     * definition. 0 with none on site; MAX_VALUE with no output. Reads.
+     */
+    public double waitOnSite(BuildingsTemplate t, double siteOutput) {
+        if (t == null) return 0;
+        return waitWith(t, 0, siteOutput);
+    }
+
+    /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone. */
+    private double waitWith(BuildingsTemplate t, int quantity, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double others = 0, aheadOwed = 0;
         int aheadUnits = 0;
@@ -3205,6 +3257,11 @@ public class BuildingManager {
             } else {
                 others += weightOf(s.getBuilding(), on);
             }
+        }
+        // ...and the city's demolitions on site (0.7.22), whose crews are
+        // struck by the same rule. None unless the city has ordered one.
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            if (site.owed() > 0) others += demolitionWeight(site);
         }
         double mine = weightOf(t, aheadUnits + quantity);
         if (!(mine > 0)) return 0;
@@ -3253,6 +3310,8 @@ public class BuildingManager {
      * Months until a site's last building finishes at a given per-site
      * output: the points still owed over the pace. NaN when nothing is
      * moving, so the screen can say why rather than print 2147483647.
+     * Nothing calls it since 0.7.20, when the construction panel took the
+     * quote's wait (Game.onSiteMonths()).
      */
     public double monthsLeft(BuildingsStacks site, double perSiteOutput) {
         if (perSiteOutput <= 0 || site.getUnderConstruction() <= 0) return Double.NaN;
@@ -3281,11 +3340,22 @@ public class BuildingManager {
         revenueDue = 0;
         pointsBuilt = 0;
         contractsDue.clear();
+        controlEvents = new ConstructionControl.Events();
 
-        if (getUnderConstruction() != 0) {
+        // The player's hand on the queue (0.7.22): an order set, a rush, a
+        // cancel or a demolition. Without one, the month below is the one it
+        // always was - see THE PLAYER'S HAND ON THE QUEUE.
+        boolean engaged = control.engaged();
+        Plan plan = null;
+        lastPlan = null;
+
+        if (getUnderConstruction() != 0 || !control.demolitions().isEmpty()) {
             // Every building gets the crew it can use, and no stack more than
-            // it owes - see EVERY BUILDING GETS THE CREW IT CAN USE above.
-            double[] share = siteShares(constructionOutput);
+            // it owes - see EVERY BUILDING GETS THE CREW IT CAN USE above -
+            // and, once the player has a hand on it, the city's share in the
+            // city's order and its rushed sites on overtime (plan()).
+            if (engaged) plan = lastPlan = plan(constructionOutput);
+            double[] share = engaged ? plan.work : siteShares(constructionOutput);
             for (int k = 0; k < stacks.size(); k++) {
                 BuildingsStacks stack = stacks.get(k);
                 stack.advanceConstruction(share[k]);
@@ -3297,10 +3367,27 @@ public class BuildingManager {
                     finished.add(new Completion(
                             stack.getBuilding().getName(), stack.getLastFinished()));
                 }
+                // ...and the run the panel reads its "done of total" off.
+                ConstructionControl.Run run = control.runOf(stack.getBuilding().getId());
+                if (run != null) {
+                    run.built += stack.getLastFinished();
+                    if (stack.getUnderConstruction() <= 0) control.endRun(run.templateId);
+                }
             }
             for (BuildingInstance inst : instances) {
                 inst.advanceConstruction();
             }
+            if (engaged) {
+                advanceDemolitions(plan);
+                stopCancelled();
+                controlEvents.overtime.addAll(plan.overtime);
+                controlEvents.overtimePoints = plan.overtimePoints;
+            }
+        }
+        if (engaged) {
+            java.util.Set<String> worked = new java.util.HashSet<>();
+            if (plan != null) for (ConstructionControl.Overtime o : plan.overtime) worked.add(o.key());
+            control.afterMonth(worked, new java.util.HashSet<>(siteKeysOnSite()), citySiteKeys());
         }
 
         return finished;
@@ -3331,6 +3418,443 @@ public class BuildingManager {
     private double pointsBuilt;
 
     public double getPointsBuilt() { return pointsBuilt; }
+
+    /* =====================================================================
+       THE PLAYER'S HAND ON THE QUEUE (0.7.22)
+
+       The crew rule above, with what the player has done to it: the city's
+       share in the city's order (A), its rushed sites on overtime (B), its
+       cancelled orders stopped at the month's end (C), and its demolitions
+       on site beside everything else (D). The rules, their sources and the
+       state are ConstructionControl's; the money is Game's (THE PLAYER'S
+       HAND ON THE QUEUE there), settled off the events the advance leaves
+       (takeControlEvents()). Nothing here runs in a city where the player
+       has done none of it: advanceConstruction() asks control.engaged()
+       first, and siteShares() appends no demolition it has not got.
+       ===================================================================== */
+
+    /** The player's hand on the queue: the order, the rushes, the shells, the demolitions and the buy-outs. */
+    private final ConstructionControl control = new ConstructionControl();
+
+    public ConstructionControl getControl() { return control; }
+
+    /** What this month's advance left for Game to settle: the overtime worked, the orders stopped, the demolitions done. */
+    private ConstructionControl.Events controlEvents = new ConstructionControl.Events();
+
+    public ConstructionControl.Events takeControlEvents() {
+        ConstructionControl.Events e = controlEvents;
+        controlEvents = new ConstructionControl.Events();
+        return e;
+    }
+
+    /** The overtime's points this month past the sites' shares - negative from a rush's third month on. Read beside getPointsBuilt(). */
+    public double getOvertimePoints() { return controlEvents.overtimePoints; }
+
+    /**
+     * One month's crews, site by site, as the advance applies them: the rule's
+     * share, the city's in the city's order, and a rushed site's month on
+     * overtime. One slot per stack in the stacks' order, one empty slot (the
+     * rule's slot for an order being weighed), then one per demolition.
+     */
+    public static final class Plan {
+        public final java.util.List<String> keys;
+        /** The site output it was struck on. */
+        public final double output;
+        /** Points owed; the rule's share (siteShares()); the share after the city's order; the work, overtime in. */
+        public final double[] owed, rule, share, work;
+        public final java.util.List<ConstructionControl.Overtime> overtime;
+        public final double overtimePoints;
+        Plan(java.util.List<String> keys, double output, double[] owed, double[] rule, double[] share, double[] work,
+             java.util.List<ConstructionControl.Overtime> overtime, double overtimePoints) {
+            this.keys = keys; this.output = output; this.owed = owed; this.rule = rule; this.share = share;
+            this.work = work; this.overtime = overtime; this.overtimePoints = overtimePoints;
+        }
+        /** This month's share of the crews, before any overtime. */
+        public double shareOf(String key) { int i = keys.indexOf(key); return i < 0 ? 0 : share[i]; }
+        /** ...and the work the site does on it, overtime included. */
+        public double workOf(String key) { int i = keys.indexOf(key); return i < 0 ? 0 : work[i]; }
+        /** Points still owed. */
+        public double owedOf(String key) { int i = keys.indexOf(key); return i < 0 ? 0 : owed[i]; }
+        /** The crews' rule's share, before the city's order. */
+        public double ruleOf(String key) { int i = keys.indexOf(key); return i < 0 ? 0 : rule[i]; }
+        /** The month's overtime on one site, or null. */
+        public ConstructionControl.Overtime overtimeOf(String key) {
+            for (ConstructionControl.Overtime o : overtime) if (o.key().equals(key)) return o;
+            return null;
+        }
+    }
+
+    /**
+     * The month's crews at this site output, as the advance would apply
+     * them: siteShares(), then the city's share in the city's order
+     * (applyPriority()), then each rushed site's month on overtime. Reads;
+     * changes nothing - the construction page shows it, the advance applies
+     * it.
+     */
+    public Plan plan(double siteOutput) {
+        int n = stacks.size();
+        java.util.List<ConstructionControl.Demolition> demolitions = control.demolitions();
+        int d = demolitions.size();
+        java.util.List<String> keys = new java.util.ArrayList<>(n + 1 + d);
+        double[] owed = new double[n + 1 + d];
+        for (int k = 0; k < n; k++) {
+            BuildingsStacks s = stacks.get(k);
+            keys.add(ConstructionControl.keyOf(s.getBuilding()));
+            if (s.getUnderConstruction() > 0) {
+                owed[k] = Math.max(0, s.getUnderConstruction() * (double) s.getBuilding().getConstructionPoints()
+                        - s.getConstructionProgress());
+            }
+        }
+        keys.add("");
+        for (int j = 0; j < d; j++) {
+            keys.add(demolitions.get(j).key());
+            owed[n + 1 + j] = demolitions.get(j).owed();
+        }
+        double[] rule = siteShares(siteOutput, null, 0);
+        double[] share = rule.clone();
+        java.util.List<String> city = citySiteKeys();
+        if (control.isPrioritySet()) applyPriority(share, owed, keys, control.effectiveOrder(city));
+
+        double[] work = share.clone();
+        java.util.List<ConstructionControl.Overtime> overtime = new java.util.ArrayList<>();
+        double extra = 0;
+        double perPoint = buildersWages == null ? 0 : Math.max(0, buildersWages.perPointToday());
+        for (ConstructionControl.Rush r : control.rushes()) {
+            if (!r.on || !city.contains(r.key)) continue;
+            int i = keys.indexOf(r.key);
+            // A month whose share already finishes the site, or that gives it
+            // no crews, is not worked on overtime.
+            if (i < 0 || !(share[i] > 0) || share[i] >= owed[i]) continue;
+            int month = r.months + 1;
+            work[i] = Math.min(owed[i], share[i] * ConstructionControl.overtimeOutput(month));
+            overtime.add(new ConstructionControl.Overtime(r.key, nameOfSite(r.key), month, share[i], work[i],
+                    perPoint, ConstructionControl.premiumShare() * share[i] * perPoint));
+            extra += work[i] - share[i];
+        }
+        return new Plan(keys, siteOutput, owed, rule, share, work, overtime, extra);
+    }
+
+    /** The plan the last month's advance applied, or null when the player's hand was not on the queue: a month's reading, not saved. */
+    private Plan lastPlan;
+
+    public Plan getLastPlan() { return lastPlan; }
+
+    /**
+     * A. The city's share, in the city's order: what the rule gave the
+     * city's sites, together, handed out again top down - the first what it
+     * still owes, at most, then the next. Every other slot is left as the
+     * rule set it.
+     */
+    static void applyPriority(double[] share, double[] owed, java.util.List<String> keys, java.util.List<String> order) {
+        double pool = 0;
+        for (String key : order) {
+            int i = keys.indexOf(key);
+            if (i >= 0) pool += share[i];
+        }
+        for (String key : order) {
+            int i = keys.indexOf(key);
+            if (i < 0) continue;
+            double give = Math.max(0, Math.min(owed[i], pool));
+            share[i] = give;
+            pool -= give;
+        }
+    }
+
+    /** The city's own sites on site, in the stacks' order and then the demolitions': the ones its order is set over. */
+    public java.util.List<String> citySiteKeys() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (BuildingsStacks s : stacks) if (s.isCitysOwn()) out.add(ConstructionControl.keyOf(s.getBuilding()));
+        for (ConstructionControl.Demolition site : control.demolitions()) out.add(site.key());
+        return out;
+    }
+
+    /** ...in the order the city's crews serve them: the player's, or the stacks' order with none set. */
+    public java.util.List<String> cityOrder() {
+        return control.effectiveOrder(citySiteKeys());
+    }
+
+    /** Every site with work on it: the stacks with buildings on site, and the demolitions. */
+    public java.util.List<String> siteKeysOnSite() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (BuildingsStacks s : stacks) if (s.getUnderConstruction() > 0) out.add(ConstructionControl.keyOf(s.getBuilding()));
+        for (ConstructionControl.Demolition site : control.demolitions()) out.add(site.key());
+        return out;
+    }
+
+    /** Whether a site is the city's own: a stack whose every order on site is the city's, or a demolition. */
+    public boolean isCitySite(String key) {
+        if (control.demolitionOf(key) != null) return true;
+        BuildingsStacks s = stackOfKey(key);
+        return s != null && s.isCitysOwn();
+    }
+
+    /** The stack a site's key names, or null. */
+    public BuildingsStacks stackOfKey(String key) {
+        int id = ConstructionControl.templateIdOf(key);
+        BuildingsTemplate t = id < 0 ? null : getTemplate(id);
+        return t == null ? null : getStack(t);
+    }
+
+    /** A site's name: its building's, "Demolishing" before a demolition's. */
+    public String nameOfSite(String key) {
+        ConstructionControl.Demolition d = control.demolitionOf(key);
+        if (d != null) return "Demolishing " + d.building;
+        BuildingsStacks s = stackOfKey(key);
+        return s == null ? key : s.getName();
+    }
+
+    /** D. The month's work on the demolitions, and the ones it finished: earned in proportion, all of it on the last point, as a stack's contract is. */
+    private void advanceDemolitions(Plan plan) {
+        int base = stacks.size() + 1;
+        java.util.List<ConstructionControl.Demolition> sites = new java.util.ArrayList<>(control.demolitions());
+        for (int j = 0; j < sites.size(); j++) {
+            ConstructionControl.Demolition site = sites.get(j);
+            double owedNow = site.owed();
+            double applied = Math.max(0, Math.min(plan.work[base + j], owedNow));
+            boolean done = applied >= owedNow;
+            double earned = done ? site.value
+                    : owedNow > 0 ? Math.min(site.value, site.value * applied / owedNow) : 0;
+            site.progress = done ? site.points : site.progress + applied;
+            site.value = Math.max(0, site.value - earned);
+            pointsBuilt += applied;
+            revenueDue += earned;
+            if (done) {
+                control.removeDemolition(site);
+                controlEvents.completed.add(new ConstructionControl.Completed(site));
+            }
+        }
+    }
+
+    /**
+     * C. The orders cancelled during the month, stopped at its end: the
+     * month's work was done and billed above; what is on site comes off
+     * into a shell, and what the city's contract has left is the refund
+     * Game pays back. A site that finished this month, or is no longer the
+     * city's alone, has nothing to stop.
+     */
+    private void stopCancelled() {
+        for (String key : new java.util.ArrayList<>(control.cancelling())) {
+            BuildingsStacks s = stackOfKey(key);
+            if (s == null || !s.isCitysOwn()) continue;
+            BuildingsTemplate t = s.getBuilding();
+            double pointsLeft = Math.max(0, s.getUnderConstruction() * (double) t.getConstructionPoints()
+                    - s.getConstructionProgress());
+            double[] stopped = s.stopForShell();
+            control.endRun(t.getId());
+            ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0);
+            controlEvents.refunds.add(new ConstructionControl.Refund(t.getId(), t.getName(), (int) stopped[0],
+                    stopped[3], stopped[4], pointsLeft, shell));
+        }
+        control.clearCancelling();
+    }
+
+    /** A shell put back on site (Game.restartShell()): its buildings, the work in them and what they still owe, onto its stack. */
+    public void resumeShell(ConstructionControl.Shell shell) {
+        BuildingsTemplate t = getTemplate(shell.templateId);
+        if (t == null) return;
+        BuildingsStacks s = getStack(t);
+        if (s == null) {
+            addStack(t, 0, true);
+            s = getStack(t);
+        }
+        s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed);
+        control.removeShell(shell);
+    }
+
+    /* ---------------------------------------------------------------------
+       ONE WAIT FOR A SITE (0.7.22, after the docs pass). Everything that
+       times something on site, or about to be, reads it through here: the
+       construction page, the right panel, a build card's "N on site" and the
+       Needs-you line (Game.siteMonths(), Game.onSiteMonths()), and the
+       quotes - a city order's (Game.quoteCityMonths(), in the build quote),
+       a shell's restart (restartWait()) and a demolition's
+       (waitForDemolition()). So a city site the player's order starves
+       reads the same wherever it is shown. The docs pass found two clocks:
+       the page timed the city's sites in the player's order while the panel,
+       the card, the Needs-you line and the quote kept the crews' rule.
+
+       WITH NO ORDER SET AND NO RUSH ON IT, a site's wait is the rule's own,
+       and for a stack it is waitWith(), to the bit what it always was. Only
+       the player's hand times it otherwise (handWait()): a city site while
+       an order is set, by everything ahead of it in the order and itself
+       over the city's share of the crews; a rushed one at each coming
+       month's overtime factor, from the month it is in. A city order joins
+       its building's site where it stands in the order, or - with nothing of
+       it on site - a new city site at the bottom of the order.
+       --------------------------------------------------------------------- */
+
+    /** Whether the player's hand times this site: a city site while an order is set, or a rushed one. */
+    private boolean handOn(String key) {
+        return (control.isRushed(key) || control.isPrioritySet()) && citySiteKeys().contains(key);
+    }
+
+    /**
+     * Months a site on site would take at today's queue: its points over its
+     * weight's share of everything on site, by the rule held steady - or as
+     * the player's hand times it (handWait()). 0 with nothing of it on site;
+     * NaN with no output.
+     */
+    public double siteMonths(String key, double siteOutput) {
+        if (!(siteOutput > 0)) return Double.NaN;
+        ConstructionControl.Demolition d = control.demolitionOf(key);
+        BuildingsStacks s = d == null ? stackOfKey(key) : null;
+        if (d == null && (s == null || s.getUnderConstruction() <= 0)) return 0;
+        // The rule's wait, to the bit, with the player's hand off the site.
+        if (s != null && !handOn(key)) return waitWith(s.getBuilding(), 0, siteOutput);
+        return handWait(key, null, false, siteOutput);
+    }
+
+    /**
+     * Months n buildings of t would take if the city ordered them now: with
+     * no order set and no rush on t's site, waitFor() exactly - the quote's
+     * wait since 0.7.17; otherwise as the hand times it, the order joining
+     * t's site where it stands, or a new city site at the bottom of the
+     * order. MAX_VALUE with no output.
+     */
+    public double cityOrderWait(BuildingsTemplate t, int quantity, double siteOutput) {
+        if (t == null || quantity < 1) return 0;
+        if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        double[] mine = joined(t, quantity, quantity * (double) t.getConstructionPoints());
+        if (mine == null) return waitFor(t, quantity, siteOutput);
+        return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
+    }
+
+    /**
+     * Months a shell of n buildings owing `owedPoints` would take if it were
+     * restarted now (0.7.22), beside whatever of it is on site already: by
+     * the rule as waitFor() times an order, or as the hand times it, as
+     * cityOrderWait(). MAX_VALUE with no output.
+     */
+    public double restartWait(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+        if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        if (t == null || n < 1 || !(owedPoints > 0)) return 0;
+        double[] mine = joined(t, n, owedPoints);
+        if (mine == null) return siteMonthsWith(t, n, owedPoints, siteOutput);
+        return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
+    }
+
+    private boolean isOnSite(BuildingsTemplate t) {
+        BuildingsStacks s = getStack(t);
+        return s != null && s.getUnderConstruction() > 0;
+    }
+
+    /**
+     * What t's site would be with n more of it owing `owed` more points on it
+     * - {its crew's weight, its points owed} - when the player's hand times
+     * it: a city site (or none, which the city's order would make one) while
+     * an order is set, or a rushed one. Null when the rule times it.
+     */
+    private double[] joined(BuildingsTemplate t, int n, double owed) {
+        BuildingsStacks s = getStack(t);
+        boolean onSite = s != null && s.getUnderConstruction() > 0;
+        if (onSite && !s.isCitysOwn()) return null;
+        String key = ConstructionControl.keyOf(t);
+        if (!control.isPrioritySet() && !(onSite && control.isRushed(key))) return null;
+        int on = onSite ? s.getUnderConstruction() : 0;
+        double aheadOwed = onSite
+                ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
+        return new double[] { weightOf(t, on + n), aheadOwed + owed };
+    }
+
+    /** Points owed on every site, demolitions included: everything owed. */
+    public double pointsOwedOnSite() { return getRemainingConstructionPoints(); }
+
+    /**
+     * Months a demolition of `points` over n buildings would take if ordered
+     * now, at today's queue (0.7.22): its own crew (demolitionWeight()) by
+     * the rule held steady - and with the city's order set, behind
+     * everything the city has on site, since a new site of the city's joins
+     * the bottom of its order (handWait()). MAX_VALUE with no output.
+     */
+    public double waitForDemolition(int n, double points, double siteOutput) {
+        if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        if (!(points > 0) || n < 1) return 0;
+        ConstructionControl.Demolition probe = new ConstructionControl.Demolition();
+        probe.buildings = n;
+        probe.points = points;
+        return handWait("D?", new double[] { demolitionWeight(probe), points }, true, siteOutput);
+    }
+
+    /**
+     * Months n buildings of t owing `owedPoints` would take if put on site
+     * now - a shell restarted (0.7.22): beside whatever of it is on site
+     * already, as waitFor() times an order. The rule's arithmetic; the
+     * hand's is restartWait(). MAX_VALUE with no output.
+     */
+    public double siteMonthsWith(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+        if (!(siteOutput > 0)) return Double.MAX_VALUE;
+        if (t == null || n < 1 || !(owedPoints > 0)) return 0;
+        BuildingsStacks s = getStack(t);
+        int ahead = s == null ? 0 : s.getUnderConstruction();
+        double aheadOwed = s == null || ahead <= 0 ? 0
+                : Math.max(0, ahead * (double) t.getConstructionPoints() - s.getConstructionProgress());
+        double others = 0;
+        for (BuildingsStacks st : stacks) {
+            if (st == s || st.getUnderConstruction() <= 0) continue;
+            others += weightOf(st.getBuilding(), st.getUnderConstruction());
+        }
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            if (site.owed() > 0) others += demolitionWeight(site);
+        }
+        double mine = weightOf(t, ahead + n);
+        if (!(mine > 0)) return 0;
+        return (aheadOwed + owedPoints) * (others + mine) / (siteOutput * mine);
+    }
+
+    /**
+     * THE HAND'S ARITHMETIC: every site on site, its crew's weight and its
+     * points owed - `key`'s replaced by `mine` when it is given, and added at
+     * the bottom of the city's order when it is a new site of the city's -
+     * then the key's months by the rule held steady, or, a city site while an
+     * order is set, everything ahead of it in the order and itself over the
+     * city's share; a rushed site at each coming month's overtime factor.
+     * NaN when its pace is nothing; MAX_VALUE past a hundred years.
+     */
+    private double handWait(String key, double[] mine, boolean isNew, double siteOutput) {
+        java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
+        for (BuildingsStacks s : stacks) {
+            int on = s.getUnderConstruction();
+            if (on <= 0) continue;
+            double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
+            by.put(ConstructionControl.keyOf(s.getBuilding()), new double[] { weightOf(s.getBuilding(), on), o });
+        }
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
+        }
+        if (mine != null) by.put(key, mine);
+        double[] me = by.get(key);
+        if (me == null || !(me[1] > 0)) return 0;
+        double total = 0;
+        for (double[] v : by.values()) total += v[0];
+        java.util.List<String> city = citySiteKeys();
+        if (isNew && !city.contains(key)) city.add(key);
+        double months;
+        if (control.isPrioritySet() && city.contains(key)) {
+            double cityWeight = 0, ahead = 0;
+            for (String k : city) { double[] v = by.get(k); if (v != null) cityWeight += v[0]; }
+            for (String k : control.effectiveOrder(city)) {
+                double[] v = by.get(k);
+                if (v != null) ahead += v[1];
+                if (k.equals(key)) break;
+            }
+            double pace = siteOutput * cityWeight / total;
+            if (!(pace > 0)) return Double.NaN;
+            months = ahead / pace;
+        } else {
+            if (!(me[0] > 0)) return Double.NaN;
+            months = me[1] * total / (siteOutput * me[0]);
+        }
+        if (isNew || !control.isRushed(key) || !city.contains(key) || !(months > 0)) return months;
+        // On overtime: the same pace, worked at each coming month's factor.
+        double pace = me[1] / months, left = me[1];
+        int from = control.monthsOnOvertime(key);
+        for (int m = 1; m <= 1200; m++) {
+            double step = pace * ConstructionControl.overtimeOutput(from + m);
+            if (step >= left) return m - 1 + left / step;
+            left -= step;
+        }
+        return Double.MAX_VALUE;
+    }
 
     /* ---------------------------------------------------------------------
        THE POSTS A SECTOR OFFERS (0.7.17, revised to Jerus's answer): the
@@ -3511,6 +4035,8 @@ public class BuildingManager {
             // progress is against the current unit only; the rest are untouched.
             total += perUnit * building - stack.getConstructionProgress();
         }
+        // ...and the city's demolitions on site (0.7.22), work like any other.
+        for (ConstructionControl.Demolition site : control.demolitions()) total += site.owed();
         return Math.max(total, 0);
     }
 
@@ -4484,6 +5010,18 @@ public class BuildingManager {
             total += stack.getBuilding().getLandSqFt()
                     * (stack.getQuantity() + stack.getUnderConstruction());
         }
+        // ...and the ground a stopped shell or a demolition on site still holds
+        // (0.7.22; ConstructionControl): the city's until the shell is
+        // demolished and the demolition done.
+        for (ConstructionControl.Shell shell : control.shells()) {
+            BuildingsTemplate t = getTemplate(shell.templateId);
+            if (t != null) total += t.getLandSqFt() * shell.buildings;
+        }
+        for (ConstructionControl.Demolition site : control.demolitions()) {
+            // ...once its buildings have closed: until the month starts they
+            // stand on their stack and hold it there.
+            if (!site.closing) total += site.landSqFt;
+        }
         return total;
     }
 
@@ -4619,6 +5157,8 @@ public class BuildingManager {
                              double amount, double units, double allowance) {
         BuildingsStacks stack = getStack(template);
         if (stack != null) stack.bookContract(payer, recovered, amount, units, allowance);
+        // ...and on the run the construction page reads "paid" off (0.7.22).
+        if (stack != null && amount > 0) control.runFor(template.getId()).billed += amount;
     }
 
     /** One payer's contract on one template's sites, as the save carries it (0.7.19). */
@@ -4840,6 +5380,7 @@ public class BuildingManager {
             if (t != null) t.redenominate(scale);
         }
         for (BuildingsStacks s : stacks) s.redenominate(scale);
+        control.redenominate(scale);
         materialsCost *= scale;
     }
 

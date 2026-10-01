@@ -1,6 +1,6 @@
-# PriceIndex.java - 296 lines · 16 methods · 3 constants · model
+# PriceIndex.java - 313 lines · 17 methods · 3 constants · model
 
-`ham/citybuildersim/PriceIndex.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceIndex.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > What a month costs a household, against what it cost at founding.
 > 
@@ -16,7 +16,8 @@
 > A REAL INDEX IS A FIXED BASKET, PRICED REPEATEDLY. That is the whole idea and
 > it is the part people get wrong: you do not re-weight as spending shifts,
 > because then a household that switched to cheaper food would show no
-> inflation while eating worse. The basket is fixed at founding and priced
+> inflation while eating worse. The basket is fixed once - after
+> SETTLING_MONTHS of real shopping, not at founding (see there) - and priced
 > every month afterwards.
 > 
 > THE BASKET IS MEASURED, NOT INVENTED. The weights come from what this game's
@@ -31,60 +32,61 @@
 
 | line | section |
 |---:|---|
-| 66 | THE HIGH AND LOW WATER MARKS |
-| 206 | · carrying |
+| 67 | THE HIGH AND LOW WATER MARKS |
+| 223 | · carrying |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 32 | `PriceIndex.WINDOW` | `13` | Months of index kept, so a year-on-year rate can be struck. |
-| 35 | `PriceIndex.MIN_BASE` | `1e-9` | Below this the basket is not worth pricing - a city with no shops. |
-| 54 | `PriceIndex.SETTLING_MONTHS` | `24` | Months of real shopping before the basket is fixed. |
+| 33 | `PriceIndex.WINDOW` | `13` | Months of index kept, so a year-on-year rate can be struck. |
+| 36 | `PriceIndex.MIN_BASE` | `1e-9` | Below this the basket is not worth pricing - a city with no shops. |
+| 55 | `PriceIndex.SETTLING_MONTHS` | `24` | Months of real shopping before the basket is fixed. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 56 | `private int shoppingMonths` |  |
-| 58 | `private double baseFood, baseRent` |  |
-| 59 | `private double foodWeight` |  |
-| 60 | `private boolean based` |  |
-| 62 | `private double index` |  |
-| 63 | `private final double[] history` |  |
-| 64 | `private int monthsSeen` |  |
-| 90 | `private double peak` |  |
-| 91 | `private int peakMonth, troughMonth` |  |
+| 57 | `private int shoppingMonths` |  |
+| 59 | `private double baseFood, baseRent` |  |
+| 60 | `private double foodWeight` |  |
+| 61 | `private boolean based` |  |
+| 63 | `private double index` |  |
+| 64 | `private final double[] history` |  |
+| 65 | `private int monthsSeen` |  |
+| 91 | `private double peak` |  |
+| 92 | `private int peakMonth, troughMonth` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 268 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
+| 30 | 284 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
 
-### THE HIGH AND LOW WATER MARKS (lines 66-205)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 102 | 58 | `public void takeMonth(double shelfPrice, double rentPrice, double foodSpend, double rentSpend, int month)` | Prices the basket for the month. |
-| 162 | 1 | `public double getPeak()` | The dearest the basket has ever been, against founding. |
-| 164 | 1 | `public int getPeakMonth()` | ...and the month it happened. |
-| 166 | 1 | `public double getTrough()` | The cheapest it has ever been. |
-| 167 | 1 | `public int getTroughMonth()` |  |
-| 176 | 1 | `public double swing()` | Peak over trough - how far the level has travelled, in one number. |
-| 179 | 1 | `public double getIndex()` | The basket now, against the basket at founding. |
-| 181 | 1 | `public boolean isBased()` |  |
-| 184 | 1 | `public double getFoodWeight()` | How the basket is split. |
-| 185 | 1 | `public double getRentWeight()` |  |
-| 196 | 6 | `public double inflation()` | Inflation over the last twelve months. |
-| 204 | 1 | `public boolean hasRate()` | True once there is a year of readings and the rate means anything. |
-
-### carrying (lines 206-296)
+### THE HIGH AND LOW WATER MARKS (lines 67-222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 208 | 24 | `public double[] toSaveArray()` |  |
-| 233 | 35 | `public void restore(double[] saved)` |  |
-| 269 | 11 | `public void reset()` |  |
-| 289 | 6 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
+| 103 | 60 | `public void takeMonth(double shelfPrice, double rentPrice, double foodSpend, double rentSpend, int month)` | Prices the basket for the month. |
+| 165 | 1 | `public double getPeak()` | The dearest the basket has ever been, against founding. |
+| 167 | 1 | `public int getPeakMonth()` | ...and the month it happened. |
+| 169 | 1 | `public double getTrough()` | The cheapest it has ever been. |
+| 170 | 1 | `public int getTroughMonth()` |  |
+| 179 | 1 | `public double swing()` | Peak over trough - how far the level has travelled, in one number. |
+| 182 | 1 | `public double getIndex()` | The basket now, against the basket at founding. |
+| 184 | 1 | `public boolean isBased()` |  |
+| 187 | 1 | `public double getFoodWeight()` | How the basket is split. |
+| 188 | 1 | `public double getRentWeight()` |  |
+| 199 | 6 | `public double inflation()` | Inflation over the last twelve months. |
+| 207 | 1 | `public boolean hasRate()` | True once there is a year of readings and the rate means anything. |
+| 217 | 5 | `public int monthsUntilRate()` | How many more months before hasRate() (0.7.20): the settling months still to come, then the readings after the basket is fixed - for the header, which says when the first rate comes rather than printing a placeholder ... |
+
+### carrying (lines 223-313)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 225 | 24 | `public double[] toSaveArray()` |  |
+| 250 | 35 | `public void restore(double[] saved)` |  |
+| 286 | 11 | `public void reset()` |  |
+| 306 | 6 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
 

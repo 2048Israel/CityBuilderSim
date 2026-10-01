@@ -1,6 +1,6 @@
-# LandManager.java - 525 lines · 47 methods · 7 constants · model
+# LandManager.java - 530 lines · 47 methods · 7 constants · model
 
-`ham/citybuildersim/LandManager.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandManager.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > The city's land: what it owns, what is built on, and what it sells.
 > 
@@ -62,7 +62,7 @@
 | 88 | `LandManager.STARTING_SQ_FT` | `3000000` | Land the city starts with - thirty blocks, about 69 acres. |
 | 120 | `LandManager.COST_GROWTH_PER_BLOCK` | `.02` | Each block bought makes the next this much dearer - annexing outward. |
 | 132 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
-| 495 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 500 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 481 | **type** `public class LandManager` | The city's land: what it owns, what is built on, and what it sells. |
+| 45 | 486 | **type** `public class LandManager` | The city's land: what it owns, what is built on, and what it sells. |
 | 62 | 1 | `public static double km2(double sqFt)` | An area in square feet, in square kilometres (0.7.13): what the land office shows in place of blocks. |
 | 70 | 6 | `public static String km2Words(double sqFt)` | ...written to three significant figures, so the smallest plot the office sells - one block, 0.00929 square kilometres - does not read "0.00", and the largest reads no more digits than a player compares plots by: 0.009... |
 | 167 | 3 | `public LandManager()` | A land office on its own, at the founding rate - what the harnesses build. |
@@ -122,7 +122,7 @@
 | 257 | 4 | `public void updateMarket(int population)` | Re-prices the market and refills the window. |
 | 276 | 32 | `public double buyParcel(int parcelId, double availableCash, int population)` | Buys one listed parcel. |
 
-### ore (lines 309-525)
+### ore (lines 309-530)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -139,16 +139,16 @@
 | 359 | 1 | `public void setBlocksPurchased(int blocks)` |  |
 | 363 | 3 | `public boolean canAllocate(double sqFt)` | Is there room to put this up at all? |
 | 373 | 7 | `public boolean allocate(double sqFt)` | Takes land out of the available pool. |
-| 382 | 3 | `public void release(double sqFt)` | Frees land again. |
+| 382 | 3 | `public void release(double sqFt)` | Frees land again: a scrapped business's plot (Game.retire()), and since 0.7.22 a finished demolition's ground (Game.settleConstructionControl()). |
 | 387 | 3 | `public double priceFor(double sqFt)` | What a business pays the city for a plot this size. |
 | 392 | 4 | `public void recordSale(double sqFt)` | Records a sale to a business. |
-| 407 | 4 | `public void recordBuyback(double sqFt)` | Records the city buying a plot back from a business that scrapped what stood on it. |
-| 417 | 3 | `public double buyBlock(double availableCash)` | Annexes one block. |
-| 431 | 13 | `public double buyBlock(double availableCash, int population)` | Buys the cheapest thing on offer. |
-| 446 | 7 | `public void clearMonth()` | Called once a month, after the government accounts have read the flows. |
-| 454 | 10 | `public void reset()` |  |
-| 466 | 28 | `public void printLandInfo()` | printers |
-| 497 | 4 | `static { ... }` |  |
-| 510 | 7 | `public void redenominate(double scale)` | The city's own land prices and this month's land flows, in the new unit. |
-| 520 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 412 | 4 | `public void recordBuyback(double sqFt)` | Records the city buying a plot back from a business that scrapped what stood on it. |
+| 422 | 3 | `public double buyBlock(double availableCash)` | Annexes one block. |
+| 436 | 13 | `public double buyBlock(double availableCash, int population)` | Buys the cheapest thing on offer. |
+| 451 | 7 | `public void clearMonth()` | Called once a month, after the government accounts have read the flows. |
+| 459 | 10 | `public void reset()` |  |
+| 471 | 28 | `public void printLandInfo()` | printers |
+| 502 | 4 | `static { ... }` |  |
+| 515 | 7 | `public void redenominate(double scale)` | The city's own land prices and this month's land flows, in the new unit. |
+| 525 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

@@ -538,7 +538,7 @@ public final class Retail extends Sector {
         lines.add(Line.head("The shops"));
         lines.add(Line.of("People the shops can serve", f.count(getStoreCoverage())));
         lines.add(Line.of("Staffed", f.pct(averageFill), averageFill < .9 ? Line.Tone.WARN : Line.Tone.NONE));
-        lines.add(Line.of("Shelf price", f.cash(storeSellPrice)));
+        lines.add(Line.of("Shelf price", f.amount(storeSellPrice)));
         lines.add(Line.of("Units sold", f.count(rProductsSold)));
         lines.add(Line.of("On the shelf", f.count(getStoreInventory())));
 
@@ -575,7 +575,7 @@ public final class Retail extends Sector {
         lines.add(Line.of("Bought locally", f.units(localKg, Good.GRAINS)));
         lines.add(Line.of("Imported", f.units(importedKg, Good.GRAINS),
                 importedKg > 0 ? Line.Tone.WARN : Line.Tone.NONE));
-        lines.add(Line.of("A customer's month", f.cash(getFoodPrice())
+        lines.add(Line.of("A customer's month", f.amount(getFoodPrice())
                 + " of food, over " + SHELF.length + " goods"));
         lines.add(Line.note("One basket is one person for one month. What is in it comes from "
                 + "the consumption model at this city's own incomes, so a richer city stocks "

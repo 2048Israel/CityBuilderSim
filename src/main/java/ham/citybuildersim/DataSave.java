@@ -88,6 +88,24 @@ public class DataSave {
     private double[] contractValueById;
     /** ...and who placed each part of it, with its material still to draw and the allowance priced in for it (0.7.19). Absent on an older save - see Game, OLD CONTRACTS. */
     private java.util.List<BuildingManager.ContractRecord> contractRecords;
+    /**
+     * The player's hand on the queue (0.7.22; ConstructionControl): the
+     * city's order of its own sites, the rushes and their months on
+     * overtime, the cancels waiting for the month's end, the stopped
+     * shells, the demolitions on site, the buy-outs made, and each stack's
+     * run. Absent on a format-27 save, which loads with none of it - which
+     * is what that city had. Why the format moved for it: GameVersion,
+     * format 28.
+     */
+    private ConstructionControl.State constructionControl;
+
+    /**
+     * What the player decided, and when (0.7.23; DecisionLog): every change
+     * of a policy and every spend at scale, a month, a kind and a line each.
+     * Absent on a format-28 save, which loads with an empty log - nothing
+     * kept them before. Why the format moved for it: GameVersion, format 29.
+     */
+    private java.util.List<DecisionLog.Entry> decisionLog;
 
     /*
      * The property tax the city CHARGED this month, rather than a figure
@@ -624,6 +642,14 @@ public class DataSave {
     public void setContractRecords(java.util.List<BuildingManager.ContractRecord> records) { this.contractRecords = records; }
     /** Null on a save from before 0.7.19. */
     public java.util.List<BuildingManager.ContractRecord> getContractRecords() { return contractRecords; }
+
+    public void setConstructionControl(ConstructionControl.State state) { this.constructionControl = state; }
+    /** Null on a save from before 0.7.22 (format 27 and older). */
+    public ConstructionControl.State getConstructionControl() { return constructionControl; }
+
+    public void setDecisionLog(java.util.List<DecisionLog.Entry> log) { this.decisionLog = log; }
+    /** Null on a save from before 0.7.23 (format 28 and older). */
+    public java.util.List<DecisionLog.Entry> getDecisionLog() { return decisionLog; }
 
     /** False for a save written before the format changed. */
     public boolean hasConstructionById() {

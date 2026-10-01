@@ -63,6 +63,16 @@ package ham.citybuildersim;
  */
 public class Education {
 
+    /** Where the player's change to the city's share of tuition is written (DecisionLog, 0.7.23); null for one no city holds. Never saved: the city wires it. */
+    private transient DecisionLog decisions;
+
+    /** Wires this to its city's decision log (Game.buildWorld()). */
+    public void recordTo(DecisionLog log) { decisions = log; }
+
+    private void decided(String kind, String label) {
+        if (decisions != null) decisions.record(kind, label);
+    }
+
     /* ===================================================================
        THE DIAL
        =================================================================== */
@@ -737,7 +747,11 @@ public class Education {
     public double getTuitionSubsidy() { return tuitionSubsidy; }
 
     public void setTuitionSubsidy(double value) {
+        double was = tuitionSubsidy;
         tuitionSubsidy = value < 0 ? 0 : (value > 1 ? 1 : value);
+        if (DecisionLog.moved(was, tuitionSubsidy)) {
+            decided(DecisionLog.PROMISE, "City's share of tuition to " + DecisionLog.pct(tuitionSubsidy));
+        }
     }
 
     /**

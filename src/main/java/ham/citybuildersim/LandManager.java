@@ -378,7 +378,7 @@ public class LandManager {
         return true;
     }
 
-    /** Frees land again. Unused until buildings can be demolished. */
+    /** Frees land again: a scrapped business's plot (Game.retire()), and since 0.7.22 a finished demolition's ground (Game.settleConstructionControl()). */
     public void release(double sqFt) {
         allocatedSqFt = Math.max(allocatedSqFt - sqFt, 0);
     }
@@ -403,6 +403,11 @@ public class LandManager {
      * What changes is the treasury: a city that taxes its businesses into
      * folding buys their plots back at the price it set. The caller moves the
      * cash; this only records it.
+     *
+     * A buy-out (0.7.22, Game.buyOutAndDemolish()) records its ground here
+     * the day it pays for it, and that plot is released only when the
+     * demolition is done: until then the buildings, and then the site, stand
+     * on it.
      */
     public void recordBuyback(double sqFt) {
         landPurchasesThisMonth += priceFor(sqFt);

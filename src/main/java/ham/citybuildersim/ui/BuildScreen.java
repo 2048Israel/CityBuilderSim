@@ -208,6 +208,14 @@ final class BuildScreen {
      * A FlowPane rather than an HBox, because seven categories at this width fit
      * on one line on a maximised window and wrap rather than clip on a small
      * one - and the one thing this strip must never do is hide a category.
+     *
+     * A DOT, NOT AN ORANGE WORD (0.7.21). The investors' categories were
+     * written in amber, which said "investors build these too" to nobody: amber
+     * is a verdict colour, and nothing on the page said what it meant here.
+     * Each tab carries a small dot now - blue for the city's own, violet
+     * (the business colour) for what investors build too - and the key sits at
+     * the right of the page's title (keyLine()). The open tab is raised, with
+     * the building colour's underline.
      */
     javafx.scene.layout.FlowPane buildStrip(String current) {
 
@@ -218,21 +226,19 @@ final class BuildScreen {
         for (BuildCategory category : buildCategories()) {
             boolean on = category.name().equals(current);
             /*
-             * AMBER MEANS SOMEBODY ELSE WILL DO IT. The colour is carried by
-             * the tab's own text and by the bar under the open one, so it reads
-             * whether the category is open or not - a legend that only appears
-             * once you are inside is a legend that never answers "which of
-             * these seven do I actually have to do".
+             * THE DOT SAYS WHO BUILDS IT, open or not - a legend that only
+             * appears once you are inside is a legend that never answers
+             * "which of these do I actually have to do".
              */
             boolean theirs = investorBuilt(category.types());
             Button tab = new Button(category.name());
-            tab.setStyle(Palette.words(Palette.SIZE_BODY,
-                        on ? Palette.TEXT_HEAD : theirs ? Palette.WARN : Palette.TEXT_BODY)
-                    + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
-                    + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
-                    + " -fx-border-color: "
-                    + (on ? (theirs ? Palette.WARN : Palette.ACCENT) : "transparent") + ";"
-                    + " -fx-border-width: 0 0 2 0; -fx-cursor: hand;");
+            tab.setGraphic(whoDot(theirs));
+            tab.setGraphicTextGap(6);
+            tab.setStyle(Palette.words(Palette.SIZE_BODY, on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL)
+                    + " -fx-background-color: " + (on ? Palette.PINNED : "transparent") + ";"
+                    + " -fx-background-radius: " + Palette.RADIUS + ";"
+                    + " -fx-border-color: " + (on ? Palette.BUILDING : "transparent") + ";"
+                    + " -fx-border-width: 0 0 2 0; -fx-padding: 6 10 6 10; -fx-cursor: hand;");
             Tooltip tip = new Tooltip(theirs
                     ? "Investors build these themselves. You can build them too."
                     : "Nobody builds these but the city.");
@@ -245,6 +251,58 @@ final class BuildScreen {
             strip.getChildren().add(tab);
         }
         return strip;
+    }
+
+    /** The colour of "only the city builds these": the money blue - the city's own account. */
+    static final String CITY_DOT = Palette.MONEY;
+
+    /** The colour of "investors build these too": the business violet. */
+    static final String INVESTOR_DOT = Palette.BUSINESS;
+
+    /** A tab's dot: who builds what is behind it (0.7.21). */
+    static Region whoDot(boolean investors) {
+        Region dot = new Region();
+        dot.setMinSize(6, 6);
+        dot.setPrefSize(6, 6);
+        dot.setMaxSize(6, 6);
+        dot.setStyle("-fx-background-color: " + (investors ? INVESTOR_DOT : CITY_DOT)
+                + "; -fx-background-radius: 3;");
+        return dot;
+    }
+
+    /** The key to the dots, at the right of the page's title: "● only the city builds  ● investors build too". */
+    HBox keyLine() {
+        Label city = new Label("only the city builds");
+        city.setGraphic(whoDot(false));
+        city.setGraphicTextGap(6);
+        city.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        Label them = new Label("investors build too");
+        them.setGraphic(whoDot(true));
+        them.setGraphicTextGap(6);
+        them.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        HBox key = new HBox(Palette.GAP_LOOSE, city, them);
+        key.setAlignment(Pos.CENTER_RIGHT);
+        key.setMinWidth(Region.USE_PREF_SIZE);
+        return key;
+    }
+
+    /**
+     * The page's head (0.7.21): its title with the building area's swatch,
+     * the key to the tabs' dots at the right, the way to the construction page
+     * (0.7.22), and the receipt's dot beyond it.
+     * The page had no title before; the strip was its first line.
+     */
+    HBox buildHead(String menuTitle, EnumSet<BuildingType> categories) {
+        Label title = ui.pageTitle("BUILD");
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        // ...and the way to the construction page (0.7.22): what is on site, and the hand on it.
+        Label sites = stepChip("Construction ›", () -> ui.constructionScreen.show(), true);
+        HBox head = new HBox(Palette.GAP_LOOSE, title, gap, keyLine(), sites, receiptCorner(menuTitle, categories));
+        head.setAlignment(Pos.CENTER_LEFT);
+        head.setMaxWidth(Double.MAX_VALUE);
+        head.setStyle("-fx-padding: 0 18 4 18;");
+        return head;
     }
 
 
@@ -308,6 +366,10 @@ final class BuildScreen {
         List<BuildingsTemplate> buildings = buildingManager.getTemplatesByCategory(categories);
         VBox buildingsBox = new VBox(5);
         buildingsBox.setAlignment(Pos.CENTER);
+        // The page scrolls in the window's own scroller, so the room under its
+        // last row is kept here (0.7.20; see UserInterface.PAGE_FOOT): the
+        // Middle School's Build button sat at the edge where the dome was.
+        buildingsBox.setPadding(new javafx.geometry.Insets(0, 0, UserInterface.PAGE_FOOT, 0));
 
         /*
          * GROUPED ON WHAT THE BUILDING IS FOR, which is a field and not a name.
@@ -337,13 +399,13 @@ final class BuildScreen {
             if (!CareType.NONE.equals(key)) {
                 Label heading = new Label(groupHeading(key));
                 heading.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
-                        + " -fx-text-fill: #5cb8ff; -fx-padding: 10 0 0 0;");
+                        + " -fx-text-fill: " + Palette.ACCENT + "; -fx-padding: 10 0 0 0;");
                 buildingsBox.getChildren().add(heading);
 
                 Label what = new Label(groupSubtitle(key));
                 what.setWrapText(true);
                 what.setMaxWidth(TILE_WIDTH * 3 + TILE_GAP * 2);
-                what.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;"
+                what.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";"
                         + " -fx-padding: 0 0 3 0;");
                 buildingsBox.getChildren().add(what);
             }
@@ -387,7 +449,7 @@ final class BuildScreen {
          *    how you leave - Back had nowhere left to go the moment the
          *    category chooser stopped existing.
          */
-        ui.rootMenu.getChildren().addAll(receiptCorner(menuTitle, categories),
+        ui.rootMenu.getChildren().addAll(buildHead(menuTitle, categories),
                 limits, buildStrip(menuTitle), whoBuildsThis(menuTitle, categories),
                 buildingsBox);
     }
@@ -401,31 +463,32 @@ final class BuildScreen {
      * million on housing that was already coming, without ever having been told
      * that it was coming.
      *
-     * The private line says what building one anyway actually DOES, because
+     * The private line says - behind its (i), since 0.7.21 - what building
+     * one anyway actually DOES, because
      * "you don't need to" on its own reads as "don't", and that is not true
      * either: an investor who is broke, cautious or short of land will not move
      * on a shortage the city can see, and paying for the first block out of the
      * treasury is a real and sometimes correct policy.
+     *
+     * ONE SHORT LINE AND AN (i) (0.7.21). It was a paragraph, in amber; the
+     * paragraph is the (i)'s now, in the mockups' words (TextLayers.dc.html),
+     * and the line is grey - it is not a warning.
      */
-    Label whoBuildsThis(String menuTitle, EnumSet<BuildingType> categories) {
+    HBox whoBuildsThis(String menuTitle, EnumSet<BuildingType> categories) {
 
         boolean theirs = investorBuilt(categories);
 
-        Label note = new Label(theirs
-                ? "Investors build these themselves \u2014 they go up on their own "
-                  + "whenever they pay, and you never have to. Building one anyway "
-                  + "spends the city's cash and land on capacity a business will run "
-                  + "and keep the earnings from, which is worth doing when they are too "
-                  + "broke, too cautious or too short of land to move on their own."
-                : "Nobody builds these but the city. However badly they are needed, no "
-                  + "investor will put one up.");
-        note.setWrapText(true);
-        note.setMaxWidth(Palette.BUILD_ROW + 120);
-        note.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-        note.setAlignment(Pos.CENTER);
-        note.setStyle(Palette.words(Palette.SIZE_LABEL,
-                    theirs ? Palette.WARN : Palette.TEXT_MUTED)
-                + " -fx-padding: 6 0 2 0;");
+        HBox note = theirs
+                ? infoLine("Investors build these on their own. Building one yourself is optional.",
+                        "Investors put these up whenever they pay. Building one yourself spends the "
+                        + "city's cash and land on a business someone else runs and keeps the earnings "
+                        + "from. Worth it when investors are too broke, too cautious or short of land.",
+                        true, Palette.SIZE_BODY, Palette.TEXT_LABEL, Palette.BUILD_ROW + 120)
+                : infoLine("Only the city builds these.",
+                        "Nobody builds these but the city. However badly they are needed, no "
+                        + "investor will put one up.",
+                        false, Palette.SIZE_BODY, Palette.TEXT_LABEL, Palette.BUILD_ROW + 120);
+        note.setStyle("-fx-padding: 6 0 2 0;");
         return note;
     }
 
@@ -537,6 +600,27 @@ final class BuildScreen {
         have.setStyle(Palette.words(Palette.SIZE_CAPTION,
                 owned > 0 ? Palette.ACCENT : Palette.TEXT_LABEL));
 
+        /*
+         * WHAT IS ON SITE, FOR ANYONE'S ORDER (0.7.20). After ordering an
+         * Elementary School the card still read "none built" and nothing
+         * else, and a second was one click away. Every unit of this template
+         * on site - the city's, an investor's or a landlord's - and how long
+         * it waits, by the same rule the quote and the planners use
+         * (Game.onSiteMonths()). Hidden, not blank, with nothing on site.
+         */
+        BuildingsStacks stack = ui.game.getBuildingManager().getStack(template);
+        int onSite = stack == null ? 0 : stack.getUnderConstruction();
+        Label coming = new Label(onSite > 0
+                ? formatter.format(onSite) + " on site  ·  " + atTodaysQueue(ui.game.onSiteMonths(template))
+                : "");
+        coming.setWrapText(true);
+        coming.setMaxWidth(TILE_WIDTH - 46);
+        // In the building colour since 0.7.21; a link since 0.7.22: it opens
+        // the construction page at this site (ConstructionScreen.showSite()).
+        coming.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-underline: true;");
+        coming.setOnMouseClicked(e -> ui.constructionScreen.showSite(ConstructionControl.keyOf(template)));
+        showIf(coming, onSite > 0);
+
         HBox priceRow = new HBox(4);
         priceRow.setAlignment(Pos.BASELINE_LEFT);
         if (importing) {
@@ -615,9 +699,8 @@ final class BuildScreen {
             }
 
             Game.BuildQuote q = ui.game.quoteBuild(template, n);
-            String eta = Double.isNaN(q.months) ? "stalled"
-                    : q.months < 1 ? "under a month"
-                    : "~" + formatter.format(Math.round(q.months)) + " mo";
+            // "at today's queue" (0.7.20): the wait at this month's shares, not a promise.
+            String eta = atTodaysQueue(q.months);
 
             String tone;
             String verdict;
@@ -714,7 +797,7 @@ final class BuildScreen {
         Region push = new Region();
         VBox.setVgrow(push, Priority.ALWAYS);
 
-        VBox face = new VBox(1, name, have, priceRow, ground, running, push, order);
+        VBox face = new VBox(1, name, have, coming, priceRow, ground, running, push, order);
         face.setStyle("-fx-padding: 8 10 8 10;");
 
         /* ----------------------------- the stats ----------------------------- */
@@ -911,9 +994,12 @@ final class BuildScreen {
     boolean placeOrder(BuildingsTemplate template, int quantity,
                             String menuTitle, EnumSet<BuildingType> categories) {
 
+        // The quote it will be charged on, for the receipt's sales tax (see noteReceipt).
+        Game.BuildQuote quote = ui.game.quoteBuild(template, quantity);
         Game.BuildResult result = ui.game.buildStack(template, quantity, false);
 
         if (result == Game.BuildResult.SUCCESS) {
+            noteReceipt(quote);
             handleAllBuildingMenus(menuTitle, categories);
         } else if (result == Game.BuildResult.NEEDS_FUNDING) {
             showQuickDebtMenu(template, quantity, menuTitle, categories);
@@ -1006,7 +1092,11 @@ final class BuildScreen {
         return cleared;
     }
 
-    /** The caption under the grid, shown while any card on the page has a quantity. */
+    /**
+     * The caption under the grid, shown while any card on the page has a
+     * quantity - and its line kept while it is not (0.7.20): it was taken out
+     * of the layout, so pressing "+" made the page a line taller and moved it.
+     */
     void showPendingHint() {
         boolean any = false;
         for (PageCard card : pageCards) {
@@ -1015,7 +1105,9 @@ final class BuildScreen {
                 break;
             }
         }
-        showIf(pendingHint, any);
+        if (pendingHint == null) return;
+        pendingHint.setManaged(true);
+        pendingHint.setVisible(any);
     }
 
 
@@ -1091,8 +1183,8 @@ final class BuildScreen {
                             formatter.format(e.getValue())));
                 } else if (g.traded()) {
                     double price = ui.game.getMarkets().get(g).getLocalPrice();
-                    String made = String.format("Makes %s %ss of %s a month",
-                            formatter.format(e.getValue()), g.unit(), g.label().toLowerCase());
+                    String made = String.format("Makes %s %s of %s a month",
+                            formatter.format(e.getValue()), Formats.plural(g.unit()), g.label().toLowerCase());
                     if (price > 0) made += String.format(", worth %s at today's price of %s a %s",
                             money(e.getValue() * price), unitPrice(price), g.unit());
                     out.add(made + (t.getStock() > 0
@@ -1104,9 +1196,9 @@ final class BuildScreen {
                 Good g = e.getKey();
                 if (!g.traded()) continue;
                 double price = ui.game.getMarkets().get(g).getLocalPrice();
-                out.add(String.format("Uses %s %ss of %s a month%s, bought on the market"
+                out.add(String.format("Uses %s %s of %s a month%s, bought on the market"
                         + " or imported.",
-                        formatter.format(e.getValue()), g.unit(), g.label().toLowerCase(),
+                        formatter.format(e.getValue()), Formats.plural(g.unit()), g.label().toLowerCase(),
                         price > 0 ? " - " + money(e.getValue() * price) + " at today's price" : ""));
             }
             if (t.getCategory() == BuildingType.MINING) {
@@ -1391,7 +1483,8 @@ final class BuildScreen {
     }
 
     /**
-     * The receipt dot, top-right of the menu, and the card it opens.
+     * The receipt dot, top-right of the menu, and the popover it opens with
+     * the last purchases (0.7.20; the card was in the page and showed one).
      *
      * It flashes only while there is a receipt this window has not shown yet -
      * compared by serial, not by contents, because building the same three
@@ -1402,13 +1495,14 @@ final class BuildScreen {
     HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories) {
 
         HBox corner = new HBox();
-        corner.setAlignment(Pos.TOP_RIGHT);
-        corner.setMaxWidth(Double.MAX_VALUE);
-        // Room on the right for the inbox envelope, which is pinned to the same
-        // corner of the stage. Two things in one corner is a collision; the
-        // receipt sits to the left of it, on the same line.
-        corner.setStyle("-fx-padding: 0 70 0 0;");
-        if (!ui.game.hasNewReceipt()) return corner;
+        corner.setAlignment(Pos.CENTER_RIGHT);
+        // At the end of the page's head since 0.7.21 (buildHead()): the inbox's
+        // envelope that shared this corner is the header's now. Its room is
+        // kept whether or not there is a dot (0.7.20), so the first purchase
+        // moves nothing.
+        corner.setMinSize(18, 18);
+        corner.setPrefSize(18, 18);
+        if (receipts.isEmpty()) return corner;
 
         boolean unseen = ui.game.getReceiptSerial() != ui.receiptSeen;
 
@@ -1416,22 +1510,35 @@ final class BuildScreen {
         dot.setMinSize(18, 18);
         dot.setPrefSize(18, 18);
         dot.setMaxSize(18, 18);
-        dot.setStyle("-fx-background-color: #2f7d52; -fx-background-radius: 50%;"
-                + " -fx-border-color: #2f7d52; -fx-border-width: 1;"
+        dot.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-background-radius: 50%;"
+                + " -fx-border-color: " + Palette.CONFIRM + "; -fx-border-width: 1;"
                 + " -fx-border-radius: 50%; -fx-cursor: hand; -fx-padding: 0;");
         Tooltip dotTip = new Tooltip(unseen
-                ? "A purchase went through - click for the receipt"
-                : "Click for the last receipt");
+                ? "A purchase went through - click for the receipts"
+                : "Click for the last purchases");
         dotTip.setShowDelay(Duration.millis(200));
         Tooltip.install(dot, dotTip);
 
+        /*
+         * A POPOVER, NOT A ROW (0.7.20). The receipt card used to open in the
+         * page, at its top, and push the strip and the whole grid down while
+         * it was open - one more thing moving under the pointer. It is a
+         * popup under the dot now, over the page, pushing nothing: a click
+         * anywhere else or Esc closes it (the popup keeps Esc for closing
+         * itself), and it goes when the build page does (UserInterface
+         * .clearMenu() -> closeReceipt()).
+         */
         dot.setOnAction(e -> {
-            ui.receiptOpen = !ui.receiptOpen;
             ui.receiptSeen = ui.game.getReceiptSerial();
-            handleAllBuildingMenus(menuTitle, categories);
+            if (ui.receiptPulse != null) {
+                ui.receiptPulse.stop();
+                ui.receiptPulse = null;
+            }
+            dot.setOpacity(1);
+            if (receiptPopup != null) closeReceipt(); else openReceipt(dot);
         });
 
-        if (unseen && !ui.receiptOpen) {
+        if (unseen && receiptPopup == null) {
             ui.receiptPulse = new FadeTransition(Duration.millis(600), dot);
             ui.receiptPulse.setFromValue(1.0);
             ui.receiptPulse.setToValue(.15);
@@ -1439,39 +1546,109 @@ final class BuildScreen {
             ui.receiptPulse.setCycleCount(Animation.INDEFINITE);
             ui.receiptPulse.play();
         }
+        // A redraw while it is open shows the newest purchases in it.
+        if (receiptPopup != null) receiptPopup.getContent().setAll(receiptCard());
 
-        if (!ui.receiptOpen) {
-            corner.getChildren().add(dot);
-            return corner;
-        }
-
-        VBox card = new VBox(1);
-        card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: #13291d; -fx-border-color: #2f7d52;"
-                + " -fx-border-width: 1; -fx-background-radius: 3;"
-                + " -fx-border-radius: 3; -fx-padding: 7 11 7 11;");
-
-        Label head = new Label("LAST TRANSACTION");
-        head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: #5fd68a;");
-
-        Label what = new Label(formatter.format(ui.game.getBuildQuantity())
-                + " \u00d7  " + ui.game.getBuildingName());
-        what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #5fd68a;");
-
-        card.getChildren().addAll(head, what,
-                receiptLine("Materials imported", formatter.format(ui.game.getMaterialsUsed())),
-                receiptLine("Total cost", money(ui.game.getTotalBuildingCost())));
-
-        HBox stack = new HBox(6);
-        stack.setAlignment(Pos.TOP_RIGHT);
-        stack.getChildren().addAll(card, dot);
-        corner.getChildren().add(stack);
+        corner.getChildren().add(dot);
         return corner;
     }
 
+    /* ----- the last purchases (0.7.20) ----- */
+
+    /**
+     * One purchase, as the receipt shows it: what and how many, what it cost
+     * all in, the sales tax in that, and when.
+     */
+    record Receipt(int serial, String name, int quantity, double total, double salesTax, int month) { }
+
+    /** How many purchases the receipt keeps. */
+    static final int RECEIPTS = 5;
+
+    /**
+     * The last RECEIPTS purchases, newest first. This window's, for the
+     * session, like receiptSeen: the model keeps only the last order's
+     * receipt (Game.getTotalBuildingCost() and the rest), and the play-through
+     * found the receipt showing the school and not the wind farm bought just
+     * before it. Emptied when another city is founded or loaded
+     * (forgetReceipts()), not when the player comes back to the same one.
+     */
+    final java.util.ArrayDeque<Receipt> receipts = new java.util.ArrayDeque<>();
+
+    /** The receipt's popover while it is open, or null. */
+    private javafx.stage.Popup receiptPopup;
+
+    /**
+     * After an order went through: the receipt the model wrote for it, with
+     * the sales tax off the quote it was charged on - quoted just before the
+     * order, against the city the order was then placed in, as
+     * Game.processBuildOrder() quotes it, so it is the same quote.
+     */
+    void noteReceipt(Game.BuildQuote quote) {
+        int serial = ui.game.getReceiptSerial();
+        if (!receipts.isEmpty() && receipts.peekFirst().serial() == serial) return;
+        receipts.addFirst(new Receipt(serial, ui.game.getBuildingName(), ui.game.getBuildQuantity(),
+                ui.game.getTotalBuildingCost(), quote.salesTax, ui.game.getMonth()));
+        while (receipts.size() > RECEIPTS) receipts.removeLast();
+    }
+
+    /** Another city, founded or loaded (UserInterface.anotherCity()): its purchases are not this one's. */
+    void forgetReceipts() {
+        closeReceipt();
+        receipts.clear();
+    }
+
+    private void openReceipt(Button dot) {
+        javafx.geometry.Bounds at = dot.localToScreen(dot.getBoundsInLocal());
+        if (at == null) return;
+        javafx.stage.Popup pop = new javafx.stage.Popup();
+        pop.setAutoHide(true);
+        pop.setHideOnEscape(true);
+        pop.getContent().add(receiptCard());
+        pop.setAnchorLocation(javafx.stage.PopupWindow.AnchorLocation.CONTENT_TOP_RIGHT);
+        pop.setOnHidden(e -> {
+            if (receiptPopup == pop) {
+                receiptPopup = null;
+                ui.receiptOpen = false;
+            }
+        });
+        receiptPopup = pop;
+        ui.receiptOpen = true;
+        pop.show(dot, at.getMaxX(), at.getMaxY() + 6);
+    }
+
+    /** Close the receipt, if it is open. */
+    void closeReceipt() {
+        javafx.stage.Popup pop = receiptPopup;
+        receiptPopup = null;
+        ui.receiptOpen = false;
+        if (pop != null) pop.hide();
+    }
+
+    /** The card in the popover: the last purchases, newest first, each with its total and the tax in it. */
+    private VBox receiptCard() {
+        VBox card = new VBox(4);
+        card.setStyle("-fx-background-color: " + Palette.CONFIRM_GROUND + "; -fx-border-color: " + Palette.CONFIRM + ";"
+                + " -fx-border-width: 1; -fx-background-radius: 4;"
+                + " -fx-border-radius: 4; -fx-padding: 8 12 9 12;"
+                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 12, 0, 0, 3);");
+
+        Label head = new Label(receipts.size() == 1 ? "LAST PURCHASE" : "LAST " + receipts.size() + " PURCHASES");
+        head.setStyle("-fx-font-size: 9px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
+        card.getChildren().add(head);
+
+        for (Receipt r : receipts) {
+            Label what = new Label(formatter.format(r.quantity()) + " \u00d7  " + r.name());
+            what.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Palette.GOOD + ";");
+            Label paid = receiptLine(money(r.total()) + "  with " + money(r.salesTax()) + " sales tax",
+                    CityCalendar.format(r.month()));
+            card.getChildren().add(new VBox(0, what, paid));
+        }
+        return card;
+    }
+
     Label receiptLine(String label, String value) {
-        Label l = new Label(String.format("%-20s%12s", label, value));
-        l.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+        Label l = new Label(String.format("%-30s %s", label, value));
+        l.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                 + " -fx-text-fill: #8bc34a;");
         return l;
     }
@@ -1616,7 +1793,7 @@ final class BuildScreen {
 
         Label reserves = monoLabel(String.format(
                 "Ore still in the ground: %,.0f tonnes", land.getIronReserveTonnes()));
-        reserves.setStyle("-fx-font-family: 'Courier New'; -fx-padding: 6 0 0 0;");
+        reserves.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
 
         Button toLand = new Button("Go to the Land Office");
         toLand.setOnAction(e -> ui.landScreen.showLandMenu());
@@ -1696,7 +1873,7 @@ final class BuildScreen {
         double blocks = Math.ceil(short_ / LandManager.BLOCK_SQ_FT);
 
         Label warning = new Label("NOT ENOUGH LAND");
-        warning.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 14px;");
+        warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold; -fx-font-size: 14px;");
 
         Label details = new Label(String.format(
                 "%,d x %s needs %s sq ft%n"
@@ -1710,7 +1887,7 @@ final class BuildScreen {
                 "Buying %s costs roughly %s",
                 LandManager.km2Words(blocks * LandManager.BLOCK_SQ_FT),
                 money(land.getNextBlockCost() * blocks)));
-        cost.setStyle("-fx-text-fill: #8fa3b0;");
+        cost.setStyle("-fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
         Button toLand = new Button("Go to the Land Office");
         toLand.setOnAction(e -> ui.landScreen.showLandMenu());
@@ -1752,7 +1929,7 @@ final class BuildScreen {
         DebtQuote bond = ui.game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
 
         Label warning = new Label("INSUFFICIENT FUNDS");
-        warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold;");
 
         VBox need = new VBox(0,
                 statementLine("Funding required", money(gap), Palette.BAD),
@@ -1870,8 +2047,9 @@ final class BuildScreen {
      */
     private void buildOnTheLoan(BuildingsTemplate selected, int quantity,
                                 String prevTitle, EnumSet<BuildingType> prevCats, String paper) {
+        Game.BuildQuote quote = ui.game.quoteBuild(selected, quantity);
         switch (ui.game.buildStack(selected, quantity, false)) {
-            case SUCCESS    -> handleAllBuildingMenus(prevTitle, prevCats);
+            case SUCCESS    -> { noteReceipt(quote); handleAllBuildingMenus(prevTitle, prevCats); }
             case NO_LAND    -> showNoLandMenu(selected, quantity, prevTitle, prevCats);
             case NO_DEPOSIT -> showNoDepositMenu(selected, quantity, prevTitle, prevCats);
             case NO_LICENCE -> showNoLicenceMenu(selected, quantity, prevTitle, prevCats);
@@ -1897,7 +2075,7 @@ final class BuildScreen {
         ui.clearMenu("showFundingFellShortMenu", () -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats, paper));
 
         Label heading = new Label("THE MONEY IS IN, THE BUILDING IS NOT");
-        heading.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 14px;");
+        heading.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold; -fx-font-size: 14px;");
 
         double price = ui.game.calculateTotalCost(selected, quantity);
 
@@ -1915,7 +2093,7 @@ final class BuildScreen {
                 money(ui.game.buildFundingGap(selected, quantity))));
         what.setWrapText(true);
         what.setMaxWidth(460);
-        what.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;");
+        what.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;");
 
         Button back = new Button("Back to the build menu");
         back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
@@ -1943,9 +2121,9 @@ final class BuildScreen {
         double howFarUp = (quote.marketRate() - floor) / span;
 
         String colour;
-        if (howFarUp >= .55)      colour = "#ff6b6b";   // deep into the expensive half
-        else if (howFarUp >= .25) colour = "#ffb454";   // getting dear
-        else                      colour = "#5fd68a";   // ordinary money
+        if (howFarUp >= .55)      colour = Palette.BAD;   // deep into the expensive half
+        else if (howFarUp >= .25) colour = Palette.WARN;   // getting dear
+        else                      colour = Palette.GOOD;   // ordinary money
         return "-fx-text-fill: " + colour + "; -fx-font-weight: bold; -fx-padding: 4 0 0 0;";
     }
 }

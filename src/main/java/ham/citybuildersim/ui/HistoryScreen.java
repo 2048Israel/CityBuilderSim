@@ -4,7 +4,6 @@ import ham.citybuildersim.*;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Pos;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -27,12 +26,15 @@ import static ham.citybuildersim.ui.Levers.*;
  *
  * Two small pinned charts, then one big chart with lines overlaid - one unit
  * on a real axis, two on two real axes, three or more mapped onto 0-100 by
- * their own range over the window - with recessions shaded and the named
- * episodes marked under it; a legend that carries the real values, presets
- * for the questions a player usually has, a picker folded into its groups,
- * and the year book written out on request (the page as of 0.7.5 is under
- * THE PAGE, REDRAWN; real GDP drawn in layers on a toggle since 0.7.6, under
- * GDP IN LAYERS). The first screen split out of
+ * their own range over the window - with recessions shaded and named, the
+ * episodes on a lane under it and the player's decisions as flags; a
+ * legend that carries the real values, presets for the questions a player
+ * usually has, a picker folded into its groups, and the year book written
+ * out on request (the page as of 0.7.5 is under THE PAGE, REDRAWN; real GDP
+ * drawn in layers on a toggle since 0.7.6, under GDP IN LAYERS). Since
+ * 0.7.23 the charts are TimeCharts - dragged, wheeled and ranged like a
+ * market chart, with an overview and a full screen - over one window of
+ * months (THE CHART, REBUILT; FULL SCREEN). The first screen split out of
  * UserInterface (2026-09-18), chosen because it is the most self-contained:
  * it reads the window's game and root, calls clearMenu() and scrolled(), and
  * nothing else in the shell reads it but the rail.
@@ -87,7 +89,19 @@ final class HistoryScreen {
 
     /** Whether the first-visit preset has been handed over; see showHistoryMenu. */
     boolean historySeeded = false;
-    int historyWindow = 120;
+
+    /**
+     * The window of months the charts show (0.7.23): the big chart's, which
+     * the two small ones follow - dragged, wheeled and ranged by the player,
+     * and following the newest month while its right edge is on it
+     * (ChartModel). It replaced historyWindow, the three chips' "10 years",
+     * "50 years" and "all". Screen state, like the picks: kept while the game
+     * runs, never saved.
+     */
+    final ChartModel chartWindow = new ChartModel();
+
+    /** The lines the big chart's legend has switched off, by key: still picked and read below, not drawn (0.7.23). */
+    final java.util.Set<String> hiddenLines = new java.util.HashSet<>();
 
     /**
      * The big chart on a log scale, when what is picked allows it; see
@@ -114,9 +128,6 @@ final class HistoryScreen {
      * closed otherwise. Screen state, not saved.
      */
     final java.util.Map<String, Boolean> groupOpen = new java.util.HashMap<>();
-
-    /** Above this many points a line is bucket-averaged; see bucketSize(). */
-    static final int MAX_PLOT_POINTS = 400;
 
     /**
      * One plottable line: where it comes from and how to read it.
@@ -308,11 +319,51 @@ final class HistoryScreen {
         return all;
     }
 
-    /** Eight, then it wraps - and the legend swatch uses the same list. */
-    static final String[] TRACE_COLOURS = {
-        "#5cb8ff", "#ff6b6b", "#5fd68a", "#ffb454",
-        "#ce93d8", "#4dd0e1", "#d4e157", "#c8b0a5"
-    };
+    /**
+     * Which of the four areas a line belongs to, for its colour (0.7.23):
+     * money and policy blue, people and services teal, business and trade
+     * violet, building and land pink - the picker's groups mapped onto the
+     * rail's areas, with output, the goods' prices and the ground put where
+     * the header and the land office already put them. It replaced
+     * TRACE_COLOURS, eight colours of which three were the verdicts.
+     */
+    static String areaOf(Trace t) {
+        switch (t.key()) {
+            case "gdp": case "gdpPerCapita": case "realGdp":        return Palette.BUSINESS;
+            case "constructionCapacity": case "landUse": case "landPrice": return Palette.BUILDING;
+            case "foodPrice": case "materialsPrice": case "orePrice": return Palette.BUSINESS;
+            default: break;
+        }
+        return groupArea(t.group());
+    }
+
+    /** A picker group's area: what its heading is coloured in. */
+    static String groupArea(String group) {
+        return switch (group) {
+            case "MONEY", "CREDIT", "BUDGET" -> Palette.MONEY;
+            case "TRADE", "THE MARKET", "PRICES" -> Palette.BUSINESS;
+            case "HOUSING" -> Palette.BUILDING;
+            default -> Palette.PEOPLE;
+        };
+    }
+
+    /** Each picked line's colour, in the order picked: its area's, then the others (Palette.lineColours()). */
+    String[] pickedColours() {
+        List<String> areas = new ArrayList<>();
+        for (String key : historyPicked) areas.add(areaOf(traceFor(key)));
+        return Palette.lineColours(areas);
+    }
+
+    /** One picked line's colour, or null if it is not picked. */
+    String colourOf(String key) {
+        String[] colours = pickedColours();
+        int k = 0;
+        for (String picked : historyPicked) {
+            if (picked.equals(key)) return colours[k];
+            k++;
+        }
+        return null;
+    }
 
     /* =====================================================================
        THE RECORD
@@ -417,7 +468,8 @@ final class HistoryScreen {
        to click on the specific stuff you want." And, to the proposal: "pinnable
        defaults, but not fixed, and leave goods there, and event marks".
 
-       So, top to bottom: the range; TWO PINNED CHARTS, one line each in its
+       So, top to bottom: the range (the big chart's own buttons since
+       0.7.23); TWO PINNED CHARTS, one line each in its
        own units, remembered in GamePrefs because which two lines a player
        keeps in view is how they read and not a fact about the city; THE BIG
        CHART, with the presets, "clear all" and "log" in a row above it and the
@@ -430,15 +482,22 @@ final class HistoryScreen {
        problem a second axis solves without losing either. A rate against a
        price level is the commonest question on this page - the first-visit
        trio is exactly that. Three or more still map, since three scales on one
-       chart is a chart nobody can read, and the axis says so.
+       chart is a chart nobody can read, and the axis says so (since 0.7.23
+       each legend chip, "low to high").
 
        NOTHING HERE DECIDES WHAT HAPPENED. The recession bands and the episode
-       marks come off YearBook (recessions(), episodes()), the same functions
+       marks come off YearBook (recessions() - since 0.7.23 through
+       recessionBands(), which names each - and episodes()), the same functions
        the year book's WHAT HAPPENED section prints from, so the file and the
        chart cannot disagree about what to call a year. The page formats.
        ===================================================================== */
 
     void showHistoryMenu() {
+        // A month landing while the player drags the chart waits for the
+        // release (0.7.23): a rebuild would take the chart out from under the
+        // pointer. The release redraws the page.
+        if (bigChart != null && bigChart.isDragging()) return;
+
         // Whether the player was typing in the filter box when this redraw came:
         // the month rebuilds the page under them, and the new box takes the
         // focus back, or the next key they press is a shortcut.
@@ -472,9 +531,7 @@ final class HistoryScreen {
             historyPicked.addAll(java.util.Arrays.asList(PRESETS[0].keys()));
         }
 
-        Label title = new Label("CITY HISTORY");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("CITY HISTORY");
 
         Label lead = new Label("Every month the city has lived, and what it did.");
         lead.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED)
@@ -491,15 +548,30 @@ final class HistoryScreen {
         column.setAlignment(Pos.TOP_LEFT);
         column.setMaxWidth(Region.USE_PREF_SIZE);
 
-        // Read once a draw and handed to all three charts: the recession months
-        // shade every one of them, and the episodes are marked under the big one.
-        List<int[]> recessions = YearBook.recessions(h);
-        List<YearBook.Episode> episodes = YearBook.episodes(h);
+        // The window is told the history's ends first: the vitals, the small
+        // charts and the readings below all read it.
+        List<Integer> axis = h.getMonth();
+        chartWindow.setData(axis.get(0), axis.get(axis.size() - 1));
 
-        column.getChildren().add(historyRange(h));
-        column.getChildren().add(pinnedCharts(h, recessions));
+        // Read once a draw and handed to all three charts (ChartModel, off
+        // YearBook): the recession bands shade every one of them, and the
+        // episodes and the player's decisions run under the big one.
+        List<YearBook.Band> bands = ChartModel.bands(h);
+        List<YearBook.Episode> episodes = ChartModel.episodes(h);
+
+        TimeChart big = bigChart(h, bands, episodes);
+        column.getChildren().add(pinnedCharts(h, bands));
         column.getChildren().add(chartControls(h));
-        column.getChildren().add(historyChart(h, recessions, episodes));
+        if (chartFull) {
+            Label away = new Label("The chart is open over the whole window. Esc brings it back here.");
+            away.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED) + " -fx-padding: 8 0 8 0;");
+            column.getChildren().add(away);
+            refreshFullScreen();
+        } else {
+            column.getChildren().add(big);
+            // Real GDP alone, in layers (0.7.6): the key under the chart, as it always had.
+            if (bigInLayers()) column.getChildren().add(layersKey(gdpStack(h, traceFor(LAYERED).unit()).layers(), GRAPH));
+        }
 
         column.getChildren().add(statementHead("What each line did", GRAPH));
         if (historyPicked.isEmpty()) {
@@ -509,19 +581,20 @@ final class HistoryScreen {
         } else {
             // On two axes, each reading says which one its line is read against.
             List<String> units = pickedUnits();
+            String[] colours = pickedColours();
             int colour = 0;
             for (String key : historyPicked) {
-                String axis = units.size() != 2 ? null
+                String side = units.size() != 2 ? null
                         : units.indexOf(traceFor(key).unit()) == 0 ? "left axis" : "right axis";
                 column.getChildren().add(historyReading(h, key,
-                        bigInLayers() ? LAYERED_LINE : TRACE_COLOURS[colour % TRACE_COLOURS.length], axis));
+                        bigInLayers() ? LAYERED_LINE : colours[colour], side));
                 colour++;
             }
-            if (historyPicked.size() > TRACE_COLOURS.length) {
-                column.getChildren().add(statementNote(
-                        "There are more lines than colours, so the palette has wrapped "
-                        + "and two of them are the same. Eight is as many as a chart can "
-                        + "tell apart anyway."));
+            if (historyPicked.size() > Palette.LINE_COLOURS) {
+                column.getChildren().add(statementNote(String.format(
+                        "There are more lines than colours, so two of them share one. %d is as many "
+                        + "as a chart can tell apart, and more than anybody reads at once.",
+                        Palette.LINE_COLOURS)));
             }
         }
 
@@ -565,6 +638,16 @@ final class HistoryScreen {
         books.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
                 + " -fx-background-color: " + Palette.CONFIRM + ";");
         books.setOnAction(e -> writeTheBooks());
+        /*
+         * NEVER HANDED THE FOCUS BY THE WINDOW (0.7.20), like the filter box
+         * above. It is the only control on this page that takes focus, and it
+         * is at the bottom: when the button that had the focus on the last
+         * screen went with it, JavaFX gave the focus to the first control
+         * that would take it - this one - and the scroller scrolled to show
+         * it. That is why City History opened at the price table and this
+         * button, every time. A click still presses it.
+         */
+        books.setFocusTraversable(false);
         VBox.setMargin(books, new javafx.geometry.Insets(4, 0, 4, 14));
         column.getChildren().add(books);
         if (bookExportSaid != null) column.getChildren().add(statementNote(bookExportSaid));
@@ -592,6 +675,10 @@ final class HistoryScreen {
         if (typing && filterField != null) {
             filterField.requestFocus();
             filterField.positionCaret(filterField.getText().length());
+        } else {
+            // ...and the focus is the page's (0.7.20), as the filter's Enter hands it
+            // back, so a redraw never leaves it to be found by traversal.
+            scroller.requestFocus();
         }
     }
 
@@ -636,13 +723,11 @@ final class HistoryScreen {
 
     HBox historyVitals(HistorySave h) {
 
+        int[] shown = shownIndices(h);
         List<Integer> months = h.getMonth();
-        int drawn = Math.min(h.months(), historyWindow);
-        int from = Math.max(0, months.size() - historyWindow);
-        int bucket = bucketSize(drawn);
-
-        String span = months.isEmpty() ? "" : CityCalendar.formatShort(months.get(from))
-                + " to " + CityCalendar.formatShort(months.get(months.size() - 1));
+        int drawn = chartWindow.monthsShown();
+        String span = months.isEmpty() ? "" : CityCalendar.formatShort(chartWindow.firstMonthShown())
+                + " to " + CityCalendar.formatShort(chartWindow.lastMonthShown());
 
         // The headline: what the FIRST picked line did over the window, because
         // that is the question a graph is nearly always being asked and the one
@@ -654,7 +739,7 @@ final class HistoryScreen {
             Trace t = traceFor(key);
             double[] all = historyValues(h, key);
             double first = Double.NaN, last = Double.NaN;
-            for (int i = from; i < all.length; i++) {
+            for (int i = shown[0]; i <= shown[1] && i < all.length; i++) {
                 if (Double.isNaN(all[i])) continue;
                 if (Double.isNaN(first)) first = all[i];
                 last = all[i];
@@ -674,9 +759,7 @@ final class HistoryScreen {
                 limitCell("RECORDED", String.format("%,d months", h.months()),
                         String.format("%,d years of city", h.months() / 12),
                         Palette.TEXT_HEAD),
-                limitCell("IN VIEW", String.format("%,d months", drawn),
-                        bucket > 1 ? "averaged " + bucket + " at a time" : span,
-                        Palette.ACCENT),
+                limitCell("IN VIEW", String.format("%,d months", drawn), span, Palette.ACCENT),
                 limitCell("DRAWING",
                         historyPicked.size() + " line"
                                 + (historyPicked.size() == 1 ? "" : "s"),
@@ -685,39 +768,19 @@ final class HistoryScreen {
                 limitCell("IT MOVED", moved, movedBy, tone));
     }
 
-    /** 10 years, 50 years, or the whole life of the city. */
-    VBox historyRange(HistorySave h) {
-
-        javafx.scene.layout.FlowPane row = new javafx.scene.layout.FlowPane(6, 6);
-        row.setMaxWidth(GRAPH);
-        row.setStyle("-fx-padding: 10 0 6 0;");
-
-        int[] windows = {120, 600, Integer.MAX_VALUE};
-        String[] names = {"10 years", "50 years",
-                          String.format("all %,d months", h.months())};
-
-        for (int i = 0; i < windows.length; i++) {
-            final int window = windows[i];
-            row.getChildren().add(chip("range:" + window, names[i], historyWindow == window,
-                    () -> { historyWindow = window; showHistoryMenu(); }));
-        }
-
-        VBox box = new VBox(0, row);
-        box.setMaxWidth(GRAPH);
-        return box;
-    }
-
     /**
-     * How many months go into one drawn point.
-     *
-     * A LineChart draws a Path node per point, so four thousand months across
-     * three lines is twelve thousand nodes and a screen that visibly hangs. The
-     * range picker is the player's control over WHAT they look at; this is
-     * about whether it can be drawn at all, and it only ever engages on windows
-     * too wide to distinguish single months by eye anyway.
+     * The window's first and last months as indices into the history's axis,
+     * {from, to} - what the vitals and the readings fold over (0.7.23; they
+     * read historyWindow's last N months before).
      */
-    int bucketSize(int points) {
-        return Math.max(1, (int) Math.ceil(points / (double) MAX_PLOT_POINTS));
+    int[] shownIndices(HistorySave h) {
+        List<Integer> months = h.getMonth();
+        if (months.isEmpty()) return new int[] {0, -1};
+        int from = ChartModel.nearest(months, chartWindow.firstMonthShown());
+        int to = ChartModel.nearest(months, chartWindow.lastMonthShown());
+        if (months.get(from) < chartWindow.lo() - 1e-9 && from < months.size() - 1) from++;
+        if (months.get(to) > chartWindow.hi() + 1e-9 && to > 0) to--;
+        return new int[] {from, Math.max(from, to)};
     }
 
     /** A chip that is on or off, which is every control on this screen. */
@@ -896,33 +959,40 @@ final class HistoryScreen {
         ui.prefs.save(ui.game.getGameFiles());
     }
 
-    /** The two small charts, side by side. */
-    HBox pinnedCharts(HistorySave h, List<int[]> recessions) {
+    /** The two small charts, side by side, on the big chart's window. */
+    HBox pinnedCharts(HistorySave h, List<YearBook.Band> bands) {
         double wide = (GRAPH - Palette.GAP_LOOSE) / 2;
         HBox row = new HBox(Palette.GAP_LOOSE,
-                smallChart(h, true, wide, recessions),
-                smallChart(h, false, wide, recessions));
+                smallChart(h, true, wide, bands),
+                smallChart(h, false, wide, bands));
         row.setMaxWidth(GRAPH);
         row.setStyle("-fx-padding: 4 0 4 0;");
         return row;
     }
 
-    /** One pinned line: its name and latest reading, then the line in its own units. */
-    VBox smallChart(HistorySave h, boolean left, double wide, List<int[]> recessions) {
+    /**
+     * The two small charts' nodes, kept from one redraw to the next, as the
+     * big chart is: each follows the big chart's window as it is dragged,
+     * which a chart rebuilt every month could not (0.7.23).
+     */
+    private final TimeChart[] smallCharts = new TimeChart[2];
+
+    /** One pinned line: its name and latest reading, then the line in its own units, its years under it. */
+    VBox smallChart(HistorySave h, boolean left, double wide, List<YearBook.Band> bands) {
 
         String key = pinned(left);
         Trace t = traceFor(key);
         List<Integer> months = h.getMonth();
-        int from = Math.max(0, months.size() - historyWindow);
-        int bucket = bucketSize(months.size() - from);
-        int[] at = bucketMonths(months, from, bucket);
+        int[] shown = shownIndices(h);
         double[] all = historyValues(h, key);
-        double[] shown = bucketed(all, from, bucket, at.length);
 
+        // The latest reading in the window, which is the newest unless the window was dragged back.
         double latest = Double.NaN;
-        for (int i = all.length - 1; i >= from; i--) {
+        for (int i = Math.min(shown[1], all.length - 1); i >= shown[0]; i--) {
             if (!Double.isNaN(all[i])) { latest = all[i]; break; }
         }
+        boolean never = true;
+        for (double v : all) if (!Double.isNaN(v)) { never = false; break; }
 
         Label name = new Label(t.label());
         name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
@@ -950,45 +1020,47 @@ final class HistoryScreen {
         boolean layered = LAYERED.equals(key) && gdpLayers;
         if (LAYERED.equals(key)) head.getChildren().add(layersChip(left ? "left" : "right"));
 
-        NumberAxis x = monthAxis(months, from);
-        x.setLabel(null);
-        x.setTickLabelsVisible(false);    // the window is the big chart's, and the vitals say it
-        NumberAxis y = new NumberAxis();
-        Plot chart = new Plot(x, y, wide, SMALL_CHART);
-
-        javafx.scene.chart.XYChart.Series<Number, Number> line =
-                new javafx.scene.chart.XYChart.Series<>();
-        line.setName(t.label());
-        double low = Double.MAX_VALUE, high = -Double.MAX_VALUE;
-        for (int b = 0; b < at.length; b++) {
-            if (Double.isNaN(shown[b])) continue;
-            double v = plotScale(t.unit(), shown[b]);
-            line.getData().add(new javafx.scene.chart.XYChart.Data<>(at[b], v));
-            low = Math.min(low, v);
-            high = Math.max(high, v);
+        /*
+         * NOTHING RECORDED, SAID IN ONE LINE (0.7.20) - not an empty frame with
+         * a flat line in it, which is what "GDP, real (yr) - not recorded"
+         * drew through a city's first year. A line kept over a rolling year
+         * has its first point when the first year ends; the rest say they
+         * have nothing yet. Held at the chart's size, so the page does not
+         * move when the line arrives.
+         */
+        if (never) {
+            Label none = new Label(t.label().endsWith("(yr)")
+                    ? "from the end of the first year" : "nothing recorded yet");
+            none.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_SPENT));
+            StackPane empty = new StackPane(none);
+            empty.setPrefSize(wide, SMALL_CHART);
+            empty.setMinSize(wide, SMALL_CHART);
+            empty.setMaxSize(wide, SMALL_CHART);
+            empty.setStyle(Palette.block(Palette.FIELD));
+            VBox box = new VBox(2, head, empty);
+            box.setPrefWidth(wide);
+            box.setMaxWidth(wide);
+            return box;
         }
-        chart.getData().add(line);
-        styleLine(line, layered ? LAYERED_LINE : Palette.ACCENT);
 
-        double[][] layers = layered ? layerValues(h, from, bucket, at.length) : null;
-        if (layered) {
-            double[] reach = stackReach(layers, t.unit());
-            low = Math.min(low, reach[0]);
-            high = Math.max(high, reach[1]);
+        // The line in its area's colour (0.7.23; it was the accent for every
+        // line), over the big chart's window, with its years under it.
+        int side = left ? 0 : 1;
+        if (smallCharts[side] == null) {
+            smallCharts[side] = new TimeChart(chartWindow, java.util.Set.of(), false);
+            smallCharts[side].follow(bigChart);
         }
-        rangeAxis(y, t.unit(), low, high, false, null, 4);
-        chart.shade(recessions);
+        TimeChart chart = smallCharts[side];
+        TimeChart.Stack stack = layered ? gdpStack(h, t.unit()) : null;
+        chart.setData(months,
+                List.of(new TimeChart.Line(key, t.label(), layered ? LAYERED_LINE : areaOf(t), 0, all,
+                        v -> plotScale(t.unit(), v), v -> fmtUnit(t.unit(), v), "")),
+                axisFor(t.unit()), null, false, false, stack, bands, List.of(), List.of(),
+                t.label().endsWith("(yr)") ? "from the end of the first year" : "nothing recorded yet");
+        chart.setSize(wide, SMALL_CHART);
 
-        VBox box = new VBox(2, head);
-        if (layered) {
-            javafx.scene.chart.StackedAreaChart<Number, Number> under =
-                    layersBehind(chart, months, from, at, layers, t.unit(), wide, SMALL_CHART, SMALL_Y_AXIS);
-            rangeAxis((NumberAxis) under.getYAxis(), t.unit(), low, high, false, null, 4);
-            box.getChildren().add(stacked(chart, under, wide, SMALL_CHART));
-            box.getChildren().add(layersKey(layers, wide));
-        } else {
-            box.getChildren().add(chart);
-        }
+        VBox box = new VBox(2, head, chart);
+        if (layered) box.getChildren().add(layersKey(stack.layers(), wide));
         box.setPrefWidth(wide);
         box.setMaxWidth(wide);
         return box;
@@ -1015,13 +1087,11 @@ final class HistoryScreen {
        beside realGdpYear(), a rolling year in founding money - so on a city
        that has kept the parts, the stack plus the gap is the line.
 
-       THE STACK IS A SECOND CHART BEHIND THE FIRST, not a LineChart that
-       fakes areas: a StackedAreaChart the same size, on the same months and
-       the same value axis ranged the same way, its axes kept but made
-       invisible (opacity, for the reason the big chart's second axis is),
-       its y-axis held to the same width as the line's, and the line chart's
-       plot made transparent over it. The recession shading, the crosshair
-       and the episode marks stay the line chart's, as they were.
+       THE STACK IS DRAWN UNDER THE LINE, on the same canvas and the same
+       axis (TimeChart.Stack, since 0.7.23): a polygon per layer, each from
+       the top of the one under it, a month a point; the crosshair reads all
+       four parts. Until 0.7.23 it was a second chart, a StackedAreaChart
+       behind the LineChart with its axes made invisible.
 
        Older saves have no parts until they play a month, and no year of
        them until twelve: the layers start where the series do, and the line
@@ -1033,9 +1103,6 @@ final class HistoryScreen {
 
     /** What the GDP line is drawn in over the layers: the headings' ink, which no step of the blue ramp is near. */
     static final String LAYERED_LINE = Palette.TEXT_HEAD;
-
-    /** How wide a small chart's y-axis is held when a stack is drawn behind it, so the two plots line up. */
-    static final double SMALL_Y_AXIS = 56;
 
     /** What each part is called on the key and in the crosshair, in YearBook.GDP_PARTS' order. */
     static final String[] LAYER_NAMES = { "consumption", "investment", "government", "net exports" };
@@ -1058,124 +1125,17 @@ final class HistoryScreen {
         return c;
     }
 
-    /** GDP's four parts, a rolling year in founding money each, averaged into the drawn points - C, I, G, then NX. */
-    static double[][] layerValues(HistorySave h, int from, int bucket, int points) {
-        double[][] out = new double[YearBook.GDP_PARTS.length][];
-        for (int p = 0; p < out.length; p++) {
-            out[p] = bucketed(YearBook.realYear(h, YearBook.GDP_PARTS[p]), from, bucket, points);
-        }
-        return out;
-    }
-
     /**
-     * The lowest and highest the stack reaches, in the axis's units: from
-     * zero to its top, and below zero wherever a layer is negative (a month
-     * of run-down stock is negative investment). Net exports are not in it;
-     * they are the gap.
+     * GDP's four parts, a rolling year in founding money each - C, I, G, then
+     * NX - as a chart stacks them (0.7.23): C, I and G drawn from zero in the
+     * three steps of the ramp, net exports read on the crosshair, in the
+     * muted ink, as the gap between the stack and the line.
      */
-    static double[] stackReach(double[][] layers, String unit) {
-        double low = 0, high = 0;
-        for (int b = 0; b < layers[0].length; b++) {
-            double sum = 0;
-            for (int p = 0; p < 3; p++) {
-                if (Double.isNaN(layers[p][b])) continue;
-                sum += plotScale(unit, layers[p][b]);
-                low = Math.min(low, sum);
-                high = Math.max(high, sum);
-            }
-        }
-        return new double[] { low, high };
-    }
-
-    /**
-     * The three layers as a chart to stand behind `front`: the same size, the
-     * same months, the axes there and invisible, the y-axis held to `axisWide`
-     * on both, no legend and no mouse. The caller ranges its y-axis exactly
-     * as the front's, and stacks the two with stacked().
-     */
-    javafx.scene.chart.StackedAreaChart<Number, Number> layersBehind(Plot front, List<Integer> months,
-            int from, int[] at, double[][] layers, String unit, double wide, double tall, double axisWide) {
-
-        NumberAxis frontX = (NumberAxis) front.getXAxis();
-        NumberAxis x = monthAxis(months, from);
-        x.setLabel(frontX.getLabel());
-        x.setTickLabelsVisible(frontX.isTickLabelsVisible());
-        x.setOpacity(0);
-        NumberAxis y = new NumberAxis();
-        y.setOpacity(0);
-
-        javafx.scene.chart.StackedAreaChart<Number, Number> under =
-                new javafx.scene.chart.StackedAreaChart<>(x, y);
-        under.setCreateSymbols(false);
-        under.setAnimated(false);
-        under.setLegendVisible(false);
-        under.setMouseTransparent(true);
-        under.setMinSize(wide, tall);
-        under.setPrefSize(wide, tall);
-        under.setMaxSize(wide, tall);
-        under.setStyle(front.getStyle());
-        for (javafx.scene.chart.XYChart<Number, Number> c
-                : List.<javafx.scene.chart.XYChart<Number, Number>>of(front, under)) {
-            c.getYAxis().setMinWidth(axisWide);
-            c.getYAxis().setPrefWidth(axisWide);
-            c.getYAxis().setMaxWidth(axisWide);
-        }
-
-        for (int p = 0; p < 3; p++) {
-            javafx.scene.chart.XYChart.Series<Number, Number> layer =
-                    new javafx.scene.chart.XYChart.Series<>();
-            layer.setName(LAYER_NAMES[p]);
-            for (int b = 0; b < at.length; b++) {
-                if (Double.isNaN(layers[p][b])) continue;
-                layer.getData().add(new javafx.scene.chart.XYChart.Data<>(at[b], plotScale(unit, layers[p][b])));
-            }
-            under.getData().add(layer);
-            styleArea(layer, Palette.GDP_LAYERS[p]);
-        }
-
-        // The line's own plot goes clear over the stack, and its grid with it:
-        // the stack's chart draws the grid underneath.
-        front.setHorizontalGridLinesVisible(false);
-        front.setVerticalGridLinesVisible(false);
-        front.setAlternativeRowFillVisible(false);
-        front.setAlternativeColumnFillVisible(false);
-        javafx.scene.Node ground = front.lookup(".chart-plot-background");
-        if (ground != null) ground.setStyle("-fx-background-color: transparent;");
-        return under;
-    }
-
-    /** The stack behind, the line chart in front, in one pane of the chart's size. */
-    static StackPane stacked(Plot front, javafx.scene.chart.StackedAreaChart<Number, Number> under,
-                             double wide, double tall) {
-        StackPane pane = new StackPane(under, front);
-        pane.setAlignment(Pos.TOP_LEFT);
-        pane.setMinSize(wide, tall);
-        pane.setPrefSize(wide, tall);
-        pane.setMaxSize(wide, tall);
-        return pane;
-    }
-
-    /**
-     * Paints one layer: its fill in its ramp step, a little translucent so
-     * the grid shows through, and its edge in the step itself. A stacked
-     * area's node is a group of the fill and the edge, made when the series
-     * is added; styled now or as soon as it exists, as styleLine() does.
-     */
-    void styleArea(javafx.scene.chart.XYChart.Series<Number, Number> layer, String colour) {
-        Color c = Color.web(colour);
-        String fill = String.format("-fx-fill: rgba(%d,%d,%d,0.78);",
-                (int) Math.round(c.getRed() * 255), (int) Math.round(c.getGreen() * 255),
-                (int) Math.round(c.getBlue() * 255));
-        String edge = "-fx-stroke: " + colour + "; -fx-stroke-width: 1px;";
-        Runnable paint = () -> {
-            if (!(layer.getNode() instanceof javafx.scene.Group group)) return;
-            for (javafx.scene.Node part : group.getChildren()) {
-                if (part.getStyleClass().contains("chart-series-area-line")) part.setStyle(edge);
-                else part.setStyle(fill + " -fx-stroke: transparent;");
-            }
-        };
-        if (layer.getNode() != null) paint.run();
-        else javafx.application.Platform.runLater(paint);
+    TimeChart.Stack gdpStack(HistorySave h, String unit) {
+        double[][] layers = new double[YearBook.GDP_PARTS.length][];
+        for (int p = 0; p < layers.length; p++) layers[p] = YearBook.realYear(h, YearBook.GDP_PARTS[p]);
+        String[] colours = {Palette.GDP_LAYERS[0], Palette.GDP_LAYERS[1], Palette.GDP_LAYERS[2], Palette.TEXT_MUTED};
+        return new TimeChart.Stack(layers, LAYER_NAMES, colours, v -> plotScale(unit, v), v -> fmtUnit(unit, v));
     }
 
     /**
@@ -1209,19 +1169,8 @@ final class HistoryScreen {
        THE BIG CHART (0.7.5)
        ===================================================================== */
 
-    /** How tall the big chart is. */
+    /** How tall the big chart's plot is on the page; the lanes and the overview are under it. */
     static final double BIG_CHART = 380;
-
-    /**
-     * How wide each y-axis is held when there are two. The two charts stacked
-     * for two units are laid out separately, and their plots only line up if
-     * each leaves the other's axis the same room - so both axes are this wide
-     * and each chart is padded by it on the side the other's axis is on.
-     */
-    static final double Y_AXIS = 76;
-
-    /** How strongly a recession is shaded: enough to see, not enough to read as a colour. */
-    static final double RECESSION_SHADE = 0.12;
 
     /** Room kept at the right of the preset row for "clear all" and "log". */
     static final double CONTROLS = 130;
@@ -1242,6 +1191,7 @@ final class HistoryScreen {
             Label c = chip("preset:" + i, p.name(), on, () -> {
                 historyPicked.clear();
                 historyPicked.addAll(java.util.Arrays.asList(p.keys()));
+                hiddenLines.clear();
                 showHistoryMenu();
             });
             tip(c, p.blurb());
@@ -1250,11 +1200,12 @@ final class HistoryScreen {
 
         Label clear = chip("clear", "clear all", false, () -> {
             historyPicked.clear();
+            hiddenLines.clear();
             showHistoryMenu();
         });
         tip(clear, "Takes every line off the big chart. The two small ones stay.");
 
-        String refused = logRefusal(h, Math.max(0, h.months() - historyWindow));
+        String refused = logRefusal(h);
         Label log;
         if (refused == null) {
             log = chip("log", "log", historyLog, () -> {
@@ -1288,18 +1239,21 @@ final class HistoryScreen {
      * A logarithm has no zero and no negatives, and a deficit or an empty
      * treasury is exactly that - so one such month in the window and the
      * chip says so rather than drawing a line with a hole in it. Three units
-     * are ranks on 0-100, which a log scale has nothing to say about.
+     * are ranks on 0-100, which a log scale has nothing to say about. The
+     * window is the chart's as it last rested (0.7.23); a drag into a month
+     * at or below zero leaves a gap there until the page redraws and says so.
      */
-    String logRefusal(HistorySave h, int from) {
+    String logRefusal(HistorySave h) {
         List<String> units = pickedUnits();
         if (units.isEmpty()) return "nothing is drawn.";
         if (bigInLayers()) return "real GDP is drawn in layers, stacked from zero, and a log scale has no zero.";
         if (units.size() > 2) {
             return "three or more units are each drawn low-to-high, and a log scale has nothing to measure there.";
         }
+        int[] shown = shownIndices(h);
         for (String key : historyPicked) {
             double[] all = historyValues(h, key);
-            for (int i = from; i < all.length; i++) {
+            for (int i = shown[0]; i <= shown[1] && i < all.length; i++) {
                 if (!Double.isNaN(all[i]) && all[i] <= 0) {
                     return traceFor(key).label() + " reaches zero or below in this window, and a log scale has no zero.";
                 }
@@ -1308,572 +1262,173 @@ final class HistoryScreen {
         return null;
     }
 
-    /**
-     * The big chart: the picked lines on one axis, two, or each its own
-     * low-to-high; the recessions shaded behind them; a crosshair that reads
-     * every line at the month under the pointer; and the named episodes
-     * marked under it.
-     */
-    VBox historyChart(HistorySave h, List<int[]> recessions, List<YearBook.Episode> episodes) {
+    /* =====================================================================
+       THE CHART, REBUILT (0.7.23)
 
-        List<Integer> months = h.getMonth();
-        int from = Math.max(0, months.size() - historyWindow);
-        int bucket = bucketSize(months.size() - from);
-        int[] at = bucketMonths(months, from, bucket);
+       Jerus: "in teh graphs you should be able to pan the chart just like
+       yahoo finance does if you get what i mean, and it actually have
+       interactive graph, and like also the crisis labels and all, dont you
+       think that it should be more clear", and "let the player click
+       fullscreen on the graph so the whole screen concentrates on the
+       graph". The plan he agreed is the project's playing-0-7-19-ui-notes.md
+       section 6.4; the mockups are History and History, full screen.
 
+       ONE CHART, KEPT. The big chart is a TimeChart made once and handed new
+       data on every redraw, so a month landing does not take the window, the
+       hover or a card the player pinned away from under the pointer; a month
+       that lands mid-drag waits for the release (showHistoryMenu()). Its
+       window is chartWindow, which the two small charts follow, and which
+       the vitals and the readings fold over once it rests (the chart's
+       onSettled redraws the page).
+
+       WHAT IT IS HANDED. Each picked line in its stored units, with
+       plotScale() to put it in the axis's and fmtUnit() to read it - the same
+       two tables the page always used; one unit is one real axis, two units
+       two, each with its own nice scale (ChartModel.niceScale(): a per cent
+       starts at zero, which is what kept a new city's flat rate off its flat
+       price level), three or more each its own low-to-high. The bands are
+       YearBook.recessionBands(), the lane YearBook.episodes(), the flags the
+       city's DecisionLog - read, never recomputed here.
+       ===================================================================== */
+
+    /** The big chart, made once; see the banner. */
+    private TimeChart bigChart;
+
+    /** Whether the big chart has the whole window (0.7.23); see FULL SCREEN. */
+    private boolean chartFull;
+
+    /** The big chart with this redraw's lines, bands, episodes and flags. */
+    TimeChart bigChart(HistorySave h, List<YearBook.Band> bands, List<YearBook.Episode> episodes) {
+        if (bigChart == null) {
+            bigChart = new TimeChart(chartWindow, hiddenLines, true);
+            // Only while City History is still the screen (after the docs pass): a rail
+            // button or the menu inside the settle's 280 ms is not drawn over.
+            bigChart.onSettled(() -> { if (ui.isShowing("showHistoryMenu")) showHistoryMenu(); });
+            bigChart.onFullScreen(() -> setChartFull(!chartFull, true));
+        }
         List<String> keys = new ArrayList<>(historyPicked);
+        hiddenLines.retainAll(keys);
         List<String> units = pickedUnits();
         boolean squashed = units.size() > 2;
-        boolean log = historyLog && logRefusal(h, from) == null;
-
-        Plot base = new Plot(monthAxis(months, from), new NumberAxis(), GRAPH, BIG_CHART);
-
-        /*
-         * THE SECOND AXIS. LineChart has one y-axis, so a second unit is drawn
-         * on a second LineChart stacked over the first: transparent, its y-axis
-         * on the right, its x-axis the same months and invisible (opacity, not
-         * visibility - XYChart sets an axis visible itself on every layout, and
-         * an invisible axis must still take the same height or the two plots'
-         * bottoms part company). Both y-axes are held Y_AXIS wide and each
-         * chart is padded by Y_AXIS where the other's axis stands, so the two
-         * plot areas cover the same pixels. It takes no mouse events; the
-         * first chart takes them for both.
-         */
-        Plot right = null;
-        if (units.size() == 2) {
-            right = new Plot(monthAxis(months, from), new NumberAxis(), GRAPH, BIG_CHART);
-            for (Plot p : new Plot[] {base, right}) {
-                p.getYAxis().setMinWidth(Y_AXIS);
-                p.getYAxis().setPrefWidth(Y_AXIS);
-                p.getYAxis().setMaxWidth(Y_AXIS);
-            }
-            base.setStyle("-fx-padding: 4 " + (4 + Y_AXIS) + " 4 4;");
-            right.setStyle("-fx-padding: 4 4 4 " + (4 + Y_AXIS) + ";");
-            right.getYAxis().setSide(javafx.geometry.Side.RIGHT);
-            right.getXAxis().setOpacity(0);
-            right.setMouseTransparent(true);
-            right.setHorizontalGridLinesVisible(false);
-            right.setVerticalGridLinesVisible(false);
-            right.setHorizontalZeroLineVisible(false);
-            right.setVerticalZeroLineVisible(false);
-            right.setAlternativeRowFillVisible(false);
-            right.setAlternativeColumnFillVisible(false);
-            javafx.scene.Node ground = right.lookup(".chart-plot-background");
-            if (ground != null) ground.setStyle("-fx-background-color: transparent;");
-        }
-
-        // Real GDP alone with the toggle on is drawn over its layers (0.7.6).
         boolean layered = bigInLayers();
-        double[][] layers = layered ? layerValues(h, from, bucket, at.length) : null;
+        boolean log = historyLog && logRefusal(h) == null;
+        String[] colours = pickedColours();
+        Currency money = ui.game.getCurrency();
 
-        // Each line averaged into the drawn points, in its own stored units -
-        // what the crosshair reads, whatever the axis has done to it.
-        double[][] shown = new double[keys.size()][];
-        double[] low = {Double.MAX_VALUE, Double.MAX_VALUE};
-        double[] high = {-Double.MAX_VALUE, -Double.MAX_VALUE};
-
+        List<TimeChart.Line> lines = new ArrayList<>();
+        boolean recorded = false;
         for (int k = 0; k < keys.size(); k++) {
-
             Trace t = traceFor(keys.get(k));
             double[] all = historyValues(h, keys.get(k));
-            shown[k] = bucketed(all, from, bucket, at.length);
-            int side = squashed ? 0 : units.indexOf(t.unit());
-
-            // Normalised against THIS window, not the whole history: a decade
-            // that is flat next to the founding boom should look flat, and it
-            // does not if the scale is set by a spike off the left of the screen.
-            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
-            for (int i = from; i < all.length; i++) {
-                if (Double.isNaN(all[i])) continue;
-                lo = Math.min(lo, all[i]);
-                hi = Math.max(hi, all[i]);
-            }
-            boolean flat = hi <= lo;
-
-            javafx.scene.chart.XYChart.Series<Number, Number> line =
-                    new javafx.scene.chart.XYChart.Series<>();
-            line.setName(t.label());
-            for (int b = 0; b < at.length; b++) {
-                // NaN is "not being recorded yet", which is not zero - see
-                // HistorySave.aligned(). A bucket of nothing draws nothing.
-                double v = shown[k][b];
-                if (Double.isNaN(v)) continue;
-                double plotted = squashed ? (flat ? 50 : (v - lo) / (hi - lo) * 100)
-                        : log ? Math.log10(plotScale(t.unit(), v))
-                        : plotScale(t.unit(), v);
-                line.getData().add(new javafx.scene.chart.XYChart.Data<>(at[b], plotted));
-                low[side] = Math.min(low[side], plotted);
-                high[side] = Math.max(high[side], plotted);
-            }
-            (side == 1 ? right : base).getData().add(line);
-            styleLine(line, layered ? LAYERED_LINE : TRACE_COLOURS[k % TRACE_COLOURS.length]);
+            for (double v : all) if (!Double.isNaN(v)) { recorded = true; break; }
+            int side = squashed ? 0 : Math.max(0, units.indexOf(t.unit()));
+            // The legend says what each line is measured in, and on two axes which one it reads against.
+            String unitWords = squashed ? "low to high"
+                    : (units.size() == 2 ? (side == 0 ? "left, " : "right, ") : "") + unitName(t.unit(), money);
+            lines.add(new TimeChart.Line(keys.get(k), t.label(), layered ? LAYERED_LINE : colours[k], side, all,
+                    v -> plotScale(t.unit(), v), v -> fmtUnit(t.unit(), v), unitWords));
         }
 
-        /*
-         * REAL GDP ALONE, IN LAYERS (0.7.6): the stack behind the line, the
-         * axis reaching from the stack's floor to whichever of the two is
-         * higher. See GDP IN LAYERS.
-         */
-        if (layered) {
-            double[] reach = stackReach(layers, units.get(0));
-            low[0] = Math.min(low[0], reach[0]);
-            high[0] = Math.max(high[0], reach[1]);
-        }
-
+        String empty = "";
         if (keys.isEmpty()) {
-            rangeAxis(base.yAxis(), null, 1, 0, false, "nothing picked", 8);
-        } else if (squashed) {
-            rangeAxis(base.yAxis(), null, low[0], high[0], false, "low to high, each line its own", 8);
+            empty = "Nothing picked: a preset above the chart, or a line below.";
+        } else if (!recorded) {
+            boolean yearly = true;
+            for (String key : keys) yearly &= traceFor(key).label().endsWith("(yr)");
+            empty = yearly ? "from the end of the first year" : "nothing recorded yet";
+        }
+
+        bigChart.setData(h.getMonth(), lines,
+                units.isEmpty() || squashed ? null : axisFor(units.get(0)),
+                units.size() == 2 ? axisFor(units.get(1)) : null,
+                squashed, log, layered ? gdpStack(h, units.get(0)) : null,
+                bands, episodes, ChartModel.flags(ui.game.getDecisions()), empty);
+        if (!chartFull) bigChart.setSize(GRAPH - 30, BIG_CHART);
+        return bigChart;
+    }
+
+    /** One value axis: its gridlines in the unit's own words (axisTick()), and from zero when a per cent. */
+    static TimeChart.Axis axisFor(String unit) {
+        return new TimeChart.Axis((v, step) -> axisTick(unit, v, step), "percent".equals(unit));
+    }
+
+    /* =====================================================================
+       FULL SCREEN (0.7.23)
+
+       Jerus: "let the player click fullscreen on the graph so the whole
+       screen concentrates on the graph". The button gives the big chart the
+       whole window - no rail, no panels, no header, laid over everything
+       the way the main menu is (UserInterface.showChartFullScreen()) - with
+       the page's title and the date in its toolbar, and the legend, the
+       ranges, the lanes and the overview as they were. Esc or the button
+       comes back. The clock is not touched: it runs on, or stays paused, and
+       every month redraws the chart in place; space and the arrows still
+       work it. F11 is the WINDOW's full screen, the operating system's, and
+       is separate: it toggles either way, in the page or over it, and
+       leaving one leaves the other as it was.
+       ===================================================================== */
+
+    /** The pane the chart is laid in over the whole window, and its clock line. */
+    private VBox fullPane;
+    private Label fullClock;
+
+    /**
+     * Gives the big chart the whole window, or takes it back - and redraws
+     * the page, unless another screen is about to be drawn instead (the
+     * main menu, a rail button: UserInterface.leaveChartFullScreen()).
+     */
+    void setChartFull(boolean on, boolean redraw) {
+        if (on == chartFull || bigChart == null) return;
+        chartFull = on;
+        // No drag or settle carried across: Esc or P can arrive with the button held (TimeChart.letGo()).
+        bigChart.letGo();
+        bigChart.unpin();
+        if (on) {
+            if (fullPane == null) {
+                fullPane = new VBox();
+                fullPane.setStyle("-fx-background-color: " + Palette.STAGE + "; -fx-padding: 14 22 12 22;");
+                fullPane.widthProperty().addListener((o, was, now) -> fitFull());
+                fullPane.heightProperty().addListener((o, was, now) -> fitFull());
+                fullClock = new Label();
+                fullClock.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            }
+            Label title = new Label("City History");
+            title.setStyle(Palette.Fonts.sansSemiBold() + " -fx-font-size: 15px; -fx-text-fill: " + Palette.TEXT + ";");
+            bigChart.lead().getChildren().setAll(title, fullClock);
+            bigChart.setFull(true);
+            fullPane.getChildren().setAll(bigChart);
+            ui.showChartFullScreen(fullPane, fullClock, back -> setChartFull(false, back));
+            fitFull();
+            if (redraw) showHistoryMenu();
         } else {
-            rangeAxis(base.yAxis(), units.get(0), low[0], high[0], log, axisLabel(units.get(0), log), 8);
-            if (right != null) {
-                rangeAxis(right.yAxis(), units.get(1), low[1], high[1], log, axisLabel(units.get(1), log), 8);
-            }
+            ui.closeChartFullScreen();
+            bigChart.lead().getChildren().clear();
+            bigChart.setFull(false);
+            if (fullPane != null) fullPane.getChildren().clear();
+            if (redraw) showHistoryMenu();
         }
-
-        javafx.scene.chart.StackedAreaChart<Number, Number> under = null;
-        if (layered) {
-            under = layersBehind(base, months, from, at, layers, units.get(0), GRAPH, BIG_CHART, Y_AXIS);
-            rangeAxis((NumberAxis) under.getYAxis(), units.get(0), low[0], high[0], false,
-                    axisLabel(units.get(0), false), 8);
-        }
-
-        base.shade(recessions);
-        base.withCursor();
-
-        /* ----- the crosshair: a line at the month under the pointer, and what every line read there ----- */
-        Pane over = new Pane();
-        over.setMinSize(GRAPH, BIG_CHART);
-        over.setPrefSize(GRAPH, BIG_CHART);
-        over.setMaxSize(GRAPH, BIG_CHART);
-        over.setMouseTransparent(true);
-
-        VBox box = new VBox(1);
-        box.setStyle(Palette.block(Palette.PINNED, Palette.EDGE) + " -fx-padding: 4 8 4 8;");
-        box.setVisible(false);
-        Label when = new Label();
-        when.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_HEAD) + " -fx-font-weight: bold;");
-        box.getChildren().add(when);
-        Label[] reads = new Label[keys.size()];
-        for (int k = 0; k < keys.size(); k++) {
-            reads[k] = new Label();
-            reads[k].setStyle(Palette.figure(Palette.SIZE_CAPTION,
-                    layered ? LAYERED_LINE : TRACE_COLOURS[k % TRACE_COLOURS.length]));
-            box.getChildren().add(reads[k]);
-        }
-        // ...and in layers, what each part read there: the three layers in
-        // their steps, net exports - the gap - in the muted ink.
-        Label[] partReads = new Label[layered ? YearBook.GDP_PARTS.length : 0];
-        for (int p = 0; p < partReads.length; p++) {
-            partReads[p] = new Label();
-            partReads[p].setStyle(Palette.figure(Palette.SIZE_CAPTION,
-                    p < 3 ? Palette.GDP_LAYERS[p] : Palette.TEXT_MUTED));
-            box.getChildren().add(partReads[p]);
-        }
-        over.getChildren().add(box);
-
-        StackPane stack = new StackPane();
-        stack.setAlignment(Pos.TOP_LEFT);
-        if (under != null) stack.getChildren().add(under);
-        stack.getChildren().add(base);
-        if (right != null) stack.getChildren().add(right);
-        stack.getChildren().add(over);
-        stack.setMinSize(GRAPH, BIG_CHART);
-        stack.setPrefSize(GRAPH, BIG_CHART);
-        stack.setMaxSize(GRAPH, BIG_CHART);
-
-        NumberAxis x = (NumberAxis) base.getXAxis();
-        Region yAxis = base.getYAxis();
-        stack.setOnMouseMoved(e -> {
-            // Inside the plot, measured on the axes themselves: the x-axis spans
-            // the plot's width, the y-axis its height.
-            javafx.geometry.Point2D across = x.sceneToLocal(e.getSceneX(), e.getSceneY());
-            javafx.geometry.Point2D down = yAxis.sceneToLocal(e.getSceneX(), e.getSceneY());
-            if (at.length == 0 || across == null || down == null
-                    || across.getX() < 0 || across.getX() > x.getWidth()
-                    || down.getY() < 0 || down.getY() > yAxis.getHeight()) {
-                base.hideCursor();
-                box.setVisible(false);
-                return;
-            }
-            // The nearest DRAWN point, so a bucketed chart reads the bucket's
-            // month and the bucket's average - what the line actually shows.
-            int b = nearest(at, x.getValueForDisplay(across.getX()).doubleValue());
-            base.showCursor(at[b]);
-            when.setText(CityCalendar.formatShort(at[b])
-                    + (bucket > 1 ? "  (" + bucket + " months averaged)" : ""));
-            for (int k = 0; k < keys.size(); k++) {
-                Trace t = traceFor(keys.get(k));
-                reads[k].setText(t.label() + "  " + (Double.isNaN(shown[k][b])
-                        ? "not recorded" : fmtUnit(t.unit(), shown[k][b])));
-            }
-            for (int p = 0; p < partReads.length; p++) {
-                partReads[p].setText("  " + LAYER_NAMES[p] + "  " + (Double.isNaN(layers[p][b])
-                        ? "not recorded" : fmtUnit(units.get(0), layers[p][b])));
-            }
-            javafx.geometry.Point2D line = over.sceneToLocal(
-                    x.localToScene(x.getDisplayPosition(at[b]), 0));
-            javafx.geometry.Point2D top = over.sceneToLocal(yAxis.localToScene(0, 0));
-            box.setVisible(true);
-            box.applyCss();
-            double w = box.prefWidth(-1), tall = box.prefHeight(w);
-            box.resize(w, tall);
-            // beside the line, on whichever side has room
-            double left = line.getX() + 10 + w <= GRAPH ? line.getX() + 10 : line.getX() - 10 - w;
-            box.relocate(Math.max(0, left), top.getY() + 6);
-        });
-        stack.setOnMouseExited(e -> {
-            base.hideCursor();
-            box.setVisible(false);
-        });
-
-        /* ----- the named episodes: a tick under the chart where each began, and their names ----- */
-        Pane strip = new Pane();
-        strip.setMinSize(GRAPH, 12);
-        strip.setPrefSize(GRAPH, 12);
-        strip.setMaxSize(GRAPH, 12);
-
-        int first = months.get(from), last = months.get(months.size() - 1);
-        List<String> names = new ArrayList<>();
-        for (YearBook.Episode ep : episodes) {
-            if (ep.fromMonth() < first || ep.fromMonth() > last) continue;
-            names.add(ep.name());
-            Region tick = new Region();
-            tick.setMinSize(10, 12);
-            tick.setPrefSize(10, 12);
-            tick.setMaxSize(10, 12);
-            // ten pixels to hover, two to see
-            tick.setStyle("-fx-background-color: " + Palette.TEXT_MUTED + ";"
-                    + " -fx-background-insets: 0 4 0 4; -fx-cursor: hand;");
-            tip(tick, ep.name() + "\n" + CityCalendar.formatShort(ep.fromMonth())
-                    + " to " + CityCalendar.formatShort(ep.toMonth()));
-            base.mark(strip, ep.fromMonth(), tick);
-        }
-
-        VBox chart = new VBox(0, stack, strip);
-        chart.setMaxWidth(GRAPH);
-        if (layered) chart.getChildren().add(layersKey(layers, GRAPH));
-        if (!names.isEmpty()) {
-            // Oldest first, at most eight, and the rest counted rather than dropped.
-            int shownNames = Math.min(8, names.size());
-            String said = String.join("  ·  ", names.subList(0, shownNames))
-                    + (names.size() > shownNames ? "  ·  and " + (names.size() - shownNames) + " more" : "");
-            Label caption = new Label(said);
-            caption.setWrapText(true);
-            caption.setMaxWidth(GRAPH);
-            caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
-                    + " -fx-padding: 2 0 4 0;");
-            chart.getChildren().add(caption);
-        }
-        return chart;
-    }
-
-    /** What an axis is called: the line's own name when it carries one line, its unit when more. */
-    String axisLabel(String unit, boolean log) {
-        String only = null;
-        int on = 0;
-        for (String key : historyPicked) {
-            if (traceFor(key).unit().equals(unit)) { only = traceFor(key).label(); on++; }
-        }
-        return (on == 1 ? only : unitName(unit, ui.game.getCurrency())) + (log ? ", log scale" : "");
     }
 
     /**
-     * The months of the window, first to last - and the same on every chart
-     * on the page.
-     *
-     * SET, NOT AUTO-RANGED (0.7.5). Two charts stacked for two units must agree
-     * about the month to the pixel, and a pinned chart covers exactly the
-     * window the big one does; an axis that ranges itself off its own data
-     * would give a line that began late a different axis from its neighbour.
+     * The page is going: another screen is being drawn (UserInterface.clearMenu()).
+     * The big chart lets go of any drag and any redraw it was waiting to make.
      */
-    static NumberAxis monthAxis(List<Integer> months, int from) {
-        NumberAxis x = new NumberAxis();
-        x.setLabel("month");
-        /*
-         * NumberAxis forces zero into its range by default, and on a graph of a
-         * city's LATER years that is most of the chart wasted. A 120-month
-         * window on a 322-month city drew months 203-322 across the right third
-         * and left two thirds of empty grid to the left of it - which also
-         * squashes every line into a corner. The axis should show the window,
-         * not the origin.
-         */
-        x.setForceZeroInRange(false);
-        x.setAutoRanging(false);
-        int first = months.get(from), last = months.get(months.size() - 1);
-        x.setLowerBound(first);
-        x.setUpperBound(Math.max(last, first + 1));
-        x.setTickUnit(Math.max(1, niceStep((last - first) / 8.0)));
-        return x;
+    void leaving() {
+        if (bigChart != null) bigChart.letGo();
     }
 
-    /**
-     * Ranges a value axis over what is drawn on it, and labels it.
-     *
-     * @param unit  what every line on this axis is measured in, or null when
-     *              they are mapped onto 0-100 (or nothing is drawn)
-     * @param low   the lowest value drawn on it, already through plotScale()
-     *              (and log10 when log); low above high means nothing is drawn
-     * @param log   whether the values are logarithms
-     * @param ticks about how many gridlines to aim for
-     */
-    static void rangeAxis(NumberAxis y, String unit, double low, double high,
-                          boolean log, String label, int ticks) {
-        y.setLabel(label);
-        y.setForceZeroInRange(false);
-        y.setAutoRanging(false);
-
-        if (low > high) {
-            /*
-             * NOTHING PICKED, so there is nothing to range against - and an
-             * auto-ranging axis with no data invents 0-100 on both sides and
-             * labels the months -1.0 to 1.0, which reads as a broken chart
-             * rather than an empty one. The window is known whether or not
-             * anything is drawn on it (monthAxis), so the frame stays honest
-             * and only the plot is bare.
-             */
-            y.setLowerBound(0);
-            y.setUpperBound(100);
-            y.setTickUnit(20);
-            y.setTickLabelsVisible(false);
-            return;
-        }
-        if (unit == null) {
-            // Normalised: the values ARE nought to a hundred, so say so
-            // rather than padding a scale that has no units to pad.
-            y.setLowerBound(0);
-            y.setUpperBound(100);
-            y.setTickUnit(10);
-            return;
-        }
-        if (log) {
-            /*
-             * A LOG AXIS IS A NUMBER AXIS OF LOGARITHMS. JavaFX has no log
-             * axis, so the lines are drawn as log10 of the value, the bounds
-             * snap to whole powers of ten, and each gridline is labelled with
-             * the value it stands for - "$1M", "10%" - through the same
-             * axisTick() a plain axis uses. The crosshair reads the stored
-             * value, never the logarithm.
-             */
-            double lo = Math.floor(low), hi = Math.ceil(high);
-            if (hi <= lo) hi = lo + 1;
-            y.setLowerBound(lo);
-            y.setUpperBound(hi);
-            y.setTickUnit(1);
-            final String logUnit = unit;
-            y.setTickLabelFormatter(new javafx.util.StringConverter<Number>() {
-                @Override public String toString(Number n) {
-                    double real = Math.pow(10, n.doubleValue());
-                    return axisTick(logUnit, real, real);
-                }
-                @Override public Number fromString(String text) { return 0; }
-            });
-            return;
-        }
-        /*
-         * THE RANGE IS SET HERE RATHER THAN LEFT TO THE AXIS.
-         *
-         * NumberAxis auto-ranging on a real-unit chart put the whole of "The
-         * budget" preset between -$55M and -$15M - three deficit spikes filled
-         * the range and revenue, which is positive, was drawn off the top of
-         * the plot. A chart that silently omits one of its own lines is worse
-         * than no chart, and the fix is not to trust the axis with a question
-         * this screen can answer itself.
-         *
-         * Six per cent of headroom top and bottom so a line that touches its
-         * extreme is not drawn along the frame.
-         */
-        double pad = high > low ? (high - low) * .06
-                                : Math.max(1, Math.abs(high) * .1);
-        double step = niceStep((high + pad - (low - pad)) / ticks);
-        y.setLowerBound(Math.floor((low - pad) / step) * step);
-        y.setUpperBound(Math.ceil((high + pad) / step) * step);
-        y.setTickUnit(step);
-        /*
-         * AND THE TICKS SAY WHAT THEY ARE.
-         *
-         * niceStep() fixed the STEP - 1, 2 or 5 times a power of ten, so the
-         * gridlines are numbers a reader can add up. It did nothing about the
-         * MAGNITUDE, so the budget preset drew an axis of 500,000,000 /
-         * 0 / -500,000,000 / -1,000,000,000 and the population one drew
-         * 100,000 under a chart eight hundred pixels wide. Every other money
-         * figure in the game has been abbreviated since the units pass; the one
-         * place with no room for the digits was the one still printing them.
-         *
-         * Only when the lines AGREE about their unit - which is why this is
-         * after the two returns above. With the units mapped onto 0-100 the
-         * axis is a rank, not a quantity, and "$50M" on it would be a lie
-         * about a number that means nothing.
-         *
-         * THE STEP DECIDES THE DECIMALS, not the value. The first cut asked
-         * each label how big it was, and a price axis came out reading "$0.00
-         * $500.00  $1k" - three conventions on one ruler, because 0 is small,
-         * 500 is medium and 1000 is large. How fine the gridlines are is a
-         * property of the AXIS, so it is the step that is asked: a land axis
-         * stepping by $20 wants no cents and one stepping by $0.50 wants two,
-         * and every label on it agrees either way.
-         */
-        final String tickUnit = unit;
-        final double tickStep = step;
-        y.setTickLabelFormatter(new javafx.util.StringConverter<Number>() {
-            @Override public String toString(Number n) {
-                return axisTick(tickUnit, n.doubleValue(), tickStep);
-            }
-            @Override public Number fromString(String text) { return 0; }
-        });
+    /** The chart sized to the pane: the whole width, and the plot whatever height the rest leaves. */
+    private void fitFull() {
+        if (!chartFull || fullPane == null || bigChart == null) return;
+        double w = fullPane.getWidth() - 44, h = fullPane.getHeight() - 26;
+        if (w <= 0 || h <= 0) return;
+        bigChart.setSize(w - 30, h - bigChart.heightBesidePlot());
     }
 
-    /** The month each drawn point stands for - the middle of its bucket. */
-    static int[] bucketMonths(List<Integer> months, int from, int bucket) {
-        int points = (months.size() - from + bucket - 1) / bucket;
-        int[] at = new int[points];
-        for (int b = 0; b < points; b++) {
-            at[b] = months.get(Math.min(from + b * bucket + bucket / 2, months.size() - 1));
-        }
-        return at;
-    }
-
-    /** A line averaged into those points; NaN where a bucket had nothing recorded. */
-    static double[] bucketed(double[] all, int from, int bucket, int points) {
-        double[] out = new double[points];
-        for (int b = 0; b < points; b++) {
-            int i = from + b * bucket;
-            double sum = 0;
-            int n = 0;
-            for (int j = i; j < Math.min(i + bucket, all.length); j++) {
-                if (Double.isNaN(all[j])) continue;
-                sum += all[j];
-                n++;
-            }
-            out[b] = n == 0 ? Double.NaN : sum / n;
-        }
-        return out;
-    }
-
-    /** The drawn point nearest a month. */
-    static int nearest(int[] at, double month) {
-        int best = 0;
-        for (int b = 1; b < at.length; b++) {
-            if (Math.abs(at[b] - month) < Math.abs(at[best] - month)) best = b;
-        }
-        return best;
-    }
-
-    /**
-     * A LineChart that also draws what its lines sit on and what points at them.
-     *
-     * JavaFX gives a chart's plot area to its subclasses only (getPlotChildren),
-     * and that is the one place a band can sit BEHIND the lines and still move
-     * with the axis: an overlay on top would tint the lines, and one placed by
-     * hand would drift from the axis it was measured against. So the recession
-     * bands, the crosshair's line and the episode ticks are all positioned in
-     * layoutPlotChildren(), from the axis's own getDisplayPosition(), every
-     * time the chart lays out.
-     */
-    static final class Plot extends javafx.scene.chart.LineChart<Number, Number> {
-
-        /** Runs of months shaded as recession, {first, last}, and the shapes drawn for them. */
-        private final List<int[]> bands = new ArrayList<>();
-        private final List<javafx.scene.shape.Rectangle> bandShapes = new ArrayList<>();
-
-        /** The crosshair's line, over the lines once withCursor() has moved it there. */
-        private final javafx.scene.shape.Line cursor = new javafx.scene.shape.Line();
-
-        /** Ticks outside the chart - in a strip laid out under it - at the month each belongs to. */
-        private final List<Integer> markMonths = new ArrayList<>();
-        private final List<Region> marks = new ArrayList<>();
-        private Pane markStrip;
-
-        Plot(NumberAxis x, NumberAxis y, double width, double height) {
-            super(x, y);
-            setCreateSymbols(false);   // a dot per month is unreadable and slow
-            setAnimated(false);        // and an animation per redraw is worse
-            setLegendVisible(false);   // the readings below carry real values
-            setMinSize(width, height);
-            setPrefSize(width, height);
-            setMaxSize(width, height);
-            cursor.setStroke(Color.web(Palette.TEXT_MUTED));
-            cursor.setStrokeWidth(1);
-            cursor.setMouseTransparent(true);
-            cursor.setVisible(false);
-            getPlotChildren().add(cursor);
-        }
-
-        NumberAxis yAxis() { return (NumberAxis) getYAxis(); }
-
-        /** Shades these runs of months, {first, last}, behind the lines. */
-        void shade(List<int[]> runs) {
-            for (int[] run : runs) {
-                javafx.scene.shape.Rectangle band = new javafx.scene.shape.Rectangle();
-                band.setFill(Color.web(Palette.TEXT_MUTED, RECESSION_SHADE));
-                band.setMouseTransparent(true);
-                bands.add(run);
-                bandShapes.add(band);
-                getPlotChildren().add(0, band);    // first child, so under every line
-            }
-        }
-
-        /** Moves the crosshair's line over the lines - call after they are added. */
-        void withCursor() {
-            getPlotChildren().remove(cursor);
-            getPlotChildren().add(cursor);
-        }
-
-        /** The crosshair at a month, in the plot's own coordinates; no layout pass needed. */
-        void showCursor(double month) {
-            double at = Math.round(getXAxis().getDisplayPosition(month)) + 0.5;
-            cursor.setStartX(at);
-            cursor.setEndX(at);
-            cursor.setStartY(0);
-            cursor.setEndY(getYAxis().getHeight());
-            cursor.setVisible(true);
-        }
-
-        void hideCursor() { cursor.setVisible(false); }
-
-        /**
-         * A tick at a month, in `strip` - a pane laid out beside this chart,
-         * under it - positioned whenever the chart lays out.
-         */
-        void mark(Pane strip, int month, Region tick) {
-            markStrip = strip;
-            markMonths.add(month);
-            marks.add(tick);
-            strip.getChildren().add(tick);
-        }
-
-        @Override protected void layoutPlotChildren() {
-            super.layoutPlotChildren();
-            NumberAxis x = (NumberAxis) getXAxis();
-            double lower = x.getLowerBound(), upper = x.getUpperBound();
-            double tall = getYAxis().getHeight();
-
-            // A run is its months, so it covers half a month either side of
-            // their points; clipped to the window, and hidden when outside it.
-            for (int i = 0; i < bands.size(); i++) {
-                javafx.scene.shape.Rectangle band = bandShapes.get(i);
-                double a = Math.max(lower, bands.get(i)[0] - 0.5);
-                double b = Math.min(upper, bands.get(i)[1] + 0.5);
-                band.setVisible(b > a);
-                if (b <= a) continue;
-                double left = x.getDisplayPosition(a), right = x.getDisplayPosition(b);
-                band.setX(left);
-                band.setY(0);
-                band.setWidth(Math.max(1, right - left));
-                band.setHeight(tall);
-            }
-            if (cursor.isVisible()) cursor.setEndY(tall);
-
-            // The ticks live outside the chart, so their position goes through
-            // the scene: the axis's pixel for the month, as the strip sees it.
-            for (int i = 0; i < marks.size(); i++) {
-                Region tick = marks.get(i);
-                javafx.geometry.Point2D inStrip = markStrip.sceneToLocal(
-                        x.localToScene(x.getDisplayPosition(markMonths.get(i)), 0));
-                if (inStrip == null) continue;
-                tick.relocate(inStrip.getX() - tick.getPrefWidth() / 2, 0);
-            }
-        }
+    /** A redraw in full screen: the clock's line, and the chart's size if the window moved. */
+    private void refreshFullScreen() {
+        if (fullClock != null) fullClock.setText(ui.clockWords());
+        fitFull();
     }
 
     /**
@@ -1890,7 +1445,8 @@ final class HistoryScreen {
      */
     static String axisTick(String unit, double v, double step) {
         double a = Math.abs(v);
-        String sign = v < 0 ? "-" : "";
+        // A gridline the arithmetic left a hair below zero is zero, and has no sign (0.7.20).
+        String sign = v < 0 && a > Math.abs(step) * 1e-6 ? "-" : "";
         return switch (unit) {
             case "money"     -> sign + shortCash(a);
             // Somebody else's money, and it says so - the same rule fmtUnit
@@ -1947,21 +1503,6 @@ final class HistoryScreen {
         return s.endsWith(".0") ? s.substring(0, s.length() - 2) : s;
     }
 
-    /**
-     * One, two or five times a power of ten - the only steps a reader can add up.
-     *
-     * Dividing the range by eight gives ticks at -13,019,917.2, which is a
-     * correct number and an unreadable axis. Rounding the STEP and then snapping
-     * the bounds outward to it costs a little empty margin and buys labels
-     * somebody can hold in their head.
-     */
-    static double niceStep(double raw) {
-        if (!(raw > 0)) return 1;
-        double power = Math.pow(10, Math.floor(Math.log10(raw)));
-        double n = raw / power;
-        return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * power;
-    }
-
     /** What the y-axis is measured in, when every line agrees - the rate in this city's own money (0.7.10). */
     static String unitName(String unit, Currency money) {
         return switch (unit) {
@@ -1997,27 +1538,6 @@ final class HistoryScreen {
     }
 
     /**
-     * Paints one line, now or as soon as it has a node.
-     *
-     * A series' Path is created when the chart lays the series out, which has
-     * usually happened by the time the series is added and occasionally has
-     * not. Colouring only when it happens to be ready would give a chart whose
-     * lines sometimes did not match its own legend, which is worse than an
-     * uncoloured chart.
-     */
-    void styleLine(javafx.scene.chart.XYChart.Series<Number, Number> line,
-                           String colour) {
-        String css = "-fx-stroke: " + colour + "; -fx-stroke-width: 2px;";
-        if (line.getNode() != null) {
-            line.getNode().setStyle(css);
-        } else {
-            javafx.application.Platform.runLater(() -> {
-                if (line.getNode() != null) line.getNode().setStyle(css);
-            });
-        }
-    }
-
-    /**
      * One line's reading: what it is now, and what it did.
      *
      * The old table gave first / latest / low / high in four monospaced columns
@@ -2028,12 +1548,11 @@ final class HistoryScreen {
 
         Trace t = traceFor(key);
         double[] all = historyValues(h, key);
-        List<Integer> months = h.getMonth();
-        int from = Math.max(0, months.size() - historyWindow);
+        int[] shown = shownIndices(h);
 
         double first = Double.NaN, last = Double.NaN;
         double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
-        for (int i = from; i < all.length; i++) {
+        for (int i = shown[0]; i <= shown[1] && i < all.length; i++) {
             if (Double.isNaN(all[i])) continue;
             if (Double.isNaN(first)) first = all[i];
             last = all[i];
@@ -2116,9 +1635,9 @@ final class HistoryScreen {
         double delta = last - first;
         switch (unit) {
             case "percent":
-                return String.format("%+.1f pts", delta * 100);
+                return String.format("%+.1f pts", unsigned0(delta * 100, 1));
             case "ratio": case "index": case "rate":
-                return String.format("%+.3f", delta);
+                return String.format("%+.3f", unsigned0(delta, 3));
             default:
                 if (Math.abs(first) < 1e-9) return delta == 0 ? "no change" : "from nothing";
                 double share = delta / Math.abs(first);
@@ -2127,7 +1646,7 @@ final class HistoryScreen {
                 // a reader can hold, and the percentage is noise with a sign on
                 // it.
                 if (Math.abs(share) >= 5) return String.format("\u00d7%,.0f", last / first);
-                return String.format("%+.1f%%", share * 100);
+                return String.format("%+.1f%%", unsigned0(share * 100, 1));
         }
     }
 
@@ -2226,6 +1745,8 @@ final class HistoryScreen {
                         groupOpen.put(group, !open);
                         showHistoryMenu();
                     });
+            // The heading in its area's colour (0.7.23), as the rail and the lines are.
+            head.setStyle(head.getStyle() + " -fx-text-fill: " + groupArea(group) + ";");
             Label count = new Label(picked + " of " + traces.size() + " picked");
             count.setStyle(Palette.words(Palette.SIZE_CAPTION,
                     picked > 0 ? Palette.TEXT_MUTED : Palette.TEXT_FAINT));
@@ -2239,14 +1760,20 @@ final class HistoryScreen {
             row.setPrefWrapLength(GRAPH);
             row.setMaxWidth(GRAPH);
             row.setStyle("-fx-padding: 2 0 6 14;");
+            String[] colours = pickedColours();
+            List<String> order = new ArrayList<>(historyPicked);
             for (Trace t : matching) {
-                row.getChildren().add(chip("line:" + t.key(), t.label(), historyPicked.contains(t.key()),
+                Label c = chip("line:" + t.key(), t.label(), historyPicked.contains(t.key()),
                         () -> {
                             if (!historyPicked.remove(t.key())) historyPicked.add(t.key());
                             // stays open under the pointer, even when its last line goes
                             groupOpen.put(group, true);
                             showHistoryMenu();
-                        }));
+                        });
+                // A picked line is underlined in the colour it is drawn in (0.7.23).
+                int at = order.indexOf(t.key());
+                if (at >= 0) c.setStyle(c.getStyle() + " -fx-border-color: " + colours[at] + ";");
+                row.getChildren().add(c);
             }
             groups.getChildren().add(row);
         }
@@ -2400,25 +1927,25 @@ final class HistoryScreen {
         switch (unit) {
             // Thousands, like everything else the model counts - see money().
             case "money":     return tightMoney(v * 1000);
-            case "percent":   return String.format("%.1f%%", v * 100);
+            case "percent":   return String.format("%.1f%%", unsigned0(v * 100, 1));
             // Ground is kept per square foot in thousands, and the land screen
             // already shows it multiplied out. Two screens, one convention -
             // and in US dollars since 0.7.6, which is what the world asks.
-            case "land":      return String.format("US$%.2f", v * 1000);
+            case "land":      return String.format("US$%.2f", unsigned0(v * 1000, 2));
             // A world price - food, materials, ore - kept in thousands like
             // every other price in the game. Multiplied out for the same reason
             // rent is: printed raw it reads as cents.
-            case "unitprice": return String.format("$%,.2f", v * 1000);
-            case "ratio":     return String.format("%.2fx", v);
+            case "unitprice": return String.format("$%,.2f", unsigned0(v * 1000, 2));
+            case "ratio":     return String.format("%.2fx", unsigned0(v, 2));
             // Four places, because the whole point of watching a currency is
             // the small moves - a rate that reads 1.20 for thirty months is a
             // rate nobody can see drifting.
-            case "rate":      return String.format("%.4f", v);
+            case "rate":      return String.format("%.4f", unsigned0(v, 4));
             // Somebody else's money, and it says so. A dollar figure printed
             // with the same $ as the local one is the single most confusing
             // thing this screen could do.
             case "usd":       return "US" + tightMoney(v * 1000);
-            case "index":     return String.format("%.3f", v);
+            case "index":     return String.format("%.3f", unsigned0(v, 3));
             /*
              * Rent is a price per person of housing capacity, kept in thousands
              * like every other price in the game - about 0.08 of them. Printed
@@ -2426,7 +1953,7 @@ final class HistoryScreen {
              * which is what the play-test showed. Multiplied out it is the
              * figure a player recognises: about $82 a head a month.
              */
-            case "rent":      return String.format("$%.2f", v * 1000);
+            case "rent":      return String.format("$%.2f", unsigned0(v * 1000, 2));
             // A share's price, kept in thousands like every price here, and
             // per FOUNDING share so a split is not a cliff on the chart.
             case "share":     return tightMoney(v * 1000, false);

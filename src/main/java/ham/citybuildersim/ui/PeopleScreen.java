@@ -67,12 +67,36 @@ final class PeopleScreen {
        because it was told to, and it lets a cell carry its own colour without
        the whole row changing.
        ===================================================================== */
+
+    /*
+     * HOW MUCH OF THE LABOUR FORCE OUT OF WORK IS A VERDICT (named in 0.7.21,
+     * when the header's OUT OF WORK tile began reading them too). Under the
+     * first, nobody is spare and every new job goes unfilled: a labour
+     * shortage, which is a watch, not a failure - it was red until 0.7.21,
+     * the colour of a city in trouble, and "Out of work 0.0%" in a city that
+     * cannot staff its jobs read as the opposite of what it was.
+     */
+
+    /** Under this share out of work, nobody is spare: amber, "jobs going unfilled". */
+    static final double OUT_OF_WORK_SHORT = .03;
+
+    /** Over this, high: amber. */
+    static final double OUT_OF_WORK_HIGH = .15;
+
+    /** Over this, far too many adults with nothing to do: red. */
+    static final double OUT_OF_WORK_FAR = .25;
+
+    /** The out-of-work rate's verdict: red far too high, amber high or short of hands, green between. */
+    static String outOfWorkTone(double jobless) {
+        return jobless > OUT_OF_WORK_FAR ? Palette.BAD
+                : jobless > OUT_OF_WORK_HIGH || jobless < OUT_OF_WORK_SHORT ? Palette.WARN
+                : Palette.GOOD;
+    }
+
     void showPopulationInfoMenu() {
         ui.clearMenu("showPopulationInfoMenu", () -> showPopulationInfoMenu());
 
-        Label title = new Label("PEOPLE");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("PEOPLE");
 
         PopulationManager pm = ui.game.getPopulationManager();
         PopulationCohorts cohorts = ui.game.getCohorts();
@@ -127,13 +151,12 @@ final class PeopleScreen {
         vitals.setStyle("-fx-padding: 8 6 8 6;" + Palette.block(Palette.PANEL));
         vitals.getChildren().addAll(
                 limitCell("LIVING HERE", formatter.format(population),
-                        String.format("%s%s a month", net >= 0 ? "+" : "-",
-                                flowText(Math.abs(net))),
+                        flowSigned(net >= 0 ? "+" : "-", Math.abs(net)) + " a month",
                         net >= 0 ? Palette.TEXT_HEAD : Palette.BAD),
                 limitCell("OUT OF WORK", String.format("%.1f%%", jobless * 100),
-                        people(unemployed) + " with nothing to do",
-                        jobless > .25 || jobless < .03 ? Palette.BAD
-                                : jobless > .15 ? Palette.WARN : Palette.GOOD),
+                        jobless < OUT_OF_WORK_SHORT && totalVacancies > 0 ? "jobs going unfilled"
+                                : people(unemployed) + " with nothing to do",
+                        outOfWorkTone(jobless)),
                 limitCell(spare >= 0 ? "SPARE HOMES" : "HOMES SHORT",
                         people(Math.abs(spare)),
                         doubled >= .5 ? people(doubled) + " doubled up anyway"
@@ -164,13 +187,11 @@ final class PeopleScreen {
          * half the city. See Migration's note on residents per job.
          */
         column.getChildren().add(statementTotal("Out of work",
-                String.format("%.1f%%", jobless * 100),
-                jobless > .25 || jobless < .03 ? Palette.BAD
-                        : jobless > .15 ? Palette.WARN : Palette.GOOD));
+                String.format("%.1f%%", jobless * 100), outOfWorkTone(jobless)));
         column.getChildren().add(statementNote(
-                jobless > .25 ? "Far too many adults with nothing to do."
-                        : jobless > .15 ? "High."
-                        : jobless < .03 ? "Nobody spare — every new job goes unfilled."
+                jobless > OUT_OF_WORK_FAR ? "Far too many adults with nothing to do."
+                        : jobless > OUT_OF_WORK_HIGH ? "High."
+                        : jobless < OUT_OF_WORK_SHORT ? "Nobody spare — every new job goes unfilled."
                         : "A healthy amount of slack."));
         column.getChildren().add(statementLine("Each 100 working adults carry",
                 String.format("%.0f", cohorts.dependencyRatio())));
@@ -180,9 +201,9 @@ final class PeopleScreen {
         /* ============================== THIS MONTH ============================== */
         column.getChildren().add(statementHead("This month"));
         column.getChildren().add(statementLine("Born",
-                "+" + flowText(cohorts.getLastBirths()), Palette.GOOD));
+                flowSigned("+", cohorts.getLastBirths()), Palette.GOOD));
         column.getChildren().add(statementLine("Died",
-                "-" + flowText(cohorts.getLastDeaths()), Palette.TEXT_BODY));
+                flowSigned("-", cohorts.getLastDeaths()), Palette.TEXT_BODY));
         /*
          * ...AND HOW MANY OF THEM STAYED SICK (2026-09-11). Anybody ill for
          * more than two months can die of it, at their age's chance. By band,
@@ -190,7 +211,7 @@ final class PeopleScreen {
          */
         Sickness sickness = ui.game.getSickness();
         column.getChildren().add(statementLine("...of illness they did not get over",
-                "-" + flowText(sickness.getLastDeaths()),
+                flowSigned("-", sickness.getLastDeaths()),
                 sickness.getLastDeaths() >= .5 ? Palette.BAD : Palette.TEXT_BODY));
         StringBuilder byAge = new StringBuilder();
         for (AgeBand b : AgeBand.values()) {
@@ -204,7 +225,7 @@ final class PeopleScreen {
         // ...and the killed (2026-09-11), all of them adults. See Crime.
         double killed = cohorts.getKilled(AgeBand.ADULT);
         column.getChildren().add(statementLine("...killed",
-                "-" + flowText(killed), killed >= .5 ? Palette.BAD : Palette.TEXT_BODY));
+                flowSigned("-", killed), killed >= .5 ? Palette.BAD : Palette.TEXT_BODY));
         column.getChildren().add(statementLine("In prison",
                 people(ui.game.getCrime().prisoners()), Palette.TEXT_BODY));
 
@@ -285,7 +306,7 @@ final class PeopleScreen {
                 flowText(migration.getLastDepartures()), outDetail));
 
         column.getChildren().add(statementTotal("Net",
-                (net >= 0 ? "+" : "-") + flowText(Math.abs(net)),
+                flowSigned(net >= 0 ? "+" : "-", Math.abs(net)),
                 net >= 0 ? Palette.GOOD : Palette.BAD));
 
         /* ============================= WHY THEY COME ============================= */
@@ -1413,7 +1434,7 @@ final class PeopleScreen {
                         ui.game.getEconomyManager().getTaxPolicy().getContributionRate() * 100),
                 tightMoney(toDollars(-hh.getContributions()), false), Palette.WARN));
         column.getChildren().add(statementLine("Pensions received",
-                tightMoney(toDollars(hh.getPensions()), false), "#8ed4ff"));
+                tightMoney(toDollars(hh.getPensions()), false), Palette.ACCENT));
         // EI and the grants (2026-09-11): off the same payslips, and in to the out of work and the students.
         column.getChildren().add(statementLine(
                 String.format("EI premiums at %.2f%%",
@@ -1425,9 +1446,9 @@ final class PeopleScreen {
                         ui.game.getEconomyManager().getTaxPolicy().getHealthPremiumRate() * 100),
                 tightMoney(toDollars(-hh.getHealthPremiums()), false), Palette.WARN));
         column.getChildren().add(statementLine("EI received",
-                tightMoney(toDollars(hh.getEiBenefits()), false), "#8ed4ff"));
+                tightMoney(toDollars(hh.getEiBenefits()), false), Palette.ACCENT));
         column.getChildren().add(statementLine("Student grants received",
-                tightMoney(toDollars(hh.getStudentGrants()), false), "#8ed4ff"));
+                tightMoney(toDollars(hh.getStudentGrants()), false), Palette.ACCENT));
         column.getChildren().add(statementTotal("Take-home",
                 tightMoney(toDollars(hh.getDisposableIncome()), false), null));
         column.getChildren().add(statementLine("Rent to landlords",
@@ -2426,7 +2447,7 @@ final class PeopleScreen {
         if (pension > .005) {
             panel.getChildren().add(statementLine(
                     pensioners == 1 ? "A pension" : "Pensions",
-                    tightMoney(pension, false), "#8ed4ff"));
+                    tightMoney(pension, false), Palette.ACCENT));
         }
 
         /*
@@ -2562,9 +2583,11 @@ final class PeopleScreen {
      * household spending more than it earns fills the bar and the shortfall
      * shows as red on the end rather than silently rescaling everything else.
      *
-     * The colours are the categories, not a gradient: tax amber because it is
-     * the one the player sets, rent blue, fees purple, the shop lime, and what
-     * survives green - or red, when nothing does.
+     * The colours are the categories, not a gradient - and since 0.7.21 the
+     * four area colours, because amber and green are verdicts: tax the money
+     * blue (it is the one the player sets, on the Policy tab), rent the
+     * building pink, fees the business violet, the shops the people teal -
+     * and what survives green, or red when nothing does, which IS a verdict.
      */
     HBox flowBar(double tax, double rent, double fees, double shops,
                          double left, double width) {
@@ -2583,10 +2606,10 @@ final class PeopleScreen {
         bar.setStyle("-fx-background-radius: 2;");
 
         bar.getChildren().addAll(
-                barPart(tax / span * width, Palette.WARN, "tax"),
-                barPart(rent / span * width, "#5cb8ff", "rent"),
-                barPart(fees / span * width, "#ce93d8", "fees"),
-                barPart(shops / span * width, "#d4e157", "the shops"),
+                barPart(tax / span * width, Palette.MONEY, "tax"),
+                barPart(rent / span * width, Palette.BUILDING, "rent"),
+                barPart(fees / span * width, Palette.BUSINESS, "fees"),
+                barPart(shops / span * width, Palette.PEOPLE, "the shops"),
                 barPart(Math.abs(left) / span * width,
                         left < 0 ? Palette.BAD : Palette.GOOD,
                         left < 0 ? "short" : "left over"));
@@ -2611,8 +2634,8 @@ final class PeopleScreen {
         key.setAlignment(Pos.CENTER_LEFT);
         key.setStyle("-fx-padding: 6 0 0 0;");
         String[][] parts = {
-            {"tax", Palette.WARN}, {"rent", "#5cb8ff"}, {"fees", "#ce93d8"},
-            {"the shops", "#d4e157"}, {"what is left", Palette.GOOD},
+            {"tax", Palette.MONEY}, {"rent", Palette.BUILDING}, {"fees", Palette.BUSINESS},
+            {"the shops", Palette.PEOPLE}, {"what is left", Palette.GOOD},
         };
         for (String[] part : parts) {
             Region swatch = new Region();

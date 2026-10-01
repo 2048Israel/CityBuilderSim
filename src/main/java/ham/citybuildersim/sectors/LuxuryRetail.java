@@ -473,8 +473,8 @@ public class LuxuryRetail extends Sector {
         }
 
         lines.add(Line.head("THE MARGIN, STRUCK AGAINST THE BUYERS AT ITS PRICE"));
-        lines.add(Line.of("What a piece cost the shop", f.cash(rLanded)));
-        lines.add(Line.of("...and what it sold for", f.cash(sellPrice)));
+        lines.add(Line.of("What a piece cost the shop", f.amount(rLanded)));
+        lines.add(Line.of("...and what it sold for", f.amount(sellPrice)));
         lines.add(Line.of("The mark-up", String.format("%.2fx", rMargin),
                 rMargin > (MARGIN_FLOOR + MARGIN_CEILING) / 2 ? Line.Tone.WARN : Line.Tone.GOOD));
         lines.add(Line.note(String.format(

@@ -245,7 +245,7 @@ public final class Manufacturing extends Sector {
 
         lines.add(Line.head("Where the steel comes from"));
         double position = getSteelPosition();
-        lines.add(Line.of("Steel, a tonne", f.cash(getSteelPrice()),
+        lines.add(Line.of("Steel, a tonne", f.amount(getSteelPrice()),
                 position < .34 ? Line.Tone.GOOD : position < .67 ? Line.Tone.NONE : Line.Tone.WARN));
         lines.add(Line.of("Wanted this month", f.units(getSteelDemand(), Good.STEEL)));
         lines.add(Line.note(position >= .67

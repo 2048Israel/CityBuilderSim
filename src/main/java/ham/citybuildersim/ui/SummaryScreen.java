@@ -145,11 +145,11 @@ final class SummaryScreen {
     /** Which sections and rows the player has opened. Survives every redraw. */
     final java.util.Set<String> panelOpen = new java.util.HashSet<>();
 
-    static final String PANEL_LABEL = "#78909c";
-    static final String PANEL_VALUE = "#eceff1";
-    static final String PANEL_GOOD  = "#5fd68a";
-    static final String PANEL_WARN  = "#ffb454";
-    static final String PANEL_BAD   = "#ff6b6b";
+    static final String PANEL_LABEL = Palette.TEXT_LABEL;
+    static final String PANEL_VALUE = Palette.TEXT_HEAD;
+    static final String PANEL_GOOD  = Palette.GOOD;
+    static final String PANEL_WARN  = Palette.WARN;
+    static final String PANEL_BAD   = Palette.BAD;
 
     HBox statLine(String label, String value) {
         return statLine(label, value, null);
@@ -170,7 +170,7 @@ final class SummaryScreen {
         HBox.setHgrow(gap, Priority.ALWAYS);
 
         Label figure = new Label(value);
-        figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+        figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
                 + " -fx-font-weight: bold; -fx-text-fill: "
                 + (tone == null ? PANEL_VALUE : tone) + ";");
 
@@ -205,13 +205,13 @@ final class SummaryScreen {
 
         Label name = new Label(heading);
         name.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: "
-                + (open ? "#5cb8ff" : "#b0bec5") + ";");
+                + (open ? Palette.ACCENT : Palette.TEXT_LABEL) + ";");
 
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
 
         Label figure = new Label(summary == null ? "" : summary);
-        figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+        figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
                 + " -fx-font-weight: bold; -fx-text-fill: "
                 + (tone == null ? PANEL_VALUE : tone) + ";");
 
@@ -219,7 +219,7 @@ final class SummaryScreen {
         header.setAlignment(Pos.CENTER_LEFT);
         header.setMaxWidth(Double.MAX_VALUE);
         header.setStyle("-fx-padding: 4 2 4 0; -fx-cursor: hand;"
-                + (open ? " -fx-background-color: #26343b; -fx-background-radius: 3;" : ""));
+                + (open ? " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;" : ""));
         header.getChildren().addAll(caret, name, gap, figure);
         header.setOnMouseClicked(e -> {
             if (!panelOpen.remove(key)) panelOpen.add(key);
@@ -232,7 +232,7 @@ final class SummaryScreen {
 
         if (open) {
             VBox body = detail.get();
-            body.setStyle("-fx-padding: 2 0 6 8; -fx-border-color: #37474f;"
+            body.setStyle("-fx-padding: 2 0 6 8; -fx-border-color: " + Palette.EDGE + ";"
                     + " -fx-border-width: 0 0 0 1;");
             box.getChildren().add(body);
         }
@@ -297,10 +297,10 @@ final class SummaryScreen {
         Label chip = new Label(text);
         chip.setStyle("-fx-font-size: 9px; -fx-padding: 2 8 3 8; -fx-cursor: hand;"
                 + " -fx-background-radius: 3;"
-                + " -fx-background-color: " + (on ? "#26343b" : "transparent") + ";"
-                + " -fx-border-color: " + (on ? "#5cb8ff" : "transparent") + ";"
+                + " -fx-background-color: " + (on ? Palette.RAISED : "transparent") + ";"
+                + " -fx-border-color: " + (on ? Palette.ACCENT : "transparent") + ";"
                 + " -fx-border-width: 0 0 2 0;"
-                + " -fx-text-fill: " + (on ? "#eceff1" : PANEL_LABEL) + ";");
+                + " -fx-text-fill: " + (on ? Palette.TEXT_HEAD : PANEL_LABEL) + ";");
         chip.setOnMouseClicked(e -> {
             ui.prefs.setPanelDashboard(dashboard);
             ui.prefs.save(ui.game.getGameFiles());
@@ -328,11 +328,11 @@ final class SummaryScreen {
 
         Label name = new Label(heading);
         name.setStyle("-fx-font-size: 9px; -fx-font-weight: bold;"
-                + " -fx-text-fill: #8fa3b0;");
+                + " -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
         Label figure = new Label(value);
         figure.setWrapText(true);
-        figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+        figure.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
                 + " -fx-font-weight: bold; -fx-text-fill: "
                 + (tone == null ? PANEL_VALUE : tone) + ";");
 
@@ -342,7 +342,7 @@ final class SummaryScreen {
         row.setStyle(rest);
         row.setOnMouseClicked(e -> go.run());
         row.setOnMouseEntered(e -> row.setStyle(rest
-                + " -fx-background-color: #26343b; -fx-background-radius: 3;"));
+                + " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;"));
         row.setOnMouseExited(e -> row.setStyle(rest));
         return row;
     }
@@ -367,7 +367,7 @@ final class SummaryScreen {
 
     Label foldLink(String text, Runnable act) {
         Label link = new Label(text);
-        link.setStyle("-fx-font-size: 9px; -fx-text-fill: #5cb8ff; -fx-cursor: hand;"
+        link.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.ACCENT + "; -fx-cursor: hand;"
                 + " -fx-underline: true;");
         link.setOnMouseClicked(e -> act.run());
         return link;
@@ -384,7 +384,7 @@ final class SummaryScreen {
         Label note = new Label(text);
         note.setWrapText(true);
         note.setMaxWidth(240);
-        note.setStyle("-fx-font-size: 9px; -fx-text-fill: #8fa3b0; -fx-padding: 3 0 1 4;");
+        note.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 3 0 1 4;");
         return note;
     }
 
@@ -456,6 +456,39 @@ final class SummaryScreen {
         out.add(new Watch(label, reading, bad ? (severe ? 2 : 1) : 0, bad ? 1 : 0, go));
     }
 
+    /**
+     * ...AND WHAT IS ALREADY ON THE WAY (0.7.20).
+     *
+     * After ordering an Elementary School, "Schools: elementary 0% taught"
+     * still sent the player to build one, in red - the fix was on site and
+     * the panel could not tell. So the watch at `at`, if there is one, says
+     * what of the buildings that answer it is on site, for anybody's order -
+     * "1 on the way, ~8 mo", the soonest of them by the wait the quote reads
+     * (Game.onSiteMonths()) - and a red one falls to amber: the city has
+     * done something about it, and it is waiting on the builders.
+     */
+    void onTheWay(java.util.List<Watch> out, int at, java.util.function.Predicate<BuildingsTemplate> serves) {
+        if (at < 0 || at >= out.size()) return;
+        int units = 0;
+        double soonest = Double.NaN;
+        for (BuildingsStacks site : ui.game.getBuildingManager().getStacksUnderConstruction()) {
+            if (!serves.test(site.getBuilding())) continue;
+            units += site.getUnderConstruction();
+            double months = ui.game.onSiteMonths(site.getBuilding());
+            if (!Double.isNaN(months) && !(months >= soonest)) soonest = months;
+        }
+        if (units <= 0) return;
+        Watch w = out.get(at);
+        out.set(at, new Watch(w.label(),
+                w.reading() + " · " + formatter.format(units) + " on the way, " + monthsWait(soonest),
+                Math.min(w.level(), 1), w.near(), w.go()));
+    }
+
+    /** The same, for the watch just measured. */
+    void onTheWay(java.util.List<Watch> out, java.util.function.Predicate<BuildingsTemplate> serves) {
+        onTheWay(out, out.size() - 1, serves);
+    }
+
     /* =====================================================================
        SEATS AGAINST WHO WOULD COME.
 
@@ -523,6 +556,7 @@ final class SummaryScreen {
                     couldHold / Math.max(seats, 1), 1.05, 2,
                     () -> ui.buildScreen.handleAllBuildingMenus("Education",
                             EnumSet.of(BuildingType.EDUCATION)));
+            onTheWay(out, t -> t.getTeaches() == type);
         }
     }
 
@@ -599,10 +633,14 @@ final class SummaryScreen {
          * goes red when the ratio finally breaks - at which point the reading
          * says what is actually being delivered instead.
          */
+        int at = out.size();
         network(out, "POWER", utilities.getConsumption(), utilities.getProduction(),
                 utilities.getEnergyRatio());
+        onTheWay(out, at, t -> t.getCategory() == BuildingType.ELECTRICITY);
+        at = out.size();
         network(out, "WATER", utilities.getWaterConsumption(),
                 utilities.getWaterProduction(), utilities.getWaterRatio());
+        onTheWay(out, at, t -> t.getCategory() == BuildingType.WATER);
 
         // Its own constants: STRAINED is .85 and free flow ends at .90.
         double traffic = roads.getUtilisation();
@@ -610,6 +648,7 @@ final class SummaryScreen {
                 traffic, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW,
                 () -> ui.buildScreen.handleAllBuildingMenus("Infrastructure",
                         EnumSet.of(BuildingType.INFRASTRUCTURE)));
+        onTheWay(out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE);
 
         /* ------------------------------- the care ------------------------------- */
         // General care is the one that moves the sick rate, so it is watched
@@ -619,16 +658,19 @@ final class SummaryScreen {
         under(out, "GENERAL CARE", String.format("%.0f%% covered", general * 100),
                 general, .80, .50,
                 () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+        onTheWay(out, t -> t.getCare() == CareType.GENERAL);
 
         double childcare = ui.servicesScreen.careCover(CareType.CHILDCARE, cohorts, staffing);
         under(out, "CHILDCARE", String.format("%.0f%% covered", childcare * 100),
                 childcare, .70, .40,
                 () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+        onTheWay(out, t -> t.getCare() == CareType.CHILDCARE);
 
         double senior = ui.servicesScreen.careCover(CareType.SENIOR, cohorts, staffing);
         under(out, "SENIOR CARE", String.format("%.0f%% covered", senior * 100),
                 senior, .70, .40,
                 () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+        onTheWay(out, t -> t.getCare() == CareType.SENIOR);
 
         // The dead are a STOCK: a backlog does not clear itself and the plots do
         // not come back, so this one is red the moment anybody is waiting.
@@ -637,6 +679,7 @@ final class SummaryScreen {
                         ? people(unburied) + " unburied" : "all dealt with",
                 unburied > 0, unburied > 0,
                 () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
+        onTheWay(out, t -> t.getCare() == CareType.BURIAL || t.getCare() == CareType.CREMATION);
 
         /*
          * MEASURED: with nobody dying this returns Double.MAX_VALUE - not
@@ -652,6 +695,7 @@ final class SummaryScreen {
                     monthsLeft, 24, 6,
                     () -> ui.buildScreen.handleAllBuildingMenus("Healthcare",
                             EnumSet.of(BuildingType.HEALTHCARE)));
+            onTheWay(out, t -> t.getCare() == CareType.BURIAL);
         }
 
         /* ------------------------------ the schools ------------------------------ */
@@ -672,6 +716,8 @@ final class SummaryScreen {
                     basic, .90, .60,
                     () -> ui.buildScreen.handleAllBuildingMenus("Education",
                             EnumSet.of(BuildingType.EDUCATION)));
+            EducationType bottleneck = schools.basicBottleneck();
+            onTheWay(out, t -> t.getTeaches() == bottleneck);
         }
 
         /* ------------------------ and the schools above them ------------------------ */
@@ -682,12 +728,14 @@ final class SummaryScreen {
         over(out, "CRIME", String.format("%.1fx Canada's", vsCanada),
                 vsCanada, 1.2, 1.5,
                 () -> ui.buildScreen.handleAllBuildingMenus("Safety", EnumSet.of(BuildingType.SAFETY)));
+        onTheWay(out, t -> t.getSafety() == SafetyType.POLICE);
 
         double unheld = crime.getNotHeld();
         over(out, "CELLS", unheld >= 1
                         ? people(unheld) + " caught, not held" : "enough for the caught",
                 unheld, 1, 25,
                 () -> ui.buildScreen.handleAllBuildingMenus("Safety", EnumSet.of(BuildingType.SAFETY)));
+        onTheWay(out, t -> t.getSafety() == SafetyType.PRISON);
 
         /* ------------------------------- the housing ------------------------------- */
         // Nobody at all with a door is the worst thing on this list: it is past
@@ -699,6 +747,7 @@ final class SummaryScreen {
                 unplaced, .5, 25,
                 () -> ui.buildScreen.handleAllBuildingMenus("Residential",
                         EnumSet.of(BuildingType.RESIDENTIAL)));
+        onTheWay(out, t -> t.getCategory() == BuildingType.RESIDENTIAL);
 
         /* -------------------------------- the ground -------------------------------- */
         /*
@@ -743,6 +792,8 @@ final class SummaryScreen {
                 bank.isInsolvent() || bank.getBranches() <= 0 || bank.strain() > 1,
                 bank.isInsolvent() || bank.getBranches() <= 0,
                 ui.bankScreen::showBankMenu);
+        // The model counts its branches by this name (Game: bank.openBranches(...countByName(...))).
+        onTheWay(out, t -> "Commercial Bank".equals(t.getName()));
 
         flag(out, "BORROWING", ui.game.getDebtManager().atCeiling()
                         ? "priced out of the market" : "the market is open",
@@ -857,7 +908,8 @@ final class SummaryScreen {
          *
          * Jerus: "its a residential thing, so the business takes care of it, so
          * it should be a symptom not a lever." He is right, and it is the rule
-         * the Build tab already draws in amber - investors put up housing on
+         * the Build tab already draws (in amber until 0.7.21, a violet dot on the
+         * tab since) - investors put up housing on
          * their own whenever it pays, so "too many of them are studios" is not
          * an instruction to the player, it is a fact about what the landlords
          * chose to build. The door goes to the screen that explains it.
@@ -965,7 +1017,11 @@ final class SummaryScreen {
         PopulationCohorts pyramid = ui.game.getCohorts();
 
         int population = people.getPopulation();
-        double annualGdp = economy.getYearGdp();
+        // Annualised from the months there are until a year has been recorded
+        // (0.7.20): getYearGdp() summed however many months there were and
+        // called it a year, so GDP per head and debt to GDP ran 12/n too high.
+        double annualGdp = annualGdp(economy.getNationalAccounts());
+        boolean scaled = gdpEstimated(economy.getNationalAccounts());
         double debt = ui.game.getDebtManager().getAllPrincipal();
 
         /* ================= ECONOMY ================= */
@@ -974,7 +1030,7 @@ final class SummaryScreen {
                 () -> {
                     VBox b = panelBody(
                             statLine("Monthly GDP", money(economy.getMonthGdp())),
-                            statLine("Annual GDP", money(annualGdp)));
+                            statLine(scaled ? "GDP, annualised" : "Annual GDP", money(annualGdp)));
                     if (population > 0 && annualGdp != 0) {
                         b.getChildren().add(statLine("GDP/capita",
                                 money(annualGdp / population)));
@@ -1010,7 +1066,7 @@ final class SummaryScreen {
                         : String.format("%.0f%% lent  \u00b7  prime %.2f%%", bankCapacity > 0
                                 ? bankPanel.getWeightedBook() / bankCapacity * 100 : 0,
                                 bankPrime * 100),
-                bankPanel.strain() > 1 ? "#ff8a7a" : null,
+                bankPanel.strain() > 1 ? Palette.BAD_SOFT : null,
                 () -> {
                     VBox b = panelBody(
                             statLine("Branches", formatter.format(bankPanel.getBranches())),
@@ -1506,18 +1562,18 @@ final class SummaryScreen {
 
         Label title = new Label("CITY OVERVIEW");
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
-                + " -fx-text-fill: #eceff1; -fx-padding: 0 0 1 2;");
+                + " -fx-text-fill: " + Palette.TEXT_HEAD + "; -fx-padding: 0 0 1 2;");
 
         Label subtitle = new Label(CityCalendar.format(ui.game.getMonth())
                 + "   ·   month " + ui.game.getMonth());
-        subtitle.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
-                + " -fx-text-fill: #8fa3b0; -fx-padding: 0 0 6 2;");
+        subtitle.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 9px;"
+                + " -fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 0 0 6 2;");
 
         VBox body = new VBox(0);
         // The ScrollPane's viewport paints its own ground, and on a dark panel
         // an unpainted one shows through as a white sliver down the side of
         // every section. Cheaper to state it than to fight the skin.
-        body.setStyle("-fx-background-color: #1c262b;");
+        body.setStyle("-fx-background-color: " + Palette.PANEL + ";");
 
         /* =============================================================
            THE VITALS, which are never folded away.
@@ -1547,7 +1603,7 @@ final class SummaryScreen {
                 statLine("Cash", money(cash), cash < 0 ? PANEL_BAD : null),
                 statLine("Net income", money(income), income < 0 ? PANEL_BAD : PANEL_GOOD),
                 statLine("Population", String.format("%,d", population)));
-        vitals.setStyle("-fx-padding: 6 4 6 2; -fx-background-color: #223038;"
+        vitals.setStyle("-fx-padding: 6 4 6 2; -fx-background-color: " + Palette.PINNED + ";"
                 + " -fx-background-radius: 4;");
         VBox.setMargin(vitals, new javafx.geometry.Insets(0, 0, 8, 0));
 
@@ -1588,8 +1644,8 @@ final class SummaryScreen {
         }
 
         if (!alerts.getChildren().isEmpty()) {
-            alerts.setStyle("-fx-padding: 4 2 4 4; -fx-background-color: #331d1d;"
-                    + " -fx-background-radius: 3; -fx-border-color: #c0392b;"
+            alerts.setStyle("-fx-padding: 4 2 4 4; -fx-background-color: " + Palette.ALERT_GROUND + ";"
+                    + " -fx-background-radius: 3; -fx-border-color: " + Palette.ALERT_EDGE + ";"
                     + " -fx-border-width: 0 0 0 2;");
             VBox spacer = new VBox(alerts);
             spacer.setStyle("-fx-padding: 6 0 2 0;");

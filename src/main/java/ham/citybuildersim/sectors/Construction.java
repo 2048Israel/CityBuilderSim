@@ -268,6 +268,7 @@ public final class Construction extends Sector {
 
         recognisedThisMonth = 0;
         escalationThisMonth = 0;
+        overtimeThisMonth = 0;
 
         double take = Math.max(0, Math.min(earned, unearnedRevenue));
         if (take > 0) {
@@ -305,6 +306,69 @@ public final class Construction extends Sector {
 
     /** ...this month's, for the screens. */
     public double getEscalationThisMonth() { return escalationThisMonth; }
+
+    /* -------------------------------------------------------------------
+       THE OVERTIME AND THE CANCELS (0.7.22; ConstructionControl, B and C)
+       ------------------------------------------------------------------- */
+
+    /**
+     * What the city paid this month for overtime on its rushed sites, with
+     * the builders' tax in it (Game.settleConstructionControl()): earned
+     * beside the work, as the escalation is - the price of the hours the
+     * work was done in - and in the month's building work for the accounts.
+     */
+    private double overtimeThisMonth;
+
+    /** ...earned now. Called after recogniseWork(). */
+    public void recogniseOvertime(double amount) {
+        if (!(amount > 0)) return;
+        bookOtherRevenue(amount);
+        recognisedThisMonth += amount;
+        overtimeThisMonth += amount;
+    }
+
+    public double getOvertimeThisMonth() { return overtimeThisMonth; }
+
+    /**
+     * The overtime's wages, by job type, that the crews on the rushed sites
+     * were paid this month on top of their posts' (0.7.22): the premium, the
+     * whole of it, in a depot's mix of posts at today's wages. Set at the
+     * advance, every month - null in a month with none - and read until the
+     * next: by the payroll the statement at the top of the next month
+     * charges (getStaffedPayrollPerType()), and by the labour market's wage
+     * bill the households are paid off (PopulationManager
+     * .getStaffedWagePerType()), so the households receive what the builders
+     * pay. Saved in the extras, for a city saved between the two.
+     */
+    private double[] overtimeWages;
+
+    public void setOvertimeWages(double[] byType) {
+        overtimeWages = byType == null ? null : byType.clone();
+    }
+
+    /** The month's overtime wages by job type, or null. */
+    public double[] getOvertimeWages() { return overtimeWages == null ? null : overtimeWages.clone(); }
+
+    /** The posts' staffed payroll by tier, and the month's overtime on it. */
+    @Override
+    public double[] getStaffedPayrollPerType() {
+        double[] out = super.getStaffedPayrollPerType();
+        if (overtimeWages != null) {
+            for (int i = 0; i < out.length && i < overtimeWages.length; i++) out[i] += overtimeWages[i];
+        }
+        return out;
+    }
+
+    /**
+     * A cancelled order, stopped (0.7.22; ConstructionControl, C. CANCEL):
+     * what the city prepaid and the builders have not earned goes back out
+     * of the book, and the work it was for off the order book's points.
+     * Never below nothing.
+     */
+    public void cancelOrder(double refund, double points) {
+        unearnedRevenue = Math.max(0, unearnedRevenue - Math.max(0, refund));
+        backlogPoints = Math.max(0, backlogPoints - Math.max(0, points));
+    }
 
     /**
      * The repair order for the month, from every owner of a standing
@@ -636,9 +700,10 @@ public final class Construction extends Sector {
     @Override
     protected java.util.Map<String, Double> nameOtherRevenue() {
         java.util.Map<String, Double> parts = new java.util.LinkedHashMap<>();
-        double work = recognisedThisMonth - escalationThisMonth;
+        double work = recognisedThisMonth - escalationThisMonth - overtimeThisMonth;
         if (Math.abs(work) > 0) parts.put("Building work recognised", work);
         if (Math.abs(escalationThisMonth) > 0) parts.put("Material escalation", escalationThisMonth);
+        if (Math.abs(overtimeThisMonth) > 0) parts.put("Overtime on rushed sites", overtimeThisMonth);
         if (Math.abs(repairsThisMonth) > 0) parts.put("Repairs billed", repairsThisMonth);
         return parts.isEmpty() ? super.nameOtherRevenue() : parts;
     }
@@ -657,7 +722,11 @@ public final class Construction extends Sector {
             lines.add(Line.of("Crews kept on", f.count(offered) + " of " + f.count(standing) + " posts",
                     postsOfferedShare <= IDLE_PAYROLL_FLOOR + 1e-9 ? Line.Tone.WARN : Line.Tone.NONE));
         }
-        lines.add(Line.of("Staffed", f.pct(averageFill), averageFill < .9 ? Line.Tone.WARN : Line.Tone.NONE));
+        // With no depot there are no posts to fill, and averageFill's 100% is its
+        // empty-city default rather than a reading (0.7.20).
+        lines.add(standing <= 0
+                ? Line.of("Staffed", "no depot yet", Line.Tone.MUTED)
+                : Line.of("Staffed", f.pct(averageFill), averageFill < .9 ? Line.Tone.WARN : Line.Tone.NONE));
         if (standing > 0 && offered < standing) {
             lines.add(Line.note(String.format("The work ahead - the repairs and what the sites still owe - "
                     + "needs %.0f%% of the depots' crews at full staffing. They keep that over how well their posts "
@@ -681,7 +750,8 @@ public final class Construction extends Sector {
                 in.boughtLocal > 0 ? Line.Tone.GOOD : Line.Tone.NONE));
         lines.add(Line.of("Imported", f.units(in.imported, Good.MATERIALS),
                 in.imported > 0 ? Line.Tone.WARN : Line.Tone.NONE));
-        lines.add(Line.of("Price each", f.cash(buildings == null ? 0 : buildings.getConstructionMaterialPrice())));
+        // The screens' money form, not cash()'s digits and cents (0.7.20; Formats.amount()).
+        lines.add(Line.of("Price each", f.amount(buildings == null ? 0 : buildings.getConstructionMaterialPrice())));
         lines.add(Line.of("Owed to the sites", f.units(buildings == null ? 0 : buildings.getMaterialsOwed(), Good.MATERIALS),
                 Line.Tone.MUTED));
         lines.add(Line.note("The public works yard turns out " + BuildingManager.BASE_MATERIALS
@@ -691,22 +761,21 @@ public final class Construction extends Sector {
                 + "the market price, and from the world for what the plant has not got."));
 
         lines.add(Line.head("How it bills"));
-        lines.add(Line.of("Billed but not yet earned", f.cash(unearnedRevenue)));
+        lines.add(Line.of("Billed but not yet earned", f.amount(unearnedRevenue)));
         if (escalationThisMonth != 0) {
-            lines.add(Line.of("Material escalation", f.cash(escalationThisMonth),
+            lines.add(Line.of("Material escalation", f.amount(escalationThisMonth),
                     escalationThisMonth > 0 ? Line.Tone.NONE : Line.Tone.MUTED));
         }
-        lines.add(Line.of("Paid a point of work", f.cash(buildings == null ? 0 : buildings.nonMaterialPricePerPoint())
+        lines.add(Line.of("Paid a point of work", f.amount(buildings == null ? 0 : buildings.nonMaterialPricePerPoint())
                 + " beyond the material and the tax"));
-        lines.add(Line.note("Every build order is invoiced up front, material priced at the day's "
-                + "rates and the sales tax in the price, and recognised as the work is done - "
-                + "which is why this business can hold cash it has not earned. The labour in the "
-                + "price is at today's builders' wages. As the crews draw the material, whoever "
-                + "ordered the building pays what it cost that month less what the invoice allowed "
-                + "for it, or is refunded the difference. It is the only sector in the city with "
-                + "a liability of that shape."));
+        // In two layers since 0.7.21, in the mockups' words (TextLayers.dc.html):
+        // the short line on the page, the rest behind its (i).
+        lines.add(Line.note("Paid up front. Material is settled as the crews use it.",
+                "The owner pays the whole quote when ordering: labour at today's builders' wages, "
+                + "material at today's price, sales tax included. As the crews use the material, "
+                + "the owner pays any rise or gets the difference back."));
         if (game != null && game.getSubsidyPaid(this) > 0) {
-            lines.add(Line.of("Subsidy this month", f.cash(game.getSubsidyPaid(this)), Line.Tone.GOOD));
+            lines.add(Line.of("Subsidy this month", f.amount(game.getSubsidyPaid(this)), Line.Tone.GOOD));
             lines.add(Line.note("You are keeping crews alive that the order book would not. Set on the policy screen."));
         }
         return lines;
@@ -728,6 +797,14 @@ public final class Construction extends Sector {
         extras.put("postsOfferedShare", postsOfferedShare);
         extras.put("crewsNeeded", crewsNeeded);
         extras.put("fillStruckOn", fillStruckOn);
+        // ...and the overtime (0.7.22), only when there is some, so a city
+        // that has rushed nothing saves what it always saved.
+        if (overtimeThisMonth != 0) extras.put("overtimeThisMonth", overtimeThisMonth);
+        if (overtimeWages != null) {
+            for (int i = 0; i < overtimeWages.length; i++) {
+                if (overtimeWages[i] != 0) extras.put("overtimeWages." + i, overtimeWages[i]);
+            }
+        }
     }
 
     @Override
@@ -742,6 +819,17 @@ public final class Construction extends Sector {
         postsOfferedShare = extras.getOrDefault("postsOfferedShare", 1.0);
         crewsNeeded = extras.getOrDefault("crewsNeeded", 1.0);
         fillStruckOn = extras.getOrDefault("fillStruckOn", 1.0);
+        overtimeThisMonth = extras.getOrDefault("overtimeThisMonth", 0.0);
+        overtimeWages = null;
+        for (java.util.Map.Entry<String, Double> e : extras.entrySet()) {
+            if (!e.getKey().startsWith("overtimeWages.")) continue;
+            try {
+                int i = Integer.parseInt(e.getKey().substring("overtimeWages.".length()));
+                if (i < 0 || i >= 64) continue;
+                if (overtimeWages == null) overtimeWages = new double[ham.citybuildersim.JobType.values().length];
+                if (i < overtimeWages.length) overtimeWages[i] = e.getValue();
+            } catch (NumberFormatException ignored) { }
+        }
     }
 
     @Override
@@ -750,6 +838,8 @@ public final class Construction extends Sector {
         utilisation = 1;
         recognisedThisMonth = repairsThisMonth = salvageCost = escalationThisMonth = 0;
         postsOfferedShare = crewsNeeded = fillStruckOn = 1;
+        overtimeThisMonth = 0;
+        overtimeWages = null;
     }
 
     /** Points and the utilisation are work, not money; the book is money. */
@@ -760,5 +850,7 @@ public final class Construction extends Sector {
         escalationThisMonth *= scale;
         repairsThisMonth *= scale;
         salvageCost *= scale;
+        overtimeThisMonth *= scale;
+        if (overtimeWages != null) for (int i = 0; i < overtimeWages.length; i++) overtimeWages[i] *= scale;
     }
 }

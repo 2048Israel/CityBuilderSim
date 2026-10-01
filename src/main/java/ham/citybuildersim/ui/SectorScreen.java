@@ -90,9 +90,7 @@ final class SectorScreen {
 
         SectorBooks books = ui.game.getSectorBooks();
 
-        Label title = new Label("SECTOR ECONOMY");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("SECTOR ECONOMY");
 
         Label lead = new Label("What the city's businesses kept this month, after tax.");
         lead.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED)
@@ -190,6 +188,18 @@ final class SectorScreen {
         what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
         what.setWrapText(true);
         what.setMaxWidth(CARD_LEFT);
+        /*
+         * TWO LINES, AND THE REST ON HOVER (0.7.20). The first sentence was
+         * cut at 72 characters - "keeps a shelf, and..." - mid-clause. It is
+         * whole now and wraps; the longest run to four lines at this width,
+         * so the label holds two (JavaFX ends a clipped wrap with its own
+         * ellipsis) and the whole blurb is the tooltip.
+         */
+        what.setMaxHeight(BLURB_LINES * Palette.SIZE_CAPTION * 1.5);
+        javafx.scene.control.Tooltip whole = new javafx.scene.control.Tooltip(
+                sector.blurb() == null || sector.blurb().isBlank() ? sector.label() : sector.blurb());
+        whole.setShowDelay(javafx.util.Duration.millis(300));
+        javafx.scene.control.Tooltip.install(what, whole);
 
         VBox left = new VBox(0, name, what);
         left.setAlignment(Pos.CENTER_LEFT);
@@ -209,8 +219,9 @@ final class SectorScreen {
         double move = now.netIncome() - then.netIncome();
         Label change = new Label(then.isEmpty() ? "no month to compare"
                 : (move >= 0 ? "+" : "-") + tightMoney(Math.abs(toDollars(move))));
+        // No move is no news (0.7.21): "+$0" read green.
         change.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                then.isEmpty() ? Palette.TEXT_SPENT
+                then.isEmpty() || Math.abs(toDollars(move)) < .5 ? Palette.TEXT_SPENT
                         : move < 0 ? Palette.BAD : Palette.GOOD));
 
         Label workers = new Label(String.format("%,.0f workers", sector.getWorkers()));
@@ -244,6 +255,9 @@ final class SectorScreen {
     /** The width the card's name and blurb are held to, so the sparkline and the figures always have their room (0.7.4). */
     static final double CARD_LEFT = 280;
 
+    /** How many lines of its first sentence a sector's card shows; the tooltip has the rest (0.7.20). */
+    static final int BLURB_LINES = 2;
+
     /** The sparkline's width on a sector's card (0.7.4): a word's size, between the blurb and the figures. */
     static final double SPARK_WIDTH = 90;
 
@@ -255,18 +269,35 @@ final class SectorScreen {
 
     /**
      * A sector's net income as a line (0.7.4): the last SPARK_MONTHS of the
-     * history's netIncome:<sector>, the zero line faint under it, the line
-     * GOOD when the latest month made money and BAD when it did not. No
-     * axes and no labels - the figure beside it is the number - and fewer
-     * than two months is said in words.
+     * history's netIncome:<sector>, the zero line faint under it. No labels -
+     * the figure beside it is the number - and fewer than two months is said
+     * in words.
+     *
+     * A SECTOR EARNING NOTHING IS GREY (0.7.21). It drew a red flat line,
+     * which read as "losing"; a sector that made nothing and lost nothing is
+     * not news, and red is only for a loss.
+     *
+     * IN THE BUSINESS AREA'S VIOLET, WITH ITS YEARS (0.7.23). The line was
+     * green when the last month made money and red when it lost some - the
+     * verdicts as a line's colour, which is the figure's job beside it (red
+     * when negative). A faint mark at each January says where the years
+     * turn, and the tooltip names the months.
      */
     javafx.scene.Node sparkline(List<? extends Number> series) {
 
+        // Each point with its month: the series' last element is the history's
+        // last month, so its i-th from the end is the axis's i-th from the end.
+        List<Integer> axis = ui.game.getHistorySave().getMonth();
         List<Double> months = new ArrayList<>();
+        List<Integer> when = new ArrayList<>();
         if (series != null) {
             for (int i = Math.max(0, series.size() - SPARK_MONTHS); i < series.size(); i++) {
                 Number v = series.get(i);
-                if (v != null && Double.isFinite(v.doubleValue())) months.add(v.doubleValue());
+                if (v != null && Double.isFinite(v.doubleValue())) {
+                    months.add(v.doubleValue());
+                    int at = axis.size() - (series.size() - i);
+                    when.add(at >= 0 ? axis.get(at) : Integer.MIN_VALUE);
+                }
             }
         }
         if (months.size() < 2) {
@@ -293,8 +324,17 @@ final class SectorScreen {
         g.setLineWidth(1);
         g.strokeLine(pad, zero, pad + w, zero);
 
+        // The turn of each year, faintly, where a January falls (0.7.23).
+        g.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_SPENT, .55));
+        for (int i = 0; i < when.size(); i++) {
+            if (when.get(i) == Integer.MIN_VALUE || CityCalendar.monthOfYear(when.get(i)) != 1) continue;
+            double x = Math.floor(pad + w * i / (months.size() - 1)) + .5;
+            g.strokeLine(x, pad, x, pad + h);
+        }
+
         double latest = months.get(months.size() - 1);
-        g.setStroke(javafx.scene.paint.Color.web(latest > 0 ? Palette.GOOD : Palette.BAD));
+        g.setStroke(javafx.scene.paint.Color.web(
+                Math.abs(toDollars(latest)) < .5 ? Palette.TEXT_SPENT : Palette.BUSINESS));
         g.setLineWidth(1.5);
         g.beginPath();
         for (int i = 0; i < months.size(); i++) {
@@ -304,9 +344,12 @@ final class SectorScreen {
         }
         g.stroke();
 
+        int from = when.get(0), to = when.get(when.size() - 1);
         javafx.scene.control.Tooltip.install(canvas, new javafx.scene.control.Tooltip(String.format(
-                "Net income after tax, the last %d months: between %s and %s a month.",
-                months.size(), tightMoney(toDollars(lo)), tightMoney(toDollars(hi)))));
+                "Net income after tax, %s: between %s and %s a month. A faint mark is a January.",
+                from == Integer.MIN_VALUE ? "the last " + months.size() + " months"
+                        : CityCalendar.formatShort(from) + " to " + CityCalendar.formatShort(to),
+                tightMoney(toDollars(lo)), tightMoney(toDollars(hi)))));
         return canvas;
     }
 
@@ -347,13 +390,12 @@ final class SectorScreen {
         return cell;
     }
 
-    /** What the business actually does, in a few words - the sector's own first sentence. */
+    /** What the business actually does - the sector's own first sentence, whole (cut at 72 until 0.7.20). */
     static String sectorBlurb(Sector sector) {
         String blurb = sector.blurb();
         if (blurb == null || blurb.isBlank()) return sector.label();
         int stop = blurb.indexOf('.');
-        String first = stop > 0 ? blurb.substring(0, stop) : blurb;
-        return first.length() > 72 ? first.substring(0, 69) + "..." : first;
+        return stop > 0 ? blurb.substring(0, stop) : blurb;
     }
 
     /** "six", "seven" - for the total line, which names the count. */
@@ -373,9 +415,7 @@ final class SectorScreen {
         SectorBooks.SectorMonth now = books.get(sector);
         SectorBooks.SectorMonth then = books.previous(sector);
 
-        Label title = new Label(sector.label().toUpperCase());
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle(sector.label().toUpperCase());
 
         HBox vitals = sectorVitals(sector, now, then);
 
@@ -1131,10 +1171,12 @@ final class SectorScreen {
         for (double v : price) if (!Double.isNaN(v)) { any = true; break; }
         if (!any) return;
         column.getChildren().add(statementHead("What a share has been worth"));
-        column.getChildren().add(trendChart(
+        // The business area's violet (0.7.23; it was the money blue), the
+        // register's reckoning in the grey a reference line is drawn in.
+        column.getChildren().add(trendChart(h.getMonth(),
                 new String[] {"The last trade", "What the register reckons"},
                 new double[][] {price, worth},
-                new String[] {Palette.ACCENT, Palette.RAMP_REST}));
+                new String[] {Palette.BUSINESS, Palette.RAMP_REST}));
         double factor = ui.game.getExchange().getSplitFactor(company);
         column.getChildren().add(statementNote(
                 "Per founding share: a split moves every holder's count and the price "
@@ -1650,11 +1692,24 @@ final class SectorScreen {
         for (Sector.Line line : sector.operations(ui.game)) {
             switch (line.kind()) {
                 case HEAD -> column.getChildren().add(statementHead(line.label()));
-                case NOTE -> column.getChildren().add(statementNote(line.label()));
+                case NOTE -> column.getChildren().add(line.value().isEmpty()
+                        ? statementNote(line.label())
+                        : noteInLayers(line.label(), line.value()));
                 default -> column.getChildren().add(statementLine(line.label(), line.value(),
                         toneColour(line.tone())));
             }
         }
+    }
+
+    /**
+     * A sector's note in two layers (0.7.21; Sector.Line.note(shown, whole)):
+     * the short line where statementNote() would put the paragraph, and the
+     * paragraph behind its (i).
+     */
+    static HBox noteInLayers(String shown, String whole) {
+        HBox row = infoLine(shown, whole, true, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, STATEMENT - 16);
+        row.setStyle("-fx-padding: 0 0 6 14;");
+        return row;
     }
 
     /** The palette colour a sector's line asked for, or none. */

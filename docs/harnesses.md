@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-09-30 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-01 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**65 harness files, 6,038 labelled assertions.** AllChecks runs 65 of them.
+**67 harness files, 6,268 labelled assertions.** AllChecks runs 67 of them.
 
 ## Which harnesses read which class
 
@@ -19,10 +19,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildLog](map/BuildLog.md) | CalendarCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BuildingDataCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, BondCheck, BooksCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, ConservationCheck, CreditCheck, CrimeCheck, DeathRecordCheck, FoodProcessingCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, NewGameCheck, PopulationCheck, RailCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SicknessCheck, TradeCostCheck, VanCheck, WaterCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, BondCheck, BooksCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, DeathRecordCheck, FoodProcessingCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, NewGameCheck, PopulationCheck, RailCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SicknessCheck, TradeCostCheck, VanCheck, WaterCheck |
 | [BuildingType](map/BuildingType.md) | BooksCheck, BuildMenuCheck, BuildingDataCheck, CrimeCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck |
-| [BuildingsStacks](map/BuildingsStacks.md) | InvestCheck, LongPlaytest |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, BankCheck, BooksCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, DeathRecordCheck, DenominationCheck, EducationCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, TradeCostCheck, TreasuryCheck, WaterCheck, YearBookCheck |
+| [BuildingsStacks](map/BuildingsStacks.md) | ConstructionControlCheck, InvestCheck, LongPlaytest |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, BankCheck, BooksCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CentralBankCheck, ChartCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, DeathRecordCheck, DenominationCheck, EducationCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, TradeCostCheck, TreasuryCheck, WaterCheck, YearBookCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | BankCheck, BondCheck, CreditCheck, LongPlaytest, MoneyCheck, MortgageCheck, ReadPathCheck, SaveFileCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, ConservationCheck, FoodProcessingCheck, InvestCheck, ManufacturingCheck, MortgageCheck, PolicyCheck, RestaurantsCheck |
@@ -31,17 +31,20 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CapitalFlows](map/CapitalFlows.md) | BondCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, LongPlaytest, MoneyCheck |
 | [CareType](map/CareType.md) | BuildMenuCheck, BuildingDataCheck, HealthCheck, LongPlaytest, ReadPathCheck |
 | [CentralBank](map/CentralBank.md) | BankCheck, CentralBankCheck, CurrencyCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck |
+| [ChartModel](map/ChartModel.md) | ChartCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | CalendarCheck, FundCheck, YearBookCheck |
-| [Construction](map/Construction.md) | BankCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, RobustnessCheck, SaveFileCheck |
+| [CityCalendar](map/CityCalendar.md) | CalendarCheck, ChartCheck, FundCheck, YearBookCheck |
+| [Construction](map/Construction.md) | BankCheck, ConstructionControlCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, RobustnessCheck, SaveFileCheck |
+| [ConstructionControl](map/ConstructionControl.md) | ChartCheck, ConstructionControlCheck |
 | [Consumption](map/Consumption.md) | ConsumptionCheck, ForeignCheck |
 | [CorporateBond](map/CorporateBond.md) | BondCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [Crime](map/Crime.md) | CrimeCheck, LongPlaytest |
 | [Currency](map/Currency.md) | DenominationCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | PopulationCheck, SaveFileCheck |
-| [Debt](map/Debt.md) | BankCheck, CentralBankCheck, CreditCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
+| [Debt](map/Debt.md) | BankCheck, CentralBankCheck, ChartCheck, CreditCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | BankCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, EquityCheck, ExchangeCheck, ForeignDebtCheck, HoldersCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, ReadPathCheck |
 | [DebtQuote](map/DebtQuote.md) | CreditCheck, ForeignDebtCheck, FundCheck, LandCheck, LongPlaytest, NewGameCheck |
+| [DecisionLog](map/DecisionLog.md) | ChartCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, HealthCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OutsideCheck, PopulationCheck, ReadPathCheck, SaveFileCheck |
@@ -55,19 +58,19 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, ForeignCheck, ForeignDebtCheck, LabourCheck, LandCheck, LongPlaytest, MonetaryCheck, NewGameCheck, SaveFileCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, FoodProcessingCheck, MortgageCheck, TradeCostCheck |
-| [Founding](map/Founding.md) | BankCheck, BondCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ConservationCheck, CreditCheck, CrimeCheck, CurrencyCheck, DenominationCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, RailCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, SkipReportCheck, VanCheck |
-| [Game](map/Game.md) | AgricultureCheck, BankCheck, BondCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ConservationCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathRecordCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorBooksCheck, SicknessCheck, SkipReportCheck, TradeCostCheck, TreasuryCheck, VanCheck, YearBookCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, BankCheck, BondCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ConservationCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathRecordCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorBooksCheck, SicknessCheck, SkipReportCheck, TradeCostCheck, TreasuryCheck, VanCheck, YearBookCheck |
+| [Founding](map/Founding.md) | BankCheck, BondCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, DenominationCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HoldersCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, RailCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, SkipReportCheck, VanCheck |
+| [Game](map/Game.md) | AgricultureCheck, BankCheck, BondCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathRecordCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorBooksCheck, SicknessCheck, SkipReportCheck, TradeCostCheck, TreasuryCheck, VanCheck, YearBookCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, BankCheck, BondCheck, BuildMenuCheck, BusinessServicesCheck, CalendarCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CentralBankCheck, ChartCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, CrimeCheck, CurrencyCheck, DeathRecordCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, InboxCheck, InfrastructureCheck, InvestCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MonetaryCheck, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, PopulationCheck, RailCheck, ReadPathCheck, RestaurantsCheck, RestructureCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorBooksCheck, SicknessCheck, SkipReportCheck, TradeCostCheck, TreasuryCheck, VanCheck, YearBookCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | **none** |
-| [GameVersion](map/GameVersion.md) | RobustnessCheck, SaveSlotCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BusinessServicesCheck, CarCheck, ConservationCheck, ConsumptionCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MiningCheck, NewGameCheck, RailCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, TradeCostCheck, VanCheck |
+| [GameVersion](map/GameVersion.md) | ChartCheck, ConstructionControlCheck, RobustnessCheck, SaveSlotCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BuildMenuCheck, BusinessServicesCheck, CarCheck, ConservationCheck, ConstructionControlCheck, ConsumptionCheck, CreditCheck, DenominationCheck, FoodProcessingCheck, ForeignCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MiningCheck, NewGameCheck, RailCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, TradeCostCheck, VanCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, FoodProcessingCheck, ForeignCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MiningCheck, NewGameCheck, RailCheck, ReadPathCheck, VanCheck |
 | [Health](map/Health.md) | HealthCheck, LongPlaytest, OutsideCheck, SicknessCheck |
 | [Healthcare](map/Healthcare.md) | HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | **none** |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
-| [HistorySave](map/HistorySave.md) | DeathRecordCheck, HistoryCheck, HouseholdMemoryCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
+| [HistorySave](map/HistorySave.md) | ChartCheck, DeathRecordCheck, HistoryCheck, HouseholdMemoryCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [Household](map/Household.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, FundCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CentralBankCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, OutsideCheck, ReadPathCheck, RestaurantsCheck |
@@ -75,7 +78,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [InfrastructureManager](map/InfrastructureManager.md) | CarCheck, InfrastructureCheck, LongPlaytest, RailCheck, TradeCostCheck |
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
-| [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CrimeCheck, EducationCheck, FoodProcessingCheck, FundCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck, OutsideCheck, PolicyCheck, PopulationCheck, RestaurantsCheck |
+| [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, FoodProcessingCheck, FundCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck, OutsideCheck, PolicyCheck, PopulationCheck, RestaurantsCheck |
 | [LabourMarket](map/LabourMarket.md) | LabourCheck, LongPlaytest |
 | [LandManager](map/LandManager.md) | FundCheck, LandCheck, LongPlaytest, MiningCheck, ReadPathCheck |
 | [LandMarket](map/LandMarket.md) | FundCheck, LandCheck, LongPlaytest, MoneyCheck |
@@ -84,23 +87,23 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
 | [Manufacturing](map/Manufacturing.md) | ManufacturingCheck |
-| [Markets](map/Markets.md) | BooksCheck, FoodProcessingCheck, InfrastructureCheck, InvestCheck, MiningCheck, RailCheck |
+| [Markets](map/Markets.md) | BooksCheck, BuildMenuCheck, FoodProcessingCheck, InfrastructureCheck, InvestCheck, MiningCheck, RailCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MediumTermBond](map/MediumTermBond.md) | BankCheck, CentralBankCheck, RestructureCheck |
 | [Migration](map/Migration.md) | CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck |
 | [Mining](map/Mining.md) | MiningCheck, ReadPathCheck |
-| [MoneyAudit](map/MoneyAudit.md) | BankCheck, BondCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, ForeignCheck, ForeignDebtCheck, FundCheck, HoldersCheck, InvestCheck, LandCheck, LongPlaytest, MoneyCheck, NewGameCheck, OutsideCheck, SkipReportCheck |
+| [MoneyAudit](map/MoneyAudit.md) | BankCheck, BondCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, ConstructionControlCheck, CreditCheck, CurrencyCheck, ForeignCheck, ForeignDebtCheck, FundCheck, HoldersCheck, InvestCheck, LandCheck, LongPlaytest, MoneyCheck, NewGameCheck, OutsideCheck, SkipReportCheck |
 | [Mortgage](map/Mortgage.md) | CreditCheck, LongPlaytest, MortgageCheck, ReadPathCheck |
 | [Motoring](map/Motoring.md) | **none** |
 | [NationalAccounts](map/NationalAccounts.md) | EducationCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, LongPlaytest, MortgageCheck, NewGameCheck, TreasuryCheck |
-| [Notice](map/Notice.md) | BankCheck, InboxCheck, LongPlaytest |
+| [Notice](map/Notice.md) | BankCheck, ConstructionControlCheck, InboxCheck, LongPlaytest |
 | [Offending](map/Offending.md) | **none** |
 | [OrderBook](map/OrderBook.md) | BankCheck, BondCheck, ExchangeCheck, FundCheck, LongPlaytest, OrderBookCheck, ReadPathCheck, SaveFileCheck |
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | BondCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest |
 | [PayTier](map/PayTier.md) | AgricultureCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, EducationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, OutsideCheck, PopulationCheck, RestaurantsCheck, TradeCostCheck |
 | [PopulationCohorts](map/PopulationCohorts.md) | CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LongPlaytest, OutsideCheck, PopulationCheck, SicknessCheck |
-| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, YearBookCheck |
+| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, HealthCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, NewGameCheck, OutsideCheck, PopulationCheck, SaveFileCheck, YearBookCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, LabourCheck, LongPlaytest, MonetaryCheck, SaveFileCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [Rail](map/Rail.md) | RailCheck |
@@ -108,14 +111,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Restaurants](map/Restaurants.md) | LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BondCheck, ForeignCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, WaterCheck |
 | [RetiredHousehold](map/RetiredHousehold.md) | HouseholdCheck |
-| [Rollover](map/Rollover.md) | CentralBankCheck, LongPlaytest, NewGameCheck, SaveFileCheck, TreasuryCheck |
+| [Rollover](map/Rollover.md) | CentralBankCheck, ChartCheck, LongPlaytest, NewGameCheck, SaveFileCheck, TreasuryCheck |
 | [SafetyType](map/SafetyType.md) | BuildingDataCheck, CrimeCheck |
 | [SalesTaxLedger](map/SalesTaxLedger.md) | PolicyCheck |
 | [SaveHeader](map/SaveHeader.md) | SaveFileCheck, SaveSlotCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, ConservationCheck, CreditCheck, DenominationCheck, ForeignCheck, HistoryCheck, HousingCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck, NewGameCheck, PolicyCheck, RailCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, VanCheck, WaterCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, ChartCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, DenominationCheck, ForeignCheck, HistoryCheck, HousingCheck, InfrastructureCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck, NewGameCheck, PolicyCheck, RailCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, VanCheck, WaterCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CreditCheck, CrimeCheck, HistoryCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, SectorBooksCheck |
 | [SectorState](map/SectorState.md) | VanCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BusinessServicesCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ForeignCheck, FundCheck, HouseholdCheck, HousingCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MoneyCheck, MortgageCheck, PolicyCheck, RailCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, TreasuryCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BondCheck, BooksCheck, BusinessServicesCheck, CapitalFlowCheck, ChartCheck, ConservationCheck, ConstructionControlCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ForeignCheck, FundCheck, HouseholdCheck, HousingCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MiningCheck, MoneyCheck, MortgageCheck, PolicyCheck, RailCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, SectorBooksCheck, TreasuryCheck |
 | [ServicesManager](map/ServicesManager.md) | NewGameCheck, ReadPathCheck, WaterCheck |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShortTermTBill](map/ShortTermTBill.md) | BankCheck, CentralBankCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
@@ -123,12 +126,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
 | [SocialSecurity](map/SocialSecurity.md) | HouseholdCheck |
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck |
-| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, EducationCheck, FoodProcessingCheck, HealthCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck |
+| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildMenuCheck, ChartCheck, ConstructionControlCheck, EducationCheck, FoodProcessingCheck, HealthCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OutsideCheck, PolicyCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck |
 | [TimeSkipReport](map/TimeSkipReport.md) | HealthCheck, SkipReportCheck |
 | [Trade](map/Trade.md) | BooksCheck, CreditCheck |
 | [Traffic](map/Traffic.md) | CarCheck, InfrastructureCheck, LongPlaytest, RailCheck, TradeCostCheck |
-| [TreasuryFund](map/TreasuryFund.md) | FundCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
-| [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, EducationCheck, FundCheck, LandCheck, SaveFileCheck, TreasuryCheck |
+| [TreasuryFund](map/TreasuryFund.md) | ChartCheck, FundCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
+| [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, EducationCheck, FundCheck, LandCheck, SaveFileCheck, TreasuryCheck |
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, FundCheck, LongPlaytest |
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck |
@@ -136,7 +139,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WageBand](map/WageBand.md) | BankCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, SaveFileCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | HoldersCheck, HouseholdCheck |
 | [WorldEconomy](map/WorldEconomy.md) | FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
-| [YearBook](map/YearBook.md) | HistoryCheck, YearBookCheck |
+| [YearBook](map/YearBook.md) | ChartCheck, HistoryCheck, YearBookCheck |
 
 ## AgricultureCheck.java - 43 labelled assertions
 
@@ -1099,9 +1102,9 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L99 EVERY JOB TYPE HAS A NAME**
 - **L108 JOB LABELS**
 - **L128 THE TWO PRICES AGREE WITH THE TILL**
-- **L138 THE PRICE COLUMN**
-- **L163 THE RECEIPT SERIAL COUNTS**
-- **L172 THE RECEIPT SERIAL**
+- **L156 THE PRICE COLUMN**
+- **L190 THE RECEIPT SERIAL COUNTS**
+- **L199 THE RECEIPT SERIAL**
 
 ## BuildingDataCheck.java - 11 labelled assertions
 
@@ -1820,6 +1823,106 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1429 a month on, both hold the same
   - L1430 ...and have made the same money
 
+## ChartCheck.java - 76 labelled assertions
+
+> The charts (0.7.23): the player's decisions as the model records them,
+> and the arithmetic City History's charts are drawn by - the window, the
+> ticks, the scales, the bands, the lanes and the flags, and the years under
+> every other chart - held to its own rules without a screen.
+> 
+> WHY. Jerus asked for charts "just like yahoo finance", crisis labels that
+> are clear, and the player's own decisions on the timeline. A decision is a
+> flow the state cannot give back, so it is recorded where it is applied
+> (DecisionLog) and saved; a chart is a window of months and a set of
+> labels, and the arithmetic of both is ChartModel's, which needs no
+> toolkit. The screen is checked by eye on the PC; everything it draws by
+> is checked here.
+> ...
+
+- **L188 1. the decision log: each kind once, at its month, with its label**
+  - L192 a new city's own settings - the rule's dial, the rollover, the rescue - are not decisions
+  - L197 a city built, ordered and played two years by the fixture's hand records nothing -
+  - L244 fixture: the University and the Middle Schools are the city's sites, the University first
+  - L267 every decision of the first month is dated that month, the next one the next
+  - L271 every kind recorded
+  - L288 fixture: the treasury emptied and a note falling due, the rollover issued
+  - L290 ...and the log has the player's note and none of the rollover's
+  - L291 ...nor anything else from the months
+- **L298 2. the log survives a save and a load; a format-28 save loads with none**
+  - L301 saved
+  - L306 as many decisions back as were written
+  - L307 ...each with its month, its kind and its label, in order
+  - L309 ...and the load's own settings - every dial put back through its setter - added none
+  - L313 a loaded city records the next decision
+  - L318 the save says this build's format,
+  - L320 ...the format the log came in, 29, or later
+  - L327 a format-28 save loads
+  - L328 ...with an empty log
+  - L330 ...which records from then on
+- **L358 3. the bands are recessions(), named for the recession that holds them; the lane is episodes()**
+  - L376 fixture: four recession runs
+  - L381 the chart's bands are exactly recessions(), one for one, in order
+  - L385 the episode lane is exactly episodes(), one for one, in order
+  - L388 fixture: the four runs make two recessions, each joined across four months of relief
+  - L405 every band carries the name of the recession that holds it - both bands of a joined one
+  - L406 ...the first two \"Recession of
+  - L408 ...and its depth is the year book's real growth at its worst inside it, at its month
+  - L415 an episode's worst reading is the series at its worst month
+  - L426 fixture: the bank's crisis overlaps the first recession
+  - L428 no two episodes that overlap share a row of the lane
+  - L429 ...so the lane has two rows
+  - L436 every kind the table names says the rule that named it, and its worst in words
+  - L437 ...from the table's own thresholds: the slump's says
+- **L446 4. years on every axis, months when they fit; nice steps on the value axis**
+  - L481 every window has a year in a label - none is left without one
+  - L482 a year's tick is on its January, and says its year
+  - L483 every tick is inside its window
+  - L484 ticks run left to right, at least MONTH_LABEL_PX apart
+  - L485 months are labelled in some windows - zoomed in - and not in all
+  - L489 ten years across the page: a tick a year, no months
+  - L491 one year across the page: its months labelled
+  - L508 4,000 scales: every step one, two or five times a power of ten
+  - L509 ...every scale holds what is drawn on it
+  - L510 ...its bottom and top on a step
+  - L511 ...and a per cent with nothing negative starts at zero
+  - L519 a new city's flat rate and flat price level, each on its own scale, no longer lie on each other
+  - L521 ...the rate's from zero, the price level's around its 1.000
+- **L528 5. pan and zoom stop at the data; the month under the pointer stays; the window follows**
+  - L531 a new window opens on DEFAULT_RANGE, ending at the newest month
+  - L534 a drag past the start stops at the first month, the span kept
+  - L537 ...and past the end at the last
+  - L539 a wheel all the way in stops at MIN_SPAN
+  - L541 ...all the way out at the whole history
+  - L545 a notch in keeps the month under the pointer under it
+  - L546 ...and shows ZOOM_STEP of the months it did
+  - L548 a window set past the start is moved inside, its span kept
+  - L550 ...and one narrower than MIN_SPAN is widened to it
+  - L554 a window on the newest month follows the month that lands
+  - L558 ...one dragged back stays where it was put
+  - L561 ...and one showing everything shows everything still
+  - L563 the double-click goes back to the range last picked
+  - L568 a history shorter than MIN_SPAN is shown whole, and a wheel cannot narrow it
+  - L571 ...nor a drag move it
+- **L577 6. the flags: one a month with its count; flags too close drawn as one**
+  - L590 a held log records nothing
+  - L592 five decisions in three months are three flags
+  - L593 ...the first month's carries its three, in the order made
+  - L594 ...the first of them first
+  - L596 zoomed in, the flags a month apart are drawn apart
+  - L598 zoomed out, the two a month apart are drawn as one
+  - L599 ...counting four decisions
+  - L600 a window that holds none draws none
+- **L606 7. a young city's window grows into its range, and stays on it**
+  - L609 a city first opened at month 30 shows all of its thirty months, on its range (10Y lit)
+  - L618 ...and month by month to 600 it is all of it while younger than ten years, the last ten after
+  - L620 ...on its range the whole way, so 10Y stays lit
+  - L621 ...at month 600 the window opens at month 481
+  - L627 50Y pressed at month 40 is the last fifty years at month 700
+  - L634 a header tile's ten years asked before the page has drawn: the last ten years once there are
+  - L642 a window the player zoomed on the newest month follows it at the width he left it
+  - L646 ...and one he zoomed out to everything stays everything
+  - L649 a double-click puts it back on its range, which it then follows
+
 ## ConservationCheck.java - 18 labelled assertions
 
 > Nothing is created and nothing is destroyed.
@@ -1859,6 +1962,187 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L371 ...and rebuilding it does not book the month twice
   - L379 the population trend survives, so forecasts are not flat
   - L387 every sector's losing streak survives a load
+
+## ConstructionControlCheck.java - 154 labelled assertions
+
+> The player's hand on the construction queue (0.7.22): each of
+> ConstructionControl's five rules held to its own arithmetic, in a played
+> city.
+> 
+> WHY. Jerus asked to reprioritise, cancel and demolish, and chose how
+> (2026-09-30): priority "Both", cancel "Keep the half-built shell",
+> demolish "City's, plus buy-outs". Every rule has a source and a figure,
+> and every one moves money between the treasury, the builders' book, the
+> owners' tills and the households; a rule that is right on the screen
+> and wrong in the books is the bug this codebase keeps finding. None of it
+> runs in the default playtest - none of it may, unless the player uses it -
+> so this is the only place it is played.
+> ...
+
+- **L198 1. the overtime table: the report's figures, week by week, and time and a half**
+  - L205 month 1's factor: weeks 0 to 4.33 of the table, each week weighted
+  - L207 month 2's: weeks 4.33 to 8.67
+  - L208 month 3's: weeks 8.67 to 13
+  - L209 month 4's and after: the last step, 0.750
+  - L210 ...and month 12's
+  - L215 a month's work on overtime is the factor x 50/40
+  - L217 month 1 does about 1.14 times a normal month's work
+  - L219 month 2 about 1.02 times (within 0.01 of the brief's estimate, 1.03)
+  - L220 month 3 LESS than a normal month, about 0.94
+  - L222 the wage bill on overtime is (40 + 10 x 1.5) / 40
+  - L224 ...1.375, so the premium is 0.375 of the bill
+  - L225 demolition is 5% of the work: $14,855 over $289,415 is 5.1%, taken at 5%
+- **L232 2. no order: the rule's own split, to the bit**
+  - L236 fixture: the city has sites of its own and the landlords one
+  - L239 fixture: the twins stand alike, to the bit
+  - L241 a city whose player has done nothing is not engaged
+  - L250 its plan is the rule's shares, every slot to the bit
+  - L254 an order set and taken back leaves the twin not engaged
+  - L264 ...and plays the month as the untouched city does: every site, to the bit
+  - L266 ...and its treasury
+  - L267 the month's advance applied no plan of the hand's
+- **L273 3. priority: the city's share, top down in the player's order; nobody else's moves**
+  - L281 setting an order moves no money
+  - L282 ...and engages the hand
+  - L287 fixture: the month applied the city's order
+  - L296 every site not the city's keeps the rule's share, to the bit
+  - L297 the city's sites together keep the share the rule gave them
+  - L306 ...handed out top down: each what it owes, at most, of what is left
+  - L308 fixture: the first in the order owes more than the rule gave it
+  - L310 ...so it took more than the rule's share
+  - L312 the landlords' site built the month the twin without an order built
+  - L315 the builders built the same points in all
+- **L321 4. rush: the table's work for 1.375 times the wages, paid out as wages**
+  - L325 fixture: the University is the city's own site
+  - L327 a rush moves no money when it is set
+  - L328 a landlords' site cannot be rushed
+  - L345 month
+  - L347 its work is its share x 50/40 x the month's factor
+  - L349 ...and is what the site was built by
+  - L350 ...its progress moved by it
+  - L351 the wage bill a point is a depot's posts at today's wages over its points
+  - L353 the premium is 0.375 of its crews' bill
+  - L355 the treasury paid it with the builders' tax in it
+  - L357 ...which the builders earned
+  - L362 the builders pay the premium out as wages
+  - L369 ...which the households are paid, on top of the posts' wages
+  - L371 month 3 does less than a normal month's work on the share
+  - L375 after month 2 the inbox says the third month costs more than it gains
+  - L381 a month off overtime: the site was not worked on it
+  - L383 ...and its count is forgotten
+  - L384 ...and the inbox's notice is settled
+  - L389 rushed again, it starts at month 1
+- **L395 5. cancel: the contract left comes back; the shell keeps its work and its ground**
+  - L402 fixture: the city's Middle Schools are part built
+  - L404 a landlords' site cannot be cancelled
+  - L407 a cancel moves no money until the month's end
+  - L419 the month's end stopped it: one refund
+  - L422 fixture: the month's work did not finish it
+  - L423 the refund is the city's contract left after the month's work
+  - L425 ...the allowance not drawn in it
+  - L433 the builders' book fell by the month's work and by the refund, no more
+  - L437 a shell stands
+  - L438 ...with the buildings that were on site
+  - L439 ...the work in them
+  - L440 ...and the material they had still to draw
+  - L441 the site has nothing on it, and no contract of the city's
+  - L443 the shell holds its ground
+  - L444 ...the land office still has it allocated
+  - L447 a month on, a shell gets no crews: its work is where it stopped
+  - L451 a restart's work is the remainder's non-material cost at today's wages
+  - L453 ...its material what the shell has still to draw
+  - L454 ...priced by the builders' rule, the tax in it
+  - L459 a restart moves the money from the treasury to the builders' book, no more
+  - L461 ...the treasury paid the quote
+  - L462 ...into the builders' book
+  - L463 its buildings are back on site, the shell gone
+  - L465 ...with the work they held
+- **L471 6. demolition: 5% of the work; closed as the next month starts; material to the builders, ground back**
+  - L476 fixture: the city has three schools standing
+  - L477 the city's own to demolish; a landlords' House is not
+  - L480 its work is 5% of the template's points
+  - L482 its price is that share of the building's work at the builders' rate today
+  - L486 ...no material, and the tax in it
+  - L493 the order moves money from the treasury to the builders' book only
+  - L494 ...the treasury paid the quote
+  - L495 until the month starts the two still stand, and no third can be ordered twice
+  - L498 ...and hold their own ground, once
+  - L500 a demolition is on site, the city's
+  - L507 as the month after the order starts, they close: one school stands
+  - L509 ...its school places gone with them
+  - L513 ...and their posts
+  - L514 the ground is held until the demolition is done
+  - L519 it finished, in
+  - L523 its material was sold
+  - L524 ...all the material the buildings held
+  - L525 ...as much as the builders' cash covered
+  - L526 ...paid for at the price it was sold at
+  - L527 ...into the treasury, on the journal
+  - L532 ...where the treasury's bridge names it
+  - L533 its ground came back
+  - L534 ...free on the land office's books
+  - L536 the inbox says it is done
+  - L554 the rule: the builders buy the material at the materials market's price
+  - L556 ...as much of it as their cash covers
+  - L557 ...and the treasury has what they paid
+  - L558 ...out of their till
+  - L559 ...money between two pools, no more
+  - L560 ...and the ground is free
+- **L566 7. buy-out: market value and the business loss, to the owner; its debts its own**
+  - L571 a landlords' House is bought out, not demolished outright
+  - L574 fixture: there is a quote
+  - L577 the building at its owner's value: its cash cost and its material at today's price
+  - L579 its ground at the land market's price
+  - L582 its share of its owner's buildings, at that value
+  - L583 the business loss: that share of the operating income, for a replacement's months
+  - L585 ...and nothing for a loss
+  - L596 fixture: every home is taken - the households outnumber the homes
+  - L598 the buy-out moves money between the pools only
+  - L599 the owner's cash rose by exactly the compensation
+  - L600 the treasury paid it and the demolition
+  - L601 the owner still owes what it owed
+  - L605 the purchase is on record
+  - L607 its demolition is on site
+  - L610 the month starts with the Houses gone: what stands is what stood, less them, and the month's new ones
+  - L612 ...and the households who lived in them are not deleted: the families did not fall with the homes
+  - L614 ...nor the people (fixture: a growing city)
+- **L620 8. money is conserved through every one**
+  - L622 the money audit's worst month is within 0.01% of what moved
+  - L623 ...and nothing moved a pool after it
+- **L629 9. a save and a load round-trip all of it; a format-27 save loads with none**
+  - L646 fixture: an order, a rush a month in, a cancel waiting, a shell, two demolitions, a buy-out
+  - L653 saved
+  - L661 the state, every field of it, reads back as it was written
+  - L664 the overtime wages the next statement charges, to the bit
+  - L665 ...and the households' wage bill that pays them
+  - L667 the ground the shells and the demolitions hold
+  - L668 ...as the land office allocates it
+  - L672 a month on, the two treasuries agree
+  - L679 ...and every site's work, to the bit
+  - L680 ...and the hand's state
+  - L686 the save says format
+  - L695 a format-27 save loads
+  - L696 ...with none of it: no order, no rush, no cancel, no shell, no demolition, no buy-out
+- **L704 10. one wait for a site everywhere; an order lasts as long as its sites**
+  - L715 no order, no rush: every site's wait is waitOnSite()'s, to the bit
+  - L717 ...and a city order's quote is quoteMonths()'s
+  - L718 ...and the build quote's months with it
+  - L745 with an order set, a card's, the panel's and the Needs-you line's wait is the page's
+  - L746 ...which is everything ahead of it in the order and itself over the city's share
+  - L747 fixture: the order starves a city site the rule would have crewed
+  - L750 ...and that site reads the order's wait, not the rule's
+  - L757 a new city order's quote: a new site at the bottom of the order
+  - L760 ...and the build quote says so
+  - L769 ...one more of a city site's building joins that site where it stands in the order
+  - L778 a city site placed while an order is set is served at its bottom
+  - L782 ...and the month's end writes it into the order, at the bottom
+  - L787 fixture: none of the order's sites is left on site
+  - L788 an order with none of its sites left is cleared
+  - L791 ...so the next city site is the crews' rule's: the hand is off the queue
+  - L801 fixture: two demolitions of one Elementary School each, closed
+  - L814 the first sale is its own: all its material
+  - L815 ...the second its own: what the till had left
+  - L818 the notice says each one's sale, not the last one's twice
 
 ## ConsumptionCheck.java - 48 labelled assertions
 
@@ -7614,136 +7898,136 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > WHY THIS EXISTS. Jerus: "show how much was the actual month change, like in
 > the next month button it shows 3k but sometimes cause of land buybacks or
-> sales it was actually more or less." The dome and the Government Overview now
-> both print a measured cash movement, and a measured figure that is measured
+> sales it was actually more or less." The dome (the header's TREASURY tile
+> since 0.7.21) and the Government Overview now both print a measured cash
+> movement, and a measured figure that is measured
 > wrongly is worse than the estimate it replaced - it looks authoritative.
 > 
 > The seven things it will not let past:
 > 
->   1. THE WINDOW CLOSES. Each month's opening balance is the previous month's
 > ...
 
-- **L135 1. no gap between windows**
-  - L137 window opens where it closed
-- **L141 2. the closing IS the cash**
-  - L142 closing balance is the cash
-- **L145 3. the bridge foots**
-  - L146 the bridge foots
-- **L153 5. and on a hands-off city there is nothing in it**
-  - L155 nothing the budget cannot explain
-- **L164 AND AGAIN WITH THE SUBSIDY DIAL ON.**
-  - L190 subsidised: window opens where it closed
-  - L193 subsidised: the bridge foots
-  - L199 subsidised: nothing the budget cannot explain
-- **L211 AND IT HAS TO SURVIVE A SAVE.**
-  - L231 survives a save
-  - L233 ...and its closing balance
-  - L245 ...and the budget behind it
-  - L248 ...including what the city spent on buildings
-  - L251 ...and what it paid in interest
-- **L255 and the first month back still has no gap**
-  - L257 window survives a reload
-- **L260 AND THE ROW OPENS.**
-- **L274 and the row that says \"everything else\" opens into lines**
-  - L285 fixture: the land office listed a plot the city can afford
-  - L290 fixture: the city paid for ten houses
-  - L300 fixture: 5,000 went into the city's fund and reserves were bought twice and sold once
-  - L312 fixture: the city issued a note and a serial bond
-  - L317 fixture: and bought the note straight back
-  - L329 the land is on the budget's own line
-  - L330 ...so the journal does not name it a second time
-  - L332 the houses are on the budget's own line
-  - L333 ...so the journal does not name them a second time
-  - L337 the journal carries what was paid into the city's fund
-  - L339 ...the reserves bought, two purchases folded into one line
-  - L341 ...the reserves sold, on a line of their own
-  - L343 ...and the bond bought back, for what it cost
-  - L345 ...and nothing the treasury did not do
-  - L349 the paper raised is on the bridge's own row, not in the journal
-  - L355 the bridge foots through the journal
-  - L359 the journal explained more than it left over
-  - L378 ...and what it left over is the first coupon's timing, to the cent: the bank's share of it
-  - L387 a city that did nothing has an empty journal, and the row stays a row
-  - L408 last month's journal survives a save, line for line, in order
-  - L409 ...and so does the residual under it
-  - L411 ...and the paper raised on the row above
-  - L413 ...and the month in progress, which the next strike will count
-  - L416 ...so the reserves bought before the save are on the next month's line
-  - L418 ...and the note issued before the save is on its raised row
-  - L423 a save from before the journal loads with an empty journal, not a broken one
-- **L427 7. ROLLING WHAT FALLS DUE (0.7.13)**
-- **L430 THE REPORT.**
-- **L515 7. the rollover's arithmetic, on the brief's figures**
-  - L518 D$1.2B falling due, D$300M in cash, a D$100M surplus: it nets D$100M
-  - L522 ...and rolls D$1.1B
-  - L523 the same surplus, netted already in the year, nets nothing again
-  - L525 a deficit year nets nothing, so everything rolls
-  - L527 ...a surplus nets no more than the treasury holds
-  - L529 ...nor more than falls due
-- **L531 a city in surplus, two notes falling due in a row**
-  - L556 fixture: a new game rolls in the same structure
-  - L569 fixture: the first note falls due next month, the second the month after
-  - L574 what falls due next month is the first note's face
-  - L575 fixture: the city ran a surplus over the year
-  - L576 it nets the surplus not netted yet, capped by the cash and what falls due
-  - L578 fixture: which is part of what falls due, so the rest rolls
-  - L579 ...into one issue: a 3-month note at home, the paper falling due
-  - L582 ...its cash what falls due less what is netted
-  - L583 ...and the face its quote gives for that cash more than it: a note sells at a discount
-  - L586 12-month notes: the same sum rolls
-  - L587 ...as one 12-month note at home
-  - L590 by hand: the same falls due
-  - L591 ...and it nets and issues nothing
-  - L599 the press rolls it: a new 3-month note, issued the month before the maturity
-  - L600 ...whose cash covers what was to roll
-  - L601 ...by less than a granule of face
-  - L602 ...raised under its face
-  - L604 ...by exactly its own discount and costs
-  - L606 the record keeps the face it booked
-  - L608 ...and the note that fell due was paid
-  - L610 so rolling moved the debt by the new face less the one it paid
-  - L612 ...more than the netting alone would leave: the note's discount is borrowed into the debt
-  - L614 the ledger keeps what it netted, the month it ran
-  - L615 the bridge's raised row is what it raised
-  - L616 ...and its repaid row the note that fell due
-  - L617 ...and the month closes its audit
-  - L619 12-month notes: a 12-month note, the month before the maturity, its cash covering what was to roll
-  - L621 ...and its month closes its audit
-  - L622 by hand: nothing issued, the note paid out of cash
-  - L624 ...and its month closes its audit
-  - L629 the second note falls due the month after
-  - L630 ...and the ledger carries the first netting into its year
-  - L631 ...so it nets only the surplus not netted already
-  - L633 the surplus nets once: the two months net no more than a year's surplus between them
-  - L636 ...and that month closes its audit too
-  - L645 the setting survives a save
-  - L646 ...the ledger, month by month
-  - L649 ...and the record
-  - L651 ...so a reloaded city reads the year's netting the live one does
-- **L654 a city that built this year: a deficit, and everything rolls**
-  - L660 fixture: it builds five roads this year
-  - L661 fixture: the window abroad is open while it owes nothing abroad
-  - L663 fixture: ...and shut once it owes dollars and sells nothing abroad
-  - L695 fixture: something fell due in the deficit year
-  - L696 a deficit year nets nothing
-  - L697 ...so everything that fell due rolled, and its cash covered it
-  - L698 ...each month's new face more than the cash it raised: the interest capitalised
-  - L699 the dollar note, the window shut, rolled into a local note of its term
-  - L700 ...and the log says why
-  - L701 the serial's instalment rolled into a new serial of its original term
-  - L702 ...and every month closed its audit
-- **L704 the surplus city, exporting: a dollar note rolls abroad, in dollars**
-  - L707 fixture: it sells abroad now, and the window is open
-  - L711 fixture: it owes a dollar note
-  - L731 fixture: the city spent the year's surplus it had not netted
-  - L739 fixture: the window is open as it falls due
-  - L740 fixture: the year's surplus is netted already, so it rolls whole
-  - L741 the dollar note rolls abroad, as a 6-month dollar note
-  - L747 ...issued abroad the month before the one falling due
-  - L748 ...the one falling due paid, and the city owes the new one in dollars
-  - L752 ...its cash covering what fell due
-  - L753 ...so a bigger dollar face than the one it replaced: its discount borrowed too
-  - L755 ...and the month closes its audit
+- **L136 1. no gap between windows**
+  - L138 window opens where it closed
+- **L142 2. the closing IS the cash**
+  - L143 closing balance is the cash
+- **L146 3. the bridge foots**
+  - L147 the bridge foots
+- **L154 5. and on a hands-off city there is nothing in it**
+  - L156 nothing the budget cannot explain
+- **L165 AND AGAIN WITH THE SUBSIDY DIAL ON.**
+  - L191 subsidised: window opens where it closed
+  - L194 subsidised: the bridge foots
+  - L200 subsidised: nothing the budget cannot explain
+- **L212 AND IT HAS TO SURVIVE A SAVE.**
+  - L232 survives a save
+  - L234 ...and its closing balance
+  - L246 ...and the budget behind it
+  - L249 ...including what the city spent on buildings
+  - L252 ...and what it paid in interest
+- **L256 and the first month back still has no gap**
+  - L258 window survives a reload
+- **L261 AND THE ROW OPENS.**
+- **L275 and the row that says \"everything else\" opens into lines**
+  - L286 fixture: the land office listed a plot the city can afford
+  - L291 fixture: the city paid for ten houses
+  - L301 fixture: 5,000 went into the city's fund and reserves were bought twice and sold once
+  - L313 fixture: the city issued a note and a serial bond
+  - L318 fixture: and bought the note straight back
+  - L330 the land is on the budget's own line
+  - L331 ...so the journal does not name it a second time
+  - L333 the houses are on the budget's own line
+  - L334 ...so the journal does not name them a second time
+  - L338 the journal carries what was paid into the city's fund
+  - L340 ...the reserves bought, two purchases folded into one line
+  - L342 ...the reserves sold, on a line of their own
+  - L344 ...and the bond bought back, for what it cost
+  - L346 ...and nothing the treasury did not do
+  - L350 the paper raised is on the bridge's own row, not in the journal
+  - L356 the bridge foots through the journal
+  - L360 the journal explained more than it left over
+  - L379 ...and what it left over is the first coupon's timing, to the cent: the bank's share of it
+  - L388 a city that did nothing has an empty journal, and the row stays a row
+  - L409 last month's journal survives a save, line for line, in order
+  - L410 ...and so does the residual under it
+  - L412 ...and the paper raised on the row above
+  - L414 ...and the month in progress, which the next strike will count
+  - L417 ...so the reserves bought before the save are on the next month's line
+  - L419 ...and the note issued before the save is on its raised row
+  - L424 a save from before the journal loads with an empty journal, not a broken one
+- **L428 7. ROLLING WHAT FALLS DUE (0.7.13)**
+- **L431 THE REPORT.**
+- **L516 7. the rollover's arithmetic, on the brief's figures**
+  - L519 D$1.2B falling due, D$300M in cash, a D$100M surplus: it nets D$100M
+  - L523 ...and rolls D$1.1B
+  - L524 the same surplus, netted already in the year, nets nothing again
+  - L526 a deficit year nets nothing, so everything rolls
+  - L528 ...a surplus nets no more than the treasury holds
+  - L530 ...nor more than falls due
+- **L532 a city in surplus, two notes falling due in a row**
+  - L557 fixture: a new game rolls in the same structure
+  - L570 fixture: the first note falls due next month, the second the month after
+  - L575 what falls due next month is the first note's face
+  - L576 fixture: the city ran a surplus over the year
+  - L577 it nets the surplus not netted yet, capped by the cash and what falls due
+  - L579 fixture: which is part of what falls due, so the rest rolls
+  - L580 ...into one issue: a 3-month note at home, the paper falling due
+  - L583 ...its cash what falls due less what is netted
+  - L584 ...and the face its quote gives for that cash more than it: a note sells at a discount
+  - L587 12-month notes: the same sum rolls
+  - L588 ...as one 12-month note at home
+  - L591 by hand: the same falls due
+  - L592 ...and it nets and issues nothing
+  - L600 the press rolls it: a new 3-month note, issued the month before the maturity
+  - L601 ...whose cash covers what was to roll
+  - L602 ...by less than a granule of face
+  - L603 ...raised under its face
+  - L605 ...by exactly its own discount and costs
+  - L607 the record keeps the face it booked
+  - L609 ...and the note that fell due was paid
+  - L611 so rolling moved the debt by the new face less the one it paid
+  - L613 ...more than the netting alone would leave: the note's discount is borrowed into the debt
+  - L615 the ledger keeps what it netted, the month it ran
+  - L616 the bridge's raised row is what it raised
+  - L617 ...and its repaid row the note that fell due
+  - L618 ...and the month closes its audit
+  - L620 12-month notes: a 12-month note, the month before the maturity, its cash covering what was to roll
+  - L622 ...and its month closes its audit
+  - L623 by hand: nothing issued, the note paid out of cash
+  - L625 ...and its month closes its audit
+  - L630 the second note falls due the month after
+  - L631 ...and the ledger carries the first netting into its year
+  - L632 ...so it nets only the surplus not netted already
+  - L634 the surplus nets once: the two months net no more than a year's surplus between them
+  - L637 ...and that month closes its audit too
+  - L646 the setting survives a save
+  - L647 ...the ledger, month by month
+  - L650 ...and the record
+  - L652 ...so a reloaded city reads the year's netting the live one does
+- **L655 a city that built this year: a deficit, and everything rolls**
+  - L661 fixture: it builds five roads this year
+  - L662 fixture: the window abroad is open while it owes nothing abroad
+  - L664 fixture: ...and shut once it owes dollars and sells nothing abroad
+  - L696 fixture: something fell due in the deficit year
+  - L697 a deficit year nets nothing
+  - L698 ...so everything that fell due rolled, and its cash covered it
+  - L699 ...each month's new face more than the cash it raised: the interest capitalised
+  - L700 the dollar note, the window shut, rolled into a local note of its term
+  - L701 ...and the log says why
+  - L702 the serial's instalment rolled into a new serial of its original term
+  - L703 ...and every month closed its audit
+- **L705 the surplus city, exporting: a dollar note rolls abroad, in dollars**
+  - L708 fixture: it sells abroad now, and the window is open
+  - L712 fixture: it owes a dollar note
+  - L732 fixture: the city spent the year's surplus it had not netted
+  - L740 fixture: the window is open as it falls due
+  - L741 fixture: the year's surplus is netted already, so it rolls whole
+  - L742 the dollar note rolls abroad, as a 6-month dollar note
+  - L748 ...issued abroad the month before the one falling due
+  - L749 ...the one falling due paid, and the city owes the new one in dollars
+  - L753 ...its cash covering what fell due
+  - L754 ...so a bigger dollar face than the one it replaced: its discount borrowed too
+  - L756 ...and the month closes its audit
 
 ## VanCheck.java - 21 labelled assertions
 

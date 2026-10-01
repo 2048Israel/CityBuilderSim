@@ -1,6 +1,7 @@
 package ham.citybuildersim.ui;
 
 import ham.citybuildersim.*;
+import ham.citybuildersim.ui.Palette.Fonts;
 import static ham.citybuildersim.ui.Money.*;
 import static ham.citybuildersim.ui.Statement.*;
 import static ham.citybuildersim.ui.Pieces.*;
@@ -28,10 +29,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- * The window: the stage and its theme, the clock and the speed ladder, the two
- * strips, the rail down the left and the inbox, the left panel and the
- * construction panel, the save and settings dialogs, the time-skip dialog, and
- * the scroller every screen draws into. Everything a tab SHOWS is a class of
+ * The window: the stage and its theme, the header - the clock and the speed,
+ * six headline tiles, the rating and the inbox - and the debt bar, the rail
+ * down the left, the left panel and the construction panel, the main menu over
+ * its backdrop, the save and settings dialogs, the time-skip dialog, and the
+ * scroller every screen draws into. Everything a tab SHOWS is a class of
  * its own in this package since 2026-09-18 - one screen per class, listed
  * below in rail order - and this is what is left once they are out: what the
  * screens share, and the shell that holds them.
@@ -70,7 +72,8 @@ public class UserInterface extends Application {
     final PolicyScreen     policyScreen     = new PolicyScreen(this);
     final HistoryScreen    historyScreen    = new HistoryScreen(this);
     final SummaryScreen    summaryScreen    = new SummaryScreen(this);   // the left panel's content, not a tab
-    final FoundingScreen   foundingScreen   = new FoundingScreen(this);  // Start New Game's screen (0.7.10)
+    final FoundingScreen   foundingScreen   = new FoundingScreen(this);  // New city's screen (0.7.10; Start New Game's until 0.7.21)
+    final ConstructionScreen constructionScreen = new ConstructionScreen(this);  // the construction page (0.7.22), the Build tab's
 
     /* ---------------------------------------------------------------------
        WHERE THE SCREENS WENT. Each line is a run of this file's banner
@@ -119,13 +122,26 @@ public class UserInterface extends Application {
     private Stage stage;
     VBox rootMenu;
 
-    /** The navigation rail down the panel's right edge; see start(). */
+    /** The navigation rail down the window's left edge (0.7.21; it was the panel's right edge); see start(). */
     private VBox tabRail;
-    /** The middle of the window, with the three overlays on top of it. */
+    /** The middle of the window, with the inbox's list and the toasts on top of it. */
     private StackPane stagePane;
+    /** The inbox's list, dropped down at the stage's top right while it is open (its envelope is the header's since 0.7.21). */
     private VBox inboxCorner;
-    private HBox timeControls;
-    private StackPane incomeDome;
+    /** The toasts, stacked at the stage's bottom right (0.7.20); see TOASTS. */
+    private VBox toastStack;
+    /** The whole window, with a dialog laid over it when one is open (0.7.20). */
+    private StackPane windowStack;
+    /** The dialog that is up - Quit's, or since 0.7.22 a confirmation (confirm()) - or null. */
+    private StackPane quitDialog;
+    /**
+     * Whether a city has been founded or loaded this session (0.7.20;
+     * anotherCity()). Not Game.isRunning(): the world the game builds at
+     * start-up already says it is running, so on a cold start Resume opened
+     * that empty world instead of loading the autosave - and the empty world,
+     * once played, autosaved over the city the player meant to resume.
+     */
+    private boolean cityOpen;
     /** The middle column's scroller. A field, so clearMenu can put it back. */
     javafx.scene.control.ScrollPane menuScroller;
     private VBox constructionPanel;
@@ -145,7 +161,9 @@ public class UserInterface extends Application {
        there is a purchase you have not looked at and opens the receipt when
        clicked. Two fields, because "have you looked at it" is a question about
        this window and not about the game: the serial the player last opened,
-       and whether the card is currently showing.
+       and whether the card is currently showing. Since 0.7.20 the card is a
+       popover over the page with the last five purchases (BuildScreen,
+       receiptCorner()), so opening it moves nothing.
        ===================================================================== */
     int receiptSeen = 0;
     boolean receiptOpen = false;
@@ -187,100 +205,135 @@ public class UserInterface extends Application {
        resource is one more thing that can fail to reach the jar, and a theme
        that silently does not load leaves the game unreadable rather than merely
        unstyled.
+
+       THE MOCKUPS' PALETTE AND IBM PLEX (0.7.21). Every colour below is a
+       Palette constant now - the sheet carried its own copies of the old
+       greys - and the root names the words' face (Fonts.sans(), read after
+       Fonts.load() in start()), so every label that names no family of its
+       own is in Plex Sans. The axes' tick labels are figures, so Plex Mono.
        ===================================================================== */
 
-    /** The middle of the window: the blackish blue everything else sits on. */
-    private static final String STAGE = "#111a24";
+    /** The middle of the window: the blackish blue everything else sits on (Palette.STAGE since 0.7.21). */
+    private static final String STAGE = Palette.STAGE;
 
     private void applyTheme(Scene target) {
 
         String css =
             ".root {"
-          + "  -fx-base: #1b2530;"
-          + "  -fx-background: #111a24;"
-          + "  -fx-control-inner-background: #17212c;"
-          + "  -fx-text-background-color: #e3e8ec;"
-          + "  -fx-accent: #2f6fa8;"
-          + "  -fx-focus-color: #5cb8ff;"
-          + "  -fx-faint-focus-color: rgba(92,184,255,0.15);"
+          + "  -fx-font-family: " + Fonts.sans() + ";"
+          + "  -fx-base: " + Palette.CONTROL + ";"
+          + "  -fx-background: " + Palette.STAGE + ";"
+          + "  -fx-control-inner-background: " + Palette.FIELD + ";"
+          + "  -fx-text-background-color: " + Palette.TEXT_HEAD + ";"
+          + "  -fx-accent: " + Palette.ACCENT_FILL + ";"
+          + "  -fx-focus-color: " + Palette.ACCENT + ";"
+          + "  -fx-faint-focus-color: rgba(90,169,255,0.15);"
           + "}"
-          + ".label { -fx-text-fill: #c3ccd3; }"
+          + ".label { -fx-text-fill: " + Palette.TEXT_BODY + "; }"
 
           + ".button {"
-          + "  -fx-background-color: #22303c;"
-          + "  -fx-text-fill: #dbe4ea;"
+          + "  -fx-background-color: " + Palette.CONTROL + ";"
+          + "  -fx-text-fill: " + Palette.TEXT_HEAD + ";"
           + "  -fx-background-radius: 4;"
-          + "  -fx-border-color: #33404b;"
+          + "  -fx-border-color: " + Palette.EDGE + ";"
           + "  -fx-border-radius: 4;"
           + "  -fx-padding: 6 14 6 14;"
           + "  -fx-cursor: hand;"
           + "}"
-          + ".button:hover    { -fx-background-color: #2b3c4b; -fx-border-color: #5cb8ff; }"
-          + ".button:pressed  { -fx-background-color: #18222c; }"
+          + ".button:hover    { -fx-background-color: " + Palette.HOVER + "; -fx-border-color: " + Palette.ACCENT + "; }"
+          + ".button:pressed  { -fx-background-color: " + Palette.RAISED + "; }"
           + ".button:disabled { -fx-opacity: 0.4; }"
 
           + ".text-field {"
-          + "  -fx-background-color: #17212c;"
-          + "  -fx-text-fill: #e3e8ec;"
-          + "  -fx-prompt-text-fill: #6b7c89;"
-          + "  -fx-border-color: #33404b;"
+          + "  -fx-background-color: " + Palette.FIELD + ";"
+          + "  -fx-text-fill: " + Palette.TEXT_HEAD + ";"
+          + "  -fx-prompt-text-fill: " + Palette.TEXT_SPENT + ";"
+          + "  -fx-border-color: " + Palette.EDGE + ";"
           + "  -fx-border-radius: 3;"
           + "  -fx-background-radius: 3;"
           + "}"
+          + ".text-field:focused { -fx-border-color: " + Palette.ACCENT + "; }"
+
+          // A link that reads as one - the founding screen's two (0.7.21).
+          + ".hyperlink, .hyperlink:visited { -fx-text-fill: " + Palette.ACCENT + ";"
+          + "  -fx-border-color: transparent; -fx-padding: 0; -fx-underline: false; }"
+          + ".hyperlink:hover { -fx-underline: true; }"
 
           + ".scroll-pane { -fx-background-color: transparent; -fx-background: transparent; }"
           + ".scroll-pane > .viewport { -fx-background-color: transparent; }"
           + ".scroll-bar { -fx-background-color: transparent; }"
-          + ".scroll-bar > .thumb { -fx-background-color: #33404b; -fx-background-radius: 6; }"
-          + ".scroll-bar > .thumb:hover { -fx-background-color: #4c6070; }"
+          + ".scroll-bar > .thumb { -fx-background-color: " + Palette.CONTROL_EDGE + "; -fx-background-radius: 6; }"
+          + ".scroll-bar > .thumb:hover { -fx-background-color: " + Palette.TEXT_SPENT + "; }"
           + ".scroll-bar > .increment-button,"
           + ".scroll-bar > .decrement-button { -fx-opacity: 0; -fx-padding: 0; }"
 
-          + ".progress-bar > .track { -fx-background-color: #17212c; }"
-          + ".progress-bar > .bar   { -fx-background-color: #5cb8ff; }"
+          // The construction panel's sites, in the building colour (0.7.21).
+          + ".progress-bar > .track { -fx-background-color: " + Palette.FIELD + "; }"
+          + ".progress-bar > .bar   { -fx-background-color: " + Palette.BUILDING + "; }"
 
           // The Policy tab's levers. A default Slider is a pale track and a
           // pale thumb, which on this ground reads as a disabled control.
           + ".slider > .track {"
-          + "  -fx-background-color: #17212c;"
-          + "  -fx-border-color: #33404b;"
+          + "  -fx-background-color: " + Palette.FIELD + ";"
+          + "  -fx-border-color: " + Palette.EDGE + ";"
           + "  -fx-border-radius: 4;"
           + "  -fx-background-radius: 4;"
           + "  -fx-pref-height: 8;"
           + "}"
           + ".slider > .thumb {"
-          + "  -fx-background-color: #5cb8ff;"
+          + "  -fx-background-color: " + Palette.ACCENT + ";"
           + "  -fx-background-radius: 9;"
           + "  -fx-padding: 8;"
           + "  -fx-effect: null;"
           + "}"
-          + ".slider > .thumb:hover   { -fx-background-color: #9ad4ff; }"
-          + ".slider > .thumb:pressed { -fx-background-color: #ffffff; }"
+          + ".slider > .thumb:hover   { -fx-background-color: " + Palette.ACCENT_LIGHT + "; }"
+          + ".slider > .thumb:pressed { -fx-background-color: " + Palette.TEXT_MAX + "; }"
 
-          + ".tooltip { -fx-background-color: transparent; }"
+          /*
+           * ONE TOOLTIP, EVERYWHERE (0.7.20). This line made every tooltip
+           * transparent, so the header's price tooltip was drawn straight over
+           * the cards under it and the receipt's ran into the right panel. A
+           * dark panel, an edge, padding and wrapped text; the width every
+           * tooltip wraps at is TIP_WIDTH (dressTooltips()). On the raised
+           * ground since 0.7.21, the popovers' (Pieces.infoButton()).
+           */
+          + ".tooltip {"
+          + "  -fx-background-color: " + Palette.PINNED + ";"
+          + "  -fx-background-radius: " + Palette.RADIUS + ";"
+          + "  -fx-border-color: " + Palette.CONTROL_EDGE + ";"
+          + "  -fx-border-radius: " + Palette.RADIUS + ";"
+          + "  -fx-border-width: 1;"
+          + "  -fx-padding: 7 10 7 10;"
+          + "  -fx-text-fill: " + Palette.TEXT_HEAD + ";"
+          + "  -fx-font-family: " + Fonts.sans() + ";"
+          + "  -fx-font-size: 12px;"
+          + "  -fx-wrap-text: true;"
+          + "  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 10, 0, 0, 2);"
+          + "}"
 
           + ".chart { -fx-background-color: transparent; -fx-padding: 4; }"
-          + ".chart-plot-background { -fx-background-color: #16202a; }"
-          + ".chart-title { -fx-text-fill: #dbe4ea; }"
+          + ".chart-plot-background { -fx-background-color: " + Palette.PANEL + "; }"
+          + ".chart-title { -fx-text-fill: " + Palette.TEXT_HEAD + "; }"
           + ".chart-legend { -fx-background-color: transparent; }"
-          + ".chart-vertical-grid-lines, .chart-horizontal-grid-lines { -fx-stroke: #24313c; }"
+          + ".chart-vertical-grid-lines, .chart-horizontal-grid-lines { -fx-stroke: " + Palette.EDGE + "; }"
           + ".chart-alternative-row-fill { -fx-fill: transparent; -fx-stroke: transparent; }"
-          + ".chart-pie-label { -fx-fill: #b6c2cb; }"
-          + ".chart-pie-label-line { -fx-stroke: #4c6070; }"
+          + ".chart-pie-label { -fx-fill: " + Palette.TEXT_LABEL + "; }"
+          + ".chart-pie-label-line { -fx-stroke: " + Palette.CONTROL_EDGE + "; }"
           + ".axis {"
-          + "  -fx-tick-label-fill: #8fa3b0;"
-          + "  -fx-tick-mark-stroke: #4c6070;"
-          + "  -fx-minor-tick-mark-stroke: #33404b;"
+          + "  -fx-tick-label-fill: " + Palette.TEXT_MUTED + ";"
+          + "  -fx-tick-label-font: 10px " + Palette.mono() + ";"
+          + "  -fx-tick-mark-stroke: " + Palette.CONTROL_EDGE + ";"
+          + "  -fx-minor-tick-mark-stroke: " + Palette.EDGE + ";"
           + "}"
-          + ".axis-label { -fx-text-fill: #8fa3b0; }";
+          + ".axis-label { -fx-text-fill: " + Palette.TEXT_MUTED + "; }";
 
         target.getStylesheets().add("data:text/css;base64,"
                 + java.util.Base64.getEncoder().encodeToString(
                         css.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }
 
-    /** Always-visible strips on the two BorderPane edges nothing else uses. */
-    private HBox dateBar;
+    /** Always-visible strips on the two BorderPane edges nothing else uses: the header (0.7.21; the date bar until then) and the debt bar. */
+    private HBox header;
     private HBox debtBar;
     private Scene scene;
 
@@ -315,12 +368,14 @@ public class UserInterface extends Application {
     public static final double SECONDS_PER_MONTH = 5.0;
 
     /**
-     * The ladder the speed slider sticks to.
+     * The ladder the speed steps along: a rung a click on the clock's two
+     * arrows since 0.7.21, and the stops the speed slider stuck to before.
      *
      * A slider that snaps rather than a row of buttons or a free drag - Jerus's
      * call: "a slider that sticks if you get what i mean, aka the discrete one,
      * but its a sticky ladder". Dragging is the natural gesture for a speed and
-     * landing between two stops is not a speed anybody meant to pick.
+     * landing between two stops is not a speed anybody meant to pick. The
+     * header's arrows (0.7.21) keep the stops and have no drag.
      */
     private static final double[] SPEEDS = {0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 50};
     private static final int NORMAL_SPEED = 3;              // 1x
@@ -363,12 +418,24 @@ public class UserInterface extends Application {
         this.stage = primaryStage;
         if (game == null) game = new Game();
 
+        // IBM Plex, before anything is styled (0.7.21): every style built from
+        // here on reads the families it loaded. See Fonts.
+        Fonts.load();
+
         //Initialize the core UI once
         this.rootMenu = new VBox(10);
-        this.rootMenu.setAlignment(Pos.CENTER);
-        // A little air top and bottom. The dome and the round buttons have a
-        // strip of their own below this scroller, so nothing has to be left
-        // clear for them - see the bottom strip in start().
+        /*
+         * TOP-ALIGNED (0.7.20), on every screen. The column was centred
+         * vertically, so a short page jumped whenever its height changed -
+         * switching build tabs, the hint line appearing under the grid, the
+         * receipt opening, a tab row wrapping differently - and a click aimed
+         * at a card landed on the tab row that had moved under it. A page
+         * that starts at the top stays where it was put.
+         */
+        this.rootMenu.setAlignment(Pos.TOP_CENTER);
+        // A little air top and bottom. Nothing floats over the foot of the
+        // stage since 0.7.21 - the clock is in the header - so nothing has to
+        // be left clear for it.
         this.rootMenu.setPadding(new javafx.geometry.Insets(8, 0, 14, 0));
 
         // Persistent construction panel down the right-hand side. The menu system
@@ -384,8 +451,8 @@ public class UserInterface extends Application {
          * "the right tab make it match the other two".
          */
         this.constructionPanel.setStyle(
-                "-fx-padding: 12 12 12 10; -fx-background-color: #1c262b;"
-                + " -fx-border-color: #37474f; -fx-border-width: 0 0 0 2;");
+                "-fx-padding: 12 12 12 10; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;");
 
         // City overview down the left. Same reasoning as the construction panel:
         // it lives outside rootMenu so the menu system can't clear it away.
@@ -409,29 +476,32 @@ public class UserInterface extends Application {
          * else. Red on light grey does not; red on near-black does.
          */
         this.cityPanel.setStyle(
-                "-fx-padding: 12 10 12 12; -fx-background-color: #1c262b;"
-                + " -fx-border-color: #37474f; -fx-border-width: 0 2 0 0;");
+                "-fx-padding: 12 10 12 12; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;");
 
         /*
-         * Date, population, prices, the rate and cash across the top; the next
-         * debt maturities across the bottom.
+         * The header across the top - the clock, the six headline tiles, the
+         * rating and the inbox (0.7.21; see THE HEADER) - and the next debt
+         * maturities across the bottom.
          *
          * Both live outside rootMenu for exactly the reason the two side panels
          * do: the menu system clears its own children on every screen change, so
          * anything meant to be always-visible has to hang off the BorderPane
          * instead. These were the two edges still unused.
          */
-        this.dateBar = new HBox(20);
-        this.dateBar.setAlignment(Pos.CENTER_LEFT);
-        this.dateBar.setStyle(
-                "-fx-padding: 10 18 10 18; -fx-background-color: #1c262b;"
-                + " -fx-border-color: #37474f; -fx-border-width: 0 0 2 0;");
+        this.header = new HBox(12);
+        this.header.setAlignment(Pos.CENTER_LEFT);
+        this.header.setPrefHeight(Palette.HEADER);
+        this.header.setMinHeight(Palette.HEADER);
+        this.header.setStyle(
+                "-fx-padding: 10 14 10 14; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 1 0;");
 
         this.debtBar = new HBox(16);
         this.debtBar.setAlignment(Pos.CENTER_LEFT);
         this.debtBar.setStyle(
-                "-fx-padding: 6 16 6 16; -fx-background-color: #1c262b;"
-                + " -fx-border-color: #33404b; -fx-border-width: 1 0 0 0;");
+                "-fx-padding: 6 16 6 16; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 1 0 0 0;");
 
         /* =====================================================================
            THE MIDDLE COLUMN SCROLLS NOW, and it should have from the start.
@@ -445,9 +515,10 @@ public class UserInterface extends Application {
            WHY THE MIN-HEIGHT BINDING. A ScrollPane top-aligns its content,
            which would have un-centred every menu in the game - forty screens
            changed to fix one. Pinning the VBox to at least the viewport height
-           keeps it centred while it fits and lets it grow past that when it
-           does not, so a short menu looks exactly as it always did and a long
-           one scrolls. Four pixels of slack, or the binding fights the
+           kept it centred while it fitted and let it grow past that when it
+           did not. Since 0.7.20 the column is top-aligned (see rootMenu), and
+           the binding stays: it is what the redraw holds the page's height
+           against (clearMenu). Four pixels of slack, or the binding fights the
            scrollbar it just caused.
            ===================================================================== */
         menuScroller = new javafx.scene.control.ScrollPane(rootMenu);
@@ -471,6 +542,8 @@ public class UserInterface extends Application {
          */
         menuScroller.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, e -> {
             if (e.getDeltaY() == 0) return;
+            // A wheel over a chart that zooms is the chart's (0.7.23; TimeChart.WHEEL_OWNER).
+            if (overAChart(e.getTarget())) return;
             javafx.scene.Node page = menuScroller.getContent();
             if (page == null) return;
             double span = pageSpan(page);
@@ -532,7 +605,7 @@ public class UserInterface extends Application {
         });
 
         /* =====================================================================
-           THE RAIL, AND WHY IT IS PART OF THE PANEL.
+           THE RAIL, AND WHY IT WAS PART OF THE PANEL.
 
            Jerus: "right where that city overview section ends and the blue box
            starts, add a sort of tab list, which will be the buttons we already
@@ -551,28 +624,36 @@ public class UserInterface extends Application {
            the middle of the window. The panel got wider to pay for it - the
            numbers keep the 290 they already needed, and the rail's 46 is
            additional rather than taken.
+
+           AT THE WINDOW'S EDGE SINCE 0.7.21, as the mockups draw it: 76 wide,
+           each button an icon over its name, the selected one in its area's
+           colour (see THE RAIL). A rail of names reads on its own, and the
+           window's edge is where a player's eye goes for the way round.
            ===================================================================== */
-        this.tabRail = new VBox(2);
+        this.tabRail = new VBox(0);
         this.tabRail.setPrefWidth(RAIL_WIDTH);
         this.tabRail.setMinWidth(RAIL_WIDTH);
+        this.tabRail.setMaxWidth(RAIL_WIDTH);
         this.tabRail.setAlignment(Pos.TOP_CENTER);
         this.tabRail.setStyle(
-                "-fx-padding: 10 0 10 0; -fx-background-color: #1c262b;"
-                + " -fx-border-color: #37474f; -fx-border-width: 0 2 0 1;");
+                "-fx-padding: 6 0 0 0; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;");
 
-        HBox leftEdge = new HBox(cityPanel, tabRail);
-        leftEdge.setStyle("-fx-background-color: #1c262b;");
+        HBox leftEdge = new HBox(tabRail, cityPanel);
+        leftEdge.setStyle("-fx-background-color: " + Palette.PANEL + ";");
 
         /* =====================================================================
            THE STAGE IS A STACK NOW.
 
-           Three things have to float over the middle rather than sit in the
+           Three things had to float over the middle rather than sit in the
            column with the menus: the inbox in the top right, the time controls
            in the bottom right, and the income dome at the bottom. All three are
            true of the CITY rather than of whatever screen is open, so putting
            them in rootMenu would mean every one of fifty screens drawing them,
            and a screen that forgot would silently lose the player's ability to
-           advance a month.
+           advance a month. Since 0.7.21 the clock and the month's income are
+           in the header and the envelope is the header's; what floats is the
+           inbox's list and the toasts.
 
            Each overlay is pinned to USE_PREF_SIZE. A StackPane stretches its
            children to fill by default, and a stretched transparent overlay would
@@ -583,48 +664,40 @@ public class UserInterface extends Application {
         this.stagePane.getChildren().add(menuScroller);
 
         /*
-         * The inbox is the only thing that FLOATS, and it earns it: it is shut
-         * almost always, it is opened deliberately, and while it is open
-         * covering the top corner of the screen is the point.
+         * The inbox's list is the one thing that FLOATS, and it earns it: it is
+         * shut almost always, it is opened deliberately (the envelope in the
+         * header), and while it is open covering the top corner of the screen
+         * is the point.
          */
         this.inboxCorner = new VBox(0);
         this.inboxCorner.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         StackPane.setAlignment(inboxCorner, Pos.TOP_RIGHT);
-        StackPane.setMargin(inboxCorner, new javafx.geometry.Insets(12, 14, 0, 0));
+        StackPane.setMargin(inboxCorner, new javafx.geometry.Insets(6, 14, 0, 0));
         this.stagePane.getChildren().add(inboxCorner);
 
+        // The toasts, at the stage's bottom right, clear of the strips and the
+        // inbox (0.7.20) - the corner the clock sat over until 0.7.21. Not
+        // picked on its bounds, so the gaps between toasts are the page's.
+        this.toastStack = new VBox(6);
+        this.toastStack.setAlignment(Pos.BOTTOM_RIGHT);
+        this.toastStack.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        this.toastStack.setPickOnBounds(false);
+        StackPane.setAlignment(toastStack, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(toastStack, new javafx.geometry.Insets(0, 24, 16, 0));
+        this.stagePane.getChildren().add(toastStack);
+
         /* =====================================================================
-           AND THE TIME CONTROLS DO NOT FLOAT, WHICH IS A CORRECTION.
+           AND THE TIME CONTROLS DID NOT FLOAT, WHICH WAS A CORRECTION.
 
            They were overlaid on the stage with the dome, and play-testing the
            healthcare build menu showed exactly what that costs: the dome sat on
-           top of the Memorial Cemetery row and hid its price. A menu can be
-           scrolled out from under an overlay, but there is no scroll position
-           at which the bottom of the stage is not covered - so a row could
-           always be hiding under it, and the player has no way to know.
-
-           They live in a strip of their own now, below the scroller and above
-           the debt bar. The viewport genuinely ends where the strip begins, so
-           nothing is ever underneath anything. Same place on screen, no dead
-           zone - and rootMenu no longer needs the 86px of bottom padding it was
-           carrying to let long menus clear them.
+           top of the Memorial Cemetery row and hid its price. They moved to a
+           strip of their own below the scroller, and since 0.7.21 they are in
+           the header with the date (see THE HEADER): the play button, the
+           month and the speed, and the dome's figure on the TREASURY tile. So
+           the stage is the scroller alone, to the window's foot.
            ===================================================================== */
-        this.timeControls = new HBox(10);
-        this.timeControls.setAlignment(Pos.BOTTOM_RIGHT);
-        this.timeControls.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        StackPane.setAlignment(timeControls, Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(timeControls, new javafx.geometry.Insets(0, 20, 8, 0));
-
-        this.incomeDome = new StackPane();
-        this.incomeDome.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        StackPane.setAlignment(incomeDome, Pos.BOTTOM_CENTER);
-
-        StackPane bottomStrip = new StackPane(incomeDome, timeControls);
-        bottomStrip.setPrefHeight(STRIP_HEIGHT);
-        bottomStrip.setMinHeight(STRIP_HEIGHT);
-        bottomStrip.setStyle("-fx-background-color: " + STAGE + ";");
-
-        VBox stageColumn = new VBox(stagePane, bottomStrip);
+        VBox stageColumn = new VBox(stagePane);
         VBox.setVgrow(stagePane, Priority.ALWAYS);
         stageColumn.setStyle("-fx-background-color: " + STAGE + ";");
 
@@ -635,7 +708,7 @@ public class UserInterface extends Application {
            month, and then try to scroll it doesn't let you, it locks."
 
            It was not locked. Clicking Next Month leaves the pointer ON the Next
-           Month button, and that button lives in the bottom strip, which is a
+           Month button, and that button lived in the bottom strip, which was a
            SIBLING of the scroller rather than inside it - so the wheel event
            went to the button, bubbled up to a parent with nothing to say about
            it, and died. Moving the pointer back over the page fixed it, which
@@ -662,10 +735,16 @@ public class UserInterface extends Application {
         root.setCenter(stageColumn);
         root.setLeft(leftEdge);
         root.setRight(constructionPanel);
-        root.setTop(dateBar);
+        root.setTop(header);
         root.setBottom(debtBar);
-        this.scene = new Scene(root);
+        // A stack over the whole window, so a dialog can be laid over all of it
+        // and take every click while it is up (0.7.20; see showQuitDialog) -
+        // and, since 0.7.21, the main menu and the founding screen over their
+        // backdrop (see THE MAIN MENU).
+        this.windowStack = new StackPane(root);
+        this.scene = new Scene(windowStack);
         applyTheme(scene);
+        dressTooltips();
 
 
         // The window title is the cheapest possible bug report: whatever a
@@ -692,7 +771,8 @@ public class UserInterface extends Application {
 
            AND THE HINT IS AN OVERLAY. JavaFX paints "Press ESC to exit full
            screen" across the top of the window for a few seconds on entry -
-           over the date bar, saying the wrong key, on every single launch.
+           over the header (the date bar then), saying the wrong key, on every
+           single launch.
            ================================================================= */
         prefs = GamePrefs.load(game.getGameFiles());
         stage.setFullScreenExitKeyCombination(
@@ -722,8 +802,8 @@ public class UserInterface extends Application {
         stage.show();
         startClock();
 
-        // Esc is the pause menu, from anywhere. See the gear at the foot of
-        // the rail for the half of this a new player can find on their own -
+        // Esc is the pause menu, from anywhere. See the Menu button at the foot
+        // of the rail for the half of this a new player can find on their own -
         // a shortcut nothing announces is a shortcut for people who already
         // know the game.
         /*
@@ -747,10 +827,41 @@ public class UserInterface extends Application {
              * of a save name. Escape and F11 are safe anywhere; P is not, and
              * the guard costs one line.
              */
-            boolean typing = scene.getFocusOwner() instanceof TextField;
+            boolean typing = scene.getFocusOwner() instanceof javafx.scene.control.TextInputControl;
+
+            /*
+             * AN OPEN DIALOG KEEPS ESCAPE FOR CLOSING ITSELF (0.7.20), and
+             * the shortcuts wait until it is gone: every other key goes to the
+             * dialog's own buttons, as on any dialog.
+             */
+            if (quitDialog != null) {
+                if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                    closeQuitDialog();
+                    e.consume();
+                }
+                return;
+            }
+
+            /*
+             * THE CHART'S FULL SCREEN KEEPS ESCAPE FOR LEAVING IT (0.7.23):
+             * the first Esc comes back to City History, the next opens the
+             * menu as everywhere. P leaves it and opens the menu, since the
+             * menu is drawn over the window too. F11 is not this - it is the
+             * window's own full screen, and passes through untouched.
+             */
+            if (chartFull != null) {
+                if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                    leaveChartFullScreen(true);
+                    e.consume();
+                    return;
+                }
+                if (!typing && e.getCode() == javafx.scene.input.KeyCode.P) leaveChartFullScreen(false);
+            }
 
             if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE
                     || (!typing && e.getCode() == javafx.scene.input.KeyCode.P)) {
+                // A tooltip still up would hang over the menu.
+                hideTooltips();
                 showMainMenu();
                 e.consume();
             } else if (e.getCode() == javafx.scene.input.KeyCode.F11) {
@@ -855,6 +966,8 @@ public class UserInterface extends Application {
             receiptPulse.stop();
             receiptPulse = null;
         }
+        // The receipt is a popover on the build page (0.7.20); it goes when the page does.
+        if (buildScreen != null && !"handleAllBuildingMenus".equals(screen)) buildScreen.closeReceipt();
 
         /* =================================================================
            AND THE SCROLL STAYS WHERE YOU PUT IT.
@@ -882,6 +995,11 @@ public class UserInterface extends Application {
            position from the last time you visited, which is not what "go to the
            top of a new screen" means.
            ================================================================= */
+        // The chart's full screen is City History's, and goes when another screen comes (0.7.23) -
+        // without History redrawing itself in the middle of this one's drawing.
+        if (chartFull != null && !"showHistoryMenu".equals(screen)) leaveChartFullScreen(false);
+        // ...and City History, left, lets go of its chart's drag and its pending redraw (after the docs pass).
+        if ("showHistoryMenu".equals(currentScreen) && !"showHistoryMenu".equals(screen)) historyScreen.leaving();
         boolean sameScreen = screen.equals(currentScreen) && !railJump;
         railJump = false;
         // Anything vvalue does from here until the settle below is the rebuild
@@ -891,13 +1009,15 @@ public class UserInterface extends Application {
         // The page's position is no longer read off the scroller here - see
         // pageScrollAt, which the player alone writes.
         if (!sameScreen) innerScrollAt.clear();
+        // An (i)'s popover belongs to the page it was opened on (0.7.21).
+        if (!sameScreen) Pieces.closePopover();
         currentScreen = screen;
 
         /*
          * HOW TO DRAW THIS SCREEN AGAIN.
          *
-         * The round button at the bottom right advances a month from wherever
-         * the player happens to be, so after the month has run it has to redraw
+         * The clock advances a month from wherever the player happens to be
+         * (the header's play button, since 0.7.21), so after the month has run it has to redraw
          * whatever was on show - and a string cannot be called. Every screen
          * hands over a lambda that calls itself with the arguments it was given,
          * which is why the call reads clearMenu("showMiningMenu", () ->
@@ -944,13 +1064,20 @@ public class UserInterface extends Application {
         final boolean releasePage = heldPage;
 
         rootMenu.getChildren().clear();
+        // The main menu and the founding screen are drawn over the whole window
+        // (0.7.21); every other screen takes the layer away. See THE MAIN MENU.
+        // ...and so are the menu's own Settings, Load and Save while no city
+        // is open (0.7.22): on a cold start there is nothing of a city to
+        // show around them. See menuPage().
+        boolean overBackdrop = !cityOpen && coldMenu(screen);
+        showTitleLayer("showMainMenu".equals(screen) || FoundingScreen.SCREEN.equals(screen) || overBackdrop,
+                FoundingScreen.SCREEN.equals(screen) || overBackdrop);
         summaryScreen.refreshCityPanel();
         refreshConstructionPanel();
-        refreshDateBar();
+        refreshHeader();
         refreshDebtBar();
         refreshTabRail();
         refreshInbox();
-        refreshTimeControls();
 
         if (menuScroller != null) {
             if (!sameScreen) menuScroller.setVvalue(0);
@@ -1033,7 +1160,7 @@ public class UserInterface extends Application {
      */
     void redraw() { redrawScreen.run(); }
 
-    /** The screen Esc was pressed on, so Resume can go back to it. */
+    /** The screen Esc was pressed on, so Continue (Resume until 0.7.21) can go back to it. */
     private Runnable resumeTo;
 
     /**
@@ -1421,16 +1548,63 @@ public class UserInterface extends Application {
     private long lastWheelNanos;
 
     /* =====================================================================
-       THE TWO STRIPS
+       THE HEADER (0.7.21)
+
+       Jerus, on the play-through of 0.7.19, asked for GDP always in view, and
+       the plan he agreed (the project's playing-0-7-19-ui-notes.md, section
+       6) put five or six headline numbers across the top - each with this
+       month's value, its change and a ten-year sparkline - and docked the
+       clock beside them. The mockups drew it (section 7, Main.dc.html) and
+       he said "that is damn pretty, go for it".
+
+       So the date bar is a header: the clock at the left - the play button,
+       the date, the month and the speed - then six tiles, then the credit
+       rating and the inbox. It replaces three things: the date bar, the
+       floating time controls at the stage's foot, and the net-income dome,
+       which is the TREASURY tile's change line now. With nothing floating
+       over the foot of the stage, the room every page kept for it
+       (PAGE_FOOT) is a margin again.
+
+       EVERY FIGURE IS A GETTER, EVERY LINE A SERIES THE MODEL KEEPS. A
+       tile's sparkline is the line City History draws for it -
+       HistoryScreen.historyValues(), the history's own series and YearBook's
+       definitions - over the last SPARK_MONTHS, or everything recorded if
+       less; the header recomputes nothing. A click opens City History with
+       that line picked, its big chart on the same ten years (openHistory(),
+       since 0.7.23's chart rebuild).
+
+       WHERE THE DATE BAR'S CONTENTS WENT:
+         the date and the month number    the clock
+         the treasury and its trend       TREASURY and its change line
+         Pop and its four flow chips      POPULATION and the month's net; born, died, in, out on its tooltip
+         the outbreak and "% sick" chips  POPULATION's tooltip
+         prices: the index and the rate   INFLATION; the index on its tooltip, the bands behind its (i)
+         the rate both ways, and parity   RATE: the dollar rate as its change line, both ways and parity behind its (i)
+         central, bank and city rates     RATE: the central bank's is its figure, all three behind its (i)
+         the rating                       the chip at the right
+       and from the stage's foot: the play button and the speed slider (the
+       clock's button and "< 10x >"), the dome's earned and banked (TREASURY's
+       change line, and its (i)), why the clock stopped itself (a line under
+       the date), and the year's twelve pips, which went nowhere: the date is
+       beside the button now, and the month's figure pops as a month lands.
+
+       IT FITS A 1366-PIXEL WINDOW. The tiles share what the clock and the
+       right-hand block leave, equally, except that a tile never gets less
+       than its figure needs (HeadlineRow): a number is never cut. A tile with
+       less room than its figure, a gap and SPARK_WIDTH shrinks its sparkline,
+       and draws none under SPARK_MIN; the label and the change line end in an
+       ellipsis before the figure is touched.
        ===================================================================== */
 
     /*
-     * WHERE THE STRIP'S PRICES AND RATE CHANGE COLOUR (2026-09-21). Two
-     * readings, three colours each: the cash trend's muted grey when nothing
-     * needs saying, amber when something is drifting, red when it has gone.
+     * WHERE THE HEADER'S PRICES AND RATE CHANGE COLOUR (2026-09-21; verdicts
+     * since 0.7.21). Inflation reads good near the player's target, amber
+     * when it drifts and red when it has gone; the currency's rate is
+     * secondary grey when nothing needs saying, amber when it is drifting and
+     * red when it has gone.
      */
 
-    /** Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads in the quiet grey. */
+    /** Inflation within this many points of the player's target (DebtManager.getInflationTarget()), either side, reads as on target. */
     static final double STRIP_INFLATION_QUIET = .03;
 
     /** Inflation more than this many points over the player's target reads red: prices running away from what the player asked for. Jerus's number (0.7.15, round 3: "Red at target + 5 points"), in place of red above 10% flat. */
@@ -1439,406 +1613,741 @@ public class UserInterface extends Application {
     /** Deflation past this reads red, whatever the target: prices collapsing. The lower half of the 10% alarm the strip had until 0.7.15; Jerus ruled on the upper half only. */
     static final double STRIP_DEFLATION_ALARM = .10;
 
-    /** The currency within this of its parity (ForeignAccounts.deviationFromParity) reads grey, and so does one stronger than parity by any amount. */
+    /** The currency within this of its parity (ForeignAccounts.deviationFromParity) reads quiet, and so does one stronger than parity by any amount. */
     static final double STRIP_RATE_QUIET = .05;
 
     /** Weaker than parity by more than this reads red: a currency well below what its basket is worth abroad is the thing the player should notice. */
     static final double STRIP_RATE_ALARM = .25;
 
+    /** How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over. */
+    static final double DATE_WIDTH = 182;
+
+    /** How many months a tile's sparkline draws: ten years, or everything recorded if less. */
+    static final int SPARK_MONTHS = 120;
+
+    /** A tile's sparkline at full size, as the mockups draw it. */
+    static final double SPARK_WIDTH = 84;
+    static final double SPARK_HEIGHT = 30;
+
+    /** Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. */
+    static final double SPARK_MIN = 30;
+
+    /** The size of a tile's figure, and of its label. */
+    static final double TILE_FIGURE = 17;
+    static final double TILE_LABEL = 10.5;
+
+    /** The month's figure in the clock, kept so it pops when a month lands. */
+    private Label monthFigure;
+
+    /** The speed's reading between its two arrows, kept so a click changes it in place. */
+    private Label speedReading;
+
+    /** The month the clock last showed, so the month's figure pops only when it moves. */
+    private int clockAt = -1;
+
+    /** Where the inbox's envelope is drawn in the header, so a notice read elsewhere can redraw its count. */
+    private StackPane inboxHolder;
+
     /**
-     * Date, month number, cash and population across the top - and, since
-     * 2026-09-21, prices and the exchange rate between the last two, and
-     * since 0.7.4 the three rates beside them.
-     *
-     * THE MONTH NUMBER STAYS, next to the date rather than instead of it. Every
-     * save, log entry, bond maturity and report in this game is keyed to the
-     * integer month, so a player cross-referencing anything - "the demolition
-     * log says 14 months ago", "this bond matures in month 340" - needs the
-     * number the game actually counts in. The date is what a person thinks in;
-     * the number is what the game thinks in, and hiding the second would make
-     * every other screen harder to read, not easier.
+     * The header, rebuilt: the clock, the six tiles, the rating and the inbox.
+     * Every redraw calls it, so it reads the month that has just landed.
      */
-    private void refreshDateBar() {
+    private void refreshHeader() {
+        header.getChildren().clear();
+        boolean inCity = !isGameMenu(currentScreen);
 
-        dateBar.getChildren().clear();
+        HeadlineRow tiles = new HeadlineRow(Palette.GAP);
+        for (Headline h : headlines()) tiles.getChildren().add(headlineTile(h));
+        HBox.setHgrow(tiles, Priority.ALWAYS);
 
-        int month = game.getMonth();
+        HBox clock = clockBlock(inCity);
+        HBox right = ratingAndInbox(inCity);
+        header.getChildren().addAll(clock, tiles, right);
+    }
 
-        /*
-         * THE TWO ANCHORS, and they are deliberately the largest text anywhere
-         * in the game.
-         *
-         * What month is it and how much money is there are the only two figures
-         * a player needs on EVERY screen, and at 15px and 13px they were the
-         * same weight as the six things beside them - so the eye had to go
-         * looking. They are 28px now, one at each end of the strip, each on its
-         * own inset panel with a caption under it. Everything between them got
-         * smaller rather than bigger, because pronouncing one thing means
-         * quietening its neighbours; making all eight bold would be the same
-         * screen again, louder.
-         */
-        /*
-         * THE DAY, which is the only thing on this bar that moves between
-         * months. Kept in a field because the clock repaints it every frame and
-         * must not rebuild the screen to do it - see paintDay().
-         */
-        Label date = new Label(CityCalendar.formatDay(month, monthProgress));
-        date.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;"
-                + " -fx-text-fill: #ffffff;");
-        dayLabel = date;
+    /**
+     * One tile, as the header draws it.
+     *
+     * @param area   its area's colour: the label and the sparkline
+     * @param tip    what the tooltip says, short; the long text is `more`
+     * @param more   the (i)'s popover, or null for a tile with none
+     * @param keys   the lines City History draws when the tile is clicked
+     */
+    private record Headline(String label, String area, String value, String valueTone,
+                            String change, String changeTone, double[] series,
+                            String tip, String more, String[] keys) { }
 
-        Label counter = new Label("month " + formatter.format(month));
-        counter.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: #78909c;");
+    /** The six, in the mockups' order: people, output, prices, work, cash, the price of money. */
+    private List<Headline> headlines() {
+        List<Headline> out = new ArrayList<>();
+        HistorySave h = game.getHistorySave();
+        String click = "Click for its line in City History.";
 
-        VBox dateBox = new VBox(-2);
-        dateBox.setAlignment(Pos.CENTER_LEFT);
-        dateBox.getChildren().addAll(date, counter);
-        dateBox.setStyle("-fx-padding: 2 14 4 12; -fx-background-color: #26343b;"
-                + " -fx-background-radius: 4;");
-
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-
-        double cash = game.getCash();
-        double income = game.getIncome();
-
-        /*
-         * Courier, at 28px, because the digits have to stay in the same columns
-         * from month to month. A proportional face makes the number jitter
-         * sideways as it changes width, and a figure that moves is a figure the
-         * eye has to re-find every turn - the opposite of what this is for.
-         */
-        Label cashLabel = new Label(money(cash));
-        cashLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 28px;"
-                + " -fx-font-weight: bold; -fx-text-fill: "
-                // Overdrawn is not a rounding detail - the central bank will
-                // advance it at the policy rate, in money it prints, and past
-                // its ceiling only the promises are paid (0.7.0) - so it gets
-                // the same red as everything else actively costing the player.
-                + (cash < 0 ? "#ff6b6b" : "#8fe0aa") + ";");
-
-        // What it is doing, under what it is. A treasury of $300k falling by
-        // $40k a month is a different city from one holding steady, and the
-        // headline figure alone cannot tell them apart.
-        Label trend = new Label((income >= 0 ? "+" : "\u2212")
-                + money(Math.abs(income)) + " a month");
-        trend.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: " + (income >= 0 ? "#78909c" : "#ff9e9e") + ";");
-
-        VBox cashBox = new VBox(-2);
-        cashBox.setAlignment(Pos.CENTER_RIGHT);
-        cashBox.getChildren().addAll(cashLabel, trend);
-        cashBox.setStyle("-fx-padding: 2 12 4 14; -fx-background-color: #26343b;"
-                + " -fx-background-radius: 4;");
-
-        /*
-         * Population, and underneath it the four flows that moved it.
-         *
-         * The headline number alone cannot tell a player WHY it changed, and
-         * since the switch there are four different reasons - and they call for
-         * opposite responses. A city losing people because nobody is being born
-         * needs nothing done about it this decade; a city losing people because
-         * they are leaving needs jobs, now. Putting the flows next to the stock
-         * is the difference between a number that reports and one that explains.
-         */
-        Label popLabel = new Label("Pop  "
-                + formatter.format(game.getPopulationManager().getPopulation()));
-        popLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px;"
-                + " -fx-font-weight: bold; -fx-text-fill: #cfd8dc;");
-
+        /* ---------------- POPULATION, and the month's net ---------------- */
+        PopulationManager pm = game.getPopulationManager();
         PopulationCohorts pyramid = game.getCohorts();
         Migration flows = game.getMigration();
-
-        HBox flowRow = new HBox(7);
-        flowRow.setAlignment(Pos.CENTER_RIGHT);
-        flowRow.getChildren().addAll(
-                flowChip("+" + flowText(pyramid.getLastBirths()) + " born",  "#8fe0aa"),
-                flowChip("-" + flowText(pyramid.getLastDeaths()) + " died",  "#8fa3b0"),
-                flowChip("+" + flowText(flows.getLastArrivals()) + " in",    "#8ed4ff"),
-                flowChip("-" + flowText(flows.getLastDepartures()) + " out", "#ffb3b3"));
-
-        /*
-         * A fifth chip, and only when there is something to say.
-         *
-         * The four above are flows - they belong there permanently because their
-         * value is the comparison between them. Sickness is a condition, and a
-         * chip that reads "3% sick" every month for four hundred months is noise
-         * a player learns to stop seeing. So it appears exactly when the city is
-         * losing more work than a well-served one has to, which means it appears
-         * for a city with no clinics and for an outbreak, and otherwise not at
-         * all.
-         */
         Health illness = game.getHealth();
+        int population = pm.getPopulation();
+        double born = pyramid.getLastBirths(), died = pyramid.getLastDeaths();
+        double in = flows.getLastArrivals(), left = flows.getLastDepartures();
+        double net = in - left + born - died;
+        long whole = Math.round(Math.abs(net));
+        String netLine, netTone;
+        if (whole == 0) {
+            netLine = "no change this month";
+            netTone = Palette.TEXT_MUTED;
+        } else if (net > 0) {
+            netLine = "▲ " + formatter.format(whole) + " this month";
+            netTone = Palette.GOOD;
+        } else {
+            netLine = "▼ " + formatter.format(whole) + " this month";
+            // The left panel's PEOPLE watch: amber when the city shrinks, red
+            // past half a percent a month (SummaryScreen.citySymptoms()).
+            netTone = net < -Math.max(1, population * .005) ? Palette.BAD : Palette.WARN;
+        }
+        StringBuilder peopleTip = new StringBuilder(String.format(
+                "%s people live in the city.%nThis month: %s born, %s died, %s moved in, %s moved out.",
+                formatter.format(population), flowText(born), flowText(died),
+                flowText(in), flowText(left)));
         if (illness.isOutbreak()) {
-            /*
-             * NAMED, not just coloured. The chip used to go red during an
-             * epidemic and otherwise amber, which told a player who already knew
-             * what the colours meant and nobody else - and an outbreak is a
-             * temporary event with a cause, unlike the standing rate beside it.
-             * A player wants to know THAT one is running before they want to
-             * know what it is costing.
-             */
-            int since = Math.max(1, game.getMonth() - illness.getOutbreakStarted() + 1);
-            flowRow.getChildren().add(flowChip(
-                    String.format("OUTBREAK - month %d", since), "#ff6b6b"));
+            peopleTip.append(String.format("%nAn outbreak is running - month %d of it.",
+                    Math.max(1, game.getMonth() - illness.getOutbreakStarted() + 1)));
         }
         if (illness.getSickRate() > Health.WELL_SERVED_RATE + 1e-9) {
-            flowRow.getChildren().add(flowChip(
-                    String.format("%.0f%% sick", illness.getSickRate() * 100),
-                    illness.isOutbreak() ? "#ffb3b3" : "#ffcf9e"));
+            peopleTip.append(String.format("%n%.0f%% of the city is off sick.", illness.getSickRate() * 100));
         }
+        peopleTip.append("\n").append(click);
+        out.add(new Headline("POPULATION", Palette.PEOPLE, formatter.format(population), Palette.TEXT_HEAD,
+                netLine, netTone, historyScreen.historyValues(h, "population"),
+                peopleTip.toString(), null, new String[] {"population"}));
 
-        VBox popBox = new VBox(0);
-        popBox.setAlignment(Pos.CENTER_RIGHT);
-        popBox.getChildren().addAll(popLabel, flowRow);
+        /* ------------- GDP, annualised from month 1, and real growth ------------- */
+        NationalAccounts na = game.getEconomyManager().getNationalAccounts();
+        int recorded = na.getMonthsRecorded();
+        double[] growth = YearBook.realGrowth(h);
+        double grew = growth.length == 0 ? Double.NaN : growth[growth.length - 1];
+        String gdpLine, gdpTone = Palette.TEXT_MUTED;
+        if (recorded < 12) {
+            gdpLine = "annualised · first year";
+        } else if (Double.isNaN(grew)) {
+            // A year recorded but not two: growth needs a year to compare with.
+            gdpLine = "growth from month 24";
+        } else if (Math.abs(grew) < .0005) {
+            gdpLine = "flat, real, 12 mo";
+        } else {
+            gdpLine = String.format("%s %.1f%% real, 12 mo", grew > 0 ? "▲" : "▼", Math.abs(grew) * 100);
+            gdpTone = grew > 0 ? Palette.GOOD : Palette.BAD;
+        }
+        out.add(new Headline("GDP", Palette.BUSINESS, money(annualGdp(na)) + " / yr", Palette.TEXT_HEAD,
+                gdpLine, gdpTone, historyScreen.historyValues(h, "gdp"),
+                String.format("What the city made in a year: the last twelve months of output%s.%n"
+                        + "Under it, real growth: the last twelve months against the twelve before,"
+                        + " with prices taken out%s.%nThe sparkline is the month's output. %s",
+                        recorded > 0 && recorded < 12
+                                ? ", scaled up from the " + recorded + " month" + (recorded == 1 ? "" : "s")
+                                  + " recorded so far, since the city has not lived a year"
+                                : "",
+                        Double.isNaN(grew) ? " - it needs two years of output" : "", click),
+                null, new String[] {"gdp"}));
 
-        // The rating, next to the money it governs. The rate curve already knew
-        // this; a letter is how a borrower actually experiences its own credit.
-        String rating = game.getCreditRating();
-        Label ratingLabel = new Label(rating);
-        ratingLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-padding: 1 6 1 6; -fx-background-radius: 3;"
-                + " -fx-text-fill: #ffffff; -fx-background-color: "
-                + switch (rating) {
-                    case "AAA", "AA" -> "#5fd68a";
-                    case "A", "BBB"  -> "#9ccc65";
-                    case "BB"        -> "#ffb454";
-                    case "B"         -> "#ff8a65";
-                    default          -> "#ff6b6b";
-                } + ";");
-
-        /*
-         * PRICES AND THE RATE, between the people and the money (2026-09-21).
-         *
-         * Jerus, reading his own city's year book: "perhaps also a number
-         * visible on the screen showing both the price index and current
-         * inflation year on year, i think that would be super helpful to the
-         * player, and a proper exchange rate which tells you how many your
-         * coins equals USD or so on."
-         *
-         * His city's prices had gone 399x in twenty-five years and nothing on
-         * the screen he was always looking at said so; the figures lived on
-         * the policy page and the trade page, two clicks from anywhere. Two
-         * small panels in the anchors' shape - figure over caption - and at
-         * the population's weight rather than the anchors', because the date
-         * and the money stay the loudest things on the strip.
-         *
-         * Every figure is a public getter. The strip formats; it does not
-         * recompute - the colours read the model's own target and parity.
-         */
+        /* ---------------- INFLATION, against the player's target ---------------- */
         PriceIndex prices = game.getPriceIndex();
-        // The player's target since 0.7.4, which the colour and the tooltip read.
         double target = game.getDebtManager().getInflationTarget();
-        double index = prices.isBased() ? prices.getIndex() : 1;
-        Label indexLabel = new Label(String.format(
-                index < 100 ? "×%.2f" : "×%,.0f", index));
-        indexLabel.setStyle(STRIP_FIGURE + " -fx-text-fill: #cfd8dc;");
-        Label inflationLabel;
+        String inflValue, inflLine, inflTone;
         if (prices.hasRate()) {
             double inflation = prices.inflation();
-            inflationLabel = new Label(String.format("%+.1f%% a year", inflation * 100));
-            inflationLabel.setStyle(STRIP_CAPTION + " -fx-text-fill: "
-                    + inflationColour(inflation, target) + ";");
+            double off = inflation - target;
+            inflValue = String.format("%.1f%% / yr", unsigned0(inflation * 100, 1));
+            inflLine = Math.abs(off) < .0005
+                    ? "on the " + DebtManager.targetWords(target) + " target"
+                    : String.format("%.1f points %s the target", Math.abs(off) * 100, off > 0 ? "over" : "under");
+            inflTone = inflationColour(inflation, target);
         } else {
-            inflationLabel = new Label("no year yet");
-            inflationLabel.setStyle(STRIP_CAPTION + " -fx-text-fill: " + STRIP_QUIET + ";");
+            /*
+             * WHEN THE FIRST RATE COMES (0.7.20; Jerus kept the countdown for
+             * 0.7.21). The basket is fixed only after PriceIndex.SETTLING_MONTHS
+             * of real shopping, and the twelve-month rate follows a year of
+             * readings after that; until then every screen reads it as zero,
+             * so the tile shows no figure of its own. Exact once the basket is
+             * fixed; before that the least it can be, since a month with no
+             * shopping does not count towards it.
+             */
+            inflValue = (prices.isBased() ? "rate in " : "rate in ~") + prices.monthsUntilRate() + " mo";
+            inflLine = "target " + DebtManager.targetWords(target);
+            inflTone = Palette.TEXT_MUTED;
         }
-        VBox pricesBox = stripPanel(indexLabel, inflationLabel);
-        Tooltip.install(pricesBox, new Tooltip(String.format(
-                "Prices: what a household's month costs against what it cost at founding.%n"
-                + "Under it, inflation over the last twelve months. The target is %s a year"
-                + " - yours, on the Policy tab's money page.%n"
-                + "Grey within %.0f points of it, amber further off, red more than %.0f points"
-                + " over it or with prices falling more than %.0f%% a year.",
-                DebtManager.targetWords(target), STRIP_INFLATION_QUIET * 100,
-                STRIP_INFLATION_OVER_TARGET * 100, STRIP_DEFLATION_ALARM * 100)));
+        double index = prices.isBased() ? prices.getIndex() : 1;
+        out.add(new Headline("INFLATION", Palette.MONEY, inflValue, Palette.TEXT_HEAD, inflLine, inflTone,
+                historyScreen.historyValues(h, "priceIndex"),
+                String.format("Inflation: what a household's month costs against twelve months before."
+                        + " The target is %s a year - yours, on the Policy tab's money page.%n"
+                        + "Prices are %s what they were when the basket was fixed; the sparkline is"
+                        + " that price level.%nClick for both lines in City History.",
+                        DebtManager.targetWords(target),
+                        String.format(index < 100 ? "×%.2f" : "×%,.0f", index)),
+                String.format("Good within %.0f points of your target, amber further off, red more than"
+                        + " %.0f points over it or with prices falling more than %.0f%% a year.%s",
+                        STRIP_INFLATION_QUIET * 100, STRIP_INFLATION_OVER_TARGET * 100,
+                        STRIP_DEFLATION_ALARM * 100,
+                        prices.hasRate() ? ""
+                        : String.format("%n%nNo rate yet. The basket is fixed after %d months of the"
+                                + " households' real shopping, so its mix of food and rent is a"
+                                + " settled city's; the first rate comes a year of readings after"
+                                + " that, about %d months from now. The index reads ×1.00 until"
+                                + " the basket is fixed, and inflation is taken as zero everywhere"
+                                + " in the game until the first rate.",
+                                PriceIndex.SETTLING_MONTHS, prices.monthsUntilRate())),
+                new String[] {"inflation", "priceIndex"}));
 
-        /*
-         * THE RATE BOTH WAYS, in the currency's own names. "US$1 = D$100.00"
-         * is how a price board quotes it; "D$1 = US¢1.00" is the question a
-         * player actually has - what is my money worth - and it is the same
-         * number upside down. Cents once a local dollar is worth less than a
-         * US one, so neither line is ever a string of leading zeros.
-         *
-         * AND PAST A HUNDREDTH OF A CENT THE SECOND LINE TURNS ROUND (0.7.3).
-         * The rate's guard was a hundred until 0.7.3, so a local dollar was
-         * never worth less than a US cent; it is a billion now, and at a rate
-         * of 100,000 "D$1 = US¢0.00" would call a currency worthless that
-         * still buys something. So once one of ours is worth less than a
-         * hundredth of a cent the line says what a US cent costs in ours -
-         * "US¢1 = D$1,000" - which is the same number again, the right way
-         * up for the size it has reached. The first line goes through
-         * Money.fxRate() below a tenth, for the other end.
-         */
+        /* -------------- OUT OF WORK, with a shortage read as watch -------------- */
+        double jobless = pm.getUnemploymentRate();
+        int unfilled = 0;
+        for (int v : pm.getJobVacancy()) unfilled += Math.max(0, v);
+        String workTone = PeopleScreen.outOfWorkTone(jobless);
+        String workLine = jobless > PeopleScreen.OUT_OF_WORK_FAR ? "far too many idle"
+                : jobless > PeopleScreen.OUT_OF_WORK_HIGH ? "high"
+                : jobless < PeopleScreen.OUT_OF_WORK_SHORT ? (unfilled > 0 ? "jobs going unfilled" : "nobody spare")
+                : "healthy slack";
+        out.add(new Headline("OUT OF WORK", Palette.PEOPLE,
+                String.format("%.1f%%", unsigned0(jobless * 100, 1)), workTone, workLine, workTone,
+                historyScreen.historyValues(h, "unemployment"),
+                String.format("%s people out of work%s.%nAmber under %.0f%% - nobody spare, so new jobs"
+                        + " go unfilled - and over %.0f%%; red over %.0f%%.%n%s",
+                        people(pm.getUnemployed()),
+                        unfilled > 0 ? ", and " + formatter.format(unfilled) + " posts going unfilled" : "",
+                        PeopleScreen.OUT_OF_WORK_SHORT * 100, PeopleScreen.OUT_OF_WORK_HIGH * 100,
+                        PeopleScreen.OUT_OF_WORK_FAR * 100, click),
+                null, new String[] {"unemployment"}));
+
+        /* ---------- TREASURY: cash, red only when overdrawn, and the month ---------- */
+        double cash = game.getCash();
+        double income = game.getIncome();
+        boolean banked = game.hasTreasuryMonth();
+        double moved = banked ? game.getTreasuryChange() : Double.NaN;
+        out.add(new Headline("TREASURY", Palette.MONEY, money(cash), cash < 0 ? Palette.BAD : Palette.TEXT_HEAD,
+                signedTight(income, false) + " this month",
+                Math.abs(income) < .5 ? Palette.TEXT_MUTED : income > 0 ? Palette.GOOD : Palette.BAD,
+                historyScreen.historyValues(h, "cash"),
+                String.format("The city's cash%s.%nThis month it earned %s%s.%n%s",
+                        cash < 0 ? " - overdrawn: the central bank advances it at the policy rate" : "",
+                        signedTight(income, false),
+                        banked ? " and banked " + signedTight(moved, false) : "", click),
+                treasuryWhy(income, moved),
+                new String[] {"cash"}));
+
+        /* --------------- RATE and the currency: the price of money --------------- */
+        DebtManager market = game.getDebtManager();
         ForeignAccounts fx = game.getForeignAccounts();
         double rate = fx.getRate();
-        // The city's own money's mark (0.7.10): A$ for Arden, D$ for Danzik.
         String here = game.getCurrency().qualifiedSymbol();
-        Label rateLabel = new Label(Currency.FOREIGN_SYMBOL + "1 = " + here
-                + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate)));
-        rateLabel.setStyle(STRIP_FIGURE + " -fx-text-fill: " + rateColour(fx) + ";");
-        double oneLocal = fx.toUsd(1);
-        Label rateBack = new Label(oneLocal >= 1
-                ? here + "1 = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)
-                : oneLocal * 100 >= .01
-                ? here + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
-                : Currency.FOREIGN_CENT_SYMBOL + "1 = " + here
-                        + String.format("%,.0f", 1 / (oneLocal * 100)));
-        rateBack.setStyle(STRIP_CAPTION + " -fx-text-fill: " + STRIP_QUIET + ";");
-        VBox rateBox = stripPanel(rateLabel, rateBack);
-        Tooltip.install(rateBox, new Tooltip(String.format(
-                "The exchange rate: what a US dollar costs in %s, and what one of yours buys.%n"
-                + "Parity - where a basket costs the same here and abroad - is %s%.2f;"
-                + " the rate is %s.",
-                game.getCurrency().plural(), here, fx.getParity(),
-                Math.abs(fx.deviationFromParity()) * 100 < .5 ? "at parity"
-                        : String.format("%.0f%% %s than it",
-                                Math.abs(fx.deviationFromParity()) * 100,
-                                fx.deviationFromParity() > 0 ? "weaker" : "stronger"))));
+        out.add(new Headline("RATE · " + here, Palette.MONEY, pct2(market.getPolicyRate()), Palette.TEXT_HEAD,
+                here + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate)) + " per " + Currency.FOREIGN_SYMBOL,
+                rateColour(fx), historyScreen.historyValues(h, "policyRate"),
+                String.format("The central bank's policy rate - your dial on the Policy tab - and what a"
+                        + " US dollar costs in %s.%n%s, and the city borrows at %s.%n"
+                        + "Click for both lines in City History.",
+                        game.getCurrency().plural(),
+                        game.getBank().getBranches() <= 0 ? "There is no bank yet"
+                                : game.getBank().isInsolvent() ? "The bank has failed"
+                                : "The bank lends at " + pct2(game.getBank().lendingRate(market.getPolicyRate()))
+                                        + " (its prime)",
+                        pct2(market.getRate())),
+                moneyWhy(market, fx, here),
+                new String[] {"policyRate", "fxRate"}));
+        return out;
+    }
 
-        /*
-         * THE PRICE OF MONEY, THREE WAYS (0.7.4).
-         *
-         * Jerus: "on the top of the UI the bank rate, the central bank rate,
-         * both should be shown, as well as the rate you borrow in." A third
-         * panel beside the other two, and the three rates in it each a public
-         * getter the strip only formats: the central bank's dial
-         * (DebtManager.getPolicyRate()); what the bank lends a business at
-         * before the business's own spread (Bank.lendingRate() on that dial,
-         * its prime since 0.7.7); and what the treasury borrows at
-         * (DebtManager.getRate(), the year book's interestRate - the note's
-         * rate on the short end).
-         *
-         * THREE SHORT LINES AT THE CAPTION'S WEIGHT rather than a figure over
-         * a caption, a word before each in Courier so the figures hold one
-         * column: three figures at the population's weight would be the
-         * loudest panel on the strip, and the date and the money stay the
-         * loudest things. The quiet grey, and red only for a bank that has
-         * failed or is not there - it lends nothing, which is the news.
-         */
-        DebtManager market = game.getDebtManager();
+    /**
+     * The treasury tile's (i): the two figures the net-income dome carried
+     * until 0.7.21, and why they differ.
+     * Jerus: "show how much was the actual month change ... sometimes cause of
+     * land buybacks or sales it was actually more or less." What the month
+     * EARNED (EconomyManager's income: tax less interest, pensions, care and
+     * schools) is not what the treasury BANKED, which counts the city's
+     * buildings, its land and its borrowing.
+     */
+    private String treasuryWhy(double income, double moved) {
+        StringBuilder why = new StringBuilder(String.format(
+                "EARNED %s: what the month made - tax in, less interest, pensions, care and schools."
+                + " It does not count what the city spent on buildings or land, or what land sales"
+                + " brought in.", signedTight(income, false)));
+        if (!Double.isNaN(moved)) {
+            double surplus = game.getTreasurySurplus();
+            why.append(String.format("%n%nBANKED %s: what the balance actually did this month - your land,"
+                    + " your buildings and your borrowing included. The whole budget came to %s; on top"
+                    + " of it, paper issued raised %s - borrowed, not earned - and %s went back to"
+                    + " lenders as principal, which shrinks a debt rather than buying anything.",
+                    signedTight(moved, false), signedTight(surplus, false),
+                    money(game.getTreasuryRaised()), money(game.getTreasuryRepaid())));
+        }
+        why.append(String.format("%n%nGovernment, on its Overview page, has it line by line."));
+        return why.toString();
+    }
+
+    /**
+     * The rate tile's (i): the price of money three ways (0.7.4) - Jerus: "the
+     * bank rate, the central bank rate, both should be shown, as well as the
+     * rate you borrow in" - and the currency both ways, against its parity.
+     * Every figure a public getter, formatted here and not recomputed.
+     */
+    private String moneyWhy(DebtManager market, ForeignAccounts fx, String here) {
         Bank lender = game.getBank();
         double policy = market.getPolicyRate();
         boolean noBank = lender.getBranches() <= 0;
         boolean bankFailed = !noBank && lender.isInsolvent();
-        Label centralLine = stripRateLine("central", String.format("%.2f%%", policy * 100), STRIP_QUIET);
-        Label bankLine = stripRateLine("bank",
-                noBank ? "no bank" : bankFailed ? "failed"
-                        : String.format("%.2f%%", lender.lendingRate(policy) * 100),
-                noBank || bankFailed ? "#ff6b6b" : STRIP_QUIET);
-        Label cityLine = stripRateLine("city", String.format("%.2f%%", market.getRate() * 100), STRIP_QUIET);
-        VBox moneyBox = stripPanel(centralLine, bankLine, cityLine);
-        Tooltip.install(moneyBox, new Tooltip(String.format(
-                "The price of money, three ways.%n"
-                + "central - the central bank's policy rate: your dial on the Policy tab,"
-                + " and the floor under every rate in the city.%n"
-                + "bank - the bank's prime, what it lends a business at before that"
-                + " business's own spread: what the money costs it, what running the bank"
-                + " costs per dollar lent, what it expects to lose, and what the capital"
-                + " behind the loan must earn.%n"
-                + "city - what the treasury pays to borrow short: the dial plus what the"
-                + " city's own debt costs it.%s",
+        double oneLocal = fx.toUsd(1);
+        double rate = fx.getRate();
+        return String.format(
+                "Central bank %s - the policy rate: your dial, and the floor under every rate in the city.%n"
+                + "Bank %s - its prime, what it lends a business at before that business's own spread.%n"
+                + "City %s - what the treasury pays to borrow short: the dial plus what the city's own"
+                + " debt costs it.%s%n%n"
+                + "%s1 = %s%s, and %s. Parity - where a basket costs the same here and abroad - is"
+                + " %s%.2f; the rate is %s.",
+                pct2(policy),
+                noBank ? "none yet" : bankFailed ? "failed" : pct2(lender.lendingRate(policy)),
+                pct2(market.getRate()),
                 noBank ? String.format("%nThere is no bank in this city yet: what it borrows is lent from"
-                        + " outside it, priced as the central bank's window money. Build a Commercial Bank"
-                        + " and the city's own savings fund its loans.")
+                        + " outside it, priced as the central bank's window money.")
                 : bankFailed ? String.format("%nThe bank has failed: it may lend nothing until it is"
-                        + " recapitalised or earns its way back.")
-                : "")));
-
-        /*
-         * AND WHAT GIVES WAY WHEN THE WINDOW IS NARROW: the population's flow
-         * chips, first and alone. Everything else on the strip keeps its full
-         * width - the two anchors, the rating, the population figure and the
-         * three panels above - and the chips' row may shrink to nothing, its
-         * chips shortening to an ellipsis and the row clipped at its own edge
-         * so nothing it cannot fit is painted over its neighbours. A strip
-         * that keeps the date and the money whole and loses "+12 born" is the
-         * right way round.
-         */
-        for (Region fixed : new Region[] {dateBox, cashBox, pricesBox, rateBox, moneyBox,
-                ratingLabel, popLabel}) {
-            fixed.setMinWidth(Region.USE_PREF_SIZE);
-        }
-        flowRow.setMinWidth(0);
-        javafx.scene.shape.Rectangle flowClip = new javafx.scene.shape.Rectangle();
-        flowClip.widthProperty().bind(flowRow.widthProperty());
-        flowClip.heightProperty().bind(flowRow.heightProperty());
-        flowRow.setClip(flowClip);
-
-        dateBar.getChildren().addAll(dateBox, gap, ratingLabel, popBox, pricesBox, rateBox, moneyBox,
-                cashBox);
+                        + " recapitalised or earns its way back.") : "",
+                Currency.FOREIGN_SYMBOL, here, rate < .1 ? fxRate(rate) : String.format("%,.2f", rate),
+                oneLocal >= 1
+                        ? here + "1 = " + Currency.FOREIGN_SYMBOL + String.format("%,.2f", oneLocal)
+                        : oneLocal * 100 >= .01
+                        ? here + "1 = " + Currency.FOREIGN_CENT_SYMBOL + String.format("%.2f", oneLocal * 100)
+                        : Currency.FOREIGN_CENT_SYMBOL + "1 = " + here + String.format("%,.0f", 1 / (oneLocal * 100)),
+                here, fx.getParity(),
+                Math.abs(fx.deviationFromParity()) * 100 < .5 ? "at parity"
+                        : String.format("%.0f%% %s than it", Math.abs(fx.deviationFromParity()) * 100,
+                                fx.deviationFromParity() > 0 ? "weaker" : "stronger"));
     }
 
-    /** The strip's quiet colour: the cash trend's muted grey. */
-    private static final String STRIP_QUIET = "#78909c";
+    /** One tile: its label in its area's colour, the figure, the change, and the sparkline. */
+    private Region headlineTile(Headline t) {
+        Label label = new Label(t.label());
+        label.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + TILE_LABEL + "px;"
+                + " -fx-text-fill: " + t.area() + ";");
+        label.setMinWidth(0);
+        HBox labelRow = new HBox(4, label);
+        labelRow.setAlignment(Pos.CENTER_LEFT);
+        if (t.more() != null) labelRow.getChildren().add(infoButton(t.more(), false));
 
-    /** A small figure on the strip: Courier, so the digits hold their columns, at the population's weight. */
-    private static final String STRIP_FIGURE = "-fx-font-family: 'Courier New'; -fx-font-size: 14px;"
-            + " -fx-font-weight: bold;";
+        Label figure = new Label(t.value());
+        figure.setStyle(Fonts.monoSemiBold() + " -fx-font-size: " + TILE_FIGURE + "px;"
+                + " -fx-text-fill: " + t.valueTone() + ";");
+        // The figure is the one thing a tile never cuts.
+        figure.setMinWidth(Region.USE_PREF_SIZE);
 
-    /** ...and the caption under it, at the size of the anchors' own captions. */
-    private static final String STRIP_CAPTION = "-fx-font-family: 'Courier New'; -fx-font-size: 11px;";
+        Label change = new Label(t.change());
+        change.setStyle("-fx-font-size: 11px; -fx-text-fill: " + t.changeTone() + ";");
+        change.setMinWidth(0);
+
+        VBox words = new VBox(0, labelRow, figure, change);
+        words.setAlignment(Pos.CENTER_LEFT);
+
+        HeadlineTile tile = new HeadlineTile(words, new Sparkline(t.series(), game.getHistorySave().getMonth(), t.area()));
+        String rest = "-fx-padding: 8 12 8 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
+        tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";");
+        tile.setOnMouseEntered(e -> tile.setStyle(rest + " -fx-border-color: " + t.area() + ";"));
+        tile.setOnMouseExited(e -> tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
+        Tooltip tip = new Tooltip(t.tip());
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(tile, tip);
+        tile.setOnMouseClicked(e -> openHistory(t.keys()));
+        return tile;
+    }
 
     /**
-     * One of the strip's inset panels, in the anchors' shape at a smaller
-     * size: figure over caption, or since 0.7.4 three rate lines stacked.
+     * Opens City History with these lines picked: the tiles' click. The
+     * page's picks are replaced by the tile's line (and its seed spent, so
+     * the first visit's preset does not come back over them), every line
+     * shown, and since 0.7.23 the big chart on its last ten years - the
+     * sparkline the tile was showing, drawn large - at the top of the page.
      */
-    private VBox stripPanel(Label... lines) {
-        VBox box = new VBox(0);
-        box.setAlignment(Pos.CENTER_RIGHT);
-        box.getChildren().addAll(lines);
-        box.setStyle("-fx-padding: 3 10 4 10; -fx-background-color: #26343b;"
-                + " -fx-background-radius: 4;");
+    private void openHistory(String[] keys) {
+        historyScreen.historySeeded = true;
+        historyScreen.historyPicked.clear();
+        historyScreen.hiddenLines.clear();
+        historyScreen.chartWindow.showRange(SPARK_MONTHS);
+        for (String key : keys) if (HistoryScreen.known(key)) historyScreen.historyPicked.add(key);
+        railJump = true;            // clearMenu: arriving, not redrawing - the page opens at its top
+        historyScreen.showHistoryMenu();
+    }
+
+    /**
+     * The tiles, side by side: equal shares of the row, except that a tile
+     * never gets less than its figure needs, and the rest share what is left.
+     * An HBox gives its spare room equally from each child's preferred width,
+     * which leaves tiles of six different widths; this is the mockups' "flex:
+     * 1 1 0" with a floor.
+     */
+    private static final class HeadlineRow extends javafx.scene.layout.Pane {
+        private final double gap;
+        HeadlineRow(double gap) { this.gap = gap; }
+
+        @Override protected double computeMinWidth(double height) {
+            double sum = 0;
+            for (javafx.scene.Node n : getManagedChildren()) sum += n.minWidth(-1);
+            return snappedLeftInset() + sum + gap * Math.max(0, getManagedChildren().size() - 1) + snappedRightInset();
+        }
+
+        @Override protected double computePrefWidth(double height) {
+            double sum = 0;
+            for (javafx.scene.Node n : getManagedChildren()) sum += n.prefWidth(-1);
+            return snappedLeftInset() + sum + gap * Math.max(0, getManagedChildren().size() - 1) + snappedRightInset();
+        }
+
+        @Override protected double computePrefHeight(double width) {
+            double tall = 0;
+            for (javafx.scene.Node n : getManagedChildren()) tall = Math.max(tall, n.prefHeight(-1));
+            return snappedTopInset() + tall + snappedBottomInset();
+        }
+
+        @Override protected void layoutChildren() {
+            List<javafx.scene.Node> tiles = getManagedChildren();
+            int n = tiles.size();
+            if (n == 0) return;
+            double x = snappedLeftInset(), y = snappedTopInset();
+            double room = getWidth() - x - snappedRightInset() - gap * (n - 1);
+            double h = getHeight() - y - snappedBottomInset();
+            // Floors first: any tile whose figure needs more than an equal
+            // share takes what it needs, and the others share the rest.
+            double[] width = new double[n];
+            boolean[] fixed = new boolean[n];
+            boolean changed = true;
+            while (changed) {
+                changed = false;
+                double left = room;
+                int free = 0;
+                for (int i = 0; i < n; i++) { if (fixed[i]) left -= width[i]; else free++; }
+                double share = free == 0 ? 0 : left / free;
+                for (int i = 0; i < n; i++) {
+                    if (fixed[i]) continue;
+                    double floor = tiles.get(i).minWidth(-1);
+                    if (floor > share) { width[i] = floor; fixed[i] = true; changed = true; }
+                    else width[i] = share;
+                }
+            }
+            for (int i = 0; i < n; i++) {
+                tiles.get(i).resizeRelocate(snapPositionX(x), y, snapSizeX(width[i]), h);
+                x += width[i] + gap;
+            }
+        }
+    }
+
+    /**
+     * One tile's inside: the words at the left, never narrower than the
+     * figure, and the sparkline at the right in what is left, up to
+     * SPARK_WIDTH - and none at all under SPARK_MIN.
+     */
+    private static final class HeadlineTile extends Region {
+        private final VBox words;
+        private final Sparkline spark;
+
+        HeadlineTile(VBox words, Sparkline spark) {
+            this.words = words;
+            this.spark = spark;
+            getChildren().addAll(words, spark);
+        }
+
+        @Override protected double computeMinWidth(double height) {
+            return snappedLeftInset() + words.minWidth(-1) + snappedRightInset();
+        }
+
+        @Override protected double computePrefWidth(double height) {
+            return snappedLeftInset() + words.prefWidth(-1) + Palette.GAP + SPARK_WIDTH + snappedRightInset();
+        }
+
+        @Override protected double computeMinHeight(double width) {
+            return snappedTopInset() + Math.max(words.minHeight(-1), SPARK_HEIGHT) + snappedBottomInset();
+        }
+
+        @Override protected double computePrefHeight(double width) {
+            return snappedTopInset() + Math.max(words.prefHeight(-1), SPARK_HEIGHT) + snappedBottomInset();
+        }
+
+        @Override protected void layoutChildren() {
+            double x = snappedLeftInset(), y = snappedTopInset();
+            double w = getWidth() - x - snappedRightInset();
+            double h = getHeight() - y - snappedBottomInset();
+            double sparkWide = Math.min(SPARK_WIDTH, w - words.minWidth(-1) - Palette.GAP);
+            boolean drawn = sparkWide >= SPARK_MIN;
+            spark.setVisible(drawn);
+            double wordsWide = drawn ? w - sparkWide - Palette.GAP : w;
+            words.resizeRelocate(x, y, wordsWide, h);
+            if (drawn) {
+                spark.resizeRelocate(snapPositionX(x + w - sparkWide), snapPositionY(y + (h - SPARK_HEIGHT) / 2),
+                        snapSizeX(sparkWide), SPARK_HEIGHT);
+            }
+        }
+    }
+
+    /**
+     * A tile's sparkline: the last SPARK_MONTHS of its series, a month a
+     * point, the months recorded as nothing (NaN) left out; a faint fill
+     * under the line and a dot on the latest month, in its area's colour.
+     * Drawn again only when its size changes. Since 0.7.23 each point sits
+     * at its month - a stretch with nothing recorded keeps its width, the
+     * line crossing it straight, rather than being squeezed out - and a short
+     * mark at the foot is each January: the ten years, counted.
+     */
+    private static final class Sparkline extends Region {
+        private final double[] points;
+        private final int[] at;
+        private final javafx.scene.paint.Color colour;
+        private final javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas();
+        private double drawnW = -1, drawnH = -1;
+        private int firstMonth, lastMonth;
+
+        Sparkline(double[] series, List<Integer> months, String colour) {
+            List<Double> finite = new ArrayList<>();
+            List<Integer> when = new ArrayList<>();
+            if (series != null) {
+                int from = Math.max(0, series.length - SPARK_MONTHS);
+                boolean dated = months != null && months.size() == series.length;
+                firstMonth = dated && series.length > 0 ? months.get(from) : from;
+                lastMonth = dated && series.length > 0 ? months.get(series.length - 1) : series.length - 1;
+                for (int i = from; i < series.length; i++) {
+                    if (!Double.isFinite(series[i])) continue;
+                    finite.add(series[i]);
+                    when.add(dated ? months.get(i) : i);
+                }
+            }
+            this.points = new double[finite.size()];
+            this.at = new int[finite.size()];
+            for (int i = 0; i < points.length; i++) { points[i] = finite.get(i); at[i] = when.get(i); }
+            this.colour = javafx.scene.paint.Color.web(colour);
+            getChildren().add(canvas);
+            setMinSize(0, 0);
+            setPrefSize(SPARK_WIDTH, SPARK_HEIGHT);
+            setMaxSize(SPARK_WIDTH, SPARK_HEIGHT);
+            setMouseTransparent(true);
+        }
+
+        @Override protected void layoutChildren() {
+            double w = getWidth(), h = getHeight();
+            if (w == drawnW && h == drawnH) return;
+            drawnW = w;
+            drawnH = h;
+            canvas.setWidth(w);
+            canvas.setHeight(h);
+            javafx.scene.canvas.GraphicsContext g = canvas.getGraphicsContext2D();
+            g.clearRect(0, 0, w, h);
+            int n = points.length;
+            if (n < 2 || w < 4) return;
+            double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+            for (double v : points) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+            double span = hi - lo;
+            double[] xs = new double[n], ys = new double[n];
+            double months = Math.max(1, lastMonth - firstMonth);
+            for (int i = 0; i < n; i++) {
+                xs[i] = 1 + (w - 2) * (at[i] - firstMonth) / months;
+                ys[i] = span <= 0 ? h / 2 : 2 + (h - 4) - (h - 4) * (points[i] - lo) / span;
+            }
+            // Each January, a short mark at the foot (0.7.23).
+            g.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_3, .6));
+            g.setLineWidth(1);
+            for (int m = firstMonth; m <= lastMonth; m++) {
+                if (m < 1 || CityCalendar.monthOfYear(m) != 1) continue;
+                double x = Math.floor(1 + (w - 2) * (m - firstMonth) / months) + .5;
+                g.strokeLine(x, h - 3, x, h);
+            }
+            g.setFill(colour.deriveColor(0, 1, 1, .12));
+            g.beginPath();
+            g.moveTo(xs[0], ys[0]);
+            for (int i = 1; i < n; i++) g.lineTo(xs[i], ys[i]);
+            g.lineTo(w - 1, h);
+            g.lineTo(1, h);
+            g.closePath();
+            g.fill();
+            g.setStroke(colour);
+            g.setLineWidth(1.6);
+            g.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+            g.beginPath();
+            g.moveTo(xs[0], ys[0]);
+            for (int i = 1; i < n; i++) g.lineTo(xs[i], ys[i]);
+            g.stroke();
+            g.setFill(colour);
+            g.fillOval(xs[n - 1] - 2.4, ys[n - 1] - 2.4, 4.8, 4.8);
+        }
+    }
+
+    /**
+     * The clock, docked at the header's left (0.7.21): the play button, the
+     * date, the month's figure and the speed - and why the clock stopped
+     * itself, when it did. The button and the speed are there only in the
+     * city; on the menus there is no clock to run.
+     */
+    private HBox clockBlock(boolean inCity) {
+        int month = game.getMonth();
+
+        javafx.scene.shape.SVGPath glyph = new javafx.scene.shape.SVGPath();
+        glyph.setContent(clockRunning ? "M8 5h3v14H8z M13 5h3v14h-3z" : "M8 5v14l11-7z");
+        glyph.setFill(javafx.scene.paint.Color.web(Palette.ON_FILL));
+        Button play = new Button();
+        play.setGraphic(glyph);
+        play.setMinSize(44, 44);
+        play.setPrefSize(44, 44);
+        play.setMaxSize(44, 44);
+        play.setPadding(javafx.geometry.Insets.EMPTY);
+        play.setStyle("-fx-background-color: " + Palette.GOOD + "; -fx-background-radius: 22;"
+                + " -fx-border-color: transparent; -fx-padding: 0; -fx-cursor: hand;");
+        Tooltip playTip = new Tooltip(clockRunning ? "Pause  (Space)" : "Run the clock  (Space)");
+        playTip.setShowDelay(Duration.millis(250));
+        play.setTooltip(playTip);
+        play.setOnAction(e -> {
+            setClockRunning(!clockRunning);
+            redrawScreen.run();
+        });
+        play.setVisible(inCity);
+
+        /*
+         * THE DAY, which is the only thing in the header that moves between
+         * months. Kept in a field because the clock repaints it every frame and
+         * must not rebuild the screen to do it - see paintDay(). Held at
+         * DATE_WIDTH so the tiles beside it do not shift as the day changes.
+         */
+        Label date = new Label(CityCalendar.formatDay(month, monthProgress));
+        date.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 19px; -fx-text-fill: " + Palette.TEXT_MAX + ";");
+        date.setMinWidth(DATE_WIDTH);
+        date.setPrefWidth(DATE_WIDTH);
+        dayLabel = date;
+
+        /*
+         * THE MONTH NUMBER STAYS, under the date rather than instead of it.
+         * Every save, log entry, bond maturity and report in this game is
+         * keyed to the integer month, so a player cross-referencing anything -
+         * "the demolition log says 14 months ago", "this bond matures in month
+         * 340" - needs the number the game actually counts in.
+         */
+        monthFigure = new Label("month " + formatter.format(month));
+        monthFigure.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+
+        speedReading = new Label(speedLabel(speedIndex));
+        speedReading.setMinWidth(34);
+        speedReading.setAlignment(Pos.CENTER);
+        speedReading.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                + " -fx-text-fill: " + Palette.TEXT_HEAD + ";");
+        HBox speed = new HBox(0, speedArrow("‹", -1), speedReading, speedArrow("›", 1));
+        speed.setAlignment(Pos.CENTER_LEFT);
+        Tooltip.install(speed, new Tooltip("How fast a month passes: " + (int) SECONDS_PER_MONTH
+                + " seconds a month at 1×. ← and → change it too."));
+        speed.setVisible(inCity);
+
+        HBox second = new HBox(8, monthFigure, speed);
+        second.setAlignment(Pos.CENTER_LEFT);
+        VBox words = new VBox(0, date, second);
+        words.setAlignment(Pos.CENTER_LEFT);
+
+        /*
+         * AND WHY IT STOPPED, when it stopped itself. A clock that halts with
+         * no explanation is a bug as far as the player is concerned - they did
+         * not press anything and time stopped. One line, under the date,
+         * beside the button they are about to press to start it again.
+         */
+        if (inCity && pausedBecause != null && !clockRunning) {
+            Label why = new Label(pausedBecause);
+            why.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.WARN + ";");
+            why.setMaxWidth(DATE_WIDTH + 40);
+            Tooltip.install(why, new Tooltip("The clock stopped itself: " + pausedBecause
+                    + "\nSettings, \"Stop for anything important\", turns this off."));
+            words.getChildren().add(why);
+        }
+
+        HBox clock = new HBox(12, play, words);
+        clock.setAlignment(Pos.CENTER_LEFT);
+        clock.setMinWidth(Region.USE_PREF_SIZE);
+        clock.setStyle("-fx-padding: 0 16 0 0; -fx-border-color: " + Palette.EDGE + ";"
+                + " -fx-border-width: 0 1 0 0;");
+
+        // The month landing, under the date: a quarter second of "that
+        // happened" where the pips used to pop (TWELVE PIPS, below).
+        if (clockAt >= 0 && clockAt != month) popPip(monthFigure);
+        clockAt = month;
+        return clock;
+    }
+
+    /** One of the speed's two arrows: a rung down or up the ladder, the reading changed in place. */
+    private Label speedArrow(String glyph, int step) {
+        Label arrow = new Label(glyph);
+        String rest = "-fx-font-size: 14px; -fx-padding: 0 4 0 4; -fx-cursor: hand; -fx-text-fill: ";
+        arrow.setStyle(rest + Palette.TEXT_LABEL + ";");
+        arrow.setOnMouseEntered(e -> arrow.setStyle(rest + Palette.TEXT_HEAD + ";"));
+        arrow.setOnMouseExited(e -> arrow.setStyle(rest + Palette.TEXT_LABEL + ";"));
+        arrow.setOnMouseClicked(e -> {
+            int pick = Math.max(0, Math.min(SPEEDS.length - 1, speedIndex + step));
+            if (pick == speedIndex) return;
+            speedIndex = pick;
+            if (speedReading != null) speedReading.setText(speedLabel(pick));
+        });
+        return arrow;
+    }
+
+    /** The credit rating's chip and the inbox's envelope, at the header's right. */
+    private HBox ratingAndInbox(boolean inCity) {
+        // The rating, which the rate curve already knew; a letter is how a
+        // borrower actually experiences its own credit.
+        String rating = game.getCreditRating();
+        Label chip = new Label(rating);
+        chip.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 12px; -fx-text-fill: " + Palette.ON_FILL + ";"
+                + " -fx-background-color: " + ratingColour(rating) + "; -fx-background-radius: 4;"
+                + " -fx-padding: 3 6 3 6;");
+        chip.setMinWidth(Region.USE_PREF_SIZE);
+        Tooltip.install(chip, new Tooltip("The city's credit rating, " + rating
+                + ": what lenders make of its debt, and part of what it pays to borrow."));
+
+        inboxHolder = new StackPane();
+        refreshInboxButton();
+        inboxHolder.setVisible(inCity);
+
+        HBox box = new HBox(10, chip, inboxHolder);
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.setMinWidth(Region.USE_PREF_SIZE);
+        box.setStyle("-fx-padding: 0 0 0 14; -fx-border-color: " + Palette.EDGE + ";"
+                + " -fx-border-width: 0 0 0 1;");
         return box;
     }
 
-    /** One line of the price-of-money panel: a word, then the figure, at the caption's size, so the three figures hold one column. */
-    private static Label stripRateLine(String word, String figure, String colour) {
-        Label line = new Label(String.format("%-7s %7s", word, figure));
-        line.setStyle(STRIP_CAPTION + " -fx-text-fill: " + colour + ";");
-        return line;
+    /** A rating's verdict: investment grade is good, BB and B a watch, below that bad. */
+    static String ratingColour(String rating) {
+        return switch (rating) {
+            case "AAA", "AA", "A", "BBB" -> Palette.GOOD;
+            case "BB", "B"               -> Palette.WARN;
+            default                      -> Palette.BAD;
+        };
     }
 
     /**
-     * Grey near the player's target, amber off it, red once prices run past
-     * it or collapse. Since 0.7.15, every colour is read from the
-     * target:
-     *   - within STRIP_INFLATION_QUIET of it, either side: grey;
+     * Good near the player's target, amber off it, red once prices run past
+     * it or collapse. Since 0.7.15, every colour is read from the target:
+     *   - within STRIP_INFLATION_QUIET of it, either side: good;
      *   - over it by more than that, up to STRIP_INFLATION_OVER_TARGET:
      *     amber; past that: red (Jerus's "Red at target + 5 points");
      *   - under it by more than the quiet band: amber, and red once prices
      *     fall faster than STRIP_DEFLATION_ALARM a year, whatever the target.
      *
-     * NEAR THE TARGET IS GREY FIRST (0.7.15). Until then the red test came
-     * first, against 10% flat, and a city on a target past 10% - which the
-     * dial now allows - would have read red for doing what it was told. Now
-     * the red is measured over the target too, so the grey band always sits
-     * inside it. At the default 2% target, inflation from 7% to 10% read
-     * amber and now reads red.
+     * NEAR THE TARGET IS FIRST (0.7.15). Until then the red test came first,
+     * against 10% flat, and a city on a target past 10% - which the dial now
+     * allows - would have read red for doing what it was told. Near the
+     * target read the strip's quiet grey until 0.7.21, and reads good now,
+     * as the mockups' "on the 2% target" does.
      */
     private static String inflationColour(double inflation, double target) {
-        if (Math.abs(inflation - target) <= STRIP_INFLATION_QUIET) return STRIP_QUIET;
-        if (inflation - target > STRIP_INFLATION_OVER_TARGET) return "#ff6b6b";
-        if (inflation < -STRIP_DEFLATION_ALARM) return "#ff6b6b";
-        return "#ffb454";
+        if (Math.abs(inflation - target) <= STRIP_INFLATION_QUIET) return Palette.GOOD;
+        if (inflation - target > STRIP_INFLATION_OVER_TARGET) return Palette.BAD;
+        if (inflation < -STRIP_DEFLATION_ALARM) return Palette.BAD;
+        return Palette.WARN;
     }
 
-    /** Grey near parity or stronger, amber weaker, red well below it. See STRIP_RATE_QUIET. */
+    /** Secondary grey near parity or stronger, amber weaker, red well below it. See STRIP_RATE_QUIET. */
     private static String rateColour(ForeignAccounts fx) {
         double weaker = fx.deviationFromParity();
-        if (weaker > STRIP_RATE_ALARM) return "#ff6b6b";
-        if (weaker > STRIP_RATE_QUIET) return "#ffb454";
-        return STRIP_QUIET;
-    }
-
-
-    /** One small coloured figure on the population strip. */
-    private Label flowChip(String text, String colour) {
-        Label chip = new Label(text);
-        chip.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: " + colour + ";");
-        return chip;
+        if (weaker > STRIP_RATE_ALARM) return Palette.BAD;
+        if (weaker > STRIP_RATE_QUIET) return Palette.WARN;
+        return Palette.TEXT_LABEL;
     }
 
     /**
@@ -1866,13 +2375,14 @@ public class UserInterface extends Application {
 
         debts.sort(java.util.Comparator.comparingInt(Debt::getMaturityMonth));
 
+        // In the money area's colour since 0.7.21, as the mockups' status bar has it.
         Label heading = new Label("NEXT DUE");
-        heading.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #8fa3b0;");
+        heading.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.MONEY));
         debtBar.getChildren().add(heading);
 
         if (debts.isEmpty()) {
             Label none = new Label("No city debt outstanding.");
-            none.setStyle("-fx-font-size: 11px; -fx-text-fill: #78909c;");
+            none.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
             debtBar.getChildren().add(none);
         } else {
             int shown = 0;
@@ -1882,7 +2392,7 @@ public class UserInterface extends Application {
             }
             if (debts.size() > 5) {
                 Label more = new Label("+" + (debts.size() - 5) + " more");
-                more.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+                more.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
                 debtBar.getChildren().add(more);
             }
         }
@@ -1919,14 +2429,14 @@ public class UserInterface extends Application {
 
         Label totals = new Label(String.format("TOTAL PRINCIPAL  %s      COUPON  %s/mo",
                 money(principal), money(coupon)));
-        totals.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-text-fill: #c3ccd3;");
+        totals.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                + " -fx-font-weight: bold; -fx-text-fill: " + Palette.TEXT_BODY + ";");
         debtBar.getChildren().add(totals);
 
         if (discountPaper > 0) {
             Label discount = new Label(String.format("  (%s of that pays at maturity, not monthly)",
                     money(discountPaper)));
-            discount.setStyle("-fx-font-size: 10px; -fx-text-fill: #78909c;");
+            discount.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
             debtBar.getChildren().add(discount);
         }
 
@@ -1934,8 +2444,8 @@ public class UserInterface extends Application {
         if (overdraft > 0) {
             Label od = new Label(String.format("  + %s overdrawn",
                     money(overdraft)));
-            od.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                    + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+            od.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD + ";");
             debtBar.getChildren().add(od);
         }
 
@@ -1945,8 +2455,8 @@ public class UserInterface extends Application {
         if (advanced > 0) {
             Label cb = new Label(String.format("  + %s advanced by the central bank",
                     money(advanced)));
-            cb.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                    + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+            cb.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                    + " -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD + ";");
             debtBar.getChildren().add(cb);
         }
     }
@@ -1959,18 +2469,18 @@ public class UserInterface extends Application {
 
         // Urgency by colour as well as by position, so a wall of paper coming
         // due reads at a glance without anyone parsing five dates.
-        String colour = (gap <= 3) ? "#ff6b6b" : (gap <= 12) ? "#ffb454" : "#c3ccd3";
+        String colour = (gap <= 3) ? Palette.BAD : (gap <= 12) ? Palette.WARN : Palette.TEXT_BODY;
 
         Label amount = new Label(money(debt.getOustandingPrincipal()));
-        amount.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
+        amount.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 12px;"
                 + " -fx-font-weight: bold; -fx-text-fill: " + colour + ";");
 
         Label when = new Label(CityCalendar.formatShort(due)
                 + "  " + CityCalendar.until(currentMonth, due));
-        when.setStyle("-fx-font-size: 9px; -fx-text-fill: #78909c;");
+        when.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
 
         Label type = new Label(debt.getType());
-        type.setStyle("-fx-font-size: 9px; -fx-text-fill: #8fa3b0;");
+        type.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
         VBox chip = new VBox(0);
         chip.getChildren().addAll(amount, when, type);
@@ -1978,11 +2488,262 @@ public class UserInterface extends Application {
         return chip;
     }
 
+    /* =====================================================================
+       THE MAIN MENU (0.7.21)
+
+       Jerus: the main menu was "bland as hell" - "thats the first thing
+       players see". It was six grey buttons at the top of the middle column,
+       with the rail hidden and the panels, the strips and an empty city's
+       "Needs you: the bank - there is none" around them, before any game.
+
+       So the menu is drawn OVER THE WHOLE WINDOW, as the mockups have it
+       (Menu.dc.html): the game's name and a line under it at the left, the
+       buttons under them, the cities saved last at the bottom right, the
+       version at the bottom left - over a backdrop the game draws itself, a
+       skyline of flat blocks with a few windows lit in the four area colours
+       and the city's line rising behind it (drawBackdrop()). It is still, on
+       purpose: a menu that moves is a menu that asks to be watched.
+
+       ONE LAYER, TWO SCREENS. The layer (titleLayer) sits in windowStack over
+       the whole window - the rail, the panels and the header under it - and
+       clearMenu() shows it for this screen and the founding screen
+       (FoundingScreen, dimmed) and takes it away for every other - but for
+       the menu's own Load, Save and Settings only in a city: with no city
+       open they draw on it too since 0.7.22, a panel over the dimmed
+       backdrop (COLD-START SETTINGS, LOAD AND SAVE GO OVER THE BACKDROP).
+       In a city they are drawn in the middle column as before, with the
+       header and the panels around them. Esc and P still open this from
+       anywhere, so the in-game menu is this one, over the city: Continue is
+       the way back to it.
+       ===================================================================== */
+
+    /** The layer the main menu and the founding screen draw on - and, with no city open, Settings, Load and Save (0.7.22): the backdrop, a dimmer, and what the screen puts on it. */
+    private StackPane titleLayer;
+    private javafx.scene.canvas.Canvas backdrop;
+    private Region titleDim;
+    private StackPane titleContent;
+
+    /** The building blocks' fill and edge, and an unlit window, on the backdrop: the skyline's own darks, under the panels' ground. */
+    static final String BACKDROP_BLOCK = "#121c28";
+    static final String BACKDROP_EDGE = "#1d2b3c";
+    static final String BACKDROP_WINDOW = "#22344a";
+
+    /** How dark the founding screen dims the backdrop under its panel: the mockups' 0.72. The cold-start Settings, Load and Save are dimmed by it too (0.7.22). */
+    static final double FOUNDING_DIM = .72;
+
+    /** Up to this many of the cities saved last, as cards at the menu's bottom right. */
+    static final int MENU_CITIES = 3;
+
+    /**
+     * The title layer shown or taken away, and emptied for the screen about
+     * to draw on it. Called by clearMenu() on every screen change.
+     */
+    private void showTitleLayer(boolean show, boolean dim) {
+        if (windowStack == null) return;
+        if (!show) {
+            if (titleLayer != null) windowStack.getChildren().remove(titleLayer);
+            return;
+        }
+        if (titleLayer == null) {
+            backdrop = new javafx.scene.canvas.Canvas();
+            javafx.scene.layout.Pane canvasHost = new javafx.scene.layout.Pane(backdrop) {
+                private double drawnW = -1, drawnH = -1;
+                @Override protected void layoutChildren() {
+                    double w = getWidth(), h = getHeight();
+                    if (w == drawnW && h == drawnH) return;
+                    drawnW = w;
+                    drawnH = h;
+                    backdrop.setWidth(w);
+                    backdrop.setHeight(h);
+                    drawBackdrop(backdrop.getGraphicsContext2D(), w, h);
+                }
+            };
+            titleDim = new Region();
+            titleDim.setStyle("-fx-background-color: " + Palette.STAGE + ";");
+            titleDim.setOpacity(FOUNDING_DIM);
+            titleContent = new StackPane();
+            // One listener for the life of the window: the menu's column is
+            // placed again when the window's height changes under it.
+            titleContent.heightProperty().addListener((o, was, now) -> {
+                if (placeMenu != null && "showMainMenu".equals(currentScreen)) placeMenu.run();
+            });
+            titleLayer = new StackPane(canvasHost, titleDim, titleContent);
+            titleLayer.setStyle("-fx-background-color: " + Palette.STAGE + ";");
+        }
+        titleDim.setVisible(dim);
+        titleContent.getChildren().clear();
+        if (!windowStack.getChildren().contains(titleLayer)) {
+            // Over the window, under a dialog that might already be up.
+            windowStack.getChildren().add(1, titleLayer);
+        }
+    }
+
+    /** Where the main menu and the founding screen put what they draw, and menuPage() its panel (0.7.22). */
+    StackPane titleContent() { return titleContent; }
+
+    /*
+     * COLD-START SETTINGS, LOAD AND SAVE GO OVER THE BACKDROP (0.7.22), as
+     * the main menu has since 0.7.21. Before a city is founded or loaded
+     * they drew in the middle column with the empty start-up world's header
+     * and panels around them - an empty city's "Needs you" and a header of
+     * zeros, before any game. On a cold start they are a panel on the dimmed
+     * backdrop, the founding screen's ground; in a city they stay where they
+     * were, with the city around them.
+     */
+
+    /** The menu's own screens, which draw over the backdrop while no city is open. */
+    private static boolean coldMenu(String screen) {
+        switch (screen) {
+            case "showSettingsMenu": case "showLoadMenu": case "loadSlot":
+            case "showSavingMenu": case "showSaveSlotConfirm": case "showSaveResult":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /** Where one of those screens draws: the middle column in a city; a panel over the backdrop, centred and scrolling if it must, when none is open. */
+    private VBox menuPage() {
+        if (cityOpen || titleContent == null || titleLayer == null
+                || !windowStack.getChildren().contains(titleLayer)) {
+            return rootMenu;
+        }
+        VBox panel = new VBox(10);
+        panel.setAlignment(Pos.TOP_LEFT);
+        panel.setMinWidth(420);
+        panel.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        panel.setStyle("-fx-padding: 26 30 26 30; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-background-radius: 14; -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 14;");
+        StackPane page = new StackPane(panel);
+        page.setStyle("-fx-padding: 16;");
+        javafx.scene.control.ScrollPane scroller = new javafx.scene.control.ScrollPane(page);
+        scroller.setFitToWidth(true);
+        scroller.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        scroller.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        page.minHeightProperty().bind(scroller.heightProperty().subtract(2));
+        titleContent.getChildren().add(scroller);
+        return panel;
+    }
+
+    /** How the menu's column is placed for the window's height; run again when it changes. */
+    private Runnable placeMenu;
+
+    /**
+     * The backdrop: the city's line rising behind a skyline of flat blocks,
+     * a few of their windows lit in the four area colours. The mockups'
+     * recipe (gen_menu.py, backdrop()), drawn to the window's size: the line
+     * a long climb with a ripple and two dips across the right seven tenths,
+     * the blocks from a fixed seed so it is the same skyline every time,
+     * scaled to the window's height.
+     */
+    static void drawBackdrop(javafx.scene.canvas.GraphicsContext g, double w, double h) {
+        g.setFill(javafx.scene.paint.Color.web(Palette.STAGE));
+        g.fillRect(0, 0, w, h);
+        if (w < 2 || h < 2) return;
+
+        // The line: 160 points, a logistic climb with a ripple and two dips.
+        int n = 160;
+        double[] v = new double[n];
+        double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            double t = i / (double) (n - 1);
+            v[i] = .15 + .7 / (1 + Math.exp(-7 * (t - .5))) + .03 * Math.sin(i / 5.0)
+                    - .05 * Math.exp(-Math.pow(i - 70, 2) / 40) - .06 * Math.exp(-Math.pow(i - 112, 2) / 30);
+            lo = Math.min(lo, v[i]);
+            hi = Math.max(hi, v[i]);
+        }
+        double x0 = w * .30, y0 = h * .12, lw = w * .70, lh = h * .48;
+        javafx.scene.paint.Color money = javafx.scene.paint.Color.web(Palette.MONEY);
+        g.setStroke(money.deriveColor(0, 1, 1, .75));
+        g.setLineWidth(2.5);
+        g.beginPath();
+        for (int i = 0; i < n; i++) {
+            double x = x0 + lw * i / (n - 1), y = y0 + lh - lh * (v[i] - lo) / (hi - lo);
+            if (i == 0) g.moveTo(x, y); else g.lineTo(x, y);
+        }
+        g.stroke();
+        g.setLineWidth(2);
+        g.setStroke(money);
+        g.setFill(javafx.scene.paint.Color.web(Palette.STAGE));
+        for (int k : new int[] {40, 70, 112, 150}) {
+            double x = x0 + lw * k / (n - 1), y = y0 + lh - lh * (v[k] - lo) / (hi - lo);
+            g.fillOval(x - 5, y - 5, 10, 10);
+            g.strokeOval(x - 5, y - 5, 10, 10);
+        }
+
+        // The skyline, from a fixed seed, at the mockups' sizes for a 900-high window.
+        java.util.Random pick = new java.util.Random(7);
+        double s = h / 900;
+        int[] widths = {46, 58, 70, 84, 104};
+        int[] heights = {120, 170, 210, 260, 320, 380};
+        javafx.scene.paint.Color[] lit = {
+            javafx.scene.paint.Color.web(Palette.PEOPLE, .75), javafx.scene.paint.Color.web(Palette.MONEY, .75),
+            javafx.scene.paint.Color.web(Palette.BUSINESS, .75), javafx.scene.paint.Color.web(Palette.BUILDING, .75)
+        };
+        javafx.scene.paint.Color block = javafx.scene.paint.Color.web(BACKDROP_BLOCK);
+        javafx.scene.paint.Color edge = javafx.scene.paint.Color.web(BACKDROP_EDGE);
+        javafx.scene.paint.Color dark = javafx.scene.paint.Color.web(BACKDROP_WINDOW);
+        g.setLineWidth(1);
+        double x = w * .28;
+        int[] gaps = {0, 4, 10};
+        while (x < w) {
+            double bw = widths[pick.nextInt(widths.length)] * s;
+            double bh = heights[pick.nextInt(heights.length)] * s;
+            g.setFill(block);
+            g.fillRect(x, h - bh, bw, bh);
+            g.setStroke(edge);
+            g.strokeRect(x + .5, h - bh + .5, bw - 1, bh - 1);
+            for (double wy = h - bh + 14 * s; wy < h - 10 * s; wy += 18 * s) {
+                for (double wx = x + 8 * s; wx < x + bw - 10 * s; wx += 14 * s) {
+                    double r = pick.nextDouble();
+                    if (r < .18) {
+                        g.setFill(lit[pick.nextInt(lit.length)]);
+                        g.fillRect(wx, wy, 6 * s, 8 * s);
+                    } else if (r < .5) {
+                        g.setFill(dark);
+                        g.fillRect(wx, wy, 6 * s, 8 * s);
+                    }
+                }
+            }
+            x += bw + gaps[pick.nextInt(gaps.length)] * s;
+        }
+    }
+
+    /** A save's header, kept while its file is unchanged, so the menu can read eleven slots without parsing eleven files every time it opens. */
+    private record KnownSave(long modified, long size, SaveHeader header) { }
+    private final java.util.Map<Integer, KnownSave> knownSaves = new java.util.HashMap<>();
+
+    /** A slot's header, read again only when its file has changed; null for an empty or unreadable slot. */
+    private SaveHeader headerOf(int slot) {
+        try {
+            java.nio.file.Path file = game.getGameFiles().saveFile(slot);
+            if (!java.nio.file.Files.isRegularFile(file)) { knownSaves.remove(slot); return null; }
+            long modified = java.nio.file.Files.getLastModifiedTime(file).toMillis();
+            long size = java.nio.file.Files.size(file);
+            KnownSave known = knownSaves.get(slot);
+            if (known != null && known.modified() == modified && known.size() == size) return known.header();
+            SaveHeader header = game.getGameFiles().readHeader(slot);
+            knownSaves.put(slot, new KnownSave(modified, size, header));
+            return header;
+        } catch (java.io.IOException | RuntimeException e) {
+            return game.getGameFiles().readHeader(slot);
+        }
+    }
+
+    /** "saved 20:38" today, "saved 29 Sep 20:38" this year, with the year before that. */
+    private static String savedWhen(long savedAt) {
+        java.time.ZonedDateTime when = java.time.Instant.ofEpochMilli(savedAt).atZone(java.time.ZoneId.systemDefault());
+        java.time.LocalDate today = java.time.LocalDate.now();
+        String pattern = when.toLocalDate().equals(today) ? "HH:mm"
+                : when.getYear() == today.getYear() ? "d MMM HH:mm" : "d MMM yyyy HH:mm";
+        return "saved " + when.format(java.time.format.DateTimeFormatter.ofPattern(pattern));
+    }
+
     void showMainMenu() {   // package-private since 0.7.10: the founding screen's Back
         /*
-         * WHERE RESUME GOES, and it is not "the start of the game".
+         * WHERE CONTINUE GOES, and it is not "the start of the game".
          *
-         * Esc opens this screen from anywhere, so Resume has to put the player
+         * Esc opens this screen from anywhere, so Continue has to put the player
          * back on the screen they pressed it on - otherwise saving mid-game
          * costs you your place. clearMenu is about to overwrite redrawScreen
          * with this menu's own, so the screen underneath is captured first.
@@ -1992,58 +2753,55 @@ public class UserInterface extends Application {
             resumeTo = redrawScreen;
         }
         clearMenu("showMainMenu", () -> showMainMenu());
+        StackPane layer = titleContent();
 
+        Label name = new Label("CityBuilderSim");
+        name.setStyle("-fx-font-size: 54px; -fx-font-weight: bold; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
+        Label line = new Label("A city, its money, and everyone in it.");
+        line.setStyle("-fx-font-size: 17px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+        VBox.setMargin(line, new javafx.geometry.Insets(0, 0, 30, 0));
 
-        Button startNewGame = new Button("Start New Game");
-        Button resumeGame = new Button("Resume Game");
-        Button loadGameSave = new Button("Load Game");
-        Button saveGame = new Button("Save Game");
-        Button settings = new Button("Settings");
-        Button quit = new Button("Quit");
-
-        /*
-         * START NEW GAME FOUNDS A CITY (0.7.10): the founding screen first -
-         * the city's name, its money, the treasury and the vault, and the
-         * world - and game.newGame() only when the player founds it there
-         * (foundCity()). "Found with defaults" on that screen is the old
-         * one-click start. The world used to be set HERE, from Settings, just
-         * after newGame(); it is one of the founding's choices now, applied
-         * inside it (Game.buildWorld()).
-         */
-        startNewGame.setOnAction(e -> foundingScreen.show());
         /* =================================================================
-           WHAT "RESUME" MEANS DEPENDS ON WHETHER THERE IS ANYTHING TO RESUME
+           WHAT "CONTINUE" MEANS DEPENDS ON WHETHER THERE IS ANYTHING TO CONTINUE
            -----------------------------------------------------------------
-           The button used to do one thing in all three situations: call
+           Resume used to do one thing in all three situations: call
            resumeGame(), which only calls initialize(), and then draw a screen.
            Pressed from the title screen with no city ever started, that drew
            the city view over an empty world - a game board with no game on it,
            and no way to tell that from a real one.
 
-           There are three cases and the button now answers all three.
+           There are three cases and the button answers all three. It is
+           Continue since 0.7.21, the mockups' word, and it says under it which
+           city it goes back to.
 
-             a game in progress -> back to the screen Esc was pressed on. This
-                is the case it was written for and it is unchanged.
-             no game, but an autosave on disk -> load the autosave. This is
-                what a player means by Resume on a cold start: carry on from
-                where the game last saved itself, without going through the
-                load list to find the one slot they were never going to pick
+             a city in play -> back to the screen Esc was pressed on. This is
+                the case it was written for and it is unchanged.
+             no city, but an autosave on disk -> load the autosave. This is
+                what a player means by it on a cold start: carry on from where
+                the game last saved itself, without going through the load
+                list to find the one slot they were never going to pick
                 anything but.
-             no game and no autosave -> greyed out. A first run has nothing to
-                resume, and a button that does nothing is worse than one that
-                says so.
+             no city and no autosave -> greyed out. A first run has nothing to
+                continue, and a button that does nothing is worse than one
+                that says so.
 
-           The autosave is deliberately the ONLY slot this reaches. Resume is
-           "carry on", not "choose"; choosing is what Load Game is for.
+           The autosave is deliberately the ONLY slot this reaches. Continue
+           is "carry on", not "choose"; choosing is what Load a city is for.
            ================================================================= */
-        boolean playing = game.isRunning();
-        boolean autosaveWaiting =
-                game.getGameFiles().slotIsLoadable(GameFiles.AUTOSAVE_SLOT);
-
-        resumeGame.setDisable(!playing && !autosaveWaiting);
-
-        resumeGame.setOnAction(e -> {
-            if (game.isRunning()) {
+        // A city founded or loaded this session, not Game.isRunning(), which the
+        // start-up world already sets (0.7.20; see cityOpen).
+        SaveHeader autosave = cityOpen ? null : headerOf(GameFiles.AUTOSAVE_SLOT);
+        boolean autosaveWaiting = autosave != null && autosave.isReadableHere();
+        String where = cityOpen
+                ? game.getCityName() + " · month " + formatter.format(game.getMonth()) + " · in play"
+                : autosaveWaiting
+                ? autosave.getCityName() + " · month " + formatter.format(autosave.getMonth())
+                        + " · " + savedWhen(autosave.getSavedAt())
+                : "nothing to continue yet";
+        Button resume = menuButton("Continue", where, true);
+        resume.setDisable(!cityOpen && !autosaveWaiting);
+        resume.setOnAction(e -> {
+            if (cityOpen) {
                 game.resumeGame();
                 if (resumeTo != null) resumeTo.run(); else openCity();
             } else {
@@ -2053,39 +2811,183 @@ public class UserInterface extends Application {
                 loadSlot(GameFiles.AUTOSAVE_SLOT);
             }
         });
-        loadGameSave.setOnAction(e -> showLoadMenu());
-        saveGame.setOnAction(e -> showSavingMenu());
-        quit.setOnAction(e -> game.toggleQuit());
 
+        /*
+         * START A NEW CITY FOUNDS ONE (0.7.10): the founding screen first -
+         * the city's name, its money, what it starts with, and the world -
+         * and game.newGame() only when the player founds it there
+         * (foundCity()). The world used to be set from Settings, just after
+         * newGame(); it is one of the founding's choices now, applied inside
+         * it (Game.buildWorld()).
+         */
+        Button found = menuButton("New city", null, false);
+        found.setOnAction(e -> foundingScreen.show());
+        Button load = menuButton("Load a city", null, false);
+        load.setOnAction(e -> showLoadMenu());
+        Button settings = menuButton("Settings", null, false);
         settings.setOnAction(e -> showSettingsMenu());
+        Button quit = menuButton("Quit", null, false);
+        // Asks first (0.7.20); see showQuitDialog.
+        quit.setOnAction(e -> showQuitDialog());
 
+        VBox column = new VBox(12, name, line, resume);
+        // A city in play still needs saving to a slot: Save keeps its place,
+        // under Continue, and is not there when there is nothing to save.
+        if (cityOpen) {
+            Button save = menuButton("Save", null, false);
+            save.setOnAction(e -> showSavingMenu());
+            column.getChildren().add(save);
+        }
+        column.getChildren().addAll(found, load, settings, quit);
+        column.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        StackPane.setAlignment(column, Pos.TOP_LEFT);
 
-        // Small, grey, always there. The window title carries it too, but a
-        // screenshot of the menu is what people actually send you.
-        Label version = new Label(GameVersion.title());
-        version.setStyle("-fx-font-size: 9px; -fx-text-fill: #7d8f9c; -fx-padding: 12 0 0 0;");
+        // Small, grey, always there; the log's path is its tooltip. A bug
+        // report that arrives with that file attached is worth ten that do not.
+        Label version = new Label(GameVersion.VERSION);
+        version.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        Tooltip.install(version, new Tooltip(GameVersion.title() + "\n" + (GameLog.file() == null
+                ? "Logging is not running."
+                : "Its log: " + GameLog.file())));
+        StackPane.setAlignment(version, Pos.BOTTOM_LEFT);
+        StackPane.setMargin(version, new javafx.geometry.Insets(0, 0, 36, MENU_LEFT));
 
-        // Where the log is, in the one place everyone can find. A bug report
-        // that arrives with this file attached is worth ten that do not.
-        Label logLine = new Label(GameLog.file() == null
-                ? "(logging is not running)"
-                : "Log: " + GameLog.file());
-        logLine.setStyle("-fx-font-size: 9px; -fx-text-fill: #7d8f9c;");
-        logLine.setWrapText(true);
-        logLine.setMaxWidth(320);
+        layer.getChildren().addAll(column, version);
 
-        rootMenu.getChildren().addAll(
-                startNewGame,
-                resumeGame,
-                loadGameSave,
-                saveGame,
-                settings,
-                quit,
-                version,
-                logLine
-        );
+        // The column's distance from the top: the mockups' 110 on a tall
+        // window, less on a short one, so the last button clears the foot.
+        Runnable place = () -> {
+            column.applyCss();      // its sizes are the stylesheet's, before the first layout
+            double tall = layer.getHeight() > 0 ? layer.getHeight() : stage.getHeight();
+            double top = Math.max(24, Math.min(110, (tall - column.prefHeight(-1)) / 2.4));
+            StackPane.setMargin(column, new javafx.geometry.Insets(top, 0, 0, MENU_LEFT));
+        };
+        place.run();
+        placeMenu = place;
 
+        VBox cities = yourCities(layer.getWidth() > 0 ? layer.getWidth() : stage.getWidth());
+        if (cities != null) {
+            StackPane.setAlignment(cities, Pos.BOTTOM_RIGHT);
+            StackPane.setMargin(cities, new javafx.geometry.Insets(0, 56, 40, 0));
+            layer.getChildren().add(cities);
+        }
+        resume.requestFocus();
+    }
 
+    /** How far in from the window's left the menu's column and version sit. */
+    static final double MENU_LEFT = 96;
+
+    /** The menu's buttons' width, as the mockups draw them. */
+    static final double MENU_BUTTON = 360;
+
+    /** One of the menu's buttons: a word, and under the primary one what it goes back to. */
+    private Button menuButton(String text, String under, boolean primary) {
+        Label word = new Label(text);
+        word.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 17px; -fx-text-fill: "
+                + (primary ? Palette.ON_FILL : Palette.TEXT_HEAD) + ";");
+        VBox face = new VBox(2, word);
+        if (under != null) {
+            Label sub = new Label(under);
+            sub.setStyle(Fonts.sansMedium() + " -fx-font-size: 12px; -fx-text-fill: "
+                    + (primary ? Palette.ON_FILL : Palette.TEXT_MUTED) + ";");
+            sub.setOpacity(primary ? .8 : 1);
+            face.getChildren().add(sub);
+        }
+        Button button = new Button();
+        button.setGraphic(face);
+        button.setAlignment(Pos.CENTER_LEFT);
+        button.setPrefWidth(MENU_BUTTON);
+        button.setMinWidth(MENU_BUTTON);
+        button.setMinHeight(56);
+        String ground = primary ? Palette.MONEY : Palette.RAISED;
+        String lit = primary ? Palette.ACCENT_LIGHT : Palette.PINNED;
+        String rest = "-fx-padding: 12 20 12 20; -fx-background-radius: 10; -fx-border-radius: 10;"
+                + " -fx-cursor: hand; -fx-border-color: " + (primary ? Palette.MONEY : Palette.EDGE) + ";";
+        button.setStyle(rest + " -fx-background-color: " + ground + ";");
+        button.setOnMouseEntered(e -> button.setStyle(rest + " -fx-background-color: " + lit + ";"));
+        button.setOnMouseExited(e -> button.setStyle(rest + " -fx-background-color: " + ground + ";"));
+        return button;
+    }
+
+    /**
+     * YOUR CITIES: the slots saved last, newest first, as cards - the
+     * city's name, its slot, its people and its month, and when it was
+     * saved. A click loads it. As many as fit beside the menu's column, up
+     * to MENU_CITIES; null when no numbered slot holds a city.
+     *
+     * NO SPARKLINE, though the mockups draw one. A save's header carries
+     * this month's figures only; a line would mean reading the slot's
+     * history file, which for a big city is the largest file in the folder,
+     * every time the menu opens. When it was saved stands in its place.
+     */
+    private VBox yourCities(double wide) {
+        List<int[]> recent = new ArrayList<>();          // {slot}, sorted below by when it was saved
+        java.util.Map<Integer, SaveHeader> headers = new java.util.HashMap<>();
+        for (int slot = 1; slot <= GameFiles.SLOT_COUNT; slot++) {
+            SaveHeader header = headerOf(slot);
+            if (header == null || !header.isReadableHere()) continue;
+            headers.put(slot, header);
+            recent.add(new int[] {slot});
+        }
+        if (recent.isEmpty()) return null;
+        recent.sort((a, b) -> Long.compare(headers.get(b[0]).getSavedAt(), headers.get(a[0]).getSavedAt()));
+
+        // As many as fit to the right of the column, with a margin between.
+        int fit = (int) Math.floor((wide - 56 - MENU_LEFT - MENU_BUTTON - 40 + 12) / (CITY_CARD + 12));
+        int shown = Math.max(1, Math.min(MENU_CITIES, Math.min(fit, recent.size())));
+
+        HBox cards = new HBox(12);
+        for (int i = 0; i < shown; i++) {
+            int slot = recent.get(i)[0];
+            cards.getChildren().add(cityCard(slot, headers.get(slot)));
+        }
+        Label head = new Label("YOUR CITIES");
+        head.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 12px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+        HBox headRow = new HBox(6, head, infoButton("The cities saved most recently, from slots 1 to "
+                + GameFiles.SLOT_COUNT + ". A click loads one. Every slot, and the autosave, is under"
+                + " Load a city.", false));
+        headRow.setAlignment(Pos.CENTER_LEFT);
+        VBox box = new VBox(10, headRow, cards);
+        box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        return box;
+    }
+
+    /** A city card's width, as the mockups draw it. */
+    static final double CITY_CARD = 250;
+
+    /** One saved city: its name and slot, its people and month, when it was saved; a click loads it. */
+    private VBox cityCard(int slot, SaveHeader header) {
+        Label city = new Label(header.getCityName());
+        city.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 14px; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
+        city.setMinWidth(0);
+        Label which = new Label("slot " + slot);
+        which.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        which.setMinWidth(Region.USE_PREF_SIZE);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox top = new HBox(8, city, gap, which);
+        top.setAlignment(Pos.BASELINE_LEFT);
+
+        Label figures = new Label(formatter.format(header.getPopulation()) + " people · month "
+                + formatter.format(header.getMonth()));
+        figures.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 13px;"
+                + " -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+        Label when = new Label(savedWhen(header.getSavedAt()));
+        when.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+
+        VBox card = new VBox(4, top, figures, when);
+        card.setPrefWidth(CITY_CARD);
+        card.setMinWidth(CITY_CARD);
+        card.setMaxWidth(CITY_CARD);
+        String rest = "-fx-padding: 14; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 10; -fx-border-radius: 10; -fx-cursor: hand; -fx-border-color: ";
+        card.setStyle(rest + Palette.EDGE + ";");
+        card.setOnMouseEntered(e -> card.setStyle(rest + Palette.ACCENT + ";"));
+        card.setOnMouseExited(e -> card.setStyle(rest + Palette.EDGE + ";"));
+        Tooltip.install(card, new Tooltip("Load " + header.getCityName() + " from slot " + slot
+                + (header.hasName() ? " (“" + header.getSlotName() + "”)" : "") + "."));
+        card.setOnMouseClicked(e -> loadSlot(slot));
+        return card;
     }
 
     /* =========================================================================
@@ -2139,9 +3041,15 @@ public class UserInterface extends Application {
     private String slotTitle(int slot) {
         SaveHeader header = game.getGameFiles().readHeader(slot);
         String base = GameFiles.slotLabel(slot);
-        return (header != null && header.hasName())
-                ? base + " - " + header.getSlotName()
-                : base;
+        if (header == null || !header.hasName()) return base;
+        /*
+         * "Autosave · month 13", not "Autosave - Autosave - month 13"
+         * (0.7.20): the autosave names itself "Autosave - <why>"
+         * (Game.autosave()), and the label was put in front of it again.
+         */
+        String name = header.getSlotName();
+        if (name.startsWith(base + " - ")) name = name.substring(base.length() + 3);
+        return base + " \u00b7 " + name;
     }
 
     /** A slot row: the label on the button, the city underneath it. */
@@ -2165,7 +3073,7 @@ public class UserInterface extends Application {
 
         Label detail = new Label(slotSummary(slot));
         detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
-                + (broken ? "#ff6b6b" : empty ? "#7d8f9c" : "#8fa3b0") + ";");
+                + (broken ? Palette.BAD : empty ? Palette.TEXT_FAINT : Palette.TEXT_MUTED) + ";");
 
         row.getChildren().addAll(pick, detail);
         return row;
@@ -2173,25 +3081,26 @@ public class UserInterface extends Application {
 
     private void showSavingMenu() {
         clearMenu("showSavingMenu", () -> showSavingMenu());
+        VBox page = menuPage();
 
         Label heading = new Label("SAVE GAME");
         heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
         Label hint = new Label("Choose a slot. The autosave is not in this list "
                 + "on purpose - it is written for you.");
-        hint.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+        hint.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
         hint.setWrapText(true);
         hint.setMaxWidth(320);
 
-        rootMenu.getChildren().addAll(heading, hint);
+        page.getChildren().addAll(heading, hint);
 
         for (int slot = 1; slot <= GameFiles.SLOT_COUNT; slot++) {
-            rootMenu.getChildren().add(slotRow(slot, this::showSaveSlotConfirm, false));
+            page.getChildren().add(slotRow(slot, this::showSaveSlotConfirm, false));
         }
 
         Button cancel = new Button("Cancel");
         cancel.setOnAction(e -> showMainMenu());
-        rootMenu.getChildren().add(cancel);
+        page.getChildren().add(cancel);
     }
 
     /**
@@ -2202,6 +3111,7 @@ public class UserInterface extends Application {
      */
     private void showSaveSlotConfirm(int slot) {
         clearMenu("showSaveSlotConfirm", () -> showSaveSlotConfirm(slot));
+        VBox page = menuPage();
 
         boolean occupied = !game.getGameFiles().slotIsEmpty(slot);
         SaveHeader header = game.getGameFiles().readHeader(slot);
@@ -2210,21 +3120,21 @@ public class UserInterface extends Application {
         heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
         Label current = new Label(slotSummary(slot));
-        current.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+        current.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
         TextField name = new TextField(
                 (header != null && header.hasName()) ? header.getSlotName() : "");
         name.setPromptText("Name this save (optional)");
         name.setMaxWidth(300);
 
-        rootMenu.getChildren().addAll(heading, current, name);
+        page.getChildren().addAll(heading, current, name);
 
         if (occupied) {
             Label warn = new Label("This slot already has a city in it. Saving replaces it.");
-            warn.setStyle("-fx-font-size: 10px; -fx-text-fill: #ffb454;");
+            warn.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.WARN + ";");
             warn.setWrapText(true);
             warn.setMaxWidth(320);
-            rootMenu.getChildren().add(warn);
+            page.getChildren().add(warn);
         }
 
         Button confirm = new Button(occupied ? "Overwrite" : "Save");
@@ -2237,28 +3147,29 @@ public class UserInterface extends Application {
         });
         cancel.setOnAction(e -> showSavingMenu());
 
-        rootMenu.getChildren().addAll(confirm, cancel);
+        page.getChildren().addAll(confirm, cancel);
     }
 
     private void showLoadMenu() {
         clearMenu("showLoadMenu", () -> showLoadMenu());
+        VBox page = menuPage();
 
         Label heading = new Label("LOAD GAME");
         heading.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
-        rootMenu.getChildren().add(heading);
+        page.getChildren().add(heading);
 
         // Autosave first: it is the most recent thing the game wrote, so it is
         // what someone recovering from a crash is looking for.
-        rootMenu.getChildren().add(
+        page.getChildren().add(
                 slotRow(GameFiles.AUTOSAVE_SLOT, this::loadSlot, true));
 
         for (int slot = 1; slot <= GameFiles.SLOT_COUNT; slot++) {
-            rootMenu.getChildren().add(slotRow(slot, this::loadSlot, true));
+            page.getChildren().add(slotRow(slot, this::loadSlot, true));
         }
 
         Button cancel = new Button("Cancel");
         cancel.setOnAction(e -> showMainMenu());
-        rootMenu.getChildren().add(cancel);
+        page.getChildren().add(cancel);
     }
 
     private void loadSlot(int slot) {
@@ -2268,19 +3179,22 @@ public class UserInterface extends Application {
         String failure = game.getLoadFailure();
         if (failure != null) {
             clearMenu("loadSlot", () -> loadSlot(slot));
+            VBox page = menuPage();
             Label outcome = new Label("Could not load.");
             outcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;"
-                    + " -fx-text-fill: #ff6b6b;");
+                    + " -fx-text-fill: " + Palette.BAD + ";");
             Label why = new Label(failure);
-            why.setStyle("-fx-font-size: 10px; -fx-text-fill: #ff6b6b;");
+            why.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.BAD + ";");
             why.setWrapText(true);
             why.setMaxWidth(320);
             Button back = new Button("Back");
             back.setOnAction(e -> showLoadMenu());
-            rootMenu.getChildren().addAll(outcome, why, back);
+            page.getChildren().addAll(outcome, why, back);
             return;
         }
 
+        // A load replaces the city - Continue's autosave on a cold start included.
+        anotherCity();
         openCity();
     }
 
@@ -2302,31 +3216,49 @@ public class UserInterface extends Application {
         buildScreen.showBuildMenu();
     }
 
+    /**
+     * Another city has just replaced the one on screen - founded, or loaded
+     * (0.7.20): its toasts and its purchases are not this one's. Called from
+     * foundCity() and a load that went through, and NOT from openCity(),
+     * which is also how the player gets back to the SAME city - the time
+     * skip's Cancel and Done, and Continue with no screen to go back to - where
+     * clearing them toasted every unread urgent notice again and forgot the
+     * session's purchases.
+     */
+    private void anotherCity() {
+        cityOpen = true;
+        toasted.clear();
+        if (toastStack != null) toastStack.getChildren().clear();
+        buildScreen.forgetReceipts();
+    }
+
     /** The founding screen's last step: found the city as chosen, and open it. */
     void foundCity(Founding choices) {
         game.newGame(choices);
+        anotherCity();
         openCity();
     }
 
     private void showSaveResult(GameFiles.Result result) {
         clearMenu("showSaveResult", () -> showSaveResult(result));
+        VBox page = menuPage();
 
         Label outcome = new Label(result.ok ? "Saved." : "Save failed.");
         outcome.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: "
-                + (result.ok ? "#5fd68a" : "#ff6b6b") + ";");
+                + (result.ok ? Palette.GOOD : Palette.BAD) + ";");
 
         Label detail = new Label(result.ok
                 ? result.file.toString()
                 : result.error);
         detail.setStyle("-fx-font-size: 10px; -fx-text-fill: "
-                + (result.ok ? "#8fa3b0" : "#ff6b6b") + ";");
+                + (result.ok ? Palette.TEXT_MUTED : Palette.BAD) + ";");
         detail.setWrapText(true);
         detail.setMaxWidth(320);
 
         Button back = new Button("Back");
         back.setOnAction(e -> showMainMenu());
 
-        rootMenu.getChildren().addAll(outcome, detail, back);
+        page.getChildren().addAll(outcome, detail, back);
 
         if (!result.ok) {
             // Worth saying out loud: the usual causes are a full disk or a
@@ -2335,10 +3267,10 @@ public class UserInterface extends Application {
             Label advice = new Label(
                     "The city is still running - nothing has been lost yet. "
                     + "Check there is free disk space, then try again.");
-            advice.setStyle("-fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+            advice.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
             advice.setWrapText(true);
             advice.setMaxWidth(320);
-            rootMenu.getChildren().add(2, advice);
+            page.getChildren().add(2, advice);
         }
     }
 
@@ -2363,19 +3295,187 @@ public class UserInterface extends Application {
     }
 
     /* =====================================================================
+       QUIT ASKS FIRST (0.7.20)
+
+       Quit went straight to the desktop: one click, no question. The
+       autosave was written, so nothing was lost - but the autosave it
+       overwrote was, and a menu button next to Save and Load is an easy one
+       to hit by mistake. So it asks: "Quit to the desktop? This city is
+       autosaved.", Quit and Cancel. Esc and Cancel close it (the key filter
+       in start() hands Esc to an open dialog first).
+
+       A DIALOG OVER THE WHOLE WINDOW, not a JavaFX Alert. An Alert is a
+       window of its own, in the platform's light theme, and a second window
+       over a full-screen one is the thing full screen does worst. This is a
+       card on a dimmed layer over windowStack: it takes every click while it
+       is up, so nothing behind it can be pressed by accident.
+       ===================================================================== */
+    private void showQuitDialog() {
+        if (quitDialog != null) return;
+
+        Label ask = new Label("Quit to the desktop?");
+        ask.setStyle(Palette.words(Palette.SIZE_LEAD, Palette.TEXT_HEAD) + " -fx-font-weight: bold;");
+        // Only a city in play is autosaved (Game.autosave() writes nothing before one).
+        Label why = new Label(cityOpen ? "This city is autosaved." : "There is no city open.");
+        why.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
+
+        Button yes = new Button("Quit");
+        yes.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
+                + " -fx-background-color: " + Palette.ALERT_EDGE + ";");
+        yes.setOnAction(e -> game.toggleQuit());
+        Button no = new Button("Cancel");
+        no.setOnAction(e -> closeQuitDialog());
+        HBox buttons = new HBox(Palette.GAP, no, yes);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+
+        VBox card = new VBox(Palette.GAP, ask, why, buttons);
+        card.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        card.setStyle("-fx-padding: 18 20 16 20;" + Palette.block(Palette.PANEL, Palette.CONTROL_EDGE));
+        VBox.setMargin(buttons, new javafx.geometry.Insets(8, 0, 0, 0));
+
+        StackPane layer = new StackPane(card);
+        layer.setStyle("-fx-background-color: rgba(5, 10, 15, 0.62);");
+        // The layer swallows a click anywhere outside the card; Cancel is the way out.
+        layer.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        quitDialog = layer;
+        windowStack.getChildren().add(layer);
+        // Cancel holds the focus, so Space or Enter on it is the safe answer.
+        no.requestFocus();
+    }
+
+    /** Close the dialog that is up, Quit's or a confirmation: Cancel, or Esc. */
+    private void closeQuitDialog() {
+        if (quitDialog == null) return;
+        windowStack.getChildren().remove(quitDialog);
+        quitDialog = null;
+    }
+
+    /* =====================================================================
+       A CONFIRMATION, WITH THE MONEY IN IT (0.7.22)
+
+       The construction page's cancel, demolition and buy-out each ask first,
+       in the Quit dialog's style (0.7.20): a card on a dimmed layer over the
+       whole window - the question, a line on what follows, the money in a
+       column of figures, Cancel and the action. Esc and Cancel close it: it
+       is the one dialog the key filter hands Esc to (quitDialog holds
+       whichever is up). Cancel holds the focus, and the clock stands still
+       while it is up, so the figures in it are the ones the action meets.
+       With no action it is a notice, and its one button closes it.
+       ===================================================================== */
+    void confirm(String ask, String why, java.util.List<String[]> lines, String yesText, Runnable yes) {
+        if (quitDialog != null) return;
+
+        Label question = new Label(ask);
+        question.setWrapText(true);
+        question.setMaxWidth(440);
+        question.setStyle(Palette.words(Palette.SIZE_LEAD, Palette.TEXT_HEAD) + " -fx-font-weight: bold;");
+        Label what = new Label(why);
+        what.setWrapText(true);
+        what.setMaxWidth(440);
+        what.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
+
+        VBox figures = new VBox(4);
+        if (lines != null) {
+            for (String[] line : lines) {
+                Label name = new Label(line[0]);
+                name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
+                Region gap = new Region();
+                HBox.setHgrow(gap, Priority.ALWAYS);
+                Label figure = new Label(line[1]);
+                figure.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+                HBox row = new HBox(Palette.GAP, name, gap, figure);
+                row.setAlignment(Pos.CENTER_LEFT);
+                row.setPrefWidth(440);
+                figures.getChildren().add(row);
+            }
+        }
+
+        Button no = new Button(yes == null ? "Close" : "Cancel");
+        no.setOnAction(e -> closeQuitDialog());
+        HBox buttons = new HBox(Palette.GAP, no);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+        if (yes != null) {
+            Button go = new Button(yesText);
+            go.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
+                    + " -fx-background-color: " + Palette.ALERT_EDGE + ";");
+            go.setOnAction(e -> {
+                closeQuitDialog();
+                yes.run();
+            });
+            buttons.getChildren().add(go);
+        }
+
+        VBox card = new VBox(Palette.GAP, question, what);
+        if (!figures.getChildren().isEmpty()) card.getChildren().add(figures);
+        card.getChildren().add(buttons);
+        card.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        card.setStyle("-fx-padding: 18 20 16 20;" + Palette.block(Palette.PANEL, Palette.CONTROL_EDGE));
+        VBox.setMargin(buttons, new javafx.geometry.Insets(8, 0, 0, 0));
+
+        StackPane layer = new StackPane(card);
+        layer.setStyle("-fx-background-color: rgba(5, 10, 15, 0.62);");
+        layer.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        quitDialog = layer;
+        windowStack.getChildren().add(layer);
+        no.requestFocus();
+    }
+
+    /* =====================================================================
+       EVERY TOOLTIP, DRESSED ONCE (0.7.20)
+
+       Tooltips are made in some thirty places across the screens, each where
+       it is needed. The stylesheet gives every one the same look (applyTheme's
+       .tooltip); two things it cannot set are done here, on each tooltip as it
+       is shown, by watching the window list:
+
+         - A WIDTH TO WRAP AT, TIP_WIDTH, unless the tooltip set its own. A
+           long tooltip ran across the panels on one line.
+         - ESCAPE IS NOT ITS TO TAKE. A showing tooltip is a popup window,
+           and a popup hides on Escape and CONSUMES it - in its owner window's
+           dispatcher, before the scene's key filter ever sees the key. On the
+           Build tab the pointer is nearly always over a card's tooltip, so
+           Esc did nothing there while P opened the menu: Jerus's play-through,
+           twice. With hideOnEscape off, Esc goes through to the filter, which
+           opens the menu and puts the tooltips away (hideTooltips()).
+       ===================================================================== */
+
+    /** The width a tooltip's text wraps at, unless it asked for its own. */
+    static final double TIP_WIDTH = 420;
+
+    private void dressTooltips() {
+        javafx.stage.Window.getWindows().addListener(
+                (javafx.collections.ListChangeListener<javafx.stage.Window>) change -> {
+            while (change.next()) {
+                for (javafx.stage.Window w : change.getAddedSubList()) {
+                    if (!(w instanceof Tooltip tip)) continue;
+                    tip.setHideOnEscape(false);
+                    tip.setWrapText(true);
+                    if (tip.getMaxWidth() < 0) tip.setMaxWidth(TIP_WIDTH);   // USE_COMPUTED_SIZE: not set
+                }
+            }
+        });
+    }
+
+    /** Every tooltip showing, put away - so one is not left hanging over the menu Esc opens. */
+    private static void hideTooltips() {
+        for (javafx.stage.Window w : new ArrayList<>(javafx.stage.Window.getWindows())) {
+            if (w instanceof Tooltip tip && tip.isShowing()) tip.hide();
+        }
+    }
+
+    /* =====================================================================
        SETTINGS.
 
        Four toggles, the keys and a way back, and it had been three raw grey
        buttons since before the palette existed - which mattered less when it
-       was buried behind a menu and matters now, because the gear at the foot
-       of the rail lands here from anywhere.
+       was buried behind a menu and matters now, because the menu at the foot
+       of the rail is a click from here, from anywhere.
        ===================================================================== */
     private void showSettingsMenu() {
         clearMenu("showSettingsMenu", () -> showSettingsMenu());
+        VBox page = menuPage();
 
-        Label title = new Label("SETTINGS");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = pageTitle("SETTINGS");
 
         VBox column = new VBox(0);
         column.setAlignment(Pos.TOP_LEFT);
@@ -2402,7 +3502,7 @@ public class UserInterface extends Application {
 
         column.getChildren().add(statementHead("What the city prints"));
         column.getChildren().add(toggleRow("Graphs", game.isGraphsEnabled(),
-                "The month-by-month charts under Reports.",
+                "The month-by-month charts under City History.",
                 () -> { game.toggleGraphs(); showSettingsMenu(); }));
         column.getChildren().add(toggleRow("Reports", game.isReportsEnabled(),
                 "The written month report in the console behind the window.",
@@ -2421,8 +3521,8 @@ public class UserInterface extends Application {
          */
 
         column.getChildren().add(statementHead("Keys"));
-        column.getChildren().add(statementLine("Esc  ·  P", "the game menu"));
-        column.getChildren().add(statementLine("F11", "full screen on and off"));
+        column.getChildren().add(statementLine("Esc  ·  P", "the game menu (Esc first leaves the full-screen chart)"));
+        column.getChildren().add(statementLine("F11", "the window's full screen on and off"));
         // ...and the four the list never carried (0.7.5): a shortcut nothing
         // announces is a shortcut for people who already know the game.
         column.getChildren().add(statementLine("Space", "the clock: run and pause"));
@@ -2433,7 +3533,8 @@ public class UserInterface extends Application {
         Button back = new Button("Back");
         back.setOnAction(e -> showMainMenu());
 
-        rootMenu.getChildren().addAll(title, scrolled(column), back);
+        // Over the backdrop the panel scrolls itself; in a city the column scrolls in the page.
+        page.getChildren().addAll(title, page == rootMenu ? scrolled(column) : column, back);
     }
 
     /*
@@ -2483,9 +3584,10 @@ public class UserInterface extends Application {
        Policy, Population, Next Month, Simulate, Back - plus whichever of four
        red banners applied. Every one of those seven is now somewhere it can be
        reached from ANY screen instead of only from this one: the first four are
-       tabs on the rail down the left, the two time controls are the round
-       buttons at the bottom right, and Back was only ever a way to the game
-       menu, which is the gear at the foot of the rail.
+       tabs on the rail down the left, the two time controls are the header's
+       clock (since 0.7.21; they were round buttons at the bottom right), and
+       Back was only ever a way to the game menu, which is Menu at the foot of
+       the rail.
 
        The four banners moved further than that. They are Notices now - raised
        by the city once a month whether or not anybody is looking, kept after
@@ -2524,6 +3626,9 @@ public class UserInterface extends Application {
        so the policy screen could leave without taking it.
        ===================================================================== */
 
+    /** Room left under the end of every scrolled page: a margin, since nothing floats over the stage's foot (0.7.21; it was 90, the dome's 74 and a margin). */
+    static final double PAGE_FOOT = 24;
+
     /** A left-aligned column inside a scroll pane, which these screens all want. */
     javafx.scene.control.ScrollPane scrolled(VBox column) {
         return scrolled(column, 150);
@@ -2548,6 +3653,15 @@ public class UserInterface extends Application {
     javafx.scene.control.ScrollPane scrolled(VBox column, double chrome, boolean fromBottom) {
         VBox content = new VBox(0);
         content.setAlignment(Pos.CENTER);
+        /*
+         * ROOM UNDER THE END OF THE PAGE (0.7.20). The end of a scrolled page
+         * - the Middle School's Build button, the last row of plots, the foot
+         * of the History chart - sat at the bottom edge of the stage where the
+         * income dome was, and read as covered by it. The dome went in 0.7.21
+         * (its figure is the header's TREASURY tile), and PAGE_FOOT is a
+         * margin again.
+         */
+        content.setPadding(new javafx.geometry.Insets(0, 0, PAGE_FOOT, 0));
         column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
         content.getChildren().add(column);
 
@@ -2608,7 +3722,7 @@ public class UserInterface extends Application {
         totalLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
         Label note = new Label("Reports and graphs are muted while fast-forwarding.");
-        note.setStyle("-fx-font-size: 11px; -fx-text-fill: #8fa3b0;");
+        note.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
         javafx.scene.layout.FlowPane grid = new javafx.scene.layout.FlowPane(10, 10);
         grid.setAlignment(Pos.CENTER);
@@ -2633,7 +3747,7 @@ public class UserInterface extends Application {
         });
 
         Button run = new Button("Run");
-        run.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;");
+        run.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;");
         run.setOnAction(e -> {
             if (months[0] > 0) {
                 int completed = game.simulateMonths(months[0]);
@@ -2686,12 +3800,12 @@ public class UserInterface extends Application {
             VBox problem = reportSection("SOMETHING WENT WRONG");
             for (String line : failure.split("\n")) {
                 Label item = monoLabel("  " + line);
-                item.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
+                item.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.BAD + ";");
                 problem.getChildren().add(item);
             }
             Label advice = monoLabel("  The months that did run are real. "
                     + "Save or reload before continuing.");
-            advice.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
+            advice.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
             problem.getChildren().add(advice);
             column.getChildren().add(problem);
         }
@@ -2706,8 +3820,8 @@ public class UserInterface extends Application {
             boolean good = line.startsWith("Nothing went wrong");
 
             Label item = monoLabel("  " + line);
-            item.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                    + (good ? "#5fd68a" : "#ff6b6b") + ";");
+            item.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: "
+                    + (good ? Palette.GOOD : Palette.BAD) + ";");
             headlines.getChildren().add(item);
         }
         column.getChildren().add(headlines);
@@ -2746,7 +3860,7 @@ public class UserInterface extends Application {
         if (skip.getAdvancedDuringSkip() > 0 || skip.getAdvancesOwedAtEnd() > 0) {
             Label adv = monoLabel(String.format("%-20s%s advanced, %s owed at the end",
                     "Central bank", money(skip.getAdvancedDuringSkip()), money(skip.getAdvancesOwedAtEnd())));
-            adv.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ffb454;");
+            adv.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.WARN + ";");
             econ.getChildren().add(adv);
         }
 
@@ -2756,8 +3870,8 @@ public class UserInterface extends Application {
             // book loses (TimeSkipReport.defaultsWereNews()).
             Label wo = monoLabel(String.format("%-20s%s written off by lenders",
                     "Defaults", money(skip.getWriteOffsDuringSkip())));
-            wo.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                    + (skip.defaultsWereNews() ? "#ffb454" : Palette.TEXT_MUTED) + ";");
+            wo.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: "
+                    + (skip.defaultsWereNews() ? Palette.WARN : Palette.TEXT_MUTED) + ";");
             econ.getChildren().add(wo);
         }
         column.getChildren().add(econ);
@@ -2779,8 +3893,8 @@ public class UserInterface extends Application {
         } else {
             for (TimeSkipReport.BuildingChange change : built) {
                 Label line = monoLabel(String.format("  %+d  %s", change.change, change.name));
-                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                        + (change.isGain() ? "#5fd68a" : "#ff6b6b") + ";");
+                line.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: "
+                        + (change.isGain() ? Palette.GOOD : Palette.BAD) + ";");
                 buildings.getChildren().add(line);
             }
         }
@@ -2802,11 +3916,11 @@ public class UserInterface extends Application {
             for (DemolitionLog.Entry entry : lost) {
                 Label line = monoLabel(String.format("  month %,d: %,d x %s (%s)",
                         entry.month, entry.quantity, entry.building, entry.sector));
-                line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff6b6b;");
+                line.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.BAD + ";");
                 demolished.getChildren().add(line);
             }
             demolished.getChildren().add(monoLabel(
-                    "  their owners could not afford to keep them"));
+                    "  their owners could not afford to keep them, or the city pulled them down"));
             column.getChildren().add(demolished);
         }
 
@@ -2828,8 +3942,8 @@ public class UserInterface extends Application {
                 Label epidemic = monoLabel(String.format(
                         "%-20s%d, running for %d months in total",
                         "Outbreaks", skip.getOutbreaks(), skip.getMonthsInOutbreak()));
-                epidemic.setStyle("-fx-font-family: 'Courier New';"
-                        + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+                epidemic.setStyle("-fx-font-family: " + Palette.mono() + ";"
+                        + " -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD + ";");
                 illness.getChildren().add(epidemic);
             } else {
                 illness.getChildren().add(monoLabel(
@@ -2847,8 +3961,8 @@ public class UserInterface extends Application {
                 Label dead = monoLabel(String.format(
                         "%-20s%,.0f at its worst - build a cemetery or a crematorium",
                         "Left unburied", skip.getPeakUnburied()));
-                dead.setStyle("-fx-font-family: 'Courier New';"
-                        + " -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+                dead.setStyle("-fx-font-family: " + Palette.mono() + ";"
+                        + " -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD + ";");
                 illness.getChildren().add(dead);
             }
             column.getChildren().add(illness);
@@ -2919,8 +4033,8 @@ public class UserInterface extends Application {
         boolean bad = higherIsBetter ? change < 0 : change > 0;
 
         Label line = monoLabel(String.format("%-20s%s", label, value));
-        line.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: "
-                + (bad ? "#ff6b6b" : good ? "#5fd68a" : "#8fa3b0") + ";");
+        line.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: "
+                + (bad ? Palette.BAD : good ? Palette.GOOD : Palette.TEXT_MUTED) + ";");
         section.getChildren().add(line);
     }
 
@@ -3026,18 +4140,34 @@ public class UserInterface extends Application {
        *sites* (stacks), so every extra building type you queued slowed down
        everything already in progress; since 0.7.17 what the sites are left
        after the repairs goes to each building by the crew it can use
-       (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE), and each
-       site's months are read at its own share. The "N site(s), M building(s)"
-       line and each site's months make that legible.
+       (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN USE), and since
+       0.7.20 each site's months are the wait the quote reads
+       (Game.onSiteMonths()), "at today's queue". The "N site(s), M
+       building(s)" line and each site's months make that legible.
        ===================================================================== */
 
     private void refreshConstructionPanel() {
         constructionPanel.getChildren().clear();
 
         Label header = new Label("UNDER CONSTRUCTION");
+        header.setGraphic(areaSwatch(Palette.BUILDING, 8));
+        header.setGraphicTextGap(8);
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;"
-                + " -fx-text-fill: #eceff1; -fx-padding: 0 0 4 2;");
-        constructionPanel.getChildren().add(header);
+                + " -fx-text-fill: " + Palette.TEXT_HEAD + "; -fx-padding: 0 0 4 2;");
+        /*
+         * OPEN, TO THE CONSTRUCTION PAGE (0.7.22): the panel keeps its summary,
+         * and the page behind it has every site's order, crews, time and
+         * money, and the player's hand on them (ConstructionScreen).
+         */
+        Label open = new Label("Open ›");
+        open.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 0 2 4 0;");
+        open.setOnMouseClicked(e -> constructionScreen.show());
+        Region headGap = new Region();
+        HBox.setHgrow(headGap, Priority.ALWAYS);
+        HBox headRow = new HBox(4, header, headGap, open);
+        headRow.setAlignment(Pos.CENTER_LEFT);
+        headRow.setMaxWidth(PANEL_TEXT + 8);
+        constructionPanel.getChildren().add(headRow);
 
         BuildingManager buildingManager = game.getBuildingManager();
         List<BuildingsStacks> sites = buildingManager.getStacksUnderConstruction();
@@ -3060,12 +4190,29 @@ public class UserInterface extends Application {
                 + (postsStanding > 0 && postsKept < postsStanding
                         ? " (crews kept on: " + formatter.format(postsKept) + " of " + formatter.format(postsStanding) + " posts)"
                         : ""));
-        capacity.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
+        capacity.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        // Wrapped, not cut (0.7.20): the panel is narrower than these lines.
+        capacity.setWrapText(true);
+        capacity.setMaxWidth(PANEL_TEXT);
+        // Its full height, or the panel squeezes it back to one cut line once
+        // the build log below needs the room (0.7.20, seen on the PC at month 5).
+        capacity.setMinHeight(Region.USE_PREF_SIZE);
         constructionPanel.getChildren().add(capacity);
 
         if (sites.isEmpty()) {
-            Label idle = new Label("Nothing being built.");
-            idle.setStyle("-fx-text-fill: #7d8f9c; -fx-padding: 8 0 0 0;");
+            ConstructionControl idleHand = buildingManager.getControl();
+            boolean handOnIt = !idleHand.demolitions().isEmpty() || !idleHand.shells().isEmpty();
+            Label idle = new Label(handOnIt
+                    ? String.format("Nothing being built. %d demolition(s) on site, %d shell(s) stopped.",
+                            idleHand.demolitions().size(), idleHand.shells().size())
+                    : "Nothing being built.");
+            idle.setWrapText(true);
+            idle.setMaxWidth(PANEL_TEXT);
+            idle.setStyle("-fx-text-fill: " + Palette.TEXT_FAINT + "; -fx-padding: 8 0 0 0;");
+            if (handOnIt) {
+                idle.setStyle(idle.getStyle() + " -fx-cursor: hand;");
+                idle.setOnMouseClicked(e -> constructionScreen.show());
+            }
             constructionPanel.getChildren().add(idle);
             addBuildLog();
             addDemolitionLog();
@@ -3074,11 +4221,17 @@ public class UserInterface extends Application {
 
         Label split = monoLabel(siteCount + " site(s), " + formatter.format(buildingsOnSite)
                 + " building(s): " + formatter.format(forSites) + " after repairs, crews by what each building can use");
-        split.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #8fa3b0;");
+        split.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        split.setWrapText(true);
+        split.setMaxWidth(PANEL_TEXT);
+        split.setMinHeight(Region.USE_PREF_SIZE);
         constructionPanel.getChildren().add(split);
 
         VBox list = new VBox(12);
         list.setStyle("-fx-padding: 10 0 0 0;");
+
+        // This month's crews, site by site, as the month will apply them (0.7.22).
+        BuildingManager.Plan sitePlan = buildingManager.plan(forSites);
 
         for (BuildingsStacks site : sites) {
 
@@ -3093,35 +4246,74 @@ public class UserInterface extends Application {
                     : 0;
 
             Label name = new Label(site.getName());
-            // explicit fill: without it the default Label colour renders almost
-            // invisibly against the panel's light background
-            name.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #5cb8ff;");
+            // The site's name in the text's colour, its bar in the building
+            // area's (the stylesheet's progress bar) since 0.7.21 - and a
+            // click opens the construction page at it (0.7.22).
+            name.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 12px; -fx-text-fill: " + Palette.TEXT_HEAD + ";"
+                    + " -fx-cursor: hand;");
+            String siteKey = ConstructionControl.keyOf(site.getBuilding());
+            name.setOnMouseClicked(e -> constructionScreen.showSite(siteKey));
 
             ProgressBar bar = new ProgressBar(fraction);
             bar.setPrefWidth(240);
 
-            // Same months-remaining calculation the console prints, guarded for the
-            // zero-output case (fully unstaffed construction) that would otherwise
-            // divide by zero and render as 2147483647.
+            // Stalled when the site gets nothing this month - this month's
+            // share as the month will apply it (BuildingManager.plan(): the
+            // crews' rule, and with the player's hand on the queue the city's
+            // order and its rushes) - and, when the rule would have given it
+            // crews and the order gave them to a site ahead of it, waiting
+            // for them; otherwise the one wait every screen reads.
             String eta;
-            double perSite = buildingManager.shareOf(site, forSites);
-            if (perSite <= 0) {
+            double perSite = sitePlan.shareOf(siteKey);
+            if (perSite <= 0 && sitePlan.ruleOf(siteKey) > 0) {
+                double monthsLeft = game.onSiteMonths(site.getBuilding());
+                eta = "waiting for crews, "
+                        + (Double.isNaN(monthsLeft) ? "stalled" : atTodaysQueue(monthsLeft));
+            } else if (perSite <= 0) {
                 // Two things can stall a site now, and they want different
                 // words: nobody to do the work, or nothing able to reach it.
                 eta = game.getInfrastructureManager().isCongested()
                         ? "stalled - gridlocked"
                         : "stalled - no workers";
             } else {
-                double monthsLeft = buildingManager.monthsLeft(site, perSite);
-                eta = Double.isNaN(monthsLeft) ? "done" : "~" + (int) monthsLeft + " mo";
+                /*
+                 * THE SAME WAIT THE CARD AND THE QUOTE READ (0.7.20):
+                 * Game.onSiteMonths(), so the panel, the build card's "N on
+                 * site" and the order's quote cannot give one site three
+                 * different times. It is a reading of today's queue, and
+                 * says so: orders placed after it take crews from it. Since
+                 * 0.7.22 (after the docs pass) it is the construction page's
+                 * wait too - Game.siteMonths(), BuildingManager, ONE WAIT FOR
+                 * A SITE: the rule's with the player's hand off the site, and
+                 * with an order set or a rush on, the order's and the
+                 * overtime's.
+                 */
+                double monthsLeft = game.onSiteMonths(site.getBuilding());
+                eta = Double.isNaN(monthsLeft) ? "stalled - no output" : atTodaysQueue(monthsLeft);
             }
 
             Label detail = monoLabel(remaining + " left / " + built + " built - " + eta);
-            detail.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px; -fx-text-fill: #8fa3b0;");
+            detail.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+            detail.setWrapText(true);
+            detail.setMaxWidth(PANEL_TEXT);
 
             VBox row = new VBox(3);
             row.getChildren().addAll(name, bar, detail);
             list.getChildren().add(row);
+        }
+
+        // ...and the player's own hand on the queue, in a line (0.7.22): the
+        // demolitions on site and the shells stopped, which the page lists.
+        ConstructionControl control = buildingManager.getControl();
+        if (!control.demolitions().isEmpty() || !control.shells().isEmpty()) {
+            Label hand = monoLabel(String.format("%d demolition(s) on site, %d shell(s) stopped",
+                    control.demolitions().size(), control.shells().size()));
+            hand.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px; -fx-text-fill: "
+                    + Palette.TEXT_MUTED + "; -fx-cursor: hand;");
+            hand.setWrapText(true);
+            hand.setMaxWidth(PANEL_TEXT);
+            hand.setOnMouseClicked(e -> constructionScreen.show());
+            list.getChildren().add(hand);
         }
 
         javafx.scene.control.ScrollPane scroller = keptPanelScroller("construction", list);
@@ -3133,6 +4325,19 @@ public class UserInterface extends Application {
         addBuildLog();
         addDemolitionLog();
     }
+
+    /** A small square in an area's colour, before a heading (0.7.21): the pages' titles' swatch, smaller. */
+    static Region areaSwatch(String colour, double size) {
+        Region swatch = new Region();
+        swatch.setMinSize(size, size);
+        swatch.setPrefSize(size, size);
+        swatch.setMaxSize(size, size);
+        swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+        return swatch;
+    }
+
+    /** How wide the construction panel's lines wrap: the panel less its padding. */
+    private static final double PANEL_TEXT = 256;
 
     /**
      * What the city has lost lately, under what it is building.
@@ -3155,7 +4360,7 @@ public class UserInterface extends Application {
 
         Label header = new Label("RECENTLY DEMOLISHED");
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
-                + " -fx-text-fill: #ff6b6b; -fx-padding: 14 0 2 0;");
+                + " -fx-text-fill: " + Palette.BAD + "; -fx-padding: 14 0 2 0;");
         constructionPanel.getChildren().add(header);
 
         VBox list = new VBox(6);
@@ -3163,22 +4368,29 @@ public class UserInterface extends Application {
         for (DemolitionLog.Entry entry : lost) {
 
             Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
-            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #ff8f8f;");
+            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD_SOFT + ";");
 
             // Fading with age, so the eye goes to what just happened without the
             // older entries disappearing entirely.
             int ago = entry.monthsAgo(game.getMonth());
-            String shade = (ago <= 1) ? "#ff6b6b" : (ago <= 6) ? "#c8b0a5" : "#7d8f9c";
+            String shade = (ago <= 1) ? Palette.BAD : (ago <= 6) ? Palette.TEXT_LABEL : Palette.TEXT_FAINT;
 
             Label when = monoLabel("  " + entry.sector + ", " + entry.when(game.getMonth()));
-            when.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+            when.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                     + " -fx-text-fill: " + shade + ";");
 
-            Label how = monoLabel(entry.wasPaidFor()
+            // The player's own demolitions (0.7.22) are the city's order, not a
+            // plot given back - a bought one's ground was paid for in the buy-out.
+            boolean ordered = entry.sector != null && entry.sector.startsWith("City");
+            Label how = monoLabel(ordered
+                    ? (entry.wasPaidFor()
+                            ? String.format("  bought out, its ground %s", money(entry.proceeds))
+                            : "  demolished by the city's order")
+                    : entry.wasPaidFor()
                     ? String.format("  plot sold back for %s", money(entry.proceeds))
                     : "  plot abandoned");
-            how.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                    + " -fx-text-fill: #7d8f9c;");
+            how.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
+                    + " -fx-text-fill: " + Palette.TEXT_FAINT + ";");
 
             VBox row = new VBox(1);
             row.getChildren().addAll(what, when, how);
@@ -3213,9 +4425,11 @@ public class UserInterface extends Application {
             return;
         }
 
+        // In the building colour since 0.7.21: a building opening is a log
+        // entry, not a verdict, and green is for a verdict.
         Label header = new Label("RECENTLY BUILT");
         header.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
-                + " -fx-text-fill: #5fd68a; -fx-padding: 14 0 2 0;");
+                + " -fx-text-fill: " + Palette.BUILDING + "; -fx-padding: 14 0 2 0;");
         constructionPanel.getChildren().add(header);
 
         VBox list = new VBox(6);
@@ -3223,16 +4437,16 @@ public class UserInterface extends Application {
         for (BuildLog.Entry entry : built) {
 
             Label what = new Label(String.format("%,d x %s", entry.quantity, entry.building));
-            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #5fd68a;");
+            what.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Palette.TEXT_HEAD + ";");
 
             // Fading with age, same as demolitions, so the eye goes to what just
             // happened without older entries disappearing entirely.
             int ago = entry.monthsAgo(game.getMonth());
-            String shade = (ago <= 1) ? "#5fd68a" : (ago <= 6) ? "#9ccc65" : "#7d8f9c";
+            String shade = (ago <= 1) ? Palette.BUILDING : (ago <= 6) ? Palette.TEXT_LABEL : Palette.TEXT_FAINT;
 
             Label when = monoLabel("  opened " + entry.when(game.getMonth())
                     + " (" + CityCalendar.formatShort(entry.month) + ")");
-            when.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
+            when.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
                     + " -fx-text-fill: " + shade + ";");
 
             VBox row = new VBox(1);
@@ -3250,25 +4464,84 @@ public class UserInterface extends Application {
 
     /* =====================================================================
        THE RAIL
+
+       0.7.21, AS THE MOCKUPS DRAW IT: 76 wide at the window's left edge,
+       each button an icon over its name, so the rail reads without learning
+       its glyphs. The one that is showing is on the raised ground, with a
+       bar down its edge and its icon in its AREA's colour - building and
+       land pink, people teal, business violet, money blue (areaOf()) - the
+       same colour as its page title's swatch and its header tile. The
+       names are the game's own, short enough for the button: "Land office",
+       "Infrastructure" and "Finances" where the mockups had Land, Transport
+       and Finance; "Sectors", "Trade" and "History" stand for the pages
+       titled Sector economy, Trade & the world and City History, whose full
+       names are the tooltips. At the foot, Menu: the game menu, which the
+       gear there opened and which was all it did; Settings is on it.
        ===================================================================== */
 
-    /** Wide enough for a glyph and its highlight, narrow enough to be an edge. */
-    private static final double RAIL_WIDTH = 46;
+    /** The rail's width: an icon over its name, as the mockups draw it (0.7.21; it was 46). */
+    private static final double RAIL_WIDTH = Palette.RAIL;
 
-    /** The strip under the stage that holds the dome and the time controls. */
-    private static final double STRIP_HEIGHT = 72;
+    /** A rail button's height, and the least it may shrink to on a short window. */
+    private static final double RAIL_BUTTON = 54;
+    private static final double RAIL_BUTTON_MIN = 40;
+
+    /** How big a rail icon is drawn: its 24-unit grid at 20 pixels. */
+    private static final double RAIL_ICON = 20;
 
     /**
      * One destination.
      *
      * @param key    what the highlight matches on
-     * @param glyph  a geometric shape, because the alternative was emoji and a
-     *               colour cartoon in the middle of a Courier instrument panel
-     *               is the one thing that would look wrong in a Steam screenshot
-     * @param name   what the tooltip says. The glyphs are learnable by position;
-     *               the name is how you learn them the first time.
+     * @param svg    a drawn outline, because the alternative was emoji and a
+     *               colour cartoon in the middle of an instrument panel is
+     *               the one thing that would look wrong in a Steam screenshot
+     * @param label  the name under the icon, short enough for the button
+     * @param name   what the tooltip says: the page's full name
      */
-    private record Tab(String key, String svg, String name, Runnable go) { }
+    private record Tab(String key, String svg, String label, String name, Runnable go) { }
+
+    /**
+     * Which of the four areas a rail key is in (0.7.21): building and land,
+     * people and services, business and trade, money and policy. Its colour
+     * is on the rail button, the page title's swatch and the header tile.
+     */
+    static String areaOf(String key) {
+        switch (key) {
+            case "build": case "land":
+                return Palette.BUILDING;
+            case "population": case "services": case "infrastructure":
+                return Palette.PEOPLE;
+            case "sector": case "trade":
+                return Palette.BUSINESS;
+            case "government": case "finances": case "bank": case "policy": case "reports":
+                return Palette.MONEY;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * A page's title, with its area's swatch before it (0.7.21): a small
+     * square in the colour of the rail tab that owns the screen showing, as
+     * the mockups set the title. A page no tab owns - Settings, the save
+     * menus - has no swatch. Every screen's title is made here.
+     */
+    Label pageTitle(String text) {
+        Label title = new Label(text);
+        title.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+        String area = areaOf(tabFor(currentScreen));
+        if (area != null) {
+            Region swatch = new Region();
+            swatch.setMinSize(10, 10);
+            swatch.setPrefSize(10, 10);
+            swatch.setMaxSize(10, 10);
+            swatch.setStyle("-fx-background-color: " + area + "; -fx-background-radius: 3;");
+            title.setGraphic(swatch);
+            title.setGraphicTextGap(10);
+        }
+        return title;
+    }
 
     /**
      * The rail, in the order a city is actually run.
@@ -3302,10 +4575,10 @@ public class UserInterface extends Application {
      */
     private Tab[] tabs() {
         return new Tab[] {
-            new Tab("build",      Icons.BUILD,      "Build",              buildScreen::showBuildMenu),
-            new Tab("land",       Icons.LAND,       "Land office",        landScreen::showLandMenu),
-            new Tab("population", Icons.POPULATION, "Population",         peopleScreen::showPopulationInfoMenu),
-            new Tab("services",   Icons.SERVICES,   "Services",           servicesScreen::showServicesStatsMenu),
+            new Tab("build",      Icons.BUILD,      "Build",       "Build",              buildScreen::showBuildMenu),
+            new Tab("land",       Icons.LAND,       "Land office", "Land office",        landScreen::showLandMenu),
+            new Tab("population", Icons.POPULATION, "People",      "People",             peopleScreen::showPopulationInfoMenu),
+            new Tab("services",   Icons.SERVICES,   "Services",    "Services",           servicesScreen::showServicesStatsMenu),
             /*
              * INFRASTRUCTURE IS ITS OWN TAB (2026-09-17). Jerus: "add a tab
              * called infrastruture or transporation and basically it shows all
@@ -3328,11 +4601,11 @@ public class UserInterface extends Application {
              * business and this tab is where a player finds out whether to
              * care about it.
              */
-            new Tab("infrastructure", Icons.INFRASTRUCTURE, "Infrastructure",
+            new Tab("infrastructure", Icons.INFRASTRUCTURE, "Infrastructure", "Infrastructure",
                     servicesScreen::showInfrastructureMenu),
-            new Tab("sector",     Icons.SECTOR,     "Sector economy",     sectorScreen::showSectorMenu),
-            new Tab("government", Icons.GOVERNMENT, "Government economy", governmentScreen::showGovernmentMenu),
-            new Tab("finances",   Icons.FINANCES,   "Finances",           financesScreen::showFinanceMenu),
+            new Tab("sector",     Icons.SECTOR,     "Sectors",     "Sector economy",     sectorScreen::showSectorMenu),
+            new Tab("government", Icons.GOVERNMENT, "Government",  "Government economy", governmentScreen::showGovernmentMenu),
+            new Tab("finances",   Icons.FINANCES,   "Finances",    "Finances",           financesScreen::showFinanceMenu),
             /*
              * THE BANK IS ITS OWN TAB NOW. Jerus: "i think we are going to have
              * 11 rails, bank is its own thing."
@@ -3348,10 +4621,10 @@ public class UserInterface extends Application {
              * subsystem reached by scrolling to the bottom of another screen is
              * a subsystem the player finds once and never again.
              */
-            new Tab("bank",       Icons.BANK,       "The bank",           bankScreen::showBankMenu),
-            new Tab("trade",      Icons.TRADE,      "Trade & the world",  tradeScreen::showForeignMenu),
-            new Tab("policy",     Icons.POLICY,     "Policies",           policyScreen::showPolicyMenu),
-            new Tab("reports",    Icons.REPORTS,    "Reports",            historyScreen::showHistoryMenu),
+            new Tab("bank",       Icons.BANK,       "Bank",        "The bank",           bankScreen::showBankMenu),
+            new Tab("trade",      Icons.TRADE,      "Trade",       "Trade & the world",  tradeScreen::showForeignMenu),
+            new Tab("policy",     Icons.POLICY,     "Policy",      "Policy",             policyScreen::showPolicyMenu),
+            new Tab("reports",    Icons.REPORTS,    "History",     "City History",       historyScreen::showHistoryMenu),
         };
     }
 
@@ -3367,7 +4640,7 @@ public class UserInterface extends Application {
      */
     private String tabFor(String screen) {
         switch (screen) {
-            case "handleAllBuildingMenus":
+            case "handleAllBuildingMenus": case ConstructionScreen.SCREEN:
             case "showNoDepositMenu": case "showNoLandMenu":
             case "showQuickDebtMenu": case "showFundingFellShortMenu":
             case "showNoLicenceMenu":
@@ -3425,17 +4698,19 @@ public class UserInterface extends Application {
 
         for (Tab tab : tabs()) {
             final Tab t = tab;
-            tabRail.getChildren().add(railButton(
-                    t.svg(), t.name(), t.key().equals(active), () -> goHome(t)));
+            tabRail.getChildren().add(railButton(t.svg(), t.label(), t.name(), areaOf(t.key()),
+                    t.key().equals(active), () -> goHome(t)));
         }
 
-        // The gear sits apart from the destinations because it is not one - it
-        // leaves the city rather than moving around inside it.
+        // Menu sits apart from the destinations because it is not one - it
+        // leaves the city rather than moving around inside it. It replaced
+        // the gear (0.7.21), which only ever opened this same menu.
         Region gap = new Region();
+        gap.setMinHeight(0);
         VBox.setVgrow(gap, Priority.ALWAYS);
         tabRail.getChildren().add(gap);
-        tabRail.getChildren().add(railButton(Icons.SETTINGS, "Game menu  (Esc)",
-                "showMainMenu".equals(currentScreen), this::showMainMenu));
+        tabRail.getChildren().add(railButton(Icons.MENU, "Menu", "The game menu: save, load, settings, quit  (Esc)",
+                Palette.TEXT_HEAD, "showMainMenu".equals(currentScreen), this::showMainMenu));
     }
 
     /* =====================================================================
@@ -3463,10 +4738,15 @@ public class UserInterface extends Application {
        top of this part of the game". Everything else - the strips across the
        tops of these screens, the links between them - still lands wherever it
        is pointed. See resetSection().
+
+       BUILD IS THE EXCEPTION since 0.7.20: it keeps its category for the
+       session - Jerus's play-through came back to Residential every time -
+       and the rail still lands at the top of the page.
        ===================================================================== */
 
     /**
-     * Press a tab: forget where you were inside it, and land at the top.
+     * Press a tab: forget where you were inside it - Build's category apart,
+     * since 0.7.20 - and land at the top.
      *
      * `tab.go().run()`, AND THE .run() IS THE WHOLE THING. Tab is a record, so
      * tab.go() is the ACCESSOR - it hands back the Runnable and does not call
@@ -3499,7 +4779,8 @@ public class UserInterface extends Application {
      *
      * Resetting only bankPage would have reset which chip was lit inside an
      * area the player was still stuck in. Four of the five use null for the
-     * landing, Services uses a named one, and Build keys off its category.
+     * landing, Services uses a named one, and Build keyed off its category
+     * until 0.7.20, when it began keeping it (its case below).
      *
      * Each case restores the field to the SAME constant its declaration uses,
      * so the two cannot drift apart - a reset that said "Overview" in one place
@@ -3508,7 +4789,9 @@ public class UserInterface extends Application {
      */
     private void resetSection(String key) {
         switch (key) {
-            case "build":      buildScreen.buildCategory = BuildScreen.BUILD_HOME;   break;
+            // Build keeps its category for the session (0.7.20): Jerus's play-through
+            // came back to Residential every time. The rail still lands at the top.
+            case "build":      break;
             case "sector":     sectorScreen.openSector  = null;
                                sectorScreen.sectorPage  = SectorScreen.SECTOR_HOME;    break;
             case "finances":   financesScreen.financeArea = null;
@@ -3536,21 +4819,21 @@ public class UserInterface extends Application {
     private boolean railJump;
 
     /**
-     * One icon on the rail.
+     * One button on the rail: its icon over its name (0.7.21).
      *
      * DRAWN, NOT TYPED. This used to be a Label carrying a Unicode glyph, with
      * the font family named explicitly because the platform default has no gear
      * at U+2699 and would have drawn an empty box. An SVGPath has no font, so
      * it cannot be missing a character, and it takes its colour from the stroke
-     * rather than from a text fill - which is what lets the same eleven marks be
-     * grey, blue when active, and paler on hover without three copies of
-     * anything.
+     * rather than from a text fill - which is what lets the same marks be
+     * grey, in their area's colour when showing, and paler on hover without
+     * three copies of anything.
      *
-     * STROKED, NOT FILLED. These are outline icons: fill null, 2px stroke,
-     * round caps and joins, exactly as Lucide draws them. Filling them would
-     * turn every one into a solid blob.
+     * STROKED, NOT FILLED. These are outline icons: fill null, 2px stroke on
+     * the 24-unit grid, round caps and joins, exactly as Lucide draws them.
+     * Filling them would turn every one into a solid blob.
      */
-    private StackPane railButton(String svg, String name, boolean active, Runnable go) {
+    private VBox railButton(String svg, String label, String name, String area, boolean active, Runnable go) {
 
         javafx.scene.shape.SVGPath mark = new javafx.scene.shape.SVGPath();
         mark.setContent(svg);
@@ -3558,49 +4841,56 @@ public class UserInterface extends Application {
         mark.setStrokeWidth(2);
         mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
         mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
-        mark.setStroke(javafx.scene.paint.Color.web(
-                active ? Palette.ACCENT : Palette.TEXT_FAINT));
+        mark.setStroke(javafx.scene.paint.Color.web(active ? area : Palette.TEXT_LABEL));
         /*
          * PINNED TO THE 24-GRID, in a Pane of exactly that size.
          *
          * An SVGPath's layout bounds are the bounds of the INK, not of the
          * drawing it was designed on - so a globe that fills its 24 square and a
          * graph that uses two thirds of one would be centred to different sizes
-         * and sit at different heights, and a rail of eleven of those never
-         * lines up. A Pane does not resize or move its children, so each icon
-         * draws at the coordinates Lucide gave it inside a box the same size for
-         * all of them.
+         * and sit at different heights, and a rail of those never lines up. A
+         * Pane does not resize or move its children, so each icon draws at the
+         * coordinates Lucide gave it inside a box the same size for all of them.
          */
         javafx.scene.layout.Pane box = new javafx.scene.layout.Pane(mark);
         box.setPrefSize(24, 24);
         box.setMinSize(24, 24);
         box.setMaxSize(24, 24);
-        box.setScaleX(.85);
-        box.setScaleY(.85);
+        box.setScaleX(RAIL_ICON / 24);
+        box.setScaleY(RAIL_ICON / 24);
 
-        StackPane cell = new StackPane(box);
-        cell.setPrefSize(RAIL_WIDTH, 34);
-        cell.setMinSize(RAIL_WIDTH, 34);
-        // The active tab is a filled block with a blue bar down its inner edge,
-        // pointing at the stage - the screen it is currently showing.
+        Label word = new Label(label);
+        String wordRest = "-fx-font-size: 10.5px; -fx-text-fill: ";
+        word.setStyle(wordRest + (active ? Palette.TEXT_HEAD : Palette.TEXT_MUTED) + ";");
+        word.setMinWidth(Region.USE_PREF_SIZE);
+
+        VBox cell = new VBox(1, box, word);
+        cell.setAlignment(Pos.CENTER);
+        cell.setPrefSize(RAIL_WIDTH, RAIL_BUTTON);
+        cell.setMinSize(RAIL_WIDTH, RAIL_BUTTON_MIN);
+        cell.setMaxSize(RAIL_WIDTH, RAIL_BUTTON);
+        // The one showing is raised, with a bar down its outer edge in its
+        // area's colour - the page it is showing is that area's.
+        String bar = "-fx-border-width: 0 0 0 3; -fx-border-color: transparent transparent transparent ";
         cell.setStyle(active
-                ? "-fx-background-color: " + Palette.RAISED + ";"
-                + " -fx-border-color: " + Palette.ACCENT + "; -fx-border-width: 0 2 0 0;"
-                : "-fx-cursor: hand;");
+                ? "-fx-background-color: " + Palette.RAISED + "; " + bar + area + ";"
+                : bar + "transparent; -fx-cursor: hand;");
 
         Tooltip tip = new Tooltip(name);
-        tip.setShowDelay(Duration.millis(250));
+        tip.setShowDelay(Duration.millis(400));
         Tooltip.install(cell, tip);
 
         cell.setOnMouseClicked(e -> go.run());
         if (!active) {
             cell.setOnMouseEntered(e -> {
-                cell.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-cursor: hand;");
+                cell.setStyle("-fx-background-color: " + Palette.CONTROL + "; " + bar + "transparent; -fx-cursor: hand;");
                 mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_HEAD));
+                word.setStyle(wordRest + Palette.TEXT_LABEL + ";");
             });
             cell.setOnMouseExited(e -> {
-                cell.setStyle("-fx-cursor: hand;");
-                mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_FAINT));
+                cell.setStyle(bar + "transparent; -fx-cursor: hand;");
+                mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
+                word.setStyle(wordRest + Palette.TEXT_MUTED + ";");
             });
         }
         return cell;
@@ -3619,9 +4909,11 @@ public class UserInterface extends Application {
        1. AT REST it is an envelope with a count. Nothing else. A warning system
           that occupies the screen when there is nothing wrong is a warning
           system players stop reading.
-       2. A NEW URGENT NOTICE shows its title, and only its title, under the
-          envelope - loud enough to be seen from another screen, quiet enough
-          not to be a dialog box in the way of what you were doing.
+       2. A NEW URGENT NOTICE shows its title, and only its title - loud
+          enough to be seen from another screen, quiet enough not to be a
+          dialog box in the way of what you were doing. Since 0.7.20 it is a
+          toast in the bottom-right corner that fades (see TOASTS); it hung
+          under the envelope, over the strips, until then.
        3. IT STAYS. Read notices stay in the list. Resolved ones stay, greyed,
           for two years. The old banners were gone the moment they were
           dismissed, so "what was that warning three months ago" had no answer.
@@ -3638,74 +4930,26 @@ public class UserInterface extends Application {
 
     private void refreshInbox() {
 
+        refreshInboxButton();
         if (inboxCorner == null) return;
-        showIf(inboxCorner, !isGameMenu(currentScreen));
+        showIf(inboxCorner, !isGameMenu(currentScreen) && inboxOpen);
         inboxCorner.getChildren().clear();
         inboxCorner.setAlignment(Pos.TOP_RIGHT);
 
-        Inbox inbox = game.getInbox();
-        Notice urgent = inbox.urgent();
-        int unread = inbox.unread();
-
-        /* ------------------------- the envelope ------------------------- */
-        Label mark = new Label("✉");
-        mark.setStyle("-fx-font-family: 'Segoe UI Symbol', 'Segoe UI', sans-serif;"
-                + " -fx-font-size: 17px; -fx-text-fill: "
-                + (urgent != null ? "#ff6b6b" : unread > 0 ? "#ffb454" : "#7d8f9c") + ";");
-
-        HBox envelope = new HBox(6, mark);
-        envelope.setAlignment(Pos.CENTER);
-        if (unread > 0) {
-            Label count = new Label(String.valueOf(unread));
-            count.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
-                    + " -fx-font-weight: bold; -fx-text-fill: #eceff1;"
-                    + " -fx-background-color: " + (urgent != null ? "#c0392b" : "#5a6b74") + ";"
-                    + " -fx-background-radius: 8; -fx-padding: 0 6 0 6;");
-            envelope.getChildren().add(count);
-        }
-        envelope.setStyle("-fx-padding: 6 10 6 10; -fx-background-color: #1c262b;"
-                + " -fx-background-radius: 4; -fx-border-color: #37474f;"
-                + " -fx-border-radius: 4; -fx-cursor: hand;");
-        envelope.setOnMouseClicked(e -> {
-            inboxOpen = !inboxOpen;
-            refreshInbox();
-        });
-        Tooltip.install(envelope, new Tooltip(inbox.size() == 0
-                ? "Nothing to report" : inbox.size() + " in the inbox"));
-
-        HBox topRow = new HBox(envelope);
-        topRow.setAlignment(Pos.CENTER_RIGHT);
-        inboxCorner.getChildren().add(topRow);
-
-        /* ----------------- the one line an urgent notice gets -----------------
+        /* ----------------- what an urgent notice gets -----------------
          *
-         * Only when the list is shut. Once it is open the notice is in the list
-         * like everything else, and saying it twice would be the banner again.
+         * A toast, bottom right, since 0.7.20 - not a line under the envelope,
+         * which sat over every page's strip for as long as it was unread. See
+         * TOASTS.
          */
-        if (!inboxOpen && urgent != null) {
-            Label title = new Label("[!]  " + urgent.getTitle());
-            title.setWrapText(true);
-            title.setMaxWidth(INBOX_WIDTH - 60);
-            title.setStyle("-fx-font-size: 12.5px; -fx-font-weight: bold;"
-                    + " -fx-text-fill: #ffd9d4; -fx-background-color: #3b1f1f;"
-                    + " -fx-background-radius: 4; -fx-border-color: #c0392b;"
-                    + " -fx-border-radius: 4; -fx-padding: 7 10 7 10; -fx-cursor: hand;");
-            title.setOnMouseClicked(e -> {
-                game.getInbox().markRead(urgent, game.getMonth());
-                inboxExpanded = urgent.getKey();
-                inboxOpen = true;
-                refreshInbox();
-            });
-            VBox.setMargin(title, new javafx.geometry.Insets(6, 0, 0, 0));
-            inboxCorner.getChildren().add(title);
-        }
+        refreshToasts();
 
         if (!inboxOpen) return;
 
         /* --------------------------- the list --------------------------- */
         VBox list = new VBox(3);
-        list.setStyle("-fx-background-color: #17212c; -fx-background-radius: 4;"
-                + " -fx-border-color: #37474f; -fx-border-radius: 4;"
+        list.setStyle("-fx-background-color: " + Palette.FIELD + "; -fx-background-radius: 4;"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 4;"
                 + " -fx-padding: 8 8 8 8;");
         /*
          * WIDE ENOUGH FOR THE MESSAGE, which is the only constraint that
@@ -3728,12 +4972,12 @@ public class UserInterface extends Application {
 
         Label heading = new Label("INBOX");
         heading.setStyle("-fx-font-size: 11px; -fx-font-weight: bold;"
-                + " -fx-text-fill: #8fa3b0; -fx-padding: 0 0 4 2;");
+                + " -fx-text-fill: " + Palette.TEXT_MUTED + "; -fx-padding: 0 0 4 2;");
         list.getChildren().add(heading);
 
         if (game.getInbox().size() == 0) {
             Label none = new Label("Nothing has gone wrong yet.");
-            none.setStyle("-fx-font-size: 12px; -fx-text-fill: #7d8f9c; -fx-padding: 2 0 2 2;");
+            none.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Palette.TEXT_FAINT + "; -fx-padding: 2 0 2 2;");
             list.getChildren().add(none);
         }
 
@@ -3746,8 +4990,63 @@ public class UserInterface extends Application {
         scroller.setFitToWidth(true);
         scroller.setMaxHeight(460);
         scroller.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-        VBox.setMargin(scroller, new javafx.geometry.Insets(6, 0, 0, 0));
         inboxCorner.getChildren().add(scroller);
+    }
+
+    /* ------------------------- the envelope -------------------------
+     *
+     * AT REST IT IS AN ENVELOPE WITH A COUNT (rule 1 above), at the header's
+     * right since 0.7.21: the mockups' button, the unread count as a badge on
+     * its corner - red while something urgent is unread, grey otherwise. A
+     * click drops the list down at the stage's top right, or puts it away.
+     */
+    private void refreshInboxButton() {
+        if (inboxHolder == null || game.getInbox() == null) return;
+        Inbox inbox = game.getInbox();
+        Notice urgent = inbox.urgent();
+        int unread = inbox.unread();
+
+        javafx.scene.shape.SVGPath mark = new javafx.scene.shape.SVGPath();
+        mark.setContent(Icons.MAIL);
+        mark.setFill(null);
+        mark.setStrokeWidth(2);
+        mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+        mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+        mark.setStroke(javafx.scene.paint.Color.web(urgent != null ? Palette.BAD : Palette.TEXT_LABEL));
+        javafx.scene.layout.Pane glyph = new javafx.scene.layout.Pane(mark);
+        glyph.setPrefSize(24, 24);
+        glyph.setMinSize(24, 24);
+        glyph.setMaxSize(24, 24);
+        glyph.setScaleX(.75);
+        glyph.setScaleY(.75);
+
+        StackPane envelope = new StackPane(glyph);
+        envelope.setMinSize(40, 40);
+        envelope.setPrefSize(40, 40);
+        envelope.setMaxSize(40, 40);
+        envelope.setStyle("-fx-background-color: " + (inboxOpen ? Palette.PINNED : Palette.RAISED) + ";"
+                + " -fx-background-radius: 8; -fx-border-color: " + (inboxOpen ? Palette.ACCENT : Palette.EDGE) + ";"
+                + " -fx-border-radius: 8; -fx-cursor: hand;");
+        if (unread > 0) {
+            Label count = new Label(unread > 99 ? "99+" : String.valueOf(unread));
+            count.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 11px; -fx-text-fill: white;"
+                    + " -fx-background-color: " + (urgent != null ? Palette.BAD : Palette.TEXT_SPENT) + ";"
+                    + " -fx-background-radius: 9; -fx-padding: 0 5 0 5;");
+            count.setMinSize(18, 18);
+            count.setAlignment(Pos.CENTER);
+            StackPane.setAlignment(count, Pos.TOP_RIGHT);
+            count.setTranslateX(6);
+            count.setTranslateY(-6);
+            count.setMouseTransparent(true);
+            envelope.getChildren().add(count);
+        }
+        envelope.setOnMouseClicked(e -> {
+            inboxOpen = !inboxOpen;
+            refreshInbox();
+        });
+        Tooltip.install(envelope, new Tooltip(inbox.size() == 0 ? "The inbox: nothing to report"
+                : "The inbox: " + inbox.size() + (unread > 0 ? ", " + unread + " unread" : "")));
+        inboxHolder.getChildren().setAll(envelope);
     }
 
     /**
@@ -3773,18 +5072,18 @@ public class UserInterface extends Application {
         title.setWrapText(true);
         title.setMaxWidth(INBOX_WIDTH - 40);
         title.setStyle("-fx-font-size: 12.5px; -fx-font-weight: bold; -fx-text-fill: "
-                + (done ? "#6b7a84" : notice.isRead() ? "#c3ccd3" : "#ff9e9e") + ";");
+                + (done ? Palette.TEXT_SPENT : notice.isRead() ? Palette.TEXT_BODY : Palette.BAD_SOFT) + ";");
 
         Label when = new Label(done
                 ? CityCalendar.format(notice.getRaised()) + "  ·  settled "
                         + CityCalendar.format(notice.getResolved())
                 : CityCalendar.format(notice.getRaised()));
-        when.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: #6b7a84;");
+        when.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
+                + " -fx-text-fill: " + Palette.TEXT_SPENT + ";");
 
         VBox head = new VBox(1, title, when);
         head.setStyle("-fx-padding: 5 4 5 4; -fx-cursor: hand;"
-                + (open ? " -fx-background-color: #22303c; -fx-background-radius: 3;" : ""));
+                + (open ? " -fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: 3;" : ""));
         head.setOnMouseClicked(e -> {
             game.getInbox().markRead(notice, game.getMonth());
             inboxExpanded = open ? "" : notice.getKey();
@@ -3793,7 +5092,7 @@ public class UserInterface extends Application {
 
         VBox row = new VBox(0, head);
         row.setStyle(done ? "" : "-fx-border-color: "
-                + (notice.isRead() ? "#37474f" : "#c0392b")
+                + (notice.isRead() ? Palette.EDGE : Palette.ALERT_EDGE)
                 + "; -fx-border-width: 0 0 0 2;");
 
         if (!open) return row;
@@ -3802,8 +5101,8 @@ public class UserInterface extends Application {
         body.setStyle("-fx-padding: 2 4 8 10;");
         for (String line : notice.getBody()) {
             Label text = new Label(line.isEmpty() ? " " : line);
-            text.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11.5px;"
-                    + " -fx-text-fill: " + (done ? "#6b7a84" : "#c3ccd3") + ";");
+            text.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11.5px;"
+                    + " -fx-text-fill: " + (done ? Palette.TEXT_SPENT : Palette.TEXT_BODY) + ";");
             body.getChildren().add(text);
         }
 
@@ -3811,7 +5110,7 @@ public class UserInterface extends Application {
         // an enabled button that fixes something already fixed is a lie.
         if (!done) {
             Button act = new Button(dealLabel(notice.getKey()));
-            act.setStyle("-fx-font-size: 11px; -fx-background-color: #2f7d52;"
+            act.setStyle("-fx-font-size: 11px; -fx-background-color: " + Palette.CONFIRM + ";"
                     + " -fx-text-fill: white;");
             act.setOnAction(e -> deal(notice));
             VBox.setMargin(act, new javafx.geometry.Insets(6, 0, 0, 0));
@@ -3831,6 +5130,8 @@ public class UserInterface extends Application {
             case "resolved":   return "See the bank's rescue →";
             case "defaults":   return "See who owes the bank →";
             case "healthcare": return "Go and build healthcare →";
+            case "overtime":   return "Go to the construction page →";
+            case "demolished": return "See the construction page →";
             default:           return "Deal with this →";
         }
     }
@@ -3872,19 +5173,109 @@ public class UserInterface extends Application {
             case "healthcare":
                 buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE));
                 break;
+            // The player's hand on the queue (0.7.22): the rushed site's row
+            // has Stop rush on it; the finished demolition is off the list.
+            case "overtime":
+            case "demolished":
+                constructionScreen.show();
+                break;
             default:
                 refreshInbox();
         }
     }
 
     /* =====================================================================
+       TOASTS (0.7.20)
+
+       An urgent notice's title used to hang under the envelope, top right,
+       for as long as it was unread - over the strip at the top of every page.
+       "[!] Crime is running above Canada's" sat over the stats strip on every
+       tab and hid the People page's "Off sick" card.
+
+       Now each one is a toast: stacked in the stage's bottom-right corner,
+       clear of the strips and the inbox (above the clock until 0.7.21, when
+       the clock went to the header); three at most, a newer one
+       pushing the oldest out; each fades after TOAST_SECONDS, and holds while
+       the pointer is on it. A click opens the inbox at that notice, as the
+       old line did. The envelope - the header's, since 0.7.21 - still goes
+       red, with its count, for as long as anything urgent is unread - a toast
+       is the interruption, not the record.
+
+       A notice is toasted once, by its key and the month it was raised; the
+       set is emptied when another city is founded or loaded (anotherCity()),
+       and not when the player returns to the same one.
+       ===================================================================== */
+
+    /** How long a toast stays before it fades, in seconds. */
+    static final double TOAST_SECONDS = 8;
+
+    /** How many toasts at once. */
+    static final int TOAST_MAX = 3;
+
+    /** How wide a toast's text wraps. */
+    static final double TOAST_WIDTH = 340;
+
+    /** The notices already toasted, as key@raised. */
+    private final java.util.Set<String> toasted = new java.util.HashSet<>();
+
+    /** New urgent notices become toasts; read or settled ones leave the stack. */
+    private void refreshToasts() {
+        if (toastStack == null) return;
+        showIf(toastStack, !isGameMenu(currentScreen));
+        if (game.getInbox() == null) return;
+        toastStack.getChildren().removeIf(n ->
+                n.getUserData() instanceof Notice was && !was.isUrgent());
+        for (Notice notice : game.getInbox().all()) {          // oldest first: the newest lands lowest, in the corner
+            if (!notice.isUrgent()) continue;
+            if (!toasted.add(notice.getKey() + "@" + notice.getRaised())) continue;
+            toastStack.getChildren().add(toast(notice));
+        }
+        while (toastStack.getChildren().size() > TOAST_MAX) toastStack.getChildren().remove(0);
+    }
+
+    /** One toast: the notice's title, a timer, and a door to the inbox. */
+    private Label toast(Notice notice) {
+        Label toast = new Label("[!]  " + notice.getTitle());
+        toast.setUserData(notice);
+        toast.setWrapText(true);
+        toast.setMaxWidth(TOAST_WIDTH);
+        toast.setStyle("-fx-font-size: 12.5px; -fx-font-weight: bold;"
+                + " -fx-text-fill: " + Palette.BAD_TEXT + "; -fx-background-color: " + Palette.ALERT_GROUND_LOUD + ";"
+                + " -fx-background-radius: 4; -fx-border-color: " + Palette.ALERT_EDGE + ";"
+                + " -fx-border-radius: 4; -fx-padding: 7 10 7 10; -fx-cursor: hand;"
+                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 2);");
+
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.millis(700), toast);
+        fade.setFromValue(1);
+        fade.setToValue(0);
+        javafx.animation.SequentialTransition life = new javafx.animation.SequentialTransition(
+                new javafx.animation.PauseTransition(Duration.seconds(TOAST_SECONDS)), fade);
+        life.setOnFinished(e -> toastStack.getChildren().remove(toast));
+        // Held while the pointer is on it, so it cannot fade under a click.
+        toast.setOnMouseEntered(e -> { life.stop(); toast.setOpacity(1); });
+        toast.setOnMouseExited(e -> life.playFromStart());
+
+        toast.setOnMouseClicked(e -> {
+            life.stop();
+            toastStack.getChildren().remove(toast);
+            game.getInbox().markRead(notice, game.getMonth());
+            inboxExpanded = notice.getKey();
+            inboxOpen = true;
+            refreshInbox();
+        });
+        life.play();
+        return toast;
+    }
+
+    /* =====================================================================
        TIME, AND WHAT THE MONTH IS WORTH
 
        The two things that used to be buttons in the column - Next Month and
-       Simulate Multiple Months - are round now and pinned to the bottom right,
-       because they are the only two controls in the game that are true of every
-       screen. A player reading the household books should not have to leave to
-       advance a month.
+       Simulate Multiple Months - became one round play button pinned to the
+       bottom right, because it is the one control in the game that is true of
+       every screen. A player reading the household books should not have to
+       leave to advance a month. Since 0.7.21 it is in the header, beside the
+       date (THE HEADER, clockBlock()).
        ===================================================================== */
 
     /**
@@ -3904,7 +5295,9 @@ public class UserInterface extends Application {
                 lastFrame = now;
                 sinceRedraw += dt;
 
-                if (!clockRunning || game == null || isGameMenu(currentScreen)) {
+                // ...and while a dialog is up (0.7.22): a confirmation's figures
+                // are the ones its action will meet.
+                if (!clockRunning || game == null || isGameMenu(currentScreen) || quitDialog != null) {
                     // A month landed and its redraw was throttled away; the
                     // clock has since stopped, so nothing else will draw it.
                     if (redrawPending && game != null && !isGameMenu(currentScreen)) {
@@ -3963,8 +5356,78 @@ public class UserInterface extends Application {
      * rebuilding the same screen sixty times a second. One label's text.
      */
     private void paintDay() {
+        if (chartFullClock != null) chartFullClock.setText(clockWords());
         if (dayLabel == null) return;
         dayLabel.setText(CityCalendar.formatDay(game.getMonth(), monthProgress));
+    }
+
+    /* =====================================================================
+       THE CHART OVER THE WHOLE WINDOW (0.7.23)
+
+       City History's full screen (HistoryScreen, FULL SCREEN): a pane laid
+       over the whole window, as a dialog and the main menu are, so the rail,
+       the panels and the header are under it. The clock is left as it was -
+       running or paused - and its day ticks on the pane's own line, since
+       the header's is covered. Esc, the pane's button, and any other screen
+       taking over (clearMenu()) close it. F11 is separate: the window's own
+       full screen, which this does not read or change.
+       ===================================================================== */
+
+    /** The chart's pane while it has the window, its clock line, and what closes it; null otherwise. */
+    private javafx.scene.Node chartFull;
+    private Label chartFullClock;
+    private java.util.function.Consumer<Boolean> chartFullLeave;
+
+    /**
+     * Lays the chart's pane over the whole window. `leave` is the screen's
+     * own way back, which Esc calls with true - come back and redraw the
+     * page - and P or another screen with false: the page is not what is
+     * drawn next.
+     */
+    void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave) {
+        if (chartFull != null) windowStack.getChildren().remove(chartFull);
+        hideTooltips();
+        chartFull = pane;
+        chartFullClock = clockLine;
+        chartFullLeave = leave;
+        if (clockLine != null) clockLine.setText(clockWords());
+        windowStack.getChildren().add(pane);
+    }
+
+    /** Takes the pane off the window; the screen redraws its page. */
+    void closeChartFullScreen() {
+        if (chartFull != null) windowStack.getChildren().remove(chartFull);
+        chartFull = null;
+        chartFullClock = null;
+        chartFullLeave = null;
+    }
+
+    /** Esc, P or another screen: the screen's own way back, which calls closeChartFullScreen(). */
+    private void leaveChartFullScreen(boolean redraw) {
+        java.util.function.Consumer<Boolean> leave = chartFullLeave;
+        if (leave != null) leave.accept(redraw); else closeChartFullScreen();
+    }
+
+    /** Whether a chart has the whole window. */
+    boolean isChartFullScreen() { return chartFull != null; }
+
+    /** Whether this screen - a clearMenu() name, "showHistoryMenu" - is the one on show: a late redraw asks before it draws. */
+    boolean isShowing(String screen) { return screen != null && screen.equals(currentScreen); }
+
+    /** The date and what the clock is doing, for a line that stands in for the header: "14 February 2151 · paused". */
+    String clockWords() {
+        return CityCalendar.formatDay(game.getMonth(), monthProgress) + "  ·  "
+                + (clockRunning ? "running at " + speedLabel(speedIndex) : "paused");
+    }
+
+    /** Whether a wheel event's target is inside a chart that takes the wheel (TimeChart.WHEEL_OWNER). */
+    private static boolean overAChart(Object target) {
+        javafx.scene.Node n = target instanceof javafx.scene.Node node ? node : null;
+        while (n != null) {
+            if (n.getProperties().containsKey(TimeChart.WHEEL_OWNER)) return true;
+            n = n.getParent();
+        }
+        return false;
     }
 
     /**
@@ -4001,359 +5464,42 @@ public class UserInterface extends Application {
         }
     }
 
-    private void refreshTimeControls() {
-
-        if (timeControls == null) return;
-        boolean inCity = !isGameMenu(currentScreen);
-        showIf(timeControls, inCity);
-        showIf(incomeDome, inCity);
-        timeControls.getChildren().clear();
-
-        /*
-         * ONE BUTTON NOW, where there were two.
-         *
-         * "Advance one month" and "simulate several months" both went: the
-         * first is what play/pause is, and the second is what 10x is. Jerus's
-         * call - "play/pause only" - and the corner is better for it, because
-         * three controls that all mean "time" is three ways to ask the same
-         * question.
-         */
-        Button play = roundButton(clockRunning ? "❙❙" : "▶", 56,
-                clockRunning ? "#2f6fa8" : "#3a7d44",
-                clockRunning ? "Pause" : "Play");
-        play.setOnAction(e -> {
-            setClockRunning(!clockRunning);
-            redrawScreen.run();
-        });
-
-        timeControls.setAlignment(Pos.BOTTOM_RIGHT);
-        /*
-         * AND WHY IT STOPPED, when it stopped itself. A clock that halts with
-         * no explanation is a bug as far as the player is concerned - they did
-         * not press anything and time stopped. One line, next to the button
-         * they are about to press to start it again.
-         */
-        if (pausedBecause != null && !clockRunning) {
-            Label why = new Label(pausedBecause);
-            why.setStyle("-fx-font-size: 11px; -fx-text-fill: #ffb454;"
-                    + " -fx-background-color: #2a2118; -fx-background-radius: 3;"
-                    + " -fx-padding: 3 8 3 8;");
-            why.setMaxWidth(220);
-            why.setWrapText(true);
-            timeControls.getChildren().add(why);
-        }
-        timeControls.getChildren().addAll(yearDial(), speedSlider(), play);
-
-        refreshIncomeDome();
-    }
-
-    /**
-     * The speed, as a slider that sticks to the ladder.
-     *
-     * SNAPPING IS THE WHOLE DESIGN. A free slider gives a player 7.3x, which is
-     * not a speed anybody chose and is not a speed they can describe or get
-     * back to. Snapping gives them the drag - the gesture that suits a speed -
-     * and a value that is always one of seven.
-     *
-     * The tick marks are the stops, so the ladder is visible rather than
-     * discovered, and the reading beside it is the number rather than the
-     * index: a player thinks in "5x", not in "position 5 of 7".
-     */
-    private HBox speedSlider() {
-
-        javafx.scene.control.Slider bar =
-                new javafx.scene.control.Slider(0, SPEEDS.length - 1, speedIndex);
-        bar.setMajorTickUnit(1);
-        bar.setMinorTickCount(0);
-        bar.setSnapToTicks(true);
-        bar.setShowTickMarks(true);
-        bar.setBlockIncrement(1);
-        bar.setPrefWidth(132);
-        bar.setTooltip(new Tooltip("How fast a month passes. "
-                + (int) SECONDS_PER_MONTH + " seconds a month at 1x."));
-
-        Label reading = new Label(speedLabel(speedIndex));
-        reading.setMinWidth(38);
-        reading.setAlignment(Pos.CENTER_RIGHT);
-        reading.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 12px;"
-                + " -fx-font-weight: bold; -fx-text-fill: #cfd8dc;");
-
-        bar.valueProperty().addListener((o, was, now) -> {
-            int pick = (int) Math.round(now.doubleValue());
-            pick = Math.max(0, Math.min(SPEEDS.length - 1, pick));
-            speedIndex = pick;
-            reading.setText(speedLabel(pick));
-            // Snap the handle itself, so a half-dragged slider settles on a stop
-            // rather than sitting between two of them looking adjustable.
-            if (Math.abs(now.doubleValue() - pick) > 1e-9) bar.setValue(pick);
-        });
-
-        HBox box = new HBox(6, bar, reading);
-        box.setAlignment(Pos.CENTER);
-        return box;
-    }
-
-    /** "0.25x", "1x", "10x" - no trailing zeros on the round ones. */
+    /** "0.25×", "1×", "10×" - no trailing zeros on the round ones; the header's speed reads it (0.7.21: "×", the mockups', for "x"). */
     private static String speedLabel(int index) {
         double s = SPEEDS[index];
-        return (s == Math.floor(s) ? String.valueOf((int) s) : String.valueOf(s)) + "x";
+        return (s == Math.floor(s) ? String.valueOf((int) s) : String.valueOf(s)) + "×";
     }
 
-    /** The month the dial is currently showing, so it only pops when it moves. */
-    private int dialAt = -1;
-
     /* =====================================================================
-       TWELVE PIPS, AND ONE OF THEM MOVES.
+       TWELVE PIPS, AND ONE OF THEM MOVED.
 
        Jerus: "in the next month button, perhaps add something so that the
        player knows that a month passed or something, perhaps a small count of
        the month of the year."
 
-       The date bar has said the date all along and it was not enough, because
-       nothing about it MOVES: February becomes March in the same place, in the
-       same weight, forty pixels from where the player is looking. The click is
-       at the bottom right and the confirmation was at the top left.
+       The date bar had said the date all along and it was not enough,
+       because nothing about it MOVED, forty pixels from where the player was
+       looking: the click was at the bottom right and the confirmation at the
+       top left. So twelve pips sat beside the button, filled up to this
+       month, and the current one popped when the month landed.
 
-       So the confirmation moved to the click. Twelve pips beside the button,
-       filled up to this month, and the current one lights and pops when the
-       month lands - a quarter of a second of motion right under the pointer.
-       The pips also do the counting the request asked for: how far through the
-       year the city is, which is the one thing the date does not say at a
-       glance, and it resets in January so a year turning over is visible as a
-       row emptying rather than as a number nobody was watching.
-
-       It pops only when the month CHANGES. refreshTimeControls runs on every
-       redraw - opening a screen, buying a building, closing a section - and a
-       dial that flashed on all of those would be noise, which is the opposite
-       of a signal.
+       Since 0.7.21 the clock is in the header and the date is beside the
+       button, so the confirmation is at the click again; the pips went, and
+       the month's figure under the date pops instead (clockBlock()). It pops
+       only when the month CHANGES - the header is rebuilt on every redraw,
+       and a figure that flashed on all of those would be noise.
        ===================================================================== */
-    private VBox yearDial() {
 
-        int month = game.getMonth();
-        int of = CityCalendar.monthOfYear(month);
-
-        HBox pips = new HBox(3);
-        pips.setAlignment(Pos.CENTER_RIGHT);
-
-        Region live = null;
-        for (int m = 1; m <= 12; m++) {
-            Region pip = new Region();
-            pip.setMinSize(5, 5);
-            pip.setPrefSize(5, 5);
-            pip.setMaxSize(5, 5);
-            pip.setStyle("-fx-background-radius: 3; -fx-background-color: "
-                    + (m == of ? Palette.ACCENT
-                              : m < of ? Palette.ACCENT_FILL : "#33434d") + ";");
-            if (m == of) live = pip;
-            pips.getChildren().add(pip);
-        }
-
-        Label reading = new Label(CityCalendar.shortMonthName(month).toUpperCase()
-                + "  \u00b7  " + of + " of 12");
-        reading.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-
-        VBox dial = new VBox(4, pips, reading);
-        dial.setAlignment(Pos.CENTER_RIGHT);
-        dial.setStyle("-fx-padding: 0 6 6 0;");
-        Tooltip.install(dial, new Tooltip(
-                "How far through " + CityCalendar.yearOf(month) + " the city is."
-                + " One pip a month; the row empties in January."));
-
-        if (live != null && dialAt >= 0 && dialAt != month) popPip(live);
-        dialAt = month;
-        return dial;
-    }
-
-    /** A quarter second of "that landed", on the pip the month just filled. */
+    /** A quarter second of "that landed", on the figure the month just changed. */
     private static void popPip(Region pip) {
         javafx.animation.ScaleTransition pop =
                 new javafx.animation.ScaleTransition(Duration.millis(130), pip);
         pop.setFromX(1);
         pop.setFromY(1);
-        pop.setToX(2.6);
-        pop.setToY(2.6);
+        pop.setToX(1.25);
+        pop.setToY(1.25);
         pop.setCycleCount(2);
         pop.setAutoReverse(true);
         pop.play();
-    }
-
-    /** A circle with a glyph in it. */
-    private Button roundButton(String glyph, double size, String fill, String tip) {
-        Button button = new Button(glyph);
-        button.setMinSize(size, size);
-        button.setPrefSize(size, size);
-        button.setMaxSize(size, size);
-        /*
-         * PADDING ZERO, or the glyph is replaced by an ellipsis.
-         *
-         * A Button keeps its default 0.333em/0.667em padding even when its size
-         * is pinned, so on the 40px button the two arrows had about 20px to live
-         * in and JavaFX did what it does to text that will not fit: it drew
-         * "...". Play-tested - the simulate button read as three dots.
-         */
-        button.setPadding(javafx.geometry.Insets.EMPTY);
-        button.setStyle("-fx-font-family: 'Segoe UI Symbol', 'Segoe UI', sans-serif;"
-                + " -fx-font-size: " + (size / 2.8) + "px; -fx-padding: 0;"
-                + " -fx-background-color: " + fill + ";"
-                + " -fx-text-fill: #eceff1;"
-                + " -fx-background-radius: " + (size / 2) + ";"
-                + " -fx-border-color: #4a5c68; -fx-border-radius: " + (size / 2) + ";"
-                + " -fx-cursor: hand;");
-        Tooltip tooltip = new Tooltip(tip);
-        tooltip.setShowDelay(Duration.millis(250));
-        button.setTooltip(tooltip);
-        return button;
-    }
-
-    /**
-     * The half circle at the foot of the stage.
-     *
-     * Jerus: "just on the bottom like above the section where the debts are
-     * listed, have a half circle, where the net income is shown - later it will
-     * have other features as well."
-     *
-     * Net income for now, and the shape is doing the work: a dome rising out of
-     * the debt strip reads as a gauge rather than as another number in a row of
-     * numbers, which is what it was when it lived as a caption under the cash
-     * figure. That caption stays where it is - it says what the TREASURY is
-     * doing, next to the treasury, and this says what the month is worth. They
-     * are the same figure answering two different questions.
-     *
-     * Built as a stack with a body VBox so the other features have somewhere to
-     * go without moving anything.
-     */
-    private void refreshIncomeDome() {
-
-        if (incomeDome == null) return;
-        incomeDome.getChildren().clear();
-
-        double income = game.getIncome();
-        boolean up = income >= 0;
-
-        Label figure = new Label((up ? "+" : "\u2212") + money(Math.abs(income)));
-        figure.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 17px;"
-                + " -fx-font-weight: bold; -fx-text-fill: "
-                + (up ? "#8fe0aa" : "#ff6b6b") + ";");
-
-        Label caption = new Label("NET INCOME  /mo");
-        caption.setStyle("-fx-font-size: 8px; -fx-text-fill: #78909c;");
-
-        VBox body = new VBox(-1, figure, caption);
-        body.setAlignment(Pos.CENTER);
-
-        /* ===================================================================
-           ...AND WHAT THE BALANCE ACTUALLY DID
-
-           Jerus: "show how much was the actual month change, like in the next
-           month button it shows 3k but sometimes cause of land buybacks or
-           sales it was actually more or less."
-
-           He is right, and there are TWO reasons rather than one, which is why
-           this needed a second figure and not a corrected first one:
-
-             1. The big figure is EconomyManager.getTotalIncome(): tax less
-                interest, pensions, healthcare and schools. It does not include
-                what the city spent on buildings or on land, and it does not
-                include what land sales brought in. That is the land the player
-                noticed.
-             2. Issuing paper raises cash and is not income; repaying principal
-                spends cash and is not an expense. Both move the balance and
-                neither can appear above.
-
-           So the dome says both: what the month EARNED, large, because that is
-           what it has always said, and what the treasury actually BANKED under
-           it, in the colour of the direction it went. The tooltip does the
-           arithmetic; the Government Overview page does it in full.
-
-           Only when they differ, or it is one number printed twice.
-           =================================================================== */
-        final String[] why = { null };
-
-        if (game.hasTreasuryMonth()) {
-
-            double moved = game.getTreasuryChange();
-
-            if (Math.abs(moved - income) > .5) {
-
-                boolean grew = moved >= 0;
-                Label actual = new Label("banked " + (grew ? "+" : "\u2212")
-                        + money(Math.abs(moved)));
-                actual.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 9px;"
-                        + " -fx-text-fill: " + (grew ? "#8fe0aa" : "#ff8f8f") + ";");
-
-                double surplus = game.getTreasurySurplus();
-                why[0] = String.format(
-                        "EARNED  %s%s%n"
-                        + "    what the month made: tax in, less interest, pensions, care "
-                        + "and schools. It does not count what the city spent on buildings "
-                        + "or land, or what land sales brought in.%n%n"
-                        + "BANKED  %s%s%n"
-                        + "    what the balance actually did between one press of this "
-                        + "button and the next \u2014 your land, your buildings and your "
-                        + "borrowing included.%n%n"
-                        + "The whole budget came to %s%s. On top of it, paper issued raised "
-                        + "%s \u2014 borrowed, not earned \u2014 and %s went back to lenders "
-                        + "as principal, which shrinks a debt rather than buying anything.",
-                        income >= 0 ? "+" : "\u2212", money(Math.abs(income)),
-                        grew ? "+" : "\u2212", money(Math.abs(moved)),
-                        surplus >= 0 ? "+" : "\u2212", money(Math.abs(surplus)),
-                        money(game.getTreasuryRaised()),
-                        money(game.getTreasuryRepaid()));
-
-                body.getChildren().add(actual);
-            }
-        }
-
-        // Taller when the second figure is there, so the dome grows to fit it
-        // rather than clipping the caption - it sits on the debt strip and the
-        // strip is what moves, not the numbers.
-        double tall = body.getChildren().size() > 2 ? 74 : 62;
-
-        StackPane dome = new StackPane(body);
-        dome.setPrefSize(168, tall);
-        dome.setMinSize(168, tall);
-        dome.setMaxSize(168, tall);
-        // Rounded at the top corners only, so it is a dome sitting on the debt
-        // strip rather than a floating pill.
-        dome.setStyle("-fx-background-color: #1c262b;"
-                + " -fx-background-radius: 84 84 0 0;"
-                + " -fx-border-color: " + (up ? "#37474f" : "#7a3b3b") + ";"
-                + " -fx-border-width: 2 2 0 2;"
-                + " -fx-border-radius: 84 84 0 0;"
-                + " -fx-padding: 8 0 0 0;");
-
-        /*
-         * AND IT IS A DOOR. Jerus: "i want so that you click the semi circle in
-         * the bottom it takes you to the government rail."
-         *
-         * The right target, too: every figure on the dome - what the month
-         * earned, what the treasury banked, and the gap between them - is
-         * reconciled line by line on Government -> Overview. A player who
-         * notices the two numbers disagree is one click from the page that
-         * explains it rather than from a rail they have to guess at.
-         */
-        dome.setStyle(dome.getStyle() + " -fx-cursor: hand;");
-        dome.setOnMouseClicked(e -> {
-            governmentScreen.govPage = "Overview";
-            innerScrollAt.remove("showGovernmentMenu:body");
-            governmentScreen.showGovernmentMenu();
-        });
-
-        /*
-         * ONE TOOLTIP, ON THE DOME, and it carries the click hint.
-         *
-         * Installed on the shape rather than on the figures inside it, because
-         * JavaFX shows the innermost and a hint that only appears over eight
-         * pixels of padding is a hint nobody finds.
-         */
-        Tooltip open = new Tooltip((why[0] == null
-                ? "What the city earned this month."
-                : why[0]) + "\n\nClick for the books, line by line.");
-        open.setShowDelay(Duration.millis(350));
-        open.setWrapText(true);
-        open.setMaxWidth(360);
-        Tooltip.install(dome, open);
-
-        incomeDome.getChildren().add(dome);
     }
 }

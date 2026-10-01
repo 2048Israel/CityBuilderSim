@@ -54,6 +54,21 @@ public class Game {
     private SectorBooks sectorBooks = new SectorBooks();
 
     /**
+     * What the player decided, and when (0.7.23; DecisionLog): every change of
+     * a policy and every spend at scale, at the month it was made. Beside the
+     * inbox and the books because it is the same kind of thing - a record of
+     * months that have happened - and saved, because a decision is a flow
+     * the state a month ended in cannot give back. Built fresh by buildWorld()
+     * and held there until the door into the city is through: the
+     * constructor, newGame() and loadGameSave() each release it at their end,
+     * and loadGame() holds it for itself.
+     */
+    private DecisionLog decisions = new DecisionLog(() -> month);
+
+    /** The player's decisions, oldest first (0.7.23): what the chart's flags are drawn from. */
+    public DecisionLog getDecisions() { return decisions; }
+
+    /**
      * Where saves live and how they are written. One instance for the whole
      * game: the path used to be spelled out separately in DataSave, HistorySave
      * and twice more down in the load methods, which is four places to get it
@@ -151,6 +166,7 @@ public class Game {
     public Game(GameFiles gameFiles, Founding founding) {
         this.gameFiles = gameFiles;
         buildWorld(foundable(founding));
+        decisions.release();
     }
 
     /** The founding, if it can found a city; otherwise why not, as an exception - the screen never offers one that cannot. */
@@ -187,6 +203,11 @@ public class Game {
      * record then replaces (loadGame()).
      */
     private void buildWorld(Founding founding) {
+
+        // A new city's decisions start empty, and nothing is one until the
+        // door into the city is through (0.7.23; see the field).
+        decisions = new DecisionLog(() -> month);
+        decisions.hold();
 
         buildingManager = new BuildingManager();
         economyManager = new EconomyManager(buildingManager);
@@ -225,6 +246,10 @@ public class Game {
         // the labour in every price follows (0.7.19; BuildingManager, THE
         // LABOUR IN A PRICE KEEPS UP WITH WAGES).
         buildingManager.setBuildersWages(buildersWages);
+        // ...and the overtime on the city's rushed sites is wages the
+        // households are paid (0.7.22; PopulationManager, THE OVERTIME ON A
+        // RUSHED SITE IS WAGES), read off the builders who pay it.
+        populationManager.setOvertimeWages(builders::getOvertimeWages);
         // ...and what a founding dollar is today, which the rebate on a new
         // rental home is struck in (0.7.19, revised; EconomyManager, THE
         // REBATES ON A NEW HOME, AND THE CITY'S).
@@ -306,6 +331,17 @@ public class Game {
         // ...and the central bank, founded fresh rather than reset, reading
         // the vault where ForeignAccounts keeps it. See getCentralBank().
         centralBank = new CentralBank(foreign::getReserves);
+        // ...and every dial the player sets writes its change to the city's
+        // decision log where it is applied (0.7.23): the taxes and promises,
+        // the wage floor, the share of tuition, the rate, the rule and the
+        // target, the holdings and the advances. Game's own methods write the
+        // rest - the standing subsidies, the bank, the fund, the paper, the
+        // money and the queue.
+        economyManager.getTaxPolicy().recordTo(decisions);
+        labourMarket.recordTo(decisions);
+        education.recordTo(decisions);
+        debtManager.recordTo(decisions);
+        centralBank.recordTo(decisions);
         arrears.clear();
         arrearsRefusedThisMonth = arrearsPaidThisMonth = 0;
         arrearsRefusedLifetime = arrearsPaidLifetime = 0;
@@ -529,7 +565,7 @@ public class Game {
     
 
     //buttons
-    /** A new city on the defaults: "Found with defaults". See newGame(Founding). */
+    /** A new city on the defaults, as "Found with defaults" founded one until 0.7.21; the harnesses' new game since. See newGame(Founding). */
     public void newGame(){
         newGame(Founding.defaults());
     }
@@ -559,9 +595,9 @@ public class Game {
          * automatic, aka not your hand", and the treasury's rollover "default
          * toggles on" - in the same structure (Rollover). Here, not in
          * buildWorld(), because this is the door a player founds through -
-         * the founding screen and "Found with defaults" both reach it
-         * (UserInterface.foundCity()) - while buildWorld() is also the load
-         * path, where the save's own setting is put back, and the constructor,
+         * the founding screen reaches it (UserInterface.foundCity()), as
+         * "Found with defaults" did until 0.7.21 - while buildWorld() is also
+         * the load path, where the save's own setting is put back, and the constructor,
          * which builds the bare city the harnesses and the playtest found on
          * and state their own settings over. An older save keeps whatever it
          * saved: the dial's hand (DataSave.getPolicyAutopilot(), off when the
@@ -576,6 +612,8 @@ public class Game {
          * it, how it was played (TreasuryFund.reset(), the load path).
          */
         fund.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+        // The founding's settings were the founding's, not the player's: the log opens now.
+        decisions.release();
     }
 
     /**
@@ -660,7 +698,8 @@ public class Game {
          * doubled. Debt is replaced rather than accumulated, so the result was a
          * city with twice the buildings and the right debt - solvent-looking,
          * corrupt, and reported as a successful load. Load is on the pause menu
-         * beside Resume and Save, so this is a thing players do.
+         * beside Continue (Resume until 0.7.21) and Save, so this is a thing
+         * players do.
          *
          * No harness could see it. Every one of the twenty-three builds a fresh
          * Game per case, so the same Game object is never loaded into twice -
@@ -698,6 +737,7 @@ public class Game {
         loadGame(slot);
         // NOTE: previously also called handleStartGame() here, which caused
         // the same infinite-loop freeze described above.
+        decisions.release();
     }
     /**
      * Returns what actually happened rather than announcing success regardless.
@@ -725,9 +765,11 @@ public class Game {
      * True once a city exists to go back to.
      *
      * buildWorld() sets it, and buildWorld() is the one door into a playable
-     * city - newGame() and loadGameSave() both go through it. So at the title
-     * screen this is false and after either of those it is true, which is
-     * exactly the question the main menu's Resume button has to ask.
+     * city - newGame() and loadGameSave() both go through it, and so does the
+     * constructor, so the world the window builds at start-up is running too.
+     * The main menu's Resume asked this until 0.7.20, which is why a cold
+     * start's Resume opened that empty world; the window keeps its own
+     * cityOpen since then (UserInterface), and nothing reads this now.
      */
     public boolean isRunning() { return isRunning; }
 
@@ -872,7 +914,9 @@ public class Game {
     /**
      * What a founding of this treasury and vault buys, at a new city's
      * invoices over the catalogue - the founding screen's line under each
-     * preset. See Founding, WHAT IT BUYS.
+     * preset until 0.7.20, when the screen stopped saying what the money
+     * buys; NewGameCheck and ReadPathCheck read it since. See Founding,
+     * WHAT IT BUYS.
      */
     public Founding.Buys whatItBuys(double cash, double reserveUsd) {
         return Founding.whatItBuys(catalogue(), cash, reserveUsd);
@@ -943,7 +987,15 @@ public class Game {
     public boolean isAutoSubsidised(String key)   { return autoSubsidy.getOrDefault(key, false); }
 
     public void setAutoSubsidised(Sector sector, boolean on){ setAutoSubsidised(sector.key(), on); }
-    public void setAutoSubsidised(String key, boolean on)   { if (key != null) autoSubsidy.put(key, on); }
+    public void setAutoSubsidised(String key, boolean on) {
+        if (key == null) return;
+        boolean was = isAutoSubsidised(key);
+        autoSubsidy.put(key, on);
+        if (was != on) {
+            decisions.record(DecisionLog.PROMISE, on ? key + " subsidised as standing policy"
+                                                    : key + "'s standing subsidy stopped");
+        }
+    }
 
     /** What this sector was paid this month. Zero when it did not need it. */
     public double getSubsidyPaid(Sector sector){ return getSubsidyPaid(sector.key()); }
@@ -1149,7 +1201,12 @@ public class Game {
     public boolean isLandPaidFromVault() { return landPaidFromVault; }
 
     /** The land office's toggle, applied at once to the next purchase. */
-    public void setLandPaidFromVault(boolean fromVault) { this.landPaidFromVault = fromVault; }
+    public void setLandPaidFromVault(boolean fromVault) {
+        if (fromVault != landPaidFromVault) {
+            decisions.record(DecisionLog.CURRENCY, fromVault ? "Land paid from the vault" : "Land paid in local money");
+        }
+        this.landPaidFromVault = fromVault;
+    }
 
     /**
      * Buys one specific listed plot - the land office screen's action - in US
@@ -2625,6 +2682,10 @@ public class Game {
         r.warrantsCancelled = cancelled[1];
         fund.noteResolution(r);
 
+        // A press of the Bank tab's button, or the automatic setting's month - the player's setting either way.
+        decisions.record(DecisionLog.BANK, "Bank rescued for its shares: " + DecisionLog.money(amount)
+                + (fund.getRescueMode() == TreasuryFund.RescueMode.AUTOMATIC ? " (automatic)" : ""));
+
         String here = getCurrency().qualifiedSymbol();
         GameLog.note(String.format("The bank failed. The city took all its shares; the old owners lost everything"
                         + " (%s%,.0fk at the last price). The city put in %s%,.0fk: %s%,.0fk from its cash and"
@@ -2699,6 +2760,7 @@ public class Game {
         double capPerShare = shares > 0 ? equity.getDividendsPaidOverYear(Equity.BANK) / shares / 12 : 0;
         double warrants = bank.issuePreferred(size, price, capPerShare);
         fund.noteAccepted(month, size);
+        decisions.record(DecisionLog.BANK, "Bought " + DecisionLog.money(size) + " of the bank's preferred shares");
         String here = getCurrency().qualifiedSymbol();
         GameLog.note(String.format("The city bought %s%,.0fk of the bank's preferred shares, %.0f%% a year for five"
                         + " years then %.0f%%, with warrants on %,.0f of its shares at %s%,.3fk.",
@@ -2710,6 +2772,7 @@ public class Game {
     public void declinePreferredOffer() {
         if (!fund.isOfferPending()) return;
         fund.noteDeclined(month);
+        decisions.record(DecisionLog.BANK, "Declined the bank's preferred shares");
         GameLog.note("The city declined the bank's preferred shares; it will ask again in "
                 + TreasuryFund.OFFER_AGAIN_MONTHS + " months if it is still under its minimum.");
     }
@@ -2820,11 +2883,24 @@ public class Game {
 
     /** The fund's dial, 0 to TreasuryFund.MAX_DIAL of the year's surplus. */
     public double getFundDial()             { return fund.getDial(); }
-    public void setFundDial(double dial)    { fund.setDial(dial); }
+    public void setFundDial(double dial) {
+        double was = fund.getDial();
+        fund.setDial(dial);
+        if (DecisionLog.moved(was, fund.getDial())) {
+            decisions.record(DecisionLog.FUND, "Fund dial to " + DecisionLog.pct(fund.getDial()) + " of the surplus");
+        }
+    }
 
     /** The treasury's setting for a failed bank. */
     public TreasuryFund.RescueMode getRescueMode()          { return fund.getRescueMode(); }
-    public void setRescueMode(TreasuryFund.RescueMode mode) { fund.setRescueMode(mode); }
+    public void setRescueMode(TreasuryFund.RescueMode mode) {
+        TreasuryFund.RescueMode was = fund.getRescueMode();
+        fund.setRescueMode(mode);
+        if (was != fund.getRescueMode()) {
+            decisions.record(DecisionLog.BANK, fund.getRescueMode() == TreasuryFund.RescueMode.AUTOMATIC
+                    ? "A failed bank to be resolved at once" : "A failed bank to wait for the button");
+        }
+    }
 
     /**
      * ONE MONTH OF THE TREASURY'S OWN SPENDING: the budget's expenses over the
@@ -2922,6 +2998,7 @@ public class Game {
         cash -= moved;
         fund.notePaidInByHand(moved);
         treasuryJournal.record("Paid into the fund", -moved);
+        decisions.record(DecisionLog.FUND, "Paid " + DecisionLog.money(moved) + " into the fund");
         GameLog.note(String.format("The city paid %s%,.0fk into its fund.", getCurrency().qualifiedSymbol(), moved));
         return moved;
     }
@@ -2933,30 +3010,44 @@ public class Game {
         cash += moved;
         fund.noteDrawnOutByHand(moved);
         treasuryJournal.record("Drawn from the fund", moved);
+        decisions.record(DecisionLog.FUND, "Drew " + DecisionLog.money(moved) + " from the fund");
         GameLog.note(String.format("The city drew %s%,.0fk from its fund.", getCurrency().qualifiedSymbol(), moved));
         return moved;
     }
 
     /** Buys a company's shares with this much of the fund's cash, at fair value, at the next step: good for the month. */
     public void fundBuyShares(int company, double money) {
-        fund.queue(new TreasuryFund.HandOrder(false, company, -1, true, Math.min(money, fund.getCash()), month));
+        double spend = Math.min(money, fund.getCash());
+        fund.queue(new TreasuryFund.HandOrder(false, company, -1, true, spend, month));
+        if (spend > 0) {
+            decisions.record(DecisionLog.FUND, "Fund to buy " + DecisionLog.money(spend) + " of "
+                    + Equity.COMPANIES[company] + " shares");
+        }
     }
 
     /** Sells this many of the fund's shares of a company - its market book first, then its rescue book - at fair value, at the next step. */
     public void fundSellShares(int company, double shares) {
-        fund.queue(new TreasuryFund.HandOrder(false, company, -1, false,
-                Math.min(shares, equity.getCityShares(company)), month));
+        double selling = Math.min(shares, equity.getCityShares(company));
+        fund.queue(new TreasuryFund.HandOrder(false, company, -1, false, selling, month));
+        if (selling > 0) {
+            decisions.record(DecisionLog.FUND, "Fund to sell " + Formats.INSTANCE.count(selling) + " "
+                    + Equity.COMPANIES[company] + " shares");
+        }
     }
 
     /** Buys a bond with this much of the fund's cash, at its value, at the next step. */
     public void fundBuyBond(int bondId, double money) {
-        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, true, Math.min(money, fund.getCash()), month));
+        double spend = Math.min(money, fund.getCash());
+        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, true, spend, month));
+        if (spend > 0) decisions.record(DecisionLog.FUND, "Fund to buy " + DecisionLog.money(spend) + " of bond #" + bondId);
     }
 
     /** Sells this much face of a bond the fund holds, at its value, at the next step. */
     public void fundSellBond(int bondId, double face) {
         CorporateBond b = bondMarket.bond(bondId);
-        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, false, b == null ? 0 : Math.min(face, b.city()), month));
+        double selling = b == null ? 0 : Math.min(face, b.city());
+        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, false, selling, month));
+        if (selling > 0) decisions.record(DecisionLog.FUND, "Fund to sell " + DecisionLog.money(selling) + " of bond #" + bondId);
     }
 
     /* ------------------------------ an Insane founding ------------------------------ */
@@ -3006,8 +3097,10 @@ public class Game {
      * founded as given and not yet played, by the model's own quote
      * functions: no revenue and no output, so DebtManager.spreadFor()
      * charges the full spread on both measures. The Found a city screen's
-     * "what it buys" for Insane reads it. A scratch city, founded in a
-     * temporary folder and thrown away; nothing is written.
+     * "what it buys" for Insane read it until 0.7.20; nothing calls it since
+     * (the playtest and FundCheck quote their day-0 offers themselves). A
+     * scratch city, founded in a temporary folder and thrown away; nothing is
+     * written.
      *
      * @return {the bond's quote, the note's}
      */
@@ -3040,6 +3133,7 @@ public class Game {
         treasuryPays(TreasuryLine.RESERVE_PURCHASES, spend);
         treasuryJournal.record("Bought reserves", -spend);
         foreign.buyReserves(spend);
+        decisions.record(DecisionLog.CURRENCY, "Bought reserves for " + DecisionLog.money(spend));
         GameLog.note(String.format("The city bought $%,.0fk of foreign currency.", spend));
         return spend;
     }
@@ -3058,6 +3152,7 @@ public class Game {
         if (sold <= 0) return 0;
         cash += sold;
         treasuryJournal.record("Sold reserves", sold);
+        decisions.record(DecisionLog.CURRENCY, "Sold reserves for " + DecisionLog.money(sold));
         GameLog.note(String.format("The city sold $%,.0fk of its reserves.", sold));
         return sold;
     }
@@ -4732,7 +4827,10 @@ public class Game {
                 buildingManager.getConstructionMaterialPrice(),
                 selected.getLandSqFt() * (double) quantity,
                 landManager.getAvailableSqFt(),
-                quoteMonths(selected, quantity),
+                // The city's own order's wait (0.7.22, after the docs pass):
+                // quoteMonths() exactly with no order set and no rush, and with
+                // one, where the order would land in it (quoteCityMonths()).
+                quoteCityMonths(selected, quantity),
                 buildersSalesRate(),
                 plantSalesRate());
     }
@@ -4748,6 +4846,49 @@ public class Game {
      */
     public double quoteMonths(BuildingsTemplate template, int quantity) {
         double months = buildingManager.waitFor(template, quantity, getBuildingOutputAtEveryPost());
+        return months == Double.MAX_VALUE ? Double.NaN : months;
+    }
+
+    /**
+     * Months what is on site of one building would take to finish (0.7.20):
+     * the same wait at the same output as quoteMonths(), with no order added
+     * - BuildingManager.waitOnSite(). For the build card's "N on site", the
+     * Needs-you line and the construction panel, so all three read the
+     * definition the quote and the planners read. NaN when there is no site
+     * output; 0 with nothing of it on site. Reads; changes nothing.
+     */
+    public double onSiteMonths(BuildingsTemplate template) {
+        // ...through the one wait every screen reads since 0.7.22 (siteMonths()):
+        // waitOnSite()'s, to the bit, while the player's hand is off the site.
+        return template == null ? 0 : siteMonths(ConstructionControl.keyOf(template));
+    }
+
+    /**
+     * ONE WAIT FOR A SITE (0.7.22, after the docs pass): months a site on
+     * site would take at today's queue - a stack's by its key, or a
+     * demolition's - at the output the quote reads. The construction page,
+     * the right panel, a build card's "N on site" and the Needs-you line all
+     * read it (through onSiteMonths() for a building), so a city site the
+     * player's order starves reads the same everywhere. With no order set
+     * and no rush on it, waitOnSite()'s wait, to the bit. NaN when there is
+     * no site output; 0 with nothing of it on site. Reads. See
+     * BuildingManager, ONE WAIT FOR A SITE.
+     */
+    public double siteMonths(String key) {
+        double months = buildingManager.siteMonths(key, getBuildingOutputAtEveryPost());
+        return months == Double.MAX_VALUE ? Double.NaN : months;
+    }
+
+    /**
+     * ...and what a city order of n of these would wait if placed now (0.7.22,
+     * after the docs pass): quoteMonths() exactly with no order set and no
+     * rush on its site; otherwise where the order would land in the
+     * player's order - on its building's site where that stands in it, or,
+     * with nothing of it on site, a new city site at the bottom. The build
+     * quote's months. NaN when there is no site output. Reads.
+     */
+    public double quoteCityMonths(BuildingsTemplate template, int quantity) {
+        double months = buildingManager.cityOrderWait(template, quantity, getBuildingOutputAtEveryPost());
         return months == Double.MAX_VALUE ? Double.NaN : months;
     }
 
@@ -4914,6 +5055,507 @@ public class Game {
      */
     public void recogniseSiteWork(double earned, double pointsBuilt, double pointsAvailable) {
         getSectors().construction().recogniseWork(earned, pointsBuilt, pointsAvailable);
+    }
+
+    /* =====================================================================
+       THE PLAYER'S HAND ON THE QUEUE (0.7.22)
+
+       Jerus asked for a construction panel that is more than "a blue loading
+       screen", then for "not only repirotize and cancel but also destroy
+       buildings, like you yourself destroy buildings"; on 2026-09-30 he chose
+       the mechanics: priority "Both", cancel "Keep the half-built shell",
+       demolish "City's, plus buy-outs (Recommended)". The rules and their
+       sources are ConstructionControl's (A to E); the crews are
+       BuildingManager's (THE PLAYER'S HAND ON THE QUEUE there). This is the
+       money, in two halves:
+
+       BETWEEN THE PRESSES, the player's hand, as a build order is placed:
+       a reorder and a rush (nothing moves), a cancel (nothing moves until the
+       month's end), a restart (the city pays today's quote for the remaining
+       work, as an order: TreasuryLine.BUILDINGS and the builders' book), a
+       demolition (the same, for the demolition's quote; its buildings close
+       as the next month starts, closeDemolished()), and a buy-out (the owner
+       is paid the compensation - the ground on the land line and recorded as
+       a buyback, the building and the business loss on the building line -
+       and then the demolition). Each
+       moves money from the treasury to a pool the audit reads - the builders'
+       book or the owner's till - in the gap the game is played in.
+
+       IN THE MONTH, settleConstructionControl(), off what the advance left:
+       the overtime's premium paid to the builders and paid out as wages; a
+       cancelled order's refund back out of their book; and a finished
+       demolition's material sold to them by the 0.7.8 rule, with its ground
+       released. All of it moves between pools the audit reads, inside its
+       window, so the money audit closes as it did.
+       ===================================================================== */
+
+    /** What can be demolished as the city's own: a building nobody in the private sector owns - but not the bank's branch, which retail paid for and the bank closes by its own rule (closeBranches()). */
+    public boolean isCitysToDemolish(BuildingsTemplate t) {
+        return t != null && !t.isOwnedBySector() && !"Commercial Bank".equals(t.getName());
+    }
+
+    /** What the city may buy out and demolish: a building a sector owns. */
+    public boolean isBuyOutable(BuildingsTemplate t) {
+        return t != null && t.isOwnedBySector() && getSectors().byKey(t.getSector()) != null;
+    }
+
+    /**
+     * A demolition, priced and laid out BEFORE the player commits: its work,
+     * its price, what it closes, what comes back and when. Every figure the
+     * staging card prints; books nothing.
+     */
+    public record DemolitionQuote(BuildingsTemplate template, int buildings, double points, BuildQuote price,
+                                  double salvageUnits, double salvagePrice, double salvageAffordable,
+                                  double landSqFt, double months, int homes, double households,
+                                  double places, int posts, double runningCost) {
+        /** What the builders would pay for the material today, for as much as their cash covers. */
+        public double salvageProceeds() { return salvageAffordable * salvagePrice; }
+    }
+
+    /** A buy-out, priced: the compensation, part by part, and the demolition after it. */
+    public record BuyOutQuote(DemolitionQuote demolition, String sector, double buildingValue, double ground,
+                              double businessLoss, double profitShare, double operatingIncome,
+                              double replacementMonths) {
+        /** What the owner is paid. */
+        public double compensation() { return buildingValue + ground + businessLoss; }
+        /** ...and what it all costs the city, the demolition included. */
+        public double total() { return compensation() + demolition.price().total; }
+    }
+
+    /**
+     * D. The demolition's price: DEMOLITION_SHARE of the work in it at the
+     * builders' rate for that building's work today
+     * (BuildingManager.nonMaterialCost(), its labour at today's wages), no
+     * material, and the builders' sales tax - THE BUILDERS' PRICE, through
+     * the one BuildQuote every order is priced by.
+     *
+     * @param workPoints the points of work the buildings hold: the whole
+     *                   template's for a standing building, a shell's progress
+     */
+    private BuildQuote demolitionPrice(BuildingsTemplate t, double workPoints, double points, double months) {
+        double perPoint = t.getConstructionPoints() > 0
+                ? buildingManager.nonMaterialCost(t) / t.getConstructionPoints() : 0;
+        double sticker = ConstructionControl.DEMOLITION_SHARE * workPoints * perPoint;
+        return new BuildQuote(1, sticker, 0, 0, new Markets.Draw(0, 0, 0, 0, 0), 0,
+                buildingManager.getConstructionMaterialPrice(), 0, landManager.getAvailableSqFt(), months,
+                buildersSalesRate(), plantSalesRate());
+    }
+
+    /** What demolishing n standing buildings of this kind would do and cost. Reads. */
+    public DemolitionQuote quoteDemolition(BuildingsTemplate t, int n) {
+        if (t == null || n < 1) return null;
+        double points = ConstructionControl.DEMOLITION_SHARE * t.getConstructionPoints() * (double) n;
+        double months = demolitionMonths(t, n, points);
+        BuildQuote price = demolitionPrice(t, t.getConstructionPoints() * (double) n, points, months);
+        double units = t.getConstructionMaterials() * (double) n;
+        double unitPrice = getMarkets().get(Good.MATERIALS).getLocalPrice();
+        double affordable = unitPrice > 0
+                ? Math.min(units, Math.max(0, getSectors().construction().getCash()) / unitPrice) : 0;
+        int homes = t.getDwellings() * n;
+        double totalHomes = buildingManager.getTotalHomes();
+        double occupancy = totalHomes > 0 ? Math.min(1, families.homesNeeded() / totalHomes) : 0;
+        int posts = 0;
+        double wages = 0;
+        double[] rates = economyManager.getWageRates();
+        for (JobType job : JobType.values()) {
+            posts += t.getJobs(job) * n;
+            if (job.ordinal() < rates.length) wages += t.getJobs(job) * (double) n * rates[job.ordinal()];
+        }
+        double places = (t.getTeaches() != null && t.getTeaches() != EducationType.NONE)
+                || (t.getCare() != null && t.getCare() != CareType.NONE)
+                || (t.getSafety() != null && t.getSafety() != SafetyType.NONE)
+                ? t.getCapacity() * (double) n : 0;
+        return new DemolitionQuote(t, n, points, price, units, unitPrice, affordable,
+                t.getLandSqFt() * n, months, homes, homes * occupancy, places, posts,
+                t.isOwnedBySector() ? 0 : wages + t.getUpkeep() * n);
+    }
+
+    /** A shell's demolition: DEMOLITION_SHARE of the work it holds, the material it drew to salvage, its ground. Reads. */
+    public DemolitionQuote quoteShellDemolition(ConstructionControl.Shell shell) {
+        BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
+        if (t == null) return null;
+        double points = ConstructionControl.DEMOLITION_SHARE * shell.progress;
+        double months = demolitionMonths(t, shell.buildings, points);
+        BuildQuote price = demolitionPrice(t, shell.progress, points, months);
+        double units = Math.max(0, t.getConstructionMaterials() * (double) shell.buildings - shell.materialsOwed);
+        double unitPrice = getMarkets().get(Good.MATERIALS).getLocalPrice();
+        double affordable = unitPrice > 0
+                ? Math.min(units, Math.max(0, getSectors().construction().getCash()) / unitPrice) : 0;
+        return new DemolitionQuote(t, shell.buildings, points, price, units, unitPrice, affordable,
+                t.getLandSqFt() * shell.buildings, months, 0, 0, 0, 0, 0);
+    }
+
+    /** Months a demolition of these points would take at today's queue, at the output the quote reads. NaN with no output. */
+    private double demolitionMonths(BuildingsTemplate t, int n, double points) {
+        double months = buildingManager.waitForDemolition(n, points, getBuildingOutputAtEveryPost());
+        return months == Double.MAX_VALUE ? Double.NaN : months;
+    }
+
+    /**
+     * E. A buy-out, priced: the building at its owner's own value of it, its
+     * ground at the land market's price, and the business loss - its share
+     * of the owner's buildings, at that value, of last month's operating
+     * income, for the months a replacement would take at today's queue, and
+     * nothing if that is a loss. Then the demolition. Reads; null if the
+     * builders have no output to time a replacement by.
+     */
+    public BuyOutQuote quoteBuyOut(BuildingsTemplate t, int n) {
+        if (!isBuyOutable(t) || n < 1) return null;
+        Sector owner = getSectors().byKey(t.getSector());
+        double each = t.getCashCost() + t.getConstructionMaterials() * buildingManager.getConstructionMaterialPrice();
+        double buildingValue = each * n;
+        double ground = landManager.priceFor(t.getLandSqFt() * n);
+        double book = buildingManager.getBookValueBySector(owner.key());
+        double share = book > 0 ? Math.min(1, buildingValue / book) : 0;
+        double operating = owner.statement().operatingIncome;
+        double months = quoteMonths(t, n);
+        if (Double.isNaN(months)) return null;
+        double loss = Math.max(0, share * operating) * months;
+        return new BuyOutQuote(quoteDemolition(t, n), owner.key(), buildingValue, ground, loss, share,
+                operating, months);
+    }
+
+    /** Why a demolition or a buy-out was not made, or null when it was. */
+    private String lastHandRefusal;
+    public String getLastHandRefusal() { return lastHandRefusal; }
+
+    /** D. Demolishes n of the city's own standing buildings of this kind: pays the quote and puts the demolition on site; they close as the next month starts (closeDemolished()). */
+    public boolean demolish(BuildingsTemplate t, int n) {
+        lastHandRefusal = null;
+        if (!isCitysToDemolish(t)) { lastHandRefusal = "not the city's to demolish"; return false; }
+        if (n < 1 || demolishable(t) < n) { lastHandRefusal = "not that many standing"; return false; }
+        DemolitionQuote q = quoteDemolition(t, n);
+        if (q.price().total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
+        placeDemolition(q, "City", 0);
+        decisions.record(DecisionLog.CONSTRUCTION, "Demolished " + n + " " + t.getName()
+                + " for " + DecisionLog.money(q.price().total));
+        GameLog.note(String.format("The city ordered %d %s demolished, for $%,.0fk.", n, t.getName(),
+                q.price().total));
+        return true;
+    }
+
+    /** E. Buys n of a sector's buildings by compulsory purchase and demolishes them. */
+    public boolean buyOutAndDemolish(BuildingsTemplate t, int n) {
+        lastHandRefusal = null;
+        if (!isBuyOutable(t)) { lastHandRefusal = "not a business's or a landlord's"; return false; }
+        if (n < 1 || demolishable(t) < n) { lastHandRefusal = "not that many standing"; return false; }
+        BuyOutQuote q = quoteBuyOut(t, n);
+        if (q == null) { lastHandRefusal = "the builders have no output to time a replacement by"; return false; }
+        if (q.total() > cash) { lastHandRefusal = "the treasury is short of it"; return false; }
+        // The owner is paid: the ground as the land line pays for a plot a
+        // business gives back (retire()), the building and the business loss
+        // as a purchase of the city's. Its debts stay its own.
+        Investor owner = sectorInvestor(q.sector());
+        double ground = treasuryPays(TreasuryLine.LAND, q.ground());
+        landManager.recordBuyback(t.getLandSqFt() * n);
+        double rest = treasuryPays(TreasuryLine.BUILDINGS, q.buildingValue() + q.businessLoss());
+        cityCapitalSpending += rest;
+        owner.receive(ground + rest);
+        ConstructionControl.Expropriation e = new ConstructionControl.Expropriation();
+        e.month = month;
+        e.templateId = t.getId();
+        e.building = t.getName();
+        e.buildings = n;
+        e.sector = q.sector();
+        e.buildingValue = q.buildingValue();
+        e.ground = q.ground();
+        e.businessLoss = q.businessLoss();
+        e.months = q.replacementMonths();
+        buildingManager.getControl().recordExpropriation(e);
+        lastInvestment.put(q.sector(), String.format("Sold %,d %s to the city by compulsory purchase, for $%s",
+                n, t.getName(), formatter.format(q.compensation())));
+        placeDemolition(q.demolition(), q.sector(), q.ground());
+        decisions.record(DecisionLog.CONSTRUCTION, "Bought out " + n + " " + t.getName() + " from " + q.sector()
+                + " for " + DecisionLog.money(q.compensation()) + ", to demolish");
+        GameLog.note(String.format("The city bought %d %s from %s for $%,.0fk and ordered them demolished.",
+                n, t.getName(), q.sector(), q.compensation()));
+        return true;
+    }
+
+    /** How many of this kind stand that no demolition has been ordered for. */
+    public int demolishable(BuildingsTemplate t) {
+        if (t == null) return 0;
+        return Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId()));
+    }
+
+    /** The demolition order every path shares: paid as a building order is, and the site put up, its buildings to close as the month starts (closeDemolished()). */
+    private void placeDemolition(DemolitionQuote q, String from, double groundPaid) {
+        BuildingsTemplate t = q.template();
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.price().total);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, q.points());
+        ConstructionControl.Demolition d = buildingManager.getControl().addDemolition(t, q.buildings(), q.points(),
+                q.salvageUnits(), q.landSqFt(), paid, from, month, true);
+        d.groundPaid = groundPaid;
+    }
+
+    /**
+     * D. THE BUILDINGS CLOSE AS THE NEXT MONTH STARTS - the first the order
+     * is in force for, since an order placed between two presses is the
+     * coming month's - before anything in it reads the city: off the stack
+     * they stood on, so their posts, their homes and their capacity are gone
+     * from the month's first count. The families are arranged into the homes that stand at
+     * the month's demographics; whoever does not fit is unhoused. No money
+     * moves: the order was paid, and a bought building's owner paid, when it
+     * was placed.
+     */
+    private void closeDemolished() {
+        for (ConstructionControl.Demolition d : buildingManager.getControl().demolitions()) {
+            if (!d.closing) continue;
+            BuildingsTemplate t = buildingManager.getTemplate(d.templateId);
+            int closed = t == null ? 0 : buildingManager.retire(t, d.buildings);
+            d.closing = false;
+            // In the log as the city's own order, and whose it was if it was bought.
+            if (t != null) demolitionLog.record(t.getName(), closed,
+                    "City".equals(d.from) ? "City" : "City, bought from " + d.from, month, d.groundPaid);
+        }
+    }
+
+    /** C. A shell demolished: its quote paid, the shell gone, the demolition on site. */
+    public boolean demolishShell(int templateId) {
+        lastHandRefusal = null;
+        ConstructionControl.Shell shell = buildingManager.getControl().shellOf(templateId);
+        if (shell == null) { lastHandRefusal = "no shell of it"; return false; }
+        DemolitionQuote q = quoteShellDemolition(shell);
+        if (q == null) { lastHandRefusal = "no such building"; return false; }
+        if (q.price().total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.price().total);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, q.points());
+        buildingManager.getControl().removeShell(shell);
+        buildingManager.getControl().addDemolition(q.template(), shell.buildings, q.points(), q.salvageUnits(),
+                q.landSqFt(), paid, "Shell", month, false);
+        decisions.record(DecisionLog.CONSTRUCTION, "Demolished the " + q.template().getName() + " shell for "
+                + DecisionLog.money(paid));
+        return true;
+    }
+
+    /**
+     * C. A shell's restart, priced: its remaining work at today's quote - the
+     * non-material cost of the points it still owes, its labour at today's
+     * builders' wages; the material it has still to draw, the yard's share
+     * free and the rest at today's market; and the builders' tax - THE
+     * BUILDERS' PRICE, as any order. Its ground is held already. Reads.
+     */
+    public BuildQuote quoteRestart(ConstructionControl.Shell shell) {
+        BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
+        if (t == null || t.getConstructionPoints() <= 0) return null;
+        double pointsLeft = Math.max(0, shell.buildings * (double) t.getConstructionPoints() - shell.progress);
+        double sticker = buildingManager.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints();
+        double needed = Math.max(0, shell.materialsOwed);
+        double yard = buildingManager.getConstructionMaterials();
+        Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
+        return new BuildQuote(shell.buildings, sticker, needed, yard, boughtIn,
+                getMarkets().get(Good.MATERIALS).getLocalPrice(), buildingManager.getConstructionMaterialPrice(),
+                0, landManager.getAvailableSqFt(),
+                restartMonths(t, shell.buildings, pointsLeft),
+                buildersSalesRate(), plantSalesRate());
+    }
+
+    /** A restart's wait, by the one wait (BuildingManager.restartWait()). NaN with no output. */
+    private double restartMonths(BuildingsTemplate t, int n, double pointsLeft) {
+        double months = buildingManager.restartWait(t, n, pointsLeft, getBuildingOutputAtEveryPost());
+        return months == Double.MAX_VALUE ? Double.NaN : months;
+    }
+
+    /** C. A shell put back on site for its remaining work, at today's quote, as an order of the city's. */
+    public boolean restartShell(int templateId) {
+        lastHandRefusal = null;
+        ConstructionControl.Shell shell = buildingManager.getControl().shellOf(templateId);
+        BuildQuote q = quoteRestart(shell);
+        if (q == null) { lastHandRefusal = "no shell of it"; return false; }
+        if (q.total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
+        BuildingsTemplate t = buildingManager.getTemplate(templateId);
+        double pointsLeft = Math.max(0, shell.buildings * (double) t.getConstructionPoints() - shell.progress);
+        buildingManager.resumeShell(shell);
+        // The yard's share to the sites now, free, as the quote priced it; the
+        // rest drawn as the crews build - see processBuildOrder().
+        double fromYard = deliverYardToSites(t, q.materialsNeeded);
+        buildingManager.bookContract(t, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        cityCapitalSpending += q.total;
+        getSectors().construction().bill(q.total, pointsLeft);
+        decisions.record(DecisionLog.CONSTRUCTION, "Restarted " + t.getName() + " for " + DecisionLog.money(q.total));
+        GameLog.note(String.format("The city restarted %d %s, for $%,.0fk.", shell.buildings, t.getName(),
+                q.total));
+        return true;
+    }
+
+    /** C. A cancel of one of the city's own sites, at the month's end - or taken back before it. */
+    public boolean cancelSite(String key, boolean cancel) {
+        if (cancel && !buildingManager.isCitySite(key)) return false;
+        if (cancel && buildingManager.getControl().demolitionOf(key) != null) return false;
+        boolean was = buildingManager.getControl().isCancelling(key);
+        buildingManager.getControl().setCancelling(key, cancel);
+        if (was != buildingManager.getControl().isCancelling(key)) {
+            decisions.record(DecisionLog.CONSTRUCTION, (cancel ? "Cancelled " : "Kept ")
+                    + buildingManager.nameOfSite(key));
+        }
+        return true;
+    }
+
+    /**
+     * C. What a cancel would hand back if the month ended now with nothing
+     * more built: the city's contract left on the site - the work not done
+     * and the material not drawn, with the sales tax on both - and its
+     * material allowance. The month's work comes off it first; the panel
+     * says so. {value, allowance}; zeros for a site that is not the city's.
+     */
+    public double[] cancelRefundNow(String key) {
+        BuildingsStacks s = buildingManager.stackOfKey(key);
+        if (s == null || !s.isCitysOwn()) return new double[] { 0, 0 };
+        for (BuildingsStacks.Contract c : s.getContracts()) {
+            if ("City".equals(c.payer)) return new double[] { c.getValue(), c.getAllowance() };
+        }
+        return new double[] { 0, 0 };
+    }
+
+    /** B. A rush on one of the city's own sites, on or off. */
+    public boolean rushSite(String key, boolean on) {
+        if (on && !buildingManager.isCitySite(key)) return false;
+        boolean was = buildingManager.getControl().isRushed(key);
+        buildingManager.getControl().setRush(key, on);
+        if (was != buildingManager.getControl().isRushed(key)) {
+            decisions.record(DecisionLog.CONSTRUCTION, (on ? "Rushed " : "Stopped rushing ")
+                    + buildingManager.nameOfSite(key));
+        }
+        return true;
+    }
+
+    /** A. Moves one of the city's sites up (-1) or down (+1) its order, setting the order if none was. */
+    public boolean moveSite(String key, int by) {
+        java.util.List<String> order = buildingManager.cityOrder();
+        int at = order.indexOf(key), to = at + by;
+        if (at < 0 || to < 0 || to >= order.size()) return false;
+        order.remove(at);
+        order.add(to, key);
+        buildingManager.getControl().setOrder(order);
+        decisions.record(DecisionLog.CONSTRUCTION, buildingManager.nameOfSite(key)
+                + (by < 0 ? " up" : " down") + " the city's order, to " + (to + 1));
+        return true;
+    }
+
+    /** A. Back to the crews' rule. */
+    public void resetSiteOrder() {
+        boolean was = buildingManager.getControl().isPrioritySet();
+        buildingManager.getControl().clearOrder();
+        if (was) decisions.record(DecisionLog.CONSTRUCTION, "The city's sites back to the crews' rule");
+    }
+
+    /**
+     * B. What a month on overtime would do on this site next month, at this
+     * month's crews - the numbers the construction page shows before and
+     * while the player rushes: {its month on overtime, its work over a
+     * normal month's, the premium with the builders' tax in it}. Zeros for a
+     * site that is not the city's. Reads.
+     */
+    public double[] rushPreview(String key) {
+        if (!buildingManager.isCitySite(key)) return new double[] { 0, 0, 0 };
+        ConstructionControl.Rush r = buildingManager.getControl().rushOf(key);
+        int next = r == null ? 1 : r.months + 1;
+        double share = buildingManager.plan(getBuildingOutput()).shareOf(key);
+        double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersSalesRate()));
+        double premium = ConstructionControl.premiumShare() * share * buildingManager.buildersWagePerPoint() / (1 - rB);
+        return new double[] { next, ConstructionControl.overtimeOutput(next), premium };
+    }
+
+    /* ----- in the month ----- */
+
+    /** This month's events, kept for the screens and the inbox: what the advance left, settled. */
+    private ConstructionControl.Events controlThisMonth = new ConstructionControl.Events();
+    /** What the treasury paid the builders this month for overtime, with their tax in it. */
+    private double overtimePaidThisMonth;
+    /** What a finished demolition's material fetched this month, from the builders. */
+    private double demolitionSalvageThisMonth;
+
+    public ConstructionControl.Events getControlThisMonth() { return controlThisMonth; }
+    public double getOvertimePaidThisMonth() { return overtimePaidThisMonth; }
+    public double getDemolitionSalvageThisMonth() { return demolitionSalvageThisMonth; }
+
+    /**
+     * Settles the month's events of THE PLAYER'S HAND ON THE QUEUE. Called by
+     * SimulationEngine after the escalation, every month; a month with
+     * nothing to settle only tells the builders they paid no overtime.
+     */
+    public void settleConstructionControl(ConstructionControl.Events ev) {
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        controlThisMonth = ev == null ? new ConstructionControl.Events() : ev;
+        overtimePaidThisMonth = 0;
+        demolitionSalvageThisMonth = 0;
+
+        // B. The overtime: the premium on the rushed sites' crews, priced with
+        // the builders' tax in it as every price of theirs is, paid from the
+        // treasury like any construction bill - and owed to them past the
+        // ceiling - and paid out by them as wages, the whole premium, in the
+        // mix of a depot's posts at today's wages.
+        double premium = 0;
+        for (ConstructionControl.Overtime o : controlThisMonth.overtime) premium += Math.max(0, o.premium());
+        if (premium > 0) {
+            double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersSalesRate()));
+            double paid = treasuryPays(TreasuryLine.BUILDING_OVERTIME, premium / (1 - rB));
+            cityCapitalSpending += paid;
+            builders.recogniseOvertime(paid);
+            overtimePaidThisMonth = paid;
+        }
+        builders.setOvertimeWages(premium > 0 ? overtimeWagesByType(premium) : null);
+
+        // C. The cancelled orders, stopped: the city's contract left comes
+        // back out of the builders' book, the work it was for off their order
+        // book's points.
+        for (ConstructionControl.Refund r : controlThisMonth.refunds) {
+            double back = Math.max(0, r.value());
+            if (back > 0) {
+                cash += back;
+                cityCapitalSpending -= back;
+            }
+            builders.cancelOrder(back, r.points());
+            r.shell().month = month;
+            r.shell().refunded += back;
+            GameLog.note(String.format("The city's %d %s stopped: $%,.0fk back, the shell kept.", r.buildings(),
+                    r.building(), back));
+        }
+
+        // D. The demolitions finished: the material sold to the builders by
+        // the 0.7.8 rule, the proceeds to the treasury, the ground freed.
+        for (ConstructionControl.Completed c : controlThisMonth.completed) {
+            ConstructionControl.Demolition d = c.site();
+            double units = d.salvageUnits;
+            double price = getMarkets().get(Good.MATERIALS).getLocalPrice();
+            double bought = units > 0 && price > 0 ? Math.min(units, Math.max(0, builders.getCash()) / price) : 0;
+            double paid = bought * price;
+            if (paid > 0) {
+                sectorInvestor(builders.key()).spend(paid);
+                salvageBySector.merge(builders.key(), paid, Double::sum);
+                cash += paid;
+                treasuryJournal.record("Sold a demolition's material to the builders", paid);
+                demolitionSalvageThisMonth += paid;
+            }
+            if (bought > 0) builders.addSalvage(bought, paid);
+            salvageThisMonth.add(new Salvage("City", d.building, d.buildings, units, price, paid, bought, false));
+            // ...and on the site's own event, which the inbox reads (0.7.22, after
+            // the docs pass): two demolitions of one building and count finishing
+            // in one month are two sales, not one read twice.
+            c.sold(bought, paid);
+            landManager.release(d.landSqFt);
+            GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %,.0f sq ft freed.",
+                    d.buildings, d.building, bought, paid, d.landSqFt));
+        }
+    }
+
+    /** The overtime's wages by job type: the premium in the mix of a Construction Depot's posts at today's wages - the bill the premium was struck on (depotWageBillPerPoint()). */
+    private double[] overtimeWagesByType(double premium) {
+        BuildingsTemplate depot = buildingManager.getTemplateByName("Construction Depot");
+        double[] wages = economyManager.getWageRates();
+        double[] out = new double[JobType.values().length];
+        double bill = 0;
+        for (JobType job : JobType.values()) {
+            if (depot == null || job.ordinal() >= wages.length) continue;
+            out[job.ordinal()] = depot.getJobs(job) * wages[job.ordinal()];
+            bill += out[job.ordinal()];
+        }
+        if (!(bill > 0)) return null;
+        for (int i = 0; i < out.length; i++) out[i] = premium * out[i] / bill;
+        return out;
     }
     /**
      * @param noConstruction put the buildings up immediately instead of queueing
@@ -5245,7 +5887,7 @@ public class Game {
         return Math.max(0, calculateTotalCost(template, quantity) - cash);
     }
 
-    /** Units of material the last order will draw, for the receipt. */
+    /** Units of material the last order will draw, for the receipt (the build screen's showed it until 0.7.20; NewGameCheck reads it). */
     public double getMaterialsUsed(){
         return receiptMaterials;
     }
@@ -5413,6 +6055,8 @@ public class Game {
         treasuryRaisedSoFar += quote.cashReceived();
 
         debtManager.updateInterest();
+        decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
+                + ": " + quote.duration() + "-month note");
         return "Note issued.\n" + quote.summary();
     }
 
@@ -5473,6 +6117,8 @@ public class Game {
         treasuryRaisedSoFar += quote.cashReceived();
 
         debtManager.updateInterest();
+        decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
+                + ": " + duration + "-year serial bond");
         return "Serial bond issued.\n" + quote.summary();
     }
 
@@ -5667,6 +6313,8 @@ public class Game {
         treasuryRaisedSoFar += quote.cashReceived();
 
         debtManager.updateInterest();
+        decisions.record(DecisionLog.BORROWING, "Borrowed " + DecisionLog.money(quote.faceValue())
+                + ": " + quote.duration() + "-year term bond");
         return "Term bond issued.\n" + quote.summary();
     }
 
@@ -5799,6 +6447,8 @@ public class Game {
     public double defaultOnForeignDebt(String because) {
         double written = debtManager.repudiateForeignDebt();
         if (written <= 0) return 0;
+        // The player's choice; the forced default holds the log (checkForeignSolvency()).
+        decisions.record(DecisionLog.BORROWING, "Defaulted on " + "US" + DecisionLog.money(written) + " of foreign debt");
         foreign.forgiveDebt(written);
         foreign.takeForeignDebt(0, foreign.getRate());
         debtManager.markForeignDefault();
@@ -5837,7 +6487,10 @@ public class Game {
         double annualRevenue = debtManager.getMonthlyTaxRevenue() * 12;
         if (annualRevenue <= 0) return;
         if (cash < -annualRevenue * DEFAULT_OVERDRAFT_YEARS) {
-            defaultOnForeignDebt("the treasury could not find the dollars");
+            // The city's fate, not the player's decision: not in the log (0.7.23).
+            decisions.hold();
+            try { defaultOnForeignDebt("the treasury could not find the dollars"); }
+            finally { decisions.release(); }
         }
     }
 
@@ -6022,7 +6675,11 @@ public class Game {
          * abroad IS, and which the intervention screen has been able to do
          * since phase 2. One path, already audited, already harnessed.
          */
-        if (holdAsReserves) buyForeignCurrency(local);
+        // Held as reserves is part of this one decision, and says so on its line (0.7.23).
+        if (holdAsReserves) {
+            decisions.hold();
+            try { buyForeignCurrency(local); } finally { decisions.release(); }
+        }
 
         /*
          * ...AND THE DEBT IS ON THE SCREEN THE SAME INSTANT THE MONEY IS.
@@ -6039,6 +6696,10 @@ public class Game {
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
 
         debtManager.updateInterest();
+        decisions.record(DecisionLog.BORROWING, "Borrowed US" + DecisionLog.money(quote.faceValue()) + " abroad: "
+                + ("Note".equals(type) ? duration + "-month note"
+                   : duration + "-year " + ("Serial".equals(type) ? "serial" : "term") + " bond")
+                + (holdAsReserves ? ", held as reserves" : ""));
         return (holdAsReserves
                 ? "Issued abroad; the dollars are in reserve.\n"
                 : "Issued abroad and converted.\n") + quote.summary();
@@ -6219,7 +6880,17 @@ public class Game {
     public Rollover.Mode getRolloverMode() { return rollover.getMode(); }
 
     /** ...and as they set it, applied at the next press. */
-    public void setRolloverMode(Rollover.Mode mode) { rollover.setMode(mode); }
+    public void setRolloverMode(Rollover.Mode mode) {
+        Rollover.Mode was = rollover.getMode();
+        rollover.setMode(mode);
+        if (was != rollover.getMode()) {
+            decisions.record(DecisionLog.BORROWING, switch (rollover.getMode()) {
+                case MANUAL            -> "Rollover off: what falls due is paid from cash";
+                case TWELVE_MONTH_BILL -> "Rollover on: everything into " + Rollover.BILL_MONTHS + "-month notes";
+                default                -> "Rollover on: each piece into its own kind";
+            });
+        }
+    }
 
     /**
      * The budget surplus the city ran over the last Rollover.NETTING_MONTHS,
@@ -6427,14 +7098,20 @@ public class Game {
     private String issueForRollover(Rollover.Issue issue, DebtQuote quote) {
         if (quote == null || quote.isEmpty()) return "Nothing issued.";
         double granule = "Note".equals(issue.type()) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
-        if (issue.foreign()) {
-            return handleForeignLogic(issue.type(), quote.requested(), issue.term(), granule, false);
+        // The player's setting at work, not a decision: the issue is not in the log (0.7.23).
+        decisions.hold();
+        try {
+            if (issue.foreign()) {
+                return handleForeignLogic(issue.type(), quote.requested(), issue.term(), granule, false);
+            }
+            return switch (issue.type()) {
+                case "Note"   -> issueNote(quote);
+                case "Serial" -> handleMediumBondLogic(quote.requested(), issue.term(), granule);
+                default       -> issueLongBond(quote);
+            };
+        } finally {
+            decisions.release();
         }
-        return switch (issue.type()) {
-            case "Note"   -> issueNote(quote);
-            case "Serial" -> handleMediumBondLogic(quote.requested(), issue.term(), granule);
-            default       -> issueLongBond(quote);
-        };
     }
 
     
@@ -6494,6 +7171,12 @@ public class Game {
          */
         month++;
         monthsSinceAutosave++;
+        // The buildings the player ordered demolished between the presses
+        // close now, as the month after the order starts - the first it is
+        // in force for - before anything in it reads the city (0.7.22; THE
+        // PLAYER'S HAND ON THE QUEUE). No money moves. None in a city that
+        // ordered none.
+        closeDemolished();
         // The bank's clock, for its preferred's anniversaries, and the fund's
         // month (0.7.14).
         bank.setMonth(month);
@@ -9315,6 +9998,12 @@ public class Game {
                 buildingManager.getContractValueById());
         // ...and who placed each part of it (0.7.19; see OLD CONTRACTS).
         dataSave.setContractRecords(buildingManager.getContractRecords());
+        // ...and the player's hand on the queue (0.7.22): the order, the
+        // rushes, the shells, the demolitions, the buy-outs and each run.
+        dataSave.setConstructionControl(buildingManager.getControl().toState());
+        // ...and the player's decisions (0.7.23; DecisionLog), which nothing
+        // else in the save could give back.
+        dataSave.setDecisionLog(decisions.toState());
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed
@@ -10795,7 +11484,7 @@ public class Game {
         if (colon >= 0) return getSectors().byKey(key.substring(colon + 1));
         TreasuryLine line = arrearsLine(key);
         return line == TreasuryLine.CONSTRUCTION_SUBSIDY || line == TreasuryLine.CITY_REPAIRS
-                || line == TreasuryLine.BUILDING_ESCALATION
+                || line == TreasuryLine.BUILDING_ESCALATION || line == TreasuryLine.BUILDING_OVERTIME
                 ? getSectors().construction() : null;
     }
 
@@ -10890,6 +11579,8 @@ public class Game {
         }
 
         treasuryPays(TreasuryLine.BUYBACKS, price);
+        decisions.record(DecisionLog.BORROWING, "Bought back " + DecisionLog.money(principal) + " of "
+                + debt.getType() + " paper for " + DecisionLog.money(price));
         // Not a repayment - retire() takes it off the books without touching
         // cityPrincipalRepaidThisMonth - so the bridge names it here.
         treasuryJournal.record("Bought back a bond", -price);
@@ -11377,6 +12068,18 @@ public class Game {
     
     // Load game
     public void loadGame(int slot) {
+        // Every dial the load puts back goes through its setter, and none of
+        // it is a decision (0.7.23): the log is held for the whole load.
+        decisions.hold();
+        try {
+            readTheSave(slot);
+        } finally {
+            decisions.release();
+        }
+    }
+
+    /** The load itself; see loadGame(). */
+    private void readTheSave(int slot) {
 
         /*
          * Applied after rebuildSimulationState() rather than inside the try,
@@ -11918,6 +12621,19 @@ public class Game {
                 // the tax a landlord's home gets back reads (revised 0.7.19).
                 contractsToInfer = true;
             }
+
+            /*
+             * THE PLAYER'S HAND ON THE QUEUE (0.7.22): the order, the rushes,
+             * the cancels, the shells, the demolitions, the buy-outs, and
+             * each stack's run - before the land below, because a shell and
+             * a demolition on site hold ground the allocation is struck from
+             * (BuildingManager.getTotalLandFootprint()). A format-27 save has
+             * none of it, and loads with none.
+             */
+            buildingManager.getControl().restore(loaded.getConstructionControl());
+            // The player's decisions (0.7.23): a format-28 save has none, and
+            // loads with an empty log.
+            decisions.restore(loaded.getDecisionLog());
 
             /*
              * Land, after the buildings, because the allocation is derived from
@@ -12804,6 +13520,8 @@ public class Game {
          * figure is re-derived next month in its proper place.
          */
 
+        decisions.record(DecisionLog.CURRENCY, String.format(java.util.Locale.ROOT,
+                "Currency reformed: one new %s for %s old", getCurrency().name(), Formats.INSTANCE.count(factor)));
         return true;
     }
 

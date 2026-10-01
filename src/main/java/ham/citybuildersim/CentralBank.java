@@ -82,6 +82,16 @@ package ham.citybuildersim;
  */
 public final class CentralBank {
 
+    /** Where the player's change to its holdings dial or its advances ceiling is written (DecisionLog, 0.7.23); null for one no city holds. Never saved: the city wires it. */
+    private transient DecisionLog decisions;
+
+    /** Wires this to its city's decision log (Game.buildWorld()). */
+    public void recordTo(DecisionLog log) { decisions = log; }
+
+    private void decided(String kind, String label) {
+        if (decisions != null) decisions.record(kind, label);
+    }
+
     /* ------------------------------------------------------------------ the dials */
 
     /** What the window charges over the policy rate: a quarter of a point since 0.7.7 (a point before), the Bank of Canada's own spread - its Bank Rate is the overnight target plus 25 basis points - so borrowing reserves always costs more than holding them earns, and a bank short of money is charged for it without being punished. */
@@ -541,7 +551,10 @@ public final class CentralBank {
     /** The dial, held to 0..MAX_QE_SHARE. Moving it remembers where it was, for the pace. */
     public void setTargetShare(double share) {
         double to = Double.isFinite(share) ? Math.max(0, Math.min(MAX_QE_SHARE, share)) : 0;
-        if (to != targetShare) previousTarget = targetShare;
+        if (to != targetShare) {
+            previousTarget = targetShare;
+            decided(DecisionLog.CENTRAL_BANK, "Central bank to hold " + DecisionLog.pct(to) + " of the city's paper");
+        }
         targetShare = to;
     }
 
@@ -654,8 +667,14 @@ public final class CentralBank {
 
     /** Sets the ceiling dial, held to 0..MAX_ADVANCES_CEILING; a number that is not one reads the default. */
     public void setAdvancesCeilingMonths(double months) {
+        double was = advancesCeilingMonths;
         advancesCeilingMonths = Double.isFinite(months)
                 ? Math.max(0, Math.min(MAX_ADVANCES_CEILING, months)) : DEFAULT_ADVANCES_MONTHS;
+        if (DecisionLog.moved(was, advancesCeilingMonths)) {
+            decided(DecisionLog.CENTRAL_BANK, String.format(java.util.Locale.ROOT,
+                    "Advances to the treasury capped at %s months of revenue",
+                    DecisionLog.times(advancesCeilingMonths).substring(1)));
+        }
     }
 
     /** What the treasury may still draw for anything that is not a promise. */

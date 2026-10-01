@@ -15,7 +15,8 @@ package ham.citybuildersim;
  * A REAL INDEX IS A FIXED BASKET, PRICED REPEATEDLY. That is the whole idea and
  * it is the part people get wrong: you do not re-weight as spending shifts,
  * because then a household that switched to cheaper food would show no
- * inflation while eating worse. The basket is fixed at founding and priced
+ * inflation while eating worse. The basket is fixed once - after
+ * SETTLING_MONTHS of real shopping, not at founding (see there) - and priced
  * every month afterwards.
  *
  * THE BASKET IS MEASURED, NOT INVENTED. The weights come from what this game's
@@ -109,8 +110,10 @@ public class PriceIndex {
              * THE MONTH THE BASKET IS FIXED. Not month one - a city one month
              * old has no households, no rent and no sales, and basing an index
              * on that would divide the whole game by a rounding error. The
-             * first month with real spending in it is the base, and everything
-             * afterwards is measured against what a family paid then.
+             * base is the SETTLING_MONTHS-th month with real spending in it
+             * (see there; it was the first until the settling went in), and
+             * everything afterwards is measured against what a family paid
+             * then.
              */
             /*
              * BOTH HALVES, NOT EITHER. Requiring only a non-zero total based
@@ -202,6 +205,20 @@ public class PriceIndex {
 
     /** True once there is a year of readings and the rate means anything. */
     public boolean hasRate() { return monthsSeen > WINDOW; }
+
+    /**
+     * How many more months before hasRate() (0.7.20): the settling months
+     * still to come, then the readings after the basket is fixed - for the
+     * header, which says when the first rate comes rather than printing a
+     * placeholder as though it were a reading. A month with no shopping in
+     * it does not count towards the settling, so before the shops open this
+     * is the least it can be. Reads; changes nothing.
+     */
+    public int monthsUntilRate() {
+        if (hasRate()) return 0;
+        if (!based) return Math.max(0, SETTLING_MONTHS - shoppingMonths) + WINDOW;
+        return WINDOW + 1 - monthsSeen;
+    }
 
     /* -------------------------------- carrying -------------------------------- */
 

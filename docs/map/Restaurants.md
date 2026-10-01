@@ -1,6 +1,6 @@
 # Restaurants.java - 462 lines · 18 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > The kitchens. THE FIFTEENTH SECTOR (2026-09-18, Jerus's call).
 > 

@@ -78,9 +78,7 @@ final class LandScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         String here = ui.game.getCurrency().qualifiedSymbol();
 
-        Label title = new Label("LAND OFFICE");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("LAND OFFICE");
 
         /* =================== HOW THE LAND IS PAID FOR (0.7.6) ===================
          *
@@ -442,7 +440,7 @@ final class LandScreen {
         String what = ids.size() == 1 ? "The plot" : ids.size() + " plots";
 
         Label warning = new Label("INSUFFICIENT FUNDS");
-        warning.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold;");
         VBox column = new VBox(0);
         column.setAlignment(Pos.TOP_LEFT);
         column.setMaxWidth(Region.USE_PREF_SIZE);
@@ -558,7 +556,7 @@ final class LandScreen {
         }
         ui.clearMenu("showLandFellShort", () -> showLandMenu());
         Label heading = new Label(paper == null ? "THE LAND IS NOT BOUGHT" : "THE MONEY IS IN, THE LAND IS NOT");
-        heading.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold; -fx-font-size: 14px;");
+        heading.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold; -fx-font-size: 14px;");
         Label why = new Label(String.format("%s%d of %d plot%s bought: the rest still cost more than the city "
                         + "holds. Nothing beyond %s was spent.",
                 paper == null ? "" : "The " + paper + " was issued. ",
@@ -588,7 +586,8 @@ final class LandScreen {
        than as a screen.
 
        These four do the same job with layout instead of spaces: the label is
-       grey on the left, the figure is Courier on the right, the gap between
+       grey on the left, the figure is monospaced on the right (Courier then,
+       IBM Plex Mono since 0.7.21), the gap between
        them is a Region rather than padding, and a rule is a one-pixel Region
        rather than sixty hyphens. Built here because Land needed them; they are
        the primitives every remaining report screen will be rebuilt on.

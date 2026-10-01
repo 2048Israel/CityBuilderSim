@@ -168,7 +168,30 @@ public class PopulationManager {
         for(int i = 0; i < totalWagePerType.length; i++) {
             totalWage += totalWagePerType[i]*fillRate[i];
         }
+        // ...and the overtime on the city's rushed sites (0.7.22), when there
+        // is any: see overtimeWages.
+        double[] overtime = overtimeWages == null ? null : overtimeWages.get();
+        if (overtime != null) {
+            for (int i = 0; i < overtime.length && i < totalWagePerType.length; i++) totalWage += overtime[i];
+        }
         return totalWage;
+    }
+
+    /**
+     * THE OVERTIME ON A RUSHED SITE IS WAGES (0.7.22; ConstructionControl,
+     * B. RUSH). The builders pay their crews on the city's rushed sites the
+     * premium the city pays them (sectors.Construction.getOvertimeWages()),
+     * so the households are paid it - on top of the posts' wages, by job
+     * type, through the same two figures every wage reaches them by
+     * (getTotalWage() and getStaffedWagePerType()), so the wage tax, the
+     * contributions and every tier's income see it too, and the builders'
+     * payroll and the households' pay stay one figure. Read through a hook
+     * Game sets; none, or null from it, adds nothing.
+     */
+    private java.util.function.Supplier<double[]> overtimeWages;
+
+    public void setOvertimeWages(java.util.function.Supplier<double[]> overtimeWages) {
+        this.overtimeWages = overtimeWages;
     }
     
     public double[] getWagesPerType(){
@@ -192,6 +215,11 @@ public class PopulationManager {
         double[] staffed = new double[totalWagePerType.length];
         for (int i = 0; i < totalWagePerType.length; i++) {
             staffed[i] = totalWagePerType[i] * fillRate[i];
+        }
+        // ...and the rushed sites' overtime (0.7.22), as getTotalWage() adds it.
+        double[] overtime = overtimeWages == null ? null : overtimeWages.get();
+        if (overtime != null) {
+            for (int i = 0; i < overtime.length && i < staffed.length; i++) staffed[i] += overtime[i];
         }
         return staffed;
     }

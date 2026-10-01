@@ -440,8 +440,8 @@ public class Restaurants extends Sector {
         }
 
         lines.add(Line.head("THE MARGIN, STRUCK AGAINST THE QUEUE"));
-        lines.add(Line.of("What the food in a meal cost", f.cash(rFoodCost)));
-        lines.add(Line.of("...and what the meal sold for", f.cash(sellPrice)));
+        lines.add(Line.of("What the food in a meal cost", f.amount(rFoodCost)));
+        lines.add(Line.of("...and what the meal sold for", f.amount(sellPrice)));
         lines.add(Line.of("The mark-up", String.format("%.2fx", rMargin),
                 rMargin > (MARGIN_FLOOR + MARGIN_CEILING) / 2 ? Line.Tone.WARN : Line.Tone.GOOD));
         lines.add(Line.note(String.format(

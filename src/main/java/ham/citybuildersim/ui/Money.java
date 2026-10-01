@@ -34,8 +34,9 @@ public final class Money {
        a thousand-fold apart, on one screen, at the same moment.
 
        So this converts, and it abbreviates: k above ten thousand, M above a
-       million, B above a billion. Everything that shows city money goes through
-       it, which is what makes the two figures agree.
+       million, B above a billion, T above a trillion (0.7.20). Everything that
+       shows city money goes through it, which is what makes the two figures
+       agree.
 
        WHAT DOES NOT COME HERE: anything that is not money in the model's unit.
        An exchange rate is a ratio, a percentage is a percentage, and a price
@@ -45,20 +46,59 @@ public final class Money {
        ===================================================================== */
 
     /** Thousands separators, Canadian style; every figure below goes through it. */
-    public static final NumberFormat formatter = NumberFormat.getNumberInstance(Locale.CANADA);
+    public static final NumberFormat formatter = withoutNegativeZero(NumberFormat.getNumberInstance(Locale.CANADA));
     static {   // this sat in the shell until 2026-09-18 (evening); it belongs to the field
         formatter.setMaximumFractionDigits(2);
         formatter.setMinimumFractionDigits(0);
     }
 
-    public static String pct2(double rate)  { return String.format("%.2f%%", rate * 100); }
+    /* =====================================================================
+       NO NEGATIVE ZERO (0.7.20).
+
+       "Died -0.0", "...killed -0.0": a figure a hair below zero, printed at a
+       precision that rounds it to nothing, keeps its minus sign - Java's
+       DecimalFormat writes -0.001 as "-0", and String.format writes -0.04 as
+       "-0.0" and -0.0 itself as "-0.0". A minus on nothing reads as a
+       direction there was not. So the shared formatters drop it here, once,
+       rather than every screen guarding its own: the formatter every screen
+       uses through `formatter`, and unsigned0() for the String.format ones
+       below.
+       ===================================================================== */
+
+    /** The same format, except that a negative which rounds to nothing prints with no sign. */
+    private static NumberFormat withoutNegativeZero(NumberFormat base) {
+        if (!(base instanceof java.text.DecimalFormat d)) return base;
+        return new java.text.DecimalFormat(d.toPattern(), d.getDecimalFormatSymbols()) {
+            @Override
+            public StringBuffer format(double number, StringBuffer to, java.text.FieldPosition at) {
+                double places = Math.pow(10, getMaximumFractionDigits());
+                if (number == 0 || (number < 0 && -number * places <= .5)) number = 0.0;
+                return super.format(number, to, at);
+            }
+        };
+    }
+
+    /**
+     * A value for String.format at `decimals` places, with a negative that
+     * rounds to nothing there - and -0.0 itself - made a plain zero.
+     */
+    public static double unsigned0(double value, int decimals) {
+        if (value == 0) return 0.0;
+        if (value < 0 && -value * Math.pow(10, decimals) < .5) return 0.0;
+        return value;
+    }
+
+    public static String pct2(double rate)  { return String.format("%.2f%%", unsigned0(rate * 100, 2)); }
 
     /*
      * TWO DECIMALS SINCE THE LADDER. Every rate that moves off the income tax
      * steps in quarter points now, and at one decimal a quarter point printed
      * as "+0.3 pts" - a dial that lies about where it just landed.
      */
-    public static String pts(double points) { return String.format("%+.2f pts", points * 100); }
+    public static String pts(double points) {
+        double shown = unsigned0(points * 100, 2);
+        return shown == 0 ? "0.00 pts" : String.format("%+.2f pts", shown);
+    }
 
     /**
      * A headcount, as a whole number of people.
@@ -67,8 +107,8 @@ public final class Money {
      * village of two hundred would otherwise print "0 born" every month - but
      * the fraction is an artefact of the arithmetic, not something a player can
      * act on, and printing "53,697.74 of working age" makes a screen look like
-     * a debugger. flowText still keeps a decimal on the small monthly flows,
-     * where it is the only thing moving.
+     * a debugger. Since 0.7.20 the monthly flows are whole people too
+     * (Pieces.flowText), with "under 1" for one too small to round to a person.
      */
     public static String people(double count) {
         return formatter.format(Math.round(count));
@@ -119,10 +159,14 @@ public final class Money {
     public static String tightMoney(double value, boolean compact) {
         double a = Math.abs(value);
         String sign = value < 0 ? "-" : "";
+        // Trillions (0.7.20): the load list printed a big city as "$3108.1B".
+        if (a >= 1e12)          return String.format("%s$%.1fT", sign, a / 1e12);
         if (a >= 1_000_000_000) return String.format("%s$%.1fB", sign, a / 1_000_000_000);
         if (a >= 1_000_000)     return String.format("%s$%.1fM", sign, a / 1_000_000);
         if (compact && a >= 10_000) return String.format("%s$%.0fk", sign, a / 1_000);
-        return sign + "$" + formatter.format(Math.round(a));
+        // ...and no sign on a figure that rounds to no dollars at all: "-$0" is a direction.
+        long whole = Math.round(a);
+        return (whole == 0 ? "" : sign) + "$" + formatter.format(whole);
     }
 
     /** City money. Takes THOUSANDS - the unit the whole model counts in. */
@@ -201,7 +245,7 @@ public final class Money {
         double a = Math.abs(d);
         if (a >= 1_000) return tightMoney(d, false);
         if (a >= 1)     return String.format("$%,.2f", d);
-        if (a > 0)      return String.format("$%.4f", d);
+        if (a > 0)      return String.format("$%.4f", unsigned0(d, 4));
         return "$0";
     }
 

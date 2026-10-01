@@ -86,7 +86,7 @@ public final class CityCalendar {
         return Math.max(1, Math.min(days, (int) Math.floor(progress * days) + 1));
     }
 
-    /** "14 March 2031" - the date bar's line while the clock is running. */
+    /** "14 March 2031" - the date in the header's clock (the date bar's line until 0.7.21) while the clock is running. */
     public static String formatDay(int gameMonth, double progress) {
         return dayOf(gameMonth, progress) + " " + monthName(gameMonth) + " " + yearOf(gameMonth);
     }

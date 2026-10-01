@@ -57,6 +57,27 @@ package ham.citybuildersim;
  */
 public class TaxPolicy {
 
+    /* =====================================================================
+       THE DECISION LOG (0.7.23)
+
+       Every dial on this class is the player's, and this is the one place
+       each is applied - so a change is written here, as it is made, to the
+       city's DecisionLog: "Taxes to 17%", "Pensions to 25% of a wage". A
+       setter called with the value the dial already reads writes nothing.
+       The city wires it (Game.buildWorld()) and holds it while it is built
+       or loaded, which is when these setters run without anybody deciding.
+       ===================================================================== */
+
+    /** Where a change to a dial here is written; null for a policy no city holds. Never saved: the city wires it. */
+    private transient DecisionLog decisions;
+
+    /** Wires this policy to its city's decision log (Game.buildWorld()). */
+    public void recordTo(DecisionLog log) { decisions = log; }
+
+    private void decided(String kind, String label) {
+        if (decisions != null) decisions.record(kind, label);
+    }
+
     /** Where income tax started before it was a dial. */
     public static final double DEFAULT_INCOME_TAX = .15;
 
@@ -143,7 +164,11 @@ public class TaxPolicy {
     public double getFarmlandRelief() { return farmlandRelief; }
 
     public void setFarmlandRelief(double share) {
+        double was = farmlandRelief;
         this.farmlandRelief = share < 0 ? 0 : Math.min(share, 1);
+        if (DecisionLog.moved(was, farmlandRelief)) {
+            decided(DecisionLog.TAX, "Farmland relief to " + DecisionLog.pct(farmlandRelief));
+        }
     }
 
     /**
@@ -183,11 +208,19 @@ public class TaxPolicy {
     public double getPensionReplacement() { return pensionReplacement; }
 
     public void setContributionRate(double rate) {
+        double was = contributionRate;
         contributionRate = Math.max(0, Math.min(MAX_CONTRIBUTION, rate));
+        if (DecisionLog.moved(was, contributionRate)) {
+            decided(DecisionLog.PROMISE, "CPP contributions to " + DecisionLog.pct(contributionRate));
+        }
     }
 
     public void setPensionReplacement(double share) {
+        double was = pensionReplacement;
         pensionReplacement = Math.max(0, Math.min(MAX_REPLACEMENT, share));
+        if (DecisionLog.moved(was, pensionReplacement)) {
+            decided(DecisionLog.PROMISE, "Pensions to " + DecisionLog.pct(pensionReplacement) + " of a wage");
+        }
     }
 
     /* =====================================================================
@@ -248,13 +281,29 @@ public class TaxPolicy {
         return grantBasis == GrantBasis.WAGE_SHARE ? grantAmount : 0;
     }
 
-    public void setEiPremiumRate(double rate)     { eiPremiumRate = clamp(rate, MAX_EI_PREMIUM); }
-    public void setEiBenefitRate(double share)    { eiBenefitRate = clamp(share, MAX_EI_BENEFIT); }
+    public void setEiPremiumRate(double rate) {
+        double was = eiPremiumRate;
+        eiPremiumRate = clamp(rate, MAX_EI_PREMIUM);
+        if (DecisionLog.moved(was, eiPremiumRate)) {
+            decided(DecisionLog.PROMISE, "EI premium to " + DecisionLog.pct(eiPremiumRate));
+        }
+    }
+
+    public void setEiBenefitRate(double share) {
+        double was = eiBenefitRate;
+        eiBenefitRate = clamp(share, MAX_EI_BENEFIT);
+        if (DecisionLog.moved(was, eiBenefitRate)) {
+            decided(DecisionLog.PROMISE, "EI to " + DecisionLog.pct(eiBenefitRate) + " of a wage");
+        }
+    }
 
     /** The grant as a share of the unskilled wage - the founding basis until 0.7.19, at this share. */
     public void setStudentGrantShare(double share) {
+        GrantBasis wasBasis = grantBasis;
+        double was = grantAmount;
         grantBasis = GrantBasis.WAGE_SHARE;
         grantAmount = clamp(share, MAX_STUDENT_GRANT);
+        grantDecided(wasBasis, was);
     }
 
     /* =====================================================================
@@ -500,22 +549,48 @@ public class TaxPolicy {
 
     /** Picks the basis; the amount is clamped to the new basis's ceiling and otherwise left where it was. */
     public void setGrantBasis(GrantBasis basis) {
+        GrantBasis wasBasis = grantBasis;
+        double was = grantAmount;
         grantBasis = basis == null ? DEFAULT_GRANT_BASIS : basis;
         grantAmount = clamp(grantAmount, maxGrantAmount(grantBasis));
+        grantDecided(wasBasis, was);
     }
 
     /** Sets the amount, in the current basis's unit, clamped to its ceiling. */
     public void setGrantAmount(double amount) {
+        double was = grantAmount;
         grantAmount = clamp(amount, maxGrantAmount(grantBasis));
+        grantDecided(grantBasis, was);
     }
 
-    /** Both at once, so a screen can stage them together. */
+    /** Both at once, so a screen can stage them together - and one line in the log for the two. */
     public void setGrant(GrantBasis basis, double amount) {
-        setGrantBasis(basis);
-        setGrantAmount(amount);
+        GrantBasis wasBasis = grantBasis;
+        double was = grantAmount;
+        grantBasis = basis == null ? DEFAULT_GRANT_BASIS : basis;
+        grantAmount = clamp(amount, maxGrantAmount(grantBasis));
+        grantDecided(wasBasis, was);
     }
 
-    public void setStudentLoanRate(double annual) { studentLoanRate = clamp(annual, MAX_STUDENT_LOAN_RATE); }
+    /** The grant's line in the decision log, when its basis or its amount moved (0.7.23). */
+    private void grantDecided(GrantBasis wasBasis, double wasAmount) {
+        if (wasBasis == grantBasis && !DecisionLog.moved(wasAmount, grantAmount)) return;
+        String amount = switch (grantBasis) {
+            case FIXED         -> DecisionLog.money(grantAmount) + " a month at founding prices";
+            case SURPLUS_SHARE -> DecisionLog.pct(grantAmount) + " of the surplus";
+            case TUITION_SHARE -> DecisionLog.pct(grantAmount) + " of tuition";
+            default            -> DecisionLog.pct(grantAmount) + " of a wage";
+        };
+        decided(DecisionLog.PROMISE, "Student grant to " + amount);
+    }
+
+    public void setStudentLoanRate(double annual) {
+        double was = studentLoanRate;
+        studentLoanRate = clamp(annual, MAX_STUDENT_LOAN_RATE);
+        if (DecisionLog.moved(was, studentLoanRate)) {
+            decided(DecisionLog.PROMISE, "Student loan rate to " + DecisionLog.pct(studentLoanRate));
+        }
+    }
 
     /**
      * Every school at once: all nine kinds set to this scale (0.7.6), which
@@ -525,13 +600,23 @@ public class TaxPolicy {
      */
     public void setTuitionScale(double scale) {
         double s = clamp(scale, MAX_TUITION_SCALE);
-        for (EducationType type : SCHOOL_KINDS) tuitionScales[type.ordinal()] = s;
+        boolean moved = false;
+        for (EducationType type : SCHOOL_KINDS) {
+            moved |= DecisionLog.moved(tuitionScales[type.ordinal()], s);
+            tuitionScales[type.ordinal()] = s;
+        }
+        if (moved) decided(DecisionLog.PROMISE, "Tuition, every school, to " + DecisionLog.times(s));
     }
 
     /** One school kind's own scale, held to MAX_TUITION_SCALE (0.7.6); NONE, or null, is ignored. */
     public void setTuitionScaleOf(EducationType type, double scale) {
         if (type == null || type == EducationType.NONE) return;
+        double was = tuitionScales[type.ordinal()];
         tuitionScales[type.ordinal()] = clamp(scale, MAX_TUITION_SCALE);
+        if (DecisionLog.moved(was, tuitionScales[type.ordinal()])) {
+            decided(DecisionLog.PROMISE, "Tuition, " + type.getLabel() + ", to "
+                    + DecisionLog.times(tuitionScales[type.ordinal()]));
+        }
     }
 
     /**
@@ -629,8 +714,21 @@ public class TaxPolicy {
     /** The share of every wage the health premium takes, employee side. */
     public double getHealthPremiumRate(){ return healthPremiumRate; }
 
-    public void setHealthFeeScale(double scale)  { healthFeeScale = clamp(scale, MAX_HEALTH_FEE_SCALE); }
-    public void setHealthPremiumRate(double rate){ healthPremiumRate = clamp(rate, MAX_HEALTH_PREMIUM); }
+    public void setHealthFeeScale(double scale) {
+        double was = healthFeeScale;
+        healthFeeScale = clamp(scale, MAX_HEALTH_FEE_SCALE);
+        if (DecisionLog.moved(was, healthFeeScale)) {
+            decided(DecisionLog.PROMISE, "Clinic fees to " + DecisionLog.times(healthFeeScale));
+        }
+    }
+
+    public void setHealthPremiumRate(double rate) {
+        double was = healthPremiumRate;
+        healthPremiumRate = clamp(rate, MAX_HEALTH_PREMIUM);
+        if (DecisionLog.moved(was, healthPremiumRate)) {
+            decided(DecisionLog.PROMISE, "Health premium to " + DecisionLog.pct(healthPremiumRate));
+        }
+    }
 
     /**
      * A pension, in TODAY's money.
@@ -758,7 +856,11 @@ public class TaxPolicy {
     public double getTransitFare() { return transitFare; }
 
     public void setTransitFare(double fare) {
+        double was = transitFare;
         this.transitFare = Math.max(0, Math.min(MAX_TRANSIT_FARE, fare));
+        if (DecisionLog.moved(was, transitFare)) {
+            decided(DecisionLog.PROMISE, "Transit fare to " + DecisionLog.money(transitFare));
+        }
     }
 
     /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
@@ -818,9 +920,29 @@ public class TaxPolicy {
     /** What every band's wage tax moves off (0.7.4). */
     public double getWageTaxRate()   { return wageTaxRate; }
 
-    public void setProfitTaxRate(double rate) { profitTaxRate = clamp(rate, MAX_INCOME_TAX); }
-    public void setSalesTaxRate(double rate)  { salesTaxRate = clamp(rate, MAX_INCOME_TAX); }
-    public void setWageTaxRate(double rate)   { wageTaxRate = clamp(rate, MAX_INCOME_TAX); }
+    public void setProfitTaxRate(double rate) {
+        double was = profitTaxRate;
+        profitTaxRate = clamp(rate, MAX_INCOME_TAX);
+        if (DecisionLog.moved(was, profitTaxRate)) {
+            decided(DecisionLog.TAX, "Profit tax to " + DecisionLog.pct(profitTaxRate));
+        }
+    }
+
+    public void setSalesTaxRate(double rate) {
+        double was = salesTaxRate;
+        salesTaxRate = clamp(rate, MAX_INCOME_TAX);
+        if (DecisionLog.moved(was, salesTaxRate)) {
+            decided(DecisionLog.TAX, "Sales tax to " + DecisionLog.pct(salesTaxRate));
+        }
+    }
+
+    public void setWageTaxRate(double rate) {
+        double was = wageTaxRate;
+        wageTaxRate = clamp(rate, MAX_INCOME_TAX);
+        if (DecisionLog.moved(was, wageTaxRate)) {
+            decided(DecisionLog.TAX, "Wage tax to " + DecisionLog.pct(wageTaxRate));
+        }
+    }
 
     /** The annual rate - what the player sets and what the screens show. */
     public double getPropertyTaxRate() {
@@ -841,14 +963,21 @@ public class TaxPolicy {
      */
     public void setIncomeTaxRate(double rate) {
         double r = clamp(rate, MAX_INCOME_TAX);
+        boolean moved = DecisionLog.moved(profitTaxRate, r) || DecisionLog.moved(salesTaxRate, r)
+                || DecisionLog.moved(wageTaxRate, r);
         profitTaxRate = r;
         salesTaxRate = r;
         wageTaxRate = r;
+        if (moved) decided(DecisionLog.TAX, "Taxes to " + DecisionLog.pct(r));
     }
 
     /** Takes the ANNUAL rate. */
     public void setPropertyTaxRate(double annualRate) {
+        double was = propertyTaxRate;
         this.propertyTaxRate = clamp(annualRate, MAX_PROPERTY_TAX);
+        if (DecisionLog.moved(was, propertyTaxRate)) {
+            decided(DecisionLog.TAX, "Property tax to " + DecisionLog.pct(propertyTaxRate) + " a year");
+        }
     }
 
     /* ==================================================================
@@ -865,20 +994,36 @@ public class TaxPolicy {
     public double getPropertyOffset(Sector s) { return getPropertyOffset(s.key()); }
 
     public void setWageOffset(WageBand band, double points) {
+        double was = wageOffset[band.ordinal()];
         wageOffset[band.ordinal()] = clampOffset(points);
+        offsetDecided("Wage tax", band.label(), was, wageOffset[band.ordinal()]);
     }
 
     public void setProfitOffset(String sector, double points) {
-        if (sector != null) profitOffset.put(sector, clampOffset(points));
+        if (sector == null) return;
+        double was = getProfitOffset(sector);
+        profitOffset.put(sector, clampOffset(points));
+        offsetDecided("Profit tax", sector, was, getProfitOffset(sector));
     }
 
     public void setSalesOffset(String sector, double points) {
-        if (sector != null) salesOffset.put(sector, clampOffset(points));
+        if (sector == null) return;
+        double was = getSalesOffset(sector);
+        salesOffset.put(sector, clampOffset(points));
+        offsetDecided("Sales tax", sector, was, getSalesOffset(sector));
     }
 
     /** In ANNUAL points, matching the rate it offsets. */
     public void setPropertyOffset(String sector, double points) {
-        if (sector != null) propertyOffset.put(sector, clampOffset(points));
+        if (sector == null) return;
+        double was = getPropertyOffset(sector);
+        propertyOffset.put(sector, clampOffset(points));
+        offsetDecided("Property tax", sector, was, getPropertyOffset(sector));
+    }
+
+    /** An offset's line in the decision log, when it moved (0.7.23): "Profit tax, Retail, to -2 pts". */
+    private void offsetDecided(String tax, String who, double was, double now) {
+        if (DecisionLog.moved(was, now)) decided(DecisionLog.TAX, tax + ", " + who + ", to " + DecisionLog.points(now));
     }
 
     public void setProfitOffset(Sector s, double points)   { setProfitOffset(s.key(), points); }

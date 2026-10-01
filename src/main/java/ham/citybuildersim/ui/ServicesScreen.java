@@ -134,9 +134,7 @@ final class ServicesScreen {
         for (String page : INFRA_PAGES) if (page.equals(infraPage)) known = true;
         if (!known) infraPage = INFRA_PAGES[0];
 
-        Label title = new Label("INFRASTRUCTURE");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("INFRASTRUCTURE");
 
         VBox column = new VBox(0);
         column.setAlignment(Pos.TOP_LEFT);
@@ -771,9 +769,7 @@ final class ServicesScreen {
         for (String page : area.pages()) if (page.equals(servicePage)) known = true;
         if (!known) servicePage = area.pages()[0];
 
-        Label title = new Label("SERVICES");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("SERVICES");
 
         VBox column = new VBox(0);
         column.setAlignment(Pos.TOP_LEFT);
@@ -1152,7 +1148,10 @@ final class ServicesScreen {
                                 + " of the workforce",
                         sick > .12 ? Palette.BAD : sick > .06 ? Palette.WARN : Palette.GOOD),
                 limitCell("THINNEST COVER", String.format("%.0f%%", worstCover * 100),
-                        worst.getLabel().toLowerCase() + " — build that next",
+                        // Nothing to build next when every kind is covered (0.7.20); it read
+                        // "100% general care - build that next".
+                        worstCover >= .995 ? "everything covered"
+                                : worst.getLabel().toLowerCase() + " — build that next",
                         worstCover < .5 ? Palette.BAD
                                 : worstCover < .9 ? Palette.WARN : Palette.GOOD),
                 service.getUnburied() > 0
@@ -1903,7 +1902,7 @@ final class ServicesScreen {
         box.getChildren().add(statementTotal("The household pays", cash(pocket),
                 pocket <= 0 ? Palette.GOOD : null));
         box.getChildren().add(statementNote(
-                "The subsidy is one dial for every course in the city, on the Policies "
+                "The subsidy is one dial for every course in the city, on the Policy "
                 + "screen, beside the price of a place, the grant and the loan's rate. At "
                 + "nothing, only the top pay tiers attend; at everything, education becomes "
                 + "one of the largest lines on the budget."));

@@ -1,6 +1,6 @@
 # LuxuryRetail.java - 490 lines · 17 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > The luxury shops. THE FOURTEENTH SECTOR (2026-09-17, Jerus's call).
 > 

@@ -32,6 +32,38 @@ public final class Formats {
         return "$" + money.format(dollars);
     }
 
+    /**
+     * The same field as the screens print money (0.7.20), Money.unitPrice()'s
+     * shape: cents only under a thousand dollars, where a price a unit or a
+     * point needs them; whole dollars from there to a million; a million or
+     * more compact, "$58.7M", as every hub prints it. The Construction page
+     * read "$58,726,150" and "$18,071.98" beside "$4.1M". Never a sign on a
+     * figure that rounds to nothing.
+     *
+     * A method of its own rather than cash() in a new shape, because cash()
+     * is also how the planners write their reasons, which the playtest's
+     * traces carry ("needs $1,922,909 of its own for the down payment").
+     *
+     * EVERY SECTOR PAGE SINCE 0.7.21, with the text cut: each sector's
+     * operations() writes its money in this form, as Construction's did from
+     * 0.7.20. The planners' reasons still use cash().
+     */
+    public String amount(double thousands) {
+        if (!Double.isFinite(thousands)) return "—";
+        double dollars = thousands * 1000;
+        double a = Math.abs(dollars);
+        if (a >= 1e12) return sign(dollars, a / 1e12, 1) + String.format("$%.1fT", a / 1e12);
+        if (a >= 1e9)  return sign(dollars, a / 1e9, 1) + String.format("$%.1fB", a / 1e9);
+        if (a >= 1e6)  return sign(dollars, a / 1e6, 1) + String.format("$%.1fM", a / 1e6);
+        if (a >= 1_000) return sign(dollars, a, 0) + "$" + whole.format(Math.round(a));
+        return sign(dollars, a, 2) + "$" + money.format(a);
+    }
+
+    /** "-" for a negative that still reads as something at `decimals` places, "" otherwise. */
+    private static String sign(double value, double shown, int decimals) {
+        return value < 0 && Math.round(shown * Math.pow(10, decimals)) > 0 ? "-" : "";
+    }
+
     public String pct(double share) {
         if (!Double.isFinite(share)) return "—";
         return String.format("%.0f%%", share * 100);
@@ -49,8 +81,9 @@ public final class Formats {
         return count(n) + " " + (r == 1 ? unit : plural(unit));
     }
 
-    private static String plural(String unit) {
-        if (unit.endsWith("s")) return unit;
+    /** "tonnes", "units" - and "kg", which is its own plural (0.7.20). */
+    public static String plural(String unit) {
+        if (unit.endsWith("s") || unit.equals("kg")) return unit;
         return unit + "s";
     }
 }

@@ -86,9 +86,7 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         CapitalFlows hot = ui.game.getCapitalFlows();
 
-        Label title = new Label("TRADE & THE WORLD");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("TRADE & THE WORLD");
 
         Label lead = new Label("What the city sells, what it buys, and what it owes "
                 + "in somebody else's money.");
@@ -298,9 +296,7 @@ final class TradeScreen {
             default               -> TRADE_MONTH_PAGES;
         };
 
-        Label title = new Label(tradeArea.toUpperCase());
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle(tradeArea.toUpperCase());
 
         javafx.scene.layout.FlowPane strip =
                 chipStrip(pages, tradePage, Palette.SIZE_LABEL, name -> {
@@ -1293,7 +1289,7 @@ final class TradeScreen {
         Button confirm = new Button(tradeBuying
                 ? "Buy " + money(tradeExchange) + " of foreign money"
                 : "Sell " + money(tradeExchange) + " of the vault");
-        confirm.setStyle("-fx-background-color: #2f7d52; -fx-text-fill: white;"
+        confirm.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                 + " -fx-padding: 8 18 8 18;");
         confirm.setOnAction(e -> {
             if (tradeBuying) ui.game.buyForeignCurrency(tradeExchange);

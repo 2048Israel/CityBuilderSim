@@ -1,6 +1,6 @@
 # EducationCheck.java - 1,391 lines · 11 methods · 2 constants · harnesses
 
-`ham/citybuildersim/EducationCheck.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EducationCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > Verifies the schools: who gets taught, who is allowed to practise, and what
 > it costs. Not part of the game.

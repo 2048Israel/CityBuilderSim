@@ -6,8 +6,9 @@ package ham.citybuildersim;
  *
  * WHY THIS EXISTS. Jerus: "show how much was the actual month change, like in
  * the next month button it shows 3k but sometimes cause of land buybacks or
- * sales it was actually more or less." The dome and the Government Overview now
- * both print a measured cash movement, and a measured figure that is measured
+ * sales it was actually more or less." The dome (the header's TREASURY tile
+ * since 0.7.21) and the Government Overview now both print a measured cash
+ * movement, and a measured figure that is measured
  * wrongly is worse than the estimate it replaced - it looks authoritative.
  *
  * The seven things it will not let past:

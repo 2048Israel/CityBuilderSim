@@ -1030,6 +1030,37 @@ public final class YearBook {
     /** A recession this many months long, or longer, is called a depression. */
     public static final int DEPRESSION_MONTHS = 24;
 
+    /*
+     * THE TABLE'S THRESHOLDS, NAMED (0.7.23). They were literals in the
+     * table below, and the chart now says each one in words when a band or
+     * an episode is pointed at (trigger()) - so the rule and its sentence
+     * read one number. The values are the table's, unchanged.
+     */
+
+    /** The bank's equity under this, in thousands, is a financial crisis: the bank has failed. */
+    public static final double FINANCIAL_EQUITY = 0;
+
+    /** Real output over a rolling year against the year before, as a fraction, under this is a recession: under zero, a fall. */
+    public static final double RECESSION_GROWTH = 0;
+
+    /** The exchange rate past this multiple of itself a year before is a currency crisis: the currency halved. */
+    public static final double CURRENCY_MOVE = 2;
+
+    /** Prices rising faster than this a year is an inflation. */
+    public static final double INFLATION_EPISODE = .25;
+
+    /** Prices falling faster than this a year (a negative rate) is a deflation. */
+    public static final double DEFLATION_EPISODE = -.10;
+
+    /** More of the workforce off sick than this is an epidemic. */
+    public static final double EPIDEMIC_SICK = .10;
+
+    /** The treasury's cash under this, in thousands, is a treasury crisis: it is overdrawn. */
+    public static final double TREASURY_CASH = 0;
+
+    /** More of the labour force out of work than this is a slump. */
+    public static final double SLUMP_UNEMPLOYMENT = .20;
+
     /**
      * One named stretch of the city's life.
      *
@@ -1042,8 +1073,13 @@ public final class YearBook {
      *                  that series' own terms (bank equity in thousands, a
      *                  year-on-year fall as a fraction, an exchange rate's
      *                  multiple of a year before, a rate as a fraction)
+     * @param worstMonth the month that worst reading was taken in, on the
+     *                  history's axis (0.7.23, for the chart's card)
      */
-    public record Episode(String kind, String name, int fromMonth, int toMonth, double worst) { }
+    public record Episode(String kind, String name, int fromMonth, int toMonth, double worst, int worstMonth) {
+        /** How many months it ran, relief inside it included. */
+        public int months() { return toMonth - fromMonth + 1; }
+    }
 
     /**
      * Every named episode in a history, oldest first.
@@ -1059,15 +1095,15 @@ public final class YearBook {
         List<Integer> axis = h.getMonth();
         double[] inflation = inflation(h);
 
-        //    kind          the series                       the condition      worst is  the name
-        named(found, axis, "financial", h.aligned("bankEquity"), v -> v < 0,     false, "Financial crisis of %d");
-        named(found, axis, "recession", realGrowth(h),           v -> v < 0,     false, "Recession of %d");
-        named(found, axis, "currency",  currencyMove(h),         v -> v > 2,     true,  "Currency crisis of %d");
-        named(found, axis, "inflation", inflation,               v -> v > .25,   true,  "The %d inflation");
-        named(found, axis, "deflation", inflation,               v -> v < -.10,  false, "The %d deflation");
-        named(found, axis, "epidemic",  h.aligned("sickRate"),   v -> v > .10,   true,  "Epidemic of %d");
-        named(found, axis, "treasury",  h.aligned("cash"),       v -> v < 0,     false, "Treasury crisis of %d");
-        named(found, axis, "slump",     unemployment(h),         v -> v > .20,   true,  "The %d slump");
+        //    kind          the series                       the condition                   worst is  the name
+        named(found, axis, "financial", h.aligned("bankEquity"), v -> v < FINANCIAL_EQUITY,    false, "Financial crisis of %d");
+        named(found, axis, "recession", realGrowth(h),           v -> v < RECESSION_GROWTH,    false, "Recession of %d");
+        named(found, axis, "currency",  currencyMove(h),         v -> v > CURRENCY_MOVE,       true,  "Currency crisis of %d");
+        named(found, axis, "inflation", inflation,               v -> v > INFLATION_EPISODE,   true,  "The %d inflation");
+        named(found, axis, "deflation", inflation,               v -> v < DEFLATION_EPISODE,   false, "The %d deflation");
+        named(found, axis, "epidemic",  h.aligned("sickRate"),   v -> v > EPIDEMIC_SICK,       true,  "Epidemic of %d");
+        named(found, axis, "treasury",  h.aligned("cash"),       v -> v < TREASURY_CASH,       false, "Treasury crisis of %d");
+        named(found, axis, "slump",     unemployment(h),         v -> v > SLUMP_UNEMPLOYMENT,  true,  "The %d slump");
 
         // A recession that ran two years is a depression, and is called one.
         for (int i = 0; i < found.size(); i++) {
@@ -1075,7 +1111,7 @@ public final class YearBook {
             if (e.kind().equals("recession") && e.toMonth() - e.fromMonth() + 1 >= DEPRESSION_MONTHS) {
                 found.set(i, new Episode("depression",
                         String.format(Locale.ROOT, "Depression of %d", CityCalendar.yearOf(e.fromMonth())),
-                        e.fromMonth(), e.toMonth(), e.worst()));
+                        e.fromMonth(), e.toMonth(), e.worst(), e.worstMonth()));
             }
         }
 
@@ -1088,7 +1124,7 @@ public final class YearBook {
             Episode e = found.get(i);
             if (!seen.add(e.name())) {
                 found.set(i, new Episode(e.kind(), e.name() + ", again",
-                        e.fromMonth(), e.toMonth(), e.worst()));
+                        e.fromMonth(), e.toMonth(), e.worst(), e.worstMonth()));
             }
         }
         return found;
@@ -1105,14 +1141,120 @@ public final class YearBook {
     public static List<int[]> recessions(HistorySave h) {
         List<int[]> out = new ArrayList<>();
         List<Integer> axis = h.getMonth();
-        for (int[] r : runsOf(realGrowth(h), v -> v < 0)) {
+        for (int[] r : runsOf(realGrowth(h), v -> v < RECESSION_GROWTH)) {
             if (r[1] - r[0] + 1 >= EPISODE_MIN_MONTHS) out.add(new int[]{axis.get(r[0]), axis.get(r[1])});
         }
         return out;
     }
 
-    /** The rolling year of real output against the year before it, as a fraction. */
-    private static double[] realGrowth(HistorySave h) {
+    /**
+     * One recession band as the chart labels it (0.7.23): its months - one
+     * of recessions(), exactly - how deep real output fell inside it and in
+     * which month, and the recession or depression it belongs to, whose
+     * name it carries. Two bands with fewer than EPISODE_JOIN_MONTHS of
+     * relief between them are one episode, so both carry its name.
+     *
+     * @param depth      real output's worst year-on-year fall inside the
+     *                   band, as a fraction (negative)
+     * @param depthMonth the month of it, on the history's axis
+     * @param episode    the episode that holds the band; null only if none
+     *                   does, which the table's order makes impossible
+     */
+    public record Band(int fromMonth, int toMonth, double depth, int depthMonth, Episode episode) {
+        /** How many months the band covers. */
+        public int months() { return toMonth - fromMonth + 1; }
+        /** The name it carries on the chart: its episode's. */
+        public String name() { return episode == null ? "Recession" : episode.name(); }
+    }
+
+    /** Every recession band, oldest first, with its depth and its episode: recessions(), told about (0.7.23). Reads. */
+    public static List<Band> recessionBands(HistorySave h) {
+        List<Band> out = new ArrayList<>();
+        if (h.months() < 1) return out;
+        List<Integer> axis = h.getMonth();
+        double[] growth = realGrowth(h);
+        List<Episode> episodes = episodes(h);
+        for (int[] run : recessions(h)) {
+            double depth = Double.NaN;
+            int depthMonth = run[0];
+            for (int i = 0; i < axis.size(); i++) {
+                int m = axis.get(i);
+                if (m < run[0] || m > run[1] || Double.isNaN(growth[i])) continue;
+                if (Double.isNaN(depth) || growth[i] < depth) { depth = growth[i]; depthMonth = m; }
+            }
+            Episode holds = null;
+            for (Episode e : episodes) {
+                boolean recession = e.kind().equals("recession") || e.kind().equals("depression");
+                if (recession && e.fromMonth() <= run[0] && run[1] <= e.toMonth()) { holds = e; break; }
+            }
+            out.add(new Band(run[0], run[1], depth, depthMonth, holds));
+        }
+        return out;
+    }
+
+    /**
+     * The rule that names an episode of this kind, in words (0.7.23) - what
+     * the chart says a band or a span is, from the table's own thresholds.
+     * Every kind also needs EPISODE_MIN_MONTHS in a row, and runs fewer
+     * than EPISODE_JOIN_MONTHS apart are one: see triggerFooter().
+     */
+    public static String trigger(String kind) {
+        return switch (kind == null ? "" : kind) {
+            case "financial"  -> "the bank's equity went below zero: it had failed";
+            case "recession"  -> "real output over a rolling year fell below the year before";
+            case "depression" -> String.format(Locale.ROOT, "a recession that ran %d months or more", DEPRESSION_MONTHS);
+            case "currency"   -> String.format(Locale.ROOT,
+                    "the exchange rate passed %s times its level a year before: the currency lost half its value",
+                    compact(CURRENCY_MOVE));
+            case "inflation"  -> "prices rose faster than " + DecisionLog.pct(INFLATION_EPISODE) + " a year";
+            case "deflation"  -> "prices fell faster than " + DecisionLog.pct(-DEFLATION_EPISODE) + " a year";
+            case "epidemic"   -> "more than " + DecisionLog.pct(EPIDEMIC_SICK) + " of the workforce was off sick";
+            case "treasury"   -> "the treasury's cash went below zero: it was overdrawn";
+            case "slump"      -> "more than " + DecisionLog.pct(SLUMP_UNEMPLOYMENT) + " of the labour force was out of work";
+            default           -> "";
+        };
+    }
+
+    /** The two rules every kind shares, in words: how long it must last, and what joins two into one. */
+    public static String triggerFooter() {
+        return String.format(Locale.ROOT, "for %d months or more; spells under %d months apart count as one",
+                EPISODE_MIN_MONTHS, EPISODE_JOIN_MONTHS);
+    }
+
+    /** Whether an episode of this kind is at its worst when its figure is HIGHEST - a peak - rather than lowest - a depth. */
+    public static boolean worstIsHigh(String kind) {
+        return switch (kind == null ? "" : kind) {
+            case "currency", "inflation", "epidemic", "slump" -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * An episode's worst reading, in words, from the episode's own record
+     * (0.7.23): "real output 3.1% below the year before", "inflation at 31%
+     * a year". Money in the model's thousands, as the screens print it.
+     */
+    public static String worstWords(String kind, double worst) {
+        if (Double.isNaN(worst)) return "not recorded";
+        return switch (kind == null ? "" : kind) {
+            case "financial"               -> "the bank's equity at " + Formats.INSTANCE.amount(worst);
+            case "recession", "depression" -> "real output " + DecisionLog.pct(-worst) + " below the year before";
+            case "currency"                -> "the rate at " + compact(worst) + " times its level a year before";
+            case "inflation"               -> "inflation at " + DecisionLog.pct(worst) + " a year";
+            case "deflation"               -> "prices falling " + DecisionLog.pct(-worst) + " a year";
+            case "epidemic"                -> DecisionLog.pct(worst) + " of the workforce off sick";
+            case "treasury"                -> "the treasury's cash at " + Formats.INSTANCE.amount(worst);
+            case "slump"                   -> DecisionLog.pct(worst) + " out of work";
+            default                        -> compact(worst);
+        };
+    }
+
+    /**
+     * The rolling year of real output against the year before it, as a
+     * fraction; NaN until two years are recorded. Public since 0.7.21: the
+     * header's GDP tile reads its last month. Reads; changes nothing.
+     */
+    public static double[] realGrowth(HistorySave h) {
         double[] year = realGdpYear(h);
         double[] out = new double[year.length];
         for (int i = 0; i < out.length; i++) {
@@ -1145,14 +1287,15 @@ public final class YearBook {
         }
         for (int[] r : joined) {
             double worst = Double.NaN;
+            int worstAt = r[0];
             for (int i = r[0]; i <= r[1]; i++) {
                 double v = series[i];
                 if (Double.isNaN(v) || !test.holds(v)) continue;
-                if (Double.isNaN(worst) || (worstIsHigh ? v > worst : v < worst)) worst = v;
+                if (Double.isNaN(worst) || (worstIsHigh ? v > worst : v < worst)) { worst = v; worstAt = i; }
             }
             int from = axis.get(r[0]);
             found.add(new Episode(kind, String.format(Locale.ROOT, name, CityCalendar.yearOf(from)),
-                    from, axis.get(r[1]), worst));
+                    from, axis.get(r[1]), worst, axis.get(worstAt)));
         }
     }
 

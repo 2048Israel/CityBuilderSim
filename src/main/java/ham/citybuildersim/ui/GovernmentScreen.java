@@ -28,8 +28,9 @@ import static ham.citybuildersim.ui.Levers.*;
  * Split out of UserInterface on 2026-09-18: the four banners from THE
  * GOVERNMENT to WHAT THE DEBT COSTS exactly as they were, the shell's members
  * reached through ui. The rail keeps no place inside this tab; the one thing
- * the shell touches is govPage, which the income dome sets to Overview before
- * it opens the tab.
+ * the shell touched was govPage, which the income dome set to Overview before
+ * it opened the tab. The dome went in 0.7.21 and nothing outside the tab sets
+ * it now.
  */
 final class GovernmentScreen {
 
@@ -285,9 +286,7 @@ final class GovernmentScreen {
         EconomyManager em = ui.game.getEconomyManager();
         NationalAccounts na = em.getNationalAccounts();
 
-        Label title = new Label("GOVERNMENT ECONOMY");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("GOVERNMENT ECONOMY");
 
         HBox vitals = governmentVitals(em, na);
 
@@ -313,10 +312,16 @@ final class GovernmentScreen {
         ui.rootMenu.getChildren().addAll(title, vitals, strip, ui.scrolled(column, 250));
     }
 
-    /** What a share of the year's output comes to, in words. */
+    /**
+     * What a share of the year's output comes to, in words - and against
+     * which year: "of GDP, annualised" until twelve months are recorded
+     * (0.7.20; Pieces.ofAnnualGdp()). annualGdp() was already scaled up from
+     * the months there are; the words said "annual" regardless.
+     */
     String ofGdp(double monthly, double annualGdp) {
         if (annualGdp <= 0) return "no output to compare";
-        return String.format("%.1f%% of annual GDP", monthly * 12 / annualGdp * 100);
+        return String.format("%.1f%% %s", monthly * 12 / annualGdp * 100,
+                ofAnnualGdp(ui.game.getEconomyManager().getNationalAccounts()));
     }
 
     HBox governmentVitals(EconomyManager em, NationalAccounts na) {
@@ -341,7 +346,7 @@ final class GovernmentScreen {
                         balance >= 0 ? Palette.GOOD : Palette.BAD),
                 limitCell("OWED", tightMoney(toDollars(debt)),
                         annual > 0
-                                ? String.format("%.0f%% of annual GDP", debt / annual * 100)
+                                ? String.format("%.0f%% %s", debt / annual * 100, ofAnnualGdp(na))
                                 : "no output to compare",
                         annual > 0 && debt / annual > 1.2 ? Palette.BAD
                                 : annual > 0 && debt / annual > .6 ? Palette.WARN
@@ -357,10 +362,12 @@ final class GovernmentScreen {
         double balance = na.getBalance();
         double annual = annualGdp(na);
 
+        // Colours told apart (0.7.21): the revenue ring's three biggest were
+        // three steps of one blue. See Palette.CATEGORIES.
         java.util.List<Slice> inSlices = topSlices(
-                revenueNames(), revenueAmounts(em, na), Palette.REVENUE_RAMP);
+                revenueNames(), revenueAmounts(em, na), Palette.CATEGORIES);
         java.util.List<Slice> outSlices = topSlices(
-                spendingNames(), spendingAmounts(em, na), Palette.SPENDING_RAMP);
+                spendingNames(), spendingAmounts(em, na), Palette.CATEGORIES);
 
         /* ------------------------------ the two rings ------------------------------ */
         VBox inBox = new VBox(Palette.GAP,
@@ -471,8 +478,9 @@ final class GovernmentScreen {
                     change >= 0 ? Palette.GOOD : Palette.BAD));
 
             column.getChildren().add(sentence(
-                    "That is the figure on the button, and it is not the surplus above. "
-                    + "Here is the difference between them, line by line.",
+                    "That is the \"banked\" figure on the header's TREASURY tile, in its tooltip "
+                    + "and behind its (i), and it is not the surplus above. Here is the difference "
+                    + "between them, line by line.",
                     Palette.TEXT_MUTED));
 
             javafx.scene.layout.GridPane bridge = grid(
@@ -506,23 +514,26 @@ final class GovernmentScreen {
                             + tightMoney(toDollars(Math.abs(change)), false),
                     change >= 0 ? Palette.GOOD : Palette.BAD));
 
-            column.getChildren().add(statementNote(journal.isEmpty()
-                    ? "The last row is everything that moves cash without being a budget "
-                    + "line \u2014 reserves, capital put into the bank, bonds bought back, "
-                    + "the students' loans \u2014 and any movement the books date to a "
-                    + "different month from the money. This month nothing of the kind was "
-                    + "recorded, so the row has nothing to open. It is printed rather than "
-                    + "folded into a total, because a bridge that hides its own gap is not "
-                    + "a bridge."
-                    : "The last row opens into the month's movements that are not a budget "
-                    + "line, each by name: reserves, capital put into the bank, bonds bought "
-                    + "back, the students' loans, and the two the budget balance leaves out "
-                    + "(the city's own repairs and the transit fares). \u201cNot accounted "
-                    + "for\u201d is what is left after them \u2014 timing between the books "
-                    + "and the money, such as a coupon booked the month it is charged and "
-                    + "paid the month after, and anything not yet journalled \u2014 printed "
-                    + "rather than folded in, because a bridge that hides its own gap is not "
-                    + "a bridge."));
+            // In two layers since 0.7.21, in the mockups' words (TextLayers.dc.html).
+            HBox lastRow = journal.isEmpty()
+                    ? infoLine("Other cash moves: none this month.",
+                            "Money that moves without being a budget line: reserves, capital put "
+                            + "into the bank, bonds bought back, students' loans, and timing "
+                            + "differences.",
+                            true, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, STATEMENT - 16)
+                    : infoLine("Other cash moves: the last row opens into them, by name.",
+                            "The last row opens into the month's movements that are not a budget "
+                            + "line, each by name: reserves, capital put into the bank, bonds bought "
+                            + "back, the students' loans, and the two the budget balance leaves out "
+                            + "(the city's own repairs and the transit fares). \u201cNot accounted "
+                            + "for\u201d is what is left after them \u2014 timing between the books "
+                            + "and the money, such as a coupon booked the month it is charged and "
+                            + "paid the month after, and anything not yet journalled \u2014 printed "
+                            + "rather than folded in, because a bridge that hides its own gap is not "
+                            + "a bridge.",
+                            true, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, STATEMENT - 16);
+            lastRow.setStyle("-fx-padding: 0 0 6 14;");
+            column.getChildren().add(lastRow);
 
             if (Math.abs(rest) > Math.abs(booked) && Math.abs(rest) > .5) {
                 TreasuryJournal.Entry biggest = null;
@@ -627,8 +638,8 @@ final class GovernmentScreen {
                     tightMoney(toDollars(heads > 0 ? annual / heads : 0), false)));
             double debt = ui.game.getDebtManager().getAllPrincipal();
             column.getChildren().add(statementLine("Total debt",
-                    String.format("%s   ·   %.0f%% of GDP",
-                            tightMoney(toDollars(debt)), debt / annual * 100),
+                    String.format("%s   ·   %.0f%% %s",
+                            tightMoney(toDollars(debt)), debt / annual * 100, ofAnnualGdp(na)),
                     debt / annual > 1.2 ? Palette.BAD : null));
             column.getChildren().add(statementNote(
                     "A month of revenue against a year of output is the only honest way to "
@@ -1093,7 +1104,7 @@ final class GovernmentScreen {
          * detail. Anything outside the top five has no colour rather than a
          * wrong one. */
         java.util.Map<String, String> colours = new java.util.HashMap<>();
-        for (Slice s : topSlices(names, amounts, Palette.REVENUE_RAMP)) {
+        for (Slice s : topSlices(names, amounts, Palette.CATEGORIES)) {
             colours.put(s.name(), s.colour());
         }
 
@@ -1111,6 +1122,21 @@ final class GovernmentScreen {
                         + "that line's own share of the year's output.",
                         ofGdp(total, annual))
                 : "There is not a year of output recorded yet, so the GDP column is empty."));
+        scaledYearNote(column, na);
+    }
+
+    /**
+     * Under a budget list whose "of GDP" column is against a year scaled up
+     * from fewer than twelve months (0.7.20): the note the overview and
+     * Finances already give, so the column says which year it is read
+     * against - its head has no room for the word.
+     */
+    void scaledYearNote(VBox column, NationalAccounts na) {
+        if (!gdpEstimated(na)) return;
+        column.getChildren().add(statementNote(String.format(
+                "The GDP column is against a year scaled up from the %d months of output "
+                + "recorded so far, not a year measured. It settles as the twelfth month goes by.",
+                na.getMonthsRecorded())));
     }
 
     VBox revenueDetail(String name, double amount) {
@@ -1404,7 +1430,7 @@ final class GovernmentScreen {
         column.getChildren().add(budgetHead(CityCalendar.format(ui.game.getMonth())));
 
         java.util.Map<String, String> colours = new java.util.HashMap<>();
-        for (Slice s : topSlices(names, amounts, Palette.SPENDING_RAMP)) {
+        for (Slice s : topSlices(names, amounts, Palette.CATEGORIES)) {
             colours.put(s.name(), s.colour());
         }
 
@@ -1427,6 +1453,7 @@ final class GovernmentScreen {
 
         column.getChildren().add(statementTotal("Paid out altogether",
                 tightMoney(toDollars(total), false), Palette.WARN));
+        scaledYearNote(column, na);
 
         /* ========================= WHAT THE DEBT IS COSTING =========================
          *

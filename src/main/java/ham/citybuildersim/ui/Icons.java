@@ -21,7 +21,9 @@ package ham.citybuildersim.ui;
  *
  * These are eleven different objects: a building, a plot of land, a group of
  * people, a heartbeat, a factory, a parliament, a coin, a globe, a set of
- * scales, a graph, a gear. Nobody has to learn them.
+ * scales, a graph, a gear. Nobody has to learn them - and since 0.7.21 each
+ * has its name under it on the rail, the gear is three lines (Menu), and the
+ * header's envelope and the (i) beside a short line are drawn the same way.
  *
  * SOURCE AND LICENCE
  *
@@ -144,7 +146,18 @@ public final class Icons {
             "M3 3v16a2 2 0 0 0 2 2h16"
           + "M19 9 l-5 5 -4-4 -3 3";
 
-    /** A gear. */
+    /** Three lines: the game menu, at the foot of the rail since 0.7.21 (it was the gear). */
+    public static final String MENU = "M4 7h16 M4 12h16 M4 17h16";
+
+    /** An envelope: the inbox, in the header since 0.7.21. The mockups' outline. */
+    public static final String MAIL = "M4 6h16v12H4z M4 7l8 6 8-6";
+
+    /** A circled i: the (i) that opens a line's full text (0.7.21; Pieces.infoButton()). */
+    public static final String INFO =
+            "M3 12 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0"
+          + "M12 11v5 M12 8h.01";
+
+    /** A gear. Nothing draws it since 0.7.21: the rail's foot is Menu. */
     public static final String SETTINGS =
             "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915"
           + "a2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831"

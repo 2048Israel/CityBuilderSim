@@ -720,9 +720,9 @@ public final class Rail extends Sector {
         lines.add(Line.head("The quote"));
         lines.add(Line.of("Charged", String.format("%.0f%% of the lorry rate", quote * 100),
                 quote < .5 ? Line.Tone.GOOD : quote > .85 ? Line.Tone.WARN : Line.Tone.NONE));
-        lines.add(Line.of("A lorry charges", f.cash(lorryRatePerTonne()) + " a tonne"));
-        lines.add(Line.of("Haulage billed", f.cash(rHaulage)));
-        lines.add(Line.of("Fuel", f.cash(rFuel), Line.Tone.MUTED));
+        lines.add(Line.of("A lorry charges", f.amount(lorryRatePerTonne()) + " a tonne"));
+        lines.add(Line.of("Haulage billed", f.amount(rHaulage)));
+        lines.add(Line.of("Fuel", f.amount(rFuel), Line.Tone.MUTED));
 
         if (rCapacity <= 0) {
             lines.add(Line.note("There is no railway. Everything the city trades goes by "

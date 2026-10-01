@@ -131,9 +131,7 @@ final class BankScreen {
 
         Bank bank = ui.game.getBank();
 
-        Label title = new Label("THE COMMERCIAL BANK");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("THE COMMERCIAL BANK");
 
         Label lead = new Label("Every loan in the city is its money, priced from what it "
                 + "costs the bank to make.");
@@ -355,8 +353,7 @@ final class BankScreen {
             band.getChildren().add(tick);
             if (labelled) {
                 Label at = new Label(share(marks[i]));
-                at.setStyle(Palette.figure(Palette.SIZE_CAPTION, i == 1 ? Palette.TEXT_BODY : Palette.TEXT_LABEL)
-                        + " -fx-font-weight: normal;");
+                at.setStyle(Palette.figureRegular(Palette.SIZE_CAPTION, i == 1 ? Palette.TEXT_BODY : Palette.TEXT_LABEL));
                 at.setLayoutX(Math.max(0, Math.min(width - 36, x - 14)));
                 at.setLayoutY(BAR + 5);
                 band.getChildren().add(at);
@@ -681,9 +678,7 @@ final class BankScreen {
 
     void drawBankScreen() {
 
-        Label title = new Label("THE BANK — " + bankPage.toUpperCase());
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("THE BANK — " + bankPage.toUpperCase());
 
         javafx.scene.layout.FlowPane strip =
                 chipStrip(BANK_PAGE_NAMES, bankPage, Palette.SIZE_LABEL, name -> {
@@ -1281,7 +1276,10 @@ final class BankScreen {
             column.getChildren().add(t);
         }
         double watch = Bank.SECTOR_WATCH_LEVERAGE, point = BusinessDebtManager.INSOLVENCY_TRIGGER;
-        column.getChildren().add(statementNote(String.format(
+        // In two layers since 0.7.22 (the text cut): the line, and the whole note behind its (i).
+        column.getChildren().add(statementNote(
+                "Pays: its next loan's rate. Leverage: what it owes over what it owns.",
+                String.format(
                 "\"Pays\" is what its next loan would cost it. Leverage is what a business owes over what "
                 + "it owns, and \"a year\" is the share of its firms that default within a year there - "
                 + "%s at %.2f, %s at %.2f, half at %.2f, where a firm owes more than it could ever repay. "
@@ -2163,7 +2161,10 @@ final class BankScreen {
                     + "most it may ask; the %s it is still short of its target is left to its own share issues.",
                     Bank.PREFERRED_MAX_SHARE * 100, marked(here, money(bank.preferredOfferShortOfTarget())))));
         }
-        block.getChildren().add(statementNote(String.format("The terms: its dividend is cumulative - what the "
+        // In two layers since 0.7.22 (the text cut): the line, and the whole of the terms behind its (i).
+        block.getChildren().add(statementNote(
+                "Cumulative dividend; repaid at par at three years; warrants after.",
+                String.format("The terms: its dividend is cumulative - what the "
                 + "bank cannot pay accrues - and no common dividend is paid while any is owed. For three years it "
                 + "buys back none of its shares and raises no dividend a share. It counts in the bank's capital, "
                 + "ahead of its common. At its third anniversary the bank repays it at par with any dividends still "
@@ -2256,16 +2257,19 @@ final class BankScreen {
         }
 
         column.getChildren().add(statementHead("Its rates"));
-        column.getChildren().add(trendChart(
+        // The policy rate in the grey a reference line is drawn in; savers in the
+        // people's teal, prime in the money blue (0.7.23: savers were the old
+        // SERIES' lilac, a palette with the three verdicts in it).
+        column.getChildren().add(trendChart(h.getMonth(),
                 new String[] {"The policy rate", "What savers got", "Prime"},
                 new double[][] {h.aligned("policyRate"), h.aligned("bankDepositRate"), h.aligned("bankPrime")},
-                new String[] {Palette.TEXT_MUTED, Palette.SERIES[4], Palette.ACCENT},
+                new String[] {Palette.TEXT_MUTED, Palette.PEOPLE, Palette.MONEY},
                 BankScreen::rate));
         column.getChildren().add(statementNote(
                 "Prime sits over the policy rate by the bank's costs; savers under it by its margin on a deposit."));
 
         column.getChildren().add(statementHead("Its capital against its target"));
-        column.getChildren().add(trendChart(
+        column.getChildren().add(trendChart(h.getMonth(),
                 new String[] {"Capital ratio", "Its target"},
                 new double[][] {h.aligned("bankCapitalRatio"), h.aligned("bankCapitalTarget")},
                 new String[] {Palette.ACCENT, Palette.TEXT_MUTED},
@@ -2282,7 +2286,7 @@ final class BankScreen {
                 underMinimum > 0 ? Palette.BAD : Palette.GOOD));
 
         column.getChildren().add(statementHead("Its return on equity"));
-        column.getChildren().add(trendChart(
+        column.getChildren().add(trendChart(h.getMonth(),
                 new String[] {"Return on equity"},
                 new double[][] {h.aligned("bankReturnOnEquity")},
                 new String[] {Palette.ACCENT},
@@ -2296,10 +2300,12 @@ final class BankScreen {
                 losing + " of " + h.monthsRecorded("bankProfit"), losing > 0 ? Palette.WARN : Palette.GOOD));
 
         column.getChildren().add(statementHead("What it set aside, and what it wrote off"));
-        column.getChildren().add(trendChart(
+        // Two of the money area's lines (0.7.23): amber and red were series
+        // colours here, and a chart's line is not a verdict.
+        column.getChildren().add(trendChart(h.getMonth(),
                 new String[] {"Provisions", "Written off"},
                 new double[][] {h.aligned("bankProvisions"), h.aligned("bankWriteOffs")},
-                new String[] {Palette.WARN, Palette.BAD}));
+                Palette.lineColours(List.of(Palette.MONEY, Palette.MONEY))));
         column.getChildren().add(statementLine("Its worst year of provisions", moneyFull(h.worstYear("bankProvisions")),
                 Palette.WARN));
         column.getChildren().add(statementLine("...as its capital target reads it",
@@ -2309,16 +2315,17 @@ final class BankScreen {
                 + "A whole business sector is one borrower in this city, so losses come in lumps."));
 
         column.getChildren().add(statementHead("What it lent, against what it could"));
-        column.getChildren().add(trendChart(
+        column.getChildren().add(trendChart(h.getMonth(),
                 new String[] {"Lent out", "What it could carry", "Deposits"},
                 new double[][] {h.aligned("bankLent"), h.aligned("bankCapacity"), h.aligned("bankDeposits")},
-                new String[] {Palette.LADDER[2], Palette.GOOD, Palette.RAMP_REST}));
+                // What it could carry is a ceiling, not good news (0.7.21): it was green.
+                new String[] {Palette.LADDER[2], Palette.PEOPLE, Palette.RAMP_REST}));
         column.getChildren().add(statementNote(
                 "Lent out is at face; what it could carry is measured against the risk-weighted book, "
-                + "so a book of city bonds can sit above the green line and still leave room."));
+                + "so a book of city bonds can sit above the teal line and still leave room."));
 
         column.getChildren().add(statementHead("Its fees"));
-        column.getChildren().add(trendChart(
+        column.getChildren().add(trendChart(h.getMonth(),
                 new String[] {"Fees a month"},
                 new double[][] {h.aligned("bankFees")},
                 new String[] {Palette.ACCENT}));

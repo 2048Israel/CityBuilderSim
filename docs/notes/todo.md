@@ -1,6 +1,6 @@
 # The list — what is open
 
-Updated 2026-09-30 (0.7.19, the price keeps up — round 3 of Jerus's fixes: the builders' labour at today's wages with an escalation clause and the sales tax in the quote (business credits, the purpose-built rental rebate, the city's tax coming home), the grant a real amount at the price index for new cities, the bank's branches by their customers with the charter exempt from the fee rule and its upkeep and the deposit cap gone, Luxury's markup on the buyers at its price; built and gated, to deploy as tag 0930a; the held-25% city's collapse is Jerus's call; before it 0.7.18, workers take the best-paid job — round 2 of Jerus's fixes: every planner that builds posts checks staffing, "truly unfillable" bands only, workers taking the best-paid job they qualify for, some unskilled migrants for a dear wage; deployed and verified with 0.7.17 as one commit, tag 0929a (287 files); round 3 (0.7.19, prices) is built and measured badly, waiting on Jerus's decisions; before it 0.7.17, the crew a building can use — round 1 of Jerus's fixes from his 0.7.14 city: Bromilow-weighted crews and nothing parked, the builders counting repairs and staffing, the landlords holding 12 months of work, arrivals bounded by room, payroll by job type with idle crews laid off; before it 0.7.16, the year book as CSV beside the text — four CSV files from one table, the text unchanged; deployed and verified as tag 0928c; next is 0.7.17, Jerus's fixes from his 0.7.14 city in three rounds, then HealthCheck's own batch; before it 0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy deployed as tag 0928b; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-10-01 (the manual brought to 0.7.23, published as version 11 and its tree copy deployed as tag 1001e, see `the-manual-at-0-7-23.md`; before it 0.7.23, the chart you can move — the last interface batch, built while Jerus slept; deployed and verified as tag 1001c (66 files); 0.7.21 to 0.7.23 still to be seen on the PC; the four interface batches are done, and next is the check by eye and HealthCheck's own batch; before it 0.7.22, the player takes the queue — the construction panel with priority, rush, cancel, demolish and buy-outs, built while Jerus slept; deployed and verified as tag 1001b (72 files), not yet seen on the PC; 0.7.23 (the charts) is next; before it 0.7.21, a front door and a dashboard — colour, the header, the main menu and the founding screen, the model untouched; deployed and verified as tag 1001a (283 files), not yet seen on the PC; before it 0.7.20, the page stays put — the interface's bugs and its layout, the first of four batches from the play-through of 0.7.19, the model untouched; deployed and verified as tag 0930b, checked by eye with two fixes the same night; 0.7.21 (colour, the header, the menu, the founding screen) is next; before it 0.7.19, the price keeps up — round 3 of Jerus's fixes: the builders' labour at today's wages with an escalation clause and the sales tax in the quote (business credits, the purpose-built rental rebate, the city's tax coming home), the grant a real amount at the price index for new cities, the bank's branches by their customers with the charter exempt from the fee rule and its upkeep and the deposit cap gone, Luxury's markup on the buyers at its price; deployed and verified as tag 0930a (269 files); the held-25% city's collapse accepted ("Let it fail"); before it 0.7.18, workers take the best-paid job — round 2 of Jerus's fixes: every planner that builds posts checks staffing, "truly unfillable" bands only, workers taking the best-paid job they qualify for, some unskilled migrants for a dear wage; deployed and verified with 0.7.17 as one commit, tag 0929a (287 files); round 3 (0.7.19, prices) is built and measured badly, waiting on Jerus's decisions; before it 0.7.17, the crew a building can use — round 1 of Jerus's fixes from his 0.7.14 city: Bromilow-weighted crews and nothing parked, the builders counting repairs and staffing, the landlords holding 12 months of work, arrivals bounded by room, payroll by job type with idle crews laid off; before it 0.7.16, the year book as CSV beside the text — four CSV files from one table, the text unchanged; deployed and verified as tag 0928c; next is 0.7.17, Jerus's fixes from his 0.7.14 city in three rounds, then HealthCheck's own batch; before it 0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy deployed as tag 0928b; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
@@ -17,6 +17,10 @@ has been away reads the changelog's top block and section 0 here, then works.
   version 10, see `the-manual-at-0-7-15.md`. `docs/manual.md`,
   `docs/manual.html` and the three `docs/notes/` copies deployed and verified
   the same day as tag 0928b.
+- ~~**NEXT: THE MANUAL, FROM 0.7.15 TO 0.7.23**~~ — published
+  2026-10-01 as version 11, see `the-manual-at-0-7-23.md`; `docs/manual.md`,
+  `docs/manual.html` and the three `docs/notes/` copies deployed and verified
+  the same day as tag 1001e.
 - **FOUND IN JERUS'S 0.7.14 CITY** (his year book, 2026-09-28, copy in
   the cloud at `runs/yb0714/year-book.txt`). The city ran 150 years to 1.05M
   people with no bank failure; 0.7.15 would have played it the same unless the
@@ -207,7 +211,7 @@ has been away reads the changelog's top block and section 0 here, then works.
       - "Leave as the law has it (Recommended)": landlords' repairs keep
         paying the tax (rent is exempt).
     — **built and gated as 0.7.19, 2026-09-30, see `the-price-keeps-up.md`;
-    to deploy as tag 0930a.** With the charter exempt, bank failures are back
+    deployed and verified as tag 0930a, 269 files.** With the charter exempt, bank failures are back
     at 0.7.18's level (default 6 → 4, schools 4 → 4) and end populations
     within the seeds' spread (169,978 and 173,280). The held-25% city still
     collapses (8,168 → 428): it lived on the deposit cap's strain and the
@@ -220,6 +224,142 @@ has been away reads the changelog's top block and section 0 here, then works.
   household row paid for (the documented shortcut in `HouseholdBalance`, THE
   PRICE AT THE CLINIC DOOR); 46% had money for food after their fixed bills
   and still planned less — untraced, and the first thing to trace.
+  - **TRACED 2026-10-01** (while Jerus slept; nothing changed), see
+    `why-the-dear-city-is-hungrier.md`. The gap went 8.4 → 77 at 0.7.17 and
+    is 40.0 at 0.7.23. 0.7.17's crews by size^0.7 with the builders reading
+    output after repairs leave the fixture's first depot on site when the fee
+    is set; the dear twin's sickness then stalls its builders for good, so it
+    never grows and its shops end banned with an empty till. The "46%" never
+    planned less: the hunger line rations every plan by one city-wide share
+    (`HouseholdBalance` L879). On 0.7.23 the dear city's hunger is the
+    unhoused (21.0 points), families billed their row's share of care above
+    their own decision (10.5) and single seniors paying care on credit until
+    locked out (7.1). **For Jerus:** O1 stand one depot with the fixture
+    (gap 40.0 → 1.0, premise and tolerance untouched; round 1 did this for
+    eight fixtures) — recommended; O2 bill care by the heads who paid; O3 the
+    clinic door without open credit (reverses his 2026-09-19 call); O4 feed
+    everyone's first basket before anyone's want above it; O5 a banned firm
+    can finance its stock (item below). Nothing applied.
+- **UI NOTES FROM PLAYING 0.7.19, 2026-09-30** (`playing-0-7-19-ui-notes.md`;
+  Jerus asked for a play-through for the interface only, nothing changed).
+  Likely bugs:
+  - the founding screen lists a 60-house village that "Found the city" does
+    not build (it is the playtest's own);
+  - City History opens scrolled to the bottom;
+  - Esc does not open the menu from the Build tab;
+  - "no year yet" still shows at month 13;
+  - a building on site is invisible on its build card, and "Needs you" still
+    asks for it;
+  - the build-time quote drifts from ~5 to ~9 months;
+  - tooltips have no background;
+  - "−0.0" people;
+  - GDP ratios before a year exists.
+
+  Layout: the vertically centred block jumps under the mouse; the net-income
+  bubble covers the bottom of scrolled pages; toasts stay on top of the
+  strips. Wording and ideas are in the note.
+  - **Jerus agreed the plan, 2026-09-30** (the note's §6):
+    - text in three layers (on screen, one click away, the manual);
+    - colour by area, with red/amber/green only for good or bad;
+    - a header of 5–6 headline numbers with sparklines, GDP among them;
+    - Yahoo-style charts: pan, zoom, range buttons, an overview strip,
+      years on the axis, a legend, **full screen**, labelled crisis bands
+      and event markers including the player's decisions;
+    - a real construction panel, plus **reprioritise, cancel and
+      player-ordered demolition** (new gameplay, mechanics to design and
+      source).
+
+    Order: bugs and layout, then colour and header, then construction,
+    then charts, then the text cut alongside. Mockups first.
+  - **Mockups made, 2026-09-30:** the canvas "CityBuilderSim UI mockups"
+    (seven artboards: main window, construction, demolish, history, full-screen
+    chart, text layers, colour; the note's §7). Waiting on Jerus's comments.
+  - **Jerus, 2026-09-30: "that is damn pretty, go for it".** His answers on
+    the open mechanics:
+    - **Founding village:** "3. but even the screen shouldnt say what the
+      money could buy, the start screen should be real simple, and also the
+      menu screen should get an uprage, cause thats the first thing players
+      see and currently its bland as hell". So no village is placed, the
+      founding screen loses the "what it buys" breakdown, and the main menu
+      and founding screen get a redesign (mockups first).
+    - **Priority: "Both".** Order the city's own sites for free, and rush a
+      site to the front of the whole queue by paying overtime (the premium
+      to be sourced).
+    - **Cancel: "Keep the half-built shell".** Termination for convenience
+      (FAR 52.249-2): pay for the work and material used plus wind-down
+      costs, get the rest back. The shell stays on its land until restarted
+      or demolished.
+    - **Demolish: "City's, plus buy-outs (Recommended)".** The city's own
+      buildings freely; a business's or landlord's only after a compulsory
+      purchase at market value. Demolition cost and salvage from real
+      figures.
+    - **Batches:**
+      - 0.7.20: the bugs and the layout;
+      - 0.7.21: colour, the header, the menu and the founding screen;
+      - 0.7.22: the construction panel with priority, rush, cancel and
+        demolish;
+      - 0.7.23: the charts;
+      - the text cut screen by screen alongside.
+    - **0.7.20 built, 2026-09-30** (`the-page-stays-put.md`): all nineteen
+      of the bugs and the layout. Two causes were not where the notes
+      guessed: a showing tooltip swallowed Esc, and "no year yet" was the
+      model's basket, not a year (the first rate is about month 50). The
+      model is untouched.
+- **CHECK 0.7.23 ON THE PC** (`the-chart-you-can-move.md` §6; `runs/ui4-notes.md`
+  §2 and §9): on slot 10 or the Doom autosave, City History: drag, wheel,
+  double-click, the range buttons, the overview window, the crosshair card,
+  legend chips, the named recession bands (hover/click), the episode lane,
+  the "you" lane's flags (change a tax first), full screen and Esc out; years
+  under the Bank's and Finances' charts; Settings' key list.
+- **CHECK 0.7.22 ON THE PC** (`the-player-takes-the-queue.md` §8;
+  `runs/ui3-notes.md` §2 and §10 have the script): the construction page's
+  three tabs; reorder two city schools; rush one and watch month 3's warning;
+  cancel one (the refund in the dialog) and restart the shell; demolish a
+  school (what closes, the cost, the salvage); buy out a landlord's house;
+  the right panel's "Open ›"; cold-start Settings and Load over the backdrop;
+  the five (i) notes.
+- **DECIDE (from 0.7.22):** salvage at the full market price is generous (a
+  school's 666 units fetched $12.2M against a $1.05M demolition; real
+  demolition recovers far less than new material): lower it, or keep the
+  0.7.8 rule as Jerus set it? And the player's own demolitions are drawn in
+  failure red.
+- **CHECK 0.7.21 BY EYE ON THE PC** (`a-front-door-and-a-dashboard.md` §6;
+  the full list is `runs/ui2-notes.md` §2, "On the PC"): the fonts (the log's
+  "Fonts:" line), the palette, the title swatches, Build's dot key, the rail,
+  the six header tiles at 1920 and 1366, a tile's click into History, the (i)
+  popovers, the menu over the skyline with Continue and YOUR CITIES, the
+  founding panel, a sector page's money, the cash white unless overdrawn.
+- **FOR 0.7.22, decided while Jerus slept (2026-10-01):** cold-start Settings
+  and Load go over the menu's backdrop too; the text cut starts with the five
+  worst paragraphs (`a-front-door-and-a-dashboard.md` §5); the GDP tile's
+  tooltip could say why a young city's real growth swings. For 0.7.23:
+  History's multi-line series still use red, green and amber.
+- **CHECK 0.7.20 BY HAND: Esc only** (`the-page-stays-put.md` §6). The rest
+  was checked by eye on the PC on 2026-09-30, with two fixes. The remote
+  control's Escape never reaches the game, so: on the Build tab with a
+  tooltip showing, Esc opens the menu; Esc closes the Quit question and the
+  receipt; Esc on the founding screen goes back. Also unseen: the header's
+  price tooltip, and a toast (no urgent notice came up).
+- **JERUS DECIDED (from 0.7.20), 2026-09-30:** "Keep the countdown" for the
+  first inflation reading (no model change); the other sector pages' money
+  form "With 0.7.21's text cut"; BuildMenuCheck "Update to the taxed price",
+  and the cloud gate runs it from now on (in 0.7.21); the price card's
+  "against what it cost at founding" "Leave it". The questions as asked:
+- **ASKED (from 0.7.20):**
+  - **The first inflation reading comes about month 50** in a Standard city
+    (the basket is fixed after `PriceIndex.SETTLING_MONTHS` = 24 months of
+    shopping, then a year of readings; inflation reads as zero everywhere
+    until then). Keep the countdown, fix the basket earlier (a model
+    change), or add a provisional reading (a new measure)?
+  - **The other sector pages' money form** (`Formats.amount()`, only
+    Construction now): with 0.7.21's text cut, or now?
+  - **BuildMenuCheck fails 73 checks, since 0.7.19**: its price check is
+    the template's cost plus material, but the quote carries the builders'
+    sales tax (House 524.7 against 446.0, 1/0.85). It can run in the cloud
+    with the Windows JavaFX jars. Rewriting its expected price to include
+    the tax is a premise change, so it waits on Jerus.
+  - The price card's "against what it cost at founding": the 1.00 is the
+    month the basket was fixed (about month 37).
 - **CHECK 0.7.19 BY EYE ON THE PC** (`the-price-keeps-up.md` §7).
   - The Build tab: a card's price row shows the work, then the price all in; a
     dialled city order reads "$X with $Y sales tax, back to the treasury as it
@@ -1226,6 +1366,12 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
   again by the reviewer, see `the-manual-at-0-7-15.md`: twenty-three sections,
   §13 *The bank* and §16 *Founding a city* new; its found-on-the-way list is
   under Housekeeping. The share pin (above) is still Jerus's.
+- **CAUGHT UP 2026-10-01 at 0.7.23 / format 29, version 11** — every item in
+  the entries below (0.7.16 to 0.7.20) and in the docs passes' "The manual"
+  sections for 0.7.19 to 0.7.23 was walked by the implementer and again by the
+  reviewer, see `the-manual-at-0-7-23.md`: twenty-five sections, §9 *The
+  builders & the queue* and §23 *Time, saves & logs* new; its found-on-the-way
+  list is under Housekeeping. The share pin (above) is still Jerus's.
 - **And 0.7.16 as of 2026-09-28: the year and decade books also write their
   tables as CSV, four files beside the text, built from one table; 226 files,
   ~177,850 lines; save format 27 unchanged; 64 harnesses.** What the manual
@@ -1299,6 +1445,22 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
     D$6M, the bond example re-measured;
   - §22's MortgageCheck, BankCheck and InvestCheck rows. No open question is
     closed.
+
+- **And 0.7.20 as of 2026-09-30: the interface's bugs and its layout; save
+  format 27 unchanged; 64 harnesses.** What the manual now says that is not so
+  (`runs/ui1-docs-pass.md`, "The manual", with what each should say), on top
+  of 0.7.19's list:
+  - §16: "Each start shows what it buys"; Insane's founding card quoting day
+    0 (those figures are FundCheck's section 12 and the playtest's); "the
+    treasury founds the village" (the village is the playtest's; a player's
+    city starts with nothing on the ground);
+  - §21: Build keeps its category; urgent notices as toasts; the keys with a
+    tooltip showing; Quit asks first, "Autosave · month 13", "$3.1T"; City
+    History at the top and its first-year charts; Needs you's "on the way";
+    the price card's "rate in ~N mo"; the on-site line on build cards; the
+    receipt's last five; the Dashboard's annualised GDP; `UserInterface`
+    about 4,650 lines;
+  - §11: "of GDP, annualised".
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -2024,7 +2186,9 @@ Ranked by how likely they are to read as "this game is broken".
   - **The held-25% city collapses** (8,168 → 428): 0.7.18's lived on the
     deposit cap's strain opening branches with outside capital and on the
     window ($181.9 trillion at a median seed). Keeping it alive needs a way in
-    for money from outside that the model does not have. Jerus's call.
+    for money from outside that the model does not have. **Jerus,
+    2026-09-30: "Let it fail (Recommended)"** — it stays a stress case whose
+    findings are watched; it is not required to recover.
   - **The Bank tab's and the planner's break-even figures** leave out the
     charter's exemption, which the rule counts.
   - **Rebated rents against taxed repairs:** an oversupplied city's landlords
@@ -3138,6 +3302,25 @@ each one Jerus's call, in the order they pay back:
   - every screen but the Bank tab snaps an opened statement line shut on the
     month's redraw (`Statement.opens()` is used by the Bank tab alone).
   Full list in `the-manual-at-0-7-15.md` §4.
+- **FOUND BY THE MANUAL PASS, 2026-10-01 — nine places**, none fixed:
+  - `DecisionLog.java` L28–30 says the playtest advisor's decisions are
+    recorded the same way; its policy-rate steps are not logged;
+  - `buildings.json` L61 `"nextId": 69` still (above);
+  - `ui/HistoryScreen.java` L25 still says "The Reports tab";
+  - `Construction.IDLE_PAYROLL_FLOOR` is a share of posts since 0.7.17; the
+    name reads as the old wage floor;
+  - `BuildingManager.java` L69–70 says 5.28 a point of labour for a Low-Rise
+    where the 0.7.19 note says 6.59 (maybe two measures);
+  - `BuildingManager.java` L3076–3078 "a four-hundredth" was measured beside
+    the coal plant and the founding's other big works; beside the plant alone
+    it is about a 168th;
+  - `ConstructionControlCheck` §7's label says "market value" where the record
+    says book value (the code defines one as the other);
+  - `TODO(docs)` left at `sectors/Construction.java` L429,
+    `sectors/FoodProcessing.java` L156, `Game.java` L6481,
+    `BuildingManager.java` L3285;
+  - `the-crew-a-building-can-use.md` §3 names its first two versions two ways.
+  Full list in `the-manual-at-0-7-23.md` §4.
 - **Do not move the harnesses to their own package yet**: about twenty
   package-private model members at seventy-odd call sites would need a seam.
 - **Sixteen classes no harness names** (`docs/harnesses.md`, as of

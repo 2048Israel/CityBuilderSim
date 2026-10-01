@@ -17,6 +17,12 @@ import java.util.List;
  * point is that the player may have been fast-forwarding and needs to see what
  * happened while they were not watching. Each one carries the month it happened
  * so the panel can say how long ago it was.
+ *
+ * SINCE 0.7.22 THE CITY'S OWN TOO. The buildings the player orders
+ * demolished, and the ones it buys out to pull down, are logged the month
+ * they close (Game.closeDemolished()), as "City" or "City, bought from" the
+ * sector, with what the city paid for a bought building's ground as the
+ * proceeds.
  */
 public class DemolitionLog {
 
@@ -33,7 +39,7 @@ public class DemolitionLog {
         public final String sector;
         public final int month;
 
-        /** What the city paid for the plot, or 0 if it was abandoned. */
+        /** What the city paid for the plot - a business's bought back, or since 0.7.22 a bought-out building's ground - or 0: abandoned, or the city's own. */
         public final double proceeds;
 
         Entry(String building, int quantity, String sector, int month, double proceeds) {

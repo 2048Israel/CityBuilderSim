@@ -103,6 +103,15 @@ import java.util.List;
  *                             not         budget line (mortgage insurance claims),
  *                                         paid through treasuryPays()
  *   processBuildOrder()       not         budget line (capital spending)
+ *   demolish(), demolishShell(), restartShell(), buyOutAndDemolish() (0.7.22)
+ *                             not         budget lines (capital spending; a buy-out's
+ *                                         ground is land purchases, recordBuyback)
+ *   settleConstructionControl() (0.7.22)
+ *                             not         the overtime on a rushed site and a cancelled
+ *                                         order's refund: capital spending, as the
+ *                                         escalation is (a refund negative); but
+ *                             JOURNALLED  "Sold a demolition's material to the builders" -
+ *                                         no budget line, as a sector's salvage is none
  *   handleTBillLogic() and the four other issues (and the emergency note,
  *   until 0.7.0 retired it)   not         the bridge's raised row (Game.treasuryRaisedSoFar)
  *   subtractCash(), repayForeignPrincipal()

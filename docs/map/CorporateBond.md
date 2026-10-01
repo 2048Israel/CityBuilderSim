@@ -1,6 +1,6 @@
 # CorporateBond.java - 232 lines · 28 methods · 2 constants · model
 
-`ham/citybuildersim/CorporateBond.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CorporateBond.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > A corporate bond: a sector's debt to investors, issued at par through
 > bookbuilding, paying a fixed coupon every month and its whole face at the

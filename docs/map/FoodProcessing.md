@@ -1,6 +1,6 @@
 # FoodProcessing.java - 567 lines · 12 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/FoodProcessing.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/FoodProcessing.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > The plants between the farm and the shelf.
 > 

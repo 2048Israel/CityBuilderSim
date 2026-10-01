@@ -14,8 +14,8 @@ requirement.
 
 ## Open these before reading source
 
-The tree is 180,000 lines; `Game.java` alone is over 12,000, and the
-interface is twenty-one files, the largest just over 4,000. Do not read them. Read the generated indexes and jump.
+The tree is about 190,000 lines; `Game.java` alone is over 13,000, and the
+interface is twenty-three files, the largest about 5,500. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -92,7 +92,7 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; over 12,000 lines, 36 banner sections
+        Game.java                  the month, the seam every system meets at; over 13,000 lines, 37 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -113,17 +113,35 @@ These are Jerus's, and they do not move.
                                    rescues and the bank's preferred offer as a record; the books themselves
                                    are the register's and the bonds' city holdings, and Game's THE CITY'S
                                    FUND AND THE BANK'S RESCUE runs it
-        ui/                        the interface: UserInterface.java is the window (4,000 lines: clock, rail,
-                                   strips, panels, dialogs), one <Name>Screen.java per tab (split 2026-09-18 -
-                                   the project's splitting-the-interface.md), Money/Statement/Pieces/Levers
-                                   (what the screens share), Ladder.java (every dial, since 0.7.6), Palette.java,
-                                   Icons.java, and FoundingScreen.java (Start New Game's page, 0.7.10; the record it
-                                   fills is Founding.java). The model never imports it.
-        *Check.java                sixty-four harnesses, each a main() with static helpers
+        ConstructionControl.java   the player's hand on the construction queue (0.7.22): the city's order of
+                                   its own sites, rushes on overtime, cancels and the shells they leave,
+                                   demolitions and buy-outs - the state, saved under one key, and each rule's
+                                   arithmetic with its source; BuildingManager applies the crews and Game's
+                                   THE PLAYER'S HAND ON THE QUEUE moves the money
+        DecisionLog.java           what the player decided, and when (0.7.23): every change of a policy and
+                                   every spend at scale, recorded where it is applied, held while a city is
+                                   founded or loaded, saved under one key; the History chart's flags
+        ChartModel.java            a time chart's arithmetic without the toolkit (0.7.23): the window and how
+                                   pan, zoom and ranges move it, the year ticks, nice value scales, the
+                                   episode lane's rows and the flags; ui/TimeChart.java draws it, ChartCheck
+                                   holds it
+        ui/                        the interface: UserInterface.java is the window (about 5,500 lines: the header
+                                   and its clock, the rail, the main menu, the panels, dialogs), one
+                                   <Name>Screen.java per tab (split 2026-09-18 - the project's
+                                   splitting-the-interface.md), Money/Statement/Pieces/Levers (what the screens
+                                   share), Ladder.java (every dial, since 0.7.6), Palette.java (the colours, and
+                                   its nested Fonts, which loads IBM Plex since 0.7.21), Icons.java, and
+                                   FoundingScreen.java (New city's page, 0.7.10, one panel since 0.7.21; the
+                                   record it fills is Founding.java), and ConstructionScreen.java (the Build
+                                   tab's construction page, 0.7.22), and TimeChart.java (City History's
+                                   charts, 0.7.23: pan, zoom, ranges, an overview, named crises, the
+                                   decision flags, full screen). The model never imports it.
+        *Check.java                sixty-six harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
-    src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket
+    src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
+                                         fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21)
 
 A `.java` file at the root that holds only a comment saying MOVED is a stub
 left where a class used to be, because a cloud session cannot delete on the

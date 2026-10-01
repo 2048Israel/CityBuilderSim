@@ -436,7 +436,7 @@ public final class FoodProcessing extends Sector {
 
         lines.add(Line.head("Where the meat comes from"));
         double position = getMeatPosition();
-        lines.add(Line.of("Meat, a kilo", f.cash(getMeatPrice()),
+        lines.add(Line.of("Meat, a kilo", f.amount(getMeatPrice()),
                 position < .34 ? Line.Tone.GOOD : position < .67 ? Line.Tone.NONE : Line.Tone.WARN));
         lines.add(Line.of("Wanted this month", f.units(getMeatDemand(), Good.MEAT)));
         lines.add(Line.note(position >= .67

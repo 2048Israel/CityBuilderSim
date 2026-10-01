@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **sixty-four harnesses plus the
-4,000-odd-month playtest**, which it reports as sixty-five, in about three minutes.
+`AllChecks` runs the lot, one JVM each — **sixty-six harnesses plus the
+4,000-odd-month playtest**, which it reports as sixty-seven, in about three minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -178,7 +178,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     about 225 files
+src/main/java/ham/citybuildersim/     about 230 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
@@ -225,8 +225,9 @@ month's household shapes and six months of prisoners.
 **The interface is its own package, `ui/`, and the model never imports it.**
 Everything JavaFX lives there; the launcher stays in the root package because
 the jar's main class is named there. `UserInterface.java` is the window — the
-clock, the rail, the strips, the panels, the dialogs — and every tab is a class
-of its own beside it (`BankScreen`, `PolicyScreen`, ...), with the figures and
+header and its clock, the rail, the main menu, the panels, the dialogs — and
+every tab is a class of its own beside it (`BankScreen`, `PolicyScreen`, ...,
+and the Build tab's construction page, `ConstructionScreen`), with the figures and
 pieces they share in `Money`, `Statement`, `Pieces` and `Levers`, and every
 dial on the policy tab drawn by one class, `Ladder` (0.7.6). The split was
 done on 2026-09-18; `splitting-the-interface.md` in the design notes says how.
@@ -236,8 +237,9 @@ done on 2026-09-18; `splitting-the-interface.md` in the design notes says how.
 day inside the month, and calls the same `nextMonth()` the button used to. Two
 consequences for anything on screen: a panel is rebuilt while the player is
 still looking at it, so it must restore its own scroll position rather than
-assume a fresh page; and the timer keeps running while a dialog is open unless
-something pauses it.
+assume a fresh page; and the timer keeps running under whatever page is open —
+only a pause, the menu's own screens and, since 0.7.22, an open dialog (Quit's,
+or a confirmation's) stop it.
 
 ## Versioning
 

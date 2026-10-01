@@ -898,9 +898,9 @@ public class NewGameCheck {
        Jerus: "the dial should default when you start a game on the
        automatic, aka not your hand", and the treasury's rollover "default
        toggles on" (Rollover). What has to hold:
-         - both doors a player founds through - "Found with defaults" and the
-           founding screen's own choices, Game.newGame() either way - found
-           on the autopilot, rolling in the same structure;
+         - both ways Game.newGame() founds - on the defaults, which was
+           "Found with defaults" until 0.7.21, and on the founding screen's
+           own choices - found on the autopilot, rolling in the same structure;
          - a city built bare, through the constructor, as the harnesses and
            the playtest build theirs, keeps the hand on the dial and rolls
            nothing: they state their own settings over it;

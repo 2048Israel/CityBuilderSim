@@ -748,8 +748,8 @@ public class ReadPathCheck {
         g.getBuybackUnsettled();
         // how the city was founded (0.7.10): the founders' note, the window's
         // title and every screen that writes the city's money read these, and
-        // the founding screen asks what each preset would buy - of the live
-        // city's catalogue, which it must not touch
+        // the founding screen asked what each preset would buy (until 0.7.20;
+        // the read stays) - of the live city's catalogue, which it must not touch
         g.getFounding();
         g.getCityName();
         g.getFoundingCash();

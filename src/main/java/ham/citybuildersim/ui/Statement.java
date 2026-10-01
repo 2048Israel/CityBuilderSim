@@ -95,6 +95,24 @@ public final class Statement {
         return note;
     }
 
+    /**
+     * ...in two layers (0.7.22, the text cut): `shown` on the page, short,
+     * and the whole note one click away behind its (i) - nothing deleted, it
+     * moves (Pieces, TEXT IN THREE LAYERS). Where a statement's note was a
+     * paragraph a player had to read past to reach the next figure.
+     */
+    public static HBox statementNote(String shown, String whole) {
+        Label note = new Label(shown);
+        note.setWrapText(true);
+        note.setMaxWidth(STATEMENT - 16 - INFO_SIZE - Palette.GAP_TIGHT);
+        note.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        HBox row = new HBox(Palette.GAP_TIGHT, note, infoButton(whole, false));
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(Region.USE_PREF_SIZE);
+        row.setStyle("-fx-padding: 0 0 6 14;");
+        return row;
+    }
+
     /** The line a statement adds up to: a rule, then the figure in full. */
     public static VBox statementTotal(String label, String value, String tone) {
 
@@ -320,7 +338,7 @@ public final class Statement {
     /**
      * A statement line that opens something underneath it.
      *
-     * disclosure() takes a preformatted Courier string, which is right for the
+     * disclosure() takes a preformatted monospaced string, which is right for the
      * report screens it was written for and wrong next to these: the label and
      * the figure landed at whatever column %-30s put them in, an inch left of
      * every other row on the screen. This is statementLine's shape with the
@@ -365,7 +383,7 @@ public final class Statement {
     /** A statement line: label left, figure right, in one fixed-width column. */
     public static Label bookLine(String label, double value, boolean bold, String colour) {
         Label line = monoLabel(String.format("%-28s%12s", label, tightMoney(value)));
-        line.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
+        line.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
                 + (bold ? " -fx-font-weight: bold;" : "")
                 + (colour == null ? "" : " -fx-text-fill: " + colour + ";"));
         return line;
@@ -373,16 +391,16 @@ public final class Statement {
 
     public static Label bookRule() {
         Label line = monoLabel(String.format("%-28s%12s", "", "------------"));
-        line.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: #55636d;");
+        line.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                + " -fx-text-fill: " + Palette.TEXT_SPENT + ";");
         return line;
     }
 
     /** A short grey line under a figure, for the one sentence it needs. */
     public static Label bookNote(String text) {
         Label line = monoLabel("  " + text);
-        line.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 10px;"
-                + " -fx-text-fill: #7b8f9c;");
+        line.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px;"
+                + " -fx-text-fill: " + Palette.TEXT_MUTED + ";");
         return line;
     }
 
@@ -400,8 +418,8 @@ public final class Statement {
      */
     public static VBox disclosure(String line, String hint, VBox detail) {
         return disclosure(line, hint, detail,
-                "-fx-font-family: 'Courier New'; -fx-font-size: 11px;"
-                + " -fx-text-fill: #8ed4ff;");
+                "-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
+                + " -fx-text-fill: " + Palette.ACCENT + ";");
     }
 
     /** As above, keeping a row's own styling - used by the tier table. */
@@ -452,7 +470,7 @@ public final class Statement {
         box.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         Label headingLabel = new Label(heading);
-        headingLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold;");
+        headingLabel.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-weight: bold;");
         box.getChildren().add(headingLabel);
 
         for (String row : rows) {

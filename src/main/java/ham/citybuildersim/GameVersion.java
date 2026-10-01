@@ -1715,8 +1715,177 @@ public final class GameVersion {
      * contract gets back (ContractRecord.recovered; an older record reads it
      * off creditable), and the grant's marker that its fixed amount is real
      * (one slot appended to TaxPolicy's state).
+     *
+     * 0.7.20 (2026-09-30) - THE INTERFACE'S BUGS AND ITS LAYOUT. From Jerus's
+     * play-through of 0.7.19 for the interface alone (the project's
+     * playing-0-7-19-ui-notes.md; "all you listed is good"). No figure in the
+     * model moves: a default playtest writes the same traces as 0.7.19's.
+     *   - CITY HISTORY OPENS AT THE TOP: "Write the year book", the page's
+     *     only focusable control, at its foot, took the focus the last
+     *     screen's button left behind and the scroller scrolled to show it.
+     *   - THE KEYS WORK FROM ANYWHERE: a showing tooltip, a popup, hid itself
+     *     on Esc and consumed the key before the scene's filter saw it - on
+     *     the Build tab the pointer is nearly always on one. Every tooltip
+     *     leaves Esc alone now; a text box keeps its typing, the founding
+     *     screen's Esc still goes back, and an open dialog keeps Esc.
+     *   - THE HEADER'S PRICES say when the first rate comes ("rate in ~37
+     *     mo") rather than "no year yet": the basket is fixed after
+     *     PriceIndex.SETTLING_MONTHS of shopping and the rate follows a year
+     *     after (PriceIndex.monthsUntilRate(), which reads).
+     *   - ON SITE: a build card says "N on site - ~M mo at today's queue" for
+     *     anybody's order, and a Needs-you line with its fix on site says "1
+     *     on the way, ~8 mo" and falls from red to amber - at the quote's own
+     *     wait (BuildingManager.waitOnSite(), Game.onSiteMonths(), which read).
+     *     The construction panel reads the same wait.
+     *   - Every build time says "at today's queue". Tooltips have a panel.
+     *     People flows are whole people ("under 1" below one) and no shared
+     *     formatter prints a negative zero. Ratios to GDP say "annualised"
+     *     before a year is recorded, and the Dashboard's GDP is annualised.
+     *     Quit asks first. The centre column is top-aligned on every screen,
+     *     the build hint keeps its line, the receipt is a popover with the
+     *     last five purchases and their sales tax, and scrolled pages keep
+     *     room under their end for the dome. Urgent notices are toasts,
+     *     bottom right, three at most, fading after eight seconds. Lines
+     *     wrap rather than cut. Build remembers its category for the session.
+     *   - THE FOUNDING SCREEN no longer says what the money buys: each choice
+     *     shows its treasury and its vault (Founding.whatItBuys() stays for
+     *     the harnesses), and its page fills the window.
+     *   - Trillions print as "$3.1T"; the Construction page's money is the
+     *     screens' form (Formats.amount()); "kg" is its own plural; the load
+     *     list says "Autosave" once; Construction with no depot reads
+     *     "no depot yet"; covered services read "everything covered".
+     *
+     * SAVE_FORMAT did not move. Nothing enters the save: the remembered build
+     * category, the receipts and the toasts are this window's, for the
+     * session.
+     *
+     * 0.7.21 (2026-10-01) - COLOUR, THE HEADER, THE MENU AND THE FOUNDING
+     * SCREEN. The second of the four interface batches Jerus agreed after
+     * playing 0.7.19 for the interface (the project's
+     * playing-0-7-19-ui-notes.md), built to the mockups he saw ("that is
+     * damn pretty, go for it"). No figure in the model moves: a default
+     * playtest writes the same traces as 0.7.20's.
+     *   - ONE PALETTE AND IBM PLEX: the mockups' grounds, three greys, four
+     *     area colours - people teal, money blue, business violet, building
+     *     pink - and the three verdicts (ui.Palette). Plex Sans for words and
+     *     Plex Mono for every figure, loaded from the jar at start-up, the
+     *     platform's faces if they do not load (ui.Palette.Fonts; the SIL licence
+     *     beside the files in resources/fonts).
+     *   - COLOUR THAT MEANS SOMETHING: each page's title carries its area's
+     *     swatch; a labour shortage reads amber, not red; a sector earning
+     *     nothing draws a grey line; the Government's rings take colours that
+     *     can be told apart; the build tabs carry a dot for who builds them,
+     *     with a key, in place of amber words.
+     *   - THE RAIL is at the window's edge, 76 wide, each button an icon over
+     *     its name, in its area's colour when showing; Menu replaced the gear.
+     *   - THE HEADER: the clock - play, the date, the month and the speed -
+     *     and six tiles: population, GDP annualised from the first month,
+     *     inflation against the target, out of work, the treasury, the rate
+     *     and the currency; each with its change and a ten-year sparkline off
+     *     the history, and a click opening City History on its line. The
+     *     rating and the inbox at its right. The floating time controls and
+     *     the net-income dome went; the toasts keep the stage's corner.
+     *   - THE MAIN MENU is drawn over the whole window, over a skyline the
+     *     game draws: Continue (saying which city it goes back to), Save
+     *     while a city is open, New city, Load a city, Settings, Quit, the
+     *     cities saved last, and the version.
+     *   - THE FOUNDING SCREEN is one panel over the dimmed skyline: the name,
+     *     its money in a line, four cards for what it starts with, five for
+     *     the world, Found and Back. "Found with defaults" went.
+     *   - TEXT IN THREE LAYERS: a short line, and an (i) whose popover holds
+     *     the rest (ui.Pieces.infoButton()) - on the build tab, Construction's
+     *     billing (Sector.Line.note(shown, whole)), the one tax dial, the
+     *     Government's last row, the founding screen, the menu and the header.
+     *   - Every sector page's money is the screens' form (Formats.amount()).
+     *   - BuildMenuCheck checks the taxed price (Jerus: "Update to the taxed
+     *     price"), from the price rule's own inputs, and runs in the cloud.
+     *   - YearBook.realGrowth() is public, for the GDP tile; it reads.
+     *
+     * SAVE_FORMAT did not move. Nothing enters the save: the fonts are the
+     * jar's, and the menu reads the slots' headers it already wrote.
+     *
+     * 0.7.22 (2026-10-01) - THE CONSTRUCTION PANEL, WITH PRIORITY, RUSH,
+     * CANCEL AND DEMOLISH. The third of the four interface batches from
+     * Jerus's play-through of 0.7.19 ("not just a blue loading screen"), and
+     * the new play he asked for with it: "not only repirotize and cancel but
+     * also destroy buildings, like you yourself destroy buildings". His
+     * answers on the mechanics (2026-09-30) are ConstructionControl's five
+     * rules, each with its source; nothing of them runs unless the player
+     * uses it, and a default playtest writes the same traces as 0.7.21's.
+     *   - PRIORITY ("Both"): the city's own sites take the city's share of
+     *     the crews, as the rule gives it, in the order the player sets, top
+     *     down; nobody else's site moves a point (BuildingManager.plan()).
+     *   - RUSH: a city's site on a 50-hour week, at the Business Roundtable's
+     *     overtime productivity (Report C-2, 1980) - 1.14 times a month's work
+     *     in the first month, 1.02 in the second, 0.94 after - for 1.375 times
+     *     its crews' wages, the premium paid by the treasury and paid out as
+     *     wages (TreasuryLine.BUILDING_OVERTIME).
+     *   - CANCEL ("Keep the half-built shell"): termination for convenience,
+     *     FAR 52.249-2 - the month's work billed, the contract left refunded
+     *     out of the builders' book, the shell stopped on its ground until it
+     *     is restarted at today's quote or demolished.
+     *   - DEMOLISH ("City's, plus buy-outs"): 5% of the building's work
+     *     (SIGTARP's Detroit average over NAHB's 2015 home), the building
+     *     closed as the next month starts, its material sold to the builders
+     *     by the 0.7.8 rule and its ground freed when done; a business's or a
+     *     landlord's building only after a compulsory purchase - market value
+     *     and the business loss, by Ontario's Expropriations Act.
+     *   - THE CONSTRUCTION PAGE: Sites, Timeline and Demolish, from the right
+     *     panel's "Open" and from Build; every cancel, demolition, buy-out
+     *     and restart confirmed in a dialog with its money in it; the inbox
+     *     says the month before a rush enters its third month, and when a
+     *     demolition is done.
+     *   - ONE WAIT FOR A SITE (after the docs pass): the page, the right
+     *     panel, a build card, the Needs-you line and the build quote all
+     *     read one getter (Game.siteMonths(), onSiteMonths(),
+     *     quoteCityMonths()) - the rule's to the bit with the player's hand
+     *     off, the order's and the overtime's with it on; and an order lasts
+     *     as long as its sites: a city site placed under it joins it at the
+     *     bottom, and it clears itself when none of its sites is left.
+     *   - Cold-start Settings, Load and Save over the menu's backdrop; the
+     *     five longest paragraphs on screen a line and an (i).
+     *
+     * SAVE_FORMAT 28: see below.
+     *
+     * 0.7.23 (2026-10-01) - THE CHARTS. The last of the four interface
+     * batches from Jerus's play-through of 0.7.19: "in teh graphs you should
+     * be able to pan the chart just like yahoo finance does", "like also the
+     * crisis labels and all", and "let the player click fullscreen on the
+     * graph so the whole screen concentrates on the graph". A default
+     * playtest writes the same traces as 0.7.22's.
+     *   - THE DECISION LOG (DecisionLog): every change of a policy and every
+     *     spend at scale, a month, a kind and a line - "Taxes to 17%",
+     *     "Central bank rate to 0.00%", "Bank rescued for its shares",
+     *     "Rushed University" - written where each is applied (TaxPolicy's
+     *     setters, the wage floor, the central bank's dials, the share of
+     *     tuition, and Game's methods for the standing subsidies, the bank,
+     *     the fund, the paper, the money and the queue), held while a city is
+     *     founded or loaded, and saved. Ordinary build orders and land
+     *     purchases are not decisions; the rollover's issues and a default the
+     *     city could not avoid are not either.
+     *   - THE CHART, REBUILT (ui.TimeChart over ChartModel): drag to pan, the
+     *     wheel to zoom about the pointer, double-click to reset; 1Y, 5Y,
+     *     10Y, 50Y and All; an overview of the whole history with a window
+     *     to drag and stretch; years on every axis and months when they fit;
+     *     a crosshair card with every line's value in its unit; a legend
+     *     that hides and shows lines; each axis its own nice scale, a per
+     *     cent from zero; lines in their areas' colours, never a verdict's.
+     *   - CRISES NAMED: each recession band carries its episode's name, and
+     *     a hover or a click gives the rule that named it and its depth and
+     *     length (YearBook.recessionBands(), trigger(), worstWords()); every
+     *     episode on a lane under the chart; the player's decisions as
+     *     flags under that, one a month with a count.
+     *   - FULL SCREEN: the chart over the whole window, Esc back; the clock
+     *     as it was; F11 still the window's own.
+     *   - EVERY OTHER CHART: the small charts, the bank's, Finances' and the
+     *     share price's have years under them; the sector cards' sparklines
+     *     and the header's mark each January; none draws in red, amber or
+     *     green.
+     *   - ChartCheck, the sixty-sixth harness.
+     *
+     * SAVE_FORMAT 29: see below.
      */
-    public static final String VERSION = "0.7.19";
+    public static final String VERSION = "0.7.23";
 
     /**
      * The save shape.
@@ -2174,8 +2343,37 @@ public final class GameVersion {
      *     following years. The visible transient is that senior care reads as
      *     fully covered for a while, because the band it mostly serves is
      *     still filling.
+     *
+     * 28 - THE PLAYER'S HAND ON THE QUEUE (0.7.22): the city's order of its
+     *     own sites, the rushes and their months on overtime, the cancels
+     *     waiting for the month's end, the stopped shells, the demolitions on
+     *     site and the buy-outs, under one key (DataSave.constructionControl;
+     *     ConstructionControl). Here because a format-27 build handed this
+     *     save would load it WRONGLY, not merely incompletely: a shell and a
+     *     demolition on site hold ground the load strikes the allocation from,
+     *     and their buildings are off the stacks - a shell's progress and the
+     *     material it drew, a demolished building already closed and paid
+     *     for - so an older build would come back with the ground free, the
+     *     work gone and the money spent. That is the accident this number
+     *     exists to prevent.
+     *
+     *     THE OTHER DIRECTION IS SAFE: a format-27 save has no key, and loads
+     *     with no order set, nothing rushed or stopped and nothing being
+     *     demolished - which is what that city had.
+     *
+     * 29 - THE DECISION LOG (0.7.23): the player's decisions, a month, a kind
+     *     and a line each, under one key (DataSave.decisionLog; DecisionLog).
+     *     Here because a format-28 build handed this save would lose them
+     *     for good, not merely leave them unread: it loads the city, plays
+     *     on, and its next save - every autosave - writes the city back
+     *     without the key. A decision is a flow; nothing in the rest of the
+     *     save could give one back, and the chart's flags would be gone
+     *     from that city's whole past.
+     *
+     *     THE OTHER DIRECTION IS SAFE: a format-28 save has no key, and loads
+     *     with an empty log - which is what that city had kept.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 27;
+    public static final int SAVE_FORMAT = 29;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

@@ -1,6 +1,6 @@
 # Migration.java - 1,209 lines · 49 methods · 14 constants · model
 
-`ham/citybuildersim/Migration.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Migration.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > Why people move to this city, and the much narrower question of why they leave.
 > 

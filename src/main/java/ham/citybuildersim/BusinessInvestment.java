@@ -654,7 +654,7 @@ public class BusinessInvestment {
              */
             if (currentOutput <= 0 && demand < t.makes(good) * sector.firstPlantUtilisation()) {
                 return Decision.no(key, String.format("%,.0f %s/mo is not enough for a first %s",
-                        demand, good.unit() + "s", t.getName()));
+                        demand, Formats.plural(good.unit()), t.getName()));
             }
 
             double lead = leadTime(t, 1, output);
@@ -721,9 +721,9 @@ public class BusinessInvestment {
         return new Decision(key, best, quantity,
                 pipeline > 0
                         ? String.format("%,.0f %s/mo forecast against %,.0f made and %,.0f coming",
-                                demandAtOpening, good.unit() + "s", currentOutput - pipeline, pipeline)
+                                demandAtOpening, Formats.plural(good.unit()), currentOutput - pipeline, pipeline)
                         : String.format("%,.0f %s/mo forecast against %,.0f made",
-                                demandAtOpening, good.unit() + "s", currentOutput),
+                                demandAtOpening, Formats.plural(good.unit()), currentOutput),
                 true);
     }
 

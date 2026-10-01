@@ -240,7 +240,7 @@ public final class BusinessServices extends Sector {
         for (Good g : kinds) {
             double held = getCapacity(g);
             if (held <= 0) continue;
-            lines.add(Line.of(g.label(), f.cash(priceOfSeat(g)) + " x " + f.count(held) + " seats"));
+            lines.add(Line.of(g.label(), f.amount(priceOfSeat(g)) + " x " + f.count(held) + " seats"));
         }
         if (seats <= 0) {
             lines.add(Line.note("Nothing standing. This is the only sector whose customer is not "

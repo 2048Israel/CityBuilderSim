@@ -171,6 +171,52 @@ public class BuildingsStacks {
     /** The payers' contracts on this stack, in the order they were placed. */
     public java.util.Collection<Contract> getContracts() { return contracts.values(); }
 
+    /**
+     * Whether what is on site is the city's alone (0.7.22): buildings on
+     * site, and every order on them the city's - the sites the player may
+     * reorder, rush and stop (ConstructionControl). A stack shared with an
+     * investor's order is not: its progress is one pool and cannot be
+     * divided by who paid for which building.
+     */
+    public boolean isCitysOwn() {
+        if (underConstruction <= 0 || contracts.isEmpty()) return false;
+        for (Contract c : contracts.values()) if (!"City".equals(c.payer)) return false;
+        return true;
+    }
+
+    /**
+     * Takes everything on site off the stack, for the shell a cancelled
+     * order leaves (0.7.22; ConstructionControl, C. CANCEL): its buildings,
+     * their progress and the material they still owe come off with it, and
+     * so does the city's contract - what is left of it is the refund, and
+     * the stack's own book comes down by it.
+     *
+     * @return {buildings, progress, materials still owed, the city's contract left, its allowance left}
+     */
+    double[] stopForShell() {
+        Contract city = contracts.get("City");
+        double value = city == null ? 0 : city.value;
+        double allowance = city == null ? 0 : city.allowance;
+        double[] out = { underConstruction, constructionProgress, materialsOwed, value, allowance };
+        contracts.remove("City");
+        contractValue = Math.max(0, contractValue - value);
+        underConstruction = 0;
+        constructionProgress = 0;
+        materialsOwed = 0;
+        return out;
+    }
+
+    /**
+     * ...and a shell put back on site (0.7.22): its buildings, the work in
+     * them and the material they still owe, beside whatever is on site
+     * already. The new order's contract is booked apart (bookContract()).
+     */
+    void resumeShell(int buildings, double progress, double owedUnits) {
+        underConstruction += Math.max(0, buildings);
+        constructionProgress += Math.max(0, progress);
+        materialsOwed += Math.max(0, owedUnits);
+    }
+
     /** This month's work, payer by payer - per the last advanceConstruction() call. */
     public java.util.List<Due> getDues() { return dues; }
 

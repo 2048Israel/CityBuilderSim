@@ -44,7 +44,8 @@ public final class Founding {
        THE PRESETS (0.7.10)
 
        Jerus's four: Lean, Standard (the default), Wealthy, and Custom, each
-       shown with what it buys. Standard is the two constants on Game, which
+       shown with what it buys until 0.7.20, and since then with its treasury
+       and its vault alone. Standard is the two constants on Game, which
        stay the named defaults the harnesses and the playtest read; Wealthy is
        the start every city had from 0.6.10 to 0.7.9.
 
@@ -199,7 +200,7 @@ public final class Founding {
         this.meanInflation = meanInflation;
     }
 
-    /** "Found with defaults": Danzik, its money named after it, the Standard preset, the default world. */
+    /** The defaults: Danzik, its money named after it, the Standard preset, the default world - what "Found with defaults" founded until 0.7.21. */
     public static Founding defaults() {
         return named(DEFAULT_CITY_NAME, Preset.STANDARD, WorldEconomy.DEFAULT_MEAN_INFLATION);
     }
@@ -295,7 +296,10 @@ public final class Founding {
        WHAT IT BUYS (0.7.10)
 
        Jerus: "each option shows what it buys". A model figure, worked out
-       here over the catalogue's own costs, never on the screen.
+       here over the catalogue's own costs, never on the screen. Since 0.7.20
+       the screen does not show it (Jerus: "even the screen shouldnt say what
+       the money could buy, the start screen should be real simple"), and it
+       stays for NewGameCheck, FundCheck, ReadPathCheck and the playtest.
 
        AT THE INVOICE, NOT THE STICKER. What the treasury is charged for an
        order is its cash cost and the material it takes beyond what the yard

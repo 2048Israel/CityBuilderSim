@@ -1,6 +1,6 @@
-# PolicyScreen.java - 3,331 lines · 75 methods · 17 constants · interface
+# PolicyScreen.java - 3,344 lines · 75 methods · 17 constants · interface
 
-`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > The policy tab: the four rows of levers - taxes, wages, money, promises -
 > the staged set every dial writes into, the ladder and the batch preview that
@@ -17,7 +17,7 @@
 > same levers. Every dial here is drawn by one class, Ladder (0.7.6), which
 > replaced the tax pages' taxLadder and everybody else's stageSlider.
 
-**Uses:** [Palette](Palette.md) (398), [TaxPolicy](TaxPolicy.md) (80), [WageBand](WageBand.md) (24), [DebtManager](DebtManager.md) (21), [EducationType](EducationType.md) (21), [Sector](Sector.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [Education](Education.md) (9), [LabourMarket](LabourMarket.md) (8), [Denomination](Denomination.md) (8), [Ladder](Ladder.md) (7), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [CentralBank](CentralBank.md) (6), [Sectors](Sectors.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [Game](Game.md) (1), [Bank](Bank.md) (1)... and 7 more
+**Uses:** [Palette](Palette.md) (393), [TaxPolicy](TaxPolicy.md) (80), [WageBand](WageBand.md) (24), [DebtManager](DebtManager.md) (21), [EducationType](EducationType.md) (21), [Sector](Sector.md) (16), [EconomyManager](EconomyManager.md) (15), [JobType](JobType.md) (11), [Money](Money.md) (11), [CareType](CareType.md) (10), [Education](Education.md) (9), [LabourMarket](LabourMarket.md) (8), [Denomination](Denomination.md) (8), [Ladder](Ladder.md) (7), [SectorBooks](SectorBooks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [CentralBank](CentralBank.md) (6), [Sectors](Sectors.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [FamilyModel](FamilyModel.md) (4), [SalesTaxLedger](SalesTaxLedger.md) (3), [PopulationManager](PopulationManager.md) (3), [PayTier](PayTier.md) (3), [UserInterface](UserInterface.md) (2), [PriceIndex](PriceIndex.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [Healthcare](Healthcare.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [Game](Game.md) (1), [Bank](Bank.md) (1)... and 7 more
 
 **Used by (2):** [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -31,35 +31,35 @@
 | 274 | WHAT THE WHOLE BATCH WOULD DO |
 | 420 | THE FOUR TAXES |
 | 461 | · EVERYTHING |
-| 596 | · PROFIT |
-| 665 | · SALES |
-| 737 | · WAGE |
-| 777 | · · what a payslip actually loses |
-| 853 | · PROPERTY |
-| 946 | THE LANDING |
-| 1010 | · WHAT IS ACTUALLY BITING |
-| 1103 | · · the wage floor |
-| 1114 | · · who is shut out |
-| 1125 | · · tuition |
-| 1149 | · · pensions |
-| 1158 | · · subsidies |
-| 1172 | · · the price of money |
-| 1189 | · · the money itself |
-| 1197 | · · at the stops |
-| 1286 | ONE SUBJECT, ITS OWN STRIP |
-| 1371 | THE PIECES A LEVER IS MADE OF |
-| 1440 | TAXES - the two rates |
-| 1516 | · the arithmetic behind it |
-| 1603 | TAXES - by wage band |
-| 1655 | TAXES - by sector |
-| 1659 | WAGES - the floor |
-| 1692 | · · the ladder |
-| 1719 | · · who is pinned |
-| 1744 | · · and the city's own bill |
-| 1788 | MONEY - the policy rate |
-| 1921 | · · prices, in words |
-| 1927 | · · where it has been |
-| 2105 | · · THE HOLDINGS DIAL (0.7.1) |
+| 597 | · PROFIT |
+| 666 | · SALES |
+| 738 | · WAGE |
+| 778 | · · what a payslip actually loses |
+| 854 | · PROPERTY |
+| 947 | THE LANDING |
+| 1009 | · WHAT IS ACTUALLY BITING |
+| 1102 | · · the wage floor |
+| 1113 | · · who is shut out |
+| 1124 | · · tuition |
+| 1148 | · · pensions |
+| 1157 | · · subsidies |
+| 1171 | · · the price of money |
+| 1188 | · · the money itself |
+| 1196 | · · at the stops |
+| 1285 | ONE SUBJECT, ITS OWN STRIP |
+| 1368 | THE PIECES A LEVER IS MADE OF |
+| 1437 | TAXES - the two rates |
+| 1513 | · the arithmetic behind it |
+| 1600 | TAXES - by wage band |
+| 1652 | TAXES - by sector |
+| 1656 | WAGES - the floor |
+| 1689 | · · the ladder |
+| 1716 | · · who is pinned |
+| 1741 | · · and the city's own bill |
+| 1785 | MONEY - the policy rate |
+| 1918 | · · prices, in words |
+| 1924 | · · where it has been |
+| 2102 | · · THE HOLDINGS DIAL (0.7.1) |
 | 2155 | · · THE CEILING, AS A DIAL (0.7.2) |
 | 2223 | MONEY - the currency reform |
 | 2350 | PROMISES - the pension |
@@ -72,10 +72,10 @@
 | 2651 | · · the schools this month |
 | 2665 | · · the price of a place |
 | 2750 | · · the grant |
-| 2828 | · · the loan |
-| 2985 | PROMISES - the out of work and the students (2026-09-11) |
-| 3086 | PROMISES - the clinic's price, and a premium (2026-09-19) |
-| 3259 | PROMISES - the standing subsidies |
+| 2836 | · · the loan |
+| 2993 | PROMISES - the out of work and the students (2026-09-11) |
+| 3094 | PROMISES - the clinic's price, and a premium (2026-09-19) |
+| 3272 | PROMISES - the standing subsidies |
 
 ## Constants
 
@@ -95,9 +95,9 @@
 | 2205 | `PolicyScreen.TARGET_STEP` | `.005` | One step of the target's ladder (0.7.4): half a point. |
 | 2208 | `PolicyScreen.HOLDINGS_STEP` | `.10` | One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. |
 | 2211 | `PolicyScreen.CEILING_STEP` | `1` | One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. |
-| 2875 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
-| 2878 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
-| 2913 | `PolicyScreen.SCHOOL_FIGURES` | `150` | How wide the four figures beside a school kind's ladder are held. |
+| 2883 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
+| 2886 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
+| 2921 | `PolicyScreen.SCHOOL_FIGURES` | `150` | How wide the four figures beside a school kind's ladder are held. |
 
 ## Fields (state)
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 3298 | **type** `final class PolicyScreen` | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview that show what a proposal would cost before it is applied, and the page... |
+| 34 | 3311 | **type** `final class PolicyScreen` | The policy tab: the four rows of levers - taxes, wages, money, promises - the staged set every dial writes into, the ladder and the batch preview that show what a proposal would cost before it is applied, and the page... |
 | 39 | 1 | `PolicyScreen(UserInterface ui)` |  |
 
 ### THE POLICY TAB (lines 41-100)
@@ -161,103 +161,103 @@
 |---:|---:|---|---|
 | 448 | 12 | `void baseRateLever(VBox column, String tax, String title, String offsets, double current, java.util.function.DoubleConsumer apply)` | One income tax's own base (0.7.4): the top lever of the profit, sales and wage pages. |
 
-### EVERYTHING (lines 461-595)
+### EVERYTHING (lines 461-596)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 463 | 86 | `void taxOverviewPage(VBox column)` |  |
-| 551 | 44 | `HBox taxSourceRow(String name, double raised, double all, String rate, String what, String page)` | One tax on the overview: what it raised, its share, its rate, and a door. |
+| 463 | 87 | `void taxOverviewPage(VBox column)` |  |
+| 552 | 44 | `HBox taxSourceRow(String name, double raised, double all, String rate, String what, String page)` | One tax on the overview: what it raised, its share, its rate, and a door. |
 
-### PROFIT (lines 596-664)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 598 | 66 | `void profitTaxPage(VBox column)` |  |
-
-### SALES (lines 665-736)
+### PROFIT (lines 597-665)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 667 | 69 | `void salesTaxPage(VBox column)` |  |
+| 599 | 66 | `void profitTaxPage(VBox column)` |  |
 
-### WAGE (lines 737-852)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 739 | 62 | `void wageTaxPage(VBox column)` |  |
-| 815 | 37 | `void payrollBurden(VBox column, TaxPolicy policy, double base)` | The whole charge on a payslip, which no screen has ever totalled. |
-
-### PROPERTY (lines 853-945)
+### SALES (lines 666-737)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 855 | 90 | `void propertyTaxPage(VBox column)` |  |
+| 668 | 69 | `void salesTaxPage(VBox column)` |  |
 
-### THE LANDING (lines 946-1285)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 950 | 83 | `void showPolicyMenu()` |  |
-| 1035 | 5 | `double taxRaised()` | Every tax line the city collected last month. |
-| 1042 | 7 | `double promisesCost()` | What the three promises cost the treasury in a month, net of what they collect. |
-| 1050 | 9 | `int pinnedBands()` |  |
-| 1060 | 23 | `HBox policyVitals()` |  |
-| 1091 | 127 | `java.util.List<String[]> policyFlags()` | The levers that are currently forcing something. |
-| 1220 | 3 | `static String capitalised(String word)` | "sales" to "Sales", for a flag that opens with a tax's name. |
-| 1224 | 17 | `VBox flagLine(String tone, String heading, String body)` |  |
-| 1242 | 43 | `HBox policyRow(String name, String blurb, String figure, String sub, String tone, String area, String page)` |  |
-
-### ONE SUBJECT, ITS OWN STRIP (lines 1286-1370)
+### WAGE (lines 738-853)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1290 | 80 | `void drawPolicyScreen()` |  |
+| 740 | 62 | `void wageTaxPage(VBox column)` |  |
+| 816 | 37 | `void payrollBurden(VBox column, TaxPolicy policy, double base)` | The whole charge on a payslip, which no screen has ever totalled. |
 
-### THE PIECES A LEVER IS MADE OF (lines 1371-1439)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1406 | 11 | `VBox stagedLadder(String key, double current, double min, double max, double step, java.util.function.DoubleFunction<String> la...` | The lever itself: a Ladder (0.7.6) that STAGES a change rather than making one, for a dial that keeps its own apply bar - the wage floor, the policy rate, the pension's two, EI's two, the clinic's two, and the fare on... |
-| 1419 | 20 | `HBox applyBar(String label, Runnable apply)` | Apply, or put it back. |
-
-### TAXES - the two rates (lines 1440-1515)
+### PROPERTY (lines 854-946)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1459 | 56 | `void farmlandRelief(javafx.scene.layout.VBox column, Game game, TaxPolicy policy, EconomyManager em)` | The one dial that decides whether the city keeps its fields. |
+| 856 | 90 | `void propertyTaxPage(VBox column)` |  |
 
-### the arithmetic behind it (lines 1516-1602)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1518 | 3 | `static double scaled(double amount, double factor)` |  |
-| 1523 | 15 | `double profitFactor(TaxPolicy policy, double from, double to)` | How the profit tax moves with the base rate, weighted by what each sector paid. |
-| 1540 | 13 | `double salesFactor(TaxPolicy policy, double from, double to)` | ...and the sales tax, weighted by what each sector actually sold. |
-| 1562 | 3 | `double wageTaxAtBase(TaxPolicy policy, double base)` | The wage tax, recomputed rather than scaled. |
-| 1572 | 3 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset)` |  |
-| 1576 | 16 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset, WageBand onlyBand)` |  |
-| 1594 | 8 | `double payrollIn(WageBand band)` | The payroll a band carries, which is what its rate is charged on. |
-
-### TAXES - by wage band (lines 1603-1654)
+### THE LANDING (lines 947-1284)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1623 | 31 | `VBox bandLever(String name, String offset, String effective, String note, double signedOffset)` | The heading row of one band or one sector's line: what it is, and where it sits. |
+| 951 | 81 | `void showPolicyMenu()` |  |
+| 1034 | 5 | `double taxRaised()` | Every tax line the city collected last month. |
+| 1041 | 7 | `double promisesCost()` | What the three promises cost the treasury in a month, net of what they collect. |
+| 1049 | 9 | `int pinnedBands()` |  |
+| 1059 | 23 | `HBox policyVitals()` |  |
+| 1090 | 127 | `java.util.List<String[]> policyFlags()` | The levers that are currently forcing something. |
+| 1219 | 3 | `static String capitalised(String word)` | "sales" to "Sales", for a flag that opens with a tax's name. |
+| 1223 | 17 | `VBox flagLine(String tone, String heading, String body)` |  |
+| 1241 | 43 | `HBox policyRow(String name, String blurb, String figure, String sub, String tone, String area, String page)` |  |
 
-### TAXES - by sector (lines 1655-1658)
-
-### WAGES - the floor (lines 1659-1787)
+### ONE SUBJECT, ITS OWN STRIP (lines 1285-1367)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1675 | 103 | `void minimumWagePage(VBox column)` |  |
-| 1780 | 7 | `double bestWageIn(LabourMarket market, WageBand band)` | The best-paid job somebody in this band can hold. |
+| 1289 | 78 | `void drawPolicyScreen()` |  |
 
-### MONEY - the policy rate (lines 1788-2222)
+### THE PIECES A LEVER IS MADE OF (lines 1368-1436)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1803 | 391 | `void policyRatePage(VBox column)` |  |
+| 1403 | 11 | `VBox stagedLadder(String key, double current, double min, double max, double step, java.util.function.DoubleFunction<String> la...` | The lever itself: a Ladder (0.7.6) that STAGES a change rather than making one, for a dial that keeps its own apply bar - the wage floor, the policy rate, the pension's two, EI's two, the clinic's two, and the fare on... |
+| 1416 | 20 | `HBox applyBar(String label, Runnable apply)` | Apply, or put it back. |
+
+### TAXES - the two rates (lines 1437-1512)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1456 | 56 | `void farmlandRelief(javafx.scene.layout.VBox column, Game game, TaxPolicy policy, EconomyManager em)` | The one dial that decides whether the city keeps its fields. |
+
+### the arithmetic behind it (lines 1513-1599)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1515 | 3 | `static double scaled(double amount, double factor)` |  |
+| 1520 | 15 | `double profitFactor(TaxPolicy policy, double from, double to)` | How the profit tax moves with the base rate, weighted by what each sector paid. |
+| 1537 | 13 | `double salesFactor(TaxPolicy policy, double from, double to)` | ...and the sales tax, weighted by what each sector actually sold. |
+| 1559 | 3 | `double wageTaxAtBase(TaxPolicy policy, double base)` | The wage tax, recomputed rather than scaled. |
+| 1569 | 3 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset)` |  |
+| 1573 | 16 | `double wageTaxWith(TaxPolicy policy, WageBand band, double base, double offset, WageBand onlyBand)` |  |
+| 1591 | 8 | `double payrollIn(WageBand band)` | The payroll a band carries, which is what its rate is charged on. |
+
+### TAXES - by wage band (lines 1600-1651)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1620 | 31 | `VBox bandLever(String name, String offset, String effective, String note, double signedOffset)` | The heading row of one band or one sector's line: what it is, and where it sits. |
+
+### TAXES - by sector (lines 1652-1655)
+
+### WAGES - the floor (lines 1656-1784)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1672 | 103 | `void minimumWagePage(VBox column)` |  |
+| 1777 | 7 | `double bestWageIn(LabourMarket market, WageBand band)` | The best-paid job somebody in this band can hold. |
+
+### MONEY - the policy rate (lines 1785-2222)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1800 | 394 | `void policyRatePage(VBox column)` |  |
 | 2214 | 3 | `static String monthsWords(double months)` | A ceiling as the ladder reads it: "1 month", "6 months". |
 | 2219 | 3 | `static double halfPoint(double target)` | A target on the half-point grid, so a run of steps lands on 3% and not on 3.0000000000000004%. |
 
@@ -274,39 +274,39 @@
 |---:|---:|---|---|
 | 2365 | 141 | `void pensionPage(VBox column)` |  |
 
-### PROMISES - the schools: the price of a place, who pays it, and the (lines 2507-2984)
+### PROMISES - the schools: the price of a place, who pays it, and the (lines 2507-2992)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2549 | 9 | `static String grantWords(TaxPolicy.GrantBasis basis, double amount)` | The grant in words, for a line that names it: "15% of an unskilled wage a month". |
 | 2560 | 8 | `static String basisName(TaxPolicy.GrantBasis basis)` | What a basis is called on its chip. |
 | 2570 | 4 | `static String amountWords(TaxPolicy.GrantBasis basis, double amount)` | How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. |
-| 2575 | 292 | `void schoolsPage(VBox column)` |  |
-| 2869 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the foot bar can name and apply it. |
-| 2881 | 1 | `static String schoolKey(EducationType kind)` | The staged key of one school kind's own price (0.7.6): "tuitionScale:UNIVERSITY". |
-| 2884 | 1 | `static String scaleWords(double scale)` | A tuition scale as the page writes it: "x1.00". |
-| 2892 | 3 | `double stagedScaleOf(TaxPolicy policy, EducationType kind)` | The scale a preview prices one kind of school at: its own lever if staged, else every school at once if that is, else what it is (0.7.6). |
-| 2897 | 7 | `boolean anyScaleStaged()` | Whether anything staged moves a price of a place: every school at once, or any kind's own. |
-| 2906 | 5 | `static Label schoolPriceHead(String name)` | The small label over a price-of-a-place ladder: which school it prices. |
-| 2921 | 48 | `HBox schoolPriceRow(EducationType kind, TaxPolicy policy, Education schools, double places)` | One school kind's row: its name and its own ladder on the left, and on the right the four figures the model holds for it - places, students, cost and revenue - or "no school" and a greyed dial when nothing of that kin... |
-| 2971 | 13 | `static HBox schoolFigure(String word, String figure, String tone)` | One of the four figures beside a school kind's ladder: its word on the left, the figure on the right. |
+| 2575 | 300 | `void schoolsPage(VBox column)` |  |
+| 2877 | 4 | `Lever register(Lever lever)` | A dial on this page, registered so the foot bar can name and apply it. |
+| 2889 | 1 | `static String schoolKey(EducationType kind)` | The staged key of one school kind's own price (0.7.6): "tuitionScale:UNIVERSITY". |
+| 2892 | 1 | `static String scaleWords(double scale)` | A tuition scale as the page writes it: "x1.00". |
+| 2900 | 3 | `double stagedScaleOf(TaxPolicy policy, EducationType kind)` | The scale a preview prices one kind of school at: its own lever if staged, else every school at once if that is, else what it is (0.7.6). |
+| 2905 | 7 | `boolean anyScaleStaged()` | Whether anything staged moves a price of a place: every school at once, or any kind's own. |
+| 2914 | 5 | `static Label schoolPriceHead(String name)` | The small label over a price-of-a-place ladder: which school it prices. |
+| 2929 | 48 | `HBox schoolPriceRow(EducationType kind, TaxPolicy policy, Education schools, double places)` | One school kind's row: its name and its own ladder on the left, and on the right the four figures the model holds for it - places, students, cost and revenue - or "no school" and a greyed dial when nothing of that kin... |
+| 2979 | 13 | `static HBox schoolFigure(String word, String figure, String tone)` | One of the four figures beside a school kind's ladder: its word on the left, the figure on the right. |
 
-### PROMISES - the out of work and the students (2026-09-11) (lines 2985-3085)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2997 | 83 | `void outOfWorkPage(VBox column)` |  |
-| 3081 | 4 | `static String burdenTone(double share)` |  |
-
-### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 3086-3258)
+### PROMISES - the out of work and the students (2026-09-11) (lines 2993-3093)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3105 | 153 | `void healthPage(VBox column)` |  |
+| 3005 | 83 | `void outOfWorkPage(VBox column)` |  |
+| 3089 | 4 | `static String burdenTone(double share)` |  |
 
-### PROMISES - the standing subsidies (lines 3259-3331)
+### PROMISES - the clinic's price, and a premium (2026-09-19) (lines 3094-3271)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3268 | 63 | `void subsidyPage(VBox column)` |  |
+| 3113 | 158 | `void healthPage(VBox column)` |  |
+
+### PROMISES - the standing subsidies (lines 3272-3344)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3281 | 63 | `void subsidyPage(VBox column)` |  |
 

@@ -493,7 +493,7 @@ final class PolicyScreen {
 
         double annual = annualGdp(na);
         column.getChildren().add(statementLine("Which is, of everything the city made",
-                annual > 0 ? String.format("%.1f%% of GDP", all * 12 / annual * 100)
+                annual > 0 ? String.format("%.1f%% %s", all * 12 / annual * 100, ofAnnualGdp(na))
                            : "no output to compare",
                 Palette.TEXT_MUTED));
         column.getChildren().add(statementNote(
@@ -514,12 +514,13 @@ final class PolicyScreen {
                 pct2(policy.getSalesTaxRate()), parted ? Palette.ACCENT : Palette.TEXT_HEAD));
         column.getChildren().add(statementLine("The wage rate",
                 pct2(policy.getWageTaxRate()), parted ? Palette.ACCENT : Palette.TEXT_HEAD));
+        // In two layers since 0.7.21, in the mockups' words (TextLayers.dc.html).
         column.getChildren().add(leverHead(parted ? "three rates" : pct2(policy.getIncomeTaxRate()),
-                (parted ? "Profit, sales and wage tax have parted - each page moves its own. "
-                        : "Profit, sales and wage tax are one rate today. ")
-                + "This dial sets all three to one number, which is what the single city rate "
-                + "did; every sector's and every band's move rides whichever base is its "
-                + "own, so a sector you have customised keeps its treatment."));
+                (parted ? "They have parted. This sets profit, sales and wage tax to one number. "
+                        : "Sets profit, sales and wage tax together. ")
+                + "Your per-sector changes stay.",
+                "Moves all three rates to one number. A sector or wage band you've set apart "
+                + "keeps its own offset on top of the new rate."));
         column.getChildren().add(ladder(new Lever(EVERY_TAX, "Every tax at once",
                 policy.getIncomeTaxRate(), 0, TaxPolicy.MAX_INCOME_TAX, STEP_INCOME,
                 Money::pct2, policy::setIncomeTaxRate)));
@@ -959,9 +960,7 @@ final class PolicyScreen {
         DebtManager market = ui.game.getDebtManager();
         LabourMarket labour = ui.game.getLabourMarket();
 
-        Label title = new Label("POLICY");
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle("POLICY");
 
         Label lead = new Label("Every number the city sets for itself, and what each "
                 + "one is doing this month.");
@@ -1300,9 +1299,7 @@ final class PolicyScreen {
             default         -> POLICY_TAX_PAGES;
         };
 
-        Label title = new Label(policyArea.toUpperCase());
-        title.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_HEAD)
-                + " -fx-font-weight: bold; -fx-padding: 8 0 2 0;");
+        Label title = ui.pageTitle(policyArea.toUpperCase());
 
         VBox column = new VBox(0);
         column.setAlignment(Pos.TOP_LEFT);
@@ -2139,7 +2136,10 @@ final class PolicyScreen {
         // from the households once the bank has none left, and the premium is gone at
         // FULL_COMPRESSION_SHARE, where it always was; and it rolls its own maturing
         // paper at issue (Game, THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE).
-        column.getChildren().add(statementNote(String.format(
+        // In two layers since 0.7.22 (the text cut): the line, and the whole mechanism behind its (i).
+        column.getChildren().add(statementNote(
+                "Buying makes money and bends the long rates down; selling destroys it.",
+                String.format(
                 "Buying creates the money that pays for it and takes the paper off the bank's "
                 + "book, then off the households' once the bank has none left to sell; the long "
                 + "end of the curve bends down in proportion - at %.0f%% the term premium is "
@@ -2771,10 +2771,18 @@ final class PolicyScreen {
         int stagedOrdinal = (int) Math.round(staged("grantBasis", basis.ordinal()));
         TaxPolicy.GrantBasis wantBasis = TaxPolicy.GrantBasis.values()[
                 Math.max(0, Math.min(TaxPolicy.GrantBasis.values().length - 1, stagedOrdinal))];
+        // The basis alone only when the amount is not staged with it (0.7.23, after the docs
+        // pass): a basis chip stages both, and the amount's lever applies the pair in one
+        // setGrant() - one decision in the log, at the figure the player chose. Applying the
+        // basis first as well logged a first line at the old amount, clamped, that nobody chose.
         register(new Lever("grantBasis", "The grant is", basis.ordinal(),
                 0, TaxPolicy.GrantBasis.values().length - 1, 1,
                 v -> basisName(TaxPolicy.GrantBasis.values()[(int) Math.round(v)]),
-                v -> policy.setGrantBasis(TaxPolicy.GrantBasis.values()[(int) Math.round(v)])));
+                v -> {
+                    if (!isStaged("grantAmount")) {
+                        policy.setGrantBasis(TaxPolicy.GrantBasis.values()[(int) Math.round(v)]);
+                    }
+                }));
 
         javafx.scene.layout.FlowPane pick = new javafx.scene.layout.FlowPane(6, 6);
         pick.setMaxWidth(STATEMENT);
@@ -3170,7 +3178,12 @@ final class PolicyScreen {
         }
         column.getChildren().add(statementTotal("Priced out of care this month", people(pricedOut),
                 pricedOut > 0 ? Palette.BAD : Palette.GOOD));
+        // In two layers since 0.7.22 (the text cut): the line, and the whole rule behind its (i).
         column.getChildren().add(statementNote(pricedOut > 0
+                ? String.format("They skipped %s of care bills to eat.",
+                        money(ui.game.getHouseholdBalance().getCareSkipped()))
+                : "Everyone a clinic had room for could pay.",
+                pricedOut > 0
                 ? String.format("They skipped %s of care bills and ate with it. A household pays for "
                         + "care out of what it has after rent, its other bills and a basket for "
                         + "everybody in it - its income, its savings, its paper abroad and the "
@@ -3303,7 +3316,7 @@ final class PolicyScreen {
             Button toggle = new Button(on ? "Stop protecting" : "Protect it");
             toggle.setStyle(on
                     ? Palette.words(Palette.SIZE_LABEL, "white")
-                      + " -fx-background-color: " + "#2f7d52" + "; -fx-cursor: hand;"
+                      + " -fx-background-color: " + Palette.CONFIRM + "; -fx-cursor: hand;"
                     : Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY)
                       + " -fx-background-color: " + Palette.CONTROL + "; -fx-cursor: hand;");
             toggle.setOnAction(e -> {

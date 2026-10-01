@@ -53,6 +53,16 @@ package ham.citybuildersim;
  */
 public class LabourMarket {
 
+    /** Where the player's change to the wage floor is written (DecisionLog, 0.7.23); null for one no city holds. Never saved: the city wires it. */
+    private transient DecisionLog decisions;
+
+    /** Wires this to its city's decision log (Game.buildWorld()). */
+    public void recordTo(DecisionLog log) { decisions = log; }
+
+    private void decided(String kind, String label) {
+        if (decisions != null) decisions.record(kind, label);
+    }
+
     /* ===================================================================
        THE DIAL
        =================================================================== */
@@ -641,7 +651,11 @@ public class LabourMarket {
      * underneath is correct and holds its worth from here on.
      */
     public void setMinimumWage(double value) {
+        double was = minimumWage;
         minimumWage = clamp(value, minSettable, maxSettable);
+        if (DecisionLog.moved(was, minimumWage)) {
+            decided(DecisionLog.PROMISE, "Wage floor to " + DecisionLog.money(minimumWage) + " a month");
+        }
     }
 
     /** Sets the real floor, in founding money. The same dial as setMinimumWage. */

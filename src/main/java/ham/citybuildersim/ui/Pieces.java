@@ -11,6 +11,7 @@ import javafx.util.Duration;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import ham.citybuildersim.ui.Palette.Fonts;
 import static ham.citybuildersim.ui.Money.*;
 import static ham.citybuildersim.ui.Statement.*;
 import static ham.citybuildersim.ui.Levers.*;
@@ -21,8 +22,8 @@ import javafx.scene.layout.Priority;
  * an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a
  * stacked bar, a limit cell - and, under the divider half way down, the
  * helpers two screens turned out to share: the trend chart, the swatch, the
- * step chip, the keyed bar, the payer row, and the tile the build menu and the
- * land office both lay out three across.
+ * step chip, the keyed bar, the (i) and its popover (0.7.21), the payer row,
+ * and the tile the build menu and the land office both lay out three across.
  *
  * Static for the same reason as Money and Statement: no state, used
  * everywhere, called unqualified through an import static. The scroller is
@@ -65,12 +66,17 @@ public final class Pieces {
         Label figure = new Label(value);
         figure.setStyle(Palette.figure(Palette.SIZE_SECTION, tone));
 
+        // WRAPPED, not cut (0.7.20): the Bank strip's "over the last 6 months;
+        // its owners want 12.0%" ended "its owners wan..." at the cell's edge.
+        // The cell keeps its width; a long note takes a second line.
         Label says = new Label(note);
         says.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        says.setWrapText(true);
+        says.setMaxWidth(LIMIT_CELL - 28);
 
         VBox cell = new VBox(0, what, figure, says);
         cell.setAlignment(Pos.CENTER_LEFT);
-        cell.setPrefWidth(190);
+        cell.setPrefWidth(LIMIT_CELL);
 
         String rest = "-fx-padding: 0 14 0 14;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 1 0 0;";
@@ -88,6 +94,9 @@ public final class Pieces {
         }
         return cell;
     }
+
+    /** How wide a limit cell is, its padding included; its note wraps inside it. */
+    static final double LIMIT_CELL = 190;
 
     /**
      * A row of chips, which is the build strip's shape at two sizes.
@@ -210,7 +219,7 @@ public final class Pieces {
     public static Label gridCell(String text, String tone, int size, boolean rightAlign) {
         Label cell = new Label(text);
         cell.setStyle(rightAlign
-                ? Palette.figure(size, tone) + " -fx-font-weight: normal;"
+                ? Palette.figureRegular(size, tone)
                 : Palette.words(size, tone));
         cell.setMaxWidth(Double.MAX_VALUE);
         cell.setAlignment(rightAlign ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
@@ -219,7 +228,7 @@ public final class Pieces {
 
     public static Label monoLabel(String text) {
         Label label = new Label(text);
-        label.setStyle("-fx-font-family: 'Courier New';");
+        label.setStyle("-fx-font-family: " + Palette.mono() + ";");
         return label;
     }
 
@@ -297,26 +306,39 @@ public final class Pieces {
     }
 
     /**
-     * A monthly flow, at a precision that stays honest in a small city.
+     * A monthly flow of people, in whole people (0.7.20).
      *
-     * Rounding to whole people would print "0 born" every month in a village of
-     * two hundred, which reads as a broken counter rather than as a slow one -
-     * so anything under ten keeps a decimal. The pyramid holds fractions of
-     * people by design; only the display rounds, and it should not round away
-     * the only thing happening.
+     * It kept a decimal under ten, so that a village of two hundred would not
+     * print "0 born" every month - and printed "+0.1 born", "Moved in 8.9" and,
+     * with a sign put in front of it, "Died -0.0". Nobody is a tenth of a
+     * person, and Money.people() already said so for every count. So a flow
+     * is whole people too, and a flow that is happening but rounds to none
+     * reads "under 1" - the form the screens already use for a share too small
+     * to print ("under 1%") and a build too quick to count ("under a month") -
+     * so the only thing moving is still not rounded away. The pyramid keeps
+     * its fractions; only the display rounds.
      */
     public static String flowText(double value) {
-        if (Math.abs(value) > 0 && Math.abs(value) < 10) {
-            return String.format("%.1f", value);
-        }
+        double a = Math.abs(value);
+        if (a > 0 && a < .5) return "under 1";
         return formatter.format(Math.round(value));
+    }
+
+    /**
+     * The same with its direction in front - "+12", "-3" - and none on a flow
+     * that reads "0" or "under 1", which have no direction to give.
+     */
+    public static String flowSigned(String sign, double value) {
+        String text = flowText(value);
+        return Math.round(Math.abs(value)) == 0 ? text : sign + text;
     }
 
     /**
      * A small line chart, in the statement's own language.
      *
-     * NOT the Reports tab's chart. That one normalises every line to its own
-     * low-to-high so unrelated series can share an axis; here the whole point
+     * NOT City History's big chart. That one gives each unit its own axis and,
+     * past two units, draws every line across its own low-to-high so
+     * unrelated series can share one (HistoryScreen); here the whole point
      * of drawing the book next to the capacity is that they are the same units
      * and one of them is above the other. So: ONE scale for every line on the
      * chart, and the axis labelled with the actual figures.
@@ -325,9 +347,15 @@ public final class Pieces {
      * There is no flag for it - a flag would only let a caller declare that two
      * incomparable series are comparable, which is the mistake rather than the
      * guard against it.
+     *
+     * AND THE YEARS UNDER IT (0.7.23): `axis` is the history's axis the
+     * series are aligned to - h.getMonth(), or the same slice of it - and the
+     * chart draws ChartModel's year ticks under the plot and a faint line up
+     * it at each. It had no time axis at all; "the last 280 months" was the
+     * only clue to when anything happened.
      */
-    public static VBox trendChart(String[] names, double[][] series, String[] colours) {
-        return trendChart(names, series, colours, null);
+    public static VBox trendChart(List<Integer> axis, String[] names, double[][] series, String[] colours) {
+        return trendChart(axis, names, series, colours, null);
     }
 
     /**
@@ -336,7 +364,7 @@ public final class Pieces {
      * rate, a ratio. Null is chartFigure(). Added for the bank's rates and
      * capital (0.7.9); the one-scale rule is unchanged.
      */
-    public static VBox trendChart(String[] names, double[][] series, String[] colours,
+    public static VBox trendChart(List<Integer> axis, String[] names, double[][] series, String[] colours,
                                   java.util.function.DoubleFunction<String> figure) {
 
         final double WIDE = STATEMENT - 40;
@@ -408,6 +436,33 @@ public final class Pieces {
             plot.getChildren().add(rule);
         }
 
+        /* ------------------------ the years (0.7.23) ------------------------ */
+        // The months the drawn part covers, first to last; a point's x is its
+        // place between them, as the lines below put it.
+        int firstMonth = axis != null && from < axis.size() ? axis.get(from) : from;
+        int lastMonth = axis != null && axis.size() >= points + from ? axis.get(from + points - 1)
+                : firstMonth + points - 1;
+        javafx.scene.canvas.Canvas years = new javafx.scene.canvas.Canvas(WIDE, 15);
+        javafx.scene.canvas.GraphicsContext yg = years.getGraphicsContext2D();
+        yg.setFont(Palette.Fonts.monoFont(9.5));
+        yg.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+        double labelEnd = -1e9;
+        for (ChartModel.Tick t : ChartModel.timeTicks(firstMonth, lastMonth, WIDE)) {
+            double x = ChartModel.x(t.month(), firstMonth, lastMonth, 0, WIDE);
+            if (t.year()) {
+                javafx.scene.shape.Line up = new javafx.scene.shape.Line(Math.floor(x) + .5, 0, Math.floor(x) + .5, TALL);
+                up.setStroke(javafx.scene.paint.Color.web(Palette.CONTROL));
+                up.setStrokeWidth(1);
+                plot.getChildren().add(up);
+            }
+            double w = TimeChart.textWidth(t.label(), yg.getFont());
+            double left = Math.max(0, Math.min(x - w / 2, WIDE - w));
+            if (left < labelEnd + 6) continue;
+            yg.setFill(javafx.scene.paint.Color.web(t.year() ? Palette.TEXT_2 : Palette.TEXT_3));
+            yg.fillText(t.label(), left + w / 2, 11);
+            labelEnd = left + w;
+        }
+
         /* ------------------------------ the lines ------------------------------ */
         for (int s = 0; s < series.length; s++) {
 
@@ -416,8 +471,8 @@ public final class Pieces {
             /*
              * FILL NULL. A JavaFX Polyline is a Shape and a Shape's default
              * fill is BLACK, so an unfilled-looking line paints the whole area
-             * under itself. On a #1c262b panel that is invisible and wrong at
-             * the same time.
+             * under itself. On the dark panel (Palette.PANEL) that is invisible
+             * and wrong at the same time.
              */
             line.setFill(null);
             line.setStroke(javafx.scene.paint.Color.web(colours[s]));
@@ -470,7 +525,7 @@ public final class Pieces {
                 : String.format("%d months, oldest on the left", points));
         span.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_SPENT));
 
-        VBox box = new VBox(2, plot, key, span);
+        VBox box = new VBox(2, plot, years, key, span);
         box.setMaxWidth(STATEMENT);
         box.setStyle("-fx-padding: 6 0 12 0;");
         return box;
@@ -493,10 +548,10 @@ public final class Pieces {
      */
     public static String chartFigure(double value, String name) {
         if (name != null && name.startsWith("Book against")) {
-            return String.format("%.2f", value);
+            return String.format("%.2f", unsigned0(value, 2));
         }
         if (name != null && name.startsWith("Points")) {
-            return String.format("%.1f pts", value * 100);
+            return String.format("%.1f pts", unsigned0(value * 100, 1));
         }
         if (name != null && name.startsWith("Branches")) {
             return formatter.format(Math.round(value));
@@ -578,9 +633,163 @@ public final class Pieces {
         return na.getAnnualGdp() / months * 12;
     }
 
+    /**
+     * A build time, as every place that quotes one writes it (0.7.20): "~8
+     * mo", "under a month" below one, "stalled" with no site output (NaN) -
+     * the order line's own forms.
+     */
+    public static String monthsWait(double months) {
+        if (Double.isNaN(months)) return "stalled";
+        return months < 1 ? "under a month" : "~" + formatter.format(Math.round(months)) + " mo";
+    }
+
+    /**
+     * ...and said for what it is (0.7.20): "~5 mo at today's queue". The
+     * quote is the wait at this month's shares of the builders' crews
+     * (BuildingManager.waitFor()), and orders placed after it take crews
+     * from it - the wind farm in Jerus's play-through was quoted ~5 mo,
+     * read ~9 mo, and still read ~5 mo left eight months later. Once per
+     * place it is quoted: the order line, a card's "N on site", and each
+     * site on the construction panel.
+     */
+    public static String atTodaysQueue(double months) {
+        String wait = monthsWait(months);
+        return Double.isNaN(months) ? wait : wait + " at today's queue";
+    }
+
+    /**
+     * What a ratio to that year of output is OF (0.7.20): "of annual GDP", or
+     * "of GDP, annualised" while the year is scaled up from fewer than twelve
+     * months - so a founding city's "169.7%" says which kind of year it is
+     * against. Every ratio to annualGdp() written out in words ends in
+     * these; the grids' "of GDP" column heads keep theirs.
+     */
+    public static String ofAnnualGdp(NationalAccounts na) {
+        return gdpEstimated(na) ? "of GDP, annualised" : "of annual GDP";
+    }
+
     public static boolean gdpEstimated(NationalAccounts na) {
         int months = na.getMonthsRecorded();
         return months > 0 && months < 12;
+    }
+
+    /* =====================================================================
+       TEXT IN THREE LAYERS: THE (i) (0.7.21)
+
+       Jerus asked for the interface to be less of a textbook, and the plan
+       he agreed put its text in three layers (the project's
+       playing-0-7-19-ui-notes.md, section 6): on the screen, the number, a
+       label of a few words and one short line at most; one click away, the
+       full explanation; in the manual, the history. This is the middle
+       layer's one piece: a short line, an (i) beside it, and a click on the
+       (i) opens a popover - the receipt's (0.7.20), a card over the page
+       under what was clicked, gone on a click anywhere else or on Esc - with
+       the whole text in it. Nothing is deleted: the long text moves in
+       here - except where the mockups wrote the popover, whose words replaced
+       the paragraph that was there.
+       The mockups' four examples are in it word for word (TextLayers.dc.html):
+       the build tab's investors, Construction's billing, the one tax dial and
+       the Government's last row.
+       ===================================================================== */
+
+    /** How wide a popover's text wraps. */
+    static final double POPOVER_WIDTH = 360;
+
+    /** The line a popover may end with: the third layer's door, with no link until the manual has one. */
+    static final String MORE_IN_THE_MANUAL = "More in the manual";
+
+    /** The popover showing now, so opening another puts the first away. */
+    private static javafx.stage.Popup popover;
+
+    /**
+     * The (i): a small circled i that opens `whole` in a popover under it.
+     * Its click goes no further, so an (i) inside something clickable - a
+     * header tile - opens the text and not the tile.
+     *
+     * @param manual whether the popover ends "More in the manual"
+     */
+    public static javafx.scene.Node infoButton(String whole, boolean manual) {
+        javafx.scene.shape.SVGPath mark = new javafx.scene.shape.SVGPath();
+        mark.setContent(Icons.INFO);
+        mark.setFill(null);
+        mark.setStrokeWidth(2);
+        mark.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+        mark.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+        mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
+        javafx.scene.layout.Pane box = new javafx.scene.layout.Pane(mark);
+        box.setPrefSize(24, 24);
+        box.setMinSize(24, 24);
+        box.setMaxSize(24, 24);
+        box.setScaleX(INFO_SIZE / 24);
+        box.setScaleY(INFO_SIZE / 24);
+        javafx.scene.layout.StackPane button = new javafx.scene.layout.StackPane(box);
+        button.setMinSize(INFO_SIZE, INFO_SIZE);
+        button.setPrefSize(INFO_SIZE, INFO_SIZE);
+        button.setMaxSize(INFO_SIZE, INFO_SIZE);
+        button.setStyle("-fx-cursor: hand;");
+        button.setOnMouseEntered(e -> mark.setStroke(javafx.scene.paint.Color.web(Palette.ACCENT)));
+        button.setOnMouseExited(e -> mark.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED)));
+        button.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, e -> {
+            e.consume();
+            openPopover(button, whole, manual);
+        });
+        button.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_PRESSED, javafx.event.Event::consume);
+        return button;
+    }
+
+    /** How big the (i) is drawn: its 24-unit grid at this many pixels. */
+    static final double INFO_SIZE = 16;
+
+    /**
+     * A short line with its (i): `shown` on the screen, `whole` one click
+     * away. The line wraps at `wide`; the (i) sits after its last word.
+     */
+    public static HBox infoLine(String shown, String whole, boolean manual, int size, String tone, double wide) {
+        Label line = new Label(shown);
+        line.setWrapText(true);
+        line.setMaxWidth(wide - INFO_SIZE - Palette.GAP_TIGHT);
+        line.setStyle(Palette.words(size, tone));
+        HBox row = new HBox(Palette.GAP_TIGHT, line, infoButton(whole, manual));
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMaxWidth(Region.USE_PREF_SIZE);
+        return row;
+    }
+
+    /** The popover itself: the whole text on the raised ground, under the (i), until a click elsewhere or Esc. */
+    static void openPopover(javafx.scene.Node anchor, String whole, boolean manual) {
+        if (popover != null) popover.hide();
+        javafx.geometry.Bounds at = anchor.localToScreen(anchor.getBoundsInLocal());
+        if (at == null || anchor.getScene() == null) return;
+
+        Label text = new Label(whole);
+        text.setWrapText(true);
+        text.setMaxWidth(POPOVER_WIDTH);
+        text.setStyle("-fx-font-family: " + Fonts.sans() + "; -fx-font-size: 12.5px;"
+                + " -fx-text-fill: " + Palette.TEXT_LABEL + "; -fx-line-spacing: 2;");
+        VBox card = new VBox(6, text);
+        if (manual) {
+            Label more = new Label(MORE_IN_THE_MANUAL);
+            more.setStyle("-fx-font-family: " + Fonts.sans() + "; -fx-font-size: 12px;"
+                    + " -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+            card.getChildren().add(more);
+        }
+        card.setStyle("-fx-background-color: " + Palette.PINNED + "; -fx-border-color: " + Palette.EDGE + ";"
+                + " -fx-border-width: 1; -fx-background-radius: 8; -fx-border-radius: 8;"
+                + " -fx-padding: 10 12 10 12;"
+                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.55), 12, 0, 0, 3);");
+
+        javafx.stage.Popup pop = new javafx.stage.Popup();
+        pop.setAutoHide(true);
+        pop.setHideOnEscape(true);
+        pop.getContent().add(card);
+        pop.setOnHidden(e -> { if (popover == pop) popover = null; });
+        popover = pop;
+        pop.show(anchor, at.getMinX() - 8, at.getMaxY() + 6);
+    }
+
+    /** The popover put away, if one is open: clearMenu() calls it when the screen changes; a redraw of the same screen (a month landing) leaves it up. */
+    public static void closePopover() {
+        if (popover != null) popover.hide();
     }
 
     /** One payer inside an opened line: who, how much, at what rate. */

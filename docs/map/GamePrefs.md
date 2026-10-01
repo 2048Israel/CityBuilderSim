@@ -1,6 +1,6 @@
 # GamePrefs.java - 176 lines · 13 methods · 3 constants · model
 
-`ham/citybuildersim/GamePrefs.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GamePrefs.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > How the player likes the window, kept between runs.
 > 

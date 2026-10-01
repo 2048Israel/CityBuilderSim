@@ -813,8 +813,8 @@ public final class RealEstate extends Sector {
         double beds = rentPrice > 0 ? perDoor / rentPrice : 0;
 
         lines.add(Line.head("Family homes, per person of capacity"));
-        lines.add(Line.of("Charged now", f.cash(rentPrice)));
-        lines.add(Line.of("Heading for", f.cash(getRentTarget()),
+        lines.add(Line.of("Charged now", f.amount(rentPrice)));
+        lines.add(Line.of("Heading for", f.amount(getRentTarget()),
                 getRentTarget() > rentPrice ? Line.Tone.WARN : Line.Tone.GOOD));
         lines.add(Line.of("Households per door", String.format("%.2f", familyPressure()),
                 familyPressure() > 1.2 ? Line.Tone.BAD : familyPressure() > 1 ? Line.Tone.WARN : Line.Tone.GOOD));
@@ -823,8 +823,8 @@ public final class RealEstate extends Sector {
                 + "about to rise is visible here months before it is felt."));
 
         lines.add(Line.head("Studios and one-beds"));
-        lines.add(Line.of("Charged now", f.cash(studioRentPrice)));
-        lines.add(Line.of("Heading for", f.cash(getStudioRentTarget()),
+        lines.add(Line.of("Charged now", f.amount(studioRentPrice)));
+        lines.add(Line.of("Heading for", f.amount(getStudioRentTarget()),
                 getStudioRentTarget() > studioRentPrice ? Line.Tone.WARN : Line.Tone.GOOD));
         lines.add(Line.of("Households per door", String.format("%.2f", studioPressure()),
                 studioPressure() > 1.2 ? Line.Tone.BAD : studioPressure() > 1 ? Line.Tone.WARN : Line.Tone.GOOD));
@@ -836,21 +836,21 @@ public final class RealEstate extends Sector {
 
         lines.add(Line.of(beds > 0 ? String.format("What one let home pays, billed for %.1f", beds)
                                    : "What one let home pays",
-                perDoor > 0 ? f.cash(perDoor) : "not struck yet",
+                perDoor > 0 ? f.amount(perDoor) : "not struck yet",
                 perDoor > 0 ? Line.Tone.HEAD : Line.Tone.MUTED));
         lines.add(Line.note("The price above is per head of capacity, not per front door. This line is "
                 + "the same money over the other denominator, read from the households' own "
-                + "ledger — it is the rent figure the Population screens print."
+                + "ledger — it is the rent figure the People screens print."
                 + (perDoor > 0 ? "" : " It is struck when a month closes, so it reads nothing"
-                        + " until you press Next Month.")));
+                        + " until a month has passed.")));
 
         lines.add(Line.head("What sets the price"));
-        lines.add(Line.of("The cost of the next home", f.cash(structurePerCapacity + landPerCapacity)));
+        lines.add(Line.of("The cost of the next home", f.amount(structurePerCapacity + landPerCapacity)));
         lines.add(Line.note(String.format("Per person of capacity: %s of building and %s of ground. What it would "
                 + "cost to put up one more, which is what a balanced market pays for. "
                 + "Cheap land and cheap materials are a rent policy.",
-                f.cash(structurePerCapacity), f.cash(landPerCapacity))));
-        lines.add(Line.of("They will not go below", f.cash(rentBreakEven()), Line.Tone.MUTED));
+                f.amount(structurePerCapacity), f.amount(landPerCapacity))));
+        lines.add(Line.of("They will not go below", f.amount(rentBreakEven()), Line.Tone.MUTED));
         lines.add(Line.note("Repairs, property tax and interest on what the company already owes, "
                 + "over every head its buildings hold — what the standing stock costs "
                 + "to hold whether anyone is in it or not. Rent can be pushed down to "

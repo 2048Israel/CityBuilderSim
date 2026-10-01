@@ -1,6 +1,6 @@
-# AllChecks.java - 81 lines · 1 methods · 1 constants · harnesses
+# AllChecks.java - 82 lines · 1 methods · 1 constants · harnesses
 
-`ham/citybuildersim/AllChecks.java` - generated 2026-09-30 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AllChecks.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
 
 > Runs every harness, one JVM each, and says which failed.
 > 
@@ -28,6 +28,6 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 58 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
-| 39 | 42 | `public static void main(String[] args) throws Exception` |  |
+| 24 | 59 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
+| 40 | 42 | `public static void main(String[] args) throws Exception` |  |
 
