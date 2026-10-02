@@ -424,9 +424,10 @@ public class HistoryCheck {
         String before077 = json;
         // ...and without 0.7.8's six, which a history from before 0.7.7 has
         // none of either (they fill the same way - asserted at the end).
+        // ...nor 0.7.35's parity beside the rate.
         for (String added : new String[]{"policyRate", "bankPrime", "bankDepositRate", "bankFees",
                 "bankCapitalRatio", "bankCapitalTarget", "bankAllowance", "bankProvisions",
-                "bankDividends", "bankReturnOnEquity"}) {
+                "bankDividends", "bankReturnOnEquity", "fxParity"}) {
             before077 = dropSeries(before077, added);
         }
         StringBuilder premiums = new StringBuilder("\"bankPremium\":[");
@@ -457,6 +458,12 @@ public class HistoryCheck {
                         && old076.getHistorySave().seriesByName().get("bankCapitalTarget").size() == 2
                         && old076.getHistorySave().seriesByName().get("bankAllowance").size() == 2
                         && !Double.isNaN(old076.getHistorySave().aligned("bankCapitalTarget")
+                                [old076.getHistorySave().months() - 1]));
+        assertTrue("...and so does parity beside the rate (0.7.35), drawn as not recorded before",
+                was.seriesByName().get("fxParity") != null
+                        && old076.getHistorySave().seriesByName().get("fxParity").size() == 2
+                        && Double.isNaN(old076.getHistorySave().aligned("fxParity")[0])
+                        && !Double.isNaN(old076.getHistorySave().aligned("fxParity")
                                 [old076.getHistorySave().months() - 1]));
 
         /* ============ 4. the derived series do not divide by zero ============

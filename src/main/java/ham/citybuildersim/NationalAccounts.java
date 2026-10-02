@@ -79,6 +79,7 @@ import java.util.List;
  */
 public class NationalAccounts {
 
+    /** How many months of GDP the rolling history keeps - ten years - and the most a load seeds it with (seedHistory()). */
     private static final int HISTORY_MONTHS = 120;
 
     /* ---------------------------- GDP components ---------------------------- */
@@ -186,8 +187,10 @@ public class NationalAccounts {
      * as this month's production. On a city holding 15,800 units of food that
      * more than doubled the next month's GDP, which then fed the interest rate.
      *
-     * The rolling history is deliberately not restored: it is not saved at all
-     * yet, and inventing entries for it would be worse than a short one.
+     * The rolling history is not restored here: it is not saved with the
+     * month, and inventing entries for it would be worse than a short one.
+     * Since 0.7.31 the load path puts it back from the graph history's GDP
+     * series, which is saved - see seedHistory().
      */
     public void restore(double gdp, double lastFoodVolume,
                         double consumptionGoods, double consumptionHousing,
@@ -821,6 +824,36 @@ public class NationalAccounts {
     public int getMonthsRecorded() { return history.size(); }
 
     public List<Double> getHistory() { return history; }
+
+    /**
+     * The rolling history put back after a load (0.7.31, the Government
+     * spec's B1): the last HISTORY_MONTHS of the graph history's GDP series
+     * (HistorySave.getGdp(), a month's GDP kept every month and saved), in
+     * place of the one month the rebuild records.
+     *
+     * WHY. It was not restored at all, so for the twelve months after every
+     * load each "of annual GDP" was one to eleven months scaled up - a
+     * 2,400-month city read 36.4% where the year said 34.4% - the Government
+     * tab said "There is not a year of output recorded yet", Output "Months
+     * recorded 1", and the header's GDP tile "$0 / yr" and "first year". The
+     * series is the same figure to ten dollars (HistorySave keeps thousands
+     * to two places), so the year read after a load is the year the city had. A city with no
+     * graph history (no history file) keeps what the rebuild recorded.
+     *
+     * Read only by screens, the time skip's report and the year's GDP
+     * EconomyManager keeps for the left panel: nothing in the month reads
+     * the history, so a loaded city
+     * plays on exactly as before.
+     */
+    public void seedHistory(List<Double> monthly) {
+        if (monthly == null || monthly.isEmpty()) return;
+        history.clear();
+        int from = Math.max(0, monthly.size() - HISTORY_MONTHS);
+        for (int i = from; i < monthly.size(); i++) {
+            Double v = monthly.get(i);
+            history.add(v == null ? 0 : v);
+        }
+    }
 
     /* ---------------------------- government -------------------------------- */
 

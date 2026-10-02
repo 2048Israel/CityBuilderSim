@@ -1,6 +1,6 @@
-# LongTermBond.java - 136 lines · 12 methods · 2 constants · model
+# LongTermBond.java - 137 lines · 12 methods · 2 constants · model
 
-`ham/citybuildersim/LongTermBond.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongTermBond.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > A term loan: a coupon every month on the whole face, and the whole face at
 > the end - issued only at the five maturities in MATURITIES (0.7.1).
@@ -32,9 +32,9 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9 | 128 | **type** `public class LongTermBond extends Debt` | A term loan: a coupon every month on the whole face, and the whole face at the end - issued only at the five maturities in MATURITIES (0.7.1). |
+| 9 | 129 | **type** `public class LongTermBond extends Debt` | A term loan: a coupon every month on the whole face, and the whole face at the end - issued only at the five maturities in MATURITIES (0.7.1). |
 
-### FIVE MATURITIES (0.7.1) (lines 11-136)
+### FIVE MATURITIES (0.7.1) (lines 11-137)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -49,5 +49,5 @@
 | 100 | 3 | `public String getType()` |  |
 | 105 | 3 | `protected double couponOwed()` |  |
 | 109 | 3 | `public double getCouponRate()` |  |
-| 124 | 12 | `protected double[] scheduleOwed()` | Coupon every month, and the whole face at the end. |
+| 125 | 12 | `protected double[] scheduleOwed()` | Coupon every month, and the whole face at the end. |
 

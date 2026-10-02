@@ -1,6 +1,6 @@
-# GamePrefs.java - 176 lines · 13 methods · 3 constants · model
+# GamePrefs.java - 202 lines · 17 methods · 3 constants · model
 
-`ham/citybuildersim/GamePrefs.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GamePrefs.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > How the player likes the window, kept between runs.
 > 
@@ -31,7 +31,7 @@
 
 | line | section |
 |---:|---|
-| 135 | THE FILE |
+| 161 | THE FILE |
 
 ## Constants
 
@@ -50,12 +50,14 @@
 | 85 | `private boolean pauseOnEvents` | Whether the clock stops itself when something worth seeing happens. |
 | 123 | `private String pinnedLeft` |  |
 | 124 | `private String pinnedRight` |  |
+| 145 | `private boolean drawerPinned` | Whether the City overview's drawer stays open across screens (0.7.24). |
+| 156 | `private boolean constructionOpen` | Whether the construction panel is open over the stage or folded to its tab (0.7.24). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 147 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
+| 30 | 173 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
 | 44 | 1 | `public boolean isFullScreen()` |  |
 | 45 | 1 | `public void setFullScreen(boolean value)` |  |
 | 61 | 1 | `public boolean isPanelDashboard()` |  |
@@ -66,12 +68,16 @@
 | 129 | 3 | `public String getPinnedRight()` |  |
 | 132 | 1 | `public void setPinnedLeft(String key)` |  |
 | 133 | 1 | `public void setPinnedRight(String key)` |  |
+| 147 | 1 | `public boolean isDrawerPinned()` |  |
+| 148 | 1 | `public void setDrawerPinned(boolean value)` |  |
+| 158 | 1 | `public boolean isConstructionOpen()` |  |
+| 159 | 1 | `public void setConstructionOpen(boolean value)` |  |
 
-### THE FILE (lines 135-176)
+### THE FILE (lines 161-202)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 139 | 3 | `private static Path fileIn(GameFiles files)` |  |
-| 144 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
-| 167 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
+| 165 | 3 | `private static Path fileIn(GameFiles files)` |  |
+| 170 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
+| 193 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
 

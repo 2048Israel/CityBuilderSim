@@ -73,6 +73,20 @@ public class PopulationCohorts {
     /** ...and of which violence: the killed. See Crime. */
     private final double[] lastKilledByBand = new double[AgeBand.values().length];
 
+    /*
+     * THE MONTH'S DEAD BY CAUSE, SUMMED AND SAVED (0.7.27). The by-band
+     * arrays above are the month's working and are not saved, so after a
+     * load the deaths read their total with nothing under it. These three
+     * are what the People page's waterfall splits the dead into, with the
+     * illness deaths Sickness keeps: the killed, the rest of the dying - of
+     * age, the band's own mortality - and the ones who aged out of the top
+     * of the pyramid at 120. Struck where the month books the dead, so the
+     * four add up to getLastDeaths(); nothing in the month reads them.
+     */
+    private double lastKilled;
+    private double lastDeathsOfAge;
+    private double lastAgedOut;
+
     public PopulationCohorts() { }
 
     /* ----------------------------- reading ----------------------------- */
@@ -91,6 +105,12 @@ public class PopulationCohorts {
     /** Last month's deaths in a band that were killings. See Crime. */
     public double getKilled(AgeBand b)   { return lastKilledByBand[b.ordinal()]; }
     public double[] getKilled()          { return lastKilledByBand.clone(); }
+    /** Last month's killings, every band together - saved, unlike the bands (0.7.27). */
+    public double getLastKilled()        { return lastKilled; }
+    /** Last month's deaths of the bands' own mortality: the dying, less illness and violence (0.7.27). */
+    public double getLastDeathsOfAge()   { return lastDeathsOfAge; }
+    /** Last month's deaths out of the top of the pyramid at 120: the deaths that are not dying (0.7.27). */
+    public double getLastAgedOut()       { return lastAgedOut; }
 
     public double total() {
         double sum = 0;
@@ -226,6 +246,9 @@ public class PopulationCohorts {
         lastBirths = 0;
         lastDeaths = 0;
         lastMigration = 0;
+        lastKilled = 0;
+        lastDeathsOfAge = 0;
+        lastAgedOut = 0;
 
         if (total() <= 0) {
             return;
@@ -279,6 +302,8 @@ public class PopulationCohorts {
             lastIllnessDeathsByBand[i] = dying * illShare;
             lastKilledByBand[i] = dying * killShare;
             lastDeaths += dying;
+            lastKilled += lastKilledByBand[i];
+            lastDeathsOfAge += dying - lastIllnessDeathsByBand[i] - lastKilledByBand[i];
 
             AgeBand next = b.next();
             if (next != null) {
@@ -287,6 +312,7 @@ public class PopulationCohorts {
                 // Out of the top of the pyramid at 120, which is also a death.
                 lastDeathsByBand[i] += ageing;
                 lastDeaths += ageing;
+                lastAgedOut += ageing;
             }
         }
 
@@ -442,7 +468,7 @@ public class PopulationCohorts {
 
        SO THE WIDTH NOW COMES FROM THE SAVE, NOT FROM THIS BUILD. The names
        the pyramid was written with travel beside it, the values are mapped by
-       name, and the three scalars sit after however many bands the SAVE had.
+       name, and the scalars - three, six since 0.7.27 - sit after however many bands the SAVE had.
        A file written by a five-band build stays a five-band file no matter
        how many bands this build has. It is the same fix Equity and the
        household cells already carry - restore(keys, state) - for the same
@@ -470,11 +496,15 @@ public class PopulationCohorts {
     }
 
     public double[] toSaveArray() {
-        double[] out = new double[band.length + 3];
+        double[] out = new double[band.length + 6];
         System.arraycopy(band, 0, out, 0, band.length);
         out[band.length]     = lastBirths;
         out[band.length + 1] = lastDeaths;
         out[band.length + 2] = lastMigration;
+        // ...and the dead by cause (0.7.27, SAVE_FORMAT 30).
+        out[band.length + 3] = lastKilled;
+        out[band.length + 4] = lastDeathsOfAge;
+        out[band.length + 5] = lastAgedOut;
         return out;
     }
 
@@ -489,6 +519,7 @@ public class PopulationCohorts {
      * @param bands the names the save was written with; null or empty means a
      *              file from before they travelled, which is always LEGACY_BANDS
      * @param saved those bands in that order, then births, deaths and migration
+     *              - and since 0.7.27 the killed, the dead of age and the aged out
      *
      * Refused whole on a length mismatch rather than padded, which is this
      * codebase's standing rule for state arrays: a pyramid read at the wrong
@@ -509,7 +540,13 @@ public class PopulationCohorts {
          * of zero. Refusing those saves outright is far worse than the missing
          * figure, because this array IS the population.
          */
-        boolean withMigration = saved.length == names.length + 3;
+        /*
+         * ...AND A THIRD SINCE 0.7.27: the dead by cause after the three
+         * flows (SAVE_FORMAT 30). A save from before them reads its causes
+         * as 0, which is what a reloaded People page showed before.
+         */
+        boolean withCauses = saved.length == names.length + 6;
+        boolean withMigration = withCauses || saved.length == names.length + 3;
         if (!withMigration && saved.length != names.length + 2) {
             return;   // any other shape is refused whole, per the standing rule
         }
@@ -539,6 +576,9 @@ public class PopulationCohorts {
         lastBirths    = saved[names.length];
         lastDeaths    = saved[names.length + 1];
         lastMigration = withMigration ? saved[names.length + 2] : 0;
+        lastKilled      = withCauses ? saved[names.length + 3] : 0;
+        lastDeathsOfAge = withCauses ? saved[names.length + 4] : 0;
+        lastAgedOut     = withCauses ? saved[names.length + 5] : 0;
     }
 
     /** The band of that name, or null if this build has no such band. */
@@ -557,5 +597,8 @@ public class PopulationCohorts {
         java.util.Arrays.fill(lastKilledByBand, 0);
         lastBirths = 0;
         lastDeaths = 0;
+        lastKilled = 0;
+        lastDeathsOfAge = 0;
+        lastAgedOut = 0;
     }
 }

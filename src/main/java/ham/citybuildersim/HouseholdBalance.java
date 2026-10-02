@@ -641,6 +641,8 @@ public class HouseholdBalance {
     private double plannedSpend;
     private double hungryPeople;
     private double totalPeople;
+    /** ...of whom hungry even had the shops handed over all that was planned: the money half (0.7.27). */
+    private double hungryAtFullShelves;
 
     public HouseholdBalance() {
         java.util.List<Household> built = new java.util.ArrayList<>();
@@ -814,6 +816,7 @@ public class HouseholdBalance {
          */
         hungryPeople = 0;
         totalPeople = 0;
+        hungryAtFullShelves = 0;
         lastWrittenOff = 0;
         lastLeaving = 0;
         lastEvicted = 0;
@@ -879,6 +882,18 @@ public class HouseholdBalance {
             double ate = c.planned * delivered + c.mealsEaten * subsistencePerMeal;
             if (c.subsistence > 0 && ate < c.subsistence) {
                 hungryPeople += people * (1 - ate / c.subsistence);
+            }
+            /*
+             * ...AND THE SAME AT FULL SHELVES (0.7.27): what the household's
+             * own plan would have left it short of had the shops handed over
+             * all of it. That is the money half of the hunger above; the rest
+             * is the shelves. The People page splits GOING SHORT by it, so a
+             * player can tell the two failures apart. Nothing reads it in the
+             * month.
+             */
+            double planFed = c.planned + c.mealsEaten * subsistencePerMeal;
+            if (c.subsistence > 0 && planFed < c.subsistence) {
+                hungryAtFullShelves += people * (1 - planFed / c.subsistence);
             }
             /*
              * READ, THEN CLEARED, here rather than in clearWorking(), because
@@ -3461,6 +3476,16 @@ public class HouseholdBalance {
     public double getHungryPeople()          { return hungryPeople; }
 
     /**
+     * Of getHungryPeople(), the ones who would have gone hungry even with
+     * the shelves full: their own plan, at every unit the shops were asked
+     * for, came up short of a basket - the money half of the hunger (0.7.27).
+     * The rest went short because the shops could not hand over what was
+     * planned (getDeliveredShare()). Counted the same way, people times how
+     * far short, and saved with it.
+     */
+    public double getHungryAtFullShelves()  { return hungryAtFullShelves; }
+
+    /**
      * The share of what households planned to buy that the shops could hand
      * over - and therefore which of the two hungers is biting.
      *
@@ -3696,7 +3721,40 @@ public class HouseholdBalance {
     public double getHouseholds(int row)     { return rowHouseholds(row); }
     public double getDebt(int row)           { return perHousehold(row, Household::debt); }
     public double getAfterFixed(int row)     { return perHousehold(row, Household::afterFixed); }
+    /** What one household of the row had to spend this month, from its own ledger (0.7.27: Policy's pension lines foot on it). */
+    public double getDisposable(int row)     { return perHousehold(row, Household::disposable); }
+    /** ...and its rent, fees and interest: what came off that before the shop - the ledger's own, so the three foot. */
+    public double getFixedCosts(int row)     { return perHousehold(row, c -> c.disposable() - c.afterFixed()); }
     public double getInterest(int row)       { return perHousehold(row, Household::interest); }
+
+    /**
+     * What one household of a row would have had to spend with the row's
+     * income moved by `rowChange` (0.7.36, the Policy spec's M11): the move
+     * split across the row's cells by advanceMonth()'s own rule - splitIncome(),
+     * by each cell's earning weight over the whole row's, nothing to a cell
+     * too small to strike - on the households as the month counted them, and
+     * averaged per household as getDisposable() is. At no move it IS
+     * getDisposable(row). The Policy tab asks it of the retired row with the
+     * pension bill moved, which is the whole of that row's income
+     * (HouseholdAccounts: rowPensions[RETIRED], no wage). Only what the
+     * household has: what it then has left after rent and bills is not
+     * projected, because its interest is struck on its income
+     * (Household.settle()). Pure.
+     */
+    public double disposableWithRowMoved(int row, double rowChange) {
+        double homes = rowHouseholds(row);
+        if (homes <= 0) return 0;
+        double weight = 0;
+        for (Household c : cells) if (c.row() == row) weight += c.households * c.earningWeight();
+        double total = 0;
+        for (Household c : cells) {
+            if (c.row() != row) continue;
+            double per = c.disposable();
+            if (!c.isEmpty() && weight > 0) per += rowChange * c.earningWeight() / weight;
+            total += per * c.households;
+        }
+        return total / homes;
+    }
     public double getDrawn(int row)          { return perHousehold(row, Household::drawn); }
 
     /** What this row wanted, could not fund, and did not get. See Household.unfunded. */
@@ -3765,9 +3823,9 @@ public class HouseholdBalance {
      * restore(). Neither direction moves SAVE_FORMAT.
      */
 
-    /** The row array an older build reads: ROWS*8+3, per household of the row. */
+    /** The row array an older build reads: ROWS*8+5 since 0.7.27 (ROWS*8+3 before), per household of the row. */
     public double[] toSaveArray() {
-        double[] out = new double[ROWS * 8 + 3];
+        double[] out = new double[ROWS * 8 + 5];
         for (int r = 0; r < ROWS; r++) {
             out[r]            = getSavings(r);
             out[ROWS + r]     = getDebt(r);
@@ -3800,6 +3858,14 @@ public class HouseholdBalance {
         out[ROWS * 8]     = plannedSpend;
         out[ROWS * 8 + 1] = hungryPeople;
         out[ROWS * 8 + 2] = totalPeople;
+        /*
+         * ...AND THE TWO HALVES OF THE HUNGER (0.7.27, SAVE_FORMAT 30): the
+         * share the shops handed over, which read 1 after every load until a
+         * month ran, and the hungry at full shelves. The cells' array does
+         * not carry them; this one is restored on every load.
+         */
+        out[ROWS * 8 + 3] = lastDelivered;
+        out[ROWS * 8 + 4] = hungryAtFullShelves;
         return out;
     }
 
@@ -4035,7 +4101,9 @@ public class HouseholdBalance {
      * Puts a ROW array back, seeding every cell of the row with the row's
      * position: the save from a build that kept the stocks per tier.
      *
-     * @param saved  ROWS*8+3 from a build with the row working, or ROWS*3 from
+     * @param saved  ROWS*8+5 from this build (0.7.27: the two halves of the
+     *               hunger after the working), ROWS*8+3 from a build with the
+     *               row working, or ROWS*3 from
      *               one before the household counts and the working were
      *               appended. A short array restores what it carries and
      *               leaves the rest to the rebuild.
@@ -4055,7 +4123,10 @@ public class HouseholdBalance {
         int rows;
         boolean current;
         int beforePrison = Household.ROWS_BEFORE_PRISON;
-        if (saved.length == ROWS * 8 + 3)                     { rows = ROWS; current = true; }
+        // ...and since 0.7.27 the two halves of the hunger after the working.
+        boolean halves = saved.length == ROWS * 8 + 5;
+        if (halves)                                           { rows = ROWS; current = true; }
+        else if (saved.length == ROWS * 8 + 3)                { rows = ROWS; current = true; }
         else if (saved.length == ROWS * 3)                    { rows = ROWS; current = false; }
         // ...or from the day before the prisons, with no prisoners' row.
         else if (saved.length == beforePrison * 8 + 3)        { rows = beforePrison; current = true; }
@@ -4086,6 +4157,10 @@ public class HouseholdBalance {
             hungryPeople = saved[rows * 8 + 1];
             totalPeople  = saved[rows * 8 + 2];
         }
+        if (halves) {
+            lastDelivered       = Math.max(0, Math.min(1, saved[rows * 8 + 3]));
+            hungryAtFullShelves = Math.max(0, saved[rows * 8 + 4]);
+        }
     }
 
     /** The row array alone, with no census: the cells wait for the plan to count them. */
@@ -4114,6 +4189,7 @@ public class HouseholdBalance {
         plannedSpend = 0;
         hungryPeople = 0;
         totalPeople = 0;
+        hungryAtFullShelves = 0;
     }
 
     /**

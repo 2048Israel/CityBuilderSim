@@ -14,8 +14,8 @@ requirement.
 
 ## Open these before reading source
 
-The tree is about 190,000 lines; `Game.java` alone is over 13,000, and the
-interface is twenty-three files, the largest about 5,500. Do not read them. Read the generated indexes and jump.
+The tree is over 200,000 lines; `Game.java` alone is over 13,000, and the
+interface is twenty-five files, the largest about 5,900. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -113,6 +113,13 @@ These are Jerus's, and they do not move.
                                    rescues and the bank's preferred offer as a record; the books themselves
                                    are the register's and the bonds' city holdings, and Game's THE CITY'S
                                    FUND AND THE BANK'S RESCUE runs it
+        FundLedger.java, FundView.java
+                                   the fund's cost basis (0.7.39): each holding's adjusted cost base by the
+                                   average-cost method, what it realized and paid, and the record of what the
+                                   fund did, booked where its holdings move - bookkeeping, saved inside the
+                                   fund's state - and the pure door the fund's pages read it all through
+                                   (positions, the return, search, a ticket's quote, the record); FundLedgerCheck
+                                   holds both (the project's spec-fund-0739.md)
         ConstructionControl.java   the player's hand on the construction queue (0.7.22): the city's order of
                                    its own sites, rushes on overtime, cancels and the shells they leave,
                                    demolitions and buy-outs - the state, saved under one key, and each rule's
@@ -125,7 +132,26 @@ These are Jerus's, and they do not move.
                                    pan, zoom and ranges move it, the year ticks, nice value scales, the
                                    episode lane's rows and the flags; ui/TimeChart.java draws it, ChartCheck
                                    holds it
-        ui/                        the interface: UserInterface.java is the window (about 5,500 lines: the header
+        CityNeeds.java             NEEDS YOU, measured (0.7.24): everything with a lever against its own line,
+                                   in the panel's order - moved out of ui/SummaryScreen whole, so the left
+                                   panel, the header's "Needs you" chip and the Build overview read one list
+        BuildAdvice.java           the Build tab's categories and measures, each measure's figure before and
+                                   after an order by the model's own arithmetic, and the rule behind the
+                                   overview's WHAT WOULD HELP MOST (0.7.24); advice, not a model change -
+                                   BuildAdviceCheck holds it
+        BuildCard.java             one build card's figures for all 73 buildings (0.7.25): what it gives the
+                                   city and in what unit, its money and scarce-resource bars, the group it is
+                                   compared within and its tags, the investors' word and the first gate it
+                                   fails for them, the verdict on an order; pure - BuildCardCheck holds it
+        SectorFlow.java            one business's month as a flow (0.7.30): each good in and out, its units off
+                                   the production rows and its money off the statement, the plant's six
+                                   throttles and the rate they multiply to; what the Sectors screen's
+                                   Operations page draws; pure - SectorFlowCheck holds it
+        PolicyPreview.java         what a staged set of the Policy tab's dials would do (0.7.36): the tax take
+                                   under another policy line by line, and THE BUDGET before and after, each
+                                   line its owner's read of a detached TaxPolicy.copy(); advice, not a model
+                                   change - PolicyPreviewCheck holds it
+        ui/                        the interface: UserInterface.java is the window (about 5,900 lines: the header
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's
                                    splitting-the-interface.md), Money/Statement/Pieces/Levers (what the screens
@@ -135,8 +161,10 @@ These are Jerus's, and they do not move.
                                    record it fills is Founding.java), and ConstructionScreen.java (the Build
                                    tab's construction page, 0.7.22), and TimeChart.java (City History's
                                    charts, 0.7.23: pan, zoom, ranges, an overview, named crises, the
-                                   decision flags, full screen). The model never imports it.
-        *Check.java                sixty-six harnesses, each a main() with static helpers
+                                   decision flags, full screen), and FundScreen.java (the city's fund as a
+                                   brokerage, 0.7.39: Finances dispatches its area to it). The model never
+                                   imports it.
+        *Check.java                seventy-one harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them

@@ -325,6 +325,18 @@ public class Education {
     private double finished;
 
     /**
+     * The diplomas the school leavers took this month, gross (0.7.28): the
+     * first half of the DIPLOMA movement in graduates[], before the
+     * diploma-holders who finished college or university are taken off it
+     * (both take diploma-holders, EducationType.requires()) - which is why
+     * that movement can read -18 in a month a high school handed out
+     * diplomas. Not saved: a month's flow only the Services screen shows, so
+     * it is NaN after a load, and before a new city's first month, until a
+     * month runs.
+     */
+    private double diplomasThisMonth = Double.NaN;
+
+    /**
      * Everyone the city has ever put through school, by band.
      *
      * A STOCK, and the only number here that a save has to carry for its own
@@ -396,6 +408,7 @@ public class Education {
         java.util.Arrays.fill(graduates, 0);
         java.util.Arrays.fill(licences, 0);
         finished = 0;
+        diplomasThisMonth = 0;
         java.util.Arrays.fill(enrolled, 0);
         tuitionCollected = 0;
         citySubsidyPaid = 0;
@@ -468,6 +481,7 @@ public class Education {
         double leavingSchool = teens / (double) AgeBand.TEEN.spanMonths();
         double afford = affordability(EducationType.HIGH, market, WageBand.NONE);
         double newDiplomas = leavingSchool * basic * afford;
+        diplomasThisMonth = newDiplomas;
 
         /*
          * A NET FLOW, not a count of graduates.
@@ -742,6 +756,9 @@ public class Education {
     /** People who became able to hold a gated job this month. */
     public double[] getLicences() { return licences; }
 
+    /** The school leavers' diplomas this month, gross (0.7.28) - see diplomasThisMonth; NaN until a month has run since the founding or a load. */
+    public double getNewDiplomas() { return diplomasThisMonth; }
+
     public double getCoverage(EducationType type) { return coverage[type.ordinal()]; }
     public double getEnrolled(EducationType type) { return enrolled[type.ordinal()]; }
     public double getTuitionSubsidy() { return tuitionSubsidy; }
@@ -982,6 +999,7 @@ public class Education {
 
         payroll = 0; upkeep = 0; citySubsidyPaid = 0; tuitionCollected = 0;
         finished = 0;
+        diplomasThisMonth = Double.NaN;
         java.util.Arrays.fill(coverage, 0);
         java.util.Arrays.fill(enrolled, 0);
         java.util.Arrays.fill(costOf, 0);

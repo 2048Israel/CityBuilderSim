@@ -40,7 +40,8 @@ import static ham.citybuildersim.ui.Levers.*;
  * the page's own apply bar, is what makes it real, as it always was. An
  * apply-at-once ladder hands the value to the model straight away - the
  * monetary page's target, holdings and ceiling, which move no price this
- * month and apply at once by design (PolicyScreen, THE TARGET, AS A DIAL).
+ * month and apply at once by design (PolicyScreen's ruleCard(), holdingsCard()
+ * and ceilingCard(); THE TARGET, AS A DIAL until 0.7.36).
  * Either way the ladder knows neither the staged set nor the model: it hands
  * a snapped value inside the ends to the callback it was given, and the
  * callback redraws the screen.
@@ -48,6 +49,15 @@ import static ham.citybuildersim.ui.Levers.*;
  * THE READING TRACKS THE THUMB, THE CALLBACK WAITS FOR THE RELEASE.
  * Restaging on every pixel of a drag would redraw the whole screen under the
  * pointer, which is both slow and how you lose the thing you were dragging.
+ * Since 0.7.36 a caller can follow the thumb too (onTrack()): the Policy
+ * tab's dial cards redraw their own "before -> after" rows on it, and the
+ * page waits for the release as before.
+ *
+ * AND THREE THINGS THE POLICY TAB ASKED FOR (0.7.36): named marks on the
+ * track (marks() - the three income rates once they have parted, the rule's
+ * rate, the clinic's break-even); words the reading says before the dial is
+ * moved (idle() - "three rates", where a figure would be one of three and
+ * read as the whole: the Policy spec's B1); and the onTrack() above.
  */
 public final class Ladder {
 
@@ -70,6 +80,10 @@ public final class Ladder {
     private String itIs;
     private boolean greyed;
     private double wide = STATEMENT;
+    private double[] markAt = new double[0];
+    private String[] markNames = new String[0];
+    private DoubleConsumer track;
+    private String idle;
 
     private Ladder(double min, double max, double step, DoubleFunction<String> reads) {
         this.min = min;
@@ -121,6 +135,19 @@ public final class Ladder {
     /** The whole ladder's width; the slider takes what the buttons and the reading leave. STATEMENT by default. */
     public Ladder wide(double width) { wide = width; return this; }
 
+    /** Named marks on the track, in the dial's units (0.7.36): drawn under the slider where each value sits, a mark outside the ends left out. */
+    public Ladder marks(double[] at, String[] names) {
+        markAt = at == null ? new double[0] : at.clone();
+        markNames = names == null ? new String[markAt.length] : names.clone();
+        return this;
+    }
+
+    /** Hands every value the thumb passes through to this while it is dragged or stepped (0.7.36), snapped and inside the ends - before the release that stages it. */
+    public Ladder onTrack(DoubleConsumer to) { track = to; return this; }
+
+    /** What the reading says, in grey, while the thumb sits on the current value and nothing is staged (0.7.36): "three rates" for a dial whose current is one of several. */
+    public Ladder idle(String words) { idle = words; return this; }
+
     /** The dial: the row of −, slider, + and reading over the ends line. */
     public VBox build() {
 
@@ -144,12 +171,24 @@ public final class Ladder {
         reading.setPrefWidth(READING);
         reading.setMinWidth(READING);
         reading.setAlignment(Pos.CENTER_RIGHT);
+        reading.setWrapText(true);
         reading.setStyle(Palette.figure(Palette.SIZE_BODY, tone(off)));
+        if (!off && idle != null) {
+            reading.setText(idle);
+            reading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
+        }
 
         bar.valueProperty().addListener((o, was, now) -> {
             double v = bounded(snapped(now.doubleValue(), min, step));
-            reading.setText(reads.apply(v));
-            reading.setStyle(Palette.figure(Palette.SIZE_BODY, tone(moved(v, current, step))));
+            boolean away = moved(v, current, step);
+            if (!away && idle != null) {
+                reading.setText(idle);
+                reading.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            } else {
+                reading.setText(reads.apply(v));
+                reading.setStyle(Palette.figure(Palette.SIZE_BODY, tone(away)));
+            }
+            if (track != null) track.accept(v);
         });
         Runnable commit = () -> hand(bar.getValue());
         bar.setOnMouseReleased(e -> commit.run());
@@ -170,11 +209,101 @@ public final class Ladder {
         ends.setStyle(Palette.words(Palette.SIZE_CAPTION,
                 greyed ? Palette.TEXT_SPENT : off ? Palette.ACCENT : Palette.TEXT_SPENT));
 
-        VBox box = new VBox(1, row, ends);
+        VBox box = new VBox(1, row);
+        if (markAt.length > 0) {
+            Marks under = new Marks(min, this.max, markAt, markNames, slider);
+            HBox lane = new HBox(under);
+            lane.setPadding(new javafx.geometry.Insets(0, 0, 0, BUTTON + GAP));
+            lane.setMaxWidth(wide);
+            box.getChildren().add(lane);
+        }
+        box.getChildren().add(ends);
         box.setMaxWidth(wide);
         box.setStyle("-fx-padding: 6 0 10 0;");
         if (greyed) box.setOpacity(.55);
         return box;
+    }
+
+    /**
+     * The marks under the slider (0.7.36): a short tick where each value sits
+     * on the track - the thumb's travel, inset by half the thumb at either
+     * end - and its name under it, a name that would touch the one before
+     * dropped a line, to the third at most. As wide as the slider.
+     */
+    static final class Marks extends javafx.scene.layout.Pane {
+        /** Half the slider's thumb: the track's travel starts and ends this far in. */
+        static final double INSET = 8;
+        private final double min, max;
+        private final double[] at;
+        private final java.util.List<javafx.scene.layout.Region> ticks = new java.util.ArrayList<>();
+        private final java.util.List<Label> names = new java.util.ArrayList<>();
+
+        Marks(double min, double max, double[] at, String[] names, double width) {
+            this.min = min;
+            this.max = max;
+            this.at = at;
+            for (int i = 0; i < at.length; i++) {
+                javafx.scene.layout.Region t = new javafx.scene.layout.Region();
+                t.setStyle("-fx-background-color: " + Palette.TEXT_LABEL + ";");
+                ticks.add(t);
+                Label n = new Label(i < names.length && names[i] != null ? names[i] : "");
+                n.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                this.names.add(n);
+                getChildren().addAll(t, n);
+            }
+            setMinWidth(width);
+            setPrefWidth(width);
+            setMaxWidth(width);
+        }
+
+        private double x(double v, double w) {
+            double span = max - min;
+            return INSET + (span > 0 ? (v - min) / span : 0) * Math.max(0, w - 2 * INSET);
+        }
+
+        /** Where each name sits, {left, line}, at a width; a name that would touch the last on its line goes one line down. */
+        private double[][] placed(double w) {
+            double[][] out = new double[at.length][2];
+            double[] lineEnd = {-1e9, -1e9, -1e9};
+            for (int i = 0; i < at.length; i++) {
+                Label n = names.get(i);
+                double nw = n.prefWidth(-1);
+                double left = Math.max(0, Math.min(w - nw, x(at[i], w) - nw / 2));
+                int line = 0;
+                while (line < lineEnd.length - 1 && left < lineEnd[line] + 6) line++;
+                lineEnd[line] = left + nw;
+                out[i][0] = left;
+                out[i][1] = line;
+            }
+            return out;
+        }
+
+        private int lines(double w) {
+            int most = 0;
+            for (double[] p : placed(w)) most = Math.max(most, (int) p[1] + 1);
+            return most;
+        }
+
+        @Override protected double computePrefHeight(double width) {
+            double w = width > 0 ? width : getPrefWidth();
+            return 6 + lines(w) * 12;
+        }
+
+        @Override protected double computeMinHeight(double width) { return computePrefHeight(width); }
+
+        @Override protected void layoutChildren() {
+            double w = getWidth();
+            double[][] p = placed(w);
+            for (int i = 0; i < at.length; i++) {
+                boolean on = at[i] >= min - 1e-12 && at[i] <= max + 1e-12;
+                ticks.get(i).setVisible(on);
+                names.get(i).setVisible(on);
+                if (!on) continue;
+                ticks.get(i).resizeRelocate(Math.round(x(at[i], w)) - 1, 0, 2, 5);
+                Label n = names.get(i);
+                n.resizeRelocate(p[i][0], 5 + p[i][1] * 12, n.prefWidth(-1), n.prefHeight(-1));
+            }
+        }
     }
 
     /** The reading's colour: accent off the city's value, dimmed when greyed. */

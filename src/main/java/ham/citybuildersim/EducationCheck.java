@@ -334,6 +334,32 @@ public class EducationCheck {
         assertTrue("so the city produces no diplomas of its own at all",
                 pe.basicCoverage() <= 0);
 
+        /*
+         * ...AND THE DIPLOMAS THEMSELVES, GROSS (0.7.28). The DIPLOMA entry in
+         * getGraduates() is a net movement - the school leavers in, the
+         * diploma-holders who finished college or university out - so the
+         * Services screen reads the leavers from getNewDiplomas(). In a city
+         * with neither the two are the same figure; with no high school both
+         * are nothing; and a city read back from its state has not struck
+         * the month yet.
+         */
+        System.out.println("\n--- the school leavers' diplomas, gross ---");
+        assertTrue("no high school: no school leaver takes a diploma", pe.getNewDiplomas() == 0);
+        quietly(() -> {
+            build(pinched, "High School", 2);
+            pinched.simulateMonths(12);
+        });
+        double leavers = pe.getNewDiplomas();
+        System.out.printf("   with a high school: %.3f diplomas, the DIPLOMA movement %.3f%n",
+                leavers, pe.getGraduates()[WageBand.DIPLOMA.ordinal()]);
+        assertTrue("fixture: a high school, and its leavers take diplomas", leavers > 0);
+        assertTrue("with no college to leave for, the net movement is the leavers' diplomas",
+                Math.abs(pe.getGraduates()[WageBand.DIPLOMA.ordinal()] - leavers) < 1e-9);
+        Education readBack = new Education();
+        readBack.restore(pe.getState());
+        assertTrue("not saved: a city read back from its state has no month's diplomas yet",
+                Double.isNaN(readBack.getNewDiplomas()));
+
         /* ============ 8. THE SUBSIDY IS A REAL DIAL ============
 
            The poverty trap, stated as a test. At no subsidy a university place

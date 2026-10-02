@@ -502,6 +502,45 @@ public class InfrastructureManager {
                 getLoad(Traffic.COMMUTERS) * TRANSIT_MAX_SHARE) * fareShare * willingToRide();
     }
 
+    /*
+     * THE SAME, ONE STEP AT A TIME (0.7.29), for the Transit page's funnel:
+     * the three ceilings, the lowest of them, what the fare leaves of it -
+     * and getTransitRiders() is that times willingToRide(), to the bit
+     * (InfrastructureCheck). Pure reads.
+     */
+
+    /** The second ceiling: what the road under the transit lets it carry, TRANSIT_NEEDS_ROAD times the street capacity. */
+    public double getTransitRoadCeiling() { return capacity * TRANSIT_NEEDS_ROAD; }
+
+    /** The third: the most of its commuters any city rides, TRANSIT_MAX_SHARE of them. */
+    public double getTransitShareCeiling() { return getLoad(Traffic.COMMUTERS) * TRANSIT_MAX_SHARE; }
+
+    /** The lowest of the three ceilings - the stock, the road under it, the share - which is what a free system would carry. */
+    public double getTransitCeiling() { return Math.min(getUsableTransit(), getTransitShareCeiling()); }
+
+    /** ...what the fare leaves of it, before the cars walk it down. */
+    public double getRidersAtFare() { return getTransitCeiling() * fareShare; }
+
+    /** The riders at a fare the city has not set, with today's ceilings and cars: the fare dial's preview. */
+    public double ridersAt(double fare) { return getTransitCeiling() * ridershipAt(fare) * willingToRide(); }
+
+    /**
+     * ...and a month of fares from them (0.7.38): those riders at a month of
+     * journeys each (TaxPolicy.monthlyFareAt()), the product the month books
+     * as the city's fares - the fare dial card's "Fares collected". Pure.
+     */
+    public double faresAt(double fare) { return ridersAt(fare) * TaxPolicy.monthlyFareAt(fare); }
+
+    /**
+     * The trips a fare would put back onto the road (0.7.38), negative for
+     * trips it would take off: the riders it loses against today's, each
+     * asking carRoadFactor() of the road, as getEffectiveLoad() counts a
+     * commuter who drives. Nothing at the fare today's riders were struck
+     * at (setFare()), which is the city's own once a month has turned on
+     * it: until then a fare just applied shows a move. Pure.
+     */
+    public double backOnTheRoadAt(double fare) { return (getTransitRiders() - ridersAt(fare)) * carRoadFactor(); }
+
     /** What one unit of a stream costs the road, after the highways are counted. */
     public double roadCostOf(Traffic stream) {
         double grade = getHighwayShare();
@@ -621,13 +660,22 @@ public class InfrastructureManager {
         return Math.max(0, capacity - BASE_CAPACITY);
     }
 
+    /** The load past which traffic starts to slow: FREE_FLOW of the capacity (0.7.29, the Roads page's line). */
+    public double getFreeFlowLoad() { return capacity * FREE_FLOW; }
+
     /** Load over capacity. Above 1 the network is carrying more than it can. */
     public double getUtilisation() {
         return (capacity > 0) ? getEffectiveLoad() / capacity : 0;
     }
 
+    /**
+     * What the network could still take before it is full: capacity less the
+     * load the curve reads (0.7.29: it read the raw trips, which in a city
+     * with cars sit well under what the road carries - a road 161% full
+     * read 1,525 spare). Never below zero.
+     */
     public double getSpareCapacity() {
-        return Math.max(0, capacity - load);
+        return Math.max(0, capacity - getEffectiveLoad());
     }
 
     /**
@@ -642,7 +690,17 @@ public class InfrastructureManager {
 
         if (load <= 0 || capacity <= 0) return 1;
 
-        double utilisation = getUtilisation();
+        return throughputAt(getUtilisation());
+    }
+
+    /**
+     * The curve itself, at any use of the road (0.7.29): 1 up to FREE_FLOW,
+     * then FREE_FLOW over the use, floored at MIN_THROUGHPUT. What
+     * getThroughputRatio() reads at the network's own use, and what the
+     * Infrastructure screen draws its curve with, so the dot and the line
+     * under it are one function and not two copies of it.
+     */
+    public static double throughputAt(double utilisation) {
         if (utilisation <= FREE_FLOW) return 1;
 
         // Past free flow, throughput is the inverse of how far over it is
@@ -664,9 +722,15 @@ public class InfrastructureManager {
      *
      * The number a player actually wants: not "how much capacity is unused" but
      * "how much more can I build before this hurts".
+     *
+     * AGAINST THE LOAD THE CURVE READS (0.7.29). It was the raw trips, so a
+     * city whose cars double its commute read 585 trips of room on a road
+     * 161% full - in green, on the Roads page. Equal to the old figure to the
+     * bit in a city with no cars, transit, highway or rail, where the two
+     * loads are one number.
      */
     public double getHeadroom() {
-        return Math.max(0, capacity * FREE_FLOW - load);
+        return Math.max(0, capacity * FREE_FLOW - getEffectiveLoad());
     }
 
     /** One line for the city panel. */
@@ -675,6 +739,111 @@ public class InfrastructureManager {
         if (isCongested())  return "Congested";
         if (isStrained())   return "Busy";
         return "Clear";
+    }
+
+    /* =======================================================================
+       FROM TRIPS TO THE ROAD (0.7.29)
+
+       The Infrastructure screen's Roads page draws the load the curve reads
+       as a walk from the trips the city makes: the three streams as their
+       buildings make them, less the commuters on transit, plus what the cars
+       add for the ones still driving, less what the highways and the railway
+       take off the freight - and the three streams as they reach the road.
+       Every step is the arithmetic getEffectiveLoad() sums, read here once,
+       so the screen draws the walk without a second copy of it. A pure
+       read; it changes nothing.
+       ======================================================================= */
+
+    /**
+     * The effective load, taken apart: by stream, in Traffic order, the trips
+     * made (raw) and the trips on the road (onRoad); the commuters transit
+     * carried off it; what the cars add; what the highways and the railway
+     * take off each freight stream (freightOff, zero for commuters); the
+     * load itself (getEffectiveLoad(), to the bit); and the car factor the
+     * drivers were costed at. raw - transitOff + carsAdd - Σ freightOff is
+     * the load, and so is Σ onRoad, each to within the order of the sum.
+     */
+    public record RoadBreakdown(double[] raw, double transitOff, double carsAdd, double[] freightOff,
+                                double[] onRoad, double effective, double carFactor) {
+
+        /** The road with nobody driving: the load less what the cars add (the Roads page's "without cars"). */
+        public double withoutCars() { return effective - carsAdd; }
+
+        /** What one trip of a stream asks of the road once it is on it: on the road over trips made; 1 with none made. */
+        public double costPerTrip(Traffic stream) {
+            int i = stream.ordinal();
+            return raw[i] > 0 ? onRoad[i] / raw[i] : 1;
+        }
+
+        /** What the commuters on transit would ask of the road if they drove instead, at today's car factor. */
+        public double ridersAsDrivers() { return transitOff * carFactor; }
+
+        /** The commuters still driving: those not on transit. */
+        public double driving() { return raw[Traffic.COMMUTERS.ordinal()] - transitOff; }
+
+        /** What the highways and the railway take off the freight, both streams together. */
+        public double freightOffTotal() {
+            double off = 0;
+            for (double f : freightOff) off += f;
+            return off;
+        }
+
+        /** The trips made, all three streams together. */
+        public double rawTotal() {
+            double all = 0;
+            for (double r : raw) all += r;
+            return all;
+        }
+    }
+
+    /** The walk from the trips the city makes to the load on its road, by the arithmetic getEffectiveLoad() sums. */
+    public RoadBreakdown roadBreakdown() {
+        int n = Traffic.values().length;
+        double[] raw = new double[n], onRoad = new double[n], freightOff = new double[n];
+        for (Traffic s : Traffic.values()) raw[s.ordinal()] = getLoad(s);
+        double effective = getEffectiveLoad();
+        double factor = carRoadFactor();
+        if (!hasModes()) {
+            // The untouched sweep: nothing is taken off and nothing added.
+            System.arraycopy(raw, 0, onRoad, 0, n);
+            return new RoadBreakdown(raw, 0, 0, freightOff, onRoad, effective, factor);
+        }
+        int c = Traffic.COMMUTERS.ordinal();
+        double driving = Math.max(0, raw[c] - getTransitRiders());
+        onRoad[c] = driving * factor;
+        for (Traffic s : Traffic.values()) {
+            if (s == Traffic.COMMUTERS) continue;
+            onRoad[s.ordinal()] = raw[s.ordinal()] * roadCostOf(s);
+            freightOff[s.ordinal()] = raw[s.ordinal()] - onRoad[s.ordinal()];
+        }
+        return new RoadBreakdown(raw, raw[c] - driving, onRoad[c] - driving, freightOff, onRoad, effective, factor);
+    }
+
+    /**
+     * This network with buildings added to it (0.7.24): a copy, every input
+     * as it stands, and the added roads' capacity, their grade-separated
+     * share, the added transit and the load the added buildings put on the
+     * road. A pure read for the Build tab's advice (BuildAdvice), so the
+     * figure it promises an order is getUtilisation() itself, on the city
+     * that order would leave, and not a second copy of the curve. Changes
+     * nothing here.
+     */
+    public InfrastructureManager with(double capacityAdded, double highwayAdded, double transitAdded,
+                                      double loadAdded, double[] streamsAdded) {
+        InfrastructureManager copy = new InfrastructureManager();
+        copy.capacity = capacity + Math.max(0, capacityAdded);
+        copy.load = Math.max(0, load + loadAdded);
+        for (int i = 0; i < byStream.length; i++) {
+            double add = streamsAdded != null && i < streamsAdded.length ? streamsAdded[i] : 0;
+            copy.byStream[i] = Math.max(0, byStream[i] + add);
+        }
+        copy.carOwnership = carOwnership;
+        copy.rememberedThroughput = rememberedThroughput;
+        copy.highwayCapacity = highwayCapacity + Math.max(0, highwayAdded);
+        copy.transitCapacity = transitCapacity + Math.max(0, transitAdded);
+        System.arraycopy(railShare, 0, copy.railShare, 0, railShare.length);
+        copy.fareShare = fareShare;
+        return copy;
     }
 
     public void reset() {

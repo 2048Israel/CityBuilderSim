@@ -243,6 +243,33 @@ public final class GoodsMarket {
     /** ...and what an importer pays for one, landed AND hauled. */
     public double netImportPrice() { return importPrice() + domesticFreight(); }
 
+    /* -------------------- the wedge, taken apart (0.7.29) --------------------
+
+       For a good the city can both buy and sell, the delivered wedge -
+       netImportPrice() less netExportPrice() - is three things, and the
+       Infrastructure screen's Freight page draws them: the world's own
+       margin, which no logistics touches; the freight still in the band,
+       paid abroad to the lorries on both sides; and the railway's charge on
+       both sides, billed at home. worldMargin() + freightInBand() is the band
+       (importPrice() less exportPrice()); adding railInWedge() is the
+       delivered wedge. bandByLorry() is the band with every tonne on a lorry
+       and no railway at all - what the city would face without one.
+       InfrastructureCheck holds the sums. Pure reads, in city money. */
+
+    /** The freight still in the band, both ways: what the lorries are paid abroad on one unit bought and one sold (0.7.29). Zero with the railway carrying all of it. */
+    public double freightInBand() { return 2 * good.baseFreight() * freightFactor * exchangeRate; }
+
+    /** The band with every tonne on a lorry: the world's asking less its buying price, freight and all (0.7.29). */
+    public double bandByLorry() { return (good.worldImportPrice() - good.worldExportPrice()) * exchangeRate; }
+
+    /** The world's own margin in the band: the band with no freight in it at all, which no railway narrows (0.7.29). */
+    public double worldMargin() {
+        return (good.worldImportPrice() - good.worldExportPrice() - 2 * good.baseFreight()) * exchangeRate;
+    }
+
+    /** The railway's charge on the wedge, both ways: what an importer pays on top and an exporter gives up (0.7.29). Zero with no railway. */
+    public double railInWedge() { return 2 * domesticFreight(); }
+
     /**
      * What one unit costs a buyer to bring in this month (0.7.12 round 6):
      * the local price when somebody in the city has the good on offer, and

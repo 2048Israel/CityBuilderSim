@@ -179,10 +179,13 @@ public final class YearBook {
         level(m, "sickPastTwoMonths", "people sick longer than two months - the ring that kills");
         level(m, "prisoners", "people in a cell");
         level(m, "constructionCapacity", "construction points the city can put out in a month");
+        level(m, "fundValue", "the city's fund, everything it holds at the marks and its cash, in thousands (recorded since 0.7.39)");
+        level(m, "fundPutIn", "what the city has put into its fund since it began - pay-ins, rescues, the bank's preferred - in thousands (recorded since 0.7.39)");
+        level(m, "fundTakenOut", "what the city has taken out of its fund since it began - the monthly transfers and draw-outs - in thousands (recorded since 0.7.39)");
 
         /* ---- rates, prices and indices: a row is the AVERAGE ---- */
         rate(m, "interestRate", "what the city pays to borrow, a fraction a year");
-        rate(m, "minimumWage", "the dial, in thousands a month - the base of every wage in the city");
+        rate(m, "minimumWage", "the dial, in founding money: thousands a month at founding prices - the base of every wage in the city, before the cost of living lifts it");
         rate(m, "unskilledPremium", "what an unskilled post pays over its band's base, a multiple");
         rate(m, "skilledShare", "share of adults holding at least a diploma");
         rate(m, "schoolCoverage", "basic schooling coverage, at the narrowest of the three stages");
@@ -198,6 +201,7 @@ public final class YearBook {
         rate(m, "orePrice", "iron ore at the export floor, per tonne in thousands");
         rate(m, "rentPrice", "rent, per month in thousands");
         rate(m, "fxRate", MONEY + " per US dollar - 1.000 at founding, HIGHER is a fallen currency");
+        rate(m, "fxParity", MONEY + " per US dollar where a basket costs the same here and abroad - where the rate is pulled back to (recorded since 0.7.35)");
         rate(m, "priceIndex", "the fixed basket against its base month, 1.000 at the base");
         rate(m, "policyRate", "the central bank's policy rate - the dial, by hand or by the autopilot - a fraction a year");
         rate(m, "bankPrime", "what a sound business pays the bank - its four costs added up - a fraction a year");
@@ -1219,6 +1223,75 @@ public final class YearBook {
     public static String triggerFooter() {
         return String.format(Locale.ROOT, "for %d months or more; spells under %d months apart count as one",
                 EPISODE_MIN_MONTHS, EPISODE_JOIN_MONTHS);
+    }
+
+    /* ------------------------------------------------------------------
+       WHAT IS RUNNING NOW (0.7.37). City History's strip names the trouble
+       the city is in this month, and leads with the worst of it: a crisis
+       before a watch, the newest start first. One kind of episode would
+       always be in it, being so old - an epidemic that has held for most of
+       the city's life (the research's 2,400-month city: 2,213 months) - so an
+       episode that has run CHRONIC_MONTHS is listed after the others and
+       leads only when it runs alone. The order is the screen's; the
+       thresholds that name an episode are the table's, untouched.
+       ------------------------------------------------------------------ */
+
+    /** An episode still running after this many months is chronic: City History lists it after the others that are running, and leads with it only when it runs alone (0.7.37). */
+    public static final int CHRONIC_MONTHS = 120;
+
+    /**
+     * Whether an episode of this kind is a crisis rather than a watch
+     * (0.7.37): the bank failed, the currency halved, the treasury
+     * overdrawn, or a recession long enough to be a depression. The chart
+     * draws these red and the rest amber (TimeChart.episodeColour() reads
+     * this), and City History's RUNNING NOW leads with one.
+     */
+    public static boolean isSevere(String kind) {
+        return switch (kind == null ? "" : kind) {
+            case "financial", "currency", "treasury", "depression" -> true;
+            default -> false;
+        };
+    }
+
+    /** How many months the episodes of one kind ran, all told - City History's hard times by kind (0.7.37). Two of one kind never overlap: the table joins its runs. */
+    public static int monthsIn(List<Episode> episodes, String kind) {
+        int months = 0;
+        if (episodes == null || kind == null) return months;
+        for (Episode e : episodes) if (kind.equals(e.kind())) months += e.months();
+        return months;
+    }
+
+    /** Whether an episode has run CHRONIC_MONTHS or more, relief inside it included (0.7.37). */
+    public static boolean isChronic(Episode e) {
+        return e != null && e.months() >= CHRONIC_MONTHS;
+    }
+
+    /**
+     * The episodes still running - those whose last month is the history's
+     * last, which the history has not closed - in the order City History
+     * names them (0.7.37): a chronic one after every other; then a crisis
+     * before a watch (isSevere()); then the newest start first. Reads;
+     * changes nothing.
+     */
+    public static List<Episode> running(HistorySave h) {
+        if (h.months() < 1) return new ArrayList<>();
+        List<Integer> axis = h.getMonth();
+        return running(episodes(h), axis.get(axis.size() - 1));
+    }
+
+    /** ...from a list already read, for a screen that has episodes() in hand: those ending at `lastMonth`, in that order. */
+    public static List<Episode> running(List<Episode> episodes, int lastMonth) {
+        List<Episode> out = new ArrayList<>();
+        if (episodes == null) return out;
+        for (Episode e : episodes) if (e.toMonth() == lastMonth) out.add(e);
+        out.sort((a, b) -> {
+            boolean ca = isChronic(a), cb = isChronic(b);
+            if (ca != cb) return ca ? 1 : -1;
+            boolean sa = isSevere(a.kind()), sb = isSevere(b.kind());
+            if (sa != sb) return sa ? -1 : 1;
+            return Integer.compare(b.fromMonth(), a.fromMonth());
+        });
+        return out;
     }
 
     /** Whether an episode of this kind is at its worst when its figure is HIGHEST - a peak - rather than lowest - a depth. */

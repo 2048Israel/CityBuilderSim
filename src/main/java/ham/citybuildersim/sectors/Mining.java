@@ -136,8 +136,8 @@ public final class Mining extends Sector {
     }
 
     @Override
-    public List<Line> operations(Game game) {
-        List<Line> lines = super.operations(game);
+    public List<Line> ownLines(Game game) {
+        List<Line> lines = new java.util.ArrayList<>();
         if (game == null) return lines;
         Formats f = Formats.INSTANCE;
         LandManager land = game.getLandManager();

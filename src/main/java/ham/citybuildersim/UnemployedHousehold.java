@@ -76,7 +76,12 @@ public class UnemployedHousehold extends Household {
      */
     @Override public int stockGroup() { return PayTier.UNSKILLED.ordinal(); }
 
-    @Override public String label() { return "Out of work, " + status.label().toLowerCase(); }
+    /** "Out of work, on EI": the status with its first letter lowered, unless that letter opens an acronym (0.7.27; it was all lower case, "on ei" and "ei run out", before). */
+    @Override public String label() {
+        String s = status.label();
+        boolean acronym = s.length() > 1 && Character.isUpperCase(s.charAt(1));
+        return "Out of work, " + (acronym ? s : Character.toLowerCase(s.charAt(0)) + s.substring(1));
+    }
 
     /** "UNEMPLOYED:ON_EI". The save's key. */
     @Override public String key()   { return "UNEMPLOYED:" + status.name(); }

@@ -64,6 +64,23 @@ public final class Formats {
         return value < 0 && Math.round(shown * Math.pow(10, decimals)) > 0 ? "-" : "";
     }
 
+    /**
+     * An exchange rate - local money per US dollar, a ratio and not money,
+     * so it is never read as thousands - written as every screen writes one
+     * (Money.fxRate() is this since 0.7.26, so the land office's receipt,
+     * written in the model, reads as the screens do): four decimals where
+     * every rate has lived, grouped two past a thousand, whole past a
+     * million, and three significant figures under a ten-thousandth.
+     */
+    public String rate(double rate) {
+        if (!Double.isFinite(rate)) return "–";
+        double a = Math.abs(rate);
+        if (a >= 1e6) return String.format("%,.0f", rate);
+        if (a >= 1e3) return String.format("%,.2f", rate);
+        if (a >= 1e-4 || a == 0) return String.format("%.4f", rate);
+        return new java.math.BigDecimal(rate).round(new java.math.MathContext(3)).toPlainString();
+    }
+
     public String pct(double share) {
         if (!Double.isFinite(share)) return "—";
         return String.format("%.0f%%", share * 100);

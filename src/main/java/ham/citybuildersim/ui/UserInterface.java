@@ -30,10 +30,11 @@ import javafx.stage.Stage;
 
 /**
  * The window: the stage and its theme, the header - the clock and the speed,
- * six headline tiles, the rating and the inbox - and the debt bar, the rail
- * down the left, the left panel and the construction panel, the main menu over
- * its backdrop, the save and settings dialogs, the time-skip dialog, and the
- * scroller every screen draws into. Everything a tab SHOWS is a class of
+ * the money block, five headline tiles, the "Needs you" chip, the rating and
+ * the inbox - the rail down the left, the City overview's drawer and the
+ * construction panel with its tab (0.7.24), the main menu over its backdrop,
+ * the save and settings dialogs, the time-skip dialog, and the scroller every
+ * screen draws into. Everything a tab SHOWS is a class of
  * its own in this package since 2026-09-18 - one screen per class, listed
  * below in rail order - and this is what is left once they are out: what the
  * screens share, and the shell that holds them.
@@ -64,6 +65,7 @@ public class UserInterface extends Application {
     final LandScreen       landScreen       = new LandScreen(this);
     final PeopleScreen     peopleScreen     = new PeopleScreen(this);
     final ServicesScreen   servicesScreen   = new ServicesScreen(this);
+    final InfrastructureScreen infrastructureScreen = new InfrastructureScreen(this);  // the Infrastructure tab (0.7.28; ServicesScreen's until then)
     final SectorScreen     sectorScreen     = new SectorScreen(this);
     final GovernmentScreen governmentScreen = new GovernmentScreen(this);
     final FinancesScreen   financesScreen   = new FinancesScreen(this);
@@ -97,8 +99,60 @@ public class UserInterface extends Application {
          CITY OVERVIEW PANEL / THE LEFT PANEL / SUMMARY, OR DASHBOARD            SummaryScreen
          THE SUMMARY IS A PROBLEM LIST NOW. / SEATS AGAINST WHO WOULD COME.      SummaryScreen
 
-       BankScreen was rebuilt in 0.7.9 and holds none of those ten now: its
-       sections run THE BANK AT A GLANCE ... HISTORY (8).
+       BankScreen was rebuilt in 0.7.9 and redrawn in 0.7.33, and holds none
+       of those ten now: its sections run THE BANK (0.7.33): THE FRAME ...
+       HISTORY (10).
+       LandScreen was redrawn in 0.7.26 and holds neither of its two now:
+       its sections run THE LAND OFFICE (0.7.26) ... WHEN THE CITY IS
+       SHORT (4).
+       PeopleScreen was redrawn in 0.7.27 and holds two of its six as they
+       were, THE MONEY BLOCKS BOTH PANELS SHARE and THE TIER TABLE, AS A
+       TABLE (a third is HOUSEHOLD MONEY: CAN THE PEOPLE OF THIS CITY AFFORD
+       TO LIVE IN IT? now): its sections run PEOPLE (0.7.27) ... THE TIER
+       TABLE, AS A TABLE. (8).
+       ServicesScreen was redrawn in 0.7.28 and holds seven of its eight
+       under their old titles, each grown or rewritten; the eighth,
+       INFRASTRUCTURE, moved whole to InfrastructureScreen. Its sections
+       run SERVICES - WHAT THE CITY PROVIDES ... THE BOOKS. (9).
+       InfrastructureScreen was redrawn in 0.7.29 and holds INFRASTRUCTURE
+       under its old title, rewritten: its sections run INFRASTRUCTURE ...
+       FREIGHT (5).
+       SectorScreen was redrawn in 0.7.30 and holds its three under their
+       old titles, the first two grown or rewritten and A STATEMENT LINE THAT
+       OPENS as it was, followed now by a banner for each of the five pages:
+       its sections run THE SECTOR ECONOMY. ... OPERATIONS (8).
+       GovernmentScreen was redrawn in 0.7.31 and holds three of its four
+       under their old titles, rewritten - THE GOVERNMENT., THE TWO LISTS
+       (0.7.31: ranked bars). and WHAT THE DEBT COSTS, BY THE PAPER IT IS
+       OWED ON, which changed only where principal repaid is shown; THE
+       SCREEN went, and a banner came for the Overview, for Revenue and
+       Spending and for the Output: its sections run THE GOVERNMENT. ...
+       THE OUTPUT (0.7.31) (6).
+       FinancesScreen was redrawn in 0.7.32 and holds seven of its eleven
+       under their old titles, rewritten - FINANCES, THE POSITION, DEBT
+       SERVICE, HOME AND ABROAD, YOUR RATE, TAKEN APART, THE BOOK and
+       BORROW; THE LANDING became THE HUB (0.7.32), and ONE SUBJECT, ITS
+       OWN STRIP, THE LADDER and BUY BACK went into FINANCES, the hub and
+       THE BOOK: its sections run FINANCES ... THE DEBT RESULT (12).
+       TradeScreen was redrawn in 0.7.35 and holds four of its seven under
+       their old titles, rewritten - TRADE & THE WORLD (the frame), WHAT WE
+       TRADE, THE CURRENCY and THE RESERVES; THE MONTH, AS A RIVER became THE
+       MONTH, ONE SUBJECT, ITS OWN STRIP went into the frame, and THE THREE
+       QUIET GAUGES into THE OVERVIEW (their band meter to Pieces): its
+       sections run TRADE & THE WORLD (0.7.35): THE FRAME ... THE RESERVES (6).
+       PolicyScreen was redrawn in 0.7.36 and holds ten under their old
+       titles - THE STAGED SET., THE LADDER, WAGES - the floor, the two
+       MONEY and the five PROMISES; THE POLICY TAB became POLICY (0.7.36):
+       THE FRAME, THE LANDING became THE HUB and THE FOUR TAXES became TAXES,
+       and the rest went in: WHAT THE WHOLE BATCH WOULD DO into PolicyPreview
+       and the tray, ONE SUBJECT, ITS OWN STRIP into the frame, THE PIECES A
+       LEVER IS MADE OF into THE STAGED SET and Levers' dial card, and the
+       three TAXES pages into TAXES: its sections run POLICY (0.7.36): THE
+       FRAME ... PROMISES - the standing subsidies (13).
+       HistoryScreen was redrawn in 0.7.37 and holds THE HISTORY SCREEN and
+       THE RECORD under their old titles; THE GOODS ROW became PRICES THIS
+       MONTH: its sections run THE HISTORY SCREEN ... PRICES THIS MONTH
+       (0.7.37) (12).
 
        What stayed is in the sections below. The figures, the statement rows,
        the shared pieces and the lever pieces went to Money, Statement, Pieces
@@ -124,7 +178,7 @@ public class UserInterface extends Application {
 
     /** The navigation rail down the window's left edge (0.7.21; it was the panel's right edge); see start(). */
     private VBox tabRail;
-    /** The middle of the window, with the inbox's list and the toasts on top of it. */
+    /** The middle of the window, with the City overview's drawer and the construction panel (both since 0.7.24), the inbox's list and the toasts on top of it. */
     private StackPane stagePane;
     /** The inbox's list, dropped down at the stage's top right while it is open (its envelope is the header's since 0.7.21). */
     private VBox inboxCorner;
@@ -144,8 +198,16 @@ public class UserInterface extends Application {
     private boolean cityOpen;
     /** The middle column's scroller. A field, so clearMenu can put it back. */
     javafx.scene.control.ScrollPane menuScroller;
+    /** The construction panel: over the stage's right edge while open, folded to constructionTab otherwise (0.7.24). */
     private VBox constructionPanel;
+    /** The slim tab on the stage's right edge the construction panel folds to (0.7.24). */
+    private VBox constructionTab;
+    /** The City overview's content, drawn by SummaryScreen. */
     VBox cityPanel;
+    /** The drawer the City overview opens in, over the stage's left (0.7.24); see THE FRAME FOLDS AWAY. */
+    private VBox drawer;
+    /** Whether the drawer is open. Not saved: the pin is (GamePrefs.isDrawerPinned()). */
+    private boolean drawerOpen;
 
     /* =====================================================================
        THE RECEIPT INDICATOR
@@ -332,9 +394,8 @@ public class UserInterface extends Application {
                         css.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }
 
-    /** Always-visible strips on the two BorderPane edges nothing else uses: the header (0.7.21; the date bar until then) and the debt bar. */
+    /** The always-visible strip on the BorderPane's top edge: the header (0.7.21; the date bar until then). The debt bar on the bottom edge went to the Finances hub in 0.7.24. */
     private HBox header;
-    private HBox debtBar;
     private Scene scene;
 
     /* =====================================================================
@@ -440,9 +501,11 @@ public class UserInterface extends Application {
 
         // Persistent construction panel down the right-hand side. The menu system
         // swaps the contents of rootMenu constantly, so the panel lives outside it
-        // in a BorderPane and survives every screen change.
+        // and survives every screen change. Since 0.7.24 it is folded to a tab
+        // on the stage's right edge and opens over the stage (THE FRAME FOLDS AWAY).
         this.constructionPanel = new VBox(8);
         this.constructionPanel.setPrefWidth(280);
+        this.constructionPanel.setMaxWidth(Region.USE_PREF_SIZE);
         /*
          * The right-hand strip, dressed to match the left.
          *
@@ -452,7 +515,8 @@ public class UserInterface extends Application {
          */
         this.constructionPanel.setStyle(
                 "-fx-padding: 12 12 12 10; -fx-background-color: " + Palette.PANEL + ";"
-                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;");
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;"
+                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 16, 0, -3, 0);");
 
         // City overview down the left. Same reasoning as the construction panel:
         // it lives outside rootMenu so the menu system can't clear it away.
@@ -470,26 +534,37 @@ public class UserInterface extends Application {
          * DARK, and the same dark as the top strip.
          *
          * The panel was #f4f4f4 with #333 text, which is a document. It is not
-         * a document - it is an instrument cluster that is on screen at all
-         * times, and the thing it most needs to do is let a figure that has
-         * gone wrong catch the eye of somebody who is looking at something
-         * else. Red on light grey does not; red on near-black does.
+         * a document - it is an instrument cluster (on screen at all times
+         * until 0.7.24, a drawer the header's chip opens since), and the thing
+         * it most needs to do is let a figure that has gone wrong catch the
+         * eye of somebody who is looking at something else. Red on light grey
+         * does not; red on near-black does.
          */
         this.cityPanel.setStyle(
-                "-fx-padding: 12 10 12 12; -fx-background-color: " + Palette.PANEL + ";"
-                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;");
+                "-fx-padding: 4 10 12 12; -fx-background-color: " + Palette.PANEL + ";");
+        VBox.setVgrow(cityPanel, Priority.ALWAYS);
+        // A drawer since 0.7.24: the header's "Needs you" chip opens it over
+        // the left of the stage. See THE FRAME FOLDS AWAY.
+        this.drawer = new VBox(0, drawerBar(), cityPanel);
+        this.drawer.setMaxWidth(Region.USE_PREF_SIZE);
+        this.drawer.setStyle("-fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;"
+                + " -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 16, 0, 3, 0);");
 
         /*
-         * The header across the top - the clock, the six headline tiles, the
-         * rating and the inbox (0.7.21; see THE HEADER) - and the next debt
-         * maturities across the bottom.
+         * The header across the top - the clock, the money block, five
+         * headline tiles, the "Needs you" chip, the rating and the inbox
+         * (0.7.21, 0.7.24; see THE HEADER). The next debt maturities ran
+         * across the bottom until 0.7.24; they are NEXT DUE, beside the
+         * ladder at the top of the Finances hub, now
+         * (FinancesScreen.nextDueCard(); a card of its own until 0.7.32).
          *
-         * Both live outside rootMenu for exactly the reason the two side panels
-         * do: the menu system clears its own children on every screen change, so
-         * anything meant to be always-visible has to hang off the BorderPane
-         * instead. These were the two edges still unused.
+         * It lives outside rootMenu for exactly the reason the side panels
+         * do: the menu system clears its own children on every screen change,
+         * so anything meant to be always-visible has to hang off the
+         * BorderPane instead.
          */
-        this.header = new HBox(12);
+        this.header = new HBox(10);
         this.header.setAlignment(Pos.CENTER_LEFT);
         this.header.setPrefHeight(Palette.HEADER);
         this.header.setMinHeight(Palette.HEADER);
@@ -497,11 +572,6 @@ public class UserInterface extends Application {
                 "-fx-padding: 10 14 10 14; -fx-background-color: " + Palette.PANEL + ";"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 1 0;");
 
-        this.debtBar = new HBox(16);
-        this.debtBar.setAlignment(Pos.CENTER_LEFT);
-        this.debtBar.setStyle(
-                "-fx-padding: 6 16 6 16; -fx-background-color: " + Palette.PANEL + ";"
-                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 1 0 0 0;");
 
         /* =====================================================================
            THE MIDDLE COLUMN SCROLLS NOW, and it should have from the start.
@@ -639,8 +709,8 @@ public class UserInterface extends Application {
                 "-fx-padding: 6 0 0 0; -fx-background-color: " + Palette.PANEL + ";"
                 + " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 1 0 0;");
 
-        HBox leftEdge = new HBox(tabRail, cityPanel);
-        leftEdge.setStyle("-fx-background-color: " + Palette.PANEL + ";");
+        // The rail alone at the left since 0.7.24: the City overview panel is a
+        // drawer over the stage (THE FRAME FOLDS AWAY).
 
         /* =====================================================================
            THE STAGE IS A STACK NOW.
@@ -653,7 +723,8 @@ public class UserInterface extends Application {
            and a screen that forgot would silently lose the player's ability to
            advance a month. Since 0.7.21 the clock and the month's income are
            in the header and the envelope is the header's; what floats is the
-           inbox's list and the toasts.
+           inbox's list and the toasts - and since 0.7.24 the City overview's
+           drawer and the construction panel (THE FRAME FOLDS AWAY).
 
            Each overlay is pinned to USE_PREF_SIZE. A StackPane stretches its
            children to fill by default, and a stretched transparent overlay would
@@ -664,10 +735,25 @@ public class UserInterface extends Application {
         this.stagePane.getChildren().add(menuScroller);
 
         /*
-         * The inbox's list is the one thing that FLOATS, and it earns it: it is
-         * shut almost always, it is opened deliberately (the envelope in the
-         * header), and while it is open covering the top corner of the screen
-         * is the point.
+         * THE DRAWER AND THE PANEL, over the stage (0.7.24): the City overview
+         * at the left, opened by the header's chip, and the construction panel
+         * at the right, opened by its tab. Each takes the stage's height and
+         * no more width than its own; under the inbox's list and the toasts.
+         */
+        StackPane.setAlignment(drawer, Pos.TOP_LEFT);
+        drawer.setMaxHeight(Double.MAX_VALUE);
+        showIf(drawer, false);
+        this.stagePane.getChildren().add(drawer);
+        StackPane.setAlignment(constructionPanel, Pos.TOP_RIGHT);
+        constructionPanel.setMaxHeight(Double.MAX_VALUE);
+        showIf(constructionPanel, false);
+        this.stagePane.getChildren().add(constructionPanel);
+        this.constructionTab = new VBox(8);
+
+        /*
+         * The inbox's list FLOATS too, and it earns it: it is shut almost
+         * always, it is opened deliberately (the envelope in the header), and
+         * while it is open covering the top corner of the screen is the point.
          */
         this.inboxCorner = new VBox(0);
         this.inboxCorner.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
@@ -694,8 +780,9 @@ public class UserInterface extends Application {
            top of the Memorial Cemetery row and hid its price. They moved to a
            strip of their own below the scroller, and since 0.7.21 they are in
            the header with the date (see THE HEADER): the play button, the
-           month and the speed, and the dome's figure on the TREASURY tile. So
-           the stage is the scroller alone, to the window's foot.
+           month and the speed, and the dome's figure on the TREASURY tile
+           (the money block's since 0.7.24). So the stage is the scroller
+           alone, to the window's foot.
            ===================================================================== */
         VBox stageColumn = new VBox(stagePane);
         VBox.setVgrow(stagePane, Priority.ALWAYS);
@@ -726,17 +813,18 @@ public class UserInterface extends Application {
         stageColumn.addEventHandler(javafx.scene.input.ScrollEvent.SCROLL, this::wheelToPage);
 
         BorderPane root = new BorderPane();
-        // The stage, and deliberately DARKER than the four strips around it.
+        // The stage, and deliberately DARKER than the strips around it (the
+        // header, the rail and the construction tab; four, with the debt bar
+        // along the foot, until 0.7.24).
         // Chrome frames content; the same colour on both would make the window
         // one flat field with things floating in it.
         root.setStyle("-fx-background-color: " + STAGE + ";");
         menuScroller.setStyle("-fx-background-color: " + STAGE + ";"
                 + " -fx-background: " + STAGE + ";");
         root.setCenter(stageColumn);
-        root.setLeft(leftEdge);
-        root.setRight(constructionPanel);
+        root.setLeft(tabRail);
+        root.setRight(constructionTab);
         root.setTop(header);
-        root.setBottom(debtBar);
         // A stack over the whole window, so a dialog can be laid over all of it
         // and take every click while it is up (0.7.20; see showQuitDialog) -
         // and, since 0.7.21, the main menu and the founding screen over their
@@ -858,6 +946,25 @@ public class UserInterface extends Application {
                 if (!typing && e.getCode() == javafx.scene.input.KeyCode.P) leaveChartFullScreen(false);
             }
 
+            /*
+             * ESC PUTS AWAY THE INBOX'S LIST, THEN THE DRAWER (0.7.24), one
+             * a press, before it is the menu: each is over the page, and Esc
+             * is how anything over the page goes away. The list stayed down
+             * through the main menu until this, a fix.
+             */
+            if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE && (inboxOpen || drawerOpen)
+                    && !isGameMenu(currentScreen)) {
+                if (inboxOpen) {
+                    inboxOpen = false;
+                    refreshInbox();
+                } else {
+                    drawerOpen = false;
+                    placeFrame();
+                }
+                e.consume();
+                return;
+            }
+
             if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE
                     || (!typing && e.getCode() == javafx.scene.input.KeyCode.P)) {
                 // A tooltip still up would hang over the menu.
@@ -948,6 +1055,20 @@ public class UserInterface extends Application {
             }
         });
 
+        /*
+         * A CLICK OUTSIDE THE DRAWER CLOSES IT (0.7.24), unless it is pinned:
+         * a filter, so it sees the press before whatever was pressed, and
+         * lets it through - the click still does what it was aimed at. The
+         * chip is its own door and is left to its own handler.
+         */
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            if (!drawerOpen || (prefs != null && prefs.isDrawerPinned())) return;
+            if (e.getTarget() instanceof javafx.scene.Node n
+                    && (inside(n, drawer) || (needsChipNode != null && inside(n, needsChipNode)))) return;
+            drawerOpen = false;
+            placeFrame();
+        });
+
         // button actions
         showMainMenu();
 
@@ -1011,6 +1132,18 @@ public class UserInterface extends Application {
         if (!sameScreen) innerScrollAt.clear();
         // An (i)'s popover belongs to the page it was opened on (0.7.21).
         if (!sameScreen) Pieces.closePopover();
+        /*
+         * ...AND SO DO THE INBOX'S LIST AND THE DRAWER (0.7.24, a fix). The
+         * list stayed down across screens and through the main menu - seen
+         * in the 0.7.23 walkthrough - because nothing but the envelope ever
+         * put it away. A real screen change puts it away now, as the main menu
+         * (a screen change too) and Esc do; the City overview's drawer goes
+         * the same way unless the player has pinned it.
+         */
+        if (!sameScreen) {
+            inboxOpen = false;
+            if (prefs == null || !prefs.isDrawerPinned()) drawerOpen = false;
+        }
         currentScreen = screen;
 
         /*
@@ -1075,9 +1208,9 @@ public class UserInterface extends Application {
         summaryScreen.refreshCityPanel();
         refreshConstructionPanel();
         refreshHeader();
-        refreshDebtBar();
         refreshTabRail();
         refreshInbox();
+        placeFrame();
 
         if (menuScroller != null) {
             if (!sameScreen) menuScroller.setVvalue(0);
@@ -1210,7 +1343,7 @@ public class UserInterface extends Application {
      * The same, remembering the distance from the BOTTOM rather than the
      * fraction - for a page whose top half changes height under the player.
      *
-     * The Reports tab is the case (Jerus, 2026-09-18: "when you click some
+     * City History is the case (Jerus, 2026-09-18: "when you click some
      * buttons it sometimes moves"). Its legend sits under the chart and grows
      * a block for every line picked, and the picker that picks them sits
      * below the legend - so ticking a line inserted a block ABOVE the pointer,
@@ -1594,6 +1727,18 @@ public class UserInterface extends Application {
        less room than its figure, a gap and SPARK_WIDTH shrinks its sparkline,
        and draws none under SPARK_MIN; the label and the change line end in an
        ellipsis before the figure is touched.
+
+       ...AND SINCE 0.7.24 NOTHING ENDS IN AN ELLIPSIS. Jerus's window is
+       1,389 points wide, and the walkthrough read "TREA...", "OUT OF W...",
+       "RATE ·..." and "5,119 this m...". TREASURY is its own block by the
+       clock (THE MONEY BLOCK) and the five tiles keep their label and a
+       sparkline on one row, the figure under them and the change line
+       across the tile: a tile's least width is its label, its figure or its
+       change line in its shortest wording, whichever is widest, and a change
+       line too long for its tile is shown in a shorter wording - each tile's
+       wordings are written beside it in headlines(), longest first - rather
+       than cut. Laid out for 1,280, 1,389 and 1,920 px: the sparklines come
+       and go with the room, as they always did; nothing else does.
        ===================================================================== */
 
     /*
@@ -1613,28 +1758,38 @@ public class UserInterface extends Application {
     /** Deflation past this reads red, whatever the target: prices collapsing. The lower half of the 10% alarm the strip had until 0.7.15; Jerus ruled on the upper half only. */
     static final double STRIP_DEFLATION_ALARM = .10;
 
-    /** The currency within this of its parity (ForeignAccounts.deviationFromParity) reads quiet, and so does one stronger than parity by any amount. */
-    static final double STRIP_RATE_QUIET = .05;
+    /*
+     * The rate line's colour has no thresholds of its own since 0.7.35: it
+     * takes ForeignAccounts.parityLevel(), the one parity rule the Trade tab
+     * and the drawer's THE CURRENCY read too (PARITY_WATCH, PARITY_FAR). It
+     * was grey within 5% of parity or stronger by any amount, amber weaker
+     * past 5% and red past 25% - three verdicts for one rate (the Trade
+     * spec's B9).
+     */
 
-    /** Weaker than parity by more than this reads red: a currency well below what its basket is worth abroad is the thing the player should notice. */
-    static final double STRIP_RATE_ALARM = .25;
+    /** How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over (0.7.24: at 17 px, so the money block and five tiles fit a 1,280 window; it was 182 at 19). */
+    static final double DATE_WIDTH = 164;
 
-    /** How wide the clock's date is held, so the tiles do not move as the day's name changes width: "28 September 2151" at the date's size, and a little over. */
-    static final double DATE_WIDTH = 182;
+    /** The date's size in the clock (0.7.24; it was 19). */
+    static final double DATE_SIZE = 17;
 
     /** How many months a tile's sparkline draws: ten years, or everything recorded if less. */
     static final int SPARK_MONTHS = 120;
 
-    /** A tile's sparkline at full size, as the mockups draw it. */
-    static final double SPARK_WIDTH = 84;
-    static final double SPARK_HEIGHT = 30;
+    /** A tile's sparkline at full size: on the label's row since 0.7.24, as the mockups draw it (it was 84 by 30, beside the words). */
+    static final double SPARK_WIDTH = 72;
+    /** ...and its height, the label's row (0.7.24; it was 30). */
+    static final double SPARK_HEIGHT = 16;
 
     /** Narrower than this and a tile draws no sparkline: a line the width of a word says nothing. */
     static final double SPARK_MIN = 30;
 
-    /** The size of a tile's figure, and of its label. */
-    static final double TILE_FIGURE = 17;
+    /** The size of a tile's figure (0.7.24: 15, so the money block and five tiles fit a 1,280 window whole; it was 17). */
+    static final double TILE_FIGURE = 15;
+    /** The size of a tile's label, and of the money block's. */
     static final double TILE_LABEL = 10.5;
+    /** The size of a tile's change line (0.7.24; it was 11). */
+    static final double TILE_CHANGE = 10.5;
 
     /** The month's figure in the clock, kept so it pops when a month lands. */
     private Label monthFigure;
@@ -1649,7 +1804,8 @@ public class UserInterface extends Application {
     private StackPane inboxHolder;
 
     /**
-     * The header, rebuilt: the clock, the six tiles, the rating and the inbox.
+     * The header, rebuilt: the clock, the money block, the five tiles, the
+     * "Needs you" chip, the rating and the inbox.
      * Every redraw calls it, so it reads the month that has just landed.
      */
     private void refreshHeader() {
@@ -1661,8 +1817,10 @@ public class UserInterface extends Application {
         HBox.setHgrow(tiles, Priority.ALWAYS);
 
         HBox clock = clockBlock(inCity);
+        // TREASURY left the tile row in 0.7.24: its own block, by the clock (THE MONEY BLOCK).
+        Region money = moneyBlock();
         HBox right = ratingAndInbox(inCity);
-        header.getChildren().addAll(clock, tiles, right);
+        header.getChildren().addAll(clock, money, tiles, right);
     }
 
     /**
@@ -1674,10 +1832,17 @@ public class UserInterface extends Application {
      * @param keys   the lines City History draws when the tile is clicked
      */
     private record Headline(String label, String area, String value, String valueTone,
-                            String change, String changeTone, double[] series,
+                            String[] change, String changeTone, double[] series,
                             String tip, String more, String[] keys) { }
 
-    /** The six, in the mockups' order: people, output, prices, work, cash, the price of money. */
+    /**
+     * A change line, longest wording first: the tile shows the longest that
+     * fits its width (HeadlineTile), so a line is shortened and never cut
+     * (0.7.24). The shortenings are written beside each tile's line below.
+     */
+    private static String[] words(String... longestFirst) { return longestFirst; }
+
+    /** The five, in the mockups' order: people, output, prices, work, the price of money - TREASURY is its own block since 0.7.24 (moneyBlock()). */
     private List<Headline> headlines() {
         List<Headline> out = new ArrayList<>();
         HistorySave h = game.getHistorySave();
@@ -1693,15 +1858,18 @@ public class UserInterface extends Application {
         double in = flows.getLastArrivals(), left = flows.getLastDepartures();
         double net = in - left + born - died;
         long whole = Math.round(Math.abs(net));
-        String netLine, netTone;
+        String[] netLine;
+        String netTone;
         if (whole == 0) {
-            netLine = "no change this month";
+            netLine = words("no change this month", "no change");
             netTone = Palette.TEXT_MUTED;
         } else if (net > 0) {
-            netLine = "▲ " + formatter.format(whole) + " this month";
+            netLine = words("▲ " + formatter.format(whole) + " this month", "▲ " + formatter.format(whole) + " this mo",
+                    "▲ " + formatter.format(whole));
             netTone = Palette.GOOD;
         } else {
-            netLine = "▼ " + formatter.format(whole) + " this month";
+            netLine = words("▼ " + formatter.format(whole) + " this month", "▼ " + formatter.format(whole) + " this mo",
+                    "▼ " + formatter.format(whole));
             // The left panel's PEOPLE watch: amber when the city shrinks, red
             // past half a percent a month (SummaryScreen.citySymptoms()).
             netTone = net < -Math.max(1, population * .005) ? Palette.BAD : Palette.WARN;
@@ -1727,16 +1895,20 @@ public class UserInterface extends Application {
         int recorded = na.getMonthsRecorded();
         double[] growth = YearBook.realGrowth(h);
         double grew = growth.length == 0 ? Double.NaN : growth[growth.length - 1];
-        String gdpLine, gdpTone = Palette.TEXT_MUTED;
+        String[] gdpLine;
+        String gdpTone = Palette.TEXT_MUTED;
         if (recorded < 12) {
-            gdpLine = "annualised · first year";
+            gdpLine = words("annualised · first year", "first year");
         } else if (Double.isNaN(grew)) {
             // A year recorded but not two: growth needs a year to compare with.
-            gdpLine = "growth from month 24";
+            gdpLine = words("growth from month 24", "growth from m24");
         } else if (Math.abs(grew) < .0005) {
-            gdpLine = "flat, real, 12 mo";
+            gdpLine = words("flat, real, 12 mo", "flat, real", "flat");
         } else {
-            gdpLine = String.format("%s %.1f%% real, 12 mo", grew > 0 ? "▲" : "▼", Math.abs(grew) * 100);
+            String arrow = grew > 0 ? "▲" : "▼";
+            gdpLine = words(String.format("%s %.1f%% real, 12 mo", arrow, Math.abs(grew) * 100),
+                    String.format("%s %.1f%% real", arrow, Math.abs(grew) * 100),
+                    String.format("%s %.1f%%", arrow, Math.abs(grew) * 100));
             gdpTone = grew > 0 ? Palette.GOOD : Palette.BAD;
         }
         out.add(new Headline("GDP", Palette.BUSINESS, money(annualGdp(na)) + " / yr", Palette.TEXT_HEAD,
@@ -1754,14 +1926,19 @@ public class UserInterface extends Application {
         /* ---------------- INFLATION, against the player's target ---------------- */
         PriceIndex prices = game.getPriceIndex();
         double target = game.getDebtManager().getInflationTarget();
-        String inflValue, inflLine, inflTone;
+        String inflValue, inflTone;
+        String[] inflLine;
         if (prices.hasRate()) {
             double inflation = prices.inflation();
             double off = inflation - target;
             inflValue = String.format("%.1f%% / yr", unsigned0(inflation * 100, 1));
+            String side = off > 0 ? "over" : "under";
             inflLine = Math.abs(off) < .0005
-                    ? "on the " + DebtManager.targetWords(target) + " target"
-                    : String.format("%.1f points %s the target", Math.abs(off) * 100, off > 0 ? "over" : "under");
+                    ? words("on the " + DebtManager.targetWords(target) + " target", "on target")
+                    : words(String.format("%.1f points %s the target", Math.abs(off) * 100, side),
+                            String.format("%.1f pts %s target", Math.abs(off) * 100, side),
+                            String.format("%.1f %s target", Math.abs(off) * 100, side),
+                            String.format("%s%.1f pts", off > 0 ? "+" : "−", Math.abs(off) * 100));
             inflTone = inflationColour(inflation, target);
         } else {
             /*
@@ -1774,7 +1951,7 @@ public class UserInterface extends Application {
              * shopping does not count towards it.
              */
             inflValue = (prices.isBased() ? "rate in " : "rate in ~") + prices.monthsUntilRate() + " mo";
-            inflLine = "target " + DebtManager.targetWords(target);
+            inflLine = words("target " + DebtManager.targetWords(target));
             inflTone = Palette.TEXT_MUTED;
         }
         double index = prices.isBased() ? prices.getIndex() : 1;
@@ -1805,10 +1982,12 @@ public class UserInterface extends Application {
         int unfilled = 0;
         for (int v : pm.getJobVacancy()) unfilled += Math.max(0, v);
         String workTone = PeopleScreen.outOfWorkTone(jobless);
-        String workLine = jobless > PeopleScreen.OUT_OF_WORK_FAR ? "far too many idle"
-                : jobless > PeopleScreen.OUT_OF_WORK_HIGH ? "high"
-                : jobless < PeopleScreen.OUT_OF_WORK_SHORT ? (unfilled > 0 ? "jobs going unfilled" : "nobody spare")
-                : "healthy slack";
+        String[] workLine = jobless > PeopleScreen.OUT_OF_WORK_FAR ? words("far too many idle", "too many idle", "idle")
+                : jobless > PeopleScreen.OUT_OF_WORK_HIGH ? words("high")
+                : jobless < PeopleScreen.OUT_OF_WORK_SHORT
+                        ? (unfilled > 0 ? words("jobs going unfilled", "jobs unfilled", "unfilled")
+                                        : words("nobody spare", "none spare"))
+                : words("healthy slack", "slack");
         out.add(new Headline("OUT OF WORK", Palette.PEOPLE,
                 String.format("%.1f%%", unsigned0(jobless * 100, 1)), workTone, workLine, workTone,
                 historyScreen.historyValues(h, "unemployment"),
@@ -1820,29 +1999,16 @@ public class UserInterface extends Application {
                         PeopleScreen.OUT_OF_WORK_FAR * 100, click),
                 null, new String[] {"unemployment"}));
 
-        /* ---------- TREASURY: cash, red only when overdrawn, and the month ---------- */
-        double cash = game.getCash();
-        double income = game.getIncome();
-        boolean banked = game.hasTreasuryMonth();
-        double moved = banked ? game.getTreasuryChange() : Double.NaN;
-        out.add(new Headline("TREASURY", Palette.MONEY, money(cash), cash < 0 ? Palette.BAD : Palette.TEXT_HEAD,
-                signedTight(income, false) + " this month",
-                Math.abs(income) < .5 ? Palette.TEXT_MUTED : income > 0 ? Palette.GOOD : Palette.BAD,
-                historyScreen.historyValues(h, "cash"),
-                String.format("The city's cash%s.%nThis month it earned %s%s.%n%s",
-                        cash < 0 ? " - overdrawn: the central bank advances it at the policy rate" : "",
-                        signedTight(income, false),
-                        banked ? " and banked " + signedTight(moved, false) : "", click),
-                treasuryWhy(income, moved),
-                new String[] {"cash"}));
+        /* TREASURY is its own block by the clock since 0.7.24: see moneyBlock(). */
 
         /* --------------- RATE and the currency: the price of money --------------- */
         DebtManager market = game.getDebtManager();
         ForeignAccounts fx = game.getForeignAccounts();
         double rate = fx.getRate();
         String here = game.getCurrency().qualifiedSymbol();
+        String perDollar = here + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate));
         out.add(new Headline("RATE · " + here, Palette.MONEY, pct2(market.getPolicyRate()), Palette.TEXT_HEAD,
-                here + (rate < .1 ? fxRate(rate) : String.format("%,.2f", rate)) + " per " + Currency.FOREIGN_SYMBOL,
+                words(perDollar + " per " + Currency.FOREIGN_SYMBOL, perDollar + "/" + Currency.FOREIGN_SYMBOL),
                 rateColour(fx), historyScreen.historyValues(h, "policyRate"),
                 String.format("The central bank's policy rate - your dial on the Policy tab - and what a"
                         + " US dollar costs in %s.%n%s, and the city borrows at %s.%n"
@@ -1859,31 +2025,133 @@ public class UserInterface extends Application {
     }
 
     /**
-     * The treasury tile's (i): the two figures the net-income dome carried
-     * until 0.7.21, and why they differ.
-     * Jerus: "show how much was the actual month change ... sometimes cause of
-     * land buybacks or sales it was actually more or less." What the month
-     * EARNED (EconomyManager's income: tax less interest, pensions, care and
-     * schools) is not what the treasury BANKED, which counts the city's
-     * buildings, its land and its borrowing.
+     * The money block's (i) - the TREASURY tile's until 0.7.24: the three
+     * figures, EARNED, SURPLUS and BANKED (0.7.31's names, the same on the
+     * Government tab), and why they differ. Jerus: "show how much was the
+     * actual month change ... sometimes cause of land buybacks or sales it was
+     * actually more or less." What the month EARNED (the tax take less the
+     * running programmes, at today's tax rates) is not the budget's SURPLUS,
+     * which adds land, buildings and the smaller lines and leaves out the
+     * fares (Game.getEarnedToBudget(), each step by name - it named three of
+     * the eleven until 0.7.31), and neither is what the treasury BANKED,
+     * which counts its borrowing and the player's own moves too.
      */
     private String treasuryWhy(double income, double moved) {
         StringBuilder why = new StringBuilder(String.format(
-                "EARNED %s: what the month made - tax in, less interest, pensions, care and schools."
-                + " It does not count what the city spent on buildings or land, or what land sales"
-                + " brought in.", signedTight(income, false)));
-        if (!Double.isNaN(moved)) {
-            double surplus = game.getTreasurySurplus();
-            why.append(String.format("%n%nBANKED %s: what the balance actually did this month - your land,"
-                    + " your buildings and your borrowing included. The whole budget came to %s; on top"
-                    + " of it, paper issued raised %s - borrowed, not earned - and %s went back to"
-                    + " lenders as principal, which shrinks a debt rather than buying anything.",
-                    signedTight(moved, false), signedTight(surplus, false),
-                    money(game.getTreasuryRaised()), money(game.getTreasuryRepaid())));
+                "EARNED %s: the month's taxes and fees less the running programmes - interest, pensions, EI,"
+                + " the grants, care, schools and the police - plus the utilities' net, read at today's tax"
+                + " rates.", signedTight(income, false)));
+        java.util.List<String> adds = new java.util.ArrayList<>();
+        double fares = 0;
+        for (TreasuryJournal.Entry e : game.getEarnedToBudget()) {
+            if (Game.EARNED_FARES.equals(e.label())) { fares = -e.amount(); continue; }
+            if (Math.abs(e.amount()) >= .5) adds.add(e.label().toLowerCase() + " " + signedTight(e.amount(), false));
         }
-        why.append(String.format("%n%nGovernment, on its Overview page, has it line by line."));
+        double dials = game.getEarnedResidual();
+        why.append(String.format("%n%nSURPLUS %s: the budget. %s%s%s",
+                signedTight(game.getEconomyManager().getNationalAccounts().getBalance(), false),
+                adds.isEmpty() ? "It has nothing EARNED leaves out this month"
+                        : "It adds what EARNED leaves out - " + String.join(", ", adds),
+                Math.abs(fares) >= .5 ? String.format(" - and leaves out the transit fares (%s), which reach"
+                        + " the cash and not the budget.", signedTight(fares, false)) : ".",
+                Math.abs(dials) >= .5 ? String.format(" A dial moved since the last press moves EARNED and not"
+                        + " the budget: %s.", signedTight(dials, false)) : ""));
+        if (!Double.isNaN(moved)) {
+            why.append(String.format("%n%nBANKED %s: what the balance actually did this month - your land,"
+                    + " your buildings and your borrowing included. On top of the budget, paper issued raised"
+                    + " %s - borrowed, not earned - and %s went back to lenders as principal, which shrinks a"
+                    + " debt rather than buying anything.",
+                    signedTight(moved, false), money(game.getTreasuryRaised()), money(game.getTreasuryRepaid())));
+        }
+        why.append(String.format("%n%nGovernment's Overview walks from one to the next, step by step."));
         return why.toString();
     }
+
+    /* ---------------------------------------------------------------------
+       THE MONEY BLOCK (0.7.24)
+
+       Jerus, on 0.7.23: "the money one has is barely visible to see as well
+       as ones income, it should really be visible (a T if trillion)" - the
+       tile read "TREA..." and "+$1.5B thi...". He chose "Own block by the
+       clock". TREASURY left the tile row: an icon, its label in the money
+       colour, the cash in 28 px mono in the compact form (Money.money(), which
+       has had the T since 0.7.20) - red only when overdrawn, as the tile was
+       - and under it the month's income as "+$1.5B a month", green, red
+       when it is negative and grey at nothing. A click opens Finances.
+
+       THE LINE UNDER IT IS THE TILE'S LINE: Game.getIncome(), what the month
+       EARNED (its "net income" until 0.7.31) - the tax take less the running
+       programmes (interest, pensions, EI, the grants, care, schools and the
+       police) plus the utilities' net, at today's tax rates. It is not the
+       budget's SURPLUS, and not the change in the cash (Game.
+       getTreasuryChange(), what Finances' TREASURY cell reads), which counts
+       the city's buildings and land, its borrowing raised and repaid, and
+       the rest of what the treasury did: in Jerus's city the tile said +$1.5B
+       while Finances said the cash grew $2.3B. The figure is unchanged; the
+       tooltip names it in a line, and the (i) had the two side by side
+       (treasuryWhy()). Since 0.7.31 the line says what it is - "+$1.5B
+       earned a month" - and the (i) names all three, EARNED, SURPLUS and
+       BANKED, as the Government tab does.
+       --------------------------------------------------------------------- */
+
+    /** The cash at its own size, what the month EARNED under it (not how far the month moved the cash: see above), and a door to Finances. */
+    private Region moneyBlock() {
+        double cash = game.getCash();
+        double income = game.getIncome();
+        boolean banked = game.hasTreasuryMonth();
+        double moved = banked ? game.getTreasuryChange() : Double.NaN;
+
+        Region coin = iconSquare(Icons.COIN, Palette.MONEY, 36, 20);
+
+        Label label = new Label("TREASURY");
+        label.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + TILE_LABEL + "px; -fx-text-fill: " + Palette.MONEY + ";");
+        label.setMinWidth(Region.USE_PREF_SIZE);
+        HBox labelRow = new HBox(4, label, infoButton(treasuryWhy(income, moved), false));
+        labelRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label figure = new Label(money(cash));
+        figure.setStyle(Fonts.monoSemiBold() + " -fx-font-size: " + MONEY_FIGURE + "px;"
+                + " -fx-text-fill: " + (cash < 0 ? Palette.BAD : Palette.TEXT_HEAD) + ";");
+        figure.setMinWidth(Region.USE_PREF_SIZE);
+
+        Label month = new Label(signedTight(income, false) + " earned a month");
+        month.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 11.5px; -fx-text-fill: "
+                + (Math.abs(income) < .5 ? Palette.TEXT_MUTED : income > 0 ? Palette.GOOD : Palette.BAD) + ";");
+        month.setMinWidth(Region.USE_PREF_SIZE);
+
+        // Packed close: the 28 px figure's own line height carries the air, and the
+        // block stays inside the header's 64 px between its paddings.
+        VBox words = new VBox(-4, labelRow, figure, month);
+        words.setAlignment(Pos.CENTER_LEFT);
+        words.setMinWidth(Region.USE_PREF_SIZE);
+
+        HBox block = new HBox(10, coin, words);
+        block.setAlignment(Pos.CENTER_LEFT);
+        block.setMinWidth(Region.USE_PREF_SIZE);
+        String rest = "-fx-padding: 1 14 1 10; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
+        block.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";");
+        block.setOnMouseEntered(e -> block.setStyle(rest + " -fx-border-color: " + Palette.MONEY + ";"));
+        block.setOnMouseExited(e -> block.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";"));
+        Tooltip tip = new Tooltip(String.format("The city's cash%s.%n"
+                        + "Under it: what the month EARNED, at today's tax rates - not the budget's surplus, nor the change in the cash%s.%n"
+                        + "Click for Finances.",
+                cash < 0 ? " - overdrawn: the central bank advances it at the policy rate" : "",
+                banked ? ", which was " + signedTight(moved, false) : ""));
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(block, tip);
+        block.setOnMouseClicked(e -> {
+            resetSection("finances");
+            railJump = true;            // clearMenu: arriving, not redrawing
+            financesScreen.showFinanceMenu();
+        });
+        return block;
+    }
+
+    /** The cash in the money block: the mockups' 28 px. */
+    static final double MONEY_FIGURE = 28;
+
+    // The icon in a tinted square beside a heading is Pieces.iconSquare() since 0.7.26.
 
     /**
      * The rate tile's (i): the price of money three ways (0.7.4) - Jerus: "the
@@ -1924,14 +2192,22 @@ public class UserInterface extends Application {
                                 fx.deviationFromParity() > 0 ? "weaker" : "stronger"));
     }
 
-    /** One tile: its label in its area's colour, the figure, the change, and the sparkline. */
+    /**
+     * One tile (0.7.24, the mockups' shape): its label in its area's colour
+     * and a small sparkline on the top row, the figure under them, and the
+     * change line across the tile's whole width - in the longest of its
+     * wordings that fits (HeadlineTile). No label, figure or change line is
+     * ever cut: each is held at its own width, and the tile's least width is
+     * the widest of them, its change line in its shortest wording.
+     */
     private Region headlineTile(Headline t) {
         Label label = new Label(t.label());
         label.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + TILE_LABEL + "px;"
                 + " -fx-text-fill: " + t.area() + ";");
-        label.setMinWidth(0);
+        label.setMinWidth(Region.USE_PREF_SIZE);
         HBox labelRow = new HBox(4, label);
         labelRow.setAlignment(Pos.CENTER_LEFT);
+        labelRow.setMinWidth(Region.USE_PREF_SIZE);
         if (t.more() != null) labelRow.getChildren().add(infoButton(t.more(), false));
 
         Label figure = new Label(t.value());
@@ -1940,15 +2216,18 @@ public class UserInterface extends Application {
         // The figure is the one thing a tile never cuts.
         figure.setMinWidth(Region.USE_PREF_SIZE);
 
-        Label change = new Label(t.change());
-        change.setStyle("-fx-font-size: 11px; -fx-text-fill: " + t.changeTone() + ";");
-        change.setMinWidth(0);
+        List<Label> changes = new ArrayList<>();
+        for (String wording : t.change()) {
+            Label change = new Label(wording);
+            change.setStyle("-fx-font-size: " + TILE_CHANGE + "px; -fx-text-fill: " + t.changeTone() + ";");
+            change.setMinWidth(Region.USE_PREF_SIZE);
+            changes.add(change);
+        }
 
-        VBox words = new VBox(0, labelRow, figure, change);
-        words.setAlignment(Pos.CENTER_LEFT);
-
-        HeadlineTile tile = new HeadlineTile(words, new Sparkline(t.series(), game.getHistorySave().getMonth(), t.area()));
-        String rest = "-fx-padding: 8 12 8 12; -fx-background-color: " + Palette.RAISED + ";"
+        HeadlineTile tile = new HeadlineTile(labelRow, figure, changes,
+                new Sparkline(t.series(), game.getHistorySave().getMonth(), t.area()));
+        // 6 and 10 (0.7.24; 8 and 12 until then): the five, the money block and the clock in 1,280 px.
+        String rest = "-fx-padding: 6 10 6 10; -fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 1; -fx-cursor: hand;";
         tile.setStyle(rest + " -fx-border-color: " + Palette.EDGE + ";");
         tile.setOnMouseEntered(e -> tile.setStyle(rest + " -fx-border-color: " + t.area() + ";"));
@@ -1966,23 +2245,22 @@ public class UserInterface extends Application {
      * the first visit's preset does not come back over them), every line
      * shown, and since 0.7.23 the big chart on its last ten years - the
      * sparkline the tile was showing, drawn large - at the top of the page.
+     * Since 0.7.37 that is HistoryScreen.openOn(), the one door into History,
+     * with the arrival marked here; on History itself it lands at the chart.
      */
     private void openHistory(String[] keys) {
-        historyScreen.historySeeded = true;
-        historyScreen.historyPicked.clear();
-        historyScreen.hiddenLines.clear();
-        historyScreen.chartWindow.showRange(SPARK_MONTHS);
-        for (String key : keys) if (HistoryScreen.known(key)) historyScreen.historyPicked.add(key);
         railJump = true;            // clearMenu: arriving, not redrawing - the page opens at its top
-        historyScreen.showHistoryMenu();
+        historyScreen.openOn(keys);
     }
 
     /**
      * The tiles, side by side: equal shares of the row, except that a tile
-     * never gets less than its figure needs, and the rest share what is left.
-     * An HBox gives its spare room equally from each child's preferred width,
-     * which leaves tiles of six different widths; this is the mockups' "flex:
-     * 1 1 0" with a floor.
+     * never gets less than its least width - its figure until 0.7.24, the
+     * widest of its label, its figure and its shortest change line since
+     * (HeadlineTile) - and the rest share what is left. An HBox gives its
+     * spare room equally from each child's preferred width, which leaves
+     * tiles of five different widths; this is the mockups' "flex: 1 1 0"
+     * with a floor.
      */
     private static final class HeadlineRow extends javafx.scene.layout.Pane {
         private final double gap;
@@ -2013,8 +2291,8 @@ public class UserInterface extends Application {
             double x = snappedLeftInset(), y = snappedTopInset();
             double room = getWidth() - x - snappedRightInset() - gap * (n - 1);
             double h = getHeight() - y - snappedBottomInset();
-            // Floors first: any tile whose figure needs more than an equal
-            // share takes what it needs, and the others share the rest.
+            // Floors first: any tile whose least width is more than an equal
+            // share takes it, and the others share the rest.
             double[] width = new double[n];
             boolean[] fixed = new boolean[n];
             boolean changed = true;
@@ -2039,48 +2317,89 @@ public class UserInterface extends Application {
     }
 
     /**
-     * One tile's inside: the words at the left, never narrower than the
-     * figure, and the sparkline at the right in what is left, up to
-     * SPARK_WIDTH - and none at all under SPARK_MIN.
+     * One tile's inside (0.7.24): the label at the top left and the
+     * sparkline at the top right in what the label leaves, up to SPARK_WIDTH
+     * - none at all under SPARK_MIN; the figure under them; and the change
+     * line across the whole width, the longest of its wordings that fits.
+     * The least width is the widest of the label, the figure and the
+     * shortest wording, so none of the three is ever cut; HeadlineRow gives
+     * every tile at least that.
      */
     private static final class HeadlineTile extends Region {
-        private final VBox words;
+        private final HBox labelRow;
+        private final Label figure;
+        private final List<Label> changes;
         private final Sparkline spark;
 
-        HeadlineTile(VBox words, Sparkline spark) {
-            this.words = words;
+        HeadlineTile(HBox labelRow, Label figure, List<Label> changes, Sparkline spark) {
+            this.labelRow = labelRow;
+            this.figure = figure;
+            this.changes = changes;
             this.spark = spark;
-            getChildren().addAll(words, spark);
+            getChildren().addAll(labelRow, spark, figure);
+            getChildren().addAll(changes);
+        }
+
+        private double shortest() {
+            double least = 0;
+            for (int i = 0; i < changes.size(); i++) {
+                double wide = changes.get(i).prefWidth(-1);
+                least = i == 0 ? wide : Math.min(least, wide);
+            }
+            return least;
+        }
+
+        private double changeHeight() {
+            return changes.isEmpty() ? 0 : changes.get(0).prefHeight(-1);
         }
 
         @Override protected double computeMinWidth(double height) {
-            return snappedLeftInset() + words.minWidth(-1) + snappedRightInset();
+            return snappedLeftInset() + Math.max(labelRow.prefWidth(-1), Math.max(figure.prefWidth(-1), shortest()))
+                    + snappedRightInset();
         }
 
         @Override protected double computePrefWidth(double height) {
-            return snappedLeftInset() + words.prefWidth(-1) + Palette.GAP + SPARK_WIDTH + snappedRightInset();
+            double longest = changes.isEmpty() ? 0 : changes.get(0).prefWidth(-1);
+            return snappedLeftInset() + Math.max(labelRow.prefWidth(-1) + Palette.GAP + SPARK_WIDTH,
+                    Math.max(figure.prefWidth(-1), longest)) + snappedRightInset();
         }
 
         @Override protected double computeMinHeight(double width) {
-            return snappedTopInset() + Math.max(words.minHeight(-1), SPARK_HEIGHT) + snappedBottomInset();
+            return computePrefHeight(width);
         }
 
         @Override protected double computePrefHeight(double width) {
-            return snappedTopInset() + Math.max(words.prefHeight(-1), SPARK_HEIGHT) + snappedBottomInset();
+            return snappedTopInset() + Math.max(labelRow.prefHeight(-1), SPARK_HEIGHT) + figure.prefHeight(-1)
+                    + changeHeight() + snappedBottomInset();
         }
 
         @Override protected void layoutChildren() {
             double x = snappedLeftInset(), y = snappedTopInset();
             double w = getWidth() - x - snappedRightInset();
-            double h = getHeight() - y - snappedBottomInset();
-            double sparkWide = Math.min(SPARK_WIDTH, w - words.minWidth(-1) - Palette.GAP);
+            double top = Math.max(labelRow.prefHeight(-1), SPARK_HEIGHT);
+            double labelWide = labelRow.prefWidth(-1);
+            labelRow.resizeRelocate(x, y + (top - labelRow.prefHeight(-1)) / 2, labelWide, labelRow.prefHeight(-1));
+            double sparkWide = Math.min(SPARK_WIDTH, w - labelWide - Palette.GAP);
             boolean drawn = sparkWide >= SPARK_MIN;
             spark.setVisible(drawn);
-            double wordsWide = drawn ? w - sparkWide - Palette.GAP : w;
-            words.resizeRelocate(x, y, wordsWide, h);
             if (drawn) {
-                spark.resizeRelocate(snapPositionX(x + w - sparkWide), snapPositionY(y + (h - SPARK_HEIGHT) / 2),
+                spark.resizeRelocate(snapPositionX(x + w - sparkWide), snapPositionY(y + (top - SPARK_HEIGHT) / 2),
                         snapSizeX(sparkWide), SPARK_HEIGHT);
+            }
+            double fh = figure.prefHeight(-1);
+            figure.resizeRelocate(x, y + top, Math.max(w, figure.prefWidth(-1)), fh);
+            // The longest wording that fits; the shortest if none does (the tile's least width is that).
+            Label shown = null;
+            for (Label c : changes) {
+                if (c.prefWidth(-1) <= w + .5) { shown = c; break; }
+            }
+            if (shown == null && !changes.isEmpty()) {
+                shown = changes.get(0);
+                for (Label c : changes) if (c.prefWidth(-1) < shown.prefWidth(-1)) shown = c;
+            }
+            for (Label c : changes) {
+                c.setVisible(c == shown);
+                if (c == shown) c.resizeRelocate(x, y + top + fh, Math.max(w, c.prefWidth(-1)), c.prefHeight(-1));
             }
         }
     }
@@ -2094,7 +2413,7 @@ public class UserInterface extends Application {
      * line crossing it straight, rather than being squeezed out - and a short
      * mark at the foot is each January: the ten years, counted.
      */
-    private static final class Sparkline extends Region {
+    static final class Sparkline extends Region {
         private final double[] points;
         private final int[] at;
         private final javafx.scene.paint.Color colour;
@@ -2211,7 +2530,7 @@ public class UserInterface extends Application {
          * DATE_WIDTH so the tiles beside it do not shift as the day changes.
          */
         Label date = new Label(CityCalendar.formatDay(month, monthProgress));
-        date.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 19px; -fx-text-fill: " + Palette.TEXT_MAX + ";");
+        date.setStyle(Fonts.sansSemiBold() + " -fx-font-size: " + DATE_SIZE + "px; -fx-text-fill: " + Palette.TEXT_MAX + ";");
         date.setMinWidth(DATE_WIDTH);
         date.setPrefWidth(DATE_WIDTH);
         dayLabel = date;
@@ -2286,7 +2605,7 @@ public class UserInterface extends Application {
         return arrow;
     }
 
-    /** The credit rating's chip and the inbox's envelope, at the header's right. */
+    /** The "Needs you" chip, the credit rating's chip and the inbox's envelope, at the header's right. */
     private HBox ratingAndInbox(boolean inCity) {
         // The rating, which the rate curve already knew; a letter is how a
         // borrower actually experiences its own credit.
@@ -2303,7 +2622,11 @@ public class UserInterface extends Application {
         refreshInboxButton();
         inboxHolder.setVisible(inCity);
 
-        HBox box = new HBox(10, chip, inboxHolder);
+        // "Needs you" and its count by the rating and the envelope since 0.7.24: the drawer's door.
+        Region needs = needsChip();
+        needs.setVisible(inCity);
+
+        HBox box = new HBox(10, needs, chip, inboxHolder);
         box.setAlignment(Pos.CENTER_LEFT);
         box.setMinWidth(Region.USE_PREF_SIZE);
         box.setStyle("-fx-padding: 0 0 0 14; -fx-border-color: " + Palette.EDGE + ";"
@@ -2342,151 +2665,22 @@ public class UserInterface extends Application {
         return Palette.WARN;
     }
 
-    /** Secondary grey near parity or stronger, amber weaker, red well below it. See STRIP_RATE_QUIET. */
+    /** Secondary grey near parity, amber past ForeignAccounts.PARITY_WATCH either side, red past PARITY_FAR (0.7.35: the one parity rule; a pinned rate is grey). */
     private static String rateColour(ForeignAccounts fx) {
-        double weaker = fx.deviationFromParity();
-        if (weaker > STRIP_RATE_ALARM) return Palette.BAD;
-        if (weaker > STRIP_RATE_QUIET) return Palette.WARN;
-        return Palette.TEXT_LABEL;
+        if (fx.isPinned()) return Palette.TEXT_LABEL;
+        int level = ForeignAccounts.parityLevel(fx.deviationFromParity());
+        return level >= 2 ? Palette.BAD : level == 1 ? Palette.WARN : Palette.TEXT_LABEL;
     }
 
-    /**
-     * The next five city debts to come due, and what the city owes altogether.
-     *
-     * CITY DEBT ONLY. The business sectors borrow too, and their paper is their
-     * own problem - it is serviced out of sector cash and the player cannot pay
-     * it off. Mixing the two here would put numbers in front of the player that
-     * they have no control over, next to numbers they very much do.
-     *
-     * The total is ALL outstanding city principal, not just the five shown, and
-     * that distinction matters: five near maturities can look small while a
-     * twenty-five-year bond sits behind them. The overdraft is called out
-     * separately when there is one, because it is priced as principal by the
-     * market (see DebtManager.getPricedDebt) but it is not an instrument and it
-     * has no maturity date to list.
+    /*
+     * THE NEXT FIVE CITY DEBTS TO COME DUE ran across the window's foot from
+     * the debt bar's beginning until 0.7.24, on every screen. Jerus chose
+     * "panels fold away", and the strip became a card at the top of the
+     * Finances hub, and since 0.7.32 is NEXT DUE beside the hub's ladder, the
+     * same five: FinancesScreen.nextDueCard(). Its red
+     * maturity - three months or less - is NEEDS YOU's FALLS DUE row
+     * (CityNeeds.fallsDue()).
      */
-    private void refreshDebtBar() {
-
-        debtBar.getChildren().clear();
-
-        DebtManager debtManager = game.getDebtManager();
-        java.util.List<Debt> debts = new java.util.ArrayList<>(debtManager.getDebt());
-        int month = game.getMonth();
-
-        debts.sort(java.util.Comparator.comparingInt(Debt::getMaturityMonth));
-
-        // In the money area's colour since 0.7.21, as the mockups' status bar has it.
-        Label heading = new Label("NEXT DUE");
-        heading.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.MONEY));
-        debtBar.getChildren().add(heading);
-
-        if (debts.isEmpty()) {
-            Label none = new Label("No city debt outstanding.");
-            none.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
-            debtBar.getChildren().add(none);
-        } else {
-            int shown = 0;
-            for (Debt debt : debts) {
-                if (shown++ >= 5) break;
-                debtBar.getChildren().add(maturityChip(debt, month));
-            }
-            if (debts.size() > 5) {
-                Label more = new Label("+" + (debts.size() - 5) + " more");
-                more.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
-                debtBar.getChildren().add(more);
-            }
-        }
-
-        Region gap = new Region();
-        HBox.setHgrow(gap, Priority.ALWAYS);
-        debtBar.getChildren().add(gap);
-
-        /*
-         * COUPON, not "interest", and the word is load-bearing.
-         *
-         * This sum is exactly what the city is charged each month - it is the
-         * same figure the bonds' own processMonth() puts through
-         * InterestExpense(). But a T-Bill is a DISCOUNT instrument: it charges
-         * nothing monthly and repays its whole face at maturity, so its
-         * getMonthlyInterestExpense() is 0, correctly. Summing that under the
-         * heading "INTEREST" tells a player whose only debt is bills that they
-         * are borrowing for free, which is the opposite of true - the cost is
-         * real, it is just sitting in the maturity chip instead.
-         *
-         * So the recurring figure is named for what it actually is, and when
-         * there is zero-coupon paper outstanding the strip says where the rest
-         * of the cost went rather than leaving a suspicious zero to interpret.
-         */
-        double principal = debtManager.getAllPrincipal();
-        double coupon = 0;
-        double discountPaper = 0;
-        for (Debt debt : debtManager.getDebt()) {
-            coupon += debt.getMonthlyInterestExpense();
-            if (debt.getMonthlyInterestExpense() <= 0) {
-                discountPaper += debt.getOustandingPrincipal();
-            }
-        }
-
-        Label totals = new Label(String.format("TOTAL PRINCIPAL  %s      COUPON  %s/mo",
-                money(principal), money(coupon)));
-        totals.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
-                + " -fx-font-weight: bold; -fx-text-fill: " + Palette.TEXT_BODY + ";");
-        debtBar.getChildren().add(totals);
-
-        if (discountPaper > 0) {
-            Label discount = new Label(String.format("  (%s of that pays at maturity, not monthly)",
-                    money(discountPaper)));
-            discount.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
-            debtBar.getChildren().add(discount);
-        }
-
-        double overdraft = debtManager.getOverdraft();
-        if (overdraft > 0) {
-            Label od = new Label(String.format("  + %s overdrawn",
-                    money(overdraft)));
-            od.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
-                    + " -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD + ";");
-            debtBar.getChildren().add(od);
-        }
-
-        // ...and what the central bank has advanced it (0.7.0): owed, priced
-        // like the overdraft, and not an instrument either.
-        double advanced = game.getCentralBank().getAdvancesToTreasury();
-        if (advanced > 0) {
-            Label cb = new Label(String.format("  + %s advanced by the central bank",
-                    money(advanced)));
-            cb.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;"
-                    + " -fx-font-weight: bold; -fx-text-fill: " + Palette.BAD + ";");
-            debtBar.getChildren().add(cb);
-        }
-    }
-
-    /** One maturity on the bottom strip: amount, type, date, how far off. */
-    private VBox maturityChip(Debt debt, int currentMonth) {
-
-        int due = debt.getMaturityMonth();
-        int gap = due - currentMonth;
-
-        // Urgency by colour as well as by position, so a wall of paper coming
-        // due reads at a glance without anyone parsing five dates.
-        String colour = (gap <= 3) ? Palette.BAD : (gap <= 12) ? Palette.WARN : Palette.TEXT_BODY;
-
-        Label amount = new Label(money(debt.getOustandingPrincipal()));
-        amount.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 12px;"
-                + " -fx-font-weight: bold; -fx-text-fill: " + colour + ";");
-
-        Label when = new Label(CityCalendar.formatShort(due)
-                + "  " + CityCalendar.until(currentMonth, due));
-        when.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
-
-        Label type = new Label(debt.getType());
-        type.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
-
-        VBox chip = new VBox(0);
-        chip.getChildren().addAll(amount, when, type);
-        chip.setStyle("-fx-padding: 0 14 0 0;");
-        return chip;
-    }
 
     /* =====================================================================
        THE MAIN MENU (0.7.21)
@@ -3230,6 +3424,13 @@ public class UserInterface extends Application {
         toasted.clear();
         if (toastStack != null) toastStack.getChildren().clear();
         buildScreen.forgetReceipts();
+        // A new city or a load opens Build on its Overview (0.7.24), every ring on its worst.
+        buildScreen.buildCategory = BuildScreen.BUILD_HOME;
+        buildScreen.measurePicked.clear();
+        // ...and the land office forgets what it last showed: nothing on a new shelf is NEW (0.7.26).
+        landScreen.forget();
+        // ...and People: no month has just landed on it (0.7.27).
+        peopleScreen.forget();
     }
 
     /** The founding screen's last step: found the city as chosen, and open it. */
@@ -3521,7 +3722,7 @@ public class UserInterface extends Application {
          */
 
         column.getChildren().add(statementHead("Keys"));
-        column.getChildren().add(statementLine("Esc  ·  P", "the game menu (Esc first leaves the full-screen chart)"));
+        column.getChildren().add(statementLine("Esc  ·  P", "the game menu (Esc first closes full-screen chart, inbox, City overview)"));
         column.getChildren().add(statementLine("F11", "the window's full screen on and off"));
         // ...and the four the list never carried (0.7.5): a shortcut nothing
         // announces is a shortcut for people who already know the game.
@@ -3658,8 +3859,8 @@ public class UserInterface extends Application {
          * - the Middle School's Build button, the last row of plots, the foot
          * of the History chart - sat at the bottom edge of the stage where the
          * income dome was, and read as covered by it. The dome went in 0.7.21
-         * (its figure is the header's TREASURY tile), and PAGE_FOOT is a
-         * margin again.
+         * (its figure was the header's TREASURY tile, and is the money
+         * block's since 0.7.24), and PAGE_FOOT is a margin again.
          */
         content.setPadding(new javafx.geometry.Insets(0, 0, PAGE_FOOT, 0));
         column.setMaxWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
@@ -3673,7 +3874,7 @@ public class UserInterface extends Application {
          * AS TALL AS THE WINDOW ALLOWS, rather than 400px.
          *
          * 400 was set when this wrapped a policy screen of eight buttons. It
-         * now wraps the People screen, the bank's books and the new Services
+         * now wraps the People screen (until 0.7.27), the bank's books and the new Services
          * screen, and on a maximised window it was showing about half of each
          * inside a box with three hundred pixels of empty stage under it - so
          * the player scrolled a small window while a large one sat unused.
@@ -3691,12 +3892,25 @@ public class UserInterface extends Application {
     /* ---------------------------------------------------------------------
        WHAT THE HARNESS READS. BuildMenuCheck sits in the model package and
        cannot see BuildScreen, so the three card methods it checks are still
-       answered here, by forwarding.
+       answered here, by forwarding - and since 0.7.24 the Build tab's own
+       pages, the page it opens on and the strip after it, so the harness can
+       hold the window to the model's list (BuildAdvice.categories()).
        --------------------------------------------------------------------- */
 
     public List<String> whatItDoes(BuildingsTemplate t) { return buildScreen.whatItDoes(t); }
     public List<String> whatCareItGives(BuildingsTemplate t) { return buildScreen.whatCareItGives(t); }
     public String jobLabel(JobType job) { return buildScreen.jobLabel(job); }
+
+    /** Build's pages as the window names them: where it opens (BuildScreen.BUILD_HOME), then the strip's categories in order. */
+    public List<String> buildPages() {
+        List<String> pages = new ArrayList<>();
+        pages.add(BuildScreen.BUILD_HOME);
+        for (BuildScreen.BuildCategory c : BuildScreen.buildCategories()) pages.add(c.name());
+        return pages;
+    }
+
+    /** The page Build opens on in this window now: the Overview, until the player opens a category (0.7.24). */
+    public String buildOpensOn() { return buildScreen.buildCategory; }
 
 
     /* =====================================================================
@@ -4038,7 +4252,7 @@ public class UserInterface extends Application {
         section.getChildren().add(line);
     }
 
-    /** Shared scaffolding for the sector report screens. */
+    /** Shared scaffolding for the sector report screens - of which none is left: Household money, the last, became a page of its own in 0.7.27, and nothing calls this now. */
     void showSectorReport(String title, VBox column, Runnable back) {
         showSectorReport(title, column, back, null);
     }
@@ -4129,11 +4343,222 @@ public class UserInterface extends Application {
 
 
     /* =====================================================================
+       THE FRAME FOLDS AWAY (0.7.24)
+
+       Jerus chose "B: panels fold away", for every screen. On the 0.7.23
+       walkthrough the three fixed things round every page - the City
+       overview at the left, Under construction at the right and NEXT DUE
+       along the foot - left the page about 55% of the window. Now:
+
+         THE CITY OVERVIEW IS A DRAWER. The header's chip, "Needs you" and
+           the count NEEDS YOU lists (CityNeeds, the panel's own list), amber
+           or red by the worst of them as the panel colours them, "Nothing
+           needs you" when there is none, opens the panel over the left of
+           the stage - its Summary/Dashboard switch and every section as they
+           were, opened on Summary's NEEDS YOU whatever mode is stored, since
+           the chip counts that list (openOnNeeds(), after the PC check). It
+           closes on the chip, its x or Esc, and on a click outside it or a
+           change of screen unless it is pinned; the pin is kept
+           (GamePrefs.isDrawerPinned()).
+         UNDER CONSTRUCTION IS A TAB, 44 px down the stage's right edge: a
+           crane, the count of sites (the panel's own "N site(s)"), and the
+           words down it. A click opens the panel as it was, over the stage;
+           its "Open ›" still goes to the construction page. Open or folded
+           is kept (GamePrefs.isConstructionOpen()), folded by default.
+         NEXT DUE is a card at the top of the Finances hub
+           (FinancesScreen.nextDueCard(); beside the hub's ladder since
+           0.7.32), and its red maturity a NEEDS YOU row, FALLS DUE.
+
+       The stage gains the width: at 1,389 px it was about 743 px wide and is
+       about 1,269 now, with the drawer and the tab closed.
+       ===================================================================== */
+
+    /** The chip, kept so a click outside the drawer can repaint it without rebuilding the header under the pointer. */
+    private Region needsChipNode;
+    private Runnable restyleNeedsChip;
+
+    /**
+     * The drawer's own bar: the pin and the close, refilled as the pin
+     * changes. Made in start(), not here: a harness constructs this window
+     * without the toolkit (BuildMenuCheck), and a node cannot be made
+     * without it.
+     */
+    private HBox drawerBarBox;
+
+    /** "Needs you" and the count, or "Nothing needs you": the drawer's door. */
+    private Region needsChip() {
+        List<CityNeeds.Need> biting = CityNeeds.biting(CityNeeds.measure(game, SummaryScreen.WORDS));
+        int n = biting.size();
+        int worst = n == 0 ? 0 : biting.get(0).level();
+        // The panel's own colours: a red row is past its line, an amber one near it.
+        String tone = worst >= 2 ? Palette.BAD : worst == 1 ? Palette.WARN : Palette.GOOD;
+
+        HBox chip = new HBox(6);
+        chip.setAlignment(Pos.CENTER_LEFT);
+        chip.setMinWidth(Region.USE_PREF_SIZE);
+        if (n == 0) {
+            Label none = new Label("Nothing needs you");
+            none.setStyle(Palette.words(12, Palette.TEXT_LABEL));
+            none.setMinWidth(Region.USE_PREF_SIZE);
+            chip.getChildren().addAll(Pieces.icon(Icons.TICK, tone, 14), none);
+        } else {
+            Label words = new Label("Needs you");
+            words.setStyle(Palette.words(12, Palette.TEXT_HEAD));
+            words.setMinWidth(Region.USE_PREF_SIZE);
+            Label count = new Label(String.valueOf(n));
+            count.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 11px; -fx-text-fill: " + Palette.ON_FILL + ";"
+                    + " -fx-background-color: " + tone + "; -fx-background-radius: 9; -fx-padding: 0 6 0 6;");
+            count.setMinSize(18, 18);
+            count.setAlignment(Pos.CENTER);
+            chip.getChildren().addAll(Pieces.icon(Icons.ALERT, tone, 15), words, count);
+        }
+        String rest = "-fx-padding: 6 10 6 10; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;";
+        restyleNeedsChip = () -> chip.setStyle(rest + " -fx-background-color: "
+                + (drawerOpen ? Palette.PINNED : Palette.RAISED) + "; -fx-border-color: "
+                + (drawerOpen ? Palette.ACCENT : Palette.EDGE) + ";");
+        restyleNeedsChip.run();
+
+        StringBuilder said = new StringBuilder(n == 0 ? "Nothing is near a limit." : "NEEDS YOU:");
+        for (int i = 0; i < Math.min(n, 8); i++) {
+            said.append("\n").append(biting.get(i).label().toLowerCase()).append(" · ").append(biting.get(i).reading());
+        }
+        if (n > 8) said.append("\n...and ").append(n - 8).append(" more");
+        said.append("\nClick for the City overview.");
+        Tooltip tip = new Tooltip(said.toString());
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(chip, tip);
+        chip.setOnMouseClicked(e -> {
+            drawerOpen = !drawerOpen;
+            if (drawerOpen) openOnNeeds();
+            placeFrame();
+        });
+        needsChipNode = chip;
+        return chip;
+    }
+
+    /**
+     * The drawer as the chip opens it: on NEEDS YOU, the list the chip
+     * counts - Summary whatever mode is stored (SummaryScreen.needsView, the
+     * stored mode untouched), at the top of its scroller, where NEEDS YOU is
+     * under the vitals and any alerts. Found on the PC: on Dashboard the chip
+     * opened a panel with no NEEDS YOU in it.
+     */
+    private void openOnNeeds() {
+        summaryScreen.needsView = true;
+        panelScrollAt.put("city", 0.0);
+        panelScrollAt.remove("city:bottom");
+        summaryScreen.refreshCityPanel();
+    }
+
+    /** The drawer's bar: pin it open across screens, or close it. */
+    private HBox drawerBar() {
+        if (drawerBarBox == null) drawerBarBox = new HBox(6);
+        drawerBarBox.setAlignment(Pos.CENTER_RIGHT);
+        drawerBarBox.setStyle("-fx-padding: 8 10 0 12; -fx-background-color: " + Palette.PANEL + ";");
+        return drawerBarBox;
+    }
+
+    private void refreshDrawerBar() {
+        if (drawerBarBox == null) return;
+        boolean pinned = prefs != null && prefs.isDrawerPinned();
+        Label pin = new Label(pinned ? "Pinned" : "Pin");
+        pin.setGraphic(Pieces.icon(Icons.PIN, pinned ? Palette.ACCENT : Palette.TEXT_LABEL, 14));
+        pin.setGraphicTextGap(5);
+        pin.setStyle(Palette.words(Palette.SIZE_LABEL, pinned ? Palette.ACCENT : Palette.TEXT_LABEL)
+                + " -fx-cursor: hand; -fx-padding: 2 6 2 6;");
+        Tooltip.install(pin, new Tooltip(pinned ? "Pinned: it stays open across screens. Click to unpin."
+                : "Keep it open across screens"));
+        pin.setOnMouseClicked(e -> {
+            if (prefs == null) return;
+            prefs.setDrawerPinned(!prefs.isDrawerPinned());
+            prefs.save(game.getGameFiles());
+            refreshDrawerBar();
+        });
+        Label close = new Label();
+        close.setGraphic(Pieces.icon(Icons.CLOSE, Palette.TEXT_LABEL, 14));
+        close.setStyle("-fx-cursor: hand; -fx-padding: 2 2 2 4;");
+        Tooltip.install(close, new Tooltip("Close  (Esc)"));
+        close.setOnMouseClicked(e -> {
+            drawerOpen = false;
+            placeFrame();
+        });
+        drawerBarBox.getChildren().setAll(pin, close);
+    }
+
+    /** The drawer, the construction panel and its tab, shown as the player left them - and none of it on the menus. */
+    private void placeFrame() {
+        if (drawer == null) return;
+        boolean inCity = !isGameMenu(currentScreen);
+        refreshDrawerBar();
+        showIf(drawer, inCity && drawerOpen);
+        if (restyleNeedsChip != null) restyleNeedsChip.run();
+        boolean open = prefs != null && prefs.isConstructionOpen();
+        showIf(constructionPanel, inCity && open);
+        refreshConstructionTab(inCity, open);
+    }
+
+    /** Whether a node is this one or inside it. */
+    private static boolean inside(javafx.scene.Node node, javafx.scene.Node in) {
+        for (javafx.scene.Node n = node; n != null; n = n.getParent()) if (n == in) return true;
+        return false;
+    }
+
+    /** How wide the construction panel's tab is. */
+    static final double CONSTRUCTION_TAB = 44;
+
+    /** The tab the construction panel folds to: a crane, how many sites, and the words down it. */
+    private void refreshConstructionTab(boolean inCity, boolean open) {
+        constructionTab.getChildren().clear();
+        showIf(constructionTab, inCity);
+        constructionTab.setPrefWidth(CONSTRUCTION_TAB);
+        constructionTab.setMinWidth(CONSTRUCTION_TAB);
+        constructionTab.setMaxWidth(CONSTRUCTION_TAB);
+        constructionTab.setAlignment(Pos.TOP_CENTER);
+        String rest = "-fx-padding: 10 0 10 0; -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 0 0 0 1;"
+                + " -fx-cursor: hand; -fx-background-color: ";
+        constructionTab.setStyle(rest + (open ? Palette.RAISED : Palette.PANEL) + ";");
+        constructionTab.setOnMouseEntered(e -> constructionTab.setStyle(rest + Palette.RAISED + ";"));
+        constructionTab.setOnMouseExited(e -> constructionTab.setStyle(rest + (open ? Palette.RAISED : Palette.PANEL) + ";"));
+
+        Label chevron = new Label(open ? "›" : "‹");
+        chevron.setStyle(Palette.words(14, Palette.TEXT_LABEL));
+
+        // The panel's own count: the kinds of building on site ("N site(s)").
+        int sites = game.getBuildingManager().getUnderConstruction();
+        Label count = new Label(String.valueOf(sites));
+        count.setStyle(Fonts.monoSemiBold() + " -fx-font-size: 11px; -fx-text-fill: " + Palette.ON_FILL + ";"
+                + " -fx-background-color: " + (sites > 0 ? Palette.BUILDING : Palette.TEXT_SPENT) + ";"
+                + " -fx-background-radius: 9; -fx-padding: 0 5 0 5;");
+        count.setMinSize(20, 18);
+        count.setAlignment(Pos.CENTER);
+
+        Label words = new Label("UNDER CONSTRUCTION");
+        words.setStyle(Fonts.sansSemiBold() + " -fx-font-size: 10.5px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+        words.setRotate(90);
+        javafx.scene.Group down = new javafx.scene.Group(words);
+
+        constructionTab.getChildren().addAll(chevron, Pieces.icon(Icons.CRANE, Palette.BUILDING, 20), count, down);
+        Tooltip tip = new Tooltip(sites == 0 ? "Under construction: nothing on site. Click to " + (open ? "fold the panel." : "open the panel.")
+                : "Under construction: " + sites + " site" + (sites == 1 ? "" : "s") + ". Click to "
+                        + (open ? "fold the panel." : "open the panel."));
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(constructionTab, tip);
+        constructionTab.setOnMouseClicked(e -> {
+            if (prefs == null) return;
+            prefs.setConstructionOpen(!prefs.isConstructionOpen());
+            prefs.save(game.getGameFiles());
+            placeFrame();
+        });
+    }
+
+    /* =====================================================================
        CONSTRUCTION PANEL
 
        Ports the terminal build's per-stack construction readout - the
        "0/1 Coal Power Plant(s) finished construction. 177 month(s)." line - into
-       a panel that's visible from every screen.
+       a panel that's visible from every screen - since 0.7.24 behind a tab
+       on the stage's right edge, open or folded as the player left it (THE
+       FRAME FOLDS AWAY).
 
        It also surfaces something that was previously invisible: how the
        builders' output is divided between sites. It was divided evenly between
@@ -4602,7 +5027,7 @@ public class UserInterface extends Application {
              * care about it.
              */
             new Tab("infrastructure", Icons.INFRASTRUCTURE, "Infrastructure", "Infrastructure",
-                    servicesScreen::showInfrastructureMenu),
+                    infrastructureScreen::showInfrastructureMenu),
             new Tab("sector",     Icons.SECTOR,     "Sectors",     "Sector economy",     sectorScreen::showSectorMenu),
             new Tab("government", Icons.GOVERNMENT, "Government",  "Government economy", governmentScreen::showGovernmentMenu),
             new Tab("finances",   Icons.FINANCES,   "Finances",    "Finances",           financesScreen::showFinanceMenu),
@@ -4645,7 +5070,12 @@ public class UserInterface extends Application {
             case "showQuickDebtMenu": case "showFundingFellShortMenu":
             case "showNoLicenceMenu":
                 return "build";
-            case "showLandMenu":
+            /*
+             * ...AND ITS FUNDING PAGE AND THE PAGE AFTER IT (0.7.26): the
+             * office's own pages lit nothing on the rail and had no swatch
+             * on their title, as the build tab's refusal pages always had.
+             */
+            case "showLandMenu": case "showLandFunding": case "showLandFellShort":
                 return "land";
             case "showPopulationInfoMenu": case "showHouseholdMenu":
                 return "population";
@@ -4673,11 +5103,13 @@ public class UserInterface extends Application {
                 return "sector";
             case "showGovernmentMenu":
                 return "government";
-            case "showFinanceMenu": case "showDebtResultMenu":
+            // The default page is Finances' own since 0.7.32, reached from
+            // Borrow › Abroad; it lit Trade (the Finances spec's B7).
+            case "showFinanceMenu": case "showDebtResultMenu": case "showForeignDefaultMenu":
                 return "finances";
             case "showBankMenu":
                 return "bank";
-            case "showForeignMenu": case "showForeignDefaultMenu":
+            case "showForeignMenu":
                 return "trade";
             case "showPolicyMenu":
                 return "policy";
@@ -4772,10 +5204,11 @@ public class UserInterface extends Application {
      *
      * TWO LAYERS, NOT ONE, and the first draft of this only cleared the second.
      * Five of these sections have an AREA as well as a page - financeArea,
-     * bankArea, tradeArea, policyArea, serviceArea, and openSector doing the
+     * bankArea, tradeArea (since 0.7.35 only a page named from outside,
+     * read once), policyArea, serviceArea, and openSector doing the
      * same job for Sector - and the area is what the entry point checks:
      *
-     *     if (bankArea != null) { drawBankScreen(); return; }
+     *     if (bankArea == null) overviewPage(page, fresh); else ...pages
      *
      * Resetting only bankPage would have reset which chip was lit inside an
      * area the player was still stuck in. Four of the five use null for the
@@ -5171,7 +5604,7 @@ public class UserInterface extends Application {
                 bankScreen.openPage("Lending");
                 break;
             case "healthcare":
-                buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE));
+                buildScreen.openCategory(BuildAdvice.HEALTHCARE);
                 break;
             // The player's hand on the queue (0.7.22): the rushed site's row
             // has Stop rush on it; the finished demolition is off the list.
@@ -5490,8 +5923,8 @@ public class UserInterface extends Application {
        and a figure that flashed on all of those would be noise.
        ===================================================================== */
 
-    /** A quarter second of "that landed", on the figure the month just changed. */
-    private static void popPip(Region pip) {
+    /** A quarter second of "that landed", on the figure the month just changed - and since 0.7.26 on the land office's figures the month moved. */
+    static void popPip(Region pip) {
         javafx.animation.ScaleTransition pop =
                 new javafx.animation.ScaleTransition(Duration.millis(130), pip);
         pop.setFromX(1);

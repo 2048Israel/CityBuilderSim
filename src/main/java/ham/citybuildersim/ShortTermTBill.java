@@ -11,8 +11,10 @@ package ham.citybuildersim;
  * A DISCOUNT INSTRUMENT. There is no interest payment. The lender hands over
  * less than the face value and collects the face at maturity, and the gap
  * between the two IS the interest. `getMonthlyInterestExpense()` therefore
- * returns 0 and that is not an oversight - the debt bar says as much in words,
- * because a bare zero under a heading called INTEREST reads as free money.
+ * returns 0 and that is not an oversight - the COUPON figure on Finances (the
+ * NEXT DUE card's totals until 0.7.32, the debt bar's until 0.7.24) says as
+ * much in words, because a bare zero under a heading called INTEREST reads
+ * as free money.
  *
  * THE DISCOUNT NOW KNOWS HOW LONG THE NOTE RUNS
  *

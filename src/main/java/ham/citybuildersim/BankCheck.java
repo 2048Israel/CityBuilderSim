@@ -43,7 +43,11 @@ import java.nio.file.Path;
  *      the year ago survives a save; and its equity's two parts, paid in
  *      and retained - and since 0.7.14 the city's preferred, a third - add
  *      up to it to the cent every month and move by exactly their own
- *      causes, and an older save does not invent them.
+ *      causes, and an older save does not invent them. Since 0.7.33
+ *      (section 13b) every rate the ladder draws in its parts is those parts
+ *      - a sector's quote to the bit, an insured mortgage to 1e-12 - a city
+ *      just loaded quotes its record and its concentration, and the branch
+ *      verdict is the investors' planner's, which is a read.
  *   7. Does the desk keep to the bank's capital (0.7.8, section 17)? It buys
  *      the bank's own shares back only with what the bank holds over its
  *      target, and other companies' only while the bank would still hold its
@@ -2000,6 +2004,7 @@ public class BankCheck {
         theBankPaysForTheCitysPaper();
 
         whatTheBankTabReads();
+        theTabDrawsEachRateInItsParts();
 
         theSectorDefaultsASliceAtATime();
 
@@ -4099,5 +4104,181 @@ public class BankCheck {
                 runsDown, noteDiscount, 1e-6);
         close("...and nothing of it is left unearned once it is repaid", note.getDiscountLeft(), 0, 1e-9);
         assertTrue("...and it is off the books", !city.getDebtManager().getDebt().contains(note));
+    }
+
+    /* ============ 13b. THE TAB DRAWS EACH RATE IN ITS PARTS (0.7.33) ============
+
+       The Bank tab's ladder draws every rate in the parts it is built from
+       (the project's spec-bank-0733.md, D2), so the parts must be the rate:
+       an insured mortgage's money, its running costs and its capital add up
+       to its rate (Bank.Ladder.mortgageRunning(), the screen's own
+       subtraction until then); and a sector's quote, kept in its parts as it
+       is priced (BusinessDebtManager.quoteParts()), is prime and its own
+       risk, its record and the book's concentration to the bit, after a
+       played month and after a record the fixture gives it. A city just
+       loaded quotes the record and the concentration too (B5: the rebuild
+       priced credit before the record was back and with no charge pushed,
+       so Mining read 3.07% after Continue and 6.38% a month on). The branch
+       verdict is the planner's (D9, B6): a city whose bank wants its first
+       branch and cannot staff one is told so, not "Yes" - and asking the
+       planner moves nothing. And the rates' chart carries the central
+       bank's and the bank's decisions in one lane, a flag a month.
+       ===================================================================== */
+    static void theTabDrawsEachRateInItsParts() throws Exception {
+        out.println("\n--- (13b) the tab draws each rate in its parts (0.7.33) ---");
+
+        Bank priced = lentOut(50_000, 400_000);
+        priced.payRunning(300, 100);
+        priced.closeMonth();
+        double worstMortgage = 0, worstRunning = 0;
+        for (double dial : new double[] {0, .01, .03, .06, .10, .15}) {
+            Bank.Ladder l = priced.ladder(dial);
+            worstMortgage = Math.max(worstMortgage,
+                    Math.abs(l.mortgageTransfer() + l.mortgageRunning() + l.mortgageCapital() - l.mortgage()));
+            worstRunning = Math.max(worstRunning, Math.abs(l.mortgageRunning() - l.running()));
+        }
+        close("an insured mortgage's money, running costs and capital add up to its rate, at six dials",
+                worstMortgage, 0, 1e-12);
+        close("...its running part is prime's own running costs", worstRunning, 0, 1e-12);
+        assertTrue("the losses' watch line is past what a sound book loses", Bank.LOSS_WATCH > 1);
+
+        GameFiles files = GameFiles.scratch("bankcheck-parts");
+        Game town = new Game(files);
+        System.setOut(quiet);
+        String retail;
+        try {
+            town.run();
+            town.setCashForTest(Founding.WEALTHY_CASH);
+            town.getForeignAccounts().pinRate(1.0);
+            town.getLandManager().setOwnedSqFt(30_000_000);
+            town.buildStack(template(town, "House"), 400, true);
+            town.buildStack(template(town, "Convenience Store"), 8, true);
+            town.buildStack(template(town, "Small Grocery Store"), 2, true);
+            town.buildStack(template(town, "Bakery"), 1, true);
+            town.buildStack(template(town, "Paved Road"), 20, true);
+            town.buildStack(template(town, "Industrial Bakery"), 2, true);
+            town.buildStack(template(town, "Construction Depot"), 4, true);
+            town.buildStack(template(town, "Coal Power Plant"), 1, true);
+            town.buildStack(template(town, "Water Treatment Plant"), 1, true);
+            town.simulateMonths(24);
+            retail = town.getSectors().retail().key();
+        } finally {
+            System.setOut(out);
+        }
+        BusinessDebtManager credit = town.getEconomyManager().getBusinessDebtManager();
+
+        // A record the fixture gives one sector: two write-downs on it, priced at once.
+        java.util.Map<String, Integer> counts = credit.getRestructureCounts();
+        counts.put(retail, 2);
+        credit.restoreCreditRecord(counts, credit.getBlockedMonthsAll());
+        credit.updateRates();
+        int sectors = 0, exact = 0, partsAgree = 0, withConcentration = 0;
+        double worstSpread = 0;
+        for (String s : credit.sectors()) {
+            BusinessDebtManager.QuoteParts q = credit.quoteParts(s);
+            if (q == null) continue;
+            sectors++;
+            if (q.rate() == credit.getRate(s)) exact++;
+            if (q.prime() == credit.getPrimeRate() && q.concentration() == credit.getConcentrationCharge(s)
+                    && q.record() == credit.getRecordSurcharge(s)) partsAgree++;
+            if (q.concentration() != 0) withConcentration++;
+            worstSpread = Math.max(worstSpread, Math.abs(q.spread() - credit.getSpread(s)));
+        }
+        out.printf("   %d sectors priced; %s's parts: prime %.4f%% + risk %.4f + record %.4f + concentration %+.4f = %.4f%%%n",
+                sectors, retail, credit.quoteParts(retail).prime() * 100, credit.quoteParts(retail).risk() * 100,
+                credit.quoteParts(retail).record() * 100, credit.quoteParts(retail).concentration() * 100,
+                credit.getRate(retail) * 100);
+        assertTrue("fixture: every sector is priced", sectors == credit.sectors().length);
+        assertTrue("fixture: the sector given a record carries it in its quote",
+                credit.quoteParts(retail).record() == 2 * BusinessDebtManager.DEFAULT_SURCHARGE);
+        assertTrue("fixture: the book's concentration prices at least one sector", withConcentration > 0);
+        assertTrue("prime and a sector's three parts are its rate, to the bit, for every sector", exact == sectors);
+        assertTrue("...on the prime it was priced on, its record and the charge pushed for it", partsAgree == sectors);
+        close("...and the three are its spread over prime", worstSpread, 0, 1e-12);
+
+        System.setOut(quiet);
+        try { town.simulateMonths(1); } finally { System.setOut(out); }
+        int exactAfter = 0, pricedAfter = 0;
+        for (String s : credit.sectors()) {
+            BusinessDebtManager.QuoteParts q = credit.quoteParts(s);
+            if (q == null) continue;
+            pricedAfter++;
+            if (q.rate() == credit.getRate(s)) exactAfter++;
+        }
+        assertTrue("...and a played month later, still to the bit", pricedAfter > 0 && exactAfter == pricedAfter);
+
+        // B5: saved, and loaded fresh.
+        double recordSaved = credit.getRecordSurcharge(retail);
+        Game back;
+        System.setOut(quiet);
+        try {
+            town.saveGame(10, "the parts city");
+            back = new Game(files);
+            back.loadGameSave(10);
+        } finally {
+            System.setOut(out);
+        }
+        BusinessDebtManager loaded = back.getEconomyManager().getBusinessDebtManager();
+        double policy = back.getDebtManager().getPolicyRate();
+        int carried = 0, pushed = 0, exactLoaded = 0, pricedLoaded = 0;
+        for (String s : loaded.sectors()) {
+            BusinessDebtManager.QuoteParts q = loaded.quoteParts(s);
+            if (q == null) continue;
+            pricedLoaded++;
+            if (q.rate() == loaded.getRate(s)) exactLoaded++;
+            if (q.record() == credit.getRecordSurcharge(s)) carried++;
+            if (q.concentration() == back.getBank().concentrationCharge(policy, Bank.PRIME_TERM_MONTHS, s)) pushed++;
+        }
+        BusinessDebtManager.QuoteParts r = loaded.quoteParts(retail);
+        out.printf("   saved, %s quoted %.4f%%; loaded fresh, %.4f%% (record %.2f, concentration %+.4f)%n", retail,
+                credit.getRate(retail) * 100, loaded.getRate(retail) * 100, r.record() * 100, r.concentration() * 100);
+        assertTrue("a city just loaded quotes every sector with its record, as the city it was saved from",
+                pricedLoaded == loaded.sectors().length && carried == pricedLoaded);
+        assertTrue("...the fixture's record among them, in its rate", r.record() == recordSaved && recordSaved > 0
+                && Math.abs(loaded.getRate(retail) - (r.prime() + r.risk() + r.concentration()) - recordSaved) < 1e-12);
+        assertTrue("...and the book's concentration on it, the charge the bank prices it at now", pushed == pricedLoaded);
+        assertTrue("...each quote still its parts, to the bit", exactLoaded == pricedLoaded);
+
+        // D9: the branch verdict is the planner's, on a fixture short of staff.
+        BuildingsTemplate branch = template(town, "Commercial Bank");
+        town.getBuildingManager().retire(branch, town.getBuildingManager().countByName("Commercial Bank"));
+        town.getLandManager().release(branch.getLandSqFt());
+        branch.setJobs(JobType.UNIV_FINANCE, 50_000);
+        Bank bank = town.getBank();
+        int standing = town.getBuildingManager().countByName("Commercial Bank");
+        Sector.Staffing staffing = town.getSectors().retail().staffing(branch);
+        String statusBefore = bank.status();
+        double bookBefore = bank.getWeightedBook();
+        double[] workforceBefore = town.getPopulationManager().workforceByBand().clone();
+        BusinessInvestment.Decision first = town.getBusinessInvestment().planBank();
+        BusinessInvestment.Decision again = town.getBusinessInvestment().planBank();
+        out.printf("   no branch standing, the book %s: the bank's rule wants one (%s); the planner: build %s - \"%s\"%n",
+                bookBefore > 0 ? "weighed" : "empty", bank.wantsBranch(standing), first.build, first.reason);
+        assertTrue("fixture: no branch stands and the bank's own rule wants its first - the page said \"Yes\"",
+                standing == 0 && bank.wantsBranch(standing));
+        assertTrue("fixture: the city could not staff one", !staffing.passes());
+        assertTrue("the planner the tab's verdict reads does not build it", !first.build);
+        assertTrue("...and holds on the staffing, the words the verdict prints after \"Not yet\"",
+                staffing.why("Commercial Bank").equals(first.reason));
+        assertTrue("asked twice, the planner answers the same and moves nothing - it is a read",
+                again.build == first.build && java.util.Objects.equals(again.reason, first.reason)
+                        && statusBefore.equals(bank.status()) && bookBefore == bank.getWeightedBook()
+                        && java.util.Arrays.equals(workforceBefore, town.getPopulationManager().workforceByBand())
+                        && town.getBuildingManager().countByName("Commercial Bank") == standing);
+
+        // The rates' flags: the central bank's and the bank's, a flag a month.
+        int[] month = {0};
+        DecisionLog log = new DecisionLog(() -> month[0]);
+        month[0] = 10; log.record(DecisionLog.CENTRAL_BANK, "the policy rate to 2.00%");
+        month[0] = 12; log.record(DecisionLog.BANK, "resolved the bank"); log.record(DecisionLog.CENTRAL_BANK, "the rule");
+        month[0] = 14; log.record(DecisionLog.TAX, "the wage tax");
+        java.util.List<ChartModel.Flag> flags = ChartModel.flagsOf(log, DecisionLog.CENTRAL_BANK, DecisionLog.BANK);
+        boolean onlyThose = true;
+        for (ChartModel.Flag f : flags) {
+            for (DecisionLog.Entry e : f.entries()) onlyThose &= !DecisionLog.TAX.equals(e.kind());
+        }
+        assertTrue("the rates' flags carry the central bank's and the bank's decisions and nothing else",
+                flags.size() == 2 && onlyThose);
+        assertTrue("...a month with both one flag holding both", flags.get(1).month() == 12 && flags.get(1).entries().size() == 2);
     }
 }

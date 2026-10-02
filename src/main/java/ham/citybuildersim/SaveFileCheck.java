@@ -635,6 +635,22 @@ public class SaveFileCheck {
         assertEquals("monthly GDP", Math.round(e2.getMonthGdp() * 10000),
                 Math.round(e1.getMonthGdp() * 10000));
 
+        /*
+         * ...AND THE YEAR OF IT (0.7.31, the Government spec's B1). The
+         * national accounts' rolling history was not restored at all, so a
+         * loaded city had one month recorded - the rebuild's - and every "of
+         * annual GDP" read that month times twelve for a year. The load path
+         * seeds it from the graph history's GDP series now.
+         */
+        java.util.List<Double> keptGdp = reloaded.getHistorySave().getGdp();
+        NationalAccounts naBack = reloaded.getEconomyManager().getNationalAccounts();
+        double lastTwelve = 0;
+        for (int i = Math.max(0, keptGdp.size() - 12); i < keptGdp.size(); i++) lastTwelve += keptGdp.get(i);
+        assertTrue("fixture: the city kept more than a year of GDP", keptGdp.size() > 12);
+        assertEquals("a loaded city has the months its history kept, up to ten years",
+                naBack.getMonthsRecorded(), Math.min(120, keptGdp.size()));
+        same("...and its year is the history's last twelve months", naBack.getAnnualGdp(), lastTwelve);
+
         // The order book, which is what makes the GDP line above hold.
         ham.citybuildersim.sectors.Construction b1 = city.getSectors().construction();
         ham.citybuildersim.sectors.Construction b2 = reloaded.getSectors().construction();
@@ -1483,6 +1499,104 @@ public class SaveFileCheck {
         same("...and what the journal left unexplained",
                 back.getTreasuryResidual(), full.getTreasuryResidual());
 
+        /*
+         * THE MONTH THE PEOPLE PAGE DRAWS (0.7.27, SAVE_FORMAT 30). Migration's
+         * last month, the pyramid's dead by cause, and the two halves of the
+         * hunger: flows nothing in the next month reads, so every section
+         * above passed without them - and a reloaded People page read "a city
+         * this good draws 0", moved in 0, moved out 0, the dead with no cause
+         * under them and the shelves full. Each is caused before it is
+         * compared.
+         */
+        Migration drew = full.getMigration(), drawsAgain = back.getMigration();
+        assertTrue("fixture: the city drew people and somebody moved this month",
+                drew.getLastTarget() > 0 && drew.getLastArrivals() + drew.getLastDepartures() > 0);
+        same("the draw the People page shows", drawsAgain.getLastTarget(), drew.getLastTarget());
+        same("...its jobs' half", drawsAgain.getLastJobDraw(), drew.getLastJobDraw());
+        same("...and its homes' half", drawsAgain.getLastHomeDraw(), drew.getLastHomeDraw());
+        same("...the posts it was struck on", drawsAgain.getLastJobs(), drew.getLastJobs());
+        same("...the people the homes hold", drawsAgain.getLastHomeCapacity(), drew.getLastHomeCapacity());
+        same("...the residents a post supports", drawsAgain.getLastResidentsPerJob(), drew.getLastResidentsPerJob());
+        same("...senior care's pull", drawsAgain.getLastSeniorPull(), drew.getLastSeniorPull());
+        same("...the rent's", drawsAgain.getLastAffordabilityPull(), drew.getLastAffordabilityPull());
+        same("...and crime's", drawsAgain.getLastCrimePull(), drew.getLastCrimePull());
+        same("how much of the draw housing let in", drawsAgain.getLastCrowding(), drew.getLastCrowding());
+        same("the payroll in trades whose people may leave", drawsAgain.getLastDecliningShare(),
+                drew.getLastDecliningShare());
+        same("the month's arrivals", drawsAgain.getLastArrivals(), drew.getLastArrivals());
+        same("...and its departures", drawsAgain.getLastDepartures(), drew.getLastDepartures());
+        same("...the ones the work pushed out", drawsAgain.getLastWorkDepartures(), drew.getLastWorkDepartures());
+        same("...the ones who went broke", drawsAgain.getLastBankruptcyDepartures(),
+                drew.getLastBankruptcyDepartures());
+        same("...and the ones crime drove out", drawsAgain.getLastCrimeDepartures(), drew.getLastCrimeDepartures());
+        for (WageBand band : WageBand.values()) {
+            same("who arrived: " + band.label(), drawsAgain.getLastArrivalMix()[band.ordinal()],
+                    drew.getLastArrivalMix()[band.ordinal()]);
+            same("who left: " + band.label(), drawsAgain.getLastDepartureMix()[band.ordinal()],
+                    drew.getLastDepartureMix()[band.ordinal()]);
+        }
+        boolean licencesKept = true;
+        for (int j = 0; j < drew.getLastArrivalLicences().length; j++) {
+            licencesKept &= Math.abs(drawsAgain.getLastArrivalLicences()[j] - drew.getLastArrivalLicences()[j]) < 1e-9;
+        }
+        assertTrue("...and which of the arrivals held a licence", licencesKept);
+
+        PopulationCohorts died = full.getCohorts(), diedAgain = back.getCohorts();
+        assertTrue("fixture: people died this month", died.getLastDeaths() > 0);
+        same("the dead of age", diedAgain.getLastDeathsOfAge(), died.getLastDeathsOfAge());
+        same("...the killed", diedAgain.getLastKilled(), died.getLastKilled());
+        same("...and the ones who aged out at 120", diedAgain.getLastAgedOut(), died.getLastAgedOut());
+        double causes = died.getLastDeathsOfAge() + died.getLastKilled() + died.getLastAgedOut()
+                + full.getSickness().getLastDeaths();
+        assertTrue("...which with illness's are the month's dead",
+                Math.abs(causes - died.getLastDeaths()) <= 1e-9 * Math.max(1, died.getLastDeaths()));
+
+        HouseholdBalance fed = full.getHouseholdBalance(), fedAgain = back.getHouseholdBalance();
+        assertTrue("fixture: the shops handed over less than the households planned",
+                fed.getDeliveredShare() < 1);
+        same("the share the shops handed over", fedAgain.getDeliveredShare(), fed.getDeliveredShare());
+        assertTrue("fixture: somebody could not afford a basket even at full shelves",
+                fed.getHungryAtFullShelves() > 0);
+        same("...the hungry even at full shelves", fedAgain.getHungryAtFullShelves(), fed.getHungryAtFullShelves());
+        assertTrue("...who are some of the hungry, never more",
+                fed.getHungryAtFullShelves() <= fed.getHungryPeople() + 1e-9);
+
+        /*
+         * ...AND A SAVE FROM BEFORE THEM STILL LOADS, with those figures at 0
+         * as a reloaded page always showed them - the arrays at the lengths a
+         * format-29 build wrote. A length neither build wrote is refused whole.
+         */
+        int tiers = PayTier.values().length;
+        int wageHistory = tiers * Migration.DECLINE_MONTHS + tiers + 1;
+        double[] migrationNow = drew.toSaveArray();
+        assertTrue("fixture: the migration array is longer than the history it opens with",
+                migrationNow.length > wageHistory);
+        Migration format29 = new Migration();
+        format29.restore(java.util.Arrays.copyOf(migrationNow, wageHistory));
+        boolean streaks = format29.hasFullHistory() == drew.hasFullHistory();
+        for (PayTier tier : PayTier.values()) streaks &= format29.getDecliningStreak(tier) == drew.getDecliningStreak(tier);
+        assertTrue("a format-29 migration array loads its wage history", streaks);
+        same("...with the month's draw at 0", format29.getLastTarget(), 0);
+        same("...and its arrivals at 0", format29.getLastArrivals(), 0);
+        Migration unknown = new Migration();
+        unknown.restore(java.util.Arrays.copyOf(migrationNow, wageHistory + 1));
+        assertTrue("...and a length it does not know is refused whole",
+                !unknown.hasFullHistory() && unknown.getLastTarget() == 0);
+        double[] pyramidNow = died.toSaveArray();
+        PopulationCohorts olderPyramid = new PopulationCohorts();
+        olderPyramid.restore(PopulationCohorts.saveBands(),
+                java.util.Arrays.copyOf(pyramidNow, AgeBand.values().length + 3));
+        same("a format-29 pyramid loads its people", olderPyramid.total(), died.total());
+        same("...and its dead", olderPyramid.getLastDeaths(), died.getLastDeaths());
+        same("...with no cause under them", olderPyramid.getLastDeathsOfAge() + olderPyramid.getLastAgedOut()
+                + olderPyramid.getLastKilled(), 0);
+        double[] rowsNow = fed.toSaveArray();
+        HouseholdBalance olderRows = new HouseholdBalance();
+        olderRows.restore(java.util.Arrays.copyOf(rowsNow, Household.ROWS * 8 + 3));
+        same("a format-29 row array loads the shelves as full", olderRows.getDeliveredShare(), 1);
+        same("...and nobody hungry at full shelves", olderRows.getHungryAtFullShelves(), 0);
+        same("...but still its hungry", olderRows.getHungryPeople(), fed.getHungryPeople());
+
         /* ============ 14. a reloaded city PLAYS ON as the one it was saved from ============ */
         System.out.println("\n--- and a reloaded city plays on as the one it was saved from ---");
 
@@ -1580,6 +1694,16 @@ public class SaveFileCheck {
         same("...asking for the same", waiting.preferredOfferSize(), fundCity.preferredOfferSize());
 
         assertTrue("fixture: the city bought the preferred", fundCity.acceptPreferredOffer());
+        // ...and a share on the book from the world, so a lot has a value at the step to keep (0.7.39, FundLedger).
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            if (c == Equity.BANK || !(fundCity.getEquity().getForeignShares(c) > 1)) continue;
+            Exchange ex = fundCity.getExchange();
+            double p = ex.price(c), q = Math.min(1, fundCity.getFund().getCash() / Math.max(1e-9, 2 * p));
+            ex.bookOf(c).withdrawAll();
+            ex.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);
+            ex.tradeForCheck(c, Exchange.FUND, OrderBook.Side.BUY, p, q);
+            break;
+        }
         fundCity.fundBuyShares(0, 1_000);
         assertTrue("saved it with the preferred bought and an order waiting", fundCity.saveGame(4, "preferred").ok);
         Game bought = new Game(fundCity.getGameFiles());
@@ -1603,6 +1727,48 @@ public class SaveFileCheck {
         same("...and the bank's equity with it in", bought.getBank().equity(), fb.equity());
         same("...its three parts still adding up", bought.getBank().equitySplitResidual(), fb.equitySplitResidual());
         same("...and what the fund is worth", bought.fundValue(), fundCity.fundValue());
+        /*
+         * WHAT EACH HOLDING COST (0.7.39, FundLedger): saved inside the
+         * fund's state, no new key - its lots, its rows and the month it
+         * began - and the fund's worth on the history beside the rest. A
+         * save from 0.7.38, the fund with no ledger in it, is seeded at the
+         * end of its load: tracking from that month, one row to say so.
+         */
+        FundLedger ledgerWas = fundCity.getFund().getLedger(), ledgerIs = bought.getFund().getLedger();
+        assertTrue("fixture: the fund's record has rows to keep", ledgerWas.getActivity().size() >= 2);
+        assertTrue("its cost basis survives a save: lots, rows, its start",
+                ledgerIs.getLots().size() == ledgerWas.getLots().size()
+                        && ledgerIs.getActivity().size() == ledgerWas.getActivity().size()
+                        && ledgerIs.getTrackingSince() == ledgerWas.getTrackingSince()
+                        && !bought.getFund().needsLedgerSeed());
+        same("...what its holdings cost", ledgerIs.acbHeld(), ledgerWas.acbHeld());
+        same("...what they realized", ledgerIs.realized(), ledgerWas.realized());
+        double valueWas = 0, valueIs = 0;
+        for (FundLedger.Lot l : ledgerWas.getLots()) valueWas += l.boughtValue();
+        for (FundLedger.Lot l : ledgerIs.getLots()) valueIs += l.boughtValue();
+        assertTrue("fixture: its buys were worth something at the step's value", valueWas > 0);
+        same("...what its buys were worth at the step, a bargain's measure", valueIs, valueWas);
+        double[] worthWas = fundCity.getHistorySave().aligned("fundValue"), worthIs = bought.getHistorySave().aligned("fundValue");
+        assertTrue("...and the fund's worth on the history, month by month",
+                worthIs.length == worthWas.length && java.util.Arrays.equals(worthIs, worthWas)
+                        && worthWas.length > 0 && !Double.isNaN(worthWas[worthWas.length - 1]));
+        com.google.gson.JsonObject noLedger = com.google.gson.JsonParser
+                .parseString(Files.readString(fundCity.getGameFiles().saveFile(4))).getAsJsonObject();
+        assertTrue("fixture: the save carries the ledger inside the fund",
+                noLedger.getAsJsonObject("fund").has("ledger"));
+        noLedger.getAsJsonObject("fund").remove("ledger");
+        Files.writeString(fundCity.getGameFiles().saveFile(8), new com.google.gson.Gson().toJson(noLedger));
+        Game seeded = new Game(fundCity.getGameFiles());
+        seeded.loadGameSave(8);
+        FundLedger seed = seeded.getFund().getLedger();
+        assertTrue("a 0.7.38 save's ledger is seeded at its load",
+                !seeded.getFund().needsLedgerSeed() && seed.getTrackingSince() == seeded.getMonth()
+                        && seed.getActivity().size() == 1
+                        && seed.getActivity().get(0).kind().equals(FundLedger.TRACKING));
+        // (Its history is not written beside it, so the warrants' volatility is not there: the holdings, not the whole.)
+        same("...its holdings and cash what they were",
+                seeded.getFund().getCash() + seeded.fundSharesValue() + seeded.fundBondsValue() + seeded.fundPreferredValue(),
+                bought.getFund().getCash() + bought.fundSharesValue() + bought.fundBondsValue() + bought.fundPreferredValue());
 
         /*
          * THE CITY'S OWN RATE AS THE MONTH LAST STRUCK IT (0.7.14). The debt
@@ -1669,6 +1835,9 @@ public class SaveFileCheck {
             noShares &= fundCity.getEquity().getCityShares(c) == 0 && fundCity.getEquity().getCityRescueShares(c) == 0;
         }
         assertTrue("...and no city shares or bonds", noShares);
+        assertTrue("...and its ledger begins at the load, nothing to seed",
+                !fundCity.getFund().needsLedgerSeed() && fundCity.getFund().getLedger().getTrackingSince() == fundCity.getMonth()
+                        && fundCity.getFund().getLedger().getLots().isEmpty());
         same("...and its register otherwise the save's: the bank's shares in issue",
                 fundCity.getEquity().getShares(Equity.BANK), full.getEquity().getShares(Equity.BANK));
 

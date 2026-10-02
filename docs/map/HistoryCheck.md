@@ -1,6 +1,6 @@
-# HistoryCheck.java - 520 lines · 6 methods · 2 constants · harnesses
+# HistoryCheck.java - 527 lines · 6 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HistoryCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoryCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Verifies the graph history: recording, alignment, and the round trip. Not
 > part of the game.
@@ -38,8 +38,8 @@
 | 296 | · 2e. the bank's capital (0.7.8) |
 | 336 | · 3. A SHORT SERIES LINES UP WITH THE END |
 | 414 | · 3b. a 0.7.6 history still loads (0.7.7) |
-| 462 | · 4. the derived series do not divide by zero |
-| 486 | · 5. a new game forgets it |
+| 469 | · 4. the derived series do not divide by zero |
+| 493 | · 5. a new game forgets it |
 
 ## Constants
 
@@ -58,11 +58,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 488 | **type** `public class HistoryCheck` | Verifies the graph history: recording, alignment, and the round trip. |
+| 33 | 495 | **type** `public class HistoryCheck` | Verifies the graph history: recording, alignment, and the round trip. |
 | 44 | 4 | `static void quietly(Runnable work)` | Runs a stretch of months without the monthly report burying the results. |
 | 49 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 54 | 6 | `static void close(String label, double a, double b)` |  |
-| 61 | 440 | `public static void main(String[] args) throws Exception` |  |
-| 503 | 9 | `static String dropSeries(String json, String name)` | Removes one "name": [ ... |
-| 513 | 7 | `static void cleanUp(Path root)` |  |
+| 61 | 447 | `public static void main(String[] args) throws Exception` |  |
+| 510 | 9 | `static String dropSeries(String json, String name)` | Removes one "name": [ ... |
+| 520 | 7 | `static void cleanUp(Path root)` |  |
 

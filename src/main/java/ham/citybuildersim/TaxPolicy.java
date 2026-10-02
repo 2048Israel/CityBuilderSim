@@ -749,6 +749,18 @@ public class TaxPolicy {
         return pensionReplacement * pensionWageBase;
     }
 
+    /**
+     * ...at another replacement rate, in today's money (0.7.36): what each
+     * senior would be paid if the dial read `replacement`, on the same wage
+     * base - the Policy tab's pension preview, which scaled today's bill by
+     * the ratio of the two rates and so read nothing from a dial at zero.
+     * SocialSecurity.pensionsFor() strikes the founding constant and is wrong
+     * after a reform; this is not. Pure.
+     */
+    public double pensionPerSeniorAt(double replacement) {
+        return Math.max(0, Math.min(MAX_REPLACEMENT, replacement)) * pensionWageBase;
+    }
+
     /** The wage a pension is a share of, carried in today's money. */
     private double pensionWageBase = PayTier.UNSKILLED.getMonthlyWage();
 
@@ -849,7 +861,10 @@ public class TaxPolicy {
      * and the national accounts collect it; anything that multiplies a rider
      * headcount by a fare wants this and not getTransitFare().
      */
-    public double monthlyFare() { return transitFare * JOURNEYS_A_MONTH; }
+    public double monthlyFare() { return monthlyFareAt(transitFare); }
+
+    /** ...at a fare the city has not set (0.7.38): the fare dial's preview, the same one multiplication. */
+    public static double monthlyFareAt(double fare) { return fare * JOURNEYS_A_MONTH; }
 
     private double transitFare = DEFAULT_TRANSIT_FARE;
 
@@ -1090,6 +1105,19 @@ public class TaxPolicy {
        ================================================================== */
 
     /**
+     * What a payslip loses in this band (0.7.36): its wage tax at its own
+     * rate, the pension contribution and the EI and health premiums - the
+     * three promises are charged on the same payroll, flat across every
+     * band. The Policy tab's payslip card, which totalled the four itself
+     * at the base rate and called it "a wage in the middle band" (the
+     * spec's B15). Null for a band reads the wage rate itself. Pure.
+     */
+    public double payslipShare(WageBand band) {
+        double tax = band == null ? wageTaxRate : effectiveWageRate(band);
+        return tax + contributionRate + eiPremiumRate + healthPremiumRate;
+    }
+
+    /**
      * The month's wage tax, summed job type by job type at its band's rate.
      *
      * NOT the total wage bill times an average rate. The bands exist so the
@@ -1145,6 +1173,48 @@ public class TaxPolicy {
                     paid * effectiveWageRate(WageBand.of(type));
         }
         return byTier;
+    }
+
+    /* =====================================================================
+       A COPY TO PREVIEW ON (0.7.36)
+
+       The Policy tab shows what a staged set of dials would do before it is
+       applied. Until 0.7.36 the screen worked each "after" out itself - a
+       clamp copied from this class, the sales tax by a ratio, the pension by
+       scaling the bill - and a rule changed here would not have changed
+       there. Now the staged set is put through a COPY of this policy, its
+       own setters and clamps, and the model's own reads are asked about the
+       copy (PolicyPreview). The copy is DETACHED: every dial, the sector
+       offsets and the wage base a pension is struck on, and no decision log
+       - a dial moved on it records nothing, because nobody decided anything.
+       ===================================================================== */
+
+    /** A detached copy of every dial (0.7.36): setters on it clamp as here and record nothing. See PolicyPreview. */
+    public TaxPolicy copy() {
+        TaxPolicy c = new TaxPolicy();
+        c.profitTaxRate = profitTaxRate;
+        c.salesTaxRate = salesTaxRate;
+        c.wageTaxRate = wageTaxRate;
+        c.propertyTaxRate = propertyTaxRate;
+        c.farmlandRelief = farmlandRelief;
+        c.contributionRate = contributionRate;
+        c.pensionReplacement = pensionReplacement;
+        c.eiPremiumRate = eiPremiumRate;
+        c.eiBenefitRate = eiBenefitRate;
+        c.grantBasis = grantBasis;
+        c.grantAmount = grantAmount;
+        c.fixedGrantNominal = fixedGrantNominal;
+        c.studentLoanRate = studentLoanRate;
+        System.arraycopy(tuitionScales, 0, c.tuitionScales, 0, tuitionScales.length);
+        c.healthFeeScale = healthFeeScale;
+        c.healthPremiumRate = healthPremiumRate;
+        c.pensionWageBase = pensionWageBase;
+        c.transitFare = transitFare;
+        System.arraycopy(wageOffset, 0, c.wageOffset, 0, wageOffset.length);
+        c.profitOffset.putAll(profitOffset);
+        c.salesOffset.putAll(salesOffset);
+        c.propertyOffset.putAll(propertyOffset);
+        return c;
     }
 
     /* ==================================================================

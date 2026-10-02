@@ -1,6 +1,6 @@
-# Unemployment.java - 587 lines · 38 methods · 8 constants · model
+# Unemployment.java - 607 lines · 40 methods · 8 constants · model
 
-`ham/citybuildersim/Unemployment.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Unemployment.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The people out of work: how many, who they were, what Employment Insurance
 > pays them, and who has lost their home.
@@ -66,7 +66,7 @@
 
 **Uses:** [PayTier](PayTier.md) (4), [Crime](Crime.md) (3), [AgeBand](AgeBand.md) (1)
 
-**Used by (9):** [DeathRecordCheck](DeathRecordCheck.md), [Game](Game.md), [Health](Health.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [TaxPolicy](TaxPolicy.md)
+**Used by (11):** [DeathRecordCheck](DeathRecordCheck.md), [Game](Game.md), [Health](Health.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [TaxPolicy](TaxPolicy.md)
 
 ## Sections
 
@@ -77,8 +77,8 @@
 | 129 | · the month |
 | 137 | · reading |
 | 199 | · the month |
-| 425 | HEALTH: the unhoused, as a share of the adult band |
-| 519 | · saving |
+| 445 | HEALTH: the unhoused, as a share of the adult band |
+| 539 | · saving |
 
 ## Constants
 
@@ -91,7 +91,7 @@
 | 89 | `Unemployment.LEAVE_WHEN_BROKE` | `.25` | The share of the evicted who leave the city rather than stay on the street. |
 | 98 | `Unemployment.UNHOUSED_MORTALITY` | `3.7` | How much faster the unhoused die: 3.7x. |
 | 101 | `Unemployment.UNHOUSED_SICKNESS` | `3.7` | ...and how much faster they get sick. |
-| 521 | `Unemployment.STATE_LENGTH` | `EI_MONTHS * 2 + 6 + PayTier.values().length * 2 + 12` |  |
+| 541 | `Unemployment.STATE_LENGTH` | `EI_MONTHS * 2 + 6 + PayTier.values().length * 2 + 12` |  |
 
 ## Fields (state)
 
@@ -118,7 +118,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 520 | **type** `public class Unemployment` | The people out of work: how many, who they were, what Employment Insurance pays them, and who has lost their home. |
+| 68 | 540 | **type** `public class Unemployment` | The people out of work: how many, who they were, what Employment Insurance pays them, and who has lost their home. |
 
 ### the dials (lines 70-102)
 
@@ -152,7 +152,7 @@
 | 191 | 4 | `public double getBenefitPerClaimant()` | What one claimant draws on average this month. |
 | 197 | 1 | `public double getInsuredCap()` | The insured wage this month's cap sits at. |
 
-### the month (lines 199-424)
+### the month (lines 199-444)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -165,22 +165,24 @@
 | 384 | 11 | `private void reconcile(double pool)` | The groups sum to the pool, whatever rounding or a clamped exit did. |
 | 396 | 6 | `private void remember(double pool, double[] filled, double[] posts)` |  |
 | 410 | 4 | `public double restrikeBenefits(double benefitRate)` | The EI bill struck again on the pool as it stands, at this benefit rate, and returned (0.7.3): Game pays it at the top of the month, where the out of work are credited it - on the pool the month opens with, at the dia... |
-| 415 | 9 | `private void strikeBenefits(double benefitRate)` |  |
+| 415 | 3 | `private void strikeBenefits(double benefitRate)` |  |
+| 428 | 10 | `public double benefitsAt(double benefitRate)` | The EI bill on the pool as it stands at this benefit rate, struck and not kept (0.7.36): every claimant's cohort, its insured wage capped, at the rate - strikeBenefits()'s loop, which sets the bill with it. |
+| 440 | 4 | `public double benefitPerClaimantAt(double benefitRate)` | ...and what one claimant would draw on average at this rate (0.7.36): benefitsAt() over the claimants, getBenefitPerClaimant()'s rule. |
 
-### HEALTH: the unhoused, as a share of the adult band (lines 425-518)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 446 | 17 | `public static double[] blendMortality(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans)` | Every band's mortality factor with its unhoused and its orphans blended in: the unhoused at UNHOUSED_MORTALITY times the band's factor, the orphans at the factor the band has with no care at all (or the city's, if tha... |
-| 482 | 25 | `public static double[] attributeDeaths(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans...` | WHO AMONG THE MONTH'S DEAD WERE ORPHANS, AND WHO HAD NO HOME. |
-| 514 | 4 | `public static double withUnhoused(double factor, double unhousedShare)` | A band's mortality factor with a share of it unhoused. |
-
-### saving (lines 519-587)
+### HEALTH: the unhoused, as a share of the adult band (lines 445-538)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 523 | 21 | `public double[] toSaveArray()` |  |
-| 546 | 22 | `public boolean restore(double[] saved)` |  |
-| 569 | 11 | `public void reset()` |  |
-| 582 | 5 | `public void redenominate(double scale)` | Wages and the bill in the new unit. |
+| 466 | 17 | `public static double[] blendMortality(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans)` | Every band's mortality factor with its unhoused and its orphans blended in: the unhoused at UNHOUSED_MORTALITY times the band's factor, the orphans at the factor the band has with no care at all (or the city's, if tha... |
+| 502 | 25 | `public static double[] attributeDeaths(double[] factors, double[] uncared, double[] inBand, double[] unhoused, double[] orphans...` | WHO AMONG THE MONTH'S DEAD WERE ORPHANS, AND WHO HAD NO HOME. |
+| 534 | 4 | `public static double withUnhoused(double factor, double unhousedShare)` | A band's mortality factor with a share of it unhoused. |
+
+### saving (lines 539-607)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 543 | 21 | `public double[] toSaveArray()` |  |
+| 566 | 22 | `public boolean restore(double[] saved)` |  |
+| 589 | 11 | `public void reset()` |  |
+| 602 | 5 | `public void redenominate(double scale)` | Wages and the bill in the new unit. |
 

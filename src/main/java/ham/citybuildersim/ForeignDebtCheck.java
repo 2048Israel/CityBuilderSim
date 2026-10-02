@@ -39,6 +39,15 @@ import java.nio.file.Path;
  *      dial says; the dial moving leaves it where it is, the world's view of
  *      the city moving does not; and a dollar issue is priced on the same
  *      curve it is then valued on.
+ *
+ *   6. Does the ladder the Finances tab draws (0.7.32) carry every payment
+ *      the paper asks, each in the calendar year it is paid in, the dollar
+ *      part as what the dollar paper asks, and the heaviest year never the
+ *      "later" that sums many? And do the tab's other reads - the next
+ *      twelve months, the coupon, each kind's principal, the rate a piece
+ *      is valued at, a quote's schedule - agree with the paper, the
+ *      rollover's parts add to what falls due, and the borrowing flags
+ *      carry nothing else?
  */
 public class ForeignDebtCheck {
 
@@ -625,6 +634,7 @@ public class ForeignDebtCheck {
                         < Math.max(1, back.getForeignPrincipal() * .05));
 
         theWorldsCurve(root.resolve("curve"));
+        theLadder(root.resolve("ladder"));
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -691,5 +701,171 @@ public class ForeignDebtCheck {
                 market.marketValue(twenty) < value - 1e-6);
         market.setTrade(exports, cover);
         close("...and back when the city's standing is", market.marketValue(twenty), value, 1e-9);
+    }
+
+    /* ============ 9. the ladder, by the calendar year it is paid in (0.7.32) ============ */
+    /**
+     * WHAT THE FINANCES TAB DRAWS THE DEBT FROM. The tab's hub leads with the
+     * ladder - every payment the city's paper still asks, coupons and
+     * principal together, a column a calendar year, "later" for the rest -
+     * and its Debt service page with the next twelve months of it. Until
+     * 0.7.32 the screen binned twelve months at a time from next month and
+     * labelled each bin with this month's year, so a payment in January stood
+     * under the year before, and it weighed the "later" bin against single
+     * years. A played city with a note, a serial, a term loan at home and a
+     * dollar term abroad, two months on, holds DebtManager.ladder() and the
+     * tab's other reads to the paper itself, and the month before its note
+     * falls due, the rollover's parts to what falls due.
+     */
+    static void theLadder(Path dir) throws Exception {
+        out.println("\n--- and the ladder falls due by the calendar year it is paid in ---");
+
+        Game city;
+        System.setOut(quiet);
+        try {
+            city = tradingCity(dir);
+            city.handleTBillLogic(3_000, 6, 100);
+            city.handleMediumBondLogic(4_000, 5, 100);
+            city.handleLongBondLogic(5_000, 20, 100);
+            city.handleForeignLogic("Term", 5_000, 10, 100, false);
+            city.simulateMonths(2);
+        } finally {
+            System.setOut(out);
+        }
+        DebtManager dm = city.getDebtManager();
+        int month = city.getMonth();
+        java.util.Set<String> kinds = new java.util.HashSet<>();
+        boolean dollars = false;
+        for (Debt d : dm.getDebt()) { kinds.add(d.getType()); dollars |= d.isForeign(); }
+        assertTrue("fixture: a note, a serial and a term loan on the books", kinds.size() == 3);
+        assertTrue("fixture: ...and a piece owed in dollars", dollars);
+
+        // Payment i of a piece is paid in month + 1 + i: its last is the month it matures.
+        boolean lastAtMaturity = true;
+        double every = 0, abroad = 0, firstYear = 0, coupon = 0, principal = 0;
+        double[] ofKind = new double[3];
+        for (Debt d : dm.getDebt()) {
+            double[] flows = d.remainingCashFlows();
+            if (month + flows.length != d.getMaturityMonth()) lastAtMaturity = false;
+            for (int i = 0; i < flows.length; i++) {
+                every += flows[i];
+                if (d.isForeign()) abroad += flows[i];
+                if (i < 12) firstYear += flows[i];
+            }
+            coupon += d.getMonthlyInterestExpense();
+            principal += d.getOustandingPrincipal();
+            ofKind[DebtManager.ladderKind(d.getType())] += d.getOustandingPrincipal();
+        }
+        assertTrue("every piece's last payment falls in the month it matures", lastAtMaturity);
+
+        DebtManager.Ladder ladder = dm.ladder(month);
+        double drawn = 0, drawnAbroad = 0;
+        boolean inTheirYears = true;
+        int first = CityCalendar.yearOf(month + 1);
+        for (int y = 0; y < ladder.years().size(); y++) {
+            DebtManager.Rung r = ladder.years().get(y);
+            drawn += r.owed();
+            drawnAbroad += r.abroad();
+            if (r.fromYear() != first + y || r.toYear() != first + y) inTheirYears = false;
+            if (r.fromMonth() >= 0 && (CityCalendar.yearOf(r.fromMonth()) != r.fromYear()
+                    || CityCalendar.yearOf(r.toMonth()) != r.fromYear())) inTheirYears = false;
+        }
+        assertTrue("fixture: something falls after the ladder's twelve years", ladder.later() != null);
+        drawn += ladder.later().owed();
+        drawnAbroad += ladder.later().abroad();
+        assertTrue("twelve calendar years, the first the year next month is in",
+                ladder.years().size() == DebtManager.LADDER_YEARS && ladder.years().get(0).fromMonth() == month + 1);
+        assertTrue("...each rung's months inside its own year", inTheirYears);
+        assertTrue("...and \"later\" starts the year after the twelfth",
+                ladder.later().fromYear() == first + DebtManager.LADDER_YEARS
+                        && CityCalendar.yearOf(ladder.later().fromMonth()) == ladder.later().fromYear());
+        close("the ladder carries every payment still owed, coupons and principal", drawn, every, every * 1e-12);
+        close("...and its total says so", ladder.owed(), every, every * 1e-12);
+        close("...of it in dollars, exactly what the dollar paper asks", drawnAbroad, abroad, Math.max(1e-9, abroad * 1e-12));
+
+        boolean maturityThere = true;
+        for (Debt d : dm.getDebt()) {
+            int slot = Math.min(DebtManager.LADDER_YEARS, CityCalendar.yearOf(d.getMaturityMonth()) - first);
+            DebtManager.Rung r = slot < DebtManager.LADDER_YEARS ? ladder.years().get(slot) : ladder.later();
+            double[] flows = d.remainingCashFlows();
+            if (r.byKind()[DebtManager.ladderKind(d.getType())] < flows[flows.length - 1] - 1e-9) maturityThere = false;
+        }
+        assertTrue("a piece's maturity stands in the year it falls due, not the one before", maturityThere);
+
+        int heaviest = ladder.heaviest();
+        double most = 0;
+        for (DebtManager.Rung r : ladder.years()) most = Math.max(most, r.owed());
+        assertTrue("fixture: \"later\" carries more than any single year", ladder.later().owed() > most);
+        assertTrue("the heaviest year is one of the twelve and the largest of them, never \"later\"",
+                heaviest >= 0 && heaviest < DebtManager.LADDER_YEARS && ladder.years().get(heaviest).owed() == most);
+
+        close("the next twelve months are the first twelve payments of every piece", dm.dueWithin(12), firstYear,
+                firstYear * 1e-12);
+        close("the coupon is every piece's monthly interest", dm.getMonthlyCoupon(), coupon, 1e-9);
+        close("each kind's principal adds to what is owed",
+                dm.getPrincipalOf("NOTE") + dm.getPrincipalOf("SERIAL") + dm.getPrincipalOf("TERM"), principal, 1e-9);
+        close("...the notes' among them, getNotePrincipal()'s", dm.getPrincipalOf("NOTE"), dm.getNotePrincipal(), 1e-9);
+        boolean valued = true;
+        for (Debt d : dm.getDebt()) {
+            if (Math.abs(dm.marketValue(d) - d.getMarketValue(dm.valuationRate(d))) > 1e-9) valued = false;
+        }
+        assertTrue("a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve", valued);
+
+        // A proposed issue on the ladder: its own payments, in their own years.
+        DebtQuote serial = city.quoteDebt("Serial", 4_000, 3, 100);
+        double[] plan = serial.schedule(1);
+        double asked = 0;
+        for (double v : plan) asked += v;
+        assertTrue("fixture: a three-year serial's schedule, a payment a month", plan.length == 36 && asked > serial.faceValue());
+        DebtManager.Ladder with = dm.ladder(month, plan);
+        double proposed = 0;
+        boolean ownYears = true;
+        for (int y = 0; y < with.years().size(); y++) {
+            DebtManager.Rung r = with.years().get(y);
+            proposed += r.proposed();
+            double expect = 0;
+            for (int i = 0; i < plan.length; i++) if (CityCalendar.yearOf(month + 1 + i) == r.fromYear()) expect += plan[i];
+            if (Math.abs(r.proposed() - expect) > 1e-9) ownYears = false;
+            if (Math.abs(r.owed() - ladder.years().get(y).owed()) > 1e-9) ownYears = false;
+        }
+        close("a proposed issue adds its whole schedule as its own", with.proposed(), asked, 1e-9);
+        close("...every payment of it in a year", proposed, asked, 1e-9);
+        assertTrue("...each in the year it is paid, and what is owed stays as it was", ownYears);
+
+        // The rollover's NEXT MONTH: netted, the central bank's own, the issues and the cash are what falls due.
+        System.setOut(quiet);
+        try {
+            int guard = 0;
+            boolean noteNext = false;
+            while (!noteNext && guard++ < 12) {
+                for (Debt d : dm.getDebt()) if ("NOTE".equals(d.getType()) && d.getMaturityMonth() == city.getMonth() + 1) noteNext = true;
+                if (!noteNext) city.simulateMonths(1);
+            }
+        } finally {
+            System.setOut(out);
+        }
+        boolean adds = true;
+        double due = 0;
+        for (Rollover.Mode mode : Rollover.Mode.values()) {
+            System.setOut(quiet);
+            try {
+                city.setRolloverMode(mode);
+            } finally {
+                System.setOut(out);
+            }
+            Rollover.Plan p = city.rolloverPlan();
+            due = p.due();
+            double parts = p.netted() + p.centralBankPar() + p.toRaise() + p.fromCash();
+            if (Math.abs(parts - p.due()) > Math.max(1e-6, p.due() * 1e-9)) adds = false;
+        }
+        assertTrue("fixture: the note falls due next month", due > 0);
+        assertTrue("netted, the central bank's own, the issues and the cash are what falls due, in every mode", adds);
+
+        java.util.List<ChartModel.Flag> borrowing = ChartModel.flags(city.getDecisions(), DecisionLog.BORROWING);
+        boolean onlyBorrowing = !borrowing.isEmpty();
+        for (ChartModel.Flag f : borrowing) for (DecisionLog.Entry e : f.entries()) {
+            if (!DecisionLog.BORROWING.equals(e.kind())) onlyBorrowing = false;
+        }
+        assertTrue("the chart's borrowing flags carry the borrowing decisions and nothing else", onlyBorrowing);
     }
 }

@@ -662,6 +662,12 @@ public final class CentralBank {
     /** The most the treasury may owe here before the arrears rule decides who is paid: the dial's months of its trailing revenue. */
     public double ceiling() { return advancesCeilingMonths * trailingRevenue(); }
 
+    /** ...at a ceiling of the caller's, in months (0.7.36): what the dial would allow at that setting, held to its range - the Policy tab's ceiling preview. Pure. */
+    public double ceilingAt(double months) {
+        double m = Double.isFinite(months) ? Math.max(0, Math.min(MAX_ADVANCES_CEILING, months)) : DEFAULT_ADVANCES_MONTHS;
+        return m * trailingRevenue();
+    }
+
     /** The ceiling dial, in months of revenue. */
     public double getAdvancesCeilingMonths() { return advancesCeilingMonths; }
 
@@ -709,6 +715,9 @@ public final class CentralBank {
 
     public double getIssued()          { return issued; }
     public double getRetired()         { return retired; }
+
+    /** What M0 moved by this month: the money made less the money destroyed (0.7.32, the Finances tab's THIS MONTH, which subtracted them itself). */
+    public double getM0Moved()         { return issued - retired; }
     public double getAdvancedToBank()  { return advancedToBank; }
     public double getRepaidByBank()    { return repaidByBank; }
     /** Printed this month: what was advanced to the treasury. */

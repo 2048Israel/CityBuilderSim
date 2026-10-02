@@ -1,6 +1,6 @@
 # Healthcare.java - 932 lines · 55 methods · 17 constants · model
 
-`ham/citybuildersim/Healthcare.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Healthcare.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The city's healthcare service: what it costs, what it collects, and what it
 > does with the dead.
@@ -39,7 +39,7 @@
 
 **Uses:** [CareType](CareType.md) (40), [AgeBand](AgeBand.md) (12), [PopulationCohorts](PopulationCohorts.md) (4), [TaxPolicy](TaxPolicy.md) (2)
 
-**Used by (16):** [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [SafetyType](SafetyType.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md)
+**Used by (20):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CityNeeds](CityNeeds.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [SafetyType](SafetyType.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 

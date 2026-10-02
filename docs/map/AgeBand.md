@@ -1,6 +1,6 @@
 # AgeBand.java - 181 lines · 12 methods · 1 constants · model
 
-`ham/citybuildersim/AgeBand.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AgeBand.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The six ages of a resident.
 > 
@@ -8,7 +8,7 @@
 > every month. Ages are inclusive of the first year and exclusive of the next
 > band's, so a resident is a BABY from 0 up to their sixth birthday.
 
-**Used by (31):** [CareType](CareType.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [EducationType](EducationType.md), [FamilyModel](FamilyModel.md), [FamilyStructure](FamilyStructure.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [Offending](Offending.md), [OrphanHousehold](OrphanHousehold.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [PopulationCohorts](PopulationCohorts.md), [RetiredHousehold](RetiredHousehold.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SimulationEngine](SimulationEngine.md), [Unemployment](Unemployment.md)
+**Used by (34):** [BuildAdvice](BuildAdvice.md), [CareType](CareType.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [EducationType](EducationType.md), [FamilyModel](FamilyModel.md), [FamilyStructure](FamilyStructure.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [Offending](Offending.md), [OrphanHousehold](OrphanHousehold.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [PopulationCohorts](PopulationCohorts.md), [ReadPathCheck](ReadPathCheck.md), [RetiredHousehold](RetiredHousehold.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SimulationEngine](SimulationEngine.md), [Unemployment](Unemployment.md)
 
 ## Sections
 

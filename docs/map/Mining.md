@@ -1,6 +1,6 @@
 # Mining.java - 153 lines · 6 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Mining.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Iron mines. Its own sector because the ore has a price.
 > 
@@ -30,5 +30,5 @@
 | 48 | 3 | `public double getPotentialOutput()` | What the mines could lift this month if the ground allowed it. |
 | 62 | 50 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to open another mine. |
 | 129 | 8 | `public double[] retirementDemandAndCapacity(Game game)` | A price-taking exporter always sells what it lifts: it shrinks on distress only - WHILE THERE IS ORE. |
-| 139 | 14 | `public List<Line> operations(Game game)` |  |
+| 139 | 14 | `public List<Line> ownLines(Game game)` |  |
 

@@ -786,11 +786,65 @@ public class HouseholdAccounts {
         return out;
     }
 
-    /** Healthcare and tuition, per person. Both are charged per head served. */
+    /** Healthcare, tuition and the fares, per person: all three are charged per head. Its parts are below (0.7.27). */
     public double feesPerHead() {
         double heads = 0;
         for (double n : rowPeople) heads += n;
         return heads > 0 ? (healthcare + tuition + fares) / heads : 0;
+    }
+
+    /*
+     * ...AND ITS PARTS, for a statement that names them (0.7.27). The opened
+     * cell on Household money printed feesPerHead() as "Healthcare and
+     * school fees", which carried the fares too - $4.1M of fares beside
+     * $1.0M of care in the 2,400-month city - and the rest of the fees line
+     * as "Interest on what they owe", which carried the bank's account fee:
+     * "interest" on households that owed nothing. These are the same
+     * divisions statementFor() makes, split where it adds.
+     */
+
+    /** The clinic's and the schools' fees, per person: feesPerHead() without the fares. */
+    public double careAndSchoolPerHead() {
+        double heads = 0;
+        for (double n : rowPeople) heads += n;
+        return heads > 0 ? (healthcare + tuition) / heads : 0;
+    }
+
+    /** The fares, per person: the rest of feesPerHead(). */
+    public double faresPerHead() {
+        double heads = 0;
+        for (double n : rowPeople) heads += n;
+        return heads > 0 ? fares / heads : 0;
+    }
+
+    /** What one household of the tier pays in interest on what it owes: its row's interest per household. */
+    public double interestPerHousehold(PayTier tier) {
+        int t = tier.ordinal();
+        return rowHouseholds[t] > 0 ? rowInterest[t] / rowHouseholds[t] : 0;
+    }
+
+    /** ...and in the bank's account fee: its row's fees per household. */
+    public double accountFeePerHousehold(PayTier tier) {
+        int t = tier.ordinal();
+        return rowHouseholds[t] > 0 ? rowAccountFees[t] / rowHouseholds[t] : 0;
+    }
+
+    /**
+     * What one earner of the tier is paid this month: the tier's wage bill
+     * over its earners, every family shape's earners counted (0.7.27, out
+     * of statementFor(), which calls it). The household money page heads
+     * each tier's column with it and the People page's matrix prints it as
+     * its pay row - the live wage, where the matrix printed the tier's
+     * founding anchor (PayTier.getMonthlyWage()). 0 for a tier nobody earns in.
+     */
+    public double wagePerEarner(FamilyModel families, PayTier tier) {
+        double earnersInTier = 0;
+        for (FamilyStructure s : FamilyStructure.values()) {
+            if (s.isRetired()) continue;
+            earnersInTier += families == null ? 0 : families.get(s, tier) * s.earners();
+        }
+        return earnersInTier > 0
+                ? rowWages[tier.ordinal()] / earnersInTier : 0;
     }
 
     /** What one pensioner receives, as the policy currently sets it. */
@@ -844,13 +898,7 @@ public class HouseholdAccounts {
          * most of why the two can afford such different lives - and dividing a
          * tier's wage bill by its households would have hidden exactly that.
          */
-        double earnersInTier = 0;
-        for (FamilyStructure s : FamilyStructure.values()) {
-            if (s.isRetired()) continue;
-            earnersInTier += families == null ? 0 : families.get(s, tier) * s.earners();
-        }
-        double wagePerEarner = earnersInTier > 0
-                ? rowWages[tier.ordinal()] / earnersInTier : 0;
+        double wagePerEarner = wagePerEarner(families, tier);
         double taxRate = rowWages[tier.ordinal()] > 0
                 ? (rowTax[tier.ordinal()] + rowContributions[tier.ordinal()])
                         / rowWages[tier.ordinal()] : 0;

@@ -246,6 +246,18 @@ public class Sickness {
         return people;
     }
 
+    /**
+     * People sick k months, across the city (0.7.28): one slot of every
+     * band's ring in people - the Services screen's long-sick bars, which
+     * peoplePastTwoMonths() is the slots from DEADLY_FROM of.
+     */
+    public double peopleInSlot(PopulationCohorts cohorts, int k) {
+        double people = 0;
+        if (cohorts == null) return 0;
+        for (AgeBand b : AgeBand.values()) people += slot(b, k) * cohorts.get(b);
+        return people;
+    }
+
     /** People sick this month, across the city. */
     public double peopleSick(PopulationCohorts cohorts) {
         double people = 0;

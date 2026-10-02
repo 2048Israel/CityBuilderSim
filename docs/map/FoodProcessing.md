@@ -1,6 +1,6 @@
 # FoodProcessing.java - 567 lines · 12 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/FoodProcessing.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/FoodProcessing.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The plants between the farm and the shelf.
 > 
@@ -97,7 +97,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 421 | 93 | `public java.util.List<Sector.Line> operations(Game game)` | What the generic page cannot say: WHICH PRICE IS DECIDING THIS SECTOR. |
+| 421 | 93 | `public java.util.List<Sector.Line> ownLines(Game game)` | What the generic page cannot say: WHICH PRICE IS DECIDING THIS SECTOR. |
 | 516 | 3 | `public double getMeatDemand()` | Kilograms of meat the plants want this month, at the rate they are running. |
 | 521 | 3 | `public double getMeatPrice()` | What a kilogram is costing them - the number that decides whether a Meat Works pays here. |
 | 530 | 3 | `public double getMeatPosition()` | Where the meat price sits between a farm's export floor and the world's delivered ceiling: 0 is a city with herds and nobody else to sell to, 1 is a city with no farms at all. |

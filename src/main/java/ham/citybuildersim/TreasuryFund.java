@@ -84,10 +84,22 @@ import java.util.List;
  *   only; what the cash cannot cover is not paid that month. Its dividends
  *   and coupons stay in it.
  *
- * THE HAND (the Finances tab's Fund page): buy and sell on the book at fair
- * value - the rule's own price - good for a month (HandOrder); pay in and
- * draw out, transfers between the treasury and the fund, journalled, never
- * revenue or spending.
+ * THE HAND (the order ticket on a security's page among the Finances tab's
+ * fund pages, ui/FundScreen since 0.7.39): buy and sell on the book at fair
+ * value - the rule's own price - or at a price the player names (0.7.39),
+ * good for a month (HandOrder); pay in and draw out, transfers between the
+ * treasury and the fund, journalled, never revenue or spending. An order
+ * waiting for the step can be cancelled, and a buy's money is the hand's
+ * from the moment it is placed until the step that withdraws it: the rule
+ * bids with the rest (handReserve(), 0.7.39). So is its room under
+ * OWNERSHIP_LIMIT: every buy of the fund's on a company counts against the
+ * cap as if it filled, and the rule's bid makes way for the hand's, at the
+ * step and between steps (Exchange.fundRoom()).
+ *
+ * WHAT EACH HOLDING COST (0.7.39): FundLedger, kept here and saved with the
+ * fund - average cost, what sales and maturities realized, the income, and
+ * every trade and event - written by hooks where the holdings move and read
+ * by nothing the month does.
  *
  * @author Jerus
  */
@@ -190,8 +202,11 @@ public final class TreasuryFund {
      * One of the player's orders, waiting for the month's step: a company's
      * shares (company, Equity's index) or a bond (bondId), to buy with this
      * much money or to sell this many shares or this much face. Posted at
-     * the step beside the rule's, at fair value, and good for the month like
-     * every order (Exchange, BondMarket).
+     * the step beside the rule's, at fair value - or at `limit` when the
+     * player named a price (0.7.39; 0 is fair value, the rule's own) - and
+     * good for the month like every order (Exchange, BondMarket). Once
+     * posted it carries what it asked for at what price, and what of it has
+     * filled, until the step after withdraws it (getPosted()).
      */
     public static final class HandOrder {
         boolean bond;
@@ -200,29 +215,75 @@ public final class TreasuryFund {
         boolean buy;
         double amount;
         int month;
+        /** The price a unit it is to post at: money a share, or a price a unit of face; 0 for the rule's (0.7.39). */
+        double limit;
+        /** Once posted: the month, the units it asked for, the price it rested at, and what of it filled for how much. */
+        int postedMonth = -1;
+        double units, price, filled, spent;
 
         HandOrder() { }
 
         HandOrder(boolean bond, int company, int bondId, boolean buy, double amount, int month) {
+            this(bond, company, bondId, buy, amount, month, 0);
+        }
+
+        HandOrder(boolean bond, int company, int bondId, boolean buy, double amount, int month, double limit) {
             this.bond = bond;
             this.company = company;
             this.bondId = bondId;
             this.buy = buy;
             this.amount = amount;
             this.month = month;
+            this.limit = Double.isFinite(limit) && limit > 0 ? limit : 0;
         }
 
-        public boolean bond()   { return bond; }
-        public int company()    { return company; }
-        public int bondId()     { return bondId; }
-        public boolean buy()    { return buy; }
+        public boolean bond()     { return bond; }
+        public int company()      { return company; }
+        public int bondId()       { return bondId; }
+        public boolean buy()      { return buy; }
         /** Money to spend on a buy; shares or face to sell. */
-        public double amount()  { return amount; }
+        public double amount()    { return amount; }
         /** The month it was placed in. */
-        public int month()      { return month; }
+        public int month()        { return month; }
+        /** The price it posts at, a unit: 0 for fair value (a bond's: its value), the rule's own price. */
+        public double limit()     { return limit; }
+        /** The month it was posted at the step, or -1 while it waits. */
+        public int postedMonth()  { return postedMonth; }
+        /** Posted: the units it asked for (shares, or face). */
+        public double units()     { return units; }
+        /** ...the price it rested at, a unit. */
+        public double price()     { return price; }
+        /** ...what of it has filled, and what that cost or brought in. */
+        public double filled()    { return filled; }
+        public double spent()     { return spent; }
+        /** What a buy still holds of the fund's cash: its amount while it waits; posted, the units still to fill at its price. */
+        public double reserved() {
+            if (!buy) return 0;
+            return postedMonth < 0 ? Math.max(0, amount) : Math.max(0, units - filled) * price;
+        }
     }
 
     private final List<HandOrder> hand = new ArrayList<>();
+
+    /** The player's orders on the books: posted at the last step, resting until the next (0.7.39). */
+    private final List<HandOrder> posted = new ArrayList<>();
+
+    /* ============================== the cost basis (0.7.39) ============================== */
+
+    /** What each holding cost, and everything the fund did: FundLedger. */
+    private FundLedger ledger = new FundLedger();
+
+    /** True after a save from before the ledger: Game seeds it once the city is back (Game.seedFundLedger()). */
+    private boolean ledgerToSeed;
+
+    /** The fund's cost basis and record. */
+    public FundLedger getLedger()   { return ledger; }
+
+    /** True while a save from before 0.7.39 waits for its ledger to be seeded. */
+    public boolean needsLedgerSeed() { return ledgerToSeed; }
+
+    /** The seed, done (Game.seedFundLedger()). */
+    void ledgerSeeded()              { ledgerToSeed = false; }
 
     /* ============================== the record ============================== */
 
@@ -505,6 +566,101 @@ public final class TreasuryFund {
     /** The orders waiting for the next step, oldest first. */
     public List<HandOrder> getHandOrders() { return java.util.Collections.unmodifiableList(hand); }
 
+    /** The orders posted at the last step and resting until the next, oldest first (0.7.39). */
+    public List<HandOrder> getPosted() { return java.util.Collections.unmodifiableList(posted); }
+
+    /** Cancels the order waiting at this place, before the step posts it (0.7.39). @return it, or null */
+    HandOrder cancel(int i) {
+        if (i < 0 || i >= hand.size()) return null;
+        return hand.remove(i);
+    }
+
+    /**
+     * WHAT THE HAND'S BUYS HOLD OF THE FUND'S CASH (0.7.39; the spec's B9): a
+     * waiting order's whole amount, and a posted one's units still to fill at
+     * its price. The rule settles its bids with what is left (the capacity
+     * Exchange's and BondMarket's settles give it), so an order the player
+     * placed is not starved by the rule, which posts first; the rule still
+     * reads its mix on the whole of the cash. Nothing with no order.
+     */
+    public double handReserve() {
+        double t = 0;
+        for (HandOrder o : hand) t += o.reserved();
+        for (HandOrder o : posted) t += o.reserved();
+        return t;
+    }
+
+    /** The fund's cash the rule may spend: its cash less the hand's reserve, never under nothing. */
+    double cashForTheRule() {
+        double reserve = handReserve();
+        double cash = Math.max(0, this.cash);
+        return reserve > 0 ? Math.max(0, cash - reserve) : cash;
+    }
+
+    /** A hand order posted at the step, `units` at `price` a unit: it rests until the next step, and the ledger opens its row. */
+    void notePosted(HandOrder o, String key, double units, double price, int month) {
+        o.postedMonth = month;
+        o.units = Math.max(0, units);
+        o.price = price;
+        o.filled = 0;
+        o.spent = 0;
+        if (o.units > FundLedger.DUST) posted.add(o);
+        ledger.handPosted(key, o.buy, o.units, price, month);
+    }
+
+    /** A hand order that could not be posted, and why: the ledger's row. */
+    void noteDropped(HandOrder o, String key, double units, double price, String why, int month) {
+        ledger.handDropped(key, o.buy, units, price, why, month);
+    }
+
+    /** One of the hand's fills, on a company's book or a bond's: the posted orders on it, oldest first, take it. */
+    void handFilled(boolean bond, int which, boolean buy, double q, double cash) {
+        double left = q;
+        HandOrder last = null;
+        for (HandOrder o : posted) {
+            if (o.bond != bond || o.buy != buy || (bond ? o.bondId : o.company) != which) continue;
+            last = o;
+            double room = Math.max(0, o.units - o.filled);
+            if (!(room > 0) || !(left > 0)) continue;
+            double take = Math.min(room, left);
+            o.filled += take;
+            o.spent += cash * take / q;
+            left -= take;
+        }
+        if (left > FundLedger.DUST && last != null) { last.filled += left; last.spent += cash * left / q; }
+    }
+
+    /** A company's shares split by k (a consolidation under one): the player's orders in them, waiting or on the book, count in the new shares and price in them; the ledger's row (0.7.39). */
+    void noteSplit(int company, double k, int month) {
+        if (!(k > 0) || k == 1) return;
+        for (HandOrder o : hand) {
+            if (o.bond || o.company != company) continue;
+            if (!o.buy) o.amount *= k;
+            if (o.limit > 0) o.limit /= k;
+        }
+        for (HandOrder o : posted) {
+            if (o.bond || o.company != company) continue;
+            if (!o.buy) o.amount *= k;
+            if (o.limit > 0) o.limit /= k;
+            o.units *= k;
+            o.filled *= k;
+            o.price /= k;
+        }
+        ledger.split(Equity.COMPANIES[company], k, month);
+    }
+
+    /** The step withdrew every order on one market: the hand's posted there close, and what they did not fill lapses. */
+    void closePosted(boolean bond) {
+        java.util.Iterator<HandOrder> it = posted.iterator();
+        while (it.hasNext()) {
+            HandOrder o = it.next();
+            if (o.bond != bond) continue;
+            it.remove();
+            ledger.handClosed(o.bond ? FundLedger.bondKey(o.bondId)
+                    : FundLedger.shareKey(Equity.COMPANIES[Math.max(0, Math.min(Equity.COMPANIES.length - 1, o.company))]), o.buy);
+        }
+    }
+
     /** ...taken by the market that posts them: the share orders, or the bond orders. */
     List<HandOrder> takeHandOrders(boolean bonds) {
         List<HandOrder> out = new ArrayList<>();
@@ -549,9 +705,30 @@ public final class TreasuryFund {
     public double getMonthBought()            { return monthBought; }
     public double getMonthSold()              { return monthSold; }
 
+    /** What every resolution paid for the rescue book, over the fund's life (0.7.39). */
+    public double getRescuesPaid() {
+        double t = 0;
+        for (Resolution r : resolutions) t += r.paid;
+        return t;
+    }
+
+    /**
+     * WHAT THE CITY HAS PUT INTO ITS FUND, over its life (0.7.39): the dial's
+     * pay-ins and the hand's, what the rescues paid, and the preferred the
+     * treasury bought - each money the city's own that became the fund's.
+     */
+    public double getPutIn() {
+        return paidInFromSurplus + paidInFromCash + handPaidIn + getRescuesPaid() + preferredBought;
+    }
+
+    /** ...AND WHAT IT HAS TAKEN OUT: the transfers paid to the budget and the hand's draw-outs. The fund's gain since it began is its value plus this less what was put in - exact on any save, from these counters. */
+    public double getTakenOut() {
+        return transfersPaid + handDrawnOut;
+    }
+
     /** True when it holds nothing and has never been asked for anything: a fund that has not begun. */
     public boolean isEmpty() {
-        return cash == 0 && resolutions.isEmpty() && hand.isEmpty() && preferredBought == 0
+        return cash == 0 && resolutions.isEmpty() && hand.isEmpty() && posted.isEmpty() && preferredBought == 0
                 && paidInFromSurplus == 0 && paidInFromCash == 0 && handPaidIn == 0;
     }
 
@@ -630,6 +807,10 @@ public final class TreasuryFund {
         double rescueCost;
         List<Resolution> resolutions;
         List<HandOrder> hand;
+        /** The hand's orders resting on the books (0.7.39). */
+        List<HandOrder> posted;
+        /** What each holding cost, and the record (0.7.39): absent from an older save, which Game seeds. */
+        FundLedger ledger;
         int lastPayInMonth, transferYear;
         double lastPayInYearSurplus, lastPayInFromSurplus, lastPayInFromCash, transfersThisYear, transferShortThisYear;
         double[] life;
@@ -652,6 +833,8 @@ public final class TreasuryFund {
         s.rescueCost = rescueCost;
         s.resolutions = new ArrayList<>(resolutions);
         s.hand = new ArrayList<>(hand);
+        s.posted = new ArrayList<>(posted);
+        s.ledger = ledger.copy();
         s.lastPayInMonth = lastPayInMonth;
         s.lastPayInYearSurplus = lastPayInYearSurplus;
         s.lastPayInFromSurplus = lastPayInFromSurplus;
@@ -675,7 +858,8 @@ public final class TreasuryFund {
      */
     public void restore(State s) {
         reset();
-        if (s == null) return;
+        // ...and with it no ledger: seeded at the end of the load, from nothing held (0.7.39).
+        if (s == null) { ledgerToSeed = true; return; }
         cash = Double.isFinite(s.cash) ? s.cash : 0;
         setDial(s.dial);
         RescueMode mode = RescueMode.BUTTON;
@@ -691,6 +875,10 @@ public final class TreasuryFund {
         rescueCost = s.rescueCost;
         if (s.resolutions != null) for (Resolution r : s.resolutions) if (r != null) resolutions.add(r);
         if (s.hand != null) for (HandOrder o : s.hand) if (o != null) hand.add(o);
+        if (s.posted != null) for (HandOrder o : s.posted) if (o != null) posted.add(o);
+        // An older save has no ledger: Game seeds it at the end of the load, when every price is back.
+        if (s.ledger != null) ledger = s.ledger.copy();
+        else ledgerToSeed = true;
         lastPayInMonth = s.lastPayInMonth;
         lastPayInYearSurplus = s.lastPayInYearSurplus;
         lastPayInFromSurplus = s.lastPayInFromSurplus;
@@ -726,6 +914,9 @@ public final class TreasuryFund {
         rescueCost = 0;
         resolutions.clear();
         hand.clear();
+        posted.clear();
+        ledger = new FundLedger();
+        ledgerToSeed = false;
         lastPayInMonth = -1;
         lastPayInYearSurplus = lastPayInFromSurplus = lastPayInFromCash = 0;
         transferYear = -1;
@@ -747,7 +938,17 @@ public final class TreasuryFund {
             r.householdsValue *= scale; r.worldValue *= scale; r.fundValue *= scale;
             r.preferredCancelled *= scale; r.warrantsCancelled *= scale;
         }
-        for (HandOrder o : hand) if (o.buy || o.bond) o.amount *= scale;
+        for (HandOrder o : hand) {
+            if (o.buy || o.bond) o.amount *= scale;
+            // A share's limit is money a share; a bond's is a price a unit of face (0.7.39).
+            if (!o.bond) o.limit *= scale;
+        }
+        for (HandOrder o : posted) {
+            if (o.buy || o.bond) o.amount *= scale;
+            if (o.bond) { o.units *= scale; o.filled *= scale; } else { o.limit *= scale; o.price *= scale; }
+            o.spent *= scale;
+        }
+        ledger.redenominate(scale);
         lastPayInYearSurplus *= scale; lastPayInFromSurplus *= scale; lastPayInFromCash *= scale;
         transfersThisYear *= scale; transferShortThisYear *= scale;
         paidInFromSurplus *= scale; paidInFromCash *= scale; handPaidIn *= scale; handDrawnOut *= scale;

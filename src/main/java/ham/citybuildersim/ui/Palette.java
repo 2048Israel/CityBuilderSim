@@ -61,7 +61,7 @@ public final class Palette {
     /** The middle of the window - the darkest thing, and the biggest. The mockups' window. */
     public static final String STAGE = "#0b1118";
 
-    /** The strips around it: both side panels, the header, the debt bar and the rail. */
+    /** The strips around it: the two side panels (a drawer and an overlay since 0.7.24), the header, the rail and the construction tab. */
     public static final String PANEL = "#101924";
 
     /** A block lifted off a panel: a card, a header tile, an open section. The mockups' card. */
@@ -235,6 +235,15 @@ public final class Palette {
         MONEY, PEOPLE, BUILDING, BUSINESS, "#c9b68f"
     };
 
+    /**
+     * Ore (0.7.26): the land office's deposits - a plot's ORE tag, the sand
+     * stripe on the ground bar, the Ore card. A resource, so neither an area
+     * nor a verdict: CATEGORIES' sand, kept for exactly that. It replaces the
+     * lilac the office hard-coded three times (#ce93d8), which read as the
+     * business violet.
+     */
+    public static final String ORE = "#c9b68f";
+
     /* =====================================================================
        THE CHART'S LINES (0.7.23)
 
@@ -329,8 +338,8 @@ public final class Palette {
 
        The Government's two rings left these ramps in 0.7.21 for CATEGORIES
        (see there: their three biggest revenue slices read as one blue); the
-       ramps still draw the bank's and the trade page's rings and bars, the
-       maturity ladder and GDP's layers.
+       ramps still draw the bank's rings and bars (and the trade page's until
+       0.7.35), the maturity ladder and GDP's layers.
 
        MEASURED, NOT CHOSEN. These steps were generated at fixed OKLCH hue with
        an even lightness ramp and checked against the dark surface: monotone
@@ -461,13 +470,13 @@ public final class Palette {
     /** The navigation rail, at the window's left edge: an icon over its name (0.7.21). */
     public static final double RAIL = 76;
 
-    /** The header across the top: the clock, the six headline tiles, the rating and the inbox (0.7.21). */
+    /** The header across the top: the clock, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox (0.7.21; the money block and the chip 0.7.24). */
     public static final double HEADER = 84;
 
-    /** The city panel, not counting the rail. */
+    /** The city panel, not counting the rail: the drawer over the stage's left since 0.7.24. */
     public static final double CITY_PANEL = 290;
 
-    /** The construction panel down the right. */
+    /** The construction panel down the right: over the stage while open, a tab while folded, since 0.7.24. */
     public static final double BUILD_PANEL = 280;
 
     /** A building row, so the price column lines up down the list. */

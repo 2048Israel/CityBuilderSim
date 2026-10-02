@@ -1,6 +1,6 @@
-# WaterCheck.java - 180 lines · 3 methods · 0 constants · harnesses
+# WaterCheck.java - 186 lines · 3 methods · 0 constants · harnesses
 
-`ham/citybuildersim/WaterCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WaterCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Sanity harness for water production, demand, throttling and billing. Not part of the game.
 
@@ -15,9 +15,9 @@
 | 67 | · 3. the ratio bites |
 | 83 | · 4. a plant fixes it |
 | 95 | · 5. split books |
-| 130 | · 6. the ratio throttles output |
-| 144 | · 7. billing is symmetric with power |
-| 169 | · 8. household affordability |
+| 136 | · 6. the ratio throttles output |
+| 150 | · 7. billing is symmetric with power |
+| 175 | · 8. household affordability |
 
 ## Fields (state)
 
@@ -29,8 +29,8 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4 | 177 | **type** `public class WaterCheck` | Sanity harness for water production, demand, throttling and billing. |
+| 4 | 183 | **type** `public class WaterCheck` | Sanity harness for water production, demand, throttling and billing. |
 | 8 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 15 | 5 | `static double[] wages()` |  |
-| 21 | 159 | `public static void main(String[] args)` |  |
+| 21 | 165 | `public static void main(String[] args)` |  |
 

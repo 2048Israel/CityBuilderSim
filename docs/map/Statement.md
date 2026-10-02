@@ -1,6 +1,6 @@
 # Statement.java - 482 lines · 23 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/Statement.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Statement.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The rows a statement is built from: a head, a line, a note, a total, a
 > disclosure that opens, and the two-column book the sector pages and the
@@ -13,7 +13,7 @@
 
 **Uses:** [Palette](Palette.md) (79)
 
-**Used by (16):** [BankCheck](BankCheck.md), [BooksCheck](BooksCheck.md), [EconomyManager](EconomyManager.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [MiningCheck](MiningCheck.md), [MonthOrder](MonthOrder.md), [NewGameCheck](NewGameCheck.md), [PeopleScreen](PeopleScreen.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md)
+**Used by (20):** [BankCheck](BankCheck.md), [BooksCheck](BooksCheck.md), [EconomyManager](EconomyManager.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MiningCheck](MiningCheck.md), [MonthOrder](MonthOrder.md), [NewGameCheck](NewGameCheck.md), [PeopleScreen](PeopleScreen.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

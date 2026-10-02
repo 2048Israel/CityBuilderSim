@@ -758,10 +758,11 @@ public class InfrastructureCheck {
                 ok &= sane(n.getRailShare(t), 0, 1);
             }
             /*
-             * AND THE PREVIEW THE FARE DIAL DRAWS, which is the one figure on
-             * that page computed by the SCREEN rather than read off the model -
-             * riders at a fare the player has not applied yet. It divides by
-             * nothing, but it is the line most likely to be handed a zero.
+             * AND THE PREVIEW THE FARE DIAL DRAWS - riders at a fare the
+             * player has not applied yet, which the SCREEN worked out rather
+             * than read off the model until 0.7.29 (InfrastructureManager.
+             * ridersAt() since). It divides by nothing, but it is the line
+             * most likely to be handed a zero.
              */
             for (double fare : new double[] {0, TaxPolicy.DEFAULT_TRANSIT_FARE,
                                              TaxPolicy.MAX_TRANSIT_FARE}) {
@@ -802,6 +803,182 @@ public class InfrastructureCheck {
             fleetOk &= sane(s.getOperatingRate(), 0, 1);
         }
         assertTrue("every sector's fleet reading is a number", fleetOk);
+
+        /* ======= 10. THE CURVE, THE WALK AND THE WEDGE, AS THE SCREEN DRAWS THEM (0.7.29) =======
+
+           The Roads page draws the curve with throughputAt() and puts the
+           city's dot on it at getUtilisation(); it draws the load as a walk
+           from the trips the city makes to what is on its road
+           (roadBreakdown()); the Freight page splits each good's wedge into
+           the world's margin, the freight still paid abroad and the
+           railway's charge (GoodsMarket's four reads). None of them may be a
+           second copy of what the model already sums, so each is held to the
+           figure it takes apart - in the four states above, and in the two
+           played cities this harness grew.
+           ==================================================================== */
+        System.out.println("\n--- the curve, the walk and the wedge, as the Infrastructure screen draws them ---");
+
+        /*
+         * ...AND ONE WITH EVERY STEP OF THE WALK LIVE, which none of the four
+         * is: the motorised one charges the most fare there is, so nobody
+         * rides. Commuters on a tram at the default fare, six households in
+         * ten with a car and a commute that has been jammed, nearly two fifths of the
+         * road built for lorries, and the railway carrying half the goods and
+         * all the bulk.
+         */
+        InfrastructureManager ridden = new InfrastructureManager();
+        ridden.setBuiltCapacity(10_000);
+        ridden.setLoad(12_000);
+        ridden.setBreakdown(new double[] {8600, 400, 3000});
+        ridden.setModes(4000, 20_000);
+        ridden.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
+        ridden.setCarOwnership(.6);
+        ridden.setRailShare(new double[] {0, .5, 1});
+        for (int i = 0; i < 40; i++) ridden.noteCongestion(InfrastructureManager.MIN_THROUGHPUT);
+
+        InfrastructureManager[] walked = {states[0], states[1], states[2], states[3], ridden,
+                city.getInfrastructureManager(), jammed.getInfrastructureManager()};
+        boolean onCurve = true, sumsOnRoad = true, sumsWalk = true, sameLoad = true;
+        for (InfrastructureManager n : walked) {
+            onCurve &= Double.compare(InfrastructureManager.throughputAt(n.getUtilisation()),
+                    n.getThroughputRatio()) == 0;
+            InfrastructureManager.RoadBreakdown w = n.roadBreakdown();
+            double tol = 1e-9 * Math.max(1, n.getEffectiveLoad());
+            double onRoad = 0;
+            for (double v : w.onRoad()) onRoad += v;
+            sumsOnRoad &= Math.abs(onRoad - n.getEffectiveLoad()) <= tol;
+            sumsWalk &= Math.abs(w.rawTotal() - w.transitOff() + w.carsAdd() - w.freightOffTotal()
+                    - n.getEffectiveLoad()) <= tol;
+            sameLoad &= Double.compare(w.effective(), n.getEffectiveLoad()) == 0;
+        }
+        assertTrue("the dot sits on the curve: throughputAt(use) is the ratio, to the bit", onCurve);
+        assertTrue("the streams on the road add to the load the curve reads", sumsOnRoad);
+        assertTrue("...and trips, less transit, plus cars, less rail and highways, is that load",
+                sumsWalk);
+        assertTrue("...which the walk carries as getEffectiveLoad() itself", sameLoad);
+
+        InfrastructureManager.RoadBreakdown motorised = ridden.roadBreakdown();
+        InfrastructureManager.RoadBreakdown railed = states[3].roadBreakdown();
+        assertTrue("a motorised city with riders, highways and rail has every step of the walk",
+                motorised.transitOff() > 0 && motorised.carsAdd() > 0 && motorised.freightOffTotal() > 0);
+        assertTrue("...and a railed one with no cars adds nothing for them and takes freight off",
+                railed.carsAdd() == 0 && railed.transitOff() == 0 && railed.freightOffTotal() > 0);
+        InfrastructureManager.RoadBreakdown plain = states[1].roadBreakdown();
+        boolean untouched = plain.transitOff() == 0 && plain.carsAdd() == 0 && plain.freightOffTotal() == 0;
+        for (Traffic t : Traffic.values()) untouched &= plain.onRoad()[t.ordinal()] == plain.raw()[t.ordinal()];
+        assertTrue("a city with no modes walks its trips straight onto the road", untouched);
+        close("without cars, the motorised road is its streams at a trip each, less the relief",
+                motorised.withoutCars(),
+                motorised.rawTotal() - motorised.transitOff() - motorised.freightOffTotal());
+
+        boolean floorOk = InfrastructureManager.throughputAt(InfrastructureManager.FREE_FLOW) == 1
+                && InfrastructureManager.throughputAt(
+                        InfrastructureManager.FREE_FLOW / InfrastructureManager.MIN_THROUGHPUT * 1.01)
+                   == InfrastructureManager.MIN_THROUGHPUT
+                && InfrastructureManager.throughputAt(
+                        InfrastructureManager.FREE_FLOW / InfrastructureManager.MIN_THROUGHPUT * .99)
+                   > InfrastructureManager.MIN_THROUGHPUT;
+        assertTrue("the curve is flat to free flow and floors where FREE_FLOW / MIN_THROUGHPUT says",
+                floorOk);
+
+        boolean funnelOk = true;
+        for (InfrastructureManager n : walked) {
+            funnelOk &= Double.compare(n.getRidersAtFare() * n.willingToRide(), n.getTransitRiders()) == 0
+                    && Double.compare(n.ridersAt(TaxPolicy.MAX_TRANSIT_FARE), 0.0) == 0
+                    && n.getTransitCeiling() <= n.getTransitCapacity() + 1e-9
+                    && n.getTransitCeiling() <= n.getTransitRoadCeiling() + 1e-9
+                    && n.getTransitCeiling() <= n.getTransitShareCeiling() + 1e-9;
+        }
+        assertTrue("the funnel's last step is the riders, to the bit, under all three ceilings",
+                ridden.getTransitRiders() > 0 && funnelOk);
+
+        /*
+         * THE FARE DIAL CARD'S ROWS (0.7.38): what a fare would do, each the
+         * model's read at that fare. At the network's own fare they are what
+         * it carries and what the month books (its riders at
+         * TaxPolicy.monthlyFare()), and nothing goes back onto the road; at
+         * a dearer one the riders are what the same network carries at that
+         * fare and the trips back onto the road its load then, less this
+         * one's, which a second network set to it says.
+         */
+        TaxPolicy fareDial = new TaxPolicy();
+        double ownFare = fareDial.getTransitFare(), dearFare = TaxPolicy.MAX_TRANSIT_FARE / 2;
+        InfrastructureManager dear = new InfrastructureManager();
+        dear.setBuiltCapacity(10_000);
+        dear.setLoad(12_000);
+        dear.setBreakdown(new double[] {8600, 400, 3000});
+        dear.setModes(4000, 20_000);
+        dear.setFare(dearFare);
+        dear.setCarOwnership(.6);
+        dear.setRailShare(new double[] {0, .5, 1});
+        for (int i = 0; i < 40; i++) dear.noteCongestion(InfrastructureManager.MIN_THROUGHPUT);
+        assertTrue("fixture: the ridden network is at the city's own fare, and the dear one rides fewer",
+                ownFare == TaxPolicy.DEFAULT_TRANSIT_FARE && dear.getTransitRiders() < ridden.getTransitRiders());
+        assertTrue("the fare card at its own fare: the riders, the month's fares, none back on the road",
+                Double.compare(ridden.ridersAt(ownFare), ridden.getTransitRiders()) == 0
+                        && Double.compare(ridden.faresAt(ownFare), ridden.getTransitRiders() * fareDial.monthlyFare()) == 0
+                        && ridden.backOnTheRoadAt(ownFare) == 0);
+        close("...at a dearer fare, the riders the network set to it carries",
+                ridden.ridersAt(dearFare), dear.getTransitRiders());
+        close("...and the trips back onto the road, its load less this one's",
+                ridden.backOnTheRoadAt(dearFare), dear.getEffectiveLoad() - ridden.getEffectiveLoad());
+
+        boolean roomOk = true;
+        for (InfrastructureManager n : walked) {
+            roomOk &= Math.abs(n.getHeadroom()
+                    - Math.max(0, n.getCapacity() * InfrastructureManager.FREE_FLOW - n.getEffectiveLoad())) < 1e-9;
+        }
+        assertTrue("the room before it slows is read against the load the curve reads", roomOk);
+        /*
+         * THE CASE THE RAW LOAD GOT WRONG (the 600-month city read 585 trips
+         * of room on a road 161% full): trips made under the line, and cars
+         * that put the road well over it.
+         */
+        InfrastructureManager driven = new InfrastructureManager();
+        driven.setBuiltCapacity(13_000);
+        driven.setLoad(12_000);
+        driven.setBreakdown(new double[] {8600, 400, 3000});
+        driven.setCarOwnership(.5);
+        assertTrue("a road whose trips are under its line and whose cars put it over",
+                driven.getLoad() < driven.getCapacity() * InfrastructureManager.FREE_FLOW
+                        && driven.getUtilisation() > 1);
+        assertTrue("...has no room before it slows, and none spare",
+                driven.getHeadroom() == 0 && driven.getSpareCapacity() == 0);
+
+        /*
+         * THE WEDGE, TAKEN APART. A fixture railway carries 60% of every good
+         * at a quote of 25% of the lorry rate, at an exchange rate that is not
+         * one, so every term is live; the untouched markets of section 9 are
+         * the city with no railway.
+         */
+        Markets railedMarkets = new Markets();
+        railedMarkets.setExchangeRate(1.3);
+        boolean bandOk = true, deliveredOk = true, lorryOk = true, marginOk = true;
+        int twoSided = 0;
+        for (Good g : Good.values()) {
+            if (!g.traded() || !g.exportable() || !g.importable()) continue;
+            GoodsMarket m = railedMarkets.get(g);
+            m.setFreightFactor(.4);
+            m.setRailCharge(.6 * .25);
+            if (!(m.importPrice() > 0)) continue;
+            twoSided++;
+            double tol = 1e-9 * Math.max(1, m.importPrice());
+            bandOk &= Math.abs(m.worldMargin() + m.freightInBand()
+                    - (m.importPrice() - m.exportPrice())) <= tol;
+            deliveredOk &= m.railInWedge() > 0 && Math.abs(m.worldMargin() + m.freightInBand() + m.railInWedge()
+                    - (m.netImportPrice() - m.netExportPrice())) <= tol;
+            marginOk &= m.worldMargin() >= 0;
+            GoodsMarket bare = bandMarkets.get(g);
+            double bareTol = 1e-9 * Math.max(1, bare.importPrice());
+            lorryOk &= Math.abs(bare.bandByLorry() - (bare.importPrice() - bare.exportPrice())) <= bareTol
+                    && bare.railInWedge() == 0;
+        }
+        assertTrue("the world's margin and the freight paid abroad are the band",
+                twoSided > 0 && bandOk);
+        assertTrue("...and with the railway's charge, the delivered wedge", deliveredOk);
+        assertTrue("with no railway the band is the band by lorry, and nothing is billed at home",
+                lorryOk);
+        assertTrue("no good's world margin is below zero, so a bar of it can be drawn", marginOk);
 
         cleanUp(root);
 

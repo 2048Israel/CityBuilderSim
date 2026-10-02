@@ -299,6 +299,23 @@ public class SicknessCheck {
         assertTrue("a city with no ring seeds one and loses its long sick the same month",
                 back.getSickness().isSeeded() && back.getSickness().getLastDeaths() > 0);
 
+        /* ============ 8. the ring in people (0.7.28) ============ */
+        // The Services screen's long-sick bars: one slot of every band, in people.
+        System.out.println("\n--- the ring in people, as the Services screen draws it ---");
+        PopulationCohorts people = bareCity.getCohorts();
+        Sickness rings = bareCity.getSickness();
+        double everyone = 0, late = 0;
+        for (int k = 0; k < Sickness.RING; k++) {
+            double p = rings.peopleInSlot(people, k);
+            everyone += p;
+            if (k >= Sickness.DEADLY_FROM) late += p;
+        }
+        double sick = rings.peopleSick(people), longSick = rings.peoplePastTwoMonths(people);
+        assertTrue("fixture: somebody is sick past two months", longSick > 0);
+        check("the slots in people add up to the people sick", everyone, sick, 1e-9 * Math.max(1, sick));
+        check("...and from DEADLY_FROM on, to the people past two months", late, longSick, 1e-9 * Math.max(1, longSick));
+        check("a slot outside the ring holds nobody", rings.peopleInSlot(people, Sickness.RING), 0, 0);
+
         System.out.println();
         System.out.println(fails == 0 ? "The long sick die, and clinics save them." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

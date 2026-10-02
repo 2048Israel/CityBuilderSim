@@ -35,7 +35,7 @@ import javafx.geometry.VPos;
  * the episodes on a lane under it, the player's decisions as flags, a
  * crosshair that reads every line, and an overview of the whole history
  * with the window on it - or, small, the same lines and years without the
- * controls.
+ * controls, and since 0.7.38 the decisions it is handed on a smaller lane.
  *
  * WHY. Jerus: "in teh graphs you should be able to pan the chart just like
  * yahoo finance does if you get what i mean, and it actually have interactive
@@ -74,6 +74,9 @@ final class TimeChart extends VBox {
 
     /** The decision lane. */
     static final double FLAG_ROW = 24;
+
+    /** ...on a small chart handed decisions (0.7.38): the same lane, smaller. */
+    static final double SMALL_FLAG_ROW = 18;
 
     /** The overview strip under the lanes. */
     static final double OVERVIEW = 52;
@@ -172,7 +175,8 @@ final class TimeChart extends VBox {
     /**
      * @param window the window of months it shows - shared with the charts that follow it
      * @param hidden the keys of lines the legend has switched off - shared with the screen, so a redraw keeps them
-     * @param main   the big chart: the controls, the lanes, the overview, and pan and zoom
+     * @param main   the big chart: the controls, both lanes, the overview, and pan and zoom (a small
+     *               one draws the decision lane alone, and only when it is handed flags)
      */
     TimeChart(ChartModel window, Set<String> hidden, boolean main) {
         super(main ? 8 : 0);
@@ -290,6 +294,9 @@ final class TimeChart extends VBox {
     /** What the full-screen button does. */
     void onFullScreen(Runnable r) { this.onFullScreen = r; }
 
+    /** A big chart on another tab (0.7.35: Trade's rate over time) has no full-screen button: only City History lays a chart out full screen. */
+    void withoutFullScreen() { if (toolbar != null) toolbar.getChildren().remove(fullButton); }
+
     /** True while a drag is in hand on a chart that is on screen: a month's redraw waits for the release. */
     boolean isDragging() { return dragging && getScene() != null; }
 
@@ -401,8 +408,18 @@ final class TimeChart extends VBox {
 
     private double plotBottom()     { return top + plotH; }
     private double episodesTop()    { return plotBottom() + TIME_ROW + 4; }
-    private double flagsTop()       { return episodesTop() + laneRows() * EPISODE_ROW + 4; }
-    private double canvasHeight()   { return main ? flagsTop() + FLAG_ROW + 2 : plotBottom() + TIME_ROW; }
+    private double flagsTop()       { return main ? episodesTop() + laneRows() * EPISODE_ROW + 4 : plotBottom() + TIME_ROW; }
+    private double canvasHeight()   { return main ? flagsTop() + FLAG_ROW + 2 : plotBottom() + TIME_ROW + (flagLane() ? SMALL_FLAG_ROW + 2 : 0); }
+
+    /**
+     * Whether the decision lane is drawn: always on the big chart, and on a
+     * small one handed a decision to show (0.7.38: the Bank's rates and
+     * Finances' debt and rate were handed theirs and drew none).
+     */
+    private boolean flagLane()      { return main || !flags.isEmpty(); }
+
+    /** The lane's height: the big chart's, or a small chart's. */
+    private double flagRow()        { return main ? FLAG_ROW : SMALL_FLAG_ROW; }
 
     private void layoutCanvases() {
         top = main ? BAND_ROW : 6;
@@ -551,10 +568,8 @@ final class TimeChart extends VBox {
         boolean drewAny = drawLines(g, scale, own, bottom);
         drawAxes(g, scale, bottom);
         drawTime(g, ticks, bottom);
-        if (main) {
-            drawEpisodes(g);
-            drawFlags(g);
-        }
+        if (main) drawEpisodes(g);
+        if (flagLane()) drawFlags(g);
         if (!drewAny) {
             // What the screen said when nothing was ever recorded or picked;
             // otherwise the legend has hidden it all, or this window holds none of it.
@@ -755,12 +770,14 @@ final class TimeChart extends VBox {
         g.setTextAlign(TextAlignment.LEFT);
     }
 
-    /** An episode's colour: a crisis or a depression is bad news, the rest are a watch - verdicts, which is what these are. */
-    static String episodeColour(String kind) {
-        return switch (kind) {
-            case "financial", "currency", "treasury", "depression" -> Palette.BAD;
-            default -> Palette.WARN;
-        };
+    /**
+     * An episode's colour: a crisis or a depression is bad news, the rest are
+     * a watch - verdicts, which is what these are. The rule is the model's
+     * since 0.7.37 (YearBook.isSevere()), so City History's RUNNING NOW leads
+     * with what this draws red; public for the screens that name episodes.
+     */
+    public static String episodeColour(String kind) {
+        return YearBook.isSevere(kind) ? Palette.BAD : Palette.WARN;
     }
 
     private void drawEpisodes(GraphicsContext g) {
@@ -812,10 +829,12 @@ final class TimeChart extends VBox {
 
     private void drawFlags(GraphicsContext g) {
         double y0 = flagsTop();
-        g.setFont(Palette.Fonts.sansFont(10));
+        // A small chart's lane is the big chart's drawing at its own height: r is 1 on the big one (0.7.38).
+        double r = flagRow() / FLAG_ROW, type = main ? 10 : 9;
+        g.setFont(Palette.Fonts.sansFont(type));
         g.setFill(Color.web(Palette.TEXT_3));
         g.setTextAlign(TextAlignment.RIGHT);
-        g.fillText("you", plotLeft - 8, y0 + 15);
+        g.fillText("you", plotLeft - 8, y0 + 15 * r);
         g.setTextAlign(TextAlignment.LEFT);
         List<ChartModel.Cluster> cs = clusters();
         Object lit = pinned != null ? pinned : hovered();
@@ -835,22 +854,22 @@ final class TimeChart extends VBox {
             g.setStroke(ink);
             g.setFill(ink);
             g.setLineWidth(1.5);
-            g.strokeLine(x, y0 + 3, x, y0 + FLAG_ROW - 3);
-            g.fillPolygon(new double[] {x, x + 10, x}, new double[] {y0 + 3, y0 + 7, y0 + 11}, 3);
-            double textX = x + 13;
+            g.strokeLine(x, y0 + 3, x, y0 + flagRow() - 3);
+            g.fillPolygon(new double[] {x, x + 10 * r, x}, new double[] {y0 + 3, y0 + 3 + 4 * r, y0 + 3 + 8 * r}, 3);
+            double textX = x + 13 * r;
             double nextX = k + 1 < cs.size() ? xOf(cs.get(k + 1).month()) : plotRight + AXIS_W;
-            g.setFont(Palette.Fonts.sansFont(10));
+            g.setFont(Palette.Fonts.sansFont(type));
             if (c.count() > 1) {
                 String n = String.valueOf(c.count());
                 g.setFill(ink);
-                g.setFont(Palette.Fonts.monoFont(10));
-                g.fillText(n, textX, y0 + 11);
+                g.setFont(Palette.Fonts.monoFont(type));
+                g.fillText(n, textX, y0 + 3 + 8 * r);
                 textX += textWidth(n, g.getFont()) + 6;
             } else {
                 String label = fit(c.flags().get(0).entries().get(0).label(), nextX - textX - 8, g.getFont());
                 if (!label.isEmpty()) {
                     g.setFill(ink.deriveColor(0, 1, 1, on ? 1 : .85));
-                    g.fillText(label, textX, y0 + 11);
+                    g.fillText(label, textX, y0 + 3 + 8 * r);
                 }
             }
         }
@@ -1001,9 +1020,9 @@ final class TimeChart extends VBox {
             for (YearBook.Band b : bands) if (m >= b.fromMonth() - .5 && m <= b.toMonth() + .5) return b;
             return null;
         }
-        if (!main) return null;
+        if (!main && !flagLane()) return null;
         double e0 = episodesTop();
-        if (y >= e0 && y < e0 + laneRows() * EPISODE_ROW) {
+        if (main && y >= e0 && y < e0 + laneRows() * EPISODE_ROW) {
             int row = (int) ((y - e0) / EPISODE_ROW);
             for (int i = 0; i < episodes.size(); i++) {
                 YearBook.Episode e = episodes.get(i);
@@ -1012,7 +1031,7 @@ final class TimeChart extends VBox {
             return null;
         }
         double f0 = flagsTop();
-        if (y >= f0 && y <= f0 + FLAG_ROW) {
+        if (y >= f0 && y <= f0 + flagRow()) {
             ChartModel.Cluster best = null;
             double bestD = FLAG_GAP;
             for (ChartModel.Cluster c : clusters()) {
@@ -1155,7 +1174,15 @@ final class TimeChart extends VBox {
     static final int CARD_DECISIONS = 10;
 
     private void flagCard(ChartModel.Cluster c) {
-        int first = c.flags().get(0).month(), last = c.flags().get(c.flags().size() - 1).month();
+        // The months its decisions were made in (0.7.37): a founding-month flag sits on the axis's first
+        // month (ChartModel.onAxis()), and its card still says when each was decided.
+        int first = Integer.MAX_VALUE, last = Integer.MIN_VALUE;
+        for (ChartModel.Flag f : c.flags()) {
+            for (DecisionLog.Entry e : f.entries()) {
+                first = Math.min(first, e.month());
+                last = Math.max(last, e.month());
+            }
+        }
         card.getChildren().add(head(CityCalendar.formatShort(first)
                 + (last != first ? " – " + CityCalendar.formatShort(last) : "")
                 + "  ·  " + c.count() + (c.count() == 1 ? " decision" : " decisions")));
@@ -1163,7 +1190,7 @@ final class TimeChart extends VBox {
         for (ChartModel.Flag f : c.flags()) {
             for (DecisionLog.Entry e : f.entries()) {
                 if (shown++ >= CARD_DECISIONS) continue;
-                Label l = caption((last != first ? CityCalendar.formatShort(f.month()) + "  " : "") + e.label(), Palette.TEXT);
+                Label l = caption((last != first ? CityCalendar.formatShort(e.month()) + "  " : "") + e.label(), Palette.TEXT);
                 Region dot = new Region();
                 dot.setMinSize(6, 6);
                 dot.setMaxSize(6, 6);

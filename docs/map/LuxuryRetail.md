@@ -1,6 +1,6 @@
-# LuxuryRetail.java - 490 lines · 17 methods · 3 constants · sectors
+# LuxuryRetail.java - 493 lines · 18 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The luxury shops. THE FOURTEENTH SECTOR (2026-09-17, Jerus's call).
 > 
@@ -90,7 +90,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 419 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
+| 72 | 422 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
 
 ### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-110)
 
@@ -125,9 +125,10 @@
 | 365 | 62 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
 | 444 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
 
-### THE SCREEN (lines 455-490)
+### THE SCREEN (lines 455-493)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 460 | 30 | `public List<Line> operations(Game game)` |  |
+| 460 | 1 | `public boolean hasPlantBlock()` |  |
+| 463 | 30 | `public List<Line> ownLines(Game game)` |  |
 

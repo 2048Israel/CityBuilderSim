@@ -1,6 +1,6 @@
-# InfrastructureCheck.java - 821 lines · 8 methods · 0 constants · harnesses
+# InfrastructureCheck.java - 998 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/InfrastructureCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InfrastructureCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The road network, from the curve up to a city that actually jams.
 > 
@@ -15,7 +15,7 @@
 > The last one is the point of the whole feature. A mechanic the player cannot
 > see themselves solve is just a tax.
 
-**Uses:** [InfrastructureManager](InfrastructureManager.md) (30), [Game](Game.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [TaxPolicy](TaxPolicy.md) (3), [Traffic](Traffic.md) (3), [Retail](Retail.md) (2), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [Markets](Markets.md) (2), [Good](Good.md) (2), [Sector](Sector.md) (2), [BuildingManager](BuildingManager.md) (1), [BuildingType](BuildingType.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [InfrastructureManager](InfrastructureManager.md) (59), [Game](Game.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [TaxPolicy](TaxPolicy.md) (9), [Traffic](Traffic.md) (5), [Markets](Markets.md) (4), [Good](Good.md) (4), [GoodsMarket](GoodsMarket.md) (3), [Retail](Retail.md) (2), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [Sector](Sector.md) (2), [BuildingManager](BuildingManager.md) (1), [BuildingType](BuildingType.md) (1)
 
 ## Sections
 
@@ -33,6 +33,7 @@
 | 562 | · 7b. THREE ROADS, AND ALL THREE USEFUL |
 | 678 | · 8. a new game forgets the traffic |
 | 688 | · 9. EVERY FIGURE THE INFRASTRUCTURE TAB READS |
+| 807 | · 10. THE CURVE, THE WALK AND THE WEDGE, AS THE SCREEN DRAWS THEM (0.7.29) |
 
 ## Fields (state)
 
@@ -44,13 +45,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 802 | **type** `public class InfrastructureCheck` | The road network, from the curve up to a city that actually jams. |
+| 20 | 979 | **type** `public class InfrastructureCheck` | The road network, from the curve up to a city that actually jams. |
 | 24 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 30 | 3 | `static boolean sane(double value, double low, double high)` | Finite, and inside the range the screen's own label claims for it. |
 | 34 | 9 | `static void close(String label, double actual, double expected)` |  |
 | 53 | 3 | `static boolean steady(ham.citybuildersim.sectors.Retail shops)` | True once the month in progress reads the same as the month last struck. |
 | 58 | 4 | `static int shopsFor(Game g, double coverage)` | How many convenience stores give this much coverage - the fixture's shape, not a count. |
 | 63 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 70 | 743 | `public static void main(String[] args) throws Exception` |  |
-| 814 | 7 | `static void cleanUp(Path root)` |  |
+| 70 | 920 | `public static void main(String[] args) throws Exception` |  |
+| 991 | 7 | `static void cleanUp(Path root)` |  |
 

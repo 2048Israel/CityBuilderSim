@@ -433,6 +433,21 @@ public class Migration {
     /** The people the placement had room for, the month's bound on arrivals (0.7.17); NaN with no census. */
     private double lastRoom = Double.NaN;
 
+    /*
+     * THE BRIDGE AND THE LEAVERS, KEPT (0.7.27). The two halves of the draw
+     * before its pulls - the jobs' and the homes', each at its weight, with
+     * the posts and the homes' capacity they were struck from - and, of the
+     * month's leavers, the ones the work pushed out: a trade dying for a year
+     * and a band pinned at its floor with people to spare. Stored as
+     * monthlyNet() strikes them, so the People page draws the arithmetic
+     * rather than doing it again; nothing in the month reads them.
+     */
+    private double lastJobs;
+    private double lastHomeCapacity;
+    private double lastJobDraw;
+    private double lastHomeDraw;
+    private double lastWorkDepartures;
+
     /* ------------------------------- reading ------------------------------- */
 
     public double getLastTarget()         { return lastTarget; }
@@ -450,6 +465,18 @@ public class Migration {
     public double getLastDecliningShare() { return lastDecliningShare; }
     public double getLastResidentsPerJob() { return lastResidentsPerJob; }
     public double getLastNet()            { return lastArrivals - lastDepartures; }
+    /** The posts the month's draw was struck on (0.7.27). */
+    public double getLastJobs()           { return lastJobs; }
+    /** ...and the people the city's homes comfortably hold. */
+    public double getLastHomeCapacity()   { return lastHomeCapacity; }
+    /** The jobs' half of the draw: the posts, times the residents each supports, at JOB_WEIGHT. */
+    public double getLastJobDraw()        { return lastJobDraw; }
+    /** ...and the homes', at HOME_WEIGHT. The two, times the three pulls, are getLastTarget(). */
+    public double getLastHomeDraw()       { return lastHomeDraw; }
+    /** The two halves together: the draw before senior care, the rent and crime multiply it. */
+    public double getLastDrawBeforePulls() { return lastJobDraw + lastHomeDraw; }
+    /** The leavers the work pushed out - a dying trade, a band pinned with people to spare; with the crime's and the broke, the month's departures. */
+    public double getLastWorkDepartures() { return lastWorkDepartures; }
 
     public int getDecliningStreak(PayTier tier) {
         return decliningStreak[tier.ordinal()];
@@ -791,6 +818,10 @@ public class Migration {
         lastResidentsPerJob = residentsPerJob(adultShare);
         double jobTarget  = totalJobs * lastResidentsPerJob;
         double homeTarget = householdCapacity;
+        lastJobs = totalJobs;
+        lastHomeCapacity = householdCapacity;
+        lastJobDraw = JOB_WEIGHT * jobTarget;
+        lastHomeDraw = HOME_WEIGHT * homeTarget;
 
         lastSeniorPull = seniorCarePull(seniorCoverage);
         lastAffordabilityPull = affordabilityPull(rentBurden);
@@ -800,6 +831,7 @@ public class Migration {
         lastArrivals = 0;
         lastDepartures = 0;
         lastCrimeDepartures = 0;
+        lastWorkDepartures = 0;
         lastCrowding = 1;
         lastDecliningShare = 0;
 
@@ -855,6 +887,7 @@ public class Migration {
         // Never evacuate. A month that would remove more people than live here
         // is arithmetic going wrong, not a city emptying.
         lastDepartures = Math.min(lastDepartures, population);
+        lastWorkDepartures = lastDepartures;
 
         return lastArrivals - lastDepartures;
     }
@@ -924,6 +957,7 @@ public class Migration {
             lastDepartureMix[band.ordinal()] += leaving;
             pushed += leaving;
         }
+        double surplusPushed = pushed;
 
         /*
          * The decline-driven departures are not about any one band, so the
@@ -990,6 +1024,10 @@ public class Migration {
             double keep = lastDepartures / asked;
             for (int b = 0; b < lastDepartureMix.length; b++) lastDepartureMix[b] *= keep;
         }
+        // The ones the work pushed out (0.7.27): the dying trades and the
+        // pinned bands, scaled with the rest when the guard bit.
+        lastWorkDepartures = (before + surplusPushed)
+                * (asked > lastDepartures && asked > 0 ? lastDepartures / asked : 1);
         return lastArrivals - lastDepartures;
     }
 
@@ -1165,20 +1203,55 @@ public class Migration {
 
     /* ------------------------------- saving ------------------------------- */
 
+    /*
+     * THE LAST MONTH RIDES AFTER THE HISTORY (0.7.27, SAVE_FORMAT 30). The
+     * array was the wage history and its streaks and nothing of the month,
+     * so a reloaded People page read "a city this good draws 0", moved in 0,
+     * moved out 0 and an empty arrival mix until a month ran - a flow read
+     * off the state a month ended in, which is nothing. So the month's
+     * figures go on the end: the draw and its parts, the pulls, the flows
+     * and who made them up, the mixes and the licences. None of them is
+     * read by the next month, which strikes each afresh; they are for the
+     * screen. A save from before them is the history alone and loads with
+     * the month at its defaults, as it always did; any other length is
+     * refused whole.
+     */
+
+    /** The wage history, its streaks and the months recorded: the array before 0.7.27. */
+    private static final int HISTORY_SLOTS = TIERS * DECLINE_MONTHS + TIERS + 1;
+
+    /** The month's scalars that follow it, in toSaveArray()'s order. */
+    private static final int LAST_SCALARS = 16;
+
+    /** ...then the arrival mix and the departure mix by band, and the licences by job. */
+    private static int lastSlots() {
+        return LAST_SCALARS + 2 * WageBand.values().length + JobType.values().length;
+    }
+
     public double[] toSaveArray() {
-        double[] out = new double[TIERS * DECLINE_MONTHS + TIERS + 1];
+        double[] out = new double[HISTORY_SLOTS + lastSlots()];
         int i = 0;
         for (double[] row : history) {
             for (double v : row) out[i++] = v;
         }
         for (int s : decliningStreak) out[i++] = s;
-        out[i] = monthsRecorded;
+        out[i++] = monthsRecorded;
+        double[] last = {
+            lastTarget, lastArrivals, lastDepartures, lastCrowding, lastDecliningShare,
+            lastSeniorPull, lastResidentsPerJob, lastAffordabilityPull, lastCrimePull,
+            lastCrimeDepartures, lastBankruptcyPush, lastWorkDepartures,
+            lastJobs, lastHomeCapacity, lastJobDraw, lastHomeDraw };
+        for (double v : last) out[i++] = v;
+        for (double v : lastArrivalMix) out[i++] = v;
+        for (double v : lastDepartureMix) out[i++] = v;
+        for (double v : lastArrivalLicences) out[i++] = v;
         return out;
     }
 
     public void restore(double[] saved) {
-        int expected = TIERS * DECLINE_MONTHS + TIERS + 1;
-        if (saved == null || saved.length != expected) {
+        if (saved == null) return;
+        boolean withMonth = saved.length == HISTORY_SLOTS + lastSlots();
+        if (!withMonth && saved.length != HISTORY_SLOTS) {
             return;   // refused whole rather than half-read
         }
         int i = 0;
@@ -1186,7 +1259,27 @@ public class Migration {
             for (int m = 0; m < row.length; m++) row[m] = saved[i++];
         }
         for (int t = 0; t < TIERS; t++) decliningStreak[t] = (int) saved[i++];
-        monthsRecorded = (int) saved[i];
+        monthsRecorded = (int) saved[i++];
+        if (!withMonth) return;
+        lastTarget            = saved[i++];
+        lastArrivals          = saved[i++];
+        lastDepartures        = saved[i++];
+        lastCrowding          = saved[i++];
+        lastDecliningShare    = saved[i++];
+        lastSeniorPull        = saved[i++];
+        lastResidentsPerJob   = saved[i++];
+        lastAffordabilityPull = saved[i++];
+        lastCrimePull         = saved[i++];
+        lastCrimeDepartures   = saved[i++];
+        lastBankruptcyPush    = saved[i++];
+        lastWorkDepartures    = saved[i++];
+        lastJobs              = saved[i++];
+        lastHomeCapacity      = saved[i++];
+        lastJobDraw           = saved[i++];
+        lastHomeDraw          = saved[i++];
+        for (int b = 0; b < lastArrivalMix.length; b++) lastArrivalMix[b] = saved[i++];
+        for (int b = 0; b < lastDepartureMix.length; b++) lastDepartureMix[b] = saved[i++];
+        for (int j = 0; j < lastArrivalLicences.length; j++) lastArrivalLicences[j] = saved[i++];
     }
 
     public void reset() {
@@ -1205,5 +1298,15 @@ public class Migration {
         crimeVsCanada = 0;
         lastCrimePull = 1;
         lastCrimeDepartures = 0;
+        lastBankruptcyPush = 0;
+        lastWorkDepartures = 0;
+        lastJobs = 0;
+        lastHomeCapacity = 0;
+        lastJobDraw = 0;
+        lastHomeDraw = 0;
+        lastAffordabilityPull = 1;
+        java.util.Arrays.fill(lastArrivalMix, 0);
+        java.util.Arrays.fill(lastDepartureMix, 0);
+        java.util.Arrays.fill(lastArrivalLicences, 0);
     }
 }

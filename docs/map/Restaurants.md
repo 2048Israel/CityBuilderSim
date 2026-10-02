@@ -1,6 +1,6 @@
-# Restaurants.java - 462 lines · 18 methods · 5 constants · sectors
+# Restaurants.java - 465 lines · 19 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The kitchens. THE FIFTEENTH SECTOR (2026-09-18, Jerus's call).
 > 
@@ -88,7 +88,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 396 | **type** `public class Restaurants extends Sector` | The kitchens. |
+| 67 | 399 | **type** `public class Restaurants extends Sector` | The kitchens. |
 
 ### WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING (lines 69-88)
 
@@ -124,9 +124,10 @@
 | 332 | 61 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
 | 406 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
 
-### THE SCREEN (lines 418-462)
+### THE SCREEN (lines 418-465)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 423 | 39 | `public List<Line> operations(Game game)` |  |
+| 423 | 1 | `public boolean hasPlantBlock()` |  |
+| 426 | 39 | `public List<Line> ownLines(Game game)` |  |
 

@@ -570,6 +570,16 @@ public abstract class Sector {
     public double getRoadRatio()    { return roadRatio; }
     public double getHealthRatio()  { return healthRatio; }
 
+    /** How many of its buildings stand, finished (0.7.30): none is "no plant standing" on its pages, not a rate. */
+    public int buildingsStanding() {
+        return buildings == null ? 0 : (int) Math.round(buildings.totalBySector(key, t -> 1));
+    }
+
+    /** ...and how many are on site, for anyone's order (0.7.30). */
+    public int buildingsOnSite() {
+        return buildings == null ? 0 : buildings.getUnderConstructionBySector(key);
+    }
+
     /** How much of nameplate actually runs: staffing times the five ratios. */
     public double getOperatingRate() {
         return averageFill * energyRatio * waterRatio * roadRatio * healthRatio * getVanRatio();
@@ -903,6 +913,10 @@ public abstract class Sector {
 
     public Output output(Good g) { return outputs.computeIfAbsent(g, k -> new Output()); }
     public Input input(Good g)   { return inputs.computeIfAbsent(g, k -> new Input()); }
+
+    /** The same rows read-only (0.7.30, for SectorFlow): null when the month has none for the good, and asking makes none. */
+    public Output outputRow(Good g) { return outputs.get(g); }
+    public Input inputRow(Good g)   { return inputs.get(g); }
 
     /**
      * What CROSSED THE CITY BOUNDARY this month, in units, by good - read-only,
@@ -2013,17 +2027,68 @@ public abstract class Sector {
         return parts;
     }
 
+    /**
+     * The operations page, as data: the factory's block (plantLines()) when
+     * the sector keeps it, then the sector's own lines (ownLines()).
+     *
+     * SPLIT IN TWO (0.7.30), with nothing about what it returns changed: the
+     * Sectors screen draws the factory's block as a picture - what goes in,
+     * what the plant makes of it and what comes out (SectorFlow) - and the
+     * sector's own lines under it, so it has to be able to tell the two apart.
+     * The five sectors that added to the block (Agriculture, Business
+     * Services, Food Processing, Manufacturing, Mining) add in ownLines() now;
+     * the seven that replaced it (Automotive, Construction, Luxury Retail,
+     * Rail, Real Estate, Restaurants, Retail) say so in hasPlantBlock() and
+     * return their whole page from ownLines(). This is still the one list the
+     * console prints and SectorBooksCheck audits.
+     */
     public List<Line> operations(Game game) {
+        List<Line> lines = hasPlantBlock() ? plantLines(game) : new ArrayList<>();
+        lines.addAll(ownLines(game));
+        return lines;
+    }
+
+    /** Whether its operations page opens on the factory's block (0.7.30): false for the seven sectors whose page is all their own. */
+    public boolean hasPlantBlock() { return true; }
+
+    /** The sector's own lines, after the factory's block (0.7.30): none unless it says more. */
+    public List<Line> ownLines(Game game) { return new ArrayList<>(); }
+
+    /**
+     * The factory's block (0.7.30; operations() itself until then): the
+     * plant - staffed, running at, and the five ratios - then a block per
+     * good it makes and per good it buys. SectorFlow is the same figures as
+     * numbers.
+     */
+    public List<Line> plantLines(Game game) {
         List<Line> lines = new ArrayList<>();
         Formats f = Formats.INSTANCE;
         lines.add(Line.head("The plant"));
-        lines.add(Line.of("Staffed", f.pct(averageFill), averageFill < .9 ? Line.Tone.WARN : Line.Tone.NONE));
-        double rate = getOperatingRate();
-        lines.add(Line.of("Running at", f.pct(rate),
-                rate < .5 ? Line.Tone.BAD : rate < .9 ? Line.Tone.WARN : Line.Tone.GOOD));
-        lines.add(Line.note(String.format(
-                "Staffed %s, power %s, water %s, roads %s, well %s — output is cut by whichever is thinnest.",
-                f.pct(averageFill), f.pct(energyRatio), f.pct(waterRatio), f.pct(roadRatio), f.pct(healthRatio))));
+        /*
+         * NOTHING STANDING IS SAID IN WORDS (0.7.30). With no building there
+         * are no posts, so the fill read its empty default, "Staffed 100%",
+         * and the four ratios the city hands every sector still multiplied to
+         * a rate - "Running at 43%" in red over Mining, Materials and Business
+         * Services with nothing to run (the project's spec-sectors-0730.md,
+         * B4). Construction's own page says "no depot yet" for the same thing.
+         */
+        if (buildingsStanding() <= 0) {
+            lines.add(Line.of("Staffed", "no plant standing", Line.Tone.MUTED));
+            lines.add(Line.of("Running at", "no plant standing", Line.Tone.MUTED));
+        } else {
+            lines.add(Line.of("Staffed", f.pct(averageFill), averageFill < .9 ? Line.Tone.WARN : Line.Tone.NONE));
+            double rate = getOperatingRate();
+            lines.add(Line.of("Running at", f.pct(rate),
+                    rate < .5 ? Line.Tone.BAD : rate < .9 ? Line.Tone.WARN : Line.Tone.GOOD));
+            // The six MULTIPLY (getOperatingRate()): it said "cut by whichever is
+            // thinnest" and left the vans out, beside a rate well under the
+            // thinnest of them (B3).
+            lines.add(Line.note(String.format(
+                    "Staffed %s \u00d7 power %s \u00d7 water %s \u00d7 roads %s \u00d7 well %s \u00d7 vans %s"
+                    + " \u2014 all six multiply, so every thin one cuts the output, not only the thinnest.",
+                    f.pct(averageFill), f.pct(energyRatio), f.pct(waterRatio), f.pct(roadRatio), f.pct(healthRatio),
+                    f.pct(getVanRatio()))));
+        }
         for (Good g : makes) {
             if (!g.traded()) continue;
             Output o = output(g);

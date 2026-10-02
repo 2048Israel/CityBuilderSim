@@ -1,6 +1,6 @@
-# RealEstate.java - 926 lines · 88 methods · 9 constants · sectors
+# RealEstate.java - 929 lines · 89 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/RealEstate.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/RealEstate.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The landlords. Own every home in the city and let them by the month.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [BusinessInvestment](BusinessInvestment.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (12), [FamilyModel](FamilyModel.md) (10), [Game](Game.md) (5), [PayTier](PayTier.md) (3), [Trade](Trade.md) (3), [Good](Good.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
-**Used by (14):** [BusinessInvestment](BusinessInvestment.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [Sectors](Sectors.md)
+**Used by (16):** [BusinessInvestment](BusinessInvestment.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -80,7 +80,7 @@
 | 429 | THE SALE, at the bottom of the month |
 | 463 | PLANNING - off jobs, and off the segment that is short |
 | 795 | THE SCREEN |
-| 863 | SAVE, RESET, THE REFORM |
+| 866 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
@@ -126,7 +126,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 834 | **type** `public final class RealEstate extends Sector` | The landlords. |
+| 93 | 837 | **type** `public final class RealEstate extends Sector` | The landlords. |
 
 ### the prices (lines 132-142)
 
@@ -242,19 +242,20 @@
 | 786 | 4 | `public String noRetirementReason(boolean distress)` |  |
 | 793 | 1 | `public double unitsOf(BuildingsTemplate t)` | People, not doors: the measure the spare-capacity rule counts in. |
 
-### THE SCREEN (lines 795-862)
+### THE SCREEN (lines 795-865)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 800 | 1 | `public String inputLabel()` |  |
-| 803 | 59 | `public List<Line> operations(Game game)` |  |
+| 803 | 1 | `public boolean hasPlantBlock()` |  |
+| 806 | 59 | `public List<Line> ownLines(Game game)` |  |
 
-### SAVE, RESET, THE REFORM (lines 863-926)
+### SAVE, RESET, THE REFORM (lines 866-929)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 868 | 13 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 883 | 13 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 898 | 13 | `protected void resetExtras()` |  |
-| 914 | 12 | `protected void redenominateExtras(double scale)` | The prices and the per-capacity costs are money; the doors, the weights and the rates are not. |
+| 871 | 13 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 886 | 13 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 901 | 13 | `protected void resetExtras()` |  |
+| 917 | 12 | `protected void redenominateExtras(double scale)` | The prices and the per-capacity costs are money; the doors, the weights and the rates are not. |
 

@@ -1,6 +1,6 @@
-# EducationCheck.java - 1,391 lines · 11 methods · 2 constants · harnesses
+# EducationCheck.java - 1,417 lines · 11 methods · 2 constants · harnesses
 
-`ham/citybuildersim/EducationCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EducationCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Verifies the schools: who gets taught, who is allowed to practise, and what
 > it costs. Not part of the game.
@@ -53,7 +53,7 @@
 >    until 0.7.4. And the Schools page's row per kind has to add up to the
 >    totals it sits under.
 
-**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (68), [Game](Game.md) (36), [WageBand](WageBand.md) (30), [Education](Education.md) (21), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [NationalAccounts](NationalAccounts.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (68), [Game](Game.md) (36), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [NationalAccounts](NationalAccounts.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
 
 ## Sections
 
@@ -66,18 +66,18 @@
 | 251 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
 | 279 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
 | 300 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
-| 337 | · 8. THE SUBSIDY IS A REAL DIAL |
-| 392 | · 9. IT SURVIVES A SAVE |
-| 459 | · 9b. THE WAIT IS REAL |
-| 501 | · 10. AND THE TREASURY PAYS FOR IT |
-| 554 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
-| 677 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
-| 722 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
-| 768 | · 13. THE GRANT IS A MENU |
-| 930 | · 14. THE LOAN'S RATE |
-| 1075 | · 15. THE PRICE OF A PLACE |
-| 1169 | · 16. ALL THREE SURVIVE A SAVE |
-| 1239 | · 17. A PRICE PER SCHOOL (0.7.6) |
+| 363 | · 8. THE SUBSIDY IS A REAL DIAL |
+| 418 | · 9. IT SURVIVES A SAVE |
+| 485 | · 9b. THE WAIT IS REAL |
+| 527 | · 10. AND THE TREASURY PAYS FOR IT |
+| 580 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
+| 703 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
+| 748 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
+| 794 | · 13. THE GRANT IS A MENU |
+| 956 | · 14. THE LOAN'S RATE |
+| 1101 | · 15. THE PRICE OF A PLACE |
+| 1195 | · 16. ALL THREE SURVIVE A SAVE |
+| 1265 | · 17. A PRICE PER SCHOOL (0.7.6) |
 
 ## Constants
 
@@ -96,16 +96,16 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1332 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
+| 60 | 1358 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
 | 68 | 4 | `static void quietly(Runnable work)` |  |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
 | 85 | 1 | `static void build(Game g, String name, int n)` |  |
 | 88 | 41 | `static Game city(GameFiles files)` | A funded city with room, so the thing under test is never money or land. |
 | 130 | 7 | `static void schools(Game g)` |  |
-| 138 | 1221 | `public static void main(String[] args) throws Exception` |  |
-| 1364 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
-| 1369 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
-| 1377 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
-| 1384 | 7 | `static void cleanUp(Path root)` |  |
+| 138 | 1247 | `public static void main(String[] args) throws Exception` |  |
+| 1390 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
+| 1395 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
+| 1403 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
+| 1410 | 7 | `static void cleanUp(Path root)` |  |
 

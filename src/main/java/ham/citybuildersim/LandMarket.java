@@ -262,14 +262,14 @@ public class LandMarket {
      * solves is the number of times they have to click Buy, and that tracks how
      * much land the city gets through - which is this number.
      */
-    private static final double BLOCKS_PER_FLOOR_STEP = 40;
+    public static final double BLOCKS_PER_FLOOR_STEP = 40;
 
     /**
      * A ceiling on the floor. Without one, a very large city eventually sees a
      * listing whose cheapest entry is a purchase it cannot make, which is a
      * worse failure than being offered scraps.
      */
-    private static final double MAX_MIN_BLOCKS = 15;
+    public static final double MAX_MIN_BLOCKS = 15;
 
     /** Smallest parcel currently on offer, in blocks. Recomputed each update(). */
     private double minBlocks = MIN_BLOCKS;
@@ -547,6 +547,39 @@ public class LandMarket {
             }
         }
         return best;
+    }
+
+    /**
+     * THE GOING RATE ON THIS LISTING (0.7.26): the median of the plots'
+     * dollar prices a square foot - what the land office judges each plot
+     * against ("44% under the going rate"). Moved here verbatim from the
+     * screen (LandScreen, until 0.7.26), which worked it out itself
+     * against the rule that every figure a screen shows is the model's,
+     * through a public getter. In thousands of US dollars; 0 with nothing
+     * listed; with an even count, the upper of the two middle prices.
+     *
+     * COMPARED AGAINST THE LISTING, not against the office's quoted rate.
+     * The obvious baseline was LandManager.getAcquisitionCostPerSqFt() -
+     * what the market says ground costs outside the city. It does not work:
+     * on a played save that figure read $0.70 a square foot while every plot
+     * actually on the shelf was priced between $7 and $28, so every card
+     * came out "3260% over the office", which is not a verdict, it is
+     * noise. A parcel's price is frozen at the moment it is listed and the
+     * market rate has moved since; either way, comparing today's plots to a
+     * number they were not priced from tells the player nothing.
+     *
+     * The going rate ON THIS LISTING does work, because the nine plots were
+     * all priced the same way and the question a player actually has is
+     * "which of these nine". The median rather than the mean, so one
+     * enormous ore-bearing plot cannot drag the line it is being judged
+     * against.
+     */
+    public double goingUsdPerSqFt() {
+        double[] rates = new double[listing.size()];
+        int at = 0;
+        for (LandParcel parcel : listing) rates[at++] = parcel.getUsdPerSqFt();
+        java.util.Arrays.sort(rates);
+        return rates.length == 0 ? 0 : rates[rates.length / 2];
     }
 
     /** The best value per square foot that carries no ore premium. */

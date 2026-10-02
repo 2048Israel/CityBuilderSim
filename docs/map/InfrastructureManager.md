@@ -1,6 +1,6 @@
-# InfrastructureManager.java - 686 lines · 43 methods · 12 constants · model
+# InfrastructureManager.java - 855 lines · 60 methods · 12 constants · model
 
-`ham/citybuildersim/InfrastructureManager.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InfrastructureManager.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The road network: what the city's buildings demand of it, what it can carry,
 > and what happens when the first number passes the second.
@@ -39,9 +39,9 @@
 > congestion a tax on growth rather than an instant death, which is the right
 > shape for something a player is meant to notice and then fix.
 
-**Uses:** [Traffic](Traffic.md) (24), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Traffic](Traffic.md) (34), [TaxPolicy](TaxPolicy.md) (2)
 
-**Used by (11):** [CarCheck](CarCheck.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [RailCheck](RailCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md)
+**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildScreen](BuildScreen.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md)
 
 ## Sections
 
@@ -53,7 +53,8 @@
 | 221 | THE CARS (2026-09-16) |
 | 313 | · the remembered jam |
 | 457 | · the fare |
-| 614 | · results |
+| 653 | · results |
+| 744 | FROM TRIPS TO THE ROAD (0.7.29) |
 
 ## Constants
 
@@ -90,7 +91,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 646 | **type** `public class InfrastructureManager` | The road network: what the city's buildings demand of it, what it can carry, and what happens when the first number passes the second. |
+| 41 | 815 | **type** `public class InfrastructureManager` | The road network: what the city's buildings demand of it, what it can carry, and what happens when the first number passes the second. |
 
 ### inputs (lines 65-79)
 
@@ -137,7 +138,7 @@
 | 450 | 1 | `public double getTransitCapacity()` | What the transit stock could carry, before the road under it is considered. |
 | 453 | 3 | `public double getUsableTransit()` | ...and what it can actually carry, which a city with no streets cannot raise. |
 
-### the fare (lines 457-613)
+### the fare (lines 457-652)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -145,25 +146,48 @@
 | 487 | 3 | `public void setFare(double fare)` | Told to the network each month, because the dial is the player's. |
 | 491 | 1 | `public double getFareShare()` |  |
 | 500 | 4 | `public double getTransitRiders()` | Commuters actually carried off the road this month. |
-| 506 | 9 | `public double roadCostOf(Traffic stream)` | What one unit of a stream costs the road, after the highways are counted. |
-| 523 | 8 | `public double getEffectiveLoad()` | What the road is actually being asked to carry, after transit has taken its riders and the highways have eased the lorries. |
-| 542 | 18 | `public double throughputOf(Traffic stream)` | What each stream actually gets through. |
-| 586 | 15 | `public double throughputFor(double[] mix)` | The ratio a business with THIS mix of traffic actually feels. |
-| 603 | 10 | `public double cityThroughput()` | What the city as a whole is getting through, blended over its own traffic. |
+| 513 | 1 | `public double getTransitRoadCeiling()` | The second ceiling: what the road under the transit lets it carry, TRANSIT_NEEDS_ROAD times the street capacity. |
+| 516 | 1 | `public double getTransitShareCeiling()` | The third: the most of its commuters any city rides, TRANSIT_MAX_SHARE of them. |
+| 519 | 1 | `public double getTransitCeiling()` | The lowest of the three ceilings - the stock, the road under it, the share - which is what a free system would carry. |
+| 522 | 1 | `public double getRidersAtFare()` | ...what the fare leaves of it, before the cars walk it down. |
+| 525 | 1 | `public double ridersAt(double fare)` | The riders at a fare the city has not set, with today's ceilings and cars: the fare dial's preview. |
+| 532 | 1 | `public double faresAt(double fare)` | ...and a month of fares from them (0.7.38): those riders at a month of journeys each (TaxPolicy.monthlyFareAt()), the product the month books as the city's fares - the fare dial card's "Fares collected". |
+| 542 | 1 | `public double backOnTheRoadAt(double fare)` | The trips a fare would put back onto the road (0.7.38), negative for trips it would take off: the riders it loses against today's, each asking carRoadFactor() of the road, as getEffectiveLoad() counts a commuter who d... |
+| 545 | 9 | `public double roadCostOf(Traffic stream)` | What one unit of a stream costs the road, after the highways are counted. |
+| 562 | 8 | `public double getEffectiveLoad()` | What the road is actually being asked to carry, after transit has taken its riders and the highways have eased the lorries. |
+| 581 | 18 | `public double throughputOf(Traffic stream)` | What each stream actually gets through. |
+| 625 | 15 | `public double throughputFor(double[] mix)` | The ratio a business with THIS mix of traffic actually feels. |
+| 642 | 10 | `public double cityThroughput()` | What the city as a whole is getting through, blended over its own traffic. |
 
-### results (lines 614-686)
+### results (lines 653-743)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 616 | 1 | `public double getCapacity()` |  |
-| 617 | 1 | `public double getLoad()` |  |
-| 620 | 3 | `public double getBuiltCapacity()` | Built capacity only - what the player actually paid for. |
-| 625 | 3 | `public double getUtilisation()` | Load over capacity. |
-| 629 | 3 | `public double getSpareCapacity()` |  |
-| 641 | 11 | `public double getThroughputRatio()` | What fraction of its business the city can actually conduct. |
-| 653 | 3 | `public boolean isCongested()` |  |
-| 658 | 3 | `public boolean isStrained()` | True while there is still room, but not much. |
-| 668 | 3 | `public double getHeadroom()` | How much more the network could carry before traffic starts to slow. |
-| 673 | 6 | `public String getStatus()` | One line for the city panel. |
-| 680 | 6 | `public void reset()` |  |
+| 655 | 1 | `public double getCapacity()` |  |
+| 656 | 1 | `public double getLoad()` |  |
+| 659 | 3 | `public double getBuiltCapacity()` | Built capacity only - what the player actually paid for. |
+| 664 | 1 | `public double getFreeFlowLoad()` | The load past which traffic starts to slow: FREE_FLOW of the capacity (0.7.29, the Roads page's line). |
+| 667 | 3 | `public double getUtilisation()` | Load over capacity. |
+| 677 | 3 | `public double getSpareCapacity()` | What the network could still take before it is full: capacity less the load the curve reads (0.7.29: it read the raw trips, which in a city with cars sit well under what the road carries - a road 161% full read 1,525 ... |
+| 689 | 6 | `public double getThroughputRatio()` | What fraction of its business the city can actually conduct. |
+| 703 | 7 | `public static double throughputAt(double utilisation)` | The curve itself, at any use of the road (0.7.29): 1 up to FREE_FLOW, then FREE_FLOW over the use, floored at MIN_THROUGHPUT. |
+| 711 | 3 | `public boolean isCongested()` |  |
+| 716 | 3 | `public boolean isStrained()` | True while there is still room, but not much. |
+| 732 | 3 | `public double getHeadroom()` | How much more the network could carry before traffic starts to slow. |
+| 737 | 6 | `public String getStatus()` | One line for the city panel. |
+
+### FROM TRIPS TO THE ROAD (0.7.29) (lines 744-855)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 766 | 32 | **type** `public record RoadBreakdown(double[] raw, double transitOff, double carsAdd, double[] freightOff, double[] ...` | The effective load, taken apart: by stream, in Traffic order, the trips made (raw) and the trips on the road (onRoad); the commuters transit carried off it; what the cars add; what the highways and the railway take of... |
+| 770 | 1 | `public double withoutCars()` _(in InfrastructureManager.RoadBreakdown)_ | The road with nobody driving: the load less what the cars add (the Roads page's "without cars"). |
+| 773 | 4 | `public double costPerTrip(Traffic stream)` _(in InfrastructureManager.RoadBreakdown)_ | What one trip of a stream asks of the road once it is on it: on the road over trips made; 1 with none made. |
+| 779 | 1 | `public double ridersAsDrivers()` _(in InfrastructureManager.RoadBreakdown)_ | What the commuters on transit would ask of the road if they drove instead, at today's car factor. |
+| 782 | 1 | `public double driving()` _(in InfrastructureManager.RoadBreakdown)_ | The commuters still driving: those not on transit. |
+| 785 | 5 | `public double freightOffTotal()` _(in InfrastructureManager.RoadBreakdown)_ | What the highways and the railway take off the freight, both streams together. |
+| 792 | 5 | `public double rawTotal()` _(in InfrastructureManager.RoadBreakdown)_ | The trips made, all three streams together. |
+| 800 | 21 | `public RoadBreakdown roadBreakdown()` | The walk from the trips the city makes to the load on its road, by the arithmetic getEffectiveLoad() sums. |
+| 831 | 17 | `public InfrastructureManager with(double capacityAdded, double highwayAdded, double transitAdded, double loadAdded, double[] st...` | This network with buildings added to it (0.7.24): a copy, every input as it stands, and the added roads' capacity, their grade-separated share, the added transit and the load the added buildings put on the road. |
+| 849 | 6 | `public void reset()` |  |
 

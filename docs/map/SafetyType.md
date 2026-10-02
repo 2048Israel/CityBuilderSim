@@ -1,6 +1,6 @@
 # SafetyType.java - 68 lines · 4 methods · 0 constants · model
 
-`ham/citybuildersim/SafetyType.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SafetyType.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > What a safety building does: police, or prison cells.
 > 
@@ -25,7 +25,7 @@
 
 **Uses:** [Healthcare](Healthcare.md) (1), [Crime](Crime.md) (1)
 
-**Used by (10):** [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [ConstructionScreen](ConstructionScreen.md), [CrimeCheck](CrimeCheck.md), [Game](Game.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (12):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityNeeds](CityNeeds.md), [ConstructionScreen](ConstructionScreen.md), [CrimeCheck](CrimeCheck.md), [Game](Game.md), [ServicesScreen](ServicesScreen.md)
 
 ## Enum constants
 

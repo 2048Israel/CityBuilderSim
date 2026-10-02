@@ -407,7 +407,7 @@ public final class FoodProcessing extends Sector {
     /**
      * What the generic page cannot say: WHICH PRICE IS DECIDING THIS SECTOR.
      *
-     * The five goods' own blocks are above, drawn by Sector.operations(), and
+     * The five goods' own blocks are above, drawn by Sector.plantLines(), and
      * they are the sector's output. None of them explains the sector. The Meat
      * Works is a bet on the meat price - ten times the monthly income between
      * a herd and a ship, measured - and a player looking at a Meat Works that
@@ -418,8 +418,8 @@ public final class FoodProcessing extends Sector {
      * two costs that can eat a plant still leave anything.
      */
     @Override
-    public java.util.List<Sector.Line> operations(Game game) {
-        java.util.List<Line> lines = super.operations(game);
+    public java.util.List<Sector.Line> ownLines(Game game) {
+        java.util.List<Line> lines = new java.util.ArrayList<>();
         if (game == null || markets == null) return lines;
         Formats f = Formats.INSTANCE;
 

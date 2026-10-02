@@ -1310,17 +1310,31 @@ public class EconomyManager {
         return taxPolicy.wageTaxOn(payrollPerType, null);
     }
 
-    public double getTaxIncome() {
+    public double getTaxIncome() { return taxTake(true); }
+
+    /**
+     * The same take at today's rates, WRITING NOTHING (0.7.31, the Government
+     * spec's B8): what Game.getIncome() - the header's EARNED - reads every
+     * time the header draws. getTaxIncome() strikes the month's wage tax,
+     * contributions and premiums into their fields as it sums them, which the
+     * month needs and a getter must not do; read from a screen it rewrote four
+     * of the budget's lines at whatever the dials said that moment. The sum
+     * is the same arithmetic, so the figure is the same to the bit.
+     */
+    public double getTaxIncomeNow() { return taxTake(false); }
+
+    /** The tax take, summed; struck into the month's fields only when `strike`. */
+    private double taxTake(boolean strike) {
         double profit = 0;
         for (Sector s : sectors.all()) profit += s.getProfitTax();
         // Banded, and summed job type by job type rather than as one total
         // times an average - averaging throws away the distinction the
         // bands exist to express.
-        totalWageTax = taxPolicy.wageTaxOn(staffedWagePerType, null);
+        double wageTax = taxPolicy.wageTaxOn(staffedWagePerType, null);
         // Pension contributions, taken off the same staffed wage bill. Revenue, and NOT a tax.
-        totalContributions = SocialSecurity.contributionsOn(totalWage, taxPolicy.getContributionRate());
+        double contributions = SocialSecurity.contributionsOn(totalWage, taxPolicy.getContributionRate());
         // ...and the EI premium, off the same bill, the same way (2026-09-11).
-        totalEiPremiums = Math.max(0, totalWage) * taxPolicy.getEiPremiumRate();
+        double eiPremiums = Math.max(0, totalWage) * taxPolicy.getEiPremiumRate();
         /*
          * ...AND THE HEALTH PREMIUM (2026-09-19), off the same bill again:
          * every wage, employee side, no cap - the EI premium's own base (the
@@ -1329,14 +1343,87 @@ public class EconomyManager {
          * or a shortfall is the treasury's, per Jerus. Zero at the default,
          * and x + 0.0 is x, so a city that charges none is the city it was.
          */
-        totalHealthPremiums = Math.max(0, totalWage) * taxPolicy.getHealthPremiumRate();
+        double healthPremiums = Math.max(0, totalWage) * taxPolicy.getHealthPremiumRate();
+        if (strike) {
+            totalWageTax = wageTax;
+            totalContributions = contributions;
+            totalEiPremiums = eiPremiums;
+            totalHealthPremiums = healthPremiums;
+        }
         // Property tax and sales tax are NOT recomputed here: the sectors
         // were billed them and bore them, and the city collects the figure
         // the businesses paid.
-        return profit + totalWageTax + salesTax + totalPropertyTax
-                + totalContributions + totalEiPremiums + healthcareFees + educationFees
-                + transitFares + totalBankTax + totalHealthPremiums;
+        return profit + wageTax + salesTax + totalPropertyTax
+                + contributions + eiPremiums + healthcareFees + educationFees
+                + transitFares + totalBankTax + healthPremiums;
     }
+
+    /* ------------------- WHAT THE POLICY TAB ASKS (0.7.36) -------------------
+     *
+     * The tax take, the three payroll lines and the pensions under ANOTHER
+     * policy - a detached copy the Policy tab has put a staged set of dials
+     * through (TaxPolicy.copy(), PolicyPreview) - struck on this month's
+     * books by the month's own rules, so the tab's "before -> after" is the
+     * model's arithmetic and not the screen's. Pure: nothing here writes a
+     * field. At this city's own policy each line is the figure the month
+     * booked - property's struck on the roll as it stands, which land changing
+     * hands since the charge can move: PolicyPreviewCheck holds every one of
+     * them to it.
+     */
+
+    /** One sector's profit tax under a policy (M2): its last struck pre-tax income at that policy's rate, nothing on a loss - Sector.strike()'s rule. */
+    public double profitTaxUnder(Sector s, TaxPolicy p) {
+        return Math.max(s.statement().preTaxIncome * p.effectiveProfitRate(s), 0);
+    }
+
+    /**
+     * One sector's sales tax under a policy (M2): its net remittance scaled by
+     * the ratio of the two rates, or its taxable sales at the rate when it was
+     * charged nothing. SCALED, NOT RECOMPUTED (the Policy spec's D11): the
+     * credits in the net are what its suppliers charged it, at their own
+     * rates, so the ratio is exact while every sector's sales rate moves by
+     * the same factor - a base move with no offsets - and an estimate when
+     * only some move. The Policy tab's (i) says so.
+     */
+    public double salesTaxUnder(Sector s, TaxPolicy p) {
+        double now = taxPolicy.effectiveSalesRate(s);
+        double at = p.effectiveSalesRate(s);
+        return now > 1e-9 ? salesTaxLedger.getNet(s.key()) * at / now
+                          : salesTaxLedger.getTaxableSales(s.key()) * at;
+    }
+
+    /** One sector's property tax under a policy (M2): its land at today's price on that policy's roll share, and its finished buildings, at that policy's monthly rate - getPropertyTaxFor()'s rule. */
+    public double propertyTaxUnder(Sector s, TaxPolicy p) {
+        double roll = landValueOf(s) * p.assessedLandShare(s.key())
+                + buildingManager.getBookValueBySector(s.key());
+        return p.propertyTaxOn(roll, s.key());
+    }
+
+    /** One wage band's wage tax under a policy (M2): every job type in it, staffed, at that policy's rate for the band - TaxPolicy.wageTaxPerTier()'s rule. */
+    public double wageTaxUnder(WageBand band, TaxPolicy p) {
+        return Math.max(0, payrollIn(band)) * p.effectiveWageRate(band);
+    }
+
+    /** The staffed payroll one wage band carries this month: what its wage tax is struck on. */
+    public double payrollIn(WageBand band) {
+        double total = 0;
+        for (int i = 0; i < staffedWagePerType.length && i < JobType.values().length; i++) {
+            if (staffedWagePerType[i] > 0 && WageBand.of(JobType.values()[i]) == band) total += staffedWagePerType[i];
+        }
+        return total;
+    }
+
+    /** The wage bill the pension contribution and both premiums are struck on (M3): the month's total wage, as getTaxIncome() reads it. */
+    public double getWageBill() { return Math.max(0, totalWage); }
+
+    /** A premium at this rate off that bill (M3): the EI and health premiums' own rule. */
+    public double premiumAt(double rate) { return Math.max(0, totalWage) * rate; }
+
+    /** Pension contributions at this rate off that bill (M3): SocialSecurity's own rule. */
+    public double contributionsAt(double rate) { return SocialSecurity.contributionsOn(totalWage, rate); }
+
+    /** What the pensions would come to under a policy (M4): today's seniors at its pension. */
+    public double pensionsPaidUnder(TaxPolicy p) { return Math.max(0, seniors) * p.pensionPerSenior(); }
 
     /* ------------------- EI and the student grant (2026-09-11) ------------------- */
 
@@ -1463,6 +1550,9 @@ public class EconomyManager {
 
     /** Negative when the fare more than covers the wages, which a player can arrange. */
     public double getTransitNet()   { return transitBill - transitFares; }
+
+    /** ...with another month of fares against this month's bill (0.7.38): the fare dial card's net, its fares InfrastructureManager.faresAt(). Pure. */
+    public double transitNetAt(double fares) { return transitBill - Math.max(0, fares); }
 
     /** What the city paid this month to hold protected sectors at break-even. Reporting only; the cash already left. */
     private double subsidiesPaid;

@@ -1,6 +1,6 @@
 # StudentHousehold.java - 57 lines · 10 methods · 1 constants · model
 
-`ham/citybuildersim/StudentHousehold.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StudentHousehold.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Full-time students, as one ledger.
 > 

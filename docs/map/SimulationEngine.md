@@ -1,6 +1,6 @@
 # SimulationEngine.java - 216 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/SimulationEngine.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SimulationEngine.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The order the month runs in: the sites advance, the roads, the posts and
 > the wages, the people, then the economy and the services.

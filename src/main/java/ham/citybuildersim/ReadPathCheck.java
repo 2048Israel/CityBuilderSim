@@ -124,7 +124,8 @@ public class ReadPathCheck {
         into.put("bank.insuranceClaims", b.getInsuranceClaims());
         // ...and 0.7.13's: its year of balance sheets and its loans by sector,
         // which the Balance sheet page reads; and the treasury's rollover, its
-        // ledger and its record, which the Finances tab's borrow page reads.
+        // ledger and its record, which the Finances tab reads (its hub and Debt
+        // service since 0.7.32, its borrow pages until then).
         double[] sheets = b.sheetYearToSave();
         for (int i = 0; i < sheets.length; i++) into.put("bank.sheet" + i, sheets[i]);
         // ...and its equity in two parts, carried at the top of the month (round 2)
@@ -164,6 +165,20 @@ public class ReadPathCheck {
             into.put("fund.rescueShares" + c, g.getEquity().getCityRescueShares(c));
         }
         into.put("fund.bondsFace", g.getBondMarket().faceHeldByCity());
+        // ...and 0.7.39's: what each holding cost, its record, the hand's orders on the books and the cash they hold.
+        FundLedger fundLedger = fund.getLedger();
+        into.put("fund.ledgerLots", (double) fundLedger.getLots().size());
+        into.put("fund.ledgerRows", (double) fundLedger.getActivity().size());
+        into.put("fund.ledgerSince", (double) fundLedger.getTrackingSince());
+        into.put("fund.ledgerCost", fundLedger.acbHeld());
+        into.put("fund.ledgerRealized", fundLedger.realized());
+        into.put("fund.ledgerBought", fundLedger.purchases());
+        into.put("fund.ledgerProceeds", fundLedger.proceeds());
+        double boughtValue = 0;
+        for (FundLedger.Lot l : fundLedger.getLots()) boughtValue += l.boughtValue();
+        into.put("fund.ledgerBoughtValue", boughtValue);
+        into.put("fund.posted", (double) fund.getPosted().size());
+        into.put("fund.handReserve", fund.handReserve());
         into.put("bank.preferred", b.preferredOutstanding());
         into.put("bank.preferredArrears", b.getPreferredArrears());
         into.put("bank.repaymentRaised", b.getRepaymentRaisedLifetime());
@@ -297,6 +312,28 @@ public class ReadPathCheck {
             g.getEducation().feeAtOne(course);
             g.getEducation().outOfPocket(course);
         }
+        // ...and what the Services screen added (0.7.28): the school leavers'
+        // diplomas, the homes' draws, the long-sick ring in people
+        g.getEducation().getNewDiplomas();
+        s.getUtilitiesHandler().getHomesElectricityDraw();
+        s.getUtilitiesHandler().getHomesWaterDraw();
+        for (int k = 0; k < Sickness.RING; k++) g.getSickness().peopleInSlot(g.getCohorts(), k);
+        // ...and what the Infrastructure screen added (0.7.29): the curve at
+        // the road's own use, the walk from trips to the road, the freight
+        // bill three ways and each good's wedge taken apart
+        InfrastructureManager.throughputAt(g.getInfrastructureManager().getUtilisation());
+        g.getInfrastructureManager().roadBreakdown().withoutCars();
+        g.getInfrastructureManager().getHeadroom();
+        g.getInfrastructureManager().getSpareCapacity();
+        g.getSectors().rail().getPaidAbroad();
+        g.getSectors().rail().getKept();
+        g.getSectors().rail().getAllowedRevenue();
+        for (GoodsMarket m : g.getMarkets().all()) {
+            m.freightInBand();
+            m.bandByLorry();
+            m.worldMargin();
+            m.railInWedge();
+        }
 
         // the bridge on the Government tab, and the journal it opens into
         // (2026-09-18) - the row is read every time the panel is rebuilt
@@ -304,6 +341,14 @@ public class ReadPathCheck {
         g.getTreasuryUnexplained();
         g.getTreasuryJournal();
         g.getTreasuryResidual();
+        // ...and the walk from EARNED to the budget, which the Government
+        // tab draws in front of it, and EARNED read without striking (0.7.31)
+        g.getIncome();
+        e.getTaxIncomeNow();
+        g.getEarnedToBudget();
+        g.getEarnedResidual();
+        e.getNationalAccounts().getMonthsRecorded();
+        e.getNationalAccounts().getAnnualGdp();
         // ...and the desk's re-mark on the bank's statement
         g.getBank().getMarkChange();
         // the bank's price and what it is made of, its savers' share and its
@@ -365,6 +410,8 @@ public class ReadPathCheck {
             // ...and round 2's: the price off the curve, the staging, the salvage
             g.getEconomyManager().getBusinessDebtManager().getRiskSpread(key);
             g.getEconomyManager().getBusinessDebtManager().getRecordSurcharge(key);
+            // ...and the quote in its parts, which 0.7.33's ladder draws
+            g.getEconomyManager().getBusinessDebtManager().quoteParts(key);
             g.getEconomyManager().getBusinessDebtManager().projectRate(key, 1_000);
             g.getEconomyManager().getBusinessDebtManager().leverageAfterProject(key, 1_000);
             g.getBank().getStageTwoShare(key);
@@ -453,6 +500,7 @@ public class ReadPathCheck {
         bk.ladder(dial).parts();
         bk.ladder(dial).saversOverPolicy();
         bk.ladder(dial).overPrime(g.getInterestRate());
+        bk.ladder(dial).mortgageRunning();
         bk.getBooksWatched();
         for (Bank.Line line : Bank.Line.values()) {
             bk.thisMonth(line);
@@ -521,7 +569,7 @@ public class ReadPathCheck {
         bk.retainedThisMonth(); bk.knowsEquitySplit();
         bk.liabilitiesAndEquity(); bk.yearAgoLiabilitiesAndEquity();
         bk.getBusinessLoans(); bk.getInterimBook(); bk.getBailoutsLifetime(); bk.getResolutionLoss();
-        // ...the treasury's rollover, as the borrow page reads it
+        // ...the treasury's rollover, as the Finances hub reads it (the borrow page until 0.7.32)
         g.rolloverPlan().toRoll(); g.surplusOverLastYear(); g.getRolloverMode();
         g.getRollover().usedInYear(g.getMonth()); g.getRollover().ledgerToSave(); g.getRollover().recordToSave();
         // ...and the land office's funding page and its next-N control
@@ -545,7 +593,7 @@ public class ReadPathCheck {
         bk.solvencyToSave();
         g.canResolveBank();
         // ...and 0.7.14's fund, its rescue and the bank's preferred: the Finances tab's fund
-        // pages and rescue block, the Bank tab's rescue, offer, sheet line and capital page,
+        // pages and the hub's rescue card, the Bank tab's rescue, offer, sheet line and capital page,
         // and the founding screen's Insane lines (the clock's refusal went in 0.7.15).
         g.bankRecapitalisationNeeded(); g.bankResolutionAdvance(); g.getLastResolution(); g.cityStakeInBank();
         g.getOwnersWipedAbroadThisMonth();
@@ -583,6 +631,37 @@ public class ReadPathCheck {
         fund.getWarrantsBoughtBack(); fund.getWarrantSharesTaken(); fund.getSharesBought(); fund.getSharesSold();
         fund.getBondsBought(); fund.getBondsSold(); fund.getRescueSold(); fund.getMonthDividends();
         fund.getMonthCoupons(); fund.getMonthPrincipal(); fund.getMonthBought(); fund.getMonthSold(); fund.isEmpty();
+        // ...and 0.7.39's: the fund as a brokerage - every read its pages make, through FundView.
+        fund.getRescuesPaid(); fund.getPutIn(); fund.getTakenOut(); fund.handReserve(); fund.getPosted();
+        fund.needsLedgerSeed(); g.fundCashFree();
+        for (FundLedger.Lot lot : fund.getLedger().getLots()) { lot.acb(); lot.realized(); lot.income(); lot.isClosed(); }
+        for (FundLedger.Activity row : fund.getLedger().getActivity()) { row.average(); row.lapsed(); }
+        java.util.List<FundView.Position> held = FundView.positions(g);
+        FundView.portfolio(g);
+        FundView.closedLots(g);
+        HistorySave fh = g.getHistorySave();
+        if (fh.months() > 0) {
+            int lastMonth = fh.getMonth().get(fh.months() - 1);
+            for (int range : ChartModel.RANGES) FundView.rangeReturn(fh, lastMonth - range, lastMonth);
+        }
+        for (String filter : new String[] { "All", "Shares", "Bonds", "Held" }) {
+            FundView.search(g, "", filter);
+            FundView.search(g, "a", filter);
+        }
+        for (String group : new String[] { "All", FundView.TRADES, FundView.INCOME, FundView.MONEY, FundView.EVENTS }) {
+            FundView.activity(g, group, null);
+        }
+        for (FundView.Position pos : held) {
+            FundView.yieldOnCost(g, pos);
+            FundView.activity(g, "All", pos.key());
+            if (pos.isShare() || pos.isBond()) {
+                FundView.quote(g, new FundView.Order(pos.key(), true, true, 1_000, 0));
+                FundView.quote(g, new FundView.Order(pos.key(), false, false, pos.units() / 4, 0));
+            }
+        }
+        for (FundView.Hit hit : FundView.market(g)) {
+            FundView.quote(g, new FundView.Order(hit.key(), true, true, 1_000, hit.price() * 1.05));
+        }
         for (TreasuryFund.Resolution r : fund.getResolutions()) {
             r.month(); r.paid(); r.fromCash(); r.advanced(); r.shortfall(); r.exitCapital(); r.shares();
             r.householdsShares(); r.householdsValue(); r.worldShares(); r.worldValue(); r.fundShares(); r.fundValue();
@@ -698,9 +777,56 @@ public class ReadPathCheck {
         g.getForeignAccounts().getLastPressure();
         g.getForeignAccounts().getLastAbsorption();
         g.getForeignAccounts().getLastRevaluation();
-        // the curve and who holds the paper (0.7.1): the borrow page's five
-        // rows, the rate page's premium and compression, the book page's
-        // holders, the money page's holdings and the households' paper
+        // ...and what 0.7.35's Trade tab reads: the push and the pull it draws,
+        // the cover a purchase would buy, its verdicts, the month's goods off the
+        // businesses' books, what is held where, and History's rate and parity
+        g.getForeignAccounts().previewPush();
+        g.getForeignAccounts().previewPull();
+        g.getForeignAccounts().previewMove();
+        g.getForeignAccounts().coverWith(1_000);
+        g.getForeignAccounts().coverWith(-1_000);
+        g.getForeignAccounts().toCover(ForeignAccounts.THIN_COVER);
+        g.getForeignAccounts().isMonthCounted();
+        g.getForeignAccounts().getLifetimeTradeBalance();
+        ForeignAccounts.parityLevel(g.getForeignAccounts().deviationFromParity());
+        ForeignAccounts.coverLevel(g.getForeignAccounts().importCover());
+        g.getTradeByGood();
+        g.getOwnReserves();
+        g.getSharesHeldAbroad();
+        g.getHeldAbroad();
+        g.getHeldHereByTheWorld();
+        record.changeOver("fxRate", 1);
+        record.changeOver("fxRate", 12);
+        record.recentTotal("exportsAbroad", 12);
+        // the Policy tab's previews (0.7.36): a staged set through a copy of
+        // the policy, and every owner's read of it - the take and the budget
+        // (PolicyPreview), the payroll lines, the pensions, the EI pool, the
+        // bank's next bill, the savers' rate, the floor, the curve's
+        // compression, the ceiling, the pensioner household
+        TaxPolicy staged = g.getEconomyManager().getTaxPolicy().copy();
+        staged.setIncomeTaxRate(staged.getIncomeTaxRate() + .01);
+        staged.setPensionReplacement(staged.getPensionReplacement() + .05);
+        PolicyPreview.taxTake(g, staged);
+        PolicyPreview.budget(g, staged, g.getEducation().getTuitionSubsidy());
+        PolicyPreview.realDepositRateAt(g, g.getDebtManager().getPolicyRate() + .0025);
+        PolicyPreview.spendFactorAt(g, g.getDebtManager().getPolicyRate() + .0025);
+        PolicyPreview.cityPayrollAt(g, g.getLabourMarket().getMinimumWage() * 1.1);
+        PolicyPreview.pensionerHasUnder(g, staged);
+        PolicyPreview.tuitionPaid(g, staged, g.getEducation().getTuitionSubsidy());
+        g.getEconomyManager().contributionsAt(.07);
+        g.getEconomyManager().premiumAt(.02);
+        g.getEconomyManager().pensionsPaidUnder(staged);
+        g.getUnemployment().benefitsAt(.6);
+        g.bankTaxUnder(staged);
+        g.getBank().depositRateAt(.05);
+        g.getLabourMarket().targetWageAt(JobType.NO_DIPLOMA, g.getLabourMarket().getMinimumWage() * 1.1);
+        g.getLabourMarket().floorForCash(g.getLabourMarket().cashAt(g.getLabourMarket().getMinimumWage()));
+        g.getDebtManager().compressionAt(.3, 360);
+        g.getCentralBank().ceilingAt(12);
+        // the curve and who holds the paper (0.7.1): the borrow page's term
+        // columns (five rows until 0.7.32), the rate page's premium and
+        // compression, the book's holders bars, the money page's holdings
+        // and the households' paper
         DebtManager debt = g.getDebtManager();
         for (int years : LongTermBond.MATURITIES) {
             debt.curveRate(years * 12);
@@ -728,7 +854,7 @@ public class ReadPathCheck {
         debt.rateAtPolicy(debt.getPolicyRate() + .01);
         g.getCentralBank().getBoughtFromHouseholds();
         g.getCentralBank().getBoughtFromHouseholdsLifetime();
-        // ...and 0.7.15's rollover at issue, as the Finances tab's rollover block and the playtest read it
+        // ...and 0.7.15's rollover at issue, as the Finances hub's rollover card and the playtest read it
         g.getCentralBank().getBoughtAtIssue();
         g.getCentralBank().getParAtIssue();
         g.getCentralBank().getBoughtAtIssueLifetime();
@@ -740,6 +866,36 @@ public class ReadPathCheck {
         g.rolloverPlan().centralBankNetted();
         debt.getTotalMarketValue();
         for (Debt paper : debt.getDebt()) debt.marketValue(paper);
+        // ...and what 0.7.32's Finances tab draws the debt from: the coupon, each
+        // kind's principal, the ladder by calendar year with and without a
+        // proposed issue, the next twelve months, the rate a piece is valued at,
+        // the rollover's cash, the borrowing flags, the bond market's issuers
+        // and sums, what every business owes, the net position, M0's move,
+        // what a buyback saves against face and the service band
+        debt.getMonthlyCoupon();
+        for (String kind : DebtManager.LADDER_KINDS) debt.getPrincipalOf(kind);
+        debt.ladder(g.getMonth());
+        debt.ladder(g.getMonth(), g.quoteDebt("Serial", 1_000, 3, 100).schedule(1));
+        debt.dueWithin(12);
+        for (Debt paper : debt.getDebt()) debt.valuationRate(paper);
+        g.rolloverPlan().fromCash();
+        ChartModel.flags(g.getDecisions(), DecisionLog.BORROWING);
+        // ...and 0.7.33's Bank tab: its rates' flags, the branch verdict the
+        // investors' planner gives (a read - BankCheck section 13b)
+        ChartModel.flagsOf(g.getDecisions(), DecisionLog.CENTRAL_BANK, DecisionLog.BANK);
+        // ...and 0.7.37's City History: what is running, the flags as its lane
+        // draws them, and where each good's price sits in its band
+        YearBook.running(record);
+        if (record.months() > 0) ChartModel.onAxis(ChartModel.flags(g.getDecisions()), record.getMonth().get(0));
+        for (Good good : Good.values()) if (g.getMarkets().get(good) != null) g.getMarkets().get(good).getPriceIndex();
+        g.getBusinessInvestment().planBank();
+        g.getBondMarket().byIssuer();
+        g.getBondMarket().getCouponsPaid(); g.getBondMarket().getPrincipalRepaid();
+        g.getBondMarket().getWrittenOffThisMonth();
+        g.getEconomyManager().getBusinessDebtManager().getEverythingOwed();
+        g.getNetPosition(); g.getCentralBank().getM0Moved();
+        for (Debt paper : debt.getDebt()) debt.underFace(paper);
+        CityNeeds.serviceLevel(debt.dueWithin(12) / Math.max(1, g.getEconomyManager().getNationalAccounts().getTotalRevenue() * 12));
         g.getHouseholdBalance().totalPaper();
         g.getHouseholdBalance().marketValueOfPaper();
         g.getHouseholdBalance().getPaperRatio();
@@ -795,6 +951,21 @@ public class ReadPathCheck {
             }
             // the operations page, which is what the sector screen draws
             sec.operations(g);
+            // ...and what the redrawn Sectors screen draws it from (0.7.30): the
+            // page's two halves, the flow, the plant, its investors and their
+            // word's kind, its Build group and note, and its debt by kind
+            sec.plantLines(g);
+            sec.ownLines(g);
+            sec.buildingsStanding();
+            sec.buildingsOnSite();
+            SectorFlow.of(g, sec);
+            SectorFlow.plant(sec);
+            BuildCard.SectorInvestors si = BuildCard.sectorInvestors(g, sec);
+            BuildCard.wordKind(si.word(), si.theirs(), si.landBlocked());
+            BuildCard.groupOf(g, sec);
+            BuildCard.categoryOf(g, sec);
+            BuildCard.noteOf(g, sec);
+            e.getBusinessDebtManager().getTermLoanPrincipal(sec.key());
             e.getAssessedValue(sec);
             e.getMaintenanceCharge(sec.key());
             g.isAutoSubsidised(sec);
@@ -829,6 +1000,17 @@ public class ReadPathCheck {
         g.getSectors().construction().getAverageFill();
         g.getConstructionOutput();
         g.quoteBuild(template(g, "House"), 1);
+        // ...and an order bar's several at once, its Build button's total (0.7.34)
+        BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3, template(g, "Water Treatment Plant"), 1));
+        // ...and the overview's suggestions added up (0.7.38)
+        BuildAdvice.quoteTotal(BuildAdvice.suggest(g));
+        // the fare's dial card (0.7.38): its rows at the city's fare, at none and at the dearest
+        for (double fare : new double[] {g.getEconomyManager().getTaxPolicy().getTransitFare(), 0, TaxPolicy.MAX_TRANSIT_FARE}) {
+            g.getInfrastructureManager().ridersAt(fare);
+            g.getEconomyManager().transitNetAt(g.getInfrastructureManager().faresAt(fare));
+            g.getInfrastructureManager().backOnTheRoadAt(fare);
+            TaxPolicy.monthlyFareAt(fare);
+        }
         // ...and what the build screen's funding page is sized to (0.7.10),
         // for an order the city can pay for and one it cannot
         g.buildFundingGap(template(g, "House"), 1);
@@ -847,6 +1029,30 @@ public class ReadPathCheck {
             m.floor();
             m.ceiling();
         }
+
+        // ...and the People page's reads since 0.7.27: the draw and its two
+        // halves, who left and why, the dead by cause, the two hungers, each
+        // tier's wage per earner and the fees named apart, the households'
+        // ledger per row for the Pensions page
+        Migration mig = g.getMigration();
+        mig.getLastJobs(); mig.getLastHomeCapacity(); mig.getLastJobDraw(); mig.getLastHomeDraw();
+        mig.getLastDrawBeforePulls(); mig.getLastWorkDepartures(); mig.getLastBankruptcyDepartures();
+        mig.getLastCrimeDepartures(); mig.getLastAffordabilityPull(); mig.getLastCrimePull();
+        mig.getLastSeniorPull(); mig.getLastTarget(); mig.getLastCrowding(); mig.toSaveArray();
+        PopulationCohorts pyramid = g.getCohorts();
+        pyramid.getLastDeathsOfAge(); pyramid.getLastAgedOut(); pyramid.getLastKilled(); pyramid.toSaveArray();
+        for (AgeBand b : AgeBand.values()) { pyramid.share(b); PopulationCohorts.equilibriumShare(b); }
+        HouseholdBalance people = g.getHouseholdBalance();
+        people.getHungryAtFullShelves(); people.getHungryPeople(); people.getDeliveredShare(); people.toSaveArray();
+        for (int r = 0; r < Household.ROWS; r++) { people.getDisposable(r); people.getFixedCosts(r); }
+        HouseholdAccounts books = g.getHouseholds();
+        books.careAndSchoolPerHead(); books.faresPerHead(); books.getAccountFees();
+        for (PayTier tier : PayTier.values()) {
+            books.wagePerEarner(g.getFamilies(), tier);
+            books.interestPerHousehold(tier);
+            books.accountFeePerHousehold(tier);
+        }
+        g.getHistorySave().aligned("births"); g.getHistorySave().aligned("outOfWork");
     }
 
     public static void main(String[] args) throws Exception {

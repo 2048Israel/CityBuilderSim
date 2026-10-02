@@ -18,16 +18,21 @@ import static ham.citybuildersim.ui.Levers.*;
 /**
  * The left panel's content: the summary and the dashboard - the vitals, the
  * alert block, the six lines that are always worth a glance or the thirteen
- * folded sections - the problem list that decides what goes red, and every
- * row's own reading of the city, seats against who would come.
+ * folded sections - and the problem list that decides what goes red, drawn
+ * from CityNeeds.
  *
- * Split out of UserInterface on 2026-09-18: the six banners CITY OVERVIEW
+ * Split out of UserInterface on 2026-09-18, with the banners CITY OVERVIEW
  * PANEL, THE LEFT PANEL, SUMMARY, OR DASHBOARD, HEADROOM, NOT SATISFACTION,
  * THE SUMMARY IS A PROBLEM LIST NOW and SEATS AGAINST WHO WOULD COME exactly
- * as they were, the shell's members reached through ui. The shell owns the
- * panel itself (cityPanel) and its scroller, and calls refreshCityPanel() on
- * the clock; this class owns what is drawn into it, and which sections the
- * player has opened (panelOpen).
+ * as they were, the shell's members reached through ui; five since 0.7.24,
+ * when the last went to the model (below). The shell owns the
+ * panel itself (cityPanel) and calls refreshCityPanel() on the clock; this
+ * class owns what is drawn into it, and which sections the player has opened
+ * (panelOpen). Since 0.7.24 the panel is a drawer the header's "Needs you"
+ * chip opens (UserInterface, THE FRAME FOLDS AWAY) - always on NEEDS YOU
+ * (needsView) - and NEEDS YOU is measured in the
+ * model, CityNeeds - the list, its lines and SEATS AGAINST WHO WOULD COME
+ * moved there whole - so the Build tab and the chip read the same verdicts.
  */
 final class SummaryScreen {
 
@@ -72,40 +77,47 @@ final class SummaryScreen {
     }
 
     /**
-     * Roads, red once traffic is actually being held up.
+     * Roads, in NEEDS YOU's colour for them (0.7.29).
      *
      * The two thresholds Jerus asked for - "above 90%" and "restricting flow" -
      * turn out to be the SAME line: InfrastructureManager.FREE_FLOW is 0.9, so
-     * throughput starts falling at exactly 90% utilisation. Written against
-     * isCongested() rather than a typed-in .90 so that stays true if FREE_FLOW
-     * is ever retuned; hardcoding the number here is the same mistake the debt
-     * band assertions kept making.
-     *
-     * STRAINED (0.85) gives the amber step, which is the useful one: it is the
-     * last point at which building more roads is cheaper than the congestion.
+     * throughput starts falling at exactly 90% utilisation; and STRAINED (0.85)
+     * gives the amber step, the last point at which building more roads is
+     * cheaper than the congestion. Both are NEEDS YOU's ROADS row's lines, so
+     * the row's own level is the colour: it was red here on isCongested()
+     * while Build's tile, on the same row, was amber with road sites on the
+     * way - one road, two verdicts. One judge now (the project's
+     * spec-infra-0729.md, D3).
      */
     HBox roadLine() {
+        HBox row = statLine("Roads", roadSummary(), roadColour());
+        // The pair is longer than the one figure it replaced: it is never cut to "…".
+        ((Label) row.getChildren().get(2)).setMinWidth(Region.USE_PREF_SIZE);
+        return row;
+    }
 
-        InfrastructureManager roads = ui.game.getInfrastructureManager();
-        return statLine("Roads", roadSummary(),
-                roads.isCongested() ? PANEL_BAD
-                        : roads.isStrained() ? PANEL_WARN : PANEL_GOOD);
+    /** The road's verdict: NEEDS YOU's ROADS row's level - amber while road sites are on the way. */
+    String roadColour() {
+        for (CityNeeds.Need n : CityNeeds.measure(ui.game, WORDS)) {
+            if (n.kind() != CityNeeds.Kind.ROADS) continue;
+            return n.level() >= 2 ? PANEL_BAD : n.level() == 1 ? PANEL_WARN : PANEL_GOOD;
+        }
+        return PANEL_GOOD;
     }
 
     /**
-     * Roads on the city overview, in one cell.
+     * Roads on the city overview, in one cell: "162% full · 56% flow" (0.7.29).
      *
-     * Shows utilisation while there is room and throughput once there is not,
-     * because those are the two different questions a player is asking: "how
-     * much more can I build" until it jams, and "how much is this costing me"
-     * after.
+     * Both figures, always, in whole per cents. It used to show how full the
+     * road was while there was room and the flow once there was not, which
+     * changed what the row meant at the congestion line without saying so -
+     * and printed up to three decimals ("55.694% flow"). Full is the load the
+     * curve reads over the capacity, flow what every business gets through it;
+     * the Infrastructure tab's Roads page draws the curve that links them.
      */
     String roadSummary() {
         InfrastructureManager roads = ui.game.getInfrastructureManager();
-        if (roads.isCongested()) {
-            return formatter.format(roads.getThroughputRatio() * 100) + "% flow";
-        }
-        return formatter.format(roads.getUtilisation() * 100) + "% used";
+        return BuildScreen.pct(roads.getUtilisation()) + " full · " + BuildScreen.pct(roads.getThroughputRatio()) + " flow";
     }
 
     /* =====================================================================
@@ -281,14 +293,30 @@ final class SummaryScreen {
        city got dearer. The bank's tax was its premium, which 0.7.7 took out.
        ===================================================================== */
 
+    /**
+     * THE CHIP OPENS ON NEEDS YOU (0.7.24, after the PC check). Jerus's
+     * settings had the panel on Dashboard, which has no NEEDS YOU list, so
+     * the "Needs you" chip opened a drawer that did not show what it
+     * counts. True from the chip's click (UserInterface.openOnNeeds()) until
+     * the player picks a mode in the drawer: the panel draws as Summary,
+     * whatever is stored, and the stored mode (GamePrefs.isPanelDashboard())
+     * is changed only by that pick.
+     */
+    boolean needsView;
+
+    /** Whether the panel draws as Dashboard now: the stored mode, unless the chip opened it on NEEDS YOU. */
+    boolean dashboardShown() {
+        return ui.prefs.isPanelDashboard() && !needsView;
+    }
+
     HBox panelModeSwitch() {
 
         HBox row = new HBox(4);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 0 0 8 2;");
         row.getChildren().addAll(
-                panelModeChip("Summary",   !ui.prefs.isPanelDashboard(), false),
-                panelModeChip("Dashboard",  ui.prefs.isPanelDashboard(), true));
+                panelModeChip("Summary",   !dashboardShown(), false),
+                panelModeChip("Dashboard",  dashboardShown(), true));
         return row;
     }
 
@@ -302,6 +330,8 @@ final class SummaryScreen {
                 + " -fx-border-width: 0 0 2 0;"
                 + " -fx-text-fill: " + (on ? Palette.TEXT_HEAD : PANEL_LABEL) + ";");
         chip.setOnMouseClicked(e -> {
+            // The player's pick: the chip's Summary gives way, and the pick is kept.
+            needsView = false;
             ui.prefs.setPanelDashboard(dashboard);
             ui.prefs.save(ui.game.getGameFiles());
             refreshCityPanel();
@@ -420,8 +450,13 @@ final class SummaryScreen {
 
        THRESHOLDS ARE PER CONDITION, not one rule, because the same percentage
        means different things: a city at 90% of its burial capacity is fine and
-       a city at 90% of its water is not. They are all in watchAll() in one
-       block, in the order they are read, so they can be tuned in one place.
+       a city at 90% of its water is not. Since 0.7.24 they are measured in the
+       model, CityNeeds.measure() - every line, threshold and reading as they
+       stood in watchAll() here - because the Build tab's overview and its
+       suggestions (BuildAdvice) read the same verdicts, and the header's
+       "Needs you" chip counts the same list. This class maps each need to the
+       screen that answers it (goTo(), and since 0.7.32 financesDoor() for
+       the three Finances rows) and draws it.
        ===================================================================== */
 
     /**
@@ -431,8 +466,14 @@ final class SummaryScreen {
      * @param near  how close to the yellow line, 0 to 1, and only meaningful at
      *              level 0 - it is what picks the "next to watch" line on a
      *              city with nothing wrong.
+     * @param tip   the row's tooltip, or null for none (0.7.27: HUNGRY's, which
+     *              gives the points hunger adds to the sick rate)
      */
-    record Watch(String label, String reading, int level, double near, Runnable go) { }
+    record Watch(String label, String reading, int level, double near, Runnable go, String tip) {
+        Watch(String label, String reading, int level, double near, Runnable go) {
+            this(label, reading, level, near, go, null);
+        }
+    }
 
     /** Higher is worse. */
     void over(java.util.List<Watch> out, String label, String reading,
@@ -450,399 +491,81 @@ final class SummaryScreen {
                 value <= 0 ? 1 : Math.max(0, Math.min(1, yellow / value)), go));
     }
 
-    /** A thing that is simply true or not. */
-    void flag(java.util.List<Watch> out, String label, String reading,
-                      boolean bad, boolean severe, Runnable go) {
-        out.add(new Watch(label, reading, bad ? (severe ? 2 : 1) : 0, bad ? 1 : 0, go));
-    }
+    /** The interface's own words for a figure, which the needs are read in (CityNeeds.Words). */
+    static final CityNeeds.Words WORDS = new CityNeeds.Words() {
+        @Override public String people(double count)      { return Money.people(count); }
+        @Override public String money(double thousands)   { return Money.money(thousands); }
+        @Override public String shortNumber(double value) { return Money.shortNumber(value); }
+        @Override public String monthsWait(double months) { return Pieces.monthsWait(months); }
+    };
 
     /**
-     * ...AND WHAT IS ALREADY ON THE WAY (0.7.20).
-     *
-     * After ordering an Elementary School, "Schools: elementary 0% taught"
-     * still sent the player to build one, in red - the fix was on site and
-     * the panel could not tell. So the watch at `at`, if there is one, says
-     * what of the buildings that answer it is on site, for anybody's order -
-     * "1 on the way, ~8 mo", the soonest of them by the wait the quote reads
-     * (Game.onSiteMonths()) - and a red one falls to amber: the city has
-     * done something about it, and it is waiting on the builders.
-     */
-    void onTheWay(java.util.List<Watch> out, int at, java.util.function.Predicate<BuildingsTemplate> serves) {
-        if (at < 0 || at >= out.size()) return;
-        int units = 0;
-        double soonest = Double.NaN;
-        for (BuildingsStacks site : ui.game.getBuildingManager().getStacksUnderConstruction()) {
-            if (!serves.test(site.getBuilding())) continue;
-            units += site.getUnderConstruction();
-            double months = ui.game.onSiteMonths(site.getBuilding());
-            if (!Double.isNaN(months) && !(months >= soonest)) soonest = months;
-        }
-        if (units <= 0) return;
-        Watch w = out.get(at);
-        out.set(at, new Watch(w.label(),
-                w.reading() + " · " + formatter.format(units) + " on the way, " + monthsWait(soonest),
-                Math.min(w.level(), 1), w.near(), w.go()));
-    }
-
-    /** The same, for the watch just measured. */
-    void onTheWay(java.util.List<Watch> out, java.util.function.Predicate<BuildingsTemplate> serves) {
-        onTheWay(out, out.size() - 1, serves);
-    }
-
-    /* =====================================================================
-       SEATS AGAINST WHO WOULD COME.
-
-       Jerus: "for university, college and all that above, how do i know? since
-       there might be 400 seats, 380 students, but if i build another uni there
-       is 800 seats and it jumps to 700 students, not full but technically it
-       was."
-
-       Exactly right, and coverage cannot answer it. For the schools above the
-       basic ladder the model sets
-       coverage = seats / everybody ELIGIBLE - every worker in the band who
-       could in principle study - so a university in a city of four thousand
-       graduates reads 10% covered whether or not a single one of them wants to
-       go. And the student body is bounded by the seats, so a full school always
-       looks full whatever the queue behind it.
-
-       THE MODEL ALREADY KNOWS THE ANSWER. Intake is
-       min(free seats, eligible x willing x ENROLMENT_RATE): the second half of
-       that min is demand with no reference to the building. Multiply it by the
-       length of the course and you have the student body this city would
-       sustain if seats were free - which is precisely the question "if I put up
-       another one, will it fill?"
-
-       So the row is TWO numbers, not a percentage: what the schools hold, and
-       what would come. Bigger second number means another building fills.
-       Smaller means the gate is not the seats - it is what a degree returns or
-       what it costs, and both of those are dials rather than buildings.
-
-       ONE ROW PER SCHOOL, because each is a different building and "higher
-       education is short" does not tell anybody what to build. In practice one
-       or two bind at a time.
-       ===================================================================== */
-    void seatsWanted(java.util.List<Watch> out) {
-
-        Education schools = ui.game.getEducation();
-        PopulationManager pm = ui.game.getPopulationManager();
-        LabourMarket market = ui.game.getLabourMarket();
-        double[] seatsBy = ui.game.getBuildingManager()
-                .getStaffedEducationPlaces(pm.getJobFillRate());
-
-        for (EducationType type : EducationType.values()) {
-            if (type == EducationType.NONE || type.isBasic()) continue;
-
-            double wanted = schools.eligibleFor(type, pm)
-                    * schools.willingShare(type, market) * Education.ENROLMENT_RATE;
-            double couldHold = wanted * type.months();
-
-            /*
-             * A CLASS'S WORTH, or it is not a building.
-             *
-             * MEASURED: a city of 1,650 with no university has 372 people who
-             * would attend one - a real row. It also has six who would read
-             * medicine and three who would read law, and a red row saying "0
-             * seats, 3 would come" is asking the player to put up a law school
-             * for three students. The floor is what separates a shortage from a
-             * rounding error; below it a city is not failing to teach anybody,
-             * it is simply too small to have one yet.
-             */
-            if (couldHold < 25) continue;
-
-            double seats = seatsBy[type.ordinal()];
-            over(out, type.getLabel().toUpperCase(),
-                    String.format("%s seats, %s would come",
-                            people(seats), people(couldHold)),
-                    couldHold / Math.max(seats, 1), 1.05, 2,
-                    () -> ui.buildScreen.handleAllBuildingMenus("Education",
-                            EnumSet.of(BuildingType.EDUCATION)));
-            onTheWay(out, t -> t.getTeaches() == type);
-        }
-    }
-
-    /**
-     * One network: how much of its capacity is spoken for, and whether it is
-     * still meeting demand.
-     *
-     * @param ratio min(supply/demand, 1) - under one the city is being
-     *              throttled, and the load figure has stopped being the news.
-     */
-    void network(java.util.List<Watch> out, String label,
-                         double demand, double supply, double ratio) {
-        if (supply <= 0) {
-            /*
-             * Nothing built. A city drawing nothing is not short of anything -
-             * a ratio of nothing over nothing reads 0.00 for power and 1.00 for
-             * water, and watching that opened every new city on a red POWER
-             * row. A city drawing something with no plant is very short indeed.
-             */
-            if (demand > 0) {
-                flag(out, label, "nothing supplying it", true, true,
-                        () -> ui.buildScreen.handleAllBuildingMenus("Utilities", ui.buildScreen.utilityTypes()));
-            }
-            return;
-        }
-        double load = demand / supply;
-        over(out, label, ratio < .99
-                        ? String.format("only %.0f%% supplied", ratio * 100)
-                        : String.format("%.0f%% of capacity", load * 100),
-                load, .75, 1,
-                () -> ui.buildScreen.handleAllBuildingMenus("Utilities", ui.buildScreen.utilityTypes()));
-    }
-
-    /**
-     * Everything with a lever, measured against its own line.
-     *
-     * Returns the whole set INCLUDING the ones that are fine, because the
-     * renderer needs the fine ones to answer "what is closest" on a healthy
-     * city. It filters; this only measures.
+     * Everything with a lever, measured against its own line: CityNeeds'
+     * list (0.7.24; it was measured here), each need with the door to the
+     * screen that answers it. Returns the whole set INCLUDING the ones that
+     * are fine, because the renderer needs the fine ones to answer "what is
+     * closest" on a healthy city. It filters; this only measures.
      */
     java.util.List<Watch> watchAll() {
-
         java.util.List<Watch> out = new java.util.ArrayList<>();
-
-        EconomyManager economy = ui.game.getEconomyManager();
-        UtilitiesHandler utilities = ui.game.getServicesManager().getUtilitiesHandler();
-        InfrastructureManager roads = ui.game.getInfrastructureManager();
-        Healthcare care = ui.game.getHealthcare();
-        Education schools = ui.game.getEducation();
-        Crime crime = ui.game.getCrime();
-        FamilyModel families = ui.game.getFamilies();
-        LandManager land = ui.game.getLandManager();
-        Bank bank = ui.game.getBank();
-        PopulationCohorts cohorts = ui.game.getCohorts();
-        double[] staffing = ui.game.getPopulationManager().getJobFillRate();
-        int population = ui.game.getPopulationManager().getPopulation();
-
-        /* ---------------------------- the networks ---------------------------- */
-        // A ratio under one is output being throttled somewhere in the city this
-        // month, so the yellow line sits just under one rather than at .85.
-        /*
-         * HOW FULL, NOT HOW SHORT - and that is the correction.
-         *
-         * getEnergyRatio() and getWaterRatio() are min(supply/demand, 1), so
-         * they sit at exactly 1.00 right up until the city is already being
-         * throttled. Watching them meant the row could only appear once the
-         * lights were out, which is the opposite of this panel's rule. Jerus:
-         * "water doesnt appear, it appears on the top, it should appear in the
-         * summary same as the others" - the dashboard's RESOURCES line has
-         * always counted a network "tight" at 75% of capacity, and it was the
-         * only thing in the game saying so.
-         *
-         * So the reading is the LOAD, on the same .75 that line uses, and it
-         * goes red when the ratio finally breaks - at which point the reading
-         * says what is actually being delivered instead.
-         */
-        int at = out.size();
-        network(out, "POWER", utilities.getConsumption(), utilities.getProduction(),
-                utilities.getEnergyRatio());
-        onTheWay(out, at, t -> t.getCategory() == BuildingType.ELECTRICITY);
-        at = out.size();
-        network(out, "WATER", utilities.getWaterConsumption(),
-                utilities.getWaterProduction(), utilities.getWaterRatio());
-        onTheWay(out, at, t -> t.getCategory() == BuildingType.WATER);
-
-        // Its own constants: STRAINED is .85 and free flow ends at .90.
-        double traffic = roads.getUtilisation();
-        over(out, "ROADS", String.format("%.0f%% of capacity", traffic * 100),
-                traffic, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW,
-                () -> ui.buildScreen.handleAllBuildingMenus("Infrastructure",
-                        EnumSet.of(BuildingType.INFRASTRUCTURE)));
-        onTheWay(out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE);
-
-        /* ------------------------------- the care ------------------------------- */
-        // General care is the one that moves the sick rate, so it is watched
-        // hardest; the other two kill at the ends of life rather than in the
-        // middle, and a young city legitimately has neither for a while.
-        double general = ui.servicesScreen.careCover(CareType.GENERAL, cohorts, staffing);
-        under(out, "GENERAL CARE", String.format("%.0f%% covered", general * 100),
-                general, .80, .50,
-                () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
-        onTheWay(out, t -> t.getCare() == CareType.GENERAL);
-
-        double childcare = ui.servicesScreen.careCover(CareType.CHILDCARE, cohorts, staffing);
-        under(out, "CHILDCARE", String.format("%.0f%% covered", childcare * 100),
-                childcare, .70, .40,
-                () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
-        onTheWay(out, t -> t.getCare() == CareType.CHILDCARE);
-
-        double senior = ui.servicesScreen.careCover(CareType.SENIOR, cohorts, staffing);
-        under(out, "SENIOR CARE", String.format("%.0f%% covered", senior * 100),
-                senior, .70, .40,
-                () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
-        onTheWay(out, t -> t.getCare() == CareType.SENIOR);
-
-        // The dead are a STOCK: a backlog does not clear itself and the plots do
-        // not come back, so this one is red the moment anybody is waiting.
-        double unburied = care.getUnburied();
-        flag(out, "THE DEAD", unburied > 0
-                        ? people(unburied) + " unburied" : "all dealt with",
-                unburied > 0, unburied > 0,
-                () -> ui.buildScreen.handleAllBuildingMenus("Healthcare", EnumSet.of(BuildingType.HEALTHCARE)));
-        onTheWay(out, t -> t.getCare() == CareType.BURIAL || t.getCare() == CareType.CREMATION);
-
-        /*
-         * MEASURED: with nobody dying this returns Double.MAX_VALUE - not
-         * infinity, so isFinite() lets it through - and a founding city holds
-         * 2,500 plots, which reads as "6500 months left" for three centuries.
-         * A decade of headroom is not news; the row appears when it stops being
-         * true.
-         */
-        double plots = ui.game.getBuildingManager().getCareCapacity(CareType.BURIAL);
-        double monthsLeft = care.monthsOfPlotsLeft(plots);
-        if (monthsLeft < 120) {
-            under(out, "BURIAL PLOTS", String.format("%.0f months left", monthsLeft),
-                    monthsLeft, 24, 6,
-                    () -> ui.buildScreen.handleAllBuildingMenus("Healthcare",
-                            EnumSet.of(BuildingType.HEALTHCARE)));
-            onTheWay(out, t -> t.getCare() == CareType.BURIAL);
+        for (CityNeeds.Need n : CityNeeds.measure(ui.game, WORDS)) {
+            out.add(new Watch(n.label(), n.reading(), n.level(), n.near(),
+                    n.go() == CityNeeds.Go.FINANCES ? financesDoor(n.kind()) : goTo(n.go())));
         }
-
-        /* ------------------------------ the schools ------------------------------ */
-        /*
-         * AND IT SAYS WHICH ONE.
-         *
-         * basicCoverage() IS the bottleneck's coverage - it returns
-         * coverage[basicBottleneck()], the minimum of the three rungs - so the
-         * number was already about one specific school and the row simply did
-         * not say which. Jerus: "just the schools one, it doesnt tell me
-         * which". A percentage with no building attached is a percentage you
-         * cannot act on, and the model has named it all along.
-         */
-        double basic = schools.basicCoverage();
-        if (population > 0) {
-            String thin = schools.basicBottleneck().getLabel().toLowerCase();
-            under(out, "SCHOOLS", String.format("%s %.0f%% taught", thin, basic * 100),
-                    basic, .90, .60,
-                    () -> ui.buildScreen.handleAllBuildingMenus("Education",
-                            EnumSet.of(BuildingType.EDUCATION)));
-            EducationType bottleneck = schools.basicBottleneck();
-            onTheWay(out, t -> t.getTeaches() == bottleneck);
-        }
-
-        /* ------------------------ and the schools above them ------------------------ */
-        seatsWanted(out);
-
-        /* ------------------------------- the police ------------------------------- */
-        double vsCanada = crime.getRateVsCanada();
-        over(out, "CRIME", String.format("%.1fx Canada's", vsCanada),
-                vsCanada, 1.2, 1.5,
-                () -> ui.buildScreen.handleAllBuildingMenus("Safety", EnumSet.of(BuildingType.SAFETY)));
-        onTheWay(out, t -> t.getSafety() == SafetyType.POLICE);
-
-        double unheld = crime.getNotHeld();
-        over(out, "CELLS", unheld >= 1
-                        ? people(unheld) + " caught, not held" : "enough for the caught",
-                unheld, 1, 25,
-                () -> ui.buildScreen.handleAllBuildingMenus("Safety", EnumSet.of(BuildingType.SAFETY)));
-        onTheWay(out, t -> t.getSafety() == SafetyType.PRISON);
-
-        /* ------------------------------- the housing ------------------------------- */
-        // Nobody at all with a door is the worst thing on this list: it is past
-        // both squeeze valves, so the model has already tried flatshares and
-        // doubling up and still has households left over.
-        double unplaced = families.getStillUnplaced();
-        over(out, "HOMES", unplaced >= .5
-                        ? people(unplaced) + " with nowhere to live" : "everybody housed",
-                unplaced, .5, 25,
-                () -> ui.buildScreen.handleAllBuildingMenus("Residential",
-                        EnumSet.of(BuildingType.RESIDENTIAL)));
-        onTheWay(out, t -> t.getCategory() == BuildingType.RESIDENTIAL);
-
-        /* -------------------------------- the ground -------------------------------- */
-        /*
-         * GROUND THE CITY OWNS AND HAS NOT BUILT ON, which is the thing an
-         * investor needs before it can break ground.
-         *
-         * NOT isPrivateInvestmentLandLocked(), and that is a measurement rather
-         * than a preference. Probed on a founding city it goes true at month 12
-         * - with 1,974,000 sq ft still free - and is still true at month 300.
-         * Its set of blocked sectors does not appear to clear, and it carries a
-         * 24-month acknowledgement snooze that only the inbox knows how to
-         * press. A row that never goes away is a row nobody reads, and this
-         * panel's whole promise is that solving something removes it.
-         *
-         * Free ground clears the moment a plot is bought and comes back when it
-         * is built on, which is exactly the shape of the decision. A block is
-         * 100,000 sq ft.
-         */
-        double free = land.getAvailableSqFt();
-        under(out, "GROUND TO BUILD ON",
-                free > 0 ? shortNumber(free) + " sq ft free" : "none - nobody can break ground",
-                free, 100_000, 0, ui.landScreen::showLandMenu);
-
-        flag(out, "BUILDERS", ui.game.isConstructionShedding()
-                        ? "being laid off" : "in work",
-                ui.game.isConstructionShedding(), false,
-                () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().construction(), "Investors"));
-
-        /* -------------------------------- the money -------------------------------- */
-        double cash = ui.game.getCash();
-        double spending = Math.max(1, ui.policyScreen.taxRaised());
-        flag(out, "TREASURY", cash < 0 ? "overdrawn" : "in hand",
-                cash < spending, cash < 0, ui.financesScreen::showFinanceMenu);
-
-        // Until 0.7.7 the warning was the strain premium on every rate; with the
-        // premium gone, a bank past its capacity is the thing worth a glance.
-        flag(out, "THE BANK", bank.isInsolvent() ? "failed"
-                        : bank.getBranches() <= 0 ? "there is none"
-                        : bank.strain() > 1
-                                ? String.format("%.0f%% lent", bank.strain() * 100)
-                                : "lending",
-                bank.isInsolvent() || bank.getBranches() <= 0 || bank.strain() > 1,
-                bank.isInsolvent() || bank.getBranches() <= 0,
-                ui.bankScreen::showBankMenu);
-        // The model counts its branches by this name (Game: bank.openBranches(...countByName(...))).
-        onTheWay(out, t -> "Commercial Bank".equals(t.getName()));
-
-        flag(out, "BORROWING", ui.game.getDebtManager().atCeiling()
-                        ? "priced out of the market" : "the market is open",
-                ui.game.getDebtManager().atCeiling(), true, ui.financesScreen::showFinanceMenu);
-
-        /* -------------------------------- the promises -------------------------------- */
-        /*
-         * MEASURED: the gap grows with the pensioner count in every city, and
-         * against a young city's tax take it is a fifth of revenue by month
-         * 300 - on a city running a comfortable surplus the whole time. An
-         * unfunded promise the city is paying without noticing is not this
-         * panel's business; one it cannot pay is. So it is gated on the budget,
-         * and THE BUDGET below carries the deficit itself.
-         */
-        double gap = economy.getPensionShortfall();
-        double balanceNow = economy.getNationalAccounts().getBalance();
-        over(out, "PENSIONS", gap > 0 ? money(gap) + " short a month" : "funded",
-                balanceNow < 0 ? gap / spending : 0, .05, .20, () -> {
-                    ui.policyScreen.policyArea = "Promises";
-                    ui.policyScreen.policyPage = "Pensions";
-                    ui.policyScreen.dropProposal();
-                    ui.policyScreen.showPolicyMenu();
-                });
-
-        // MEASURED: the unskilled band sits on the floor in month one of every
-        // city and again whenever the city stalls. One band pinned is the
-        // minimum wage doing its job; three of four is the wage ladder
-        // collapsing onto it.
-        int pinned = population > 0 ? ui.policyScreen.pinnedBands() : 0;
-        over(out, "WAGES", pinned > 0
-                        ? pinned + (pinned == 1 ? " band" : " bands") + " pinned to the floor"
-                        : "no band is pinned",
-                pinned, 2, 4, () -> {
-                    ui.policyScreen.policyArea = "Wages";
-                    ui.policyScreen.policyPage = PolicyScreen.POLICY_WAGE_PAGES[0];
-                    ui.policyScreen.dropProposal();
-                    ui.policyScreen.showPolicyMenu();
-                });
-
-        double balance = balanceNow;
-        over(out, "THE BUDGET", balance < 0 ? money(-balance) + " short a month" : "in surplus",
-                balance < 0 ? -balance / spending : 0, .05, .20, () -> {
-                    ui.policyScreen.policyArea = "Taxes";
-                    ui.policyScreen.policyPage = PolicyScreen.POLICY_HOME;
-                    ui.policyScreen.dropProposal();
-                    ui.policyScreen.showPolicyMenu();
-                });
-
         return out;
+    }
+
+    /**
+     * Where a Finances row goes (0.7.32, the Finances spec's D17), through
+     * FinancesScreen.open() so it lands where it says rather than on the last
+     * page the tab had open (its B8): TREASURY on the hub, FALLS DUE on the
+     * hub's ladder, BORROWING on Your rate.
+     */
+    Runnable financesDoor(CityNeeds.Kind kind) {
+        return switch (kind) {
+            case BORROWING -> () -> ui.financesScreen.open("The position", "Your rate", null);
+            case FALLS_DUE -> () -> ui.financesScreen.open(null, null, FinancesScreen.LADDER);
+            default        -> () -> ui.financesScreen.open(null, null, null);
+        };
+    }
+
+    /**
+     * Where a need's row goes: the Build category that answers it, the land
+     * office, the builders' books, Finances, the bank, or the Policy page of
+     * the promise, the wage floor or the taxes - the doors watchAll() opened
+     * before 0.7.24, with the Build categories by their new names.
+     */
+    Runnable goTo(CityNeeds.Go go) {
+        switch (go) {
+            case UTILITIES:  return () -> ui.buildScreen.openCategory(BuildAdvice.UTILITIES);
+            case ROADS:      return () -> ui.buildScreen.openCategory(BuildAdvice.ROADS);
+            case HEALTHCARE: return () -> ui.buildScreen.openCategory(BuildAdvice.HEALTHCARE);
+            case EDUCATION:  return () -> ui.buildScreen.openCategory(BuildAdvice.EDUCATION);
+            case SAFETY:     return () -> ui.buildScreen.openCategory(BuildAdvice.SAFETY);
+            case HOMES:      return () -> ui.buildScreen.openCategory(BuildAdvice.HOMES);
+            case LAND:       return ui.landScreen::showLandMenu;
+            case BUILDERS:   return () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().construction(), "Investors");
+            case FINANCES:   return () -> ui.financesScreen.open(null, null, null);
+            case BANK:       return ui.bankScreen::showBankMenu;
+            case PENSIONS:   return () -> {
+                ui.policyScreen.policyArea = "Promises";
+                ui.policyScreen.policyPage = "Pensions";
+                ui.policyScreen.dropProposal();
+                ui.policyScreen.showPolicyMenu();
+            };
+            case WAGES:      return () -> {
+                ui.policyScreen.policyArea = "Wages";
+                ui.policyScreen.policyPage = PolicyScreen.POLICY_WAGE_PAGES[0];
+                ui.policyScreen.dropProposal();
+                ui.policyScreen.showPolicyMenu();
+            };
+            default:         return () -> {
+                ui.policyScreen.policyArea = "Taxes";
+                ui.policyScreen.policyPage = PolicyScreen.POLICY_HOME;
+                ui.policyScreen.dropProposal();
+                ui.policyScreen.showPolicyMenu();
+            };
+        }
     }
 
     /**
@@ -864,13 +587,27 @@ final class SummaryScreen {
         over(out, "OUT OF WORK", String.format("%.1f%%", jobless * 100),
                 jobless, .12, .20, ui.peopleScreen::showPopulationInfoMenu);
 
+        // Its lines are CityNeeds' since 0.7.28, which Services colours the same
+        // figure by; and it opens Health's Overview, not whatever Services showed last.
         double sick = health.getSickRate();
         over(out, "OFF SICK", String.format("%.1f%%", sick * 100),
-                sick, .06, .12, ui.servicesScreen::showServicesStatsMenu);
+                sick, CityNeeds.SICK_YELLOW, CityNeeds.SICK_RED, () -> ui.servicesScreen.open("Health", "Overview"));
 
-        double hungry = health.getHungerRate();
-        over(out, "HUNGRY", hungry > 0 ? String.format("%.1f%%", hungry * 100) : "nobody",
-                hungry, .005, .03, ui.peopleScreen::showHouseholdMenu);
+        /*
+         * THE SHARE OF PEOPLE, AS THE PAGE IT OPENS SAYS IT (0.7.27). It read
+         * Health.getHungerRate(), the points hunger adds to the sick rate
+         * (6.3), and opened Household money, whose GOING SHORT is the share
+         * of the city eating less than a basket (42.2%) - two figures under
+         * one word. It reads the share now, on GOING SHORT's own lines; the
+         * points are in its tooltip.
+         */
+        double hungry = ui.game.getHouseholdBalance().getHungerRate();
+        over(out, "HUNGRY", hungry > 0 ? String.format("%.1f%% of people", hungry * 100) : "nobody",
+                hungry, PeopleScreen.GOING_SHORT_WARN, PeopleScreen.GOING_SHORT_BAD, ui.peopleScreen::showHouseholdMenu);
+        Watch last = out.remove(out.size() - 1);
+        out.add(new Watch(last.label(), last.reading(), last.level(), last.near(), last.go(), String.format(
+                "%.1f%% of the city ate less than a basket this month.%nHunger adds %.1f points to the sick rate.",
+                hungry * 100, health.getHungerRate() * 100)));
 
         double net = ui.game.getMigration().getLastNet()
                 + pyramid.getLastBirths() - pyramid.getLastDeaths();
@@ -898,10 +635,14 @@ final class SummaryScreen {
          */
         ForeignAccounts fx = ui.game.getForeignAccounts();
         double drift = Math.abs(fx.deviationFromParity());
+        // ...ON THE ONE PARITY RULE (0.7.35): the Trade tab and the header's rate
+        // line read the same two lines, and the row opens The currency rather
+        // than whatever Trade page was last open (the Trade spec's B9, B18).
         over(out, "THE CURRENCY", fx.isPinned() ? "pinned"
                         : String.format("%.0f%% %s than parity", drift * 100,
                                 fx.deviationFromParity() > 0 ? "weaker" : "stronger"),
-                fx.isPinned() ? 0 : drift, .25, .50, ui.tradeScreen::showForeignMenu);
+                fx.isPinned() ? 0 : drift, ForeignAccounts.PARITY_WATCH, ForeignAccounts.PARITY_FAR,
+                () -> ui.tradeScreen.open(TradeScreen.CURRENCY));
 
         /*
          * THE SHAPE OF THE HOUSING STOCK IS A READING, NOT A LEVER.
@@ -964,9 +705,11 @@ final class SummaryScreen {
         /* ------------------------------ the symptoms ------------------------------ */
         rows.getChildren().add(panelHeading("HOW THE CITY IS"));
         for (Watch w : citySymptoms()) {
-            rows.getChildren().add(summaryRow(w.label(), w.reading(),
+            VBox row = summaryRow(w.label(), w.reading(),
                     w.level() >= 2 ? PANEL_BAD : w.level() == 1 ? PANEL_WARN : null,
-                    w.go()));
+                    w.go());
+            if (w.tip() != null) javafx.scene.control.Tooltip.install(row, new javafx.scene.control.Tooltip(w.tip()));
+            rows.getChildren().add(row);
         }
 
         body.getChildren().add(rows);
@@ -1105,7 +848,10 @@ final class SummaryScreen {
                             statLine("Rate", fxRate(fxPanel.getRate())),
                             statLine("vs parity",
                                     String.format("%+.1f%%", fxDrift * 100),
-                                    Math.abs(fxDrift) > .15 ? PANEL_WARN : null));
+                                    // The one parity rule (0.7.38), which the watch list's THE CURRENCY, the header and Trade read too.
+                                    fxPanel.isPinned() ? null
+                                            : ForeignAccounts.parityLevel(fxDrift) >= 2 ? PANEL_BAD
+                                            : ForeignAccounts.parityLevel(fxDrift) == 1 ? PANEL_WARN : null));
                     b.getChildren().add(panelNote(fxPanel.isPinned()
                             ? "held fixed"
                             : fxDrift > .005 ? "weaker \u2014 imports cost more"
@@ -1160,14 +906,14 @@ final class SummaryScreen {
                             b.getChildren().add(panelNote(String.format(
                                     "the founders left %s here%s", usd(ui.game.getFoundingReserveUsd()),
                                     fxPanel.monthlyImports() <= 0 ? ""
-                                            : cover >= 120 ? " - over ten years of imports"
-                                            : String.format(" - %.1f months of imports", cover))));
+                                            : " - " + coverMonths(cover) + " of imports")));
                         }
                         if (fxPanel.monthlyImports() > 0) {
+                            // Trade's words and verdict (0.7.38): ForeignAccounts.coverLevel().
+                            int coverLevel = ForeignAccounts.coverLevel(fxPanel.importCover());
                             b.getChildren().add(statLine("Import cover",
-                                    String.format("%.1f mo",
-                                            Math.min(9999, fxPanel.importCover())),
-                                    fxPanel.importCover() < 3 ? PANEL_WARN : null));
+                                    coverMonths(fxPanel.importCover()),
+                                    coverLevel >= 2 ? PANEL_BAD : coverLevel == 1 ? PANEL_WARN : null));
                         }
                     } else {
                         b.getChildren().add(panelNote("the treasury holds no foreign money"));
@@ -1292,7 +1038,7 @@ final class SummaryScreen {
                                         : own[i] > posts[i] * 1.2 ? PANEL_WARN : null));
                     }
                     b.getChildren().add(statLine("Min wage",
-                            money(market.getMinimumWage())));
+                            money(market.cashMinimumWage())));
 
                     /*
                      * WHERE THEY CAME FROM, because otherwise it reads as a bug.
@@ -1474,25 +1220,36 @@ final class SummaryScreen {
                                 ui.game.getSectors().industry().getStock(Good.BREAD))))));
 
         /* ================= LAND ================= */
-        double landUsed = land.getUtilisation();
         /*
          * THE PRICE ON THE COLLAPSED HEADER, not only inside.
          *
-         * "% used" says how full the city is; the price is what the player is
-         * actually deciding against - every building's all-in cost is its cash
-         * plus its footprint at this figure, and the three road types are
-         * costed so that which one wins depends on it. A number that decides
-         * every purchase should not need a click.
+         * The price is what the player is actually deciding against - every
+         * building's all-in cost is its cash plus its footprint at this
+         * figure, and the three road types are costed so that which one wins
+         * depends on it. A number that decides every purchase should not
+         * need a click.
+         *
+         * THE GROUND FREE BESIDE IT, COLOURED AS NEEDS YOU COLOURS IT
+         * (0.7.26). It read "95% used" in red from 95%, and a city buys
+         * ground as it needs it, so the share used sits at 95-100% for
+         * centuries with nothing wrong (GROUND USED, citySymptoms()): the
+         * playtest's 2,400-month city was over 95% in 120 months of 120 with
+         * no sector waiting. The colour is the GROUND row's
+         * (CityNeeds.ground()), which the land office's GROUND FREE and
+         * Build's LAND FREE read too, so the three and NEEDS YOU agree; the
+         * share used is a line inside, in no colour. The price is the city's
+         * money (Money.unitPrice()); it printed a bare "$".
          */
+        CityNeeds.Need ground = CityNeeds.ground(ui.game, WORDS);
+        String perSqFt = marked(ui.game.getCurrency().qualifiedSymbol(), unitPrice(land.getPricePerSqFt()));
         body.getChildren().add(panelSection("land", "LAND",
-                String.format("%.0f%% used  ·  $%.2f/sq ft",
-                        landUsed * 100, land.getPricePerSqFt() * 1000),
-                landUsed >= .95 ? PANEL_BAD : landUsed >= .85 ? PANEL_WARN : null,
+                shortNumber(land.getAvailableSqFt()) + " free  ·  " + perSqFt + "/sq ft",
+                ground.level() >= 2 ? PANEL_BAD : ground.level() == 1 ? PANEL_WARN : null,
                 () -> panelBody(
                         statLine("Owned", LandManager.km2Words(land.getOwnedSqFt())),
                         statLine("Free", LandManager.km2Words(land.getAvailableSqFt())),
-                        statLine("Price/sq ft", String.format("$%.2f",
-                                land.getPricePerSqFt() * 1000)))));
+                        statLine("Used", String.format("%.0f%%", land.getUtilisation() * 100)),
+                        statLine("Price/sq ft", perSqFt))));
 
         /* ================= SECTOR CASH ================= */
         double sectorCash = ui.game.getSectors().totalCash();
@@ -1601,7 +1358,7 @@ final class SummaryScreen {
         VBox vitals = new VBox(0);
         vitals.getChildren().addAll(
                 statLine("Cash", money(cash), cash < 0 ? PANEL_BAD : null),
-                statLine("Net income", money(income), income < 0 ? PANEL_BAD : PANEL_GOOD),
+                statLine("Earned", money(income), income < 0 ? PANEL_BAD : PANEL_GOOD),
                 statLine("Population", String.format("%,d", population)));
         vitals.setStyle("-fx-padding: 6 4 6 2; -fx-background-color: " + Palette.PINNED + ";"
                 + " -fx-background-radius: 4;");
@@ -1611,7 +1368,7 @@ final class SummaryScreen {
            AND WHATEVER IS ACTUALLY WRONG.
 
            An alert earns its place by being ABSENT most of the time. These are
-           the five conditions that quietly cost the city output or people, each
+           the six conditions that quietly cost the city output or people, each
            of which used to be a row indistinguishable from the forty around it -
            an outbreak read exactly like the store stock.
            ============================================================= */
@@ -1628,7 +1385,7 @@ final class SummaryScreen {
                     formatter.format(service.getUnburied()), PANEL_BAD));
         }
         if (ui.game.getInfrastructureManager().isCongested()) {
-            alerts.getChildren().add(statLine("Roads", roadSummary(), PANEL_BAD));
+            alerts.getChildren().add(roadLine());
         }
         if (utilities.getProduction() > 0
                 && utilities.getConsumption() > utilities.getProduction()) {
@@ -1638,9 +1395,11 @@ final class SummaryScreen {
                 && utilities.getWaterConsumption() > utilities.getWaterProduction()) {
             alerts.getChildren().add(statLine("Water", "over capacity", PANEL_BAD));
         }
-        if (land.getUtilisation() >= .95) {
-            alerts.getChildren().add(statLine("Land",
-                    String.format("%.0f%% used", land.getUtilisation() * 100), PANEL_BAD));
+        // NOBODY CAN BREAK GROUND (0.7.26): NEEDS YOU's GROUND row at red, none
+        // free. It was "95% used", which a city sits at for centuries with
+        // nothing wrong - see LAND in the dashboard's sections.
+        if (CityNeeds.ground(ui.game, WORDS).level() >= 2) {
+            alerts.getChildren().add(statLine("Land", "none free", PANEL_BAD));
         }
 
         if (!alerts.getChildren().isEmpty()) {
@@ -1652,7 +1411,7 @@ final class SummaryScreen {
             body.getChildren().add(spacer);
         }
 
-        if (ui.prefs.isPanelDashboard()) {
+        if (dashboardShown()) {
             body.getChildren().add(panelFoldAll());
             panelDashboardSections(body);
         } else {
@@ -1662,6 +1421,8 @@ final class SummaryScreen {
         javafx.scene.control.ScrollPane scroller = ui.keptPanelScroller("city", body);
         scroller.setFitToWidth(true);
         scroller.setPrefHeight(700);
+        // The drawer's full height (0.7.24): it is as tall as the stage it opens over.
+        VBox.setVgrow(scroller, Priority.ALWAYS);
         scroller.setStyle("-fx-background-color:transparent; -fx-background:transparent;");
 
         ui.cityPanel.getChildren().addAll(title, subtitle, panelModeSwitch(),

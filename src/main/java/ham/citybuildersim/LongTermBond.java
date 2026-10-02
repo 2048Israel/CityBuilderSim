@@ -117,8 +117,9 @@ public class LongTermBond extends Debt {
      * lump but pays no coupon, and the serial bond amortises. That makes this
      * the instrument with the redemption cliff, which is its character rather
      * than a flaw - you buy a very low monthly payment and you owe the lot in
-     * thirty years. The maturity strip along the bottom of the window
-     * exists so that is visible for years beforehand rather than on the morning.
+     * thirty years. The Finances hub's ladder (the maturity strip along the
+     * bottom of the window until 0.7.24) exists so that is visible for years
+     * beforehand rather than on the morning.
      */
     @Override
     protected double[] scheduleOwed() {

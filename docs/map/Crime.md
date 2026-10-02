@@ -1,6 +1,6 @@
-# Crime.java - 522 lines · 61 methods · 17 constants · model
+# Crime.java - 525 lines · 61 methods · 18 constants · model
 
-`ham/citybuildersim/Crime.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Crime.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Crime, the police who deter and catch it, and the prisons that hold who
 > they catch.
@@ -66,32 +66,32 @@
 
 **Uses:** [PopulationCohorts](PopulationCohorts.md) (1), [AgeBand](AgeBand.md) (1)
 
-**Used by (12):** [BuildScreen](BuildScreen.md), [CrimeCheck](CrimeCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [SafetyType](SafetyType.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md)
+**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [PeopleScreen](PeopleScreen.md), [SafetyType](SafetyType.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 68 | · the dials |
-| 118 | · the causes |
-| 253 | · the stock |
-| 258 | · the month |
-| 267 | · lifetime |
-| 271 | · the month |
-| 364 | · reading |
-| 457 | · saving |
+| 121 | · the causes |
+| 256 | · the stock |
+| 261 | · the month |
+| 270 | · lifetime |
+| 274 | · the month |
+| 367 | · reading |
+| 460 | · saving |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 128 | `Crime.Cause.NO_HOME` |  |
-| 129 | `Crime.Cause.PAST_EI` |  |
-| 130 | `Crime.Cause.SHORT_OF_MONEY` |  |
-| 131 | `Crime.Cause.ON_EI` |  |
-| 132 | `Crime.Cause.CROWDED` |  |
-| 133 | `Crime.Cause.NO_CAUSE` |  |
-| 134 | `Crime.Cause.FEW_POLICE` |  |
+| 131 | `Crime.Cause.NO_HOME` |  |
+| 132 | `Crime.Cause.PAST_EI` |  |
+| 133 | `Crime.Cause.SHORT_OF_MONEY` |  |
+| 134 | `Crime.Cause.ON_EI` |  |
+| 135 | `Crime.Cause.CROWDED` |  |
+| 136 | `Crime.Cause.NO_CAUSE` |  |
+| 137 | `Crime.Cause.FEW_POLICE` |  |
 
 ## Constants
 
@@ -101,131 +101,132 @@
 | 74 | `Crime.FULL_OFFICERS_PER_100K` | `2 * CANADA_OFFICERS_PER_100K` | Full coverage: twice Canada's level. |
 | 77 | `Crime.CANADA_CRIMES_PER_100K` | `5_585` | Police-reported crime per 100,000 people a year, Canada, 2025. |
 | 80 | `Crime.CANADA_HOMICIDES_PER_100K` | `1.61` | Homicides per 100,000 people a year, Canada, 2025. |
-| 83 | `Crime.MAX_DETERRENCE` | `.90` | What full coverage takes off. |
-| 91 | `Crime.DETERRENCE_POWER` | `1.5` | The curve between none and full. |
-| 94 | `Crime.NO_POLICE_WEIGHT` | `2` | Every adult at liberty, tempted this much more with no police at all. |
-| 97 | `Crime.VIOLENT_SHARE` | `.25` | A quarter of crime is violent. |
-| 100 | `Crime.MONTHS_OFF_PER_VIOLENT` | `.5` | Months off work per violent crime, on the sick rate. |
-| 103 | `Crime.KILLED_PER_VIOLENT` | `CANADA_HOMICIDES_PER_100K /(CANADA_CRIMES_PER_100K * VIOLENT_SHARE)` | Of violent crimes, the share that kill: Canada's homicides over its violent crime, 0.115%. |
-| 107 | `Crime.THEFT_WAGE_SHARE` | `.25` | What one property crime takes, as a share of a month's unskilled wage. |
-| 110 | `Crime.FROM_HOUSEHOLDS` | `.5` | ...of which this much from households, the rest from the businesses. |
-| 113 | `Crime.CAUGHT_AT_FULL` | `.09` | The share of crimes that end in a sentence at full coverage; straight down to none with no police. |
-| 116 | `Crime.SENTENCE_MONTHS` | `6` | Months a sentence lasts. |
-| 153 | `Crime.CAUSES` | `Cause.values().length` |  |
-| 224 | `Crime.K` | `strikeK()` | Crimes a month per point of pressure. |
-| 459 | `Crime.STATE_LENGTH` | `SENTENCE_MONTHS + 5 + CAUSES + 13 + 2 + 5` |  |
+| 83 | `Crime.CANADA_PRISONERS_PER_100K` | `127` | Prisoners per 100,000 people, Canada, about - what the Services screen's prisons say beside the city's (0.7.28; a literal in the screen until then). |
+| 86 | `Crime.MAX_DETERRENCE` | `.90` | What full coverage takes off. |
+| 94 | `Crime.DETERRENCE_POWER` | `1.5` | The curve between none and full. |
+| 97 | `Crime.NO_POLICE_WEIGHT` | `2` | Every adult at liberty, tempted this much more with no police at all. |
+| 100 | `Crime.VIOLENT_SHARE` | `.25` | A quarter of crime is violent. |
+| 103 | `Crime.MONTHS_OFF_PER_VIOLENT` | `.5` | Months off work per violent crime, on the sick rate. |
+| 106 | `Crime.KILLED_PER_VIOLENT` | `CANADA_HOMICIDES_PER_100K /(CANADA_CRIMES_PER_100K * VIOLENT_SHARE)` | Of violent crimes, the share that kill: Canada's homicides over its violent crime, 0.115%. |
+| 110 | `Crime.THEFT_WAGE_SHARE` | `.25` | What one property crime takes, as a share of a month's unskilled wage. |
+| 113 | `Crime.FROM_HOUSEHOLDS` | `.5` | ...of which this much from households, the rest from the businesses. |
+| 116 | `Crime.CAUGHT_AT_FULL` | `.09` | The share of crimes that end in a sentence at full coverage; straight down to none with no police. |
+| 119 | `Crime.SENTENCE_MONTHS` | `6` | Months a sentence lasts. |
+| 156 | `Crime.CAUSES` | `Cause.values().length` |  |
+| 227 | `Crime.K` | `strikeK()` | Crimes a month per point of pressure. |
+| 462 | `Crime.STATE_LENGTH` | `SENTENCE_MONTHS + 5 + CAUSES + 13 + 2 + 5` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 136 | `private final String label` |  |
-| 137 | `private final double weight` |  |
-| 161 | `private final double[] adults` |  |
-| 164 | `private double poolWeighted` | Of the weighted pressure, the part that is the out of work's. |
-| 256 | `private final double[] ring` | Prisoners by months served, 0 the month they went in. |
-| 260 | `private double population, officers, cells, coverage` |  |
-| 261 | `private final double[] pressureBy` |  |
-| 262 | `private double pressure, crimes, violent, killed, injuredShare, theftWanted` |  |
-| 263 | `private double caught, admitted, notHeld, released, releasedEarly` |  |
-| 264 | `private double stolenFromHouseholds, stolenFromBusinesses` |  |
-| 265 | `private double payroll, upkeep` |  |
-| 269 | `private double everCrimes, everKilled, everStolen, everAdmitted, everNotHeld` |  |
+| 139 | `private final String label` |  |
+| 140 | `private final double weight` |  |
+| 164 | `private final double[] adults` |  |
+| 167 | `private double poolWeighted` | Of the weighted pressure, the part that is the out of work's. |
+| 259 | `private final double[] ring` | Prisoners by months served, 0 the month they went in. |
+| 263 | `private double population, officers, cells, coverage` |  |
+| 264 | `private final double[] pressureBy` |  |
+| 265 | `private double pressure, crimes, violent, killed, injuredShare, theftWanted` |  |
+| 266 | `private double caught, admitted, notHeld, released, releasedEarly` |  |
+| 267 | `private double stolenFromHouseholds, stolenFromBusinesses` |  |
+| 268 | `private double payroll, upkeep` |  |
+| 272 | `private double everCrimes, everKilled, everStolen, everAdmitted, everNotHeld` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 457 | **type** `public class Crime` | Crime, the police who deter and catch it, and the prisons that hold who they catch. |
+| 66 | 460 | **type** `public class Crime` | Crime, the police who deter and catch it, and the prisons that hold who they catch. |
 
-### the dials (lines 68-117)
+### the dials (lines 68-120)
 
-### the causes (lines 118-252)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 127 | 25 | **type** `public enum Cause` | Why an adult at liberty offends, and how much. |
-| 139 | 4 | `Cause(String label, double weight)` _(in Crime.Cause)_ |  |
-| 144 | 1 | `public String label()` _(in Crime.Cause)_ |  |
-| 147 | 1 | `public double weight()` _(in Crime.Cause)_ | Per adult; FEW_POLICE's is before the coverage it is missing. |
-| 150 | 1 | `public boolean isGroup()` _(in Crime.Cause)_ | The six that are groups of people. |
-| 160 | 58 | **type** `public static final class Causes` | The adults at liberty, sorted into the groups above - each adult once. |
-| 166 | 4 | `public Causes add(Cause cause, double people)` _(in Crime.Causes)_ |  |
-| 172 | 6 | `public Causes add(Causes other)` _(in Crime.Causes)_ | Another set of adults, added group by group - a cell's, into the city's. |
-| 179 | 4 | `public Causes addPool(double weighted)` _(in Crime.Causes)_ |  |
-| 184 | 1 | `public double adults(Cause cause)` _(in Crime.Causes)_ |  |
-| 187 | 5 | `public double adults()` _(in Crime.Causes)_ | Every adult at liberty. |
-| 194 | 5 | `public double weighted()` _(in Crime.Causes)_ | Adults times weight, the six groups. |
-| 200 | 1 | `public double poolWeighted()` _(in Crime.Causes)_ |  |
-| 207 | 10 | `public static Causes canadaLike(double adults)` _(in Crime.Causes)_ | A city of this many adults at liberty sorted the way Canada's are: 3% on EI, 1.5% past it, 0.15% with no home, 5% short of money, 8% crowded. |
-| 226 | 8 | `private static double strikeK()` |  |
-| 236 | 4 | `public static double deterrence(double coverage)` | What the police leave of the crime the reasons make: 1 with none, 0.1 at full. |
-| 242 | 5 | `public static double coverageOf(double officers, double population)` | Staffed officers against full coverage for this many people, 0-1. |
-| 249 | 3 | `public static double caughtShare(double coverage)` | The share of crimes that end in a sentence at this coverage. |
-
-### the stock (lines 253-257)
-
-### the month (lines 258-266)
-
-### lifetime (lines 267-270)
-
-### the month (lines 271-363)
+### the causes (lines 121-255)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 284 | 63 | `public void advanceMonth(Causes causes, double population, double staffedOfficers, double staffedCells, double adultExitRate, d...` | Strikes the month's crime and turns the prison ring. |
-| 352 | 5 | `public void recordStolen(double fromHouseholds, double fromBusinesses)` | What the thieves actually got - which is less than getTheftWanted() when the households or the businesses had less than that to take. |
-| 359 | 4 | `public void setCosts(double payroll, double upkeep)` | What the police and the prisons cost this month. |
+| 130 | 25 | **type** `public enum Cause` | Why an adult at liberty offends, and how much. |
+| 142 | 4 | `Cause(String label, double weight)` _(in Crime.Cause)_ |  |
+| 147 | 1 | `public String label()` _(in Crime.Cause)_ |  |
+| 150 | 1 | `public double weight()` _(in Crime.Cause)_ | Per adult; FEW_POLICE's is before the coverage it is missing. |
+| 153 | 1 | `public boolean isGroup()` _(in Crime.Cause)_ | The six that are groups of people. |
+| 163 | 58 | **type** `public static final class Causes` | The adults at liberty, sorted into the groups above - each adult once. |
+| 169 | 4 | `public Causes add(Cause cause, double people)` _(in Crime.Causes)_ |  |
+| 175 | 6 | `public Causes add(Causes other)` _(in Crime.Causes)_ | Another set of adults, added group by group - a cell's, into the city's. |
+| 182 | 4 | `public Causes addPool(double weighted)` _(in Crime.Causes)_ |  |
+| 187 | 1 | `public double adults(Cause cause)` _(in Crime.Causes)_ |  |
+| 190 | 5 | `public double adults()` _(in Crime.Causes)_ | Every adult at liberty. |
+| 197 | 5 | `public double weighted()` _(in Crime.Causes)_ | Adults times weight, the six groups. |
+| 203 | 1 | `public double poolWeighted()` _(in Crime.Causes)_ |  |
+| 210 | 10 | `public static Causes canadaLike(double adults)` _(in Crime.Causes)_ | A city of this many adults at liberty sorted the way Canada's are: 3% on EI, 1.5% past it, 0.15% with no home, 5% short of money, 8% crowded. |
+| 229 | 8 | `private static double strikeK()` |  |
+| 239 | 4 | `public static double deterrence(double coverage)` | What the police leave of the crime the reasons make: 1 with none, 0.1 at full. |
+| 245 | 5 | `public static double coverageOf(double officers, double population)` | Staffed officers against full coverage for this many people, 0-1. |
+| 252 | 3 | `public static double caughtShare(double coverage)` | The share of crimes that end in a sentence at this coverage. |
 
-### reading (lines 364-456)
+### the stock (lines 256-260)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 367 | 5 | `public double prisoners()` | Everyone serving a sentence. |
-| 374 | 1 | `public double cohort(int monthsServed)` | Prisoners in their nth month, 0 the newest. |
-| 376 | 1 | `public double getPopulation()` |  |
-| 377 | 1 | `public double getOfficers()` |  |
-| 378 | 1 | `public double getCells()` |  |
-| 379 | 1 | `public double getCoverage()` |  |
-| 380 | 1 | `public double getAdultsAtLiberty()` |  |
-| 382 | 1 | `public double getPressure()` |  |
-| 383 | 1 | `public double getPressure(Cause c)` |  |
-| 386 | 1 | `public double getCrimes()` | This month's crimes. |
-| 389 | 3 | `public double getCrimes(Cause c)` | ...of which this many from one cause, by its share of the pressure. |
-| 398 | 6 | `public double crimesAt(double otherCoverage)` | What this month's reasons would have made at another coverage: the groups the same, the part the police are missing moved, and what the police leave of it. |
-| 406 | 1 | `public double crimesWithoutPolice()` | ...and with no police at all, for how much the police are taking off. |
-| 408 | 1 | `public double getViolent()` |  |
-| 409 | 1 | `public double getProperty()` |  |
-| 410 | 1 | `public double getKilled()` |  |
-| 413 | 1 | `public double getInjuredShare()` | The share of the city off work this month with an injury. |
-| 416 | 1 | `public double getTheftWanted()` | What the month's thefts would take if there were money to take. |
-| 417 | 1 | `public double getStolenFromHouseholds()` |  |
-| 418 | 1 | `public double getStolenFromBusinesses()` |  |
-| 419 | 1 | `public double getStolen()` |  |
-| 421 | 1 | `public double getCaught()` |  |
-| 422 | 1 | `public double getAdmitted()` |  |
-| 423 | 1 | `public double getNotHeld()` |  |
-| 424 | 1 | `public double getReleased()` |  |
-| 425 | 1 | `public double getReleasedEarly()` |  |
-| 428 | 3 | `public double getRatePer100k()` | Crimes a year per 100,000 people, at this month's pace. |
-| 433 | 3 | `public double getRateVsCanada()` | The rate against Canada's: 1 is Canada. |
-| 438 | 3 | `public double getOfficersPer100k()` | Officers per 100,000 people. |
-| 443 | 3 | `public double getPrisonersPer100k()` | Prisoners per 100,000 people. |
-| 447 | 1 | `public double getPayroll()` |  |
-| 448 | 1 | `public double getUpkeep()` |  |
-| 449 | 1 | `public double getGrossCost()` |  |
-| 451 | 1 | `public double getEverCrimes()` |  |
-| 452 | 1 | `public double getEverKilled()` |  |
-| 453 | 1 | `public double getEverStolen()` |  |
-| 454 | 1 | `public double getEverAdmitted()` |  |
-| 455 | 1 | `public double getEverNotHeld()` |  |
+### the month (lines 261-269)
 
-### saving (lines 457-522)
+### lifetime (lines 270-273)
+
+### the month (lines 274-366)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 466 | 17 | `public double[] getState()` | The ring, and the month as it was struck - the migration pull, the killings and the injuries next month read are this month's figures, and a flow cannot be rebuilt from the state a month ended in. |
-| 485 | 17 | `public boolean restore(double[] saved)` |  |
-| 503 | 9 | `public void reset()` |  |
-| 514 | 8 | `public void redenominate(double scale)` | Money in the new unit. |
+| 287 | 63 | `public void advanceMonth(Causes causes, double population, double staffedOfficers, double staffedCells, double adultExitRate, d...` | Strikes the month's crime and turns the prison ring. |
+| 355 | 5 | `public void recordStolen(double fromHouseholds, double fromBusinesses)` | What the thieves actually got - which is less than getTheftWanted() when the households or the businesses had less than that to take. |
+| 362 | 4 | `public void setCosts(double payroll, double upkeep)` | What the police and the prisons cost this month. |
+
+### reading (lines 367-459)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 370 | 5 | `public double prisoners()` | Everyone serving a sentence. |
+| 377 | 1 | `public double cohort(int monthsServed)` | Prisoners in their nth month, 0 the newest. |
+| 379 | 1 | `public double getPopulation()` |  |
+| 380 | 1 | `public double getOfficers()` |  |
+| 381 | 1 | `public double getCells()` |  |
+| 382 | 1 | `public double getCoverage()` |  |
+| 383 | 1 | `public double getAdultsAtLiberty()` |  |
+| 385 | 1 | `public double getPressure()` |  |
+| 386 | 1 | `public double getPressure(Cause c)` |  |
+| 389 | 1 | `public double getCrimes()` | This month's crimes. |
+| 392 | 3 | `public double getCrimes(Cause c)` | ...of which this many from one cause, by its share of the pressure. |
+| 401 | 6 | `public double crimesAt(double otherCoverage)` | What this month's reasons would have made at another coverage: the groups the same, the part the police are missing moved, and what the police leave of it. |
+| 409 | 1 | `public double crimesWithoutPolice()` | ...and with no police at all, for how much the police are taking off. |
+| 411 | 1 | `public double getViolent()` |  |
+| 412 | 1 | `public double getProperty()` |  |
+| 413 | 1 | `public double getKilled()` |  |
+| 416 | 1 | `public double getInjuredShare()` | The share of the city off work this month with an injury. |
+| 419 | 1 | `public double getTheftWanted()` | What the month's thefts would take if there were money to take. |
+| 420 | 1 | `public double getStolenFromHouseholds()` |  |
+| 421 | 1 | `public double getStolenFromBusinesses()` |  |
+| 422 | 1 | `public double getStolen()` |  |
+| 424 | 1 | `public double getCaught()` |  |
+| 425 | 1 | `public double getAdmitted()` |  |
+| 426 | 1 | `public double getNotHeld()` |  |
+| 427 | 1 | `public double getReleased()` |  |
+| 428 | 1 | `public double getReleasedEarly()` |  |
+| 431 | 3 | `public double getRatePer100k()` | Crimes a year per 100,000 people, at this month's pace. |
+| 436 | 3 | `public double getRateVsCanada()` | The rate against Canada's: 1 is Canada. |
+| 441 | 3 | `public double getOfficersPer100k()` | Officers per 100,000 people. |
+| 446 | 3 | `public double getPrisonersPer100k()` | Prisoners per 100,000 people. |
+| 450 | 1 | `public double getPayroll()` |  |
+| 451 | 1 | `public double getUpkeep()` |  |
+| 452 | 1 | `public double getGrossCost()` |  |
+| 454 | 1 | `public double getEverCrimes()` |  |
+| 455 | 1 | `public double getEverKilled()` |  |
+| 456 | 1 | `public double getEverStolen()` |  |
+| 457 | 1 | `public double getEverAdmitted()` |  |
+| 458 | 1 | `public double getEverNotHeld()` |  |
+
+### saving (lines 460-525)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 469 | 17 | `public double[] getState()` | The ring, and the month as it was struck - the migration pull, the killings and the injuries next month read are this month's figures, and a flow cannot be rebuilt from the state a month ended in. |
+| 488 | 17 | `public boolean restore(double[] saved)` |  |
+| 506 | 9 | `public void reset()` |  |
+| 517 | 8 | `public void redenominate(double scale)` | Money in the new unit. |
 

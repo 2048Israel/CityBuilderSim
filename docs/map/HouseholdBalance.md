@@ -1,6 +1,6 @@
-# HouseholdBalance.java - 4,138 lines · 209 methods · 43 constants · model
+# HouseholdBalance.java - 4,214 lines · 213 methods · 43 constants · model
 
-`ham/citybuildersim/HouseholdBalance.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdBalance.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The households' balance sheet: what they have saved, what they owe, and what
 > happens in the month they cannot cover the shop.
@@ -64,9 +64,9 @@
 > 
 > ... (17 more lines in the source)
 
-**Uses:** [Household](Household.md) (189), [Equity](Equity.md) (14), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (11), [UnemployedHousehold](UnemployedHousehold.md) (7), [AgeBand](AgeBand.md) (7), [OutwardInvestment](OutwardInvestment.md) (5), [WorkingHousehold](WorkingHousehold.md) (4), [Bank](Bank.md) (4), [StudentHousehold](StudentHousehold.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [PrisonerHousehold](PrisonerHousehold.md) (3), [TaxPolicy](TaxPolicy.md) (2), [Restaurants](Restaurants.md) (2), [Exchange](Exchange.md) (2), [BondMarket](BondMarket.md) (2), [RetiredHousehold](RetiredHousehold.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
+**Uses:** [Household](Household.md) (192), [Equity](Equity.md) (14), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (11), [UnemployedHousehold](UnemployedHousehold.md) (7), [AgeBand](AgeBand.md) (7), [OutwardInvestment](OutwardInvestment.md) (5), [WorkingHousehold](WorkingHousehold.md) (4), [Bank](Bank.md) (4), [StudentHousehold](StudentHousehold.md) (3), [OrphanHousehold](OrphanHousehold.md) (3), [PrisonerHousehold](PrisonerHousehold.md) (3), [TaxPolicy](TaxPolicy.md) (2), [Restaurants](Restaurants.md) (2), [Exchange](Exchange.md) (2), [BondMarket](BondMarket.md) (2), [RetiredHousehold](RetiredHousehold.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
-**Used by (33):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CentralBankCheck](CentralBankCheck.md), [CityBasket](CityBasket.md), [CrimeCheck](CrimeCheck.md), [DenominationCheck](DenominationCheck.md), [EducationCheck](EducationCheck.md), [Equity](Equity.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryCounter](LuxuryCounter.md), [Motoring](Motoring.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [ShadowBasket](ShadowBasket.md), [TradeScreen](TradeScreen.md)
+**Used by (36):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CentralBankCheck](CentralBankCheck.md), [CityBasket](CityBasket.md), [CrimeCheck](CrimeCheck.md), [DenominationCheck](DenominationCheck.md), [EducationCheck](EducationCheck.md), [Equity](Equity.md), [EquityCheck](EquityCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdCheck](HouseholdCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryCounter](LuxuryCounter.md), [Motoring](Motoring.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [ShadowBasket](ShadowBasket.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -84,32 +84,32 @@
 | 539 | · the student loan's rate (2026-09-21) |
 | 553 | · the bank's account fee (0.7.7) |
 | 630 | · the month |
-| 683 | EVERY HOUSEHOLD, OR ONE OF THEM |
-| 760 | THE MONTH |
-| 841 | · ...AND A MEAL OUT IS FOOD (2026-09-18) |
-| 1090 | THE STOCK BELONGS TO THE PEOPLE, NOT TO THE CELLS |
-| 1312 | A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) |
-| 1498 | · EVERY SHARE HERE IS A FRACTION, AND IS HELD TO BEING ONE (2026-09-16) |
-| 1607 | THE CARS (2026-09-16) |
-| 1683 | AND THEY BORROW FOR IT (2026-09-17) |
-| 1768 | THE SECOND-HAND MARKET (2026-09-17) |
-| 1904 | WHOLE CARS, AND WHY THE FLOOR IS LOAD-BEARING (2026-09-16) |
-| 2060 | · the second-hand market |
-| 2125 | THE LUXURY COUNTER (2026-09-17) |
-| 2226 | THE TABLE (2026-09-18) |
-| 2511 | THE MARKET |
-| 2580 | THE WORLD'S PAPER |
-| 2598 | THE ROUNDING FLOOR, AND WHY IT IS SEEDED (2026-09-16) |
-| 2688 | · THE COUPON IS PAID HOME, NOT ROLLED (2026-09-17) |
-| 2785 | THE CITY'S PAPER, AT HOME (0.7.1) |
-| 3036 | THE BUSINESSES' BONDS, AT HOME (0.7.12) |
-| 3295 | · the people outside the families |
-| 3349 | · what the bank is owed |
-| 3425 | · reading |
-| 3497 | THEFT (2026-09-11) |
-| 3557 | THE OFFER |
-| 3749 | · saving |
-| 3914 | · THE SLOT COUNT ALONE DOES NOT SAY WHAT THE SLOTS ARE (2026-09-12) |
+| 685 | EVERY HOUSEHOLD, OR ONE OF THEM |
+| 762 | THE MONTH |
+| 844 | · ...AND A MEAL OUT IS FOOD (2026-09-18) |
+| 1105 | THE STOCK BELONGS TO THE PEOPLE, NOT TO THE CELLS |
+| 1327 | A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) |
+| 1513 | · EVERY SHARE HERE IS A FRACTION, AND IS HELD TO BEING ONE (2026-09-16) |
+| 1622 | THE CARS (2026-09-16) |
+| 1698 | AND THEY BORROW FOR IT (2026-09-17) |
+| 1783 | THE SECOND-HAND MARKET (2026-09-17) |
+| 1919 | WHOLE CARS, AND WHY THE FLOOR IS LOAD-BEARING (2026-09-16) |
+| 2075 | · the second-hand market |
+| 2140 | THE LUXURY COUNTER (2026-09-17) |
+| 2241 | THE TABLE (2026-09-18) |
+| 2526 | THE MARKET |
+| 2595 | THE WORLD'S PAPER |
+| 2613 | THE ROUNDING FLOOR, AND WHY IT IS SEEDED (2026-09-16) |
+| 2703 | · THE COUPON IS PAID HOME, NOT ROLLED (2026-09-17) |
+| 2800 | THE CITY'S PAPER, AT HOME (0.7.1) |
+| 3051 | THE BUSINESSES' BONDS, AT HOME (0.7.12) |
+| 3310 | · the people outside the families |
+| 3364 | · what the bank is owed |
+| 3440 | · reading |
+| 3522 | THEFT (2026-09-11) |
+| 3582 | THE OFFER |
+| 3807 | · saving |
+| 3980 | · THE SLOT COUNT ALONE DOES NOT SAY WHAT THE SLOTS ARE (2026-09-12) |
 
 ## Constants
 
@@ -134,30 +134,30 @@
 | 396 | `HouseholdBalance.BANKRUPT_RATE` | `.04` | Share of a stuck cell that goes under in a month. |
 | 399 | `HouseholdBalance.LOCKOUT_MONTHS` | `12` | Months a discharged household cannot borrow. |
 | 402 | `HouseholdBalance.LEAVE_ON_BANKRUPTCY` | `.25` | ...and the share of them who give up on the city entirely. |
-| 1347 | `HouseholdBalance.EMPTY_CELL` | `.5` | Fewer households than this in a cell and it is empty: it holds nothing and is paid nothing. |
-| 1644 | `HouseholdBalance.CAR_LIFE_MONTHS` | `180` | How long a car lasts. |
-| 1656 | `HouseholdBalance.CAR_ADOPTION` | `.02` | What share of the households who have never owned a car buy one in a month, before they are asked whether they can afford it. |
-| 1681 | `HouseholdBalance.TRANSIT_DETERRENT` | `.5` | How much of the wanting a fully-served transit system takes away. |
-| 1740 | `HouseholdBalance.CAR_DEPOSIT` | `.20` | The least of a car's price a household must find in cash before a lender will put up the rest. |
-| 1766 | `HouseholdBalance.CAR_CREDIT_SHARE` | `.5` | How much of what a household could still borrow a lender will actually advance against a car. |
-| 1825 | `HouseholdBalance.USED_CAR_FLOOR` | `.15` | What a scrapper pays, as a share of a new car. |
-| 1834 | `HouseholdBalance.USED_CAR_CEILING` | `.70` | ...and what one fetches when buyers are queueing, on the same terms. |
-| 2082 | `HouseholdBalance.CAR_SALE_HORIZON_MONTHS` | `CREDIT_LIMIT_MONTHS` | How far ahead a household looks before it decides the car has to go. |
-| 2628 | `HouseholdBalance.MIN_MOVE` | `1e-12` |  |
-| 2825 | `HouseholdBalance.HOUSEHOLD_PAPER_APPETITE` | `20` | The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point - so two and a half points of spread would take half an issue. |
-| 2828 | `HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE` | `.5` | ...and never more than this share of one issue: half, because a bond market with no bank in it is no longer the city's bank's market. |
-| 3571 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home a household keeps in the bank before it buys a share. |
-| 3574 | `HouseholdBalance.SHARE_OF_EXCESS` | `.30` | The share of what is past the cushion it puts into one offering. |
-| 3807 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
-| 3810 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
-| 3813 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
-| 3816 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
-| 3819 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
-| 3829 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
-| 3839 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
-| 3848 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
-| 3860 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim on the households' o... |
-| 3863 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_BONDS + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, t... |
+| 1362 | `HouseholdBalance.EMPTY_CELL` | `.5` | Fewer households than this in a cell and it is empty: it holds nothing and is paid nothing. |
+| 1659 | `HouseholdBalance.CAR_LIFE_MONTHS` | `180` | How long a car lasts. |
+| 1671 | `HouseholdBalance.CAR_ADOPTION` | `.02` | What share of the households who have never owned a car buy one in a month, before they are asked whether they can afford it. |
+| 1696 | `HouseholdBalance.TRANSIT_DETERRENT` | `.5` | How much of the wanting a fully-served transit system takes away. |
+| 1755 | `HouseholdBalance.CAR_DEPOSIT` | `.20` | The least of a car's price a household must find in cash before a lender will put up the rest. |
+| 1781 | `HouseholdBalance.CAR_CREDIT_SHARE` | `.5` | How much of what a household could still borrow a lender will actually advance against a car. |
+| 1840 | `HouseholdBalance.USED_CAR_FLOOR` | `.15` | What a scrapper pays, as a share of a new car. |
+| 1849 | `HouseholdBalance.USED_CAR_CEILING` | `.70` | ...and what one fetches when buyers are queueing, on the same terms. |
+| 2097 | `HouseholdBalance.CAR_SALE_HORIZON_MONTHS` | `CREDIT_LIMIT_MONTHS` | How far ahead a household looks before it decides the car has to go. |
+| 2643 | `HouseholdBalance.MIN_MOVE` | `1e-12` |  |
+| 2840 | `HouseholdBalance.HOUSEHOLD_PAPER_APPETITE` | `20` | The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point - so two and a half points of spread would take half an issue. |
+| 2843 | `HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE` | `.5` | ...and never more than this share of one issue: half, because a bond market with no bank in it is no longer the city's bank's market. |
+| 3596 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home a household keeps in the bank before it buys a share. |
+| 3599 | `HouseholdBalance.SHARE_OF_EXCESS` | `.30` | The share of what is past the cushion it puts into one offering. |
+| 3873 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
+| 3876 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
+| 3879 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
+| 3882 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
+| 3885 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
+| 3895 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
+| 3905 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
+| 3914 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
+| 3926 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim on the households' o... |
+| 3929 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_BONDS + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, t... |
 
 ## Fields (state)
 
@@ -191,38 +191,39 @@
 | 641 | `private double plannedSpend` |  |
 | 642 | `private double hungryPeople` |  |
 | 643 | `private double totalPeople` |  |
-| 1131 | `private int[] bondStockIds` | The bonds' ids in the order stocks() last listed them, one stock each from its named slot. |
-| 1350 | `private int lastCellsFolded` | Cells the census left under EMPTY_CELL this month that still held something, and were emptied. |
-| 1604 | `private final double[] lastSharesTakenAway` | Shares of each company that left the city with their holders this month. |
-| 1837 | `private final double[] carsToReplace` | What died this month, per cell, waiting to be replaced. |
-| 1840 | `private double lastCarsTakenAway` | ...and the cars whose owners left the city. |
-| 2329 | `private double lastMealsBought, lastMealSpend, lastMealsEaten` |  |
-| 2340 | `private double lastLuxuriesBought, lastLuxurySpend` |  |
-| 2453 | `private double lastUsedOffered, lastUsedTraded, lastUsedSpend, lastUsedFinanced, lastUsedPrice, lastUsedNew...` |  |
-| 2491 | `private double lastUsedLoanFees` |  |
-| 2493 | `private double lastCarsBought` |  |
-| 2494 | `private double lastCarsFinanced` |  |
-| 2508 | `private double lastCarLoanFees` |  |
-| 2519 | `private Exchange exchange` |  |
-| 2520 | `private Equity register` |  |
-| 2521 | `private Bank bank` |  |
-| 2522 | `private Household.Liquidity liquidity` |  |
-| 2631 | `private double minMove` | The same floor in today's money. |
-| 2657 | `private double localPerUsd` | Local currency per dollar, this month: what the paper abroad is worth here. |
-| 2666 | `private double lastAbroadTakenAway` | Dollars the households that left this month took with them. |
-| 2840 | `private PaperDesk paperDesk` |  |
-| 2855 | `private double paperRatio` | What a dollar of face of the households' paper is worth this month: the households' book at the curve over its face (DebtManager .householdBookRatio()), struck once a month by Game before the households' strike and SA... |
-| 2872 | `private double spendFactor` | The month's spend factor (0.7.3): what share of its spending above subsistence every household plans, struck by Game once a month on the real deposit rate (Game.spendFactor()) before the households plan - see the bann... |
-| 3051 | `private BondMarket bondMarket` |  |
-| 3064 | `private double bondRatio` | What a dollar of face of the households' bonds is worth this month: every cell's holdings at the bonds' value over their face, struck by the market at its step and SAVED, because the plan reads it and the load path mu... |
-| 3073 | `private double lastBondsTakenAway` | The face that left the city this month with its holders, every bond together. |
-| 3113 | `private java.util.Map<String, Household> cellIndex` |  |
+| 645 | `private double hungryAtFullShelves` | ...of whom hungry even had the shops handed over all that was planned: the money half (0.7.27). |
+| 1146 | `private int[] bondStockIds` | The bonds' ids in the order stocks() last listed them, one stock each from its named slot. |
+| 1365 | `private int lastCellsFolded` | Cells the census left under EMPTY_CELL this month that still held something, and were emptied. |
+| 1619 | `private final double[] lastSharesTakenAway` | Shares of each company that left the city with their holders this month. |
+| 1852 | `private final double[] carsToReplace` | What died this month, per cell, waiting to be replaced. |
+| 1855 | `private double lastCarsTakenAway` | ...and the cars whose owners left the city. |
+| 2344 | `private double lastMealsBought, lastMealSpend, lastMealsEaten` |  |
+| 2355 | `private double lastLuxuriesBought, lastLuxurySpend` |  |
+| 2468 | `private double lastUsedOffered, lastUsedTraded, lastUsedSpend, lastUsedFinanced, lastUsedPrice, lastUsedNew...` |  |
+| 2506 | `private double lastUsedLoanFees` |  |
+| 2508 | `private double lastCarsBought` |  |
+| 2509 | `private double lastCarsFinanced` |  |
+| 2523 | `private double lastCarLoanFees` |  |
+| 2534 | `private Exchange exchange` |  |
+| 2535 | `private Equity register` |  |
+| 2536 | `private Bank bank` |  |
+| 2537 | `private Household.Liquidity liquidity` |  |
+| 2646 | `private double minMove` | The same floor in today's money. |
+| 2672 | `private double localPerUsd` | Local currency per dollar, this month: what the paper abroad is worth here. |
+| 2681 | `private double lastAbroadTakenAway` | Dollars the households that left this month took with them. |
+| 2855 | `private PaperDesk paperDesk` |  |
+| 2870 | `private double paperRatio` | What a dollar of face of the households' paper is worth this month: the households' book at the curve over its face (DebtManager .householdBookRatio()), struck once a month by Game before the households' strike and SA... |
+| 2887 | `private double spendFactor` | The month's spend factor (0.7.3): what share of its spending above subsistence every household plans, struck by Game once a month on the real deposit rate (Game.spendFactor()) before the households plan - see the bann... |
+| 3066 | `private BondMarket bondMarket` |  |
+| 3079 | `private double bondRatio` | What a dollar of face of the households' bonds is worth this month: every cell's holdings at the bonds' value over their face, struck by the market at its step and SAVED, because the plan reads it and the load path mu... |
+| 3088 | `private double lastBondsTakenAway` | The face that left the city this month with its holders, every bond together. |
+| 3128 | `private java.util.Map<String, Household> cellIndex` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 4053 | **type** `public class HouseholdBalance` | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. |
+| 86 | 4129 | **type** `public class HouseholdBalance` | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. |
 
 ### the dials (lines 97-151)
 
@@ -281,300 +282,304 @@
 | 625 | 1 | `public double totalLoanFees()` | ...and the loan fees the bank added to what they owe on the credit they drew this month. |
 | 628 | 1 | `public double getStudentLoanRate()` | The annual rate the cells were last told. |
 
-### the month (lines 630-682)
+### the month (lines 630-684)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 645 | 37 | `public HouseholdBalance()` |  |
+| 647 | 37 | `public HouseholdBalance()` |  |
 
-### EVERY HOUSEHOLD, OR ONE OF THEM (lines 683-759)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 691 | 4 | `public Household cell(FamilyStructure shape, PayTier tier)` | The cell for this shape at this tier. |
-| 697 | 6 | `public Household cell(FamilyStructure shape)` | The cell for a retired shape, which has no tier. |
-| 705 | 3 | `public UnemployedHousehold unemployed(UnemployedHousehold.Status status)` | The out-of-work cell in this situation. |
-| 710 | 1 | `public StudentHousehold students()` | The students' cell. |
-| 713 | 4 | `public OrphanHousehold orphans(AgeBand band)` | The orphans of a child band, or null for a band that has none. |
-| 719 | 1 | `public PrisonerHousehold prisoners()` | The prisoners' ledger. |
-| 722 | 1 | `public java.util.List<Household> cells()` | Every cell, in the fixed order. |
-| 724 | 1 | `public int cellCount()` |  |
-| 726 | 3 | `public void forEach(Consumer<Household> action)` |  |
-| 731 | 5 | `public double sum(ToDoubleFunction<Household> figure)` | Adds a figure up across every cell. |
-| 738 | 5 | `public double sumRow(int row, ToDoubleFunction<Household> figure)` | ...or across one row: a tier's cells, or the retired. |
-| 745 | 3 | `public double rowHouseholds(int row)` | Households in the row: the denominator of every per-household row figure. |
-| 750 | 9 | `private double perHousehold(int row, ToDoubleFunction<Household> perCell)` | A row total, per household of the row. |
-
-### THE MONTH (lines 760-1089)
+### EVERY HOUSEHOLD, OR ONE OF THEM (lines 685-761)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 790 | 230 | `public void advanceMonth(ToDoubleBiFunction<FamilyStructure, PayTier> census, double[] rowDisposable, double rentPerHousehold, ...` | months owed sit on (Bank.householdRate() since 0.7.7; the city's own borrowing rate before it) |
-| 1026 | 5 | `private static double[] padRows(double[] rows)` | A seven-row array - the tiers and the retired, from a caller written before the people outside the families had rows - padded with empty rows. |
-| 1033 | 16 | `private double[] takeCensus(ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Who lives in each cell now, in cell order. |
-| 1060 | 13 | `private double[] splitIncome(double[] fresh, double[] rowTotal)` | A row's take-home, per household of each of its cells. |
-| 1075 | 14 | `private double[] splitByPeople(double[] fresh, double[] rowTotal)` | A row's fees, per household of each of its cells, by the people in them. |
+| 693 | 4 | `public Household cell(FamilyStructure shape, PayTier tier)` | The cell for this shape at this tier. |
+| 699 | 6 | `public Household cell(FamilyStructure shape)` | The cell for a retired shape, which has no tier. |
+| 707 | 3 | `public UnemployedHousehold unemployed(UnemployedHousehold.Status status)` | The out-of-work cell in this situation. |
+| 712 | 1 | `public StudentHousehold students()` | The students' cell. |
+| 715 | 4 | `public OrphanHousehold orphans(AgeBand band)` | The orphans of a child band, or null for a band that has none. |
+| 721 | 1 | `public PrisonerHousehold prisoners()` | The prisoners' ledger. |
+| 724 | 1 | `public java.util.List<Household> cells()` | Every cell, in the fixed order. |
+| 726 | 1 | `public int cellCount()` |  |
+| 728 | 3 | `public void forEach(Consumer<Household> action)` |  |
+| 733 | 5 | `public double sum(ToDoubleFunction<Household> figure)` | Adds a figure up across every cell. |
+| 740 | 5 | `public double sumRow(int row, ToDoubleFunction<Household> figure)` | ...or across one row: a tier's cells, or the retired. |
+| 747 | 3 | `public double rowHouseholds(int row)` | Households in the row: the denominator of every per-household row figure. |
+| 752 | 9 | `private double perHousehold(int row, ToDoubleFunction<Household> perCell)` | A row total, per household of the row. |
 
-### THE STOCK BELONGS TO THE PEOPLE, NOT TO THE CELLS (lines 1090-1311)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1134 | 4 | **type** `private interface Stock` | One stock a household carries, for followThePeople() to move. |
-| 1135 | 1 | `double get(Household c)` _(in HouseholdBalance.Stock)_ |  |
-| 1136 | 1 | `void set(Household c, double perHousehold)` _(in HouseholdBalance.Stock)_ |  |
-| 1146 | 80 | `private java.util.List<Stock> stocks(int[] named)` | Every stock a household carries, in the order followThePeople() moves them and foldEmptyCells() folds them. |
-| 1237 | 74 | `private void followThePeople(double[] fresh, double[] buffer)` | Moves every stock with the people, then sets every cell's count. |
-
-### A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) (lines 1312-1606)
+### THE MONTH (lines 762-1104)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1358 | 1 | `int foldEmptyCells()` | Empties every cell under EMPTY_CELL into the cells that are not. |
-| 1360 | 22 | `private int foldEmptyCells(java.util.List<Stock> stocks)` |  |
-| 1390 | 23 | `private boolean spread(Stock s, double amount, int group)` | One stock's amount onto the cells that are not empty, in one stock group (or the whole city, for -1): pro rata to what each holds of it, or by households when none holds any. |
-| 1415 | 4 | `boolean holdsAnything(Household c)` | True when the cell holds any stock at all, which an empty cell must not. |
-| 1421 | 1 | `public int getCellsFolded()` | Cells emptied this month that still held something when the census left them under EMPTY_CELL. |
-| 1437 | 27 | `private double[] carryGraduatesLoans(double[] before)` | The graduates' student loans, handed to the working families before the census moves anything. |
-| 1477 | 125 | `private double moveStock(Stock stock, double[] fresh, double[] before, double[] arrival)` | One stock through the pool: released by the cells that shrank at their own average, claimed by the cells that grew - within the row first, then across the city - and what nobody claimed returned. |
-| 1605 | 1 | `public double getSharesTakenAway(int company)` |  |
+| 792 | 243 | `public void advanceMonth(ToDoubleBiFunction<FamilyStructure, PayTier> census, double[] rowDisposable, double rentPerHousehold, ...` | months owed sit on (Bank.householdRate() since 0.7.7; the city's own borrowing rate before it) |
+| 1041 | 5 | `private static double[] padRows(double[] rows)` | A seven-row array - the tiers and the retired, from a caller written before the people outside the families had rows - padded with empty rows. |
+| 1048 | 16 | `private double[] takeCensus(ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Who lives in each cell now, in cell order. |
+| 1075 | 13 | `private double[] splitIncome(double[] fresh, double[] rowTotal)` | A row's take-home, per household of each of its cells. |
+| 1090 | 14 | `private double[] splitByPeople(double[] fresh, double[] rowTotal)` | A row's fees, per household of each of its cells, by the people in them. |
 
-### THE CARS (2026-09-16) (lines 1607-1682)
-
-### AND THEY BORROW FOR IT (2026-09-17) (lines 1683-1767)
-
-### THE SECOND-HAND MARKET (2026-09-17) (lines 1768-1903)
+### THE STOCK BELONGS TO THE PEOPLE, NOT TO THE CELLS (lines 1105-1326)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1842 | 1 | `public double getCarsTakenAway()` |  |
-| 1845 | 1 | `public double totalCars()` | Every car in the city. |
-| 1848 | 4 | `public double carsPerHousehold()` | Cars per household, 0 to 1 - what the road reads. |
-| 1863 | 12 | `public double wearOutCars()` | Fifteen years on, every car in the city is scrapped. |
-| 1897 | 6 | `public double carsWanted(double price, double ceiling)` | What the households would buy this month at this price, before the market says how many there are. |
+| 1149 | 4 | **type** `private interface Stock` | One stock a household carries, for followThePeople() to move. |
+| 1150 | 1 | `double get(Household c)` _(in HouseholdBalance.Stock)_ |  |
+| 1151 | 1 | `void set(Household c, double perHousehold)` _(in HouseholdBalance.Stock)_ |  |
+| 1161 | 80 | `private java.util.List<Stock> stocks(int[] named)` | Every stock a household carries, in the order followThePeople() moves them and foldEmptyCells() folds them. |
+| 1252 | 74 | `private void followThePeople(double[] fresh, double[] buffer)` | Moves every stock with the people, then sets every cell's count. |
 
-### WHOLE CARS, AND WHY THE FLOOR IS LOAD-BEARING (2026-09-16) (lines 1904-2059)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1936 | 49 | `private double wantOf(int i, double price, double ceiling)` | What one cell would buy this month, in whole cars. |
-| 1999 | 60 | `public double takeCars(double units, double price, double ceiling)` | Hands out the cars the market actually had, pro rata over who wanted them, and takes the money out of savings. |
-
-### the second-hand market (lines 2060-2124)
+### A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) (lines 1327-1621)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2111 | 13 | `private double offerOf(int i, double floorPrice)` | What one cell would put up for sale this month, in whole cars. |
+| 1373 | 1 | `int foldEmptyCells()` | Empties every cell under EMPTY_CELL into the cells that are not. |
+| 1375 | 22 | `private int foldEmptyCells(java.util.List<Stock> stocks)` |  |
+| 1405 | 23 | `private boolean spread(Stock s, double amount, int group)` | One stock's amount onto the cells that are not empty, in one stock group (or the whole city, for -1): pro rata to what each holds of it, or by households when none holds any. |
+| 1430 | 4 | `boolean holdsAnything(Household c)` | True when the cell holds any stock at all, which an empty cell must not. |
+| 1436 | 1 | `public int getCellsFolded()` | Cells emptied this month that still held something when the census left them under EMPTY_CELL. |
+| 1452 | 27 | `private double[] carryGraduatesLoans(double[] before)` | The graduates' student loans, handed to the working families before the census moves anything. |
+| 1492 | 125 | `private double moveStock(Stock stock, double[] fresh, double[] before, double[] arrival)` | One stock through the pool: released by the cells that shrank at their own average, claimed by the cells that grew - within the row first, then across the city - and what nobody claimed returned. |
+| 1620 | 1 | `public double getSharesTakenAway(int company)` |  |
 
-### THE LUXURY COUNTER (2026-09-17) (lines 2125-2225)
+### THE CARS (2026-09-16) (lines 1622-1697)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 2152 | 4 | `public double luxuriesWanted(double price)` | What the city's households would buy at this price, in whole pieces. |
-| 2158 | 5 | `private double luxuryBudget()` | What the city's households would put over a counter, in money. |
-| 2174 | 7 | `private double luxuryBudgetOf(Household c)` | What one cell would buy, in whole pieces. |
-| 2195 | 30 | `public double takeLuxuries(double units, double price)` | Hands out the pieces the shops actually had, pro rata over who wanted them, and takes the money out of savings. |
+### AND THEY BORROW FOR IT (2026-09-17) (lines 1698-1782)
 
-### THE TABLE (2026-09-18) (lines 2226-2510)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2244 | 16 | `public double mealsWanted(double price)` | What the city's households would eat out at this price, in whole meals. |
-| 2262 | 5 | `private double mealBudget()` | What the city's households would put on a table, in money. |
-| 2281 | 7 | `private double mealBudgetOf(Household c)` | What one cell would spend eating out. |
-| 2300 | 28 | `public double takeMeals(double meals, double price)` | Hands out the meals the kitchens actually served, pro rata over who wanted them, takes the money out of savings and REMEMBERS THE MEALS. |
-| 2332 | 1 | `public double getMealsEaten()` | Meals the city ate out in the month the hunger measure just read. |
-| 2335 | 1 | `public double getMealsBought()` | Meals the households ate out this month. |
-| 2338 | 1 | `public double getMealSpend()` | ...and what they paid for them. |
-| 2343 | 1 | `public double getLuxuriesBought()` | Pieces the households took this month. |
-| 2346 | 1 | `public double getLuxurySpend()` | ...and what they paid for them. |
-| 2349 | 1 | `public double getLuxuryWant()` | What every household in the city would like to put over a counter this month. |
-| 2352 | 5 | `public double carsOffered(double floorPrice)` | What the city's households would put up for sale at this floor. |
-| 2380 | 72 | `public double clearUsedCars(double newPrice, double ceiling)` | Clears the month's second-hand market: strikes a price, moves the cars that find a buyer, and pays the households that sold them. |
-| 2457 | 1 | `public double getUsedCarsOffered()` | Cars put up for sale this month, whether or not anybody took them. |
-| 2460 | 1 | `public double getUsedCarsTraded()` | ...and the ones that found a buyer. |
-| 2463 | 1 | `public double getUsedCarPrice()` | What they went for. |
-| 2476 | 3 | `public double getUsedCarShare()` | ...as a share of what a NEW one cost the month it was struck, which is the only honest denominator and is between USED_CAR_FLOOR and USED_CAR_CEILING by construction. |
-| 2481 | 1 | `public double getUsedCarSpend()` | What the buyers paid, all in. |
-| 2487 | 1 | `public double getUsedCarsFinanced()` | ...and what of that a lender advanced, which the bank has to be told about in the same month. |
-| 2490 | 1 | `public double getUsedCarLoanFees()` | ...and the bank's fee on that, added to what the buyers owe (0.7.7). |
-| 2497 | 1 | `public double getCarsBought()` | Cars the households actually took this month. |
-| 2504 | 1 | `public double getCarsFinanced()` | ...and what of that a lender advanced, which the bank has to be told about in the same month or the money audit sees a pool fall for no reason. |
-| 2507 | 1 | `public double getCarLoanFees()` | ...and the bank's fee on it, added to what the buyers owe rather than paid (0.7.7). |
-
-### THE MARKET (lines 2511-2579)
+### THE SECOND-HAND MARKET (2026-09-17) (lines 1783-1918)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2524 | 6 | `public void setMarket(Exchange exchange, Equity register, Bank bank)` |  |
-| 2536 | 15 | `private void rebuildLiquidity()` | The waterfall's two sales, in one object: the city's paper to the bank's desk first (0.7.1), then shares on the exchange. |
-| 2558 | 1 | `Household[] cellsForMarket()` | The cells, for the exchange and the bond market to post their orders from (0.7.12 round 2: each household type is its own participant). |
-| 2561 | 5 | `public void splitShares(int company, double k)` | A split or consolidation: every household's count of the company by the factor. |
-| 2568 | 4 | `public double marketValueOfShares()` | What the households' shares are worth at the exchange's price - the last trade on each book, or fair value before one. |
-| 2574 | 5 | `public double totalSold()` | What the households raised this month selling shares to cover the shop. |
+| 1857 | 1 | `public double getCarsTakenAway()` |  |
+| 1860 | 1 | `public double totalCars()` | Every car in the city. |
+| 1863 | 4 | `public double carsPerHousehold()` | Cars per household, 0 to 1 - what the road reads. |
+| 1878 | 12 | `public double wearOutCars()` | Fifteen years on, every car in the city is scrapped. |
+| 1912 | 6 | `public double carsWanted(double price, double ceiling)` | What the households would buy this month at this price, before the market says how many there are. |
 
-### THE WORLD'S PAPER (lines 2580-2597)
-
-### THE ROUNDING FLOOR, AND WHY IT IS SEEDED (2026-09-16) (lines 2598-2784)
+### WHOLE CARS, AND WHY THE FLOOR IS LOAD-BEARING (2026-09-16) (lines 1919-2074)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2634 | 3 | `public void seedConstants(double unit)` | Re-seeds the floor at a given unit. |
-| 2654 | 1 | `private boolean owes(Household c)` | WHETHER A CELL OWES ANYTHING, READ AT THE SAME FLOOR (0.7.12 round 6). |
-| 2659 | 3 | `public void setExchangeRate(double localPerUsd)` |  |
-| 2663 | 1 | `public double getExchangeRate()` |  |
-| 2680 | 70 | `public void investAbroad(double depositRate, double worldRate, double rate)` | Every household decides where to keep its idle money: what is past the cushion goes abroad towards the target share, a little a month; what is abroad comes home when the target falls. |
-| 2752 | 5 | `public double totalAbroadUsd()` | Dollars every household holds abroad. |
-| 2759 | 1 | `public double totalAbroadValue()` | ...worth this much at home, at the month's rate. |
-| 2762 | 5 | `public double getSentAbroad()` | Sent abroad this month, all households, local money. |
-| 2769 | 5 | `public double getBroughtHome()` | Brought home this month - to keep to the target or to eat - all households, local money. |
-| 2776 | 5 | `public double getForeignInterest()` | What the world paid the households this month, rolled abroad. |
-| 2783 | 1 | `public double getAbroadTakenAway()` | Dollars that left with the households that left this month. |
+| 1951 | 49 | `private double wantOf(int i, double price, double ceiling)` | What one cell would buy this month, in whole cars. |
+| 2014 | 60 | `public double takeCars(double units, double price, double ceiling)` | Hands out the cars the market actually had, pro rata over who wanted them, and takes the money out of savings. |
 
-### THE CITY'S PAPER, AT HOME (0.7.1) (lines 2785-3035)
+### the second-hand market (lines 2075-2139)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2835 | 4 | **type** `public interface PaperDesk` | Where the households' paper is sold, for what, and what it does to the paper on the other side. |
-| 2837 | 1 | `void buy(double face, double cash)` _(in HouseholdBalance.PaperDesk)_ | The desk buys this much face of the households' paper for this much cash. |
-| 2842 | 4 | `public void setPaperDesk(PaperDesk desk)` |  |
-| 2857 | 3 | `public void setPaperRatio(double ratio)` |  |
-| 2861 | 1 | `public double getPaperRatio()` |  |
-| 2874 | 3 | `public void setSpendFactor(double factor)` |  |
-| 2879 | 1 | `public double getSpendFactor()` | The factor the last plan was struck at. |
-| 2882 | 1 | `public double totalPaper()` | Every cell's paper, at face - DebtManager.householdPrincipal() from the other side. |
-| 2885 | 1 | `public double marketValueOfPaper()` | ...at this month's market value. |
-| 2888 | 5 | `public double totalPaperSold()` | Sold to the desk this month, all households, in cash. |
-| 2895 | 5 | `public double totalPaperIncome()` | Coupons and principal the city paid the households on their paper this month. |
-| 2901 | 3 | `private boolean mayBuyPaper(Household c)` |  |
-| 2905 | 3 | `private double spareFor(Household c)` |  |
-| 2910 | 4 | `public static double paperShareAt(double yield, double depositRate)` | The share of an issue yielding this much the households would take, before asking whether they can pay. |
-| 2916 | 5 | `public double spareForPaper()` | What every eligible household could put into paper: savings past the cushion, in total. |
-| 2928 | 17 | `public double buyAtIssue(double cash, double facePerCash)` | The households buy at issue: this much cash in total, from each eligible cell pro rata to what is past its cushion, for this much face per dollar. |
-| 2947 | 3 | `private double paperWeight(Household c, double total)` | Pro rata to the paper held: what a dollar of face in the households' book is spread as, cell by cell. |
-| 2952 | 13 | `public void creditPaperCoupon(double total)` | A coupon on the households' share, into savings and the month's investment income, pro rata to the paper. |
-| 2967 | 13 | `public void creditPaperPrincipal(double face)` | Principal on their share, into savings with the paper down by the same, pro rata. |
-| 2988 | 10 | `public void creditPaperBuyback(double face, double price)` | A bond bought back: this much of their face off the paper, this much of the price into savings, pro rata. |
-| 3000 | 9 | `private double sellPaperToDesk(Household c, double needPer)` | One cell sells to the desk for up to needPer a household. |
-| 3019 | 16 | `public double sellPaperForSpread(double bookYield, double depositRate)` | THE SPREAD HAS GONE: when the households' paper yields no more than the bank pays savers, the target for it is nothing, and they sell a little a month - HOME_SPEED of it, the pace the dollars abroad come home at - int... |
+| 2126 | 13 | `private double offerOf(int i, double floorPrice)` | What one cell would put up for sale this month, in whole cars. |
 
-### THE BUSINESSES' BONDS, AT HOME (0.7.12) (lines 3036-3294)
+### THE LUXURY COUNTER (2026-09-17) (lines 2140-2240)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3053 | 4 | `public void setBondMarket(BondMarket market)` |  |
-| 3066 | 3 | `public void setBondRatio(double ratio)` |  |
-| 3070 | 1 | `public double getBondRatio()` |  |
-| 3074 | 1 | `public double getBondsTakenAway()` |  |
-| 3077 | 1 | `public double totalBonds()` | Every cell's bonds, at face: the households' face in every bond. |
-| 3080 | 1 | `public double marketValueOfBonds()` | ...at this month's value. |
-| 3083 | 5 | `public double totalBondsSold()` | Sold this month, in cash, and the coupons and principal received. |
-| 3089 | 5 | `public double totalBondIncome()` |  |
-| 3096 | 1 | `public double getBonds(int row)` | One row's bonds, per household of the row. |
-| 3099 | 5 | `public double bondFaceHeld(int id)` | Every cell's face in one bond, together. |
-| 3106 | 7 | `public Household cellByKey(String key)` | The cell with this key, or null - from an index built once, because the markets ask on every fill. |
-| 3116 | 1 | `public double bondSpare()` | What every eligible household could put into bonds: savings past the cushion - the city's paper's rule. |
-| 3119 | 1 | `public double bondSpare(Household c)` | ...one cell's, every household of it: nothing for a cell that may not buy (the city's paper's eligibility). |
-| 3128 | 19 | `public double payForBonds(int id, double cash, double face)` | A new issue's households' part, at issue: this much cash out of every eligible cell's savings past its cushion, pro rata, for this much face of the bond, which each cell holds in the same proportion. |
-| 3156 | 26 | `public void creditBondCoupons(java.util.Map<String, Double> dueByCell)` | THE MONTH'S COUPONS, to the cells that held the bonds at the record date (BondMarket.strikeCoupons()): into savings and the month's investment income. |
-| 3184 | 13 | `public double creditBondPrincipal(int id)` | One bond's principal at maturity: every cell paid its own face of it, into savings, and the bond gone from it. |
-| 3204 | 14 | `public void writeDownBonds(java.util.Collection<Integer> ids, double keep)` | A default on one issuer's bonds together: every cell's face of each down to this share, and its total recounted once - a slice writes an issuer's bonds down every month it is past the curve's floor, and a recount per ... |
-| 3220 | 12 | `public double writeDownBonds(int id, double keep)` | A default on one bond: every cell's face of it down to this share. |
-| 3236 | 10 | `public java.util.Map<String, java.util.Map<String, Double>> bondsByCellToSave()` | Every cell's bonds, per household, by the cell's key and the bond's id: the save's (0.7.12 round 2). |
-| 3252 | 16 | `public void restoreBondsByCell(java.util.Map<String, java.util.Map<String, Double>> saved)` | ...back, by name: a cell this build does not have is dropped, as the cell arrays' rule is, and a bond id that does not parse is skipped. |
-| 3279 | 15 | `public void claimPooledBonds(java.util.Map<Integer, Double> poolById)` | A SAVE FROM ROUND 1 held the households' bonds as one pool, each cell with a claim on it at face (Household.bonds): the pool is handed to the cells by those claims - every bond's households' face split across the cell... |
+| 2167 | 4 | `public double luxuriesWanted(double price)` | What the city's households would buy at this price, in whole pieces. |
+| 2173 | 5 | `private double luxuryBudget()` | What the city's households would put over a counter, in money. |
+| 2189 | 7 | `private double luxuryBudgetOf(Household c)` | What one cell would buy, in whole pieces. |
+| 2210 | 30 | `public double takeLuxuries(double units, double price)` | Hands out the pieces the shops actually had, pro rata over who wanted them, and takes the money out of savings. |
 
-### the people outside the families (lines 3295-3348)
+### THE TABLE (2026-09-18) (lines 2241-2525)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3298 | 1 | `public double getEvicted()` | Out-of-work households that lost their home this month. |
-| 3301 | 1 | `public double totalStudentBorrowed()` | Student loans drawn this month, all students - the treasury's money out. |
-| 3304 | 1 | `public double totalStudentRepaid()` | ...and repaid by graduates, the treasury's money back: principal, which is what the journal's line carries. |
-| 3307 | 1 | `public double totalStudentInterest()` | ...and the interest the graduates paid on top of it this month: the treasury's revenue. |
-| 3310 | 3 | `public double studentInterestAt(double annualRate)` | What a month's interest would come to at an annual rate, on the balances that are charged it - for a screen previewing a rate. |
-| 3315 | 1 | `public double totalStudentDebt()` | What every household owes the treasury in student loans. |
-| 3318 | 3 | `public double totalGraduateDebt()` | ...and the part of it that is in repayment: the graduates' balances, which the rate is charged on. |
-| 3323 | 1 | `public double getStudentDebtTakenAway()` | Student loans that left the city with graduates who left. |
-| 3344 | 1 | `public void setGraduates(double people)` | THE GRADUATES LEAVE THE STUDENT BODY WITH THEIR LOANS. |
-| 3347 | 1 | `public double getLastGraduated()` | Students who left the student body with what they carried, at the last month's census. |
+| 2259 | 16 | `public double mealsWanted(double price)` | What the city's households would eat out at this price, in whole meals. |
+| 2277 | 5 | `private double mealBudget()` | What the city's households would put on a table, in money. |
+| 2296 | 7 | `private double mealBudgetOf(Household c)` | What one cell would spend eating out. |
+| 2315 | 28 | `public double takeMeals(double meals, double price)` | Hands out the meals the kitchens actually served, pro rata over who wanted them, takes the money out of savings and REMEMBERS THE MEALS. |
+| 2347 | 1 | `public double getMealsEaten()` | Meals the city ate out in the month the hunger measure just read. |
+| 2350 | 1 | `public double getMealsBought()` | Meals the households ate out this month. |
+| 2353 | 1 | `public double getMealSpend()` | ...and what they paid for them. |
+| 2358 | 1 | `public double getLuxuriesBought()` | Pieces the households took this month. |
+| 2361 | 1 | `public double getLuxurySpend()` | ...and what they paid for them. |
+| 2364 | 1 | `public double getLuxuryWant()` | What every household in the city would like to put over a counter this month. |
+| 2367 | 5 | `public double carsOffered(double floorPrice)` | What the city's households would put up for sale at this floor. |
+| 2395 | 72 | `public double clearUsedCars(double newPrice, double ceiling)` | Clears the month's second-hand market: strikes a price, moves the cars that find a buyer, and pays the households that sold them. |
+| 2472 | 1 | `public double getUsedCarsOffered()` | Cars put up for sale this month, whether or not anybody took them. |
+| 2475 | 1 | `public double getUsedCarsTraded()` | ...and the ones that found a buyer. |
+| 2478 | 1 | `public double getUsedCarPrice()` | What they went for. |
+| 2491 | 3 | `public double getUsedCarShare()` | ...as a share of what a NEW one cost the month it was struck, which is the only honest denominator and is between USED_CAR_FLOOR and USED_CAR_CEILING by construction. |
+| 2496 | 1 | `public double getUsedCarSpend()` | What the buyers paid, all in. |
+| 2502 | 1 | `public double getUsedCarsFinanced()` | ...and what of that a lender advanced, which the bank has to be told about in the same month. |
+| 2505 | 1 | `public double getUsedCarLoanFees()` | ...and the bank's fee on that, added to what the buyers owe (0.7.7). |
+| 2512 | 1 | `public double getCarsBought()` | Cars the households actually took this month. |
+| 2519 | 1 | `public double getCarsFinanced()` | ...and what of that a lender advanced, which the bank has to be told about in the same month or the money audit sees a pool fall for no reason. |
+| 2522 | 1 | `public double getCarLoanFees()` | ...and the bank's fee on it, added to what the buyers owe rather than paid (0.7.7). |
 
-### what the bank is owed (lines 3349-3424)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3352 | 1 | `public double getWrittenOff()` | Written off this month, which is the bank's loss. |
-| 3355 | 1 | `public double getTakenAway()` | Savings that left the city with the households that left. |
-| 3358 | 1 | `public double getBankrupt(int row)` | Households discharged this month, and the share of them leaving the city. |
-| 3359 | 1 | `public double getLeavingCity()` |  |
-| 3362 | 1 | `public boolean isLockedOut(int row)` | True when any cell of the row the bank has stopped lending to is still locked out. |
-| 3365 | 7 | `public int getLockout(int row)` | The longest lockout standing in the row. |
-| 3374 | 1 | `public double bookOwed()` | Everything the households owe the bank. |
-| 3392 | 32 | `public void planOnly(ToDoubleBiFunction<FamilyStructure, PayTier> census, double[] rowDisposable, double rentPerHousehold, doub...` | The plan alone, without settling a month. |
-
-### reading (lines 3425-3496)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3428 | 1 | `public double getSpendingCapacity()` | What the shops can sell next month, in money. |
-| 3431 | 1 | `public double getWantedSpend()` | What they would spend if money were no object - the demand behind the cap. |
-| 3434 | 1 | `public double getSubsistence(int row)` | One basket a head, per household of the row: what going short is measured against. |
-| 3444 | 11 | `public double[] plannedShare()` | The share of each row's planned spend, for splitting what retail actually sold back across the rows. |
-| 3457 | 3 | `public double getHungerRate()` | Share of the city going short of food, 0-1. |
-| 3461 | 1 | `public double getHungryPeople()` |  |
-| 3472 | 1 | `public double getDeliveredShare()` | The share of what households planned to buy that the shops could hand over - and therefore which of the two hungers is biting. |
-| 3485 | 11 | `public void creditDepositInterest(double total)` | Interest the bank paid on what these households have saved. |
-
-### THEFT (2026-09-11) (lines 3497-3556)
+### THE MARKET (lines 2526-2594)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3516 | 16 | `public double takeFromSavings(double total)` | Takes up to `total` from the households' savings, each cell in proportion to what it has saved. |
-| 3539 | 14 | `public double creditByWeight(double total, double[] weight)` | Credits `total` to the cells in proportion to a weight per cell, in the cells' order - what the offenders' households took home. |
-| 3555 | 1 | `public double getDepositInterest()` | What the bank paid the city's savers this month. |
+| 2539 | 6 | `public void setMarket(Exchange exchange, Equity register, Bank bank)` |  |
+| 2551 | 15 | `private void rebuildLiquidity()` | The waterfall's two sales, in one object: the city's paper to the bank's desk first (0.7.1), then shares on the exchange. |
+| 2573 | 1 | `Household[] cellsForMarket()` | The cells, for the exchange and the bond market to post their orders from (0.7.12 round 2: each household type is its own participant). |
+| 2576 | 5 | `public void splitShares(int company, double k)` | A split or consolidation: every household's count of the company by the factor. |
+| 2583 | 4 | `public double marketValueOfShares()` | What the households' shares are worth at the exchange's price - the last trade on each book, or fair value before one. |
+| 2589 | 5 | `public double totalSold()` | What the households raised this month selling shares to cover the shop. |
 
-### THE OFFER (lines 3557-3748)
+### THE WORLD'S PAPER (lines 2595-2612)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 3589 | 28 | `public double subscribe(int company, double offered, double price)` | Puts an offering to every household, and takes up what they will buy. |
-| 3628 | 10 | `public void grantFounders(int company, double shares)` | Hands out a company's founding shares to the people who founded it. |
-| 3644 | 15 | `public double creditDividend(int company, double perShare)` | Pays every household its dividend, straight into its savings. |
-| 3670 | 6 | `public double surrenderShares(int company)` | EVERY CELL GIVES UP ITS SHARES OF ONE COMPANY, for nothing: a failed bank's resolution (0.7.14; Equity.takeAllForCity() - the old owners are wiped out, CDIC). |
-| 3678 | 5 | `public double sharesHeld(int company)` | Shares of this company the city's households hold between them. |
-| 3685 | 5 | `public double totalDividends()` | What the households were paid in dividends this month. |
-| 3693 | 1 | `public double getSavings(int row)` | ---- the row, per household of it: what the screens and the fixtures read ---- |
-| 3696 | 1 | `public double getHouseholds(int row)` | Households this row was struck for - the multiplier on every per-row figure. |
-| 3697 | 1 | `public double getDebt(int row)` |  |
-| 3698 | 1 | `public double getAfterFixed(int row)` |  |
-| 3699 | 1 | `public double getInterest(int row)` |  |
-| 3700 | 1 | `public double getDrawn(int row)` |  |
-| 3703 | 1 | `public double getUnfunded(int row)` | What this row wanted, could not fund, and did not get. |
-| 3706 | 4 | `public boolean isCutOff(int row)` | True when the bank has stopped lending to any cell of this row - ceiling or lockout. |
-| 3710 | 1 | `public double getBorrowed(int row)` |  |
-| 3711 | 1 | `public double getRepaid(int row)` |  |
-| 3712 | 1 | `public double getBanked(int row)` |  |
-| 3713 | 1 | `public double getWant(int row)` |  |
-| 3714 | 1 | `public double getPlanned(int row)` |  |
-| 3715 | 1 | `public double getRate(int row)` |  |
-| 3718 | 4 | `public boolean isGoingShort(int row)` | True when this row is buying less food than it wants. |
-| 3724 | 1 | `public double totalSavings()` | City totals, for the headline lines on the screen. |
-| 3725 | 1 | `public double totalDebt()` |  |
-| 3726 | 1 | `public double totalInterest()` |  |
-| 3735 | 4 | `public double averageRate()` | What the families' credit lines cost them this month on average: each cell's rate weighted by what it owes - the bank's household rate plus RISK_SLOPE for every month of income owed, capped at MAX_RATE (Household.sett... |
-| 3741 | 1 | `public double totalBorrowed()` | New lending to families this month - the bank's money out the door. |
-| 3744 | 1 | `public double totalRepaid()` | ...and what came back. |
-| 3747 | 1 | `public double totalNetWorth()` | What every household in the city has, less what it owes. |
-
-### saving (lines 3749-4138)
+### THE ROUNDING FLOOR, AND WHY IT IS SEEDED (2026-09-16) (lines 2613-2799)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3769 | 36 | `public double[] toSaveArray()` | The row array an older build reads: ROWS*8+3, per household of the row. |
-| 3866 | 5 | `public String[] cellKeys()` | The name of every cell, in the order toCellSaveArray() writes them. |
-| 3873 | 27 | `public double[] toCellSaveArray()` | CELL_SLOTS per cell, in cellKeys() order, then the three city figures. |
-| 3912 | 121 | `public boolean restoreCells(String[] keys, double[] saved, String[] savedCompanies)` | Puts the cells back, by name. |
-| 4047 | 43 | `public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Puts a ROW array back, seeding every cell of the row with the row's position: the save from a build that kept the stocks per tier. |
-| 4092 | 1 | `public void restore(double[] saved)` | The row array alone, with no census: the cells wait for the plan to count them. |
-| 4094 | 24 | `public void reset()` |  |
-| 4125 | 12 | `public void redenominate(double scale)` | The households' stocks and this month's working, in the new unit. |
+| 2649 | 3 | `public void seedConstants(double unit)` | Re-seeds the floor at a given unit. |
+| 2669 | 1 | `private boolean owes(Household c)` | WHETHER A CELL OWES ANYTHING, READ AT THE SAME FLOOR (0.7.12 round 6). |
+| 2674 | 3 | `public void setExchangeRate(double localPerUsd)` |  |
+| 2678 | 1 | `public double getExchangeRate()` |  |
+| 2695 | 70 | `public void investAbroad(double depositRate, double worldRate, double rate)` | Every household decides where to keep its idle money: what is past the cushion goes abroad towards the target share, a little a month; what is abroad comes home when the target falls. |
+| 2767 | 5 | `public double totalAbroadUsd()` | Dollars every household holds abroad. |
+| 2774 | 1 | `public double totalAbroadValue()` | ...worth this much at home, at the month's rate. |
+| 2777 | 5 | `public double getSentAbroad()` | Sent abroad this month, all households, local money. |
+| 2784 | 5 | `public double getBroughtHome()` | Brought home this month - to keep to the target or to eat - all households, local money. |
+| 2791 | 5 | `public double getForeignInterest()` | What the world paid the households this month, rolled abroad. |
+| 2798 | 1 | `public double getAbroadTakenAway()` | Dollars that left with the households that left this month. |
+
+### THE CITY'S PAPER, AT HOME (0.7.1) (lines 2800-3050)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2850 | 4 | **type** `public interface PaperDesk` | Where the households' paper is sold, for what, and what it does to the paper on the other side. |
+| 2852 | 1 | `void buy(double face, double cash)` _(in HouseholdBalance.PaperDesk)_ | The desk buys this much face of the households' paper for this much cash. |
+| 2857 | 4 | `public void setPaperDesk(PaperDesk desk)` |  |
+| 2872 | 3 | `public void setPaperRatio(double ratio)` |  |
+| 2876 | 1 | `public double getPaperRatio()` |  |
+| 2889 | 3 | `public void setSpendFactor(double factor)` |  |
+| 2894 | 1 | `public double getSpendFactor()` | The factor the last plan was struck at. |
+| 2897 | 1 | `public double totalPaper()` | Every cell's paper, at face - DebtManager.householdPrincipal() from the other side. |
+| 2900 | 1 | `public double marketValueOfPaper()` | ...at this month's market value. |
+| 2903 | 5 | `public double totalPaperSold()` | Sold to the desk this month, all households, in cash. |
+| 2910 | 5 | `public double totalPaperIncome()` | Coupons and principal the city paid the households on their paper this month. |
+| 2916 | 3 | `private boolean mayBuyPaper(Household c)` |  |
+| 2920 | 3 | `private double spareFor(Household c)` |  |
+| 2925 | 4 | `public static double paperShareAt(double yield, double depositRate)` | The share of an issue yielding this much the households would take, before asking whether they can pay. |
+| 2931 | 5 | `public double spareForPaper()` | What every eligible household could put into paper: savings past the cushion, in total. |
+| 2943 | 17 | `public double buyAtIssue(double cash, double facePerCash)` | The households buy at issue: this much cash in total, from each eligible cell pro rata to what is past its cushion, for this much face per dollar. |
+| 2962 | 3 | `private double paperWeight(Household c, double total)` | Pro rata to the paper held: what a dollar of face in the households' book is spread as, cell by cell. |
+| 2967 | 13 | `public void creditPaperCoupon(double total)` | A coupon on the households' share, into savings and the month's investment income, pro rata to the paper. |
+| 2982 | 13 | `public void creditPaperPrincipal(double face)` | Principal on their share, into savings with the paper down by the same, pro rata. |
+| 3003 | 10 | `public void creditPaperBuyback(double face, double price)` | A bond bought back: this much of their face off the paper, this much of the price into savings, pro rata. |
+| 3015 | 9 | `private double sellPaperToDesk(Household c, double needPer)` | One cell sells to the desk for up to needPer a household. |
+| 3034 | 16 | `public double sellPaperForSpread(double bookYield, double depositRate)` | THE SPREAD HAS GONE: when the households' paper yields no more than the bank pays savers, the target for it is nothing, and they sell a little a month - HOME_SPEED of it, the pace the dollars abroad come home at - int... |
+
+### THE BUSINESSES' BONDS, AT HOME (0.7.12) (lines 3051-3309)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3068 | 4 | `public void setBondMarket(BondMarket market)` |  |
+| 3081 | 3 | `public void setBondRatio(double ratio)` |  |
+| 3085 | 1 | `public double getBondRatio()` |  |
+| 3089 | 1 | `public double getBondsTakenAway()` |  |
+| 3092 | 1 | `public double totalBonds()` | Every cell's bonds, at face: the households' face in every bond. |
+| 3095 | 1 | `public double marketValueOfBonds()` | ...at this month's value. |
+| 3098 | 5 | `public double totalBondsSold()` | Sold this month, in cash, and the coupons and principal received. |
+| 3104 | 5 | `public double totalBondIncome()` |  |
+| 3111 | 1 | `public double getBonds(int row)` | One row's bonds, per household of the row. |
+| 3114 | 5 | `public double bondFaceHeld(int id)` | Every cell's face in one bond, together. |
+| 3121 | 7 | `public Household cellByKey(String key)` | The cell with this key, or null - from an index built once, because the markets ask on every fill. |
+| 3131 | 1 | `public double bondSpare()` | What every eligible household could put into bonds: savings past the cushion - the city's paper's rule. |
+| 3134 | 1 | `public double bondSpare(Household c)` | ...one cell's, every household of it: nothing for a cell that may not buy (the city's paper's eligibility). |
+| 3143 | 19 | `public double payForBonds(int id, double cash, double face)` | A new issue's households' part, at issue: this much cash out of every eligible cell's savings past its cushion, pro rata, for this much face of the bond, which each cell holds in the same proportion. |
+| 3171 | 26 | `public void creditBondCoupons(java.util.Map<String, Double> dueByCell)` | THE MONTH'S COUPONS, to the cells that held the bonds at the record date (BondMarket.strikeCoupons()): into savings and the month's investment income. |
+| 3199 | 13 | `public double creditBondPrincipal(int id)` | One bond's principal at maturity: every cell paid its own face of it, into savings, and the bond gone from it. |
+| 3219 | 14 | `public void writeDownBonds(java.util.Collection<Integer> ids, double keep)` | A default on one issuer's bonds together: every cell's face of each down to this share, and its total recounted once - a slice writes an issuer's bonds down every month it is past the curve's floor, and a recount per ... |
+| 3235 | 12 | `public double writeDownBonds(int id, double keep)` | A default on one bond: every cell's face of it down to this share. |
+| 3251 | 10 | `public java.util.Map<String, java.util.Map<String, Double>> bondsByCellToSave()` | Every cell's bonds, per household, by the cell's key and the bond's id: the save's (0.7.12 round 2). |
+| 3267 | 16 | `public void restoreBondsByCell(java.util.Map<String, java.util.Map<String, Double>> saved)` | ...back, by name: a cell this build does not have is dropped, as the cell arrays' rule is, and a bond id that does not parse is skipped. |
+| 3294 | 15 | `public void claimPooledBonds(java.util.Map<Integer, Double> poolById)` | A SAVE FROM ROUND 1 held the households' bonds as one pool, each cell with a claim on it at face (Household.bonds): the pool is handed to the cells by those claims - every bond's households' face split across the cell... |
+
+### the people outside the families (lines 3310-3363)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3313 | 1 | `public double getEvicted()` | Out-of-work households that lost their home this month. |
+| 3316 | 1 | `public double totalStudentBorrowed()` | Student loans drawn this month, all students - the treasury's money out. |
+| 3319 | 1 | `public double totalStudentRepaid()` | ...and repaid by graduates, the treasury's money back: principal, which is what the journal's line carries. |
+| 3322 | 1 | `public double totalStudentInterest()` | ...and the interest the graduates paid on top of it this month: the treasury's revenue. |
+| 3325 | 3 | `public double studentInterestAt(double annualRate)` | What a month's interest would come to at an annual rate, on the balances that are charged it - for a screen previewing a rate. |
+| 3330 | 1 | `public double totalStudentDebt()` | What every household owes the treasury in student loans. |
+| 3333 | 3 | `public double totalGraduateDebt()` | ...and the part of it that is in repayment: the graduates' balances, which the rate is charged on. |
+| 3338 | 1 | `public double getStudentDebtTakenAway()` | Student loans that left the city with graduates who left. |
+| 3359 | 1 | `public void setGraduates(double people)` | THE GRADUATES LEAVE THE STUDENT BODY WITH THEIR LOANS. |
+| 3362 | 1 | `public double getLastGraduated()` | Students who left the student body with what they carried, at the last month's census. |
+
+### what the bank is owed (lines 3364-3439)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3367 | 1 | `public double getWrittenOff()` | Written off this month, which is the bank's loss. |
+| 3370 | 1 | `public double getTakenAway()` | Savings that left the city with the households that left. |
+| 3373 | 1 | `public double getBankrupt(int row)` | Households discharged this month, and the share of them leaving the city. |
+| 3374 | 1 | `public double getLeavingCity()` |  |
+| 3377 | 1 | `public boolean isLockedOut(int row)` | True when any cell of the row the bank has stopped lending to is still locked out. |
+| 3380 | 7 | `public int getLockout(int row)` | The longest lockout standing in the row. |
+| 3389 | 1 | `public double bookOwed()` | Everything the households owe the bank. |
+| 3407 | 32 | `public void planOnly(ToDoubleBiFunction<FamilyStructure, PayTier> census, double[] rowDisposable, double rentPerHousehold, doub...` | The plan alone, without settling a month. |
+
+### reading (lines 3440-3521)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3443 | 1 | `public double getSpendingCapacity()` | What the shops can sell next month, in money. |
+| 3446 | 1 | `public double getWantedSpend()` | What they would spend if money were no object - the demand behind the cap. |
+| 3449 | 1 | `public double getSubsistence(int row)` | One basket a head, per household of the row: what going short is measured against. |
+| 3459 | 11 | `public double[] plannedShare()` | The share of each row's planned spend, for splitting what retail actually sold back across the rows. |
+| 3472 | 3 | `public double getHungerRate()` | Share of the city going short of food, 0-1. |
+| 3476 | 1 | `public double getHungryPeople()` |  |
+| 3486 | 1 | `public double getHungryAtFullShelves()` | Of getHungryPeople(), the ones who would have gone hungry even with the shelves full: their own plan, at every unit the shops were asked for, came up short of a basket - the money half of the hunger (0.7.27). |
+| 3497 | 1 | `public double getDeliveredShare()` | The share of what households planned to buy that the shops could hand over - and therefore which of the two hungers is biting. |
+| 3510 | 11 | `public void creditDepositInterest(double total)` | Interest the bank paid on what these households have saved. |
+
+### THEFT (2026-09-11) (lines 3522-3581)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3541 | 16 | `public double takeFromSavings(double total)` | Takes up to `total` from the households' savings, each cell in proportion to what it has saved. |
+| 3564 | 14 | `public double creditByWeight(double total, double[] weight)` | Credits `total` to the cells in proportion to a weight per cell, in the cells' order - what the offenders' households took home. |
+| 3580 | 1 | `public double getDepositInterest()` | What the bank paid the city's savers this month. |
+
+### THE OFFER (lines 3582-3806)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3614 | 28 | `public double subscribe(int company, double offered, double price)` | Puts an offering to every household, and takes up what they will buy. |
+| 3653 | 10 | `public void grantFounders(int company, double shares)` | Hands out a company's founding shares to the people who founded it. |
+| 3669 | 15 | `public double creditDividend(int company, double perShare)` | Pays every household its dividend, straight into its savings. |
+| 3695 | 6 | `public double surrenderShares(int company)` | EVERY CELL GIVES UP ITS SHARES OF ONE COMPANY, for nothing: a failed bank's resolution (0.7.14; Equity.takeAllForCity() - the old owners are wiped out, CDIC). |
+| 3703 | 5 | `public double sharesHeld(int company)` | Shares of this company the city's households hold between them. |
+| 3710 | 5 | `public double totalDividends()` | What the households were paid in dividends this month. |
+| 3718 | 1 | `public double getSavings(int row)` | ---- the row, per household of it: what the screens and the fixtures read ---- |
+| 3721 | 1 | `public double getHouseholds(int row)` | Households this row was struck for - the multiplier on every per-row figure. |
+| 3722 | 1 | `public double getDebt(int row)` |  |
+| 3723 | 1 | `public double getAfterFixed(int row)` |  |
+| 3725 | 1 | `public double getDisposable(int row)` | What one household of the row had to spend this month, from its own ledger (0.7.27: Policy's pension lines foot on it). |
+| 3727 | 1 | `public double getFixedCosts(int row)` | ...and its rent, fees and interest: what came off that before the shop - the ledger's own, so the three foot. |
+| 3728 | 1 | `public double getInterest(int row)` |  |
+| 3744 | 14 | `public double disposableWithRowMoved(int row, double rowChange)` | What one household of a row would have had to spend with the row's income moved by `rowChange` (0.7.36, the Policy spec's M11): the move split across the row's cells by advanceMonth()'s own rule - splitIncome(), by ea... |
+| 3758 | 1 | `public double getDrawn(int row)` |  |
+| 3761 | 1 | `public double getUnfunded(int row)` | What this row wanted, could not fund, and did not get. |
+| 3764 | 4 | `public boolean isCutOff(int row)` | True when the bank has stopped lending to any cell of this row - ceiling or lockout. |
+| 3768 | 1 | `public double getBorrowed(int row)` |  |
+| 3769 | 1 | `public double getRepaid(int row)` |  |
+| 3770 | 1 | `public double getBanked(int row)` |  |
+| 3771 | 1 | `public double getWant(int row)` |  |
+| 3772 | 1 | `public double getPlanned(int row)` |  |
+| 3773 | 1 | `public double getRate(int row)` |  |
+| 3776 | 4 | `public boolean isGoingShort(int row)` | True when this row is buying less food than it wants. |
+| 3782 | 1 | `public double totalSavings()` | City totals, for the headline lines on the screen. |
+| 3783 | 1 | `public double totalDebt()` |  |
+| 3784 | 1 | `public double totalInterest()` |  |
+| 3793 | 4 | `public double averageRate()` | What the families' credit lines cost them this month on average: each cell's rate weighted by what it owes - the bank's household rate plus RISK_SLOPE for every month of income owed, capped at MAX_RATE (Household.sett... |
+| 3799 | 1 | `public double totalBorrowed()` | New lending to families this month - the bank's money out the door. |
+| 3802 | 1 | `public double totalRepaid()` | ...and what came back. |
+| 3805 | 1 | `public double totalNetWorth()` | What every household in the city has, less what it owes. |
+
+### saving (lines 3807-4214)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3827 | 44 | `public double[] toSaveArray()` | The row array an older build reads: ROWS*8+5 since 0.7.27 (ROWS*8+3 before), per household of the row. |
+| 3932 | 5 | `public String[] cellKeys()` | The name of every cell, in the order toCellSaveArray() writes them. |
+| 3939 | 27 | `public double[] toCellSaveArray()` | CELL_SLOTS per cell, in cellKeys() order, then the three city figures. |
+| 3978 | 121 | `public boolean restoreCells(String[] keys, double[] saved, String[] savedCompanies)` | Puts the cells back, by name. |
+| 4115 | 50 | `public void restore(double[] saved, ToDoubleBiFunction<FamilyStructure, PayTier> census)` | Puts a ROW array back, seeding every cell of the row with the row's position: the save from a build that kept the stocks per tier. |
+| 4167 | 1 | `public void restore(double[] saved)` | The row array alone, with no census: the cells wait for the plan to count them. |
+| 4169 | 25 | `public void reset()` |  |
+| 4201 | 12 | `public void redenominate(double scale)` | The households' stocks and this month's working, in the new unit. |
 

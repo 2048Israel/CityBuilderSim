@@ -1,6 +1,6 @@
-# LandCheck.java - 1,176 lines · 11 methods · 0 constants · harnesses
+# LandCheck.java - 1,282 lines · 13 methods · 0 constants · harnesses
 
-`ham/citybuildersim/LandCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Verifies the land ledger: what the city owns, what it can allocate, what it
 > charges, and that the three numbers never drift apart.
@@ -15,81 +15,92 @@
 > sections 12-13); and, since 0.7.13, the office in square kilometres (14),
 > the funding page a city short of the price is offered, converting and
 > from the vault, with the window abroad open and shut (15), and the next N
-> plots bought at once ending exactly as N bought one by one (16).
+> plots bought at once ending exactly as N bought one by one (16); and,
+> since 0.7.26, the three figures the redrawn office takes from the model:
+> the going rate, which it used to work out itself, the GROUND row's
+> verdict and the receipt in the screens' money (17).
 
-**Uses:** [LandManager](LandManager.md) (74), [Game](Game.md) (44), [LandParcel](LandParcel.md) (29), [LandMarket](LandMarket.md) (14), [MoneyAudit](MoneyAudit.md) (4), [ForeignAccounts](ForeignAccounts.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [BuildingManager](BuildingManager.md) (2), [TreasuryJournal](TreasuryJournal.md) (2)
+**Uses:** [LandManager](LandManager.md) (76), [Game](Game.md) (46), [LandParcel](LandParcel.md) (31), [LandMarket](LandMarket.md) (16), [CityNeeds](CityNeeds.md) (10), [MoneyAudit](MoneyAudit.md) (4), [ForeignAccounts](ForeignAccounts.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (3), [DebtQuote](DebtQuote.md) (3), [Formats](Formats.md) (3), [BuildingManager](BuildingManager.md) (2), [TreasuryJournal](TreasuryJournal.md) (2)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 43 | · 1. what the city starts with |
-| 55 | · 2. allocating |
-| 76 | · 3. filling up |
-| 88 | · 4. releasing |
-| 97 | · 5. the listing |
-| 138 | · 5b. buying one |
-| 168 | · 5c. a bigger city pays more |
-| 188 | · 5d. supply and demand inside the city |
-| 264 | · 5e. iron in the ground |
-| 308 | · 5f. parcels are blocks, and they grow |
-| 478 | · 6. not affording it |
-| 495 | · 7. selling |
-| 519 | · 8. the player's price |
-| 539 | · 9. reset |
-| 554 | · 10. every building fits on a starting city |
-| 606 | · 11. the price is a density policy |
-| 647 | 12. LAND IS PRICED IN DOLLARS (0.7.6) |
-| 707 | 13. THE TWO WAYS TO PAY (0.7.6) |
-| 898 | 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) |
-| 928 | 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) |
-| 1057 | 16. THE NEXT N PLOTS, AT ONCE (0.7.13) |
+| 46 | · 1. what the city starts with |
+| 58 | · 2. allocating |
+| 79 | · 3. filling up |
+| 91 | · 4. releasing |
+| 100 | · 5. the listing |
+| 141 | · 5b. buying one |
+| 171 | · 5c. a bigger city pays more |
+| 191 | · 5d. supply and demand inside the city |
+| 267 | · 5e. iron in the ground |
+| 311 | · 5f. parcels are blocks, and they grow |
+| 481 | · 6. not affording it |
+| 498 | · 7. selling |
+| 522 | · 8. the player's price |
+| 542 | · 9. reset |
+| 557 | · 10. every building fits on a starting city |
+| 609 | · 11. the price is a density policy |
+| 651 | 12. LAND IS PRICED IN DOLLARS (0.7.6) |
+| 711 | 13. THE TWO WAYS TO PAY (0.7.6) |
+| 902 | 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) |
+| 932 | 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) |
+| 1061 | 16. THE NEXT N PLOTS, AT ONCE (0.7.13) |
+| 1181 | 17. THE OFFICE'S OWN FIGURES, IN THE MODEL (0.7.26) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 21 | `static int fails` |  |
+| 24 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 1158 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
-| 23 | 6 | `static void check(String label, double actual, double expected)` |  |
-| 30 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 35 | 5 | `static void quietly(Runnable work)` |  |
-| 41 | 605 | `public static void main(String[] args) throws Exception` |  |
+| 22 | 1261 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
+| 26 | 6 | `static void check(String label, double actual, double expected)` |  |
+| 33 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 38 | 5 | `static void quietly(Runnable work)` |  |
+| 44 | 606 | `public static void main(String[] args) throws Exception` |  |
 
-### 12. LAND IS PRICED IN DOLLARS (0.7.6) (lines 647-706)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 657 | 49 | `static void inDollars()` |  |
-
-### 13. THE TWO WAYS TO PAY (0.7.6) (lines 707-897)
+### 12. LAND IS PRICED IN DOLLARS (0.7.6) (lines 651-710)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 718 | 6 | `static Game dollarCity(String label)` |  |
-| 725 | 5 | `static double[] moved(double[] before, double[] after)` |  |
-| 731 | 166 | `static void bothWays() throws Exception` |  |
+| 661 | 49 | `static void inDollars()` |  |
 
-### 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) (lines 898-927)
+### 13. THE TWO WAYS TO PAY (0.7.6) (lines 711-901)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 906 | 21 | `static void inSquareKilometres()` |  |
+| 722 | 6 | `static Game dollarCity(String label)` |  |
+| 729 | 5 | `static double[] moved(double[] before, double[] after)` |  |
+| 735 | 166 | `static void bothWays() throws Exception` |  |
 
-### 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) (lines 928-1056)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 943 | 113 | `static void whenShort() throws Exception` |  |
-
-### 16. THE NEXT N PLOTS, AT ONCE (0.7.13) (lines 1057-1176)
+### 14. THE OFFICE IN SQUARE KILOMETRES (0.7.13) (lines 902-931)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1072 | 104 | `static void severalAtOnce() throws Exception` |  |
+| 910 | 21 | `static void inSquareKilometres()` |  |
+
+### 15. SHORT OF THE PRICE: THE FUNDING PAGE (0.7.13) (lines 932-1060)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 947 | 113 | `static void whenShort() throws Exception` |  |
+
+### 16. THE NEXT N PLOTS, AT ONCE (0.7.13) (lines 1061-1180)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1076 | 104 | `static void severalAtOnce() throws Exception` |  |
+
+### 17. THE OFFICE'S OWN FIGURES, IN THE MODEL (0.7.26) (lines 1181-1282)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1196 | 73 | `static void theOfficesFigures()` |  |
+| 1271 | 11 | `static double[] handMade(double marker, double[] perSqFt, double[] sizes, int n)` | A dollar listing of `n` plots by hand: each its size and its dollars a square foot, ids from 1, no ore. |
 

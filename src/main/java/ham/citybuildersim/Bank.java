@@ -683,9 +683,11 @@ public class Bank {
        Each is a public getter, so the Bank tab can print the build-up. PRIME
        is the four for a sound business borrowing for a business loan's term
        at RISK_BUSINESS; a business pays prime plus its own expected loss
-       off the curve and its record (BusinessDebtManager.priceSector(),
-       PRICING FROM THE CURVE, since 0.7.8), a household the four at
-       RISK_HOUSEHOLD plus its months of income owed (Household.settle()),
+       off the curve, its record and since 0.7.12 the book's concentration
+       on it (BusinessDebtManager.priceSector(), PRICING FROM THE CURVE,
+       since 0.7.8; the three kept as quoteParts() since 0.7.33), a
+       household the four at RISK_HOUSEHOLD plus its months of income owed
+       (Household.settle()),
        the carry trade the three without the expected loss, at RISK_CARRY
        and short (carryRate()), and since 0.7.11 a landlord's insured
        mortgage the funds-transfer price at ten years and the running costs,
@@ -713,6 +715,9 @@ public class Bank {
 
     /** What a sound loan is expected to lose a year through the cycle, as a share of the book: 0.4%, about what Canada's big banks provision for credit losses in a normal year (RBC, 2025). */
     public static final double BASE_LOSS_RATE = .004;
+
+    /** How many times BASE_LOSS_RATE a year of provisions runs at before the Bank tab's CREDIT LOSSES is a warning: twice what a sound book loses (0.7.33; the screen's own literal until then). */
+    public static final double LOSS_WATCH = 2;
 
     /** Months of payroll and upkeep the running costs are measured over: a year, so one month's building bill is not a price. */
     public static final int COST_WINDOW_MONTHS = 12;
@@ -3498,13 +3503,9 @@ public class Bank {
      */
     private double chooseDepositRate(double policyAnnual) {
         depositPayoutHeld = false;
-        double policy = Math.max(0, policyAnnual);
-        double window = policy + CentralBank.WINDOW_PENALTY;
 
         /* ---- rule 1: the rate its funding asks for, moved toward a sixth at a time ---- */
-        double target = Math.max(0, Math.min(window, depositShare() * policy));
-        double moved = depositRate + (target - depositRate) * DEPOSIT_RATE_SPEED;
-        chosenDepositRate = Math.max(0, Math.min(window, moved));
+        chosenDepositRate = depositRateAt(policyAnnual);
         if (deposits <= 0) return 0;
 
         /* ---- rule 2: never past net zero, and never more than the savers' share of the margin ---- */
@@ -3518,6 +3519,24 @@ public class Bank {
             return ceilingCash;
         }
         return wanted;
+    }
+
+    /**
+     * RULE 1 ON ITS OWN, at a policy rate of the caller's (0.7.36): the rate
+     * the bank would choose for its savers next month - the rate its funding
+     * asks for (depositShare() of the dial, under the window's), moved a
+     * sixth of the way from what it paid last. Pure; chooseDepositRate()
+     * strikes the month's choice with it, so the Policy tab's "savers, next
+     * month" at any dial is the month's own rule (it showed the share times
+     * the dial, a jump at an unchanged dial: the Policy spec's B12). Rule 2,
+     * the margin's cap, is the month's and is not here.
+     */
+    public double depositRateAt(double policyAnnual) {
+        double policy = Math.max(0, policyAnnual);
+        double window = policy + CentralBank.WINDOW_PENALTY;
+        double target = Math.max(0, Math.min(window, depositShare() * policy));
+        double moved = depositRate + (target - depositRate) * DEPOSIT_RATE_SPEED;
+        return Math.max(0, Math.min(window, moved));
     }
 
     /* HOW OFTEN RULE 2 HELD THE SAVERS UNDER THE CHOSEN RATE - counted for the run, not saved, for the reason the bid-up's counter was: a rule that never binds looks exactly like one that does not exist. */
@@ -3896,6 +3915,17 @@ public class Bank {
     /** The city's share of a month's profit at this rate: nothing on a loss. One definition, for the bill and for the dividend. */
     private static double taxOn(double profit, double profitTaxRate) {
         return Math.max(0, profit) * Math.max(0, profitTaxRate);
+    }
+
+    /**
+     * What chargeTax() would take at the top of next month at this rate
+     * (0.7.36): the profit the month just closed on, taxed at it. In arrears
+     * by design (Game.nextMonth()), so this is NEXT month's bill, not the one
+     * getTaxPaid() reports; the Policy tab's Profit page previews the bank's
+     * line with it at the staged rate. Pure.
+     */
+    public double taxAt(double annualProfitRate) {
+        return taxOn(profitLastMonth, annualProfitRate);
     }
 
     /**
@@ -6155,6 +6185,8 @@ public class Bank {
         public double mortgageTransferOverPolicy() { return mortgageTransfer - policy; }
         /** An insured mortgage's rate over its money: running the bank, and the capital its leverage requirement ties up (round 2). */
         public double mortgageOverTransfer() { return mortgage - mortgageTransfer; }
+        /** ...the first of those two: what running the bank adds to an insured mortgage (0.7.33; the Bank tab worked it out until then), so its money, this and mortgageCapital add up to mortgage. */
+        public double mortgageRunning() { return mortgageOverTransfer() - mortgageCapital; }
     }
 
     /** The ladder at this policy rate. */

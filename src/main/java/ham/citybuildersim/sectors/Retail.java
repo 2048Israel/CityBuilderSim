@@ -532,7 +532,10 @@ public final class Retail extends Sector {
     public String inputLabel() { return "Stock bought"; }
 
     @Override
-    public List<Line> operations(Game game) {
+    public boolean hasPlantBlock() { return false; }
+
+    @Override
+    public List<Line> ownLines(Game game) {
         Formats f = Formats.INSTANCE;
         List<Line> lines = new java.util.ArrayList<>();
         lines.add(Line.head("The shops"));

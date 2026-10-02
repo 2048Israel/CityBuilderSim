@@ -733,7 +733,10 @@ public class DataSave {
      * A STOCK. Everything else on the household screen is this month's flow and
      * is rebuilt from the month; savings and debt are the accumulation of every
      * month before it and cannot be. A save without them reloads a city whose
-     * families are all suddenly solvent.
+     * families are all suddenly solvent. The array's tail does carry some of
+     * the month: the plan and the hunger, and since 0.7.27 (format 30) the
+     * share the shops handed over and the hungry at full shelves, which GOING
+     * SHORT reads after a load.
      */
     private double[] householdBalance;
 
@@ -1446,6 +1449,10 @@ public class DataSave {
      * codebase has to be: a streak cannot be reconstructed from the month it
      * ended in. Without it a reloaded city forgets that its steel industry has
      * been dying since spring and cannot shed a single resident for a year.
+     * Since 0.7.27 (format 30) the month rides after it too - the draw and its
+     * halves, the pulls, who came and who left and why, both skill mixes and
+     * the licences - because the People page reads them after a load; see
+     * Migration's THE LAST MONTH RIDES AFTER THE HISTORY.
      */
     private double[] cohorts;
 

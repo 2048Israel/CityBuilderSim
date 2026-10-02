@@ -247,8 +247,8 @@ public final class Statement {
          * money columns are right-aligned to fixed widths so that every figure
          * on the statement lines up; a caret after them would push the whole
          * line out of that grid, and a statement whose columns do not line up
-         * is not a statement. Same reason budgetLine() puts its mark where it
-         * does.
+         * is not a statement. Same reason the Government's budget lines put
+         * their mark beside the label (budgetLine, until 0.7.31's ranked bars).
          */
         Label mark = new Label(CLOSED + " " + word);
         mark.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT));

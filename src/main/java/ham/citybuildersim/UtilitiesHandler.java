@@ -33,7 +33,7 @@ public class UtilitiesHandler {
 
     /**
      * What the city can draw before it builds anything: the legacy wells and
-     * the old municipal intake. Same role as the 10,000 W the grid starts
+     * the old municipal intake. Same role as the 10,000 kW the grid starts
      * with - enough to get going, nowhere near enough to grow into.
      */
     private static final double BASE_WATER_SUPPLY = 8000;
@@ -188,6 +188,24 @@ public class UtilitiesHandler {
     public double getUnbilledElectricityDraw() {
         return Math.max(0, consumption - billedElectricityDraw);
     }
+
+    /**
+     * What the homes draw, power and water (0.7.28): the residential
+     * buildings' own draw, set beside the billed draws by ServicesManager,
+     * so the Services screen can say who the unbilled draw is - the homes,
+     * or the city's own buildings (in the 2,400-month playtest city the
+     * water plants alone draw more power than every home). A read; nothing
+     * is billed by it, and it is not saved - the month recomputes it from
+     * the standing stock, as it does the billed draws.
+     */
+    private double homesElectricityDraw, homesWaterDraw;
+
+    public void setHomesDraw(double electricity, double water) {
+        this.homesElectricityDraw = Math.max(0, electricity);
+        this.homesWaterDraw = Math.max(0, water);
+    }
+    public double getHomesElectricityDraw() { return homesElectricityDraw; }
+    public double getHomesWaterDraw()       { return homesWaterDraw; }
 
     /**
      * Only the billed slice, and only the fraction actually delivered - during
@@ -399,9 +417,9 @@ public class UtilitiesHandler {
 
         /* 2. Energy Load Analysis */
         System.out.println("\nENERGY LOAD ANALYSIS");
-        System.out.printf("Total Grid Consumption:   %s Watts%n", formatter.format(consumption));
-        System.out.printf("Maximum Generation:       %s Watts%n", formatter.format(baseProduction));
-        System.out.printf("Current Power Output:     %s Watts%n", formatter.format(production));
+        System.out.printf("Total Grid Consumption:   %s kW%n", formatter.format(consumption));
+        System.out.printf("Maximum Generation:       %s kW%n", formatter.format(baseProduction));
+        System.out.printf("Current Power Output:     %s kW%n", formatter.format(production));
 
         double elecRev = getElectricityRevenue();
         double elecPay = getElectricityPayroll();
@@ -413,7 +431,7 @@ public class UtilitiesHandler {
 
         if (energyRatio < 1.0) {
             System.out.println("\n[CRITICAL] ELECTRICAL GRID SHORTAGE");
-            System.out.printf("Additional Capacity Needed:       %s Watts%n",
+            System.out.printf("Additional Capacity Needed:       %s kW%n",
                     formatter.format(consumption - production));
             System.out.println("Industrial and Commercial efficiency may be reduced.");
         }

@@ -7,11 +7,12 @@ package ham.citybuildersim;
  * WHY THIS EXISTS. Jerus: "show how much was the actual month change, like in
  * the next month button it shows 3k but sometimes cause of land buybacks or
  * sales it was actually more or less." The dome (the header's TREASURY tile
- * since 0.7.21) and the Government Overview now both print a measured cash
- * movement, and a measured figure that is measured
- * wrongly is worse than the estimate it replaced - it looks authoritative.
+ * since 0.7.21, its money block since 0.7.24) and the Government Overview
+ * now both print a measured cash movement, and a measured figure that is
+ * measured wrongly is worse than the estimate it replaced - it looks
+ * authoritative.
  *
- * The seven things it will not let past:
+ * The eight things it will not let past:
  *
  *   1. THE WINDOW CLOSES. Each month's opening balance is the previous month's
  *      closing balance, with no gap. If it ever is not, a month of the player's
@@ -74,6 +75,19 @@ package ham.citybuildersim;
  *      note rolled abroad in dollars; every press audited, and the setting,
  *      the ledger and the record through a save.
  *
+ *   8. AND EARNED WALKS TO THE BUDGET (0.7.31, section 8). The Government
+ *      tab draws three figures - EARNED (Game.getIncome(), the header's),
+ *      the budget's SURPLUS and what the cash BANKED - and the steps between
+ *      them. The second walk is the bridge above; the first is
+ *      Game.getEarnedToBudget(), the budget's lines EARNED leaves out and the
+ *      fares it keeps, with Game.getEarnedResidual() for what they leave.
+ *      Every month of both played cities the walk comes to the budget and a
+ *      city nobody touched leaves nothing - the subsidised one with its
+ *      subsidies a step; then the one thing the residual is for: a dial moved
+ *      between presses moves EARNED, read at today's rates, and not the
+ *      budget, so the residual is exactly the move, struck nowhere (B8), and
+ *      the next press takes it away.
+ *
  * @author Jerus
  */
 public class TreasuryCheck {
@@ -90,6 +104,37 @@ public class TreasuryCheck {
                     what, month, actual, expected);
         }
         fails++;
+    }
+
+    /**
+     * Two figures that must agree to a part in a billion of the figures they
+     * are made of (0.7.31): the walk from EARNED to the budget adds a dozen
+     * figures in the millions, so an absolute tenth of a cent is too fine.
+     */
+    static void nearOf(String what, int month, double actual, double expected, double size) {
+        if (Math.abs(actual - expected) <= 1e-9 * Math.max(1, size)) return;
+        if (fails < 12) {
+            System.out.printf("  FAIL  %-28s month %3d: %,.6f, expected %,.6f%n",
+                    what, month, actual, expected);
+        }
+        fails++;
+    }
+
+    /**
+     * The walk from EARNED to the budget, as the Government tab draws it:
+     * {EARNED, the steps summed, what they leave, the budget's balance, the
+     * size of the figures in it}.
+     */
+    static double[] earnedWalk(Game g) {
+        double steps = 0, size = 0;
+        for (TreasuryJournal.Entry e : g.getEarnedToBudget()) {
+            steps += e.amount();
+            size += Math.abs(e.amount());
+        }
+        double earned = g.getIncome();
+        double balance = g.getEconomyManager().getNationalAccounts().getBalance();
+        return new double[] { earned, steps, g.getEarnedResidual(), balance,
+                size + Math.abs(earned) + Math.abs(balance) };
     }
 
     /** A fact that is either so or not, printed either way so the run reads as a list. */
@@ -127,6 +172,7 @@ public class TreasuryCheck {
         double previousClosing = Double.NaN;
         double biggestRest = 0;
         int monthsWithRest = 0;
+        int monthsWithSteps = 0;
 
         for (int i = 0; i < 120; i++) {
 
@@ -159,6 +205,13 @@ public class TreasuryCheck {
                 if (Math.abs(rest) > Math.abs(biggestRest)) biggestRest = rest;
             }
 
+            /* ---- 8. and EARNED walks to the budget, nothing left for the dials ---- */
+            double[] walk = earnedWalk(game);
+            nearOf("EARNED, its steps and the dials come to the budget", month,
+                    walk[0] + walk[1] + walk[2], walk[3], walk[4]);
+            nearOf("...and on a hands-off city the dials leave nothing", month, walk[2], 0, walk[4]);
+            if (Math.abs(walk[1]) > .5) monthsWithSteps++;
+
             previousClosing = game.getTreasuryClosing();
         }
 
@@ -182,6 +235,7 @@ public class TreasuryCheck {
 
         double paidOut = 0;
         double previousFunded = Double.NaN;
+        int subsidyMonths = 0;
         for (int i = 0; i < 120; i++) {
             funded.toggleNextMonth();
             int month = funded.getMonth();
@@ -199,7 +253,21 @@ public class TreasuryCheck {
                     funded.getTreasuryChange());
             near("subsidised: nothing the budget cannot explain", month,
                     funded.getTreasuryUnexplained(), 0);
+            double[] walk = earnedWalk(funded);
+            nearOf("subsidised: EARNED, its steps and the dials come to the budget", month,
+                    walk[0] + walk[1] + walk[2], walk[3], walk[4]);
+            nearOf("subsidised: ...the subsidies one of the steps, and the dials leave nothing", month,
+                    walk[2], 0, walk[4]);
+            for (TreasuryJournal.Entry e : funded.getEarnedToBudget()) {
+                if (e.label().equals("Subsidies") && e.amount() < 0) subsidyMonths++;
+            }
             previousFunded = funded.getTreasuryClosing();
+        }
+        System.out.printf("   %d of 120 months had a subsidy among the steps from EARNED to the budget.%n",
+                subsidyMonths);
+        if (subsidyMonths == 0) {
+            System.out.println("  FAIL  fixture: no month carried a subsidy step, so the walk was not tested with one");
+            fails++;
         }
         System.out.printf("   the dial cost the city $%,.0fk over 120 months, "
                 + "and every dollar of it is on a budget line.%n", paidOut);
@@ -428,6 +496,9 @@ public class TreasuryCheck {
         /* ============ 7. ROLLING WHAT FALLS DUE (0.7.13) ============ */
         rolling();
 
+        /* ============ 8. FROM EARNED TO THE BUDGET (0.7.31) ============ */
+        earned();
+
         /* ===================================================================
            THE REPORT.
 
@@ -438,9 +509,10 @@ public class TreasuryCheck {
         System.out.printf("%n%d of 120 months moved the balance by something other than "
                 + "the budget and its borrowing.%n", monthsWithRest);
         System.out.printf("The largest was %,.2f thousand.%n", biggestRest);
+        System.out.printf("%d of 120 months had a step between EARNED and the budget.%n", monthsWithSteps);
 
         System.out.println(fails == 0
-                ? "\nThe treasury bridge closes, foots, opens and survives a save."
+                ? "\nThe treasury bridge closes, foots, opens and survives a save, and EARNED walks to the budget."
                 : "\n" + fails + " FAILED");
 
         if (fails > 0) System.exit(1);
@@ -474,6 +546,48 @@ public class TreasuryCheck {
          - every press closes its audit, the bridge's rows carry what was
            raised and repaid, and the ledger survives a save.
        =================================================================== */
+
+    /* ===================================================================
+       8. FROM EARNED TO THE BUDGET (0.7.31).
+
+       The played cities above hold the walk every month. Here the one thing
+       its residual is for, caused: a city nobody touched leaves nothing; five
+       points more wage tax between two presses moves EARNED - read at
+       today's rates - and not the budget, struck at the month's, so the
+       residual is exactly that move; reading EARNED strikes nothing into the
+       month's wage tax (B8: it did, every time the header drew); and the next
+       press strikes the month at the new rate and the residual goes.
+       =================================================================== */
+
+    static void earned() {
+        System.out.println("\n--- 8. from EARNED to the budget ---");
+
+        Game city = founded("treasury-earned");
+        for (int i = 0; i < 24; i++) press(city);
+        int m = city.getMonth();
+        double[] still = earnedWalk(city);
+        nearOf("a city nobody touched: the dials leave nothing", m, still[2], 0, still[4]);
+
+        TaxPolicy policy = city.getEconomyManager().getTaxPolicy();
+        double earnedBefore = city.getIncome();
+        double struckBefore = city.getEconomyManager().getWageTax();
+        policy.setWageTaxRate(policy.getWageTaxRate() + .05);
+        double earnedAfter = city.getIncome();
+        double[] moved = earnedWalk(city);
+        System.out.printf("   month %d: EARNED %,.2fk -> %,.2fk on five points of wage tax; the budget %,.2fk%n",
+                m, earnedBefore, earnedAfter, moved[3]);
+        check("fixture: five points more wage tax moves EARNED with no month played",
+                earnedAfter > earnedBefore + 1);
+        nearOf("...and not the budget it walks to", m, moved[3], still[3], moved[4]);
+        nearOf("...so the dials leave exactly the move", m, moved[2], -(earnedAfter - earnedBefore), moved[4]);
+        check("...and reading EARNED struck nothing into the month's wage tax",
+                city.getEconomyManager().getWageTax() == struckBefore);
+
+        press(city);
+        double[] next = earnedWalk(city);
+        nearOf("a press strikes the month at the new rate, and the dials leave nothing again",
+                city.getMonth(), next[2], 0, next[4]);
+    }
 
     /** A city founded as a player founds one: newGame(), so it rolls in the same structure. */
     static Game founded(String label) {

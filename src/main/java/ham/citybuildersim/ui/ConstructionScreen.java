@@ -165,8 +165,9 @@ final class ConstructionScreen {
 
         // The bar: the queue over two years, a mark at the landlords' twelve.
         double span = limit * 2;
-        Bar bar = new Bar(Double.isNaN(queue) ? 1 : Math.min(1, queue / span), limit / span,
-                Double.isNaN(queue) || queue > limit ? Palette.WARN : Palette.BUILDING);
+        SegmentBar bar = segmentBar(List.of(Segment.of(Double.isNaN(queue) ? 1 : Math.min(1, queue / span),
+                        Double.isNaN(queue) || queue > limit ? Palette.WARN : Palette.BUILDING)), 1,
+                List.of(new Tick(limit / span, Palette.TEXT_LABEL, 2, null, null)), 0, BAR_BAND);
         Label zero = caption("0");
         Label mark = caption(String.format("%.0f months: landlords stop ordering past their own%s", limit,
                 Double.isNaN(theirs) ? "" : String.format(" (theirs ≈ %.1f)", theirs)));
@@ -191,29 +192,14 @@ final class ConstructionScreen {
         return new VBox(4, headLine, box);
     }
 
-    /** A bar that fills its width: a track, the fill at `fraction`, and a mark at `markAt`. */
-    private static final class Bar extends Pane {
-        private final Region track = new Region(), fill = new Region(), mark = new Region();
-        private final double fraction, markAt;
-        Bar(double fraction, double markAt, String colour) {
-            this.fraction = Math.max(0, Math.min(1, fraction));
-            this.markAt = markAt;
-            track.setStyle("-fx-background-color: " + Palette.CONTROL + "; -fx-background-radius: 5;");
-            fill.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 5;");
-            mark.setStyle("-fx-background-color: " + Palette.TEXT_LABEL + ";");
-            mark.setVisible(markAt >= 0 && markAt <= 1);
-            getChildren().addAll(track, fill, mark);
-            setMinHeight(18);
-            setPrefHeight(18);
-        }
-        @Override protected void layoutChildren() {
-            double w = getWidth(), h = getHeight(), y = (h - 10) / 2;
-            track.resizeRelocate(0, y, w, 10);
-            fill.resizeRelocate(0, y, Math.max(0, w * fraction), 10);
-            mark.resizeRelocate(Math.round(w * markAt) - 1, 0, 2, h);
-        }
-        @Override protected double computePrefWidth(double height) { return 200; }
-    }
+    /**
+     * How tall the page's bars are: the gauge's queue and each site's and
+     * stopped shell's progress. They are Pieces.segmentBar() since 0.7.26 -
+     * this page's own bar (a track, a fill and one mark, filling its width),
+     * generalised when the land office needed it with ghosts and several
+     * ticks - at this band, its track and its 2 px mark as they were.
+     */
+    private static final double BAR_BAND = 10;
 
     /* =====================================================================
        THE SITES
@@ -371,7 +357,7 @@ final class ConstructionScreen {
         Region spread = new Region();
         HBox.setHgrow(spread, Priority.ALWAYS);
         HBox countLine = new HBox(4, count, spread, pct);
-        Bar progress = new Bar(fraction, -1, Palette.BUILDING);
+        SegmentBar progress = segmentBar(List.of(Segment.of(fraction, Palette.BUILDING)), 1, null, 0, BAR_BAND);
         progress.setPrefHeight(12);
         progress.setMinHeight(12);
         VBox progressBox = new VBox(3, countLine, progress);
@@ -478,7 +464,7 @@ final class ConstructionScreen {
                 caption(String.format("%,d half-built, stopped", shell.buildings))));
         Label count = new Label(String.format("stopped at %.0f%%", fraction * 100));
         count.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-        Bar bar = new Bar(fraction, -1, Palette.TEXT_SPENT);
+        SegmentBar bar = segmentBar(List.of(Segment.of(fraction, Palette.TEXT_SPENT)), 1, null, 0, BAR_BAND);
         bar.setPrefHeight(12);
         bar.setMinHeight(12);
         VBox progressBox = new VBox(3, count, bar);
@@ -1032,22 +1018,7 @@ final class ConstructionScreen {
         return l;
     }
 
-    /** A chip: the words in a colour on a faint ground of it. */
-    static Label chip(String text, String colour) {
-        Label l = new Label(text);
-        l.setStyle(Palette.words(Palette.SIZE_CAPTION, colour)
-                + " -fx-background-color: " + tint(colour, .16) + "; -fx-background-radius: 10;"
-                + " -fx-padding: 2 8 2 8;");
-        l.setMinWidth(Region.USE_PREF_SIZE);
-        return l;
-    }
-
-    /** A colour at an opacity, for a chip's ground. */
-    static String tint(String hex, double alpha) {
-        javafx.scene.paint.Color c = javafx.scene.paint.Color.web(hex);
-        return String.format("rgba(%d, %d, %d, %.2f)", (int) Math.round(c.getRed() * 255),
-                (int) Math.round(c.getGreen() * 255), (int) Math.round(c.getBlue() * 255), alpha);
-    }
+    // The chip and its tint are Pieces.chip() and Pieces.tint() since 0.7.27.
 
     private static Button action(String text, String tone, Runnable act) {
         Button b = new Button(text);

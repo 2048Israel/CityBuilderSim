@@ -176,6 +176,16 @@ public final class Rollover {
             for (Issue i : issues) sum += i.face();
             return sum;
         }
+        /**
+         * What the treasury's cash pays of what falls due (0.7.32, the Finances
+         * tab's NEXT MONTH bar): by hand, all of the market's part; rolling, what
+         * no issue raises - a share under the smallest deal worth arranging, or
+         * all of it when no issue is. So netted + the central bank's par + the
+         * issues' cash + this is what falls due.
+         */
+        public double fromCash() {
+            return mode == Mode.MANUAL ? toRoll() : Math.max(0, toRoll() - toRaise());
+        }
     }
 
     /** The setting in words, for the log and the Finances tab: "by hand", "in the same structure", "into 12-month notes". */

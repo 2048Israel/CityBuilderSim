@@ -1884,8 +1884,565 @@ public final class GameVersion {
      *   - ChartCheck, the sixty-sixth harness.
      *
      * SAVE_FORMAT 29: see below.
+     *
+     * 0.7.24 (2026-10-01) - THE BUILD SCREEN AND THE FRAME. The first of the
+     * interface redone "slowly, one at a time, starting with buildings", after
+     * Jerus's second look at 0.7.23: "the money one has is barely visible to
+     * see as well as ones income", and "when you start the game you start in
+     * residential so the player without reading thinks he needs to building
+     * houses". His answers on the round-2 mockups: the money "Own block by the
+     * clock", the frame "B: panels fold away" for every screen, the Build home
+     * "Keep all three rows", the renames "Yes, rename them". The model is
+     * untouched: a default playtest writes the same traces as 0.7.23's.
+     *   - THE MONEY BLOCK: TREASURY left the tile row for a block by the
+     *     clock - the cash at 28 px, the month's net income under it as
+     *     "+$1.5B a month" (the tile's figure, Game.getIncome(), which is not
+     *     the change in the cash, and the tooltip says so); a click opens
+     *     Finances. The other five tiles put their label and a sparkline on
+     *     one row, and no label, figure or change line is ever cut: a change
+     *     line too long for its tile is shortened, never clipped.
+     *   - THE FRAME FOLDS AWAY: the City overview is a drawer the header's
+     *     "Needs you" chip opens, always on NEEDS YOU, whatever mode the
+     *     panel was left in (pinned, it stays across screens); Under
+     *     construction a 44 px tab that opens the panel over the stage; NEXT
+     *     DUE a card at the top of the Finances hub, its red maturity a NEEDS
+     *     YOU row, FALLS DUE. The inbox's list and the drawer close on a
+     *     screen change, on the main menu and on Esc (the list stayed open
+     *     before, a fix).
+     *   - NEEDS YOU, IN THE MODEL (CityNeeds): the panel's list, its lines and
+     *     its order, moved out of the interface whole, so the header's chip,
+     *     the panel and the Build overview read one set of verdicts. An
+     *     amber TREASURY row says why it is listed - the cash, under a
+     *     month's tax - where it said "in hand".
+     *   - BUILD OPENS ON AN OVERVIEW: the city's job (a tile and a ring for
+     *     each of the five only the city builds, the worst need NEEDS YOU
+     *     lists for it), what would help most (up to three orders by
+     *     BuildAdvice's rule, each the real quote its Order button charges)
+     *     and what the market builds. Residential is Homes, Commercial Shops,
+     *     Industrial Industry, Infrastructure Roads & transit, Services
+     *     Offices.
+     *   - THE CITY'S FIVE OPEN ON THEIR NEEDS: a ring per measure, the cards
+     *     of the picked one - each saying what it does in the measure's own
+     *     verb ("seats", "puts N officers on the street") - with a bar for the
+     *     cost per unit served and one for the posts the city likely cannot
+     *     fill per 10,000 served, and an order bar.
+     *   - BuildAdviceCheck, the sixty-seventh harness.
+     *
+     * SAVE_FORMAT did not move: the drawer's pin and the construction panel's
+     * fold are GamePrefs (settings.json), and an older settings file opens
+     * with the drawer unpinned and the panel folded.
+     *
+     * 0.7.25 (2026-10-01) - ONE BUILD CARD FOR ALL 73. Jerus, after seeing
+     * 0.7.24: "also the build card for every building, i think the card
+     * itself needs a redesign dont you think?" The market's nine had kept the
+     * 0.7.21 card; every building has the city cards' skeleton now, its
+     * figures in the model (BuildCard). A default playtest writes the same
+     * traces as 0.7.24's.
+     *   - THE CARD: an icon in who-builds-it's colour, the name, what stands
+     *     and what is on site; the best of its group as tags; a hero that
+     *     says what it gives the city - "houses 252 residents", "makes 1,200
+     *     t of steel a month", "exports 300 seat-months of support work" -
+     *     with a detail line; the price all in with the sticker; a money bar
+     *     and a bar for the scarce resource, scaled within its group; what it
+     *     needs and what it costs to run; the stepper with +100 and the
+     *     quote, whose verdict now warns of a missing deposit or licence
+     *     before the click, in buildStack()'s order.
+     *   - THE MARKET'S NINE, IN THEIR GROUPS: under their owning sectors
+     *     (Industry seven, Shops two), each heading with the sector's own
+     *     figure; bar 1 the price per resident, customer, thousand meals,
+     *     tonne or point a month - or for the makers, farms and vehicle
+     *     plants the price in months of their value added at today's prices
+     *     - and bar 2 the land per unit (an office's, the posts the city could
+     *     not staff); and the order bar's left half and Build.
+     *   - THE INVESTORS' LINE: on site if they are building it, otherwise the
+     *     sector's word for the month and, in amber, "this one:" with the
+     *     first gate this building fails for them now - the deposit, the
+     *     licence, the staffing test, the land, or a loss in their estimate.
+     *   - THE CITY'S FIVE got back what 0.7.24 dropped: the (i) and its
+     *     cover, "runs $X/mo", +100, the share of the land free; a group of
+     *     one draws its bars with no track.
+     *   - A FIX ON THE LOAD PATH: the bank's planner had no bank for the
+     *     first month after every load ("Holding: no bank"); the load hands it
+     *     over as the month does (Game, beside setFamilies()).
+     *   - BuildCardCheck, the sixty-eighth harness.
+     *
+     * SAVE_FORMAT did not move: nothing new is saved. The investors' words
+     * are still not, so after a load the line says nothing was recorded
+     * until a month runs.
+     *
+     * 0.7.26 (2026-10-01) - THE LAND OFFICE REDRAWN. The first of the rail's
+     * other screens in Build's style, after Jerus's "the others are still
+     * full of text and the design could be more intuitive and fun". The
+     * model is untouched but for three reads the office used to work out or
+     * write itself, and the receipt's words; a default playtest writes the
+     * same traces as 0.7.25's.
+     *   - THE GROUND: the ground free and the next plots as one bar - free
+     *     now solid, the next N as numbered ghosts with a sand stripe where
+     *     there is ore, on a scale of the two - under four cells: the ground
+     *     free, who is waiting on it, what the world asks and what investors
+     *     pay. The stepper moves the ghosts; a purchase widens the solid.
+     *   - THE SHELF: nine wide cards three by three, cheapest ground a square
+     *     foot first; the next N with their numbers and a pink edge; each
+     *     with its value as a bar against the going rate and the world's
+     *     price, and BEST VALUE, ORE, MOST ORE and NEW as tags of their own
+     *     (one card can carry BEST VALUE and MOST ORE). Prices are neutral,
+     *     red only when no way pays without debt; a Buy that needs a loan,
+     *     or a vault that is short, says so in its label.
+     *   - WHAT THE GROUND IS WORTH: the margin, the ground on top of the
+     *     build, the ore and who is waiting, as four cards with their (i);
+     *     the world's price of ground over the city's life behind "details";
+     *     the funding page in the same frame, its offers as cards.
+     *   - FIXES: "Who is waiting" reads the sectors the month found blocked
+     *     (a sector refused at the last moment was missed); the ground's
+     *     colour is NEEDS YOU's GROUND row here, on Build's LAND FREE and in
+     *     the left panel, not the share used (red at 95% for centuries); the
+     *     receipt and the journal's land line in the screens' money ("for
+     *     US$101.8M", not "US$101,800k"); the funding pages light the rail;
+     *     a funding page with nothing left to fund goes back to the office;
+     *     the floor's wording; the going rate is the market's
+     *     (LandMarket.goingUsdPerSqFt()); ore has a colour of its own
+     *     (Palette.ORE) and an icon.
+     *   - LandCheck asserts the going rate, the GROUND row's verdict and the
+     *     receipt's money (its seventeenth section).
+     *
+     * SAVE_FORMAT did not move: nothing new is saved.
+     *
+     * 0.7.27 (2026-10-01) - THE PEOPLE PAGE REDRAWN. The second of the rail's
+     * screens in Build's style. The model gained reads of what it already
+     * struck, and keeps the month's migration, the dead by cause and the two
+     * halves of the hunger across a save (format 30); a default playtest
+     * writes the same traces as 0.7.26's.
+     *   - PEOPLE, one scrolling page that leads with pictures: five vitals,
+     *     each a door; the age pyramid with a settled city's shape as a
+     *     ghost; the month as a waterfall - born, died by cause, moved in,
+     *     moved out by why, the net - with a year view, the headcount
+     *     counting up and the bars growing when a month lands; why people
+     *     come as a bridge, jobs and homes to the draw and the city against
+     *     it; care as Build's four rings, each a door to Build; the homes as
+     *     a gauge with one verdict; the households as a mosaic of who lives
+     *     in them, each tile its members drawn and a door to its books; the
+     *     people outside the families as five tiles with their sparklines,
+     *     the pool's month and EI; the skill ladder as bars with its chance
+     *     and pay chips. Every table is behind "details", every paragraph
+     *     behind an (i).
+     *   - HOUSEHOLD MONEY, its own page: the grid with each tier's live wage
+     *     at its head and the open cell's books beside it, held in view; a
+     *     verdict that counts every row; the city's month as a waterfall;
+     *     what the households have put by as four cards.
+     *   - FIXES: the verdict that said every household covered its month over
+     *     red rows; the rows below the rule measured against a basket, not a
+     *     saver's plan; the city's month left out the bank's account fees and
+     *     did not foot; the opened cell's fares under "healthcare" and its
+     *     account fee under "interest"; the matrix's fractional households,
+     *     its pay row at the founding wages and its retired in the unskilled
+     *     column; licences in fractions of people; GOING SHORT says which
+     *     hunger it is; PER WORKER became INCOME PER RESIDENT; the dashboard's
+     *     HUNGRY reads the share of people, as the page it opens does; the
+     *     Pensions page's "They can afford to eat" under a deficit, and its
+     *     three lines that did not foot; four of the eight "things it fakes"
+     *     were no longer true.
+     *   - Pieces gained the page head, the chip, a ring as a card (Build's
+     *     rings draw with it), a waterfall and a bullet bar.
+     *
+     * 0.7.28 (2026-10-01) - THE SERVICES SCREEN REDRAWN. The third of the
+     * rail's screens in Build's style. The model gained reads of what it
+     * already struck - the school leavers' diplomas gross (not saved: "not
+     * recorded yet" after a load until a month runs), what the homes draw of
+     * the power and the water, the long sick by months ill - and the sick
+     * rate's lines moved into CityNeeds; a default playtest writes the same
+     * traces as 0.7.27's.
+     *   - EVERY SYSTEM OPENS ON AN OVERVIEW whose one picture answers its
+     *     question: the sick rate as one bar of its causes, each a door to
+     *     where it is fixed, over the four kinds of care as cards (the
+     *     coverage the month applied, the one thing each buys, its places
+     *     against the people it serves, "Build for it ›"); the schools as a
+     *     pipeline, the basic ladder to the diplomas to adult study to the
+     *     four professions, each school's gate named; power, water and the
+     *     road as capacity rows - now, at full staff, asked - with who draws
+     *     each; the crime as one bar of its reasons beside Canada's, over the
+     *     police, the cells and what it did. The pages behind lead with a
+     *     picture too: the long sick by months ill, what childcare and
+     *     senior care buy as scales from nobody covered to everybody, the
+     *     ground and the month's dead, a course's gates as a funnel with the
+     *     binding one outlined, the police before and after, the cells and
+     *     the sentences. The books open on cost against what came back.
+     *     Every table is behind "details", every paragraph behind an (i).
+     *   - THE FRAME: the systems as chips with a verdict dot and a "!" for
+     *     the month's news (an outbreak begins, a brownout begins, the last
+     *     plot is taken, the first unburied, the basic ladder passes its
+     *     line); each figure a door, with ten years' sparkline and its change
+     *     on last month where the history keeps the figure. Build's rings
+     *     get a "why ›" back.
+     *   - FIXES: power is kilowatts, scaled to MW and GW (it was printed as
+     *     watts, and as "units a month" on Build); "plenty" and "not for
+     *     centuries" on full ground; the road's "Spare 0" in green at 163%;
+     *     the schools' books listed the forgiven tuition as a cost and an
+     *     alert compared a figure with itself; "new diplomas" was a net band
+     *     movement (-18); the utilities called a private business, and
+     *     "four fifths" of the water unpaid for (it is measured); "resident
+     *     draw" that is the homes and the city's own buildings; senior care's
+     *     "people" that were places; the elders left out of the death
+     *     chances and of senior care's effects; the Health books' nought
+     *     patients after a load; every verdict colour is NEEDS YOU's lines;
+     *     the left panel's OFF SICK opens Health; "Build water" opens Build
+     *     on water; Canada's prisoners a named figure.
+     *   - The Infrastructure tab moved out of ServicesScreen into its own
+     *     class, unchanged. Pieces gained a cause bar, a supply bar, a
+     *     funnel, an effect scale, cohort bars and a door.
+     *
+     * 0.7.29 (2026-10-01) - THE INFRASTRUCTURE SCREEN REDRAWN. The fourth of
+     * the rail's screens in Build's style. The model gained pure reads of
+     * what it already works out - the flow curve at any use, the walk from
+     * the trips the city makes to the load on its road, the transit
+     * funnel's steps, the month's lorry bill three ways, each good's wedge
+     * taken apart - and the railway keeps what it was allowed to bill and
+     * what went abroad across a save (in its extras; format still 30); a
+     * default playtest writes the same traces as 0.7.28's.
+     *   - ROADS leads with the flow curve and the city's dot on it - a
+     *     hollow dot where the road sites on site would leave it - beside
+     *     FROM TRIPS TO THE ROAD: the streams stacked, less transit, plus the
+     *     cars, less rail and highways, the streams on the road, with the
+     *     capacity and the free-flow line through every row. Then a card a
+     *     stream and the network in four figures. TRANSIT is a funnel from
+     *     the commuters through the three ceilings - the lowest tagged - the
+     *     fare and the cars to the riders, over its books and the fare.
+     *     THE RAILWAY is the month's lorry bill split three ways - billed at
+     *     home, paid abroad, kept - with its quote on a gauge, its track and
+     *     trains, what it hauls and its business. FREIGHT is a bar a good:
+     *     the world's margin, the freight paid abroad and the railway's
+     *     charge, with a mark at what it would be by lorry. Every table is
+     *     behind "details", every paragraph behind an (i).
+     *   - THE FRAME: five figures - FULL and FLOW in NEEDS YOU's colour for
+     *     the road, the only verdict there - each a door; the pages with
+     *     their icons; Build › Roads & transit and the road over the years.
+     *   - ONE ROAD: "162% full · 56% flow" in whole per cents, here, in the
+     *     drawer, on Services' road card, on Build and in NEEDS YOU, in NEEDS YOU's
+     *     ROADS colour (the drawer was red where Build was amber). Services'
+     *     road row is one card and a door; Build's road and transit headings
+     *     open Infrastructure.
+     *   - FIXES: the room before the road slows read the raw trips (585 on a
+     *     road 161% full); "paid abroad" was the shippers' saving; Build's
+     *     transit ring said "carries 62.5k" where 41.4k rode; a commuter
+     *     "costs" 1.00 a trip whatever the cars; the drawer's three decimals
+     *     and the meaning it changed at the congestion line; the railway's
+     *     allowed bill read nought after a load; a lorry row of noughts;
+     *     verdict colours used as categories.
+     *
+     * 0.7.30 (2026-10-01) - THE SECTORS SCREEN REDRAWN. The fifth of the
+     * rail's screens in Build's style. The model gained pure reads: a
+     * business's month as a flow (SectorFlow - each good in and out with its
+     * units and its money, the plant's six throttles and the rate they
+     * multiply to; SectorFlowCheck holds its money to the statement and its
+     * cascade to the rate), the investors' word read into a kind and a
+     * sector's investors as one record (BuildCard), the operations page in
+     * its two halves (Sector.plantLines() and ownLines(), operations()
+     * unchanged), and a sector's plain bank loans; a default playtest
+     * writes the same traces as 0.7.29's.
+     *   - THE LIST is fifteen cards in Build's market order under four
+     *     figures - what they kept, how many lost, who works there, the
+     *     range they run at with the city's throttles named and a door to
+     *     the Build category that relieves the thinnest. Each card: its icon,
+     *     its name and Build group, what it kept, two years of it, its
+     *     workers, a running-at bar with what cuts it most, and its
+     *     investors' word in a kind.
+     *   - A BUSINESS: "Sectors ›" and its name, five figures, its
+     *     investors' line on every page. OPERATIONS is inputs → the plant
+     *     (a ring of its rate and the six throttles as a cascade) → outputs,
+     *     its own lines as a grid under it. INCOME is a waterfall over the
+     *     statement, its ratios as chips. THE BALANCE SHEET is two bars on
+     *     one scale and an owners card - the Bank's Owners page draws the
+     *     same card. CASH & DEBT is the month's cash as a bridge, with its
+     *     rate in parts, its leverage to the default point and its debt by
+     *     kind. INVESTORS is the decision as one line, each building's first
+     *     gate, what stops it in three tiles, the rules as chips and the
+     *     four things the player controls as doors.
+     *   - FIXES: the balance sheet left out what a business holds abroad and
+     *     other businesses' bonds; the cash statement left out what was
+     *     stolen and what was bought back; the operating rate's note said the
+     *     thinnest of five ratios when it is six multiplied; a business with
+     *     nothing standing read "Staffed 100%" and a rate in red; the
+     *     Investors page read "Sold" and "Could not build" in green; OWES
+     *     quoted a rate on no debt; the scrapping alert over nothing to scrap;
+     *     taxes, revenue, bids and asks in verdict colours; a negative zero.
+     *
+     * 0.7.31 (2026-10-01) - THE GOVERNMENT SCREEN REDRAWN. The sixth of the
+     * rail's screens in Build's style, and the city's money named three ways
+     * everywhere: EARNED (the header's figure - "+$1.5B earned a month" now,
+     * and "Earned" in the drawer), the budget's SURPLUS and what the cash
+     * BANKED. The model gained pure reads: the walk from EARNED to the budget
+     * (Game.getEarnedToBudget() and getEarnedResidual(), held by
+     * TreasuryCheck), and EARNED read without striking four of the month's
+     * lines (EconomyManager.getTaxIncomeNow()); and the national accounts'
+     * rolling year is put back from the graph history on every load
+     * (NationalAccounts.seedHistory()), so no "of GDP" reads one month
+     * scaled up for a year after a load. A default playtest writes the same
+     * traces as 0.7.30's.
+     *   - OVERVIEW: the two rings - shares of the arcs drawn, a slice or a
+     *     key row opening its line - with THE BALANCE between them, two bars
+     *     on one scale and what was kept or short outlined in NEEDS YOU's
+     *     colour; then FROM EARNED TO BANKED, three tiles and every step
+     *     between them by name, each a door to where it is decided; the
+     *     central bank and the budget against the economy as cards.
+     *   - REVENUE and SPENDING: a ranked bar a line, opening into who pays
+     *     on one bar and their rows, with a door to the dial or the screen
+     *     that decides it; repairs and the transit fares named under the
+     *     totals as outside the budget's; the debt, the services that charge
+     *     and the pensions as three cards.
+     *   - OUTPUT: City History's GDP layers lead, the four parts as cards,
+     *     this month as one bar, the growth as five readings.
+     *   - FIXES: repairs in the spending ring and list but not in the total
+     *     (111%); the net cost of care and schooling printed with its sign
+     *     turned over; verdict colours drawn as categories, and OWED's own
+     *     60%/120% thresholds here and on Finances; "Steel exported" and
+     *     "Scrap imported" for every sector's trade; an "of the change"
+     *     column that read 1,038%; the header's (i) naming three of what
+     *     EARNED leaves out; the pension alert every month; "the city's own
+     *     staff" that was care and schools; a key adding to 100.3%; a hyphen
+     *     beside a minus.
+     *
+     * 0.7.32 (2026-10-01) - THE FINANCES SCREEN REDRAWN. The seventh of the
+     * rail's screens in Build's style: a hub that is the debt's dashboard,
+     * six areas as cards, and every page one picture first, its paragraphs
+     * behind an (i) and its tables behind "details". The model gained pure
+     * reads: the ladder by the calendar year each payment falls in, with or
+     * without a proposed issue, the next twelve months, the coupon, each
+     * kind's principal and the rate a piece is valued at (DebtManager,
+     * held by ForeignDebtCheck), a quote's payment schedule (DebtQuote),
+     * the rollover's cash (Rollover.Plan.fromCash()), the bond market's
+     * sums by issuer, the city's net position, and the service bands and
+     * the soon line as CityNeeds constants. A default playtest writes the
+     * same traces as 0.7.31's.
+     *   - THE HUB: TREASURY, OWED, THE RATE, COUPON and NEXT DUE, one
+     *     verdict each; WHEN IT FALLS DUE, a column a calendar year stacked
+     *     by instrument, the dollar part striped, "later" a ghost, with NEXT
+     *     DUE beside it; the rollover and the bank's rescue said once each,
+     *     with next month's bar; the six areas as cards.
+     *   - THE POSITION: the balance and the credit band, the debt against
+     *     the economy, the debt and the rate over the years with the
+     *     borrowing decisions as flags; a gauge of the next twelve months'
+     *     coupons and principal against the take; who holds the paper and
+     *     what the dollars are; the rate built up and the curve.
+     *   - THE BOOK: a card a piece, Buy back on each. BORROW: the ask
+     *     beside the land office's offer card, the terms as columns of their
+     *     rate, the ladder with the issue as ghosts. MONEY, THE BOND MARKET
+     *     and THE CITY'S FUND as bars and cards; Issued as a receipt;
+     *     Default abroad as two equal cards.
+     *   - FIXES: the ladder's "later" weighed as "year 13" with a false red
+     *     alert, and its bars labelled a year early; "debt service" two
+     *     different figures; debt judged red at 60% and 120% of output while
+     *     the market charged AAA; "$" and "D$" on one page and rates with no
+     *     unit; a dollar piece priced at the city's short rate where a
+     *     buyback pays the world's curve; the net position taking an
+     *     overdraft off twice; NEEDS YOU's doors landing on the last page
+     *     open; the default page lighting Trade; "->" on the offer cards.
+     *
+     * 0.7.33 (2026-10-01) - THE BANK SCREEN REDRAWN. The eighth of the
+     * rail's screens in Build's style: an Overview of the bank's state, its
+     * capital in its band beside eight figures, and the ladder of its rates
+     * drawn in their parts; six pages behind it, each one picture first, its
+     * paragraphs behind an (i) and its statements and tables behind
+     * "details", verbatim. The model gained pure reads: each sector's quote
+     * kept in its parts as it is priced (BusinessDebtManager.quoteParts()),
+     * an insured mortgage's running part (Bank.Ladder.mortgageRunning()),
+     * the losses' watch line (Bank.LOSS_WATCH) and the rates' flags of two
+     * kinds (ChartModel.flagsOf()), held by BankCheck; and a city just loaded
+     * prices its businesses' credit with their record and the book's
+     * concentration in it. A default playtest writes the same traces as
+     * 0.7.32's.
+     *   - OVERVIEW: the state as a banner; THE CAPITAL GAUGE on the measure
+     *     that binds; PROFIT, RETURN ON EQUITY, CREDIT LOSSES, HOW FULL
+     *     (NEEDS YOU's THE BANK row as a figure), MARGIN, COSTS, LENT OUT and
+     *     DEPOSITS, each a door; THE LADDER, prime as its four parts and each
+     *     borrower as prime and its own risk, record and concentration, its
+     *     bonds under it; the six pages as cards with a year of their line.
+     *   - PROFIT: a waterfall from the interest, by who paid it, to what it
+     *     kept, this month or the year; the ratios and the year as cards; the
+     *     trading desk as a card. BALANCE SHEET: what it owns against what it
+     *     owes and its owners' as two bars on one scale, every line in the
+     *     key; the deposits beside the sheet and its equity in parts as cards.
+     *   - LENDING: the book by borrower, the bonds among it; a card a
+     *     borrower - what it owes the bank, its bonds, its leverage on its
+     *     scale; set aside and written off; the next loan's price in its
+     *     parts. FUNDING: the deposits and what funds the book; savers, the
+     *     central bank and what it can carry; the branches. CAPITAL & OWNERS:
+     *     both ratios on their bands, BINDS on one; the payout and the
+     *     equity's walk; the owners' card; rescues and the preferred.
+     *     HISTORY: City History's charts, the decisions as flags, how full it
+     *     is over time.
+     *   - FIXES: "-0.00% a year"; amber families and green interest, verdict
+     *     colours as series; a book that left out $166M of bonds; a borrower's
+     *     "owed" that was its bonds held by anybody; a ladder that never named
+     *     the concentration charge; every sector quoted without its record
+     *     after a load; a branch verdict of "Yes" where the investors could
+     *     not staff one; "at face value" on bonds at cost; 0.008% and 0.014%
+     *     both "0.01%"; lent against capacity read as 94 times over; the
+     *     Back button a page's length from the strip.
+     *
+     * 0.7.34 (2026-10-01) - BUTTONS THAT ASK TO BE PRESSED. Jerus, playing
+     * 0.7.31: "everywhere you have build, like the build button, it should
+     * be more intuitive aka like an actual button that is basically asking
+     * to be pressed, cause currently its a tiny text". One action button in
+     * Pieces wherever the player commits to building or buying, and one
+     * door pill wherever a link sends them to Build or the land office. No
+     * order, price or door moved; a default playtest writes the same traces
+     * as 0.7.33's.
+     *   - BUILD: every card's Build is the card's width under the stepper,
+     *     in the building pink, and says the order - "Build 3 · $37.5M", "on
+     *     credit", or why it cannot go ahead and the way out; at 0 it reads
+     *     "Build · choose how many" and a press chooses one, never orders.
+     *     The order bar, the suggestions and "Build all three" say the same;
+     *     the credit page's offers say what they build and on which paper.
+     *   - THE LAND OFFICE: each offer card ends in a full-width "Buy · D$1.0B"
+     *     (outlined "on credit", or "the vault is short"); "Buy the next 5"
+     *     and the funding page's offers the same.
+     *   - DOORS: Services' "Build for it", Infrastructure's "Build · Roads &
+     *     transit", "Build transit" and "Rail on Build", a business's "Build ·
+     *     Homes" and its "Land office", People's "Build homes", the Bank's
+     *     "Build a Commercial Bank" and Build's own refusal pages: pills.
+     *   - FINANCES: the ladder's "later", past twice the tallest year, is
+     *     drawn broken a little above it, so the twelve years fill the height.
+     *   - SECTORS: after a load, one line over the cards says nothing is
+     *     recorded yet, where fourteen of fifteen said "no word yet".
+     *   - A double-click on either piece is one press.
+     *
+     * 0.7.35 (2026-10-02) - THE TRADE SCREEN, REDRAWN. Jerus, on the screens
+     * not yet redone: "the others are still full of text and the design
+     * could be more intuitive and fun". Trade & the world in Build's style
+     * (the project's spec-trade-0734.md): one strip of five pages - Overview,
+     * The month, What we trade, The currency, The reserves - and the five
+     * figures over every page, each a door. No model behaviour moved; a
+     * default playtest writes the same traces as 0.7.34's. SAVE_FORMAT 30.
+     *   - OVERVIEW: what the city trades as mirrored bars a good, bought to
+     *     the left and sold to the right, off the businesses' own books;
+     *     the rate per US$ beside parity on a ten-year chart; the three
+     *     gauges as cards.
+     *   - THE MONTH: a walk from exports to the month's balance through the
+     *     two accounts; the river one toggle away, with the income from
+     *     abroad it dropped; what is held abroad and what the world holds here.
+     *   - WHAT WE TRADE: every good, or every business; the ten years; the
+     *     record since founding; the world's prices off the markets, freight
+     *     in them.
+     *   - THE CURRENCY: the rate on City History's chart, parity beside it
+     *     (recorded from this build on), the crises and the city's decisions;
+     *     the forces next month as bars either side of a line.
+     *   - THE RESERVES: whose the vault is, how long it would last, what can
+     *     leave, what else moved it, and the exchange with 0.7.34's button.
+     *   - ONE PARITY RULE: amber past 25% either side, red past 50% - the
+     *     drawer's THE CURRENCY row, which opens The currency now, the
+     *     header's rate line and the tab alike.
+     *   - AFTER A LOAD the month's flows read "not counted yet", not zero.
+     *
+     * 0.7.36 (2026-10-02) - THE POLICY SCREEN, REDRAWN. The tenth rail screen
+     * in Build's style (the project's spec-policy-0735.md): a hub of four
+     * area cards - Taxes, Wages, Money, Promises - over the levers that are
+     * biting and the decisions lately made; the areas as chips in the head
+     * and their pages as tabs; every dial a card with what it would do beside
+     * it, before and after, following the thumb. No model behaviour moved; a
+     * default playtest writes the same traces as 0.7.35's. SAVE_FORMAT 30.
+     *   - EVERY "AFTER" IS THE MODEL'S: a staged set goes through a detached
+     *     copy of the policy (TaxPolicy.copy()) and the owners' own reads -
+     *     the tax take and THE BUDGET (PolicyPreview), the payroll lines, the
+     *     pensions, the EI pool, the bank's choice for its savers. A dial at
+     *     zero previews something now, and the EI bill is the pool's.
+     *   - TAXES: the take as a bar, a card a tax with its ten years, every
+     *     tax at once with the three rates as chips and marks once they have
+     *     parted (no more "three rates" over the profit rate); each tax's
+     *     payers ranked, a row opening into its own move, the bank among the
+     *     profit payers; the staged set in a tray at the foot of the stage.
+     *   - WAGES: the wage ladder against the floor in today's money.
+     *   - MONEY: every rate on one line; the dial, the rule, the central bank.
+     *   - PROMISES: the pension's cover beside a pensioner's month; EI's cover;
+     *     who pays for care; who can afford a school place; the subsidies.
+     *   - PROMISES, the figure, no longer counts the tuition the city waives:
+     *     forgone revenue, not money out of the treasury.
+     *
+     * 0.7.37 (2026-10-02) - CITY HISTORY, FINISHED. The last rail screen in
+     * Build's style (the project's spec-history-0736.md): the page at the
+     * stage's width, not the 0.7.5 column of 760 pixels; the chart itself is
+     * 0.7.23's. No model behaviour moved; a default playtest writes the same
+     * traces as 0.7.36's. SAVE_FORMAT 30.
+     *   - THE HEAD: "Write the year book" there, 0.7.34's button, its result
+     *     a card under it; the strip about the city - its age, its hard
+     *     times, what is running now (the worst first, a chronic one last),
+     *     and the decisions made.
+     *   - THE PINS as cards over the big chart, each with its move; the big
+     *     chart and both pins follow the page's width.
+     *   - A CARD A LINE: its figure, its move in neutral ink with an arrow
+     *     (a rise was green and a fall amber, whatever the line), and where
+     *     it ended in its range over the view.
+     *   - HARD TIMES AND YOUR DECISIONS in view, a click each moving the
+     *     chart there; every one since founding by kind behind "details".
+     *   - DECISIONS FROM THE FOUNDING MONTH are on the chart's lane, at its
+     *     first month.
+     *   - EVERY SERIES THE HISTORY KEEPS can be drawn: GDP's parts, the
+     *     central bank's year, the bank's capital, each band's dead a month,
+     *     each sector's net income and workers, each company's fair value.
+     *   - PRICES THIS MONTH: one line of counts, and every good on its band
+     *     between what the world pays and what it charges behind "details".
+     *
+     * 0.7.38 (2026-10-02) - THE LOOSE ENDS OF THE REDRAW. Eleven small things
+     * the rail screens' batches left for one another, each a display fix that
+     * makes a screen agree with the model or with the others. No model
+     * behaviour moved; a default playtest writes the same traces as 0.7.37's.
+     * SAVE_FORMAT 30.
+     *   - FLAGS ON THE SMALL CHARTS: the Bank's rates and Finances' debt and
+     *     rate draw the decisions they are handed, on a smaller lane; the
+     *     founding month's sit on the first month there and on Trade's rate
+     *     chart, as on City History's. The Bank's (i) no longer says its
+     *     chart can be dragged.
+     *   - IMPORT COVER reads "under 0.1 months", not "0.0 months", on Finances
+     *     and in the drawer too, and the drawer colours it as Trade does.
+     *   - THE DRAWER'S "vs parity" is on the one parity rule (amber past 25%
+     *     either side, red past 50%), not amber past 15%.
+     *   - THE FLOOR in today's money on People; City History's line and the
+     *     year book's column say they are the floor in founding money.
+     *   - THE FARE on a dial card as Policy draws its dials, every row the
+     *     model's own read at the fare under the thumb.
+     *   - THE BANK'S LADDER: a shut-out sector's name reads red.
+     *   - SECTORS' RATE BAR in the parts the rate was struck from.
+     *   - Build's "all three" added up by the model; no method name in the
+     *     pension's (i); members with no caller left removed.
+     *
+     * 0.7.39 (2026-10-02) - THE CITY'S FUND AS A BROKERAGE. Jerus: "like
+     * wealthsimple trade ... search the shares and bonds and see and all, and
+     * also the city fund should show pnl and acb and all that" (the project's
+     * spec-fund-0739.md). The fund is four pages and a page a security, its
+     * own screen (ui/FundScreen.java). Behind them a cost basis, FundLedger:
+     * each holding's adjusted cost base by the average-cost method, what it
+     * realized and the income it paid, booked where the holdings already
+     * move - bookkeeping only; a default playtest writes the same traces as
+     * 0.7.38's. SAVE_FORMAT 30: the ledger is saved inside the fund's own
+     * state, and an older save counts what it holds at market value in the
+     * month it loads ("cost from").
+     *   - PORTFOLIO: its worth, the return over the chart's window and since
+     *     it began (exact, from the fund's own record of every flow); a chart
+     *     of its worth against what was put in, kept from this version on;
+     *     every holding with its average cost and P&L, green and red as a
+     *     verdict and nowhere else; each kind since it began; the closed lots.
+     *   - SEARCH every listed company and every bond outstanding, as you type.
+     *   - A SECURITY'S PAGE: its price and chart (a bond's, the cash it still
+     *     pays), its facts, its book, its record, YOUR POSITION, and the order
+     *     ticket, which says what the order would take off today's book,
+     *     what would wait, what it would cost and leave, and the cap.
+     *   - ACTIVITY: every trade, payment and event, newest first.
+     *   - RULES & CASH: the dial, the 3%, the rescue book with its terms, pay
+     *     in and draw out, and your orders.
+     *   - YOUR ORDERS can name their price and be cancelled before the step; a
+     *     buy goes no further than the 10% cap, and holds its money from the
+     *     rule from the moment it is placed. None of it reaches a playtest.
+     *   - AFTER ITS DOCS PASS: a buy's room under the 10% cap counts every buy
+     *     of the fund's on the company as filled - the rule's bid and your
+     *     orders on the book or waiting - so the rule's bid and two orders can
+     *     no longer fill past it together; the rule's bid makes way for your
+     *     orders, as its cash does (Exchange.fundRoom(), which the ticket's
+     *     quote reads too; the ticket says "No room under the 10% cap" when
+     *     there is none); THE RULE's words no longer say an order of yours
+     *     can lift it past. An older save's rescue lot, seeded at what the
+     *     city paid, has its checks. Search says a city younger than a year
+     *     has a record shorter than the year, not one recorded too coarsely.
+     *     The default playtest places no order: its traces stand.
      */
-    public static final String VERSION = "0.7.23";
+    public static final String VERSION = "0.7.39";
 
     /**
      * The save shape.
@@ -2372,8 +2929,24 @@ public final class GameVersion {
      *
      *     THE OTHER DIRECTION IS SAFE: a format-28 save has no key, and loads
      *     with an empty log - which is what that city had kept.
+     *
+     * 30 - THE MONTH THE PEOPLE PAGE DRAWS (0.7.27): Migration's last month
+     *     (the draw and its two halves, the pulls, the arrivals and the
+     *     departures and who made them up, the mixes and the licences) after
+     *     its wage history; the pyramid's dead by cause after its flows; and
+     *     the share the shops handed over and the hungry at full shelves after
+     *     the households' row array. Here because a format-29 build handed
+     *     this save would load it WRONGLY: each of the three arrays is now a
+     *     length it refuses whole, so it would come back with no wage history
+     *     - every tier's twelve-month streak gone, nobody able to leave for a
+     *     year - and with a pyramid of nobody. That is the accident this
+     *     number exists to prevent.
+     *
+     *     THE OTHER DIRECTION IS SAFE: a format-29 save carries the arrays at
+     *     their old lengths, which still read, and loads with those figures at
+     *     0 until a month runs - what a reloaded People page showed before.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 29;
+    public static final int SAVE_FORMAT = 30;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

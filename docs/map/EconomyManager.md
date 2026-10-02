@@ -1,6 +1,6 @@
-# EconomyManager.java - 1,926 lines · 209 methods · 8 constants · model
+# EconomyManager.java - 2,016 lines · 221 methods · 8 constants · model
 
-`ham/citybuildersim/EconomyManager.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EconomyManager.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The private economy: every sector, every market, the credit desk, the
 > tax policy and the national accounts, and the month they run in.
@@ -18,9 +18,9 @@
 > Both are inputs to a sector that is not a factory, and they arrive here
 > because this class already talks to everything that produces them.
 
-**Uses:** [Sector](Sector.md) (54), [BuildingsTemplate](BuildingsTemplate.md) (17), [Good](Good.md) (12), [BuildingType](BuildingType.md) (11), [Markets](Markets.md) (5), [SalesTaxLedger](SalesTaxLedger.md) (5), [BuildingManager](BuildingManager.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (4), [TaxPolicy](TaxPolicy.md) (4), [Traffic](Traffic.md) (4), [SectorState](SectorState.md) (4), [Sectors](Sectors.md) (3), [NationalAccounts](NationalAccounts.md) (3), [RealEstate](RealEstate.md) (3), [Statement](Statement.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [BondMarket](BondMarket.md) (3), [Equity](Equity.md) (3), [FamilyModel](FamilyModel.md) (2), [GameLog](GameLog.md) (2), [Retail](Retail.md) (2), [GoodsMarket](GoodsMarket.md) (1), [JobType](JobType.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [Game](Game.md) (1), [SocialSecurity](SocialSecurity.md) (1), [LuxuryRetail](LuxuryRetail.md) (1), [HistorySave](HistorySave.md) (1)
+**Uses:** [Sector](Sector.md) (57), [BuildingsTemplate](BuildingsTemplate.md) (17), [Good](Good.md) (12), [BuildingType](BuildingType.md) (11), [TaxPolicy](TaxPolicy.md) (9), [Markets](Markets.md) (5), [SalesTaxLedger](SalesTaxLedger.md) (5), [BuildingManager](BuildingManager.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (4), [Traffic](Traffic.md) (4), [SectorState](SectorState.md) (4), [Sectors](Sectors.md) (3), [NationalAccounts](NationalAccounts.md) (3), [JobType](JobType.md) (3), [RealEstate](RealEstate.md) (3), [Statement](Statement.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [BondMarket](BondMarket.md) (3), [Equity](Equity.md) (3), [WageBand](WageBand.md) (3), [FamilyModel](FamilyModel.md) (2), [GameLog](GameLog.md) (2), [SocialSecurity](SocialSecurity.md) (2), [Retail](Retail.md) (2), [GoodsMarket](GoodsMarket.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [Game](Game.md) (1), [LuxuryRetail](LuxuryRetail.md) (1), [HistorySave](HistorySave.md) (1)
 
-**Used by (37):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BusinessInvestment](BusinessInvestment.md), [CapitalFlowCheck](CapitalFlowCheck.md), [ConservationCheck](ConservationCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Materials](Materials.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [OutwardInvestment](OutwardInvestment.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [ServicesScreen](ServicesScreen.md), [SimulationEngine](SimulationEngine.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (39):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BusinessInvestment](BusinessInvestment.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CityNeeds](CityNeeds.md), [ConservationCheck](ConservationCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HousingCheck](HousingCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Materials](Materials.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [OutwardInvestment](OutwardInvestment.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SimulationEngine](SimulationEngine.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 
@@ -44,14 +44,15 @@
 | 1134 | THE OWNERS AND THE MONEY ABROAD |
 | 1247 | THE MONTH, IN THE MIDDLE AND AT THE BOTTOM |
 | 1273 | THE CITY'S BOOKS |
-| 1341 | · EI and the student grant (2026-09-11) |
-| 1407 | · the services |
-| 1435 | THE TRANSIT BOOKS (2026-09-16) |
-| 1472 | · pensions |
-| 1502 | THE NATIONAL ACCOUNTS |
-| 1750 | CONVENIENCES - the prices the screens and the harnesses ask for by name |
-| 1767 | SAVE AND RESTORE |
-| 1800 | PRINTERS, RESET, THE REFORM |
+| 1361 | · WHAT THE POLICY TAB ASKS (0.7.36) |
+| 1428 | · EI and the student grant (2026-09-11) |
+| 1494 | · the services |
+| 1522 | THE TRANSIT BOOKS (2026-09-16) |
+| 1562 | · pensions |
+| 1592 | THE NATIONAL ACCOUNTS |
+| 1840 | CONVENIENCES - the prices the screens and the harnesses ask for by name |
+| 1857 | SAVE AND RESTORE |
+| 1890 | PRINTERS, RESET, THE REFORM |
 
 ## Constants
 
@@ -64,7 +65,7 @@
 | 710 | `EconomyManager.NRRP_CAP` | `6.3` | ...and its most a unit, in founding thousands: $6,300. |
 | 712 | `EconomyManager.NRRP_FULL_BELOW` | `350` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
 | 714 | `EconomyManager.NRRP_NONE_FROM` | `450` | ...and none for a unit worth this or more: $450,000. |
-| 1859 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1949 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -123,25 +124,25 @@
 | 1283 | `private double debt` |  |
 | 1284 | `private double GDP` |  |
 | 1285 | `private double yearGDP` |  |
-| 1343 | `private double totalEiPremiums` |  |
-| 1344 | `private double eiBenefits` |  |
-| 1345 | `private double studentGrants` |  |
-| 1348 | `private double totalHealthPremiums` | The month's health premium off every wage, struck in getTaxIncome() beside the EI premium (2026-09-19). |
-| 1361 | `private double studentLoanInterest` | The interest the graduates paid the treasury on their student loans this month (2026-09-21): a revenue line beside the premiums, set by Game off the household ledger the month it is struck. |
-| 1370 | `private double centralBankRemittance, centralBankInterest` | THE CENTRAL BANK'S TWO BUDGET LINES (0.7.0), set by Game where the central bank settles with the treasury at the top of the month: the remittance in, the interest on the advances out. |
-| 1381 | `private double fundTransfer` | THE TRANSFER FROM THE CITY'S FUND (0.7.14), set by Game where the treasury settles, for the central bank's lines' reason: Game moves the cash there. |
-| 1409 | `private double healthcareBill, healthcareFees` |  |
-| 1418 | `private double educationBill, educationFees` |  |
-| 1431 | `private double safetyBill` | What the police and the prisons cost this month: payroll and upkeep, no fees - nobody pays to be policed or jailed. |
-| 1456 | `private double transitBill, transitFares` |  |
-| 1468 | `private double subsidiesPaid` | What the city paid this month to hold protected sectors at break-even. |
-| 1474 | `private double seniors` |  |
+| 1430 | `private double totalEiPremiums` |  |
+| 1431 | `private double eiBenefits` |  |
+| 1432 | `private double studentGrants` |  |
+| 1435 | `private double totalHealthPremiums` | The month's health premium off every wage, struck in getTaxIncome() beside the EI premium (2026-09-19). |
+| 1448 | `private double studentLoanInterest` | The interest the graduates paid the treasury on their student loans this month (2026-09-21): a revenue line beside the premiums, set by Game off the household ledger the month it is struck. |
+| 1457 | `private double centralBankRemittance, centralBankInterest` | THE CENTRAL BANK'S TWO BUDGET LINES (0.7.0), set by Game where the central bank settles with the treasury at the top of the month: the remittance in, the interest on the advances out. |
+| 1468 | `private double fundTransfer` | THE TRANSFER FROM THE CITY'S FUND (0.7.14), set by Game where the treasury settles, for the central bank's lines' reason: Game moves the cash there. |
+| 1496 | `private double healthcareBill, healthcareFees` |  |
+| 1505 | `private double educationBill, educationFees` |  |
+| 1518 | `private double safetyBill` | What the police and the prisons cost this month: payroll and upkeep, no fees - nobody pays to be policed or jailed. |
+| 1543 | `private double transitBill, transitFares` |  |
+| 1558 | `private double subsidiesPaid` | What the city paid this month to hold protected sectors at break-even. |
+| 1564 | `private double seniors` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 1898 | **type** `public class EconomyManager` | The private economy: every sector, every market, the credit desk, the tax policy and the national accounts, and the month they run in. |
+| 29 | 1988 | **type** `public class EconomyManager` | The private economy: every sector, every market, the credit desk, the tax policy and the national accounts, and the month they run in. |
 
 ### THE CITY'S PARTS (lines 31-61)
 
@@ -355,7 +356,7 @@
 | 1262 | 5 | `public void finalEconUpdate(Game game)` | The bottom of the month: every market clears, every maker produces. |
 | 1269 | 3 | `public void refreshEconPrices()` | What the load path needs of the bottom of the month, and nothing else: the draw the expense lines need. |
 
-### THE CITY'S BOOKS (lines 1273-1340)
+### THE CITY'S BOOKS (lines 1273-1360)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -370,116 +371,133 @@
 | 1305 | 1 | `public double getWageTax()` |  |
 | 1306 | 1 | `public double getUtilityIncome()` |  |
 | 1309 | 3 | `public double wageTaxOnPayroll(double[] payrollPerType)` | The banded wage tax on one sector's payroll, asked of the policy rather than multiplied out in the UI. |
-| 1313 | 27 | `public double getTaxIncome()` |  |
+| 1313 | 1 | `public double getTaxIncome()` |  |
+| 1324 | 1 | `public double getTaxIncomeNow()` | The same take at today's rates, WRITING NOTHING (0.7.31, the Government spec's B8): what Game.getIncome() - the header's EARNED - reads every time the header draws. |
+| 1327 | 33 | `private double taxTake(boolean strike)` | The tax take, summed; struck into the month's fields only when `strike`. |
 
-### EI and the student grant (2026-09-11) (lines 1341-1406)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1351 | 1 | `public double getHealthPremiums()` | What the health premium raised this month, employee side, off the whole wage bill. |
-| 1372 | 4 | `public void setCentralBankLines(double remittance, double interest)` |  |
-| 1377 | 1 | `public double getCentralBankRemittance()` |  |
-| 1378 | 1 | `public double getCentralBankInterest()` |  |
-| 1383 | 1 | `public void setFundTransfer(double transfer)` |  |
-| 1384 | 1 | `public double getFundTransfer()` |  |
-| 1387 | 1 | `public void setStudentLoanInterest(double interest)` | Sets the month's student-loan interest, the treasury's. |
-| 1390 | 1 | `public double getStudentLoanInterest()` | What the graduates paid in interest on their student loans this month. |
-| 1393 | 4 | `public void setOutsidePayments(double eiBenefits, double studentGrants)` | The month's EI bill and grant bill as the treasury paid them: set by Game where it pays them, at the top of the month (payEiBenefits() since 0.7.3, payStudentGrants() since 0.7.1), and on the load path. |
-| 1398 | 1 | `public double getEiPremiums()` |  |
-| 1399 | 1 | `public double getEiBenefits()` |  |
-| 1400 | 1 | `public double getStudentGrants()` |  |
-| 1403 | 3 | `public double getEiCoverage()` | What the premiums cover of the EI bill. |
-
-### the services (lines 1407-1434)
+### WHAT THE POLICY TAB ASKS (0.7.36) (lines 1361-1427)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1410 | 4 | `public void setHealthcare(double grossCost, double fees)` |  |
-| 1414 | 1 | `public double getHealthcareBill()` |  |
-| 1415 | 1 | `public double getHealthcareFees()` |  |
-| 1416 | 1 | `public double getHealthcareNet()` |  |
-| 1419 | 4 | `public void setEducation(double grossCost, double fees)` |  |
-| 1423 | 1 | `public double getEducationBill()` |  |
-| 1424 | 1 | `public double getEducationFees()` |  |
-| 1425 | 1 | `public double getEducationNet()` |  |
-| 1432 | 1 | `public void setSafety(double grossCost)` |  |
-| 1433 | 1 | `public double getSafetyBill()` |  |
+| 1375 | 3 | `public double profitTaxUnder(Sector s, TaxPolicy p)` | One sector's profit tax under a policy (M2): its last struck pre-tax income at that policy's rate, nothing on a loss - Sector.strike()'s rule. |
+| 1388 | 6 | `public double salesTaxUnder(Sector s, TaxPolicy p)` | One sector's sales tax under a policy (M2): its net remittance scaled by the ratio of the two rates, or its taxable sales at the rate when it was charged nothing. |
+| 1396 | 5 | `public double propertyTaxUnder(Sector s, TaxPolicy p)` | One sector's property tax under a policy (M2): its land at today's price on that policy's roll share, and its finished buildings, at that policy's monthly rate - getPropertyTaxFor()'s rule. |
+| 1403 | 3 | `public double wageTaxUnder(WageBand band, TaxPolicy p)` | One wage band's wage tax under a policy (M2): every job type in it, staffed, at that policy's rate for the band - TaxPolicy.wageTaxPerTier()'s rule. |
+| 1408 | 7 | `public double payrollIn(WageBand band)` | The staffed payroll one wage band carries this month: what its wage tax is struck on. |
+| 1417 | 1 | `public double getWageBill()` | The wage bill the pension contribution and both premiums are struck on (M3): the month's total wage, as getTaxIncome() reads it. |
+| 1420 | 1 | `public double premiumAt(double rate)` | A premium at this rate off that bill (M3): the EI and health premiums' own rule. |
+| 1423 | 1 | `public double contributionsAt(double rate)` | Pension contributions at this rate off that bill (M3): SocialSecurity's own rule. |
+| 1426 | 1 | `public double pensionsPaidUnder(TaxPolicy p)` | What the pensions would come to under a policy (M4): today's seniors at its pension. |
 
-### THE TRANSIT BOOKS (2026-09-16) (lines 1435-1471)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1457 | 4 | `public void setTransit(double grossCost, double fares)` |  |
-| 1461 | 1 | `public double getTransitBill()` |  |
-| 1462 | 1 | `public double getTransitFares()` |  |
-| 1465 | 1 | `public double getTransitNet()` | Negative when the fare more than covers the wages, which a player can arrange. |
-| 1469 | 1 | `public void setSubsidiesPaid(double v)` |  |
-| 1470 | 1 | `public double getSubsidiesPaid()` |  |
-
-### pensions (lines 1472-1501)
+### EI and the student grant (2026-09-11) (lines 1428-1493)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1475 | 1 | `public void setSeniors(double seniors)` |  |
-| 1476 | 1 | `public double getSeniors()` |  |
-| 1477 | 1 | `public double getContributions()` |  |
-| 1478 | 1 | `public double getPensionsPaid()` |  |
-| 1479 | 1 | `public double getPensionShortfall()` |  |
-| 1480 | 5 | `public double getPensionCoverage()` |  |
-| 1487 | 4 | `public double getExpenses()` | What the city pays out this month. |
-| 1493 | 1 | `public double getInterestAccrued()` | The interest alone, which is the only part of getExpenses() that is CARRIED. |
-| 1494 | 1 | `public void setInterest(double value)` |  |
-| 1495 | 1 | `public void updateInterestExpense(double interest)` |  |
-| 1497 | 1 | `public double getTotalIncome()` |  |
-| 1499 | 1 | `public void setUtilityIncome(double income)` |  |
-| 1500 | 1 | `public void setDebt(double debt)` |  |
+| 1438 | 1 | `public double getHealthPremiums()` | What the health premium raised this month, employee side, off the whole wage bill. |
+| 1459 | 4 | `public void setCentralBankLines(double remittance, double interest)` |  |
+| 1464 | 1 | `public double getCentralBankRemittance()` |  |
+| 1465 | 1 | `public double getCentralBankInterest()` |  |
+| 1470 | 1 | `public void setFundTransfer(double transfer)` |  |
+| 1471 | 1 | `public double getFundTransfer()` |  |
+| 1474 | 1 | `public void setStudentLoanInterest(double interest)` | Sets the month's student-loan interest, the treasury's. |
+| 1477 | 1 | `public double getStudentLoanInterest()` | What the graduates paid in interest on their student loans this month. |
+| 1480 | 4 | `public void setOutsidePayments(double eiBenefits, double studentGrants)` | The month's EI bill and grant bill as the treasury paid them: set by Game where it pays them, at the top of the month (payEiBenefits() since 0.7.3, payStudentGrants() since 0.7.1), and on the load path. |
+| 1485 | 1 | `public double getEiPremiums()` |  |
+| 1486 | 1 | `public double getEiBenefits()` |  |
+| 1487 | 1 | `public double getStudentGrants()` |  |
+| 1490 | 3 | `public double getEiCoverage()` | What the premiums cover of the EI bill. |
 
-### THE NATIONAL ACCOUNTS (lines 1502-1749)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1517 | 123 | `public void updateNationalAccounts(double constructionWorkDone, double governmentServices, double interest, double capitalSpend...` | Measures the month's output and the government's books, from the statements the sectors have just struck. |
-| 1646 | 19 | `public void refreshGovernmentAccounts(double landSales, double capitalSpending, double landPurchases, double interestPaid)` | Repopulates the government's revenue and expenditure block after a load, and nothing else - running the whole measure would be running a month of the economy with the calendar standing still. |
-| 1675 | 4 | `private void setMortgageInsuranceLines()` | THE MORTGAGE INSURANCE'S TWO BUDGET LINES (0.7.11), off the lender's month: the premiums on the mortgages written, which the treasury took as each was written, and the claims - what the month's write-downs took off in... |
-| 1680 | 1 | `public double getLastFoodVolume()` |  |
-| 1692 | 17 | `public void restoreNationalAccounts(double[] a)` | A NEW SLOT RATHER THAN A CHANGED ONE, because slot 11 changed SCALE. |
-| 1710 | 19 | `public double[] getNationalAccountsState()` |  |
-| 1730 | 1 | `double[] governmentMonthToSave()` |  |
-| 1731 | 1 | `void restoreGovernmentMonth(double[] m)` |  |
-| 1733 | 1 | `public double getMonthGdp()` |  |
-| 1734 | 1 | `public double getYearGdp()` |  |
-| 1735 | 1 | `public double getGDP()` |  |
-| 1737 | 1 | `public double getTaxRate()` | The income rate - the three income taxes together, TaxPolicy.getIncomeTaxRate(): the profit rate once they have parted (0.7.4). |
-| 1739 | 10 | `public void setPreviousGdp(HistorySave historySave)` |  |
-
-### CONVENIENCES - the prices the screens and the harnesses ask for by name (lines 1750-1766)
+### the services (lines 1494-1521)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1755 | 1 | `public double getFoodLocalPrice()` | What one person-month of food costs the shops at today's market prices. |
-| 1756 | 1 | `public double getIronLocalPrice()` |  |
-| 1759 | 7 | `public int getFoodUnitsHeld()` | Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. |
+| 1497 | 4 | `public void setHealthcare(double grossCost, double fees)` |  |
+| 1501 | 1 | `public double getHealthcareBill()` |  |
+| 1502 | 1 | `public double getHealthcareFees()` |  |
+| 1503 | 1 | `public double getHealthcareNet()` |  |
+| 1506 | 4 | `public void setEducation(double grossCost, double fees)` |  |
+| 1510 | 1 | `public double getEducationBill()` |  |
+| 1511 | 1 | `public double getEducationFees()` |  |
+| 1512 | 1 | `public double getEducationNet()` |  |
+| 1519 | 1 | `public void setSafety(double grossCost)` |  |
+| 1520 | 1 | `public double getSafetyBill()` |  |
 
-### SAVE AND RESTORE (lines 1767-1799)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1771 | 1 | `public List<SectorState> getSectorStates()` |  |
-| 1772 | 1 | `public void restoreSectorStates(List<SectorState> s)` |  |
-| 1775 | 13 | `public void restoreSectorBills(List<SectorState> saved)` | The month's bills back over the rebuild's re-derivation, and the total they add to. |
-| 1788 | 1 | `public List<Markets.State> getMarketStates()` |  |
-| 1789 | 1 | `public void restoreMarketStates(List<Markets.State> s)` |  |
-| 1791 | 1 | `public SalesTaxLedger.State getSalesTaxState()` |  |
-| 1794 | 5 | `public boolean restoreSalesTaxState(SalesTaxLedger.State state)` | The month's VAT back, AND the total that came out of it - one fact. |
-
-### PRINTERS, RESET, THE REFORM (lines 1800-1926)
+### THE TRANSIT BOOKS (2026-09-16) (lines 1522-1561)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1804 | 3 | `public void printWageTaxInfo()` |  |
-| 1808 | 35 | `public void printCityStats()` |  |
-| 1844 | 14 | `public void resetEconomyManager()` |  |
-| 1861 | 4 | `static { ... }` |  |
-| 1873 | 48 | `public void redenominate(double scale)` | Every figure the economy manager holds, and every sector and market under it, in the new unit. |
-| 1922 | 4 | `private static void scaleArray(double[] values, double scale)` |  |
+| 1544 | 4 | `public void setTransit(double grossCost, double fares)` |  |
+| 1548 | 1 | `public double getTransitBill()` |  |
+| 1549 | 1 | `public double getTransitFares()` |  |
+| 1552 | 1 | `public double getTransitNet()` | Negative when the fare more than covers the wages, which a player can arrange. |
+| 1555 | 1 | `public double transitNetAt(double fares)` | ...with another month of fares against this month's bill (0.7.38): the fare dial card's net, its fares InfrastructureManager.faresAt(). |
+| 1559 | 1 | `public void setSubsidiesPaid(double v)` |  |
+| 1560 | 1 | `public double getSubsidiesPaid()` |  |
+
+### pensions (lines 1562-1591)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1565 | 1 | `public void setSeniors(double seniors)` |  |
+| 1566 | 1 | `public double getSeniors()` |  |
+| 1567 | 1 | `public double getContributions()` |  |
+| 1568 | 1 | `public double getPensionsPaid()` |  |
+| 1569 | 1 | `public double getPensionShortfall()` |  |
+| 1570 | 5 | `public double getPensionCoverage()` |  |
+| 1577 | 4 | `public double getExpenses()` | What the city pays out this month. |
+| 1583 | 1 | `public double getInterestAccrued()` | The interest alone, which is the only part of getExpenses() that is CARRIED. |
+| 1584 | 1 | `public void setInterest(double value)` |  |
+| 1585 | 1 | `public void updateInterestExpense(double interest)` |  |
+| 1587 | 1 | `public double getTotalIncome()` |  |
+| 1589 | 1 | `public void setUtilityIncome(double income)` |  |
+| 1590 | 1 | `public void setDebt(double debt)` |  |
+
+### THE NATIONAL ACCOUNTS (lines 1592-1839)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1607 | 123 | `public void updateNationalAccounts(double constructionWorkDone, double governmentServices, double interest, double capitalSpend...` | Measures the month's output and the government's books, from the statements the sectors have just struck. |
+| 1736 | 19 | `public void refreshGovernmentAccounts(double landSales, double capitalSpending, double landPurchases, double interestPaid)` | Repopulates the government's revenue and expenditure block after a load, and nothing else - running the whole measure would be running a month of the economy with the calendar standing still. |
+| 1765 | 4 | `private void setMortgageInsuranceLines()` | THE MORTGAGE INSURANCE'S TWO BUDGET LINES (0.7.11), off the lender's month: the premiums on the mortgages written, which the treasury took as each was written, and the claims - what the month's write-downs took off in... |
+| 1770 | 1 | `public double getLastFoodVolume()` |  |
+| 1782 | 17 | `public void restoreNationalAccounts(double[] a)` | A NEW SLOT RATHER THAN A CHANGED ONE, because slot 11 changed SCALE. |
+| 1800 | 19 | `public double[] getNationalAccountsState()` |  |
+| 1820 | 1 | `double[] governmentMonthToSave()` |  |
+| 1821 | 1 | `void restoreGovernmentMonth(double[] m)` |  |
+| 1823 | 1 | `public double getMonthGdp()` |  |
+| 1824 | 1 | `public double getYearGdp()` |  |
+| 1825 | 1 | `public double getGDP()` |  |
+| 1827 | 1 | `public double getTaxRate()` | The income rate - the three income taxes together, TaxPolicy.getIncomeTaxRate(): the profit rate once they have parted (0.7.4). |
+| 1829 | 10 | `public void setPreviousGdp(HistorySave historySave)` |  |
+
+### CONVENIENCES - the prices the screens and the harnesses ask for by name (lines 1840-1856)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1845 | 1 | `public double getFoodLocalPrice()` | What one person-month of food costs the shops at today's market prices. |
+| 1846 | 1 | `public double getIronLocalPrice()` |  |
+| 1849 | 7 | `public int getFoodUnitsHeld()` | Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. |
+
+### SAVE AND RESTORE (lines 1857-1889)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1861 | 1 | `public List<SectorState> getSectorStates()` |  |
+| 1862 | 1 | `public void restoreSectorStates(List<SectorState> s)` |  |
+| 1865 | 13 | `public void restoreSectorBills(List<SectorState> saved)` | The month's bills back over the rebuild's re-derivation, and the total they add to. |
+| 1878 | 1 | `public List<Markets.State> getMarketStates()` |  |
+| 1879 | 1 | `public void restoreMarketStates(List<Markets.State> s)` |  |
+| 1881 | 1 | `public SalesTaxLedger.State getSalesTaxState()` |  |
+| 1884 | 5 | `public boolean restoreSalesTaxState(SalesTaxLedger.State state)` | The month's VAT back, AND the total that came out of it - one fact. |
+
+### PRINTERS, RESET, THE REFORM (lines 1890-2016)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1894 | 3 | `public void printWageTaxInfo()` |  |
+| 1898 | 35 | `public void printCityStats()` |  |
+| 1934 | 14 | `public void resetEconomyManager()` |  |
+| 1951 | 4 | `static { ... }` |  |
+| 1963 | 48 | `public void redenominate(double scale)` | Every figure the economy manager holds, and every sector and market under it, in the new unit. |
+| 2012 | 4 | `private static void scaleArray(double[] values, double scale)` |  |
 

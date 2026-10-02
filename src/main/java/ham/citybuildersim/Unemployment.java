@@ -413,13 +413,33 @@ public class Unemployment {
     }
 
     private void strikeBenefits(double benefitRate) {
+        benefitsPaid = benefitsAt(benefitRate);
+    }
+
+    /**
+     * The EI bill on the pool as it stands at this benefit rate, struck and
+     * not kept (0.7.36): every claimant's cohort, its insured wage capped,
+     * at the rate - strikeBenefits()'s loop, which sets the bill with it. The
+     * Policy tab's preview of the benefit dial: next month's bill is this,
+     * restruck at the top of the month on the pool the month opens with
+     * (restrikeBenefits()). It scaled the bill the treasury paid at the top of
+     * this month by the ratio of the rates (the Policy spec's B11). Pure.
+     */
+    public double benefitsAt(double benefitRate) {
         double rate = Math.max(0, benefitRate);
-        benefitsPaid = 0;
+        double bill = 0;
         for (int m = 0; m < EI_MONTHS; m++) {
             if (cohortPeople[m] <= 0) continue;
             double insured = insuredCap > 0 ? Math.min(cohortWage[m], insuredCap) : cohortWage[m];
-            benefitsPaid += cohortPeople[m] * rate * insured;
+            bill += cohortPeople[m] * rate * insured;
         }
+        return bill;
+    }
+
+    /** ...and what one claimant would draw on average at this rate (0.7.36): benefitsAt() over the claimants, getBenefitPerClaimant()'s rule. Pure. */
+    public double benefitPerClaimantAt(double benefitRate) {
+        double on = onEi();
+        return on > 0 ? benefitsAt(benefitRate) / on : 0;
     }
 
     /* =====================================================================

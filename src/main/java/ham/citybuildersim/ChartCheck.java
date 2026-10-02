@@ -40,7 +40,9 @@ import java.util.Locale;
  *   3. THE CHART'S SPANS ARE YEARBOOK'S: the bands are exactly recessions(),
  *      each carrying the name of the recession that holds it, its depth the
  *      year book's own; the episode lane is exactly episodes(), and no two
- *      that overlap share a row; every kind says the rule that named it.
+ *      that overlap share a row; every kind says the rule that named it; and
+ *      (0.7.37) what is running is what the history has not closed, a
+ *      crisis before a watch, the newest first, the chronic last.
  *   4. THE TICKS: every window, at every width, has years on its axis - on
  *      January, every tick at least MONTH_LABEL_PX apart - and months only
  *      when they fit; a value axis steps by one, two or five times a power
@@ -50,7 +52,8 @@ import java.util.Locale;
  *      MIN_SPAN and at the whole history, the month under the pointer stays
  *      under it, and a window on the newest month follows it.
  *   6. THE FLAGS: one a month, with the count; flags too close to part drawn
- *      as one.
+ *      as one; and (0.7.37) a decision from the founding month, before the
+ *      history's first month, on the lane at that first month.
  *   7. A YOUNG CITY'S WINDOW GROWS INTO ITS RANGE (after the docs pass): a
  *      history shorter than the range is shown whole and then, as it grows,
  *      is the last ten years - or whichever range was pressed - every
@@ -438,6 +441,51 @@ public class ChartCheck {
                 YearBook.trigger("slump").contains(DecisionLog.pct(YearBook.SLUMP_UNEMPLOYMENT))
                         && YearBook.trigger("inflation").contains(DecisionLog.pct(YearBook.INFLATION_EPISODE))
                         && YearBook.trigger("depression").contains(String.valueOf(YearBook.DEPRESSION_MONTHS)));
+
+        whatIsRunning();
+    }
+
+    /**
+     * What City History's RUNNING NOW reads (0.7.37): YearBook.running(). Two
+     * hundred months, the workforce off sick the whole way (an epidemic as
+     * old as the city), the bank under water twice - once closed, once to
+     * the end - the treasury overdrawn for the last twenty months and a
+     * quarter of the labour force out of work for the last ten.
+     */
+    static void whatIsRunning() {
+        int months = 200;
+        double[] equity = flat(months, 1000), cash = flat(months, 1000), out = flat(months, 10);
+        for (int m = 101; m <= 120; m++) equity[m - 1] = -80;
+        for (int m = 171; m <= months; m++) equity[m - 1] = -80;
+        for (int m = 181; m <= months; m++) cash[m - 1] = -5;
+        for (int m = 191; m <= months; m++) out[m - 1] = 25;
+        HistorySave h = built(months, new String[] {"sickRate", "bankEquity", "cash", "workforce", "outOfWork"},
+                flat(months, .2), equity, cash, flat(months, 100), out);
+
+        List<YearBook.Episode> all = YearBook.episodes(h);
+        List<YearBook.Episode> running = YearBook.running(h);
+        boolean closedOne = false;
+        for (YearBook.Episode e : all) closedOne |= e.kind().equals("financial") && e.toMonth() == 120;
+        assertTrue("fixture: a financial crisis closed at month 120, and four kinds held to the last month",
+                closedOne && all.size() == 5);
+        boolean open = running.size() == 4;
+        for (YearBook.Episode e : running) open &= e.toMonth() == months;
+        assertTrue("a running episode is one the history has not closed: the four that end at its last month", open);
+        List<String> kinds = new ArrayList<>();
+        for (YearBook.Episode e : running) kinds.add(e.kind());
+        same("...a crisis before a watch, the newest start first, and the chronic one last", kinds,
+                List.of("treasury", "financial", "slump", "epidemic"));
+        assertTrue("...the epidemic, as old as the city, is chronic at CHRONIC_MONTHS; the ten-month slump is not",
+                running.get(3).months() >= YearBook.CHRONIC_MONTHS && YearBook.isChronic(running.get(3))
+                        && !YearBook.isChronic(running.get(2)));
+        assertTrue("...and read from a list already in hand, the same four in the same order",
+                YearBook.running(all, months).equals(running));
+        same("the months a kind ran, all told: the two financial crises' twenty and thirty",
+                YearBook.monthsIn(all, "financial"), 50);
+        assertTrue("a crisis is the kinds the chart draws red: financial, currency, treasury, depression",
+                YearBook.isSevere("financial") && YearBook.isSevere("currency") && YearBook.isSevere("treasury")
+                        && YearBook.isSevere("depression") && !YearBook.isSevere("recession")
+                        && !YearBook.isSevere("slump") && !YearBook.isSevere("epidemic"));
     }
 
     /* ============================ 4. THE TICKS ============================ */
@@ -598,6 +646,28 @@ public class ChartCheck {
         same("zoomed out, the two a month apart are drawn as one", narrow.size(), 2);
         same("...counting four decisions", narrow.get(0).count(), 4);
         same("a window that holds none draws none", ChartModel.clusters(flags, 200, 300, 400, 16).size(), 0);
+
+        // The founding month (0.7.37): decided in month 1, before a history whose axis starts at month 2.
+        DecisionLog founding = new DecisionLog(() -> month[0]);
+        month[0] = 1;
+        founding.record(DecisionLog.BORROWING, "Rollover on: each piece into its own kind");
+        founding.record(DecisionLog.BANK, "A failed bank to be resolved at once");
+        month[0] = 2;
+        founding.record(DecisionLog.TAX, "Taxes to 17%");
+        month[0] = 40;
+        founding.record(DecisionLog.CURRENCY, "Bought reserves for $2.0M");
+        int drawnBefore = 0;
+        for (ChartModel.Cluster c : ChartModel.clusters(ChartModel.flags(founding), 2, 200, 20_000, 16)) drawnBefore += c.count();
+        same("fixture: on an axis from month 2, the founding month's two decisions were on no lane", drawnBefore, 2);
+        List<ChartModel.Flag> lane = ChartModel.onAxis(ChartModel.flags(founding), 2);
+        assertTrue("a decision in the founding month is on the lane: at the axis's first month, with that month's own",
+                lane.size() == 2 && lane.get(0).month() == 2 && lane.get(0).count() == 3 && lane.get(1).month() == 40);
+        assertTrue("...each keeping its own month, the founding month's first",
+                lane.get(0).entries().get(0).month() == 1 && lane.get(0).entries().get(1).month() == 1
+                        && lane.get(0).entries().get(2).month() == 2);
+        int drawn = 0;
+        for (ChartModel.Cluster c : ChartModel.clusters(lane, 2, 200, 20_000, 16)) drawn += c.count();
+        same("...so the whole history drawn shows every decision in the log", drawn, founding.size());
     }
 
     /* ============================ 7. A YOUNG CITY'S WINDOW ============================ */

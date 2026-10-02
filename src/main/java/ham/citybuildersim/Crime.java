@@ -79,6 +79,9 @@ public class Crime {
     /** Homicides per 100,000 people a year, Canada, 2025. */
     public static final double CANADA_HOMICIDES_PER_100K = 1.61;
 
+    /** Prisoners per 100,000 people, Canada, about - what the Services screen's prisons say beside the city's (0.7.28; a literal in the screen until then). Nothing in the model reads it. */
+    public static final double CANADA_PRISONERS_PER_100K = 127;
+
     /** What full coverage takes off. Jerus: "drastically reduces it but never eliminates it". */
     public static final double MAX_DETERRENCE = .90;
 

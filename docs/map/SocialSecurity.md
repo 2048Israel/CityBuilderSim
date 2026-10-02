@@ -1,6 +1,6 @@
 # SocialSecurity.java - 150 lines · 9 methods · 4 constants · model
 
-`ham/citybuildersim/SocialSecurity.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SocialSecurity.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Contributions off every wage, and a pension for everyone too old to work.
 > 
@@ -47,7 +47,7 @@
 
 **Uses:** [PayTier](PayTier.md) (1)
 
-**Used by (4):** [EconomyManager](EconomyManager.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [TaxPolicy](TaxPolicy.md)
+**Used by (5):** [EconomyManager](EconomyManager.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [TaxPolicy](TaxPolicy.md)
 
 ## Sections
 

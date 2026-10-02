@@ -282,6 +282,17 @@ public class RailCheck {
                 rail.getTradeTonnes() > 10_000,
                 String.format("%,.0f tonnes a month, worth %,.0fk by lorry",
                         rail.getTradeTonnes(), rail.getTruckBill()));
+        /*
+         * THE LORRY BILL, THREE WAYS (0.7.29): billed at home, paid abroad and
+         * kept. With no track the railway carries nothing, so all of it went
+         * abroad with the cargo - the Freight page called the whole of it
+         * "paid abroad" whatever the railway carried, which is right only here.
+         */
+        report("with no railway, the whole lorry bill is paid abroad",
+                rail.getTruckBill() > 0 && near(rail.getPaidAbroad(), rail.getTruckBill(), 1e-9)
+                        && rail.getHaulageBilled() == 0
+                        && near(rail.getKept(), 0, 1e-9 * rail.getTruckBill()),
+                String.format("%,.2fk abroad of a %,.2fk lorry bill", rail.getPaidAbroad(), rail.getTruckBill()));
         report("...and the band agrees with what the railway says it is carrying",
                 same(game.getMarkets().get(Good.STEEL).getFreightFactor(),
                      1 - rail.getCarried()[Traffic.BULK.ordinal()]),
@@ -336,6 +347,15 @@ public class RailCheck {
                 allInputsAddUp(game),
                 "every sector");
 
+        report("with the railway carrying, the lorry bill is billed at home, paid abroad and kept",
+                rail.getHaulageBilled() > 0 && rail.getHauledTonnes() > 0
+                        && near(rail.getHaulageBilled() + rail.getPaidAbroad() + rail.getKept(),
+                                rail.getTruckBill(), 1e-9)
+                        && rail.getTruckBill() - rail.getHaulageBilled() - rail.getPaidAbroad()
+                           >= -1e-9 * rail.getTruckBill(),
+                String.format("%,.0fk = %,.0fk at home + %,.0fk abroad + %,.0fk kept", rail.getTruckBill(),
+                        rail.getHaulageBilled(), rail.getPaidAbroad(), rail.getKept()));
+
         /*
          * TWO THINGS IT BUYS FROM ABROAD, and between them they are the whole
          * of its import line. The fuel is a running cost; the locomotives are
@@ -352,6 +372,26 @@ public class RailCheck {
                         && near(rail.statement().imports, fuelBill + trainBill, 1e-9),
                 String.format("fuel %,.0fk + trains %,.0fk = %,.0fk on the trade balance",
                         fuelBill, trainBill, rail.statement().imports));
+
+        /*
+         * ...AND THE TRADE TAB NAMES THE FUEL (0.7.35). It draws the month good
+         * by good off the sectors' books (Game.getTradeByGood()), and the fuel
+         * has no good: it must come out as the railway's own line, the trains
+         * as rolling stock bought by the railway, and the whole as the
+         * balance of payments' imports - ForeignCheck holds the footing every
+         * month in a city with no railway; this is the city with one.
+         */
+        Sectors.TradeByGood goods = game.getTradeByGood();
+        Sectors.GoodTrade wagons = goods.goods().get(Good.ROLLING_STOCK);
+        report("...and the Trade tab's goods name the fuel as the railway's, the trains as rolling stock",
+                near(goods.services().getOrDefault(Sectors.RAIL, 0.0), fuelBill, 1e-9)
+                        && wagons != null && near(wagons.buyers().getOrDefault(Sectors.RAIL, 0.0), trainBill, 1e-9),
+                String.format("fuel %,.0fk, rolling stock %,.0fk", goods.services().getOrDefault(Sectors.RAIL, 0.0),
+                        wagons == null ? 0 : wagons.bought()));
+        report("...with every other good bought, the city's imports",
+                near(goods.bought(), game.getForeignAccounts().tradeImports(), 1e-9),
+                String.format("%,.0fk by good, %,.0fk on the balance of payments", goods.bought(),
+                        game.getForeignAccounts().tradeImports()));
 
         report("...and it bought the fleet its track needs",
                 rail.fleet() > 0 && near(rail.fleet(), rail.setsNeeded(), .02),
@@ -438,6 +478,7 @@ public class RailCheck {
 
         double quoteWas = rail.getQuote();
         double[] carriedWas = rail.getCarried();
+        double allowedWas = rail.getAllowedRevenue(), abroadWas = rail.getPaidAbroad();
         quietly(() -> game.saveGame(10));
         Game reloaded = new Game(files);
         quietly(() -> { reloaded.run(); reloaded.loadGame(10); });
@@ -450,6 +491,43 @@ public class RailCheck {
             shares &= same(back.getCarried()[t.ordinal()], carriedWas[t.ordinal()]);
         }
         assertTrue("...and so did what it was carrying, stream by stream", shares);
+        /*
+         * THE TWO THE SCREENS READ (0.7.29). The allowed revenue was not
+         * saved, so a loaded railway read "allowed to bill $0.00" until its
+         * first month ran, and the "bigger than its city" line could not fire.
+         */
+        report("...and so did what it was allowed to bill, and what went abroad",
+                allowedWas > 0 && same(back.getAllowedRevenue(), allowedWas)
+                        && same(back.getPaidAbroad(), abroadWas),
+                String.format("allowed %,.2fk, abroad %,.2fk", back.getAllowedRevenue(), back.getPaidAbroad()));
+        /*
+         * ...AND A SAVE FROM BEFORE THEY WERE KEPT says it does not know them,
+         * rather than reading $0 allowed and the whole bill "kept". The two
+         * keys are taken out of this railway's own state, as a save written
+         * before 0.7.29 lacks them; nothing billed at home is the one case
+         * where what went abroad is known anyway - the whole lorry bill.
+         */
+        SectorState older = back.toState();
+        older.extras.remove("allowed");
+        older.extras.remove("paidAbroad");
+        Rail old = new Rail();
+        old.restore(older);
+        report("a save from before them loads them as not known, not as nothing",
+                back.getHaulageBilled() > 0 && Double.isNaN(old.getAllowedRevenue())
+                        && Double.isNaN(old.getPaidAbroad()) && Double.isNaN(old.getKept()),
+                String.format("allowed %s, abroad %s", old.getAllowedRevenue(), old.getPaidAbroad()));
+        SectorState resaved = old.toState();
+        report("...and saving it again writes no guess for the next load to take as a figure",
+                !resaved.extras.containsKey("allowed") && !resaved.extras.containsKey("paidAbroad"),
+                resaved.extras.keySet().toString());
+        older.extras.put("haulage", 0.0);
+        Rail idle = new Rail();
+        idle.restore(older);
+        report("...but with nothing billed at home, the whole lorry bill went abroad",
+                older.extras.getOrDefault("truckBill", 0.0) > 0
+                        && same(idle.getPaidAbroad(), older.extras.get("truckBill")) && idle.getKept() == 0,
+                String.format("%,.2fk abroad of %,.2fk", idle.getPaidAbroad(), older.extras.get("truckBill")));
+
         report("...and its locomotives came back with it",
                 same(back.fleet(), rail.fleet()) && back.fleet() > 0,
                 String.format("%,.4f wagon sets against %,.4f", back.fleet(), rail.fleet()));

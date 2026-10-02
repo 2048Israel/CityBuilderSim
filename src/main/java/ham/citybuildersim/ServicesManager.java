@@ -88,6 +88,14 @@ public class ServicesManager {
                 buildingManager.getTotalDouble(
                         t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getWaterConsumption() : 0));
 
+        // ...and what the homes draw of the rest (0.7.28), which the Services
+        // screen splits the unbilled draw by: homes, and the city's own.
+        utilitiesHandler.setHomesDraw(
+                buildingManager.getTotalDouble(
+                        t -> t.getCategory() == BuildingType.RESIDENTIAL ? t.getElectricityConsumption() : 0),
+                buildingManager.getTotalDouble(
+                        t -> t.getCategory() == BuildingType.RESIDENTIAL ? t.getWaterConsumption() : 0));
+
         updateInfrastructure();
     }
 

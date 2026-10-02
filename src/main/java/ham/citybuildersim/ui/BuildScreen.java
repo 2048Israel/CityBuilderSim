@@ -22,18 +22,26 @@ import static ham.citybuildersim.ui.Pieces.*;
 import static ham.citybuildersim.ui.Levers.*;
 
 /**
- * The build tab: the strip of categories across the top, the constraints bar
- * that says what stops a build, the line that says who builds these, and every
- * building as a card - its face, its order line, its stats - with the stat
- * card's own vocabulary for what a building does and what care it gives.
+ * The build tab: the Overview it opens on and the city's five categories
+ * opened on their needs (both 0.7.24), the market's nine in their groups
+ * (0.7.25), the strip of categories, the constraints bar that says what
+ * stops a build, the line that says who builds these, and every building as
+ * the one card (0.7.25) - its head, hero, bars, investors' line, needs,
+ * order line and stats - with the stat card's own vocabulary for what a
+ * building does and what care it gives.
  *
- * Split out of UserInterface on 2026-09-18: the five banners BUILD: THE
- * CATEGORY SCREEN IS GONE TOO, THE HALF OF THE CATALOGUE THAT BUILDS ITSELF,
- * THE BUILD MENU, ONE BUILDING, AS A CARD and THE STAT CARD exactly as they
- * were, the shell's members reached through ui. The shell still reads which
- * category is open (buildCategory) for the rail and the scroll memory, and the
- * inbox and the panels send the player into a category through
- * handleAllBuildingMenus(). BuildMenuCheck reads the three card methods.
+ * Split out of UserInterface on 2026-09-18, the shell's members reached
+ * through ui: BUILD: THE CATEGORY SCREEN IS GONE TOO, THE HALF OF THE
+ * CATALOGUE THAT BUILDS ITSELF, THE BUILD MENU, ONE BUILDING, AS A CARD and
+ * THE STAT CARD came over then; THE OVERVIEW and A CITY CATEGORY, OPENED ON
+ * ITS NEEDS joined them in 0.7.24, and A MARKET CATEGORY, IN ITS GROUPS in
+ * 0.7.25, when ONE BUILDING, AS A CARD became the one card for every
+ * building. The shell still reads
+ * which category is open (buildCategory) for the rail and the scroll memory,
+ * and the inbox and the panels send the player into a category through
+ * openCategory(), which lands in handleAllBuildingMenus(). BuildMenuCheck
+ * reads the three card methods, and since 0.7.24 the pages through the
+ * window's buildPages() and buildOpensOn().
  * Since 0.7.5 the shell's key filter also calls buildPending() and
  * clearPending(): Enter, and Backspace or Delete, on the page showing.
  */
@@ -60,7 +68,8 @@ final class BuildScreen {
        Healthcare and Education come up to the strip at the same time. They were
        behind a "Services" submenu that existed because they are built for the
        people rather than for the economy - a true distinction, and not one
-       worth a click. The strip says it by putting them last.
+       worth a click. The strip said it by putting them last; since 0.7.24
+       the city's five come first (buildCategories()).
        ===================================================================== */
 
     /** One tab on the build strip: what it is called and what it contains. */
@@ -131,75 +140,106 @@ final class BuildScreen {
     }
 
     /**
-     * The strip, in the order a city is actually built.
+     * The strip, since 0.7.24 in BuildAdvice's order: the five only the city
+     * builds - Utilities, Roads & transit, Healthcare, Education, Safety -
+     * then the nine investors build too - Homes, Shops, Industry, Offices,
+     * Farms, Rail, Vehicles, Luxury shops, Restaurants - under the names
+     * Jerus chose ("Yes, rename them": Residential, Commercial, Industrial,
+     * Infrastructure and Services until then). The list lives in the model
+     * (BuildAdvice.categories()) so the harness can hold that every building
+     * sits in exactly one.
      *
-     * Housing first because a city with no homes employs nobody, then the shops
-     * that feed them, then the industry that employs them, then the power and
-     * water that run it, then the roads that carry it, then the two the city
-     * provides rather than sells.
+     * It ran in the order a city is built until 0.7.24, homes first. Jerus:
+     * "when you start the game you start in residential so the player
+     * without reading thinks he needs to building houses" - so the city's
+     * own works come first, and Build opens on its Overview (BUILD_HOME).
+     *
+     * Several have a row of their own for a reason the old strip gave
+     * beside each: Offices (business services) because its customer is not
+     * in the city; Farms because a farm competes with the whole
+     * neighbourhood; Rail because its product is a price on every other
+     * screen; Vehicles because an assembly plant cannot run on imported
+     * parts; Luxury shops and Restaurants because they exist so a rich city
+     * has somewhere to spend (BuildingType's notes on each).
      */
     static BuildCategory[] buildCategories() {
-        return new BuildCategory[] {
-            new BuildCategory("Residential",    EnumSet.of(BuildingType.RESIDENTIAL)),
-            new BuildCategory("Commercial",     EnumSet.of(BuildingType.COMMERCIAL)),
-            new BuildCategory("Industrial",     industrialTypes()),
-            new BuildCategory("Utilities",      utilityTypes()),
-            new BuildCategory("Infrastructure", EnumSet.of(BuildingType.INFRASTRUCTURE)),
-            new BuildCategory("Healthcare",     EnumSet.of(BuildingType.HEALTHCARE)),
-            new BuildCategory("Education",      EnumSet.of(BuildingType.EDUCATION)),
-            new BuildCategory("Safety",         EnumSet.of(BuildingType.SAFETY)),
-            // Its own row rather than folded into Industrial, because the thing
-            // a player needs to understand about these is the one thing they do
-            // not share with a mill: the customer is not in the city.
-            new BuildCategory("Services",       EnumSet.of(BuildingType.BUSINESS_SERVICES)),
-            // Its own row for the same reason, and a different one: what a
-            // player has to understand about a farm is that it competes with
-            // the whole neighbourhood rather than with one lot. See
-            // BuildingType.AGRICULTURE.
-            new BuildCategory("Farms",          EnumSet.of(BuildingType.AGRICULTURE)),
-            // Its own row because it is the one thing in this strip that is
-            // neither a business the city hopes will employ people nor a
-            // network the city owns: it is a private company whose product is
-            // a price on every other screen. See BuildingType.RAIL.
-            new BuildCategory("Rail",           EnumSet.of(BuildingType.RAIL)),
-            // ...and its own row for the reason Farms and Services have one:
-            // what a player has to understand about an assembly plant is the
-            // one thing it does not share with a foundry - it cannot be run on
-            // imported parts, at any price. See BuildingType.AUTOMOTIVE.
-            new BuildCategory("Vehicles",       EnumSet.of(BuildingType.AUTOMOTIVE)),
-            // ...and its own row because of what it is FOR. Every other
-            // category here is something the city needs; this is the one that
-            // exists so a rich city has somewhere to spend, and a player who
-            // does not build it will watch its mark-up climb and its citizens
-            // save money they cannot use. See BuildingType.LUXURY.
-            new BuildCategory("Luxury shops",   EnumSet.of(BuildingType.LUXURY)),
-            // ...and the kitchens, which are the other half of the same idea
-            // and the only one of the two that feeds anybody. See Restaurants.
-            new BuildCategory("Restaurants",    EnumSet.of(BuildingType.HOSPITALITY)),
-        };
+        List<BuildAdvice.Category> all = BuildAdvice.categories();
+        BuildCategory[] out = new BuildCategory[all.size()];
+        for (int i = 0; i < out.length; i++) out[i] = new BuildCategory(all.get(i).name(), all.get(i).types());
+        return out;
     }
 
     /**
-     * Which category the player was last looking at.
+     * Where Build opens (BUILD_HOME), and which category the player was last
+     * looking at (buildCategory).
      *
      * Remembered because Build is a tab now rather than a screen you arrive at
-     * from somewhere: a player who is halfway through putting up housing and
-     * goes to check the land price should come back to housing, not to the
-     * front of the catalogue.
+     * from somewhere: a player who is halfway through putting up a school and
+     * goes to check the land price should come back to the schools, not to
+     * the front of the catalogue - so within a session Build returns to the
+     * category the player was last in (0.7.20; Jerus's play-through came back
+     * to Residential every time).
+     *
+     * THE OVERVIEW IS WHERE IT STARTS (0.7.24): a fresh start, a new city and
+     * a load open Build on the Overview (UserInterface.anotherCity() puts it
+     * back), and the Overview is a place the player can be "last in" too.
      */
-    static final String BUILD_HOME    = "Residential";
+    static final String BUILD_HOME    = BuildAdvice.OVERVIEW;
     String buildCategory = BUILD_HOME;
 
-    /** The Build tab: the list, in whichever category you were last in. */
+    /** The Build tab: the Overview, or whichever category you were last in. */
     void showBuildMenu() {
-        for (BuildCategory category : buildCategories()) {
-            if (category.name().equals(buildCategory)) {
-                handleAllBuildingMenus(category.name(), category.types());
-                return;
+        openCategory(buildCategory);
+    }
+
+    /**
+     * A category, by its name - or by its label before 0.7.24, which lands in
+     * the same place - or the Overview. Arriving from anywhere (the strip, the
+     * Overview's tiles, NEEDS YOU's rows, a refusal's way to the schools) the
+     * page opens on its worst measure, not the one picked when the player was
+     * last there (A CITY CATEGORY, OPENED ON ITS NEEDS).
+     */
+    void openCategory(String name) {
+        BuildAdvice.Category c = BuildAdvice.category(name);
+        if (c == null) {
+            showOverview();
+            return;
+        }
+        measurePicked.remove(c.name());
+        handleAllBuildingMenus(c.name(), c.types());
+    }
+
+    /**
+     * A city category opened on one ring (0.7.28): the Services screen's
+     * "Build for it ›" doors - opened as openCategory() opens it, with this
+     * measure picked rather than its worst. The burial plots are the death
+     * care ring; a measure no city category has opens the Overview.
+     */
+    void openOn(BuildAdvice.Measure m) {
+        BuildAdvice.Category c = m == null ? null : BuildAdvice.category(m.category());
+        if (c == null) {
+            showOverview();
+            return;
+        }
+        measurePicked.put(c.name(), m.kind() == BuildAdvice.Kind.PLOTS ? BuildAdvice.Measure.of(BuildAdvice.Kind.DEATH) : m);
+        showCityCategory(c);
+    }
+
+    /**
+     * ...and the way back to the why (0.7.28): the "why ›" at a ring's
+     * heading opens the Services page that explains it - the road and
+     * transit rings, Infrastructure's, behind "what is on the road" and
+     * "who rides" since 0.7.29.
+     */
+    void why(BuildAdvice.Measure m) {
+        switch (m.kind()) {
+            case ROADS:   ui.infrastructureScreen.open("Roads");   return;
+            case TRANSIT: ui.infrastructureScreen.open("Transit"); return;
+            default: {
+                String[] at = ServicesScreen.pageFor(m);
+                ui.servicesScreen.open(at[0], at[1]);
             }
         }
-        BuildCategory first = buildCategories()[0];
-        handleAllBuildingMenus(first.name(), first.types());
     }
 
     /**
@@ -217,14 +257,42 @@ final class BuildScreen {
      * the right of the page's title (keyLine()). The open tab is raised, with
      * the building colour's underline.
      */
+    /*
+     * SINCE 0.7.24 it shows on a category page only, not on the Overview,
+     * and reads "‹ Overview", then the city's five with their blue dots, a
+     * rule, then the market's nine with their violet ones, left-aligned under
+     * the page's head as the round-2 mockups draw it.
+     */
     javafx.scene.layout.FlowPane buildStrip(String current) {
 
         javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(6, 6);
-        strip.setAlignment(Pos.CENTER);
-        strip.setPrefWrapLength(Palette.BUILD_ROW + 120);
+        strip.setAlignment(Pos.CENTER_LEFT);
+        strip.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
+        strip.setStyle("-fx-padding: 0 18 4 18;");
 
+        Button overview = new Button("‹ Overview");
+        overview.setGraphic(icon(Icons.OVERVIEW, Palette.TEXT_LABEL, 13));
+        overview.setGraphicTextGap(6);
+        overview.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL)
+                + " -fx-background-color: transparent; -fx-border-color: transparent;"
+                + " -fx-padding: 6 10 6 6; -fx-cursor: hand;");
+        overview.setTooltip(new Tooltip("The city's job, what would help most, and what the market builds"));
+        overview.setOnAction(e -> showOverview());
+        strip.getChildren().add(overview);
+
+        boolean ruled = false;
         for (BuildCategory category : buildCategories()) {
             boolean on = category.name().equals(current);
+            if (investorBuilt(category.types()) && !ruled) {
+                // The rule between the city's five and the market's nine.
+                Region rule = new Region();
+                rule.setMinSize(1, 18);
+                rule.setPrefSize(1, 18);
+                rule.setMaxSize(1, 18);
+                rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
+                strip.getChildren().add(rule);
+                ruled = true;
+            }
             /*
              * THE DOT SAYS WHO BUILDS IT, open or not - a legend that only
              * appears once you are inside is a legend that never answers
@@ -244,10 +312,7 @@ final class BuildScreen {
                     : "Nobody builds these but the city.");
             tip.setShowDelay(Duration.millis(250));
             tab.setTooltip(tip);
-            tab.setOnAction(e -> {
-                buildCategory = category.name();
-                handleAllBuildingMenus(category.name(), category.types());
-            });
+            tab.setOnAction(e -> openCategory(category.name()));
             strip.getChildren().add(tab);
         }
         return strip;
@@ -291,14 +356,28 @@ final class BuildScreen {
      * the key to the tabs' dots at the right, the way to the construction page
      * (0.7.22), and the receipt's dot beyond it.
      * The page had no title before; the strip was its first line.
+     *
+     * "Build", and on a category "Build › Healthcare" since 0.7.24, the
+     * mockups' title - "Build" a way back to the Overview.
      */
     HBox buildHead(String menuTitle, EnumSet<BuildingType> categories) {
-        Label title = ui.pageTitle("BUILD");
+        Label title = ui.pageTitle("Build");
+        HBox titled = new HBox(10, title);
+        titled.setAlignment(Pos.CENTER_LEFT);
+        if (!BuildAdvice.OVERVIEW.equals(menuTitle)) {
+            title.setStyle(title.getStyle() + " -fx-cursor: hand;");
+            title.setOnMouseClicked(e -> showOverview());
+            Label sep = new Label("›");
+            sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
+            Label where = new Label(menuTitle);
+            where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+            titled.getChildren().addAll(sep, where);
+        }
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         // ...and the way to the construction page (0.7.22): what is on site, and the hand on it.
         Label sites = stepChip("Construction ›", () -> ui.constructionScreen.show(), true);
-        HBox head = new HBox(Palette.GAP_LOOSE, title, gap, keyLine(), sites, receiptCorner(menuTitle, categories));
+        HBox head = new HBox(Palette.GAP_LOOSE, titled, gap, keyLine(), sites, receiptCorner(menuTitle, categories));
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMaxWidth(Double.MAX_VALUE);
         head.setStyle("-fx-padding: 0 18 4 18;");
@@ -309,149 +388,41 @@ final class BuildScreen {
     /* =====================================================================
        THE BUILD MENU
 
-       The catalogue screen itself: the strip of categories, the tiles, the
-       constraints bar across the top and the line that says who builds these.
-       It sat inside BORROW, where it landed when the build menu was rewritten
-       around the debt screen's tiles; it is its own section since 2026-09-18
-       so that the interface split can file it with the cards, not the loans.
+       The catalogue screen itself: where a page's name lands
+       (handleAllBuildingMenus()), the constraints bar across the top and the
+       line that says who builds these. The 0.7.21 page's grid of tiles was
+       drawn here too; since 0.7.24 and 0.7.25 the pages are drawn under THE
+       OVERVIEW and the two CATEGORY banners below, on the card of ONE
+       BUILDING, AS A CARD. It sat inside BORROW, where it landed when the
+       build menu was rewritten around the debt screen's tiles; it is its own
+       section since 2026-09-18 so that the interface split can file it with
+       the cards, not the loans.
        ===================================================================== */
 
-    void handleAllBuildingMenus(String menuTitle, EnumSet<BuildingType> categories) {
-        ui.clearMenu("handleAllBuildingMenus", () -> handleAllBuildingMenus(menuTitle, categories));
-        BuildingManager buildingManager = ui.game.getBuildingManager();
-
-        /*
-         * WHICH CATEGORY THIS IS, remembered for the Build tab.
-         *
-         * Set here rather than only in the strip's own handler, because this
-         * method is also entered from outside the strip - the inbox's "go and
-         * build healthcare" lands here directly - and a player sent to
-         * Healthcare by a warning should find Healthcare when they come back.
-         */
-        for (BuildCategory category : buildCategories()) {
-            if (category.name().equals(menuTitle)) buildCategory = menuTitle;
+    /**
+     * A Build page by its name: the Overview, one of the city's five opened
+     * on its needs (showCityCategory()), or one of the market's nine in its
+     * groups (showMarketCategory(), 0.7.25). Every way into Build lands here - the strip, the
+     * inbox, NEEDS YOU, a refusal's Back, an order placed - and a label from
+     * before 0.7.24 lands where it always did, under its new name.
+     */
+    void handleAllBuildingMenus(String asked, EnumSet<BuildingType> categories) {
+        if (asked == null || BuildAdvice.OVERVIEW.equals(asked)) {
+            showOverview();
+            return;
         }
-
-        /*
-         * AND WHICH CARDS ARE ON IT, for the keyboard (see "the keyboard",
-         * after placeOrder). Started again here, before a card is drawn, so
-         * each card below files itself in the order it is laid out and the
-         * caption it keeps up to date is this page's, not the last one's.
-         */
-        pageCards.clear();
-        pageTitle = menuTitle;
-        pageCategories = categories;
-        pendingHint = new Label("↵ builds what is pending · ⌫ clears it");
-        pendingHint.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
-                + " -fx-padding: 6 0 0 0;");
-
-        // 1. The four things that decide whether anything you click will happen.
-        HBox limits = constraintsBar();
-
-        /* ---------------------------------------------------------------
-           2. THE BUILDINGS, GROUPED BY WHAT THEY ACTUALLY DO
-
-           Fourteen buttons in one column told a player nothing - "Home Care
-           Service" and "Home Daycare" sit next to each other and do opposite
-           things to opposite ends of the pyramid, and the only way to tell was
-           to already know. Jerus: "group it further cause its hard to know
-           whats for what".
-
-           Grouped on the CareType field rather than on the names, which is the
-           whole reason that field exists. It is also general: every menu that
-           contains no care types at all - which is every other menu in the game
-           - falls through the loop below unchanged and comes out as the same
-           flat column it always was.
-           --------------------------------------------------------------- */
-        List<BuildingsTemplate> buildings = buildingManager.getTemplatesByCategory(categories);
-        VBox buildingsBox = new VBox(5);
-        buildingsBox.setAlignment(Pos.CENTER);
-        // The page scrolls in the window's own scroller, so the room under its
-        // last row is kept here (0.7.20; see UserInterface.PAGE_FOOT): the
-        // Middle School's Build button sat at the edge where the dome was.
-        buildingsBox.setPadding(new javafx.geometry.Insets(0, 0, UserInterface.PAGE_FOOT, 0));
-
-        /*
-         * GROUPED ON WHAT THE BUILDING IS FOR, which is a field and not a name.
-         *
-         * Started as a CareType loop for the healthcare menu. Education needed
-         * exactly the same treatment - nine schools in one column, with
-         * "Middle School" and "Medical School" sitting next to each other doing
-         * entirely different things - so the loop reads whichever of the two
-         * fields the building has. A menu with neither falls through unchanged
-         * and comes out as the flat column it always was.
-         */
-        java.util.List<Object> keys = new ArrayList<>();
-        keys.add(CareType.NONE);
-        for (CareType care : CareType.values()) if (care != CareType.NONE) keys.add(care);
-        for (EducationType type : EducationType.values()) {
-            if (type != EducationType.NONE) keys.add(type);
+        BuildAdvice.Category known = BuildAdvice.category(asked);
+        if (known != null && known.cityBuilds()) {
+            showCityCategory(known);
+            return;
         }
-
-        for (Object key : keys) {
-
-            List<BuildingsTemplate> group = new ArrayList<>();
-            for (BuildingsTemplate template : buildings) {
-                if (groupKeyOf(template).equals(key)) group.add(template);
-            }
-            if (group.isEmpty()) continue;
-
-            if (!CareType.NONE.equals(key)) {
-                Label heading = new Label(groupHeading(key));
-                heading.setStyle("-fx-font-weight: bold; -fx-font-size: 11px;"
-                        + " -fx-text-fill: " + Palette.ACCENT + "; -fx-padding: 10 0 0 0;");
-                buildingsBox.getChildren().add(heading);
-
-                Label what = new Label(groupSubtitle(key));
-                what.setWrapText(true);
-                what.setMaxWidth(TILE_WIDTH * 3 + TILE_GAP * 2);
-                what.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";"
-                        + " -fx-padding: 0 0 3 0;");
-                buildingsBox.getChildren().add(what);
-            }
-
-            /*
-             * A GRID, THREE ACROSS. A column of rows was right when a row was a
-             * name and a price; each one carries five figures and a quantity
-             * stepper now, and fourteen of those in one column is a screen you
-             * scroll rather than read.
-             */
-            javafx.scene.layout.FlowPane grid =
-                    new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
-            grid.setAlignment(Pos.CENTER);
-            /*
-             * BOUND TO THE WINDOW rather than fixed at three.
-             *
-             * Three across is the layout on a maximised window and the
-             * arithmetic said it fitted - and it laid out two, because the
-             * stage is not as wide as the arithmetic assumed once the two side
-             * panels and the rail have taken theirs. Asking the viewport how
-             * much room there actually is gets three on a big screen and two on
-             * a small one, which is what a grid is for.
-             */
-            grid.prefWrapLengthProperty().bind(
-                    ui.menuScroller.widthProperty().subtract(TILE_GAP * 4));
-            grid.maxWidthProperty().bind(
-                    ui.menuScroller.widthProperty().subtract(TILE_GAP * 4));
-            for (BuildingsTemplate template : group) {
-                grid.getChildren().add(buildingTile(template, menuTitle, categories));
-            }
-            buildingsBox.getChildren().add(grid);
+        if (known == null) {
+            // A name that is no category - nothing passes one since 0.7.24 -
+            // lands on the Overview rather than on an empty page.
+            showOverview();
+            return;
         }
-
-        // The two keys, said once, under the grid - and only while something
-        // on the page is pending for them to act on.
-        buildingsBox.getChildren().add(pendingHint);
-        showPendingHint();
-
-        /*
-         * 3. NO BACK BUTTON. The strip is where you were going, and the rail is
-         *    how you leave - Back had nowhere left to go the moment the
-         *    category chooser stopped existing.
-         */
-        ui.rootMenu.getChildren().addAll(buildHead(menuTitle, categories),
-                limits, buildStrip(menuTitle), whoBuildsThis(menuTitle, categories),
-                buildingsBox);
+        showMarketCategory(known);
     }
 
     /**
@@ -503,8 +474,10 @@ final class BuildScreen {
      * decision.
      *
      * They colour when they are about to bite, and that is the whole point: a
-     * bar of four grey numbers is a bar nobody reads, and a red one on a city at
-     * 95% land is the warning that used to arrive as a rejection.
+     * bar of four grey numbers is a bar nobody reads, and a red one on a city
+     * with no ground free is the warning that used to arrive as a rejection.
+     * (Red from 95% of the land used until 0.7.26, which a city sits at for
+     * centuries with nothing wrong; the free ground's own line since.)
      */
     HBox constraintsBar() {
 
@@ -535,13 +508,22 @@ final class BuildScreen {
                         materials <= 0 ? Palette.WARN : Palette.TEXT_HEAD),
                 limitCell("PER UNIT", unitPrice(price),
                         "to import more", Palette.TEXT_HEAD),
+                // Coloured by NEEDS YOU's GROUND row since 0.7.26 (CityNeeds.ground(): a
+                // block free or less amber, none red), not by the share used, which a city
+                // sits at 95-100% of for centuries with nothing wrong - it read 51.0M sq ft
+                // free in red. The land office and the left panel take the same row.
                 limitCell("LAND FREE", shortNumber(free) + " sq ft",
                         String.format("%.0f%% of the city used", used * 100),
-                        used >= .95 ? Palette.BAD : used >= .85 ? Palette.WARN : Palette.TEXT_HEAD,
+                        groundTone(CityNeeds.ground(ui.game, SummaryScreen.WORDS).level()),
                         "Go to the land office and buy more",
                         () -> ui.landScreen.showLandMenu()),
                 lastCell);
         return bar;
+    }
+
+    /** LAND FREE's colour: the GROUND row's verdict, amber or red, and the strip's plain figure while it is fine. */
+    static String groundTone(int level) {
+        return level >= 2 ? Palette.BAD : level == 1 ? Palette.WARN : Palette.TEXT_HEAD;
     }
 
     /* =====================================================================
@@ -564,6 +546,36 @@ final class BuildScreen {
        its own stat block; clicking pins it there. Pinned cards stay pinned while
        you open others, so two buildings can be compared side by side - which a
        tooltip, by construction, can never do.
+
+       ONE CARD FOR ALL 73 (0.7.25). Jerus, after seeing 0.7.24: "also the
+       build card for every building, i think the card itself needs a
+       redesign dont you think?" The market's nine had kept the 0.7.21 card
+       - a name, two prices, the land and the running cost, a stepper - while
+       the city's five had one that said what a building gives and set it
+       beside its neighbours, and had lost the (i), the running cost and +100
+       on the way. Every building has the one card now (the project's design
+       note for 0.7.25), NEED_CARD wide and as tall as what it says:
+         the head - an icon square in who-builds-it's colour, the name (faint
+           when one costs more than the cash), "you have N" and what is on
+           site with its wait, a link to the site;
+         the tags - the best of its group on each bar;
+         the hero - what it gives the city, in its own verb and unit, and a
+           detail line under it;
+         the price - all in, green or red against the cash, the sticker smaller;
+         two bars - money per unit of the hero, and the category's scarce
+           resource: land on the market's cards, the posts the city cannot
+           fill on the city's, the posts it could not staff on an office's -
+           scaled within its group, with no track in a group of one;
+         the investors' line, on the market's cards;
+         what it needs - its posts, the staffing, the land and how much of
+           what is free, what it costs to run;
+         the stepper and Build, and the quote with its verdict, which warns
+           of the deposit and the licence before the click, in buildStack()'s
+           order - Build the card's width since 0.7.34, its label the order
+           (orderPress()).
+       The figures are BuildCard's, which BuildCardCheck holds; this keeps the
+       words and the layout. The (i) and its cover, the stepper, the reprice
+       in place, the keyboard and placeOrder() are the 0.7.21 card's.
        ===================================================================== */
 
     /** Which cards are showing their stats, by building name. */
@@ -572,191 +584,489 @@ final class BuildScreen {
     /** How many of each the player has dialled up, by building name. */
     final java.util.Map<String, Integer> orderQty = new java.util.HashMap<>();
 
-    StackPane buildingTile(BuildingsTemplate template, String menuTitle,
-                                   EnumSet<BuildingType> categories) {
-
+    /**
+     * One building as a card, on a city category's page (its picked ring's
+     * group) or a market category's (its owning sector's group).
+     *
+     * @param f     its figures (BuildCard.of())
+     * @param group what it is compared within: its bars' scale and its tags
+     * @param c     the category whose page it is on
+     * @param m     the picked ring on a city page; null on a market page
+     */
+    StackPane card(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Category c, BuildAdvice.Measure m) {
+        BuildingsTemplate template = f.template();
         String key = template.getName();
-        // The work, and the price all in - material and the builders' sales
-        // tax (0.7.19) - both off the quote that charges.
-        Game.BuildQuote one = ui.game.quoteBuild(template, 1);
-        double sticker = one.sticker;
-        double allIn = one.total;
-        boolean importing = allIn > sticker + .5;
-        boolean afford = allIn <= ui.game.getCash();
+        boolean afford = f.price() <= ui.game.getCash();
 
-        int owned = ui.game.getBuildingManager().getQuantity(template.getId());
-        double landFree = ui.game.getLandManager().getAvailableSqFt();
+        VBox face = new VBox(6);
+        face.setStyle("-fx-padding: 10 12 10 12;");
+        face.getChildren().add(cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford));
+        javafx.scene.layout.FlowPane tags = cardTags(f, group);
+        if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
+        face.getChildren().addAll(heroRow(f), priceRow(f, afford));
+        face.getChildren().addAll(cardBars(f, group, m));
+        if (f.market()) face.getChildren().add(investorsLine(template));
+        face.getChildren().add(needsLine(f));
 
-        /* ------------------------------ the face ------------------------------ */
-        Label name = new Label(template.getName());
+        StackPane card = new StackPane();
+        // The border turns the building colour while an order is pending.
+        Runnable dress = () -> card.setStyle("-fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: "
+                + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : Palette.EDGE) + ";");
+        Order order = orderControls(template, key, c.name(), c.types(), dress);
+        face.getChildren().addAll(order.steps(), order.build(), order.quoted());
+
+        VBox cover = statCover(template, f);
+        cover.setVisible(pinnedStats.contains(key));
+        Label info = infoDot(key, cover);
+        card.getChildren().addAll(face, cover, info);
+        StackPane.setAlignment(info, Pos.TOP_RIGHT);
+        StackPane.setMargin(info, new javafx.geometry.Insets(8, 8, 0, 0));
+        card.setPrefWidth(NEED_CARD);
+        card.setMinWidth(NEED_CARD);
+        card.setMaxWidth(NEED_CARD);
+        card.setMaxHeight(Region.USE_PREF_SIZE);
+
+        pageCards.add(new PageCard(template, order.reprice()));
+        order.reprice().run();
+        return card;
+    }
+
+    /** A run of words in a TextFlow, at a size and in a colour - so a line wraps where it must and never ends in "...". */
+    static javafx.scene.text.Text textRun(String s, String font, double size, String colour) {
+        javafx.scene.text.Text run = new javafx.scene.text.Text(s);
+        run.setStyle((font == null ? "" : font + " ") + "-fx-font-size: " + size + "px;");
+        run.setFill(javafx.scene.paint.Color.web(colour));
+        return run;
+    }
+
+    /** ...and a TextFlow of them, as wide as a card's face. */
+    static javafx.scene.text.TextFlow flow(javafx.scene.Node... runs) {
+        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(runs);
+        line.setMinWidth(0);
+        line.setPrefWidth(NEED_CARD - 24);
+        line.setMaxWidth(NEED_CARD - 24);
+        return line;
+    }
+
+    /**
+     * The head: an icon square in who-builds-it's colour - the strip's dots,
+     * blue for the city's five, violet for the market's nine - the name, faint
+     * when one costs more than the cash, "you have N" or "none built", and
+     * what is on site for anyone's order with its wait (0.7.20), a link to the
+     * site on the construction page (0.7.22). Room is left at the right for
+     * the (i), which sits over the card.
+     */
+    HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford) {
+        BuildingsTemplate t = f.template();
+        int owned = f.owned();
+        Label name = new Label(t.getName());
         name.setWrapText(true);
-        name.setMaxWidth(TILE_WIDTH - 46);
-        name.setStyle(Palette.words(Palette.SIZE_HEADING,
-                afford ? Palette.TEXT_HEAD : Palette.TEXT_FAINT) + " -fx-font-weight: bold;");
-
-        Label have = new Label(owned > 0
-                ? "you have " + formatter.format(owned)
-                : "none built");
-        have.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                owned > 0 ? Palette.ACCENT : Palette.TEXT_LABEL));
-
-        /*
-         * WHAT IS ON SITE, FOR ANYONE'S ORDER (0.7.20). After ordering an
-         * Elementary School the card still read "none built" and nothing
-         * else, and a second was one click away. Every unit of this template
-         * on site - the city's, an investor's or a landlord's - and how long
-         * it waits, by the same rule the quote and the planners use
-         * (Game.onSiteMonths()). Hidden, not blank, with nothing on site.
-         */
-        BuildingsStacks stack = ui.game.getBuildingManager().getStack(template);
-        int onSite = stack == null ? 0 : stack.getUnderConstruction();
-        Label coming = new Label(onSite > 0
-                ? formatter.format(onSite) + " on site  ·  " + atTodaysQueue(ui.game.onSiteMonths(template))
-                : "");
-        coming.setWrapText(true);
-        coming.setMaxWidth(TILE_WIDTH - 46);
-        // In the building colour since 0.7.21; a link since 0.7.22: it opens
-        // the construction page at this site (ConstructionScreen.showSite()).
-        coming.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-underline: true;");
-        coming.setOnMouseClicked(e -> ui.constructionScreen.showSite(ConstructionControl.keyOf(template)));
-        showIf(coming, onSite > 0);
-
-        HBox priceRow = new HBox(4);
-        priceRow.setAlignment(Pos.BASELINE_LEFT);
-        if (importing) {
-            Label was = new Label(money(sticker));
-            was.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-            Label arrow = new Label("›");
-            arrow.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
-            priceRow.getChildren().addAll(was, arrow);
+        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, afford ? Palette.TEXT_HEAD : Palette.TEXT_FAINT));
+        javafx.scene.text.Text have = textRun(owned > 0 ? "you have " + formatter.format(owned) : "none built",
+                null, Palette.SIZE_LABEL, owned > 0 ? Palette.ACCENT : Palette.TEXT_LABEL);
+        int onSite = f.onSite();
+        javafx.scene.text.TextFlow haveLine = new javafx.scene.text.TextFlow(have);
+        if (onSite > 0) {
+            javafx.scene.text.Text coming = textRun(" · " + formatter.format(onSite) + " on site · "
+                    + atTodaysQueue(f.siteMonths()), null, Palette.SIZE_LABEL, Palette.BUILDING);
+            coming.setUnderline(true);
+            coming.setCursor(javafx.scene.Cursor.HAND);
+            coming.setOnMouseClicked(e -> ui.constructionScreen.showSite(ConstructionControl.keyOf(t)));
+            haveLine.getChildren().add(coming);
         }
-        Label price = new Label(money(allIn));
-        price.setStyle(Palette.figure(Palette.SIZE_SECTION,
-                afford ? Palette.GOOD : Palette.BAD));
-        priceRow.getChildren().add(price);
+        haveLine.setMinWidth(0);
+        VBox who = new VBox(1, name, haveLine);
+        HBox.setHgrow(who, Priority.ALWAYS);
+        who.setMinWidth(0);
+        who.setPadding(new javafx.geometry.Insets(0, 20, 0, 0));
+        HBox top = new HBox(10, iconSquare(svg, dot, 34, 18), who);
+        top.setAlignment(Pos.TOP_LEFT);
+        return top;
+    }
 
-        Label ground = new Label(String.format("%s sq ft  ·  %s of what is free",
-                formatter.format(template.getLandSqFt()),
-                landFree > 0
-                        ? String.format("%.1f%%", template.getLandSqFt() / landFree * 100)
-                        : "no land left"));
-        ground.setStyle(Palette.words(Palette.SIZE_CAPTION,
-                template.getLandSqFt() > landFree ? Palette.BAD : Palette.TEXT_MUTED));
+    /**
+     * The tags: the best of the group on each bar (BuildCard.Group.best1()
+     * and best2()), in a flow so two never cut each other.
+     */
+    javafx.scene.layout.FlowPane cardTags(BuildCard.Figures f, BuildCard.Group group) {
+        javafx.scene.layout.FlowPane tags = new javafx.scene.layout.FlowPane(6, 4);
+        tags.setPrefWrapLength(NEED_CARD - 24);
+        for (String words : tagWords(f, group)) tags.getChildren().add(tag(words, Palette.GOOD));
+        return tags;
+    }
 
-        Label running = new Label(runningCost(template));
-        running.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+    /** The tags' words, for the bars the card is the best of: "cheapest per resident", "adds the most per $". */
+    static List<String> tagWords(BuildCard.Figures f, BuildCard.Group group) {
+        String one, two;
+        switch (f.kind()) {
+            case CITY:   one = "cheapest per " + f.perTag(); two = "fewest unfilled posts per " + f.perTag(); break;
+            case MAKER:  one = "adds the most per $"; two = "adds the most per sq ft"; break;
+            case OFFICE: one = "exports the most per $"; two = "easiest to staff"; break;
+            default:     one = "cheapest per " + f.perTag(); two = "least land per " + f.perTag();
+        }
+        List<String> out = new ArrayList<>();
+        if (group.best1(f)) out.add(one);
+        if (group.best2(f)) out.add(two);
+        return out;
+    }
 
-        /* --------------------------- the order line --------------------------- */
+    /**
+     * The hero: what the building gives the city, in its own verb, a big
+     * figure and its unit - "houses 252 residents", "makes 1,200 t of steel a
+     * month", "puts 87 officers on the street · 120 fully staffed" - and a
+     * smaller line under it (heroDetail()).
+     */
+    VBox heroRow(BuildCard.Figures f) {
+        // A power plant's figure is kilowatts, written scaled with its unit (0.7.28).
+        boolean kw = BuildCard.KILOWATTS.equals(f.words());
+        javafx.scene.text.TextFlow line = flow(
+                textRun(f.verb(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED),
+                textRun(kw ? power(f.figure()) : shortOrWhole(f.figure()), Palette.Fonts.monoSemiBold(), Palette.SIZE_SECTION + 2, Palette.TEXT_HEAD),
+                textRun(kw ? "" : f.words(), null, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        if (f.kind() == BuildCard.Kind.CITY && f.unit() < f.built() - .5) {
+            line.getChildren().add(textRun(" · " + (kw ? power(f.built()) : shortOrWhole(f.built())) + " fully staffed", null,
+                    Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        }
+        VBox hero = new VBox(2, line);
+        String detail = heroDetail(f);
+        if (!detail.isEmpty()) {
+            Label more = new Label(detail);
+            more.setWrapText(true);
+            more.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
+            hero.getChildren().add(more);
+        }
+        return hero;
+    }
+
+    /**
+     * The hero's smaller line, by kind: a home's doors and who may live
+     * behind them; the branch's capital; the builders' output; an office's
+     * exports at the price of a seat; a maker's other goods, what it uses and
+     * what it adds at today's prices - or that it adds nothing - and a mine's
+     * deposit.
+     */
+    String heroDetail(BuildCard.Figures f) {
+        BuildingsTemplate t = f.template();
+        double[] d = f.detail();
+        switch (f.kind()) {
+            case HOMES:
+                return "in " + formatter.format(d[0]) + (d[0] == 1 ? " home" : " homes") + " for "
+                        + formatter.format(d[1]) + (d[2] > 0 ? " · adults only" : " · children welcome");
+            case BRANCH:
+                return "brings " + money(d[0]) + " of shareholders' capital";
+            case POINTS:
+                return "the builders make " + formatter.format(d[0]) + " pts a month";
+            case OFFICE:
+                return f.addsNothing() ? "the world pays nothing for it at today's prices"
+                        : "worth " + money(f.valueAdded()) + " a month at " + unitPrice(d[0]) + " a seat-month";
+            case MAKER: {
+                List<String> parts = new ArrayList<>();
+                java.util.Map<Good, Double> others = new java.util.LinkedHashMap<>(t.goodsMade());
+                others.remove(f.good());
+                if (!others.isEmpty()) parts.add("and " + goodsList(others));
+                if (!t.goodsUsed().isEmpty()) parts.add("from " + goodsList(t.goodsUsed()));
+                parts.add(f.addsNothing() ? "adds nothing at today's prices: its inputs cost more than it makes"
+                        : "adds " + money(f.valueAdded()) + " a month at today's prices");
+                if (d.length == 3) {
+                    parts.add("needs a deposit: the city owns " + formatter.format(d[0]) + ", "
+                            + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t in the ground");
+                }
+                return String.join(" · ", parts);
+            }
+            default:
+                return "";
+        }
+    }
+
+    /** Goods and their counts: "1,320 t of iron ore", "5,000 kg of dairy and eggs and 1,400 kg of meat". */
+    static String goodsList(java.util.Map<Good, Double> goods) {
+        List<String> out = new ArrayList<>();
+        for (java.util.Map.Entry<Good, Double> e : goods.entrySet()) {
+            out.add(formatter.format(Math.round(e.getValue())) + BuildCard.goodWords(e.getKey()));
+        }
+        if (out.size() <= 1) return out.isEmpty() ? "" : out.get(0);
+        return String.join(", ", out.subList(0, out.size() - 1)) + " and " + out.get(out.size() - 1);
+    }
+
+    /** The price all in, green when the cash covers it and red when it does not, with the sticker smaller. */
+    HBox priceRow(BuildCard.Figures f, boolean afford) {
+        Label price = new Label(money(f.price()));
+        price.setStyle(Palette.figure(Palette.SIZE_SECTION, afford ? Palette.GOOD : Palette.BAD));
+        price.setMinWidth(Region.USE_PREF_SIZE);
+        Label allIn = new Label(" all in · sticker " + money(f.sticker()));
+        allIn.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
+        allIn.setWrapText(true);
+        allIn.setMinWidth(0);
+        HBox row = new HBox(0, price, allIn);
+        row.setAlignment(Pos.BASELINE_LEFT);
+        return row;
+    }
+
+    /**
+     * The two bars. Bar 1 is money per unit of the hero - the price per
+     * resident, per customer, per thousand meals, per tonne a month, per
+     * patient - or for a maker and an office the price in months of what it
+     * adds or exports. Bar 2 is the category's scarce resource: land per unit
+     * on a market card, the posts the city likely cannot fill per 10,000
+     * served on a city card (none for one with no posts), the posts the city
+     * could not staff of every 100 on an office's. Both read "—" with no
+     * track when there is nothing to price against.
+     */
+    List<javafx.scene.Node> cardBars(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Measure m) {
+        double wide = NEED_CARD - 26;
+        boolean track = group.track() && !f.addsNothing();
+        String[] words = barWords(f, m);
+        List<javafx.scene.Node> out = new ArrayList<>();
+        out.add(barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track));
+        // None for a city building with no posts: its needs line says so.
+        if (words[2] == null) return out;
+        boolean land = f.bar2Kind() == BuildCard.Bar2.LAND;
+        out.add(barRow(words[2], words[3], group.share2(f), land ? Palette.BUILDING : Palette.PEOPLE, wide,
+                land ? Icons.LAND : Icons.STAFF, track));
+        return out;
+    }
+
+    /** The bars' labels and figures: {label 1, figure 1, label 2, figure 2}, label 2 null for no second bar. */
+    static String[] barWords(BuildCard.Figures f, BuildAdvice.Measure m) {
+        String label1, value1;
+        if (f.inMonths()) {
+            label1 = f.kind() == BuildCard.Kind.OFFICE ? "its price, in months of its exports" : "its price, in months of what it adds";
+            value1 = Double.isFinite(f.bar1()) ? String.format("%.1f mo", f.bar1()) : "—";
+        } else {
+            label1 = "cost per " + f.per();
+            value1 = Double.isFinite(f.bar1()) ? money(f.bar1()) : "—";
+        }
+        switch (f.bar2Kind()) {
+            case LAND:
+                return new String[] {label1, value1,
+                        f.inMonths() ? "land per $1k it adds a month" : "land per " + f.per(), sqFt(f.bar2())};
+            case UNSTAFFABLE:
+                return new String[] {label1, value1, "posts the city couldn't staff, of 100",
+                        Double.isFinite(f.bar2()) ? String.format("%.0f", f.bar2()) : "—"};
+            case UNFILLED:
+                return new String[] {label1, value1, "posts the city can't fill, per 10,000 " + BuildCard.perPlural(m),
+                        perTenThousand(f.bar2())};
+            default:
+                return new String[] {label1, value1, null, null};
+        }
+    }
+
+    /** Square feet a bar reads: a tenth below a hundred, whole and grouped above; a dash for none. */
+    static String sqFt(double v) {
+        if (!Double.isFinite(v)) return "—";
+        return (v >= 100 ? formatter.format(Math.round(v)) : String.format("%.1f", v)) + " sq ft";
+    }
+
+    /**
+     * THE INVESTORS' LINE, on a market card: if investors have an order on
+     * its site, that, with the count and the wait; otherwise the sector's own
+     * word for the month (Game.getLastInvestment(), filed per sector, so it
+     * can name another building) - and then, in amber, "this one:" and the
+     * first gate this building fails for them now, unless the word already
+     * names it (BuildCard.Investors). The word is not saved, so after a load
+     * the line says nothing was recorded until a month runs. A click opens
+     * the owner's Investors page, which keeps the rules it builds by;
+     * the tooltip carries the whole word and the investors' estimate.
+     */
+    HBox investorsLine(BuildingsTemplate t) {
+        BuildCard.Investors inv = BuildCard.investors(ui.game, t);
+        String word = inv.word();
+        String[] said = investorsWords(inv);
+        double size = 9.5;
+        javafx.scene.text.TextFlow line = new javafx.scene.text.TextFlow(
+                textRun("Investors", Palette.Fonts.sansSemiBold(), size, Palette.BUSINESS),
+                textRun(said[0], null, size, Palette.TEXT_MUTED));
+        if (said[1] != null) line.getChildren().add(textRun(said[1], null, size, Palette.WARN));
+        line.setMinWidth(0);
+        HBox.setHgrow(line, Priority.ALWAYS);
+        HBox row = new HBox(5, icon(Icons.SECTOR, Palette.BUSINESS, 12), line);
+        row.setAlignment(Pos.TOP_LEFT);
+        row.setStyle("-fx-cursor: hand;");
+        Tooltip tip = new Tooltip((word.isEmpty() ? "Nothing recorded since the city was loaded or founded: a month has to run."
+                : word) + "\nInvestors' estimate: " + money(inv.estimate()) + " a month to its owner."
+                + "\nClick for " + inv.owner().key() + "'s Investors page.");
+        tip.setWrapText(true);
+        tip.setMaxWidth(420);
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(row, tip);
+        row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(inv.owner(), "Investors"));
+        return row;
+    }
+
+    /**
+     * The line's words after "Investors": {what they are doing or last said,
+     * " · this one: " and the gate - or null}.
+     */
+    String[] investorsWords(BuildCard.Investors inv) {
+        String word = inv.word();
+        String rest;
+        if (inv.theirs()) {
+            rest = " are building · " + formatter.format(inv.onSite()) + " on site · " + atTodaysQueue(inv.months())
+                    + (inv.yoursToo() ? ", yours among them" : "");
+        } else if (word.isEmpty()) {
+            rest = ": nothing recorded since the city was loaded or founded";
+        } else if (word.startsWith("Holding: ")) {
+            rest = " holding: " + word.substring("Holding: ".length());
+        } else {
+            rest = " " + Character.toLowerCase(word.charAt(0)) + word.substring(1);
+        }
+        return new String[] {rest, inv.showOwn() ? " · this one: " + gateWords(inv.own()) : null};
+    }
+
+    /** A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss. */
+    String gateWords(BuildCard.Gate gate) {
+        switch (gate.kind()) {
+            case DEPOSIT:
+                return "no iron deposit free (the city owns " + formatter.format(gate.a()) + ", "
+                        + formatter.format(gate.b()) + " spoken for)";
+            case LICENCE:
+                return "needs " + formatter.format(Math.ceil(gate.a() - 1e-9)) + " spare " + jobPlural(gate.licence())
+                        + "; the city has " + formatter.format(Math.floor(gate.b() + 1e-9));
+            case STAFFING:
+                return gate.why();
+            case LAND:
+                return "no land - needs " + formatter.format(Math.round(gate.a())) + " sq ft, "
+                        + formatter.format(Math.round(gate.b())) + " free";
+            default:
+                return gate.a() > 0 ? "would lose " + money(gate.a()) + " a month" : "would make nothing";
+        }
+    }
+
+    /**
+     * What it needs: its posts by job - or "needs no staff" - then, on a
+     * market card, the share of them the owner's staffing test says the
+     * city could fill, below 99.5%; then its land, red with " - more than is
+     * free" when it is, else the share of what is free from 1% up (the
+     * 0.7.21 card's); then what it costs to run (BuildCard.runningCost()),
+     * which for a city building is the treasury's bill.
+     */
+    Label needsLine(BuildCard.Figures f) {
+        Label needs = new Label(needsWords(f));
+        needs.setWrapText(true);
+        needs.setStyle(wordsAt(9.5, f.template().getLandSqFt() > f.landFree() ? Palette.BAD : Palette.TEXT_MUTED));
+        return needs;
+    }
+
+    /** ...its words. */
+    String needsWords(BuildCard.Figures f) {
+        BuildingsTemplate t = f.template();
+        StringBuilder line = new StringBuilder();
+        for (JobType job : JobType.values()) {
+            int n = t.getJobs(job);
+            if (n == 0) continue;
+            if (line.length() > 0) line.append(" · ");
+            line.append(formatter.format(n)).append(" ").append(n == 1 ? jobLabel(job) : jobPlural(job));
+        }
+        if (line.length() == 0) line.append("needs no staff");
+        else if (f.market() && f.staffable() < .995) line.append(String.format(" · the city could staff %.0f%%", f.staffable() * 100));
+        double free = f.landFree();
+        double land = t.getLandSqFt();
+        boolean noRoom = land > free;
+        line.append(" · ").append(formatter.format(land)).append(" sq ft");
+        if (noRoom) line.append(" - more than is free");
+        else if (free > 0 && land / free >= .01) line.append(String.format(" · %.1f%% of what is free", land / free * 100));
+        line.append(" · ").append(f.running() > 0 ? "runs " + money(f.running()) + "/mo" : "nothing to run");
+        return line.toString();
+    }
+
+    /** A card's order line: the stepper, Build under it (0.7.34), the quote under that, and how they reprice in place. */
+    record Order(HBox steps, Pieces.ActionButton build, Label quoted, Runnable reprice) { }
+
+    /**
+     * − N + +10 +100 and ↺, then Build, and the quote under them - as the
+     * 0.7.21 card had them, on every card now (the city's had lost +100).
+     *
+     * BUILD ASKS TO BE PRESSED (0.7.34). Jerus: "everywhere you have build,
+     * like the build button, it should be more intuitive aka like an actual
+     * button that is basically asking to be pressed, cause currently its a
+     * tiny text". It was a small grey button beside "+100", disabled at 0.
+     * It is Pieces' action button now, the card's width under the stepper,
+     * and says the order: "Build 3 · $37.5M", on credit, or why it cannot
+     * go ahead (orderPress()). At 0 it is still a button - "Build", "choose
+     * how many" - and a press sets the count to one and prices it; it never
+     * orders from 0, and the second click of a double-click is no press
+     * (Pieces.ActionButton), so a double-click on it cannot become an order.
+     * A press with a count places the order as before (placeOrder()): the
+     * refusals' pages and the credit page are the same doors.
+     *
+     * REPRICED IN PLACE, not by redrawing the screen. Every press used to be
+     * a screen change; here it is a few labels. That matters for more than
+     * speed - a rebuild would throw away every pinned stat card and put the
+     * page back at the top, so comparing two buildings while pricing an order
+     * would be impossible. The figures come from Game.quoteBuild(), the
+     * method that CHARGES, through BuildCard.verdict(), so the card cannot
+     * quote a price the city then declines to honour.
+     *
+     * @param after run after every reprice: the card's border
+     */
+    Order orderControls(BuildingsTemplate template, String key, String page, EnumSet<BuildingType> types, Runnable after) {
         Label quoted = new Label(" ");
         quoted.setWrapText(true);
-        quoted.setMaxWidth(TILE_WIDTH - 110);
         quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-
         Label count = new Label("0");
         count.setMinWidth(30);
         count.setAlignment(Pos.CENTER);
         count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
-
-        Button build = new Button("Build");
-        build.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
-                + " -fx-background-color: " + Palette.CONTROL + ";");
-        build.setDisable(true);
-
+        Pieces.ActionButton build = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, orderPress(null, 0), null);
         /*
-         * REPRICED IN PLACE, not by redrawing the screen.
-         *
-         * Every press used to be a screen change; here it is four labels. That
-         * matters for more than speed - a rebuild would throw away every pinned
-         * stat card and put the grid back at the top, so comparing two
-         * buildings while pricing an order would be impossible.
-         *
-         * The figures come from Game.quoteBuild, which is the method that
-         * CHARGES. Nothing here is arithmetic of its own, so the card cannot
-         * quote a price the city then declines to honour.
-         */
-        /*
-         * The reset button is built below but referenced above, because reprice
-         * is what decides whether it is on screen. One-element array, the same
-         * trick the old quantity screen used for its running total: a lambda
-         * can only close over something final.
+         * The reset button is built below but referenced above, because
+         * reprice is what decides whether it is on screen. One-element array:
+         * a lambda can only close over something final.
          */
         final javafx.scene.Node[] resetHolder = new javafx.scene.Node[1];
-
         Runnable reprice = () -> {
             int n = orderQty.getOrDefault(key, 0);
             count.setText(String.valueOf(n));
-            build.setDisable(n <= 0);
+            count.setStyle(Palette.figure(Palette.SIZE_BODY, n > 0 ? Palette.BUILDING : Palette.TEXT_HEAD));
             showIf(resetHolder[0], n > 0);
             showPendingHint();
-            build.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
-                    + " -fx-background-color: "
-                    + (n > 0 ? Palette.CONFIRM : Palette.CONTROL) + ";");
-
             if (n <= 0) {
+                build.show(orderPress(null, 0));
                 quoted.setText(" ");
                 quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-                return;
-            }
-
-            Game.BuildQuote q = ui.game.quoteBuild(template, n);
-            // "at today's queue" (0.7.20): the wait at this month's shares, not a promise.
-            String eta = atTodaysQueue(q.months);
-
-            String tone;
-            String verdict;
-            if (q.landNeeded > q.landFree) {
-                tone = Palette.BAD;
-                verdict = "short " + shortNumber(q.landNeeded - q.landFree) + " sq ft of land";
-            } else if (q.total > ui.game.getCash()) {
-                tone = Palette.WARN;
-                verdict = "short " + money(q.total - ui.game.getCash())
-                        + " — you will be offered a bill";
             } else {
-                tone = Palette.GOOD;
-                verdict = eta;
+                BuildCard.Verdict v = BuildCard.verdict(ui.game, template, n);
+                build.show(orderPress(v, n));
+                String[] said = quoteVerdict(v);
+                // The city's rebate is the tax coming home (revised 0.7.19; EconomyManager,
+                // THE REBATES ON A NEW HOME, AND THE CITY'S): the builders remit it to the
+                // treasury as they bill the work.
+                quoted.setText(money(v.quote().total) + " with " + money(v.quote().salesTax)
+                        + " sales tax, back to the treasury as it is built  ·  " + said[0]);
+                quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, said[1]));
             }
-            // The city's rebate is the tax coming home (revised 0.7.19; EconomyManager,
-            // THE REBATES ON A NEW HOME, AND THE CITY'S): the builders remit it to the
-            // treasury as they bill the work.
-            quoted.setText(money(q.total) + " with " + money(q.salesTax) + " sales tax, back to the treasury as it is built  ·  " + verdict);
-            quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, tone));
+            refreshOrderBar();
+            after.run();
         };
-
-        Button less = stepper("−", 24, () -> {
+        Button less = stepper("−", 26, () -> {
             // compute, not merge: merge() STORES the -1 when the card has no
             // entry yet, so a "-" on an empty card read "-1" until 0.7.5.
             orderQty.compute(key, (k, v) -> Math.max(0, (v == null ? 0 : v) - 1));
             reprice.run();
         });
-        Button more = stepper("+", 24, () -> {
+        Button more = stepper("+", 26, () -> {
             orderQty.merge(key, 1, Integer::sum);
             reprice.run();
         });
-
         /*
-         * TEN AND A HUNDRED, not just ten.
-         *
-         * Jerus: "+10 sometimes isnt enough". It is not - housing goes up in
-         * hundreds in a city this size, and forty presses to reach four hundred
-         * is a control that punishes the thing it exists for. A hundred is the
-         * right second step: it is the order of magnitude above ten, and
-         * anything larger than a few hundred is a decision worth making one
-         * hundred at a time anyway.
+         * TEN AND A HUNDRED, not just ten. Jerus: "+10 sometimes isnt
+         * enough". It is not - housing goes up in hundreds in a city this
+         * size, and the advice suggests forty clinics and eighty-eight gravel
+         * roads. A hundred is the order of magnitude above ten, and anything
+         * larger is a decision worth making a hundred at a time anyway.
          */
-        Button ten = stepper("+10", 34, () -> {
+        Button ten = stepper("+10", 36, () -> {
             orderQty.merge(key, 10, Integer::sum);
             reprice.run();
         });
-        Button hundred = stepper("+100", 40, () -> {
+        Button hundred = stepper("+100", 42, () -> {
             orderQty.merge(key, 100, Integer::sum);
             reprice.run();
         });
-
         /*
-         * AND A WAY BACK TO ZERO. Also asked for, and obvious in hindsight:
-         * with a +100 on the card, overshooting is one click away and unwinding
-         * it was a hundred. Hidden until there is something to clear, because a
-         * Reset on an empty order is a button that does nothing.
+         * AND A WAY BACK TO ZERO: with a +100 on the card, overshooting is one
+         * click away. Hidden until there is something to clear.
          */
         Button reset = stepper("↺", 24, () -> {
             orderQty.remove(key);
@@ -766,44 +1076,74 @@ final class BuildScreen {
         clear.setShowDelay(Duration.millis(300));
         reset.setTooltip(clear);
         resetHolder[0] = reset;
-
-        build.setOnAction(e -> {
+        build.onPress(() -> {
             int n = orderQty.getOrDefault(key, 0);
-            if (n <= 0) return;
+            // From none, a press chooses one and prices it; it never orders.
+            if (n <= 0) {
+                orderQty.put(key, 1);
+                reprice.run();
+                return;
+            }
             orderQty.remove(key);
-            placeOrder(template, n, menuTitle, categories);
+            placeOrder(template, n, page, types);
         });
-
-        /*
-         * THE SHORTCUT, SAID ON THE BUTTON IT STANDS IN FOR. A disabled
-         * control shows no tooltip, so this is read only while the card has
-         * something for Enter to build.
-         */
+        // The shortcut, said on the button it stands in for.
         Tooltip keys = new Tooltip("Enter builds every pending order on this page; Backspace clears them");
         keys.setShowDelay(Duration.millis(300));
-        build.setTooltip(keys);
-
-        HBox steps = new HBox(4, less, count, more, ten, hundred);
-        steps.setAlignment(Pos.CENTER_LEFT);
-
+        Tooltip.install(build, keys);
         Region spread = new Region();
         HBox.setHgrow(spread, Priority.ALWAYS);
-        HBox commit = new HBox(4, quoted, spread, reset, build);
-        commit.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(quoted, Priority.ALWAYS);
+        HBox steps = new HBox(4, less, count, more, ten, hundred, spread, reset);
+        steps.setAlignment(Pos.CENTER_LEFT);
+        return new Order(steps, build, quoted, reprice);
+    }
 
-        VBox order = new VBox(4, steps, commit);
+    /**
+     * What a Build button says for n of a building (0.7.34), off the verdict
+     * the quote line reads (BuildCard.verdict(), Game.quoteBuild()): with
+     * none chosen, "Build" and "choose how many"; ready, "Build 3 ·
+     * $37.5M", the count and the all-in total; short of cash, "Build 3 on
+     * credit · $37.5M" - the press opens the credit page, as it did; and
+     * where buildStack() would refuse - no deposit, nobody licensed, short
+     * of land - why, on the button, and the way out under it, which the
+     * press's page offers. A pure read: no node, so a probe reads it.
+     */
+    Pieces.Press orderPress(BuildCard.Verdict v, int n) {
+        if (n <= 0 || v == null) return new Pieces.Press(Pieces.Look.CHOOSE, "Build", "choose how many");
+        String count = formatter.format(n), total = money(v.quote().total);
+        switch (v.kind()) {
+            case NO_DEPOSIT: return new Pieces.Press(Pieces.Look.HELD, "No iron deposit",
+                    "ore comes with land: the Land office ›");
+            case NO_LICENCE: return new Pieces.Press(Pieces.Look.HELD, "Nobody licensed to work in it",
+                    "a school licenses them: Education ›");
+            case NO_LAND:    return new Pieces.Press(Pieces.Look.HELD, v.quote().landFree <= 0 ? "No land free"
+                    : "Short " + shortNumber(v.figure()) + " sq ft of land", "more ground: the Land office ›");
+            case BILL:       return new Pieces.Press(Pieces.Look.CREDIT, "Build " + count + " on credit · " + total, null);
+            default:         return new Pieces.Press(Pieces.Look.GO, "Build " + count + " · " + total, null);
+        }
+    }
 
-        Region push = new Region();
-        VBox.setVgrow(push, Priority.ALWAYS);
+    /**
+     * The quote's verdict and its colour, in buildStack()'s order: no
+     * deposit and nobody licensed in red - warned here since 0.7.25, where
+     * they were found only after the click - then short of land in red,
+     * short of cash in amber (the bill and the credit offers follow the
+     * click), else the wait at today's queue in green.
+     */
+    String[] quoteVerdict(BuildCard.Verdict v) {
+        switch (v.kind()) {
+            case NO_DEPOSIT: return new String[] {"no iron deposit", Palette.BAD};
+            case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
+            case NO_LAND:    return new String[] {"short " + shortNumber(v.figure()) + " sq ft of land", Palette.BAD};
+            case BILL:       return new String[] {"short " + money(v.figure()) + " — you will be offered a bill", Palette.WARN};
+            default:         return new String[] {atTodaysQueue(v.figure()), Palette.GOOD};
+        }
+    }
 
-        VBox face = new VBox(1, name, have, coming, priceRow, ground, running, push, order);
-        face.setStyle("-fx-padding: 8 10 8 10;");
+    // The stepper's buttons are Pieces.stepper() since 0.7.26, which the land office draws too.
 
-        /* ----------------------------- the stats ----------------------------- */
-        VBox stats = tileStats(template);
-        stats.setVisible(pinnedStats.contains(key));
-
+    /** The (i): hover shows the stat cover over the whole card, a click keeps it there (the dot turns blue), a second puts it away. */
+    Label infoDot(String key, VBox cover) {
         Label info = new Label("i");
         info.setAlignment(Pos.CENTER);
         info.setMinSize(18, 18);
@@ -815,120 +1155,64 @@ final class BuildScreen {
                 + " -fx-text-fill: " + Palette.TEXT_BODY + "; -fx-font-size: 10px;"
                 + " -fx-font-weight: bold; -fx-font-family: 'Georgia'; -fx-cursor: hand;");
         dress.run();
-        info.setOnMouseEntered(e -> stats.setVisible(true));
-        info.setOnMouseExited(e -> stats.setVisible(pinnedStats.contains(key)));
+        info.setOnMouseEntered(e -> cover.setVisible(true));
+        info.setOnMouseExited(e -> cover.setVisible(pinnedStats.contains(key)));
         info.setOnMouseClicked(e -> {
             if (!pinnedStats.remove(key)) pinnedStats.add(key);
             dress.run();
-            stats.setVisible(true);
+            cover.setVisible(true);
         });
         Tooltip pin = new Tooltip("Hover to read, click to keep it open");
         pin.setShowDelay(Duration.millis(400));
         Tooltip.install(info, pin);
-
-        StackPane tile = new StackPane(face, stats, info);
-        StackPane.setAlignment(info, Pos.TOP_RIGHT);
-        StackPane.setMargin(info, new javafx.geometry.Insets(7, 7, 0, 0));
-        info.setMaxSize(18, 18);
-        tile.setPrefSize(TILE_WIDTH, TILE_HEIGHT);
-        tile.setMinSize(TILE_WIDTH, TILE_HEIGHT);
-        tile.setMaxSize(TILE_WIDTH, TILE_HEIGHT);
-        tile.setStyle(Palette.block(Palette.CONTROL, Palette.HAIRLINE));
-
-        pageCards.add(new PageCard(template, reprice));
-        reprice.run();
-        return tile;
-    }
-
-    /** A small square button in the quantity stepper. */
-    Button stepper(String glyph, double width, Runnable go) {
-        Button b = new Button(glyph);
-        b.setMinSize(width, 22);
-        b.setPrefSize(width, 22);
-        /*
-         * -fx-padding: 0 IN THE STYLE, not just setPadding.
-         *
-         * The theme's .button rule carries "-fx-padding: 6 14 6 14", and on a
-         * button pinned to 24px wide that leaves the label a content box 4px
-         * narrower than nothing - so JavaFX drew three empty grey squares where
-         * the minus, the plus and the +10 should have been. Play-tested.
-         *
-         * An inline style beats a stylesheet, which setPadding did not.
-         */
-        b.setPadding(javafx.geometry.Insets.EMPTY);
-        b.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY)
-                + " -fx-padding: 0; -fx-background-color: " + Palette.FIELD + ";"
-                + " -fx-border-color: transparent;"
-                + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-cursor: hand;");
-        b.setOnAction(e -> go.run());
-        return b;
+        return info;
     }
 
     /**
-     * What one costs to keep, which is not what it costs to buy.
+     * The stat cover, as tall as the card it covers: what the building does
+     * in sentences (whatItDoes(), which BuildMenuCheck holds for all 73), the
+     * figures the face does not say - materials, build points, road load,
+     * electricity, water, the wage bill and the job mix - and on a market
+     * card the investors' estimate of what one would make its owner.
+     * Scrollable, so a building with a long staff list loses nothing.
      *
-     * Upkeep plus today's wage bill, because for anything with staff the upkeep
-     * is the smaller half and the template only carries the upkeep.
+     * SIZED BY THE CARD, NOT BY ITSELF (0.7.25): the 0.7.21 tile was a fixed
+     * 232 px and its cover was too; a card is as tall as what it says now, so
+     * the cover asks for no height of its own and the card's stack stretches
+     * it over the face.
      */
-    String runningCost(BuildingsTemplate t) {
-        double[] wages = ui.game.getPopulationManager().getWagesPerType();
-        double bill = 0;
-        int staff = 0;
-        for (JobType job : JobType.values()) {
-            int n = t.getJobs(job);
-            if (n == 0) continue;
-            staff += n;
-            if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()];
-        }
-        double all = t.getUpkeep() + bill;
-        if (all <= 0) return "nothing to run";
-        return staff > 0
-                ? String.format("runs %s/mo  ·  %s staff", money(all), formatter.format(staff))
-                : String.format("runs %s/mo", money(all));
-    }
-
-    /**
-     * The stat block, sized to cover its own card.
-     *
-     * The same figures the hover card carried, in one column instead of two,
-     * because 250px does not take two. Scrollable, so a building with a long
-     * staff list loses nothing.
-     */
-    VBox tileStats(BuildingsTemplate t) {
+    VBox statCover(BuildingsTemplate t, BuildCard.Figures f) {
 
         VBox body = new VBox(1);
-        body.setStyle("-fx-padding: 6 8 6 8;");
+        body.setStyle("-fx-padding: 8 10 8 10;");
 
         Label title = new Label(t.getName().toUpperCase());
         title.setWrapText(true);
-        title.setMaxWidth(TILE_WIDTH - 46);
+        title.setMaxWidth(NEED_CARD - 46);
         title.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-font-weight: bold;");
         body.getChildren().add(title);
 
         for (String line : whatItDoes(t)) {
             Label l = new Label(line);
             l.setWrapText(true);
-            l.setMaxWidth(TILE_WIDTH - 24);
+            l.setMaxWidth(NEED_CARD - 28);
             l.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY)
                     + " -fx-padding: 3 0 0 0;");
             body.getChildren().add(l);
         }
 
         /*
-         * WHAT THE FACE DOES NOT ALREADY SAY.
-         *
-         * The cash cost, the land and the upkeep were all on this list and are
-         * all on the card underneath it - so covering the card with them told
-         * the player three things they had just read, and pushed the four they
-         * had not off the bottom of a 212px box. A cover that repeats the face
-         * is a cover that wastes the space it took.
+         * WHAT THE FACE DOES NOT ALREADY SAY. The cash cost, the land and the
+         * upkeep are on the card underneath it - so covering the card with
+         * them would tell the player three things they had just read. A cover
+         * that repeats the face is a cover that wastes the space it took.
          */
         body.getChildren().add(cardGap());
         body.getChildren().addAll(
                 statPair("Materials", formatter.format(t.getConstructionMaterials())),
                 statPair("Build points", formatter.format(t.getConstructionPoints())),
                 statPair("Road load", formatter.format(t.getRoadLoad())),
-                statPair("Electricity", formatter.format(t.getElectricityConsumption())),
+                statPair("Electricity", power(t.getElectricityConsumption())),
                 statPair("Water", formatter.format(t.getWaterConsumption())));
 
         double[] wages = ui.game.getPopulationManager().getWagesPerType();
@@ -948,9 +1232,22 @@ final class BuildScreen {
             body.getChildren().add(statPair("Wages", money(bill) + "/mo"));
             Label who = new Label(mix.toString());
             who.setWrapText(true);
-            who.setMaxWidth(TILE_WIDTH - 24);
+            who.setMaxWidth(NEED_CARD - 28);
             who.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
             body.getChildren().add(who);
+        }
+
+        // ...and on a market card, what the investors reckon one would make
+        // its owner a month (BusinessInvestment.estimatedMonthlyProfit()):
+        // after its wages, so it can be a loss where the value added is not.
+        if (f.market()) {
+            body.getChildren().add(cardGap());
+            Label est = new Label("Investors' estimate: " + money(BuildCard.investors(ui.game, t).estimate())
+                    + " a month to its owner.");
+            est.setWrapText(true);
+            est.setMaxWidth(NEED_CARD - 28);
+            est.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+            body.getChildren().add(est);
         }
 
         javafx.scene.control.ScrollPane scroller =
@@ -958,11 +1255,14 @@ final class BuildScreen {
         scroller.setFitToWidth(true);
         scroller.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         scroller.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        scroller.setMinHeight(0);
+        VBox.setVgrow(scroller, Priority.ALWAYS);
 
         VBox cover = new VBox(scroller);
-        cover.setPrefSize(TILE_WIDTH, TILE_HEIGHT);
-        cover.setMaxSize(TILE_WIDTH, TILE_HEIGHT);
-        cover.setStyle(Palette.block(Palette.FIELD, Palette.ACCENT));
+        cover.setMinSize(0, 0);
+        cover.setPrefSize(NEED_CARD, 0);
+        cover.setMaxSize(NEED_CARD, Double.MAX_VALUE);
+        cover.setStyle(Palette.block(Palette.FIELD, Palette.ACCENT) + " -fx-background-radius: 8; -fx-border-radius: 8;");
         return cover;
     }
 
@@ -1026,7 +1326,7 @@ final class BuildScreen {
      * which calls the two methods below only while this page is the screen.
      * They act on the page the player is LOOKING AT and on nothing else:
      * orderQty is kept by name across every category, so a hundred flats
-     * dialled up on Residential and left there are not built by an Enter
+     * dialled up on Homes and left there are not built by an Enter
      * pressed on Healthcare. Each card files itself in pageCards as it is
      * drawn, so the page's order is the order it is laid out in - under its
      * group headings, not the catalogue's.
@@ -1078,7 +1378,7 @@ final class BuildScreen {
     /**
      * Every quantity on the page back to none - the ↺ on every card at once,
      * and like it, each card repriced in place rather than the page redrawn
-     * (see REPRICED IN PLACE, in buildingTile). True when something pending
+     * (see REPRICED IN PLACE, in orderControls()). True when something pending
      * was cleared.
      */
     boolean clearPending() {
@@ -1110,6 +1410,1262 @@ final class BuildScreen {
         pendingHint.setVisible(any);
     }
 
+
+    /* =====================================================================
+       THE OVERVIEW (0.7.24)
+
+       Jerus: "when you start the game you start in residential so the player
+       without reading thinks he needs to building houses". Build opens here
+       now, as the round-2 mockups draw it (BuildB, "Keep all three rows"):
+
+         one line - the city's own works are the player's job, and investors
+         build homes, shops and industry by themselves;
+         THE CITY'S JOB - a tile for each of the five only the city builds,
+         its ring the category's worst need from NEEDS YOU (CityNeeds.worst(),
+         the panel's own verdict, not a second scoring), a caption, a smaller
+         line and what is on site;
+         WHAT WOULD HELP MOST - up to three orders by BuildAdvice's rule, each
+         with the need, before and after, the count and the building, a line,
+         the quote its button charges, Show and the button (Show and Order
+         until 0.7.34: a pill now, and Build's action button saying the order);
+         THE MARKET BUILDS THESE - the nine the investors build, quieter, with
+         what stands and what is on site.
+
+       The drawn city strip the mockups tried is saved for the city view, as
+       Jerus chose; it is not here. Every figure is the model's.
+       ===================================================================== */
+
+    /** A ring's size on the Overview's tiles (its stroke is 6 px). */
+    static final double JOB_RING = 58;
+
+    /** The Build tab's front page. */
+    void showOverview() {
+        ui.clearMenu("handleAllBuildingMenus", this::showOverview);
+        buildCategory = BuildAdvice.OVERVIEW;
+        // The keyboard's page: nothing on it to build or clear.
+        pageCards.clear();
+        pageTitle = BuildAdvice.OVERVIEW;
+        pageCategories = EnumSet.noneOf(BuildingType.class);
+        pendingHint = null;
+
+        List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+        List<BuildAdvice.Suggestion> advice = BuildAdvice.suggest(ui.game, all);
+
+        VBox page = widePage();
+        HBox head = buildHead(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
+        head.setStyle("-fx-padding: 0 0 4 0;");
+        page.getChildren().addAll(head, overviewLead(),
+                sectionHead("THE CITY'S JOB", hint("tap one to build for it")),
+                cityJob(all),
+                sectionHead("WHAT WOULD HELP MOST", adviceTotal(advice)),
+                adviceRow(advice),
+                sectionHead("THE MARKET BUILDS THESE", hint("investors decide; you can add")),
+                marketRow());
+        ui.rootMenu.getChildren().add(page);
+    }
+
+    /** The one line: whose job the city's works are. */
+    HBox overviewLead() {
+        javafx.scene.text.Text first = new javafx.scene.text.Text("Your job is the city's own works. ");
+        first.setStyle(Palette.Fonts.sansSemiBold() + " -fx-font-size: 12.5px;");
+        first.setFill(javafx.scene.paint.Color.web(Palette.TEXT_HEAD));
+        javafx.scene.text.Text rest = new javafx.scene.text.Text(
+                "Investors build homes, shops and industry by themselves; you can add to theirs.");
+        rest.setStyle("-fx-font-size: 12.5px;");
+        rest.setFill(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
+        javafx.scene.text.TextFlow words = new javafx.scene.text.TextFlow(first, rest);
+        HBox.setHgrow(words, Priority.ALWAYS);
+        HBox line = new HBox(10, icon(Icons.OVERVIEW, Palette.ACCENT, 16), words);
+        line.setAlignment(Pos.CENTER_LEFT);
+        line.setStyle("-fx-padding: 9 12 9 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: " + Palette.EDGE + ";"
+                + " -fx-border-width: 1 1 1 3; -fx-border-color: " + Palette.EDGE + " " + Palette.EDGE + " "
+                + Palette.EDGE + " " + Palette.ACCENT + ";");
+        return line;
+    }
+
+    /*
+     * The page, the section's heading and its hint, and the grid of equal
+     * columns are Pieces' since 0.7.26 (widePage(), sectionHead(), hint(),
+     * equalColumns(), PAGE_WIDE): the land office is laid out with them too.
+     */
+
+    /* ----------------------------- the city's job ----------------------------- */
+
+    /** The five, a tile each. */
+    javafx.scene.layout.GridPane cityJob(List<CityNeeds.Need> all) {
+        List<BuildAdvice.Category> mine = new ArrayList<>();
+        for (BuildAdvice.Category c : BuildAdvice.categories()) if (c.cityBuilds()) mine.add(c);
+        javafx.scene.layout.GridPane grid = equalColumns(mine.size(), 10);
+        for (int i = 0; i < mine.size(); i++) grid.add(jobTile(mine.get(i), all), i, 0);
+        return grid;
+    }
+
+    /** Which of NEEDS YOU's doors a city category is. */
+    static CityNeeds.Go goOf(String category) {
+        switch (category) {
+            case BuildAdvice.UTILITIES:  return CityNeeds.Go.UTILITIES;
+            case BuildAdvice.ROADS:      return CityNeeds.Go.ROADS;
+            case BuildAdvice.HEALTHCARE: return CityNeeds.Go.HEALTHCARE;
+            case BuildAdvice.EDUCATION:  return CityNeeds.Go.EDUCATION;
+            case BuildAdvice.SAFETY:     return CityNeeds.Go.SAFETY;
+            default:                     return CityNeeds.Go.HOMES;
+        }
+    }
+
+    /** A verdict's colour: green, amber or red, as NEEDS YOU colours its rows; -1, no verdict, is the city's blue. */
+    static String verdict(int level) {
+        return level >= 2 ? Palette.BAD : level == 1 ? Palette.WARN : level == 0 ? Palette.GOOD : Palette.ACCENT;
+    }
+
+    /**
+     * What a ring says: its figure, how much of it is drawn, a caption of a
+     * few words and a smaller line.
+     */
+    record Shown(String figure, double arc, String caption, String detail) { }
+
+    /** A need, as a ring shows it: the figure NEEDS YOU judged, worded for the ring. */
+    Shown shown(CityNeeds.Need n) {
+        BuildAdvice.Measure m = BuildAdvice.measureOf(n);
+        double[] sd = m == null ? new double[] {0, 0} : BuildAdvice.supplyDemand(ui.game, m, java.util.Map.of());
+        double share = sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1;
+        double v = n.value();
+        switch (n.kind()) {
+            case POWER: case WATER: {
+                boolean power = n.kind() == CityNeeds.Kind.POWER;
+                double gap = sd[1] - sd[0];
+                // Power in kW scaled, a rate (0.7.28: "units short a month" until then).
+                return new Shown(pct(v), Math.min(1, v),
+                        power ? "of the grid in use" : "of the water supply in use",
+                        power ? (gap > 0 ? power(gap) + " short" : power(-gap) + " spare")
+                              : gap > 0 ? shortNumber(gap) + " units short a month" : shortNumber(-gap) + " units spare");
+            }
+            case ROADS:
+                // The road's pair (0.7.29): "162%" "full · 56% flow", as every screen writes it.
+                return new Shown(pct(v), Math.min(1, v),
+                        "full · " + pct(ui.game.getInfrastructureManager().getThroughputRatio()) + " flow",
+                        shortNumber(sd[1]) + " trips on " + shortNumber(sd[0]) + " of road");
+            case CARE:
+                return new Shown(pct(v), v, careCaption(n.care()),
+                        sd[1] - sd[0] >= .5 ? people(sd[1] - sd[0]) + " people without" : "everyone has a place");
+            case DEAD:
+                return new Shown(people(v), share, "dead with nowhere to go",
+                        people(ui.game.getHealthcare().getDeaths()) + " die a month");
+            case PLOTS:
+                return new Shown(String.format("%.0f mo", v), Math.min(1, v / CityNeeds.PLOTS_YELLOW),
+                        "of burial plots left",
+                        shortNumber(Healthcare.plotsRemaining(ui.game.getBuildingManager().getCareCapacity(CareType.BURIAL),
+                                ui.game.getHealthcare().getPlotsUsed())) + " plots free");
+            case BASIC_SCHOOLS:
+                return new Shown(pct(v), v, n.school().getLabel().toLowerCase() + " taught",
+                        sd[1] - sd[0] >= .5 ? "short " + people(sd[1] - sd[0]) + " places" : "a place for every child");
+            case HIGHER_SCHOOL:
+                return new Shown(pct(share), share,
+                        "of would-be " + n.school().getLabel().toLowerCase().replace(" school", "") + " students seated",
+                        people(sd[0]) + " seats · " + people(sd[1]) + " would come");
+            case CRIME:
+                return new Shown(String.format("%.1f×", v), v > 0 ? Math.min(1, 1 / v) : 1, "Canada's crime rate",
+                        String.format("police at %.0f%% of full cover", share * 100));
+            case CELLS:
+                return new Shown(pct(share), share, "of the caught held", n.reading());
+            default:
+                return new Shown("", 1, n.label().toLowerCase(), n.reading());
+        }
+    }
+
+    /** A share as a whole per cent; a dash for one that is not a number (a network with nothing supplying it). */
+    static String pct(double share) { return Double.isFinite(share) ? String.format("%.0f%%", share * 100) : "—"; }
+
+    String careCaption(CareType care) {
+        switch (care) {
+            case GENERAL:   return "of the city has a doctor";
+            case CHILDCARE: return "of children have a place";
+            case SENIOR:    return "of seniors are cared for";
+            default:        return "covered";
+        }
+    }
+
+    /** A category with nothing near its line: a few words, and the figure nearest one. */
+    Shown fine(String category, List<CityNeeds.Need> all) {
+        CityNeeds.Go go = goOf(category);
+        CityNeeds.Need nearest = null;
+        for (CityNeeds.Need n : all) {
+            if (n.go() == go && (nearest == null || n.near() > nearest.near())) nearest = n;
+        }
+        String caption;
+        switch (category) {
+            case BuildAdvice.UTILITIES:  caption = "power and water reach everyone"; break;
+            case BuildAdvice.ROADS:      caption = "the roads flow"; break;
+            case BuildAdvice.HEALTHCARE: caption = "care for everyone who needs it"; break;
+            case BuildAdvice.EDUCATION:  caption = "every school has room"; break;
+            default:                     caption = "crime is in hand"; break;
+        }
+        return new Shown(null, 1, caption,
+                nearest == null ? "" : nearest.label().toLowerCase() + " · " + nearest.reading());
+    }
+
+    /** Buildings on site in a category, for anybody's order. */
+    int onSiteIn(EnumSet<BuildingType> types) {
+        int n = 0;
+        for (BuildingsStacks s : ui.game.getBuildingManager().getStacksUnderConstruction()) {
+            if (types.contains(s.getBuilding().getCategory())) n += s.getUnderConstruction();
+        }
+        return n;
+    }
+
+    /** ...and standing. */
+    int standingIn(EnumSet<BuildingType> types) {
+        BuildingManager bm = ui.game.getBuildingManager();
+        int n = 0;
+        for (BuildingsTemplate t : bm.getTemplatesByCategory(types)) n += bm.getQuantity(t.getId());
+        return n;
+    }
+
+    /** A crane and "N on site", in the building colour, or a quiet word when there is nothing. */
+    HBox onSiteLine(int n, String none) {
+        Label words = new Label(n > 0 ? formatter.format(n) + " on site" : none);
+        words.setStyle(Palette.words(Palette.SIZE_LABEL, n > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
+        HBox line = new HBox(5);
+        if (n > 0) line.getChildren().add(icon(Icons.CRANE, Palette.BUILDING, 13));
+        line.getChildren().add(words);
+        line.setAlignment(Pos.CENTER_LEFT);
+        return line;
+    }
+
+    /** One of the city's five: its worst need as a ring, a caption, a line, and what is on site. */
+    VBox jobTile(BuildAdvice.Category c, List<CityNeeds.Need> all) {
+        CityNeeds.Need worst = CityNeeds.worst(all, goOf(c.name()));
+        String tone = verdict(worst == null ? 0 : worst.level());
+        Shown s = worst == null ? fine(c.name(), all) : shown(worst);
+
+        Label name = new Label(c.name());
+        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        Label go = new Label("›");
+        go.setStyle(Palette.words(13, Palette.TEXT_MUTED));
+        HBox top = new HBox(8, iconSquare(Icons.ofCategory(c.name()), CITY_DOT, 28, 15), name, gap, go);
+        top.setAlignment(Pos.CENTER_LEFT);
+
+        Label caption = new Label(s.caption());
+        caption.setWrapText(true);
+        caption.setStyle(Palette.words(12, Palette.TEXT_HEAD));
+        Label detail = new Label(s.detail());
+        detail.setWrapText(true);
+        detail.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        VBox words = new VBox(2, caption, detail);
+        words.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(words, Priority.ALWAYS);
+        words.setMinWidth(0);
+        HBox middle = new HBox(10, ring(s.arc(), tone, JOB_RING, 6, s.figure(), 13), words);
+        middle.setAlignment(Pos.CENTER_LEFT);
+
+        int onSite = onSiteIn(c.types());
+        VBox tile = new VBox(10, top, middle, onSiteLine(onSite, worst == null ? "nothing needed" : "nothing on site"));
+        tile.setMaxWidth(Double.MAX_VALUE);
+        tile.setMinHeight(150);
+        String rest = "-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-width: 3 1 1 1; -fx-cursor: hand;"
+                + " -fx-border-color: " + tone + " ";
+        tile.setStyle(rest + Palette.EDGE + " " + Palette.EDGE + " " + Palette.EDGE + ";");
+        tile.setOnMouseEntered(e -> tile.setStyle(rest + Palette.ACCENT + " " + Palette.ACCENT + " " + Palette.ACCENT + ";"));
+        tile.setOnMouseExited(e -> tile.setStyle(rest + Palette.EDGE + " " + Palette.EDGE + " " + Palette.EDGE + ";"));
+        Tooltip tip = new Tooltip(worst == null ? c.name() + ": nothing near its line. Click to build for it."
+                : c.name() + ": " + worst.label().toLowerCase() + " · " + worst.reading() + ". Click to build for it.");
+        tip.setShowDelay(Duration.millis(300));
+        Tooltip.install(tile, tip);
+        tile.setOnMouseClicked(e -> openCategory(c.name()));
+        return tile;
+    }
+
+    /* ----------------------------- what would help most ----------------------------- */
+
+    /** "all three ≈ $X of your $Y", and the button that orders them ("Build all three", 0.7.34; a step chip, "Order all three", before). */
+    javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> advice) {
+        if (advice.isEmpty()) return null;
+        double sum = BuildAdvice.quoteTotal(advice);   // each one's quote, added by the model (0.7.38)
+        String all = advice.size() == 3 ? "all three" : advice.size() == 2 ? "both" : "it";
+        Label what = new Label(all + " ≈ ");
+        what.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        Label total = new Label(money(sum));
+        total.setStyle(Palette.figure(Palette.SIZE_BODY, sum > ui.game.getCash() ? Palette.WARN : Palette.TEXT_HEAD));
+        Label of = new Label(" of your ");
+        of.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        Label cash = new Label(money(ui.game.getCash()));
+        cash.setStyle(Palette.figure(Palette.SIZE_BODY, ui.game.getCash() < 0 ? Palette.BAD : Palette.TEXT_HEAD));
+        HBox row = new HBox(0, what, total, of, cash);
+        row.setAlignment(Pos.CENTER_RIGHT);
+        if (advice.size() > 1) {
+            // The cards' button, inline (0.7.34): it orders every suggestion, as each card's would.
+            Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_INLINE,
+                    allPress(advice, sum > ui.game.getCash()), () -> orderAll(advice));
+            order.setMinWidth(Region.USE_PREF_SIZE);
+            HBox.setMargin(order, new javafx.geometry.Insets(0, 0, 0, 10));
+            row.getChildren().add(order);
+        }
+        Tooltip.install(row, new Tooltip("Each is the quote its own Build charges now. Ordered one after another, "
+                + "an earlier one's material from the yard can make a later one dearer."));
+        return row;
+    }
+
+    /**
+     * "Build all three" or "Build both" (0.7.34), in the look of the cards
+     * under it: held when one of them is - orderAll() stops at the first the
+     * city refuses, so it says so - else "... on credit" when one is, or
+     * when together they are more than the cash.
+     */
+    Pieces.Press allPress(List<BuildAdvice.Suggestion> advice, boolean overCash) {
+        int held = 0;
+        boolean credit = overCash;
+        for (BuildAdvice.Suggestion s : advice) {
+            Pieces.Look look = suggestionPress(s).look();
+            if (look == Pieces.Look.HELD) held++;
+            if (look == Pieces.Look.CREDIT) credit = true;
+        }
+        String all = advice.size() == 3 ? "Build all three" : "Build both";
+        if (held > 0) return new Pieces.Press(Pieces.Look.HELD, all, held == advice.size()
+                ? "none can go ahead as it stands" : "it stops at the first that cannot go ahead");
+        return new Pieces.Press(credit ? Pieces.Look.CREDIT : Pieces.Look.GO, all + (credit ? " on credit" : ""), null);
+    }
+
+    /** Each suggestion through its own button's path (placeOrder()), in turn; the first refusal stops the run, as Enter's does. */
+    void orderAll(List<BuildAdvice.Suggestion> advice) {
+        for (BuildAdvice.Suggestion s : new ArrayList<>(advice)) {
+            if (!placeOrder(s.template(), s.count(), BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class))) return;
+        }
+    }
+
+    /** Up to three cards, or a line saying there is nothing to suggest. */
+    javafx.scene.Node adviceRow(List<BuildAdvice.Suggestion> advice) {
+        if (advice.isEmpty()) {
+            Label none = new Label("Nothing the city builds is past its line, or what is on site already answers it, or no building can move it: nothing to suggest.");
+            none.setWrapText(true);
+            none.setStyle(Palette.words(12, Palette.TEXT_LABEL) + " -fx-padding: 4 0 4 0;");
+            return none;
+        }
+        javafx.scene.layout.GridPane grid = equalColumns(3, 10);
+        for (int i = 0; i < advice.size(); i++) grid.add(suggestionCard(advice.get(i)), i, 0);
+        return grid;
+    }
+
+    /** A measure's figure, worded as its ring words it: a share, a load, months, people, or a multiple of Canada's crime. */
+    String figureText(BuildAdvice.Measure m, double f) {
+        // A network drawing something with nothing supplying it has no load to print.
+        if (Double.isNaN(f) || Double.isInfinite(f)) return "—";
+        switch (m.kind()) {
+            case DEATH:  return people(f) + " unburied";
+            case PLOTS:  return f >= 1e6 ? "plenty" : String.format("%.0f mo", f);
+            case POLICE: return String.format("%.1f×", f);
+            case CELLS:  return people(f) + " not held";
+            case SCHOOL:
+                if (!m.school().isBasic()) return pct(f > 0 ? Math.min(1, 1 / f) : 1);
+                return pct(f);
+            default:     return pct(f);
+        }
+    }
+
+    /** What a suggested order does, in a line. */
+    String doesWhat(BuildAdvice.Suggestion s) {
+        BuildAdvice.Measure m = s.measure();
+        String from = figureText(m, s.before()), to = figureText(m, s.after());
+        String line;
+        switch (m.kind()) {
+            case POWER:  line = "brings the grid from " + from + " to " + to + " of its capacity"; break;
+            case WATER:  line = "brings the water supply from " + from + " to " + to + " of its capacity"; break;
+            case ROADS:  line = "takes road use from " + from + " to " + to + " of capacity"; break;
+            case CARE:   line = careHeading(m.care()).split("  -  ")[0].toLowerCase() + " from " + from + " to " + to; break;
+            case DEATH:  line = "plots and ovens for the dead: " + from + " to " + to; break;
+            case PLOTS:  line = "burial plots from " + from + " to " + to + " left"; break;
+            case SCHOOL: line = m.school().isBasic()
+                    ? m.school().getLabel().toLowerCase() + " from " + from + " to " + to + " taught"
+                    : "would-be students seated from " + from + " to " + to; break;
+            case POLICE: line = "crime from " + from + " to " + to + " Canada's"; break;
+            case CELLS:  line = "the caught not held: " + from.replace(" not held", "") + " to " + to; break;
+            default:     line = from + " to " + to;
+        }
+        if (s.onSite() > 0) line += ", once the " + formatter.format(s.onSite()) + " on site open";
+        return line;
+    }
+
+    /** What closing the need means, for the line that gives the full count. */
+    static String goal(BuildAdvice.Measure m) {
+        switch (m.kind()) {
+            case POWER: case WATER: return "bring the load under " + pct(CityNeeds.NETWORK_YELLOW);
+            case ROADS:  return "bring the roads under " + pct(InfrastructureManager.STRAINED) + " of capacity";
+            case CARE:   return "cover over " + pct(m.care() == CareType.GENERAL ? CityNeeds.GENERAL_YELLOW : CityNeeds.OTHER_CARE_YELLOW);
+            case DEATH:  return "leave nobody unburied";
+            case PLOTS:  return String.format("give over %.0f months of plots", CityNeeds.PLOTS_YELLOW);
+            case SCHOOL: return m.school().isBasic() ? "teach over " + pct(CityNeeds.SCHOOLS_YELLOW) : "seat everyone who would come";
+            case POLICE: return String.format("bring crime under %.1f× Canada's", CityNeeds.CRIME_YELLOW);
+            case CELLS:  return "hold everyone caught";
+            default:     return "close it";
+        }
+    }
+
+    /** The measure Show opens a category on, for a suggestion: transit's ring for a line, death care's for the plots. */
+    static BuildAdvice.Measure showOn(BuildAdvice.Suggestion s) {
+        BuildAdvice.Measure m = s.measure();
+        if (m.kind() == BuildAdvice.Kind.ROADS && s.template().getTransitCapacity() > 0) return BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT);
+        if (m.kind() == BuildAdvice.Kind.PLOTS) return BuildAdvice.Measure.of(BuildAdvice.Kind.DEATH);
+        return m;
+    }
+
+    /** One suggested order: the need, before and after, the count and the building, a line, its price, Show, and its Build button. */
+    VBox suggestionCard(BuildAdvice.Suggestion s) {
+        CityNeeds.Need need = s.need();
+        String tone = verdict(need.level());
+        Label chip = new Label(need.label().charAt(0) + need.label().substring(1).toLowerCase() + " "
+                + figureText(s.measure(), s.before()));
+        chip.setStyle(Palette.words(Palette.SIZE_LABEL, tone) + " -fx-padding: 1 7 1 7; -fx-border-color: " + tone + ";"
+                + " -fx-border-radius: 9; -fx-background-radius: 9; -fx-background-color: " + tone + "22;");
+        Label before = new Label(figureText(s.measure(), s.before()) + " → ");
+        before.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        boolean clears = BuildAdvice.clear(s.measure(), s.after());
+        Label after = new Label(figureText(s.measure(), s.after()));
+        after.setStyle(Palette.figure(Palette.SIZE_LABEL, clears ? Palette.GOOD : Palette.WARN));
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox top = new HBox(0, chip, gap, before, after);
+        top.setAlignment(Pos.CENTER_LEFT);
+
+        Label count = new Label(formatter.format(s.count()) + " × ");
+        count.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.BUILDING));
+        Label name = new Label(s.template().getName());
+        name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        HBox what = new HBox(0, count, name);
+        what.setAlignment(Pos.BASELINE_LEFT);
+        String said;
+        if (s.needsCredit()) {
+            said = formatter.format(s.fullCount()) + " would " + goal(s.measure()) + ", for " + money(s.fullPrice())
+                    + ": more than the treasury holds, so Build offers a loan.";
+        } else if (s.capped()) {
+            said = formatter.format(s.count()) + " is what the cash left affords. "
+                    + formatter.format(s.fullCount()) + " would " + goal(s.measure()) + ", for ≈ " + money(s.fullPrice()) + ".";
+        } else if (!s.closes()) {
+            said = doesWhat(s) + " - as far as " + s.template().getName() + "s go.";
+        } else {
+            said = doesWhat(s) + ".";
+        }
+        if (s.landShort() > 0) said += " Short " + shortNumber(s.landShort()) + " sq ft of land.";
+        Label line = new Label(said);
+        line.setWrapText(true);
+        line.setStyle(wordsAt(10.5, s.landShort() > 0 ? Palette.WARN : Palette.TEXT_LABEL));
+        VBox words = new VBox(2, what, line);
+        HBox.setHgrow(words, Priority.ALWAYS);
+        words.setMinWidth(0);
+        HBox middle = new HBox(10, iconSquare(Icons.ofCategory(s.measure().category()), CITY_DOT, 34, 18), words);
+        middle.setAlignment(Pos.TOP_LEFT);
+
+        Label price = new Label(money(s.price()));
+        price.setStyle(Palette.figure(Palette.SIZE_SECTION, s.needsCredit() ? Palette.WARN : Palette.TEXT_HEAD));
+        Label allIn = new Label(" all in");
+        allIn.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        HBox cost = new HBox(0, price, allIn);
+        cost.setAlignment(Pos.BASELINE_LEFT);
+        Region spread = new Region();
+        HBox.setHgrow(spread, Priority.ALWAYS);
+        // A door to the category (0.7.34: a pill), and the order itself as the card's button under it.
+        HBox show = doorPill("Show", Icons.BUILD, Palette.BUILDING, () -> {
+            orderQty.put(s.template().getName(), s.count());
+            BuildAdvice.Category c = BuildAdvice.category(s.measure().category());
+            measurePicked.put(c.name(), showOn(s));
+            handleAllBuildingMenus(c.name(), c.types());
+        });
+        Tooltip.install(show, new Tooltip("Open " + s.measure().category() + " with " + formatter.format(s.count()) + " dialled up"));
+        Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, suggestionPress(s),
+                () -> placeOrder(s.template(), s.count(), BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class)));
+        Tooltip orderTip = new Tooltip(s.needsCredit()
+                ? "short " + money(s.price() - ui.game.getCash()) + " — you will be offered a bill"
+                : "Orders " + formatter.format(s.count()) + " × " + s.template().getName() + " as its Build button would");
+        Tooltip.install(order, orderTip);
+        HBox bottom = new HBox(6, cost, spread, show);
+        bottom.setAlignment(Pos.CENTER_LEFT);
+
+        VBox card = new VBox(10, top, middle, bottom, order);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+        return card;
+    }
+
+    /**
+     * A suggestion's button (0.7.34): a card's words for its count, off the
+     * same verdict (orderPress()) - on credit as well when the cash left
+     * after the suggestions before it affords none (Suggestion.needsCredit(),
+     * the old "Order on credit").
+     */
+    Pieces.Press suggestionPress(BuildAdvice.Suggestion s) {
+        BuildCard.Verdict v = BuildCard.verdict(ui.game, s.template(), s.count());
+        Pieces.Press p = orderPress(v, s.count());
+        if (s.needsCredit() && p.look() == Pieces.Look.GO) {
+            return new Pieces.Press(Pieces.Look.CREDIT, "Build " + formatter.format(s.count()) + " on credit · "
+                    + money(v.quote().total), null);
+        }
+        return p;
+    }
+
+    /* ----------------------------- the market builds these ----------------------------- */
+
+    /** The nine, quieter. */
+    javafx.scene.layout.GridPane marketRow() {
+        List<BuildAdvice.Category> theirs = new ArrayList<>();
+        for (BuildAdvice.Category c : BuildAdvice.categories()) if (!c.cityBuilds()) theirs.add(c);
+        javafx.scene.layout.GridPane grid = equalColumns(theirs.size(), 8);
+        for (int i = 0; i < theirs.size(); i++) grid.add(marketTile(theirs.get(i)), i, 0);
+        return grid;
+    }
+
+    /** One of the market's: its icon, its name, what stands and what is on site. */
+    HBox marketTile(BuildAdvice.Category c) {
+        // Nine to a row: at 1,280 a column is about 118 px, and "Luxury shops"
+        // wraps to two lines there rather than running into its neighbour.
+        Label name = new Label(c.name());
+        name.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL));
+        name.setWrapText(true);
+        name.setMinWidth(0);
+        Label standing = new Label(formatter.format(standingIn(c.types())));
+        standing.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        int onSite = onSiteIn(c.types());
+        Label under = new Label(onSite > 0 ? formatter.format(onSite) + " on site" : "standing");
+        under.setStyle(wordsAt(9.5, onSite > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
+        VBox words = new VBox(0, name, standing, under);
+        words.setMinWidth(0);
+        HBox.setHgrow(words, Priority.ALWAYS);
+        HBox tile = new HBox(8, iconSquare(Icons.ofCategory(c.name()), INVESTOR_DOT, 28, 15), words);
+        tile.setAlignment(Pos.CENTER_LEFT);
+        tile.setMaxWidth(Double.MAX_VALUE);
+        String rest = "-fx-padding: 8 8 8 8; -fx-background-color: " + Palette.PANEL + ";"
+                + " -fx-background-radius: 6; -fx-border-radius: 6; -fx-cursor: hand; -fx-border-color: ";
+        tile.setStyle(rest + Palette.EDGE + ";");
+        tile.setOnMouseEntered(e -> tile.setStyle(rest + Palette.BUSINESS + ";"));
+        tile.setOnMouseExited(e -> tile.setStyle(rest + Palette.EDGE + ";"));
+        Tooltip.install(tile, new Tooltip(c.name() + ": investors build these themselves. You can build them too."));
+        tile.setOnMouseClicked(e -> openCategory(c.name()));
+        return tile;
+    }
+
+    /* =====================================================================
+       A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24)
+
+       Healthcare as the round-2 mockups draw it (BuildHealthB), and the same
+       shape for Utilities, Roads & transit, Education and Safety: a ring per
+       measure the category serves (BuildAdvice.measuresOf()) - its figure,
+       how far short in people or places, and what is on site with its wait
+       - the worst picked first, a click on another showing its buildings;
+       then the buildings that serve the picked measure as cards, each with
+       what it does at today's staffing in the measure's own verb ("seats",
+       "puts N officers on the street" - BuildCard.doesWords()), what the city has and
+       has on site, the all-in price with the sticker smaller, a bar for the
+       cost per unit served and one for the posts the city likely cannot fill
+       per 10,000 served (none for a building with no posts), a tag on the
+       cheapest per unit and on the fewest unfilled posts, its staff and land,
+       and the stepper and Build as before, with every warning the card gave
+       (land, the bill, the queue's months, what is on site). With a stepper
+       above zero, an order bar at the foot: the order, its price against the
+       cash, the measure now, when what is on site opens and with the order,
+       what it needs, and one Build for all of it - Enter's own path.
+
+       Since 0.7.25 every card is the one card (ONE BUILDING, AS A CARD),
+       its figures BuildCard's, and the market's nine are drawn the same way
+       in their groups (A MARKET CATEGORY, IN ITS GROUPS). The city's cards
+       got back what 0.7.24 had dropped - the (i) and its cover, "runs $X/mo",
+       +100 and the share of the land free - and a ring with one building
+       draws its bars' figures with no track.
+       ===================================================================== */
+
+    /** Which ring each city category has picked, by name; none picks its worst. Forgotten on arriving (openCategory()). */
+    final java.util.Map<String, BuildAdvice.Measure> measurePicked = new java.util.HashMap<>();
+
+    /** A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). */
+    static final double NEED_CARD = 300;
+
+    /** The order bar, refilled in place as a stepper moves. */
+    private VBox orderBar;
+
+    /** The measure the order bar reads, the picked one; null on a market page (orderMarket). */
+    private BuildAdvice.Measure orderMeasure;
+
+    /** The worst of a category's measures: its NEEDS YOU row first in the panel's order, else the first ring. */
+    BuildAdvice.Measure worstMeasure(BuildAdvice.Category c, List<BuildAdvice.Measure> measures, List<CityNeeds.Need> all) {
+        CityNeeds.Need worst = CityNeeds.worst(all, goOf(c.name()));
+        BuildAdvice.Measure m = worst == null ? null : BuildAdvice.measureOf(worst);
+        if (m != null && m.kind() == BuildAdvice.Kind.PLOTS) m = BuildAdvice.Measure.of(BuildAdvice.Kind.DEATH);
+        return m != null && measures.contains(m) ? m : measures.get(0);
+    }
+
+    /**
+     * A measure's verdict: its NEEDS YOU row's level; for a stage of the
+     * basic ladder that is not the bottleneck, the SCHOOLS row's own lines on
+     * its own coverage; -1 for a measure no row watches (transit, a school
+     * fewer than a class would come to).
+     */
+    int levelOf(BuildAdvice.Measure m, List<CityNeeds.Need> all) {
+        CityNeeds.Need n = BuildAdvice.needFor(all, m);
+        if (n != null) return n.level();
+        if (m.kind() == BuildAdvice.Kind.SCHOOL && m.school().isBasic()) {
+            double cover = BuildAdvice.figure(ui.game, m, java.util.Map.of());
+            return cover <= CityNeeds.SCHOOLS_RED ? 2 : cover <= CityNeeds.SCHOOLS_YELLOW ? 1 : 0;
+        }
+        return -1;
+    }
+
+    /** A city category's page. */
+    void showCityCategory(BuildAdvice.Category c) {
+        ui.clearMenu("handleAllBuildingMenus", () -> showCityCategory(c));
+        buildCategory = c.name();
+        pageCards.clear();
+        pageTitle = c.name();
+        pageCategories = c.types();
+        pendingHint = new Label("↵ builds what is pending · ⌫ clears it");
+        pendingHint.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 6 0 0 0;");
+
+        List<CityNeeds.Need> all = CityNeeds.measure(ui.game, SummaryScreen.WORDS);
+        List<BuildAdvice.Measure> measures = BuildAdvice.measuresOf(c.name());
+        BuildAdvice.Measure picked = measurePicked.get(c.name());
+        if (picked == null || !measures.contains(picked)) picked = worstMeasure(c, measures, all);
+        final BuildAdvice.Measure on = picked;
+        orderMeasure = on;
+        orderMarket = false;
+
+        VBox page = widePage();
+        HBox head = buildHead(c.name(), c.types());
+        head.setStyle("-fx-padding: 0 0 4 0;");
+        javafx.scene.layout.FlowPane strip = buildStrip(c.name());
+        strip.setStyle("-fx-padding: 0;");
+
+        // The rings: one per measure; Education's nine smaller, in one row.
+        boolean small = measures.size() > 4;
+        javafx.scene.layout.GridPane rings = equalColumns(measures.size(), small ? 6 : 10);
+        for (int i = 0; i < measures.size(); i++) rings.add(measureCard(c, measures.get(i), all, measures.get(i).equals(on), small), i, 0);
+
+        // The picked measure's buildings, as BuildCard groups them: one group,
+        // the ring's, its bars scaled and tagged within it (0.7.25).
+        BuildCard.Group group = BuildCard.groups(ui.game, c.name(), on).get(0);
+        List<BuildingsTemplate> shown = new ArrayList<>();
+        for (BuildCard.Figures f : group.cards()) shown.add(f.template());
+        double[] fill = ui.game.getPopulationManager().getJobFillRate();
+        // The order bar first: each card reprices into it as it is drawn.
+        orderBar = new VBox();
+        javafx.scene.layout.FlowPane cards = new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
+        cards.setAlignment(Pos.TOP_LEFT);
+        cards.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
+        for (BuildCard.Figures f : group.cards()) cards.getChildren().add(card(f, group, c, on));
+
+        // The four limits every category page has shown (constraintsBar()):
+        // the materials in the yard, their import price, the land free and the
+        // builders - the states a card's warnings come from.
+        HBox limits = constraintsBar();
+
+        // ...and at the heading's right, the way to the why (0.7.28): the Services page behind this ring -
+        // for the road and transit, Infrastructure's, said for what it shows (0.7.29). A road has no
+        // posts, so its "these need no staff" gives way to the door.
+        HBox headRight = new HBox(Palette.GAP_LOOSE);
+        if (on.kind() == BuildAdvice.Kind.ROADS) {
+            headRight.getChildren().add(door("what is on the road: Infrastructure", Palette.PEOPLE, () -> why(on)));
+        } else if (on.kind() == BuildAdvice.Kind.TRANSIT) {
+            headRight.getChildren().addAll(scarceNote(shown, fill),
+                    door("who rides: Infrastructure", Palette.PEOPLE, () -> why(on)));
+        } else {
+            headRight.getChildren().addAll(scarceNote(shown, fill), door("why", Palette.PEOPLE, () -> why(on)));
+        }
+        headRight.setAlignment(Pos.CENTER_RIGHT);
+        page.getChildren().addAll(head, strip, limits, rings,
+                sectionHead(on.label().toUpperCase() + " · " + measureSubtitle(on), headRight),
+                cards, orderBar, pendingHint);
+        showPendingHint();
+        refreshOrderBar();
+        ui.rootMenu.getChildren().add(page);
+    }
+
+    /** A few words on what a measure is for, beside its heading. */
+    String measureSubtitle(BuildAdvice.Measure m) {
+        switch (m.kind()) {
+            case POWER:   return "generation for every building and home";
+            case WATER:   return "treatment for every tap";
+            case ROADS:   return "the trips the city's buildings make";
+            case TRANSIT: return "commuters off the road";
+            case CARE:    return m.care() == CareType.GENERAL ? "somewhere to see a doctor"
+                               : m.care() == CareType.CHILDCARE ? "babies and children" : "the over-seventies";
+            case DEATH:   return "plots and ovens for the dead";
+            case SCHOOL: {
+                String[] head = schoolHeading(m.school()).split("  -  ");
+                return head.length > 1 ? head[1] : m.school().getLabel().toLowerCase();
+            }
+            case POLICE:  return "officers on the street";
+            default:      return "somewhere to hold the caught";
+        }
+    }
+
+    /** At the heading's right: which of these buildings' staff the city fills worst. */
+    Label scarceNote(List<BuildingsTemplate> shown, double[] fill) {
+        Label note = new Label(scarceWords(shown, fill));
+        note.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        return note;
+    }
+
+    /** ...its words, worked out without the label (0.7.28: the Services care heading says them too). */
+    String scarceWords(List<BuildingsTemplate> shown, double[] fill) {
+        JobType worst = null;
+        double at = 2;
+        for (BuildingsTemplate t : shown) {
+            JobType j = BuildAdvice.scarceJob(t, fill);
+            if (j == null) continue;
+            double f = j.ordinal() < fill.length ? fill[j.ordinal()] : 1;
+            if (f < at) { at = f; worst = j; }
+        }
+        return worst == null ? "these need no staff"
+                : at >= .995 ? "every post these need is filling"
+                : String.format("%s are the scarcest: %.0f%% of their posts filled", jobPlural(worst), at * 100);
+    }
+
+    /** A job type in plain words, plural: "doctors", "nurses", "unskilled workers". */
+    String jobPlural(JobType job) {
+        switch (job) {
+            case NO_DIPLOMA:          return "unskilled workers";
+            case DIPLOMA:             return "diploma holders";
+            case COLLEGE_HEALTH:      return "nurses";
+            case COLLEGE_BUSINESS:    return "business-college graduates";
+            case COLLEGE_ENGINEERING: return "technicians";
+            case UNIV_DOCTOR:         return "doctors";
+            case UNIV_LAW:            return "lawyers";
+            case UNIV_FINANCE:        return "finance graduates";
+            case UNIV_SCIENCE:        return "scientists";
+            case UNIV_HIGHTECH_ENG:   return "high-tech engineers";
+            case UNIV_POLICY:         return "policy graduates";
+            default:                  return jobLabel(job);
+        }
+    }
+
+    /** What a measure is counted in, for a ring's "short by N ..." - only care reaches it since 0.7.25, when the cards' "serves N ..." moved to BuildCard.doesWords(). */
+    static String unitWords(BuildAdvice.Measure m) {
+        switch (m.kind()) {
+            case POWER:   return "kW";
+            case WATER:   return "units a month";
+            case ROADS:   return "trips a month";
+            case TRANSIT: return "riders";
+            case CARE:    return m.care() == CareType.CHILDCARE ? "children" : m.care() == CareType.SENIOR ? "seniors" : "people";
+            case DEATH:   return "of the dead";
+            case SCHOOL:  return "places";
+            case POLICE:  return "officers";
+            default:      return "cells";
+        }
+    }
+
+    /** The staff bar's figure: a tenth below a hundred, whole and grouped above. */
+    static String perTenThousand(double staff) {
+        return !Double.isFinite(staff) ? "—" : staff >= 100 ? formatter.format(Math.round(staff)) : String.format("%.1f", staff);
+    }
+
+    /**
+     * What a ring says, worked out without drawing it: its figure, how much
+     * of it is drawn, its verdict's colour, how far short in people or
+     * places, and what is on site with its wait. measureCard() draws it; a
+     * probe can read it without the toolkit.
+     */
+    record RingWords(String figure, double arc, String tone, String shortLine, String onSite, int units,
+                     CityNeeds.Need need) { }
+
+    RingWords ringWords(BuildAdvice.Measure m, List<CityNeeds.Need> all) {
+        Game game = ui.game;
+        CityNeeds.Need need = BuildAdvice.needFor(all, m);
+        int level = levelOf(m, all);
+        String tone = verdict(level);
+        double[] sd = BuildAdvice.supplyDemand(game, m, java.util.Map.of());
+        String figure, shortLine;
+        double arc;
+        double gap = sd[1] - sd[0];
+        switch (m.kind()) {
+            case POWER: case WATER: {
+                double load = BuildAdvice.figure(game, m, java.util.Map.of());
+                figure = pct(load);
+                arc = Math.min(1, load);
+                shortLine = m.kind() == BuildAdvice.Kind.POWER
+                        ? (gap > 0 ? power(gap) + " short" : power(-gap) + " spare")
+                        : gap > 0 ? shortNumber(gap) + " units short" : shortNumber(-gap) + " units spare";
+                break;
+            }
+            case ROADS: {
+                double use = BuildAdvice.figure(game, m, java.util.Map.of());
+                figure = pct(use);
+                arc = Math.min(1, use);
+                // ...with the flow beside it (0.7.29): the ring is how full, the flow what it costs.
+                shortLine = pct(game.getInfrastructureManager().getThroughputRatio()) + " flow · "
+                        + (gap > 0 ? shortNumber(gap) + " trips over capacity" : shortNumber(-gap) + " trips spare");
+                break;
+            }
+            case TRANSIT:
+                figure = pct(BuildAdvice.cover(game, m, java.util.Map.of()));
+                arc = BuildAdvice.cover(game, m, java.util.Map.of());
+                // ROOM, NOT RIDERS (0.7.29): the ring is what the stock could carry, and it
+                // said "carries 62.5k" where 41.4k rode - the ceiling, the fare and the cars
+                // walk it down (Infrastructure › Transit draws the steps).
+                shortLine = sd[0] > 0 ? "room for " + shortNumber(Math.min(sd[0], sd[1])) + " of " + shortNumber(sd[1])
+                        + " · " + shortNumber(game.getInfrastructureManager().getTransitRiders()) + " ride"
+                        : "no transit yet";
+                break;
+            case DEATH:
+                if (need != null && need.kind() == CityNeeds.Kind.PLOTS) {
+                    figure = String.format("%.0f mo", need.value());
+                    arc = Math.min(1, need.value() / CityNeeds.PLOTS_YELLOW);
+                    shortLine = "of burial plots left";
+                } else {
+                    double waiting = game.getHealthcare().getUnburied();
+                    double toHandle = game.getHealthcare().getDeaths() + waiting;
+                    arc = toHandle > 0 ? Math.max(0, 1 - waiting / toHandle) : 1;
+                    figure = pct(arc);
+                    shortLine = waiting >= .5 ? people(waiting) + " unburied" : "every funeral has a place";
+                }
+                break;
+            case SCHOOL:
+                arc = BuildAdvice.cover(game, m, java.util.Map.of());
+                figure = pct(arc);
+                shortLine = m.school().isBasic()
+                        ? (gap >= .5 ? "short " + people(gap) + " places" : "a place for every child")
+                        : sd[1] < CityNeeds.SEATS_FLOOR ? people(sd[1]) + " would come"
+                        : people(sd[0]) + " seats, " + people(sd[1]) + " would come";
+                break;
+            case POLICE: {
+                double vs = need != null ? need.value() : BuildAdvice.figure(game, m, java.util.Map.of());
+                figure = String.format("%.1f×", vs);
+                arc = vs > 0 ? Math.min(1, 1 / vs) : 1;
+                shortLine = gap >= .5 ? people(gap) + " officers short of full cover" : "full cover";
+                break;
+            }
+            case CELLS: {
+                arc = BuildAdvice.cover(game, m, java.util.Map.of());
+                figure = pct(arc);
+                double unheld = game.getCrime().getNotHeld();
+                shortLine = unheld >= 1 ? people(unheld) + " caught, not held" : "a cell for everyone caught";
+                break;
+            }
+            default: {
+                arc = BuildAdvice.cover(game, m, java.util.Map.of());
+                figure = pct(arc);
+                shortLine = gap >= .5 ? "short by " + people(gap) + " " + unitWords(m) : "everyone has a place";
+            }
+        }
+        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
+        int units = BuildAdvice.units(site);
+        double soonest = Double.NaN;
+        for (BuildingsTemplate t : site.keySet()) {
+            double months = game.onSiteMonths(t);
+            if (!Double.isNaN(months) && !(months >= soonest)) soonest = months;
+        }
+        String onSite = units > 0 ? formatter.format(units) + " on site · " + monthsWait(soonest) : "nothing on site";
+        return new RingWords(figure, arc, tone, shortLine, onSite, units, need);
+    }
+
+    /** One ring: its figure, how far short, and what is on site with its wait; a click picks it. */
+    HBox measureCard(BuildAdvice.Category c, BuildAdvice.Measure m, List<CityNeeds.Need> all, boolean picked, boolean small) {
+        RingWords w = ringWords(m, all);
+        String figure = w.figure(), tone = w.tone(), shortLine = w.shortLine(), onSite = w.onSite();
+        double arc = w.arc();
+        int units = w.units();
+        CityNeeds.Need need = w.need();
+
+        String tip = m.label() + ": " + shortLine + (need != null ? "\nNEEDS YOU: " + need.label().toLowerCase()
+                + " · " + need.reading() : "") + "\nClick for its buildings.";
+        if (!small) {
+            // The card is Pieces.ringCard() since 0.7.27, which the People page's care row draws too.
+            return ringCard(figure, arc, tone, m.label(), null, shortLine, onSite,
+                    units > 0 ? Palette.BUILDING : Palette.TEXT_MUTED, 56, picked, null, () -> {
+                        measurePicked.put(c.name(), m);
+                        showCityCategory(c);
+                    }, tip);
+        }
+        Label name = new Label(m.label());
+        name.setStyle(Palette.strong(small ? Palette.SIZE_BODY : Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        name.setWrapText(true);
+        Label sl = new Label(shortLine);
+        sl.setWrapText(true);
+        sl.setStyle(wordsAt(small ? 9 : 10.5, Palette.TEXT_LABEL));
+        Label os = new Label(onSite);
+        os.setWrapText(true);
+        os.setStyle(Palette.words(small ? Palette.SIZE_CAPTION : Palette.SIZE_LABEL,
+                units > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
+        VBox words = new VBox(1, name, sl, os);
+        words.setMinWidth(0);
+        HBox.setHgrow(words, Priority.ALWAYS);
+        double size = small ? 42 : 56;
+        HBox card = new HBox(small ? 6 : 10, ring(arc, tone, size, small ? 5 : 6, figure, small ? 10.5 : 12.5), words);
+        if (small) {
+            // Nine in a row: the ring above its words.
+            card = new HBox(0);
+            VBox stacked = new VBox(4, ring(arc, tone, size, 5, figure, 10.5), name, sl, os);
+            stacked.setAlignment(Pos.TOP_LEFT);
+            card.getChildren().add(stacked);
+        }
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setMaxWidth(Double.MAX_VALUE);
+        String rest = "-fx-padding: " + (small ? "8 8 8 8" : "10 12 10 12") + "; -fx-background-radius: 8; -fx-border-radius: 8;"
+                + " -fx-cursor: hand; -fx-background-color: " + (picked ? Palette.PINNED : Palette.RAISED) + "; -fx-border-color: ";
+        String edge = picked ? Palette.BUILDING : Palette.EDGE;
+        final HBox shownCard = card;
+        shownCard.setStyle(rest + edge + ";");
+        shownCard.setOnMouseEntered(e -> shownCard.setStyle(rest + (picked ? Palette.BUILDING : Palette.ACCENT) + ";"));
+        shownCard.setOnMouseExited(e -> shownCard.setStyle(rest + edge + ";"));
+        Tooltip tipped = new Tooltip(tip);
+        tipped.setShowDelay(Duration.millis(300));
+        Tooltip.install(shownCard, tipped);
+        shownCard.setOnMouseClicked(e -> {
+            measurePicked.put(c.name(), m);
+            showCityCategory(c);
+        });
+        return shownCard;
+    }
+
+    /** Words at a size between Palette's steps (0.7.24's cards and rings), in a colour. */
+    static String wordsAt(double size, String colour) {
+        return "-fx-font-size: " + size + "px; -fx-text-fill: " + colour + ";";
+    }
+
+    /** A figure at a size between Palette's steps: Palette.figure()'s face. */
+    static String figureAt(double size, String colour) {
+        return Palette.Fonts.monoSemiBold() + " -fx-font-size: " + size + "px; -fx-text-fill: " + colour + ";";
+    }
+
+    /** A figure that may be large: "2,500", "120k", "1.2M". */
+    static String shortOrWhole(double v) {
+        return v >= 100_000 ? shortNumber(v) : formatter.format(Math.round(v));
+    }
+
+    // A card's tag - the best of these on one count - is Pieces.tag() in green since 0.7.26.
+
+    /**
+     * One of the card's two bars: what it measures, its figure, and the bar
+     * scaled across its group - with no track when `track` is false (0.7.25):
+     * a group of one, where a full bar compares nothing, or a card with
+     * nothing to price against.
+     */
+    VBox barRow(String label, String value, double share, String colour, double wide, String svg, boolean track) {
+        Label what = new Label(label);
+        what.setStyle(wordsAt(9.5, Palette.TEXT_LABEL));
+        // "posts the city can't fill, per 10,000 patients" nearly fills the
+        // card: it wraps to a second line rather than losing its end.
+        what.setWrapText(true);
+        what.setMinWidth(0);
+        if (svg != null) {
+            what.setGraphic(icon(svg, colour, 11));
+            what.setGraphicTextGap(4);
+        }
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        Label figure = new Label(value);
+        figure.setStyle(figureAt(9.5, Palette.TEXT_HEAD));
+        figure.setMinWidth(Region.USE_PREF_SIZE);
+        HBox row = new HBox(4, what, gap, figure);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return track ? new VBox(2, row, bar(share, colour, wide, 4)) : new VBox(row);
+    }
+
+    /**
+     * The order bar: what the page's steppers add up to, its price against
+     * the cash, the picked measure now, when what is on site opens and with
+     * the order - as a stacked bar and in figures - what the order needs,
+     * and one Build for all of it (buildPending(), Enter's path). On a
+     * market page (0.7.25) it has no measure: the order, its price, what it
+     * needs, and Build.
+     */
+    void refreshOrderBar() {
+        if (orderBar == null || (orderMeasure == null && !orderMarket)) return;
+        Game game = ui.game;
+        java.util.Map<BuildingsTemplate, Integer> order = new java.util.LinkedHashMap<>();
+        for (PageCard card : pageCards) {
+            int n = orderQty.getOrDefault(card.template().getName(), 0);
+            if (n > 0) order.put(card.template(), n);
+        }
+        orderBar.getChildren().clear();
+        if (order.isEmpty()) {
+            showIf(orderBar, false);
+            return;
+        }
+        showIf(orderBar, true);
+        BuildAdvice.Measure m = orderMeasure;
+
+        int units = 0;
+        StringBuilder names = new StringBuilder();
+        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : order.entrySet()) {
+            units += e.getValue();
+            if (names.length() > 0) names.append(" + ");
+            names.append(formatter.format(e.getValue())).append(" × ").append(e.getKey().getName());
+        }
+        double total = BuildAdvice.quoteTotal(game, order);
+        Label what = new Label(names.toString());
+        what.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        what.setWrapText(true);
+        Label price = new Label(money(total) + " all in, of your " + money(game.getCash()));
+        price.setStyle(Palette.figure(Palette.SIZE_LABEL, total > game.getCash() ? Palette.WARN : Palette.TEXT_LABEL));
+        double[] needs = BuildAdvice.needs(order);
+        StringBuilder staff = new StringBuilder();
+        for (JobType job : JobType.values()) {
+            double n = needs[job.ordinal()];
+            if (n <= 0) continue;
+            if (staff.length() > 0) staff.append(" · ");
+            staff.append(formatter.format(Math.round(n))).append(" ").append(n == 1 ? jobLabel(job) : jobPlural(job));
+        }
+        if (staff.length() > 0) staff.append(" · ");
+        double land = needs[needs.length - 1];
+        staff.append(shortNumber(land)).append(" sq ft");
+        Label wants = new Label(staff.toString());
+        wants.setWrapText(true);
+        wants.setStyle(wordsAt(9.5,
+                land > game.getLandManager().getAvailableSqFt() ? Palette.BAD : Palette.TEXT_MUTED));
+        VBox left = new VBox(2, what, price, wants);
+        left.setPrefWidth(300);
+        left.setMinWidth(220);
+
+        // The cards' button (0.7.34), saying the whole order: on credit when it is more than the cash,
+        // where the first order the cash cannot cover opens the credit page.
+        Pieces.ActionButton go = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL,
+                orderBarPress(units, total, game.getCash()), this::buildPending);
+        go.setMinWidth(Region.USE_PREF_SIZE);
+        Tooltip.install(go, new Tooltip("Places every order on this page, as each card's Build would (Enter does the same)"));
+
+        // A market page (0.7.25): the order and Build, no measure between them.
+        if (m == null) {
+            HBox.setHgrow(left, Priority.ALWAYS);
+            left.setMaxWidth(Double.MAX_VALUE);
+            HBox bar = new HBox(18, left, go);
+            bar.setAlignment(Pos.CENTER_LEFT);
+            bar.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
+                    + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.BUILDING + ";");
+            VBox.setMargin(bar, new javafx.geometry.Insets(4, 0, 0, 0));
+            orderBar.getChildren().add(bar);
+            return;
+        }
+
+        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
+        java.util.Map<BuildingsTemplate, Integer> withOrder = BuildAdvice.plus(site, order);
+        double now = BuildAdvice.cover(game, m, java.util.Map.of());
+        double whenOpen = BuildAdvice.cover(game, m, site);
+        double with = BuildAdvice.cover(game, m, withOrder);
+        Label measure = new Label(m.label().toLowerCase());
+        measure.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        int onSiteUnits = BuildAdvice.units(site);
+        Label figures = new Label(figureText(m, BuildAdvice.figure(game, m, java.util.Map.of())) + " now · "
+                + (onSiteUnits > 0 ? figureText(m, BuildAdvice.figure(game, m, site)) + " when the "
+                        + formatter.format(onSiteUnits) + " on site open · " : "")
+                + figureText(m, BuildAdvice.figure(game, m, withOrder)) + " with " + (units == 1 ? "this" : "these"));
+        figures.setStyle(Palette.figure(Palette.SIZE_LABEL, BuildAdvice.clear(m, BuildAdvice.figure(game, m, withOrder))
+                ? Palette.GOOD : Palette.TEXT_HEAD));
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox labels = new HBox(6, measure, gap, figures);
+        labels.setAlignment(Pos.CENTER_LEFT);
+        javafx.scene.layout.HBox stacked = new javafx.scene.layout.HBox(0);
+        stacked.setMaxWidth(Double.MAX_VALUE);
+        stacked.setPrefHeight(10);
+        stacked.setStyle("-fx-background-color: " + Palette.EDGE + "; -fx-background-radius: 5;");
+        stacked.setMinHeight(10);
+        javafx.beans.binding.DoubleBinding wide = stacked.widthProperty().multiply(1.0);
+        stacked.getChildren().addAll(segment(now, Palette.MONEY, wide),
+                segment(Math.max(0, whenOpen - now), Palette.BUILDING_DARK, wide),
+                segment(Math.max(0, with - Math.max(now, whenOpen)), Palette.BUILDING, wide));
+        HBox key = new HBox(Palette.GAP_LOOSE, keySwatch(Palette.MONEY, "covered"),
+                keySwatch(Palette.BUILDING_DARK, "on site"), keySwatch(Palette.BUILDING, "this order"));
+        VBox middle = new VBox(4, labels, stacked, key);
+        HBox.setHgrow(middle, Priority.ALWAYS);
+
+        HBox bar = new HBox(18, left, middle, go);
+        bar.setAlignment(Pos.CENTER_LEFT);
+        bar.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.BUILDING + ";");
+        VBox.setMargin(bar, new javafx.geometry.Insets(4, 0, 0, 0));
+        orderBar.getChildren().add(bar);
+    }
+
+    /** The order bar's Build (0.7.34): "Build 5 · $X" with the order's total, or "Build 5 on credit · $X" past the cash. */
+    Pieces.Press orderBarPress(int units, double total, double cash) {
+        String words = "Build " + formatter.format(units) + (total > cash ? " on credit · " : " · ") + money(total);
+        return new Pieces.Press(total > cash ? Pieces.Look.CREDIT : Pieces.Look.GO, words, null);
+    }
+
+    /** One part of the order bar's stacked bar, its width a share of the bar's. */
+    Region segment(double share, String colour, javafx.beans.binding.DoubleBinding wide) {
+        Region r = new Region();
+        double s = Math.max(0, Math.min(1, share));
+        r.prefWidthProperty().bind(wide.multiply(s));
+        r.minWidthProperty().bind(wide.multiply(s));
+        r.setMinHeight(10);
+        r.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 5;");
+        return r;
+    }
+
+    /* =====================================================================
+       A MARKET CATEGORY, IN ITS GROUPS (0.7.25)
+
+       The nine investors build - Homes, Shops, Industry, Offices, Farms,
+       Rail, Vehicles, Luxury shops, Restaurants - on the one card the city's
+       five have (ONE BUILDING, AS A CARD), and under their owning sectors
+       rather than in one grid: Industry is seven groups (food mills, food
+       processing, steel, fabrication and machinery, iron, building
+       materials, builders) and Shops two (the groceries and the bank's
+       branches), so a card's bars and tags compare it with the buildings it
+       competes with, not with everything on the page. Jerus asked it of the
+       healthcare list when it was one column of buttons - "group it further
+       cause its hard to know whats for what" - and the old page grouped
+       care and the schools for it, until 0.7.24 opened the city's five on
+       their needs; the market's groups are the same answer. Each group's
+       heading says what it is for and, at its right where there is one, the
+       sector's own figure the group answers to (BuildCard.Note).
+
+       The page keeps what the 0.7.21 page had: the head and the strip, the
+       limits (constraintsBar()), whose job these are (whoBuildsThis() and its
+       (i)), the receipt and the keys' caption - and gains the order bar's
+       left half and its Build: what the steppers add up to, its price
+       against the cash, the posts and the land. No measure in the middle:
+       nothing on a market page is judged against a need.
+       ===================================================================== */
+
+    /** Whether the order bar is a market page's, which has no measure to draw. */
+    private boolean orderMarket;
+
+    /** A market category's page. */
+    void showMarketCategory(BuildAdvice.Category c) {
+        ui.clearMenu("handleAllBuildingMenus", () -> showMarketCategory(c));
+
+        /*
+         * WHICH CATEGORY THIS IS, remembered for the Build tab - set here
+         * rather than only in the strip's own handler, because the inbox's
+         * "go and build" lands here directly too.
+         */
+        buildCategory = c.name();
+
+        /*
+         * AND WHICH CARDS ARE ON IT, for the keyboard (see "the keyboard",
+         * after placeOrder). Started again before a card is drawn, so each
+         * card files itself in the order it is laid out.
+         */
+        pageCards.clear();
+        pageTitle = c.name();
+        pageCategories = c.types();
+        pendingHint = new Label("↵ builds what is pending · ⌫ clears it");
+        pendingHint.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 6 0 0 0;");
+        orderMeasure = null;
+        orderMarket = true;
+
+        VBox page = widePage();
+        HBox head = buildHead(c.name(), c.types());
+        head.setStyle("-fx-padding: 0 0 4 0;");
+        javafx.scene.layout.FlowPane strip = buildStrip(c.name());
+        strip.setStyle("-fx-padding: 0;");
+        HBox who = whoBuildsThis(c.name(), c.types());
+        page.getChildren().addAll(head, strip, constraintsBar(), who);
+
+        // The order bar first: each card reprices into it as it is drawn.
+        orderBar = new VBox();
+        for (BuildCard.Group group : BuildCard.groups(ui.game, c.name(), null)) {
+            page.getChildren().add(groupHead(group));
+            javafx.scene.layout.FlowPane cards = new javafx.scene.layout.FlowPane(TILE_GAP, TILE_GAP);
+            cards.setAlignment(Pos.TOP_LEFT);
+            cards.prefWrapLengthProperty().bind(ui.menuScroller.widthProperty().subtract(60));
+            for (BuildCard.Figures f : group.cards()) cards.getChildren().add(card(f, group, c, null));
+            page.getChildren().add(cards);
+        }
+
+        page.getChildren().addAll(orderBar, pendingHint);
+        showPendingHint();
+        refreshOrderBar();
+        ui.rootMenu.getChildren().add(page);
+    }
+
+    /**
+     * A market group's heading - "FOOD MILLS · bread and bakery goods from
+     * crops", or "STEEL · from iron ore" where the goods would repeat the
+     * name - and at its right the sector's figure the group answers to, both
+     * wrapping rather than cutting.
+     */
+    HBox groupHead(BuildCard.Group group) {
+        String about = groupSubtitle(group);
+        Label head = new Label(group.title().toUpperCase() + (about.isEmpty() ? "" : " · " + about));
+        head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        head.setWrapText(true);
+        head.setMinWidth(0);
+        Label note = new Label(groupNote(group.note()));
+        note.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        note.setWrapText(true);
+        note.setMinWidth(0);
+        note.setTextAlignment(javafx.scene.text.TextAlignment.RIGHT);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP, head, gap, note);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 6 0 0 0;");
+        return row;
+    }
+
+    /**
+     * What a market group is for, beside its name: the goods a maker group
+     * makes and what from, off the templates' own goods; a few words for the
+     * rest.
+     */
+    String groupSubtitle(BuildCard.Group group) {
+        BuildCard.Figures first = group.cards().get(0);
+        switch (first.kind()) {
+            case HOMES:     return "a door for every household";
+            case CUSTOMERS: return first.template().makes(Good.LUXURY_TRADE) > 0
+                                   ? "somewhere for the well-off to spend" : "food for every household";
+            case MEALS:     return "the city's food, cooked";
+            case BRANCH:    return "the city's bank, a counter at a time";
+            case RAIL:      return "freight across the city's boundary";
+            case POINTS:    return "the crews every site waits on";
+            case OFFICE:    return "work the world buys";
+            default: {
+                java.util.Set<String> made = new java.util.LinkedHashSet<>(), used = new java.util.LinkedHashSet<>();
+                for (BuildCard.Figures f : group.cards()) {
+                    for (Good g : f.template().goodsMade().keySet()) made.add(g.label().toLowerCase());
+                    for (Good g : f.template().goodsUsed().keySet()) used.add(g.label().toLowerCase());
+                }
+                used.removeAll(made);
+                String what = andList(new ArrayList<>(made));
+                if (what.equalsIgnoreCase(group.title())) what = "";
+                if (!used.isEmpty()) what += (what.isEmpty() ? "" : " ") + "from " + andList(new ArrayList<>(used));
+                return what;
+            }
+        }
+    }
+
+    /** "a, b and c". */
+    static String andList(List<String> words) {
+        if (words.size() <= 1) return words.isEmpty() ? "" : words.get(0);
+        return String.join(", ", words.subList(0, words.size() - 1)) + " and " + words.get(words.size() - 1);
+    }
+
+    /** A group's note, in words (BuildCard.NoteKind). */
+    String groupNote(BuildCard.Note n) {
+        switch (n.kind()) {
+            case DOORS:
+                return "studios: " + doors(n.a()) + " · family homes: " + doors(n.b());
+            case SHOPS:
+                return "the shops serve " + formatter.format(Math.round(n.a())) + " a month; "
+                        + formatter.format(Math.round(n.b())) + " people";
+            case MADE:
+                return "the city used " + formatter.format(Math.round(n.a())) + BuildCard.goodWords(n.good())
+                        + "; " + (n.good() == Good.CROPS ? "farms here grow " : "plants here make ")
+                        + formatter.format(Math.round(n.b()));
+            case RAIL:
+                return "the city trades " + formatter.format(Math.round(n.a())) + " t a month; the network carries "
+                        + formatter.format(Math.round(n.b()));
+            case LUXURY:
+                // Not counted yet since the load (BuildCard.Note): what the counters serve alone.
+                return Double.isNaN(n.a()) ? "the counters serve " + formatter.format(Math.round(n.b()))
+                        : formatter.format(Math.round(n.a())) + " customers came; the counters serve "
+                        + formatter.format(Math.round(n.b()));
+            case MEALS:
+                return Double.isNaN(n.a()) ? "the kitchens serve " + formatter.format(Math.round(n.b()))
+                        : formatter.format(Math.round(n.a())) + " meals wanted; the kitchens serve "
+                        + formatter.format(Math.round(n.b()));
+            default:
+                return "";
+        }
+    }
+
+    /** Households of a segment without a door, or the doors to spare (RealEstate.doorShortfall(), negative when there are). */
+    static String doors(double shortfall) {
+        if (shortfall >= .5) return formatter.format(Math.round(shortfall)) + " households without a door";
+        if (shortfall <= -.5) return formatter.format(Math.round(-shortfall)) + " to spare";
+        return "none short";
+    }
 
     /* =====================================================================
        THE STAT CARD
@@ -1148,7 +2704,7 @@ final class BuildScreen {
     // Package-private, not private, so BuildMenuCheck can read the sentences
     // back. A description that is derived can still be derived WRONGLY - the
     // whole risk of reading production1 is that it means a different thing in
-    // each category - and the only way to hold that is to print all 29 and
+    // each category - and the only way to hold that is to print every one and
     // assert on them. Same for the two below.
     public List<String> whatItDoes(BuildingsTemplate t) {
         List<String> out = new ArrayList<>();
@@ -1221,8 +2777,7 @@ final class BuildScreen {
                 break;
 
             case ELECTRICITY:
-                out.add(String.format("Generates %s units of electricity a month.",
-                        formatter.format(t.getProduction1())));
+                out.add(String.format("Generates %s of electricity.", power(t.getProduction1())));
                 break;
 
             case WATER:
@@ -1653,25 +3208,6 @@ final class BuildScreen {
         return l;
     }
 
-    /** Which heading a building belongs under: its care type, or what it teaches. */
-    Object groupKeyOf(BuildingsTemplate template) {
-        if (template.getCare() != CareType.NONE) return template.getCare();
-        if (template.getTeaches() != EducationType.NONE) return template.getTeaches();
-        return CareType.NONE;
-    }
-
-    String groupHeading(Object key) {
-        if (key instanceof CareType care) return careHeading(care);
-        if (key instanceof EducationType type) return schoolHeading(type);
-        return "";
-    }
-
-    String groupSubtitle(Object key) {
-        if (key instanceof CareType care) return careSubtitle(care);
-        if (key instanceof EducationType type) return schoolSubtitle(type);
-        return "";
-    }
-
     /**
      * A school's heading, and what it is actually for.
      *
@@ -1795,8 +3331,7 @@ final class BuildScreen {
                 "Ore still in the ground: %,.0f tonnes", land.getIronReserveTonnes()));
         reserves.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
 
-        Button toLand = new Button("Go to the Land Office");
-        toLand.setOnAction(e -> ui.landScreen.showLandMenu());
+        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
         Button back = new Button("Back");
         back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
@@ -1839,8 +3374,7 @@ final class BuildScreen {
                 "",
                 "This is not a funding problem. A bond would not fix it.");
 
-        Button toSchools = new Button("Go to Build - Education");
-        toSchools.setOnAction(e -> {
+        HBox toSchools = doorPill("Go to Build · Education", Icons.BUILD, Palette.BUILDING, () -> {
             buildCategory = "Education";
             showBuildMenu();
         });
@@ -1889,8 +3423,7 @@ final class BuildScreen {
                 money(land.getNextBlockCost() * blocks)));
         cost.setStyle("-fx-text-fill: " + Palette.TEXT_MUTED + ";");
 
-        Button toLand = new Button("Go to the Land Office");
-        toLand.setOnAction(e -> ui.landScreen.showLandMenu());
+        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
         Button back = new Button("Back");
         back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
@@ -1931,6 +3464,9 @@ final class BuildScreen {
         Label warning = new Label("INSUFFICIENT FUNDS");
         warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold;");
 
+        // Each offer's button builds (0.7.34): the order and its price, and the paper it is built on under them.
+        String order = "Build " + formatter.format(quantity) + " · " + money(ui.game.calculateTotalCost(selected, quantity));
+
         VBox need = new VBox(0,
                 statementLine("Funding required", money(gap), Palette.BAD),
                 statementNote(String.format("%,d x %s costs %s, and the treasury holds %s.",
@@ -1957,7 +3493,7 @@ final class BuildScreen {
                 pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
                 String.format("Paid over %d years: the coupon every month, then the whole %s at the end.",
                         bond.duration(), money(bond.faceValue())),
-                "Issue the " + Game.BUILD_BOND_YEARS + "-year bond",
+                new Pieces.Press(Pieces.Look.GO, order, "issues the " + Game.BUILD_BOND_YEARS + "-year bond, then builds"),
                 () -> {
                     ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);   // quotes it again, identically
                     buildOnTheLoan(selected, quantity, prevTitle, prevCats, "bond");
@@ -1969,7 +3505,7 @@ final class BuildScreen {
                                 ? "Falls due in %d months: the whole %s at once, out of the treasury."
                                 : "Falls due in %d months: the whole %s at once, refinanced then by the treasury's rollover.",
                         note.duration(), money(note.faceValue())),
-                "Issue the " + Game.BUILD_NOTE_MONTHS + "-month note",
+                new Pieces.Press(Pieces.Look.GO, order, "issues the " + Game.BUILD_NOTE_MONTHS + "-month note, then builds"),
                 () -> {
                     ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);   // quotes it again, identically
                     buildOnTheLoan(selected, quantity, prevTitle, prevCats, "note");
@@ -1985,30 +3521,31 @@ final class BuildScreen {
      * One of the funding page's offers: its rate, its face, the cash it
      * brings, what it costs a month and in all, and what happens at the end -
      * every figure off the quote - then what asking this much does to the
-     * city's rate, and its button.
+     * city's rate, and its button: Build's action button since 0.7.34, the
+     * statement's width, saying the order and the paper it is built on.
      */
     VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
-                      String action, Runnable issue) {
+                      Pieces.Press action, Runnable issue) {
         return fundingOffer(name, quote, rate, atTheEnd, action, issue, Money::money);
     }
 
     /**
      * ...with its figures written by `written` - the land office's dollar
-     * offers (0.7.13) print theirs in US dollars, since a dollar quote's
-     * every figure is in dollars (Game.quoteForeign()). Package-private since
-     * 0.7.13, so the land office's funding page is this page's pieces and not
-     * a second copy of them.
+     * offers printed theirs in US dollars here from 0.7.13, since a dollar
+     * quote's every figure is in dollars (Game.quoteForeign()). Since 0.7.26
+     * the office lays its offers out as cards (Pieces.offerCard(), the same
+     * figures and the same rule for the rate's colour, rateColour()), and
+     * this page is to take that card in Build's own pass.
      */
     VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
-                      String action, Runnable issue, java.util.function.DoubleFunction<String> written) {
+                      Pieces.Press action, Runnable issue, java.util.function.DoubleFunction<String> written) {
 
         Label impact = new Label(quote.creditImpact());
         impact.setStyle(rateStyle(quote));
 
-        Button go = new Button(action);
-        go.setStyle(Palette.words(Palette.SIZE_LABEL, "white")
-                + " -fx-background-color: " + Palette.CONFIRM + ";");
-        go.setOnAction(e -> issue.run());
+        Pieces.ActionButton go = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, action, issue);
+        go.setMaxWidth(STATEMENT);
+        VBox.setMargin(go, new javafx.geometry.Insets(6, 0, 0, 0));
 
         VBox offer = new VBox(0,
                 statementHead(name),
@@ -2109,21 +3646,9 @@ final class BuildScreen {
      * looks the same at 1% and at 20% does not communicate that at a glance.
      */
     String rateStyle(DebtQuote quote) {
-
-        // Measured against the market's OWN band rather than typed-in numbers,
-        // so re-shaping the curve cannot leave this colouring behind. When the
-        // spread ran 1%-20% a flat "red above 15%" was about right; the moment
-        // the curve was made gentler the same thresholds would have painted
-        // ordinary municipal leverage green and nothing else anything at all.
-        DebtManager market = ui.game.getDebtManager();
-        double floor = market.floorRate();
-        double span = Math.max(1e-9, market.ceilingRate() - floor);
-        double howFarUp = (quote.marketRate() - floor) / span;
-
-        String colour;
-        if (howFarUp >= .55)      colour = Palette.BAD;   // deep into the expensive half
-        else if (howFarUp >= .25) colour = Palette.WARN;   // getting dear
-        else                      colour = Palette.GOOD;   // ordinary money
-        return "-fx-text-fill: " + colour + "; -fx-font-weight: bold; -fx-padding: 4 0 0 0;";
+        // The rule - how far up the market's own band - is Pieces.rateColour() since 0.7.26,
+        // so the land office's offer cards colour theirs the same way.
+        return "-fx-text-fill: " + rateColour(quote, ui.game.getDebtManager())
+                + "; -fx-font-weight: bold; -fx-padding: 4 0 0 0;";
     }
 }

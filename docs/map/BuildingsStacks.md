@@ -1,13 +1,13 @@
 # BuildingsStacks.java - 466 lines · 42 methods · 0 constants · model
 
-`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > One building type in the city: how many stand, how many are on site, and
 > the progress, material and contract its sites carry.
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (3), [JobType](JobType.md) (1)
 
-**Used by (10):** [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [Game](Game.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [RealEstate](RealEstate.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (13):** [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CityNeeds](CityNeeds.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [Game](Game.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [RealEstate](RealEstate.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 

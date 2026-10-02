@@ -979,6 +979,172 @@ public class DebtManager {
         return total;
     }
 
+    /* -----------------------------------------------------------------------
+       WHAT THE FINANCES TAB DRAWS THE DEBT FROM (0.7.32)
+
+       The sums the tab used to make for itself - the coupon, each kind's
+       principal, the ladder's years, the next twelve months, the rate a
+       piece is valued at - here, so the screen prints the model's figures
+       and a harness can hold them (ForeignDebtCheck, section 9). Pure reads.
+       ----------------------------------------------------------------------- */
+
+    /**
+     * What the city is charged in coupon a month, every piece together, in
+     * local money: the bonds' own getMonthlyInterestExpense(), summed - the
+     * Finances tab's COUPON. A note charges none (its cost was its discount),
+     * so a city owing only notes reads nothing here; getNotePrincipal() is
+     * what pays at maturity instead.
+     */
+    public double getMonthlyCoupon() {
+        double total = 0;
+        for (Debt d : debts) total += d.getMonthlyInterestExpense();
+        return total;
+    }
+
+    /** Principal outstanding of one kind of paper, by Debt.getType() - "NOTE", "SERIAL" or "TERM" - at home and abroad, in local money. */
+    public double getPrincipalOf(String type) {
+        double total = 0;
+        for (Debt d : debts) if (d.getType().equals(type)) total += d.getOustandingPrincipal();
+        return total;
+    }
+
+    /**
+     * Everything the city's paper asks of it over the next `months` months,
+     * coupons and principal together, in local money - the first `months` of
+     * every piece's remainingCashFlows(), the ladder's own read: the Debt
+     * service page's twelve months (the Finances spec's D6).
+     */
+    public double dueWithin(int months) {
+        double total = 0;
+        for (Debt d : debts) {
+            double[] flows = d.remainingCashFlows();
+            for (int i = 0; i < Math.min(months, flows.length); i++) total += flows[i];
+        }
+        return total;
+    }
+
+    /** The rate a piece is valued at today: the city's curve for its own paper, the world's for a dollar piece, at the months it has left - marketValue()'s, so a screen quoting its yield or its price of par reads the price a buyback pays. */
+    public double valuationRate(Debt paper) {
+        if (paper == null) return getRate();
+        return paper.isForeign() ? foreignCurveRate(paper.getRemainingMonths())
+                                 : curveRate(paper.getRemainingMonths());
+    }
+
+    /** What buying a piece back today would save against its face: its principal less marketValue() - below nothing when it costs a premium to retire (the Finances tab's book, which subtracted them itself). */
+    public double underFace(Debt paper) {
+        return paper == null ? 0 : paper.getOustandingPrincipal() - marketValue(paper);
+    }
+
+    /** How many calendar years the ladder draws before it totals the rest as "later". */
+    public static final int LADDER_YEARS = 12;
+
+    /** The ladder's instruments, in its order: what Debt.getType() calls each, short to long. */
+    public static final String[] LADDER_KINDS = {"NOTE", "SERIAL", "TERM"};
+
+    /** A kind's place in LADDER_KINDS: a note 0, a serial 1, anything else - a term loan - 2. */
+    public static int ladderKind(String type) {
+        return "NOTE".equals(type) ? 0 : "SERIAL".equals(type) ? 1 : 2;
+    }
+
+    /**
+     * One rung of the ladder: a calendar year of payments, from its first
+     * month on the ladder to its last - a whole year, but the first, which
+     * starts next month, and the one the last payment falls in, which ends
+     * with it; both -1 for a year after that; and "later" from the January
+     * after the twelfth to the last payment: what falls due in it by kind,
+     * coupons and principal together, and how much of each kind is owed in
+     * dollars; and a proposed issue's payments in it, when the ladder was
+     * asked with one.
+     */
+    public record Rung(int fromYear, int toYear, int fromMonth, int toMonth, double[] byKind,
+                       double[] abroadByKind, double proposed) {
+        /** What the city's paper asks in it. */
+        public double owed() { return byKind[0] + byKind[1] + byKind[2]; }
+        /** ...of which in dollars. */
+        public double abroad() { return abroadByKind[0] + abroadByKind[1] + abroadByKind[2]; }
+        /** ...and with the proposed issue's. */
+        public double total() { return owed() + proposed; }
+    }
+
+    /**
+     * The ladder: LADDER_YEARS calendar years from next month's, and what
+     * falls after them as one "later" rung (null when nothing does); which
+     * of the years is the heaviest (-1 with nothing owed in them) - never
+     * "later", which is many years summed; and the totals.
+     */
+    public record Ladder(List<Rung> years, Rung later, int heaviest, double owed, double proposed) {
+        /** What is owed and what the proposed issue would ask, together. */
+        public double total() { return owed + proposed; }
+    }
+
+    /** The ladder as the city owes it, struck in `month`. */
+    public Ladder ladder(int month) { return ladder(month, null); }
+
+    /**
+     * WHEN IT FALLS DUE, BY THE CALENDAR YEAR IT IS PAID IN (0.7.32, the
+     * Finances spec's D4). Every piece's remainingCashFlows() - payment i in
+     * month + 1 + i, so the maturity lands in the year NEXT DUE dates it -
+     * binned by CityCalendar.yearOf() of its month. The tab binned twelve
+     * months at a time from next month and labelled the bin with this
+     * month's year, so a payment in January 2210 stood under "2209" (its
+     * B2); and it called the thirteenth bin "year 13 from now" and weighed
+     * it against single years, raising a red alert at the many years it
+     * summed (B1).
+     *
+     * @param extra a proposed issue's payments in local money, index i paid
+     *              in month + 1 + i as the pieces' are, or null
+     */
+    public Ladder ladder(int month, double[] extra) {
+        int first = CityCalendar.yearOf(month + 1);
+        int lastShown = first + LADDER_YEARS - 1;
+        int lastMonth = month;
+        for (Debt d : debts) lastMonth = Math.max(lastMonth, month + d.remainingCashFlows().length);
+        if (extra != null) lastMonth = Math.max(lastMonth, month + extra.length);
+        double[][] kind = new double[LADDER_YEARS + 1][3], abroad = new double[LADDER_YEARS + 1][3];
+        double[] proposed = new double[LADDER_YEARS + 1];
+        int[] from = new int[LADDER_YEARS + 1], to = new int[LADDER_YEARS + 1];
+        java.util.Arrays.fill(from, Integer.MAX_VALUE);
+        java.util.Arrays.fill(to, Integer.MIN_VALUE);
+        for (int m = month + 1; m <= lastMonth; m++) {
+            int slot = Math.min(LADDER_YEARS, CityCalendar.yearOf(m) - first);
+            from[slot] = Math.min(from[slot], m);
+            to[slot] = Math.max(to[slot], m);
+        }
+        double owed = 0, ask = 0;
+        for (Debt d : debts) {
+            int k = ladderKind(d.getType());
+            double[] flows = d.remainingCashFlows();
+            for (int i = 0; i < flows.length; i++) {
+                int slot = Math.min(LADDER_YEARS, CityCalendar.yearOf(month + 1 + i) - first);
+                kind[slot][k] += flows[i];
+                if (d.isForeign()) abroad[slot][k] += flows[i];
+                owed += flows[i];
+            }
+        }
+        if (extra != null) {
+            for (int i = 0; i < extra.length; i++) {
+                proposed[Math.min(LADDER_YEARS, CityCalendar.yearOf(month + 1 + i) - first)] += extra[i];
+                ask += extra[i];
+            }
+        }
+        List<Rung> years = new ArrayList<>();
+        int heaviest = -1;
+        double most = 0;
+        for (int y = 0; y < LADDER_YEARS; y++) {
+            int fromMonth = from[y] == Integer.MAX_VALUE ? -1 : from[y];
+            int toMonth = to[y] == Integer.MIN_VALUE ? -1 : to[y];
+            Rung r = new Rung(first + y, first + y, fromMonth, toMonth, kind[y], abroad[y], proposed[y]);
+            years.add(r);
+            if (r.owed() > most) { most = r.owed(); heaviest = y; }
+        }
+        Rung later = null;
+        if (to[LADDER_YEARS] != Integer.MIN_VALUE) {
+            later = new Rung(lastShown + 1, CityCalendar.yearOf(to[LADDER_YEARS]), from[LADDER_YEARS],
+                    to[LADDER_YEARS], kind[LADDER_YEARS], abroad[LADDER_YEARS], proposed[LADDER_YEARS]);
+        }
+        return new Ladder(years, later, heaviest, owed, ask);
+    }
+
     /**
      * Everything the city owes, including what it is overdrawn and what it
      * owes the central bank in advances.
@@ -1182,6 +1348,29 @@ public class DebtManager {
         double held = centralBankShareOfTerm();
         if (held <= 0) return 0;
         return premium * Math.min(1, held / CentralBank.FULL_COMPRESSION_SHARE) * CentralBank.QE_COMPRESSION;
+    }
+
+    /**
+     * ...at a share of the term paper of the caller's (0.7.36): what holding
+     * `share` would take off the premium at this many months, compression()'s
+     * rule with the share given - the Policy tab's holdings dial, whose
+     * thirty-year rate "once the book has moved" is the premium less this at
+     * the dial's target. Pure.
+     */
+    public double compressionAt(double share, int months) {
+        double premium = termPremium(months);
+        if (premium <= 0 || share <= 0) return 0;
+        return premium * Math.min(1, share / CentralBank.FULL_COMPRESSION_SHARE) * CentralBank.QE_COMPRESSION;
+    }
+
+    /**
+     * The curve at a maturity with the central bank holding `share` of the
+     * term paper (0.7.36): curveRate()'s credit judgement and premium, less
+     * compressionAt() that share - the thirty-year rate "once the book has
+     * moved" to a holdings dial's target, on the Policy tab. Pure.
+     */
+    public double curveRateAtShare(int months, double share) {
+        return priceAt(getPricedDebt(), 0) + (months <= 12 ? 0 : termPremium(months) - compressionAt(share, months));
     }
 
     /** The premium less the compression: the curve's shape over the short end. */
@@ -1403,6 +1592,12 @@ public class DebtManager {
     public double revenueStress() {
         return MAX_SPREAD_PER_MEASURE > 0 ? revenueSpread() / MAX_SPREAD_PER_MEASURE : 0;
     }
+
+    /** What the city's own rate is over the world's (0.7.36): the short end against WORLD_BASE_RATE - the difference hot money follows. */
+    public double overTheWorld() { return currentRate - WORLD_BASE_RATE; }
+
+    /** ...at a policy rate of the caller's: rateAtPolicy() against the world's. Pure. */
+    public double overTheWorldAt(double policy) { return rateAtPolicy(policy) - WORLD_BASE_RATE; }
 
     /** The most either measure can add on its own. */
     public static double maxSpreadPerMeasure() { return MAX_SPREAD_PER_MEASURE; }

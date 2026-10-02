@@ -1,6 +1,6 @@
-# PopulationCohorts.java - 561 lines · 32 methods · 2 constants · model
+# PopulationCohorts.java - 604 lines · 35 methods · 2 constants · model
 
-`ham/citybuildersim/PopulationCohorts.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCohorts.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The city's age pyramid, and since the switch, the city's POPULATION.
 > 
@@ -40,22 +40,22 @@
 
 **Uses:** [AgeBand](AgeBand.md) (37)
 
-**Used by (22):** [CareType](CareType.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (26):** [BuildAdvice](BuildAdvice.md), [CareType](CareType.md), [CityNeeds](CityNeeds.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 78 | · reading |
-| 129 | · ageing |
-| 420 | · saving |
+| 92 | · reading |
+| 149 | · ageing |
+| 446 | · saving |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 59 | `PopulationCohorts.BIRTHS_PER_1000_PER_YEAR` | `15.0` | Births per thousand residents per year. |
-| 462 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
+| 488 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
 
 ## Fields (state)
 
@@ -70,57 +70,63 @@
 | 70 | `private final double[] lastIllnessDeathsByBand` | ...of which sickness: the share of each band's deaths its extra rate carried. |
 | 72 | `private final double[] lastDyingByBand` | ...and of which the band's mortality at all, as opposed to ageing out of the top at 120. |
 | 74 | `private final double[] lastKilledByBand` | ...and of which violence: the killed. |
+| 86 | `private double lastKilled` | THE MONTH'S DEAD BY CAUSE, SUMMED AND SAVED (0.7.27). |
+| 87 | `private double lastDeathsOfAge` |  |
+| 88 | `private double lastAgedOut` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 522 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
-| 76 | 1 | `public PopulationCohorts()` |  |
+| 40 | 565 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
+| 90 | 1 | `public PopulationCohorts()` |  |
 
-### reading (lines 78-128)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 80 | 1 | `public double get(AgeBand b)` |  |
-| 81 | 1 | `public double getLastBirths()` |  |
-| 82 | 1 | `public double getLastDeaths()` |  |
-| 83 | 1 | `public double getLastMigration()` |  |
-| 84 | 1 | `public double getPromoted(AgeBand b)` |  |
-| 85 | 1 | `public double getDeaths(AgeBand b)` |  |
-| 87 | 1 | `public double getIllnessDeaths(AgeBand b)` | Last month's deaths in a band that sickness caused. |
-| 88 | 1 | `public double[] getIllnessDeaths()` |  |
-| 90 | 1 | `public double getDying(AgeBand b)` | Last month's deaths in a band from its mortality - everything but the seniors who aged out at 120. |
-| 92 | 1 | `public double getKilled(AgeBand b)` | Last month's deaths in a band that were killings. |
-| 93 | 1 | `public double[] getKilled()` |  |
-| 95 | 5 | `public double total()` |  |
-| 102 | 4 | `public double share(AgeBand b)` | Share of the city in this band, 0-1. |
-| 108 | 7 | `public double workingAge()` | Everyone of working age. |
-| 123 | 5 | `public double dependencyRatio()` | Children and seniors per hundred working-age adults. |
-
-### ageing (lines 129-419)
+### reading (lines 92-148)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 144 | 3 | `public void advanceMonth()` | One month of ageing. |
-| 167 | 3 | `public void advanceMonth(double[] mortalityFactor)` | The same month, with healthcare's hand on the death rate. |
-| 180 | 3 | `public void advanceMonth(double[] mortalityFactor, double birthFactor)` | The same month, with healthcare's hand on BOTH ends of a life. |
-| 197 | 3 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double birthFactor)` | The same month, with the people who stayed sick dying as well. |
-| 210 | 87 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double birthFactor)` | ...and the people violence killed (2026-09-11). |
-| 314 | 19 | `public void migrate(double netArrivals)` | People moving in, or out. |
-| 342 | 8 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
-| 379 | 7 | `private void seedFrom(int livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
-| 398 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
-| 405 | 14 | `private static double[] equilibriumWeights()` |  |
+| 94 | 1 | `public double get(AgeBand b)` |  |
+| 95 | 1 | `public double getLastBirths()` |  |
+| 96 | 1 | `public double getLastDeaths()` |  |
+| 97 | 1 | `public double getLastMigration()` |  |
+| 98 | 1 | `public double getPromoted(AgeBand b)` |  |
+| 99 | 1 | `public double getDeaths(AgeBand b)` |  |
+| 101 | 1 | `public double getIllnessDeaths(AgeBand b)` | Last month's deaths in a band that sickness caused. |
+| 102 | 1 | `public double[] getIllnessDeaths()` |  |
+| 104 | 1 | `public double getDying(AgeBand b)` | Last month's deaths in a band from its mortality - everything but the seniors who aged out at 120. |
+| 106 | 1 | `public double getKilled(AgeBand b)` | Last month's deaths in a band that were killings. |
+| 107 | 1 | `public double[] getKilled()` |  |
+| 109 | 1 | `public double getLastKilled()` | Last month's killings, every band together - saved, unlike the bands (0.7.27). |
+| 111 | 1 | `public double getLastDeathsOfAge()` | Last month's deaths of the bands' own mortality: the dying, less illness and violence (0.7.27). |
+| 113 | 1 | `public double getLastAgedOut()` | Last month's deaths out of the top of the pyramid at 120: the deaths that are not dying (0.7.27). |
+| 115 | 5 | `public double total()` |  |
+| 122 | 4 | `public double share(AgeBand b)` | Share of the city in this band, 0-1. |
+| 128 | 7 | `public double workingAge()` | Everyone of working age. |
+| 143 | 5 | `public double dependencyRatio()` | Children and seniors per hundred working-age adults. |
 
-### saving (lines 420-561)
+### ageing (lines 149-445)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 465 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
-| 472 | 8 | `public double[] toSaveArray()` |  |
-| 482 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
-| 497 | 46 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
-| 545 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 551 | 10 | `public void reset()` |  |
+| 164 | 3 | `public void advanceMonth()` | One month of ageing. |
+| 187 | 3 | `public void advanceMonth(double[] mortalityFactor)` | The same month, with healthcare's hand on the death rate. |
+| 200 | 3 | `public void advanceMonth(double[] mortalityFactor, double birthFactor)` | The same month, with healthcare's hand on BOTH ends of a life. |
+| 217 | 3 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double birthFactor)` | The same month, with the people who stayed sick dying as well. |
+| 230 | 93 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double birthFactor)` | ...and the people violence killed (2026-09-11). |
+| 340 | 19 | `public void migrate(double netArrivals)` | People moving in, or out. |
+| 368 | 8 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
+| 405 | 7 | `private void seedFrom(int livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
+| 424 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
+| 431 | 14 | `private static double[] equilibriumWeights()` |  |
+
+### saving (lines 446-604)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 491 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
+| 498 | 12 | `public double[] toSaveArray()` |  |
+| 512 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
+| 528 | 55 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
+| 585 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 591 | 13 | `public void reset()` |  |
 

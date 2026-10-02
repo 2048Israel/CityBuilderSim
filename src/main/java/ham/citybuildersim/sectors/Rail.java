@@ -251,6 +251,26 @@ public final class Rail extends Sector {
     private double rCapacity, rTightness, rFx = 1, rAllowed;
 
     /**
+     * The part of the month's lorry bill that went abroad with the cargo
+     * (0.7.29): what the lorries were paid for the tonnes the railway did not
+     * carry, at the shares the month was billed at. With rHaulage and the
+     * rest it splits the lorry bill three ways - see getPaidAbroad().
+     */
+    private double rPaidAbroad;
+
+    /**
+     * Whether the two above are this railway's own figures (0.7.29). FALSE
+     * AFTER LOADING A SAVE FROM BEFORE THEY WERE KEPT, until its first month
+     * is struck: what it was allowed cannot be worked back from what the save
+     * holds, and what went abroad only when nothing was billed at home (then
+     * it was the whole lorry bill). The getters read NaN meanwhile - "known
+     * after a month" on the screen, where it read $0 - and the save leaves
+     * the keys out rather than writing a guess, which the next load would
+     * take for a figure.
+     */
+    private boolean allowedKnown = true, abroadKnown = true;
+
+    /**
      * Whether this railway's fleet is a figure it actually knows.
      *
      * FALSE IN A SAVE FROM BEFORE TRAINS EXISTED, and that is the whole reason
@@ -321,7 +341,7 @@ public final class Rail extends Sector {
 
         /* ---- 1. what crossed the boundary, and what a lorry charges for it ---- */
 
-        double haulage = 0;
+        double haulage = 0, abroad = 0;
         for (Sector s : sectors.all()) {
             if (s == this) continue;
             double bill = 0;
@@ -335,6 +355,8 @@ public final class Rail extends Sector {
                 double lorry = units * g.baseFreight() * fx;
                 truck[i] += lorry;
                 bill += lorry * carried[i] * quote;
+                // ...and what still went by lorry, paid abroad (0.7.29): read, never billed.
+                abroad += lorry * (1 - carried[i]);
             }
             if (bill > 0) {
                 s.billForService(key(), "Haulage", bill);
@@ -354,6 +376,8 @@ public final class Rail extends Sector {
         rHaulage = haulage;
         rFuel = fuel;
         rHauled = moved;
+        rPaidAbroad = abroad;
+        abroadKnown = allowedKnown = true;
 
         /* ---- 3. what it can carry next month, bulk first ---- */
 
@@ -487,6 +511,9 @@ public final class Rail extends Sector {
     /** ...and how many the track standing would need. */
     public double setsNeeded() { return trackTonnes() / TONNES_PER_SET; }
 
+    /** What the fleet wears out a month, in sets: the replacements it asks for for ever (0.7.29, the railway page's line; haul()'s wear). */
+    public double replacementSets() { return fleet() / SET_LIFE_MONTHS; }
+
     /**
      * What it asks the market for: the gap between the fleet it has and the
      * fleet its track needs.
@@ -523,7 +550,22 @@ public final class Rail extends Sector {
      * and because "billed less than it is allowed" is exactly what a network
      * too big for its city looks like from the outside.
      */
-    public double getAllowedRevenue()   { return rAllowed; }
+    public double getAllowedRevenue()   { return allowedKnown ? rAllowed : Double.NaN; }
+
+    /**
+     * THE MONTH'S LORRY BILL, THREE WAYS (0.7.29). getTruckBill() is what the
+     * month's cross-border tonnes would have cost entirely by lorry, and it is
+     * exactly three things: what the railway billed for the part it carried,
+     * at home (getHaulageBilled()); what the lorries were paid for the part
+     * it did not, abroad (this); and what the city's shippers kept - the
+     * railway's quote under the lorry rate, on what it carried (getKept()).
+     * The Freight page printed truck bill less billed as "paid abroad", which
+     * with the railway carrying everything was the saving and not a payment.
+     */
+    public double getPaidAbroad()       { return abroadKnown ? rPaidAbroad : Double.NaN; }
+
+    /** ...and what the shippers kept: the lorry bill less what was billed at home and what was paid abroad, never below zero (NaN while the split is not known). */
+    public double getKept()             { return abroadKnown ? Math.max(0, rTruckBill - rHaulage - rPaidAbroad) : Double.NaN; }
 
     /** The multiple a network that cannot reach the city's freight can charge on top. */
     public double getScarcity() { return 1 + rTightness * (MAX_SCARCITY_MULTIPLE - 1); }
@@ -701,7 +743,10 @@ public final class Rail extends Sector {
     /* ------------------------------------------------------------ the screen */
 
     @Override
-    public List<Sector.Line> operations(Game game) {
+    public boolean hasPlantBlock() { return false; }
+
+    @Override
+    public List<Sector.Line> ownLines(Game game) {
         List<Sector.Line> lines = new ArrayList<>();
         Formats f = Formats.INSTANCE;
 
@@ -759,6 +804,10 @@ public final class Rail extends Sector {
         extras.put("truckBill", rTruckBill);
         extras.put("haulage", rHaulage);
         extras.put("fuel", rFuel);
+        // The screens' two (0.7.29), only when they are figures (see allowedKnown): an
+        // older save has neither, and loads with them unknown, so no format bump.
+        if (allowedKnown) extras.put("allowed", rAllowed);
+        if (abroadKnown) extras.put("paidAbroad", rPaidAbroad);
     }
 
     @Override
@@ -776,6 +825,11 @@ public final class Rail extends Sector {
         rTruckBill = extras.getOrDefault("truckBill", 0.0);
         rHaulage = extras.getOrDefault("haulage", 0.0);
         rFuel = extras.getOrDefault("fuel", 0.0);
+        rAllowed = extras.getOrDefault("allowed", 0.0);
+        allowedKnown = extras.containsKey("allowed");
+        // Nothing billed at home: nothing was carried, so the whole lorry bill went abroad.
+        rPaidAbroad = extras.getOrDefault("paidAbroad", rHaulage <= 0 ? rTruckBill : 0.0);
+        abroadKnown = extras.containsKey("paidAbroad") || rHaulage <= 0;
     }
 
     @Override
@@ -784,6 +838,8 @@ public final class Rail extends Sector {
         fleetKnown = false;
         java.util.Arrays.fill(carried, 0);
         rTonnes = rHauled = rCapacity = rTightness = rTruckBill = rHaulage = rFuel = 0;
+        rAllowed = rPaidAbroad = 0;
+        allowedKnown = abroadKnown = true;
     }
 
     /**
@@ -799,5 +855,7 @@ public final class Rail extends Sector {
         rTruckBill *= scale;
         rHaulage *= scale;
         rFuel *= scale;
+        rAllowed *= scale;
+        rPaidAbroad *= scale;
     }
 }

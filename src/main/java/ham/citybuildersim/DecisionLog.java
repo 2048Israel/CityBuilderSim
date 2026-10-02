@@ -44,8 +44,9 @@ import java.util.function.IntSupplier;
  * says "held as reserves").
  *
  * NOTHING HERE PRINTS. Every println is the game's log and the playtest's
- * report reads the log; a decision is in this list and in the save, and on
- * the chart (ChartModel.flags()), and nowhere else.
+ * report reads the log; a decision is in this list and in the save, on
+ * the charts (ChartModel.flags()) and in Policy's RECENT DECISIONS and City
+ * History's lists, and nowhere else.
  */
 public final class DecisionLog {
 

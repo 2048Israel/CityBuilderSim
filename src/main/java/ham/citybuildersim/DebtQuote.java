@@ -68,7 +68,9 @@ public record DebtQuote(
         if (moved < 0.005) {
             return String.format("Market rate: %.2f%% (unchanged by this)", marketRate * 100);
         }
-        return String.format("Market rate: %.2f%% -> %.2f%%  (+%.2f pts for asking this much)",
+        // An arrow, not "->" (0.7.32, the Finances spec's B11): the line is
+        // printed on the offer cards of the land office, Build and Finances.
+        return String.format("Market rate: %.2f%% \u2192 %.2f%%  (+%.2f pts for asking this much)",
                 rateBefore * 100, marketRate * 100, moved);
     }
 
@@ -139,6 +141,50 @@ public record DebtQuote(
     /** True if the city is receiving nothing worth booking. */
     public boolean isEmpty() {
         return requested <= 0 || faceValue <= 0;
+    }
+
+    /**
+     * Every payment this paper would ask, month by month, index i paid i + 1
+     * months after it is issued, times `toLocal` (1 for the city's own paper;
+     * the exchange rate, for a dollar quote's figures into local money):
+     * a note's face at its end; a serial's coupon on what is still out and a
+     * slice of the face each anniversary; a term loan's coupon every month and
+     * its face at the end. The Finances tab's own (its proposedSchedule) until 0.7.32,
+     * moved here so the ladder it draws with the issue in it is the model's:
+     * built from the quote rather than from an instrument, because the
+     * instrument does not exist yet and constructing one to draw a picture is
+     * how a reporting layer ends up changing the thing it reports.
+     */
+    public double[] schedule(double toLocal) {
+        int months = "Note".equals(instrument) ? duration : duration * 12;
+        if (months <= 0 || isEmpty()) return new double[0];
+        double[] flows = new double[months];
+        switch (instrument) {
+            case "Note" -> flows[months - 1] = faceValue;
+            case "Serial" -> {
+                // A slice of principal on each anniversary, and a coupon on the
+                // declining balance - which is why the coupon falls rather
+                // than sitting flat.
+                int slices = Math.max(1, duration);
+                double perSlice = faceValue / slices;
+                double outstanding = faceValue;
+                double monthlyRate = marketRate / 12;
+                for (int m = 0; m < months; m++) {
+                    flows[m] = outstanding * monthlyRate;
+                    if ((m + 1) % 12 == 0) {
+                        double due = Math.min(perSlice, outstanding);
+                        flows[m] += due;
+                        outstanding -= due;
+                    }
+                }
+            }
+            default -> {
+                java.util.Arrays.fill(flows, monthlyInterest);
+                flows[months - 1] += faceValue;
+            }
+        }
+        if (toLocal != 1) for (int m = 0; m < months; m++) flows[m] *= toLocal;
+        return flows;
     }
 
     /**

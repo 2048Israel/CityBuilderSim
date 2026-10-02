@@ -14,7 +14,10 @@ package ham.citybuildersim;
  * sections 12-13); and, since 0.7.13, the office in square kilometres (14),
  * the funding page a city short of the price is offered, converting and
  * from the vault, with the window abroad open and shut (15), and the next N
- * plots bought at once ending exactly as N bought one by one (16).
+ * plots bought at once ending exactly as N bought one by one (16); and,
+ * since 0.7.26, the three figures the redrawn office takes from the model:
+ * the going rate, which it used to work out itself, the GROUND row's
+ * verdict and the receipt in the screens' money (17).
  */
 public class LandCheck {
 
@@ -639,6 +642,7 @@ public class LandCheck {
         inSquareKilometres();
         whenShort();
         severalAtOnce();
+        theOfficesFigures();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1172,5 +1176,107 @@ public class LandCheck {
         check("...leaving what the solver left over", g.getCash(), quote.cashReceived() - gap);
         quietly(g::toggleNextMonth);
         assertTrue("...and the month after closes its audit", Math.abs(g.getLastMoneyAudit().relative()) < 1e-9);
+    }
+
+    /* ==================================================================
+       17. THE OFFICE'S OWN FIGURES, IN THE MODEL (0.7.26)
+
+       Jerus, on the screens not yet redone: "the others are still full of
+       text and the design could be more intuitive and fun". The land office
+       redrawn takes three things from the model: the going rate each plot
+       is judged against - the median the screen took of the listing,
+       LandMarket.goingUsdPerSqFt() now; the GROUND row its ground-free cell
+       is coloured by - CityNeeds.ground(), the row NEEDS YOU lists, which
+       Build's LAND FREE and the left panel read too, so none of them colours
+       the ground used; and the receipt, which the model always wrote but in
+       its own thousands ("US$101,800k"), in the screens' money now
+       (Formats.amount() and rate()). Hand-made listings and a city's free
+       ground set by hand cause each case.
+       ================================================================== */
+    static void theOfficesFigures() {
+        System.out.println("\n--- the going rate is the listing's median, a square foot ---");
+
+        LandMarket market = new LandMarket();
+        market.update(LandManager.STARTING_SQ_FT, 0, 0);
+        double marker = market.getListingState()[0];
+        // Nine plots of different sizes, priced so the median a square foot
+        // (US$5) is neither the mean (US$14) nor the median of the prices.
+        double[] perSqFt = { .007, .001, .090, .003, .005, .002, .008, .004, .006 };
+        double[] sizes   = { 200_000, 9_000_000, 400_000, 1_000_000, 300_000, 7_000_000, 500_000,
+                             2_000_000, 600_000 };
+        market.restoreListingState(handMade(marker, perSqFt, sizes, 9));
+        assertTrue("fixture: the nine hand-made plots are listed", market.getListing().size() == 9);
+        check("the going rate is the median of the plots' dollars a square foot",
+                market.goingUsdPerSqFt(), .005);
+        double mean = 0;
+        for (double r : perSqFt) mean += r / perSqFt.length;
+        assertTrue("...not their mean, which the one dear plot drags", Math.abs(market.goingUsdPerSqFt() - mean) > 1e-3);
+        double[] prices = new double[9];
+        for (int i = 0; i < 9; i++) prices[i] = perSqFt[i] * sizes[i];
+        java.util.Arrays.sort(prices);
+        double plotAtMedianPrice = 0;
+        for (LandParcel p : market.getListing()) if (p.getPriceUsd() == prices[4]) plotAtMedianPrice = p.getUsdPerSqFt();
+        assertTrue("...nor the dollars a square foot of the plot at the median price",
+                Math.abs(market.goingUsdPerSqFt() - plotAtMedianPrice) > 1e-6);
+
+        market.restoreListingState(handMade(marker, new double[] { .001, .002, .003, .004, .005, .006, .007, .090 },
+                new double[] { 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6 }, 8));
+        check("with an even count, the upper of the two middle prices", market.goingUsdPerSqFt(), .005);
+        market.restoreListingState(handMade(marker, new double[0], new double[0], 0));
+        check("with nothing listed, none", market.goingUsdPerSqFt(), 0);
+
+        System.out.println("\n--- the ground's verdict is NEEDS YOU's GROUND row, on free ground alone ---");
+
+        Game g = dollarCity("landcheck-ground");
+        LandManager land = g.getLandManager();
+        double owned = land.getOwnedSqFt();
+        double allocated = land.getAllocatedSqFt();
+        double[] frees = { 0, 50_000, CityNeeds.GROUND_YELLOW, CityNeeds.GROUND_YELLOW + 1_000, owned * .05 };
+        int[] levels = { 2, 1, 1, 0, 0 };
+        for (int i = 0; i < frees.length; i++) {
+            land.setAllocatedSqFt(owned - frees[i]);
+            CityNeeds.Need alone = CityNeeds.ground(g, CityNeeds.PLAIN);
+            CityNeeds.Need listed = null;
+            for (CityNeeds.Need n : CityNeeds.measure(g, CityNeeds.PLAIN)) {
+                if (n.kind() == CityNeeds.Kind.GROUND) listed = n;
+            }
+            System.out.printf("   %,.0f sq ft free, %.1f%% used: %s%n", frees[i], land.getUtilisation() * 100,
+                    alone.reading());
+            check("the GROUND row's level is its free ground's", alone.level(), levels[i]);
+            assertTrue("...is the row measure() lists, word for word",
+                    listed != null && listed.level() == alone.level() && listed.reading().equals(alone.reading()));
+        }
+        assertTrue("fixture: the last is over 90% used, and still fine", land.getUtilisation() > .9);
+        land.setAllocatedSqFt(allocated);
+
+        System.out.println("\n--- the receipt writes its money as the office does ---");
+
+        Game buyer = dollarCity("landcheck-receipt");
+        LandParcel plot = buyer.landShelf().get(0);
+        double rate = buyer.getForeignAccounts().getRate();
+        String here = buyer.getCurrency().qualifiedSymbol();
+        assertTrue("fixture: the plot is bought", buyer.buyLandParcel(plot.getId()));
+        String receipt = buyer.getLastLandReceipt();
+        System.out.println("   " + receipt);
+        assertTrue("the receipt prices the plot as the screens do",
+                receipt.contains(" for " + Formats.INSTANCE.amount(plot.getPriceUsd()).replace("$", "US$") + ","));
+        assertTrue("...and the cash it converted",
+                receipt.contains(Formats.INSTANCE.amount(plot.localPrice(rate)).replace("$", here) + " of cash"));
+        assertTrue("...at the rate as the screens write it",
+                receipt.contains(here + Formats.INSTANCE.rate(rate) + " to the dollar"));
+        assertTrue("...and no thousands with a k stuck on", !receipt.matches(".*[0-9]k[ ,.].*"));
+    }
+
+    /** A dollar listing of `n` plots by hand: each its size and its dollars a square foot, ids from 1, no ore. */
+    static double[] handMade(double marker, double[] perSqFt, double[] sizes, int n) {
+        double[] state = new double[2 + n * 5];
+        state[0] = marker;
+        state[1] = n + 1;
+        for (int i = 0; i < n; i++) {
+            state[2 + i * 5] = i + 1;
+            state[3 + i * 5] = sizes[i];
+            state[4 + i * 5] = perSqFt[i] * sizes[i];
+        }
+        return state;
     }
 }

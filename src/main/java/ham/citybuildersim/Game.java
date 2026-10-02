@@ -1111,8 +1111,19 @@ public class Game {
                 : 0;
     }
 
+    /**
+     * EARNED (0.7.31's name for it): the tax take less the running programmes,
+     * plus the utilities' net, at today's dials - the header's "+$X earned a
+     * month". getEarnedToBudget() walks it to the budget's balance.
+     *
+     * READS, AND WRITES NOTHING (0.7.31, the Government spec's B8): it summed
+     * through getTotalIncome(), whose getTaxIncome() strikes four of the
+     * month's lines as it goes, so every draw of the header rewrote them.
+     * getTaxIncomeNow() is the same sum, struck nowhere.
+     */
     public double getIncome(){
-        double income = economyManager.getTotalIncome()+servicesManager.getServiceNetIncome();
+        double income = economyManager.getTaxIncomeNow() - economyManager.getExpenses()
+                + servicesManager.getServiceNetIncome();
         return income;
     }
     /** Read-only passthrough for the city overview panel. */
@@ -1237,27 +1248,44 @@ public class Game {
             treasuryPays(TreasuryLine.LAND, convertedLocal);
         }
         if (paidFromVault > 0) {
-            treasuryJournal.record(String.format("Bought land with US$%,.0fk of reserves",
-                    paidFromVault), paidFromVault * rate);
+            treasuryJournal.record(String.format("Bought land with %s of reserves",
+                    usdWords(paidFromVault)), paidFromVault * rate);
         }
         // The plot's size in square kilometres since 0.7.13, as the office shows it.
         String area = LandManager.km2Words(parcel.getSizeSqFt());
         String here = getCurrency().qualifiedSymbol();
+        /*
+         * IN THE SCREENS' MONEY SINCE 0.7.26 (Formats.amount(), rate()): it
+         * printed the model's thousands with a "k" stuck on and every digit
+         * kept - "for US$101,800k, converting D$72,000k" - beside an office
+         * whose cards said "US$101.8M" and "D$72.0M" for the same plot.
+         */
         if (paidFromVault <= 0) {
-            lastLandReceipt = String.format("Bought %s for US$%,.0fk, converting %s%,.0fk of cash at %s%.4f"
-                    + " to the dollar.", area, usd, here, convertedLocal,
-                    here, rate);
+            lastLandReceipt = String.format("Bought %s for %s, converting %s of cash at %s%s"
+                    + " to the dollar.", area, usdWords(usd), localWords(here, convertedLocal),
+                    here, Formats.INSTANCE.rate(rate));
         } else if (converted <= 0) {
-            lastLandReceipt = String.format("Bought %s for US$%,.0fk out of the vault, which holds"
-                    + " US$%,.0fk now. No cash moved.", area, usd, foreign.getReservesUsd());
+            lastLandReceipt = String.format("Bought %s for %s out of the vault, which holds"
+                    + " %s now. No cash moved.", area, usdWords(usd), usdWords(foreign.getReservesUsd()));
         } else {
-            lastLandReceipt = String.format("Bought %s for US$%,.0fk. The vault held only US$%,.0fk,"
-                    + " so that went and the other US$%,.0fk was converted from %s%,.0fk of cash.",
-                    area, usd, paidFromVault, converted, here, convertedLocal);
+            lastLandReceipt = String.format("Bought %s for %s. The vault held only %s,"
+                    + " so that went and the other %s was converted from %s of cash.",
+                    area, usdWords(usd), usdWords(paidFromVault), usdWords(converted),
+                    localWords(here, convertedLocal));
         }
         lastLandReceiptMonth = month;
         GameLog.note(lastLandReceipt);
         return true;
+    }
+
+    /** Thousands of US dollars as the screens write them: "US$101.8M" (Formats.amount() with the dollar's mark). */
+    private static String usdWords(double thousands) {
+        return Formats.INSTANCE.amount(thousands).replace("$", Currency.FOREIGN_SYMBOL);
+    }
+
+    /** ...and thousands of local money, with its own mark: "D$72.0M". */
+    private static String localWords(String here, double thousands) {
+        return Formats.INSTANCE.amount(thousands).replace("$", here);
     }
 
     /**
@@ -1273,7 +1301,7 @@ public class Game {
         return Math.max(0, cash) + fromVault * foreign.getRate();
     }
 
-    /** Whether buyLandParcel() would buy this parcel today, paid the way the toggle says - what the land office colours a plot's tile by; since 0.7.13 its button asks landNeedsFunding() instead. */
+    /** Whether buyLandParcel() would buy this parcel today, paid the way the toggle says - what the land office colours a plot's price by (red when not, since 0.7.26 the only verdict on it); since 0.7.13 its button asks landNeedsFunding() instead. */
     public boolean canAffordParcel(LandParcel parcel) {
         return parcel != null && parcel.localPrice(foreign.getRate()) <= landPayable(parcel);
     }
@@ -1407,20 +1435,21 @@ public class Game {
             usd += parcel.getPriceUsd();
         }
         if (bought > 1) {
-            lastLandReceipt = String.format("Bought %d plots, %s in all, for US$%,.0fk. The last: %s",
-                    bought, LandManager.km2Words(sqFt), usd, lastLandReceipt);
-            GameLog.note(String.format("Bought %d plots, %s in all, for US$%,.0fk.",
-                    bought, LandManager.km2Words(sqFt), usd));
+            lastLandReceipt = String.format("Bought %d plots, %s in all, for %s. The last: %s",
+                    bought, LandManager.km2Words(sqFt), usdWords(usd), lastLandReceipt);
+            GameLog.note(String.format("Bought %d plots, %s in all, for %s.",
+                    bought, LandManager.km2Words(sqFt), usdWords(usd)));
         }
         return bought;
     }
 
     /**
      * What the last land purchase cost and how it was paid, in the player's
-     * words - the land office shows it under the toggle, and a short vault
-     * says here that the rest was converted. Not saved: it is the answer to
-     * the button just pressed, and a reloaded city has pressed nothing - and
-     * it is the month's, so once the month turns it is gone.
+     * words - the land office shows it under ON OFFER (under the toggle until
+     * 0.7.26), and a short vault says here that the rest was converted. Not
+     * saved: it is the answer to the button just pressed, and a reloaded
+     * city has pressed nothing - and it is the month's, so once the month
+     * turns it is gone.
      */
     private String lastLandReceipt = "";
     private int lastLandReceiptMonth;
@@ -2093,6 +2122,17 @@ public class Game {
     }
 
     /**
+     * The bank's profit tax under another policy (0.7.36, the Policy spec's
+     * M2): Bank.taxAt() at that policy's retail rate, bankProfitTaxRate()'s
+     * rule - so NEXT month's bill, the tax being in arrears. What the Policy
+     * tab's Profit page previews the bank's line with; it has no dial of its
+     * own (D12). Pure.
+     */
+    public double bankTaxUnder(TaxPolicy p) {
+        return bank.taxAt(p.effectiveProfitRate(getSectors().retail()));
+    }
+
+    /**
      * Each household cell's own bonds, by the cell's name (0.7.12 round 2).
      * A round-1 save held the households' bonds as one pool with a claim per
      * cell (the cells' Household.bonds, in the cell arrays): the pool is
@@ -2201,7 +2241,10 @@ public class Game {
          * while any is unpaid the common gets nothing (Bank.payPreferredDividends(),
          * Bank.dividendDue()). What the bank pays goes to the city's fund.
          */
-        fund.receivePreferredDividend(bank.payPreferredDividends());
+        double preferredPaid = bank.payPreferredDividends();
+        fund.receivePreferredDividend(preferredPaid);
+        // ...a row on the fund's record (0.7.39, FundLedger).
+        if (preferredPaid > 0) fund.getLedger().preferred("dividend", preferredPaid, 0, month);
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double paid;
             if (c == Equity.BANK) {
@@ -2235,6 +2278,9 @@ public class Game {
                 bank.receiveDividend(equity.getDividendDeskThisMonth(c) - deskBefore);
                 // ...and the city's fund on what it holds (0.7.14), its books apart.
                 fund.receiveDividend(equity.getDividendCityThisMonth(c) - cityBefore, rescueShare);
+                // ...each book's lot's income (0.7.39).
+                fund.getLedger().dividend(Equity.COMPANIES[c], equity.getDividendCityThisMonth(c) - cityBefore,
+                        rescueShare, month);
                 // ...and the register keeps what was paid: the yield every
                 // participant on the exchange values the share on (0.7.12
                 // round 2; Equity.dividendPerShareAnnual()).
@@ -2657,6 +2703,8 @@ public class Game {
         double shortfall = Math.max(0, -bank.equity());
         double exit = bank.resolutionExitEquity();
         double amount = shortfall + exit;
+        // The fund's market-book shares pass for nothing: their cost, a realized loss (0.7.39, FundLedger).
+        double marketCostLost = fund.getLedger().rescueTakes(Equity.COMPANIES[Equity.BANK], month);
         double[] before = equity.takeAllForCity(Equity.BANK, amount / equity.foundingPrice());
         double cashBefore = cash;
         treasuryPays(TreasuryLine.BANK_RESOLUTION, amount);
@@ -2681,6 +2729,9 @@ public class Game {
         r.preferredCancelled = cancelled[0];
         r.warrantsCancelled = cancelled[1];
         fund.noteResolution(r);
+        fund.getLedger().rescued(Equity.COMPANIES[Equity.BANK], r, marketCostLost, month);
+        if (cancelled[0] > 0) fund.getLedger().preferred("cancelled", 0, -cancelled[0], month);
+        if (cancelled[1] > 0) fund.getLedger().warrants("cancelled", 0, cancelled[1], month);
 
         // A press of the Bank tab's button, or the automatic setting's month - the player's setting either way.
         decisions.record(DecisionLog.BANK, "Bank rescued for its shares: " + DecisionLog.money(amount)
@@ -2760,6 +2811,7 @@ public class Game {
         double capPerShare = shares > 0 ? equity.getDividendsPaidOverYear(Equity.BANK) / shares / 12 : 0;
         double warrants = bank.issuePreferred(size, price, capPerShare);
         fund.noteAccepted(month, size);
+        fund.getLedger().preferred("bought", size, 0, month);
         decisions.record(DecisionLog.BANK, "Bought " + DecisionLog.money(size) + " of the bank's preferred shares");
         String here = getCurrency().qualifiedSymbol();
         GameLog.note(String.format("The city bought %s%,.0fk of the bank's preferred shares, %.0f%% a year for five"
@@ -2799,6 +2851,10 @@ public class Game {
         double warrants = bank.repurchaseWarrants(exchange.price(Equity.BANK), bankVolatility(),
                 debtManager.getPolicyRate(), offering);
         fund.receiveRedemption(0, warrants);
+        // ...rows on the fund's record (0.7.39): the warrants cost nothing, so what they bring is realized whole.
+        if (redeemed[0] > 0) fund.getLedger().preferred("dividend", redeemed[0], 0, month);
+        if (redeemed[1] > 0) fund.getLedger().preferred("redeemed", redeemed[1], 0, month);
+        if (warrants > 0) fund.getLedger().warrants("bought back", warrants, 0, month);
         if (redeemed[1] > 0 || warrants > 0) {
             String here = getCurrency().qualifiedSymbol();
             GameLog.note(String.format("The bank repaid the city: %s%,.0fk of preferred at par, %s%,.0fk of its unpaid"
@@ -2809,6 +2865,7 @@ public class Game {
         if (shares > 0) {
             equity.issueToCityRescue(Equity.BANK, shares);
             fund.noteWarrantShares(shares);
+            fund.getLedger().warrants("exercised", 0, shares, month);
             GameLog.note(String.format("The city's warrants on the bank expired in the money: %,.0f new shares"
                     + " for the city.", shares));
         }
@@ -2853,7 +2910,7 @@ public class Game {
     /** What this month's transfer is on the fund as it stands: TreasuryFund.transferOn(fundValue()). */
     public double fundTransferDue()       { return TreasuryFund.transferOn(fundValue()); }
 
-    /** One company's shares in the fund, both books, at the exchange's price: the Fund page's line for it. */
+    /** One company's shares in the fund, both books, at the exchange's price: the Holdings page's line for it until 0.7.39 (FundView reads each book itself now). */
     public double fundCompanyValue(int company) {
         return equity.getCityShares(company) * exchange.price(company);
     }
@@ -2981,6 +3038,7 @@ public class Game {
         fund.notePayIn(month, year, in[0], in[1]);
         rollover.noteFundTook(month, in[0]);
         if (total > 0) treasuryJournal.record("Paid into the fund (the dial)", -total);
+        fund.getLedger().flow(FundLedger.PAY_IN, total, false, month);
         String here = getCurrency().qualifiedSymbol();
         GameLog.note(year > 0
                 ? String.format("THE FUND, year end: %.0f%% of the year's surplus of %s%,.0fk - %s%,.0fk from the surplus"
@@ -2997,6 +3055,7 @@ public class Game {
         if (!(moved > 0)) return 0;
         cash -= moved;
         fund.notePaidInByHand(moved);
+        fund.getLedger().flow(FundLedger.PAY_IN, moved, true, month);
         treasuryJournal.record("Paid into the fund", -moved);
         decisions.record(DecisionLog.FUND, "Paid " + DecisionLog.money(moved) + " into the fund");
         GameLog.note(String.format("The city paid %s%,.0fk into its fund.", getCurrency().qualifiedSymbol(), moved));
@@ -3009,45 +3068,100 @@ public class Game {
         if (!(moved > 0)) return 0;
         cash += moved;
         fund.noteDrawnOutByHand(moved);
+        fund.getLedger().flow(FundLedger.DRAW_OUT, moved, true, month);
         treasuryJournal.record("Drawn from the fund", moved);
         decisions.record(DecisionLog.FUND, "Drew " + DecisionLog.money(moved) + " from the fund");
         GameLog.note(String.format("The city drew %s%,.0fk from its fund.", getCurrency().qualifiedSymbol(), moved));
         return moved;
     }
 
-    /** Buys a company's shares with this much of the fund's cash, at fair value, at the next step: good for the month. */
-    public void fundBuyShares(int company, double money) {
-        double spend = Math.min(money, fund.getCash());
-        fund.queue(new TreasuryFund.HandOrder(false, company, -1, true, spend, month));
+    /**
+     * Buys a company's shares with this much of the fund's cash, at fair value, at the next step: good for the month.
+     * (0.7.39: never more than the cash the hand's other buys leave - TreasuryFund.handReserve() - and a decision
+     * that says it is an order, which the step may fill in part or not at all - the spec's B5.)
+     */
+    public void fundBuyShares(int company, double money) { fundBuyShares(company, money, 0); }
+
+    /** ...at a price a share the player names (0.7.39, the spec's D2): 0 is fair value, the rule's own. */
+    public void fundBuyShares(int company, double money, double limit) {
+        double spend = Math.min(money, fundCashFree());
+        fund.queue(new TreasuryFund.HandOrder(false, company, -1, true, spend, month, limit));
         if (spend > 0) {
-            decisions.record(DecisionLog.FUND, "Fund to buy " + DecisionLog.money(spend) + " of "
-                    + Equity.COMPANIES[company] + " shares");
+            decisions.record(DecisionLog.FUND, "Order: buy " + DecisionLog.money(spend) + " of "
+                    + Equity.COMPANIES[company] + " shares" + atLimit(limit, false));
         }
     }
 
     /** Sells this many of the fund's shares of a company - its market book first, then its rescue book - at fair value, at the next step. */
-    public void fundSellShares(int company, double shares) {
+    public void fundSellShares(int company, double shares) { fundSellShares(company, shares, 0); }
+
+    /** ...at a price a share the player names (0.7.39): 0 is fair value. */
+    public void fundSellShares(int company, double shares, double limit) {
         double selling = Math.min(shares, equity.getCityShares(company));
-        fund.queue(new TreasuryFund.HandOrder(false, company, -1, false, selling, month));
+        fund.queue(new TreasuryFund.HandOrder(false, company, -1, false, selling, month, limit));
         if (selling > 0) {
-            decisions.record(DecisionLog.FUND, "Fund to sell " + Formats.INSTANCE.count(selling) + " "
-                    + Equity.COMPANIES[company] + " shares");
+            decisions.record(DecisionLog.FUND, "Order: sell " + shareCount(selling) + " "
+                    + Equity.COMPANIES[company] + " shares" + atLimit(limit, false));
         }
     }
 
     /** Buys a bond with this much of the fund's cash, at its value, at the next step. */
-    public void fundBuyBond(int bondId, double money) {
-        double spend = Math.min(money, fund.getCash());
-        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, true, spend, month));
-        if (spend > 0) decisions.record(DecisionLog.FUND, "Fund to buy " + DecisionLog.money(spend) + " of bond #" + bondId);
+    public void fundBuyBond(int bondId, double money) { fundBuyBond(bondId, money, 0); }
+
+    /** ...at a price a unit of face the player names (0.7.39): 0 is the bond's value. */
+    public void fundBuyBond(int bondId, double money, double limit) {
+        double spend = Math.min(money, fundCashFree());
+        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, true, spend, month, limit));
+        if (spend > 0) decisions.record(DecisionLog.FUND, "Order: buy " + DecisionLog.money(spend) + " of bond #" + bondId
+                + atLimit(limit, true));
     }
 
     /** Sells this much face of a bond the fund holds, at its value, at the next step. */
-    public void fundSellBond(int bondId, double face) {
+    public void fundSellBond(int bondId, double face) { fundSellBond(bondId, face, 0); }
+
+    /** ...at a price a unit of face the player names (0.7.39): 0 is the bond's value. */
+    public void fundSellBond(int bondId, double face, double limit) {
         CorporateBond b = bondMarket.bond(bondId);
         double selling = b == null ? 0 : Math.min(face, b.city());
-        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, false, selling, month));
-        if (selling > 0) decisions.record(DecisionLog.FUND, "Fund to sell " + DecisionLog.money(selling) + " of bond #" + bondId);
+        fund.queue(new TreasuryFund.HandOrder(true, -1, bondId, false, selling, month, limit));
+        if (selling > 0) decisions.record(DecisionLog.FUND, "Order: sell " + DecisionLog.money(selling) + " of bond #" + bondId
+                + atLimit(limit, true));
+    }
+
+    /** The fund's cash a new buy may hold: its cash less what the hand's buys already hold (TreasuryFund.handReserve(), 0.7.39). */
+    public double fundCashFree() {
+        return Math.max(0, fund.getCash() - fund.handReserve());
+    }
+
+    /** A count of shares in a decision's words: whole from a hundred, else to two places, and four under one - a consolidated holding is a fraction (0.7.39). */
+    private static String shareCount(double n) {
+        if (n >= 100) return Formats.INSTANCE.count(n);
+        return String.format(java.util.Locale.ROOT, n >= 1 ? "%,.2f" : "%.4f", n);
+    }
+
+    /** A decision's words for a named price: " at D$101.35k", " at 102.80 per 100"; nothing at fair value. */
+    private String atLimit(double limit, boolean bond) {
+        if (!(limit > 0)) return "";
+        return bond ? String.format(java.util.Locale.ROOT, " at %.2f per 100", limit * 100)
+                : " at " + DecisionLog.money(limit);
+    }
+
+    /**
+     * CANCELS ONE OF THE PLAYER'S ORDERS before the step posts it (0.7.39, the
+     * spec's D3): the order at this place in TreasuryFund.getHandOrders(). Its
+     * cash is the rule's again. An order already on the book rests until the
+     * step after, as every order does.
+     *
+     * @return true if there was one to cancel
+     */
+    public boolean fundCancelOrder(int i) {
+        TreasuryFund.HandOrder o = fund.cancel(i);
+        if (o == null) return false;
+        String what = o.bond() ? "bond #" + o.bondId()
+                : (o.company() >= 0 && o.company() < Equity.COMPANIES.length ? Equity.COMPANIES[o.company()] : "?") + " shares";
+        String size = o.buy() || o.bond() ? DecisionLog.money(o.amount()) : shareCount(o.amount());
+        decisions.record(DecisionLog.FUND, "Cancelled: " + (o.buy() ? "buy " : "sell ") + size + " of " + what);
+        return true;
     }
 
     /* ------------------------------ an Insane founding ------------------------------ */
@@ -4398,12 +4512,14 @@ public class Game {
             cityMaintenancePaid = cityShare;
             /*
              * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
-             * Government screen lists this bill under spending as "Repairs",
-             * but NationalAccounts.getTotalExpenses() has no line for it, so
-             * the surplus the bridge starts from is struck without it and the
-             * bridge's last row held exactly -cityShare every month, in every
-             * city with a road. Named here until the accounts carry it; the
-             * day they do, this line comes out. See TreasuryJournal.
+             * Government screen listed this bill under spending as "Repairs"
+             * (since 0.7.31 it names it under the total, outside the
+             * budget's), but NationalAccounts.getTotalExpenses() has no line
+             * for it, so the surplus the bridge starts from is struck without
+             * it and the bridge's last row held exactly -cityShare every
+             * month, in every city with a road. Named here until the accounts
+             * carry it; the day they do, this line comes out. See
+             * TreasuryJournal.
              */
             treasuryJournal.record("Repaired the city's own buildings", -cityShare);
         } else {
@@ -6814,9 +6930,10 @@ public class Game {
        is looking at month m, the maturity falls due in m + 1, and the
        proceeds sit in the treasury until it does.
 
-       WHAT: rolloverPlan(), which the Finances tab's borrow page prints
-       before it happens and rollMaturities() books - one function on one
-       state, so the sentence on the screen is the issue at the press.
+       WHAT: rolloverPlan(), which the Finances hub prints (both borrow
+       pages until 0.7.32) before it happens and rollMaturities() books - one
+       function on one state, so the sentence on the screen is the issue at
+       the press.
          - what falls due: Debt.principalDueNextMonth(), piece by piece, at
            home and abroad;
          - the netting: surplusOverLastYear(), the national accounts' own
@@ -9672,6 +9789,60 @@ public class Game {
     public ForeignAccounts getForeignAccounts() { return foreign; }
 
     /**
+     * The month across the city's edge, good by good (0.7.35): the
+     * businesses' struck statements split by good, the railway's fuel by
+     * the sector that bought it, and the households' cars among the cars
+     * bought - so it foots to the balance of payments (Sectors.tradeByGood()).
+     * The Trade tab's mirrored bars. Pure.
+     */
+    public Sectors.TradeByGood getTradeByGood() {
+        return economyManager.getSectors().tradeByGood(getHouseholdCarImports());
+    }
+
+    /**
+     * What is left of the vault once everything owed against it is taken
+     * off: the dollar paper outstanding and the foreign money parked in the
+     * bank, both claims on the one pot (0.7.35; the Trade tab's own
+     * subtraction until then). Hold a hundred, owe eighty, and twenty is the
+     * city's whichever dollar came from where. The parked money is the one
+     * addition to netForeignPosition(), and the right one: a claim that can
+     * be exercised at no notice is heavier than a bond with a date on it.
+     * Negative when more is owed than is held.
+     */
+    public double getOwnReserves() {
+        return foreign.getReserves() - foreign.getForeignDebt() - hotMoney.getStock();
+    }
+
+    /** The city's shares in foreign hands, at each company's price - its last trade, or its fair value before one (0.7.35; the Trade tab's own sum until then). */
+    public double getSharesHeldAbroad() {
+        double total = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) total += equity.getForeignShares(c) * exchange.price(c);
+        return total;
+    }
+
+    /*
+     * WHAT THE CITY HOLDS ABROAD AND WHAT THE WORLD HOLDS HERE (0.7.35):
+     * the rough shape of an international investment position, as the Trade
+     * tab's holdings card draws it - each side the sum of its parts at
+     * today's rate, so the card prints a total the model added up.
+     */
+
+    /** The businesses' and the households' paper abroad, at today's rate: what is held abroad outside the vault. */
+    public double getHeldAbroadPrivately() {
+        return outward.totalLocalValue() + householdBalance.totalAbroadValue();
+    }
+
+    /** ...and the vault with it: everything the city holds abroad. */
+    public double getHeldAbroad() {
+        return getHeldAbroadPrivately() + foreign.getReserves();
+    }
+
+    /** What the world holds here: the city's shares at their price, the businesses' bonds at face, the foreign money parked in the bank and the city's dollar paper at today's rate. */
+    public double getHeldHereByTheWorld() {
+        return getSharesHeldAbroad() + bondMarket.faceHeldByWorld() + hotMoney.getStock() + foreign.getForeignDebt();
+    }
+
+    /**
      * The city's commercial bank - every loan in it, and every default.
      *
      * Owned here rather than by EconomyManager because it lends to all three of
@@ -11152,6 +11323,18 @@ public class Game {
     public double getTreasuryChange() { return treasuryClosing - treasuryOpening; }
 
     /**
+     * The city's net position (0.7.32, the Finances tab's THE BALANCE): its
+     * cash - below nothing when it is overdrawn - less the paper it owes and
+     * what its central bank has advanced it. The tab worked it out itself
+     * until 0.7.32, as the cash less the paper less the overdraft, which on
+     * an overdrawn city took the overdraft off twice (the cash below
+     * nothing was it already) and left the advances out.
+     */
+    public double getNetPosition() {
+        return cash - debtManager.getAllPrincipal() - centralBank.getAdvancesToTreasury();
+    }
+
+    /**
      * Everything the three named flows do not explain - the whole of the
      * bridge's last row, "Everything else the treasury did".
      *
@@ -11194,6 +11377,65 @@ public class Game {
      */
     public double getTreasuryResidual() {
         return getTreasuryUnexplained() - treasuryJournal.lastMonthTotal();
+    }
+
+    /* -----------------------------------------------------------------------
+       FROM EARNED TO THE BUDGET (0.7.31)
+
+       Jerus, on the header: "the money one has is barely visible to see as
+       well as ones income" - and in his city the line under the cash said
+       "+$1.5B a month" while the cash grew $2.3B. Three figures, all right:
+       EARNED (getIncome(), the header's), the budget's SURPLUS
+       (NationalAccounts.getBalance()) and what the cash BANKED
+       (getTreasuryChange()). The bridge above walks the budget to the cash;
+       this walks EARNED to the budget, so the Government tab can draw the
+       whole road EARNED -> SURPLUS -> BANKED with every step named and the
+       screen adding nothing up itself (the project's spec-government-0731.md,
+       D3).
+
+       EARNED is the tax take (getTaxIncomeNow(): the fares in it) less the
+       running programmes (getExpenses()) plus the utilities' net. The budget
+       has the same lines - measured equal to the cent in two played cities -
+       and ten more: land sold and bought, buildings, the fund's transfer,
+       the mortgage insurance's premiums and claims, subsidies, the central
+       bank's remittance and its interest, the students' loan interest; and
+       it does NOT carry the transit fares (TreasuryJournal: they reach the
+       cash outside getTotalRevenue()). Those ten and the fares are the
+       steps, each an existing getter.
+
+       What they leave is getEarnedResidual(), and it is not a gap to hide.
+       getIncome() reads today's dials (getTaxIncomeNow()); the budget was
+       struck at the month's. Move the wage tax between two presses and EARNED
+       moves while the budget does not - the residual is that move, named
+       "today's dials, not the month's" on the screen, and nothing in a month
+       nobody touched a dial (TreasuryCheck holds both).
+       ----------------------------------------------------------------------- */
+
+    /** The steps from EARNED to the budget's balance, in the Government bridge's order, signed as they move EARNED (+ adds, - takes away); every line, at nothing too. */
+    public java.util.List<TreasuryJournal.Entry> getEarnedToBudget() {
+        NationalAccounts na = economyManager.getNationalAccounts();
+        return java.util.List.of(
+                new TreasuryJournal.Entry("Land sold", na.getLandSales()),
+                new TreasuryJournal.Entry("Land bought", -na.getLandPurchases()),
+                new TreasuryJournal.Entry("Buildings", -na.getCapitalSpending()),
+                new TreasuryJournal.Entry("Transfer from the fund", na.getFundTransfer()),
+                new TreasuryJournal.Entry("Mortgage insurance premiums", na.getMortgagePremiums()),
+                new TreasuryJournal.Entry("Mortgage insurance claims", -na.getMortgageClaims()),
+                new TreasuryJournal.Entry("Subsidies", -na.getSubsidies()),
+                new TreasuryJournal.Entry("Central bank remittance", na.getCentralBankRemittance()),
+                new TreasuryJournal.Entry("Interest to the central bank", -na.getCentralBankInterest()),
+                new TreasuryJournal.Entry("Student loan interest", na.getStudentLoanInterest()),
+                new TreasuryJournal.Entry(EARNED_FARES, -economyManager.getTransitFares()));
+    }
+
+    /** The fares' step's words: in EARNED and in the cash, not in the budget. */
+    public static final String EARNED_FARES = "Transit fares: on the cash, not the budget";
+
+    /** What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. */
+    public double getEarnedResidual() {
+        double steps = 0;
+        for (TreasuryJournal.Entry e : getEarnedToBudget()) steps += e.amount();
+        return economyManager.getNationalAccounts().getBalance() - (getIncome() + steps);
     }
 
     double[] treasuryMonthToSave() {
@@ -11341,6 +11583,7 @@ public class Game {
         double transfer = fund.payTransfer(fundValue(), CityCalendar.yearOf(month));
         cash += transfer;
         economyManager.setFundTransfer(transfer);
+        fund.getLedger().flow(FundLedger.TRANSFER, transfer, false, month);
 
         if (cash > 0 && centralBank.getAdvancesToTreasury() > 0) {
             double repaid = centralBank.repayFromTreasury(cash);
@@ -11836,6 +12079,12 @@ public class Game {
     getSectors().realEstate().setRentWeight(
             families.studioRentWeight(), families.familyRentWeight());
     businessInvestment.setFamilies(families);
+    // ...and the bank, as advanceDemographics() hands it over every month
+    // (0.7.25). Without it the first month after every load planned the
+    // branch with no bank - BusinessInvestment.planBank()'s "no bank" was
+    // the bank's word on the Investors page and the build card - because
+    // the month's investment runs before advanceDemographics() sets it.
+    businessInvestment.setBank(bank);
     // BOTH retired bands, or the over-85s stop drawing a pension the day the
     // band lands and the city's pension bill silently falls.
     economyManager.setSeniors(cohorts.get(AgeBand.SENIOR) + cohorts.get(AgeBand.ELDER));
@@ -13063,6 +13312,11 @@ public class Game {
 
         if (restoredFlows != null) {
             economyManager.restoreNationalAccounts(restoredFlows.getNationalAccounts());
+            // ...and its rolling year from the graph history, read above
+            // (0.7.31; NationalAccounts.seedHistory()): every "of GDP" on the
+            // Government tab and the header's GDP tile read one month after a
+            // load, scaled up, until a year had been played again.
+            economyManager.getNationalAccounts().seedHistory(historySave.getGdp());
 
             demolitionLog.restore(restoredFlows.getDemolitions());
             buildLog.restore(restoredFlows.getBuilds());
@@ -13255,6 +13509,21 @@ public class Game {
         pushCostOfFundsToTheDebtMarket();
         debtManager.updateInterest();
         /*
+         * ...AND EVERY SECTOR'S RATE WITH ITS RECORD AND THE BOOK'S
+         * CONCENTRATION IN IT (0.7.33; the project's spec-bank-0733.md, B5).
+         * The rebuild priced business credit before restoreCreditRecord() put
+         * the write-downs back, and with no concentration charge pushed - the
+         * month pushes them at its top (startOfMonthUpdate()) - so a city just
+         * loaded quoted every sector at prime and its own risk alone: Mining
+         * read 3.07% after Continue and 6.38% a month on with nothing changed.
+         * The month re-prices before it writes a loan, so it was the screens'
+         * error, not the simulation's. Re-priced here from the same two calls
+         * the month's top makes, after the bank's book and its concentration
+         * are back (refreshBank() above); that top pushes its own over them.
+         */
+        economyManager.getBusinessDebtManager().setConcentrationCharges(concentrationCharges());
+        economyManager.getBusinessDebtManager().updateRates();
+        /*
          * ...AND THE CITY'S OWN RATE AS THE MONTH LAST STRUCK IT (0.7.14). The
          * lines above re-strike it from the cash the save holds, and the
          * treasury's cash moves after the month's last strike: a reloaded
@@ -13266,6 +13535,19 @@ public class Game {
          * the live city's, exactly. An older save keeps the re-strike.
          */
         if (restoredFlows != null) debtManager.restoreMarket(restoredFlows.getDebtMarket());
+        // ...and, last, the fund's cost basis for a save from before it (0.7.39): every price is back now.
+        if (fund.needsLedgerSeed()) seedFundLedger();
+    }
+
+    /**
+     * THE FUND'S COST BASIS FOR A SAVE FROM BEFORE IT (0.7.39; the project's
+     * spec-fund-0739.md, 3.5): each market lot and bond at its market value
+     * this month, flagged as such, the rescue lot exact from the counters,
+     * one TRACKING row. Reads prices and writes the ledger only.
+     */
+    void seedFundLedger() {
+        fund.getLedger().seed(this, month);
+        fund.ledgerSeeded();
     }
 
     /** True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. */

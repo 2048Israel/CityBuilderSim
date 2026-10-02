@@ -1,6 +1,6 @@
-# ShortTermTBill.java - 125 lines · 13 methods · 0 constants · model
+# ShortTermTBill.java - 127 lines · 13 methods · 0 constants · model
 
-`ham/citybuildersim/ShortTermTBill.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShortTermTBill.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > A short-term anticipation note: borrow now, repay one lump, no coupon.
 > 
@@ -12,8 +12,10 @@
 > A DISCOUNT INSTRUMENT. There is no interest payment. The lender hands over
 > less than the face value and collects the face at maturity, and the gap
 > between the two IS the interest. `getMonthlyInterestExpense()` therefore
-> returns 0 and that is not an oversight - the debt bar says as much in words,
-> because a bare zero under a heading called INTEREST reads as free money.
+> returns 0 and that is not an oversight - the COUPON figure on Finances (the
+> NEXT DUE card's totals until 0.7.32, the debt bar's until 0.7.24) says as
+> much in words, because a bare zero under a heading called INTEREST reads
+> as free money.
 > 
 > THE DISCOUNT NOW KNOWS HOW LONG THE NOTE RUNS
 > 
@@ -43,18 +45,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 89 | **type** `public class ShortTermTBill extends Debt` | A short-term anticipation note: borrow now, repay one lump, no coupon. |
-| 39 | 3 | `public ShortTermTBill(double faceValue, int months, int monthStarted)` |  |
-| 44 | 9 | `public ShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign)` |  |
-| 63 | 4 | `public static double discountFraction(double annualRate, int months)` | The discount for a note of this term, as a fraction of face. |
-| 69 | 3 | `public static double faceFor(double cashWanted, double annualRate, int months)` | Face value needed to raise a given sum for a given term. |
-| 74 | 6 | `public void processMonth(Game game)` |  |
-| 82 | 3 | `public double getIssuePrice()` |  |
-| 87 | 3 | `public int getMonths()` | getters |
-| 92 | 3 | `protected double principalOwed()` |  |
-| 97 | 3 | `public int getMaturityMonth()` |  |
-| 101 | 3 | `public boolean isMatured()` |  |
-| 106 | 3 | `public String getType()` |  |
-| 111 | 3 | `protected double couponOwed()` |  |
-| 117 | 8 | `protected double[] scheduleOwed()` | Nothing until maturity, then the whole face. |
+| 39 | 89 | **type** `public class ShortTermTBill extends Debt` | A short-term anticipation note: borrow now, repay one lump, no coupon. |
+| 41 | 3 | `public ShortTermTBill(double faceValue, int months, int monthStarted)` |  |
+| 46 | 9 | `public ShortTermTBill(double faceValue, int months, int monthStarted, boolean foreign)` |  |
+| 65 | 4 | `public static double discountFraction(double annualRate, int months)` | The discount for a note of this term, as a fraction of face. |
+| 71 | 3 | `public static double faceFor(double cashWanted, double annualRate, int months)` | Face value needed to raise a given sum for a given term. |
+| 76 | 6 | `public void processMonth(Game game)` |  |
+| 84 | 3 | `public double getIssuePrice()` |  |
+| 89 | 3 | `public int getMonths()` | getters |
+| 94 | 3 | `protected double principalOwed()` |  |
+| 99 | 3 | `public int getMaturityMonth()` |  |
+| 103 | 3 | `public boolean isMatured()` |  |
+| 108 | 3 | `public String getType()` |  |
+| 113 | 3 | `protected double couponOwed()` |  |
+| 119 | 8 | `protected double[] scheduleOwed()` | Nothing until maturity, then the whole face. |
 

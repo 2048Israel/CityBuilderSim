@@ -1,6 +1,6 @@
 # InterimLoan.java - 35 lines · 1 methods · 1 constants · model
 
-`ham/citybuildersim/InterimLoan.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InterimLoan.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Interim financing: the bank's loan to a sector in the month it defaulted,
 > for what the month's bills left unpaid after its debt was written down,

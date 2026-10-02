@@ -1,6 +1,6 @@
-# UnemployedHousehold.java - 83 lines · 14 methods · 0 constants · model
+# UnemployedHousehold.java - 88 lines · 14 methods · 0 constants · model
 
-`ham/citybuildersim/UnemployedHousehold.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UnemployedHousehold.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Adults who are out of work, as one ledger per situation.
 > 
@@ -52,7 +52,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 53 | **type** `public class UnemployedHousehold extends Household` | Adults who are out of work, as one ledger per situation. |
+| 31 | 58 | **type** `public class UnemployedHousehold extends Household` | Adults who are out of work, as one ledger per situation. |
 | 34 | 9 | **type** `public enum Status` | Where one of them stands. |
 | 40 | 1 | `Status(String label)` _(in UnemployedHousehold.Status)_ |  |
 | 41 | 1 | `public String label()` _(in UnemployedHousehold.Status)_ |  |
@@ -66,6 +66,6 @@
 | 60 | 1 | `public double earningWeight()` | The EI bill is split among those still drawing it. |
 | 63 | 1 | `public boolean canBeEvicted()` | Only once EI has ended - Jerus: "EI ends, savings gone". |
 | 77 | 1 | `public int stockGroup()` | THE OUT OF WORK CARRY THE UNSKILLED TIER'S MONEY, NOT THE CITY'S. |
-| 79 | 1 | `public String label()` |  |
-| 82 | 1 | `public String key()` | "UNEMPLOYED:ON_EI". |
+| 80 | 5 | `public String label()` | "Out of work, on EI": the status with its first letter lowered, unless that letter opens an acronym (0.7.27; it was all lower case, "on ei" and "ei run out", before). |
+| 87 | 1 | `public String key()` | "UNEMPLOYED:ON_EI". |
 

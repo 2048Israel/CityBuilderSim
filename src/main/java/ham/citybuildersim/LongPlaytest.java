@@ -3243,6 +3243,7 @@ public class LongPlaytest {
                 else g.declinePreferredOffer();
             }
             watchTheStake(g);
+            watchTheLedger(g);
 
             // ...and its equity's two parts (0.7.13, round 2): how low paid in
             // runs - a buyback comes off it at all it cost - and the most the
@@ -3512,6 +3513,10 @@ public class LongPlaytest {
         same(month, "the bank's preferred across a save", back.getBank().preferredOutstanding(), g.getBank().preferredOutstanding());
         same(month, "...its arrears", back.getBank().getPreferredArrears(), g.getBank().getPreferredArrears());
         same(month, "...its warrants' shares", back.getBank().warrantSharesOut(), g.getBank().warrantSharesOut());
+        // ...and what each of its holdings cost, and its record (0.7.39, FundLedger).
+        same(month, "the fund's cost basis across a save", fundNow.getLedger().acbHeld(), fundWas.getLedger().acbHeld());
+        same(month, "...what it realized", fundNow.getLedger().realized(), fundWas.getLedger().realized());
+        same(month, "...its rows", fundNow.getLedger().getActivity().size(), fundWas.getLedger().getActivity().size());
         same(month, "the fund's transfer on the budget across a save",
                 now.getNationalAccounts().getFundTransfer(), was.getNationalAccounts().getFundTransfer());
         // ...and the city's own rate and its curve, which the fund's bonds are marked on (0.7.14): the
@@ -3669,6 +3674,51 @@ public class LongPlaytest {
             for (int c = 0; c < Equity.COMPANIES.length; c++) {
                 double shares = g.getEquity().getShares(c);
                 if (shares > 0) mostHeld[c] = Math.max(mostHeld[c], g.getEquity().getCityMarketShares(c) / shares);
+            }
+        }
+    }
+
+    /* ---------------- the fund's cost basis (0.7.39) ---------------- */
+
+    /**
+     * THE FUND'S LEDGER, MONTH BY MONTH (FundLedger; the project's
+     * spec-fund-0739.md, 3.7, rule 3 - count a mechanic in a real run): the
+     * identity FundLedgerCheck holds on a fixture - realized + the change in
+     * unrealized = the change in what the shares and bonds are worth + what
+     * sales and maturities brought in - what purchases and rescues cost -
+     * read every month of the run, its worst kept; and the rows the month
+     * wrote, by kind.
+     */
+    static double[] ledgerBefore;
+    static double ledgerWorst;
+    static int ledgerRuleRows, ledgerHandRows, ledgerMatured, ledgerWrittenDown, ledgerRescues;
+
+    static double[] ledgerSnap(Game g) {
+        TreasuryFund f = g.getFund();
+        FundLedger l = f.getLedger();
+        return new double[] { g.fundSharesValue() + g.fundBondsValue(), l.acbHeld() + f.getRescueCost(), l.realized(),
+                f.getSharesBought() + f.getBondsBought(), f.getSharesSold() + f.getBondsSold() + f.getPrincipal(),
+                f.getRescuesPaid() };
+    }
+
+    static void watchTheLedger(Game g) {
+        double[] now = ledgerSnap(g);
+        if (ledgerBefore != null) {
+            double[] was = ledgerBefore;
+            double lhs = (now[2] - was[2]) + ((now[0] - now[1]) - (was[0] - was[1]));
+            double rhs = (now[0] - was[0]) + (now[4] - was[4]) - (now[3] - was[3]) - (now[5] - was[5]);
+            ledgerWorst = Math.max(ledgerWorst, Math.abs(lhs - rhs) / Math.max(1, Math.abs(now[0])));
+        }
+        ledgerBefore = now;
+        List<FundLedger.Activity> rows = g.getFund().getLedger().getActivity();
+        for (int i = rows.size() - 1; i >= 0 && rows.get(i).month() == g.getMonth(); i--) {
+            FundLedger.Activity a = rows.get(i);
+            switch (a.kind()) {
+                case FundLedger.BUY, FundLedger.SELL -> { if (a.hand()) ledgerHandRows++; else ledgerRuleRows++; }
+                case FundLedger.MATURED -> ledgerMatured++;
+                case FundLedger.WRITTEN_DOWN -> ledgerWrittenDown++;
+                case FundLedger.RESCUE -> ledgerRescues++;
+                default -> { }
             }
         }
     }
@@ -4632,6 +4682,22 @@ public class LongPlaytest {
                     fundEnd.getSharesSold(), fundEnd.getBondsSold(),
                     fundMonths > 0 ? fundCashShareSum / fundMonths * 100 : 0,
                     book.length() > 0 ? book.toString() : " nothing");
+            // ...and what its holdings cost (0.7.39, FundLedger): counted over the run, and the identity's worst month.
+            FundLedger ledger = fundEnd.getLedger();
+            double unrealized = 0, cost = 0;
+            for (FundView.Position p : FundView.positions(g)) {
+                if (!(p.isShare() || p.isBond()) || Double.isNaN(p.unrealized())) continue;
+                unrealized += p.unrealized();
+                cost += p.acb();
+            }
+            out.printf("  the fund's cost basis over the run: %d lot-month(s) traded by the rule and %d by the hand;"
+                            + " %d bond lot(s) repaid and %d written down; %d rescue(s); realized $%,.0fk; unrealized"
+                            + " $%,.0fk at the end on a cost of $%,.0fk; its purchases and proceeds off the fund's"
+                            + " counters by $%,.2fk and $%,.2fk; the identity's worst month off by %.1e of what it held%n",
+                    ledgerRuleRows, ledgerHandRows, ledgerMatured, ledgerWrittenDown, ledgerRescues, ledger.realized(),
+                    unrealized, cost, ledger.purchases() - fundEnd.getSharesBought() - fundEnd.getBondsBought(),
+                    ledger.proceeds() - fundEnd.getSharesSold() - fundEnd.getBondsSold() - fundEnd.getPrincipal(),
+                    ledgerWorst);
         }
         if (FOUNDING == Founding.Preset.INSANE) {
             out.printf("  the Insane founding: the land bond US$%,.0fk at %.0f%% for %d years; the village invoiced"

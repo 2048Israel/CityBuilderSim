@@ -1,6 +1,6 @@
-# Palette.java - 706 lines · 25 methods · 73 constants · interface
+# Palette.java - 715 lines · 25 methods · 74 constants · interface
 
-`ham/citybuildersim/ui/Palette.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Palette.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Every colour, size and spacing this game is allowed to use, in one place.
 > 
@@ -44,7 +44,7 @@
 > their names, so every screen that read them took the new values without
 > an edit; the window's own literals moved here the same day.
 
-**Used by (20):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (22):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -56,21 +56,21 @@
 | 141 | THE THREE THAT MEAN SOMETHING |
 | 179 | WHAT CAN BE PRESSED |
 | 203 | THE FOUR AREAS (0.7.21) |
-| 238 | THE CHART'S LINES (0.7.23) |
-| 313 | THE CHART RAMPS |
-| 389 | TYPE |
-| 437 | SPACE |
-| 454 | THE FIXED WIDTHS |
-| 479 | THE THREE THINGS A SCREEN IS BUILT FROM |
-| 529 | THE FACES (0.7.21) |
-| 688 | · on a canvas (0.7.23): a Font, not CSS, for the charts |
+| 247 | THE CHART'S LINES (0.7.23) |
+| 322 | THE CHART RAMPS |
+| 398 | TYPE |
+| 446 | SPACE |
+| 463 | THE FIXED WIDTHS |
+| 488 | THE THREE THINGS A SCREEN IS BUILT FROM |
+| 538 | THE FACES (0.7.21) |
+| 697 | · on a canvas (0.7.23): a Font, not CSS, for the charts |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 62 | `Palette.STAGE` | `"#0b1118"` | The middle of the window - the darkest thing, and the biggest. |
-| 65 | `Palette.PANEL` | `"#101924"` | The strips around it: both side panels, the header, the debt bar and the rail. |
+| 65 | `Palette.PANEL` | `"#101924"` | The strips around it: the two side panels (a drawer and an overlay since 0.7.24), the header, the rail and the construction tab. |
 | 68 | `Palette.RAISED` | `"#152130"` | A block lifted off a panel: a card, a header tile, an open section. |
 | 71 | `Palette.PINNED` | `"#1a2839"` | The vitals block, and anything that should read as pinned rather than raised - and a popover. |
 | 74 | `Palette.FIELD` | `STAGE` | Inside a control, and inside the inbox: darker than the panel it sits on - the window's own ground. |
@@ -109,53 +109,54 @@
 | 222 | `Palette.BUSINESS` | `"#a78bfa"` | Business and trade: Sectors, Trade & the world. |
 | 225 | `Palette.BUILDING` | `"#f17cb0"` | Building and land: Build, the land office. |
 | 234 | `Palette.CATEGORIES` | `{ MONEY, PEOPLE, BUILDING, BUSINESS, "#c9b68f" }` | Categories told apart (0.7.21): the Government's two rings, whose three biggest revenue slices were three steps of one blue and read as one. |
-| 261 | `Palette.MONEY_LIGHT` | `"#a9d1ff", MONEY_DARK = "#2f80d9"` | The money blue, a step lighter and a step darker: the money area's second and third lines. |
-| 264 | `Palette.PEOPLE_LIGHT` | `"#93e2da", PEOPLE_DARK = "#1c968b"` | The people teal, lighter and darker. |
-| 267 | `Palette.BUSINESS_LIGHT` | `"#d3c5fd", BUSINESS_DARK = "#8669e8"` | The business violet, lighter and darker. |
-| 270 | `Palette.BUILDING_LIGHT` | `"#f9bcd7", BUILDING_DARK = "#cf5590"` | The building pink, lighter and darker. |
-| 273 | `Palette.LINE_COLOURS` | `13` | How many lines one chart can draw before a colour repeats: the five CATEGORIES and two steps of each of the four areas. |
-| 344 | `Palette.REVENUE_RAMP` | `{ "#afd5fe", "#8dbef1", "#6aa6e4", "#468fd6", "#1577c8" }` | Money coming in. |
-| 349 | `Palette.SPENDING_RAMP` | `{ "#efca9f", "#deaf78", "#cd954f", "#bc7a19", "#aa6000" }` | Money going out. |
-| 368 | `Palette.LADDER` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | The three instruments on the maturity ladder, short to long. |
-| 379 | `Palette.GDP_LAYERS` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | GDP's three stacked layers on the Reports page (0.7.6) - consumption, investment, government, bottom to top - on the same three validated steps as the maturity ladder, and for the same reason: they are parts of one wh... |
-| 384 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
-| 387 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
-| 417 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
-| 420 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
-| 423 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
-| 426 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
-| 429 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
-| 432 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
-| 435 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
-| 443 | `Palette.GAP_TIGHT` | `4` |  |
-| 444 | `Palette.GAP` | `8` |  |
-| 445 | `Palette.GAP_LOOSE` | `12` |  |
-| 446 | `Palette.GAP_SECTION` | `20` |  |
-| 449 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
-| 452 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
-| 462 | `Palette.RAIL` | `76` | The navigation rail, at the window's left edge: an icon over its name (0.7.21). |
-| 465 | `Palette.HEADER` | `84` | The header across the top: the clock, the six headline tiles, the rating and the inbox (0.7.21). |
-| 468 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail. |
-| 471 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right. |
-| 474 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
-| 477 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
-| 583 | `Palette.Fonts.FOLDER` | `"/fonts/"` | Where the files sit on the classpath. |
-| 586 | `Palette.Fonts.SYSTEM_FACE` | `"System"` | The platform's own face, for words when Plex Sans did not load. |
-| 589 | `Palette.Fonts.FIGURE_FACE` | `"Courier New"` | The face figures used before 0.7.21, and use again when Plex Mono did not load. |
+| 245 | `Palette.ORE` | `"#c9b68f"` | Ore (0.7.26): the land office's deposits - a plot's ORE tag, the sand stripe on the ground bar, the Ore card. |
+| 270 | `Palette.MONEY_LIGHT` | `"#a9d1ff", MONEY_DARK = "#2f80d9"` | The money blue, a step lighter and a step darker: the money area's second and third lines. |
+| 273 | `Palette.PEOPLE_LIGHT` | `"#93e2da", PEOPLE_DARK = "#1c968b"` | The people teal, lighter and darker. |
+| 276 | `Palette.BUSINESS_LIGHT` | `"#d3c5fd", BUSINESS_DARK = "#8669e8"` | The business violet, lighter and darker. |
+| 279 | `Palette.BUILDING_LIGHT` | `"#f9bcd7", BUILDING_DARK = "#cf5590"` | The building pink, lighter and darker. |
+| 282 | `Palette.LINE_COLOURS` | `13` | How many lines one chart can draw before a colour repeats: the five CATEGORIES and two steps of each of the four areas. |
+| 353 | `Palette.REVENUE_RAMP` | `{ "#afd5fe", "#8dbef1", "#6aa6e4", "#468fd6", "#1577c8" }` | Money coming in. |
+| 358 | `Palette.SPENDING_RAMP` | `{ "#efca9f", "#deaf78", "#cd954f", "#bc7a19", "#aa6000" }` | Money going out. |
+| 377 | `Palette.LADDER` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | The three instruments on the maturity ladder, short to long. |
+| 388 | `Palette.GDP_LAYERS` | `{ REVENUE_RAMP [ 0 ], REVENUE_RAMP [ 2 ], REVENUE_RAMP [ 4 ] }` | GDP's three stacked layers on the Reports page (0.7.6) - consumption, investment, government, bottom to top - on the same three validated steps as the maturity ladder, and for the same reason: they are parts of one wh... |
+| 393 | `Palette.RAMP_REST` | `"#5c6b75"` | Everything too small to have its own step. |
+| 396 | `Palette.RING` | `26` | How thick a donut's ring is drawn, and how wide the hole is. |
+| 426 | `Palette.SIZE_TITLE` | `20` | A screen's title. |
+| 429 | `Palette.SIZE_LEAD` | `17` | A figure that is the point of its panel. |
+| 432 | `Palette.SIZE_SECTION` | `14` | A section heading inside a screen. |
+| 435 | `Palette.SIZE_HEADING` | `12` | A panel's own heading. |
+| 438 | `Palette.SIZE_BODY` | `11` | Body text, and the figure in a row. |
+| 441 | `Palette.SIZE_LABEL` | `10` | The label in a row, and a button in a dense list. |
+| 444 | `Palette.SIZE_CAPTION` | `9` | A caption under something, and a unit after something. |
+| 452 | `Palette.GAP_TIGHT` | `4` |  |
+| 453 | `Palette.GAP` | `8` |  |
+| 454 | `Palette.GAP_LOOSE` | `12` |  |
+| 455 | `Palette.GAP_SECTION` | `20` |  |
+| 458 | `Palette.RADIUS` | `4` | Corner of a block, a chip, a control. |
+| 461 | `Palette.RADIUS_TIGHT` | `3` | Corner of something small - a row, a badge. |
+| 471 | `Palette.RAIL` | `76` | The navigation rail, at the window's left edge: an icon over its name (0.7.21). |
+| 474 | `Palette.HEADER` | `84` | The header across the top: the clock, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox (0.7.21; the money block and the chip 0.7.24). |
+| 477 | `Palette.CITY_PANEL` | `290` | The city panel, not counting the rail: the drawer over the stage's left since 0.7.24. |
+| 480 | `Palette.BUILD_PANEL` | `280` | The construction panel down the right: over the stage while open, a tab while folded, since 0.7.24. |
+| 483 | `Palette.BUILD_ROW` | `400` | A building row, so the price column lines up down the list. |
+| 486 | `Palette.INBOX` | `470` | The inbox, sized to the 62-character lines the notices are written at. |
+| 592 | `Palette.Fonts.FOLDER` | `"/fonts/"` | Where the files sit on the classpath. |
+| 595 | `Palette.Fonts.SYSTEM_FACE` | `"System"` | The platform's own face, for words when Plex Sans did not load. |
+| 598 | `Palette.Fonts.FIGURE_FACE` | `"Courier New"` | The face figures used before 0.7.21, and use again when Plex Mono did not load. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 591 | `private static String sans` |  |
-| 592 | `private static String mono` |  |
-| 593 | `private static boolean tried` |  |
+| 600 | `private static String sans` |  |
+| 601 | `private static String mono` |  |
+| 602 | `private static boolean tried` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 659 | **type** `public final class Palette` | Every colour, size and spacing this game is allowed to use, in one place. |
+| 48 | 668 | **type** `public final class Palette` | Every colour, size and spacing this game is allowed to use, in one place. |
 | 50 | 1 | `private Palette()` |  |
 
 ### THE GROUNDS (lines 52-81)
@@ -168,56 +169,56 @@
 
 ### WHAT CAN BE PRESSED (lines 179-202)
 
-### THE FOUR AREAS (0.7.21) (lines 203-237)
+### THE FOUR AREAS (0.7.21) (lines 203-246)
 
-### THE CHART'S LINES (0.7.23) (lines 238-312)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 276 | 7 | `static String[] stepsOf(String area)` | An area's two further steps, lighter first; none for a colour that is not an area's. |
-| 290 | 22 | `public static String[] lineColours(java.util.List<String> areas)` | Each line's colour, given each line's area in the order they are drawn: the area's own for the first of an area, then the CATEGORIES nobody on the chart has, then the area's lighter and darker steps, then any of the t... |
-
-### THE CHART RAMPS (lines 313-388)
-
-### TYPE (lines 389-436)
+### THE CHART'S LINES (0.7.23) (lines 247-321)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 407 | 1 | `public static String mono()` | Figures. |
+| 285 | 7 | `static String[] stepsOf(String area)` | An area's two further steps, lighter first; none for a colour that is not an area's. |
+| 299 | 22 | `public static String[] lineColours(java.util.List<String> areas)` | Each line's colour, given each line's area in the order they are drawn: the area's own for the first of an area, then the CATEGORIES nobody on the chart has, then the area's lighter and darker steps, then any of the t... |
 
-### SPACE (lines 437-453)
+### THE CHART RAMPS (lines 322-397)
 
-### THE FIXED WIDTHS (lines 454-478)
-
-### THE THREE THINGS A SCREEN IS BUILT FROM (lines 479-528)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 488 | 3 | `public static String fill(String colour)` | "-fx-text-fill: X;" |
-| 497 | 4 | `public static String figure(int size, String colour)` | A figure: monospaced, at a size, in a colour - semibold since 0.7.21, as the mockups set their figures (Courier's was bold, and Plex Mono's bold is heavier than the figure needs). |
-| 503 | 4 | `public static String figureRegular(int size, String colour)` | A figure at the regular weight: a table's cells, where a column of semibold is a wall. |
-| 509 | 3 | `public static String strong(int size, String colour)` | Words at the semibold weight: a title, a tile's label (0.7.21). |
-| 514 | 3 | `public static String words(int size, String colour)` | A word: the words' face, at a size, in a colour - Plex Sans from the stylesheet's root since 0.7.21, the platform's if it did not load. |
-| 519 | 3 | `public static String block(String ground)` | A block of content raised off its ground. |
-| 524 | 4 | `public static String block(String ground, String edge)` | A block with an edge, for when it has to be told from its neighbour. |
-
-### THE FACES (0.7.21) (lines 529-706)
+### TYPE (lines 398-445)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 578 | 128 | **type** `public static final class Fonts` | The game's two typefaces, IBM Plex Sans for words and IBM Plex Mono for every figure, loaded from the jar once at start-up. |
-| 580 | 1 | `private Fonts()` _(in Palette.Fonts)_ |  |
-| 601 | 30 | `static synchronized void load()` _(in Palette.Fonts)_ | Loads the eight files and records the family JavaFX reports for each. |
-| 633 | 17 | `private static String family(String file, StringBuilder said)` _(in Palette.Fonts)_ | One file: the family JavaFX reports for it, or null - and why, in the log line. |
-| 652 | 1 | `static boolean loaded()` _(in Palette.Fonts)_ | Whether Plex Sans loaded; the words are the platform's face if not. |
-| 655 | 1 | `static String sans()` _(in Palette.Fonts)_ | The family for words, quoted for CSS: "'IBM Plex Sans'", or the platform's. |
-| 658 | 1 | `static String mono()` _(in Palette.Fonts)_ | The family for figures, quoted for CSS: "'IBM Plex Mono'", or Courier New. |
-| 661 | 5 | `static String sansSemiBold()` _(in Palette.Fonts)_ | CSS for words at the semibold weight: the SmBld family at the normal weight, or bold of the words' face. |
-| 668 | 4 | `static String sansMedium()` _(in Palette.Fonts)_ | CSS for words at the medium weight, or the regular face. |
-| 674 | 5 | `static String monoSemiBold()` _(in Palette.Fonts)_ | CSS for figures at the semibold weight: the SmBld family at the normal weight, or bold of the figures' face. |
-| 681 | 4 | `static String monoMedium()` _(in Palette.Fonts)_ | CSS for figures at the medium weight, or the regular face. |
-| 686 | 1 | `private static String quoted(String family)` _(in Palette.Fonts)_ |  |
-| 691 | 3 | `static javafx.scene.text.Font sansFont(double size)` _(in Palette.Fonts)_ | Words at this size, for a canvas: Plex Sans or the platform's. |
-| 696 | 4 | `static javafx.scene.text.Font sansStrongFont(double size)` _(in Palette.Fonts)_ | Words at the semibold weight, for a canvas: the SmBld family, or bold of the words' face. |
-| 702 | 3 | `static javafx.scene.text.Font monoFont(double size)` _(in Palette.Fonts)_ | Figures at this size, for a canvas: Plex Mono or Courier New. |
+| 416 | 1 | `public static String mono()` | Figures. |
+
+### SPACE (lines 446-462)
+
+### THE FIXED WIDTHS (lines 463-487)
+
+### THE THREE THINGS A SCREEN IS BUILT FROM (lines 488-537)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 497 | 3 | `public static String fill(String colour)` | "-fx-text-fill: X;" |
+| 506 | 4 | `public static String figure(int size, String colour)` | A figure: monospaced, at a size, in a colour - semibold since 0.7.21, as the mockups set their figures (Courier's was bold, and Plex Mono's bold is heavier than the figure needs). |
+| 512 | 4 | `public static String figureRegular(int size, String colour)` | A figure at the regular weight: a table's cells, where a column of semibold is a wall. |
+| 518 | 3 | `public static String strong(int size, String colour)` | Words at the semibold weight: a title, a tile's label (0.7.21). |
+| 523 | 3 | `public static String words(int size, String colour)` | A word: the words' face, at a size, in a colour - Plex Sans from the stylesheet's root since 0.7.21, the platform's if it did not load. |
+| 528 | 3 | `public static String block(String ground)` | A block of content raised off its ground. |
+| 533 | 4 | `public static String block(String ground, String edge)` | A block with an edge, for when it has to be told from its neighbour. |
+
+### THE FACES (0.7.21) (lines 538-715)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 587 | 128 | **type** `public static final class Fonts` | The game's two typefaces, IBM Plex Sans for words and IBM Plex Mono for every figure, loaded from the jar once at start-up. |
+| 589 | 1 | `private Fonts()` _(in Palette.Fonts)_ |  |
+| 610 | 30 | `static synchronized void load()` _(in Palette.Fonts)_ | Loads the eight files and records the family JavaFX reports for each. |
+| 642 | 17 | `private static String family(String file, StringBuilder said)` _(in Palette.Fonts)_ | One file: the family JavaFX reports for it, or null - and why, in the log line. |
+| 661 | 1 | `static boolean loaded()` _(in Palette.Fonts)_ | Whether Plex Sans loaded; the words are the platform's face if not. |
+| 664 | 1 | `static String sans()` _(in Palette.Fonts)_ | The family for words, quoted for CSS: "'IBM Plex Sans'", or the platform's. |
+| 667 | 1 | `static String mono()` _(in Palette.Fonts)_ | The family for figures, quoted for CSS: "'IBM Plex Mono'", or Courier New. |
+| 670 | 5 | `static String sansSemiBold()` _(in Palette.Fonts)_ | CSS for words at the semibold weight: the SmBld family at the normal weight, or bold of the words' face. |
+| 677 | 4 | `static String sansMedium()` _(in Palette.Fonts)_ | CSS for words at the medium weight, or the regular face. |
+| 683 | 5 | `static String monoSemiBold()` _(in Palette.Fonts)_ | CSS for figures at the semibold weight: the SmBld family at the normal weight, or bold of the figures' face. |
+| 690 | 4 | `static String monoMedium()` _(in Palette.Fonts)_ | CSS for figures at the medium weight, or the regular face. |
+| 695 | 1 | `private static String quoted(String family)` _(in Palette.Fonts)_ |  |
+| 700 | 3 | `static javafx.scene.text.Font sansFont(double size)` _(in Palette.Fonts)_ | Words at this size, for a canvas: Plex Sans or the platform's. |
+| 705 | 4 | `static javafx.scene.text.Font sansStrongFont(double size)` _(in Palette.Fonts)_ | Words at the semibold weight, for a canvas: the SmBld family, or bold of the words' face. |
+| 711 | 3 | `static javafx.scene.text.Font monoFont(double size)` _(in Palette.Fonts)_ | Figures at this size, for a canvas: Plex Mono or Courier New. |
 

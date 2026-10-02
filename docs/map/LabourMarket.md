@@ -1,6 +1,6 @@
-# LabourMarket.java - 764 lines · 40 methods · 12 constants · model
+# LabourMarket.java - 800 lines · 44 methods · 12 constants · model
 
-`ham/citybuildersim/LabourMarket.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourMarket.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > What labour costs, and why it costs that.
 > 
@@ -52,9 +52,9 @@
 > what Migration's surplus departures now model. The player sets the number and
 > lives with which of the two costs they would rather pay.
 
-**Uses:** [JobType](JobType.md) (23), [WageBand](WageBand.md) (17), [DecisionLog](DecisionLog.md) (5), [PayTier](PayTier.md) (5), [EducationType](EducationType.md) (2)
+**Uses:** [JobType](JobType.md) (26), [WageBand](WageBand.md) (20), [DecisionLog](DecisionLog.md) (5), [PayTier](PayTier.md) (5), [EducationType](EducationType.md) (2)
 
-**Used by (11):** [Education](Education.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (14):** [CityNeeds](CityNeeds.md), [Education](Education.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 
@@ -68,7 +68,8 @@
 | 404 | THE MONTH |
 | 515 | READING AND SETTING |
 | 567 | THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS. |
-| 666 | SAVE AND RESTORE |
+| 656 | · WHAT THE POLICY TAB ASKS (0.7.36) |
+| 702 | SAVE AND RESTORE |
 
 ## Constants
 
@@ -108,7 +109,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 711 | **type** `public class LabourMarket` | What labour costs, and why it costs that. |
+| 54 | 747 | **type** `public class LabourMarket` | What labour costs, and why it costs that. |
 | 60 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |
 | 62 | 3 | `private void decided(String kind, String label)` |  |
 
@@ -169,7 +170,7 @@
 | 545 | 5 | `public double licencePremium(JobType job)` | What a licensed profession is paid OVER ITS OWN BAND, as actually paid. |
 | 558 | 9 | `public double bandPremium(WageBand band)` | The premium the BAND is paying, read off an ungated job in it. |
 
-### THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS. (lines 567-665)
+### THE MINIMUM WAGE IS A STANDARD OF LIVING, NOT A NUMBER OF DOLLARS. (lines 567-655)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -179,16 +180,25 @@
 | 615 | 3 | `public double cashMinimumWage()` | The floor in TODAY'S money: the real floor, lifted by the cost of living. |
 | 620 | 3 | `public void setMinimumWageAdjustment(double share)` | Moves the percentage. |
 | 625 | 4 | `public double premium(JobType job)` | How far above its base a job is paying - 1.00 is the going rate. |
-| 653 | 7 | `public void setMinimumWage(double value)` | Moves the dial. |
-| 662 | 3 | `public void setMinimumWageBase(double value)` | Sets the real floor, in founding money. |
+| 648 | 7 | `public void setMinimumWage(double value)` | Moves the dial. |
 
-### SAVE AND RESTORE (lines 666-764)
+### WHAT THE POLICY TAB ASKS (0.7.36) (lines 656-701)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 676 | 26 | `public double[] state()` |  |
-| 703 | 3 | `private int diagnosticsLength()` |  |
-| 715 | 27 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded - the same rule the health and healthcare arrays follow. |
-| 750 | 6 | `public void redenominate(double scale)` | Wages and the floor, in the new unit. |
-| 759 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 663 | 3 | `public double cashAt(double floor)` | What a real floor of `floor`, in founding money, comes to in today's money: cashMinimumWage()'s rule at another setting. |
+| 668 | 4 | `public double floorForCash(double cash)` | ...and back: the founding figure whose cash floor is `cash` today - what the Policy tab's dial, read in today's money, sets. |
+| 681 | 6 | `public double targetWageAt(JobType job, double floor)` | Where a job's wage heads with the real floor at `floor`: advanceMonth()'s target - its base at that floor times this month's band and licence multiples, held to MAX_MULTIPLE - and never under the floor in today's mone... |
+| 689 | 7 | `public double bestWageIn(WageBand band)` | The best-paid job somebody in this band can hold (0.7.36; the Policy tab's own until then): what a course's fee is weighed against. |
+| 698 | 3 | `public void setMinimumWageBase(double value)` | Sets the real floor, in founding money. |
+
+### SAVE AND RESTORE (lines 702-800)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 712 | 26 | `public double[] state()` |  |
+| 739 | 3 | `private int diagnosticsLength()` |  |
+| 751 | 27 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded - the same rule the health and healthcare arrays follow. |
+| 786 | 6 | `public void redenominate(double scale)` | Wages and the floor, in the new unit. |
+| 795 | 4 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

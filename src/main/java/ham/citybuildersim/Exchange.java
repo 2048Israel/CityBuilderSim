@@ -94,9 +94,11 @@ import java.util.List;
  *     others left: by its rule, under FUND, a bid at fair value for the gap
  *     to its mix, never past TreasuryFund.OWNERSHIP_LIMIT of a company, and
  *     an ask at fair value for an excess; then the player's hand, at fair
- *     value, under FUND_HAND. It never buys the bank's new shares, and its
- *     two names never trade with each other (Settle.mayTrade()). See
- *     postFund().
+ *     value or the price it names and no further than the limit, every buy
+ *     of the fund's on the company counted as filled and the rule's making
+ *     way for the hand's (0.7.39, fundRoom()), under FUND_HAND. It never
+ *     buys the bank's new shares, and its two names never trade with each
+ *     other (Settle.mayTrade()). See postFund().
  *
  * And out of order, in the middle of the month: a HOUSEHOLD CELL SHORT OF
  * MONEY sells in the waterfall (Household.settle(): savings, the city's
@@ -539,6 +541,8 @@ public class Exchange {
         lastPostedSellValue = lastFilledValue = 0;
         java.util.Arrays.fill(lastDeskBound, 0);
         lastSellsPosted = lastSellsWaited = lastTrades = 0;
+        // ...the player's among them, each closed with what it filled and what lapsed (0.7.39).
+        if (fund != null) fund.closePosted(false);
         for (int c = 0; c < n; c++) {
             OrderBook b = books[c];
             b.withdrawAll();
@@ -1033,9 +1037,24 @@ public class Exchange {
      * asks fair value for the excess instead, the desk's rule for an excess
      * (postDesk()); and a holding a company's buyback has lifted past the
      * limit is asked at fair value down to it, whatever the mix. The hand's
-     * orders go on after, at fair value too, under
-     * FUND_HAND. It never buys the bank's new shares: the desk's asks in them
+     * orders go on after, at fair value too unless the player named a price
+     * (below), under FUND_HAND. It never buys the bank's new shares: the desk's asks in them
      * are an issue, and the clearing refuses them to the fund (Settle.mayTrade()).
+     *
+     * THE HAND, SINCE 0.7.39 (the project's spec-fund-0739.md, D2 and B1): at
+     * the price the player named, or fair value when it named none; a buy no
+     * further than the room under OWNERSHIP_LIMIT that the fund's market book
+     * and the hand's orders before it leave (fundRoom()) - since past the cap
+     * the rule would ask the excess back at fair value from the next step;
+     * and an order that cannot be posted is written down as lapsed, with why.
+     * The rule's own bid, posted first, is sized by the same reckoning while
+     * the hand's buys still wait in the queue, and fills between steps no
+     * further than the room they leave, so it makes way for them: the hand
+     * comes first for the room as it does for the cash (B9), and with no
+     * order of the hand's the rule's room is what it always was. The rule
+     * reads its mix on the whole of its cash, and settles its bids with what
+     * the hand's buys leave of it (TreasuryFund.handReserve(), its
+     * capacity in Settle).
      */
     private void postFund() {
         if (fund == null || register == null) return;
@@ -1068,7 +1087,8 @@ public class Exchange {
                     if (!(caps > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
                     double want = target * marketCap(register, c) / caps;
                     double mine = register.getCityMarketShares(c);
-                    double room = TreasuryFund.OWNERSHIP_LIMIT * register.getShares(c) - mine;
+                    // The room under the cap, less the hand's buys waiting for this step (0.7.39): none, the default.
+                    double room = fundRoom(register, fund, c);
                     double q = Math.min((want - mine * price(c)) / fair[c], room);
                     if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.BUY, fair[c], q);
                 }
@@ -1076,10 +1096,98 @@ public class Exchange {
         }
         for (TreasuryFund.HandOrder o : fund.takeHandOrders(false)) {
             int c = o.company();
-            if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
-            if (o.buy()) submit(c, FUND_HAND, OrderBook.Side.BUY, fair[c], o.amount() / fair[c]);
-            else submit(c, FUND_HAND, OrderBook.Side.SELL, fair[c], Math.min(o.amount(), register.getCityShares(c)));
+            String key = c >= 0 && c < n ? FundLedger.shareKey(Equity.COMPANIES[c]) : null;
+            if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) {
+                fund.noteDropped(o, key, 0, o.limit(), c >= 0 && c < n && register.getShares(c) > 0
+                        ? "the company was worth nothing" : "the company was not listed", month);
+                continue;
+            }
+            double price = o.limit() > 0 ? o.limit() : fair[c];
+            if (o.buy()) {
+                double q = o.amount() / price;
+                // The share orders are out of the queue by now: the room is what the market book and the hand's bids leave.
+                double room = fundRoom(register, fund, c);
+                if (!(Math.min(q, room) > OrderBook.DUST)) {
+                    fund.noteDropped(o, key, q, price, "no room under the " + Math.round(TreasuryFund.OWNERSHIP_LIMIT * 100)
+                            + "% cap", month);
+                    continue;
+                }
+                fund.notePosted(o, key, Math.min(q, room), price, month);
+                submit(c, FUND_HAND, OrderBook.Side.BUY, price, Math.min(q, room));
+            } else {
+                double q = Math.min(o.amount(), register.getCityShares(c));
+                if (!(q > OrderBook.DUST)) {
+                    fund.noteDropped(o, key, o.amount(), price, "nothing held to sell", month);
+                    continue;
+                }
+                fund.notePosted(o, key, q, price, month);
+                submit(c, FUND_HAND, OrderBook.Side.SELL, price, q);
+            }
         }
+    }
+
+    /* ----- the cap and the hand's orders (0.7.39) -----
+     *
+     * THE GAP IN B1 ITS DOCS PASS FOUND. Everything the fund could hold of a
+     * company on its market book, were every buy of its on the company to
+     * fill, stays under TreasuryFund.OWNERSHIP_LIMIT: past it the rule asks
+     * the excess back at fair value, a certain loss on a buy over fair.
+     * Counted: what it holds there now, the hand's buys (handOnOrder(): on
+     * the book, and waiting for the step), and the rule's bid on the book
+     * (fundCouldHold()). The hand comes first, as it does for the cash (B9,
+     * TreasuryFund.handReserve()): a buy of the hand's has the cap less what
+     * the fund holds and the hand's other buys
+     * (fundRoom()), and the rule's bid makes way for it - sized at the step
+     * by the same reckoning while the hand's buys still wait in the queue,
+     * and between steps filled no further than the room they leave
+     * (ruleRoom(), its capacity in Settle). postFund() trims each hand buy to
+     * fundRoom() as it posts, in the order they were placed; FundView.quote()
+     * caps the ticket at it: one reckoning for both. With no buy of the
+     * hand's on the company the rule's room is what it always was - the cap
+     * less what it holds when it bids, its cash alone between steps - and a
+     * company's buyback can still lift the fund past the cap, which the rule
+     * then asks back.
+     */
+
+    /** The hand's buys on a company, in shares: those resting on its book, and the waiting orders' money over their price (the price named, or fair value as struck now). */
+    public double handOnOrder(TreasuryFund fund, int c) {
+        if (c < 0 || c >= n) return 0;
+        double units = books[c].resting(FUND_HAND, OrderBook.Side.BUY);
+        if (fund != null) {
+            for (TreasuryFund.HandOrder o : fund.getHandOrders()) {
+                if (o.bond() || !o.buy() || o.company() != c) continue;
+                double price = o.limit() > 0 ? o.limit() : fair[c];
+                if (price > 0) units += o.amount() / price;
+            }
+        }
+        return units;
+    }
+
+    /** The room a buy of the hand's has under the cap, and the rule's bid at the step: the cap less what the fund holds of the company and the hand's buys on order, never under nothing. */
+    public double fundRoom(Equity register, TreasuryFund fund, int c) {
+        if (register == null || c < 0 || c >= n) return 0;
+        return Math.max(0, TreasuryFund.OWNERSHIP_LIMIT * register.getShares(c)
+                - (register.getCityMarketShares(c) + handOnOrder(fund, c)));
+    }
+
+    /** ...the most of the rule's bid that may still fill between steps: that room, or no limit with no buy of the hand's on the company. */
+    private double ruleRoom(int c) {
+        double hand = handOnOrder(fund, c);
+        return hand > 0 ? fundRoom(register, fund, c) : Double.POSITIVE_INFINITY;
+    }
+
+    /**
+     * Everything the fund could hold of a company on its market book were
+     * every buy of its on it to fill, with `more` units of a new buy of the
+     * hand's among them: what it holds, the hand's buys, and the rule's bid on
+     * the book as far as the room they leave lets it fill.
+     */
+    public double fundCouldHold(Equity register, TreasuryFund fund, int c, double more) {
+        if (register == null || c < 0 || c >= n) return 0;
+        double held = register.getCityMarketShares(c), hand = handOnOrder(fund, c) + Math.max(0, more);
+        double rule = books[c].resting(FUND, OrderBook.Side.BUY);
+        if (hand > 0) rule = Math.min(rule, Math.max(0, TreasuryFund.OWNERSHIP_LIMIT * register.getShares(c) - held - hand));
+        return held + hand + rule;
     }
 
     /** What the city's fund holds of every company, both books, at the price: the fund's shares' mark. */
@@ -1154,6 +1262,20 @@ public class Exchange {
     private double raised;
 
     /* =========================== one order, settled =========================== */
+
+    /**
+     * ONE ORDER ON A COMPANY'S BOOK, SETTLED AGAINST THE CITY, between two
+     * steps: for FundLedgerCheck (0.7.39), which causes a seller or a buyer at
+     * a price it names and then the fund's order against it, and reads back
+     * the fills the book reports; and for SaveFileCheck's fixture, a share
+     * the fund buys from the world before its save. The month never calls it.
+     */
+    List<OrderBook.Fill> tradeForCheck(int c, String who, OrderBook.Side side, double price, double quantity) {
+        return books[c].submit(who, side, price, quantity, month, clearing(c));
+    }
+
+    /** ...and the splits the step would make now: for FundLedgerCheck, after it has traded a share past SPLIT_AT. */
+    void splitForCheck() { splitWhatNeedsIt(); }
 
     private void submit(int c, String who, OrderBook.Side side, double price, double quantity) {
         if (!(quantity > OrderBook.DUST) || !(price > 0) || !Double.isFinite(price)) return;
@@ -1236,8 +1358,11 @@ public class Exchange {
                     double cash = h == buying ? Math.min(buyingBudget, spareOf(h)) : spareOf(h);
                     return Math.max(0, cash) / price;
                 }
-                // The city's fund, rule or hand (0.7.14): what its cash buys.
-                if (isFund(who)) return fund == null ? 0 : Math.max(0, fund.getCash()) / price;
+                // The city's fund, rule or hand (0.7.14): what its cash buys - the rule's,
+                // less what the hand's buys hold of it (0.7.39, TreasuryFund.handReserve()),
+                // and no further than the room under the cap they leave (ruleRoom()).
+                if (FUND.equals(who)) return fund == null ? 0 : Math.min(fund.cashForTheRule() / price, ruleRoom(c));
+                if (FUND_HAND.equals(who)) return fund == null ? 0 : Math.max(0, fund.getCash()) / price;
                 if (companies == null || !who.equals(Equity.COMPANIES[c])) return 0;
                 return Math.max(0, Math.min(buybackBudget[c], companies.till(c))) / price;
             }
@@ -1302,13 +1427,21 @@ public class Exchange {
                     h.savings += cash / h.households();
                 }
             } else if (FUND.equals(seller)) {
+                double marketBefore = register.getCityMarketShares(c);
                 register.moveCity(c, -q);
                 fund.noteSold(cash, false);
+                // ...and what it cost, out of the market lot (0.7.39, FundLedger).
+                fund.getLedger().soldShare(Equity.COMPANIES[c], false, q, price, 0, marketBefore, 0, 0, month);
             } else if (FUND_HAND.equals(seller)) {
                 double rescueBefore = register.getCityRescueShares(c);
+                double marketBefore = register.getCityMarketShares(c);
+                double rescueCostBefore = fund.getRescueCost();
                 double fromRescue = register.sellCityByHand(c, q);
                 fund.noteSold(cash, false);
                 fund.noteRescueSold(fromRescue, rescueBefore, cash * fromRescue / q);
+                fund.getLedger().soldShare(Equity.COMPANIES[c], true, q, price, fromRescue, marketBefore,
+                        rescueBefore, rescueCostBefore, month);
+                fund.handFilled(false, c, false, q, cash);
             }
 
             /* ---- the buyer pays and takes them ---- */
@@ -1335,6 +1468,9 @@ public class Exchange {
             } else if (fundBuys) {
                 register.moveCity(c, q);
                 fund.noteBought(cash, false);
+                // ...into the market lot, at what it paid (0.7.39, FundLedger).
+                fund.getLedger().boughtShare(Equity.COMPANIES[c], FUND_HAND.equals(buyer), q, price, fair[c], month);
+                if (FUND_HAND.equals(buyer)) fund.handFilled(false, c, true, q, cash);
             }
 
             /* ---- and what crossed the pools' edge, for the audit ---- */
@@ -1396,6 +1532,9 @@ public class Exchange {
             volume[c] *= k;
             split[c] = k;
             splitFactor[c] *= k;
+            // ...the fund's cost stands; its average a share and the player's orders on the book move
+            // with the count (0.7.39): a row on its record.
+            if (fund != null) fund.noteSplit(c, k, month);
         }
     }
 

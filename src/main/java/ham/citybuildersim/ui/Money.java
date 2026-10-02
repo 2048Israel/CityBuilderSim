@@ -91,6 +91,38 @@ public final class Money {
     public static String pct2(double rate)  { return String.format("%.2f%%", unsigned0(rate * 100, 2)); }
 
     /*
+     * A RATE, A SHARE AND A SPREAD, the Bank tab's three (0.7.33; its own
+     * rate(), share() and points() until then: rate() wrote a year of net
+     * releases a hair under nothing as "-0.00% a year" - the spec's B1 - and
+     * it and share() a hyphen where points() wrote a minus). Through
+     * unsigned0(), with a true minus; a rate under a tenth of a per cent to
+     * three places, so savers paid 0.008% and the 0.014% the bank chose do
+     * not both read "0.01%" beside a sentence saying they differ (B11).
+     */
+
+    /** A yearly rate: "2.37% a year", "0.008% a year". */
+    public static String ratePerYear(double rate) { return ratePct(rate) + " a year"; }
+
+    /** ...without its unit, for a column headed "a year": "2.37%". */
+    public static String ratePct(double rate) {
+        double shown = rate * 100;
+        int places = shown != 0 && Math.abs(shown) < .1 ? 3 : 2;
+        return String.format("%." + places + "f%%", unsigned0(shown, places)).replace('-', '−');
+    }
+
+    /** A share or a ratio that is not a yearly rate, to one place, grouped: "14.1%", "1,991.3%". */
+    public static String share1(double share) {
+        return String.format("%,.1f%%", unsigned0(share * 100, 1)).replace('-', '−');
+    }
+
+    /** A spread between two rates, signed, to the rates' own two places: "+2.06 points", "−0.22 points", "0.00 points". */
+    public static String points(double spread) {
+        double shown = unsigned0(spread * 100, 2);
+        if (Math.abs(shown) < .005) return "0.00 points";
+        return String.format("%s%.2f points", shown < 0 ? "−" : "+", Math.abs(shown));
+    }
+
+    /*
      * TWO DECIMALS SINCE THE LADDER. Every rate that moves off the income tax
      * steps in quarter points now, and at one decimal a quarter point printed
      * as "+0.3 pts" - a dial that lies about where it just landed.
@@ -259,14 +291,13 @@ public final class Money {
      * past a thousand, whole past a million, and three significant figures
      * under a ten-thousandth - where "%.4f" printed a currency still worth
      * something as 0.0000.
+     *
+     * Formats.rate() since 0.7.26, the same lines moved, so a rate the model
+     * writes into a sentence - the land office's receipt - is written the
+     * screens' way.
      */
     public static String fxRate(double rate) {
-        if (!Double.isFinite(rate)) return "–";
-        double a = Math.abs(rate);
-        if (a >= 1e6) return String.format("%,.0f", rate);
-        if (a >= 1e3) return String.format("%,.2f", rate);
-        if (a >= 1e-4 || a == 0) return String.format("%.4f", rate);
-        return new java.math.BigDecimal(rate).round(new java.math.MathContext(3)).toPlainString();
+        return Formats.INSTANCE.rate(rate);
     }
 
     /** 12.4k rather than 12,400 - the panel is narrow and these are two to a row. */
@@ -275,6 +306,46 @@ public final class Money {
         if (value >= 10_000)    return String.format("%.0fk", value / 1_000);
         if (value >= 1_000)     return String.format("%.1fk", value / 1_000);
         return String.format("%.0f", value);
+    }
+
+    /**
+     * Power, from the model's kilowatts (0.7.28): "900 kW", "38.9 MW", "199
+     * MW", "1.18 GW" - three figures at most, the unit scaled to fit. The
+     * model's power figures were always kilowatts (a coal plant's 280,000 is
+     * "the 325 MW this plant actually is", Game's note on its price), and
+     * the screens printed them as watts (" W") or "units a month", which
+     * was a thousand times out on one and not a rate on the other. Never a
+     * sign: the caller says short or spare.
+     */
+    public static String power(double kW) {
+        if (!Double.isFinite(kW)) return "—";
+        double a = Math.abs(kW);
+        if (a >= 1_000_000) return scaled(a / 1_000_000) + " GW";
+        if (a >= 1_000)     return scaled(a / 1_000) + " MW";
+        return (a >= 10 ? formatter.format(Math.round(a)) : String.format("%.1f", a)) + " kW";
+    }
+
+    /** A figure of one to three digits before its unit: 8.1, 38.9, 199, 1.18 - its three significant figures, under 10 to two places only when they say something. */
+    private static String scaled(double v) {
+        if (v >= 100) return formatter.format(Math.round(v));
+        if (v >= 10)  return String.format("%.1f", v);
+        String two = String.format("%.2f", v);
+        return two.endsWith("0") ? String.format("%.1f", v) : two;
+    }
+
+    /**
+     * Months of import cover in words a player can act on (Trade's since
+     * 0.7.35, every screen's since 0.7.38): "over 10 years" past ten years (a
+     * city with D$100M in the vault and D$36k a month of imports has 2,777
+     * months, which means nothing), "under 0.1 months" under a tenth of a
+     * month (the Trade spec's B16 and D11: it printed "0.0 months" for
+     * US$6.8M), "none" for an empty vault, else to one place. Its verdict
+     * is ForeignAccounts.coverLevel().
+     */
+    public static String coverMonths(double months) {
+        if (months >= 120) return "over 10 years";
+        if (!(months >= .1)) return months > 0 ? "under 0.1 months" : "none";
+        return String.format("%.1f months", months);
     }
 
 }

@@ -1,6 +1,6 @@
-# Sickness.java - 345 lines · 23 methods · 6 constants · model
+# Sickness.java - 357 lines · 24 methods · 6 constants · model
 
-`ham/citybuildersim/Sickness.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sickness.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Who has been sick, and for how long - and the ones it kills.
 > 
@@ -33,9 +33,9 @@
 > Childcare and senior care keep their swings, and also take away the extra
 > sickness the youngest and the oldest carry.
 
-**Uses:** [AgeBand](AgeBand.md) (27), [PopulationCohorts](PopulationCohorts.md) (3), [Health](Health.md) (1)
+**Uses:** [AgeBand](AgeBand.md) (29), [PopulationCohorts](PopulationCohorts.md) (4), [Health](Health.md) (1)
 
-**Used by (9):** [BuildScreen](BuildScreen.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
+**Used by (10):** [BuildScreen](BuildScreen.md), [Game](Game.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
 
 ## Sections
 
@@ -45,7 +45,7 @@
 | 117 | · state |
 | 126 | · the month |
 | 213 | · reading it |
-| 272 | · saving |
+| 284 | · saving |
 
 ## Constants
 
@@ -71,7 +71,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 311 | **type** `public class Sickness` | Who has been sick, and for how long - and the ones it kills. |
+| 35 | 323 | **type** `public class Sickness` | Who has been sick, and for how long - and the ones it kills. |
 
 ### THE NUMBERS - every one of them Jerus's, from a table of what each (lines 37-116)
 
@@ -91,7 +91,7 @@
 | 150 | 30 | `public void advanceMonth(double cityRate, double generalCoverage, double childcareCoverage, double seniorCoverage)` | Turns every band's ring a month and meets this month's rate. |
 | 191 | 21 | `public void seed(double cityRate, double generalCoverage, double childcareCoverage, double seniorCoverage)` | Puts every band's ring at the steady state for a rate: a city that has been this sick, and this well served, for ever. |
 
-### reading it (lines 213-271)
+### reading it (lines 213-283)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -102,19 +102,20 @@
 | 238 | 1 | `public boolean isSeeded()` |  |
 | 239 | 1 | `public double getLastRecovery()` |  |
 | 242 | 6 | `public double peoplePastTwoMonths(PopulationCohorts cohorts)` | People sick past two months, across the city. |
-| 250 | 6 | `public double peopleSick(PopulationCohorts cohorts)` | People sick this month, across the city. |
-| 258 | 5 | `public void setLastDeaths(double[] byBand)` | Recorded by Game from what the pyramid actually booked. |
-| 264 | 1 | `public double getLastDeaths(AgeBand b)` |  |
-| 266 | 5 | `public double getLastDeaths()` |  |
+| 254 | 6 | `public double peopleInSlot(PopulationCohorts cohorts, int k)` | People sick k months, across the city (0.7.28): one slot of every band's ring in people - the Services screen's long-sick bars, which peoplePastTwoMonths() is the slots from DEADLY_FROM of. |
+| 262 | 6 | `public double peopleSick(PopulationCohorts cohorts)` | People sick this month, across the city. |
+| 270 | 5 | `public void setLastDeaths(double[] byBand)` | Recorded by Game from what the pyramid actually booked. |
+| 276 | 1 | `public double getLastDeaths(AgeBand b)` |  |
+| 278 | 5 | `public double getLastDeaths()` |  |
 
-### saving (lines 272-345)
+### saving (lines 284-357)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 275 | 10 | `public double[] getState()` | Every ring, the month's dead by band, the recovery, and whether it has been seeded. |
-| 287 | 3 | `public boolean restore(double[] saved)` | A ring saved before the band names travelled with it. |
-| 304 | 23 | `public boolean restore(String[] bands, double[] saved)` | Refused whole on a length mismatch. |
-| 329 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 335 | 6 | `public void reset()` |  |
-| 342 | 3 | `private static double clamp(double v)` |  |
+| 287 | 10 | `public double[] getState()` | Every ring, the month's dead by band, the recovery, and whether it has been seeded. |
+| 299 | 3 | `public boolean restore(double[] saved)` | A ring saved before the band names travelled with it. |
+| 316 | 23 | `public boolean restore(String[] bands, double[] saved)` | Refused whole on a length mismatch. |
+| 341 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 347 | 6 | `public void reset()` |  |
+| 354 | 3 | `private static double clamp(double v)` |  |
 

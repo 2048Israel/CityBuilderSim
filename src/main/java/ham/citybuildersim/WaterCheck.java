@@ -105,6 +105,12 @@ public class WaterCheck {
         double billed = 5 * 6 + 2 * 60;
         check("billed draw", uh.getBilledWaterDraw(), billed);
         check("unbilled draw", uh.getUnbilledWaterDraw(), uh.getWaterConsumption() - billed);
+        // ...and of the rest, what the homes draw (0.7.28): the Services screen
+        // splits the unbilled buildings into the homes and the city's own.
+        check("the homes' water: the houses' own draw", uh.getHomesWaterDraw(), 40000 * house.getWaterConsumption());
+        check("...the city's own: the water plant's",
+                uh.getBuildingWaterDraw() - billed - uh.getHomesWaterDraw(), plant.getWaterConsumption());
+        check("the homes' power: the houses' own draw", uh.getHomesElectricityDraw(), 40000 * house.getElectricityConsumption());
 
         double expectedWaterRev = billed * uh.getWaterRatio() * .05;
         check("water revenue (billed only)", uh.getWaterRevenue(), expectedWaterRev);

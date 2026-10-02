@@ -828,7 +828,16 @@ public class BusinessDebtManager {
 
     /** The quote: the curve at the leverage the sector's last quarter of statements reads (getQuarterLeverage()), and the whole curve against no assets (pricingLeverage()). */
     private double priceSector(String sector) {
-        return priceSector(sector, 0, 0);
+        // ...kept in its parts (0.7.33): every call of this one is a rate put on
+        // the book (rates.put()), so the parts are always the rate's.
+        QuoteParts parts = quote(sector, 0, 0);
+        quoteParts.put(sector, parts);
+        return parts.rate();
+    }
+
+    /** A quote, with a deal on top (see quote()): the rate its parts add up to. */
+    private double priceSector(String sector, double extraPrincipal, double extraAssets) {
+        return quote(sector, extraPrincipal, extraAssets).rate();
     }
 
     /**
@@ -851,7 +860,7 @@ public class BusinessDebtManager {
      * written earlier in the same month are in neither until the month's own
      * reading - at most a shortfall loan and one project a month a sector.
      */
-    private double priceSector(String sector, double extraPrincipal, double extraAssets) {
+    private QuoteParts quote(String sector, double extraPrincipal, double extraAssets) {
 
         double principal = quarterPrincipal(sector) + extraPrincipal;
         double totalAssets = extraAssets > 0
@@ -870,13 +879,13 @@ public class BusinessDebtManager {
          * RECOVERIES BY INSTRUMENT. (Round 1 read the loans' side of absolute
          * priority here, which fell as the sector's bonds grew.)
          */
-        double spread = expectedLossSpread(pricingLeverage(principal, totalAssets));
+        double risk = expectedLossSpread(pricingLeverage(principal, totalAssets));
 
         // The record, priced: a bad HISTORY is not a leverage.
-        spread += recordSurcharge(sector);
+        double record = recordSurcharge(sector);
 
         // ...and the capital the book's concentration asks of the loan (0.7.12).
-        spread += getConcentrationCharge(sector);
+        double concentration = getConcentrationCharge(sector);
 
         /*
          * ...OVER PRIME, which is what the money and the bank cost (0.7.7).
@@ -888,8 +897,11 @@ public class BusinessDebtManager {
          * From then until 0.7.7 it was floored on the bank's cost of funds
          * plus Bank.MIN_MARGIN. Prime is built on the bank's funds-transfer
          * price and its costs, so the floor went with the base it propped up.
+         *
+         * Kept in its parts since 0.7.33 (QuoteParts), which add up in the
+         * order this did: the risk, the record, the concentration, on prime.
          */
-        return primeRate + spread;
+        return new QuoteParts(primeRate, risk, record, concentration);
     }
 
     //getters
@@ -898,7 +910,7 @@ public class BusinessDebtManager {
         return rates.getOrDefault(sector, primeRate);
     }
 
-    /** What this sector pays over prime: its own expected loss and record. */
+    /** What this sector pays over prime: its own expected loss, its record and the book's concentration on it (QuoteParts.spread()). */
     public double getSpread(String sector) {
         return getRate(sector) - primeRate;
     }
@@ -916,6 +928,35 @@ public class BusinessDebtManager {
     private double recordSurcharge(String sector) {
         return DEFAULT_SURCHARGE * Math.min(getRestructureCount(sector), DEFAULT_SURCHARGE_MAX_COUNT);
     }
+
+    /**
+     * THE QUOTE IN ITS PARTS (0.7.33): the prime a sector's rate was struck
+     * on and the three things over it - its own expected loss over the
+     * book's, its record and the book's concentration - as quote() added
+     * them up the last time the sector was priced, so prime plus the three
+     * is getRate() to the bit (BankCheck). getRiskSpread() re-reads the
+     * curve as the statements stand now, so a month after the price was
+     * struck it and the rate part company (the Bank tab's B4 in the
+     * project's spec-bank-0733.md); the Bank tab's ladder draws a sector's
+     * rate from these.
+     */
+    public record QuoteParts(double prime, double risk, double record, double concentration) {
+        /** What the sector pays over prime: the three parts, added in quote()'s order. */
+        public double spread() {
+            double spread = risk;
+            spread += record;
+            spread += concentration;
+            return spread;
+        }
+        /** ...and the rate: prime and the spread, which is getRate(). */
+        public double rate() { return prime + spread(); }
+    }
+
+    /** Each sector's quote in its parts, as it was last priced (priceSector()). */
+    private final Map<String, QuoteParts> quoteParts = new LinkedHashMap<>();
+
+    /** A sector's rate in its parts as it was last priced; null for a sector not priced yet, whose getRate() is its placeholder. */
+    public QuoteParts quoteParts(String sector) { return quoteParts.get(sector); }
 
     /**
      * WHAT A PROJECT LOAN OF THIS SIZE WOULD BE WRITTEN AT (0.7.8): the curve
@@ -994,6 +1035,13 @@ public class BusinessDebtManager {
         return getLoanPrincipal(sector) + getBondPrincipal(sector);
     }
 
+    /** What every business owes, bank loans and bonds together: getPrincipal() over every sector (0.7.32, the Finances tab's bond market, which summed it itself). */
+    public double getEverythingOwed() {
+        double total = 0;
+        for (String s : SECTORS) total += getPrincipal(s);
+        return total;
+    }
+
     /** What a sector owes the bank: its loans and its mortgages. */
     public double getLoanPrincipal(String sector) {
         double total = 0;
@@ -1001,6 +1049,21 @@ public class BusinessDebtManager {
             if (loan.getSector().equals(sector)) {
                 total += loan.getOutstandingPrincipal();
             }
+        }
+        return total;
+    }
+
+    /**
+     * ...of which its plain bank loans (0.7.30, the Sectors screen's debt
+     * mix): its loans that are neither a mortgage nor interim financing, so
+     * the four parts - these, its mortgages, its interim financing and its
+     * bonds - are what it owes, each counted once.
+     */
+    public double getTermLoanPrincipal(String sector) {
+        double total = 0;
+        for (BusinessDebt loan : loans) {
+            if (loan instanceof Mortgage || loan instanceof InterimLoan || !loan.getSector().equals(sector)) continue;
+            total += loan.getOutstandingPrincipal();
         }
         return total;
     }

@@ -1,6 +1,6 @@
-# HouseholdAccounts.java - 1,178 lines · 87 methods · 11 constants · model
+# HouseholdAccounts.java - 1,226 lines · 92 methods · 11 constants · model
 
-`ham/citybuildersim/HouseholdAccounts.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdAccounts.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The city's residents, treated as one household.
 > 
@@ -48,9 +48,9 @@
 > runs a deficit and the richest banks almost everything, and both are artefacts
 > of a missing budget constraint rather than results. The screen says so.
 
-**Uses:** [Household](Household.md) (11), [PayTier](PayTier.md) (7), [FamilyModel](FamilyModel.md) (6), [FamilyStructure](FamilyStructure.md) (5), [Statement](Statement.md) (3), [AgeBand](AgeBand.md) (2), [SocialSecurity](SocialSecurity.md) (1)
+**Uses:** [Household](Household.md) (11), [PayTier](PayTier.md) (10), [FamilyModel](FamilyModel.md) (7), [FamilyStructure](FamilyStructure.md) (5), [Statement](Statement.md) (3), [AgeBand](AgeBand.md) (2), [SocialSecurity](SocialSecurity.md) (1)
 
-**Used by (10):** [BankCheck](BankCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ShadowBasket](ShadowBasket.md)
+**Used by (13):** [BankCheck](BankCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ShadowBasket](ShadowBasket.md)
 
 ## Sections
 
@@ -64,7 +64,7 @@
 | 396 | THE SAME STATEMENT, PER PAY TIER |
 | 449 | WHO PAID FOR CARE, AND WHO WAS TURNED AWAY (2026-09-19) |
 | 714 | ONE HOUSEHOLD OF A GIVEN SHAPE, AT A GIVEN TIER |
-| 888 | THE MONTH'S STATEMENT, CARRIED |
+| 936 | THE MONTH'S STATEMENT, CARRIED |
 
 ## Constants
 
@@ -77,10 +77,10 @@
 | 419 | `HouseholdAccounts.PRISONERS` | `Household.PRISON_ROW` | ...and the prisoners, since 2026-09-11 (night). |
 | 420 | `HouseholdAccounts.ROWS` | `Household.ROWS` |  |
 | 423 | `HouseholdAccounts.ROWS_BEFORE_OUTSIDE` | `RETIRED + 1` | The rows a save from before 2026-09-11 carries: the tiers and the retired. |
-| 946 | `HouseholdAccounts.STATE_SCALARS` | `18, STATE_ROWS = 19` | Scalars and row arrays in the statement's state since 0.7.7. |
-| 949 | `HouseholdAccounts.SCALARS_BEFORE_ACCOUNT_FEES` | `17, ROWS_BEFORE_ACCOUNT_FEES = 18` | ...and the shape before the bank's account fee was a line on it (0.7.7). |
-| 952 | `HouseholdAccounts.SCALARS_BEFORE_HEALTH` | `16, ROWS_BEFORE_HEALTH = 15` | ...and the shape before the health premium was a line on it (2026-09-19). |
-| 955 | `HouseholdAccounts.SCALARS_BEFORE_FARES` | `15, ROWS_BEFORE_FARES = 14` | ...and the shape before the transit fare was a line on it (2026-09-16). |
+| 994 | `HouseholdAccounts.STATE_SCALARS` | `18, STATE_ROWS = 19` | Scalars and row arrays in the statement's state since 0.7.7. |
+| 997 | `HouseholdAccounts.SCALARS_BEFORE_ACCOUNT_FEES` | `17, ROWS_BEFORE_ACCOUNT_FEES = 18` | ...and the shape before the bank's account fee was a line on it (0.7.7). |
+| 1000 | `HouseholdAccounts.SCALARS_BEFORE_HEALTH` | `16, ROWS_BEFORE_HEALTH = 15` | ...and the shape before the health premium was a line on it (2026-09-19). |
+| 1003 | `HouseholdAccounts.SCALARS_BEFORE_FARES` | `15, ROWS_BEFORE_FARES = 14` | ...and the shape before the transit fare was a line on it (2026-09-16). |
 
 ## Fields (state)
 
@@ -126,13 +126,13 @@
 | 474 | `private double careBilled, careFull` | The treatment fees the households were billed - Healthcare.getTreatmentFees() - and the same at full service. |
 | 477 | `private final double[] rowCareBilled` | ...and each by row: the billed over the heads who paid, the full over every head. |
 | 478 | `private final double[] rowCareFull` |  |
-| 797 | `private double pensionPerSenior` | What one pensioner receives, as the policy currently sets it. |
+| 851 | `private double pensionPerSenior` | What one pensioner receives, as the policy currently sets it. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1129 | **type** `public class HouseholdAccounts` | The city's residents, treated as one household. |
+| 50 | 1177 | **type** `public class HouseholdAccounts` | The city's residents, treated as one household. |
 
 ### this month (lines 52-123)
 
@@ -218,7 +218,7 @@
 | 544 | 6 | `public void updateByTier(double[] wagesPerTier, double[] taxPerTier, double[] peoplePerRow, double[] housePerRow, double[] spen...` | HouseholdBalance - who could AFFORD to shop, not who was hungry. |
 | 555 | 158 | `public void updateByTier(double[] wagesPerTier, double[] taxPerTier, double[] peoplePerRow, double[] housePerRow, double[] spen...` | null for one door a household, as before |
 
-### ONE HOUSEHOLD OF A GIVEN SHAPE, AT A GIVEN TIER (lines 714-887)
+### ONE HOUSEHOLD OF A GIVEN SHAPE, AT A GIVEN TIER (lines 714-935)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -226,41 +226,46 @@
 | 736 | 6 | `public double rentPerHousehold()` | Rent one let home pays, whoever lives in it. |
 | 743 | 1 | `public double getRowDoors(int row)` |  |
 | 765 | 23 | `public double[] livingAlonePressure(FamilyModel families)` | How badly a single adult in each tier cannot afford to live alone, 0-1. |
-| 790 | 5 | `public double feesPerHead()` | Healthcare and tuition, per person. |
-| 798 | 1 | `public void setPensionPerSenior(double value)` |  |
-| 799 | 1 | `public double getPensionPerSenior()` |  |
-| 802 | 5 | `public double shoppingPerHead()` | The weekly shop, per person, which is how retail demand is counted. |
-| 816 | 14 | `public double[] seekerPressure(double[] households)` | How badly one of each group living outside the families cannot afford a door of their own, 0-1 - livingAlonePressure()'s arithmetic on what they live on: EI for the out of work (nothing past the twelfth month), the gr... |
-| 837 | 41 | `public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier)` | What one household of this shape and tier earns, pays and keeps. |
-| 879 | 1 | `public double getRowWages(int row)` |  |
-| 880 | 1 | `public double getRowTax(int row)` |  |
-| 881 | 1 | `public double getRowRent(int row)` |  |
-| 882 | 1 | `public double getRowShopping(int row)` |  |
-| 883 | 1 | `public double getRowFares(int row)` |  |
-| 884 | 1 | `public double getRowPeople(int row)` |  |
-| 885 | 1 | `public double getRowHouseholds(int row)` |  |
-| 886 | 1 | `public int getRowCount()` |  |
+| 790 | 5 | `public double feesPerHead()` | Healthcare, tuition and the fares, per person: all three are charged per head. |
+| 807 | 5 | `public double careAndSchoolPerHead()` | The clinic's and the schools' fees, per person: feesPerHead() without the fares. |
+| 814 | 5 | `public double faresPerHead()` | The fares, per person: the rest of feesPerHead(). |
+| 821 | 4 | `public double interestPerHousehold(PayTier tier)` | What one household of the tier pays in interest on what it owes: its row's interest per household. |
+| 827 | 4 | `public double accountFeePerHousehold(PayTier tier)` | ...and in the bank's account fee: its row's fees per household. |
+| 840 | 9 | `public double wagePerEarner(FamilyModel families, PayTier tier)` | What one earner of the tier is paid this month: the tier's wage bill over its earners, every family shape's earners counted (0.7.27, out of statementFor(), which calls it). |
+| 852 | 1 | `public void setPensionPerSenior(double value)` |  |
+| 853 | 1 | `public double getPensionPerSenior()` |  |
+| 856 | 5 | `public double shoppingPerHead()` | The weekly shop, per person, which is how retail demand is counted. |
+| 870 | 14 | `public double[] seekerPressure(double[] households)` | How badly one of each group living outside the families cannot afford a door of their own, 0-1 - livingAlonePressure()'s arithmetic on what they live on: EI for the out of work (nothing past the twelfth month), the gr... |
+| 891 | 35 | `public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier)` | What one household of this shape and tier earns, pays and keeps. |
+| 927 | 1 | `public double getRowWages(int row)` |  |
+| 928 | 1 | `public double getRowTax(int row)` |  |
+| 929 | 1 | `public double getRowRent(int row)` |  |
+| 930 | 1 | `public double getRowShopping(int row)` |  |
+| 931 | 1 | `public double getRowFares(int row)` |  |
+| 932 | 1 | `public double getRowPeople(int row)` |  |
+| 933 | 1 | `public double getRowHouseholds(int row)` |  |
+| 934 | 1 | `public int getRowCount()` |  |
 
-### THE MONTH'S STATEMENT, CARRIED (lines 888-1178)
+### THE MONTH'S STATEMENT, CARRIED (lines 936-1226)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 913 | 31 | `public double[] getStatementState()` |  |
-| 963 | 99 | `public boolean restoreStatement(double[] in)` | Puts a saved statement back, exactly as it was written. |
-| 1064 | 7 | `private static double[] padOlder(double[] rows)` | A row array from an older caller, padded to today's rows; anything else as it came. |
-| 1072 | 1 | `public double getRowContributions(int row)` |  |
-| 1073 | 1 | `public double getRowPensions(int row)` |  |
-| 1074 | 1 | `public double getRowHealthcare(int row)` |  |
-| 1075 | 1 | `public double getRowTuition(int row)` |  |
-| 1076 | 1 | `public double getRowInterest(int row)` |  |
-| 1077 | 1 | `public double getRowEiPremiums(int row)` |  |
-| 1079 | 1 | `public double getRowHealthPremiums(int row)` | The health premium this row's wages carried (2026-09-19). |
-| 1081 | 1 | `public double getRowBenefits(int row)` | EI for the out of work, the grant for the students; zero for every other row. |
-| 1083 | 4 | `public double getRowDisposable(int row)` |  |
-| 1088 | 4 | `public double getRowSpending(int row)` |  |
-| 1093 | 3 | `public double getRowSaving(int row)` |  |
-| 1098 | 4 | `public double getRowSavingRate(int row)` | Saving as a share of take-home. |
-| 1103 | 8 | `public String getRowLabel(int row)` |  |
-| 1112 | 43 | `public void reset()` |  |
-| 1157 | 20 | `public void redenominate(double scale)` | The households' income statement, in the new unit. |
+| 961 | 31 | `public double[] getStatementState()` |  |
+| 1011 | 99 | `public boolean restoreStatement(double[] in)` | Puts a saved statement back, exactly as it was written. |
+| 1112 | 7 | `private static double[] padOlder(double[] rows)` | A row array from an older caller, padded to today's rows; anything else as it came. |
+| 1120 | 1 | `public double getRowContributions(int row)` |  |
+| 1121 | 1 | `public double getRowPensions(int row)` |  |
+| 1122 | 1 | `public double getRowHealthcare(int row)` |  |
+| 1123 | 1 | `public double getRowTuition(int row)` |  |
+| 1124 | 1 | `public double getRowInterest(int row)` |  |
+| 1125 | 1 | `public double getRowEiPremiums(int row)` |  |
+| 1127 | 1 | `public double getRowHealthPremiums(int row)` | The health premium this row's wages carried (2026-09-19). |
+| 1129 | 1 | `public double getRowBenefits(int row)` | EI for the out of work, the grant for the students; zero for every other row. |
+| 1131 | 4 | `public double getRowDisposable(int row)` |  |
+| 1136 | 4 | `public double getRowSpending(int row)` |  |
+| 1141 | 3 | `public double getRowSaving(int row)` |  |
+| 1146 | 4 | `public double getRowSavingRate(int row)` | Saving as a share of take-home. |
+| 1151 | 8 | `public String getRowLabel(int row)` |  |
+| 1160 | 43 | `public void reset()` |  |
+| 1205 | 20 | `public void redenominate(double scale)` | The households' income statement, in the new unit. |
 

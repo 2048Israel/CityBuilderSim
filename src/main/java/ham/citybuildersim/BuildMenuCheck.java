@@ -21,7 +21,7 @@ import java.util.List;
  * worse than no sentence at all - and it produces it silently, because the
  * string still formats.
  *
- * So this prints the description of all 29 buildings, which is how a person
+ * So this prints the description of every building, which is how a person
  * checks the mapping, and asserts the things a person would not notice: that
  * every building says SOMETHING, that no sentence carries a null or a NaN, and
  * that every JobType has a label. The last one is the trap with a fuse on it -
@@ -131,9 +131,11 @@ public class BuildMenuCheck {
            The row quotes calculateTotalCost(), which is the method
            processBuildOrder() charges with - so the quote and the debit cannot
            drift. What CAN drift is the claim the row makes about the two being
-           equal: it shows one figure when the yard covers the materials and two
-           when it does not, and if that test disagreed with the arithmetic the
-           player would see "$1,400" and be charged $3,200.
+           equal: it showed one figure when the yard covered the materials and
+           two when it did not (the 0.7.21 tile's sticker, then its all-in;
+           since 0.7.25 every card shows both, the all-in first), and if that
+           test disagreed with the arithmetic the player would see "$1,400"
+           and be charged $3,200.
 
            AND THE ARITHMETIC IS THE TAXED PRICE (0.7.21; Jerus: "Update to the
            taxed price"). Since 0.7.19 the quote carries the builders' sales
@@ -227,6 +229,35 @@ public class BuildMenuCheck {
                 "a REFUSED build moved the receipt serial - the dot would flash for"
                 + " a purchase that never happened");
         check(!game.hasNewReceipt(), "a refused build left a receipt standing");
+
+        /* -----------------------------------------------------------------
+           THE BUILD TAB'S PAGES (0.7.24)
+
+           Jerus: "when you start the game you start in residential so the
+           player without reading thinks he needs to building houses", and
+           "Yes, rename them". Build opens on an Overview now, and the strip
+           after it is the model's list (BuildAdvice.categories(), which
+           BuildAdviceCheck holds: fourteen, every building in one) under the
+           new names. Nothing above this section named a category, so none of
+           it moved; this holds the window to the model, labels and order.
+           ----------------------------------------------------------------- */
+        System.out.println("\n=== THE BUILD TAB'S PAGES ===");
+        List<String> pages = ui.buildPages();
+        System.out.println("  " + pages);
+        check(!pages.isEmpty() && pages.get(0).equals(BuildAdvice.OVERVIEW),
+                "Build's first page is " + (pages.isEmpty() ? "nothing" : pages.get(0)) + ", not the Overview");
+        check(BuildAdvice.OVERVIEW.equals(ui.buildOpensOn()),
+                "a fresh window opens Build on " + ui.buildOpensOn() + ", not the Overview");
+        List<BuildAdvice.Category> model = BuildAdvice.categories();
+        check(pages.size() == model.size() + 1,
+                "the strip has " + (pages.size() - 1) + " categories and the model " + model.size());
+        for (int i = 0; i < model.size() && i + 1 < pages.size(); i++) {
+            check(pages.get(i + 1).equals(model.get(i).name()),
+                    "the strip's place " + (i + 1) + " reads " + pages.get(i + 1) + ", the model's " + model.get(i).name());
+        }
+        for (String old : new String[] {"Residential", "Commercial", "Industrial", "Infrastructure", "Services"}) {
+            check(!pages.contains(old), "the strip still reads " + old);
+        }
 
         System.out.println();
         if (failures == 0) {

@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * The treasury's journal: every movement of the city's cash that is neither a
  * budget line nor paper raised or repaid, recorded by name as it happens, so
- * the bridge on the Government tab can open its last row into lines.
+ * the bridge on the Government tab can name them line by line.
  *
  * WHY. Jerus, 2026-09-18: "in the government tab, in the revenues vs deficits
  * and all that, it just says 'everything else' - that should be expandable,
@@ -74,7 +74,9 @@ import java.util.List;
  *                                         interest) and is added to the cash there but
  *                                         NOT journalled, for the rule above
  *   chargeBuildingMaintenance() JOURNALLED "Repaired the city's own buildings" - the
- *                                         Government screen lists it under spending but
+ *                                         Government screen names it under spending's
+ *                                         total, outside the budget's (a line of the
+ *                                         list until 0.7.31), because
  *                                         NationalAccounts.getTotalExpenses() does not
  *                                         carry it, so the balance omits it (measured:
  *                                         the residual was exactly -repairs every month)

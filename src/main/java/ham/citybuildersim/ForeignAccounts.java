@@ -998,6 +998,7 @@ public class ForeignAccounts {
      */
     public void takeMonth(MoneyAudit.Result month, double monthlyGdp) {
         if (month == null) return;
+        monthCounted = true;
         if (monthlyGdp > 0) {
             double trade = exportsTrailing + importsTrailing;
             openness = Math.max(0, Math.min(1, trade / monthlyGdp));
@@ -1441,6 +1442,113 @@ public class ForeignAccounts {
 
     private double lastValuation;
 
+    /* ================ WHAT THE TRADE TAB READS (0.7.35) ================
+     *
+     * Pure reads for the Trade tab's redesign (the project's
+     * spec-trade-0734.md): nothing here is read by the month, and nothing
+     * here writes. The tab drew several of these as its own arithmetic -
+     * the forces' push and pull, the cover a purchase would buy, three
+     * parity verdicts for one rate - and the screens' rule is that a figure
+     * is a model read.
+     */
+
+    /**
+     * Whether a month has been taken since the city was founded or loaded.
+     *
+     * THE MONTH'S FLOWS ARE NOT SAVED: exports, imports, the income and the
+     * capital across the edge and the valuation change are struck by
+     * takeMonth() and live until the next one, and the treasury's purchases
+     * and sales are booked as they are made and cleared by startMonth() -
+     * so a city loaded between two months reads all of them as nothing
+     * while its businesses' saved books say it sold hundreds of millions
+     * abroad. The Trade tab reads this and says "not counted yet since the
+     * load" until the month turns, rather than printing those zeros as the
+     * month's figures (0.7.30's rule for a word the month has not said yet).
+     * Saving the flows themselves is the spec's D4, put to Jerus; this is
+     * what the tab reads until he decides. Not saved, on purpose: false on
+     * every load is the point.
+     */
+    private boolean monthCounted;
+
+    /** True once a month has been taken since the city was founded or loaded: the month's flows are then the month's, not nothing. */
+    public boolean isMonthCounted() { return monthCounted; }
+
+    /** Exports less imports since founding: the record on trade alone, without the income or the capital. */
+    public double getLifetimeTradeBalance() { return lifetimeExports - lifetimeImports; }
+
+    /**
+     * How far from parity, either side, the rate reads as a watch - amber on
+     * the Trade tab, the drawer's THE CURRENCY row and the header's rate
+     * line, which until 0.7.35 judged one rate three ways (the spec's B9):
+     * the drawer's own bands, kept. Since 0.7.38 the drawer's TRADE "vs
+     * parity" line too, which read amber past 15% until then.
+     */
+    public static final double PARITY_WATCH = .25;
+
+    /** ...and how far reads as far: red on all four. */
+    public static final double PARITY_FAR = .50;
+
+    /** The verdict on a deviation from parity (deviationFromParity()), either side: 0 near, 1 at PARITY_WATCH or more, 2 at PARITY_FAR or more. */
+    public static int parityLevel(double deviation) {
+        double far = Math.abs(deviation);
+        if (!(far < PARITY_FAR)) return Double.isNaN(far) ? 0 : 2;
+        return far >= PARITY_WATCH ? 1 : 0;
+    }
+
+    /**
+     * Months of import cover under which the world prices a currency for a
+     * crisis rather than on its trade balance - the Trade tab's red line and
+     * its alert, three months by the usual rule of thumb. The screens' line:
+     * nothing in the month reads it (absorption() reads COMFORTABLE_COVER).
+     */
+    public static final double THIN_COVER = 3;
+
+    /** The verdict on months of cover: 2 under THIN_COVER, 1 under COMFORTABLE_COVER, 0 at or over it. */
+    public static int coverLevel(double months) {
+        if (!(months >= THIN_COVER)) return 2;
+        return months < COMFORTABLE_COVER ? 1 : 0;
+    }
+
+    /**
+     * The cover the vault would give with this much local money's worth of
+     * dollars bought into it at today's rate (negative: sold out of it) -
+     * the Exchange card's "what it would do". importCover()'s rule: an empty
+     * vault is no cover, and no import bill is endless cover.
+     */
+    public double coverWith(double localChange) {
+        double after = getReserves() + localChange;
+        if (after <= 0) return 0;
+        if (importsTrailing <= 0) return Double.MAX_VALUE;
+        return after / importsTrailing;
+    }
+
+    /** What it would cost in local money, at today's rate, to bring the vault up to this many months of the trailing import bill; nothing when it is there already. */
+    public double toCover(double months) {
+        return Math.max(0, months * importsTrailing - getReserves());
+    }
+
+    /**
+     * The next reprice, in its two parts, as fractions of today's rate:
+     * the month's push - previewPressure() at DRIFT_SPEED - and the pull
+     * back to parity, struck on the rate the push leaves, as
+     * repriceCurrency() applies it; so push and pull add to previewMove(),
+     * the rate's next move, exactly (the guards aside, which no city
+     * reaches). A pinned rate does not move. Positive is weaker.
+     */
+    public double previewPush() {
+        return pinned ? 0 : previewPressure() * DRIFT_SPEED;
+    }
+
+    /** ...the pull back to parity, on the rate the push leaves. */
+    public double previewPull() {
+        if (pinned || !(rate > 0)) return 0;
+        double pushed = rate * (1 + previewPush());
+        return (parity - pushed) * REVERSION / rate;
+    }
+
+    /** ...and the two together: the next month's move, a fraction of today's rate. */
+    public double previewMove() { return previewPush() + previewPull(); }
+
     /* ------------------------------- carrying ------------------------------- */
 
     /*
@@ -1663,6 +1771,7 @@ public class ForeignAccounts {
         exports = imports = foreignInterest = 0;
         financialIn = financialOut = 0;
         boughtThisMonth = soldThisMonth = 0;
+        monthCounted = false;
         openness = 0;
         lastPressure = lastAbsorption = 0;
         foreignDebt = foreignDebtUsd = 0;

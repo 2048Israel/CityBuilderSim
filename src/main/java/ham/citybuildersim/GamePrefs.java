@@ -132,6 +132,32 @@ public final class GamePrefs {
     public void setPinnedLeft(String key)  { this.pinnedLeft = key; }
     public void setPinnedRight(String key) { this.pinnedRight = key; }
 
+    /**
+     * Whether the City overview's drawer stays open across screens (0.7.24).
+     *
+     * Jerus chose "B: panels fold away", for every screen: the left panel
+     * became a drawer the header's "Needs you" chip opens, closed by default
+     * and on every screen change - unless the player pins it, which is a
+     * preference about how they like to read, kept here for fullScreen's
+     * reason. A settings.json older than 0.7.24 has no key for it, Gson
+     * leaves the field alone, and the drawer is unpinned.
+     */
+    private boolean drawerPinned = false;
+
+    public boolean isDrawerPinned()            { return drawerPinned; }
+    public void setDrawerPinned(boolean value) { this.drawerPinned = value; }
+
+    /**
+     * Whether the construction panel is open over the stage or folded to its
+     * tab (0.7.24). FOLDED BY DEFAULT, as the brief set it: the stage gets
+     * the width, and the tab still says how many sites are running. An
+     * older settings.json has no key for it and opens folded.
+     */
+    private boolean constructionOpen = false;
+
+    public boolean isConstructionOpen()            { return constructionOpen; }
+    public void setConstructionOpen(boolean value) { this.constructionOpen = value; }
+
     /* ===================================================================
        THE FILE
        =================================================================== */

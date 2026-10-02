@@ -1,6 +1,6 @@
-# HistorySave.java - 1,160 lines · 34 methods · 0 constants · model
+# HistorySave.java - 1,225 lines · 36 methods · 0 constants · model
 
-`ham/citybuildersim/HistorySave.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistorySave.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Every month the city has ever lived, one number at a time.
 > 
@@ -35,7 +35,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (7), [Crime](Crime.md) (4), [FamilyStructure](FamilyStructure.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [Game](Game.md) (1), [EconomyManager](EconomyManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [PopulationManager](PopulationManager.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [Migration](Migration.md) (1), [LabourMarket](LabourMarket.md) (1), [JobType](JobType.md) (1), [WageBand](WageBand.md) (1), [Education](Education.md) (1), [Good](Good.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Bank](Bank.md) (1), [CentralBank](CentralBank.md) (1), [Unemployment](Unemployment.md) (1), [FamilyModel](FamilyModel.md) (1), [Sickness](Sickness.md) (1), [Exchange](Exchange.md) (1), [Sector](Sector.md) (1)
 
-**Used by (16):** [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DeathRecordCheck](DeathRecordCheck.md), [EconomyManager](EconomyManager.md), [FinancesScreen](FinancesScreen.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (24):** [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DeathRecordCheck](DeathRecordCheck.md), [EconomyManager](EconomyManager.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 
@@ -47,35 +47,37 @@
 | 104 | · what throttles |
 | 111 | · prices |
 | 122 | · the edge |
-| 142 | · money and credit |
-| 161 | · what the bank could carry, and how hard |
-| 182 | · the price of money (0.7.7) |
-| 197 | · the bank's capital (0.7.8) |
-| 214 | · the budget |
-| 230 | · housing |
-| 240 | · school and care |
-| 246 | · outside the families |
-| 267 | · THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: |
-| 281 | · THE LONG SICK, 2026-09-11. How many have been sick more than two |
-| 289 | · THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many |
-| 299 | · WHO DIED, 2026-09-11. The month's dead by age band, and how many of |
-| 315 | · CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a |
-| 337 | · what runs out |
-| 341 | · the market |
-| 365 | · the sectors (0.7.4) |
-| 390 | · GDP in layers (0.7.6) |
-| 407 | RECORDING |
-| 479 | · · the edge |
-| 488 | · · money and credit |
-| 528 | · · the budget |
-| 538 | · · housing |
-| 543 | · · school and care |
-| 549 | · · outside the families |
-| 594 | · · what runs out |
-| 598 | · · the market |
-| 610 | · · the sectors |
-| 816 | READING |
-| 853 | · a series' record, counted (0.7.9) |
+| 149 | · money and credit |
+| 168 | · what the bank could carry, and how hard |
+| 189 | · the price of money (0.7.7) |
+| 204 | · the bank's capital (0.7.8) |
+| 221 | · the budget |
+| 237 | · housing |
+| 247 | · school and care |
+| 253 | · outside the families |
+| 274 | · THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: |
+| 288 | · THE LONG SICK, 2026-09-11. How many have been sick more than two |
+| 296 | · THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many |
+| 306 | · WHO DIED, 2026-09-11. The month's dead by age band, and how many of |
+| 322 | · CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a |
+| 344 | · what runs out |
+| 348 | · the market |
+| 372 | · the sectors (0.7.4) |
+| 397 | · GDP in layers (0.7.6) |
+| 414 | · the city's fund (0.7.39) |
+| 430 | RECORDING |
+| 502 | · · the edge |
+| 512 | · · money and credit |
+| 552 | · · the budget |
+| 562 | · · housing |
+| 567 | · · school and care |
+| 573 | · · outside the families |
+| 618 | · · what runs out |
+| 622 | · · the market |
+| 634 | · · the sectors |
+| 642 | · · the city's fund (0.7.39) |
+| 852 | READING |
+| 889 | · a series' record, counted (0.7.9) |
 
 ## Fields (state)
 
@@ -112,99 +114,103 @@
 | 119 | `private List<Double> materialsPrice` |  |
 | 120 | `private List<Double> orePrice` |  |
 | 135 | `private List<Double> fxRate` |  |
-| 136 | `private List<Double> reservesUsd` |  |
-| 137 | `private List<Double> foreignDebtUsd` |  |
-| 138 | `private List<Double> currentAccount` |  |
-| 139 | `private List<Double> exportsAbroad` |  |
-| 140 | `private List<Double> importsAbroad` |  |
-| 148 | `private List<Double> priceIndex` |  |
-| 149 | `private List<Double> businessDebt` |  |
-| 156 | `private List<Double> bankDeposits` | bankPremium WAS HERE until 0.7.7: the points the strained bank added to every rate in the city. |
-| 157 | `private List<Double> bankLent` |  |
-| 158 | `private List<Double> bankEquity` |  |
-| 159 | `private List<Double> bankWriteOffs` |  |
-| 176 | `private List<Double> bankCapacity` |  |
-| 177 | `private List<Double> bankStrain` |  |
-| 178 | `private List<Double> bankProfit` |  |
-| 179 | `private List<Double> bankBranches` |  |
-| 180 | `private List<Double> householdSavings` |  |
-| 192 | `private List<Double> policyRate` |  |
-| 193 | `private List<Double> bankPrime` |  |
-| 194 | `private List<Double> bankDepositRate` |  |
-| 195 | `private List<Double> bankFees` |  |
-| 207 | `private List<Double> bankCapitalRatio` |  |
-| 208 | `private List<Double> bankCapitalTarget` |  |
-| 209 | `private List<Double> bankAllowance` |  |
-| 210 | `private List<Double> bankProvisions` |  |
-| 211 | `private List<Double> bankDividends` |  |
-| 212 | `private List<Double> bankReturnOnEquity` |  |
-| 221 | `private List<Double> taxWage` |  |
-| 222 | `private List<Double> taxProperty` |  |
-| 223 | `private List<Double> taxSales` |  |
-| 224 | `private List<Double> taxBusiness` |  |
-| 225 | `private List<Double> taxIndustrial` |  |
-| 226 | `private List<Double> contributions` |  |
-| 227 | `private List<Double> pensionBill` |  |
-| 228 | `private List<Double> healthBill` |  |
-| 236 | `private List<Double> rentPrice` |  |
-| 237 | `private List<Integer> homes` |  |
-| 238 | `private List<Double> households` |  |
-| 241 | `private List<Double> students` |  |
-| 242 | `private List<Double> graduates` |  |
-| 243 | `private List<Double> licences` |  |
-| 244 | `private List<Double> unburied` |  |
-| 253 | `private List<Double> outOfWorkOnEi` |  |
-| 254 | `private List<Double> outOfWorkOffEi` |  |
-| 255 | `private List<Double> unhoused` |  |
-| 256 | `private List<Double> orphans` |  |
-| 257 | `private List<Double> evicted` |  |
-| 258 | `private List<Double> eiPaid` |  |
-| 259 | `private List<Double> eiPremiums` |  |
-| 261 | `private List<Double> healthPremiums` | The health premium collected, a month at a time - the EI premium's shape (2026-09-19). |
-| 262 | `private List<Double> studentGrants` |  |
-| 263 | `private List<Double> studentLoansOwed` |  |
-| 265 | `private List<Double> studentLoanInterest` | Interest the graduates paid on their student loans, a month at a time - the premiums' shape (2026-09-21). |
-| 275 | `private List<Double> m0` |  |
-| 276 | `private List<Double> m2` |  |
-| 277 | `private List<Double> advancesToTreasury` |  |
-| 278 | `private List<Double> reserves` |  |
-| 279 | `private List<Double> remittance` |  |
-| 285 | `private List<Double> sickPastTwoMonths` |  |
-| 286 | `private List<Double> diedOfIllness` |  |
-| 287 | `private List<Double> sickRecovery` |  |
-| 297 | `private Map<String, List<Double>> householdsByShape` |  |
-| 305 | `private List<Double> deathsBabies` |  |
-| 306 | `private List<Double> deathsChildren` |  |
-| 307 | `private List<Double> deathsTeens` |  |
-| 308 | `private List<Double> deathsAdults` |  |
-| 309 | `private List<Double> deathsSeniors` |  |
-| 311 | `private List<Double> deathsElders` | The over-85s, since the band was split on 2026-09-15. |
-| 312 | `private List<Double> deathsOrphans` |  |
-| 313 | `private List<Double> deathsUnhoused` |  |
-| 322 | `private List<Double> crimeRate` |  |
-| 323 | `private List<Double> policeCoverage` |  |
-| 324 | `private List<Double> prisoners` |  |
-| 325 | `private List<Double> caughtNotHeld` |  |
-| 326 | `private List<Double> stolen` |  |
-| 327 | `private List<Double> deathsKilled` |  |
-| 328 | `private List<Double> safetyBill` |  |
-| 329 | `private Map<String, List<Double>> crimeByCause` |  |
-| 338 | `private List<Integer> constructionCapacity` |  |
-| 339 | `private List<Double> landUse` |  |
-| 358 | `private Map<String, List<Double>> sharePrice` |  |
-| 359 | `private Map<String, List<Double>> shareValue` |  |
-| 382 | `private Map<String, List<Double>> sectorNetIncome` |  |
-| 383 | `private Map<String, List<Double>> sectorWorkers` |  |
-| 402 | `private List<Double> consumption` |  |
-| 403 | `private List<Double> investment` |  |
-| 404 | `private List<Double> government` |  |
-| 405 | `private List<Double> netExports` |  |
+| 142 | `private List<Double> fxParity` | Parity beside the rate (0.7.35): where a basket costs the same here and abroad, in the rate's own units (ForeignAccounts.getParity()), so the Trade tab can draw the two on one chart. |
+| 143 | `private List<Double> reservesUsd` |  |
+| 144 | `private List<Double> foreignDebtUsd` |  |
+| 145 | `private List<Double> currentAccount` |  |
+| 146 | `private List<Double> exportsAbroad` |  |
+| 147 | `private List<Double> importsAbroad` |  |
+| 155 | `private List<Double> priceIndex` |  |
+| 156 | `private List<Double> businessDebt` |  |
+| 163 | `private List<Double> bankDeposits` | bankPremium WAS HERE until 0.7.7: the points the strained bank added to every rate in the city. |
+| 164 | `private List<Double> bankLent` |  |
+| 165 | `private List<Double> bankEquity` |  |
+| 166 | `private List<Double> bankWriteOffs` |  |
+| 183 | `private List<Double> bankCapacity` |  |
+| 184 | `private List<Double> bankStrain` |  |
+| 185 | `private List<Double> bankProfit` |  |
+| 186 | `private List<Double> bankBranches` |  |
+| 187 | `private List<Double> householdSavings` |  |
+| 199 | `private List<Double> policyRate` |  |
+| 200 | `private List<Double> bankPrime` |  |
+| 201 | `private List<Double> bankDepositRate` |  |
+| 202 | `private List<Double> bankFees` |  |
+| 214 | `private List<Double> bankCapitalRatio` |  |
+| 215 | `private List<Double> bankCapitalTarget` |  |
+| 216 | `private List<Double> bankAllowance` |  |
+| 217 | `private List<Double> bankProvisions` |  |
+| 218 | `private List<Double> bankDividends` |  |
+| 219 | `private List<Double> bankReturnOnEquity` |  |
+| 228 | `private List<Double> taxWage` |  |
+| 229 | `private List<Double> taxProperty` |  |
+| 230 | `private List<Double> taxSales` |  |
+| 231 | `private List<Double> taxBusiness` |  |
+| 232 | `private List<Double> taxIndustrial` |  |
+| 233 | `private List<Double> contributions` |  |
+| 234 | `private List<Double> pensionBill` |  |
+| 235 | `private List<Double> healthBill` |  |
+| 243 | `private List<Double> rentPrice` |  |
+| 244 | `private List<Integer> homes` |  |
+| 245 | `private List<Double> households` |  |
+| 248 | `private List<Double> students` |  |
+| 249 | `private List<Double> graduates` |  |
+| 250 | `private List<Double> licences` |  |
+| 251 | `private List<Double> unburied` |  |
+| 260 | `private List<Double> outOfWorkOnEi` |  |
+| 261 | `private List<Double> outOfWorkOffEi` |  |
+| 262 | `private List<Double> unhoused` |  |
+| 263 | `private List<Double> orphans` |  |
+| 264 | `private List<Double> evicted` |  |
+| 265 | `private List<Double> eiPaid` |  |
+| 266 | `private List<Double> eiPremiums` |  |
+| 268 | `private List<Double> healthPremiums` | The health premium collected, a month at a time - the EI premium's shape (2026-09-19). |
+| 269 | `private List<Double> studentGrants` |  |
+| 270 | `private List<Double> studentLoansOwed` |  |
+| 272 | `private List<Double> studentLoanInterest` | Interest the graduates paid on their student loans, a month at a time - the premiums' shape (2026-09-21). |
+| 282 | `private List<Double> m0` |  |
+| 283 | `private List<Double> m2` |  |
+| 284 | `private List<Double> advancesToTreasury` |  |
+| 285 | `private List<Double> reserves` |  |
+| 286 | `private List<Double> remittance` |  |
+| 292 | `private List<Double> sickPastTwoMonths` |  |
+| 293 | `private List<Double> diedOfIllness` |  |
+| 294 | `private List<Double> sickRecovery` |  |
+| 304 | `private Map<String, List<Double>> householdsByShape` |  |
+| 312 | `private List<Double> deathsBabies` |  |
+| 313 | `private List<Double> deathsChildren` |  |
+| 314 | `private List<Double> deathsTeens` |  |
+| 315 | `private List<Double> deathsAdults` |  |
+| 316 | `private List<Double> deathsSeniors` |  |
+| 318 | `private List<Double> deathsElders` | The over-85s, since the band was split on 2026-09-15. |
+| 319 | `private List<Double> deathsOrphans` |  |
+| 320 | `private List<Double> deathsUnhoused` |  |
+| 329 | `private List<Double> crimeRate` |  |
+| 330 | `private List<Double> policeCoverage` |  |
+| 331 | `private List<Double> prisoners` |  |
+| 332 | `private List<Double> caughtNotHeld` |  |
+| 333 | `private List<Double> stolen` |  |
+| 334 | `private List<Double> deathsKilled` |  |
+| 335 | `private List<Double> safetyBill` |  |
+| 336 | `private Map<String, List<Double>> crimeByCause` |  |
+| 345 | `private List<Integer> constructionCapacity` |  |
+| 346 | `private List<Double> landUse` |  |
+| 365 | `private Map<String, List<Double>> sharePrice` |  |
+| 366 | `private Map<String, List<Double>> shareValue` |  |
+| 389 | `private Map<String, List<Double>> sectorNetIncome` |  |
+| 390 | `private Map<String, List<Double>> sectorWorkers` |  |
+| 409 | `private List<Double> consumption` |  |
+| 410 | `private List<Double> investment` |  |
+| 411 | `private List<Double> government` |  |
+| 412 | `private List<Double> netExports` |  |
+| 426 | `private List<Double> fundValue` |  |
+| 427 | `private List<Double> fundPutIn` |  |
+| 428 | `private List<Double> fundTakenOut` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 1119 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
+| 42 | 1184 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
 
 ### THE AXIS (lines 44-52)
 
@@ -216,97 +222,101 @@
 
 ### prices (lines 111-121)
 
-### the edge (lines 122-141)
+### the edge (lines 122-148)
 
-### money and credit (lines 142-160)
+### money and credit (lines 149-167)
 
-### what the bank could carry, and how hard (lines 161-181)
+### what the bank could carry, and how hard (lines 168-188)
 
-### the price of money (0.7.7) (lines 182-196)
+### the price of money (0.7.7) (lines 189-203)
 
-### the bank's capital (0.7.8) (lines 197-213)
+### the bank's capital (0.7.8) (lines 204-220)
 
-### the budget (lines 214-229)
+### the budget (lines 221-236)
 
-### housing (lines 230-239)
+### housing (lines 237-246)
 
-### school and care (lines 240-245)
+### school and care (lines 247-252)
 
-### outside the families (lines 246-266)
+### outside the families (lines 253-273)
 
-### THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: (lines 267-280)
+### THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: (lines 274-287)
 
-### THE LONG SICK, 2026-09-11. How many have been sick more than two (lines 281-288)
+### THE LONG SICK, 2026-09-11. How many have been sick more than two (lines 288-295)
 
-### THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many (lines 289-298)
+### THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many (lines 296-305)
 
-### WHO DIED, 2026-09-11. The month's dead by age band, and how many of (lines 299-314)
+### WHO DIED, 2026-09-11. The month's dead by age band, and how many of (lines 306-321)
 
-### CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a (lines 315-336)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 332 | 1 | `public static String crimeKey(Crime.Cause cause)` | The series name the screens ask for, per reason for crime. |
-| 335 | 1 | `public static String householdKey(FamilyStructure shape)` | The series name the screens ask for, per household shape. |
-
-### what runs out (lines 337-340)
-
-### the market (lines 341-364)
+### CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a (lines 322-343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 362 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
-| 363 | 1 | `public static String valueKey(String company)` |  |
+| 339 | 1 | `public static String crimeKey(Crime.Cause cause)` | The series name the screens ask for, per reason for crime. |
+| 342 | 1 | `public static String householdKey(FamilyStructure shape)` | The series name the screens ask for, per household shape. |
 
-### the sectors (0.7.4) (lines 365-389)
+### what runs out (lines 344-347)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 386 | 1 | `public static String netIncomeKey(String sector)` | The series name the screens ask for, per sector: the month's net income after tax. |
-| 388 | 1 | `public static String workersKey(String sector)` | ...and its posts filled. |
-
-### GDP in layers (0.7.6) (lines 390-406)
-
-### RECORDING (lines 407-815)
+### the market (lines 348-371)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 422 | 196 | `public void recordMonth(Game game)` | One month, read off the city itself. |
-| 627 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
-| 634 | 1 | `private static double round2(double v)` |  |
-| 635 | 1 | `private static double round4(double v)` |  |
-| 648 | 135 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
-| 785 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
-| 802 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
-| 811 | 4 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
+| 369 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
+| 370 | 1 | `public static String valueKey(String company)` |  |
 
-### READING (lines 816-852)
+### the sectors (0.7.4) (lines 372-396)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 821 | 1 | `public int months()` | How many months the city has lived. |
-| 823 | 1 | `public List<Integer> getMonth()` |  |
-| 838 | 14 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
+| 393 | 1 | `public static String netIncomeKey(String sector)` | The series name the screens ask for, per sector: the month's net income after tax. |
+| 395 | 1 | `public static String workersKey(String sector)` | ...and its posts filled. |
 
-### a series' record, counted (0.7.9) (lines 853-1160)
+### GDP in layers (0.7.6) (lines 397-413)
+
+### the city's fund (0.7.39) (lines 414-429)
+
+### RECORDING (lines 430-851)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 863 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
-| 873 | 5 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
-| 880 | 5 | `public int monthsRecorded(String series)` | Months a series was recorded in. |
-| 887 | 5 | `public double total(String series)` | A flow added up over the months it was recorded. |
-| 898 | 14 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
-| 919 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
-| 936 | 147 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
-| 1085 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
-| 1086 | 1 | `public List<Double> getGdp()` |  |
-| 1087 | 1 | `public List<Double> getDebt()` |  |
-| 1088 | 1 | `public List<Double> getInterestRate()` |  |
-| 1089 | 1 | `public List<Integer> getJobs()` |  |
-| 1090 | 1 | `public List<Integer> getWorkforce()` |  |
-| 1091 | 1 | `public List<Integer> getOutOfWork()` |  |
-| 1092 | 1 | `public List<Integer> getPopulation()` |  |
-| 1105 | 43 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
-| 1150 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
+| 445 | 205 | `public void recordMonth(Game game)` | One month, read off the city itself. |
+| 659 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
+| 666 | 1 | `private static double round2(double v)` |  |
+| 667 | 1 | `private static double round4(double v)` |  |
+| 680 | 139 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
+| 821 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
+| 838 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
+| 847 | 4 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
+
+### READING (lines 852-888)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 857 | 1 | `public int months()` | How many months the city has lived. |
+| 859 | 1 | `public List<Integer> getMonth()` |  |
+| 874 | 14 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
+
+### a series' record, counted (0.7.9) (lines 889-1225)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 899 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
+| 909 | 5 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
+| 916 | 5 | `public int monthsRecorded(String series)` | Months a series was recorded in. |
+| 923 | 5 | `public double total(String series)` | A flow added up over the months it was recorded. |
+| 936 | 7 | `public double changeOver(String series, int months)` | How far a series has moved over the last `months` months, as a share of where it stood then: the last recorded value over the one `months` entries before it, less one (0.7.35: the Trade tab's rate this month and over ... |
+| 945 | 6 | `public double recentTotal(String series, int months)` | A flow added up over the last `months` months only, those recorded among them (0.7.35: the Trade tab's year of exports and imports). |
+| 957 | 14 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
+| 978 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
+| 995 | 151 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
+| 1148 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
+| 1149 | 1 | `public List<Double> getGdp()` |  |
+| 1150 | 1 | `public List<Double> getDebt()` |  |
+| 1151 | 1 | `public List<Double> getInterestRate()` |  |
+| 1152 | 1 | `public List<Integer> getJobs()` |  |
+| 1153 | 1 | `public List<Integer> getWorkforce()` |  |
+| 1154 | 1 | `public List<Integer> getOutOfWork()` |  |
+| 1155 | 1 | `public List<Integer> getPopulation()` |  |
+| 1168 | 45 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
+| 1215 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
 

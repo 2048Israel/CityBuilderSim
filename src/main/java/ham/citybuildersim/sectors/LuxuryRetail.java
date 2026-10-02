@@ -457,7 +457,10 @@ public class LuxuryRetail extends Sector {
        =================================================================== */
 
     @Override
-    public List<Line> operations(Game game) {
+    public boolean hasPlantBlock() { return false; }
+
+    @Override
+    public List<Line> ownLines(Game game) {
         List<Line> lines = new java.util.ArrayList<>();
         Formats f = Formats.INSTANCE;
 

@@ -437,6 +437,65 @@ public final class ChartModel {
         return out;
     }
 
+    /**
+     * ...of one kind only (0.7.32): the Finances tab's chart of what the city
+     * owes and its rate carries the BORROWING decisions alone - an issue, a
+     * buyback, the rollover's setting, a default abroad. A kind nobody records
+     * gives none.
+     */
+    public static List<Flag> flags(DecisionLog log, String kind) {
+        List<Flag> out = new ArrayList<>();
+        if (log == null || kind == null) return out;
+        Map<Integer, List<DecisionLog.Entry>> byMonth = new TreeMap<>();
+        for (DecisionLog.Entry e : log.entries()) {
+            if (kind.equals(e.kind())) byMonth.computeIfAbsent(e.month(), m -> new ArrayList<>()).add(e);
+        }
+        for (Map.Entry<Integer, List<DecisionLog.Entry>> m : byMonth.entrySet()) {
+            out.add(new Flag(m.getKey(), Collections.unmodifiableList(m.getValue())));
+        }
+        return out;
+    }
+
+    /**
+     * ...of several kinds, one flag a month (0.7.33): the Bank tab's rates
+     * carry the CENTRAL_BANK decisions that move the policy rate under them
+     * and the BANK ones - a rescue, the preferred offer - in one lane, so a
+     * month with both is one flag with both in it, not two drawn on top of
+     * each other.
+     */
+    public static List<Flag> flagsOf(DecisionLog log, String... kinds) {
+        List<Flag> out = new ArrayList<>();
+        if (log == null || kinds == null || kinds.length == 0) return out;
+        java.util.Set<String> wanted = new java.util.HashSet<>(java.util.Arrays.asList(kinds));
+        Map<Integer, List<DecisionLog.Entry>> byMonth = new TreeMap<>();
+        for (DecisionLog.Entry e : log.entries()) {
+            if (wanted.contains(e.kind())) byMonth.computeIfAbsent(e.month(), m -> new ArrayList<>()).add(e);
+        }
+        for (Map.Entry<Integer, List<DecisionLog.Entry>> m : byMonth.entrySet()) {
+            out.add(new Flag(m.getKey(), Collections.unmodifiableList(m.getValue())));
+        }
+        return out;
+    }
+
+    /**
+     * The flags as the lane can draw them (0.7.37): a flag from before the
+     * axis's first month - the founding month's, which the history does not
+     * record, so no window reaches it - is moved onto that first month and
+     * merged with any flag already there, every entry keeping its own month
+     * (the card says it). Until then the dials a player set before pressing
+     * play were in the log and on no lane (City History's spec, B4).
+     */
+    public static List<Flag> onAxis(List<Flag> flags, int firstMonth) {
+        List<Flag> out = new ArrayList<>();
+        if (flags == null) return out;
+        List<DecisionLog.Entry> first = new ArrayList<>();
+        for (Flag f : flags) if (f.month() < firstMonth) first.addAll(f.entries());
+        for (Flag f : flags) if (f.month() == firstMonth) first.addAll(f.entries());
+        if (!first.isEmpty()) out.add(new Flag(firstMonth, Collections.unmodifiableList(first)));
+        for (Flag f : flags) if (f.month() > firstMonth) out.add(f);
+        return out;
+    }
+
     /** Flags drawn as one: at the first one's month, so many months packed under one pixel read as one count. */
     public record Cluster(int month, List<Flag> flags) {
         public int count() {

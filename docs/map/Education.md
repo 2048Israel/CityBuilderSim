@@ -1,6 +1,6 @@
-# Education.java - 1,040 lines · 55 methods · 7 constants · model
+# Education.java - 1,058 lines · 56 methods · 7 constants · model
 
-`ham/citybuildersim/Education.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Education.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Who the city teaches, what it costs, and why anybody bothers.
 > 
@@ -64,7 +64,7 @@
 
 **Uses:** [EducationType](EducationType.md) (75), [WageBand](WageBand.md) (16), [LabourMarket](LabourMarket.md) (11), [DecisionLog](DecisionLog.md) (5), [JobType](JobType.md) (5), [PopulationManager](PopulationManager.md) (5), [TaxPolicy](TaxPolicy.md) (3), [AgeBand](AgeBand.md) (3), [PopulationCohorts](PopulationCohorts.md) (2), [PayTier](PayTier.md) (1)
 
-**Used by (9):** [EducationCheck](EducationCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (11):** [BuildAdvice](BuildAdvice.md), [CityNeeds](CityNeeds.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 
@@ -74,12 +74,12 @@
 | 93 | WHAT A COURSE COSTS, IN TODAY'S MONEY |
 | 247 | THE CURVE |
 | 290 | STATE |
-| 367 | THE MONTH |
-| 437 | · · the basic ladder |
-| 506 | · · adult study |
-| 732 | READING |
-| 848 | WHAT THE SCREEN NEEDS TO EXPLAIN AN EMPTY SCHOOL |
-| 919 | SAVE AND RESTORE |
+| 379 | THE MONTH |
+| 450 | · · the basic ladder |
+| 520 | · · adult study |
+| 746 | READING |
+| 865 | WHAT THE SCREEN NEEDS TO EXPLAIN AN EMPTY SCHOOL |
+| 936 | SAVE AND RESTORE |
 
 ## Constants
 
@@ -91,7 +91,7 @@
 | 261 | `Education.MAX_PARTICIPATION` | `.90` | However good the return, this share of the eligible is the most that go. |
 | 279 | `Education.ENROLMENT_RATE` | `1 / 60.0` | What fraction of the willing eligible pool starts a course in any month. |
 | 288 | `Education.ELEMENTARY_SHARE` | `4 / 7.0` | Ages 6-10 out of the CHILD band's 6-13. |
-| 971 | `Education.MONTH_FIELDS` | `4` | Scalars appended to the state array on 2026-09-09. |
+| 988 | `Education.MONTH_FIELDS` | `4` | Scalars appended to the state array on 2026-09-09. |
 
 ## Fields (state)
 
@@ -112,15 +112,16 @@
 | 314 | `private final double[] feesOf` | THE MONTH BY SCHOOL KIND (0.7.6), for the Schools page's row per kind: the tuition collected from each kind's students - tuitionCollected, split by what was taught, added to by the same line in charge() - and what eac... |
 | 315 | `private final double[] costOf` |  |
 | 325 | `private double finished` | Adults who came out of a course this month, every course counted once: the gross flow out of the student body, where graduates[] is the net movement between bands. |
-| 336 | `private final double[] everGraduated` | Everyone the city has ever put through school, by band. |
-| 356 | `private final double[][] inFlight` | THE PIPELINE (2026-09-06). |
-| 359 | `private final double[] studying` | Adults currently studying full time, by the band they came FROM. |
+| 337 | `private double diplomasThisMonth` | The diplomas the school leavers took this month, gross (0.7.28): the first half of the DIPLOMA movement in graduates[], before the diploma-holders who finished college or university are taken off it (both take diploma... |
+| 348 | `private final double[] everGraduated` | Everyone the city has ever put through school, by band. |
+| 368 | `private final double[][] inFlight` | THE PIPELINE (2026-09-06). |
+| 371 | `private final double[] studying` | Adults currently studying full time, by the band they came FROM. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 977 | **type** `public class Education` | Who the city teaches, what it costs, and why anybody bothers. |
+| 64 | 995 | **type** `public class Education` | Who the city teaches, what it costs, and why anybody bothers. |
 | 70 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |
 | 72 | 3 | `private void decided(String kind, String label)` |  |
 
@@ -144,73 +145,74 @@
 
 ### THE CURVE (lines 247-289)
 
-### STATE (lines 290-366)
+### STATE (lines 290-378)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 361 | 5 | `{ ... }` |  |
+| 373 | 5 | `{ ... }` |  |
 
-### THE MONTH (lines 367-731)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 380 | 5 | `public void advanceMonth(double[] places, PopulationCohorts pyramid, PopulationManager people, LabourMarket market, double staf...` | Teaches everybody who can, will, and can afford to go. |
-| 391 | 133 | `public void advanceMonth(double[] places, PopulationCohorts pyramid, PopulationManager people, LabourMarket market, double staf...` | month, so the students in flight thin at the same rate as the workforce they came from |
-| 526 | 7 | `private void refreshStudying()` | Recounts who is in a lecture theatre, by the band they came from. |
-| 535 | 5 | `public double studentBody(EducationType type)` | Everybody part way through this course. |
-| 549 | 1 | `public double[] getStudying()` | Adults out of the labour supply this month because they are studying, by the band they hold NOW (the one they enrolled from). |
-| 559 | 56 | `private void study(EducationType type, double[] places, double[] workforceByBand, LabourMarket market, PopulationManager people)` | One course, for adults who already have what it asks for. |
-| 624 | 5 | `private double participation(EducationType type, LabourMarket market, WageBand from)` | What share of the eligible actually enrol: the return, times the money. |
-| 639 | 28 | `private double returnOn(EducationType type, LabourMarket market, WageBand from)` | How much better off somebody is for having done it. |
-| 669 | 8 | `private double bandWage(LabourMarket market, WageBand band)` | The best-paid job in a band, which is what a student is aiming at. |
-| 679 | 14 | `private double ungatedWage(LabourMarket market, WageBand band)` | The best a graduate can earn WITHOUT a professional licence. |
-| 703 | 11 | `private double affordability(EducationType type, LabourMarket market, WageBand from)` | What share of people could pay the un-subsidised part out of a month's pay. |
-| 716 | 6 | `private void charge(EducationType type, double students)` | Bills the month's tuition, split between the household and the treasury. |
-| 723 | 4 | `private static double cover(double have, double need)` |  |
-| 728 | 3 | `private static double clamp(double v)` |  |
-
-### READING (lines 732-847)
+### THE MONTH (lines 379-745)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 740 | 1 | `public double[] getGraduates()` | The month's movement between bands: positive where people arrived, negative where they left. |
-| 743 | 1 | `public double[] getLicences()` | People who became able to hold a gated job this month. |
-| 745 | 1 | `public double getCoverage(EducationType type)` |  |
-| 746 | 1 | `public double getEnrolled(EducationType type)` |  |
-| 747 | 1 | `public double getTuitionSubsidy()` |  |
-| 749 | 7 | `public void setTuitionSubsidy(double value)` |  |
-| 787 | 1 | `public double getGrossCost()` | What leaves the treasury: staff and buildings. |
-| 788 | 1 | `public double getPayroll()` |  |
-| 789 | 1 | `public double getUpkeep()` |  |
-| 792 | 1 | `public double getSubsidy()` | Fees the city waived. |
-| 795 | 1 | `public double getFees()` | ...and what comes back from the households. |
-| 796 | 1 | `public double getNetCost()` |  |
-| 798 | 4 | `public double getCostRecovery()` |  |
-| 809 | 1 | `public double getCostOf(EducationType type)` | What one kind's standing buildings cost the treasury this month: staffed payroll plus upkeep (0.7.6). |
-| 812 | 1 | `public double getFeesOf(EducationType type)` | The tuition households paid for one kind this month (0.7.6); across the kinds, getFees(). |
-| 821 | 4 | `public void setCostOf(EducationType type, double payroll, double upkeep)` | Hands in one kind's cost for the month: its staffed payroll plus its upkeep, off BuildingManager.getSchoolPayroll() and getSchoolUpkeep(). |
-| 834 | 8 | `public double billedAt(java.util.function.ToDoubleFunction<EducationType> scaleOf)` | What this month's students would be billed at another set of scales, before the subsidy (0.7.6): each kind's enrolled at the founding fee in today's money times the scale asked for it. |
-| 843 | 1 | `public double[] getEverGraduated()` |  |
-| 846 | 1 | `public double getFinished()` | Adults who finished a course this month - the gross flow out of getStudying(). |
+| 392 | 5 | `public void advanceMonth(double[] places, PopulationCohorts pyramid, PopulationManager people, LabourMarket market, double staf...` | Teaches everybody who can, will, and can afford to go. |
+| 403 | 135 | `public void advanceMonth(double[] places, PopulationCohorts pyramid, PopulationManager people, LabourMarket market, double staf...` | month, so the students in flight thin at the same rate as the workforce they came from |
+| 540 | 7 | `private void refreshStudying()` | Recounts who is in a lecture theatre, by the band they came from. |
+| 549 | 5 | `public double studentBody(EducationType type)` | Everybody part way through this course. |
+| 563 | 1 | `public double[] getStudying()` | Adults out of the labour supply this month because they are studying, by the band they hold NOW (the one they enrolled from). |
+| 573 | 56 | `private void study(EducationType type, double[] places, double[] workforceByBand, LabourMarket market, PopulationManager people)` | One course, for adults who already have what it asks for. |
+| 638 | 5 | `private double participation(EducationType type, LabourMarket market, WageBand from)` | What share of the eligible actually enrol: the return, times the money. |
+| 653 | 28 | `private double returnOn(EducationType type, LabourMarket market, WageBand from)` | How much better off somebody is for having done it. |
+| 683 | 8 | `private double bandWage(LabourMarket market, WageBand band)` | The best-paid job in a band, which is what a student is aiming at. |
+| 693 | 14 | `private double ungatedWage(LabourMarket market, WageBand band)` | The best a graduate can earn WITHOUT a professional licence. |
+| 717 | 11 | `private double affordability(EducationType type, LabourMarket market, WageBand from)` | What share of people could pay the un-subsidised part out of a month's pay. |
+| 730 | 6 | `private void charge(EducationType type, double students)` | Bills the month's tuition, split between the household and the treasury. |
+| 737 | 4 | `private static double cover(double have, double need)` |  |
+| 742 | 3 | `private static double clamp(double v)` |  |
 
-### WHAT THE SCREEN NEEDS TO EXPLAIN AN EMPTY SCHOOL (lines 848-918)
+### READING (lines 746-864)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 860 | 3 | `public double[] cohortsInFlight(EducationType type)` | Everybody part way through this course, cohort by cohort, nearest first. |
-| 865 | 3 | `public double outOfPocket(EducationType type)` | What a household actually pays for a seat, after the subsidy. |
-| 870 | 3 | `public double studyReturn(EducationType type, LabourMarket market)` | How much better off somebody is for doing it - 0 means not worth it. |
-| 875 | 3 | `public double studyAffordability(EducationType type, LabourMarket market)` | What share of the eligible could pay the un-subsidised part. |
-| 880 | 3 | `public double willingShare(EducationType type, LabourMarket market)` | The two above, multiplied and capped: who actually enrols. |
-| 890 | 9 | `public double eligibleFor(EducationType type, PopulationManager people)` | The pool this course draws on, before anything else is applied. |
-| 906 | 8 | `public EducationType basicBottleneck()` | Which stage of the basic ladder is holding the rest up. |
-| 915 | 3 | `public double basicCoverage()` |  |
+| 754 | 1 | `public double[] getGraduates()` | The month's movement between bands: positive where people arrived, negative where they left. |
+| 757 | 1 | `public double[] getLicences()` | People who became able to hold a gated job this month. |
+| 760 | 1 | `public double getNewDiplomas()` | The school leavers' diplomas this month, gross (0.7.28) - see diplomasThisMonth; NaN until a month has run since the founding or a load. |
+| 762 | 1 | `public double getCoverage(EducationType type)` |  |
+| 763 | 1 | `public double getEnrolled(EducationType type)` |  |
+| 764 | 1 | `public double getTuitionSubsidy()` |  |
+| 766 | 7 | `public void setTuitionSubsidy(double value)` |  |
+| 804 | 1 | `public double getGrossCost()` | What leaves the treasury: staff and buildings. |
+| 805 | 1 | `public double getPayroll()` |  |
+| 806 | 1 | `public double getUpkeep()` |  |
+| 809 | 1 | `public double getSubsidy()` | Fees the city waived. |
+| 812 | 1 | `public double getFees()` | ...and what comes back from the households. |
+| 813 | 1 | `public double getNetCost()` |  |
+| 815 | 4 | `public double getCostRecovery()` |  |
+| 826 | 1 | `public double getCostOf(EducationType type)` | What one kind's standing buildings cost the treasury this month: staffed payroll plus upkeep (0.7.6). |
+| 829 | 1 | `public double getFeesOf(EducationType type)` | The tuition households paid for one kind this month (0.7.6); across the kinds, getFees(). |
+| 838 | 4 | `public void setCostOf(EducationType type, double payroll, double upkeep)` | Hands in one kind's cost for the month: its staffed payroll plus its upkeep, off BuildingManager.getSchoolPayroll() and getSchoolUpkeep(). |
+| 851 | 8 | `public double billedAt(java.util.function.ToDoubleFunction<EducationType> scaleOf)` | What this month's students would be billed at another set of scales, before the subsidy (0.7.6): each kind's enrolled at the founding fee in today's money times the scale asked for it. |
+| 860 | 1 | `public double[] getEverGraduated()` |  |
+| 863 | 1 | `public double getFinished()` | Adults who finished a course this month - the gross flow out of getStudying(). |
 
-### SAVE AND RESTORE (lines 919-1040)
+### WHAT THE SCREEN NEEDS TO EXPLAIN AN EMPTY SCHOOL (lines 865-935)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 928 | 41 | `public double[] getState()` |  |
-| 979 | 48 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded. |
-| 1029 | 10 | `public void redenominate(double scale)` | Tuition and this month's bill, in the new unit. |
+| 877 | 3 | `public double[] cohortsInFlight(EducationType type)` | Everybody part way through this course, cohort by cohort, nearest first. |
+| 882 | 3 | `public double outOfPocket(EducationType type)` | What a household actually pays for a seat, after the subsidy. |
+| 887 | 3 | `public double studyReturn(EducationType type, LabourMarket market)` | How much better off somebody is for doing it - 0 means not worth it. |
+| 892 | 3 | `public double studyAffordability(EducationType type, LabourMarket market)` | What share of the eligible could pay the un-subsidised part. |
+| 897 | 3 | `public double willingShare(EducationType type, LabourMarket market)` | The two above, multiplied and capped: who actually enrols. |
+| 907 | 9 | `public double eligibleFor(EducationType type, PopulationManager people)` | The pool this course draws on, before anything else is applied. |
+| 923 | 8 | `public EducationType basicBottleneck()` | Which stage of the basic ladder is holding the rest up. |
+| 932 | 3 | `public double basicCoverage()` |  |
+
+### SAVE AND RESTORE (lines 936-1058)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 945 | 41 | `public double[] getState()` |  |
+| 996 | 49 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded. |
+| 1047 | 10 | `public void redenominate(double scale)` | Tuition and this month's bill, in the new unit. |
 

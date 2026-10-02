@@ -43,6 +43,12 @@ import java.nio.file.Path;
  * holding it down - and can a screen show the push without rewriting the
  * month's record of it? Section 14 (0.7.6): does converting cash for land
  * push the rate exactly as buying the same dollars for the vault would?
+ * And since 0.7.35, for the Trade tab: does the month's trade read good by
+ * good off the businesses' books foot to the balance of payments, every
+ * month of section 2's city; and section 15, do the push and the pull the
+ * tab draws come to the move the reprice makes, does a loaded city say its
+ * month is not counted yet, and do the verdicts and the cover a purchase
+ * buys stand where their constants say?
  */
 public class ForeignCheck {
 
@@ -100,6 +106,9 @@ public class ForeignCheck {
         double worstSplit = 0, worstStock = 0;
         double yearDomesticOut = 0, yearTrade = 0;
         int worstMonth = 0;
+        // The Trade tab's goods against the balance of payments (0.7.35).
+        double worstSold = 0, worstBought = 0;
+        int monthsSold = 0, monthsBought = 0;
 
         System.setOut(quiet);
         try {
@@ -156,6 +165,22 @@ public class ForeignCheck {
                     worstStock = drift;
                     worstMonth = city.getMonth();
                 }
+
+                /*
+                 * ...AND THE GOODS FOOT TO IT (0.7.35). The Trade tab draws the
+                 * month good by good off every sector's statement (Game
+                 * .getTradeByGood()) and prints SOLD ABROAD and BOUGHT ABROAD
+                 * off the balance of payments: the two must be the same money,
+                 * the imports with no good (the railway's fuel) and the
+                 * households' cars included. The markets' own tally does not
+                 * foot (the Trade spec's B13), which is why the books are read.
+                 */
+                Sectors.TradeByGood goods = city.getTradeByGood();
+                if (f.getExports() > 0) monthsSold++;
+                if (f.tradeImports() > 0) monthsBought++;
+                worstSold = Math.max(worstSold, Math.abs(goods.sold() - f.getExports()) / Math.max(1, f.getExports()));
+                worstBought = Math.max(worstBought,
+                        Math.abs(goods.bought() - f.tradeImports()) / Math.max(1, f.tradeImports()));
             }
         } finally {
             System.setOut(out);
@@ -224,6 +249,15 @@ public class ForeignCheck {
                 worstStock, 0, .005);
         out.printf("   worst split error $%.6fk; worst stock drift $%.6fk (month %d)%n",
                 worstSplit, worstStock, worstMonth);
+
+        out.printf("   the goods: sold abroad in %d of 180 months, bought in %d; worst footing %.2e sold, %.2e bought%n",
+                monthsSold, monthsBought, worstSold, worstBought);
+        assertTrue("fixture: the city sold abroad and bought abroad, month after month",
+                monthsSold > 12 && monthsBought > 12);
+        close("the goods the businesses sold abroad are the month's exports, every month",
+                worstSold, 0, 1e-9);
+        close("...and what they bought, with the fuel and the households' cars, its imports",
+                worstBought, 0, 1e-9);
 
         /*
          * WAGES ARE NOT IMPORTS, which is the whole reason for the split.
@@ -874,6 +908,7 @@ public class ForeignCheck {
         vaultInDollars();
         reserveDefends();
         landByConversion();
+        whatTheTradeTabReads();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1537,5 +1572,76 @@ public class ForeignCheck {
         g.simulateMonths(90);
         lastCash = g.getCash();
         return g.getPopulationManager().getPopulation();
+    }
+
+    /* ============ 15. what the Trade tab reads (0.7.35) ============
+     *
+     * The tab's redesign drew several of its figures as its own arithmetic -
+     * the push and the pull, the cover a purchase would buy, three parity
+     * verdicts for one rate - and they are model reads now. CAUSED: section
+     * 13's deficit city, its parity struck above its rate so the basket
+     * pulls, and a vault too thin for three months of imports.
+     */
+    static void whatTheTradeTabReads() {
+        out.println("\n--- and the Trade tab's readings are the model's ---");
+
+        final double trade = 6_000, gdp = 40_000;
+        ForeignAccounts fx = new ForeignAccounts();
+        assertTrue("a city founded or loaded has no month counted yet", !fx.isMonthCounted());
+        for (int m = 0; m < ForeignAccounts.SETTLING_MONTHS + 12; m++) fx.takeMonth(month(trade / 3, trade * 2 / 3), gdp);
+        assertTrue("...and once a month is taken, it has", fx.isMonthCounted());
+        fx.setParity(1.2, 1.0, 0, 0);
+        fx.buyReserves(fx.monthlyImports() * ForeignAccounts.COMFORTABLE_COVER * 2);
+
+        /*
+         * THE NEXT MONTH'S MOVE IN ITS TWO PARTS. The push is the previewed
+         * pressure at the drift speed; the pull is the basket's, struck on
+         * the rate the push leaves, as repriceCurrency() applies it - so the
+         * two add to the move, and the reprice then makes exactly that move.
+         */
+        double push = fx.previewPush(), pull = fx.previewPull(), move = fx.previewMove();
+        assertTrue("fixture: the month pushes the rate and the basket pulls it", Math.abs(push) > 1e-6 && Math.abs(pull) > 1e-6);
+        close("the push and the pull the tab draws add to the move it draws", push + pull, move, 1e-15);
+        double before = fx.getRate();
+        fx.repriceCurrency();
+        out.printf("   push %+.5f%%, pull %+.5f%%: the rate %.6f -> %.6f%n", push * 100, pull * 100, before, fx.getRate());
+        close("...and the month's reprice moves the rate by exactly that", fx.getRate() / before - 1, move, 1e-12);
+        fx.pinRate(fx.getRate());
+        close("a pinned rate's previewed move is nothing", Math.abs(fx.previewPush()) + Math.abs(fx.previewPull()), 0, 0);
+
+        /* ...and a loaded city has no month counted, whatever it traded. */
+        ForeignAccounts loaded = new ForeignAccounts();
+        loaded.restore(fx.toSaveArray());
+        assertTrue("fixture: the city sold abroad the month it was saved", fx.getExports() > 0);
+        assertTrue("a city loaded from it has no month counted yet", !loaded.isMonthCounted());
+        close("...and its month's exports read nothing until one is", loaded.getExports(), 0, 0);
+
+        /* THE ONE PARITY RULE, either side, at its own constants. */
+        double w = ForeignAccounts.PARITY_WATCH, f = ForeignAccounts.PARITY_FAR;
+        assertTrue("short of the watch line either side is near",
+                ForeignAccounts.parityLevel(w - 1e-9) == 0 && ForeignAccounts.parityLevel(-(w - 1e-9)) == 0);
+        assertTrue("...at it, either side, a watch",
+                ForeignAccounts.parityLevel(w) == 1 && ForeignAccounts.parityLevel(-w) == 1);
+        assertTrue("...and at the far line, either side, far",
+                ForeignAccounts.parityLevel(f) == 2 && ForeignAccounts.parityLevel(-f - 1) == 2);
+
+        /* THE COVER: its verdict at its constants, and what a purchase buys. */
+        assertTrue("under the thin line is the cover's red",
+                ForeignAccounts.coverLevel(ForeignAccounts.THIN_COVER - 1e-9) == 2);
+        assertTrue("...at it, amber, until the comfortable line",
+                ForeignAccounts.coverLevel(ForeignAccounts.THIN_COVER) == 1
+                        && ForeignAccounts.coverLevel(ForeignAccounts.COMFORTABLE_COVER - 1e-9) == 1);
+        assertTrue("...and from there on, nothing to say",
+                ForeignAccounts.coverLevel(ForeignAccounts.COMFORTABLE_COVER) == 0);
+        ForeignAccounts thin = new ForeignAccounts();
+        for (int m = 0; m < 24; m++) thin.takeMonth(month(trade / 3, trade * 2 / 3), gdp);
+        thin.buyReserves(thin.monthlyImports() * .5);
+        assertTrue("fixture: a vault of half a month of imports", Math.abs(thin.importCover() - .5) < 1e-9);
+        double need = thin.toCover(ForeignAccounts.THIN_COVER);
+        close("buying what the tab says three months need ...", thin.coverWith(need), ForeignAccounts.THIN_COVER, 1e-9);
+        thin.buyReserves(need);
+        close("...buys exactly that cover", thin.importCover(), ForeignAccounts.THIN_COVER, 1e-9);
+        close("...after which it needs nothing more", thin.toCover(ForeignAccounts.THIN_COVER), 0, 1e-9);
+        close("and selling it all leaves no cover", thin.coverWith(-thin.getReserves()), 0, 0);
     }
 }

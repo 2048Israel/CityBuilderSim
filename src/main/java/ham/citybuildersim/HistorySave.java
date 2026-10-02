@@ -133,6 +133,13 @@ public class HistorySave {
        into somebody else's currency.
        ------------------------------------------------------------------ */
     private List<Double> fxRate = new ArrayList<>();
+    /**
+     * Parity beside the rate (0.7.35): where a basket costs the same here
+     * and abroad, in the rate's own units (ForeignAccounts.getParity()), so
+     * the Trade tab can draw the two on one chart. A history file older than
+     * 0.7.35 has none, and its months read as not recorded.
+     */
+    private List<Double> fxParity = new ArrayList<>();
     private List<Double> reservesUsd = new ArrayList<>();
     private List<Double> foreignDebtUsd = new ArrayList<>();
     private List<Double> currentAccount = new ArrayList<>();
@@ -404,6 +411,22 @@ public class HistorySave {
     private List<Double> government = new ArrayList<>();
     private List<Double> netExports = new ArrayList<>();
 
+    /* --------------------- the city's fund (0.7.39) ---------------------
+
+       Jerus, 2026-10-02: "the city fund should show pnl and acb and all
+       that". The fund's worth each month (Game.fundValue(), what its transfer
+       is struck on), and what the city has put into it and taken out of it,
+       CUMULATIVE (TreasuryFund.getPutIn(), getTakenOut()) - so a month's flow
+       is a difference and nothing new is kept on the fund. The fund's
+       Portfolio chart and its return over the chart's window (FundView.rangeReturn(),
+       Modified Dietz) read the three. Money, so a reform scales them; an
+       older save has none until it plays a month, which aligned() pads as
+       "not counting".
+       ------------------------------------------------------------------ */
+    private List<Double> fundValue = new ArrayList<>();
+    private List<Double> fundPutIn = new ArrayList<>();
+    private List<Double> fundTakenOut = new ArrayList<>();
+
     /* ==================================================================
        RECORDING
        ================================================================== */
@@ -479,6 +502,7 @@ public class HistorySave {
         /* ------------------------- the edge ------------------------- */
         ForeignAccounts abroad = game.getForeignAccounts();
         fxRate.add(round4(abroad.getRate()));
+        fxParity.add(round4(abroad.getParity()));
         reservesUsd.add(round2(abroad.getReservesUsd()));
         foreignDebtUsd.add(round2(abroad.getForeignDebtUsd()));
         currentAccount.add(round2(abroad.currentAccount()));
@@ -614,6 +638,14 @@ public class HistorySave {
             sectorWorkers.computeIfAbsent(sector.key(), k -> new ArrayList<>())
                     .add(round2(sector.getWorkers()));
         }
+
+        /* --------------------- the city's fund (0.7.39) ---------------------
+           Last, after the share prices: the warrants' value in fundValue()
+           reads the bank's price history (Game.bankVolatility()), which has
+           this month in it only from here. */
+        fundValue.add(round2(game.fundValue()));
+        fundPutIn.add(round2(game.getFund().getPutIn()));
+        fundTakenOut.add(round2(game.getFund().getTakenOut()));
     }
 
     /**
@@ -656,6 +688,9 @@ public class HistorySave {
         investment = copy(loaded.investment);
         government = copy(loaded.government);
         netExports = copy(loaded.netExports);
+        fundValue = copy(loaded.fundValue);
+        fundPutIn = copy(loaded.fundPutIn);
+        fundTakenOut = copy(loaded.fundTakenOut);
         debt = copy(loaded.debt);
         interestRate = copy(loaded.interestRate);
         revenue = copy(loaded.revenue);
@@ -688,6 +723,7 @@ public class HistorySave {
         orePrice = copy(loaded.orePrice);
 
         fxRate = copy(loaded.fxRate);
+        fxParity = copy(loaded.fxParity);
         reservesUsd = copy(loaded.reservesUsd);
         foreignDebtUsd = copy(loaded.foreignDebtUsd);
         currentAccount = copy(loaded.currentAccount);
@@ -891,6 +927,29 @@ public class HistorySave {
     }
 
     /**
+     * How far a series has moved over the last `months` months, as a share of
+     * where it stood then: the last recorded value over the one `months`
+     * entries before it, less one (0.7.35: the Trade tab's rate this month and
+     * over a year). NaN when either was not recorded or the old one is not
+     * above nothing.
+     */
+    public double changeOver(String series, int months) {
+        double[] a = aligned(series);
+        int last = a.length - 1, then = last - months;
+        if (months <= 0 || then < 0) return Double.NaN;
+        if (Double.isNaN(a[last]) || Double.isNaN(a[then]) || !(a[then] > 0)) return Double.NaN;
+        return a[last] / a[then] - 1;
+    }
+
+    /** A flow added up over the last `months` months only, those recorded among them (0.7.35: the Trade tab's year of exports and imports). */
+    public double recentTotal(String series, int months) {
+        double[] a = aligned(series);
+        double sum = 0;
+        for (int i = Math.max(0, a.length - months); i < a.length; i++) if (!Double.isNaN(a[i])) sum += a[i];
+        return sum;
+    }
+
+    /**
      * A flow's worst year: the largest sum of any twelve months in a row since
      * it was first recorded - over fewer than twelve, what there is. Nothing
      * with nothing recorded.
@@ -941,6 +1000,9 @@ public class HistorySave {
         map.put("investment", investment);
         map.put("government", government);
         map.put("netExports", netExports);
+        map.put("fundValue", fundValue);
+        map.put("fundPutIn", fundPutIn);
+        map.put("fundTakenOut", fundTakenOut);
         map.put("debt", debt);
         map.put("interestRate", interestRate);
         map.put("revenue", revenue);
@@ -970,6 +1032,7 @@ public class HistorySave {
         map.put("orePrice", orePrice);
 
         map.put("fxRate", fxRate);
+        map.put("fxParity", fxParity);
         map.put("reservesUsd", reservesUsd);
         map.put("foreignDebtUsd", foreignDebtUsd);
         map.put("currentAccount", currentAccount);
@@ -1112,6 +1175,8 @@ public class HistorySave {
         // they were recorded in - the year book's note says so.
         // GDP's four parts (0.7.6), money like the sum they make.
         scaleAll(scale, consumption, investment, government, netExports);
+        // The city's fund (0.7.39): its worth and what went in and out, money.
+        scaleAll(scale, fundValue, fundPutIn, fundTakenOut);
 
         /*
          * The same reform, applied to everything added since - and the list of
@@ -1127,7 +1192,7 @@ public class HistorySave {
          * constructionCapacity are counts of things, and landUse is a share -
          * none of them is money at all.
          */
-        scaleAll(scale, fxRate, currentAccount, exportsAbroad, importsAbroad,
+        scaleAll(scale, fxRate, fxParity, currentAccount, exportsAbroad, importsAbroad,
                 businessDebt, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
                 householdSavings, bankFees,

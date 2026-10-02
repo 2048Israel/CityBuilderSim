@@ -1,6 +1,6 @@
-# DecisionLog.java - 205 lines · 24 methods · 8 constants · model
+# DecisionLog.java - 206 lines · 24 methods · 8 constants · model
 
-`ham/citybuildersim/DecisionLog.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DecisionLog.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > What the player decided, and when: every change of a policy and every
 > spend at scale, one short line each, at the month it was made (0.7.23).
@@ -39,88 +39,89 @@
 > says "held as reserves").
 > 
 > NOTHING HERE PRINTS. Every println is the game's log and the playtest's
-> report reads the log; a decision is in this list and in the save, and on
-> the chart (ChartModel.flags()), and nowhere else.
+> report reads the log; a decision is in this list and in the save, on
+> the charts (ChartModel.flags()) and in Policy's RECENT DECISIONS and City
+> History's lists, and nowhere else.
 
 **Uses:** [Formats](Formats.md) (1)
 
-**Used by (11):** [CentralBank](CentralBank.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [Education](Education.md), [Game](Game.md), [LabourMarket](LabourMarket.md), [TaxPolicy](TaxPolicy.md), [TimeChart](TimeChart.md), [YearBook](YearBook.md)
+**Used by (22):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [CentralBank](CentralBank.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [Education](Education.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [LabourMarket](LabourMarket.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [TaxPolicy](TaxPolicy.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [YearBook](YearBook.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 52 | · the kinds a decision comes in: what its flag is coloured by |
-| 147 | · the save (DataSave.decisionLog) |
-| 166 | · the words a line is written in |
+| 53 | · the kinds a decision comes in: what its flag is coloured by |
+| 148 | · the save (DataSave.decisionLog) |
+| 167 | · the words a line is written in |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 55 | `DecisionLog.TAX` | `"tax"` | A tax rate, an offset or the farmland relief. |
-| 58 | `DecisionLog.PROMISE` | `"promise"` | A promise: the wage floor, pensions, EI, schools, health, the fare, a standing subsidy. |
-| 61 | `DecisionLog.CENTRAL_BANK` | `"central bank"` | The central bank's dials: the rate, the rule, the target, its holdings, its advances. |
-| 64 | `DecisionLog.CURRENCY` | `"currency"` | The money itself: a reform, the vault bought or sold, how land is paid for. |
-| 67 | `DecisionLog.BORROWING` | `"borrowing"` | The city's paper: an issue, a buyback, the rollover's setting, a default abroad. |
-| 70 | `DecisionLog.BANK` | `"bank"` | The commercial bank: a rescue, the preferred offer, the rescue setting. |
-| 73 | `DecisionLog.FUND` | `"fund"` | The city's fund: its dial, and the hand on it. |
-| 76 | `DecisionLog.CONSTRUCTION` | `"construction"` | The construction queue (0.7.22): the order, rushes, cancels, restarts, demolitions, buy-outs. |
+| 56 | `DecisionLog.TAX` | `"tax"` | A tax rate, an offset or the farmland relief. |
+| 59 | `DecisionLog.PROMISE` | `"promise"` | A promise: the wage floor, pensions, EI, schools, health, the fare, a standing subsidy. |
+| 62 | `DecisionLog.CENTRAL_BANK` | `"central bank"` | The central bank's dials: the rate, the rule, the target, its holdings, its advances. |
+| 65 | `DecisionLog.CURRENCY` | `"currency"` | The money itself: a reform, the vault bought or sold, how land is paid for. |
+| 68 | `DecisionLog.BORROWING` | `"borrowing"` | The city's paper: an issue, a buyback, the rollover's setting, a default abroad. |
+| 71 | `DecisionLog.BANK` | `"bank"` | The commercial bank: a rescue, the preferred offer, the rescue setting. |
+| 74 | `DecisionLog.FUND` | `"fund"` | The city's fund: its dial, and the hand on it. |
+| 77 | `DecisionLog.CONSTRUCTION` | `"construction"` | The construction queue (0.7.22): the order, rushes, cancels, restarts, demolitions, buy-outs. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 80 | `public int month` |  |
-| 81 | `public String kind` |  |
-| 82 | `public String label` |  |
-| 98 | `private final List<Entry> entries` |  |
-| 101 | `private final IntSupplier clock` | The month a decision is made in: the city's own counter, read when it is recorded. |
-| 104 | `private int held` | How many doors are open that set dials without deciding anything; nothing is recorded while any is. |
+| 81 | `public int month` |  |
+| 82 | `public String kind` |  |
+| 83 | `public String label` |  |
+| 99 | `private final List<Entry> entries` |  |
+| 102 | `private final IntSupplier clock` | The month a decision is made in: the city's own counter, read when it is recorded. |
+| 105 | `private int held` | How many doors are open that set dials without deciding anything; nothing is recorded while any is. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 156 | **type** `public final class DecisionLog` | What the player decided, and when: every change of a policy and every spend at scale, one short line each, at the month it was made (0.7.23). |
+| 51 | 156 | **type** `public final class DecisionLog` | What the player decided, and when: every change of a policy and every spend at scale, one short line each, at the month it was made (0.7.23). |
 
-### the kinds a decision comes in: what its flag is coloured by (lines 52-146)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 79 | 18 | **type** `public static final class Entry` | One decision: when, what kind, and what it was, in a few words. |
-| 85 | 1 | `public Entry()` _(in DecisionLog.Entry)_ | Gson needs it. |
-| 87 | 5 | `public Entry(int month, String kind, String label)` _(in DecisionLog.Entry)_ |  |
-| 93 | 1 | `public int month()` _(in DecisionLog.Entry)_ |  |
-| 94 | 1 | `public String kind()` _(in DecisionLog.Entry)_ |  |
-| 95 | 1 | `public String label()` _(in DecisionLog.Entry)_ |  |
-| 107 | 1 | `public DecisionLog()` | A log on no clock - every decision at month 0. |
-| 109 | 3 | `public DecisionLog(IntSupplier clock)` |  |
-| 118 | 4 | `public void record(String kind, String label)` | Records one decision at this month. |
-| 124 | 1 | `public void hold()` | Stops recording until the matching release(): a city being built or loaded. |
-| 127 | 1 | `public void release()` | Ends one hold(). |
-| 130 | 1 | `public boolean isHeld()` | Whether anything is being recorded now. |
-| 133 | 1 | `public List<Entry> entries()` | Every decision, oldest first. |
-| 135 | 1 | `public int size()` |  |
-| 138 | 5 | `public List<Entry> inMonth(int month)` | The decisions of one month, in the order they were made. |
-| 145 | 1 | `public Entry last()` | The newest decision, or null. |
-
-### the save (DataSave.decisionLog) (lines 147-165)
+### the kinds a decision comes in: what its flag is coloured by (lines 53-147)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 150 | 5 | `public List<Entry> toState()` | For the save: a copy, so the save never holds the live list. |
-| 157 | 8 | `public void restore(List<Entry> saved)` | ...and back; null - a save from before 0.7.23 (format 28 and older) - is an empty log. |
+| 80 | 18 | **type** `public static final class Entry` | One decision: when, what kind, and what it was, in a few words. |
+| 86 | 1 | `public Entry()` _(in DecisionLog.Entry)_ | Gson needs it. |
+| 88 | 5 | `public Entry(int month, String kind, String label)` _(in DecisionLog.Entry)_ |  |
+| 94 | 1 | `public int month()` _(in DecisionLog.Entry)_ |  |
+| 95 | 1 | `public String kind()` _(in DecisionLog.Entry)_ |  |
+| 96 | 1 | `public String label()` _(in DecisionLog.Entry)_ |  |
+| 108 | 1 | `public DecisionLog()` | A log on no clock - every decision at month 0. |
+| 110 | 3 | `public DecisionLog(IntSupplier clock)` |  |
+| 119 | 4 | `public void record(String kind, String label)` | Records one decision at this month. |
+| 125 | 1 | `public void hold()` | Stops recording until the matching release(): a city being built or loaded. |
+| 128 | 1 | `public void release()` | Ends one hold(). |
+| 131 | 1 | `public boolean isHeld()` | Whether anything is being recorded now. |
+| 134 | 1 | `public List<Entry> entries()` | Every decision, oldest first. |
+| 136 | 1 | `public int size()` |  |
+| 139 | 5 | `public List<Entry> inMonth(int month)` | The decisions of one month, in the order they were made. |
+| 146 | 1 | `public Entry last()` | The newest decision, or null. |
 
-### the words a line is written in (lines 166-205)
+### the save (DataSave.decisionLog) (lines 148-166)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 169 | 3 | `public static String pct(double share)` | A share as a percentage, as few places as it needs and never more than two: "17%", "17.5%", "0.25%". |
-| 174 | 3 | `public static String pct2(double share)` | A rate to two places, as the central bank's dial reads: "0.00%", "3.25%". |
-| 179 | 5 | `public static String points(double share)` | Points over or under a base: "+2 pts", "-1.5 pts", "0 pts". |
-| 186 | 3 | `public static String times(double scale)` | A multiplier: "x1.2", "x0". |
-| 191 | 3 | `public static String money(double thousands)` | Money, in the model's thousands, as the screens print it: "$58.7M". |
-| 196 | 3 | `public static boolean moved(double was, double now)` | Whether two dial readings differ by more than a rounding hair. |
-| 200 | 5 | `private static String trim(String s)` |  |
+| 151 | 5 | `public List<Entry> toState()` | For the save: a copy, so the save never holds the live list. |
+| 158 | 8 | `public void restore(List<Entry> saved)` | ...and back; null - a save from before 0.7.23 (format 28 and older) - is an empty log. |
+
+### the words a line is written in (lines 167-206)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 170 | 3 | `public static String pct(double share)` | A share as a percentage, as few places as it needs and never more than two: "17%", "17.5%", "0.25%". |
+| 175 | 3 | `public static String pct2(double share)` | A rate to two places, as the central bank's dial reads: "0.00%", "3.25%". |
+| 180 | 5 | `public static String points(double share)` | Points over or under a base: "+2 pts", "-1.5 pts", "0 pts". |
+| 187 | 3 | `public static String times(double scale)` | A multiplier: "x1.2", "x0". |
+| 192 | 3 | `public static String money(double thousands)` | Money, in the model's thousands, as the screens print it: "$58.7M". |
+| 197 | 3 | `public static boolean moved(double was, double now)` | Whether two dial readings differ by more than a rounding hair. |
+| 201 | 5 | `private static String trim(String s)` |  |
 

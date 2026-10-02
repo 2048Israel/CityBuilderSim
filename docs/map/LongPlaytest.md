@@ -1,6 +1,6 @@
-# LongPlaytest.java - 5,266 lines · 75 methods · 66 constants · harnesses
+# LongPlaytest.java - 5,332 lines · 77 methods · 66 constants · harnesses
 
-`ham/citybuildersim/LongPlaytest.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongPlaytest.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > A city played for four thousand months, the way a person plays.
 > 
@@ -29,9 +29,9 @@
 > problem that starts at month 900 and a problem that starts at month 3 are
 > different problems.
 
-**Uses:** [Game](Game.md) (73), [BusinessDebtManager](BusinessDebtManager.md) (38), [Good](Good.md) (35), [Equity](Equity.md) (25), [Exchange](Exchange.md) (24), [Sectors](Sectors.md) (21), [Sector](Sector.md) (21), [Bank](Bank.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (14), [WageBand](WageBand.md) (14), [Crime](Crime.md) (13), [AgeBand](AgeBand.md) (12), [CareType](CareType.md) (12), [Founding](Founding.md) (12), [DebtManager](DebtManager.md) (11), [JobType](JobType.md) (11), [EconomyManager](EconomyManager.md) (8), [HouseholdBalance](HouseholdBalance.md) (8), [BuildingType](BuildingType.md) (8), [TaxPolicy](TaxPolicy.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [FamilyModel](FamilyModel.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [InterimLoan](InterimLoan.md) (6), [PopulationManager](PopulationManager.md) (6), [BuildingManager](BuildingManager.md) (6), [TreasuryFund](TreasuryFund.md) (6), [UnemployedHousehold](UnemployedHousehold.md) (6), [CentralBank](CentralBank.md) (5), [Household](Household.md) (5)... and 45 more
+**Uses:** [Game](Game.md) (75), [BusinessDebtManager](BusinessDebtManager.md) (38), [Good](Good.md) (35), [Equity](Equity.md) (25), [Exchange](Exchange.md) (24), [Sectors](Sectors.md) (21), [Sector](Sector.md) (21), [Bank](Bank.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (14), [WageBand](WageBand.md) (14), [Crime](Crime.md) (13), [AgeBand](AgeBand.md) (12), [CareType](CareType.md) (12), [Founding](Founding.md) (12), [DebtManager](DebtManager.md) (11), [JobType](JobType.md) (11), [FundLedger](FundLedger.md) (9), [EconomyManager](EconomyManager.md) (8), [HouseholdBalance](HouseholdBalance.md) (8), [BuildingType](BuildingType.md) (8), [TaxPolicy](TaxPolicy.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [FamilyModel](FamilyModel.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [TreasuryFund](TreasuryFund.md) (7), [InterimLoan](InterimLoan.md) (6), [PopulationManager](PopulationManager.md) (6), [BuildingManager](BuildingManager.md) (6), [UnemployedHousehold](UnemployedHousehold.md) (6), [CentralBank](CentralBank.md) (5)... and 47 more
 
-**Used by (9):** [BondCheck](BondCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [LabourCheck](LabourCheck.md), [MonetaryCheck](MonetaryCheck.md), [MortgageCheck](MortgageCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [ShadowBasket](ShadowBasket.md)
+**Used by (11):** [BondCheck](BondCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [LabourCheck](LabourCheck.md), [MonetaryCheck](MonetaryCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [ShadowBasket](ShadowBasket.md)
 
 ## Sections
 
@@ -57,14 +57,15 @@
 | 2540 | · AND EVERYTHING THAT IS A PURCHASE. |
 | 2829 | · AND THE BEST OF THEM WINS. |
 | 3110 | RUNNING MONTHS |
-| 3293 | SAVE / RELOAD, MID-RUN |
-| 3580 | (untitled) |
-| 3588 | · the city's fund and the bank's rescue (0.7.14) |
-| 3679 | · an Insane founding (0.7.14) |
-| 3766 | · · founding: a few months at a time, by hand |
-| 3858 | · · then the real rhythm |
-| 4005 | · · the report |
-| 4099 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
+| 3294 | SAVE / RELOAD, MID-RUN |
+| 3585 | (untitled) |
+| 3593 | · the city's fund and the bank's rescue (0.7.14) |
+| 3681 | · the fund's cost basis (0.7.39) |
+| 3729 | · an Insane founding (0.7.14) |
+| 3816 | · · founding: a few months at a time, by hand |
+| 3908 | · · then the real rhythm |
+| 4055 | · · the report |
+| 4149 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
 
 ## Constants
 
@@ -134,8 +135,8 @@
 | 2850 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
 | 3065 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
 | 3097 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
-| 3625 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
-| 3633 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
+| 3630 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
+| 3638 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
 
 ## Fields (state)
 
@@ -252,31 +253,34 @@
 | 3156 | `static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun` |  |
 | 3165 | `static int peakCompressionMonth` | The most the central bank's holdings took off the long end, and when: the twenty-year paper a borrowing seed sells matures inside the run, so by month 4,002 the central bank usually holds none of it and the endpoint's... |
 | 3166 | `static double peakCompression, longRateAtPeak, heldShareAtPeak` |  |
-| 3582 | `static double lifetimeWriteOffs` |  |
-| 3584 | `static double lowestPaidIn` | The bank's paid-in capital at its lowest, the month, and the most its two parts were ever off its equity (0.7.13, round 2). |
-| 3585 | `static int lowestPaidInMonth` |  |
-| 3586 | `static double lifetimeHouseholdWriteOffs` |  |
-| 3591 | `static int buttonPresses` | Presses of the Bank tab's button that resolved the bank (-Dplaytest.rescue=BUTTON). |
-| 3593 | `static int offersFunded` | Offers accepted after borrowing for them on the funding page's bond, and what that bond raised. |
-| 3594 | `static double offerFundingRaised` |  |
-| 3620 | `int month` |  |
-| 3621 | `double at` |  |
-| 3622 | `int under50` |  |
-| 3623 | `double lowest` |  |
-| 3626 | `static int resolutionsSeen` |  |
-| 3628 | `static double fundPeak, fundCashShareSum` | The fund's value, its cash and the most of any company its market book held, over the run. |
-| 3629 | `static int fundMonths` |  |
-| 3631 | `static double warrantSharesSeen, warrantValueTaken` | The warrants' shares taken at expiry, at the price the month they were taken (share counts move with the exchange's splits, so the count alone does not add up across a run). |
-| 3632 | `static int warrantExercises` |  |
-| 3682 | `static DebtQuote dayZeroBond, dayZeroNote` | What an Insane city was quoted on day 0 for its village, and what it borrowed in its first year. |
-| 3683 | `static double villageInvoice, firstYearBorrowed` |  |
-| 3684 | `static int insaneBorrowings` |  |
+| 3587 | `static double lifetimeWriteOffs` |  |
+| 3589 | `static double lowestPaidIn` | The bank's paid-in capital at its lowest, the month, and the most its two parts were ever off its equity (0.7.13, round 2). |
+| 3590 | `static int lowestPaidInMonth` |  |
+| 3591 | `static double lifetimeHouseholdWriteOffs` |  |
+| 3596 | `static int buttonPresses` | Presses of the Bank tab's button that resolved the bank (-Dplaytest.rescue=BUTTON). |
+| 3598 | `static int offersFunded` | Offers accepted after borrowing for them on the funding page's bond, and what that bond raised. |
+| 3599 | `static double offerFundingRaised` |  |
+| 3625 | `int month` |  |
+| 3626 | `double at` |  |
+| 3627 | `int under50` |  |
+| 3628 | `double lowest` |  |
+| 3631 | `static int resolutionsSeen` |  |
+| 3633 | `static double fundPeak, fundCashShareSum` | The fund's value, its cash and the most of any company its market book held, over the run. |
+| 3634 | `static int fundMonths` |  |
+| 3636 | `static double warrantSharesSeen, warrantValueTaken` | The warrants' shares taken at expiry, at the price the month they were taken (share counts move with the exchange's splits, so the count alone does not add up across a run). |
+| 3637 | `static int warrantExercises` |  |
+| 3692 | `static double[] ledgerBefore` | THE FUND'S LEDGER, MONTH BY MONTH (FundLedger; the project's spec-fund-0739.md, 3.7, rule 3 - count a mechanic in a real run): the identity FundLedgerCheck holds on a fixture - realized + the change in unrealized = th... |
+| 3693 | `static double ledgerWorst` |  |
+| 3694 | `static int ledgerRuleRows, ledgerHandRows, ledgerMatured, ledgerWrittenDown, ledgerRescues` |  |
+| 3732 | `static DebtQuote dayZeroBond, dayZeroNote` | What an Insane city was quoted on day 0 for its village, and what it borrowed in its first year. |
+| 3733 | `static double villageInvoice, firstYearBorrowed` |  |
+| 3734 | `static int insaneBorrowings` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 5227 | **type** `public class LongPlaytest` | A city played for four thousand months, the way a person plays. |
+| 40 | 5293 | **type** `public class LongPlaytest` | A city played for four thousand months, the way a person plays. |
 
 ### FINDINGS (lines 47-65)
 
@@ -396,45 +400,52 @@
 | 3099 | 3 | `static void refusal(String why)` |  |
 | 3103 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
 
-### RUNNING MONTHS (lines 3110-3292)
+### RUNNING MONTHS (lines 3110-3293)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 3168 | 17 | `static void countTheHolders(Game g)` |  |
 | 3186 | 10 | `static void countTheCentralBank(Game g)` |  |
 | 3197 | 13 | `static void countTheCitysPaper(Game g)` |  |
-| 3211 | 81 | `static void run(Game g, int months)` |  |
+| 3211 | 82 | `static void run(Game g, int months)` |  |
 
-### SAVE / RELOAD, MID-RUN (lines 3293-3579)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3302 | 271 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
-| 3574 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
-
-### (untitled) (lines 3580-3587)
-
-### the city's fund and the bank's rescue (0.7.14) (lines 3588-3678)
+### SAVE / RELOAD, MID-RUN (lines 3294-3584)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3602 | 10 | `static void acceptTheOffer(Game g)` | ACCEPTS THE BANK'S OFFER, the way the page lets a player: a treasury short of it takes the funding page's first offer - the build screen's twenty-year bond, sized to the gap - and then pays. |
-| 3619 | 6 | **type** `static final class Stake` | THE CITY'S STAKE IN ITS BANK AFTER EACH RESCUE: at the resolution, then five, ten and twenty-five years on, and the first months it is under half and under a tenth - until the next resolution takes it back to everything. |
-| 3635 | 40 | `static void watchTheStake(Game g)` |  |
-| 3677 | 1 | `static String pct(double v)` | A stake, in words: "84.4%", or "-" before it was read. |
+| 3303 | 275 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
+| 3579 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
 
-### an Insane founding (0.7.14) (lines 3679-5266)
+### (untitled) (lines 3585-3592)
+
+### the city's fund and the bank's rescue (0.7.14) (lines 3593-3680)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3693 | 10 | `static void borrowForTheVillage(Game g)` | THE PLAYER OF AN INSANE CITY BORROWS FIRST: the build screen's twenty-year bond, sized to the village's invoice at a new city's prices (Founding.whatItBuys()), before it places a house - the treasury holds nothing and... |
-| 3711 | 13 | `static boolean buildOnTheFundingPage(Game g, String name, int quantity)` | ...AND BUILDS THE REST OF IT THE SAME WAY: a stage the treasury is short of is borrowed for on the funding page's bond, sized to the gap (Game.buildFundingGap()), and placed - the page a player is shown, where the adv... |
-| 3725 | 1372 | `public static void main(String[] args) throws Exception` |  |
-| 5105 | 10 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
-| 5124 | 17 | `static String creditEra(Game g)` | The business economy at a checkpoint, on one line: per sector its cash, write-downs and months of ban left, then hunger and the shelf. |
-| 5150 | 33 | `static String bankEra(Game g)` | The bank as a business at a checkpoint, on one line (0.7.7): its price build-up at the dial - funds-transfer price, running costs, expected loss and capital charge, adding to prime - then what it paid savers and what ... |
-| 5185 | 7 | `static double depositBeta()` | The run's deposit rate regressed on the dial: the share of a move in the policy rate savers saw, over every month. |
-| 5193 | 57 | `static String era(Game g, String label)` |  |
-| 5251 | 7 | `static String money(double v)` |  |
-| 5259 | 7 | `static void cleanUp(Path root)` |  |
+| 3607 | 10 | `static void acceptTheOffer(Game g)` | ACCEPTS THE BANK'S OFFER, the way the page lets a player: a treasury short of it takes the funding page's first offer - the build screen's twenty-year bond, sized to the gap - and then pays. |
+| 3624 | 6 | **type** `static final class Stake` | THE CITY'S STAKE IN ITS BANK AFTER EACH RESCUE: at the resolution, then five, ten and twenty-five years on, and the first months it is under half and under a tenth - until the next resolution takes it back to everything. |
+| 3640 | 40 | `static void watchTheStake(Game g)` |  |
+
+### the fund's cost basis (0.7.39) (lines 3681-3728)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3696 | 7 | `static double[] ledgerSnap(Game g)` |  |
+| 3704 | 21 | `static void watchTheLedger(Game g)` |  |
+| 3727 | 1 | `static String pct(double v)` | A stake, in words: "84.4%", or "-" before it was read. |
+
+### an Insane founding (0.7.14) (lines 3729-5332)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3743 | 10 | `static void borrowForTheVillage(Game g)` | THE PLAYER OF AN INSANE CITY BORROWS FIRST: the build screen's twenty-year bond, sized to the village's invoice at a new city's prices (Founding.whatItBuys()), before it places a house - the treasury holds nothing and... |
+| 3761 | 13 | `static boolean buildOnTheFundingPage(Game g, String name, int quantity)` | ...AND BUILDS THE REST OF IT THE SAME WAY: a stage the treasury is short of is borrowed for on the funding page's bond, sized to the gap (Game.buildFundingGap()), and placed - the page a player is shown, where the adv... |
+| 3775 | 1388 | `public static void main(String[] args) throws Exception` |  |
+| 5171 | 10 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
+| 5190 | 17 | `static String creditEra(Game g)` | The business economy at a checkpoint, on one line: per sector its cash, write-downs and months of ban left, then hunger and the shelf. |
+| 5216 | 33 | `static String bankEra(Game g)` | The bank as a business at a checkpoint, on one line (0.7.7): its price build-up at the dial - funds-transfer price, running costs, expected loss and capital charge, adding to prime - then what it paid savers and what ... |
+| 5251 | 7 | `static double depositBeta()` | The run's deposit rate regressed on the dial: the share of a move in the policy rate savers saw, over every month. |
+| 5259 | 57 | `static String era(Game g, String label)` |  |
+| 5317 | 7 | `static String money(double v)` |  |
+| 5325 | 7 | `static void cleanUp(Path root)` |  |
 

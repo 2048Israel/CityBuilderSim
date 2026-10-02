@@ -126,7 +126,8 @@ public final class CityCalendar {
     /**
      * "in 3 months", "next month", "this month", "overdue".
      *
-     * For anything dated in the future, which is what the maturity strip needs.
+     * For anything dated in the future, which is what a maturity needs - the
+     * Finances tab's NEXT DUE and its book (the maturity strip's, until 0.7.24).
      * Overdue is a real state rather than a defensive one: a bond's maturity
      * month can pass while the player is mid-skip.
      */

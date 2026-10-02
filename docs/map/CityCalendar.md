@@ -1,6 +1,6 @@
-# CityCalendar.java - 145 lines · 13 methods · 4 constants · model
+# CityCalendar.java - 146 lines · 13 methods · 4 constants · model
 
-`ham/citybuildersim/CityCalendar.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityCalendar.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Turns the month counter into a date a person can hold in their head.
 > 
@@ -23,7 +23,7 @@
 > they floor at the epoch rather than counting backwards into 1999. A date is
 > cosmetic; crashing the status bar over one is not.
 
-**Used by (18):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CalendarCheck](CalendarCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (22):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CalendarCheck](CalendarCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 
@@ -44,10 +44,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 121 | **type** `public final class CityCalendar` | Turns the month counter into a date a person can hold in their head. |
+| 25 | 122 | **type** `public final class CityCalendar` | Turns the month counter into a date a person can hold in their head. |
 | 43 | 1 | `private CityCalendar()` |  |
 
-### DAYS, WHICH THE SIMULATION DOES NOT HAVE AND THE CLOCK NEEDS (lines 45-145)
+### DAYS, WHICH THE SIMULATION DOES NOT HAVE AND THE CLOCK NEEDS (lines 45-146)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -62,5 +62,5 @@
 | 112 | 3 | `public static String shortMonthName(int gameMonth)` |  |
 | 117 | 3 | `public static String format(int gameMonth)` | "March 2014" - the status bar. |
 | 122 | 3 | `public static String formatShort(int gameMonth)` | "Mar 2014" - tables and strips, where the long form does not fit. |
-| 133 | 12 | `public static String until(int fromMonth, int targetMonth)` | "in 3 months", "next month", "this month", "overdue". |
+| 134 | 12 | `public static String until(int fromMonth, int targetMonth)` | "in 3 months", "next month", "this month", "overdue". |
 

@@ -236,7 +236,10 @@ public final class Automotive extends Sector {
     /* ------------------------------------------------------------ the screen */
 
     @Override
-    public List<Sector.Line> operations(Game game) {
+    public boolean hasPlantBlock() { return false; }
+
+    @Override
+    public List<Sector.Line> ownLines(Game game) {
         List<Sector.Line> lines = new ArrayList<>();
         Formats f = Formats.INSTANCE;
 

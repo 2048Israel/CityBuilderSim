@@ -53,8 +53,9 @@ import java.io.PrintStream;
  *      cannot be placed waits, and a holding over 10% is asked down to the
  *      limit and no further.
  *   9. The 3% transfer, from cash only.
- *  10. The hand: its orders at fair value; pay-in and draw-out off the
- *      surplus.
+ *  10. The hand: its orders at fair value, or at a price the player names,
+ *      and one cancelled before the step (0.7.39); pay-in and draw-out off
+ *      the surplus.
  *  11. Every piece round-trips through a save; an older save loads empty.
  *  12. Insane: nothing in the treasury or the vault; one dollar bond abroad at
  *      3% for twenty years at the land's value; a day-0 city is quoted both
@@ -887,6 +888,20 @@ public class FundCheck {
         check("...and is posted at it, at fair value", a.getFund().getHandOrders().isEmpty()
                 && a.getExchange().bookOf(0).bids().stream().filter(o -> o.who().equals(Exchange.FUND_HAND))
                         .allMatch(o -> Math.abs(o.price() - a.getExchange().fair(0)) < 1e-12));
+        // 0.7.39 (the project's spec-fund-0739.md, D2 and D3): a price the player names, and an order cancelled before the step.
+        double limit = a.getExchange().fair(0) * .9;
+        a.fundBuyShares(0, 100, limit);
+        a.fundBuyShares(0, 100);
+        check("fixture: two orders wait for the step, one at a price the player named",
+                a.getFund().getHandOrders().size() == 2 && a.getFund().getHandOrders().get(0).limit() == limit);
+        check("...and the second can be cancelled", a.fundCancelOrder(1) && a.getFund().getHandOrders().size() == 1);
+        play(a);
+        check("a limit posts at its limit", a.getFund().getPosted().size() == 1
+                && a.getFund().getPosted().get(0).price() == limit
+                && a.getExchange().bookOf(0).bids().stream().filter(o -> o.who().equals(Exchange.FUND_HAND))
+                        .allMatch(o -> o.price() == limit));
+        check("a cancelled order never reaches the step", a.getFund().getHandOrders().isEmpty()
+                && a.getFund().getPosted().stream().noneMatch(o -> o.limit() == 0));
     }
 
     /* ================= 11. the save ================= */

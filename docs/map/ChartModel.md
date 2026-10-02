@@ -1,6 +1,6 @@
-# ChartModel.java - 474 lines · 38 methods · 11 constants · model
+# ChartModel.java - 533 lines · 41 methods · 11 constants · model
 
-`ham/citybuildersim/ChartModel.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartModel.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > What a time chart shows, as numbers: the window of months it looks at and
 > how a drag, a wheel, a range button and the overview move it; the ticks on
@@ -26,9 +26,9 @@
 > the spans YearBook.episodes() and the flags the DecisionLog's entries, as
 > they are; this class only says where on the chart each one goes.
 
-**Uses:** [CityCalendar](CityCalendar.md) (9), [YearBook](YearBook.md) (6), [DecisionLog](DecisionLog.md) (5), [HistorySave](HistorySave.md) (2)
+**Uses:** [DecisionLog](DecisionLog.md) (14), [CityCalendar](CityCalendar.md) (9), [YearBook](YearBook.md) (6), [HistorySave](HistorySave.md) (2)
 
-**Used by (4):** [ChartCheck](ChartCheck.md), [HistoryScreen](HistoryScreen.md), [Pieces](Pieces.md), [TimeChart](TimeChart.md)
+**Used by (14):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -70,7 +70,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 441 | **type** `public final class ChartModel` | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks on its two axes; and the bands, the episodes and the decisions it lays ... |
+| 34 | 500 | **type** `public final class ChartModel` | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks on its two axes; and the bands, the episodes and the decisions it lays ... |
 
 ### THE WINDOW (lines 69-217)
 
@@ -123,7 +123,7 @@
 | 367 | 12 | `public static Scale niceScale(double low, double high, int ticks, boolean fromZero)` | A nice scale over low..high, about `ticks` gridlines, from zero when asked and nothing is negative. |
 | 381 | 6 | `public static Scale logScale(double lowLog, double highLog)` | A log axis over these LOGARITHMS: whole powers of ten, a gridline each. |
 
-### WHAT IS LAID OVER THE LINES (lines 388-474)
+### WHAT IS LAID OVER THE LINES (lines 388-533)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -134,8 +134,11 @@
 | 424 | 3 | **type** `public record Flag(int month, List<DecisionLog.Entry> entries)` | One flag on the decision lane: a month and everything decided in it, in the order it was decided. |
 | 425 | 1 | `public int count()` _(in ChartModel.Flag)_ |  |
 | 429 | 10 | `public static List<Flag> flags(DecisionLog log)` | The log's entries as flags: one a month, many decisions in one month one flag with a count; oldest first. |
-| 441 | 7 | **type** `public record Cluster(int month, List<Flag> flags)` | Flags drawn as one: at the first one's month, so many months packed under one pixel read as one count. |
-| 442 | 5 | `public int count()` _(in ChartModel.Cluster)_ |  |
-| 455 | 16 | `public static List<Cluster> clusters(List<Flag> flags, double lo, double hi, double pixels, double gapPx)` | The flags inside the window, each month's one flag, and a flag that would sit within `gapPx` of the FIRST flag of the group before it drawn in that group, as one: the decision lane of a long city zoomed out is a row o... |
-| 473 | 1 | `public ChartModel()` | A fresh window: no data yet; the first setData() opens it on DEFAULT_RANGE. |
+| 446 | 12 | `public static List<Flag> flags(DecisionLog log, String kind)` | ...of one kind only (0.7.32): the Finances tab's chart of what the city owes and its rate carries the BORROWING decisions alone - an issue, a buyback, the rollover's setting, a default abroad. |
+| 466 | 13 | `public static List<Flag> flagsOf(DecisionLog log, String...kinds)` | ...of several kinds, one flag a month (0.7.33): the Bank tab's rates carry the CENTRAL_BANK decisions that move the policy rate under them and the BANK ones - a rescue, the preferred offer - in one lane, so a month wi... |
+| 488 | 10 | `public static List<Flag> onAxis(List<Flag> flags, int firstMonth)` | The flags as the lane can draw them (0.7.37): a flag from before the axis's first month - the founding month's, which the history does not record, so no window reaches it - is moved onto that first month and merged wi... |
+| 500 | 7 | **type** `public record Cluster(int month, List<Flag> flags)` | Flags drawn as one: at the first one's month, so many months packed under one pixel read as one count. |
+| 501 | 5 | `public int count()` _(in ChartModel.Cluster)_ |  |
+| 514 | 16 | `public static List<Cluster> clusters(List<Flag> flags, double lo, double hi, double pixels, double gapPx)` | The flags inside the window, each month's one flag, and a flag that would sit within `gapPx` of the FIRST flag of the group before it drawn in that group, as one: the decision lane of a long city zoomed out is a row o... |
+| 532 | 1 | `public ChartModel()` | A fresh window: no data yet; the first setData() opens it on DEFAULT_RANGE. |
 

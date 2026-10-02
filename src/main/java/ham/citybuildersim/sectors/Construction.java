@@ -709,7 +709,10 @@ public final class Construction extends Sector {
     }
 
     @Override
-    public List<Line> operations(Game game) {
+    public boolean hasPlantBlock() { return false; }
+
+    @Override
+    public List<Line> ownLines(Game game) {
         Formats f = Formats.INSTANCE;
         List<Line> lines = new java.util.ArrayList<>();
         double output = game == null ? 0 : game.getConstructionOutput();

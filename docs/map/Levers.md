@@ -1,27 +1,45 @@
-# Levers.java - 79 lines · 9 methods · 0 constants · interface
+# Levers.java - 144 lines · 3 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/Levers.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Levers.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
-> The pieces a policy lever is drawn with: its head, the would-be rows that
-> show a staged change against today's figure, and the arithmetic of snapping
-> a slider to its step. The dial itself is Ladder (0.7.6), which knows
-> nothing of the staged set; the wiring to it and the apply bar stay with
-> the policy screen, because they read and write that set.
+> The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36)
+> - the dial on a card with what it does beside it, which every dial on the
+> Policy tab and, since 0.7.38, the fare on Infrastructure are drawn with -
+> and the arithmetic of snapping a slider to its step. The dial itself is
+> Ladder (0.7.6), which knows nothing of the staged set; the wiring to it
+> and the apply bar stay with the policy screen, because they read and
+> write that set. The lever's head, the would-be rows and the preview's
+> caveat sentence, which the cards replaced, went in 0.7.38 with their
+> last caller.
 
-**Uses:** [Palette](Palette.md) (11)
+**Uses:** [Palette](Palette.md) (17), [Ladder](Ladder.md) (1)
 
-## Methods, in file order
+**Used by (1):** [InfrastructureScreen](InfrastructureScreen.md)
+
+## Sections
+
+| line | section |
+|---:|---|
+| 35 | THE DIAL CARD (0.7.36) |
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 66 | `Levers.EFFECTS` | `420` | How wide the effects column is held beside the ladder. |
+
+## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 18 | 62 | **type** `public final class Levers` | The pieces a policy lever is drawn with: its head, the would-be rows that show a staged change against today's figure, and the arithmetic of snapping a slider to its step. |
-| 21 | 15 | `public static VBox leverHead(String figure, String what)` | The current setting, big, with the sentence that says what it governs. |
-| 38 | 10 | `public static VBox leverHead(String figure, String shown, String whole)` | The same, in two layers (0.7.21): one short line under the figure, and the whole of it behind an (i). |
-| 49 | 3 | `public static double snapped(double value, double min, double step)` |  |
-| 53 | 3 | `public static boolean moved(double value, double from, double step)` |  |
-| 57 | 1 | `public static VBox wouldHead()` |  |
-| 60 | 3 | `public static String arrow(boolean staged, String now, String then)` | "now  \u2192  then", or just now when nothing staged reaches this row. |
-| 65 | 3 | `public static HBox wouldBe(String label, String before, String after, String tone)` | One line of a preview: what it reads now, and what it would read. |
-| 69 | 3 | `public static VBox wouldTotal(String label, String before, String after, String tone)` |  |
-| 74 | 5 | `public static Label previewCaveat(String basis)` | The sentence every preview on this tab ends with, because it is always true. |
+| 25 | 120 | **type** `public final class Levers` | The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36) - the dial on a card with what it does beside it, which every dial on the Policy tab and, since 0.7.38, the fare on Infrastructure are drawn ... |
+| 27 | 3 | `public static double snapped(double value, double min, double step)` |  |
+| 31 | 3 | `public static boolean moved(double value, double from, double step)` |  |
+
+### THE DIAL CARD (0.7.36) (lines 35-144)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 60 | 4 | **type** `public record DialCard(String svg, String colour, String name, String info, String reading, String status, ...` | One dial card: its icon and the icon's colour; its name and the (i) behind it (null: none); the reading in large type and a line of status under it (either null: none); anything that sits over the ladder - its chips, ... |
+| 74 | 70 | `public static VBox dialCard(DialCard d, double ladderWidth, boolean stacked)` | The card: the dial at the left `ladderWidth` wide and its effects at the right, or - `stacked`, in a narrow column - the effects under the dial. |
 

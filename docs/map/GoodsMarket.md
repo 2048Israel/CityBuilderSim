@@ -1,6 +1,6 @@
-# GoodsMarket.java - 466 lines · 47 methods · 3 constants · model
+# GoodsMarket.java - 493 lines · 51 methods · 3 constants · model
 
-`ham/citybuildersim/GoodsMarket.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoodsMarket.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Where one good clears between whoever makes it and whoever wants it.
 > 
@@ -43,7 +43,7 @@
 
 **Uses:** [Trade](Trade.md) (5), [Good](Good.md) (3)
 
-**Used by (26):** [AgricultureCheck](AgricultureCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServicesCheck](BusinessServicesCheck.md), [EconomyManager](EconomyManager.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [HistoryScreen](HistoryScreen.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Retail](Retail.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md)
+**Used by (27):** [AgricultureCheck](AgricultureCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServicesCheck](BusinessServicesCheck.md), [EconomyManager](EconomyManager.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [HistoryScreen](HistoryScreen.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md)
 
 ## Sections
 
@@ -53,7 +53,8 @@
 | 92 | · the month |
 | 122 | WHAT IT COSTS TO MOVE ONE, THIS MONTH (2026-09-16) |
 | 217 | ...AND WHAT THE SHIPPER IS ACTUALLY LEFT WITH |
-| 382 | · readers |
+| 246 | · the wedge, taken apart (0.7.29) |
+| 409 | · readers |
 
 ## Constants
 
@@ -89,7 +90,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 421 | **type** `public final class GoodsMarket` | Where one good clears between whoever makes it and whoever wants it. |
+| 46 | 448 | **type** `public final class GoodsMarket` | Where one good clears between whoever makes it and whoever wants it. |
 
 ### the last strike (lines 65-91)
 
@@ -115,48 +116,57 @@
 | 206 | 4 | `public double importPrice()` | What an import costs the city, in the city's money. |
 | 212 | 4 | `public double exportPrice()` | What the world pays the city for one, in the city's money. |
 
-### ...AND WHAT THE SHIPPER IS ACTUALLY LEFT WITH (lines 217-381)
+### ...AND WHAT THE SHIPPER IS ACTUALLY LEFT WITH (lines 217-245)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 241 | 1 | `public double netExportPrice()` | What an exporter nets on one, after the haulage it will be billed for. |
 | 244 | 1 | `public double netImportPrice()` | ...and what an importer pays for one, landed AND hauled. |
-| 259 | 4 | `public double landedPrice()` | What one unit costs a buyer to bring in this month (0.7.12 round 6): the local price when somebody in the city has the good on offer, and the import price when nobody does and it can be imported. |
-| 265 | 3 | `public double floor()` | The floor: the export price, or nothing. |
-| 270 | 4 | `public double ceiling()` | The ceiling: the import price, or twice the floor. |
-| 276 | 3 | `private double openingPrice()` | The middle of the band: where a market nobody has told about anything opens. |
-| 287 | 21 | `public void strike(double productionFlow, double stock, double demand)` | Prices the month. |
-| 310 | 8 | `public void startMonth()` | Wipes the month's tally, not the draws. |
-| 320 | 1 | `void noteDrawn(double units)` | A draw since the last clearing, counted toward the next strike's demand. |
-| 327 | 4 | `void closeMonth()` | Closes the month's clearing: folds what the city took - the larger of what it asked for and what it got, at home or from the world - into the trend. |
-| 333 | 8 | `public double getDemandTrend()` | The average take of this good a month, over the months the good plans on. |
-| 343 | 5 | `public double[] getTakenHistory()` | The year, as the save carries it: oldest first. |
-| 350 | 8 | `public void restoreTakenHistory(double[] saved)` | The year, put back on load. |
-| 360 | 5 | `double takeDrawn()` | ...and the strike takes them. |
-| 366 | 1 | `public double getDrawn()` |  |
-| 369 | 9 | `public Trade record(String seller, String buyer, double units, double price)` | A fill, recorded. |
-| 379 | 1 | `void noteOffered(double units)` |  |
-| 380 | 1 | `void noteBid(double units)` |  |
 
-### readers (lines 382-466)
+### the wedge, taken apart (0.7.29) (lines 246-408)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 384 | 1 | `public double getLocalPrice()` |  |
-| 385 | 1 | `public double getSupplyFlow()` |  |
-| 386 | 1 | `public double getSupplyStock()` |  |
-| 388 | 1 | `public double getSupply()` | Flow plus the slice of stock the month was priced on. |
-| 389 | 1 | `public double getDemand()` |  |
-| 391 | 1 | `public double getOffered()` |  |
-| 392 | 1 | `public double getBid()` |  |
-| 393 | 1 | `public double getLocalFilled()` |  |
-| 394 | 1 | `public double getImported()` |  |
-| 395 | 1 | `public double getExported()` |  |
-| 396 | 1 | `public List<Trade> getTrades()` |  |
-| 399 | 4 | `public double getPriceIndex()` | Where in the band the price sits: 0 the floor, 1 the ceiling. |
-| 405 | 3 | `public boolean isShortage()` | True when the buyers wanted more than the makers brought. |
-| 435 | 3 | `public void setLocalPrice(double price)` | The price a month traded at, put back on load - restored, never recomputed. |
-| 440 | 5 | `public void restoreStrike(double flow, double stock, double demand)` | The last strike's inputs, put back so the screens read the saved month. |
-| 446 | 10 | `public void reset()` |  |
-| 462 | 4 | `public void redenominate(double scale)` | The price in the new unit. |
+| 260 | 1 | `public double freightInBand()` | The freight still in the band, both ways: what the lorries are paid abroad on one unit bought and one sold (0.7.29). |
+| 263 | 1 | `public double bandByLorry()` | The band with every tonne on a lorry: the world's asking less its buying price, freight and all (0.7.29). |
+| 266 | 3 | `public double worldMargin()` | The world's own margin in the band: the band with no freight in it at all, which no railway narrows (0.7.29). |
+| 271 | 1 | `public double railInWedge()` | The railway's charge on the wedge, both ways: what an importer pays on top and an exporter gives up (0.7.29). |
+| 286 | 4 | `public double landedPrice()` | What one unit costs a buyer to bring in this month (0.7.12 round 6): the local price when somebody in the city has the good on offer, and the import price when nobody does and it can be imported. |
+| 292 | 3 | `public double floor()` | The floor: the export price, or nothing. |
+| 297 | 4 | `public double ceiling()` | The ceiling: the import price, or twice the floor. |
+| 303 | 3 | `private double openingPrice()` | The middle of the band: where a market nobody has told about anything opens. |
+| 314 | 21 | `public void strike(double productionFlow, double stock, double demand)` | Prices the month. |
+| 337 | 8 | `public void startMonth()` | Wipes the month's tally, not the draws. |
+| 347 | 1 | `void noteDrawn(double units)` | A draw since the last clearing, counted toward the next strike's demand. |
+| 354 | 4 | `void closeMonth()` | Closes the month's clearing: folds what the city took - the larger of what it asked for and what it got, at home or from the world - into the trend. |
+| 360 | 8 | `public double getDemandTrend()` | The average take of this good a month, over the months the good plans on. |
+| 370 | 5 | `public double[] getTakenHistory()` | The year, as the save carries it: oldest first. |
+| 377 | 8 | `public void restoreTakenHistory(double[] saved)` | The year, put back on load. |
+| 387 | 5 | `double takeDrawn()` | ...and the strike takes them. |
+| 393 | 1 | `public double getDrawn()` |  |
+| 396 | 9 | `public Trade record(String seller, String buyer, double units, double price)` | A fill, recorded. |
+| 406 | 1 | `void noteOffered(double units)` |  |
+| 407 | 1 | `void noteBid(double units)` |  |
+
+### readers (lines 409-493)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 411 | 1 | `public double getLocalPrice()` |  |
+| 412 | 1 | `public double getSupplyFlow()` |  |
+| 413 | 1 | `public double getSupplyStock()` |  |
+| 415 | 1 | `public double getSupply()` | Flow plus the slice of stock the month was priced on. |
+| 416 | 1 | `public double getDemand()` |  |
+| 418 | 1 | `public double getOffered()` |  |
+| 419 | 1 | `public double getBid()` |  |
+| 420 | 1 | `public double getLocalFilled()` |  |
+| 421 | 1 | `public double getImported()` |  |
+| 422 | 1 | `public double getExported()` |  |
+| 423 | 1 | `public List<Trade> getTrades()` |  |
+| 426 | 4 | `public double getPriceIndex()` | Where in the band the price sits: 0 the floor, 1 the ceiling. |
+| 432 | 3 | `public boolean isShortage()` | True when the buyers wanted more than the makers brought. |
+| 462 | 3 | `public void setLocalPrice(double price)` | The price a month traded at, put back on load - restored, never recomputed. |
+| 467 | 5 | `public void restoreStrike(double flow, double stock, double demand)` | The last strike's inputs, put back so the screens read the saved month. |
+| 473 | 10 | `public void reset()` |  |
+| 489 | 4 | `public void redenominate(double scale)` | The price in the new unit. |
 

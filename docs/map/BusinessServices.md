@@ -1,6 +1,6 @@
 # BusinessServices.java - 270 lines · 8 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > Somebody else's work, done here, paid for from outside.
 > 
@@ -91,5 +91,5 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 232 | 38 | `public List<Line> operations(Game game)` |  |
+| 232 | 38 | `public List<Line> ownLines(Game game)` |  |
 

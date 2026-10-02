@@ -635,20 +635,15 @@ public class LabourMarket {
      * year rather than on the turn it is signed - which is both truer and the
      * only version a player can see happening.
      *
-     * Sets the floor as a CASH figure, in today's money.
-     *
-     * AND SETS THE REAL BASE TO MATCH, which is the whole of a bug worth
-     * recording. This method used to be the only way in, and reindexing runs
-     * every month from the base - so a caller that set the cash figure had it
-     * silently overwritten on the next tick by a base that knew nothing about
-     * it. LabourCheck caught it immediately ("doubling the floor moved the
-     * unskilled wage: FAIL"), which is exactly what that assertion is for: two
-     * setters for one quantity is one setter too many unless they agree.
-     *
-     * They agree now. The base is set to whatever reproduces this cash figure
-     * at today's index, so every existing caller - the harnesses, the load
-     * path, the old screen - behaves exactly as it did, while the real floor
-     * underneath is correct and holds its worth from here on.
+     * TAKES THE REAL FLOOR, IN FOUNDING MONEY, and stores it as given, held to
+     * the settable bounds: the same figure getMinimumWage() reads, and what
+     * cashMinimumWage() lifts by the cost of living and the player's nudge
+     * into today's money. (This comment said until 0.7.36 that it took a cash
+     * figure and set the real base to match - true of an older version, when
+     * reindexing from a base overwrote a cash figure on the next tick and
+     * LabourCheck caught it as "doubling the floor moved the unskilled wage".
+     * The code has stored the founding figure since; the Policy tab's floor
+     * dial moves in it and reads in today's money through cashAt().)
      */
     public void setMinimumWage(double value) {
         double was = minimumWage;
@@ -656,6 +651,47 @@ public class LabourMarket {
         if (DecisionLog.moved(was, minimumWage)) {
             decided(DecisionLog.PROMISE, "Wage floor to " + DecisionLog.money(minimumWage) + " a month");
         }
+    }
+
+    /* ------------------- WHAT THE POLICY TAB ASKS (0.7.36) -------------------
+     * The floor dial's reading and its preview, by this class's own rules:
+     * the dial is set in founding money and read in today's (the Policy
+     * spec's D6, B7 - the tab printed the founding figure as a wage).
+     */
+
+    /** What a real floor of `floor`, in founding money, comes to in today's money: cashMinimumWage()'s rule at another setting. Pure. */
+    public double cashAt(double floor) {
+        return floor * costOfLiving * (1 + minimumWageAdjustment);
+    }
+
+    /** ...and back: the founding figure whose cash floor is `cash` today - what the Policy tab's dial, read in today's money, sets. */
+    public double floorForCash(double cash) {
+        double per = costOfLiving * (1 + minimumWageAdjustment);
+        return per > 0 ? cash / per : cash;
+    }
+
+    /**
+     * Where a job's wage heads with the real floor at `floor`: advanceMonth()'s
+     * target - its base at that floor times this month's band and licence
+     * multiples, held to MAX_MULTIPLE - and never under the floor in today's
+     * money at that setting. What the wage walks to "once wages have walked
+     * there", at ADJUST_RATE a month; at today's floor it is today's target,
+     * which the wage itself may not have reached. Pure.
+     */
+    public double targetWageAt(JobType job, double floor) {
+        double base = floor * ratioOf(job) * costOfLiving;
+        double combined = Math.min(MAX_MULTIPLE,
+                bandMultiple[WageBand.of(job).ordinal()] * licenceMultiple[job.ordinal()]);
+        return Math.max(base * combined, cashAt(floor));
+    }
+
+    /** The best-paid job somebody in this band can hold (0.7.36; the Policy tab's own until then): what a course's fee is weighed against. */
+    public double bestWageIn(WageBand band) {
+        double best = 0;
+        for (JobType job : JobType.values()) {
+            if (WageBand.of(job) == band) best = Math.max(best, wage[job.ordinal()]);
+        }
+        return best;
     }
 
     /** Sets the real floor, in founding money. The same dial as setMinimumWage. */

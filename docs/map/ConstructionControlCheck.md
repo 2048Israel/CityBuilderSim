@@ -1,6 +1,6 @@
 # ConstructionControlCheck.java - 826 lines · 21 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ConstructionControlCheck.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConstructionControlCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The player's hand on the construction queue (0.7.22): each of
 > ConstructionControl's five rules held to its own arithmetic, in a played

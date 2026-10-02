@@ -1,6 +1,6 @@
 # Agriculture.java - 393 lines · 12 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The fields, and what they cost the city in ground.
 > 
@@ -103,6 +103,6 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 308 | 58 | `public List<Sector.Line> operations(Game game)` |  |
+| 308 | 58 | `public List<Sector.Line> ownLines(Game game)` |  |
 | 375 | 18 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with a silo: it holds a harvest, sells what the mills want and ships the rest, and shrinks only on distress. |
 

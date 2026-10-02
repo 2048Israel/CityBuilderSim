@@ -1,6 +1,6 @@
-# Retail.java - 651 lines · 46 methods · 7 constants · sectors
+# Retail.java - 654 lines · 47 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/Retail.java` - generated 2026-10-01 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Retail.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
 
 > The shops. Buy food on the food market, keep it on a shelf, sell it to the
 > households as groceries at a price they strike themselves.
@@ -43,7 +43,7 @@
 | 260 | THE SALE, at the bottom of the month |
 | 452 | PLANNING - customers against coverage |
 | 527 | THE SCREEN |
-| 586 | SAVE, RESET, THE REFORM |
+| 589 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 606 | **type** `public final class Retail extends Sector` | The shops. |
+| 46 | 609 | **type** `public final class Retail extends Sector` | The shops. |
 
 ### THE THIRTEEN THINGS ON THE SHELF (lines 92-163)
 
@@ -140,20 +140,21 @@
 | 518 | 3 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | Gross margin on a full store: every covered customer buys a unit a month. |
 | 523 | 3 | `public double[] retirementDemandAndCapacity(Game game)` |  |
 
-### THE SCREEN (lines 527-585)
+### THE SCREEN (lines 527-588)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 532 | 1 | `public String inputLabel()` |  |
-| 535 | 50 | `public List<Line> operations(Game game)` |  |
+| 535 | 1 | `public boolean hasPlantBlock()` |  |
+| 538 | 50 | `public List<Line> ownLines(Game game)` |  |
 
-### SAVE, RESET, THE REFORM (lines 586-651)
+### SAVE, RESET, THE REFORM (lines 589-654)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 591 | 22 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 615 | 12 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 629 | 9 | `protected void resetExtras()` |  |
-| 640 | 6 | `protected void redenominateExtras(double scale)` |  |
-| 648 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 594 | 22 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 618 | 12 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 632 | 9 | `protected void resetExtras()` |  |
+| 643 | 6 | `protected void redenominateExtras(double scale)` |  |
+| 651 | 3 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

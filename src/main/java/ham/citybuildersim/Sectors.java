@@ -18,6 +18,7 @@ import ham.citybuildersim.sectors.Retail;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -234,6 +235,99 @@ public final class Sectors {
         double total = 0;
         for (Sector s : all) total += s.getPayroll();
         return total;
+    }
+
+    /* ----------------------- the month across the edge, by good ----------------------- */
+
+    /** The name the households' own imports are kept under among a good's buyers: the cars they buy from the world (Game.getHouseholdCarImports()). */
+    public static final String HOUSEHOLDS = "Households";
+
+    /**
+     * One good across the city's edge in the month the books last struck:
+     * what was sold of it abroad and bought of it abroad, in money, and by
+     * whom - sector keys, and HOUSEHOLDS among the buyers of cars.
+     */
+    public record GoodTrade(Good good, double sold, double bought,
+                            Map<String, Double> sellers, Map<String, Double> buyers) {
+        /** What the city sold of it abroad less what it bought: its row's net. */
+        public double net() { return sold - bought; }
+    }
+
+    /**
+     * The month across the edge by good (0.7.35): every good that crossed
+     * it, the imports with no good behind them by the sector that bought
+     * them (the railway's fuel - Sector.bookImportedService()), and the
+     * households' cars, counted among the cars bought.
+     */
+    public record TradeByGood(Map<Good, GoodTrade> goods, Map<String, Double> services, double householdCars) {
+        /** Everything sold abroad: the balance of payments' exports, by its own construction. */
+        public double sold() {
+            double total = 0;
+            for (GoodTrade g : goods.values()) total += g.sold();
+            return total;
+        }
+        /** Everything bought abroad - the goods, the households' cars among them, and the services with no good: its imports. */
+        public double bought() {
+            double total = 0;
+            for (GoodTrade g : goods.values()) total += g.bought();
+            for (double v : services.values()) total += v;
+            return total;
+        }
+        /** ...the one less the other: the trade balance. */
+        public double balance() { return sold() - bought(); }
+    }
+
+    /**
+     * WHAT THE CITY SOLD AND BOUGHT ABROAD, GOOD BY GOOD (0.7.35), read off
+     * the statements every sector struck - each line of revenue and of cost
+     * split home and abroad as the trade was booked (Sector.Split) - so it
+     * foots to the balance of payments exactly: the sold side to the
+     * exports, and the bought side, with the imports that have no good and
+     * the households' cars, to the imports (ForeignCheck asserts both). NOT
+     * the markets' own tally (GoodsMarket.getExported()), which the Trade
+     * spec found D$24M short of the exports in the 2,400-month city (its
+     * B13). Pure: it reads the struck statements, which a load restores, and
+     * writes nothing.
+     *
+     * @param householdCars what the households paid the world for cars this month
+     */
+    public TradeByGood tradeByGood(double householdCars) {
+        Map<Good, double[]> sums = new EnumMap<>(Good.class);
+        Map<Good, Map<String, Double>> sellers = new EnumMap<>(Good.class), buyers = new EnumMap<>(Good.class);
+        Map<String, Double> services = new LinkedHashMap<>();
+        for (Sector s : all) {
+            Sector.Statement st = s.statement();
+            double goodsBought = 0;
+            for (Map.Entry<Good, Sector.Split> e : st.sold.entrySet()) {
+                double v = e.getValue().abroad;
+                if (v == 0) continue;
+                sums.computeIfAbsent(e.getKey(), k -> new double[2])[0] += v;
+                sellers.computeIfAbsent(e.getKey(), k -> new LinkedHashMap<>()).merge(s.key(), v, Double::sum);
+            }
+            for (Map.Entry<Good, Sector.Split> e : st.bought.entrySet()) {
+                double v = e.getValue().abroad;
+                if (v == 0) continue;
+                goodsBought += v;
+                sums.computeIfAbsent(e.getKey(), k -> new double[2])[1] += v;
+                buyers.computeIfAbsent(e.getKey(), k -> new LinkedHashMap<>()).merge(s.key(), v, Double::sum);
+            }
+            // ...and what it imported that is no good at all: its import line less its goods.
+            double rest = st.imports - goodsBought;
+            if (Math.abs(rest) > 1e-9 * Math.max(1, Math.abs(st.imports))) services.put(s.key(), rest);
+        }
+        if (householdCars > 0) {
+            sums.computeIfAbsent(Good.CARS, k -> new double[2])[1] += householdCars;
+            buyers.computeIfAbsent(Good.CARS, k -> new LinkedHashMap<>()).merge(HOUSEHOLDS, householdCars, Double::sum);
+        }
+        Map<Good, GoodTrade> goods = new EnumMap<>(Good.class);
+        for (Map.Entry<Good, double[]> e : sums.entrySet()) {
+            Good g = e.getKey();
+            goods.put(g, new GoodTrade(g, e.getValue()[0], e.getValue()[1],
+                    Collections.unmodifiableMap(sellers.getOrDefault(g, new LinkedHashMap<>())),
+                    Collections.unmodifiableMap(buyers.getOrDefault(g, new LinkedHashMap<>()))));
+        }
+        return new TradeByGood(Collections.unmodifiableMap(goods), Collections.unmodifiableMap(services),
+                Math.max(0, householdCars));
     }
 
     public List<SectorState> toState() {
