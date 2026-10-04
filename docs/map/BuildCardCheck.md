@@ -1,6 +1,6 @@
-# BuildCardCheck.java - 739 lines · 18 methods · 1 constants · harnesses
+# BuildCardCheck.java - 989 lines · 21 methods · 1 constants · harnesses
 
-`ham/citybuildersim/BuildCardCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildCardCheck.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
 
 > The build card (0.7.25): BuildCard's figures for all 73 buildings held to
 > the model's own reads - the quote, the land, the staffing tests, the
@@ -44,99 +44,130 @@
 >      as whole words and in WordKind's order; and a sector's investors are
 >      its own buildings' lines, its word, and "building" while investors
 >      have an order on site.
+>   9. A RUN OF ORDERS (0.7.40): Build's funding page is sized to a run -
+>      its invoice, each order priced on the yard the ones before it leave,
+>      is what placing them in turn charges, to the bit, and more than the
+>      orders quoted alone when the yard covers part; the gap is that less
+>      the cash, an overdraft in full; and the run is walked as buildStack()
+>      checks it - an order short of ground once the ones before it have
+>      theirs, of a deposit or of licences stops it, with buildStack()'s own
+>      answer there.
+>   10. SERVED (0.7.41): every Build ring and NEEDS YOU row that is a
+>       supply against a demand reads supply over demand, unclamped - each
+>       row its owner's getter, to the bit - and CityNeeds' one verdict on
+>       it is NEEDS YOU's own lines turned over: the same colour as the
+>       row's level wherever the row is listed and nothing is on the way, a
+>       tick only at 100% or more, and Jerus's case - general care at 90%,
+>       off the list - amber and "short", shown on Build's tile before its
+>       tick.
 > 
 > Every fixture causes its condition.
 
-**Uses:** [BuildCard](BuildCard.md) (172), [BuildAdvice](BuildAdvice.md) (28), [Game](Game.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (18), [Sector](Sector.md) (5), [Good](Good.md) (4), [GameFiles](GameFiles.md) (3), [Founding](Founding.md) (3), [Formats](Formats.md) (3), [BuildingsStacks](BuildingsStacks.md) (2), [JobType](JobType.md) (2), [BuildingManager](BuildingManager.md) (2), [LandManager](LandManager.md) (2), [Bank](Bank.md) (1), [Sectors](Sectors.md) (1), [Rail](Rail.md) (1)
+**Uses:** [BuildCard](BuildCard.md) (172), [CityNeeds](CityNeeds.md) (89), [BuildAdvice](BuildAdvice.md) (58), [Game](Game.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (29), [CareType](CareType.md) (16), [Sector](Sector.md) (5), [Founding](Founding.md) (4), [Good](Good.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [GameFiles](GameFiles.md) (3), [Formats](Formats.md) (3), [BuildingManager](BuildingManager.md) (3), [LandManager](LandManager.md) (3), [BuildingsStacks](BuildingsStacks.md) (2), [JobType](JobType.md) (2), [EducationType](EducationType.md) (2), [Bank](Bank.md) (1), [Sectors](Sectors.md) (1), [Rail](Rail.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 180 | 1. EVERY BUILDING HAS A CARD |
-| 222 | 2. THE HERO AND THE BARS |
-| 348 | 3. THE TAGS |
-| 384 | 4. THE NOTES |
-| 414 | 5. THE INVESTORS' LINE |
-| 488 | 6. THE GATES |
-| 559 | 7. THE VERDICT |
-| 612 | 8. THE WORD'S KIND |
+| 199 | 1. EVERY BUILDING HAS A CARD |
+| 241 | 2. THE HERO AND THE BARS |
+| 367 | 3. THE TAGS |
+| 403 | 4. THE NOTES |
+| 433 | 5. THE INVESTORS' LINE |
+| 507 | 6. THE GATES |
+| 578 | 7. THE VERDICT |
+| 631 | 8. THE WORD'S KIND |
+| 758 | 9. A RUN OF ORDERS |
+| 849 | · 10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 615 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind....` | The examples: a word shaped as the model files it, and the kind it must read as. |
+| 634 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind....` | The examples: a word shaped as the model files it, and the kind it must read as. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 62 | `static int fails` |  |
-| 63 | `static PrintStream out` |  |
-| 64 | `static PrintStream quiet` |  |
+| 79 | `static int fails` |  |
+| 80 | `static PrintStream out` |  |
+| 81 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 680 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for all 73 buildings held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' words and their gates - in a played city. |
-| 66 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 71 | 5 | `static void bits(String label, double actual, double expected)` |  |
-| 77 | 5 | `static void quietly(Runnable r)` |  |
-| 83 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 103 | 27 | `static Game town(Path root, String name)` | A played town with workers to spare: the founding, then a bank, shops, two bakeries, six hundred houses, the three basic schools and a college, builders, roads, a clinic, police, power, water and one rail spur standin... |
-| 131 | 20 | `public static void main(String[] args) throws Exception` |  |
-| 153 | 11 | `static List<BuildCard.Group> allGroups(Game g)` | Every page's groups: the market's nine, and the city's five ring by ring. |
-| 166 | 13 | `static void printTown(Game g)` | The town as the cards read it, for the record. |
+| 77 | 913 | **type** `public class BuildCardCheck` | The build card (0.7.25): BuildCard's figures for all 73 buildings held to the model's own reads - the quote, the land, the staffing tests, the markets, the investors' words and their gates - in a played city. |
+| 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 88 | 5 | `static void bits(String label, double actual, double expected)` |  |
+| 94 | 5 | `static void quietly(Runnable r)` |  |
+| 100 | 6 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 120 | 27 | `static Game town(Path root, String name)` | A played town with workers to spare: the founding, then a bank, shops, two bakeries, six hundred houses, the three basic schools and a college, builders, roads, a clinic, police, power, water and one rail spur standin... |
+| 148 | 22 | `public static void main(String[] args) throws Exception` |  |
+| 172 | 11 | `static List<BuildCard.Group> allGroups(Game g)` | Every page's groups: the market's nine, and the city's five ring by ring. |
+| 185 | 13 | `static void printTown(Game g)` | The town as the cards read it, for the record. |
 
-### 1. EVERY BUILDING HAS A CARD (lines 180-221)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 182 | 39 | `static void everyBuilding(Game g)` |  |
-
-### 2. THE HERO AND THE BARS (lines 222-347)
+### 1. EVERY BUILDING HAS A CARD (lines 199-240)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 224 | 110 | `static void heroAndBars(Game g)` |  |
-| 335 | 4 | `static int onSite(BuildingManager bm, BuildingsTemplate t)` |  |
-| 341 | 6 | `static BuildAdvice.Measure measureOf(BuildCard.Group gr)` | The measure a city group was drawn for: the ring whose label is its title. |
+| 201 | 39 | `static void everyBuilding(Game g)` |  |
 
-### 3. THE TAGS (lines 348-383)
+### 2. THE HERO AND THE BARS (lines 241-366)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 350 | 33 | `static void theTags(Game g)` |  |
+| 243 | 110 | `static void heroAndBars(Game g)` |  |
+| 354 | 4 | `static int onSite(BuildingManager bm, BuildingsTemplate t)` |  |
+| 360 | 6 | `static BuildAdvice.Measure measureOf(BuildCard.Group gr)` | The measure a city group was drawn for: the ring whose label is its title. |
 
-### 4. THE NOTES (lines 384-413)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 386 | 27 | `static void theNotes(Game g)` |  |
-
-### 5. THE INVESTORS' LINE (lines 414-487)
+### 3. THE TAGS (lines 367-402)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 416 | 71 | `static void theInvestors(Path root, Game g)` |  |
+| 369 | 33 | `static void theTags(Game g)` |  |
 
-### 6. THE GATES (lines 488-558)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 490 | 68 | `static void theGates(Game g)` |  |
-
-### 7. THE VERDICT (lines 559-611)
+### 4. THE NOTES (lines 403-432)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 561 | 50 | `static void theVerdict(Game g)` |  |
+| 405 | 27 | `static void theNotes(Game g)` |  |
 
-### 8. THE WORD'S KIND (lines 612-739)
+### 5. THE INVESTORS' LINE (lines 433-506)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 666 | 73 | `static void theKinds(Game g)` |  |
+| 435 | 71 | `static void theInvestors(Path root, Game g)` |  |
+
+### 6. THE GATES (lines 507-577)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 509 | 68 | `static void theGates(Game g)` |  |
+
+### 7. THE VERDICT (lines 578-630)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 580 | 50 | `static void theVerdict(Game g)` |  |
+
+### 8. THE WORD'S KIND (lines 631-757)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 685 | 73 | `static void theKinds(Game g)` |  |
+
+### 9. A RUN OF ORDERS (lines 758-848)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 760 | 5 | `static Map<BuildingsTemplate, Integer> run(Object...pairs)` |  |
+| 766 | 82 | `static void theRun(Game g)` |  |
+
+### 10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and (lines 849-989)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 859 | 130 | `static void theServed(Game g)` |  |
 

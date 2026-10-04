@@ -3998,8 +3998,8 @@ final class BankScreen {
        the top of every page while the offer waits. Accept buys it through
        the treasury (Game.acceptPreferredOffer()); a treasury short of it is
        offered two loans first, as the land office's cards side by side
-       (Pieces.offerCard(), since 0.7.33; BuildScreen.fundingOffer()'s
-       statement until then), then buys. Decline, and the bank asks again in
+       (Pieces.offerCard(), since 0.7.33; Build's statement page's until
+       then), then buys. Decline, and the bank asks again in
        a quarter while it is still under its minimum.
        ===================================================================== */
 

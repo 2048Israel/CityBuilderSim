@@ -642,7 +642,7 @@ final class PeopleScreen {
                 illness = "Everyone can get seen. This is as healthy as a workforce gets — "
                     + "people still fall ill, and an outbreak can still arrive.";
             }
-            return String.format("General care covers %.0f%% - the month's figure, the ring's beds less anybody "
+            return String.format("General care served %.0f%% - the month's figure, the ring's beds less anybody "
                     + "the fee turned away. %s staffed beds for %s people: the figure is the people treated over the "
                     + "people, not the beds%s\n\nIt also cures %.0f%% of the sick a month. %s have been ill for "
                     + "more than two months, and %s died of illness last month.\n\n%s\n\nIn full on Services › "
@@ -670,7 +670,7 @@ final class PeopleScreen {
                             Healthcare.mortalityFactor(AgeBand.SENIOR, 0, .5, cover),
                             1 + Sickness.EXTRA_SICKNESS * (1 - cover),
                             (Migration.seniorCarePull(cover) - 1) * 100);
-            return String.format("%s covers %.0f%% - the month's figure, the ring's places less anybody the "
+            return String.format("%s served %.0f%% - the month's figure, the ring's places less anybody the "
                     + "fee turned away: %s places for %s%s. At this cover: %s\n\nIn full on "
                     + "Services › Health › %s.",
                     type.getLabel(), cover * 100,

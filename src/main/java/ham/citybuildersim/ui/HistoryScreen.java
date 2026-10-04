@@ -176,10 +176,11 @@ final class HistoryScreen {
     private javafx.scene.Node chartTop, hardTimesTop;
 
     /**
-     * The page's inside width, last laid out (0.7.37; GRAPH's 760 until
-     * then): the big chart, the pins and the rows that wrap are drawn at it,
-     * and the canvases follow it when the window is resized. A first draw
-     * guesses the 1,389-pixel window's 1,234.
+     * The page's inside width, as the scroller gives it (0.7.37; GRAPH's 760
+     * until then; read off the viewport, not the page, since 0.7.40): the
+     * big chart, the pins and the rows that wrap are drawn at it, and the
+     * canvases follow it when the window is resized. A first draw guesses
+     * the 1,389-pixel window's 1,234.
      */
     private double pageWidth = 1234;
 
@@ -646,7 +647,8 @@ final class HistoryScreen {
        at the page's width; a card for each line it draws; the hard times and
        the decisions in view, each a click that moves the chart there (D6);
        the picker; and the month's prices, folded (D7). The canvases follow
-       the page when the window is resized (follow()).
+       the window when it is resized - the scroller's viewport since 0.7.40,
+       not the page, which they could push (follow()).
 
        NO VERDICT ON A LINE'S MOVE (D5). Every reading's change was green
        when its line rose and amber when it fell, so rising unemployment read
@@ -800,11 +802,26 @@ final class HistoryScreen {
     /** What the stage keeps under the scroller once the frame is laid out - BankScreen's and Trade's. */
     static final double STAGE_REST = 36;
 
+    /** What a canvas leaves unused of the width it is given (0.7.40), so a pixel's rounding never makes it wider than what holds it. */
+    static final double SLACK = 2;
+
     /**
      * The fixed frame over a scrolling page, at the page's width; the page as
      * tall as what is left under the frame as laid out (BankScreen's), its
      * position kept from the bottom (THE PAGE, REDRAWN), and its width the
      * scroller's, which the canvases follow (follow()).
+     *
+     * THE CANVASES FOLLOW THE VIEWPORT, NOT THE PAGE (0.7.40). Jerus: "the
+     * graphs tend to go to the right endlessly, even if you dont scroll they
+     * just continue flowing". follow() listened to the page's own width and
+     * drew the big chart and the pins to fill exactly that; a canvas's
+     * minimum is its width, so one pixel of rounding up - a pin's half of an
+     * odd page, the screen's scale - made the page's minimum a pixel more
+     * than it was given, the page widened to it, the canvases followed, and
+     * again on the next pulse. The viewport is what the page is given and
+     * nothing on the page can move it; the charts leave SLACK of it unused,
+     * and a TimeChart is cut at its edge rather than pushing it (its
+     * minimum width is nothing).
      */
     private void frameOver(VBox frame, VBox body) {
         frame.setMaxWidth(PAGE_WIDE);
@@ -817,12 +834,19 @@ final class HistoryScreen {
                         - (frame.getHeight() > 0 ? frame.getHeight() + STAGE_REST : FRAME_CHROME)),
                 ui.menuScroller.heightProperty(), frame.heightProperty()));
         body.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(
-                () -> Math.min(PAGE_WIDE, Math.max(320, scroller.getViewportBounds().getWidth())),
+                () -> given(scroller.getViewportBounds().getWidth()),
                 scroller.viewportBoundsProperty()));
-        // The page's inside width: widePage()'s 18 a side off what it is given.
-        body.widthProperty().addListener((o, was, now) -> follow(now.doubleValue() - 36));
+        // The page's inside width: widePage()'s 18 a side off what it is given - the viewport (0.7.40).
+        scroller.viewportBoundsProperty().addListener((o, was, now) -> {
+            if (now != null && now.getWidth() > 0) follow(given(now.getWidth()) - 36);
+        });
         ui.rootMenu.getChildren().addAll(frame, scroller);
         page = scroller;
+    }
+
+    /** The page's width for a viewport this wide: all of it, from 320 up to PAGE_WIDE. */
+    static double given(double viewport) {
+        return Math.min(PAGE_WIDE, Math.max(320, viewport));
     }
 
     /**
@@ -833,7 +857,7 @@ final class HistoryScreen {
     private void follow(double width) {
         if (!(width > 0) || Math.abs(width - pageWidth) < 1) return;
         pageWidth = width;
-        if (bigChart != null && !chartFull) bigChart.setSize(pageWidth - 30, BIG_CHART);
+        if (bigChart != null && !chartFull) bigChart.setSize(bigChartWidth(), BIG_CHART);
         for (TimeChart small : smallCharts) if (small != null) small.setSize(pinChartWidth(), SMALL_CHART);
         if (presetFlow != null) {
             presetFlow.setPrefWrapLength(pageWidth - CONTROLS);
@@ -1373,9 +1397,14 @@ final class HistoryScreen {
         return row;
     }
 
-    /** A pin's chart: its card's half of the page, less the card's padding and edge. */
+    /** A pin's chart: its card's half of the page, less the card's padding and edge - in whole pixels, less SLACK (0.7.40). */
     double pinChartWidth() {
-        return Math.max(200, (pageWidth - 10) / 2 - 26);
+        return Math.max(200, Math.floor((pageWidth - 10) / 2) - 26 - SLACK);
+    }
+
+    /** The big chart's canvas: the page, less its padding and edge (TimeChart's 30) and SLACK, in whole pixels (0.7.40). */
+    double bigChartWidth() {
+        return Math.floor(pageWidth) - 30 - SLACK;
     }
 
     /**
@@ -1763,7 +1792,7 @@ final class HistoryScreen {
                 units.size() == 2 ? axisFor(units.get(1)) : null,
                 squashed, log, layered ? gdpStack(h, units.get(0)) : null,
                 bands, episodes, flags, empty);
-        if (!chartFull) bigChart.setSize(pageWidth - 30, BIG_CHART);
+        if (!chartFull) bigChart.setSize(bigChartWidth(), BIG_CHART);
         return bigChart;
     }
 
@@ -1837,12 +1866,19 @@ final class HistoryScreen {
         if (bigChart != null) bigChart.letGo();
     }
 
-    /** The chart sized to the pane: the whole width, and the plot whatever height the rest leaves. */
+    /**
+     * The chart sized to the pane: the whole width, and the plot whatever
+     * height the rest leaves - read off the window (0.7.40), which the pane
+     * is laid over and nothing in it can move, not off the pane, which a
+     * chart a pixel too big for it would stretch.
+     */
     private void fitFull() {
         if (!chartFull || fullPane == null || bigChart == null) return;
-        double w = fullPane.getWidth() - 44, h = fullPane.getHeight() - 26;
+        javafx.scene.Scene window = fullPane.getScene();
+        double w = (window != null ? window.getWidth() : fullPane.getWidth()) - 44,
+               h = (window != null ? window.getHeight() : fullPane.getHeight()) - 26;
         if (w <= 0 || h <= 0) return;
-        bigChart.setSize(w - 30, h - bigChart.heightBesidePlot());
+        bigChart.setSize(Math.floor(w) - 30 - SLACK, Math.floor(h - bigChart.heightBesidePlot()) - SLACK);
     }
 
     /** A redraw in full screen: the clock's line, and the chart's size if the window moved. */

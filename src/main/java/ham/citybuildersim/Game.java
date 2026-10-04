@@ -4929,8 +4929,13 @@ public class Game {
      * the sales tax the builders pass on. See THE BUILDERS' PRICE.
      */
     public BuildQuote quoteBuild(BuildingsTemplate selected, int quantity) {
+        return quoteBuild(selected, quantity, buildingManager.getConstructionMaterials());
+    }
+
+    /** ...against a yard holding `yardHolds` units (0.7.40): an order in a run, priced on the yard the orders before it leave (buildRunInvoice()). */
+    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds) {
         double needed = selected.constructionMaterials * (double) quantity;
-        double yard = buildingManager.getConstructionMaterials();
+        double yard = yardHolds;
         double beyondYard = Math.max(0, needed - yard);
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, beyondYard, getSectors());
         return new BuildQuote(
@@ -5787,7 +5792,8 @@ public class Game {
             // branch is unreachable. It used to fall into quickIssueDebt(), a
             // console-era T-Bill issuer with its own stale pricing and no land
             // allocation; the JavaFX path offers the note BEFORE building, on
-            // showQuickDebtMenu(). Loud rather than silent if that ever changes.
+            // Build's funding page (BuildScreen.showBuildFunding()). Loud
+            // rather than silent if that ever changes.
             throw new IllegalStateException("processBuildOrder() called with $"
                     + formatter.format(totalCost) + " due and $"
                     + formatter.format(cash) + " on hand");
@@ -5859,10 +5865,15 @@ public class Game {
      * deposits in it - and why the parcels that carry them cost more.
      */
     public boolean hasDepositFor(BuildingsTemplate template, int quantity) {
+        return hasDepositFor(template, quantity, 0);
+    }
+
+    /** ...with `before` more mines already put on site by the orders ahead of it in a run (0.7.40, buildRunAhead()). */
+    private boolean hasDepositFor(BuildingsTemplate template, int quantity, int before) {
         if (template == null || template.getCategory() != BuildingType.MINING) {
             return true;
         }
-        return landManager.getIronDeposits() >= minesCommitted() + quantity
+        return landManager.getIronDeposits() >= minesCommitted() + before + quantity
                 && landManager.getIronReserveTonnes() > 0;
     }
 
@@ -5997,10 +6008,106 @@ public class Game {
     /**
      * What the treasury is short of for this order: its invoice less the cash
      * on hand, never below nothing. The figure the build screen's two offers
-     * are sized to (0.7.10) - the page used to work it out itself.
+     * were sized to from 0.7.10 - the page used to work it out itself - until
+     * 0.7.40 sized them to the whole run (buildFundingGap(Map), A RUN OF
+     * ORDERS), which for a run of one is this figure.
      */
     public double buildFundingGap(BuildingsTemplate template, int quantity){
         return Math.max(0, calculateTotalCost(template, quantity) - cash);
+    }
+
+    /* -------------------------------------------------------------------
+       A RUN OF ORDERS (0.7.40)
+
+       Jerus: "when you click build all and you dont have the credit it
+       just builds one not all". Build's "Build all three", its order bar
+       and Enter place several orders one after another, and the screen
+       offered a loan for the first one the cash could not cover, sized to
+       that order alone; after it the rest of the run never happened. The
+       funding page is sized to the run now, and these are what it reads.
+       Pure reads: nothing is placed, booked or allocated.
+
+       AN ORDER IN A RUN IS PRICED ON THE YARD THE ORDERS BEFORE IT LEAVE.
+       Placing an order sends the yard's share of its material to its sites
+       the same day (deliverYardToSites()), so the next order's quote has
+       less of the yard to count free and buys more in: when the yard holds
+       some of what the run needs but not all of it, the run costs more than
+       its orders quoted one by one, BuildAdvice.quoteTotal() (the
+       Overview's tooltip on it: "an earlier one's material from the yard
+       can make a later one dearer").
+       Nothing else an order changes reaches the next one's price: the
+       plant's stock is drawn by the crews month by month, not at the order,
+       and the wages and the tax rates do not move. So buildRunInvoice() is
+       what placing the run charges, order by order, to the last bit
+       (BuildCardCheck, section 9, places one and sums what it was charged).
+
+       ...AND CHECKED AS IT WILL BE PLACED. buildStack() refuses an order
+       short of ore, of licences or of ground before it asks about money, so
+       the city is never sold a loan for a building it has nowhere to put.
+       buildRunAhead() walks the run in that order with what each order
+       takes - its mines' deposits and its ground - counted against the next;
+       licences are not taken by an order (a site employs nobody), so each is
+       held against the same spare. The first that would be refused is where
+       the run stops, and what it is refused for is buildRunStop().
+       ------------------------------------------------------------------- */
+
+    /** What placing these orders in turn would charge altogether: each one's quote on the yard the ones before it leave. */
+    public double buildRunInvoice(java.util.Map<BuildingsTemplate, Integer> run) {
+        int yard = buildingManager.getConstructionMaterials();
+        double total = 0;
+        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
+            BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard);
+            total += q.total;
+            // What deliverYardToSites() will take: BuildingManager.takeFromYard()'s own rule.
+            yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
+        }
+        return total;
+    }
+
+    /** What the treasury is short of for the whole run: its invoice less the cash, never below nothing - an overdraft counted in full, as one order's buildFundingGap(template, quantity) counts it. */
+    public double buildFundingGap(java.util.Map<BuildingsTemplate, Integer> run) {
+        return Math.max(0, buildRunInvoice(run) - cash);
+    }
+
+    /** How many of the run's orders, from the first, would pass the checks money cannot fix - ore, licences, ground - each placed after the ones before it. */
+    public int buildRunAhead(java.util.Map<BuildingsTemplate, Integer> run) {
+        return runAhead(run, null);
+    }
+
+    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
+    public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Integer> run) {
+        BuildResult[] stop = { BuildResult.SUCCESS };
+        runAhead(run, stop);
+        return stop[0];
+    }
+
+    private int runAhead(java.util.Map<BuildingsTemplate, Integer> run, BuildResult[] stop) {
+        int ahead = 0, mines = 0;
+        double ground = 0;
+        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            int n = e.getValue() == null ? 0 : e.getValue();
+            if (t != null && n > 0) {
+                BuildResult refused = !hasDepositFor(t, n, mines) ? BuildResult.NO_DEPOSIT
+                        : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
+                        : !landManager.canAllocate(ground + t.getLandSqFt() * (double) n) ? BuildResult.NO_LAND
+                        : null;
+                if (refused != null) {
+                    if (stop != null) stop[0] = refused;
+                    return ahead;
+                }
+                if (t.getCategory() == BuildingType.MINING) mines += n;
+                ground += t.getLandSqFt() * (double) n;
+            }
+            ahead++;
+        }
+        return ahead;
+    }
+
+    /** What the treasury is overdrawn by right now (0.7.40): the cash below nothing, or nothing - Finances' "overdrawn by" ask. */
+    public double cashShortfall() {
+        return Math.max(0, -cash);
     }
 
     /** Units of material the last order will draw, for the receipt (the build screen's showed it until 0.7.20; NewGameCheck reads it). */
@@ -8458,6 +8565,11 @@ public class Game {
     public double minimumIssueSize() {
         double annualRevenue = economyManager.getTaxIncome() * 12;
         return Math.max(50, annualRevenue * .05);
+    }
+
+    /** ...in US dollars at today's rate (0.7.40): Finances' "the minimum" on the ask abroad, which is asked in dollars. */
+    public double minimumIssueSizeUsd() {
+        return foreign.toUsd(minimumIssueSize());
     }
 
     /* =====================================================================

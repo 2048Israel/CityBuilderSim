@@ -1,6 +1,6 @@
-# Money.java - 351 lines · 26 methods · 1 constants · interface
+# Money.java - 356 lines · 27 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/Money.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Money.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
 
 > Every figure the interface prints as money, in one place.
 > 
@@ -32,7 +32,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 332 | **type** `public final class Money` | Every figure the interface prints as money, in one place. |
+| 20 | 337 | **type** `public final class Money` | Every figure the interface prints as money, in one place. |
 
 ### THE ONE PLACE MODEL MONEY BECOMES A STRING. (lines 22-54)
 
@@ -40,7 +40,7 @@
 |---:|---:|---|---|
 | 50 | 4 | `static { ... }` |  |
 
-### NO NEGATIVE ZERO (0.7.20). (lines 55-351)
+### NO NEGATIVE ZERO (0.7.20). (lines 55-356)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -56,18 +56,19 @@
 | 150 | 3 | `public static String cash(double thousands)` | A wage or a price the model holds in thousands, in the dollars it is. |
 | 165 | 1 | `public static double toDollars(double thousands)` | Thousands into dollars, for the one screen that has to talk about a family. |
 | 178 | 1 | `public static String tightMoney(double value)` | Money at a width that cannot overflow its column. |
-| 191 | 12 | `public static String tightMoney(double value, boolean compact)` | Two thresholds, because the two views of the tier table hold numbers three orders apart. |
-| 205 | 3 | `public static String money(double thousands)` | City money. |
-| 210 | 3 | `public static String moneyFull(double thousands)` | The same, with every digit rather than an abbreviation. |
-| 226 | 5 | `public static String marked(String prefix, String amount)` | Somebody else's money, marked as such: "US$" in place of the "$". |
-| 239 | 5 | `public static String signedTight(double thousands, boolean negate)` | signed(), in the k/M column a city-scale statement wants. |
-| 251 | 5 | `public static String signed(double thousands, boolean negate)` | A movement, signed - and a zero movement is written without one. |
-| 258 | 3 | `public static String usd(double thousands)` | Foreign money, abbreviated. |
-| 263 | 3 | `public static String usdFull(double thousands)` | ...and with every digit. |
-| 275 | 8 | `public static String unitPrice(double thousands)` | A price small enough that the cents matter - a unit on the shelf, an hourly rate, anything a lopped currency has just made tiny. |
-| 299 | 3 | `public static String fxRate(double rate)` | An exchange rate - local dollars per US dollar, a ratio and not money, so it never goes through toDollars(). |
-| 304 | 6 | `public static String shortNumber(double value)` | 12.4k rather than 12,400 - the panel is narrow and these are two to a row. |
-| 320 | 7 | `public static String power(double kW)` | Power, from the model's kilowatts (0.7.28): "900 kW", "38.9 MW", "199 MW", "1.18 GW" - three figures at most, the unit scaled to fit. |
-| 329 | 6 | `private static String scaled(double v)` | A figure of one to three digits before its unit: 8.1, 38.9, 199, 1.18 - its three significant figures, under 10 to two places only when they say something. |
-| 345 | 5 | `public static String coverMonths(double months)` | Months of import cover in words a player can act on (Trade's since 0.7.35, every screen's since 0.7.38): "over 10 years" past ten years (a city with D$100M in the vault and D$36k a month of imports has 2,777 months, w... |
+| 191 | 14 | `public static String tightMoney(double value, boolean compact)` | Two thresholds, because the two views of the tier table hold numbers three orders apart. |
+| 207 | 1 | `private static double tenths(double v)` | A figure to one place, as "%.1f" prints it: where a unit's figure would read a thousand. |
+| 210 | 3 | `public static String money(double thousands)` | City money. |
+| 215 | 3 | `public static String moneyFull(double thousands)` | The same, with every digit rather than an abbreviation. |
+| 231 | 5 | `public static String marked(String prefix, String amount)` | Somebody else's money, marked as such: "US$" in place of the "$". |
+| 244 | 5 | `public static String signedTight(double thousands, boolean negate)` | signed(), in the k/M column a city-scale statement wants. |
+| 256 | 5 | `public static String signed(double thousands, boolean negate)` | A movement, signed - and a zero movement is written without one. |
+| 263 | 3 | `public static String usd(double thousands)` | Foreign money, abbreviated. |
+| 268 | 3 | `public static String usdFull(double thousands)` | ...and with every digit. |
+| 280 | 8 | `public static String unitPrice(double thousands)` | A price small enough that the cents matter - a unit on the shelf, an hourly rate, anything a lopped currency has just made tiny. |
+| 304 | 3 | `public static String fxRate(double rate)` | An exchange rate - local dollars per US dollar, a ratio and not money, so it never goes through toDollars(). |
+| 309 | 6 | `public static String shortNumber(double value)` | 12.4k rather than 12,400 - the panel is narrow and these are two to a row. |
+| 325 | 7 | `public static String power(double kW)` | Power, from the model's kilowatts (0.7.28): "900 kW", "38.9 MW", "199 MW", "1.18 GW" - three figures at most, the unit scaled to fit. |
+| 334 | 6 | `private static String scaled(double v)` | A figure of one to three digits before its unit: 8.1, 38.9, 199, 1.18 - its three significant figures, under 10 to two places only when they say something. |
+| 350 | 5 | `public static String coverMonths(double months)` | Months of import cover in words a player can act on (Trade's since 0.7.35, every screen's since 0.7.38): "over 10 years" past ten years (a city with D$100M in the vault and D$36k a month of imports has 2,777 months, w... |
 

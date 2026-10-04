@@ -25,6 +25,12 @@ import java.util.List;
  * One row is new: FALLS DUE, the bottom strip's red maturity, which left the
  * frame in 0.7.24 (see fallsDue()).
  *
+ * Since 0.7.41 the rows that are a supply against a demand - power, water,
+ * the road, care and the basic ladder - read what they serve (a school above
+ * the ladder still reads its seats and who would come), and the one verdict
+ * every screen colours such a gauge by is here too (SERVED, below). What is
+ * listed, and in what order, is still read on the lines as they stood.
+ *
  * Reads the city; changes nothing. Every figure is a getter the screens
  * already read.
  */
@@ -63,8 +69,11 @@ public final class CityNeeds {
      * @param onSite  units on site of the buildings that answer it, for
      *                anybody's order; onSiteMonths the soonest of their waits
      * @param a       the reading's second figure where it has one: a higher
-     *                school's seats, a network's supply; b its third, who
-     *                would come, the demand
+     *                school's seats, a network's supply, the road's capacity,
+     *                a care's staffed places (the last two since 0.7.41); b
+     *                its third, who would come, the demand, the load the
+     *                road's curve reads, the people - so a served row is a
+     *                over b
      */
     public record Need(String label, String reading, int level, double near,
                        Kind kind, Go go, CareType care, EducationType school,
@@ -80,6 +89,33 @@ public final class CityNeeds {
                 default:
                     return false;
             }
+        }
+
+        /**
+         * What the row's figure serves, read the one way (0.7.41), for the
+         * rows that are a supply against a demand - power, water, the road,
+         * care and the schools - or null for the rest. The basic ladder's is
+         * its bottleneck's own coverage, Education's; the others' are a over b.
+         */
+        public Served served() {
+            switch (kind) {
+                case BASIC_SCHOOLS:
+                    return verdict(kind, care, value);
+                case POWER: case WATER: case ROADS: case CARE: case HIGHER_SCHOOL:
+                    return verdict(kind, care, servedShare(a, b));
+                default:
+                    return null;
+            }
+        }
+
+        /**
+         * The row's colour on a screen (0.7.41): a served row's verdict, so a
+         * gauge and its row read one colour everywhere; any other row's level.
+         * What is listed, its order and the chip stay on level().
+         */
+        public int verdictLevel() {
+            Served s = served();
+            return s == null || s.level() < 0 ? level : s.level();
         }
 
         Need withOnSite(String moreReading, int units, double months, int newLevel) {
@@ -136,7 +172,7 @@ public final class CityNeeds {
     /** ...listed under two years of plots, red under six months. */
     public static final double PLOTS_YELLOW = 24, PLOTS_RED = 6;
 
-    /** The basic ladder's bottleneck, taught. */
+    /** The basic ladder's bottleneck, its coverage (read as served since 0.7.41; "taught" until then). */
     public static final double SCHOOLS_YELLOW = .90, SCHOOLS_RED = .60;
 
     /** A school above the ladder: who would come over its seats. */
@@ -203,6 +239,109 @@ public final class CityNeeds {
     }
 
     /* =====================================================================
+       SERVED (0.7.41): ONE RULE FOR EVERY SERVICE GAUGE. Jerus, playing
+       0.7.39: "some of the build stuff shows check no issues yet if you
+       click general care is at 90%, additionally roads are at 180% bad,
+       while general care 90% is bad, so its confusing to the player". Power,
+       water and the road read as a load ("% used", "% full": over 100% was
+       bad) and care as a cover ("% covered": under 100% was bad), and Build
+       ticked care at 90% because 90% is past NEEDS YOU's line. His rule,
+       asked which: every gauge shows how much of the need is met - SUPPLY
+       OVER DEMAND, unclamped, "served" - and 100% means enough.
+
+       ONE VERDICT, for every screen, on the lines above read the other way
+       up: green, "enough", at 100% or more AND past the line NEEDS YOU lists
+       the measure at (a network wants a quarter in hand, 1/NETWORK_YELLOW;
+       the road 1/STRAINED; care's and the schools' lines are under 100%, so
+       100% binds); red at or under its red line, struck as NEEDS YOU strikes
+       it (a network at 1/NETWORK_RED, overloaded; the road at 1/FREE_FLOW,
+       where its flow starts to fall - NEEDS YOU's red for it, the model's
+       own; care at GENERAL_RED or OTHER_CARE_RED; the basic ladder at
+       SCHOOLS_RED; a school above it at 1/SEATS_RED, seats for half of who
+       would come); amber between - "short" under 100%, "tight" at 100% or
+       more. What NEEDS YOU lists is untouched: its levels still decide what
+       is listed, in what order, and the chip.
+       ===================================================================== */
+
+    /** The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. */
+    public static final String SERVED = "served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough";
+
+    /**
+     * One gauge, read the one way (0.7.41): its share served - supply over
+     * demand, unclamped, +∞ when nothing is asked of it - its verdict's level
+     * (0 green, 1 amber, 2 red; -1 none, for a gauge no line judges) and its
+     * word (null with no verdict).
+     */
+    public record Served(double share, int level, String word) {
+        /** Green: 100% or more and off NEEDS YOU's list. */
+        public boolean enough() { return level == 0; }
+    }
+
+    /** Supply over demand, unclamped (0.7.41): nothing asked of it is all of it met, +∞; nothing supplying a demand is nothing, 0. */
+    public static double servedShare(double supply, double demand) {
+        if (!(demand > 0)) return Double.POSITIVE_INFINITY;
+        return Math.max(0, supply) / demand;
+    }
+
+    /**
+     * A served share as a whole per cent, "62%", or a dash for one that is
+     * not a finite number (nothing asked of it). A share just under 100%
+     * prints as 99%, never 100%: the word beside it says "short".
+     */
+    public static String servedPct(double share) {
+        if (!Double.isFinite(share)) return "—";
+        if (share < 1 && share >= .995) return "99%";
+        return String.format("%.0f%%", share * 100);
+    }
+
+    /**
+     * The verdict on a served share against two lines in served terms (0.7.41):
+     * green past `offList` (strictly, as NEEDS YOU lists a row at its line)
+     * and at 100% or more; red at or under `red`; amber between, "short"
+     * under 100% and "tight" from it. Not a number has no verdict.
+     */
+    public static Served served(double share, double offList, double red) {
+        if (Double.isNaN(share)) return new Served(share, -1, null);
+        int level = share <= red ? 2 : share >= 1 && share > offList ? 0 : 1;
+        return new Served(share, level, level == 0 ? ENOUGH : share < 1 ? SHORT : TIGHT);
+    }
+
+    /** ...and a share no line judges (transit; a school fewer than a class would come to): no colour, no word. */
+    public static Served unjudged(double share) {
+        return new Served(share, -1, null);
+    }
+
+    /**
+     * A served kind's two lines in served terms (0.7.41), {off the list past
+     * this, red at or under this} - NEEDS YOU's own lines turned over where
+     * its figure was a load (a network, the road) or a crowd (who would come
+     * over the seats); null for a kind that is not a supply against a demand.
+     */
+    public static double[] servedLines(Kind kind, CareType care) {
+        switch (kind) {
+            case POWER: case WATER:
+                return new double[] {1 / NETWORK_YELLOW, 1 / NETWORK_RED};
+            case ROADS:
+                return new double[] {1 / InfrastructureManager.STRAINED, 1 / InfrastructureManager.FREE_FLOW};
+            case CARE:
+                return care == CareType.GENERAL ? new double[] {GENERAL_YELLOW, GENERAL_RED}
+                                                : new double[] {OTHER_CARE_YELLOW, OTHER_CARE_RED};
+            case BASIC_SCHOOLS:
+                return new double[] {SCHOOLS_YELLOW, SCHOOLS_RED};
+            case HIGHER_SCHOOL:
+                return new double[] {1 / SEATS_YELLOW, 1 / SEATS_RED};
+            default:
+                return null;
+        }
+    }
+
+    /** The one verdict on a served share of one of NEEDS YOU's served kinds (0.7.41); null for a kind that is not a supply against a demand. */
+    public static Served verdict(Kind kind, CareType care, double share) {
+        double[] lines = servedLines(kind, care);
+        return lines == null ? null : served(share, lines[0], lines[1]);
+    }
+
+    /* =====================================================================
        THE LIST
        ===================================================================== */
 
@@ -238,31 +377,38 @@ public final class CityNeeds {
         onTheWay(game, w, out, at, t -> t.getCategory() == BuildingType.WATER);
 
         // Its own constants: STRAINED is .85 and free flow ends at .90. Read as
-        // the pair every screen writes the road in (0.7.29): how full, and the
-        // flow that leaves - "162% full · 56% flow".
+        // the pair every screen writes the road in (0.7.29): how much of its
+        // traffic it serves, and the flow that leaves - "62% served · 56% flow"
+        // since 0.7.41 (it was how full, "162% full"); listed on the load still.
         double traffic = roads.getUtilisation();
-        over(out, "ROADS", String.format("%.0f%% full · %.0f%% flow", traffic * 100, roads.getThroughputRatio() * 100),
+        double served = servedShare(roads.getCapacity(), roads.getEffectiveLoad());
+        over(out, "ROADS", servedPct(served) + " " + SERVED + " · " + String.format("%.0f%% flow", roads.getThroughputRatio() * 100),
                 traffic, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW,
-                Kind.ROADS, Go.ROADS, CareType.NONE, EducationType.NONE, 0, 0);
+                Kind.ROADS, Go.ROADS, CareType.NONE, EducationType.NONE, roads.getCapacity(), roads.getEffectiveLoad());
         onTheWay(game, w, out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE);
 
         /* ------------------------------- the care ------------------------------- */
+        // Listed on the cover as it always was; read as served (0.7.41), the
+        // same places over the same people unclamped - "covered" until then.
         double general = careCover(game, CareType.GENERAL, cohorts, staffing);
-        under(out, "GENERAL CARE", String.format("%.0f%% covered", general * 100),
+        under(out, "GENERAL CARE", servedPct(careServed(game, CareType.GENERAL, cohorts, staffing)) + " " + SERVED,
                 general, GENERAL_YELLOW, GENERAL_RED,
-                Kind.CARE, Go.HEALTHCARE, CareType.GENERAL, EducationType.NONE, 0, 0);
+                Kind.CARE, Go.HEALTHCARE, CareType.GENERAL, EducationType.NONE,
+                careHave(game, CareType.GENERAL, staffing), CareType.GENERAL.populationServed(cohorts));
         onTheWay(game, w, out, t -> t.getCare() == CareType.GENERAL);
 
         double childcare = careCover(game, CareType.CHILDCARE, cohorts, staffing);
-        under(out, "CHILDCARE", String.format("%.0f%% covered", childcare * 100),
+        under(out, "CHILDCARE", servedPct(careServed(game, CareType.CHILDCARE, cohorts, staffing)) + " " + SERVED,
                 childcare, OTHER_CARE_YELLOW, OTHER_CARE_RED,
-                Kind.CARE, Go.HEALTHCARE, CareType.CHILDCARE, EducationType.NONE, 0, 0);
+                Kind.CARE, Go.HEALTHCARE, CareType.CHILDCARE, EducationType.NONE,
+                careHave(game, CareType.CHILDCARE, staffing), CareType.CHILDCARE.populationServed(cohorts));
         onTheWay(game, w, out, t -> t.getCare() == CareType.CHILDCARE);
 
         double senior = careCover(game, CareType.SENIOR, cohorts, staffing);
-        under(out, "SENIOR CARE", String.format("%.0f%% covered", senior * 100),
+        under(out, "SENIOR CARE", servedPct(careServed(game, CareType.SENIOR, cohorts, staffing)) + " " + SERVED,
                 senior, OTHER_CARE_YELLOW, OTHER_CARE_RED,
-                Kind.CARE, Go.HEALTHCARE, CareType.SENIOR, EducationType.NONE, 0, 0);
+                Kind.CARE, Go.HEALTHCARE, CareType.SENIOR, EducationType.NONE,
+                careHave(game, CareType.SENIOR, staffing), CareType.SENIOR.populationServed(cohorts));
         onTheWay(game, w, out, t -> t.getCare() == CareType.SENIOR);
 
         // The dead are a STOCK: a backlog does not clear itself and the plots do
@@ -299,7 +445,7 @@ public final class CityNeeds {
         if (population > 0) {
             EducationType bottleneck = schools.basicBottleneck();
             String thin = bottleneck.getLabel().toLowerCase();
-            under(out, "SCHOOLS", String.format("%s %.0f%% taught", thin, basic * 100),
+            under(out, "SCHOOLS", thin + " " + servedPct(basic) + " " + SERVED,
                     basic, SCHOOLS_YELLOW, SCHOOLS_RED,
                     Kind.BASIC_SCHOOLS, Go.EDUCATION, CareType.NONE, bottleneck, 0, 0);
             onTheWay(game, w, out, t -> t.getTeaches() == bottleneck);
@@ -447,6 +593,22 @@ public final class CityNeeds {
         return null;
     }
 
+    /**
+     * ...and of the served rows NEEDS YOU does NOT list, the one that is
+     * still not enough (0.7.41): general care at 90% is past its line, so
+     * not listed, and short of 100% - the worst verdict, of equals the first
+     * in order. Null when every unlisted served row is enough. Build's tile
+     * showed its tick on such a city, and Jerus clicked through to 90%.
+     */
+    public static Need worstUnlisted(List<Need> all, Go go) {
+        Need found = null;
+        for (Need n : all) {
+            if (n.go() != go || n.level() > 0) continue;
+            if (n.verdictLevel() > 0 && (found == null || n.verdictLevel() > found.verdictLevel())) found = n;
+        }
+        return found;
+    }
+
     /* =====================================================================
        THE PIECES
        ===================================================================== */
@@ -456,6 +618,16 @@ public final class CityNeeds {
         return Health.coverageOf(
                 game.getBuildingManager().getStaffedCareCapacity(care, staffing),
                 care.populationServed(cohorts));
+    }
+
+    /** ...the same places over the same people, unclamped: what the care rows read as served (0.7.41), and Build's care rings. */
+    public static double careServed(Game game, CareType care, PopulationCohorts cohorts, double[] staffing) {
+        return servedShare(careHave(game, care, staffing), care.populationServed(cohorts));
+    }
+
+    /** The staffed places of a kind of care: what its row carries as its supply (0.7.41). */
+    static double careHave(Game game, CareType care, double[] staffing) {
+        return game.getBuildingManager().getStaffedCareCapacity(care, staffing);
     }
 
     /** What the city raised in tax last month: profit, sales, wages and property (the Policy tab's TAX A MONTH). */
@@ -545,12 +717,14 @@ public final class CityNeeds {
 
     /**
      * One network: how much of its capacity is spoken for, and whether it is
-     * still meeting demand. HOW FULL, NOT HOW SHORT: the ratio sits at 1.00
-     * until the city is already throttled, so the reading is the LOAD, on the
-     * .75 the dashboard's RESOURCES line uses, red once the ratio breaks.
+     * still meeting demand. NOT THE RATIO: it sits at 1.00 until the city is
+     * already throttled. Listed on the LOAD, from the .75 the dashboard's
+     * RESOURCES line used, red once over; read since 0.7.41 as served, the
+     * same fraction the other way up and unclamped (it read the load).
      *
      * @param ratio min(supply/demand, 1) - under one the city is being
-     *              throttled, and the load figure has stopped being the news.
+     *              throttled; unread since 0.7.41, when the reading became
+     *              served, which says the same under 100% and more over it.
      */
     static void network(List<Need> out, String label, Kind kind,
                         double demand, double supply, double ratio) {
@@ -564,10 +738,10 @@ public final class CityNeeds {
             }
             return;
         }
+        // Read as served (0.7.41): it was the load, "75% of capacity", or
+        // "only 92% supplied" once short; listed on the load still.
         double load = demand / supply;
-        over(out, label, ratio < .99
-                        ? String.format("only %.0f%% supplied", ratio * 100)
-                        : String.format("%.0f%% of capacity", load * 100),
+        over(out, label, servedPct(servedShare(supply, demand)) + " " + SERVED,
                 load, NETWORK_YELLOW, NETWORK_RED, kind, Go.UTILITIES, CareType.NONE, EducationType.NONE,
                 supply, demand);
     }

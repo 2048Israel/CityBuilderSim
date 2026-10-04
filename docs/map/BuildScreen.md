@@ -1,6 +1,6 @@
-# BuildScreen.java - 3,654 lines · 120 methods · 6 constants · interface
+# BuildScreen.java - 3,817 lines · 128 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BuildScreen.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
 
 > The build tab: the Overview it opens on and the city's five categories
 > opened on their needs (both 0.7.24), the market's nine in their groups
@@ -25,7 +25,7 @@
 > Since 0.7.5 the shell's key filter also calls buildPending() and
 > clearPending(): Enter, and Backspace or Delete, on the page showing.
 
-**Uses:** [Palette](Palette.md) (312), [BuildAdvice](BuildAdvice.md) (128), [Pieces](Pieces.md) (47), [BuildingType](BuildingType.md) (46), [BuildCard](BuildCard.md) (46), [CityNeeds](CityNeeds.md) (45), [BuildingsTemplate](BuildingsTemplate.md) (29), [Game](Game.md) (24), [Icons](Icons.md) (19), [Good](Good.md) (13), [JobType](JobType.md) (11), [CareType](CareType.md) (10), [LandManager](LandManager.md) (7), [DebtQuote](DebtQuote.md) (5), [Health](Health.md) (4), [SummaryScreen](SummaryScreen.md) (3), [Healthcare](Healthcare.md) (3), [EducationType](EducationType.md) (3), [Crime](Crime.md) (3), [UserInterface](UserInterface.md) (2), [BuildingManager](BuildingManager.md) (2), [Formats](Formats.md) (2), [Bank](Bank.md) (2), [SafetyType](SafetyType.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [ServicesScreen](ServicesScreen.md) (1), [ConstructionControl](ConstructionControl.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [InfrastructureManager](InfrastructureManager.md) (1)... and 4 more
+**Uses:** [Palette](Palette.md) (332), [BuildAdvice](BuildAdvice.md) (131), [CityNeeds](CityNeeds.md) (76), [BuildingsTemplate](BuildingsTemplate.md) (59), [BuildCard](BuildCard.md) (46), [Pieces](Pieces.md) (45), [BuildingType](BuildingType.md) (43), [Game](Game.md) (22), [Icons](Icons.md) (19), [Good](Good.md) (13), [JobType](JobType.md) (11), [CareType](CareType.md) (8), [LandManager](LandManager.md) (7), [Health](Health.md) (4), [SummaryScreen](SummaryScreen.md) (3), [Healthcare](Healthcare.md) (3), [EducationType](EducationType.md) (3), [Crime](Crime.md) (3), [DebtQuote](DebtQuote.md) (3), [UserInterface](UserInterface.md) (2), [BuildingManager](BuildingManager.md) (2), [Formats](Formats.md) (2), [Bank](Bank.md) (2), [SafetyType](SafetyType.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [ServicesScreen](ServicesScreen.md) (1), [ConstructionControl](ConstructionControl.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Rail](Rail.md) (1)... and 3 more
 
 **Used by (14):** [BankScreen](BankScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
@@ -37,15 +37,16 @@
 | 78 | THE HALF OF THE CATALOGUE THAT BUILDS ITSELF. |
 | 388 | THE BUILD MENU |
 | 529 | ONE BUILDING, AS A CARD. |
-| 1316 | · the keyboard |
-| 1414 | THE OVERVIEW (0.7.24) |
-| 1493 | · the city's job |
-| 1681 | · what would help most |
-| 1907 | · the market builds these |
-| 1947 | A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) |
-| 2494 | A MARKET CATEGORY, IN ITS GROUPS (0.7.25) |
-| 2670 | THE STAT CARD |
-| 3111 | · the last purchases (0.7.20) |
+| 1305 | · the keyboard |
+| 1397 | THE OVERVIEW (0.7.24) |
+| 1476 | · the city's job |
+| 1685 | · what would help most |
+| 1932 | · the market builds these |
+| 1972 | A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) |
+| 2512 | A MARKET CATEGORY, IN ITS GROUPS (0.7.25) |
+| 2688 | THE STAT CARD |
+| 3129 | · the last purchases (0.7.20) |
+| 3452 | ONE FUNDING PAGE FOR THE RUN (0.7.40) |
 
 ## Constants
 
@@ -54,9 +55,9 @@
 | 187 | `BuildScreen.BUILD_HOME` | `BuildAdvice.OVERVIEW` | Where Build opens (BUILD_HOME), and which category the player was last looking at (buildCategory). |
 | 322 | `BuildScreen.CITY_DOT` | `Palette.MONEY` | The colour of "only the city builds these": the money blue - the city's own account. |
 | 325 | `BuildScreen.INVESTOR_DOT` | `Palette.BUSINESS` | The colour of "investors build these too": the business violet. |
-| 1439 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
-| 1980 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
-| 3120 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
+| 1422 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
+| 2005 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
+| 3138 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
 
 ## Fields (state)
 
@@ -64,24 +65,24 @@
 |---:|---|---|
 | 51 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
 | 188 | `String buildCategory` |  |
-| 582 | `final java.util.Set<String> pinnedStats` | Which cards are showing their stats, by building name. |
-| 585 | `final java.util.Map<String, Integer> orderQty` | How many of each the player has dialled up, by building name. |
-| 1339 | `final List<PageCard> pageCards` | The cards on the category page showing now, in the order they are laid out; each draw starts it again. |
-| 1342 | `private String pageTitle` | Which page those are on, so an order placed from the keyboard comes back to it. |
-| 1343 | `private EnumSet<BuildingType> pageCategories` |  |
-| 1346 | `private Label pendingHint` | The caption under the grid that says the two keys; shown only while something on the page is pending. |
-| 1977 | `final java.util.Map<String, BuildAdvice.Measure> measurePicked` | Which ring each city category has picked, by name; none picks its worst. |
-| 1983 | `private VBox orderBar` | The order bar, refilled in place as a stepper moves. |
-| 1986 | `private BuildAdvice.Measure orderMeasure` | The measure the order bar reads, the picked one; null on a market page (orderMarket). |
-| 2521 | `private boolean orderMarket` | Whether the order bar is a market page's, which has no measure to draw. |
-| 3130 | `final java.util.ArrayDeque<Receipt> receipts` | The last RECEIPTS purchases, newest first. |
-| 3133 | `private javafx.stage.Popup receiptPopup` | The receipt's popover while it is open, or null. |
+| 583 | `final java.util.Set<String> pinnedStats` | Which cards are showing their stats, by building name. |
+| 586 | `final java.util.Map<String, Integer> orderQty` | How many of each the player has dialled up, by building name. |
+| 1328 | `final List<PageCard> pageCards` | The cards on the category page showing now, in the order they are laid out; each draw starts it again. |
+| 1331 | `private String pageTitle` | Which page those are on, so an order placed from the keyboard comes back to it. |
+| 1332 | `private EnumSet<BuildingType> pageCategories` |  |
+| 1335 | `private Label pendingHint` | The caption under the grid that says the two keys; shown only while something on the page is pending. |
+| 2002 | `final java.util.Map<String, BuildAdvice.Measure> measurePicked` | Which ring each city category has picked, by name; none picks its worst. |
+| 2008 | `private VBox orderBar` | The order bar, refilled in place as a stepper moves. |
+| 2011 | `private BuildAdvice.Measure orderMeasure` | The measure the order bar reads, the picked one; null on a market page (orderMarket). |
+| 2539 | `private boolean orderMarket` | Whether the order bar is a market page's, which has no measure to draw. |
+| 3148 | `final java.util.ArrayDeque<Receipt> receipts` | The last RECEIPTS purchases, newest first. |
+| 3151 | `private javafx.stage.Popup receiptPopup` | The receipt's popover while it is open, or null. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 3607 | **type** `final class BuildScreen` | The build tab: the Overview it opens on and the city's five categories opened on their needs (both 0.7.24), the market's nine in their groups (0.7.25), the strip of categories, the constraints bar that says what stops... |
+| 48 | 3770 | **type** `final class BuildScreen` | The build tab: the Overview it opens on and the city's five categories opened on their needs (both 0.7.24), the market's nine in their groups (0.7.25), the strip of categories, the constraints bar that says what stops... |
 | 53 | 1 | `BuildScreen(UserInterface ui)` |  |
 
 ### BUILD: THE CATEGORY SCREEN IS GONE TOO. (lines 55-77)
@@ -117,160 +118,177 @@
 | 482 | 41 | `HBox constraintsBar()` | WHAT STOPS A BUILD, across the top, above the categories. |
 | 525 | 3 | `static String groundTone(int level)` | LAND FREE's colour: the GROUND row's verdict, amber or red, and the strip's plain figure while it is fine. |
 
-### ONE BUILDING, AS A CARD. (lines 529-1315)
+### ONE BUILDING, AS A CARD. (lines 529-1304)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 596 | 38 | `StackPane card(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Category c, BuildAdvice.Measure m)` | One building as a card, on a city category's page (its picked ring's group) or a market category's (its owning sector's group). |
-| 636 | 6 | `static javafx.scene.text.Text textRun(String s, String font, double size, String colour)` | A run of words in a TextFlow, at a size and in a colour - so a line wraps where it must and never ends in "...". |
-| 644 | 7 | `static javafx.scene.text.TextFlow flow(javafx.scene.Node...runs)` | ...and a TextFlow of them, as wide as a card's face. |
-| 660 | 27 | `HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford)` | The head: an icon square in who-builds-it's colour - the strip's dots, blue for the city's five, violet for the market's nine - the name, faint when one costs more than the cash, "you have N" or "none built", and what... |
-| 692 | 6 | `javafx.scene.layout.FlowPane cardTags(BuildCard.Figures f, BuildCard.Group group)` | The tags: the best of the group on each bar (BuildCard.Group.best1() and best2()), in a flow so two never cut each other. |
-| 700 | 13 | `static List<String> tagWords(BuildCard.Figures f, BuildCard.Group group)` | The tags' words, for the bars the card is the best of: "cheapest per resident", "adds the most per $". |
-| 720 | 21 | `VBox heroRow(BuildCard.Figures f)` | The hero: what the building gives the city, in its own verb, a big figure and its unit - "houses 252 residents", "makes 1,200 t of steel a month", "puts 87 officers on the street · 120 fully staffed" - and a smaller l... |
-| 749 | 32 | `String heroDetail(BuildCard.Figures f)` | The hero's smaller line, by kind: a home's doors and who may live behind them; the branch's capital; the builders' output; an office's exports at the price of a seat; a maker's other goods, what it uses and what it ad... |
-| 783 | 8 | `static String goodsList(java.util.Map<Good, Double> goods)` | Goods and their counts: "1,320 t of iron ore", "5,000 kg of dairy and eggs and 1,400 kg of meat". |
-| 793 | 12 | `HBox priceRow(BuildCard.Figures f, boolean afford)` | The price all in, green when the cash covers it and red when it does not, with the sticker smaller. |
-| 816 | 13 | `List<javafx.scene.Node> cardBars(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Measure m)` | The two bars. |
-| 831 | 23 | `static String[] barWords(BuildCard.Figures f, BuildAdvice.Measure m)` | The bars' labels and figures: {label 1, figure 1, label 2, figure 2}, label 2 null for no second bar. |
-| 856 | 4 | `static String sqFt(double v)` | Square feet a bar reads: a tenth below a hundred, whole and grouped above; a dash for none. |
-| 872 | 24 | `HBox investorsLine(BuildingsTemplate t)` | THE INVESTORS' LINE, on a market card: if investors have an order on its site, that, with the count and the wait; otherwise the sector's own word for the month (Game.getLastInvestment(), filed per sector, so it can na... |
-| 901 | 15 | `String[] investorsWords(BuildCard.Investors inv)` | The line's words after "Investors": {what they are doing or last said, " · this one: " and the gate - or null}. |
-| 918 | 17 | `String gateWords(BuildCard.Gate gate)` | A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss. |
-| 944 | 6 | `Label needsLine(BuildCard.Figures f)` | What it needs: its posts by job - or "needs no staff" - then, on a market card, the share of them the owner's staffing test says the city could fill, below 99.5%; then its land, red with " - more than is free" when it... |
-| 952 | 20 | `String needsWords(BuildCard.Figures f)` | ...its words. |
-| 974 | 1 | **type** `record Order(HBox steps, Pieces.ActionButton build, Label quoted, Runnable reprice)` | A card's order line: the stepper, Build under it (0.7.34), the quote under that, and how they reprice in place. |
-| 1003 | 97 | `Order orderControls(BuildingsTemplate template, String key, String page, EnumSet<BuildingType> types, Runnable after)` | − N + +10 +100 and ↺, then Build, and the quote under them - as the 0.7.21 card had them, on every card now (the city's had lost +100). |
-| 1111 | 14 | `Pieces.Press orderPress(BuildCard.Verdict v, int n)` | What a Build button says for n of a building (0.7.34), off the verdict the quote line reads (BuildCard.verdict(), Game.quoteBuild()): with none chosen, "Build" and "choose how many"; ready, "Build 3 · $37.5M", the cou... |
-| 1133 | 9 | `String[] quoteVerdict(BuildCard.Verdict v)` | The quote's verdict and its colour, in buildStack()'s order: no deposit and nobody licensed in red - warned here since 0.7.25, where they were found only after the click - then short of land in red, short of cash in a... |
-| 1146 | 24 | `Label infoDot(String key, VBox cover)` | The (i): hover shows the stat cover over the whole card, a click keeps it there (the dot turns blue), a second puts it away. |
-| 1184 | 84 | `VBox statCover(BuildingsTemplate t, BuildCard.Figures f)` | The stat cover, as tall as the card it covers: what the building does in sentences (whatItDoes(), which BuildMenuCheck holds for all 73), the figures the face does not say - materials, build points, road load, electri... |
-| 1270 | 11 | `HBox statPair(String label, String value)` | A label and a figure, on one line, inside a stat cover. |
-| 1294 | 21 | `boolean placeOrder(BuildingsTemplate template, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Placing the order, and everything the city can say back. |
+| 597 | 38 | `StackPane card(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Category c, BuildAdvice.Measure m)` | One building as a card, on a city category's page (its picked ring's group) or a market category's (its owning sector's group). |
+| 637 | 6 | `static javafx.scene.text.Text textRun(String s, String font, double size, String colour)` | A run of words in a TextFlow, at a size and in a colour - so a line wraps where it must and never ends in "...". |
+| 645 | 7 | `static javafx.scene.text.TextFlow flow(javafx.scene.Node...runs)` | ...and a TextFlow of them, as wide as a card's face. |
+| 661 | 27 | `HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford)` | The head: an icon square in who-builds-it's colour - the strip's dots, blue for the city's five, violet for the market's nine - the name, faint when one costs more than the cash, "you have N" or "none built", and what... |
+| 693 | 6 | `javafx.scene.layout.FlowPane cardTags(BuildCard.Figures f, BuildCard.Group group)` | The tags: the best of the group on each bar (BuildCard.Group.best1() and best2()), in a flow so two never cut each other. |
+| 701 | 13 | `static List<String> tagWords(BuildCard.Figures f, BuildCard.Group group)` | The tags' words, for the bars the card is the best of: "cheapest per resident", "adds the most per $". |
+| 721 | 21 | `VBox heroRow(BuildCard.Figures f)` | The hero: what the building gives the city, in its own verb, a big figure and its unit - "houses 252 residents", "makes 1,200 t of steel a month", "puts 87 officers on the street · 120 fully staffed" - and a smaller l... |
+| 750 | 32 | `String heroDetail(BuildCard.Figures f)` | The hero's smaller line, by kind: a home's doors and who may live behind them; the branch's capital; the builders' output; an office's exports at the price of a seat; a maker's other goods, what it uses and what it ad... |
+| 784 | 8 | `static String goodsList(java.util.Map<Good, Double> goods)` | Goods and their counts: "1,320 t of iron ore", "5,000 kg of dairy and eggs and 1,400 kg of meat". |
+| 794 | 12 | `HBox priceRow(BuildCard.Figures f, boolean afford)` | The price all in, green when the cash covers it and red when it does not, with the sticker smaller. |
+| 817 | 13 | `List<javafx.scene.Node> cardBars(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Measure m)` | The two bars. |
+| 832 | 23 | `static String[] barWords(BuildCard.Figures f, BuildAdvice.Measure m)` | The bars' labels and figures: {label 1, figure 1, label 2, figure 2}, label 2 null for no second bar. |
+| 857 | 4 | `static String sqFt(double v)` | Square feet a bar reads: a tenth below a hundred, whole and grouped above; a dash for none. |
+| 873 | 24 | `HBox investorsLine(BuildingsTemplate t)` | THE INVESTORS' LINE, on a market card: if investors have an order on its site, that, with the count and the wait; otherwise the sector's own word for the month (Game.getLastInvestment(), filed per sector, so it can na... |
+| 902 | 15 | `String[] investorsWords(BuildCard.Investors inv)` | The line's words after "Investors": {what they are doing or last said, " · this one: " and the gate - or null}. |
+| 919 | 17 | `String gateWords(BuildCard.Gate gate)` | A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss. |
+| 945 | 6 | `Label needsLine(BuildCard.Figures f)` | What it needs: its posts by job - or "needs no staff" - then, on a market card, the share of them the owner's staffing test says the city could fill, below 99.5%; then its land, red with " - more than is free" when it... |
+| 953 | 20 | `String needsWords(BuildCard.Figures f)` | ...its words. |
+| 975 | 1 | **type** `record Order(HBox steps, Pieces.ActionButton build, Label quoted, Runnable reprice)` | A card's order line: the stepper, Build under it (0.7.34), the quote under that, and how they reprice in place. |
+| 1006 | 97 | `Order orderControls(BuildingsTemplate template, String key, String page, EnumSet<BuildingType> types, Runnable after)` | − N + +10 +100 and ↺, then Build, and the quote under them - as the 0.7.21 card had them, on every card now (the city's had lost +100). |
+| 1115 | 14 | `Pieces.Press orderPress(BuildCard.Verdict v, int n)` | What a Build button says for n of a building (0.7.34), off the verdict the quote line reads (BuildCard.verdict(), Game.quoteBuild()): with none chosen, "Build" and "choose how many"; ready, "Build 3 · $37.5M", the cou... |
+| 1137 | 9 | `String[] quoteVerdict(BuildCard.Verdict v)` | The quote's verdict and its colour, in buildStack()'s order: no deposit and nobody licensed in red - warned here since 0.7.25, where they were found only after the click - then short of land in red, short of cash in a... |
+| 1150 | 24 | `Label infoDot(String key, VBox cover)` | The (i): hover shows the stat cover over the whole card, a click keeps it there (the dot turns blue), a second puts it away. |
+| 1188 | 84 | `VBox statCover(BuildingsTemplate t, BuildCard.Figures f)` | The stat cover, as tall as the card it covers: what the building does in sentences (whatItDoes(), which BuildMenuCheck holds for all 73), the figures the face does not say - materials, build points, road load, electri... |
+| 1274 | 11 | `HBox statPair(String label, String value)` | A label and a figure, on one line, inside a stat cover. |
+| 1300 | 4 | `boolean placeOrder(BuildingsTemplate template, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Placing the order, and everything the city can say back. |
 
-### the keyboard (lines 1316-1413)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1336 | 1 | **type** `record PageCard(BuildingsTemplate template, Runnable reprice)` | One card on the page showing now: what it builds, and how it reprices itself in place. |
-| 1359 | 18 | `boolean buildPending()` | Every pending order on the page, placed as its own Build button would place it, in the page's order. |
-| 1384 | 10 | `boolean clearPending()` | Every quantity on the page back to none - the ↺ on every card at once, and like it, each card repriced in place rather than the page redrawn (see REPRICED IN PLACE, in orderControls()). |
-| 1400 | 12 | `void showPendingHint()` | The caption under the grid, shown while any card on the page has a quantity - and its line kept while it is not (0.7.20): it was taken out of the layout, so pressing "+" made the page a line taller and moved it. |
-
-### THE OVERVIEW (0.7.24) (lines 1414-1492)
+### the keyboard (lines 1305-1396)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1442 | 24 | `void showOverview()` | The Build tab's front page. |
-| 1468 | 18 | `HBox overviewLead()` | The one line: whose job the city's works are. |
+| 1325 | 1 | **type** `record PageCard(BuildingsTemplate template, Runnable reprice)` | One card on the page showing now: what it builds, and how it reprices itself in place. |
+| 1350 | 10 | `boolean buildPending()` | Every pending order on the page, placed as its own Build button would place it, in the page's order. |
+| 1367 | 10 | `boolean clearPending()` | Every quantity on the page back to none - the ↺ on every card at once, and like it, each card repriced in place rather than the page redrawn (see REPRICED IN PLACE, in orderControls()). |
+| 1383 | 12 | `void showPendingHint()` | The caption under the grid, shown while any card on the page has a quantity - and its line kept while it is not (0.7.20): it was taken out of the layout, so pressing "+" made the page a line taller and moved it. |
 
-### the city's job (lines 1493-1680)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1496 | 7 | `javafx.scene.layout.GridPane cityJob(List<CityNeeds.Need> all)` | The five, a tile each. |
-| 1505 | 10 | `static CityNeeds.Go goOf(String category)` | Which of NEEDS YOU's doors a city category is. |
-| 1517 | 3 | `static String verdict(int level)` | A verdict's colour: green, amber or red, as NEEDS YOU colours its rows; -1, no verdict, is the city's blue. |
-| 1525 | 1 | **type** `record Shown(String figure, double arc, String caption, String detail)` | What a ring says: its figure, how much of it is drawn, a caption of a few words and a smaller line. |
-| 1528 | 47 | `Shown shown(CityNeeds.Need n)` | A need, as a ring shows it: the figure NEEDS YOU judged, worded for the ring. |
-| 1577 | 1 | `static String pct(double share)` | A share as a whole per cent; a dash for one that is not a number (a network with nothing supplying it). |
-| 1579 | 8 | `String careCaption(CareType care)` |  |
-| 1589 | 17 | `Shown fine(String category, List<CityNeeds.Need> all)` | A category with nothing near its line: a few words, and the figure nearest one. |
-| 1608 | 7 | `int onSiteIn(EnumSet<BuildingType> types)` | Buildings on site in a category, for anybody's order. |
-| 1617 | 6 | `int standingIn(EnumSet<BuildingType> types)` | ...and standing. |
-| 1625 | 9 | `HBox onSiteLine(int n, String none)` | A crane and "N on site", in the building colour, or a quiet word when there is nothing. |
-| 1636 | 44 | `VBox jobTile(BuildAdvice.Category c, List<CityNeeds.Need> all)` | One of the city's five: its worst need as a ring, a caption, a line, and what is on site. |
-
-### what would help most (lines 1681-1906)
+### THE OVERVIEW (0.7.24) (lines 1397-1475)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1684 | 26 | `javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> advice)` | "all three ≈ $X of your $Y", and the button that orders them ("Build all three", 0.7.34; a step chip, "Order all three", before). |
-| 1717 | 13 | `Pieces.Press allPress(List<BuildAdvice.Suggestion> advice, boolean overCash)` | "Build all three" or "Build both" (0.7.34), in the look of the cards under it: held when one of them is - orderAll() stops at the first the city refuses, so it says so - else "... |
-| 1732 | 5 | `void orderAll(List<BuildAdvice.Suggestion> advice)` | Each suggestion through its own button's path (placeOrder()), in turn; the first refusal stops the run, as Enter's does. |
-| 1739 | 11 | `javafx.scene.Node adviceRow(List<BuildAdvice.Suggestion> advice)` | Up to three cards, or a line saying there is nothing to suggest. |
-| 1752 | 14 | `String figureText(BuildAdvice.Measure m, double f)` | A measure's figure, worded as its ring words it: a share, a load, months, people, or a multiple of Canada's crime. |
-| 1768 | 21 | `String doesWhat(BuildAdvice.Suggestion s)` | What a suggested order does, in a line. |
-| 1791 | 13 | `static String goal(BuildAdvice.Measure m)` | What closing the need means, for the line that gives the full count. |
-| 1806 | 6 | `static BuildAdvice.Measure showOn(BuildAdvice.Suggestion s)` | The measure Show opens a category on, for a suggestion: transit's ring for a line, death care's for the plots. |
-| 1814 | 76 | `VBox suggestionCard(BuildAdvice.Suggestion s)` | One suggested order: the need, before and after, the count and the building, a line, its price, Show, and its Build button. |
-| 1897 | 9 | `Pieces.Press suggestionPress(BuildAdvice.Suggestion s)` | A suggestion's button (0.7.34): a card's words for its count, off the same verdict (orderPress()) - on credit as well when the cash left after the suggestions before it affords none (Suggestion.needsCredit(), the old ... |
+| 1425 | 24 | `void showOverview()` | The Build tab's front page. |
+| 1451 | 18 | `HBox overviewLead()` | The one line: whose job the city's works are. |
 
-### the market builds these (lines 1907-1946)
+### the city's job (lines 1476-1684)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1910 | 7 | `javafx.scene.layout.GridPane marketRow()` | The nine, quieter. |
-| 1919 | 27 | `HBox marketTile(BuildAdvice.Category c)` | One of the market's: its icon, its name, what stands and what is on site. |
+| 1479 | 7 | `javafx.scene.layout.GridPane cityJob(List<CityNeeds.Need> all)` | The five, a tile each. |
+| 1488 | 10 | `static CityNeeds.Go goOf(String category)` | Which of NEEDS YOU's doors a city category is. |
+| 1500 | 3 | `static String verdict(int level)` | A verdict's colour: green, amber or red, as NEEDS YOU colours its rows; -1, no verdict, is the city's blue. |
+| 1508 | 1 | **type** `record Shown(String figure, double arc, String caption, String detail)` | What a ring says: its figure, how much of it is drawn, a caption of a few words and a smaller line. |
+| 1516 | 48 | `Shown shown(CityNeeds.Need n)` | A need, as a ring shows it: the figure NEEDS YOU judged, worded for the ring. |
+| 1566 | 1 | `static String pct(double share)` | A share as a whole per cent; a dash for one that is not a number (a network with nothing supplying it). |
+| 1569 | 3 | `static String servedWords(CityNeeds.Served s)` | A served gauge's words after its figure (0.7.41), the same on every screen: "served, short", "served, tight", "served, enough" - or "served" alone where no line judges it (transit). |
+| 1574 | 3 | `static String servedTone(CityNeeds.Served s)` | ...its colour: the one verdict's, or the city's blue where no line judges it. |
+| 1579 | 4 | `static double arc(CityNeeds.Served s)` | ...and its ring's arc: the share held to a whole ring, so a ring is full when the need is met (0.7.41: a load's ring was full when it was over). |
+| 1585 | 17 | `Shown fine(String category, List<CityNeeds.Need> all)` | A category with nothing near its line: a few words, and the figure nearest one. |
+| 1604 | 7 | `int onSiteIn(EnumSet<BuildingType> types)` | Buildings on site in a category, for anybody's order. |
+| 1613 | 6 | `int standingIn(EnumSet<BuildingType> types)` | ...and standing. |
+| 1621 | 9 | `HBox onSiteLine(int n, String none)` | A crane and "N on site", in the building colour, or a quiet word when there is nothing. |
+| 1639 | 45 | `VBox jobTile(BuildAdvice.Category c, List<CityNeeds.Need> all)` | One of the city's five: its worst need as a ring, a caption, a line, and what is on site. |
 
-### A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) (lines 1947-2493)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1989 | 6 | `BuildAdvice.Measure worstMeasure(BuildAdvice.Category c, List<BuildAdvice.Measure> measures, List<CityNeeds.Need> all)` | The worst of a category's measures: its NEEDS YOU row first in the panel's order, else the first ring. |
-| 2002 | 9 | `int levelOf(BuildAdvice.Measure m, List<CityNeeds.Need> all)` | A measure's verdict: its NEEDS YOU row's level; for a stage of the basic ladder that is not the bottleneck, the SCHOOLS row's own lines on its own coverage; -1 for a measure no row watches (transit, a school fewer tha... |
-| 2013 | 66 | `void showCityCategory(BuildAdvice.Category c)` | A city category's page. |
-| 2081 | 17 | `String measureSubtitle(BuildAdvice.Measure m)` | A few words on what a measure is for, beside its heading. |
-| 2100 | 5 | `Label scarceNote(List<BuildingsTemplate> shown, double[] fill)` | At the heading's right: which of these buildings' staff the city fills worst. |
-| 2107 | 13 | `String scarceWords(List<BuildingsTemplate> shown, double[] fill)` | ...its words, worked out without the label (0.7.28: the Services care heading says them too). |
-| 2122 | 16 | `String jobPlural(JobType job)` | A job type in plain words, plural: "doctors", "nurses", "unskilled workers". |
-| 2140 | 13 | `static String unitWords(BuildAdvice.Measure m)` | What a measure is counted in, for a ring's "short by N ..." - only care reaches it since 0.7.25, when the cards' "serves N ..." moved to BuildCard.doesWords(). |
-| 2155 | 3 | `static String perTenThousand(double staff)` | The staff bar's figure: a tenth below a hundred, whole and grouped above. |
-| 2165 | 2 | **type** `record RingWords(String figure, double arc, String tone, String shortLine, String onSite, int units, CityNe...` | What a ring says, worked out without drawing it: its figure, how much of it is drawn, its verdict's colour, how far short in people or places, and what is on site with its wait. |
-| 2168 | 89 | `RingWords ringWords(BuildAdvice.Measure m, List<CityNeeds.Need> all)` |  |
-| 2259 | 57 | `HBox measureCard(BuildAdvice.Category c, BuildAdvice.Measure m, List<CityNeeds.Need> all, boolean picked, boolean small)` | One ring: its figure, how far short, and what is on site with its wait; a click picks it. |
-| 2318 | 3 | `static String wordsAt(double size, String colour)` | Words at a size between Palette's steps (0.7.24's cards and rings), in a colour. |
-| 2323 | 3 | `static String figureAt(double size, String colour)` | A figure at a size between Palette's steps: Palette.figure()'s face. |
-| 2328 | 3 | `static String shortOrWhole(double v)` | A figure that may be large: "2,500", "120k", "1.2M". |
-| 2340 | 20 | `VBox barRow(String label, String value, double share, String colour, double wide, String svg, boolean track)` | One of the card's two bars: what it measures, its figure, and the bar scaled across its group - with no track when `track` is false (0.7.25): a group of one, where a full bar compares nothing, or a card with nothing t... |
-| 2369 | 107 | `void refreshOrderBar()` | The order bar: what the page's steppers add up to, its price against the cash, the picked measure now, when what is on site opens and with the order - as a stacked bar and in figures - what the order needs, and one Bu... |
-| 2478 | 4 | `Pieces.Press orderBarPress(int units, double total, double cash)` | The order bar's Build (0.7.34): "Build 5 · $X" with the order's total, or "Build 5 on credit · $X" past the cash. |
-| 2484 | 9 | `Region segment(double share, String colour, javafx.beans.binding.DoubleBinding wide)` | One part of the order bar's stacked bar, its width a share of the bar's. |
-
-### A MARKET CATEGORY, IN ITS GROUPS (0.7.25) (lines 2494-2669)
+### what would help most (lines 1685-1931)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2524 | 47 | `void showMarketCategory(BuildAdvice.Category c)` | A market category's page. |
-| 2578 | 18 | `HBox groupHead(BuildCard.Group group)` | A market group's heading - "FOOD MILLS · bread and bakery goods from crops", or "STEEL · from iron ore" where the goods would repeat the name - and at its right the sector's figure the group answers to, both wrapping ... |
-| 2602 | 25 | `String groupSubtitle(BuildCard.Group group)` | What a market group is for, beside its name: the goods a maker group makes and what from, off the templates' own goods; a few words for the rest. |
-| 2629 | 4 | `static String andList(List<String> words)` | "a, b and c". |
-| 2635 | 27 | `String groupNote(BuildCard.Note n)` | A group's note, in words (BuildCard.NoteKind). |
-| 2664 | 5 | `static String doors(double shortfall)` | Households of a segment without a door, or the doors to spare (RealEstate.doorShortfall(), negative when there are). |
+| 1688 | 26 | `javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> advice)` | "all three ≈ $X of your $Y", and the button that orders them ("Build all three", 0.7.34; a step chip, "Order all three", before). |
+| 1721 | 13 | `Pieces.Press allPress(List<BuildAdvice.Suggestion> advice, boolean overCash)` | "Build all three" or "Build both" (0.7.34), in the look of the cards under it: held when one of them is - orderAll() stops at the first the city refuses, so it says so - else "... |
+| 1736 | 5 | `void orderAll(List<BuildAdvice.Suggestion> advice)` | The suggestions as one run (0.7.40, placeRun()): funded whole when it is more than the cash, each placed in turn by its own button's path; the first refusal stops the run, as Enter's does. |
+| 1743 | 11 | `javafx.scene.Node adviceRow(List<BuildAdvice.Suggestion> advice)` | Up to three cards, or a line saying there is nothing to suggest. |
+| 1756 | 4 | `String gaugeText(BuildAdvice.Measure m, java.util.Map<BuildingsTemplate, Integer> added)` | A measure's gauge with these buildings standing as well, as its ring writes it (0.7.41): what a served measure serves, else figureText() of its figure. |
+| 1762 | 14 | `String figureText(BuildAdvice.Measure m, double f)` | A measure's figure, worded as its ring words it: a share, a load, months, people, or a multiple of Canada's crime - for a served measure (0.7.41) gaugeText() reads what it serves instead. |
+| 1783 | 22 | `String doesWhat(BuildAdvice.Suggestion s)` | What a suggested order does, in a line. |
+| 1807 | 17 | `static String goal(BuildAdvice.Measure m)` | What closing the need means, for the line that gives the full count - a served measure's line read as served (0.7.41: "bring the load under 75%" became "bring power over 133% served"). |
+| 1826 | 6 | `static BuildAdvice.Measure showOn(BuildAdvice.Suggestion s)` | The measure Show opens a category on, for a suggestion: transit's ring for a line, death care's for the plots. |
+| 1834 | 81 | `VBox suggestionCard(BuildAdvice.Suggestion s)` | One suggested order: the need, before and after, the count and the building, a line, its price, Show, and its Build button. |
+| 1922 | 9 | `Pieces.Press suggestionPress(BuildAdvice.Suggestion s)` | A suggestion's button (0.7.34): a card's words for its count, off the same verdict (orderPress()) - on credit as well when the cash left after the suggestions before it affords none (Suggestion.needsCredit(), the old ... |
 
-### THE STAT CARD (lines 2670-3110)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2685 | 5 | `Region cardGap()` | A hairline of space, used where a blank line would be too much. |
-| 2709 | 192 | `public List<String> whatItDoes(BuildingsTemplate t)` | Package-private, not private, so BuildMenuCheck can read the sentences back. |
-| 2908 | 29 | `List<String> whatSafetyItGives(BuildingsTemplate t)` | The police and the prisons (2026-09-11). |
-| 2946 | 75 | `public List<String> whatCareItGives(BuildingsTemplate t)` | The healthcare version, which needs the care type and not the category. |
-| 3023 | 16 | `public String jobLabel(JobType job)` | JobType, in words a player reads rather than the enum constant. |
-| 3050 | 60 | `HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories)` | The receipt dot, top-right of the menu, and the popover it opens with the last purchases (0.7.20; the card was in the page and showed one). |
-
-### the last purchases (0.7.20) (lines 3111-3654)
+### the market builds these (lines 1932-1971)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3117 | 1 | **type** `record Receipt(int serial, String name, int quantity, double total, double salesTax, int month)` | One purchase, as the receipt shows it: what and how many, what it cost all in, the sales tax in that, and when. |
-| 3141 | 7 | `void noteReceipt(Game.BuildQuote quote)` | After an order went through: the receipt the model wrote for it, with the sales tax off the quote it was charged on - quoted just before the order, against the city the order was then placed in, as Game.processBuildOr... |
-| 3150 | 4 | `void forgetReceipts()` | Another city, founded or loaded (UserInterface.anotherCity()): its purchases are not this one's. |
-| 3155 | 18 | `private void openReceipt(Button dot)` |  |
-| 3175 | 6 | `void closeReceipt()` | Close the receipt, if it is open. |
-| 3183 | 20 | `private VBox receiptCard()` | The card in the popover: the last purchases, newest first, each with its total and the tax in it. |
-| 3204 | 6 | `Label receiptLine(String label, String value)` |  |
-| 3219 | 12 | `String schoolHeading(EducationType type)` | A school's heading, and what it is actually for. |
-| 3240 | 19 | `String schoolSubtitle(EducationType type)` | One line, like the care subtitles beside it. |
-| 3261 | 10 | `String careHeading(CareType care)` | The group's name, in the player's words rather than the enum's. |
-| 3279 | 22 | `String careSubtitle(CareType care)` | What building one of these actually gets you. |
-| 3311 | 30 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
-| 3349 | 41 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
-| 3399 | 34 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The city has the money and nowhere to put the building. |
-| 3450 | 69 | `void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | "You cannot afford this - borrow for it?" with the terms on the screen. |
-| 3527 | 4 | `VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd, Pieces.Press action, Runnable issue)` | One of the funding page's offers: its rate, its face, the cash it brings, what it costs a month and in all, and what happens at the end - every figure off the quote - then what asking this much does to the city's rate... |
-| 3540 | 24 | `VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd, Pieces.Press action, Runnable issue, java.util.fu...` | ...with its figures written by `written` - the land office's dollar offers printed theirs in US dollars here from 0.7.13, since a dollar quote's every figure is in dollars (Game.quoteForeign()). |
-| 3585 | 14 | `private void buildOnTheLoan(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats, String ...` | Either offer's money is in: the order is placed again, and whatever it answers is shown. |
-| 3610 | 30 | `void showFundingFellShortMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats, Strin...` | The loan went through and the building still did not. |
-| 3648 | 6 | `String rateStyle(DebtQuote quote)` | Colours a quoted rate by how punishing it is. |
+| 1935 | 7 | `javafx.scene.layout.GridPane marketRow()` | The nine, quieter. |
+| 1944 | 27 | `HBox marketTile(BuildAdvice.Category c)` | One of the market's: its icon, its name, what stands and what is on site. |
+
+### A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) (lines 1972-2511)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2014 | 6 | `BuildAdvice.Measure worstMeasure(BuildAdvice.Category c, List<BuildAdvice.Measure> measures, List<CityNeeds.Need> all)` | The worst of a category's measures: its NEEDS YOU row first in the panel's order, else the first ring. |
+| 2029 | 5 | `int levelOf(BuildAdvice.Measure m, List<CityNeeds.Need> all)` | A measure's verdict. |
+| 2036 | 66 | `void showCityCategory(BuildAdvice.Category c)` | A city category's page. |
+| 2104 | 17 | `String measureSubtitle(BuildAdvice.Measure m)` | A few words on what a measure is for, beside its heading. |
+| 2123 | 5 | `Label scarceNote(List<BuildingsTemplate> shown, double[] fill)` | At the heading's right: which of these buildings' staff the city fills worst. |
+| 2130 | 13 | `String scarceWords(List<BuildingsTemplate> shown, double[] fill)` | ...its words, worked out without the label (0.7.28: the Services care heading says them too). |
+| 2145 | 16 | `String jobPlural(JobType job)` | A job type in plain words, plural: "doctors", "nurses", "unskilled workers". |
+| 2163 | 13 | `static String unitWords(BuildAdvice.Measure m)` | What a measure is counted in, for a ring's "short by N ..." - only care reaches it since 0.7.25, when the cards' "serves N ..." moved to BuildCard.doesWords(). |
+| 2178 | 3 | `static String perTenThousand(double staff)` | The staff bar's figure: a tenth below a hundred, whole and grouped above. |
+| 2188 | 2 | **type** `record RingWords(String figure, double arc, String tone, String shortLine, String onSite, int units, CityNe...` | What a ring says, worked out without drawing it: its figure, how much of it is drawn, its verdict's colour, how far short in people or places, and what is on site with its wait. |
+| 2191 | 92 | `RingWords ringWords(BuildAdvice.Measure m, List<CityNeeds.Need> all)` |  |
+| 2285 | 57 | `HBox measureCard(BuildAdvice.Category c, BuildAdvice.Measure m, List<CityNeeds.Need> all, boolean picked, boolean small)` | One ring: its figure, how far short, and what is on site with its wait; a click picks it. |
+| 2344 | 3 | `static String wordsAt(double size, String colour)` | Words at a size between Palette's steps (0.7.24's cards and rings), in a colour. |
+| 2349 | 3 | `static String figureAt(double size, String colour)` | A figure at a size between Palette's steps: Palette.figure()'s face. |
+| 2354 | 3 | `static String shortOrWhole(double v)` | A figure that may be large: "2,500", "120k", "1.2M". |
+| 2366 | 20 | `VBox barRow(String label, String value, double share, String colour, double wide, String svg, boolean track)` | One of the card's two bars: what it measures, its figure, and the bar scaled across its group - with no track when `track` is false (0.7.25): a group of one, where a full bar compares nothing, or a card with nothing t... |
+| 2395 | 110 | `void refreshOrderBar()` | The order bar: what the page's steppers add up to, its price against the cash, the picked measure now, when what is on site opens and with the order - as a stacked bar and in figures - what the order needs, and one Bu... |
+| 2507 | 4 | `Pieces.Press orderBarPress(int units, double total, double cash)` | The order bar's Build (0.7.34): "Build 5 · $X" with the order's total, or "Build 5 on credit · $X" past the cash. |
+
+### A MARKET CATEGORY, IN ITS GROUPS (0.7.25) (lines 2512-2687)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2542 | 47 | `void showMarketCategory(BuildAdvice.Category c)` | A market category's page. |
+| 2596 | 18 | `HBox groupHead(BuildCard.Group group)` | A market group's heading - "FOOD MILLS · bread and bakery goods from crops", or "STEEL · from iron ore" where the goods would repeat the name - and at its right the sector's figure the group answers to, both wrapping ... |
+| 2620 | 25 | `String groupSubtitle(BuildCard.Group group)` | What a market group is for, beside its name: the goods a maker group makes and what from, off the templates' own goods; a few words for the rest. |
+| 2647 | 4 | `static String andList(List<String> words)` | "a, b and c". |
+| 2653 | 27 | `String groupNote(BuildCard.Note n)` | A group's note, in words (BuildCard.NoteKind). |
+| 2682 | 5 | `static String doors(double shortfall)` | Households of a segment without a door, or the doors to spare (RealEstate.doorShortfall(), negative when there are). |
+
+### THE STAT CARD (lines 2688-3128)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2703 | 5 | `Region cardGap()` | A hairline of space, used where a blank line would be too much. |
+| 2727 | 192 | `public List<String> whatItDoes(BuildingsTemplate t)` | Package-private, not private, so BuildMenuCheck can read the sentences back. |
+| 2926 | 29 | `List<String> whatSafetyItGives(BuildingsTemplate t)` | The police and the prisons (2026-09-11). |
+| 2964 | 75 | `public List<String> whatCareItGives(BuildingsTemplate t)` | The healthcare version, which needs the care type and not the category. |
+| 3041 | 16 | `public String jobLabel(JobType job)` | JobType, in words a player reads rather than the enum constant. |
+| 3068 | 60 | `HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories)` | The receipt dot, top-right of the menu, and the popover it opens with the last purchases (0.7.20; the card was in the page and showed one). |
+
+### the last purchases (0.7.20) (lines 3129-3451)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3135 | 1 | **type** `record Receipt(int serial, String name, int quantity, double total, double salesTax, int month)` | One purchase, as the receipt shows it: what and how many, what it cost all in, the sales tax in that, and when. |
+| 3159 | 7 | `void noteReceipt(Game.BuildQuote quote)` | After an order went through: the receipt the model wrote for it, with the sales tax off the quote it was charged on - quoted just before the order, against the city the order was then placed in, as Game.processBuildOr... |
+| 3168 | 4 | `void forgetReceipts()` | Another city, founded or loaded (UserInterface.anotherCity()): its purchases are not this one's. |
+| 3173 | 18 | `private void openReceipt(Button dot)` |  |
+| 3193 | 6 | `void closeReceipt()` | Close the receipt, if it is open. |
+| 3201 | 20 | `private VBox receiptCard()` | The card in the popover: the last purchases, newest first, each with its total and the tax in it. |
+| 3222 | 6 | `Label receiptLine(String label, String value)` |  |
+| 3237 | 12 | `String schoolHeading(EducationType type)` | A school's heading, and what it is actually for. |
+| 3258 | 19 | `String schoolSubtitle(EducationType type)` | One line, like the care subtitles beside it. |
+| 3279 | 10 | `String careHeading(CareType care)` | The group's name, in the player's words rather than the enum's. |
+| 3297 | 22 | `String careSubtitle(CareType care)` | What building one of these actually gets you. |
+| 3329 | 30 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
+| 3367 | 41 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
+| 3417 | 34 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The city has the money and nowhere to put the building. |
+
+### ONE FUNDING PAGE FOR THE RUN (0.7.40) (lines 3452-3817)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3492 | 1 | **type** `record RunFrom(String title, EnumSet<BuildingType> categories, boolean cards)` | Where a run came from: the page to come back to, and whether its orders are that page's cards - each taken off its card once placed, the rest left on theirs. |
+| 3495 | 5 | `static java.util.LinkedHashMap<BuildingsTemplate, Integer> runOf(BuildingsTemplate t, int n)` | One order as a run of one. |
+| 3502 | 8 | `static java.util.LinkedHashMap<BuildingsTemplate, Integer> firstOf(java.util.Map<BuildingsTemplate, Integer> run, int n)` | The first `n` orders of a run. |
+| 3512 | 8 | `static String runNames(java.util.Map<BuildingsTemplate, Integer> run)` | A run's orders in words, the order bar's way: "5 × Walk-in Clinic + 3 × Paved Road". |
+| 3527 | 10 | `boolean placeRun(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | A run placed (0.7.40): funded first when the orders that can go ahead cost more than the cash (showBuildFunding()), otherwise placed in turn as they always were. |
+| 3555 | 19 | `private boolean goAhead(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from, String paper)` | Every order of the run in turn, through buildStack() - the path each card's Build always took - each placed one taken off its card. |
+| 3576 | 2 | **type** `record Placed(java.util.LinkedHashMap<BuildingsTemplate, Integer> built, java.util.LinkedHashMap<BuildingsT...` | What placing a run in turn did: the orders placed, the orders left - the one that stopped it first - and buildStack()'s answer there, SUCCESS when nothing stopped it. |
+| 3580 | 17 | `Placed placeInTurn(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | goAhead()'s placing, without the page it then draws (a probe runs it): each order through buildStack() until one is not placed, each placed one's receipt noted and, from the cards, its card emptied. |
+| 3605 | 2 | **type** `record RunWords(java.util.LinkedHashMap<BuildingsTemplate, Integer> funded, double invoice, double gap, Str...` | What the funding page says about a run, worked out without drawing it (a probe reads it): the orders that can go ahead, their invoice and the gap, the summary's line, what the treasury holds and the bar's part for it,... |
+| 3608 | 30 | `RunWords runWords(java.util.Map<BuildingsTemplate, Integer> run)` |  |
+| 3640 | 2 | **type** `record RunOffer(String name, DebtQuote quote, String rate, String tone, String ending, Pieces.Press action,...` | One loan the funding page offers, worded - what Pieces.offerCard() draws, as the land office's Offer is: its name, quote, rate's words and colour, ending, button; what booking it does to the model (a probe runs it); a... |
+| 3651 | 35 | `List<RunOffer> runOffers(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The two offers, the old page's on the run's gap: the bond first - what the page recommends, since a building outlives either loan and the matching principle pays for a long-lived asset with long-lived debt - then the ... |
+| 3688 | 20 | `HBox runHead(String sub, RunFrom from)` | The run's pages' head: "Build › Funding", the title a way back to the page the run came from, and "‹ <that page>" at the right - the land office's head() on Build. |
+| 3715 | 61 | `void showBuildFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The funding page for a run. |
+| 3782 | 14 | `String[] fellShortWords(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFro...` | What the fell-short card says, worked out without drawing it: its heading, then what was built, what was not and what it is still short of - the model's gap for the orders left, as it stands now. |
+| 3806 | 11 | `void showBuildFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFro...` | The loan went through and an order still did not: one red card in Build's frame, as the land office's "Not bought" (0.7.40; it was THE MONEY IS IN, THE BUILDING IS NOT, a page of its own). |
 

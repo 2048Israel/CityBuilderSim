@@ -15,7 +15,7 @@ requirement.
 ## Open these before reading source
 
 The tree is over 200,000 lines; `Game.java` alone is over 13,000, and the
-interface is twenty-five files, the largest about 5,900. Do not read them. Read the generated indexes and jump.
+interface is twenty-five files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -134,7 +134,9 @@ These are Jerus's, and they do not move.
                                    holds it
         CityNeeds.java             NEEDS YOU, measured (0.7.24): everything with a lever against its own line,
                                    in the panel's order - moved out of ui/SummaryScreen whole, so the left
-                                   panel, the header's "Needs you" chip and the Build overview read one list
+                                   panel, the header's "Needs you" chip and the Build overview read one list;
+                                   and SERVED (0.7.41), the one verdict every service gauge is read by -
+                                   supply over demand, its lines turned over
         BuildAdvice.java           the Build tab's categories and measures, each measure's figure before and
                                    after an order by the model's own arithmetic, and the rule behind the
                                    overview's WHAT WOULD HELP MOST (0.7.24); advice, not a model change -
@@ -151,7 +153,7 @@ These are Jerus's, and they do not move.
                                    under another policy line by line, and THE BUDGET before and after, each
                                    line its owner's read of a detached TaxPolicy.copy(); advice, not a model
                                    change - PolicyPreviewCheck holds it
-        ui/                        the interface: UserInterface.java is the window (about 5,900 lines: the header
+        ui/                        the interface: UserInterface.java is the window (about 6,000 lines: the header
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's
                                    splitting-the-interface.md), Money/Statement/Pieces/Levers (what the screens

@@ -50,17 +50,16 @@ final class SummaryScreen {
        city browns out, then fall off a cliff. "Everything is fine" and "you are
        one factory away from a blackout" print identically.
 
-       So the panel shows the other side of the same fraction: how much of what
-       the city can generate is being drawn. That number climbs steadily and
-       visibly, which is what makes it a warning rather than an obituary.
-
-       Past 100% it keeps counting rather than clamping, because how far over
-       you are is exactly what you need to know while fixing it - 118% and 190%
-       want very different responses, and both would read as "0% spare".
+       So the panel shows the same fraction UNCLAMPED: what the city can
+       generate over what it draws - "served" since 0.7.41, Jerus's one rule for
+       every gauge (it showed the other side, "% used", until then). That
+       number falls steadily and visibly towards 100%, which is what makes it a
+       warning rather than an obituary, and under 100% it keeps counting: how
+       far short you are is exactly what you need to know while fixing it.
        ===================================================================== */
 
-    /** Amber from three-quarters, red once there is no headroom left. */
-    HBox utilityLine(String label, double consumption, double production) {
+    /** What a network serves (0.7.41; it was "% used"), in the one verdict: amber from a third in hand, red once it serves no more than it is asked. */
+    HBox utilityLine(String label, double served, double consumption, double production) {
 
         if (production <= 0) {
             // No plant at all. Not a shortage until something actually draws.
@@ -68,26 +67,28 @@ final class SummaryScreen {
                     consumption > 0 ? PANEL_BAD : null);
         }
 
-        double used = consumption / production;
-
-        String colour = (used >= 1.0) ? PANEL_BAD
-                      : (used >= .75) ? PANEL_WARN
-                                      : PANEL_GOOD;
-        return statLine(label, formatter.format(used * 100) + "% used", colour);
+        CityNeeds.Served s = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, served);
+        HBox row = statLine(label, CityNeeds.servedPct(s.share()) + " " + CityNeeds.SERVED, BuildScreen.servedTone(s));
+        ((Label) row.getChildren().get(2)).setMinWidth(Region.USE_PREF_SIZE);
+        return row;
     }
 
     /**
-     * Roads, in NEEDS YOU's colour for them (0.7.29).
+     * Roads, in NEEDS YOU's colour for them (0.7.29) - in the one verdict on
+     * what the road serves since 0.7.41.
      *
      * The two thresholds Jerus asked for - "above 90%" and "restricting flow" -
      * turn out to be the SAME line: InfrastructureManager.FREE_FLOW is 0.9, so
      * throughput starts falling at exactly 90% utilisation; and STRAINED (0.85)
      * gives the amber step, the last point at which building more roads is
-     * cheaper than the congestion. Both are NEEDS YOU's ROADS row's lines, so
-     * the row's own level is the colour: it was red here on isCongested()
-     * while Build's tile, on the same row, was amber with road sites on the
-     * way - one road, two verdicts. One judge now (the project's
-     * spec-infra-0729.md, D3).
+     * cheaper than the congestion. Both are NEEDS YOU's ROADS row's lines, and
+     * from 0.7.29 the row's own level was the colour: it was red here on
+     * isCongested() while Build's tile, on the same row, was amber with road
+     * sites on the way - one road, two verdicts. One judge since (the
+     * project's spec-infra-0729.md, D3), and since 0.7.41 that judge is the
+     * one verdict on what the road serves - the same two lines turned over,
+     * red at or under 1/FREE_FLOW, green past 1/STRAINED - which road sites
+     * on the way no longer soften.
      */
     HBox roadLine() {
         HBox row = statLine("Roads", roadSummary(), roadColour());
@@ -96,28 +97,28 @@ final class SummaryScreen {
         return row;
     }
 
-    /** The road's verdict: NEEDS YOU's ROADS row's level - amber while road sites are on the way. */
+    /** The road's verdict: since 0.7.41 the one verdict on what it serves, as every road gauge has it (it was NEEDS YOU's ROADS row's level, amber while road sites were on the way). */
     String roadColour() {
-        for (CityNeeds.Need n : CityNeeds.measure(ui.game, WORDS)) {
-            if (n.kind() != CityNeeds.Kind.ROADS) continue;
-            return n.level() >= 2 ? PANEL_BAD : n.level() == 1 ? PANEL_WARN : PANEL_GOOD;
-        }
-        return PANEL_GOOD;
+        InfrastructureManager roads = ui.game.getInfrastructureManager();
+        return BuildScreen.servedTone(CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, roads.getServed()));
     }
 
     /**
-     * Roads on the city overview, in one cell: "162% full · 56% flow" (0.7.29).
+     * Roads on the city overview, in one cell: "62% served · 56% flow" (0.7.29;
+     * "162% full" until 0.7.41).
      *
      * Both figures, always, in whole per cents. It used to show how full the
      * road was while there was room and the flow once there was not, which
      * changed what the row meant at the congestion line without saying so -
-     * and printed up to three decimals ("55.694% flow"). Full is the load the
-     * curve reads over the capacity, flow what every business gets through it;
-     * the Infrastructure tab's Roads page draws the curve that links them.
+     * and printed up to three decimals ("55.694% flow"). Served is the
+     * capacity over the load the curve reads, flow what every business gets
+     * through it; the Infrastructure tab's Roads page draws the curve that
+     * links them.
      */
     String roadSummary() {
         InfrastructureManager roads = ui.game.getInfrastructureManager();
-        return BuildScreen.pct(roads.getUtilisation()) + " full · " + BuildScreen.pct(roads.getThroughputRatio()) + " flow";
+        return CityNeeds.servedPct(roads.getServed()) + " " + CityNeeds.SERVED + " · "
+                + BuildScreen.pct(roads.getThroughputRatio()) + " flow";
     }
 
     /* =====================================================================
@@ -468,10 +469,16 @@ final class SummaryScreen {
      *              city with nothing wrong.
      * @param tip   the row's tooltip, or null for none (0.7.27: HUNGRY's, which
      *              gives the points hunger adds to the sick rate)
+     * @param verdict the level its colour is read at (0.7.41): a served row's
+     *              one verdict (CityNeeds.Need.verdictLevel()), any other row's
+     *              level
      */
-    record Watch(String label, String reading, int level, double near, Runnable go, String tip) {
+    record Watch(String label, String reading, int level, double near, Runnable go, String tip, int verdict) {
         Watch(String label, String reading, int level, double near, Runnable go) {
-            this(label, reading, level, near, go, null);
+            this(label, reading, level, near, go, null, level);
+        }
+        Watch(String label, String reading, int level, double near, Runnable go, String tip) {
+            this(label, reading, level, near, go, tip, level);
         }
     }
 
@@ -509,8 +516,10 @@ final class SummaryScreen {
     java.util.List<Watch> watchAll() {
         java.util.List<Watch> out = new java.util.ArrayList<>();
         for (CityNeeds.Need n : CityNeeds.measure(ui.game, WORDS)) {
+            // Listed and ordered by its level; coloured by its verdict (0.7.41, Need.verdictLevel()),
+            // so a served row reads the colour its gauges do.
             out.add(new Watch(n.label(), n.reading(), n.level(), n.near(),
-                    n.go() == CityNeeds.Go.FINANCES ? financesDoor(n.kind()) : goTo(n.go())));
+                    n.go() == CityNeeds.Go.FINANCES ? financesDoor(n.kind()) : goTo(n.go()), null, n.verdictLevel()));
         }
         return out;
     }
@@ -691,14 +700,15 @@ final class SummaryScreen {
             Watch next = null;
             for (Watch w : all) if (next == null || w.near() > next.near()) next = w;
             if (next != null) {
+                // Green while it is enough; a served row short of 100% is amber though not listed (0.7.41).
                 rows.getChildren().add(summaryRow("NEXT TO WATCH",
                         next.label().toLowerCase() + " · " + next.reading(),
-                        PANEL_GOOD, next.go()));
+                        next.verdict() >= 2 ? PANEL_BAD : next.verdict() == 1 ? PANEL_WARN : PANEL_GOOD, next.go()));
             }
         } else {
             for (Watch w : biting) {
                 rows.getChildren().add(summaryRow(w.label(), w.reading(),
-                        w.level() >= 2 ? PANEL_BAD : PANEL_WARN, w.go()));
+                        w.verdict() >= 2 ? PANEL_BAD : PANEL_WARN, w.go()));
             }
         }
 
@@ -1084,24 +1094,26 @@ final class SummaryScreen {
         /* ================= SCHOOLS ================= */
         Education schools = ui.game.getEducation();
 
+        // Served (0.7.41), in the one verdict - "taught" on lines of its own (.5, .9) until then.
         body.getChildren().add(panelSection("school", "SCHOOLS",
-                String.format("%.0f%% taught", schools.basicCoverage() * 100),
-                schools.basicCoverage() < .5 ? PANEL_BAD
-                        : schools.basicCoverage() < .9 ? PANEL_WARN : PANEL_GOOD,
+                CityNeeds.servedPct(schools.basicCoverage()) + " " + CityNeeds.SERVED,
+                BuildScreen.servedTone(CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE,
+                        schools.basicCoverage())),
                 () -> {
                     VBox b = panelBody();
                     for (EducationType type : EducationType.values()) {
                         if (type == EducationType.NONE) continue;
                         double seats = schools.getEnrolled(type);
                         if (seats <= 0 && !type.isBasic()) continue;
+                        // A stage reads as served, coloured while it is not enough (0.7.41; amber under .9 until then).
+                        CityNeeds.Served stage = CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE,
+                                schools.getCoverage(type));
                         b.getChildren().add(statLine(type.getLabel(),
                                 type.isBasic()
-                                        ? String.format("%.0f%%  %s", 
-                                                schools.getCoverage(type) * 100,
-                                                shortNumber(seats))
+                                        ? CityNeeds.servedPct(stage.share()) + " " + CityNeeds.SERVED
+                                                + "  " + shortNumber(seats)
                                         : shortNumber(seats) + " studying",
-                                type.isBasic() && schools.getCoverage(type) < .9
-                                        ? PANEL_WARN : null));
+                                type.isBasic() && stage.level() > 0 ? BuildScreen.servedTone(stage) : null));
                     }
                     // The bottleneck names a building, which is the only
                     // actionable thing on this section.
@@ -1195,21 +1207,27 @@ final class SummaryScreen {
                 }));
 
         /* ================= RESOURCES ================= */
-        int tight = 0;
-        if (utilities.getProduction() > 0
-                && utilities.getConsumption() / utilities.getProduction() >= .75) tight++;
-        if (utilities.getWaterProduction() > 0
-                && utilities.getWaterConsumption() / utilities.getWaterProduction() >= .75) tight++;
-        if (ui.game.getInfrastructureManager().isStrained()) tight++;
-        final int strained = tight;
+        // How many of the three are not enough, by the one verdict (0.7.41): "1 short · 1 tight", in the
+        // worst one's colour. It counted the loads past .75 and the road while busy, but not congested.
+        int shortOnes = 0, tightOnes = 0, worstLevel = 0;
+        for (CityNeeds.Served s : new CityNeeds.Served[] {
+                CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, utilities.getPowerServed()),
+                CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, utilities.getWaterServed()),
+                CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, ui.game.getInfrastructureManager().getServed())}) {
+            if (s.level() <= 0) continue;
+            if (CityNeeds.SHORT.equals(s.word())) shortOnes++; else tightOnes++;
+            worstLevel = Math.max(worstLevel, s.level());
+        }
+        String notEnough = (shortOnes > 0 ? shortOnes + " " + CityNeeds.SHORT : "")
+                + (shortOnes > 0 && tightOnes > 0 ? " · " : "") + (tightOnes > 0 ? tightOnes + " " + CityNeeds.TIGHT : "");
 
         body.getChildren().add(panelSection("res", "RESOURCES",
-                strained == 0 ? "all clear" : strained + " tight",
-                strained == 0 ? PANEL_GOOD : PANEL_WARN,
+                notEnough.isEmpty() ? "all clear" : notEnough,
+                BuildScreen.verdict(worstLevel),
                 () -> panelBody(
-                        utilityLine("Energy",
+                        utilityLine("Energy", utilities.getPowerServed(),
                                 utilities.getConsumption(), utilities.getProduction()),
-                        utilityLine("Water",
+                        utilityLine("Water", utilities.getWaterServed(),
                                 utilities.getWaterConsumption(), utilities.getWaterProduction()),
                         roadLine(),
                         statLine("Materials", String.format("%,d",
@@ -1387,13 +1405,14 @@ final class SummaryScreen {
         if (ui.game.getInfrastructureManager().isCongested()) {
             alerts.getChildren().add(roadLine());
         }
+        // Under 100% served (0.7.41: it read "over capacity").
         if (utilities.getProduction() > 0
                 && utilities.getConsumption() > utilities.getProduction()) {
-            alerts.getChildren().add(statLine("Power", "over capacity", PANEL_BAD));
+            alerts.getChildren().add(statLine("Power", CityNeeds.servedPct(utilities.getPowerServed()) + " " + CityNeeds.SERVED, PANEL_BAD));
         }
         if (utilities.getWaterProduction() > 0
                 && utilities.getWaterConsumption() > utilities.getWaterProduction()) {
-            alerts.getChildren().add(statLine("Water", "over capacity", PANEL_BAD));
+            alerts.getChildren().add(statLine("Water", CityNeeds.servedPct(utilities.getWaterServed()) + " " + CityNeeds.SERVED, PANEL_BAD));
         }
         // NOBODY CAN BREAK GROUND (0.7.26): NEEDS YOU's GROUND row at red, none
         // free. It was "95% used", which a city sits at for centuries with
@@ -1437,16 +1456,21 @@ final class SummaryScreen {
      * while treating nobody, and this is the row that says so. The percentage
      * is the model's own, Healthcare.getCoverage() (2026-09-19): the places
      * over the people, less whoever the fee turned away, so on a dear month
-     * it reads below the two numbers beside it, which is the point.
+     * it reads below the two numbers beside it, which is the point. Read as
+     * served since 0.7.41, coloured by the one verdict on it (by lines of its
+     * own, .5 and .9, until then) - and plain while it is enough.
      */
     HBox careLine(String label, CareType care, double needed, double[] staffing) {
 
         double places = ui.game.getBuildingManager().getStaffedCareCapacity(care, staffing);
         double cover = ui.game.getHealthcare().getCoverage(care);
+        CityNeeds.Served s = CityNeeds.verdict(CityNeeds.Kind.CARE, care, cover);
 
-        return statLine(label, String.format("%.0f%%  %s/%s", cover * 100,
-                        shortNumber(places), shortNumber(needed)),
-                cover < .5 ? PANEL_BAD : cover < .9 ? PANEL_WARN : null);
+        HBox row = statLine(label, CityNeeds.servedPct(cover) + " " + CityNeeds.SERVED + "  "
+                        + shortNumber(places) + "/" + shortNumber(needed),
+                s.level() > 0 ? BuildScreen.servedTone(s) : null);
+        ((Label) row.getChildren().get(2)).setMinWidth(Region.USE_PREF_SIZE);
+        return row;
     }
 
     /** Keeps building names inside the panel's fixed-width column. */

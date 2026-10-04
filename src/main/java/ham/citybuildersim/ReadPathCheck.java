@@ -1004,6 +1004,28 @@ public class ReadPathCheck {
         BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3, template(g, "Water Treatment Plant"), 1));
         // ...and the overview's suggestions added up (0.7.38)
         BuildAdvice.quoteTotal(BuildAdvice.suggest(g));
+        // ...and every gauge as served, with its one verdict (0.7.41): the owners' getters, each row's,
+        // each measure's now and with what is on site, each suggestion's after, the tile's unlisted row
+        s.getUtilitiesHandler().getPowerServed();
+        s.getUtilitiesHandler().getWaterServed();
+        g.getInfrastructureManager().getServed();
+        g.getInfrastructureManager().getTransitServed();
+        InfrastructureManager.throughputAtServed(g.getInfrastructureManager().getServed());
+        java.util.List<CityNeeds.Need> served = CityNeeds.measure(g, CityNeeds.PLAIN);
+        for (CityNeeds.Need n : served) { n.served(); n.verdictLevel(); }
+        for (CityNeeds.Go go : CityNeeds.Go.values()) CityNeeds.worstUnlisted(served, go);
+        for (CareType care : new CareType[] {CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR}) {
+            CityNeeds.careServed(g, care, g.getCohorts(), g.getPopulationManager().getJobFillRate());
+        }
+        for (String category : new String[] {BuildAdvice.UTILITIES, BuildAdvice.ROADS, BuildAdvice.HEALTHCARE,
+                BuildAdvice.EDUCATION, BuildAdvice.SAFETY}) {
+            for (BuildAdvice.Measure m : BuildAdvice.measuresOf(category)) {
+                BuildAdvice.verdict(g, m, Map.of());
+                BuildAdvice.verdict(g, m, BuildAdvice.onSite(g, m));
+                BuildAdvice.servedLines(m);
+            }
+        }
+        for (BuildAdvice.Suggestion sg : BuildAdvice.suggest(g)) BuildAdvice.verdictAfter(g, sg);
         // the fare's dial card (0.7.38): its rows at the city's fare, at none and at the dearest
         for (double fare : new double[] {g.getEconomyManager().getTaxPolicy().getTransitFare(), 0, TaxPolicy.MAX_TRANSIT_FARE}) {
             g.getInfrastructureManager().ridersAt(fare);
@@ -1011,10 +1033,25 @@ public class ReadPathCheck {
             g.getInfrastructureManager().backOnTheRoadAt(fare);
             TaxPolicy.monthlyFareAt(fare);
         }
-        // ...and what the build screen's funding page is sized to (0.7.10),
-        // for an order the city can pay for and one it cannot
+        // ...and what the build screen's funding page was sized to from 0.7.10
+        // (one order's gap), for an order the city can pay for and one it cannot
         g.buildFundingGap(template(g, "House"), 1);
         g.buildFundingGap(template(g, "Water Treatment Plant"), 1_000);
+        // ...and a run of orders, which its funding page is sized to since 0.7.40
+        Map<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
+        run.put(template(g, "House"), 3);
+        run.put(template(g, "Water Treatment Plant"), 1_000);
+        g.buildRunInvoice(run);
+        g.buildFundingGap(run);
+        g.buildRunAhead(run);
+        g.buildRunStop(run);
+        g.cashShortfall();
+        // the borrow page's presets (0.7.40)
+        g.minimumIssueSizeUsd();
+        g.getDebtManager().dueWithin(12);
+        g.getDebtManager().dueAbroadWithinUsd(12);
+        g.monthOfSpending();
+        g.getDebtManager().annualCapacityRevenue();
 
         // land, ore and every market
         g.getLandManager().getAvailableSqFt();

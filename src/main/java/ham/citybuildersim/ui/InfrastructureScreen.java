@@ -81,16 +81,19 @@ final class InfrastructureScreen {
        is a policy and has no other home.
 
        ONE ROAD, ONE VERDICT, ONE WORDING (0.7.29). The road has two figures
-       and both are right: how FULL it is (the load the curve reads, over the
-       capacity) and how much it lets through, its FLOW (1 up to free flow,
-       then free flow over the use, floored). They are written as a pair in
-       whole per cents - "162% full · 56% flow" - here, in the drawer, on
-       Build, on Services' road card and in NEEDS YOU, and coloured by one
-       judge: NEEDS YOU's ROADS row, which is amber while road sites are on
-       the way. Nothing else on this tab takes a verdict colour except the
-       railway's and the lorries' own verdicts - sets or lorries short, a
-       railway too big for its city or losing money, every sector's lorries
-       in hand; the streams, the money and the modes are categories.
+       and both are right: how much of its traffic it SERVES (the capacity
+       over the load the curve reads - since 0.7.41, Jerus's one rule for the
+       gauges; how FULL, the same fraction the other way up, until then) and
+       how much it lets through, its FLOW (1 up to free flow, then free flow
+       over the use, floored). They are written as a pair in whole per cents
+       - "62% served · 56% flow" - here, in the drawer, on Build, on Services'
+       road card and in NEEDS YOU, and coloured by one judge: the one verdict
+       on what it serves (CityNeeds.verdict(); NEEDS YOU's ROADS row's level,
+       amber while road sites were on the way, until 0.7.41). Nothing else on
+       this tab takes a verdict colour except the railway's and the lorries'
+       own verdicts - sets or lorries short, a railway too big for its city
+       or losing money, every sector's lorries in hand; the streams, the
+       money and the modes are categories.
        ===================================================================== */
 
     /** The tab's four pages, in the strip's order; the first is the one it starts on, and falls back to for a page it does not know. */
@@ -111,8 +114,8 @@ final class InfrastructureScreen {
     /** How much of the stage the fixed frame takes above the page's scroller: the head, the five figures with FLOW's change, the pages, and their gaps (0.7.29). */
     static final double FRAME_CHROME = 232;
 
-    /** The flow curve's x scale: the use of the road from nothing to this, fixed so the dot's motion reads month to month; the floor starts at FREE_FLOW / MIN_THROUGHPUT, 257%. */
-    static final double CURVE_MAX = 2.6;
+    /** The flow curve's x scale: what the road serves, from nothing to this (0.7.41; its use, to 260%, until then), fixed so the dot's motion reads month to month; the floor ends at MIN_THROUGHPUT / FREE_FLOW, 39%, and a road serving more sits at the edge with a "›". */
+    static final double CURVE_MAX = 2.0;
 
     /** The three streams' colours - categories, never verdicts: commuters the people teal, goods the business violet, bulk the ore sand. */
     static String streamColour(Traffic s) {
@@ -188,9 +191,10 @@ final class InfrastructureScreen {
     /* ---------------------------------------------------------------------
        THE FIVE FIGURES (0.7.29; four until then)
 
-       Both road figures first - FULL was the Roads page's meter and is the
-       figure NEEDS YOU judges; FLOW is the one that multiplies every business
-       - in that row's colour, the only verdict in the strip. Then who rides,
+       Both road figures first - SERVED (FULL until 0.7.41) was the Roads
+       page's meter and is the figure NEEDS YOU's row reads; FLOW is the one
+       that multiplies every business - in the road's verdict colour, the
+       only verdict in the strip. Then who rides,
        who drives and what the railway carries, plain: no line judges them,
        and ON TRANSIT was green as a category. Each opens its page; FLOW
        carries its change on last month, from History's road throughput.
@@ -200,14 +204,16 @@ final class InfrastructureScreen {
 
         InfrastructureManager roads = ui.game.getInfrastructureManager();
         ham.citybuildersim.sectors.Rail rail = ui.game.getSectors().rail();
-        String tone = roadTone(all);
+        CityNeeds.Served served = roadServed(roads);
+        String tone = BuildScreen.servedTone(served);
 
         double commuters = roads.getLoad(Traffic.COMMUTERS);
         double owned = roads.getCarOwnership();
         double fare = ui.game.getEconomyManager().getTaxPolicy().getTransitFare();
 
-        VBox full = limitCell("FULL", pct(roads.getUtilisation()), "of the road's capacity", tone,
-                "The road: how full it is, and what it lets through", () -> open("Roads"));
+        VBox full = limitCell("SERVED", CityNeeds.servedPct(served.share()),
+                BuildScreen.servedWords(served) + ": its capacity over the trips on it", tone,
+                "The road: how much of its traffic it serves, and what it lets through", () -> open("Roads"));
         VBox flow = limitCell("FLOW", pct(roads.getThroughputRatio()), flowWords(roads), tone,
                 "The road: what every business gets through it", () -> open("Roads"));
         String change = flowChange();
@@ -256,16 +262,9 @@ final class InfrastructureScreen {
         return (d > 0 ? "▲ " : "▼ ") + shown + " on last month";
     }
 
-    /** NEEDS YOU's ROADS row - the road's one judge (0.7.29) - or null. */
-    static CityNeeds.Need roadNeed(List<CityNeeds.Need> all) {
-        for (CityNeeds.Need n : all) if (n.kind() == CityNeeds.Kind.ROADS) return n;
-        return null;
-    }
-
-    /** The road's verdict colour: its NEEDS YOU row's, amber while road sites are on the way. */
-    static String roadTone(List<CityNeeds.Need> all) {
-        CityNeeds.Need n = roadNeed(all);
-        return n == null ? Palette.TEXT_HEAD : BuildScreen.verdict(n.level());
+    /** What the road serves and the one verdict on it (0.7.41) - the road's one judge, as every road gauge reads it; its colour was NEEDS YOU's ROADS row's level, amber while road sites were on the way, until then. */
+    static CityNeeds.Served roadServed(InfrastructureManager roads) {
+        return CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, roads.getServed());
     }
 
     /** A share as a whole per cent, as Build's rings write it. */
@@ -306,7 +305,7 @@ final class InfrastructureScreen {
         return row;
     }
 
-    /** "162% full → 56% flow": the two figures at 28 px, the words between them smaller. */
+    /** "62% served → 56% flow" ("162% full" until 0.7.41): the two figures at 28 px, the words between them smaller. */
     static javafx.scene.layout.FlowPane pairLine(String a, String aTone, String aWords, String b, String bTone, String bWords) {
         javafx.scene.layout.FlowPane line = new javafx.scene.layout.FlowPane(6, 0);
         line.setPrefWrapLength(280);
@@ -388,11 +387,13 @@ final class InfrastructureScreen {
 
     /** The hero's left: THE ROAD, both figures as a pair, what the flow costs, the status chip, the curve and what is on site. */
     VBox roadHeroLeft(InfrastructureManager roads, List<CityNeeds.Need> all) {
-        String tone = roadTone(all);
-        double use = roads.getUtilisation(), flow = roads.getThroughputRatio();
+        CityNeeds.Served served = roadServed(roads);
+        String tone = BuildScreen.servedTone(served);
+        double flow = roads.getThroughputRatio();
 
         VBox left = new VBox(6, caption("THE ROAD", null),
-                pairLine(pct(use), tone, "full  →", pct(flow), Palette.TEXT_HEAD, "flow"));
+                pairLine(CityNeeds.servedPct(served.share()), tone, BuildScreen.servedWords(served) + "  →",
+                        pct(flow), Palette.TEXT_HEAD, "flow"));
         left.getChildren().add(infoLine(flow < 1
                         ? "every shop, plant and site works at " + pct(flow) + " of its output"
                         : "flowing freely: every shop, plant and site works at its full output",
@@ -400,11 +401,11 @@ final class InfrastructureScreen {
                 Palette.SIZE_BODY, Palette.TEXT_LABEL, 340));
         if (!"Clear".equals(roads.getStatus())) left.getChildren().add(chip(roads.getStatus().toUpperCase(), tone));
 
-        // The hollow dot: where the road sites on site would leave it, by Build's own figure.
+        // The hollow dot: where the road sites on site would leave it, by Build's own figure - served (0.7.41).
         BuildAdvice.Measure m = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
         BuildScreen.RingWords ring = ui.buildScreen.ringWords(m, all);
-        double then = ring.units() > 0 ? BuildAdvice.figure(ui.game, m, BuildAdvice.onSite(ui.game, m)) : Double.NaN;
-        left.getChildren().add(new FlowCurve(use, then, tone));
+        double then = ring.units() > 0 ? BuildAdvice.served(ui.game, m, BuildAdvice.onSite(ui.game, m)) : Double.NaN;
+        left.getChildren().add(new FlowCurve(served.share(), then, tone));
         if (ring.units() > 0) {
             HBox site = new HBox(6, icon(Icons.CRANE, Palette.BUILDING, 13),
                     words(ring.onSite() + " · the hollow dot is where they leave it", Palette.SIZE_LABEL, Palette.BUILDING));
@@ -414,14 +415,16 @@ final class InfrastructureScreen {
         return left;
     }
 
-    /** The flow's (i): the old page's paragraph under its big figure. */
+    /** The flow's (i): the old page's paragraph under its big figure, said in served since 0.7.41. */
     static final String FLOW_INFO = String.format("Every business in the city multiplies its output by its "
-            + "flow, and so does construction. It is 100%% until the road is at %.0f%% of capacity and then falls "
-            + "away - traffic does not degrade in a straight line, which is why a road that coped last month can "
+            + "flow, and so does construction. It is 100%% while the road serves %.0f%% of its traffic or more - "
+            + "free flow ends at %.0f%% of its capacity - and then falls away - traffic does not degrade in a "
+            + "straight line, which is why a road that coped last month can "
             + "gridlock after one more office opens. It never falls under %.0f%%: a gridlocked city still moves. "
             + "A business loses less of it while the city rides transit: a commuter on a tram is not in the jam.\n\n"
-            + "How full the road is and how much it lets through are two measures of one state: the flow is "
-            + "%.0f%% over how full, past that line. The curve under this is the model's own.",
+            + "What the road serves and how much it lets through are two measures of one state: under that line "
+            + "the flow is %.0f%% of what it serves. The curve under this is the model's own.",
+            CityNeeds.servedLines(CityNeeds.Kind.ROADS, CareType.NONE)[1] * 100,
             InfrastructureManager.FREE_FLOW * 100, InfrastructureManager.MIN_THROUGHPUT * 100,
             InfrastructureManager.FREE_FLOW * 100);
 
@@ -631,13 +634,15 @@ final class InfrastructureScreen {
     }
 
     /**
-     * The flow curve (0.7.29): the road's flow against how full it is, from
-     * nothing to CURVE_MAX - the model's own curve (throughputAt()) as a line
-     * over NEEDS YOU's three bands along its foot (green under STRAINED,
-     * amber to FREE_FLOW, red past it) - the city's dot on it with its two
-     * figures dropped to the axes, and, with road sites on site, a hollow
-     * pink dot where they would leave it. A dot past the scale sits at its
-     * edge with a "›".
+     * The flow curve (0.7.29): the road's flow against what it serves (0.7.41;
+     * against how full it was until then), from nothing to CURVE_MAX - the
+     * model's own curve (InfrastructureManager.throughputAtServed()) as a line
+     * over the one verdict's three bands along its foot (red at or under
+     * 1/FREE_FLOW served, amber to 1/STRAINED, green past it - NEEDS YOU's
+     * lines read the other way up), so better is to the right - the city's
+     * dot on it with its two figures dropped to the axes, and, with road sites
+     * on site, a hollow pink dot where they would leave it. A dot past the
+     * scale sits at its edge with a "›".
      */
     static final class FlowCurve extends javafx.scene.layout.Pane {
         /** The plot's size, and the room for the axes' figures at its left and under it. */
@@ -646,10 +651,11 @@ final class InfrastructureScreen {
         /** Where the dot's drops meet the axes. */
         private final double dotX, dotY;
 
-        FlowCurve(double use, double then, String tone) {
-            double u = Double.isFinite(use) ? Math.max(0, use) : 0;
-            double f = InfrastructureManager.throughputAt(u);
+        FlowCurve(double served, double then, String tone) {
+            double u = Double.isNaN(served) ? 0 : Math.max(0, served);
+            double f = InfrastructureManager.throughputAtServed(u);
             double span = 1 - InfrastructureManager.MIN_THROUGHPUT;
+            double[] lines = CityNeeds.servedLines(CityNeeds.Kind.ROADS, CareType.NONE);
 
             javafx.scene.shape.Line xAxis = new javafx.scene.shape.Line(LEFT, TOP + H + .5, LEFT + W, TOP + H + .5);
             javafx.scene.shape.Line yAxis = new javafx.scene.shape.Line(LEFT - .5, TOP, LEFT - .5, TOP + H);
@@ -658,19 +664,20 @@ final class InfrastructureScreen {
             }
             getChildren().addAll(xAxis, yAxis);
 
-            // NEEDS YOU's lines along the foot, as the band meter drew them (0.30).
-            double[] cuts = {0, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW, CURVE_MAX};
-            String[] tones = {Palette.GOOD, Palette.WARN, Palette.BAD};
+            // The one verdict's lines along the foot (0.7.41; NEEDS YOU's on the load, as the band meter drew them, since 0.30).
+            double[] cuts = {0, lines[1], lines[0], CURVE_MAX};
+            String[] tones = {Palette.BAD, Palette.WARN, Palette.GOOD};
             for (int k = 0; k < 3; k++) {
                 Region band = new Region();
                 band.setStyle("-fx-background-color: " + tint(tones[k], .30) + ";");
                 band.relocate(x(cuts[k]), TOP + H - 5);
                 band.setPrefSize(x(cuts[k + 1]) - x(cuts[k]), 5);
                 band.resize(x(cuts[k + 1]) - x(cuts[k]), 5);
-                Tooltip.install(band, new Tooltip(k == 0 ? "under " + pct(InfrastructureManager.STRAINED) + ": clear"
-                        : k == 1 ? pct(InfrastructureManager.STRAINED) + " to " + pct(InfrastructureManager.FREE_FLOW)
+                Tooltip.install(band, new Tooltip(k == 0 ? CityNeeds.servedPct(lines[1]) + " " + CityNeeds.SERVED
+                                   + " or less: congested, the flow falls"
+                        : k == 1 ? CityNeeds.servedPct(lines[1]) + " to " + CityNeeds.servedPct(lines[0])
                                    + ": NEEDS YOU lists the road"
-                        : "past " + pct(InfrastructureManager.FREE_FLOW) + ": congested, the flow falls"));
+                        : "past " + CityNeeds.servedPct(lines[0]) + ": clear"));
                 getChildren().add(band);
             }
 
@@ -678,10 +685,11 @@ final class InfrastructureScreen {
             int n = 130;
             for (int k = 0; k <= n; k++) {
                 double at = CURVE_MAX * k / n;
-                if (k > 0 && CURVE_MAX * (k - 1) / n < InfrastructureManager.FREE_FLOW && at > InfrastructureManager.FREE_FLOW) {
-                    curve.getPoints().addAll(x(InfrastructureManager.FREE_FLOW), y(1, span));
+                // The knee where free flow ends, drawn on the line rather than between two samples.
+                if (k > 0 && CURVE_MAX * (k - 1) / n < lines[1] && at > lines[1]) {
+                    curve.getPoints().addAll(x(lines[1]), y(1, span));
                 }
-                curve.getPoints().addAll(x(at), y(InfrastructureManager.throughputAt(at), span));
+                curve.getPoints().addAll(x(at), y(InfrastructureManager.throughputAtServed(at), span));
             }
             curve.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
             curve.setStrokeWidth(2);
@@ -701,15 +709,15 @@ final class InfrastructureScreen {
             }
             getChildren().addAll(down, across);
 
-            if (Double.isFinite(then) && Math.abs(then - u) > .005) {
+            if (!Double.isNaN(then) && Math.abs(Math.min(then, CURVE_MAX) - Math.min(u, CURVE_MAX)) > .005) {
                 double t = Math.max(0, then);
                 javafx.scene.shape.Circle hollow = new javafx.scene.shape.Circle(x(Math.min(t, CURVE_MAX)),
-                        y(InfrastructureManager.throughputAt(t), span), DOT);
+                        y(InfrastructureManager.throughputAtServed(t), span), DOT);
                 hollow.setFill(null);
                 hollow.setStroke(javafx.scene.paint.Color.web(Palette.BUILDING));
                 hollow.setStrokeWidth(1.5);
-                Tooltip.install(hollow, new Tooltip("With the road sites on site finished: " + pct(t) + " full · "
-                        + pct(InfrastructureManager.throughputAt(t)) + " flow"));
+                Tooltip.install(hollow, new Tooltip("With the road sites on site finished: " + CityNeeds.servedPct(t) + " "
+                        + CityNeeds.SERVED + " · " + pct(InfrastructureManager.throughputAtServed(t)) + " flow"));
                 getChildren().add(hollow);
             }
 
@@ -717,10 +725,10 @@ final class InfrastructureScreen {
             dot.setFill(javafx.scene.paint.Color.web(Palette.TEXT_HEAD));
             dot.setStroke(javafx.scene.paint.Color.web(tone));
             dot.setStrokeWidth(2);
-            Tooltip.install(dot, new Tooltip("Today: " + pct(u) + " full · " + pct(f) + " flow"));
+            Tooltip.install(dot, new Tooltip("Today: " + CityNeeds.servedPct(u) + " " + CityNeeds.SERVED + " · " + pct(f) + " flow"));
             getChildren().add(dot);
 
-            useLabel = label(pct(u), Palette.TEXT_HEAD);
+            useLabel = label(CityNeeds.servedPct(u), Palette.TEXT_HEAD);
             flowLabel = label(pct(f), Palette.TEXT_HEAD);
             xLow = label("0%", Palette.TEXT_MUTED);
             xHigh = label(pct(CURVE_MAX), Palette.TEXT_MUTED);
@@ -744,7 +752,7 @@ final class InfrastructureScreen {
             return l;
         }
 
-        private static double x(double use) { return LEFT + W * Math.max(0, Math.min(CURVE_MAX, use)) / CURVE_MAX; }
+        private static double x(double served) { return LEFT + W * Math.max(0, Math.min(CURVE_MAX, served)) / CURVE_MAX; }
 
         private static double y(double flow, double span) {
             return TOP + H * (1 - flow) / span;
@@ -891,8 +899,9 @@ final class InfrastructureScreen {
 
         VBox box = new VBox(8, caption("FROM COMMUTERS TO RIDERS", null), scaleRows(rows, scale, List.of(), 230, 84, 14));
         HBox ring = new HBox(Palette.GAP_LOOSE,
-                words("Build's transit ring reads " + pct(roads.getTransitCover()) + ": room on the stock for "
-                        + pct(roads.getTransitCover()) + " of commuters. " + pct(commuters > 0 ? roads.getTransitRiders() / commuters : 0)
+                words("Build's transit ring reads " + CityNeeds.servedPct(roads.getTransitServed()) + " " + CityNeeds.SERVED
+                        + ": room on the stock for " + CityNeeds.servedPct(roads.getTransitServed()) + " of commuters. "
+                        + pct(commuters > 0 ? roads.getTransitRiders() / commuters : 0)
                         + " ride.", Palette.SIZE_LABEL, Palette.TEXT_MUTED),
                 doorPill("Build transit", Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openOn(transit)));
         ring.setAlignment(Pos.CENTER_LEFT);

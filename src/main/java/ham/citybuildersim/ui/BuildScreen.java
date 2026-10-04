@@ -575,7 +575,8 @@ final class BuildScreen {
            (orderPress()).
        The figures are BuildCard's, which BuildCardCheck holds; this keeps the
        words and the layout. The (i) and its cover, the stepper, the reprice
-       in place, the keyboard and placeOrder() are the 0.7.21 card's.
+       in place, the keyboard and placing the order are the 0.7.21 card's
+       (the order placed as a run of one since 0.7.40, placeRun()).
        ===================================================================== */
 
     /** Which cards are showing their stats, by building name. */
@@ -987,8 +988,10 @@ final class BuildScreen {
      * how many" - and a press sets the count to one and prices it; it never
      * orders from 0, and the second click of a double-click is no press
      * (Pieces.ActionButton), so a double-click on it cannot become an order.
-     * A press with a count places the order as before (placeOrder()): the
-     * refusals' pages and the credit page are the same doors.
+     * A press with a count places the order - since 0.7.40 a run of one
+     * (placeRun()), taken off the card once it is placed: the refusals'
+     * pages are the same doors, and short of cash the funding page, Build ›
+     * Funding (showBuildFunding()), where the credit page was.
      *
      * REPRICED IN PLACE, not by redrawing the screen. Every press used to be
      * a screen change; here it is a few labels. That matters for more than
@@ -1084,8 +1087,8 @@ final class BuildScreen {
                 reprice.run();
                 return;
             }
-            orderQty.remove(key);
-            placeOrder(template, n, page, types);
+            // A run of one, off this card once placed (0.7.40): refused or not yet funded, it stays on it.
+            placeRun(runOf(template, n), new RunFrom(page, types, true));
         });
         // The shortcut, said on the button it stands in for.
         Tooltip keys = new Tooltip("Enter builds every pending order on this page; Backspace clears them");
@@ -1103,7 +1106,8 @@ final class BuildScreen {
      * the quote line reads (BuildCard.verdict(), Game.quoteBuild()): with
      * none chosen, "Build" and "choose how many"; ready, "Build 3 ·
      * $37.5M", the count and the all-in total; short of cash, "Build 3 on
-     * credit · $37.5M" - the press opens the credit page, as it did; and
+     * credit · $37.5M" - the press opens Build › Funding (0.7.40; the credit
+     * page until then); and
      * where buildStack() would refuse - no deposit, nobody licensed, short
      * of land - why, on the button, and the way out under it, which the
      * press's page offers. A pure read: no node, so a probe reads it.
@@ -1284,33 +1288,18 @@ final class BuildScreen {
      *
      * Lifted out of the old quantity screen unchanged: buildStack is the method
      * that decides, and the four refusals it can return each have a screen
-     * that explains the refusal and offers the way out of it. The card is a new
-     * way to reach this; it is not a new way to buy.
+     * that explains the refusal and offers the way out of it. The card was a new
+     * way to reach this; it was not a new way to buy.
      *
      * True when it was built and the page is drawn again; false when the city
-     * said no and the refusal's screen is up instead - which is where Enter's
-     * run of orders stops (buildPending).
+     * said no and the refusal's screen is up instead, or the funding page.
+     * Since 0.7.40 a run of one (placeRun(), ONE FUNDING PAGE FOR THE RUN),
+     * and a suggestion's Build is its one caller: a card's own Build, the
+     * order bar and Enter hand placeRun() their orders themselves.
      */
     boolean placeOrder(BuildingsTemplate template, int quantity,
                             String menuTitle, EnumSet<BuildingType> categories) {
-
-        // The quote it will be charged on, for the receipt's sales tax (see noteReceipt).
-        Game.BuildQuote quote = ui.game.quoteBuild(template, quantity);
-        Game.BuildResult result = ui.game.buildStack(template, quantity, false);
-
-        if (result == Game.BuildResult.SUCCESS) {
-            noteReceipt(quote);
-            handleAllBuildingMenus(menuTitle, categories);
-        } else if (result == Game.BuildResult.NEEDS_FUNDING) {
-            showQuickDebtMenu(template, quantity, menuTitle, categories);
-        } else if (result == Game.BuildResult.NO_LAND) {
-            showNoLandMenu(template, quantity, menuTitle, categories);
-        } else if (result == Game.BuildResult.NO_DEPOSIT) {
-            showNoDepositMenu(template, quantity, menuTitle, categories);
-        } else if (result == Game.BuildResult.NO_LICENCE) {
-            showNoLicenceMenu(template, quantity, menuTitle, categories);
-        }
-        return result == Game.BuildResult.SUCCESS;
+        return placeRun(runOf(template, quantity), new RunFrom(menuTitle, categories, false));
     }
 
     /* ---------------------------- the keyboard ---------------------------- */
@@ -1349,30 +1338,24 @@ final class BuildScreen {
      * Every pending order on the page, placed as its own Build button would
      * place it, in the page's order.
      *
-     * Through placeOrder, one card at a time, so each order meets the city as
-     * the one before it left it: what the first spent is not there for the
-     * second. The first refusal stops the run - placeOrder has put up the
-     * screen that explains it and offers the way out, and the orders after it
-     * stay on their cards for when the player comes back. True when there was
-     * anything to build, which is when the key is spent.
+     * One run since 0.7.40 (placeRun()): funded whole when it is more than
+     * the cash, then placed one card at a time, so each order meets the city
+     * as the one before it left it - what the first spent is not there for
+     * the second. The first refusal stops the run - its screen explains it
+     * and offers the way out - and every order not placed stays on its card
+     * for when the player comes back (each card was emptied before it was
+     * placed until 0.7.40, so the refused one lost its count). True when
+     * there was anything to build, which is when the key is spent.
      */
     boolean buildPending() {
-        // A copy, and the page remembered: every success draws the page
-        // again, and pageCards with it.
-        List<PageCard> page = new ArrayList<>(pageCards);
-        String title = pageTitle;
-        EnumSet<BuildingType> categories = pageCategories;
-
-        boolean any = false;
-        for (PageCard card : page) {
-            String key = card.template().getName();
-            int n = orderQty.getOrDefault(key, 0);
-            if (n <= 0) continue;
-            any = true;
-            orderQty.remove(key);
-            if (!placeOrder(card.template(), n, title, categories)) break;
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
+        for (PageCard card : pageCards) {
+            int n = orderQty.getOrDefault(card.template().getName(), 0);
+            if (n > 0) run.putIfAbsent(card.template(), n);
         }
-        return any;
+        if (run.isEmpty()) return false;
+        placeRun(run, new RunFrom(pageTitle, pageCategories, true));
+        return true;
     }
 
     /**
@@ -1524,29 +1507,35 @@ final class BuildScreen {
      */
     record Shown(String figure, double arc, String caption, String detail) { }
 
-    /** A need, as a ring shows it: the figure NEEDS YOU judged, worded for the ring. */
+    /**
+     * A need, as a ring shows it: the figure NEEDS YOU judged, worded for the
+     * ring. A SERVED ROW (0.7.41) shows what it serves - the row's own share
+     * (Need.served()), its arc that share held to a whole ring, and its
+     * name, "served" and the verdict's word: "general care served, short".
+     */
     Shown shown(CityNeeds.Need n) {
         BuildAdvice.Measure m = BuildAdvice.measureOf(n);
         double[] sd = m == null ? new double[] {0, 0} : BuildAdvice.supplyDemand(ui.game, m, java.util.Map.of());
         double share = sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1;
         double v = n.value();
+        CityNeeds.Served s = n.served();
+        String said = s == null || m == null ? null : m.label().toLowerCase() + " " + servedWords(s);
         switch (n.kind()) {
             case POWER: case WATER: {
                 boolean power = n.kind() == CityNeeds.Kind.POWER;
                 double gap = sd[1] - sd[0];
                 // Power in kW scaled, a rate (0.7.28: "units short a month" until then).
-                return new Shown(pct(v), Math.min(1, v),
-                        power ? "of the grid in use" : "of the water supply in use",
+                return new Shown(CityNeeds.servedPct(s.share()), arc(s), said,
                         power ? (gap > 0 ? power(gap) + " short" : power(-gap) + " spare")
                               : gap > 0 ? shortNumber(gap) + " units short a month" : shortNumber(-gap) + " units spare");
             }
             case ROADS:
-                // The road's pair (0.7.29): "162%" "full · 56% flow", as every screen writes it.
-                return new Shown(pct(v), Math.min(1, v),
-                        "full · " + pct(ui.game.getInfrastructureManager().getThroughputRatio()) + " flow",
+                // The road's pair (0.7.29), served since 0.7.41: "62%" "road capacity served, short · 56% flow".
+                return new Shown(CityNeeds.servedPct(s.share()), arc(s),
+                        said + " · " + pct(ui.game.getInfrastructureManager().getThroughputRatio()) + " flow",
                         shortNumber(sd[1]) + " trips on " + shortNumber(sd[0]) + " of road");
             case CARE:
-                return new Shown(pct(v), v, careCaption(n.care()),
+                return new Shown(CityNeeds.servedPct(s.share()), arc(s), said,
                         sd[1] - sd[0] >= .5 ? people(sd[1] - sd[0]) + " people without" : "everyone has a place");
             case DEAD:
                 return new Shown(people(v), share, "dead with nowhere to go",
@@ -1557,11 +1546,11 @@ final class BuildScreen {
                         shortNumber(Healthcare.plotsRemaining(ui.game.getBuildingManager().getCareCapacity(CareType.BURIAL),
                                 ui.game.getHealthcare().getPlotsUsed())) + " plots free");
             case BASIC_SCHOOLS:
-                return new Shown(pct(v), v, n.school().getLabel().toLowerCase() + " taught",
+                return new Shown(CityNeeds.servedPct(s.share()), arc(s), said,
                         sd[1] - sd[0] >= .5 ? "short " + people(sd[1] - sd[0]) + " places" : "a place for every child");
             case HIGHER_SCHOOL:
-                return new Shown(pct(share), share,
-                        "of would-be " + n.school().getLabel().toLowerCase().replace(" school", "") + " students seated",
+                // Seats over who would come, served (0.7.41): it read "of would-be students seated", held to 100%.
+                return new Shown(CityNeeds.servedPct(s.share()), arc(s), said,
                         people(sd[0]) + " seats · " + people(sd[1]) + " would come");
             case CRIME:
                 return new Shown(String.format("%.1f×", v), v > 0 ? Math.min(1, 1 / v) : 1, "Canada's crime rate",
@@ -1576,13 +1565,20 @@ final class BuildScreen {
     /** A share as a whole per cent; a dash for one that is not a number (a network with nothing supplying it). */
     static String pct(double share) { return Double.isFinite(share) ? String.format("%.0f%%", share * 100) : "—"; }
 
-    String careCaption(CareType care) {
-        switch (care) {
-            case GENERAL:   return "of the city has a doctor";
-            case CHILDCARE: return "of children have a place";
-            case SENIOR:    return "of seniors are cared for";
-            default:        return "covered";
-        }
+    /** A served gauge's words after its figure (0.7.41), the same on every screen: "served, short", "served, tight", "served, enough" - or "served" alone where no line judges it (transit). */
+    static String servedWords(CityNeeds.Served s) {
+        return s == null || s.word() == null ? CityNeeds.SERVED : CityNeeds.SERVED + ", " + s.word();
+    }
+
+    /** ...its colour: the one verdict's, or the city's blue where no line judges it. */
+    static String servedTone(CityNeeds.Served s) {
+        return verdict(s == null ? -1 : s.level());
+    }
+
+    /** ...and its ring's arc: the share held to a whole ring, so a ring is full when the need is met (0.7.41: a load's ring was full when it was over). */
+    static double arc(CityNeeds.Served s) {
+        double v = s == null ? 0 : s.share();
+        return Double.isNaN(v) ? 0 : Math.max(0, Math.min(1, v));
     }
 
     /** A category with nothing near its line: a few words, and the figure nearest one. */
@@ -1632,10 +1628,18 @@ final class BuildScreen {
         return line;
     }
 
-    /** One of the city's five: its worst need as a ring, a caption, a line, and what is on site. */
+    /**
+     * One of the city's five: its worst need as a ring, a caption, a line, and
+     * what is on site. NOTHING LISTED IS NOT ALWAYS ENOUGH (0.7.41): with no
+     * NEEDS YOU row of its own, a tile shows a served row that is still short
+     * or tight (CityNeeds.worstUnlisted()) before it shows its tick - Jerus:
+     * "shows check no issues yet if you click general care is at 90%". The
+     * ring's colour is the row's verdict (Need.verdictLevel()).
+     */
     VBox jobTile(BuildAdvice.Category c, List<CityNeeds.Need> all) {
         CityNeeds.Need worst = CityNeeds.worst(all, goOf(c.name()));
-        String tone = verdict(worst == null ? 0 : worst.level());
+        if (worst == null) worst = CityNeeds.worstUnlisted(all, goOf(c.name()));
+        String tone = verdict(worst == null ? 0 : worst.verdictLevel());
         Shown s = worst == null ? fine(c.name(), all) : shown(worst);
 
         Label name = new Label(c.name());
@@ -1728,11 +1732,11 @@ final class BuildScreen {
         return new Pieces.Press(credit ? Pieces.Look.CREDIT : Pieces.Look.GO, all + (credit ? " on credit" : ""), null);
     }
 
-    /** Each suggestion through its own button's path (placeOrder()), in turn; the first refusal stops the run, as Enter's does. */
+    /** The suggestions as one run (0.7.40, placeRun()): funded whole when it is more than the cash, each placed in turn by its own button's path; the first refusal stops the run, as Enter's does. */
     void orderAll(List<BuildAdvice.Suggestion> advice) {
-        for (BuildAdvice.Suggestion s : new ArrayList<>(advice)) {
-            if (!placeOrder(s.template(), s.count(), BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class))) return;
-        }
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
+        for (BuildAdvice.Suggestion s : advice) run.merge(s.template(), s.count(), Integer::sum);
+        placeRun(run, new RunFrom(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class), false));
     }
 
     /** Up to three cards, or a line saying there is nothing to suggest. */
@@ -1748,7 +1752,13 @@ final class BuildScreen {
         return grid;
     }
 
-    /** A measure's figure, worded as its ring words it: a share, a load, months, people, or a multiple of Canada's crime. */
+    /** A measure's gauge with these buildings standing as well, as its ring writes it (0.7.41): what a served measure serves, else figureText() of its figure. */
+    String gaugeText(BuildAdvice.Measure m, java.util.Map<BuildingsTemplate, Integer> added) {
+        return BuildAdvice.isServed(m) ? CityNeeds.servedPct(BuildAdvice.served(ui.game, m, added))
+                : figureText(m, BuildAdvice.figure(ui.game, m, added));
+    }
+
+    /** A measure's figure, worded as its ring words it: a share, a load, months, people, or a multiple of Canada's crime - for a served measure (0.7.41) gaugeText() reads what it serves instead. */
     String figureText(BuildAdvice.Measure m, double f) {
         // A network drawing something with nothing supplying it has no load to print.
         if (Double.isNaN(f) || Double.isInfinite(f)) return "—";
@@ -1764,21 +1774,27 @@ final class BuildScreen {
         }
     }
 
-    /** What a suggested order does, in a line. */
+    /**
+     * What a suggested order does, in a line. A served measure (0.7.41) goes
+     * from what its NEEDS YOU row serves to what the order and what is on
+     * site leave it serving (BuildAdvice.verdictAfter()): "brings power from
+     * 92% to 140% served" - it was the load, "of its capacity".
+     */
     String doesWhat(BuildAdvice.Suggestion s) {
         BuildAdvice.Measure m = s.measure();
-        String from = figureText(m, s.before()), to = figureText(m, s.after());
+        boolean served = BuildAdvice.isServed(m);
+        String from = served ? CityNeeds.servedPct(s.need().served().share()) : figureText(m, s.before());
+        String to = served ? CityNeeds.servedPct(BuildAdvice.verdictAfter(ui.game, s).share()) : figureText(m, s.after());
         String line;
         switch (m.kind()) {
-            case POWER:  line = "brings the grid from " + from + " to " + to + " of its capacity"; break;
-            case WATER:  line = "brings the water supply from " + from + " to " + to + " of its capacity"; break;
-            case ROADS:  line = "takes road use from " + from + " to " + to + " of capacity"; break;
-            case CARE:   line = careHeading(m.care()).split("  -  ")[0].toLowerCase() + " from " + from + " to " + to; break;
+            case POWER:  line = "brings power from " + from + " to " + to + " " + CityNeeds.SERVED; break;
+            case WATER:  line = "brings water from " + from + " to " + to + " " + CityNeeds.SERVED; break;
+            case ROADS:  line = "takes the road from " + from + " to " + to + " " + CityNeeds.SERVED; break;
+            case CARE:   line = careHeading(m.care()).split("  -  ")[0].toLowerCase() + " from " + from + " to " + to
+                    + " " + CityNeeds.SERVED; break;
             case DEATH:  line = "plots and ovens for the dead: " + from + " to " + to; break;
             case PLOTS:  line = "burial plots from " + from + " to " + to + " left"; break;
-            case SCHOOL: line = m.school().isBasic()
-                    ? m.school().getLabel().toLowerCase() + " from " + from + " to " + to + " taught"
-                    : "would-be students seated from " + from + " to " + to; break;
+            case SCHOOL: line = m.school().getLabel().toLowerCase() + " from " + from + " to " + to + " " + CityNeeds.SERVED; break;
             case POLICE: line = "crime from " + from + " to " + to + " Canada's"; break;
             case CELLS:  line = "the caught not held: " + from.replace(" not held", "") + " to " + to; break;
             default:     line = from + " to " + to;
@@ -1787,15 +1803,19 @@ final class BuildScreen {
         return line;
     }
 
-    /** What closing the need means, for the line that gives the full count. */
+    /** What closing the need means, for the line that gives the full count - a served measure's line read as served (0.7.41: "bring the load under 75%" became "bring power over 133% served"). */
     static String goal(BuildAdvice.Measure m) {
+        double[] lines = BuildAdvice.servedLines(m);
         switch (m.kind()) {
-            case POWER: case WATER: return "bring the load under " + pct(CityNeeds.NETWORK_YELLOW);
-            case ROADS:  return "bring the roads under " + pct(InfrastructureManager.STRAINED) + " of capacity";
-            case CARE:   return "cover over " + pct(m.care() == CareType.GENERAL ? CityNeeds.GENERAL_YELLOW : CityNeeds.OTHER_CARE_YELLOW);
+            case POWER:  return "bring power over " + pct(lines[0]) + " " + CityNeeds.SERVED;
+            case WATER:  return "bring water over " + pct(lines[0]) + " " + CityNeeds.SERVED;
+            case ROADS:  return "bring the road over " + pct(lines[0]) + " " + CityNeeds.SERVED;
+            case CARE:   return "bring " + m.label().toLowerCase() + " over " + pct(lines[0]) + " " + CityNeeds.SERVED;
             case DEATH:  return "leave nobody unburied";
             case PLOTS:  return String.format("give over %.0f months of plots", CityNeeds.PLOTS_YELLOW);
-            case SCHOOL: return m.school().isBasic() ? "teach over " + pct(CityNeeds.SCHOOLS_YELLOW) : "seat everyone who would come";
+            case SCHOOL: return m.school().isBasic()
+                    ? "bring " + m.label().toLowerCase() + " over " + pct(lines[0]) + " " + CityNeeds.SERVED
+                    : "seat everyone who would come";
             case POLICE: return String.format("bring crime under %.1f× Canada's", CityNeeds.CRIME_YELLOW);
             case CELLS:  return "hold everyone caught";
             default:     return "close it";
@@ -1813,16 +1833,21 @@ final class BuildScreen {
     /** One suggested order: the need, before and after, the count and the building, a line, its price, Show, and its Build button. */
     VBox suggestionCard(BuildAdvice.Suggestion s) {
         CityNeeds.Need need = s.need();
-        String tone = verdict(need.level());
+        // SERVED (0.7.41): a served need's chip, its before and its after read what it serves, each in
+        // the one verdict's colour - an order that stops at NEEDS YOU's line short of 100% reads amber.
+        CityNeeds.Served afterServed = BuildAdvice.verdictAfter(ui.game, s);
+        String now = afterServed != null ? CityNeeds.servedPct(need.served().share()) : figureText(s.measure(), s.before());
+        String tone = verdict(need.verdictLevel());
         Label chip = new Label(need.label().charAt(0) + need.label().substring(1).toLowerCase() + " "
-                + figureText(s.measure(), s.before()));
+                + now + (afterServed != null ? " " + CityNeeds.SERVED : ""));
         chip.setStyle(Palette.words(Palette.SIZE_LABEL, tone) + " -fx-padding: 1 7 1 7; -fx-border-color: " + tone + ";"
                 + " -fx-border-radius: 9; -fx-background-radius: 9; -fx-background-color: " + tone + "22;");
-        Label before = new Label(figureText(s.measure(), s.before()) + " → ");
+        Label before = new Label(now + " → ");
         before.setStyle(Palette.figure(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         boolean clears = BuildAdvice.clear(s.measure(), s.after());
-        Label after = new Label(figureText(s.measure(), s.after()));
-        after.setStyle(Palette.figure(Palette.SIZE_LABEL, clears ? Palette.GOOD : Palette.WARN));
+        Label after = new Label(afterServed != null ? CityNeeds.servedPct(afterServed.share()) : figureText(s.measure(), s.after()));
+        after.setStyle(Palette.figure(Palette.SIZE_LABEL, afterServed != null ? servedTone(afterServed)
+                : clears ? Palette.GOOD : Palette.WARN));
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         HBox top = new HBox(0, chip, gap, before, after);
@@ -1994,19 +2019,17 @@ final class BuildScreen {
     }
 
     /**
-     * A measure's verdict: its NEEDS YOU row's level; for a stage of the
-     * basic ladder that is not the bottleneck, the SCHOOLS row's own lines on
-     * its own coverage; -1 for a measure no row watches (transit, a school
-     * fewer than a class would come to).
+     * A measure's verdict. Since 0.7.41 a served measure's is the one verdict
+     * on what it serves (BuildAdvice.verdict()) - transit's and a school's
+     * fewer than a class would come to none, -1 - which also reads a stage of
+     * the basic ladder that is not the bottleneck on the SCHOOLS row's lines,
+     * as this did; the dead, the plots, the police and the cells, their NEEDS
+     * YOU row's level, or -1 with none.
      */
     int levelOf(BuildAdvice.Measure m, List<CityNeeds.Need> all) {
+        if (BuildAdvice.isServed(m)) return BuildAdvice.verdict(ui.game, m, java.util.Map.of()).level();
         CityNeeds.Need n = BuildAdvice.needFor(all, m);
-        if (n != null) return n.level();
-        if (m.kind() == BuildAdvice.Kind.SCHOOL && m.school().isBasic()) {
-            double cover = BuildAdvice.figure(ui.game, m, java.util.Map.of());
-            return cover <= CityNeeds.SCHOOLS_RED ? 2 : cover <= CityNeeds.SCHOOLS_YELLOW ? 1 : 0;
-        }
-        return -1;
+        return n != null ? n.level() : -1;
     }
 
     /** A city category's page. */
@@ -2174,32 +2197,35 @@ final class BuildScreen {
         String figure, shortLine;
         double arc;
         double gap = sd[1] - sd[0];
+        // SERVED (0.7.41): the figure is what the measure serves, unclamped, the arc that held to a
+        // whole ring, and the line opens with "served" and the verdict's word - for power, water and
+        // the road it was the load, a ring full when it was over.
+        CityNeeds.Served served = BuildAdvice.verdict(game, m, java.util.Map.of());
+        String says = served == null ? null : servedWords(served) + " · ";
         switch (m.kind()) {
             case POWER: case WATER: {
-                double load = BuildAdvice.figure(game, m, java.util.Map.of());
-                figure = pct(load);
-                arc = Math.min(1, load);
-                shortLine = m.kind() == BuildAdvice.Kind.POWER
+                figure = CityNeeds.servedPct(served.share());
+                arc = arc(served);
+                shortLine = says + (m.kind() == BuildAdvice.Kind.POWER
                         ? (gap > 0 ? power(gap) + " short" : power(-gap) + " spare")
-                        : gap > 0 ? shortNumber(gap) + " units short" : shortNumber(-gap) + " units spare";
+                        : gap > 0 ? shortNumber(gap) + " units short" : shortNumber(-gap) + " units spare");
                 break;
             }
             case ROADS: {
-                double use = BuildAdvice.figure(game, m, java.util.Map.of());
-                figure = pct(use);
-                arc = Math.min(1, use);
-                // ...with the flow beside it (0.7.29): the ring is how full, the flow what it costs.
-                shortLine = pct(game.getInfrastructureManager().getThroughputRatio()) + " flow · "
+                figure = CityNeeds.servedPct(served.share());
+                arc = arc(served);
+                // ...with the flow beside it (0.7.29): the ring is what it serves, the flow what it costs.
+                shortLine = says + pct(game.getInfrastructureManager().getThroughputRatio()) + " flow · "
                         + (gap > 0 ? shortNumber(gap) + " trips over capacity" : shortNumber(-gap) + " trips spare");
                 break;
             }
             case TRANSIT:
-                figure = pct(BuildAdvice.cover(game, m, java.util.Map.of()));
-                arc = BuildAdvice.cover(game, m, java.util.Map.of());
+                figure = CityNeeds.servedPct(served.share());
+                arc = arc(served);
                 // ROOM, NOT RIDERS (0.7.29): the ring is what the stock could carry, and it
                 // said "carries 62.5k" where 41.4k rode - the ceiling, the fare and the cars
                 // walk it down (Infrastructure › Transit draws the steps).
-                shortLine = sd[0] > 0 ? "room for " + shortNumber(Math.min(sd[0], sd[1])) + " of " + shortNumber(sd[1])
+                shortLine = sd[0] > 0 ? says + "room for " + shortNumber(Math.min(sd[0], sd[1])) + " of " + shortNumber(sd[1])
                         + " · " + shortNumber(game.getInfrastructureManager().getTransitRiders()) + " ride"
                         : "no transit yet";
                 break;
@@ -2217,12 +2243,12 @@ final class BuildScreen {
                 }
                 break;
             case SCHOOL:
-                arc = BuildAdvice.cover(game, m, java.util.Map.of());
-                figure = pct(arc);
-                shortLine = m.school().isBasic()
+                arc = arc(served);
+                figure = CityNeeds.servedPct(served.share());
+                shortLine = says + (m.school().isBasic()
                         ? (gap >= .5 ? "short " + people(gap) + " places" : "a place for every child")
                         : sd[1] < CityNeeds.SEATS_FLOOR ? people(sd[1]) + " would come"
-                        : people(sd[0]) + " seats, " + people(sd[1]) + " would come";
+                        : people(sd[0]) + " seats, " + people(sd[1]) + " would come");
                 break;
             case POLICE: {
                 double vs = need != null ? need.value() : BuildAdvice.figure(game, m, java.util.Map.of());
@@ -2239,9 +2265,9 @@ final class BuildScreen {
                 break;
             }
             default: {
-                arc = BuildAdvice.cover(game, m, java.util.Map.of());
-                figure = pct(arc);
-                shortLine = gap >= .5 ? "short by " + people(gap) + " " + unitWords(m) : "everyone has a place";
+                arc = arc(served);
+                figure = CityNeeds.servedPct(served.share());
+                shortLine = says + (gap >= .5 ? "short by " + people(gap) + " " + unitWords(m) : "everyone has a place");
             }
         }
         java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
@@ -2415,7 +2441,7 @@ final class BuildScreen {
         left.setMinWidth(220);
 
         // The cards' button (0.7.34), saying the whole order: on credit when it is more than the cash,
-        // where the first order the cash cannot cover opens the credit page.
+        // where the funding page opens for the whole run (0.7.40; for the first order short of it before).
         Pieces.ActionButton go = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL,
                 orderBarPress(units, total, game.getCash()), this::buildPending);
         go.setMinWidth(Region.USE_PREF_SIZE);
@@ -2442,26 +2468,29 @@ final class BuildScreen {
         Label measure = new Label(m.label().toLowerCase());
         measure.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         int onSiteUnits = BuildAdvice.units(site);
-        Label figures = new Label(figureText(m, BuildAdvice.figure(game, m, java.util.Map.of())) + " now · "
-                + (onSiteUnits > 0 ? figureText(m, BuildAdvice.figure(game, m, site)) + " when the "
+        // SERVED (0.7.41): a served measure's three figures are what it serves, "served 92% now · ...", and
+        // they turn green when the order leaves it enough (the one verdict) - not merely off NEEDS YOU's list.
+        CityNeeds.Served withServed = BuildAdvice.verdict(game, m, withOrder);
+        Label figures = new Label((withServed != null ? CityNeeds.SERVED + " " : "")
+                + gaugeText(m, java.util.Map.of()) + " now · "
+                + (onSiteUnits > 0 ? gaugeText(m, site) + " when the "
                         + formatter.format(onSiteUnits) + " on site open · " : "")
-                + figureText(m, BuildAdvice.figure(game, m, withOrder)) + " with " + (units == 1 ? "this" : "these"));
-        figures.setStyle(Palette.figure(Palette.SIZE_LABEL, BuildAdvice.clear(m, BuildAdvice.figure(game, m, withOrder))
-                ? Palette.GOOD : Palette.TEXT_HEAD));
+                + gaugeText(m, withOrder) + " with " + (units == 1 ? "this" : "these"));
+        figures.setStyle(Palette.figure(Palette.SIZE_LABEL, (withServed != null ? withServed.enough()
+                : BuildAdvice.clear(m, BuildAdvice.figure(game, m, withOrder))) ? Palette.GOOD : Palette.TEXT_HEAD));
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
         HBox labels = new HBox(6, measure, gap, figures);
         labels.setAlignment(Pos.CENTER_LEFT);
-        javafx.scene.layout.HBox stacked = new javafx.scene.layout.HBox(0);
-        stacked.setMaxWidth(Double.MAX_VALUE);
-        stacked.setPrefHeight(10);
-        stacked.setStyle("-fx-background-color: " + Palette.EDGE + "; -fx-background-radius: 5;");
-        stacked.setMinHeight(10);
-        javafx.beans.binding.DoubleBinding wide = stacked.widthProperty().multiply(1.0);
-        stacked.getChildren().addAll(segment(now, Palette.MONEY, wide),
-                segment(Math.max(0, whenOpen - now), Palette.BUILDING_DARK, wide),
-                segment(Math.max(0, with - Math.max(now, whenOpen)), Palette.BUILDING, wide));
-        HBox key = new HBox(Palette.GAP_LOOSE, keySwatch(Palette.MONEY, "covered"),
+        // The stacked bar is the house's segment bar (0.7.40): a Pane that lays its parts out at the width
+        // it is given, its minimum nothing. It was an HBox of three Regions whose minimum widths were bound
+        // to a share of the HBox's own width, so rounding up made them add to more than it - the bar
+        // widened, the shares followed, and the order bar crept right while nothing moved (Jerus).
+        SegmentBar stacked = segmentBar(List.of(Segment.of(Math.max(0, Math.min(1, now)), Palette.MONEY),
+                Segment.of(Math.max(0, Math.min(1, whenOpen - now)), Palette.BUILDING_DARK),
+                Segment.of(Math.max(0, Math.min(1, with - Math.max(now, whenOpen))), Palette.BUILDING)),
+                1, List.of(), 0, 10);
+        HBox key = new HBox(Palette.GAP_LOOSE, keySwatch(Palette.MONEY, withServed != null ? "served" : "covered"),
                 keySwatch(Palette.BUILDING_DARK, "on site"), keySwatch(Palette.BUILDING, "this order"));
         VBox middle = new VBox(4, labels, stacked, key);
         HBox.setHgrow(middle, Priority.ALWAYS);
@@ -2478,17 +2507,6 @@ final class BuildScreen {
     Pieces.Press orderBarPress(int units, double total, double cash) {
         String words = "Build " + formatter.format(units) + (total > cash ? " on credit · " : " · ") + money(total);
         return new Pieces.Press(total > cash ? Pieces.Look.CREDIT : Pieces.Look.GO, words, null);
-    }
-
-    /** One part of the order bar's stacked bar, its width a share of the bar's. */
-    Region segment(double share, String colour, javafx.beans.binding.DoubleBinding wide) {
-        Region r = new Region();
-        double s = Math.max(0, Math.min(1, share));
-        r.prefWidthProperty().bind(wide.multiply(s));
-        r.minWidthProperty().bind(wide.multiply(s));
-        r.setMinHeight(10);
-        r.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 5;");
-        return r;
     }
 
     /* =====================================================================
@@ -3431,224 +3449,369 @@ final class BuildScreen {
         ui.rootMenu.getChildren().addAll(warning, details, cost, toLand, back);
     }
 
+    /* =====================================================================
+       ONE FUNDING PAGE FOR THE RUN (0.7.40)
+
+       Jerus, playing 0.7.39: "when you click build all and you dont have
+       the credit it just builds one not all", and "when you buy land on
+       credit a new issuance screen appears, but when you buy buildings on
+       credit its still the old one."
+
+       Both were the old page. Every Build press - a card's, the order bar's
+       and Enter's (buildPending()), "Build all three" (orderAll()) and a
+       suggestion's - placed its orders one at a time, and the first the
+       cash could not cover opened INSUFFICIENT FUNDS with a loan sized for
+       that order alone; the loan built it and went back to the page, and
+       the rest of the run never happened.
+
+       A RUN IS FUNDED WHOLE NOW. A press hands placeRun() its orders in the
+       page's order, and before anything is placed the model says how far
+       the run can go - the orders, from the first, that pass the checks
+       money cannot fix (Game.buildRunAhead()) - and what those are short of
+       (Game.buildFundingGap(run): their invoice, each order priced on the
+       yard the ones before it leave, less the cash). Short of nothing, the
+       run goes ahead as it always did. Short of something, this page comes
+       first, in the land office's shape (LandScreen.showLandFunding()):
+       "Build › Funding", the run's price against the cash as a bar with
+       what it is short by, and the two offers as cards side by side - the
+       Game.BUILD_BOND_YEARS bond first, then the Game.BUILD_NOTE_MONTHS
+       note, the old page's offers and calls, each on the gap and each
+       button saying the run. A press books exactly its card's quote and
+       places every order in turn (goAhead()). An order the city refuses on
+       the way shows its own page; a run that will stop at an order short of
+       ore, licences or ground is funded only up to the order before it, and
+       this page says so - the city is never sold a loan for a building it
+       has nowhere to put (buildStack()'s rule). If an order still comes up
+       short of money after the loan - which the exact invoice should make
+       impossible - a card in the same frame says what was built and what
+       was not, and never offers a second loan (showBuildFellShort()). An
+       order not placed stays on its card.
+       ===================================================================== */
+
+    /** Where a run came from: the page to come back to, and whether its orders are that page's cards - each taken off its card once placed, the rest left on theirs. */
+    record RunFrom(String title, EnumSet<BuildingType> categories, boolean cards) { }
+
+    /** One order as a run of one. */
+    static java.util.LinkedHashMap<BuildingsTemplate, Integer> runOf(BuildingsTemplate t, int n) {
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
+        run.put(t, n);
+        return run;
+    }
+
+    /** The first `n` orders of a run. */
+    static java.util.LinkedHashMap<BuildingsTemplate, Integer> firstOf(java.util.Map<BuildingsTemplate, Integer> run, int n) {
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> part = new java.util.LinkedHashMap<>();
+        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+            if (part.size() >= n) break;
+            part.put(e.getKey(), e.getValue());
+        }
+        return part;
+    }
+
+    /** A run's orders in words, the order bar's way: "5 × Walk-in Clinic + 3 × Paved Road". */
+    static String runNames(java.util.Map<BuildingsTemplate, Integer> run) {
+        StringBuilder names = new StringBuilder();
+        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+            if (names.length() > 0) names.append(" + ");
+            names.append(formatter.format(e.getValue())).append(" × ").append(e.getKey().getName());
+        }
+        return names.toString();
+    }
+
     /**
-     * "You cannot afford this - borrow for it?" with the terms on the screen.
-     *
-     * NOTE: this used to gross the gap up itself using getRate(), the standing
-     * rate, and hand the resulting face value to the emergency note (gone
-     * since 0.7.0) - which then grossed it up a second time off the same
-     * stale rate. The quote does both now, priced with the bill included, and
-     * the button books precisely what is printed above it.
-     *
-     * TWO OFFERS SINCE 0.7.10: a bond for Game.BUILD_BOND_YEARS beside the
-     * note, each sized so the cash it brings covers the gap, each with its
-     * rate, its face, its cash, what it costs a month and in all, and what
-     * happens at the end. Every figure is the model's - the gap is
-     * Game.buildFundingGap(), the rest is on the two quotes - and each button
-     * books exactly the quote printed above it.
+     * A run placed (0.7.40): funded first when the orders that can go ahead
+     * cost more than the cash (showBuildFunding()), otherwise placed in turn
+     * as they always were. True when every order was placed and the page is
+     * drawn again.
      */
-    void showQuickDebtMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
-        ui.clearMenu("showQuickDebtMenu", () -> showQuickDebtMenu(selected, quantity, prevTitle, prevCats));
+    boolean placeRun(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+        if (run.isEmpty()) return false;
+        Game g = ui.game;
+        int ahead = g.buildRunAhead(run);
+        if (ahead > 0 && g.buildFundingGap(firstOf(run, ahead)) > 0) {
+            showBuildFunding(run, from);
+            return false;
+        }
+        return goAhead(run, from, null);
+    }
 
-        double gap = ui.game.buildFundingGap(selected, quantity);
+    /**
+     * Every order of the run in turn, through buildStack() - the path each
+     * card's Build always took - each placed one taken off its card. The
+     * first the city refuses stops the run and shows its own page; one short
+     * of money shows the funding page for what is left, or, with `paper`
+     * already issued for it, the fell-short card.
+     *
+     * THE RESULT IS LOOKED AT, AND A LOAN IS NEVER OFFERED TWICE - 0.7.10's
+     * rule, from the page this one replaced: a bare call threw the answer
+     * away, so a city could take on debt, build nothing and come back to a
+     * page that said nothing - Jerus: "the tbill is inacted but the roads
+     * are not built and you are just left with the cash unspent" - and going
+     * back to the funding page after a loan would loop the player through
+     * the same button for ever, borrowing every time.
+     *
+     * @param paper the loan just issued for the run, in words ("20-year bond"), or null for none
+     */
+    private boolean goAhead(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from, String paper) {
+        Placed p = placeInTurn(run, from);
+        if (p.stop() == Game.BuildResult.SUCCESS) {
+            handleAllBuildingMenus(from.title(), from.categories());
+            return true;
+        }
+        BuildingsTemplate t = p.left().keySet().iterator().next();
+        int n = p.left().get(t);
+        switch (p.stop()) {
+            case NO_LAND    -> showNoLandMenu(t, n, from.title(), from.categories());
+            case NO_DEPOSIT -> showNoDepositMenu(t, n, from.title(), from.categories());
+            case NO_LICENCE -> showNoLicenceMenu(t, n, from.title(), from.categories());
+            default -> {
+                if (paper == null) showBuildFunding(p.left(), from);
+                else showBuildFellShort(p.built(), p.left(), from, paper);
+            }
+        }
+        return false;
+    }
 
-        // Matching what the button below books - the SAME duration, not just the
-        // same method. This quoted a 3-month bill while the button booked the
-        // 6-month emergency note, and quoteTBill() discounts by duration, so the
-        // price on screen was not the price paid. The emergency note itself is
-        // gone (0.7.0: the central bank advances a broke treasury); this is the
-        // screen's own note on Game.BUILD_NOTE_MONTHS.
-        DebtQuote note = ui.game.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
-        DebtQuote bond = ui.game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+    /** What placing a run in turn did: the orders placed, the orders left - the one that stopped it first - and buildStack()'s answer there, SUCCESS when nothing stopped it. */
+    record Placed(java.util.LinkedHashMap<BuildingsTemplate, Integer> built,
+                  java.util.LinkedHashMap<BuildingsTemplate, Integer> left, Game.BuildResult stop) { }
 
-        Label warning = new Label("INSUFFICIENT FUNDS");
-        warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold;");
+    /** goAhead()'s placing, without the page it then draws (a probe runs it): each order through buildStack() until one is not placed, each placed one's receipt noted and, from the cards, its card emptied. */
+    Placed placeInTurn(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> built = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> left = new java.util.LinkedHashMap<>(run);
+        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            int n = e.getValue();
+            // The quote it will be charged on, for the receipt's sales tax (see noteReceipt).
+            Game.BuildQuote quote = ui.game.quoteBuild(t, n);
+            Game.BuildResult result = ui.game.buildStack(t, n, false);
+            if (result != Game.BuildResult.SUCCESS) return new Placed(built, left, result);
+            noteReceipt(quote);
+            if (from.cards()) orderQty.remove(t.getName());
+            built.put(t, n);
+            left.remove(t);
+        }
+        return new Placed(built, left, Game.BuildResult.SUCCESS);
+    }
 
-        // Each offer's button builds (0.7.34): the order and its price, and the paper it is built on under them.
-        String order = "Build " + formatter.format(quantity) + " · " + money(ui.game.calculateTotalCost(selected, quantity));
+    /**
+     * What the funding page says about a run, worked out without drawing it
+     * (a probe reads it): the orders that can go ahead, their invoice and
+     * the gap, the summary's line, what the treasury holds and the bar's
+     * part for it, the gap in money, the offers' button, and - when the run
+     * stops at an order the city would refuse - which and why.
+     */
+    record RunWords(java.util.LinkedHashMap<BuildingsTemplate, Integer> funded, double invoice, double gap,
+                    String priceLine, String heldWords, double held, String shortBy, String button, String stops) { }
 
-        VBox need = new VBox(0,
-                statementLine("Funding required", money(gap), Palette.BAD),
-                statementNote(String.format("%,d x %s costs %s, and the treasury holds %s.",
-                        quantity, selected.getName(),
-                        money(ui.game.calculateTotalCost(selected, quantity)),
-                        money(ui.game.getCash()))));
+    RunWords runWords(java.util.Map<BuildingsTemplate, Integer> run) {
+        Game g = ui.game;
+        int ahead = g.buildRunAhead(run);
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> funded = firstOf(run, ahead);
+        double invoice = g.buildRunInvoice(funded);
+        double gap = g.buildFundingGap(funded);
+        double cash = g.getCash();
+        // "Build 5 · $X" for one order, "Build 3 orders · $X" for several: the run, at its invoice.
+        String button = "Build " + (funded.size() == 1 ? formatter.format(funded.values().iterator().next())
+                : funded.size() + " orders") + " · " + money(invoice);
+        String stops = null;
+        if (ahead < run.size()) {
+            java.util.Map.Entry<BuildingsTemplate, Integer> at = null;
+            int i = 0;
+            for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+                if (i++ == ahead) { at = e; break; }
+            }
+            String why = switch (g.buildRunStop(run)) {
+                case NO_DEPOSIT -> "no iron deposit is free for it";
+                case NO_LICENCE -> "nobody is licensed to work in it";
+                default         -> "not enough ground is free for it";
+            };
+            stops = "Then " + formatter.format(at.getValue()) + " × " + at.getKey().getName() + " cannot go ahead - "
+                    + why + " - so the run stops there: this borrows only for the "
+                    + (ahead == 1 ? "order" : ahead + " orders") + " before it.";
+        }
+        return new RunWords(funded, invoice, gap, runNames(funded) + " · " + money(invoice) + " all in",
+                cash < 0 ? "the treasury is overdrawn by " + money(g.cashShortfall()) : "the treasury holds " + money(cash),
+                Math.max(0, Math.min(cash, invoice)), money(gap), button, stops);
+    }
 
-        /*
-         * THE BOND FIRST, because it is the offer this page recommends. What
-         * the page sells is always a building, and a building outlives either
-         * loan: the matching principle says a long-lived asset is paid for with
-         * long-lived debt, so the people who use it over the years pay for it
-         * over the years. The note asks for the whole face back in six months,
-         * out of a treasury that was short of the price to begin with - on the
-         * D$100M founding (0.7.10) a water plant bought that way left the
-         * treasury D$16.2M overdrawn when the note matured, ten months on the
-         * central bank's advances, where on this bond it never fell below
-         * D$0.5M and never touched them. The note stays, second, for a gap
-         * the next six months' revenue will cover, and both offers print their
-         * whole cost so the player can weigh six months' credit against
-         * twenty years'.
-         */
-        VBox bondOffer = fundingOffer(Game.BUILD_BOND_YEARS + "-year bond", bond,
+    /** One loan the funding page offers, worded - what Pieces.offerCard() draws, as the land office's Offer is: its name, quote, rate's words and colour, ending, button; what booking it does to the model (a probe runs it); and what the button does - books it, then places the run. */
+    record RunOffer(String name, DebtQuote quote, String rate, String tone, String ending, Pieces.Press action,
+                    Runnable book, Runnable issue) { }
+
+    /**
+     * The two offers, the old page's on the run's gap: the bond first -
+     * what the page recommends, since a building outlives either loan and
+     * the matching principle pays for a long-lived asset with long-lived
+     * debt - then the note, for a gap the next months' revenue will cover.
+     * Each button books exactly its quote (the call quotes it again,
+     * identically), then places the whole run.
+     */
+    List<RunOffer> runOffers(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+        Game g = ui.game;
+        RunWords w = runWords(run);
+        double gap = w.gap();
+        DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        String bondName = Game.BUILD_BOND_YEARS + "-year bond", noteName = Game.BUILD_NOTE_MONTHS + "-month note";
+        // Each quotes its paper again, identically, and books it.
+        Runnable bookBond = () -> ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        Runnable bookNote = () -> ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        List<RunOffer> out = new ArrayList<>();
+        out.add(new RunOffer(bondName, bond,
                 pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
+                rateColour(bond, g.getDebtManager()),
                 String.format("Paid over %d years: the coupon every month, then the whole %s at the end.",
                         bond.duration(), money(bond.faceValue())),
-                new Pieces.Press(Pieces.Look.GO, order, "issues the " + Game.BUILD_BOND_YEARS + "-year bond, then builds"),
-                () -> {
-                    ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);   // quotes it again, identically
-                    buildOnTheLoan(selected, quantity, prevTitle, prevCats, "bond");
-                });
-
-        VBox noteOffer = fundingOffer(Game.BUILD_NOTE_MONTHS + "-month note", note,
+                new Pieces.Press(Pieces.Look.GO, w.button(), "issues the " + bondName + ", then builds"),
+                bookBond, () -> {
+                    bookBond.run();
+                    goAhead(run, from, bondName);
+                }));
+        out.add(new RunOffer(noteName, note,
                 pct2(note.marketRate()) + " a year, taken as a discount",
-                String.format(ui.game.getRollover().getMode() == Rollover.Mode.MANUAL
+                rateColour(note, g.getDebtManager()),
+                String.format(g.getRollover().getMode() == Rollover.Mode.MANUAL
                                 ? "Falls due in %d months: the whole %s at once, out of the treasury."
                                 : "Falls due in %d months: the whole %s at once, refinanced then by the treasury's rollover.",
                         note.duration(), money(note.faceValue())),
-                new Pieces.Press(Pieces.Look.GO, order, "issues the " + Game.BUILD_NOTE_MONTHS + "-month note, then builds"),
-                () -> {
-                    ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);   // quotes it again, identically
-                    buildOnTheLoan(selected, quantity, prevTitle, prevCats, "note");
-                });
+                new Pieces.Press(Pieces.Look.GO, w.button(), "issues the " + noteName + ", then builds"),
+                bookNote, () -> {
+                    bookNote.run();
+                    goAhead(run, from, noteName);
+                }));
+        return out;
+    }
 
-        Button cancel = new Button("Cancel Build");
-        cancel.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
-
-        ui.rootMenu.getChildren().addAll(warning, need, bondOffer, noteOffer, cancel);
+    /** The run's pages' head: "Build › Funding", the title a way back to the page the run came from, and "‹ <that page>" at the right - the land office's head() on Build. */
+    HBox runHead(String sub, RunFrom from) {
+        String back = from.title() == null ? BuildAdvice.OVERVIEW : from.title();
+        Label title = ui.pageTitle("Build");
+        title.setStyle(title.getStyle() + " -fx-cursor: hand;");
+        title.setOnMouseClicked(e -> handleAllBuildingMenus(from.title(), from.categories()));
+        Label sep = new Label("›");
+        sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
+        Label where = new Label(sub);
+        where.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_HEAD) + " -fx-padding: 8 0 2 0;");
+        HBox titled = new HBox(10, title, sep, where);
+        titled.setAlignment(Pos.CENTER_LEFT);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox head = new HBox(Palette.GAP_LOOSE, titled, gap,
+                stepChip("‹ " + back, () -> handleAllBuildingMenus(from.title(), from.categories()), true));
+        head.setAlignment(Pos.CENTER_LEFT);
+        head.setMaxWidth(Double.MAX_VALUE);
+        head.setStyle("-fx-padding: 0 0 4 0;");
+        return head;
     }
 
     /**
-     * One of the funding page's offers: its rate, its face, the cash it
-     * brings, what it costs a month and in all, and what happens at the end -
-     * every figure off the quote - then what asking this much does to the
-     * city's rate, and its button: Build's action button since 0.7.34, the
-     * statement's width, saying the order and the paper it is built on.
+     * The funding page for a run. A redraw - a month landing - re-quotes
+     * it; one that finds nothing to fund any more, or nothing that can go
+     * ahead, goes back to the page the run came from, its orders still on
+     * their cards, rather than quoting a loan of nothing.
      */
-    VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
-                      Pieces.Press action, Runnable issue) {
-        return fundingOffer(name, quote, rate, atTheEnd, action, issue, Money::money);
-    }
-
-    /**
-     * ...with its figures written by `written` - the land office's dollar
-     * offers printed theirs in US dollars here from 0.7.13, since a dollar
-     * quote's every figure is in dollars (Game.quoteForeign()). Since 0.7.26
-     * the office lays its offers out as cards (Pieces.offerCard(), the same
-     * figures and the same rule for the rate's colour, rateColour()), and
-     * this page is to take that card in Build's own pass.
-     */
-    VBox fundingOffer(String name, DebtQuote quote, String rate, String atTheEnd,
-                      Pieces.Press action, Runnable issue, java.util.function.DoubleFunction<String> written) {
-
-        Label impact = new Label(quote.creditImpact());
-        impact.setStyle(rateStyle(quote));
-
-        Pieces.ActionButton go = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, action, issue);
-        go.setMaxWidth(STATEMENT);
-        VBox.setMargin(go, new javafx.geometry.Insets(6, 0, 0, 0));
-
-        VBox offer = new VBox(0,
-                statementHead(name),
-                statementLine("Rate", rate),
-                statementLine("Face - what the city owes", written.apply(quote.faceValue())),
-                statementLine("Cash it brings", written.apply(quote.cashReceived()), Palette.GOOD),
-                statementLine("Monthly cost", quote.monthlyInterest() > 0
-                        ? written.apply(quote.monthlyInterest()) + " a month"
-                        : "none - it pays no coupon"),
-                statementLine("Cost of the credit, all in", written.apply(quote.totalCost())),
-                statementNote(atTheEnd),
-                impact,
-                go);
-        return offer;
-    }
-
-    /**
-     * Either offer's money is in: the order is placed again, and whatever it
-     * answers is shown.
-     *
-     * THE RESULT IS LOOKED AT NOW, and that is the more important half of
-     * this fix.
-     *
-     * This line used to be a bare call. The note was issued, the build was
-     * asked for, and whatever it answered was thrown away - so when the
-     * proceeds came up a few hundred short of the price (see
-     * Game.faceForNetProceeds) the city took on debt, built nothing, and
-     * returned to a menu that said nothing at all. Jerus found it in play:
-     * "the tbill is inacted but the roads are not built and you are just
-     * left with the cash unspent."
-     *
-     * The sizing bug is fixed, so the last branch should now be
-     * unreachable - for the bond too (Game.quoteLongBondForCash). It stays
-     * anyway. A refusal that is not read is a refusal that is silent, and
-     * silence is what made a plain arithmetic error look like a mystery.
-     */
-    private void buildOnTheLoan(BuildingsTemplate selected, int quantity,
-                                String prevTitle, EnumSet<BuildingType> prevCats, String paper) {
-        Game.BuildQuote quote = ui.game.quoteBuild(selected, quantity);
-        switch (ui.game.buildStack(selected, quantity, false)) {
-            case SUCCESS    -> { noteReceipt(quote); handleAllBuildingMenus(prevTitle, prevCats); }
-            case NO_LAND    -> showNoLandMenu(selected, quantity, prevTitle, prevCats);
-            case NO_DEPOSIT -> showNoDepositMenu(selected, quantity, prevTitle, prevCats);
-            case NO_LICENCE -> showNoLicenceMenu(selected, quantity, prevTitle, prevCats);
-            // NOT back to the funding page. Re-offering a loan to a city that
-            // has just taken one and is still short would loop the player
-            // through the same button forever, borrowing every time.
-            default         -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats, paper);
+    void showBuildFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+        RunWords w = runWords(run);
+        if (w.funded().isEmpty() || !(w.gap() > 0)) {
+            handleAllBuildingMenus(from.title(), from.categories());
+            return;
         }
+        ui.clearMenu("showBuildFunding", () -> showBuildFunding(run, from));
+
+        VBox page = widePage();
+        page.getChildren().add(runHead("Funding", from));
+
+        Label shortChip = tag("short by " + w.shortBy(), Palette.BAD);
+        shortChip.setMinWidth(Region.USE_PREF_SIZE);
+        Label title = new Label(w.priceLine());
+        title.setWrapText(true);
+        title.setMinWidth(0);
+        title.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        HBox.setHgrow(title, Priority.ALWAYS);
+        HBox top = new HBox(Palette.GAP, title, shortChip);
+        top.setAlignment(Pos.CENTER_LEFT);
+        SegmentBar bar = segmentBar(List.of(
+                new Segment(w.held(), Palette.MONEY, false, null, null, w.heldWords(), null),
+                new Segment(w.gap(), Palette.BAD, true, null, null, "short " + w.shortBy(), null)), 0, null, 0, 14);
+        Label held = new Label(w.heldWords());
+        held.setWrapText(true);
+        held.setMinWidth(0);
+        held.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        Label gapWords = new Label("short " + w.shortBy());
+        gapWords.setMinWidth(Region.USE_PREF_SIZE);
+        gapWords.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.BAD));
+        Region spread = new Region();
+        HBox.setHgrow(spread, Priority.ALWAYS);
+        HBox under = new HBox(6, held, spread, gapWords);
+        under.setAlignment(Pos.CENTER_LEFT);
+        VBox summary = new VBox(8, top, bar, under);
+        if (w.stops() != null) {
+            Label stops = new Label(w.stops());
+            stops.setWrapText(true);
+            stops.setMinWidth(0);
+            stops.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD));
+            summary.getChildren().add(stops);
+        }
+        summary.setStyle("-fx-padding: 12 14 12 14;" + Palette.block(Palette.PANEL, Palette.EDGE));
+        summary.setMaxWidth(Double.MAX_VALUE);
+        page.getChildren().addAll(summary, sectionHead("TWO WAYS TO BORROW IT",
+                hint("each books exactly the quote on its card, then builds")));
+
+        javafx.scene.layout.GridPane offers = equalColumns(3, TILE_GAP);
+        List<RunOffer> loans = runOffers(run, from);
+        for (int i = 0; i < loans.size(); i++) {
+            RunOffer o = loans.get(i);
+            offers.add(offerCard(o.name(), null, o.quote(), o.rate(), o.tone(), o.ending(), o.action(),
+                    Icons.BUILD, Palette.BUILDING, o.issue(), Money::money), i, 0);
+        }
+        page.getChildren().add(offers);
+
+        Button cancel = new Button("Cancel");
+        cancel.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
+        page.getChildren().add(cancel);
+        ui.rootMenu.getChildren().add(page);
     }
 
     /**
-     * The loan went through and the building still did not.
-     *
-     * Should be unreachable. It exists because the state it describes - debt on
-     * the books, nothing built, cash sitting in the treasury - is a state the
-     * player CAN end up in and could not previously be told about, and a screen
-     * that says what happened is worth more than an assertion that it cannot.
-     *
-     * @param paper which of the page's two offers was taken, "note" or "bond"
+     * What the fell-short card says, worked out without drawing it: its
+     * heading, then what was built, what was not and what it is still
+     * short of - the model's gap for the orders left, as it stands now.
      */
-    void showFundingFellShortMenu(BuildingsTemplate selected, int quantity,
-                                          String prevTitle, EnumSet<BuildingType> prevCats, String paper) {
-        ui.clearMenu("showFundingFellShortMenu", () -> showFundingFellShortMenu(selected, quantity, prevTitle, prevCats, paper));
-
-        Label heading = new Label("THE MONEY IS IN, THE BUILDING IS NOT");
-        heading.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold; -fx-font-size: 14px;");
-
-        double price = ui.game.calculateTotalCost(selected, quantity);
-
-        Label what = new Label(String.format(
-                "The " + paper + " was issued and the cash is in the treasury, but %d x %s"
-                + " still costs more than the city is holding.%n%n"
-                + "  Price now      %s%n"
-                + "  Cash on hand   %s%n"
-                + "  Still short    %s%n%n"
-                + "Nothing was built and nothing beyond the " + paper + " was spent. Order a"
-                + " smaller batch, or borrow again from the finance screen where you"
-                + " can choose the size yourself.",
-                quantity, selected.getName(),
-                money(price), money(ui.game.getCash()),
-                money(ui.game.buildFundingGap(selected, quantity))));
-        what.setWrapText(true);
-        what.setMaxWidth(460);
-        what.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 11px;");
-
-        Button back = new Button("Back to the build menu");
-        back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
-
-        ui.rootMenu.getChildren().addAll(heading, what, back);
+    String[] fellShortWords(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left,
+                            RunFrom from, String paper) {
+        double still = ui.game.buildFundingGap(left);
+        StringBuilder s = new StringBuilder("The " + paper + " was issued and its cash is in the treasury. ");
+        if (!built.isEmpty()) s.append("Built: ").append(runNames(built)).append(". ");
+        s.append("Not built: ").append(runNames(left)).append(still > 0
+                ? (left.size() == 1 ? " - it still costs " : " - they still cost ") + money(still) + " more than the city holds. "
+                : " - the cash covers " + (left.size() == 1 ? "it" : "them") + " now. ");
+        s.append("Nothing beyond the ").append(paper).append(built.isEmpty() ? "" : " and what was built").append(" was spent")
+                .append(from.cards() ? "; what was not built is still on its card." : ".");
+        return new String[] {
+                built.isEmpty() ? "The money is in, the building is not" : "The money is in, the run is not all built",
+                s.toString() };
     }
 
     /**
-     * Colours a quoted rate by how punishing it is.
-     *
-     * Not decoration. The whole point of showing the quote is that a player can
-     * see they are being charged for the size of the ask, and a number that
-     * looks the same at 1% and at 20% does not communicate that at a glance.
+     * The loan went through and an order still did not: one red card in
+     * Build's frame, as the land office's "Not bought" (0.7.40; it was
+     * THE MONEY IS IN, THE BUILDING IS NOT, a page of its own). Should not
+     * be reached - the invoice the loan is sized to is what the run is
+     * charged - and kept because the state it describes, debt on the books
+     * and something not built, is one the player CAN end up in and must be
+     * told about.
      */
-    String rateStyle(DebtQuote quote) {
-        // The rule - how far up the market's own band - is Pieces.rateColour() since 0.7.26,
-        // so the land office's offer cards colour theirs the same way.
-        return "-fx-text-fill: " + rateColour(quote, ui.game.getDebtManager())
-                + "; -fx-font-weight: bold; -fx-padding: 4 0 0 0;";
+    void showBuildFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left,
+                            RunFrom from, String paper) {
+        ui.clearMenu("showBuildFellShort", () -> showBuildFellShort(built, left, from, paper));
+        String[] w = fellShortWords(built, left, from, paper);
+        VBox page = widePage();
+        page.getChildren().add(runHead("Not built", from));
+        Button back = new Button("Back to " + (from.title() == null ? BuildAdvice.OVERVIEW : from.title()));
+        back.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
+        page.getChildren().addAll(alert(w[0], w[1]), back);
+        ui.rootMenu.getChildren().add(page);
     }
 }

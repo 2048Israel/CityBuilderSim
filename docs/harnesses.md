@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-10-02 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-10-04 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**72 harness files, 6,782 labelled assertions.** AllChecks runs 72 of them.
+**72 harness files, 6,813 labelled assertions.** AllChecks runs 72 of them.
 
 ## Which harnesses read which class
 
@@ -31,12 +31,12 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest |
 | [CapitalFlows](map/CapitalFlows.md) | BondCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, LongPlaytest, MoneyCheck |
-| [CareType](map/CareType.md) | BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, HealthCheck, LongPlaytest, ReadPathCheck |
+| [CareType](map/CareType.md) | BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, HealthCheck, LongPlaytest, ReadPathCheck |
 | [CentralBank](map/CentralBank.md) | BankCheck, CentralBankCheck, CurrencyCheck, ForeignCheck, FundCheck, HoldersCheck, LongPlaytest, MortgageCheck, PolicyPreviewCheck |
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, ReadPathCheck |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | CalendarCheck, ChartCheck, ForeignDebtCheck, FundCheck, YearBookCheck |
-| [CityNeeds](map/CityNeeds.md) | BuildAdviceCheck, LandCheck, PolicyPreviewCheck, ReadPathCheck |
+| [CityNeeds](map/CityNeeds.md) | BuildAdviceCheck, BuildCardCheck, LandCheck, PolicyPreviewCheck, ReadPathCheck |
 | [Construction](map/Construction.md) | BankCheck, ConstructionControlCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, RobustnessCheck, SaveFileCheck |
 | [ConstructionControl](map/ConstructionControl.md) | ChartCheck, ConstructionControlCheck |
 | [Consumption](map/Consumption.md) | ConsumptionCheck, ForeignCheck |
@@ -52,7 +52,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Denomination](map/Denomination.md) | DenominationCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, BankCheck, BondCheck, CapitalFlowCheck, ConservationCheck, CreditCheck, CrimeCheck, EducationCheck, HealthCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, OutsideCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, SaveFileCheck |
 | [Education](map/Education.md) | EducationCheck, LongPlaytest |
-| [EducationType](map/EducationType.md) | BuildingDataCheck, EducationCheck, LongPlaytest, ReadPathCheck |
+| [EducationType](map/EducationType.md) | BuildCardCheck, BuildingDataCheck, EducationCheck, LongPlaytest, ReadPathCheck |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BusinessServicesCheck, CarCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, FoodProcessingCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [FamilyModel](map/FamilyModel.md) | CrimeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, LongPlaytest, OutsideCheck, PopulationCheck |
@@ -80,7 +80,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [HouseholdAccounts](map/HouseholdAccounts.md) | BankCheck, HealthCheck, HouseholdCheck, HousingCheck, OutsideCheck, PolicyPreviewCheck, ReadPathCheck |
 | [HouseholdBalance](map/HouseholdBalance.md) | BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CentralBankCheck, CrimeCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, HealthCheck, HoldersCheck, HouseholdCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck |
 | [Inbox](map/Inbox.md) | InboxCheck |
-| [InfrastructureManager](map/InfrastructureManager.md) | CarCheck, InfrastructureCheck, LongPlaytest, RailCheck, ReadPathCheck, TradeCostCheck |
+| [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, InfrastructureCheck, LongPlaytest, RailCheck, ReadPathCheck, TradeCostCheck |
 | [InterimLoan](map/InterimLoan.md) | CreditCheck, LongPlaytest |
 | [Investor](map/Investor.md) | CreditCheck |
 | [JobType](map/JobType.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, FoodProcessingCheck, FundCheck, HealthCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MiningCheck, OutsideCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, ReadPathCheck, RestaurantsCheck |
@@ -142,7 +142,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, FundCheck, LongPlaytest |
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck |
-| [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, ConservationCheck, WaterCheck |
+| [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, ConservationCheck, WaterCheck |
 | [WageBand](map/WageBand.md) | BankCheck, EducationCheck, HouseholdCheck, InvestCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyPreviewCheck, SaveFileCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | HoldersCheck, HouseholdCheck |
 | [WorldEconomy](map/WorldEconomy.md) | FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SkipReportCheck |
@@ -1171,7 +1171,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L661 fixture: NEEDS YOU lists no need a city-built building answers
   - L662 ...and the advice suggests nothing
 
-## BuildCardCheck.java - 51 labelled assertions
+## BuildCardCheck.java - 82 labelled assertions
 
 > The build card (0.7.25): BuildCard's figures for all 73 buildings held to
 > the model's own reads - the quote, the land, the staffing tests, the
@@ -1187,65 +1187,98 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > passes would be a confident wrong answer on the screen that spends. The
 > ...
 
-- **L183 1. every building has a card: a group on its page, and a unit or \"adds nothing\"**
-  - L207 every building in the catalogue (
-  - L208 ...a market building on exactly one, in one group (
-  - L210 ...and every card and group has a name
-  - L211 every card has a unit above zero, or reads \"adds nothing\"
-  - L216 Industry is seven groups by owning sector:
-  - L218 Shops is the groceries and the bank's branches:
-- **L225 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets**
-  - L323 every card's price and sticker are Game.quoteBuild(t, 1)'s
-  - L324 ...its head the count standing, what is on site and its wait, and the land free the city's own
-  - L325 the hero's figure is the template's own (capacity, coverage, rail, points, its first good)
-  - L327 value added is what one makes less what it uses at the markets' prices, an office's at
-  - L329 bar 1 is the quote at one over the unit, to the bit, on every card
-  - L330 bar 2 is land per unit on the market's cards, unstaffable posts of 100 on an office's,
-  - L332 the running cost is the upkeep and the posts at today's wages
-- **L351 3. the tags: only the strict best on a bar, only in a group of two or more**
-  - L380 a tag is on the lowest figure of a bar, strictly below the highest, and on no other
-  - L381 a group of one has no tag and draws no track (
-- **L387 4. the notes: each group's note reads the sector's own figures**
-  - L410 homes' doors, the shops' coverage, the counters', the kitchens', the rail's and each maker
-- **L417 5. the investors' line: on site only for an investor's order; the word is the month's**
-  - L433 every market card's word is Game.getLastInvestment() under its sector, the branch's under
-  - L435 ...and the bank has a word of its own, filed under \"Bank\":
-  - L441 fixture: no department store and no grocery store on site before the orders
-  - L449 fixture: Luxury Retail's order of three department stores went on site
-  - L452 the department store reads \"Investors are building\", with the three on site and their wait
-  - L455 ...and says no \"this one:\" while they are, whatever its gate
-  - L456 the city's own two grocery stores on site are not an investors' order
-  - L458 a department store of the city's beside theirs reads \"yours among them\"
-  - L470 loaded, no market card has a word until a month runs (the words are not saved)
-  - L473 loaded, the customers who came and the meals wanted are not counted yet, not zero (the save
-  - L478 loaded, the bank's planner sees the bank: not \"no bank\" (
-  - L481 ...and a month later they are counted:
-  - L483 ...and the month after the load files a word for the bank that is not \"no bank\":
-- **L491 6. the gates: each \"this one:\" caused by a fixture, in buildStack()'s order**
-  - L500 with no deposit, the mine's gate is the deposit, with what the city owns and has committed
-  - L508 fixture: the town has no spare
-  - L510 the engineering office's gate is the licence: what one needs and what the city has
-  - L518 fixture: the town could staff
-  - L520 its gate is the staffing test, in the test's own words:
-  - L528 with half a house's ground free, the house's gate is the land, with what it needs and what is free
-  - L539 another spur's gate is a loss, what the investors' estimate says it would lose:
-  - L555 a market building that passes every gate has no \"this one:\", and one that fails one has it (
-- **L562 7. the verdict: in buildStack()'s order, and buildStack()'s own answer**
-  - L570 no deposit: the verdict is NO_DEPOSIT, and buildStack() says NO_DEPOSIT
-  - L576 nobody licensed: NO_LICENCE, with the licences it needs, and buildStack() says NO_LICENCE
-  - L584 short of land for three houses: NO_LAND by the quote's shortfall, and buildStack() says NO_LAND
-  - L593 short of cash: BILL by the quote less the cash, and buildStack() says NEEDS_FUNDING
-  - L599 with all of it: MONTHS, the quote's own wait at today's queue
-  - L605 with neither ore nor land, the mine's verdict is the deposit, as buildStack() checks ore first
-- **L667 8. the word's kind: none of the town's words is OTHER; every phrase, whole words, in order**
-  - L679 every sector's word in the town has a kind, none OTHER (
-  - L692 every example of
-  - L694 whole words: \"more\", \"before\" and \"Convenience Store\" are not ore, \"banks\" is not a bank
-  - L697 an order on site is BUILDING whatever the word, and the land-blocked list is LAND
-  - L717 a sector's investors are its own market buildings' lines and its word - Retail's with the bank's branch
-  - L721 fixture (section 5): Luxury Retail's three department stores are still on site
-  - L729 ...so its investors read BUILDING, with what is on site of what they are building (
-  - L736 ...and a sector with nothing on site does not:
+- **L202 1. every building has a card: a group on its page, and a unit or \"adds nothing\"**
+  - L226 every building in the catalogue (
+  - L227 ...a market building on exactly one, in one group (
+  - L229 ...and every card and group has a name
+  - L230 every card has a unit above zero, or reads \"adds nothing\"
+  - L235 Industry is seven groups by owning sector:
+  - L237 Shops is the groceries and the bank's branches:
+- **L244 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets**
+  - L342 every card's price and sticker are Game.quoteBuild(t, 1)'s
+  - L343 ...its head the count standing, what is on site and its wait, and the land free the city's own
+  - L344 the hero's figure is the template's own (capacity, coverage, rail, points, its first good)
+  - L346 value added is what one makes less what it uses at the markets' prices, an office's at
+  - L348 bar 1 is the quote at one over the unit, to the bit, on every card
+  - L349 bar 2 is land per unit on the market's cards, unstaffable posts of 100 on an office's,
+  - L351 the running cost is the upkeep and the posts at today's wages
+- **L370 3. the tags: only the strict best on a bar, only in a group of two or more**
+  - L399 a tag is on the lowest figure of a bar, strictly below the highest, and on no other
+  - L400 a group of one has no tag and draws no track (
+- **L406 4. the notes: each group's note reads the sector's own figures**
+  - L429 homes' doors, the shops' coverage, the counters', the kitchens', the rail's and each maker
+- **L436 5. the investors' line: on site only for an investor's order; the word is the month's**
+  - L452 every market card's word is Game.getLastInvestment() under its sector, the branch's under
+  - L454 ...and the bank has a word of its own, filed under \"Bank\":
+  - L460 fixture: no department store and no grocery store on site before the orders
+  - L468 fixture: Luxury Retail's order of three department stores went on site
+  - L471 the department store reads \"Investors are building\", with the three on site and their wait
+  - L474 ...and says no \"this one:\" while they are, whatever its gate
+  - L475 the city's own two grocery stores on site are not an investors' order
+  - L477 a department store of the city's beside theirs reads \"yours among them\"
+  - L489 loaded, no market card has a word until a month runs (the words are not saved)
+  - L492 loaded, the customers who came and the meals wanted are not counted yet, not zero (the save
+  - L497 loaded, the bank's planner sees the bank: not \"no bank\" (
+  - L500 ...and a month later they are counted:
+  - L502 ...and the month after the load files a word for the bank that is not \"no bank\":
+- **L510 6. the gates: each \"this one:\" caused by a fixture, in buildStack()'s order**
+  - L519 with no deposit, the mine's gate is the deposit, with what the city owns and has committed
+  - L527 fixture: the town has no spare
+  - L529 the engineering office's gate is the licence: what one needs and what the city has
+  - L537 fixture: the town could staff
+  - L539 its gate is the staffing test, in the test's own words:
+  - L547 with half a house's ground free, the house's gate is the land, with what it needs and what is free
+  - L558 another spur's gate is a loss, what the investors' estimate says it would lose:
+  - L574 a market building that passes every gate has no \"this one:\", and one that fails one has it (
+- **L581 7. the verdict: in buildStack()'s order, and buildStack()'s own answer**
+  - L589 no deposit: the verdict is NO_DEPOSIT, and buildStack() says NO_DEPOSIT
+  - L595 nobody licensed: NO_LICENCE, with the licences it needs, and buildStack() says NO_LICENCE
+  - L603 short of land for three houses: NO_LAND by the quote's shortfall, and buildStack() says NO_LAND
+  - L612 short of cash: BILL by the quote less the cash, and buildStack() says NEEDS_FUNDING
+  - L618 with all of it: MONTHS, the quote's own wait at today's queue
+  - L624 with neither ore nor land, the mine's verdict is the deposit, as buildStack() checks ore first
+- **L686 8. the word's kind: none of the town's words is OTHER; every phrase, whole words, in order**
+  - L698 every sector's word in the town has a kind, none OTHER (
+  - L711 every example of
+  - L713 whole words: \"more\", \"before\" and \"Convenience Store\" are not ore, \"banks\" is not a bank
+  - L716 an order on site is BUILDING whatever the word, and the land-blocked list is LAND
+  - L736 a sector's investors are its own market buildings' lines and its word - Retail's with the bank's branch
+  - L740 fixture (section 5): Luxury Retail's three department stores are still on site
+  - L748 ...so its investors read BUILDING, with what is on site of what they are building (
+  - L755 ...and a sector with nothing on site does not:
+- **L767 9. a run of orders: priced and checked as placing them in turn would be, and charged that**
+  - L778 fixture: the yard holds all of the first order's material and half the second's (
+  - L784 ...so the run's invoice is more than its orders quoted alone, which each count the same yard free
+  - L786 the run's first order is quoted as it is alone: a run of one is its quote
+  - L790 short of cash: the run's gap is its invoice less the cash
+  - L792 overdrawn: the gap counts the overdraft in full, as buildFundingGap() for one order does
+  - L794 ...and what the treasury is overdrawn by is the cash below nothing
+  - L796 with the cash to cover it, the gap is nothing
+  - L797 every order of it passes the checks money cannot fix: buildRunAhead() is all three, buildRunStop() SUCCESS
+  - L809 fixture: the three orders were placed
+  - L810 ...and what they were charged, added in turn, is the run's invoice to the bit
+  - L816 fixture: the free ground holds either of the first two orders alone and not both (
+  - L820 ...so the run goes one order ahead and stops at the second for ground
+  - L828 ...and placed in turn, buildStack() places the first and says NO_LAND to the second
+  - L837 a run whose second order is two mines, with one deposit free, goes one order ahead and stops for the deposit
+  - L842 a run with an office nobody is licensed for stops there for licences, as buildStack() would
+  - L845 a run whose first order is refused goes nowhere
+- **L860 10. served: every gauge is supply over demand, and one verdict, NEEDS YOU's lines turned over (0.7.41)**
+  - L891 a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%
+  - L892 ...the road's, on STRAINED and FREE_FLOW
+  - L893 ...a school's seats, on who would come over them - and a crowd off the list but over its seats is amber
+  - L894 ...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it
+  - L895 ...and every word is the verdict's: enough only green and at 100% or more, short under 100%, tight from it
+  - L898 general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)
+  - L901 a network serving 120%, a fifth in hand, is tight: amber, though over 100%
+  - L904 the road 180% full serves 56%: red, short
+  - L906 nothing asked is all of it met, and nothing supplying an ask is nothing; not a number has no verdict
+  - L910 a share just under 100% never prints as 100% (the word would say short beside it)
+  - L940 every served NEEDS YOU row (
+  - L962 every Build ring of power, water, the road, transit, care and the schools (
+  - L966 ...power's ring is the grid's own figure (to 1e-9) and the road's the road's, to the bit; transit has no verdict
+  - L972 the curve the Roads page draws against served is the road's flow at what it serves
+  - L982 fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows
 
 ## BuildMenuCheck.java - 0 labelled assertions
 
@@ -7496,24 +7529,24 @@ _(this harness does not label its checks through a helper - it prints its findin
 >                              reloaded city collected $0 where the live one
 > ...
 
-- **L1066 a city with money moving in every sector**
-  - L1131 fixture: the businesses owe bonds, and orders rest on their books
-  - L1133 fixture: the city's fund holds shares and bonds
-  - L1141 every sector is actually trading
-- **L1147 the FIRST read, which is the hard one**
-  - L1203 one pass over the screens moved nothing
-  - L1220 the live sale figure IS the one in the ledger
-- **L1224 read it, and read it again**
-  - L1251 reading the city fifty times changed nothing
-- **L1253 and the specific one item 7 was about**
-  - L1309 every one of the thirteen pantries fell by what sold and rose by what arrived
-  - L1316 ...and the statement never sold more than was in stock
-  - L1318 ...and the shelf never goes negative
-- **L1321 the tax the city takes is the tax it shows**
-  - L1329 business tax collected == business tax printed
-  - L1333 ...and it is the companies taxed separately, not netted
-- **L1338 a rate change reaches the treasury at once**
-  - L1368 doubling the rate moves the very next month's commercial tax
+- **L1103 a city with money moving in every sector**
+  - L1168 fixture: the businesses owe bonds, and orders rest on their books
+  - L1170 fixture: the city's fund holds shares and bonds
+  - L1178 every sector is actually trading
+- **L1184 the FIRST read, which is the hard one**
+  - L1240 one pass over the screens moved nothing
+  - L1257 the live sale figure IS the one in the ledger
+- **L1261 read it, and read it again**
+  - L1288 reading the city fifty times changed nothing
+- **L1290 and the specific one item 7 was about**
+  - L1346 every one of the thirteen pantries fell by what sold and rose by what arrived
+  - L1353 ...and the statement never sold more than was in stock
+  - L1355 ...and the shelf never goes negative
+- **L1358 the tax the city takes is the tax it shows**
+  - L1366 business tax collected == business tax printed
+  - L1370 ...and it is the companies taxed separately, not netted
+- **L1375 a rate change reaches the treasury at once**
+  - L1405 doubling the rate moves the very next month's commercial tax
 
 ## RestaurantsCheck.java - 33 labelled assertions
 

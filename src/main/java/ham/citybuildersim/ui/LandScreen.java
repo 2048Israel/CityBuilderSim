@@ -1549,7 +1549,7 @@ final class LandScreen {
      * The money is in: the plots are bought, each as its own button would
      * buy it, and whatever the purchase answers is shown - the build
      * screen's rule that a refusal nobody reads is a silent one
-     * (BuildScreen.buildOnTheLoan()). paper is the offer taken, or null for
+     * (BuildScreen.goAhead()). paper is the offer taken, or null for
      * the vault's dollars with the rest converted. Short of all of them -
      * which should not happen - one red card says so, in the office's frame.
      */

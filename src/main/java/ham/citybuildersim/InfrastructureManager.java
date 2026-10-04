@@ -375,6 +375,11 @@ public class InfrastructureManager {
         return Math.min(1, getUsableTransit() / commuters);
     }
 
+    /** ...unclamped, as Build's transit ring reads it since 0.7.41: the room on the stock over the commuters, served (+∞ with no commuters). */
+    public double getTransitServed() {
+        return CityNeeds.servedShare(getUsableTransit(), getLoad(Traffic.COMMUTERS));
+    }
+
     private double highwayCapacity;
     private double transitCapacity;
     private final double[] railShare = new double[Traffic.values().length];
@@ -666,6 +671,22 @@ public class InfrastructureManager {
     /** Load over capacity. Above 1 the network is carrying more than it can. */
     public double getUtilisation() {
         return (capacity > 0) ? getEffectiveLoad() / capacity : 0;
+    }
+
+    /**
+     * SERVED (0.7.41): capacity over the load the curve reads - the road's
+     * figure on every screen since Jerus's one rule for the gauges ("Served
+     * %, higher = better"), where it read how full, getUtilisation(). The
+     * same fraction the other way up: 162% full serves 62%. +∞ with nothing
+     * on the road (CityNeeds.servedShare()).
+     */
+    public double getServed() {
+        return CityNeeds.servedShare(capacity, getEffectiveLoad());
+    }
+
+    /** The flow at a served share of the traffic (0.7.41): throughputAt() at its load, one over it - the curve as the Roads page draws it, against served. */
+    public static double throughputAtServed(double served) {
+        return throughputAt(served > 0 ? 1 / served : Double.POSITIVE_INFINITY);
     }
 
     /**

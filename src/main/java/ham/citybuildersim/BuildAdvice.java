@@ -469,7 +469,8 @@ public final class BuildAdvice {
      * What the measure has against what it needs, with these buildings
      * standing as well, in the measure's own unit: generation or treatment
      * against the draw; the road's capacity against the trips on it, and
-     * transit's riders against the commuters; the places, seats, officers
+     * the room on transit's stock against the commuters (getUsableTransit(),
+     * not its riders); the places, seats, officers
      * and cells against the people who need them (cells: six months of the
      * caught, a sentence each); the free plots and the ovens against the
      * dead waiting and dying. Burial plots, which are months and not a
@@ -552,6 +553,70 @@ public final class BuildAdvice {
         double[] sd = supplyDemand(game, m, added);
         if (!(sd[1] > 0)) return 1;
         return Math.max(0, Math.min(1, sd[0] / sd[1]));
+    }
+
+    /*
+     * SERVED (0.7.41): every gauge on the Build tab reads how much of its
+     * need is met - supplyDemand()'s two halves, the one over the other,
+     * unclamped (cover() is the same held to 0-1, for a ring's arc) - and is
+     * judged by CityNeeds' one verdict. A gauge that is a supply against a
+     * demand: power, water, the road, transit, care and the schools. The
+     * dead, the plots, the police and the cells are not, and read as before.
+     */
+
+    /** Whether a measure's gauge reads as served (0.7.41): power, water, the road, transit, care and the schools. */
+    public static boolean isServed(Measure m) {
+        switch (m.kind()) {
+            case POWER: case WATER: case ROADS: case TRANSIT: case CARE: case SCHOOL: return true;
+            default: return false;
+        }
+    }
+
+    /** What the measure serves with these buildings standing as well (0.7.41): supply over demand, unclamped; NaN for a measure that is not served (isServed()). */
+    public static double served(Game game, Measure m, Map<BuildingsTemplate, Integer> added) {
+        if (!isServed(m)) return Double.NaN;
+        double[] sd = supplyDemand(game, m, added);
+        return CityNeeds.servedShare(sd[0], sd[1]);
+    }
+
+    /**
+     * ...and CityNeeds' one verdict on it (0.7.41): the lines of the NEEDS
+     * YOU row that watches the measure. Transit has no line, and a school
+     * above the ladder fewer than a class would come to has no row
+     * (CityNeeds.SEATS_FLOOR): no verdict. Null for a measure not served.
+     */
+    public static CityNeeds.Served verdict(Game game, Measure m, Map<BuildingsTemplate, Integer> added) {
+        if (!isServed(m)) return null;
+        double share = served(game, m, added);
+        switch (m.kind()) {
+            case POWER:   return CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, share);
+            case WATER:   return CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, share);
+            case ROADS:   return CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, share);
+            case CARE:    return CityNeeds.verdict(CityNeeds.Kind.CARE, m.care(), share);
+            case SCHOOL:
+                if (m.school().isBasic()) return CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, share);
+                if (CityNeeds.wouldCome(game, m.school()) < CityNeeds.SEATS_FLOOR) return CityNeeds.unjudged(share);
+                return CityNeeds.verdict(CityNeeds.Kind.HIGHER_SCHOOL, CareType.NONE, share);
+            default:      return CityNeeds.unjudged(share);
+        }
+    }
+
+    /** A served measure's two lines in served terms (0.7.41), {off NEEDS YOU's list past this, red at or under this}; null for transit and a measure not served. */
+    public static double[] servedLines(Measure m) {
+        switch (m.kind()) {
+            case POWER:  return CityNeeds.servedLines(CityNeeds.Kind.POWER, CareType.NONE);
+            case WATER:  return CityNeeds.servedLines(CityNeeds.Kind.WATER, CareType.NONE);
+            case ROADS:  return CityNeeds.servedLines(CityNeeds.Kind.ROADS, CareType.NONE);
+            case CARE:   return CityNeeds.servedLines(CityNeeds.Kind.CARE, m.care());
+            case SCHOOL: return CityNeeds.servedLines(m.school().isBasic()
+                    ? CityNeeds.Kind.BASIC_SCHOOLS : CityNeeds.Kind.HIGHER_SCHOOL, CareType.NONE);
+            default:     return null;
+        }
+    }
+
+    /** What a suggestion would leave its measure serving, and the verdict on it (0.7.41): what is on site and the order, standing - the served side of its after(); null for a measure not served. */
+    public static CityNeeds.Served verdictAfter(Game game, Suggestion s) {
+        return verdict(game, s.measure(), plus(onSite(game, s.measure()), s.template(), s.count()));
     }
 
     /** The road network with these buildings standing: InfrastructureManager.with(), the model's own curve. */

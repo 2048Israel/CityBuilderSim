@@ -105,6 +105,9 @@ final class TimeChart extends VBox {
     /** Which node owns the wheel: the window's page-scroll filter leaves a wheel over this alone (UserInterface). */
     static final String WHEEL_OWNER = "TimeChart.wheel";
 
+    /** How far above and below its own box the chart's clip reaches (0.7.40): it cuts the sides only. */
+    static final double OVERHANG = 2000;
+
     /* ------------------------- what it is handed ------------------------- */
 
     /**
@@ -185,6 +188,22 @@ final class TimeChart extends VBox {
         this.main = main;
         // The big chart zooms on the wheel; a small one leaves it to the page.
         if (main) getProperties().put(WHEEL_OWNER, Boolean.TRUE);
+        /*
+         * NEVER WIDER THAN IT IS GIVEN (0.7.40). A VBox's minimum width is its
+         * widest child's and a canvas's is its width, so a chart drawn a pixel
+         * wider than what held it pushed that out a pixel - and City History,
+         * which sized its charts off the page's own width, did it again every
+         * pulse (Jerus: "the graphs tend to go to the right endlessly"). The
+         * chart's minimum is nothing, and what is past its sides is cut off.
+         * Only the sides: a hover card may hang below a short chart, as it
+         * always could.
+         */
+        setMinWidth(0);
+        javafx.scene.shape.Rectangle sides = new javafx.scene.shape.Rectangle();
+        sides.setY(-OVERHANG);
+        sides.widthProperty().bind(widthProperty());
+        sides.heightProperty().bind(heightProperty().add(2 * OVERHANG));
+        setClip(sides);
 
         card.setStyle(Palette.block(Palette.PINNED, Palette.EDGE) + " -fx-padding: 7 10 8 10;");
         card.setMaxWidth(CARD_W);
@@ -196,7 +215,13 @@ final class TimeChart extends VBox {
         StackPane plotStack = new StackPane(plot, over);
         plotStack.setAlignment(Pos.TOP_LEFT);
 
-        settle.setOnFinished(e -> { if (onSettled != null && !dragging) onSettled.run(); });
+        // ...and not while a button is down anywhere in the window (0.7.40): the redraw would take
+        // a click's node from under its release (UserInterface, A PRESS IS NEVER REBUILT AWAY).
+        settle.setOnFinished(e -> {
+            if (onSettled == null || dragging) return;
+            if (UserInterface.pressHeld(this)) settle.playFromStart();
+            else onSettled.run();
+        });
 
         if (main) {
             setStyle("-fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 10;"

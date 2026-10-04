@@ -1354,8 +1354,8 @@ public final class Pieces {
 
     /**
      * A quoted rate's verdict colour, by how far up the market's own band it
-     * sits - BuildScreen.rateStyle()'s rule, here since 0.7.26 so a card can
-     * colour its offer.
+     * sits - the rule Build's old credit page coloured its rates by, here
+     * since 0.7.26 so a card can colour its offer.
      *
      * Not decoration. The whole point of showing the quote is that a player
      * can see they are being charged for the size of the ask, and a number
@@ -1378,16 +1378,17 @@ public final class Pieces {
 
     /**
      * A loan on offer, as a card (0.7.26): the land office's funding page sets
-     * two or three side by side, where BuildScreen.fundingOffer() stacks the
-     * same figures as a statement (Build's credit page, INSUFFICIENT FUNDS, is
-     * to take this in Build's own pass). Its name, with an (i) holding `info`
-     * when it is not null; the rate in `tone`, the verdict rateColour() gives
+     * two or three side by side, and Build's two since 0.7.40 (it stacked the
+     * same figures as a statement, INSUFFICIENT FUNDS, until then). Its name,
+     * with an (i) holding `info` when it is not null; the rate in `tone`, the
+     * verdict rateColour() gives
      * it; the face, the cash it brings, a month's cost and the cost all in,
      * each written by `written`; what happens at the end, in a line; the
      * credit impact in the rate's colour; and the button across its foot,
      * which books exactly this quote - here a green one saying `action`
      * (Finances' Borrow, the Bank's preferred offer); the land office's has
-     * been the action button since 0.7.34 (the overload below).
+     * been the action button since 0.7.34, and Build's funding page's since
+     * 0.7.40 (the overload below).
      */
     public static VBox offerCard(String name, String info, DebtQuote quote, String rate, String tone,
                                  String ending, String action, Runnable issue,
@@ -1404,7 +1405,8 @@ public final class Pieces {
     /**
      * ...with the action button across its foot (0.7.34): the land office's
      * offers, whose press borrows and then buys - "Buy 5 plots · D$9.8B",
-     * and the paper under it.
+     * and the paper under it - and since 0.7.40 Build's, whose press borrows
+     * and then places the run - "Build 3 orders · $X".
      */
     public static VBox offerCard(String name, String info, DebtQuote quote, String rate, String tone,
                                  String ending, Press press, String svg, String accent, Runnable issue,
@@ -5169,9 +5171,11 @@ public final class Pieces {
        for a gain and red for a loss, with a sign and an arrow always (but
        on a figure that rounds to no money at all), and the body's ink
        under BRIDGE_NOTHING; never on a price, a price's move, a yield or a
-       chart line (chartCardHead()'s rule). And MONEY AT A UNIT'S EDGE: Money writes 999,600 as "$1000k"
-       and 999.96 million as "$1000.0M"; tidyMoney() says them in the next
-       unit's words, for these two.
+       chart line (chartCardHead()'s rule). And MONEY AT A UNIT'S EDGE:
+       Money wrote 999,600 as "$1000k" and 999.96 million as "$1000.0M", and
+       tidyMoney() said them in the next unit's words, for these two; since
+       0.7.40 Money.tightMoney() does that itself for every screen, and
+       tidyMoney() is left in place with nothing to change.
        ===================================================================== */
 
     /** A search box (0.7.39): `text` in it, `prompt` when empty, `width` wide; `typed` on every key, `entered` on Enter. */
@@ -5219,7 +5223,7 @@ public final class Pieces {
         return new Pnl(arrow + sign + figure + pct, tone);
     }
 
-    /** Money.money()'s words at a unit's edge in the next unit's: "$1000k" is "$1.0M", "$1000.0M" "$1.0B", "$1000.0B" "$1.0T" (0.7.39). */
+    /** Money.money()'s words at a unit's edge in the next unit's: "$1000k" is "$1.0M", "$1000.0M" "$1.0B", "$1000.0B" "$1.0T" (0.7.39) - none of which Money writes since 0.7.40 (tightMoney()), so it changes nothing now. */
     public static String tidyMoney(String shown) {
         if (shown == null) return null;
         return shown.replace("$1000k", "$1.0M").replace("$1000.0M", "$1.0B").replace("$1000.0B", "$1.0T");

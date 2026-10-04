@@ -465,6 +465,29 @@ public class UserInterface extends Application {
     private boolean redrawPending;
     private javafx.animation.AnimationTimer clock;
 
+    /*
+     * A PRESS IS NEVER REBUILT AWAY (0.7.40). Jerus: "when your going at 20x
+     * speed you have to click buttons several times in order to actually
+     * click go through". A button here fires on MOUSE_CLICKED, which needs
+     * the press and the release on the same node; at 20x a month lands every
+     * 250 ms and the open screen is rebuilt for it, so a rebuild between the
+     * two put a new node under the release and the click was nobody's.
+     *
+     * So while any mouse button is down anywhere in the window (a filter on
+     * the scene, holdPresses()) the clock runs the months and only marks the
+     * redraw pending, and the first frame after the release draws it, month
+     * or no month. A slider's drag and a chart's are held still the same way,
+     * and a TimeChart's settle waits for the release too (PRESS_HELD).
+     */
+    private boolean pressHeld;
+    /** The buttons down, each counted from its press to its release, so one let go while another is held still holds. */
+    private final java.util.EnumSet<javafx.scene.input.MouseButton> buttonsDown =
+            java.util.EnumSet.noneOf(javafx.scene.input.MouseButton.class);
+    /** Set when a release has been delivered, and spent by the next frame: the first frame after a release. */
+    private boolean letGo;
+    /** The scene property that says a button is down (0.7.40), for what waits on a timer outside this class (TimeChart's settle). */
+    static final String PRESS_HELD = "UserInterface.pressHeld";
+
     /** The date line, kept so a day can be repainted without a whole redraw. */
     private Label dayLabel;
 
@@ -1068,6 +1091,7 @@ public class UserInterface extends Application {
             drawerOpen = false;
             placeFrame();
         });
+        holdPresses();
 
         // button actions
         showMainMenu();
@@ -5067,7 +5091,7 @@ public class UserInterface extends Application {
         switch (screen) {
             case "handleAllBuildingMenus": case ConstructionScreen.SCREEN:
             case "showNoDepositMenu": case "showNoLandMenu":
-            case "showQuickDebtMenu": case "showFundingFellShortMenu":
+            case "showBuildFunding": case "showBuildFellShort":
             case "showNoLicenceMenu":
                 return "build";
             /*
@@ -5727,13 +5751,16 @@ public class UserInterface extends Application {
                 double dt = (now - lastFrame) / 1e9;
                 lastFrame = now;
                 sinceRedraw += dt;
+                // The first frame after a release (0.7.40): it draws what the press held back.
+                boolean released = letGo;
+                letGo = false;
 
                 // ...and while a dialog is up (0.7.22): a confirmation's figures
                 // are the ones its action will meet.
                 if (!clockRunning || game == null || isGameMenu(currentScreen) || quitDialog != null) {
                     // A month landed and its redraw was throttled away; the
                     // clock has since stopped, so nothing else will draw it.
-                    if (redrawPending && game != null && !isGameMenu(currentScreen)) {
+                    if (redrawPending && game != null && !isGameMenu(currentScreen) && !pressHeld) {
                         redrawPending = false;
                         sinceRedraw = 0;
                         redrawScreen.run();
@@ -5766,7 +5793,7 @@ public class UserInterface extends Application {
                     landed = true;
                     if (stopIfSomethingHappened()) { monthProgress = 0; break; }
                 }
-                if (landed && sinceRedraw >= REDRAW_EVERY) {
+                if (!pressHeld && ((landed && sinceRedraw >= REDRAW_EVERY) || (released && redrawPending))) {
                     sinceRedraw = 0;
                     redrawPending = false;
                     redrawScreen.run();
@@ -5779,6 +5806,61 @@ public class UserInterface extends Application {
             }
         };
         clock.start();
+    }
+
+    /**
+     * A PRESS IS NEVER REBUILT AWAY (0.7.40; see the clock's fields): a press
+     * anywhere in the window holds the clock's redraw, and the release lets
+     * it go once the release - and the click the scene makes of it - has
+     * been delivered (a runLater, after both). Filters, so a node that
+     * consumes the event still counts. A move with no button down, or the
+     * window losing the focus, lets go as well, so a release the window
+     * never saw cannot hold the screen still for ever.
+     */
+    private void holdPresses() {
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            buttonsDown.add(e.getButton());
+            setPressHeld(true);
+        });
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
+            javafx.scene.input.MouseButton up = e.getButton();
+            javafx.application.Platform.runLater(() -> {
+                buttonsDown.remove(up);
+                if (buttonsDown.isEmpty()) setPressHeld(false);
+            });
+        });
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_MOVED, e -> letAllGo());
+        stage.focusedProperty().addListener((o, was, now) -> { if (!now) letAllGo(); });
+    }
+
+    /** No button is down after all: a move without one, or the window gone from under the pointer. */
+    private void letAllGo() {
+        buttonsDown.clear();
+        if (pressHeld) setPressHeld(false);
+    }
+
+    /** Holds the redraw, or lets it go - and says so on the scene, for TimeChart. */
+    private void setPressHeld(boolean held) {
+        if (pressHeld && !held) letGo = true;
+        pressHeld = held;
+        scene.getProperties().put(PRESS_HELD, held);
+    }
+
+    /**
+     * The open screen redrawn on the next frame no button is held on (0.7.40):
+     * for a change made as a press takes the focus - Finances' ask, set as
+     * its box is left - which a redraw at once would take from under the
+     * release.
+     */
+    void redrawSoon() {
+        redrawPending = true;
+        letGo = true;
+    }
+
+    /** Whether a mouse button is down in the scene a node is in (0.7.40): what a redraw on a timer waits for. */
+    static boolean pressHeld(javafx.scene.Node node) {
+        javafx.scene.Scene s = node == null ? null : node.getScene();
+        return s != null && Boolean.TRUE.equals(s.getProperties().get(PRESS_HELD));
     }
 
     /**

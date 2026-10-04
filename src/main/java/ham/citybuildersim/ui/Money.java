@@ -192,14 +192,19 @@ public final class Money {
         double a = Math.abs(value);
         String sign = value < 0 ? "-" : "";
         // Trillions (0.7.20): the load list printed a big city as "$3108.1B".
-        if (a >= 1e12)          return String.format("%s$%.1fT", sign, a / 1e12);
-        if (a >= 1_000_000_000) return String.format("%s$%.1fB", sign, a / 1_000_000_000);
-        if (a >= 1_000_000)     return String.format("%s$%.1fM", sign, a / 1_000_000);
+        // And each unit from where the one below it would print a thousand (0.7.40): 999.97B is
+        // "$1.0T", not "$1000.0B", and 999,600 in a compact column "$1.0M", not "$1000k".
+        if (a >= 1e12 || tenths(a / 1e9) >= 1000)          return String.format("%s$%.1fT", sign, a / 1e12);
+        if (a >= 1_000_000_000 || tenths(a / 1e6) >= 1000) return String.format("%s$%.1fB", sign, a / 1_000_000_000);
+        if (a >= 1_000_000 || (compact && Math.round(a / 1e3) >= 1000)) return String.format("%s$%.1fM", sign, a / 1_000_000);
         if (compact && a >= 10_000) return String.format("%s$%.0fk", sign, a / 1_000);
         // ...and no sign on a figure that rounds to no dollars at all: "-$0" is a direction.
         long whole = Math.round(a);
         return (whole == 0 ? "" : sign) + "$" + formatter.format(whole);
     }
+
+    /** A figure to one place, as "%.1f" prints it: where a unit's figure would read a thousand. */
+    private static double tenths(double v) { return Math.round(v * 10) / 10.0; }
 
     /** City money. Takes THOUSANDS - the unit the whole model counts in. */
     public static String money(double thousands) {

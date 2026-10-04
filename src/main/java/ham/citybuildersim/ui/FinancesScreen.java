@@ -209,6 +209,15 @@ final class FinancesScreen {
     int borrowTerm = 10;
     double borrowAsk = 0;
     boolean borrowHold = false;
+    /** What is typed in the ask's box and not yet set (0.7.40), kept through a month's redraw; null while the box is empty. */
+    private String askTyped;
+    /** ...the ask it was typed over: a step, a preset or an issue that moves the ask drops it. */
+    private double askTypedOver;
+    /** What the last entry that could not be read says, under the box until the ask is next set; null for none. */
+    private String askRefused;
+    /** The ask's box, and whether it had the focus when the page was last redrawn - a month landing rebuilds it under the typing (FundScreen's search box). */
+    private javafx.scene.control.TextField askField;
+    private boolean askTyping;
 
     /**
      * What is standing open - a "details" fold, by key. Kept on the screen
@@ -256,6 +265,8 @@ final class FinancesScreen {
     void showFinanceMenu() {
         // Redrawn where it stands - a month landing, a click on it - rather than arrived at: only then does the fund's worth count on (0.7.39).
         fundScreen.here = ui.isShowing("showFinanceMenu");
+        // ...and whether the player was typing an ask, so the new box takes the focus back (0.7.40).
+        askTyping = askField != null && askField.isFocused();
         ui.clearMenu("showFinanceMenu", () -> showFinanceMenu());
 
         boolean known = financeArea == null;
@@ -2389,34 +2400,217 @@ final class FinancesScreen {
         card.getChildren().add(foreign ? termChips(kit) : termColumns(kit));
 
         double minimum = g.minimumIssueSize();
-        card.getChildren().add(caption(foreign ? "HOW MANY " + Currency.FOREIGN_CODE : "HOW MUCH", null));
-        card.getChildren().add(figure(borrowAsk <= 0 ? "nothing asked for yet"
-                : foreign ? usdFull(borrowAsk) : dFull(borrowAsk), Palette.SIZE_TITLE,
-                borrowAsk > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
-        // ONE, TWO, FIVE, TEN of the rounding unit. It was 1/5/25/100, which on a
-        // term loan put a ten-billion-dollar button in front of a city holding
-        // half a billion - a step nobody will ever press, taking the place of
-        // one they would.
-        double[] steps = {kit.rounding(), kit.rounding() * 2, kit.rounding() * 5, kit.rounding() * 10};
+        card.getChildren().add(caption(foreign ? "HOW MANY " + Currency.FOREIGN_CODE : "HOW MUCH", ASK_TYPED_INFO));
+        /*
+         * TYPED, AND BUTTONS THAT SCALE WITH IT (0.7.40). Jerus: "there should
+         * be an option to raise trillions or tens of trillions right now max
+         * is 1B but if city is big or inflation you have to click endlessly
+         * ... i think that selection itself needs a redesign button-wise";
+         * asked, he chose "Type it + scaling buttons". The steps were one,
+         * two, five and ten lots - D$1B a click at most on a term loan. Now:
+         * the ask in full and short; a box it is typed in; ÷10 and ×10; one
+         * unit of its leading digit and a tenth of that each way, never under
+         * a lot; and presets off the model's own figures. The model caps no
+         * issue's size, so neither does this - the quote says what the
+         * market takes.
+         */
+        String[] shown = askShown(borrowAsk, foreign);
+        javafx.scene.layout.FlowPane figures = new javafx.scene.layout.FlowPane(8, 2);
+        figures.getChildren().add(figure(shown[0], Palette.SIZE_TITLE, borrowAsk > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
+        if (shown[1] != null) figures.getChildren().add(figure("· " + shown[1], Palette.SIZE_TITLE, Palette.TEXT_LABEL));
+        card.getChildren().addAll(figures, askBox(foreign));
+        if (askRefused != null) card.getChildren().add(words(askRefused, Palette.SIZE_LABEL, Palette.BAD));
+
         java.util.function.DoubleFunction<String> w = v -> foreign ? usd(v) : d(v);
-        javafx.scene.layout.FlowPane up = new javafx.scene.layout.FlowPane(6, 6);
-        javafx.scene.layout.FlowPane down = new javafx.scene.layout.FlowPane(6, 6);
-        for (double step : steps) {
-            up.getChildren().add(stepChip("+" + w.apply(step), () -> { borrowAsk += step; showFinanceMenu(); }, false));
-            down.getChildren().add(stepChip("−" + w.apply(step), () -> {
-                borrowAsk = Math.max(0, borrowAsk - step);
-                showFinanceMenu();
-            }, false));
+        double base = askBase();
+        double[] by = askSteps(base, kit.rounding());
+        javafx.scene.layout.FlowPane steps = new javafx.scene.layout.FlowPane(6, 6);
+        if (base > 0) {
+            steps.getChildren().add(stepChip("÷10", () -> setAsk(askBase() / 10), false));
+            for (double step : by) steps.getChildren().add(stepChip("−" + w.apply(step), () -> setAsk(Math.max(0, askBase() - step)), false));
         }
-        up.getChildren().add(stepChip("the minimum", () -> {
-            borrowAsk = Math.max(minimum, kit.rounding());
-            showFinanceMenu();
-        }, false));
-        down.getChildren().add(stepChip("clear", () -> { borrowAsk = 0; showFinanceMenu(); }, true));
-        card.getChildren().addAll(up, down);
-        card.getChildren().add(noteLine("lots of " + w.apply(kit.rounding()) + " · nothing under " + d(minimum),
+        for (int i = by.length - 1; i >= 0; i--) {
+            double step = by[i];
+            steps.getChildren().add(stepChip("+" + w.apply(step), () -> setAsk(askBase() + step), false));
+        }
+        if (base > 0) steps.getChildren().add(stepChip("×10", () -> setAsk(askBase() * 10), false));
+        javafx.scene.layout.FlowPane presets = new javafx.scene.layout.FlowPane(6, 6);
+        for (AskPreset p : askPresets(kit, foreign)) {
+            presets.getChildren().add(stepChip(p.name() + " · " + w.apply(p.ask()), () -> setAsk(p.ask()), false));
+        }
+        presets.getChildren().add(stepChip("clear", () -> setAsk(0), true));
+        card.getChildren().addAll(steps, presets);
+        card.getChildren().add(noteLine("lots of " + w.apply(kit.rounding()) + " · nothing under "
+                + w.apply(foreign ? g.minimumIssueSizeUsd() : minimum),
                 LOTS_INFO, 560));
         return card;
+    }
+
+    /* ----------------------------- the ask, typed (0.7.40) ----------------------------- */
+
+    /** HOW MUCH's (i): what the box takes - the case rules - and what the buttons do. */
+    static final String ASK_TYPED_INFO = "Type an amount in dollars: digits, with or without commas, a decimal "
+            + "point if you like, and k, M, B or T after them for thousands, millions, billions or trillions - "
+            + "capital or small, so 40b is 40B and 750m is 750M (an m is never a thousandth). A D$, $ or US$ in "
+            + "front is ignored. Enter, or leaving the box, sets the ask; what cannot be read is said under the box "
+            + "and the ask stays as it was. ÷10 and ×10 scale it; the steps are one unit of its leading digit and "
+            + "a tenth of that, never less than a lot; the presets are the city's own figures.";
+
+    /** A typed amount: an optional mark, digits (grouped by commas or not), an optional fraction, an optional unit. */
+    private static final java.util.regex.Pattern ASK_WORDS = java.util.regex.Pattern.compile(
+            "(?:[A-Za-z]{0,3}\\$)?\\s*((?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?|\\.\\d+)\\s*([kKmMbBtT])?");
+
+    /** The ask a typed amount sets, in the model's thousands (Money.toDollars()'s unit), by ASK_TYPED_INFO's rules; NaN when it is not an amount. Pure. */
+    static double askFromWords(String typed) {
+        if (typed == null) return Double.NaN;
+        java.util.regex.Matcher m = ASK_WORDS.matcher(typed.trim());
+        if (!m.matches()) return Double.NaN;
+        double scale = switch (m.group(2) == null ? "" : m.group(2).toLowerCase(java.util.Locale.ROOT)) {
+            case "k" -> 1e3;
+            case "m" -> 1e6;
+            case "b" -> 1e9;
+            case "t" -> 1e12;
+            default  -> 1;
+        };
+        double dollars = Double.parseDouble(m.group(1).replace(",", "")) * scale;
+        return Double.isFinite(dollars) ? dollars / 1000 : Double.NaN;
+    }
+
+    /** What the box says under itself when an entry cannot be read. Pure. */
+    static String askRefusal(String typed) {
+        return "“" + typed.trim() + "” is not an amount: digits, then k, M, B or T - 40B, 2.5T, 750M "
+                + "or 12,000,000. The ask stays as it was.";
+    }
+
+    /** The ask written in full and short: {"D$2,500,000,000,000", "D$2.5T"} - the second null when it would say the same; nothing asked, {"nothing asked for yet", null}. Pure. */
+    String[] askShown(double ask, boolean foreign) {
+        if (!(ask > 0)) return new String[] { "nothing asked for yet", null };
+        String full = marked(foreign ? Currency.FOREIGN_SYMBOL : sym(), Money.cash(ask));
+        String brief = foreign ? usd(ask) : d(ask);
+        return new String[] { full, full.equals(brief) ? null : brief };
+    }
+
+    /** The ± steps for an ask: one unit of its leading digit and a tenth of that - D$1B and D$100M at D$3.4B - never under a lot; at nothing, one lot. Pure. */
+    static double[] askSteps(double ask, double lot) {
+        if (!(ask > 0)) return new double[] { lot };
+        double big = Math.max(lot, Math.pow(10, Math.floor(Math.log10(ask))));
+        double fine = Math.max(lot, big / 10);
+        return fine < big ? new double[] { big, fine } : new double[] { big };
+    }
+
+    /** What a step or a scale starts from: what is typed and not yet set, when it reads as an amount, else the ask. */
+    double askBase() {
+        double typed = askTyped == null ? Double.NaN : askFromWords(askTyped);
+        return Double.isNaN(typed) ? borrowAsk : typed;
+    }
+
+    /** The ask set by a step, a preset or clear: what was typed and the refusal go, and the page is drawn on it. */
+    void setAsk(double ask) {
+        borrowAsk = Double.isFinite(ask) ? Math.max(0, ask) : 0;
+        askTyped = null;
+        askRefused = null;
+        askField = null;
+        showFinanceMenu();
+    }
+
+    /** One preset of the ask: what it is called, and the model's figure it sets. */
+    record AskPreset(String name, double ask) { }
+
+    /**
+     * The ask's presets, every figure a model getter's, each offered only
+     * when it is something: at home, the minimum issue (at least a lot, as
+     * "the minimum" always set it), what falls due in the next twelve months
+     * (DebtManager.dueWithin()), a month of the treasury's spending
+     * (Game.monthOfSpending()), a year of tax as the market prices it
+     * (DebtManager.annualCapacityRevenue()) and what the treasury is
+     * overdrawn by (Game.cashShortfall()); abroad, in the dollars the ask is
+     * in, the minimum (Game.minimumIssueSizeUsd()) and what the dollar paper
+     * asks in the next twelve months (DebtManager.dueAbroadWithinUsd()).
+     * Pure.
+     */
+    List<AskPreset> askPresets(Instrument kit, boolean foreign) {
+        Game g = ui.game;
+        DebtManager ledger = g.getDebtManager();
+        List<AskPreset> out = new ArrayList<>();
+        out.add(new AskPreset("the minimum", Math.max(foreign ? g.minimumIssueSizeUsd() : g.minimumIssueSize(), kit.rounding())));
+        double[] figures = foreign
+                ? new double[] { ledger.dueAbroadWithinUsd(12) }
+                : new double[] { ledger.dueWithin(12), g.monthOfSpending(), ledger.annualCapacityRevenue(), g.cashShortfall() };
+        String[] names = foreign
+                ? new String[] { "falls due abroad within a year" }
+                : new String[] { "falls due within a year", "a month's spending", "a year of tax", "overdrawn by" };
+        for (int i = 0; i < figures.length; i++) {
+            if (figures[i] > 0 && Double.isFinite(figures[i])) out.add(new AskPreset(names[i], figures[i]));
+        }
+        return out;
+    }
+
+    /**
+     * The box the ask is typed in (0.7.40), the house's search box: what is
+     * typed and not yet set lives through a month's redraw, and the focus
+     * with it. Enter sets the ask; so does leaving the box - checked once the
+     * leaving is over, so a redraw that took the box away is not mistaken
+     * for it.
+     */
+    Node askBox(boolean foreign) {
+        if (askTyped != null && askTypedOver != borrowAsk) askTyped = null;
+        javafx.scene.control.TextField box = searchBox(askTyped == null ? "" : askTyped,
+                foreign ? "type it: 40M, 2.5B" : "type it: 40B, 2.5T, 750M", 240, typed -> {
+                    askTyped = typed;
+                    askTypedOver = borrowAsk;
+                }, null);
+        box.setOnAction(e -> commitAsk(box, true));
+        box.focusedProperty().addListener((o, was, now) -> {
+            if (now) return;
+            javafx.application.Platform.runLater(() -> {
+                if (box.getScene() != null && !box.isFocused()) commitAsk(box, false);
+            });
+        });
+        boolean again = askTyping;
+        askTyping = false;
+        askField = box;
+        if (again) {
+            javafx.application.Platform.runLater(() -> {
+                box.requestFocus();
+                box.positionCaret(box.getText().length());
+            });
+        }
+        HBox row = new HBox(Palette.GAP, box, words("Enter sets it", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /**
+     * What is in the box, set as the ask - or, when it cannot be read, said
+     * under the box with the ask left as it was. Enter draws the page at
+     * once; leaving the box asks the window for a redraw, which waits for the
+     * mouse button to come up (UserInterface.redrawSoon()), so the press that
+     * took the focus away still lands on what it was aimed at.
+     */
+    private void commitAsk(javafx.scene.control.TextField box, boolean enter) {
+        String typed = box.getText() == null ? "" : box.getText().trim();
+        boolean changed;
+        if (typed.isEmpty()) {
+            changed = askRefused != null;
+            askTyped = null;
+            askRefused = null;
+        } else {
+            double ask = askFromWords(typed);
+            if (Double.isNaN(ask)) {
+                changed = !askRefusal(typed).equals(askRefused);
+                askRefused = askRefusal(typed);
+                askTyped = typed;
+                askTypedOver = borrowAsk;
+            } else {
+                changed = true;
+                borrowAsk = ask;
+                askTyped = null;
+                askRefused = null;
+            }
+        }
+        askField = null;
+        if (enter) showFinanceMenu();
+        else if (changed) ui.redrawSoon();
     }
 
     /** One instrument as a tile: its swatch-tinted icon, its name and (i), the range it is issued over, its line; picked, its ground and edge lit. */
@@ -3152,8 +3346,8 @@ final class FinancesScreen {
        Issuing the paper a screen asked for, and the page that says what was
        raised. The borrow page comes through here; the two offers the build
        screen makes when the treasury is short do not - each books its own
-       quote on Game and places the order again (BuildScreen's
-       buildOnTheLoan()). Its own section since 2026-09-18, on the way out of
+       quote on Game and places the run (BuildScreen's runOffers(), since
+       0.7.40). Its own section since 2026-09-18, on the way out of
        the stat card and into the finances screen.
 
        A RECEIPT SINCE 0.7.32 (the spec's D13, B11): "Finances › Issued" reads

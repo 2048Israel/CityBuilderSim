@@ -273,12 +273,12 @@ final class ServicesScreen {
         }
     }
 
-    /** A system's verdict: the worst NEEDS YOU level of the rows it answers, and that row (null when none is near its line). */
+    /** A system's verdict: the worst of the rows it answers - by each row's colour since 0.7.41 (Need.verdictLevel(): a served row short of 100% is amber though not listed) - and that row (null when none is near its line). */
     static CityNeeds.Need areaWorst(String area, List<CityNeeds.Need> all) {
         CityNeeds.Need worst = null;
         for (CityNeeds.Need n : all) {
             if (!answers(area, n.go())) continue;
-            if (worst == null || n.level() > worst.level()) worst = n;
+            if (worst == null || n.verdictLevel() > worst.verdictLevel()) worst = n;
         }
         return worst;
     }
@@ -295,7 +295,7 @@ final class ServicesScreen {
         for (ServiceArea a : serviceAreas()) {
             boolean on = a.name().equals(serviceArea);
             CityNeeds.Need worst = areaWorst(a.name(), all);
-            int level = worst == null ? 0 : worst.level();
+            int level = worst == null ? 0 : worst.verdictLevel();
             boolean news = false;
             for (Event e : events) if (e.area().equals(a.name()) && !seen.contains(e.key())) news = true;
 
@@ -314,7 +314,7 @@ final class ServicesScreen {
                     + " -fx-background-color: " + (on ? Palette.RAISED : Palette.CONTROL) + ";"
                     + " -fx-background-radius: " + Palette.RADIUS_TIGHT + ";"
                     + " -fx-border-color: " + (on ? Palette.ACCENT : "transparent") + "; -fx-border-width: 0 0 2 0;");
-            Tooltip tip = new Tooltip(a.name() + (worst == null || worst.level() == 0
+            Tooltip tip = new Tooltip(a.name() + (worst == null || worst.verdictLevel() == 0
                     ? ": nothing near its line" : ": " + worst.label().toLowerCase() + " · " + worst.reading())
                     + (news ? "\nSomething happened here this month." : ""));
             tip.setShowDelay(Duration.millis(300));
@@ -331,7 +331,8 @@ final class ServicesScreen {
        They stay put while the second strip moves underneath them, so drilling
        into senior care never costs you sight of the sick rate that senior care
        is one of the answers to. Each is a door (0.7.28): the bills to their
-       books, the thinnest cover to Build on that ring, the roads to
+       books, the least served care (THINNEST COVER until 0.7.41) to Build
+       on that ring, the roads to
        Infrastructure, the rest to the page that explains them. Where the
        history keeps the figure, a sparkline of ten years and its change on
        last month.
@@ -417,8 +418,8 @@ final class ServicesScreen {
     /** A share, as Build's rings write it. */
     static String pct(double share) { return BuildScreen.pct(share); }
 
-    /** A row's verdict colour, or the plain figure's where no row judges it. */
-    static String tone(CityNeeds.Need n) { return n == null ? Palette.TEXT_HEAD : BuildScreen.verdict(n.level()); }
+    /** A row's verdict colour - a served row's the one verdict on what it serves (0.7.41), any other's its level - or the plain figure's where no row judges it. */
+    static String tone(CityNeeds.Need n) { return n == null ? Palette.TEXT_HEAD : BuildScreen.verdict(n.verdictLevel()); }
 
     /** The NEEDS YOU row of a kind - for CARE, of a care type; for HIGHER_SCHOOL, of a school - or null. */
     static CityNeeds.Need need(List<CityNeeds.Need> all, CityNeeds.Kind kind, CareType care, EducationType school) {
@@ -473,7 +474,7 @@ final class ServicesScreen {
         double[] power = lastTwo("energyRatio");
         if (power[1] < 1 && power[0] >= 1) {
             out.add(new Event("Utilities", "brownout:" + month, String.format(
-                    "A brownout began this month: the grid supplies %s of what the city asks.", pct(power[1])),
+                    "A brownout began this month: the grid serves %s of what the city asks.", pct(power[1])),
                     BROWNOUT_INFO, Palette.BAD));
         }
         double[] ladder = lastTwo("schoolCoverage");
@@ -702,11 +703,15 @@ final class ServicesScreen {
          * names a building. */
         CareType worst = thinnest();
         double cover = service.getCoverage(worst);
-        out.add(new Kpi("THINNEST COVER", pct(cover),
-                // Nothing to build next when every kind is covered (0.7.20); it read
+        // SERVED (0.7.41): the month's coverage is the share of the need it met, so it reads as served, in
+        // the one verdict on that figure - "everything covered" read at 99.5% until then.
+        CityNeeds.Served least = CityNeeds.verdict(CityNeeds.Kind.CARE, worst, cover);
+        out.add(new Kpi("LEAST SERVED", CityNeeds.servedPct(cover),
+                // Nothing to build next when every kind is served (0.7.20); it read
                 // "100% general care - build that next".
-                cover >= .995 ? "everything covered" : worst.getLabel().toLowerCase() + " — build that next",
-                tone(need(all, CityNeeds.Kind.CARE, worst, null)),
+                least.enough() ? "every kind served, enough"
+                        : worst.getLabel().toLowerCase() + " " + BuildScreen.servedWords(least) + " — build that next",
+                BuildScreen.servedTone(least),
                 "Build › Healthcare, on " + worst.getLabel().toLowerCase(),
                 () -> ui.buildScreen.openOn(BuildAdvice.Measure.care(worst)), null, null));
 
@@ -957,9 +962,12 @@ final class ServicesScreen {
         double built = bm.getCareCapacity(care);
         double staffed = bm.getStaffedCareCapacity(care, fill);
         double cover = service.getCoverage(care);
-        String tone = tone(need(all, CityNeeds.Kind.CARE, care, null));
+        // SERVED (0.7.41): the ring is the month's coverage read as served, in the one verdict on it.
+        CityNeeds.Served v = CityNeeds.verdict(CityNeeds.Kind.CARE, care, cover);
+        String tone = BuildScreen.servedTone(v);
         String toServe = care == CareType.SENIOR ? " places needed" : " to serve";
-        String caption = people(staffed) + " staffed of " + people(built) + " built · " + people(served) + toServe;
+        String caption = BuildScreen.servedWords(v) + " · " + people(staffed) + " staffed of " + people(built) + " built · "
+                + people(served) + toServe;
         String buys, buysWords, range, icon, page;
         switch (care) {
             case CHILDCARE: {
@@ -988,7 +996,7 @@ final class ServicesScreen {
                 page = "General care";
             }
         }
-        return new CareWords(care.getLabel(), icon, pct(cover), cover, tone, buys, buysWords, range,
+        return new CareWords(care.getLabel(), icon, CityNeeds.servedPct(cover), cover, tone, buys, buysWords, range,
                 served, built, staffed, caption, careInfo(care, cover), BuildAdvice.Measure.care(care), page);
     }
 
@@ -1004,9 +1012,9 @@ final class ServicesScreen {
         String who = care == CareType.CHILDCARE ? "Babies and children — the band it is measured against."
                 : care == CareType.SENIOR ? seniorNeedWords()
                 : "Everybody in the city. General care is not means-tested or age-banded.";
-        return who + "\n\nThe ring is the coverage the month applied, " + pct(cover) + ": the staffed places "
-                + "less anybody the fee turned away. A place with no staff treats nobody — check the "
-                + "professions table on the People screen.";
+        return who + "\n\nThe ring is what it served the month it applied, " + CityNeeds.servedPct(cover) + ": the staffed "
+                + "places less anybody the fee turned away, over who needs one. A place with no staff treats nobody — "
+                + "check the professions table on the People screen.";
     }
 
     /**
@@ -1123,9 +1131,9 @@ final class ServicesScreen {
         VBox cures = card(cardHead(Icons.HEALTH, "What care cures", RECOVERY_INFO, null),
                 effectScale("", sickness.getLastRecovery(), Sickness.RECOVERY_UNTREATED, Sickness.RECOVERY_SERVED,
                         false, ServicesScreen::pct, Palette.PEOPLE, 0,
-                        words(pct(cover) + " covered", Palette.SIZE_LABEL, Palette.TEXT_LABEL), 90),
+                        words(CityNeeds.servedPct(cover) + " " + CityNeeds.SERVED, Palette.SIZE_LABEL, Palette.TEXT_LABEL), 90),
                 words("of the sick get better each month: " + pct(Sickness.RECOVERY_UNTREATED)
-                        + " with nobody covered, " + pct(Sickness.RECOVERY_SERVED) + " with everybody.",
+                        + " with nobody served, " + pct(Sickness.RECOVERY_SERVED) + " with everybody.",
                         Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         two.add(cures, 0, 0);
         two.add(card(cardHead(Icons.STAFF, "Who gets a doctor", careInfo(CareType.GENERAL, cover), null),
@@ -1269,7 +1277,7 @@ final class ServicesScreen {
     void livingCarePage(VBox page, CareType care, List<CityNeeds.Need> all) {
         double c = ui.game.getHealthcare().getCoverage(care);
         page.getChildren().add(sectionHead("WHAT " + care.getLabel().toUpperCase() + " BUYS", null,
-                hint(pct(c) + " covered: the dot is today, the ends nobody covered and everybody")));
+                hint(CityNeeds.servedPct(c) + " " + CityNeeds.SERVED + ": the dot is today, the ends nobody served and everybody")));
         VBox scales = new VBox(10);
         if (care == CareType.CHILDCARE) {
             scales.getChildren().add(scaleRow("Infant deaths", Healthcare.mortalityFactor(AgeBand.BABY, c, .5, 0),
@@ -1326,7 +1334,7 @@ final class ServicesScreen {
         double staffed = bm.getStaffedCareCapacity(care, staffing);
         double cover = service.getCoverage(care);
         VBox col = column(statementHead(care.getLabel()),
-                statementLine("Covers", pct(cover)),
+                statementLine("Serves", CityNeeds.servedPct(cover)),
                 statementLine(care == CareType.SENIOR ? "Places needed" : "People to serve", people(served)),
                 statementLine("Places built", people(built)),
                 statementLine("Places staffed", people(staffed), staffed < built * .95 ? Palette.WARN : null));
@@ -1500,9 +1508,10 @@ final class ServicesScreen {
         Education schools = ui.game.getEducation();
         double basic = schools.basicCoverage();
         List<Kpi> out = new ArrayList<>();
-        out.add(new Kpi("BASIC LADDER", pct(basic),
-                "held up by " + schools.basicBottleneck().getLabel().toLowerCase(),
-                tone(need(all, CityNeeds.Kind.BASIC_SCHOOLS, null, null)),
+        CityNeeds.Served ladder = CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, basic);
+        out.add(new Kpi("BASIC LADDER", CityNeeds.servedPct(basic),
+                BuildScreen.servedWords(ladder) + " · held up by " + schools.basicBottleneck().getLabel().toLowerCase(),
+                BuildScreen.servedTone(ladder),
                 "Education's Overview: the pipeline", () -> open("Education", OVERVIEW),
                 "schoolCoverage", ServicesScreen::points));
         out.add(new Kpi("IN CLASS", people(sum(schools.getStudying())), "adults out of the workforce",
@@ -1573,11 +1582,11 @@ final class ServicesScreen {
 
     /**
      * One school as the pipeline draws it, worked out without drawing it: its
-     * ring - a basic stage's coverage in Build's verdict for it, a school
-     * above the ladder its seats in use in the people teal (who would come is
-     * Build's verdict, not this page's) - its two lines, and the gate that
-     * holds it with that gate's colour (grey; a verdict only where NEEDS YOU
-     * lists the school for its seats).
+     * ring - since 0.7.41 what it serves in the one verdict on it: a basic
+     * stage's coverage, a school above the ladder its seats over who would
+     * come (its seats in use, in the people teal, until then) - its two
+     * lines, and the gate that holds it with that gate's colour (grey; a
+     * verdict only where NEEDS YOU lists the school for its seats).
      */
     record SchoolNode(EducationType type, String ring, double arc, String ringTone, String line1, String line2,
                       String gate, String gateTone, String page) { }
@@ -1592,23 +1601,25 @@ final class ServicesScreen {
                 : t == EducationType.UNIVERSITY ? "University" : "Professions";
         if (t.isBasic()) {
             double cover = schools.getCoverage(t);
-            int level = ui.buildScreen.levelOf(BuildAdvice.Measure.school(t), all);
+            // Served (0.7.41), in the one verdict on the stage's own coverage.
+            CityNeeds.Served v = CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, cover);
             double[] sd = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.school(t), java.util.Map.of());
             boolean narrowest = t == schools.basicBottleneck();
-            return new SchoolNode(t, pct(cover), cover, BuildScreen.verdict(level),
+            return new SchoolNode(t, CityNeeds.servedPct(cover), cover, BuildScreen.servedTone(v),
                     "taught " + people(schools.getEnrolled(t)), "of " + people(sd[1]) + " to teach",
                     narrowest ? "the narrowest stage" : null,
-                    narrowest ? BuildScreen.verdict(level) : Palette.TEXT_LABEL, page);
+                    narrowest ? BuildScreen.servedTone(v) : Palette.TEXT_LABEL, page);
         }
         Gate g = gate(t);
         double inFlight = schools.getEnrolled(t);
         double[] queue = schools.cohortsInFlight(t);
-        double use = seats > 0 ? Math.min(1, inFlight / seats) : 0;
-        String ring = seats > 0 ? pct(use) : built > 0 ? "0%" : "—";
+        // SEATS OVER WHO WOULD COME, served (0.7.41): it was the seats in use, in the people teal, a load.
+        CityNeeds.Served v = BuildAdvice.verdict(ui.game, BuildAdvice.Measure.school(t), java.util.Map.of());
+        String ring = CityNeeds.servedPct(v.share());
         CityNeeds.Need row = need(all, CityNeeds.Kind.HIGHER_SCHOOL, null, t);
         String gateTone = g.binding().equals("seats") && row != null && row.level() > 0
-                ? BuildScreen.verdict(row.level()) : Palette.TEXT_LABEL;
-        return new SchoolNode(t, ring, use, Palette.PEOPLE,
+                ? BuildScreen.verdict(row.verdictLevel()) : Palette.TEXT_LABEL;
+        return new SchoolNode(t, ring, BuildScreen.arc(v), BuildScreen.servedTone(v),
                 seats <= 0 && inFlight <= 0 ? (built > 0 ? people(built) + " seats, none staffed" : "not built")
                         : "in class " + people(inFlight) + " of " + people(seats),
                 queue.length > 0 && queue[0] > 0 ? flowText(queue[0]) + " finish next month" : "nobody finishes next month",
@@ -1741,7 +1752,7 @@ final class ServicesScreen {
 
     /** The basic ladder's notes: the minimum of three, and the four-and-three split. */
     static final String LADDER_INFO = String.format(
-            "The ladder covers the minimum of its three stages, not the average — the narrowest is the one "
+            "The ladder serves the minimum of its three stages, not the average — the narrowest is the one "
             + "holding the rest up, and spare places anywhere else cannot make up for it.%n%n"
             + "Elementary and middle both teach the child band, so it is split %.0f/%.0f between them — the "
             + "real four years then three.",
@@ -1770,17 +1781,19 @@ final class ServicesScreen {
         double[] staffed = bm.getStaffedEducationPlaces(staffing);
         double[] built = bm.getBuiltEducationPlaces();
 
-        page.getChildren().add(sectionHead("THE BASIC LADDER · " + pct(schools.basicCoverage()) + " covered", LADDER_INFO,
+        page.getChildren().add(sectionHead("THE BASIC LADDER · " + CityNeeds.servedPct(schools.basicCoverage()) + " "
+                + CityNeeds.SERVED, LADDER_INFO,
                 hint("held up by " + schools.basicBottleneck().getLabel().toLowerCase())));
         VBox rows = new VBox(12);
         for (EducationType stage : new EducationType[]{EducationType.ELEMENTARY, EducationType.MIDDLE, EducationType.HIGH}) {
             double[] sd = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.school(stage), java.util.Map.of());
             double cover = schools.getCoverage(stage);
-            int level = ui.buildScreen.levelOf(BuildAdvice.Measure.school(stage), all);
+            // Served (0.7.41), in the one verdict on the stage's own coverage.
+            CityNeeds.Served v = CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, cover);
             Label name = words(stage.getLabel(), Palette.SIZE_BODY, Palette.TEXT_HEAD);
             name.setMinWidth(150);
             name.setPrefWidth(150);
-            Label figure = figure(pct(cover), Palette.SIZE_SECTION, BuildScreen.verdict(level));
+            Label figure = figure(CityNeeds.servedPct(cover), Palette.SIZE_SECTION, BuildScreen.servedTone(v));
             figure.setMinWidth(54);
             SegmentBar bar = supplyBar(sd[1], built[stage.ordinal()], staffed[stage.ordinal()], Palette.PEOPLE,
                     "to teach", List.of(new Tick(schools.getEnrolled(stage), Palette.PEOPLE_LIGHT, 2, null, "in class")),
@@ -1804,7 +1817,7 @@ final class ServicesScreen {
         page.getChildren().add(tuitionLine(EducationType.HIGH));
         page.getChildren().add(details("education:ladder", "the ladder as a table, and the diplomas since the founding",
                 ladderTable(), column(
-                        statementTotal("The ladder covers", pct(schools.basicCoverage()), null),
+                        statementTotal("The ladder serves", CityNeeds.servedPct(schools.basicCoverage()), null),
                         statementLine("Diploma-holders gained since the founding",
                                 people(schools.getEverGraduated()[WageBand.DIPLOMA.ordinal()])),
                         statementNote("A running total of the months the diploma band grew, net of those who "
@@ -1812,7 +1825,7 @@ final class ServicesScreen {
                                 + "months it grew count only the growth. Not a count of diplomas handed out."))));
     }
 
-    /** The old ladder table: stage, to teach, seats, staffed, in class, covered. */
+    /** The old ladder table: stage, to teach, seats, staffed, in class, served ("covered" until 0.7.41). */
     javafx.scene.layout.GridPane ladderTable() {
         Education schools = ui.game.getEducation();
         BuildingManager bm = ui.game.getBuildingManager();
@@ -1820,7 +1833,7 @@ final class ServicesScreen {
         double[] staffed = bm.getStaffedEducationPlaces(staffing);
         double[] built = bm.getBuiltEducationPlaces();
         javafx.scene.layout.GridPane table = grid(new double[] {124, 74, 74, 74, 74, 78}, rightAfterFirst(6));
-        gridHead(table, "stage", "to teach", "seats", "staffed", "in class", "covered");
+        gridHead(table, "stage", "to teach", "seats", "staffed", "in class", CityNeeds.SERVED);
         EducationType[] stages = {EducationType.ELEMENTARY, EducationType.MIDDLE, EducationType.HIGH};
         for (int i = 0; i < stages.length; i++) {
             EducationType stage = stages[i];
@@ -1831,7 +1844,7 @@ final class ServicesScreen {
             table.add(gridCell(people(built[stage.ordinal()]), tone, Palette.SIZE_CAPTION, true), 2, i + 1);
             table.add(gridCell(people(staffed[stage.ordinal()]), tone, Palette.SIZE_CAPTION, true), 3, i + 1);
             table.add(gridCell(people(schools.getEnrolled(stage)), tone, Palette.SIZE_CAPTION, true), 4, i + 1);
-            table.add(gridCell(pct(schools.getCoverage(stage)), tone, Palette.SIZE_CAPTION, true), 5, i + 1);
+            table.add(gridCell(CityNeeds.servedPct(schools.getCoverage(stage)), tone, Palette.SIZE_CAPTION, true), 5, i + 1);
         }
         return table;
     }
@@ -2142,23 +2155,36 @@ final class ServicesScreen {
        figures and the door to Infrastructure › Roads, which owns the road.
        ===================================================================== */
 
+    /*
+     * SERVED (0.7.41): POWER, WATER and ROADS read what they serve, in the one
+     * verdict - they were the share supplied, held to 100%, and the road's
+     * flow, in NEEDS YOU's colour for the load (ui9's decision 5). No
+     * sparkline and no change under them: City History keeps the share
+     * supplied and the flow, not what they serve, and a line under a figure
+     * draws that figure. The flow is the road's second figure, in its note.
+     */
     List<Kpi> utilityKpis(List<CityNeeds.Need> all) {
         ServicesManager services = ui.game.getServicesManager();
-        double power = services.getEnergyRatio();
-        double water = services.getWaterRatio();
-        double roads = services.getRoadRatio();
+        UtilitiesHandler uh = services.getUtilitiesHandler();
+        InfrastructureManager road = services.getInfrastructureManager();
+        CityNeeds.Served power = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, uh.getPowerServed());
+        CityNeeds.Served water = CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, uh.getWaterServed());
+        CityNeeds.Served roads = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, road.getServed());
         double net = services.getServiceNetIncome();
         List<Kpi> out = new ArrayList<>();
-        out.add(new Kpi("POWER", pct(power), power >= 1 ? "the grid is stable" : "brownout",
-                tone(need(all, CityNeeds.Kind.POWER, null, null)), "The utilities: power, water and the road",
-                () -> open("Utilities", OVERVIEW), "energyRatio", ServicesScreen::points));
-        out.add(new Kpi("WATER", pct(water), water >= 1 ? "supply is adequate" : "rationing",
-                tone(need(all, CityNeeds.Kind.WATER, null, null)), "The utilities: power, water and the road",
-                () -> open("Utilities", OVERVIEW), "waterRatio", ServicesScreen::points));
-        out.add(new Kpi("ROADS", pct(roads),
-                ui.game.getServicesManager().getInfrastructureManager().getStatus().toLowerCase(),
-                tone(need(all, CityNeeds.Kind.ROADS, null, null)), "Infrastructure › Roads",
-                () -> ui.infrastructureScreen.open("Roads"), "roadRatio", ServicesScreen::points));
+        out.add(new Kpi("POWER", CityNeeds.servedPct(power.share()),
+                BuildScreen.servedWords(power) + (services.getEnergyRatio() < 1 ? " · a brownout" : ""),
+                BuildScreen.servedTone(power), "The utilities: power, water and the road",
+                () -> open("Utilities", OVERVIEW), null, null));
+        out.add(new Kpi("WATER", CityNeeds.servedPct(water.share()),
+                BuildScreen.servedWords(water) + (services.getWaterRatio() < 1 ? " · rationing" : ""),
+                BuildScreen.servedTone(water), "The utilities: power, water and the road",
+                () -> open("Utilities", OVERVIEW), null, null));
+        out.add(new Kpi("ROADS", CityNeeds.servedPct(roads.share()),
+                BuildScreen.servedWords(roads) + " · " + pct(road.getThroughputRatio()) + " flow, "
+                        + road.getStatus().toLowerCase(),
+                BuildScreen.servedTone(roads), "Infrastructure › Roads",
+                () -> ui.infrastructureScreen.open("Roads"), null, null));
         out.add(new Kpi("THEY EARN", tightMoney(toDollars(net)) + "/mo", "the city's own, after wages",
                 Palette.TEXT_HEAD, "The utilities' books", () -> open("Utilities", BOOKS), null, null));
         return out;
@@ -2178,27 +2204,30 @@ final class ServicesScreen {
 
     /**
      * The road, as one card (0.7.29): its two figures as every screen writes
-     * them - "162% full · 56% flow" - in its NEEDS YOU row's colour, and the
+     * them - "62% served · 56% flow" since 0.7.41 ("162% full" until then) -
+     * the first in the one verdict on what it serves, and the
      * door to Infrastructure › Roads, which owns the road (the project's
      * spec-infra-0729.md, D10). It was a capacity row with its streams and a
      * statement of its own, a second copy of the Roads page's figures.
      */
     VBox roadCard(List<CityNeeds.Need> all) {
         InfrastructureManager roads = ui.game.getServicesManager().getInfrastructureManager();
-        String tone = tone(need(all, CityNeeds.Kind.ROADS, null, null));
+        CityNeeds.Served served = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, roads.getServed());
+        String tone = BuildScreen.servedTone(served);
         Label name = new Label("The road");
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         HBox titled = new HBox(8, iconSquare(Icons.ROADS, Palette.PEOPLE, 28, 15), name);
         titled.setAlignment(Pos.CENTER_LEFT);
-        HBox pair = new HBox(6, figure(pct(roads.getUtilisation()), 24, tone),
-                words("full ·", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+        HBox pair = new HBox(6, figure(CityNeeds.servedPct(served.share()), 24, tone),
+                words(BuildScreen.servedWords(served) + " ·", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 figure(pct(roads.getThroughputRatio()), 24, Palette.TEXT_HEAD),
                 words("flow", Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         pair.setAlignment(Pos.BASELINE_LEFT);
         VBox left = new VBox(4, titled, pair);
         left.setMinWidth(220);
-        Label says = words("How full the road is, and what every business gets through it. What is on it, the "
-                + "curve that links the two and what the cars and transit do to it are on Infrastructure.",
+        Label says = words("How much of its traffic the road serves - its capacity over the trips on it - and what every "
+                + "business gets through it. What is on it, the curve that links the two and what the cars and transit "
+                + "do to it are on Infrastructure.",
                 Palette.SIZE_BODY, Palette.TEXT_LABEL);
         HBox.setHgrow(says, Priority.ALWAYS);
         says.setMaxWidth(Double.MAX_VALUE);
@@ -2210,8 +2239,9 @@ final class ServicesScreen {
 
     /**
      * One capacity row, worked out without drawing it: its name and icon;
-     * the verdict figure (power and water supplied) in its
-     * NEEDS YOU row's colour; what it could do at full staff, what it does
+     * the verdict figure - what it serves, unclamped, in the one verdict on it
+     * (0.7.41; the share supplied, held to 100%, in NEEDS YOU's colour for the
+     * load until then); what it could do at full staff, what it does
      * now and what is asked, in its unit, with its other ticks; who draws it;
      * how short or spare; its door; its (i); and the old page's lines.
      */
@@ -2226,10 +2256,13 @@ final class ServicesScreen {
 
         double asked = uh.getConsumption(), now = uh.getProduction(), could = uh.getBaseProduction();
         double billed = uh.getBilledElectricityDraw(), homes = uh.getHomesElectricityDraw();
-        out.add(new UtilityRow("Power", Icons.UTILITIES, pct(uh.getEnergyRatio()), "supplied",
-                tone(need(all, CityNeeds.Kind.POWER, null, null)), could, now, asked,
+        CityNeeds.Served power = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, uh.getPowerServed());
+        double[] lines = CityNeeds.servedLines(CityNeeds.Kind.POWER, CareType.NONE);
+        out.add(new UtilityRow("Power", Icons.UTILITIES, CityNeeds.servedPct(power.share()), BuildScreen.servedWords(power),
+                BuildScreen.servedTone(power), could, now, asked,
                 List.of(new Tick(CityNeeds.NETWORK_YELLOW * now, Palette.TEXT_MUTED, 1, null,
-                        "NEEDS YOU lists the grid from here: " + pct(CityNeeds.NETWORK_YELLOW) + " of what it generates")),
+                        "NEEDS YOU lists the grid once the city asks past here: then it serves "
+                                + CityNeeds.servedPct(lines[0]) + " or less of what it asks")),
                 List.of(Part.of("business, billed", billed, Palette.BUSINESS),
                         Part.of("homes", homes, Palette.PEOPLE),
                         Part.of("the city's own", Math.max(0, asked - billed - homes), Palette.MONEY)),
@@ -2239,10 +2272,12 @@ final class ServicesScreen {
 
         double wAsked = uh.getWaterConsumption(), wNow = uh.getWaterProduction(), wCould = uh.getBaseWaterProduction();
         double wBilled = uh.getBilledWaterDraw(), wHomes = uh.getHomesWaterDraw();
-        out.add(new UtilityRow("Water", Icons.DROP, pct(uh.getWaterRatio()), "supplied",
-                tone(need(all, CityNeeds.Kind.WATER, null, null)), wCould, wNow, wAsked,
+        CityNeeds.Served water = CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, uh.getWaterServed());
+        out.add(new UtilityRow("Water", Icons.DROP, CityNeeds.servedPct(water.share()), BuildScreen.servedWords(water),
+                BuildScreen.servedTone(water), wCould, wNow, wAsked,
                 List.of(new Tick(CityNeeds.NETWORK_YELLOW * wNow, Palette.TEXT_MUTED, 1, null,
-                        "NEEDS YOU lists the water from here: " + pct(CityNeeds.NETWORK_YELLOW) + " of what it treats")),
+                        "NEEDS YOU lists the water once the city asks past here: then it serves "
+                                + CityNeeds.servedPct(lines[0]) + " or less of what it asks")),
                 List.of(Part.of("business, billed", wBilled, Palette.BUSINESS),
                         Part.of("homes", wHomes, Palette.PEOPLE),
                         Part.of("residents", uh.getResidentWaterDraw(), Palette.PEOPLE_LIGHT),

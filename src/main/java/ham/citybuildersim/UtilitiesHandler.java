@@ -124,6 +124,17 @@ public class UtilitiesHandler {
     public double getWaterRatio()          { return waterRatio; }
     public double getPricePerWaterUnit()   { return pricePerWaterUnit; }
 
+    /**
+     * SERVED (0.7.41): what the grid generates over what the city asks of
+     * it, unclamped - energyRatio's own fraction without its cap at 1, so
+     * past 100% it keeps counting the headroom - CityNeeds.servedShare(): +∞
+     * with nothing asked, 0 with an ask and nothing generating. What every
+     * power gauge reads.
+     */
+    public double getPowerServed()         { return CityNeeds.servedShare(production, consumption); }
+    /** ...and what the water works treat over what the city asks of them, waterRatio's fraction unclamped. */
+    public double getWaterServed()         { return CityNeeds.servedShare(waterProduction, waterConsumption); }
+
     /* -----------------------------------------------------------------------
        Split books. The two utilities share one workforce and one fill rate, but
        the report shows them as separate businesses that then total, so revenue

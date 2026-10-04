@@ -2441,8 +2441,66 @@ public final class GameVersion {
      *     city paid, has its checks. Search says a city younger than a year
      *     has a record shorter than the year, not one recorded too coarsely.
      *     The default playtest places no order: its traces stand.
+     *
+     * 0.7.40 (2026-10-04) - FIXES FROM PLAYING 0.7.39. Five things Jerus
+     * found playing the fund's version. No model behaviour moved; a default
+     * playtest writes the same traces as 0.7.39's. SAVE_FORMAT 30.
+     *   - CITY HISTORY'S CHARTS STAY PUT: they crept right for ever, a pixel
+     *     a pulse, the page widening to the charts and the charts to the page.
+     *     They follow the window now, not the page, and a chart is cut at its
+     *     edge rather than pushing what holds it.
+     *   - BUILD'S ORDER BAR STAYS PUT: its stacked bar - now, on site, this
+     *     order - is the house's segment bar, laid out at the width it is
+     *     given.
+     *   - A CLICK AT 20x GOES THROUGH: while a mouse button is down the clock
+     *     runs the months and holds the redraw, and draws it once the button
+     *     is up - a click's press and release land on the same button, and a
+     *     slider or a chart is not rebuilt under the hand.
+     *   - BUILDING ON CREDIT IS ONE PAGE FOR THE WHOLE RUN, in the land
+     *     office's shape: "Build › Funding", the run's price against the cash
+     *     and what it is short by, the bond and the note as cards, each button
+     *     saying the run. Build all three, the order bar and Enter borrow for
+     *     every order and place them all; a run that would stop at an order
+     *     short of ground, ore or licences borrows only for the orders before
+     *     it, and says so. The invoice is the model's, each order priced on
+     *     the yard the ones before it leave. An order not placed stays on its
+     *     card.
+     *   - BORROWING ANY AMOUNT: the ask is typed - "40B", "2.5T", "750M",
+     *     "12,000,000" - and scaled by ÷10 and ×10 and by steps that follow
+     *     its size, with presets off the city's own figures: the minimum, what
+     *     falls due within a year, a month's spending, a year of tax, what the
+     *     treasury is overdrawn by. The ask is written in full and short.
+     *   - MONEY AT A UNIT'S EDGE: 999.97B reads "$1.0T", not "$1000.0B".
+     *
+     * 0.7.41 (2026-10-04) - ONE RULE FOR EVERY SERVICE GAUGE: SERVED. Jerus,
+     * playing 0.7.39: "some of the build stuff shows check no issues yet if
+     * you click general care is at 90%, additionally roads are at 180% bad,
+     * while general care 90% is bad, so its confusing to the player". Power,
+     * water and the road read as a load, care and the schools as a cover; the
+     * rule he chose: "Served %, higher = better". No model behaviour moved; a
+     * default playtest writes the same traces as 0.7.40's. SAVE_FORMAT 30.
+     * Built beside 0.7.40, both from 0.7.39, and merged with it: the two
+     * ship together.
+     *   - SERVED IS SUPPLY OVER DEMAND, unclamped, from the owners' getters
+     *     (UtilitiesHandler.getPowerServed() and getWaterServed(),
+     *     InfrastructureManager.getServed() and getTransitServed(),
+     *     CityNeeds.careServed(), BuildAdvice.served()): the road 162% full
+     *     serves 62%; care and the schools read their figures, "served".
+     *   - ONE VERDICT, CityNeeds.verdict(): green and "enough" at 100% or more
+     *     and past NEEDS YOU's line; red at or under its red line; amber
+     *     between, "short" under 100% and "tight" from it. A tick only at 100%
+     *     or more: Build's Overview shows a served row NEEDS YOU does not list
+     *     but is not enough - general care at 90% - before its tick.
+     *   - WHEREVER IT IS WRITTEN: Build's rings, tiles, suggestions and order
+     *     bar (its figures, and its key's first word, "covered" in 0.7.40's
+     *     bar); Services' utilities, care and schools; Infrastructure's SERVED,
+     *     its hero and its curve (the flow against served, better to the
+     *     right); the drawer; NEEDS YOU's rows ("62% served · 56% flow").
+     *   - WHAT NEEDS YOU LISTS IS UNCHANGED - its levels decide the list, its
+     *     order, the chip and Build's suggestions - but a served row takes the
+     *     one verdict's colour, so a gauge and its row read alike.
      */
-    public static final String VERSION = "0.7.39";
+    public static final String VERSION = "0.7.41";
 
     /**
      * The save shape.

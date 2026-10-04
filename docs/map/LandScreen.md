@@ -1,6 +1,6 @@
 # LandScreen.java - 1,579 lines · 59 methods · 8 constants · interface
 
-`ham/citybuildersim/ui/LandScreen.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/LandScreen.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
 
 > The land office: whether the city has room to grow, and which ground to
 > buy. Since 0.7.26 in the style Build got in 0.7.24 and 0.7.25: a head with
@@ -255,5 +255,5 @@
 | 1435 | 79 | `void showLandFunding(List<Integer> ids)` |  |
 | 1519 | 23 | `VBox topUpCard(List<Integer> ids, String here)` | The third way, from the vault: what the vault holds, the rest converted from cash - no debt. |
 | 1544 | 3 | `Pieces.Press topUpPress(List<Integer> ids)` | The third way's button (0.7.34): the purchase, and what it takes - the 0.7.13 button's words, under it. |
-| 1556 | 23 | `private void buyOnTheLoan(List<Integer> ids, String paper)` | The money is in: the plots are bought, each as its own button would buy it, and whatever the purchase answers is shown - the build screen's rule that a refusal nobody reads is a silent one (BuildScreen.buildOnTheLoan()). |
+| 1556 | 23 | `private void buyOnTheLoan(List<Integer> ids, String paper)` | The money is in: the plots are bought, each as its own button would buy it, and whatever the purchase answers is shown - the build screen's rule that a refusal nobody reads is a silent one (BuildScreen.goAhead()). |
 

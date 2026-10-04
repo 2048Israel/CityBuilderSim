@@ -1023,6 +1023,17 @@ public class DebtManager {
         return total;
     }
 
+    /** ...of the dollar paper alone, in the dollars it is owed in (0.7.40): the first `months` of each foreign piece's own schedule - Finances' ask abroad. */
+    public double dueAbroadWithinUsd(int months) {
+        double total = 0;
+        for (Debt d : debts) {
+            if (!d.isForeign()) continue;
+            double[] flows = d.scheduleOwed();
+            for (int i = 0; i < Math.min(months, flows.length); i++) total += flows[i];
+        }
+        return total;
+    }
+
     /** The rate a piece is valued at today: the city's curve for its own paper, the world's for a dollar piece, at the months it has left - marketValue()'s, so a screen quoting its yield or its price of par reads the price a buyback pays. */
     public double valuationRate(Debt paper) {
         if (paper == null) return getRate();

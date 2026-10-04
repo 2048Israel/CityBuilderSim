@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -54,6 +55,22 @@ import java.util.Set;
  *      as whole words and in WordKind's order; and a sector's investors are
  *      its own buildings' lines, its word, and "building" while investors
  *      have an order on site.
+ *   9. A RUN OF ORDERS (0.7.40): Build's funding page is sized to a run -
+ *      its invoice, each order priced on the yard the ones before it leave,
+ *      is what placing them in turn charges, to the bit, and more than the
+ *      orders quoted alone when the yard covers part; the gap is that less
+ *      the cash, an overdraft in full; and the run is walked as buildStack()
+ *      checks it - an order short of ground once the ones before it have
+ *      theirs, of a deposit or of licences stops it, with buildStack()'s own
+ *      answer there.
+ *   10. SERVED (0.7.41): every Build ring and NEEDS YOU row that is a
+ *       supply against a demand reads supply over demand, unclamped - each
+ *       row its owner's getter, to the bit - and CityNeeds' one verdict on
+ *       it is NEEDS YOU's own lines turned over: the same colour as the
+ *       row's level wherever the row is listed and nothing is on the way, a
+ *       tick only at 100% or more, and Jerus's case - general care at 90%,
+ *       off the list - amber and "short", shown on Build's tile before its
+ *       tick.
  *
  * Every fixture causes its condition.
  */
@@ -144,6 +161,8 @@ public class BuildCardCheck {
         theGates(g);
         theVerdict(g);
         theKinds(g);
+        theRun(g);
+        theServed(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -735,5 +754,236 @@ public class BuildCardCheck {
         BuildCard.SectorInvestors mines = BuildCard.sectorInvestors(g, g.getSectors().mining());
         assertTrue("...and a sector with nothing on site does not: " + mines.kind() + ", " + mines.word(),
                 !mines.theirs() && mines.kind() == BuildCard.wordKind(mines.word(), false, mines.landBlocked()));
+    }
+    /* ============================ 9. A RUN OF ORDERS ============================ */
+
+    static Map<BuildingsTemplate, Integer> run(Object... pairs) {
+        Map<BuildingsTemplate, Integer> r = new LinkedHashMap<>();
+        for (int i = 0; i < pairs.length; i += 2) r.put((BuildingsTemplate) pairs[i], (Integer) pairs[i + 1]);
+        return r;
+    }
+
+    static void theRun(Game g) {
+        out.println("\n--- 9. a run of orders: priced and checked as placing them in turn would be, and charged that ---");
+        BuildingManager bm = g.getBuildingManager();
+        LandManager land = g.getLandManager();
+        BuildingsTemplate house = template(g, "House"), road = template(g, "Paved Road"), water = template(g, "Water Treatment Plant");
+        BuildingsTemplate mine = template(g, "Iron Mine"), eso = template(g, "Engineering Services Office");
+        Map<BuildingsTemplate, Integer> three = run(house, 3, road, 2, water, 1);
+        double cash = g.getCash();
+
+        // The yard holds the first order's material and half the second's.
+        int yard = (int) Math.round(house.getConstructionMaterials() * 3.0 + road.getConstructionMaterials() * 2.0 / 2);
+        bm.setConstructionMaterials(yard);
+        assertTrue("fixture: the yard holds all of the first order's material and half the second's (" + yard + " units)",
+                bm.getConstructionMaterials() == yard && yard > house.getConstructionMaterials() * 3.0
+                && yard < house.getConstructionMaterials() * 3.0 + road.getConstructionMaterials() * 2.0);
+        double alone = 0;
+        for (Map.Entry<BuildingsTemplate, Integer> e : three.entrySet()) alone += g.quoteBuild(e.getKey(), e.getValue()).total;
+        double invoice = g.buildRunInvoice(three);
+        assertTrue("...so the run's invoice is more than its orders quoted alone, which each count the same yard free",
+                invoice > alone);
+        bits("the run's first order is quoted as it is alone: a run of one is its quote", g.buildRunInvoice(run(house, 3)),
+                g.quoteBuild(house, 3).total);
+
+        g.setCashForTest(invoice / 2);
+        bits("short of cash: the run's gap is its invoice less the cash", g.buildFundingGap(three), invoice - invoice / 2);
+        g.setCashForTest(-1_000);
+        bits("overdrawn: the gap counts the overdraft in full, as buildFundingGap() for one order does",
+                g.buildFundingGap(three), invoice + 1_000);
+        assertTrue("...and what the treasury is overdrawn by is the cash below nothing", g.cashShortfall() == 1_000);
+        g.setCashForTest(cash);
+        bits("with the cash to cover it, the gap is nothing", g.buildFundingGap(three), 0);
+        assertTrue("every order of it passes the checks money cannot fix: buildRunAhead() is all three, buildRunStop() SUCCESS",
+                g.buildRunAhead(three) == 3 && g.buildRunStop(three) == Game.BuildResult.SUCCESS);
+
+        // Placed in turn, as Build's goAhead() places a run: what each was charged, from its receipt.
+        double[] charged = { 0 };
+        boolean[] placed = { true };
+        quietly(() -> {
+            for (Map.Entry<BuildingsTemplate, Integer> e : three.entrySet()) {
+                placed[0] &= g.buildStack(e.getKey(), e.getValue(), false) == Game.BuildResult.SUCCESS;
+                charged[0] += g.getTotalBuildingCost();
+            }
+        });
+        assertTrue("fixture: the three orders were placed", placed[0]);
+        bits("...and what they were charged, added in turn, is the run's invoice to the bit", charged[0], invoice);
+
+        // Ground: the second order short once the first has taken its own, though each fits alone.
+        double owned = land.getOwnedSqFt();
+        Map<BuildingsTemplate, Integer> ground = run(house, 3, water, 1, road, 1);
+        land.setOwnedSqFt(land.getAllocatedSqFt() + water.getLandSqFt() + house.getLandSqFt() * 3 / 2);
+        assertTrue("fixture: the free ground holds either of the first two orders alone and not both ("
+                + (long) land.getAvailableSqFt() + " sq ft)",
+                land.canAllocate(house.getLandSqFt() * 3) && land.canAllocate(water.getLandSqFt())
+                && !land.canAllocate(house.getLandSqFt() * 3 + water.getLandSqFt()));
+        assertTrue("...so the run goes one order ahead and stops at the second for ground",
+                g.buildRunAhead(ground) == 1 && g.buildRunStop(ground) == Game.BuildResult.NO_LAND);
+        g.setCashForTest(Founding.WEALTHY_CASH);
+        Game.BuildResult[] inTurn = new Game.BuildResult[2];
+        quietly(() -> {
+            inTurn[0] = g.buildStack(house, 3, false);
+            inTurn[1] = g.buildStack(water, 1, false);
+        });
+        assertTrue("...and placed in turn, buildStack() places the first and says NO_LAND to the second",
+                inTurn[0] == Game.BuildResult.SUCCESS && inTurn[1] == Game.BuildResult.NO_LAND);
+        land.setOwnedSqFt(owned);
+
+        // A deposit, and licences.
+        int deposits = land.getIronDeposits();
+        double reserve = land.getIronReserveTonnes();
+        land.restoreIron(g.minesCommitted() + 1, Math.max(1, reserve));
+        Map<BuildingsTemplate, Integer> ore = run(house, 1, mine, 2);
+        assertTrue("a run whose second order is two mines, with one deposit free, goes one order ahead and stops for the deposit",
+                g.buildRunAhead(ore) == 1 && g.buildRunStop(ore) == Game.BuildResult.NO_DEPOSIT
+                && !g.hasDepositFor(mine, 2) && g.hasDepositFor(mine, 1));
+        land.restoreIron(deposits, reserve);
+        Map<BuildingsTemplate, Integer> licensed = run(house, 1, eso, 1);
+        assertTrue("a run with an office nobody is licensed for stops there for licences, as buildStack() would",
+                g.buildRunAhead(licensed) == 1 && g.buildRunStop(licensed) == Game.BuildResult.NO_LICENCE
+                && !g.hasLicencesFor(eso, 1));
+        assertTrue("a run whose first order is refused goes nowhere", g.buildRunAhead(run(eso, 1, house, 1)) == 0);
+        g.setCashForTest(cash);
+    }
+
+    /* ---------------------------------------------------------------------
+       10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and
+       that was bad, general care read "90%" and that was bad, and Build
+       ticked the care. One rule since: supply over demand, "served", higher
+       is better, a tick only at 100% or more. The lines are NEEDS YOU's; the
+       verdict is them read the other way up, so where a row is listed it
+       must be the row's colour - checked on the constants at every load and
+       crowd from 25% to 300% and every cover from 25% to 100% - and the
+       figures are the owners' own.
+       --------------------------------------------------------------------- */
+    static void theServed(Game g) {
+        out.println("\n--- 10. served: every gauge is supply over demand, and one verdict, NEEDS YOU's lines turned over (0.7.41) ---");
+
+        // The lines, read the other way up: a load's level is the verdict on one over it.
+        boolean networks = true, roads = true, crowds = true, covers = true, words = true;
+        for (int k = 250; k <= 3000; k++) {
+            double x = k / 1000.0;
+            CityNeeds.Served net = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, 1 / x);
+            networks &= net.level() == CityNeeds.level(x, CityNeeds.NETWORK_YELLOW, CityNeeds.NETWORK_RED, true);
+            CityNeeds.Served road = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, 1 / x);
+            roads &= road.level() == CityNeeds.level(x, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW, true);
+            CityNeeds.Served seats = CityNeeds.verdict(CityNeeds.Kind.HIGHER_SCHOOL, CareType.NONE, 1 / x);
+            int listed = CityNeeds.level(x, CityNeeds.SEATS_YELLOW, CityNeeds.SEATS_RED, true);
+            // ...a crowd off the list but over its seats (1 < x < SEATS_YELLOW) is short of 100%: amber, not listed
+            crowds &= x > 1 && x < CityNeeds.SEATS_YELLOW ? seats.level() == 1 && listed == 0 : seats.level() == listed;
+            if (x <= 1) {
+                for (CareType care : new CareType[] {CareType.GENERAL, CareType.CHILDCARE}) {
+                    CityNeeds.Served c = CityNeeds.verdict(CityNeeds.Kind.CARE, care, x);
+                    int row = care == CareType.GENERAL ? CityNeeds.level(x, CityNeeds.GENERAL_YELLOW, CityNeeds.GENERAL_RED, false)
+                            : CityNeeds.level(x, CityNeeds.OTHER_CARE_YELLOW, CityNeeds.OTHER_CARE_RED, false);
+                    // ...listed, the row's colour; off the list, green only at 100%, amber short under it
+                    covers &= row > 0 ? c.level() == row : c.level() == (x >= 1 ? 0 : 1);
+                }
+                CityNeeds.Served b = CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, x);
+                int row = CityNeeds.level(x, CityNeeds.SCHOOLS_YELLOW, CityNeeds.SCHOOLS_RED, false);
+                covers &= row > 0 ? b.level() == row : b.level() == (x >= 1 ? 0 : 1);
+            }
+            for (CityNeeds.Served v : new CityNeeds.Served[] {net, road, seats}) {
+                words &= v.word().equals(v.level() == 0 ? CityNeeds.ENOUGH : v.share() < 1 ? CityNeeds.SHORT : CityNeeds.TIGHT)
+                        && (v.level() != 0 || v.share() >= 1);
+            }
+        }
+        assertTrue("a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%", networks);
+        assertTrue("...the road's, on STRAINED and FREE_FLOW", roads);
+        assertTrue("...a school's seats, on who would come over them - and a crowd off the list but over its seats is amber", crowds);
+        assertTrue("...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it", covers);
+        assertTrue("...and every word is the verdict's: enough only green and at 100% or more, short under 100%, tight from it", words);
+
+        CityNeeds.Served jerus = CityNeeds.verdict(CityNeeds.Kind.CARE, CareType.GENERAL, .9);
+        assertTrue("general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)",
+                .9 > CityNeeds.GENERAL_YELLOW && jerus.level() == 1 && CityNeeds.SHORT.equals(jerus.word()));
+        CityNeeds.Served over = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, 1.2);
+        assertTrue("a network serving 120%, a fifth in hand, is tight: amber, though over 100%",
+                over.level() == 1 && CityNeeds.TIGHT.equals(over.word()));
+        CityNeeds.Served full = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, 1 / 1.8);
+        assertTrue("the road 180% full serves 56%: red, short",
+                CityNeeds.servedPct(full.share()).equals("56%") && full.level() == 2 && CityNeeds.SHORT.equals(full.word()));
+        assertTrue("nothing asked is all of it met, and nothing supplying an ask is nothing; not a number has no verdict",
+                CityNeeds.servedShare(5, 0) == Double.POSITIVE_INFINITY && CityNeeds.servedShare(0, 5) == 0
+                && CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, Double.POSITIVE_INFINITY).enough()
+                && CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, Double.NaN).level() == -1);
+        assertTrue("a share just under 100% never prints as 100% (the word would say short beside it)",
+                CityNeeds.servedPct(.9996).equals("99%") && CityNeeds.servedPct(1).equals("100%"));
+
+        // The figures are the owners' own, in the town.
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        InfrastructureManager road = g.getInfrastructureManager();
+        List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
+        boolean rows = true;
+        int servedRows = 0, listedRows = 0;
+        for (CityNeeds.Need n : all) {
+            CityNeeds.Served v = n.served();
+            if (v == null) continue;
+            servedRows++;
+            if (n.level() > 0) listedRows++;
+            double want = switch (n.kind()) {
+                case POWER -> u.getPowerServed();
+                case WATER -> u.getWaterServed();
+                case ROADS -> road.getServed();
+                case CARE -> CityNeeds.careServed(g, n.care(), g.getCohorts(), g.getPopulationManager().getJobFillRate());
+                case BASIC_SCHOOLS -> g.getEducation().basicCoverage();
+                default -> CityNeeds.servedShare(n.a(), n.b());
+            };
+            rows &= Double.doubleToLongBits(v.share()) == Double.doubleToLongBits(want);
+            // listed with nothing on the way: the row's colour; never red off the list; on the way only ever lowers the level
+            rows &= n.onSite() == 0 && n.level() > 0 ? v.level() == n.level()
+                    : n.level() == 0 ? v.level() < 2 : v.level() >= n.level();
+            rows &= n.reading().startsWith(n.kind() == CityNeeds.Kind.BASIC_SCHOOLS ? n.school().getLabel().toLowerCase() + " "
+                    + CityNeeds.servedPct(v.share()) + " served" : n.kind() == CityNeeds.Kind.HIGHER_SCHOOL ? ""
+                    : CityNeeds.servedPct(v.share()) + " served") || n.reading().startsWith("nothing supplying");
+        }
+        assertTrue("every served NEEDS YOU row (" + servedRows + " in the town, " + listedRows + " listed) reads its owner's "
+                + "figure, to the bit, as served, in the colour of its level where it is listed", rows && servedRows >= 6);
+
+        boolean measures = true;
+        int counted = 0;
+        Set<BuildAdvice.Kind> notServed = new HashSet<>();
+        for (String category : new String[] {BuildAdvice.UTILITIES, BuildAdvice.ROADS, BuildAdvice.HEALTHCARE,
+                BuildAdvice.EDUCATION, BuildAdvice.SAFETY}) {
+            for (BuildAdvice.Measure m : BuildAdvice.measuresOf(category)) {
+                double served = BuildAdvice.served(g, m, Map.of());
+                if (!BuildAdvice.isServed(m)) {
+                    notServed.add(m.kind());
+                    measures &= Double.isNaN(served) && BuildAdvice.verdict(g, m, Map.of()) == null;
+                    continue;
+                }
+                double[] sd = BuildAdvice.supplyDemand(g, m, Map.of());
+                measures &= Double.doubleToLongBits(served) == Double.doubleToLongBits(CityNeeds.servedShare(sd[0], sd[1]))
+                        && (!(sd[1] > 0) || BuildAdvice.cover(g, m, Map.of()) == Math.max(0, Math.min(1, served)));
+                counted++;
+            }
+        }
+        measures &= notServed.equals(Set.of(BuildAdvice.Kind.DEATH, BuildAdvice.Kind.POLICE, BuildAdvice.Kind.CELLS));
+        assertTrue("every Build ring of power, water, the road, transit, care and the schools (" + counted + ") reads its "
+                + "supply over its demand, the arc that held to 0-1; the police, the cells and the dead are not served", measures);
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildAdvice.Measure roadM = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        assertTrue("...power's ring is the grid's own figure (to 1e-9) and the road's the road's, to the bit; transit has no verdict",
+                Math.abs(BuildAdvice.served(g, power, Map.of()) / u.getPowerServed() - 1) < 1e-9
+                && Double.doubleToLongBits(BuildAdvice.served(g, roadM, Map.of())) == Double.doubleToLongBits(road.getServed())
+                && BuildAdvice.verdict(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()).level() == -1
+                && Double.doubleToLongBits(BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()))
+                        == Double.doubleToLongBits(road.getTransitServed()));
+        assertTrue("the curve the Roads page draws against served is the road's flow at what it serves",
+                Math.abs(InfrastructureManager.throughputAtServed(road.getServed()) - road.getThroughputRatio()) < 1e-12);
+
+        // Build's tile: a served row off the list that is not enough is shown before the tick.
+        CityNeeds.Need short90 = new CityNeeds.Need("GENERAL CARE", "90% served", 0, .89, CityNeeds.Kind.CARE,
+                CityNeeds.Go.HEALTHCARE, CareType.GENERAL, EducationType.NONE, .9, CityNeeds.GENERAL_YELLOW,
+                CityNeeds.GENERAL_RED, false, 0, Double.NaN, 900, 1000);
+        CityNeeds.Need enough = new CityNeeds.Need("CHILDCARE", "100% served", 0, .7, CityNeeds.Kind.CARE,
+                CityNeeds.Go.HEALTHCARE, CareType.CHILDCARE, EducationType.NONE, 1, CityNeeds.OTHER_CARE_YELLOW,
+                CityNeeds.OTHER_CARE_RED, false, 0, Double.NaN, 1000, 1000);
+        assertTrue("fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows "
+                        + "the care, amber - with every care at 100%, nothing, and the tick",
+                CityNeeds.worst(List.of(short90, enough), CityNeeds.Go.HEALTHCARE) == null
+                && CityNeeds.worstUnlisted(List.of(short90, enough), CityNeeds.Go.HEALTHCARE) == short90
+                && short90.verdictLevel() == 1 && enough.verdictLevel() == 0
+                && CityNeeds.worstUnlisted(List.of(enough), CityNeeds.Go.HEALTHCARE) == null);
     }
 }
