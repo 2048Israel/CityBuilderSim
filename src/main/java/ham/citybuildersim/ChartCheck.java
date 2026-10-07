@@ -61,6 +61,14 @@ import java.util.Locale;
  *      keeps its own width, and only one the player zoomed out to
  *      everything stays everything; a double-click puts it back on its
  *      range.
+ *   8. A CHART DRAWS FROM WHAT IT WAS HANDED (0.7.50): the months and every
+ *      series fixed at handover, all as long as the months, so a month
+ *      the history records under a chart still on screen moves nothing it
+ *      reads - the stack's runs and reach, the hover's readout and the
+ *      redraw when the pointer leaves are those of the handover, and the
+ *      stack's arithmetic, handed the history's own growing list, still
+ *      reads nothing past either. The fixture is Jerus's 0.7.49 freeze:
+ *      the same month, under that version's walk, reads past the layers.
  *
  * Every fixture causes its condition.
  */
@@ -140,6 +148,7 @@ public class ChartCheck {
         panAndZoomClamp();
         theFlags();
         aYoungCitysWindow();
+        aChartDrawsFromItsSnapshot(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -447,10 +456,11 @@ public class ChartCheck {
 
     /**
      * What City History's RUNNING NOW reads (0.7.37): YearBook.running(). Two
-     * hundred months, the workforce off sick the whole way (an epidemic as
-     * old as the city), the bank under water twice - once closed, once to
-     * the end - the treasury overdrawn for the last twenty months and a
-     * quarter of the labour force out of work for the last ten.
+     * hundred months, an outbreak the whole way (an epidemic as old as the
+     * city - on the sick rate until 0.7.46, when an epidemic became an
+     * outbreak, A8), the bank under water twice - once closed, once to the
+     * end - the treasury overdrawn for the last twenty months and a quarter
+     * of the labour force out of work for the last ten.
      */
     static void whatIsRunning() {
         int months = 200;
@@ -459,8 +469,8 @@ public class ChartCheck {
         for (int m = 171; m <= months; m++) equity[m - 1] = -80;
         for (int m = 181; m <= months; m++) cash[m - 1] = -5;
         for (int m = 191; m <= months; m++) out[m - 1] = 25;
-        HistorySave h = built(months, new String[] {"sickRate", "bankEquity", "cash", "workforce", "outOfWork"},
-                flat(months, .2), equity, cash, flat(months, 100), out);
+        HistorySave h = built(months, new String[] {"outbreak", "bankEquity", "cash", "workforce", "outOfWork"},
+                flat(months, Health.OUTBREAK_MIN_PEAK), equity, cash, flat(months, 100), out);
 
         List<YearBook.Episode> all = YearBook.episodes(h);
         List<YearBook.Episode> running = YearBook.running(h);
@@ -718,5 +728,172 @@ public class ChartCheck {
         moved.setData(1, 401);
         assertTrue("a double-click puts it back on its range, which it then follows",
                 moved.onRange() && moved.lo() == 282 && moved.hi() == 401);
+    }
+
+    /* ============================ 8. A CHART DRAWS FROM WHAT IT WAS HANDED ============================ */
+
+    /**
+     * 0.7.49's TimeChart.drawStack(), its walk without the canvas: each
+     * layer's points {month, top, bottom} over the months it was handed, the
+     * way it read them - straight out of the arrays, by the list's index.
+     * The fixture: on the history's own list, a month landing makes it read
+     * past the layers, which is what threw in Jerus's game.
+     */
+    static List<double[]> walk0749(List<Integer> months, double[][] layers, double lo, double hi) {
+        List<double[]> points = new ArrayList<>();
+        for (int p = Math.min(3, layers.length) - 1; p >= 0; p--) {
+            for (int i = 0; i <= months.size(); i++) {
+                boolean in = i < months.size() && months.get(i) >= lo - 1 && months.get(i) <= hi + 1;
+                double under = 0, upper = Double.NaN;
+                if (in) {
+                    boolean whole = true;
+                    double sum = 0;
+                    for (int q = 0; q <= p; q++) {
+                        double v = layers[q][i];
+                        if (Double.isNaN(v)) { whole = false; break; }
+                        if (q == p) under = sum;
+                        sum += v;
+                    }
+                    if (whole) upper = sum;
+                }
+                if (!Double.isNaN(upper)) points.add(new double[] {months.get(i), upper, under});
+            }
+        }
+        return points;
+    }
+
+    /** The same points as ChartModel.stackRuns() gives them, every layer's runs in the order the chart fills them. */
+    static List<double[]> runs0750(List<Integer> months, double[][] layers, double lo, double hi) {
+        List<double[]> points = new ArrayList<>();
+        for (int p = Math.min(3, layers.length) - 1; p >= 0; p--) {
+            for (List<double[]> run : ChartModel.stackRuns(months, layers, p, lo, hi, v -> v)) points.addAll(run);
+        }
+        return points;
+    }
+
+    static boolean samePoints(List<double[]> a, List<double[]> b) {
+        if (a.size() != b.size()) return false;
+        for (int k = 0; k < a.size(); k++) if (!java.util.Arrays.equals(a.get(k), b.get(k))) return false;
+        return true;
+    }
+
+    /**
+     * What the chart does on every frame, from what it holds: the stack's
+     * runs and reach, each line read at every month in the window, and the
+     * hover's readout at the month nearest `pointer` - every line's and
+     * layer's value there, NaN for not recorded. The readout's month comes
+     * first.
+     */
+    static double[] frame(List<Integer> months, double[][] layers, double[][] lines, ChartModel w, double pointer) {
+        runs0750(months, layers, w.lo(), w.hi());
+        ChartModel.stackReach(months, layers, 3, w.lo(), w.hi(), v -> v);
+        for (double[] l : lines) ChartModel.reach(l, months, w.lo(), w.hi());
+        int i = ChartModel.nearest(months, pointer);
+        double[] read = new double[1 + lines.length + layers.length];
+        read[0] = i < 0 ? Double.NaN : months.get(i);
+        for (int k = 0; k < lines.length; k++) read[1 + k] = ChartModel.at(lines[k], i);
+        for (int p = 0; p < layers.length; p++) read[1 + lines.length + p] = ChartModel.at(layers[p], i);
+        return read;
+    }
+
+    static void aChartDrawsFromItsSnapshot(Path root) {
+        out.println("\n--- 8. a chart draws from what it was handed: a month landing under it changes nothing it reads ---");
+        Game g = city(root, "drawn");
+        HistorySave h = g.getHistorySave();
+        // What Government's WHAT THE CITY MAKES hands its chart: the history's
+        // month list, GDP's parts a rolling year each (HistoryScreen.gdpStack())
+        // and a line, on a new window - and what TimeChart.setData() keeps of it.
+        List<Integer> handed = h.getMonth();
+        double[][] layers = new double[YearBook.GDP_PARTS.length][];
+        for (int p = 0; p < layers.length; p++) layers[p] = YearBook.realYear(h, YearBook.GDP_PARTS[p]);
+        double[][] lines = { h.aligned("cash"), h.aligned("gdp") };
+        ChartModel w = new ChartModel();
+        w.setData(handed.get(0), handed.get(handed.size() - 1));
+        int n = handed.size();
+        int newest = handed.get(n - 1);
+        List<Integer> months = ChartModel.fixedMonths(handed);
+        double[][] ownLayers = ChartModel.aligned(layers, months.size());
+        double[][] ownLines = ChartModel.aligned(lines, months.size());
+        boolean anyLayer = false;
+        for (double v : layers[0]) anyLayer |= !Double.isNaN(v);
+        assertTrue("fixture: a city played two years has its months and its GDP's layers, " + n + " of each, the window on all",
+                n > 12 && layers[0].length == n && anyLayer && w.lo() == handed.get(0) && w.hi() == newest);
+        List<double[]> before = walk0749(handed, layers, w.lo(), w.hi());
+        double[] hoverBefore = frame(months, ownLayers, ownLines, w, newest);
+
+        // A month lands: the history records it in the same list.
+        quietly(() -> g.simulateMonths(1));
+        String threw = "nothing";
+        try {
+            walk0749(handed, layers, w.lo(), w.hi());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            threw = e.getMessage();
+        }
+        assertTrue("fixture: the month lands in the list the chart was handed: " + h.getMonth().size() + " months, the newest "
+                + h.getMonth().get(h.getMonth().size() - 1), handed == h.getMonth() && handed.size() == n + 1
+                && handed.get(n) == newest + 1);
+        same("fixture: 0.7.49's walk over that list now reads past the layers (Jerus's \"Index 384 out of bounds for length 384\")",
+                threw, "Index " + n + " out of bounds for length " + n);
+
+        assertTrue("the chart's own months are still the handover's: " + n + ", the newest " + newest,
+                months.size() == n && months.get(n - 1) == newest);
+        boolean lengths = true;
+        for (double[] l : ownLayers) lengths &= l.length == n;
+        for (double[] l : ownLines) lengths &= l.length == n;
+        assertTrue("...and every layer and line it holds is exactly as long", lengths);
+        boolean old = true;
+        try {
+            walk0749(months, ownLayers, w.lo(), w.hi());
+        } catch (RuntimeException e) {
+            old = false;
+        }
+        assertTrue("so even 0.7.49's walk, over what the chart holds, reads nothing past it", old);
+
+        String drew = "nothing";
+        double[] hover = null, hoverPast = null;
+        List<double[]> again = null;
+        try {
+            hover = frame(months, ownLayers, ownLines, w, newest);            // the pointer on the newest month
+            hoverPast = frame(months, ownLayers, ownLines, w, newest + 1);    // ...and on the month that landed
+            again = runs0750(months, ownLayers, w.lo(), w.hi());              // the pointer leaves: the chart draws again
+        } catch (RuntimeException e) {
+            drew = e.toString();
+        }
+        same("a frame, a hover on the newest month and on the one that landed, and the redraw as the pointer leaves: no throw",
+                drew, "nothing");
+        assertTrue("the stack the chart fills is 0.7.49's, point for point, as it was handed: " + before.size() + " points",
+                again != null && !before.isEmpty() && samePoints(again, before));
+        double[] asHanded = new double[1 + lines.length + layers.length];
+        asHanded[0] = newest;
+        for (int k = 0; k < lines.length; k++) asHanded[1 + k] = lines[k][n - 1];
+        for (int p = 0; p < layers.length; p++) asHanded[1 + lines.length + p] = layers[p][n - 1];
+        assertTrue("the hover reads the handover's newest month, every line and layer as it was handed",
+                hover != null && java.util.Arrays.equals(hover, asHanded) && java.util.Arrays.equals(hoverBefore, asHanded));
+        assertTrue("...and so does a hover on the month that landed since: the chart has no such month",
+                hoverPast != null && java.util.Arrays.equals(hoverPast, hoverBefore));
+
+        // Bounded by both: the stack's arithmetic handed the history's own list and the short layers.
+        String bounded = "nothing";
+        List<double[]> live = null;
+        double[] reach = null;
+        try {
+            live = runs0750(handed, layers, w.lo(), w.hi());
+            reach = ChartModel.stackReach(handed, layers, 3, w.lo(), w.hi(), v -> v);
+        } catch (RuntimeException e) {
+            bounded = e.toString();
+        }
+        same("handed the growing list itself, the stack's runs and reach read nothing past either", bounded, "nothing");
+        boolean newestLast = live != null;
+        if (live != null) for (double[] pt : live) newestLast &= pt[0] <= newest;
+        assertTrue("...the month the layers do not reach is not drawn", newestLast && samePoints(live, before));
+        assertTrue("...and the reach is the handover's",
+                reach != null && java.util.Arrays.equals(reach, ChartModel.stackReach(months, ownLayers, 3, w.lo(), w.hi(), v -> v)));
+
+        double[] shortSeries = ChartModel.aligned(new double[] {1, 2}, 4), longSeries = ChartModel.aligned(new double[] {1, 2, 3, 4, 5}, 4);
+        assertTrue("a series shorter than the months is held as long, the rest not recorded; a longer one is cut",
+                shortSeries.length == 4 && shortSeries[1] == 2 && Double.isNaN(shortSeries[2]) && Double.isNaN(shortSeries[3])
+                        && longSeries.length == 4 && longSeries[3] == 4);
+        assertTrue("...and a value off either end of a series reads as not recorded",
+                Double.isNaN(ChartModel.at(longSeries, -1)) && Double.isNaN(ChartModel.at(longSeries, 4)) && ChartModel.at(longSeries, 0) == 1);
     }
 }

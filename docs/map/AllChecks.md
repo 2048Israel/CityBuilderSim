@@ -1,6 +1,6 @@
 # AllChecks.java - 82 lines · 1 methods · 1 constants · harnesses
 
-`ham/citybuildersim/AllChecks.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AllChecks.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Runs every harness, one JVM each, and says which failed.
 > 
@@ -22,7 +22,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 27 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "CalendarCheck", "BooksCheck", "WaterC...` | In the order they are cheapest to fail. |
+| 27 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "CalendarCheck", "BooksC...` | In the order they are cheapest to fail. |
 
 ## Methods, in file order
 

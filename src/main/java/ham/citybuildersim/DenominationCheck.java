@@ -31,6 +31,10 @@ import java.nio.file.Path;
  * That is a much stronger assertion than "the balances add up", and it is the
  * only one that can be trusted, because nobody can enumerate this codebase's
  * money by reading it.
+ *
+ * The twins have no transit, so a second pair with a bus network is reformed
+ * by a thousand in section 6 (B6, 0.7.47): the month's transit lines, the
+ * riders at the same real fare, and the working rows' fixed bills.
  */
 public class DenominationCheck {
 
@@ -122,7 +126,10 @@ public class DenominationCheck {
     /* ------------------------------------------------------------------ */
 
     /** A city with a bit of everything in it, so the reform has work to do. */
-    static Game city(String name) {
+    static Game city(String name) { return city(name, false); }
+
+    /** ...with a bus network on its roads too (B6, 0.7.47): a fare, riders and the month's transit lines for a reform to carry. */
+    static Game city(String name, boolean buses) {
         Game g = new Game(GameFiles.scratch(name));
         quietly(() -> {
             g.run();
@@ -144,6 +151,13 @@ public class DenominationCheck {
             LongPlaytest.build(g, "Elementary School", 3);
             LongPlaytest.build(g, "Walk-in Clinic", 3);
             LongPlaytest.build(g, "Paved Road", 20);
+            if (buses) {
+                // ...standing from the first month, and given its price on top:
+                // the list above spends the treasury down, and its sites queue.
+                BuildingsTemplate network = g.getBuildingManager().getTemplateByName("Bus Network");
+                g.setCashForTest(g.getCash() + network.getCashCost());
+                g.buildStack(network, 1, true);
+            }
             g.simulateMonths(120);
         });
         return g;
@@ -421,7 +435,7 @@ public class DenominationCheck {
                 stepBoth(plain, lopped, 1);
                 double a = plain.getBank().equity(), b = lopped.getBank().equity() * factor;
                 double ca = plain.getCash(), cb = lopped.getCash() * factor;
-                int pa = plain.getPopulationManager().getPopulation(), pb = lopped.getPopulationManager().getPopulation();
+                long pa = plain.getPopulationManager().getPopulation(), pb = lopped.getPopulationManager().getPopulation();
                 out.printf("   m%d bank %.6f vs %.6f | cash %.6f vs %.6f | pop %d vs %d | matOwed %.3f vs %.3f | bankCash %.6f vs %.6f%n", plain.getMonth(), a, b, ca, cb, pa, pb,
                         plain.getBuildingManager().getMaterialsOwed(), lopped.getBuildingManager().getMaterialsOwed(),
                         plain.getBank().getCash(), lopped.getBank().getCash() * factor);
@@ -515,6 +529,66 @@ public class DenominationCheck {
         close("...and the rent it was charging", rent(back), rentBefore, 1e-9);
         close("...and a House still costs what it cost",
                 cost(back, "House"), cost(saved, "House"), 1e-9);
+
+        /* ============ 6. AND THE TRAMS (B6, 0.7.47) ============
+
+           The twins above have no transit, so nothing above saw it: a reform
+           divided every month's figure but the transit wages and fares, and
+           the next month billed the households last month's fares in the old
+           unit - a thousand times the ride, and every working row's income
+           after its fixed bills went negative. And the ridership curve read
+           the dial, divided, against a cap in founding money, so a thousandth
+           of the fare put more people on the buses at the same real price.
+           A pair of bus towns, one reformed by a thousand (the research
+           city's reform), a month on.
+           ================================================================= */
+        out.println("\n--- a reform and the buses ---");
+
+        Game buses = city("denom-buses-plain", true);
+        Game reformed = city("denom-buses-lopped", true);
+        assertTrue("fixture: two bus towns, identical, with riders and a transit bill and fares",
+                same(buses, reformed) && buses.getInfrastructureManager().getTransitRiders() > 0
+                        && buses.getEconomyManager().getTransitBill() > 0 && buses.getEconomyManager().getTransitFares() > 0);
+        double thousand = 1000;
+        double billBefore = reformed.getEconomyManager().getTransitBill();
+        double faresBefore = reformed.getEconomyManager().getTransitFares();
+        // ...and the fuel (0.7.49): a journey's price as the month struck it, the drivers' bill, and what the households paid.
+        double fuelStruck = reformed.getInfrastructureManager().getFuelPerJourney();
+        double fuelBill = reformed.getMotoring().getFuelBill();
+        double fuelPaid = reformed.getHouseholdFuel();
+        assertTrue("fixture: the bus town's drivers burn fuel, struck, billed and paid",
+                fuelStruck > 0 && fuelBill > 0 && fuelPaid > 0);
+        assertTrue("fixture: the reform by a thousand goes through", force(reformed, thousand));
+        assertTrue("a reform scales the month's transit bill and fares",
+                reformed.getEconomyManager().getTransitBill() == billBefore * (1.0 / thousand)
+                        && reformed.getEconomyManager().getTransitFares() == faresBefore * (1.0 / thousand));
+        assertTrue("a reform divides the fuel struck and the fuel paid",
+                reformed.getInfrastructureManager().getFuelPerJourney() == fuelStruck * (1.0 / thousand)
+                        && reformed.getMotoring().getFuelBill() == fuelBill * (1.0 / thousand)
+                        && reformed.getHouseholdFuel() == fuelPaid * (1.0 / thousand));
+        assertTrue("...and the fare dial's cap is the founding cap in the new unit",
+                reformed.getEconomyManager().getTaxPolicy().maxTransitFare() == TaxPolicy.MAX_TRANSIT_FARE / reformed.getDenomination().getUnit()
+                        && reformed.getInfrastructureManager().getFareUnit() == reformed.getDenomination().getUnit());
+
+        stepBoth(buses, reformed, 1);
+        double ridersPlain = buses.getInfrastructureManager().getTransitRiders();
+        double ridersReformed = reformed.getInfrastructureManager().getTransitRiders();
+        out.printf("   a month on: riders %,.3f plain, %,.3f reformed%n", ridersPlain, ridersReformed);
+        assertTrue("after a reform the riders are what the same real fare drew",
+                ridersPlain > 0 && Math.abs(ridersReformed - ridersPlain) <= 1e-9 * ridersPlain);
+
+        java.util.List<Household> plainCells = buses.getHouseholdBalance().cells();
+        java.util.List<Household> reformedCells = reformed.getHouseholdBalance().cells();
+        int working = 0, wentNegative = 0;
+        for (int i = 0; i < plainCells.size() && i < reformedCells.size(); i++) {
+            Household p = plainCells.get(i), r = reformedCells.get(i);
+            if (!(p instanceof WorkingHousehold) || p.isEmpty() || p.afterFixed() < 0) continue;
+            working++;
+            if (r.afterFixed() < 0) wentNegative++;
+        }
+        out.printf("   %d working rows clear their fixed bills unreformed; %d of them do not, reformed%n", working, wentNegative);
+        assertTrue("no working row's income after fixed bills goes negative across a reform",
+                working > 0 && wentNegative == 0 && plainCells.size() == reformedCells.size());
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

@@ -248,7 +248,8 @@ public class Mortgage extends BusinessDebt {
 
     /**
      * WHAT THE LANDLORD CAN BUY ON A MORTGAGE, and why not more: the largest
-     * number of these, scanning down from what was asked for, that its own
+     * number of these, up to what was asked for (found by halving since
+     * 0.7.54: THE LANDLORD'S ORDER IS A RUN FROM ONE), that its own
      * funds buy outright, or that its own funds can put the down payment on
      * (ownFundsFor()) and whose net operating income covers the payment
      * MORTGAGE_DEBT_COVERAGE times (coverage()). Nothing when not even one
@@ -260,36 +261,82 @@ public class Mortgage extends BusinessDebt {
      * @param costOf     what n of them cost, land included (BusinessInvestment.getCostOf())
      * @param cash       the landlord's till, after its owners and its money abroad
      * @param noiPerUnit one's rent less what it costs to hold (EconomyManager.housingCarry())
-     * @param annualRate the insured rate a mortgage is written at this month
+     * @param annualRate the rate the lender reads the payment at: since 0.7.44 the insured rate a
+     *                   mortgage is written at this month, less expected inflation
+     *                   (BusinessInvestment.realTestRate(), in Game.considerOnMortgage())
      */
     public static Decision decide(int asked, java.util.function.IntToDoubleFunction costOf,
                                   double cash, double noiPerUnit, double annualRate) {
-        String trimmedBy = null;
-        double ownForOne = Double.NaN, coverageOfOne = Double.NaN;
-        boolean shortForOne = false;
-        for (int n = asked; n >= 1; n--) {
+        if (asked < 1) return new Decision(0, null, false, Double.NaN, Double.NaN);
+        // What trimmed it is what failed first on the way down: the whole order.
+        Slice top = Slice.of(asked, costOf, cash, noiPerUnit, annualRate);
+        String trimmedBy = top.failedOn();
+        // The largest that passes, by halving: passing is a run from one up
+        // (THE LANDLORD'S ORDER IS A RUN FROM ONE, below).
+        int pass = 0, fail = asked;
+        if (top.passes()) pass = asked;
+        else while (fail - pass > 1) {
+            int mid = (int) (((long) pass + fail) >>> 1);
+            if (Slice.of(mid, costOf, cash, noiPerUnit, annualRate).passes()) pass = mid; else fail = mid;
+        }
+        if (pass >= 2) return new Decision(pass, trimmedBy, false, Double.NaN, Double.NaN);
+        // ...and the facts for one, which the count read when it got down to one.
+        Slice one = asked == 1 ? top : Slice.of(1, costOf, cash, noiPerUnit, annualRate);
+        if (pass == 1 && one.outright()) return new Decision(1, trimmedBy, false, Double.NaN, Double.NaN);
+        if (pass == 1) return new Decision(1, trimmedBy, false, one.own(), one.coverage());
+        return new Decision(0, trimmedBy, one.shortOfDown(), one.own(), one.coverage());
+    }
+
+    /*
+     * THE LANDLORD'S ORDER IS A RUN FROM ONE (0.7.54). decide() counted down
+     * from what was asked, one building at a time; the order grows with the
+     * city, and at x1000 the count was a fifth of a month (the project's
+     * spec-scale.md, section 4). It halves now, and finds the same order and
+     * the same reasons, because a slice that passes means every smaller one
+     * passes. The proof, for costs c(n) = BusinessInvestment.getCostOf():
+     *
+     * c(n) = A n + B max(0, m n - y) with A, B, m and the yard y at least 0:
+     * the builders' price and the land a building, and the materials bought
+     * past the yard. So c(n) rises with n, and so does c(n) / n.
+     *   - Outright: cash >= c(n) holds on a run from one.
+     *   - The down payment: ownFundsFor(c) is c (1 - 0.85 (1 - fee (1 +
+     *     premium))), about 0.159 c, so cash >= ownFundsFor(c(n)) holds on a
+     *     run from one too, and needs cash > 0.
+     *   - The lender's test: coverage() is the income, noi n, over a payment
+     *     that is a fixed multiple of the shortfall c(n) - cash. Its ratio
+     *     n / (c(n) - cash) falls as n grows: the shortfall a building,
+     *     c(n) / n - cash / n, rises with n because c(n) / n rises and cash
+     *     is above 0. So the test holds on a run from one where it is read,
+     *     and with the down payment met cash is at least 0.159 c(n), which
+     *     makes the ratio fall by at least one part in 5.3 (n + 1) a
+     *     building - past the rounding of the dozen operations in it while n
+     *     is under a trillion.
+     * Outright, or the down payment and the test: a run from one either way.
+     * OrderSearchCheck holds the halving to the count over a long run.
+     */
+
+    /** One slice of a landlord's order, read as decide()'s count read it: bought outright, or its down payment, and the lender's test. */
+    private record Slice(boolean outright, double own, boolean shortOfDown, double coverage, String failedOn) {
+        boolean passes() { return failedOn == null; }
+
+        static Slice of(int n, java.util.function.IntToDoubleFunction costOf,
+                        double cash, double noiPerUnit, double annualRate) {
             double cost = costOf.applyAsDouble(n);
             // Its own funds buy it outright: no lender to ask.
-            if (cash >= cost) return new Decision(n, trimmedBy, false, ownForOne, coverageOfOne);
+            if (cash >= cost) return new Slice(true, Double.NaN, false, Double.NaN, null);
             double own = ownFundsFor(cost);
-            if (n == 1) ownForOne = own;
-            if (!(cash > 0) || cash < own) {
-                if (n == 1) shortForOne = true;
-                if (trimmedBy == null) trimmedBy = Decision.DOWN_PAYMENT;
-                continue;
-            }
-            double coverage = coverage(noiPerUnit * n, cost - cash, annualRate);
-            if (n == 1) coverageOfOne = coverage;
-            if (coverage >= MORTGAGE_DEBT_COVERAGE) return new Decision(n, trimmedBy, false, ownForOne, coverageOfOne);
-            if (trimmedBy == null) trimmedBy = Decision.LENDERS_TEST;
+            if (!(cash > 0) || cash < own) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
+            double coverage = Mortgage.coverage(noiPerUnit * n, cost - cash, annualRate);
+            return new Slice(false, own, false, coverage,
+                    coverage >= MORTGAGE_DEBT_COVERAGE ? null : Decision.LENDERS_TEST);
         }
-        return new Decision(0, trimmedBy, shortForOne, ownForOne, coverageOfOne);
     }
 
     /**
      * The order, decided: how many; what trimmed it from what was asked, if
-     * anything did (DOWN_PAYMENT or LENDERS_TEST, the first that failed on
-     * the way down); and, when not even one passed, whether one was short of
+     * anything did (DOWN_PAYMENT or LENDERS_TEST, what the whole order
+     * failed on - the first failure a count down from it would meet); and,
+     * when not even one passed, whether one was short of
      * its down payment, the funds one needs, and the coverage one gives.
      */
     public record Decision(int quantity, String trimmedBy, boolean shortOfDown,
@@ -308,6 +355,21 @@ public class Mortgage extends BusinessDebt {
             }
             return String.format("Declined %s - its rent would cover the mortgage %.2f×; the lender asks %.2f×",
                     building, coverageOfOne, MORTGAGE_DEBT_COVERAGE);
+        }
+
+        /**
+         * ...and with the rate the lender read the payment at, against the
+         * insured rate the mortgage would be written at (0.7.44): the real
+         * rate, when expected inflation took something off it.
+         */
+        public String refusal(String building, double testedRate, double insuredRate) {
+            if (shortOfDown) return refusal(building);
+            String rate = testedRate < insuredRate
+                    ? String.format("at %.2f%% real (the insured %.2f%% less the inflation expected)",
+                            testedRate * 100, insuredRate * 100)
+                    : String.format("at the insured %.2f%%", insuredRate * 100);
+            return String.format("Declined %s - its rent would cover the mortgage %.2f× %s; the lender asks %.2f×",
+                    building, coverageOfOne, rate, MORTGAGE_DEBT_COVERAGE);
         }
 
         /** ...and the words for an order cut down from what was asked, or nothing when it was not. */

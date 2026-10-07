@@ -622,7 +622,14 @@ public class BankCheck {
         double[] shop = new double[HouseholdBalance.ROWS];
         wages[0] = 1_000 * 3.0;
         shop[0] = 1_000 * .5;
-        double fee = new Bank() {{ refresh(1, 0, 0, 0, 0, 0); }}.accountFee(1.2);
+        // REWRITTEN FOR 0.7.42 (the anchor, spec-inflation.md 2.3): the fee's
+        // base is a money constant struck at the EXPECTED price level
+        // (Game.restrikeMoneyConstants() seeds it at the unit over the level)
+        // and Game reads accountFee(1); it was the base read at the price
+        // index. A level of 1.2, struck and read as the month does.
+        Bank feeAt = new Bank() {{ refresh(1, 0, 0, 0, 0, 0); }};
+        feeAt.seedConstants(1 / 1.2);
+        double fee = feeAt.accountFee(1);
         HouseholdBalance feeless = new HouseholdBalance(), charged = new HouseholdBalance();
         charged.setAccountFee(fee);
         charged.setHousedShares(c -> 1);
@@ -630,7 +637,7 @@ public class BankCheck {
         for (HouseholdBalance hb : new HouseholdBalance[] { feeless, charged }) {
             hb.advanceMonth(townCensus, wages, 1.0, noBills, shop, .2, .05, 1);
         }
-        close("a month's fee is ACCOUNT_FEE at the price index, in today's money",
+        close("a month's fee is ACCOUNT_FEE at the expected price level, in today's money",
                 fee, Bank.ACCOUNT_FEE * 1.2, 1e-15);
         close("the households charged it end the month poorer by exactly the fee on every household",
                 feeless.totalSavings() - charged.totalSavings(), fee * 1_000, 1e-9);
@@ -855,7 +862,7 @@ public class BankCheck {
         assertTrue("the bank is one of the audited pools",
                 java.util.Arrays.asList(MoneyAudit.POOL_NAMES).contains("bank"));
         assertTrue("...and the month still balances to the cent",
-                Math.abs(audit.residual) < .01);
+                Math.abs(audit.residual) < MoneyAudit.tolerance(audit.moved()));
 
         /* ================= 5. the save carries the bank's cash ================= */
         out.println("\n--- and it survives a reload ---");
@@ -1926,7 +1933,8 @@ public class BankCheck {
         close("...and its next month articulates like any other", articulatedOld, 0, .005);
         close("...with the provision the saved city made, within a hundredth of the allowance - not the allowance again",
                 provisionOld, provisionNew, Math.abs(allowanceAtLoad - livedBank.getAllowance()) + .01 * allowanceAtLoad);
-        assertTrue("...and a money audit that closes", Math.abs(old077.getLastMoneyAudit().residual) < .01);
+        assertTrue("...and a money audit that closes", Math.abs(old077.getLastMoneyAudit().residual)
+                < MoneyAudit.tolerance(old077.getLastMoneyAudit().moved()));
 
         /* ============ 9. capital is the constraint, and it can run out ============ */
         out.println("\n--- and capital is what lets it lend ---");
@@ -2372,7 +2380,7 @@ public class BankCheck {
                 worstResidual = Math.max(worstResidual, Math.abs(audit.residual));
                 worstRelative = Math.max(worstRelative, audit.relative());
                 if (credit.getDefaultedThisMonth(RET) > 0 && !credit.wasRestructuredThisMonth(RET)) sliceMonths++;
-                if (Math.abs(audit.residual) < .01) cleanMonths++;
+                if (Math.abs(audit.residual) < MoneyAudit.tolerance(audit.moved())) cleanMonths++;
                 // ...its loans' part, and since 0.7.12 what its holdings of the
                 // sector's bonds lost, at what they cost it (round 2: the bank
                 // holds retail's bonds in this city since each class recovers
@@ -2415,7 +2423,8 @@ public class BankCheck {
         assertTrue("fixture: retail's month was past the default point", credit.defaultsAreNews(RET));
         assertTrue("...and the inbox says so, naming it",
                 raised != null && String.join("\n", raised.getBody()).contains(RET));
-        assertTrue("...and the month still closes", Math.abs(city.getLastMoneyAudit().residual) < .01);
+        assertTrue("...and the month still closes", Math.abs(city.getLastMoneyAudit().residual)
+                < MoneyAudit.tolerance(city.getLastMoneyAudit().moved()));
     }
 
     /* ============ 15. A FAILING SECTOR'S PLANT, SOLD TO THE BUILDERS (0.7.8) ============
@@ -2541,9 +2550,11 @@ public class BankCheck {
         SectorBooks.SectorMonth builderBooks = city.getSectorBooks().get(builders.key());
         close("...both on their cash-flow statements", sellerBooks.salvage() + builderBooks.salvage(), 0, 1e-9);
         close("...which close for the seller, but for the overdraft the fixture handed it",
-                sellerBooks.unexplained(), overdrawnBy, 1e-6);
-        close("...and for the builders", builderBooks.unexplained(), 0, 1e-6);
-        assertTrue("and the month's money audit closes, to the cent", audit != null && Math.abs(audit.residual) < .01);
+                sellerBooks.unexplained(), overdrawnBy, MoneyAudit.tolerance(1e-6, sellerBooks.unexplainedScale()));
+        close("...and for the builders", builderBooks.unexplained(), 0,
+                MoneyAudit.tolerance(1e-6, builderBooks.unexplainedScale()));
+        assertTrue("and the month's money audit closes, to the cent",
+                audit != null && Math.abs(audit.residual) < MoneyAudit.tolerance(audit.moved()));
 
         /*
          * ...AND WHAT THEY BUILD WITH FROM IT IS A COST (0.7.8, round 3): at
@@ -2586,8 +2597,9 @@ public class BankCheck {
                 built.paidEarlier, 1e-9);
         SectorBooks.SectorMonth builtBooks = city.getSectorBooks().get(builders.key());
         close("...and no cash: the cash flow adds it back", builtBooks.paidEarlier(), built.paidEarlier, 1e-9);
-        close("...and closes", builtBooks.unexplained(), 0, 1e-6);
-        assertTrue("...and that month's money audit closes, to the cent", Math.abs(nextAudit.residual) < .01);
+        close("...and closes", builtBooks.unexplained(), 0, MoneyAudit.tolerance(1e-6, builtBooks.unexplainedScale()));
+        assertTrue("...and that month's money audit closes, to the cent",
+                Math.abs(nextAudit.residual) < MoneyAudit.tolerance(nextAudit.moved()));
 
         /*
          * ...AND A SHOP OF ITS OWN TO RETIRE (0.7.17, re-caused). The founding
@@ -3240,6 +3252,7 @@ public class BankCheck {
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
         Bank bank = city.getBank();
         double worstResidual = 0, worstBetween = 0, worstByWho = 0, worstLast = 0, worstYear = 0, worstFoot = 0;
+        double largestMovement = 0;   // the size of the figures the movements were made of (0.7.54)
         int foundingMonths = 0, dividendMonths = 0, familyMonths = 0, cityMonths = 0, businessMonths = 0;
         int lastChecked = 0, yearChecked = 0, played = 72;
         double buybackGain = 0, rescued = 0;
@@ -3287,6 +3300,7 @@ public class BankCheck {
 
                 Bank.EquityMovement moved = bank.equityMovement();
                 worstResidual = Math.max(worstResidual, Math.abs(moved.residual()));
+                largestMovement = Math.max(largestMovement, moved.scale());
                 if (Math.abs(moved.founding()) > 1e-9) foundingMonths++;
                 if (moved.dividends() > 0) dividendMonths++;
                 if (moved.fromShareholders() > 0) offeringMonths++;
@@ -3393,8 +3407,10 @@ public class BankCheck {
         assertTrue("fixture: the bank paid its owners in it", dividendMonths > 0);
         assertTrue("fixture: the treasury bought paper back from it, at a gain or a loss", Math.abs(buybackGain) > 1e-9);
         assertTrue("fixture: the city put capital into it", rescued > 0);
-        close("its equity's movement left nothing unexplained, every month", worstResidual, 0, 1e-6);
-        close("...nor between two presses, after a buyback and after a rescue", worstBetween, 0, 1e-6);
+        close("its equity's movement left nothing unexplained, every month", worstResidual, 0,
+                MoneyAudit.tolerance(1e-6, largestMovement));
+        close("...nor between two presses, after a buyback and after a rescue", worstBetween, 0,
+                MoneyAudit.tolerance(1e-6, largestMovement));
         assertTrue("fixture: the city and the businesses paid it interest", cityMonths > 0 && businessMonths > 0);
         close("its interest by who paid it is the whole of its interest, every month", worstByWho, 0, 1e-6);
         assertTrue("fixture: last month and the year were read in most months", lastChecked > 60 && yearChecked > 50);
@@ -4059,11 +4075,12 @@ public class BankCheck {
         MoneyAudit.Result audit = city.getLastMoneyAudit();
         out.printf("   %s%n", audit);
         assertTrue("MoneyAudit still closes, on the month the bank paid",
-                Math.abs(audit.residual) < .01);
+                Math.abs(audit.residual) < MoneyAudit.tolerance(audit.moved()));
         close("the reloaded city's bank paid the same, at its settle",
                 twin.getCityPaperSettled(), bankPaid, 1e-9);
         close("...and its households the same", twin.getHouseholdsBoughtPaper(), householdsPaid, 1e-9);
-        assertTrue("...and its month closes too", Math.abs(twin.getLastMoneyAudit().residual) < .01);
+        assertTrue("...and its month closes too", Math.abs(twin.getLastMoneyAudit().residual)
+                < MoneyAudit.tolerance(twin.getLastMoneyAudit().moved()));
 
         /* ---- the discount accretes (0.7.1) ---- */
         Debt note = null, serialBond = null;

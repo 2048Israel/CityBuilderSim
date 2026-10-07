@@ -142,11 +142,11 @@ public final class RealEstate extends Sector {
 
     /* ------------------------------ the doors ------------------------------ */
 
-    private int homes;
+    private long homes;
     private double occupiedHomes;
     /** Household CAPACITY - the people the residential buildings hold. */
-    private int household;
-    private int population;
+    private long household;
+    private long population;
     private double householdCount;
     private double marginalHousingCost;
 
@@ -160,7 +160,7 @@ public final class RealEstate extends Sector {
     /** People the residential buildings hold, sites included - the break-even's denominator. */
     private double ownedCapacity;
 
-    private int studioHomes, familyHomes;
+    private long studioHomes, familyHomes;
     private double studioSeekers, familySeekers;
     private double studioSeekerHeads, familySeekerHeads;
 
@@ -188,7 +188,7 @@ public final class RealEstate extends Sector {
        INPUTS FROM THE CITY, set each month by EconomyManager and Game
        =================================================================== */
 
-    public void setHomes(int homes) { this.homes = Math.max(0, homes); }
+    public void setHomes(long homes) { this.homes = Math.max(0, homes); }
 
     /**
      * How many doors have somebody behind them. CLAMPED TO THE STOCK: what
@@ -201,8 +201,8 @@ public final class RealEstate extends Sector {
         this.occupiedHomes = homes > 0 ? Math.min(want, homes) : want;
     }
 
-    public void setHousehold(int capacity)           { this.household = Math.max(0, capacity); }
-    public void setPopulation(int population)        { this.population = Math.max(0, population); }
+    public void setHousehold(long capacity)           { this.household = Math.max(0, capacity); }
+    public void setPopulation(long population)        { this.population = Math.max(0, population); }
     public void setHouseholdCount(double count)      { this.householdCount = Math.max(0, count); }
     public void setMarginalHousingCost(double perCapacity) { this.marginalHousingCost = Math.max(0, perCapacity); }
 
@@ -218,7 +218,7 @@ public final class RealEstate extends Sector {
 
     public void setOwnedHousingCapacity(double capacity) { this.ownedCapacity = Math.max(0, capacity); }
 
-    public void setSegments(int studioHomes, int familyHomes,
+    public void setSegments(long studioHomes, long familyHomes,
                             double studioSeekers, double familySeekers,
                             double studioSeekerHeads, double familySeekerHeads) {
         this.studioHomes = Math.max(0, studioHomes);
@@ -240,9 +240,9 @@ public final class RealEstate extends Sector {
 
     /* ------------------------------ readers ------------------------------ */
 
-    public int getHomes()                    { return homes; }
+    public long getHomes()                    { return homes; }
     public double getOccupiedHomes()         { return occupiedHomes; }
-    public int getHousehold()                { return household; }
+    public long getHousehold()                { return household; }
     public double getHouseholdCount()        { return householdCount; }
     public double getMarginalHousingCost()   { return marginalHousingCost; }
     public double getStructurePerCapacity()  { return structurePerCapacity; }
@@ -250,8 +250,8 @@ public final class RealEstate extends Sector {
     public double getStudioCostPerCapacity() { return studioCostPerCapacity; }
     public double getFamilyCostPerCapacity() { return familyCostPerCapacity; }
     public double getOwnedHousingCapacity()  { return ownedCapacity; }
-    public int getStudioHomes()              { return studioHomes; }
-    public int getFamilyHomes()              { return familyHomes; }
+    public long getStudioHomes()              { return studioHomes; }
+    public long getFamilyHomes()              { return familyHomes; }
     public double getStudioSeekers()         { return studioSeekers; }
     public double getFamilySeekers()         { return familySeekers; }
     public double getStudioSeekerHeads()     { return studioSeekerHeads; }
@@ -333,7 +333,7 @@ public final class RealEstate extends Sector {
         return householdCount / homes;
     }
 
-    private double segmentPressure(int doors, double seekers) {
+    private double segmentPressure(long doors, double seekers) {
         if (doors < MIN_HOMES_FOR_A_MARKET || seekers <= 0) return housingPressure();
         return seekers / doors;
     }
@@ -383,18 +383,34 @@ public final class RealEstate extends Sector {
         return Math.max(1, breakEven / blend);
     }
 
-    /** Moves each rent a lease-length closer to what its market says it should be. */
+    /** Expected inflation a month, which each rent drifts at between leases (0.7.43): told by Game before the month's sale; never saved. */
+    private double expectedMonthly;
+
+    /** Told by Game each month (Expectations.monthlyExpected()); anything not finite is ignored. */
+    public void setExpectedMonthly(double monthly) {
+        if (Double.isFinite(monthly)) expectedMonthly = monthly;
+    }
+
+    /**
+     * Moves each rent a lease-length closer to what its market says it should
+     * be - in logs since 0.7.43, and drifting with expected inflation as it
+     * goes: the one form every seller in the city prices by
+     * (Retail.stickyPrice(), spec-inflation.md 2.7), at a lease's speed. A
+     * landlord who expects prices to rise writes the next lease at more than
+     * this one even with the market standing still. Linear until 0.7.43, with
+     * no drift; a rent at nothing still steps linearly.
+     */
     public void repriceRent() {
         double target = rentTarget();
         if (target > 0) {
             lastRentTarget = target;
-            rentPrice += (target - rentPrice) / LEASE_MONTHS;
+            rentPrice = Retail.stickyPrice(rentPrice, target, expectedMonthly, 1.0 / LEASE_MONTHS);
             if (rentPrice < 0) rentPrice = 0;
         }
         double studioTarget = studioRentTarget();
         if (studioTarget > 0) {
             lastStudioTarget = studioTarget;
-            studioRentPrice += (studioTarget - studioRentPrice) / LEASE_MONTHS;
+            studioRentPrice = Retail.stickyPrice(studioRentPrice, studioTarget, expectedMonthly, 1.0 / LEASE_MONTHS);
             if (studioRentPrice < 0) studioRentPrice = 0;
         }
     }
@@ -479,8 +495,8 @@ public final class RealEstate extends Sector {
         // Every post, the builders' laid-off crews included (0.7.17): a post
         // laid off for want of work is a job that comes back with the work -
         // see BuildingManager.getPostsWithheld().
-        int totalJobs = game.getPopulationManager().getTotalJobs() + buildings.getPostsWithheld();
-        int housingCapacity = game.getHouseholdCapacity();
+        long totalJobs = game.getPopulationManager().getTotalJobs() + buildings.getPostsWithheld();
+        long housingCapacity = game.getHouseholdCapacity();
 
         /*
          * Population is min(housing, jobs x 2.25), so housing demand IS the
@@ -489,7 +505,7 @@ public final class RealEstate extends Sector {
          * are committed, funded and visible. A population trend does not: it
          * would be reading the landlords' own echo.
          */
-        int jobsComing = buildings.getJobsUnderConstruction();
+        long jobsComing = buildings.getJobsUnderConstruction();
         double latentDemand = (totalJobs + jobsComing) * 2.25;
         /*
          * ...AND SO DO THE HOMES ON SITE (0.7.17), for the same reason and now
@@ -510,9 +526,9 @@ public final class RealEstate extends Sector {
 
         if (headShortfall <= 0 && familyShortfall <= 0) {
             return BusinessInvestment.Decision.no(sector, comingCapacity > 0
-                    ? String.format("housing ahead of jobs (%d now, %d coming), homes for %,.0f on site",
+                    ? String.format("housing ahead of jobs (%,d now, %,d coming), homes for %,.0f on site",
                             totalJobs, jobsComing, comingCapacity)
-                    : String.format("housing ahead of jobs (%d now, %d coming)", totalJobs, jobsComing));
+                    : String.format("housing ahead of jobs (%,d now, %,d coming)", totalJobs, jobsComing));
         }
 
         BuildingsTemplate best = null;
@@ -680,8 +696,8 @@ public final class RealEstate extends Sector {
 
     /** The head shortage plan() would see if it were asked right now - for the credit check. */
     private double latentHeadShortfall() {
-        int standing = buildings.getPostsWithheld();   // every post, as plan() reads them (0.7.17)
-        for (int n : buildings.getTotalJobs()) standing += n;
+        long standing = buildings.getPostsWithheld();   // every post, as plan() reads them (0.7.17)
+        for (long n : buildings.getTotalJobs()) standing += n;
         double latent = (standing + buildings.getJobsUnderConstruction()) * 2.25;
         return latent - (buildings.getTotalHouseCapacity() + capacityOnSite())
                 * (1 + BusinessInvestment.TARGET_HEADROOM);
@@ -893,7 +909,7 @@ public final class RealEstate extends Sector {
         rBilledStudioWeight = extras.getOrDefault("billedStudioWeight", 0.0);
         rBilledFamilyWeight = extras.getOrDefault("billedFamilyWeight", 0.0);
         rRentIncome = extras.getOrDefault("rentIncome", 0.0);
-        homes = (int) Math.round(extras.getOrDefault("homes", 0.0));
+        homes = Math.round(extras.getOrDefault("homes", 0.0));
         occupiedHomes = extras.getOrDefault("occupiedHomes", 0.0);
     }
 

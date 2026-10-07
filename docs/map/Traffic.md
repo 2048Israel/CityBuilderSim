@@ -1,6 +1,6 @@
 # Traffic.java - 60 lines · 3 methods · 0 constants · model
 
-`ham/citybuildersim/Traffic.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Traffic.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > The three things that move, which used to be one number.
 > 
@@ -39,7 +39,7 @@
 > all without moving the save format. If that ever stops being true, new
 > constants go on the END, for the reason BuildingType's header gives.
 
-**Used by (13):** [BuildAdvice](BuildAdvice.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [EconomyManager](EconomyManager.md), [Good](Good.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ServicesManager](ServicesManager.md), [TradeCostCheck](TradeCostCheck.md)
+**Used by (15):** [BuildAdvice](BuildAdvice.md), [BuildingsTemplate](BuildingsTemplate.md), [CarCheck](CarCheck.md), [EconomyManager](EconomyManager.md), [Good](Good.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [TradeCostCheck](TradeCostCheck.md)
 
 ## Enum constants
 

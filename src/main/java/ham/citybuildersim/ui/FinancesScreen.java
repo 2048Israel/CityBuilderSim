@@ -1408,10 +1408,11 @@ final class FinancesScreen {
                                 : "the businesses borrow from the bank",
                         Palette.TEXT_LABEL, null),
                 new AreaCard("The city's fund", fundValue > 0 ? d(fundValue) : "empty",
-                        fund.getTransferShort() > 0 ? d(fund.getTransferShort()) + " of its transfer unpaid"
+                        fund.getToRaise() > 0 ? "selling " + d(fund.getToRaise()) + " to pay its withdrawal"
+                                : fund.getTransferShort() > 0 ? d(fund.getTransferShort()) + " of its transfer unpaid"
                                 : fund.getTransferPaid() > 0 ? "paid " + d(fund.getTransferPaid()) + " to the treasury"
                                 : String.format("the dial at %.0f%% of the year's surplus", fund.getDial() * 100),
-                        fund.getTransferShort() > 0 ? Palette.WARN : Palette.TEXT_LABEL, null));
+                        fund.getTransferShort() > 0 && !(fund.getToRaise() > 0) ? Palette.WARN : Palette.TEXT_LABEL, null));
     }
 
     GridPane areaCards() {

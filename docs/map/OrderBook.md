@@ -1,6 +1,6 @@
 # OrderBook.java - 433 lines · 50 methods · 1 constants · model
 
-`ham/citybuildersim/OrderBook.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderBook.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > A limit-order book for one instrument: buy and sell orders from named
 > participants, each a price and a quantity, matched by price-time priority.
@@ -51,7 +51,7 @@
 > 
 > Every field is plain data, so the book saves with Gson as it stands.
 
-**Used by (17):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [LongPlaytest](LongPlaytest.md), [OrderBookCheck](OrderBookCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (18):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [HistoryCheck](HistoryCheck.md), [LongPlaytest](LongPlaytest.md), [OrderBookCheck](OrderBookCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

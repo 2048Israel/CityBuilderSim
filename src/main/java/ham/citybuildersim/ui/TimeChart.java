@@ -3,8 +3,10 @@ package ham.citybuildersim.ui;
 import ham.citybuildersim.ChartModel;
 import ham.citybuildersim.CityCalendar;
 import ham.citybuildersim.DecisionLog;
+import ham.citybuildersim.GameLog;
 import ham.citybuildersim.YearBook;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.DoubleFunction;
@@ -49,9 +51,11 @@ import javafx.geometry.VPos;
  *
  * NOTHING HERE IS ARITHMETIC ABOUT THE CITY. The window, the ticks, the
  * scales, the lanes and the flags are ChartModel's, which ChartCheck holds
- * to; the bands and episodes YearBook's; the decisions the DecisionLog's;
- * each line's values the screen's, in its stored units, with the screen's
- * own formatter to read them. This draws and listens.
+ * to, and since 0.7.50 so are the copy of what it is handed that it draws
+ * from and the stack's runs and reach (setData(); ChartModel, WHAT A CHART
+ * DRAWS FROM); the bands and episodes YearBook's; the decisions the
+ * DecisionLog's; each line's values the screen's, in its stored units, with
+ * the screen's own formatter to read them. This draws and listens.
  */
 final class TimeChart extends VBox {
 
@@ -117,20 +121,55 @@ final class TimeChart extends VBox {
      * read out, and what the legend says its unit is.
      */
     record Line(String key, String label, String colour, int side, double[] values,
-                DoubleUnaryOperator toPlot, DoubleFunction<String> reads, String unitWords) { }
+                DoubleUnaryOperator toPlot, DoubleFunction<String> reads, String unitWords, boolean dashed) {
+        /** ...drawn solid, as every line was until 0.7.45. */
+        Line(String key, String label, String colour, int side, double[] values,
+             DoubleUnaryOperator toPlot, DoubleFunction<String> reads, String unitWords) {
+            this(key, label, colour, side, values, toPlot, reads, unitWords, false);
+        }
+
+        /** The same line drawn dashed (0.7.45): what people expect beside what happened. */
+        Line asDashed() { return new Line(key, label, colour, side, values, toPlot, reads, unitWords, true); }
+
+        /** The same line with its own copy of its values, exactly n months long (0.7.50; ChartModel.aligned()). */
+        Line alignedTo(int n) {
+            return new Line(key, label, colour, side, ChartModel.aligned(values, n), toPlot, reads, unitWords, dashed);
+        }
+    }
 
     /** One value axis: what a gridline says, from the value and the step; and whether it starts at zero. */
     record Axis(java.util.function.BiFunction<Double, Double, String> tick, boolean fromZero) { }
 
     /** Layers stacked from zero under the first line (GDP in layers, 0.7.6): their values, names and colours. */
     record Stack(double[][] layers, String[] names, String[] colours, DoubleUnaryOperator toPlot,
-                 DoubleFunction<String> reads) { }
+                 DoubleFunction<String> reads) {
+        /** The same stack with its own copy of every layer, exactly n months long (0.7.50; ChartModel.aligned()). */
+        Stack alignedTo(int n) {
+            return new Stack(ChartModel.aligned(layers == null ? new double[0][] : layers, n),
+                    names == null ? new String[0] : names.clone(), colours == null ? new String[0] : colours.clone(),
+                    toPlot, reads);
+        }
+
+        /** Layer p's name, or nothing for a layer handed no name. */
+        String name(int p) { return p < names.length ? names[p] : ""; }
+
+        /** Layer p's colour, or the muted ink for a layer handed none. */
+        String colour(int p) { return p < colours.length ? colours[p] : Palette.TEXT_3; }
+    }
 
     private final ChartModel window;
     private final Set<String> hidden;
     private final boolean main;
 
     private List<Integer> months = List.of();
+
+    /**
+     * How many of the months, from the first, are folded years (0.7.55;
+     * HistorySave.yearlyPoints()): each drawn at its year's last month, as
+     * the history keeps it, and read in the crosshair as its year. 0 for a
+     * chart that is never handed a history that old.
+     */
+    private int yearly;
     private List<Line> lines = List.of();
     private Axis left, right;
     private boolean squashed, log;
@@ -139,6 +178,8 @@ final class TimeChart extends VBox {
     private List<YearBook.Episode> episodes = List.of();
     private int[] lanes = new int[0];
     private List<ChartModel.Flag> flags = List.of();
+    /** What the model did on its own that a line answers to (0.7.45: the basket's links), drawn over the plot on the big chart. */
+    private List<ChartModel.Mark> marks = List.of();
     private String emptySays = "";
 
     /* ------------------------------ its nodes ------------------------------ */
@@ -204,6 +245,10 @@ final class TimeChart extends VBox {
         sides.widthProperty().bind(widthProperty());
         sides.heightProperty().bind(heightProperty().add(2 * OVERHANG));
         setClip(sides);
+        // Taken off the screen, it lets go of the pointer (0.7.50): a page torn down no longer tells what is on
+        // it that the pointer left (UserInterface.clearMenu, A PAGE TORN DOWN HEARS NOTHING), and City History
+        // keeps its charts for the next page - one would come back with a crosshair where the pointer was.
+        sceneProperty().addListener((o, was, now) -> { if (now == null) hoverX = hoverY = Double.NaN; });
 
         card.setStyle(Palette.block(Palette.PINNED, Palette.EDGE) + " -fx-padding: 7 10 8 10;");
         card.setMaxWidth(CARD_W);
@@ -252,8 +297,8 @@ final class TimeChart extends VBox {
         } else {
             toolbar = null;
             getChildren().add(plotStack);
-            plot.setOnMouseMoved(e -> { hoverX = e.getX(); hoverY = e.getY(); draw(); });
-            plot.setOnMouseExited(e -> { hoverX = hoverY = Double.NaN; draw(); });
+            plot.setOnMouseMoved(guarded(e -> { hoverX = e.getX(); hoverY = e.getY(); draw(); }));
+            plot.setOnMouseExited(guarded(e -> { hoverX = hoverY = Double.NaN; draw(); }));
         }
     }
 
@@ -265,21 +310,44 @@ final class TimeChart extends VBox {
      * Everything the chart draws. The months are the history's axis; every
      * line's values and the stack's layers are aligned to them. The window
      * is told the data's ends, and follows the newest month if it was on it.
+     *
+     * ONE SNAPSHOT, TAKEN HERE (0.7.50; ChartModel, WHAT A CHART DRAWS FROM).
+     * The chart keeps copies: the months, every line's values and every
+     * layer exactly as many months long, and the bands, episodes, flags and
+     * marks as lists of their own. It used to keep the history's month list
+     * itself, which grew under a chart still on screen when a month landed,
+     * and the next redraw read past the end of the stack's layers.
      */
     void setData(List<Integer> months, List<Line> lines, Axis left, Axis right, boolean squashed,
                  boolean log, Stack stack, List<YearBook.Band> bands, List<YearBook.Episode> episodes,
                  List<ChartModel.Flag> flags, String emptySays) {
-        this.months = months == null ? List.of() : months;
-        this.lines = lines == null ? List.of() : lines;
+        setData(months, lines, left, right, squashed, log, stack, bands, episodes, flags, List.of(), emptySays);
+    }
+
+    /**
+     * ...and the marks over the plot (0.7.45): the basket's links, which City
+     * History hands the big chart while it draws an index line. A mark is not
+     * a decision - the model did it, not the player - so it is a hairline
+     * through the plot, not a flag on the lane.
+     */
+    void setData(List<Integer> months, List<Line> lines, Axis left, Axis right, boolean squashed,
+                 boolean log, Stack stack, List<YearBook.Band> bands, List<YearBook.Episode> episodes,
+                 List<ChartModel.Flag> flags, List<ChartModel.Mark> marks, String emptySays) {
+        this.marks = fixed(marks);
+        this.months = ChartModel.fixedMonths(months);
+        int n = this.months.size();
+        List<Line> own = new ArrayList<>();
+        if (lines != null) for (Line l : lines) own.add(l.alignedTo(n));
+        this.lines = Collections.unmodifiableList(own);
         this.left = left;
         this.right = right;
         this.squashed = squashed;
         this.log = log;
-        this.stack = stack;
-        this.bands = bands == null ? List.of() : bands;
-        this.episodes = episodes == null ? List.of() : episodes;
+        this.stack = stack == null ? null : stack.alignedTo(n);
+        this.bands = fixed(bands);
+        this.episodes = fixed(episodes);
         this.lanes = ChartModel.lanes(this.episodes);
-        this.flags = flags == null ? List.of() : flags;
+        this.flags = fixed(flags);
         this.emptySays = emptySays == null ? "" : emptySays;
         if (!this.months.isEmpty()) window.setData(this.months.get(0), this.months.get(this.months.size() - 1));
         // A pinned card on something that is no longer drawn goes with it.
@@ -290,6 +358,11 @@ final class TimeChart extends VBox {
             buildRanges();
         }
         layoutCanvases();
+    }
+
+    /** A list as the chart keeps it: its own copy, so the caller's can change afterwards. */
+    private static <T> List<T> fixed(List<T> list) {
+        return list == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(list));
     }
 
     private Object sameBand(YearBook.Band b) {
@@ -387,11 +460,11 @@ final class TimeChart extends VBox {
                     + " -fx-padding: 3 9 3 8; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 1;"
                     + " -fx-border-color: " + (on ? l.colour() : Palette.EDGE) + "; -fx-cursor: hand;");
             HistoryScreen.tip(chip, (on ? "Hides" : "Shows") + " this line; the axes fit what is shown.");
-            chip.setOnMouseClicked(e -> {
+            chip.setOnMouseClicked(guarded(e -> {
                 if (!hidden.remove(l.key())) hidden.add(l.key());
                 buildLegend();
                 draw();
-            });
+            }));
             legend.getChildren().add(chip);
         }
     }
@@ -402,7 +475,7 @@ final class TimeChart extends VBox {
             int months = i < ChartModel.RANGES.length ? ChartModel.RANGES[i] : ChartModel.ALL;
             Label r = new Label(ChartModel.RANGE_NAMES[i]);
             r.setUserData(months);
-            r.setOnMouseClicked(e -> { window.showRange(months); moved(true); });
+            r.setOnMouseClicked(guarded(e -> { window.showRange(months); moved(true); }));
             ranges.getChildren().add(r);
         }
         paintRanges();
@@ -477,7 +550,7 @@ final class TimeChart extends VBox {
 
     /** A line's value at index i in the axis's units, or NaN: through toPlot, the log, or its own low-to-high. */
     private double plotted(Line l, int i, double[] own) {
-        double v = l.values()[i];
+        double v = ChartModel.at(l.values(), i);
         if (Double.isNaN(v)) return Double.NaN;
         if (squashed) {
             if (own == null || !(own[1] > own[0])) return 50;
@@ -533,29 +606,85 @@ final class TimeChart extends VBox {
         return out;
     }
 
+    /** What the stack's first three layers reach in the window, summed from zero (ChartModel.stackReach()). */
     private double[] stackReach() {
-        double low = 0, high = 0;
-        for (int i = 0; i < months.size(); i++) {
-            int m = months.get(i);
-            if (m < window.lo() - 1e-9 || m > window.hi() + 1e-9) continue;
-            double sum = 0;
-            for (int p = 0; p < 3 && p < stack.layers().length; p++) {
-                double v = stack.layers()[p][i];
-                if (Double.isNaN(v)) continue;
-                sum += stack.toPlot().applyAsDouble(v);
-                low = Math.min(low, sum);
-                high = Math.max(high, sum);
-            }
-        }
-        return new double[] {low, high};
+        return ChartModel.stackReach(months, stack.layers(), 3, window.lo(), window.hi(), stack.toPlot());
     }
 
     /* =====================================================================
        DRAWING
        ===================================================================== */
 
-    /** Draws the chart, its overview and its card, and lights the range button the window still matches. */
+    /**
+     * Draws the chart, its overview and its card, and lights the range button
+     * the window still matches.
+     *
+     * A FAULT HERE NEVER REACHES JAVAFX (0.7.50). This runs from the
+     * pointer's handlers, and JavaFX fires one of them - the pointer leaving
+     * - from inside its own removal of a page. Jerus's 0.7.49 chart threw
+     * there, and the exception went up through the page's children list half
+     * way through the change: the page's children before the one holding the
+     * chart had been taken off the scene and were still in the list. So a
+     * frame that fails is skipped:
+     * the canvas is cleared, the card hidden, and the fault written to the
+     * log with its stack trace, once for this chart.
+     */
     void draw() {
+        try {
+            paint();
+        } catch (RuntimeException e) {
+            skipFrame(e);
+        }
+    }
+
+    /** Whether this chart has written a fault to the log: once a chart, so a fault on every frame is one entry (0.7.50). */
+    private boolean faultLogged;
+
+    /** A fault in this chart, written to the log with its stack trace the first time only. */
+    private void fault(String what, RuntimeException e) {
+        if (faultLogged) return;
+        faultLogged = true;
+        GameLog.failure("A chart failed " + what + " (TimeChart; this chart reports no more of its faults)", e);
+    }
+
+    /**
+     * A frame that failed, skipped: the state a drawing step saved put back
+     * (each saves one at a time, and a restore with nothing saved does
+     * nothing), the canvases cleared, the card hidden, and the fault logged.
+     */
+    private void skipFrame(RuntimeException e) {
+        try {
+            GraphicsContext g = plot.getGraphicsContext2D();
+            g.restore();
+            g.setLineDashes((double[]) null);
+            g.setTextAlign(TextAlignment.LEFT);
+            g.setTextBaseline(VPos.BASELINE);
+            g.clearRect(0, 0, plot.getWidth(), plot.getHeight());
+            if (main) strip.getGraphicsContext2D().clearRect(0, 0, strip.getWidth(), strip.getHeight());
+            card.setVisible(false);
+        } catch (RuntimeException ignored) {
+            // The fault below is what is worth reading.
+        }
+        fault("drawing, and the frame was skipped", e);
+    }
+
+    /**
+     * A handler that cannot throw into JavaFX's event dispatch (0.7.50): what
+     * it throws is the chart's fault, logged once, and the event is dropped.
+     * Every pointer, wheel and click handler on the chart is one of these.
+     */
+    private <T extends javafx.event.Event> javafx.event.EventHandler<T> guarded(javafx.event.EventHandler<T> h) {
+        return e -> {
+            try {
+                h.handle(e);
+            } catch (RuntimeException ex) {
+                fault("handling " + e.getEventType() + ", and the event was dropped", ex);
+            }
+        };
+    }
+
+    /** One frame: draw()'s, which catches what it throws. */
+    private void paint() {
         if (!(width > 0)) return;
         plotRight = width - (anyOnRight() ? AXIS_W : NO_AXIS_W);
         GraphicsContext g = plot.getGraphicsContext2D();
@@ -589,6 +718,7 @@ final class TimeChart extends VBox {
         }
 
         drawBands(g, bottom);
+        if (main) drawMarks(g, bottom);
         if (stack != null && scale[0] != null) drawStack(g, scale[0], bottom);
         boolean drewAny = drawLines(g, scale, own, bottom);
         drawAxes(g, scale, bottom);
@@ -648,37 +778,53 @@ final class TimeChart extends VBox {
         }
     }
 
+    /** How near a mark the pointer must be, in pixels, for the card to say it (0.7.45). */
+    static final double MARK_REACH = 5;
+
+    /** The marks in view: a dashed hairline in the muted ink through the plot, and its word at the plot's top (0.7.45). */
+    private void drawMarks(GraphicsContext g, double bottom) {
+        if (marks.isEmpty()) return;
+        g.setFont(Palette.Fonts.sansFont(10));
+        g.setTextAlign(TextAlignment.LEFT);
+        for (ChartModel.Mark mk : marks) {
+            if (mk.month() < window.lo() - .5 || mk.month() > window.hi() + .5) continue;
+            double x = Math.floor(xOf(mk.month())) + .5;
+            boolean near = !Double.isNaN(hoverX) && Math.abs(hoverX - x) <= MARK_REACH && inPlot(hoverX, hoverY);
+            g.setStroke(Color.web(Palette.TEXT_MUTED, near ? 1 : .75));
+            g.setLineWidth(1);
+            g.setLineDashes(4, 4);
+            g.strokeLine(x, top, x, bottom);
+            g.setLineDashes((double[]) null);
+            g.setFill(Color.web(near ? Palette.TEXT_2 : Palette.TEXT_MUTED));
+            g.fillText("basket", x + 4, top + 12);
+        }
+    }
+
+    /** The mark within MARK_REACH of the pointer, or null. */
+    private ChartModel.Mark markAt(double x) {
+        if (marks.isEmpty() || Double.isNaN(x)) return null;
+        for (ChartModel.Mark mk : marks) {
+            if (mk.month() < window.lo() - .5 || mk.month() > window.hi() + .5) continue;
+            if (Math.abs(x - (Math.floor(xOf(mk.month())) + .5)) <= MARK_REACH) return mk;
+        }
+        return null;
+    }
+
     private void drawStack(GraphicsContext g, ChartModel.Scale s, double bottom) {
         int n = Math.min(3, stack.layers().length);
         g.save();
         clipToPlot(g);
         for (int p = n - 1; p >= 0; p--) {
-            Color c = Color.web(stack.colours()[p]);
+            Color c = Color.web(stack.colour(p));
             g.setFill(c.deriveColor(0, 1, 1, .78));
             g.setStroke(c);
             g.setLineWidth(1);
             // One polygon per unbroken run of months: the top of this layer, then back along the one under it.
-            List<double[]> run = new ArrayList<>();
-            for (int i = 0; i <= months.size(); i++) {
-                boolean in = i < months.size() && months.get(i) >= window.lo() - 1 && months.get(i) <= window.hi() + 1;
-                double under = 0, upper = Double.NaN;
-                if (in) {
-                    boolean whole = true;
-                    double sum = 0;
-                    for (int q = 0; q <= p; q++) {
-                        double v = stack.layers()[q][i];
-                        if (Double.isNaN(v)) { whole = false; break; }
-                        if (q == p) under = sum;
-                        sum += stack.toPlot().applyAsDouble(v);
-                    }
-                    if (whole) upper = sum;
-                }
-                if (!Double.isNaN(upper)) {
-                    run.add(new double[] {xOf(months.get(i)), s.y(upper, bottom, plotH), s.y(under, bottom, plotH)});
-                } else if (!run.isEmpty()) {
-                    fillRun(g, run);
-                    run.clear();
-                }
+            // The runs are ChartModel's (0.7.50, ChartCheck walks them); this only places them.
+            for (List<double[]> run : ChartModel.stackRuns(months, stack.layers(), p, window.lo(), window.hi(), stack.toPlot())) {
+                List<double[]> at = new ArrayList<>(run.size());
+                for (double[] r : run) at.add(new double[] {xOf(r[0]), s.y(r[1], bottom, plotH), s.y(r[2], bottom, plotH)});
+                fillRun(g, at);
             }
         }
         g.restore();
@@ -716,6 +862,7 @@ final class TimeChart extends VBox {
             ChartModel.Scale s = squashed ? scale[0] : scale[l.side()];
             if (!shown(l) || s == null) continue;
             g.setStroke(Color.web(l.colour()));
+            if (l.dashed()) g.setLineDashes(6, 4); else g.setLineDashes((double[]) null);
             g.beginPath();
             boolean open = false;
             double sum = 0;
@@ -744,6 +891,7 @@ final class TimeChart extends VBox {
             }
             g.stroke();
         }
+        g.setLineDashes((double[]) null);
         g.restore();
         return drew || (stack != null && scale[0] != null);
     }
@@ -1140,11 +1288,17 @@ final class TimeChart extends VBox {
         return r;
     }
 
+    /** The folded years at the front of the months this chart is handed (0.7.55; HistorySave.yearlyPoints()). */
+    void setYearly(int years) { yearly = Math.max(0, years); }
+
     private void crosshairCard(YearBook.Band in) {
         int i = ChartModel.nearest(months, monthAt(hoverX));
         if (i < 0) return;
         int m = months.get(i);
-        card.getChildren().add(head(CityCalendar.formatShort(m) + (in == null ? "" : "  ·  " + in.name())));
+        // A folded year reads as its year: a month's average for a flow, its
+        // end for a level, its average for a rate (0.7.55).
+        String when = i < yearly ? "the year " + CityCalendar.yearOf(m) + ", kept whole" : CityCalendar.formatShort(m);
+        card.getChildren().add(head(when + (in == null ? "" : "  ·  " + in.name())));
         for (Line l : lines) {
             if (!shown(l)) continue;
             double v = i < l.values().length ? l.values()[i] : Double.NaN;
@@ -1152,10 +1306,15 @@ final class TimeChart extends VBox {
         }
         if (stack != null) {
             for (int p = 0; p < stack.layers().length; p++) {
-                double v = stack.layers()[p][i];
-                card.getChildren().add(row(p < stack.colours().length ? stack.colours()[p] : Palette.TEXT_3,
-                        "  " + stack.names()[p], Double.isNaN(v) ? "not recorded" : stack.reads().apply(v)));
+                double v = ChartModel.at(stack.layers()[p], i);
+                card.getChildren().add(row(stack.colour(p),
+                        "  " + stack.name(p), Double.isNaN(v) ? "not recorded" : stack.reads().apply(v)));
             }
+        }
+        ChartModel.Mark mark = main ? markAt(hoverX) : null;
+        if (mark != null) {
+            // A mark under the pointer (0.7.45): what the model did that month, in its own words.
+            card.getChildren().add(caption(CityCalendar.formatShort(mark.month()) + ": " + mark.words() + ".", Palette.TEXT_2));
         }
         if (in != null) {
             // The band's rule and its numbers, from the year book's record of it; a click keeps them.
@@ -1238,26 +1397,26 @@ final class TimeChart extends VBox {
        ===================================================================== */
 
     private void listen() {
-        plot.setOnMouseMoved(e -> {
+        plot.setOnMouseMoved(guarded(e -> {
             hoverX = e.getX();
             hoverY = e.getY();
             Object item = itemAt(hoverX, hoverY);
             plot.setCursor(inPlot(hoverX, hoverY) ? Cursor.OPEN_HAND
                     : item != null ? Cursor.HAND : Cursor.DEFAULT);
             draw();
-        });
-        plot.setOnMouseExited(e -> {
+        }));
+        plot.setOnMouseExited(guarded(e -> {
             hoverX = hoverY = Double.NaN;
             draw();
-        });
-        plot.setOnMousePressed(e -> {
+        }));
+        plot.setOnMousePressed(guarded(e -> {
             if (e.getButton() != MouseButton.PRIMARY) return;
             pressX = e.getX();
             pressY = e.getY();
             pressLo = window.lo();
             pressHi = window.hi();
-        });
-        plot.setOnMouseDragged(e -> {
+        }));
+        plot.setOnMouseDragged(guarded(e -> {
             if (Double.isNaN(pressX) || !inPlot(pressX, pressY)) return;
             if (!dragging && Math.abs(e.getX() - pressX) < DRAG_SLOP) return;
             dragging = true;
@@ -1267,8 +1426,8 @@ final class TimeChart extends VBox {
             hoverX = e.getX();
             hoverY = e.getY();
             moved(false);
-        });
-        plot.setOnMouseReleased(e -> {
+        }));
+        plot.setOnMouseReleased(guarded(e -> {
             boolean was = dragging;
             dragging = false;
             double px = pressX;
@@ -1290,8 +1449,8 @@ final class TimeChart extends VBox {
             pinned = item == pinned ? null : item;
             pinnedX = e.getX();
             draw();
-        });
-        plot.setOnScroll(this::wheel);
+        }));
+        plot.setOnScroll(guarded(this::wheel));
     }
 
     private void wheel(ScrollEvent e) {
@@ -1309,12 +1468,12 @@ final class TimeChart extends VBox {
     }
 
     private void listenToStrip() {
-        strip.setOnMouseMoved(e -> {
+        strip.setOnMouseMoved(guarded(e -> {
             double xl = stripX(window.lo()), xr = stripX(window.hi());
             strip.setCursor(Math.abs(e.getX() - xl) <= HANDLE || Math.abs(e.getX() - xr) <= HANDLE ? Cursor.H_RESIZE
                     : e.getX() > xl && e.getX() < xr ? Cursor.MOVE : Cursor.HAND);
-        });
-        strip.setOnMousePressed(e -> {
+        }));
+        strip.setOnMousePressed(guarded(e -> {
             if (e.getButton() != MouseButton.PRIMARY) return;
             double xl = stripX(window.lo()), xr = stripX(window.hi());
             if (Math.abs(e.getX() - xl) <= HANDLE) stripMode = 2;
@@ -1331,8 +1490,8 @@ final class TimeChart extends VBox {
             pressMonth = stripMonth(e.getX());
             pressLo = window.lo();
             pressHi = window.hi();
-        });
-        strip.setOnMouseDragged(e -> {
+        }));
+        strip.setOnMouseDragged(guarded(e -> {
             if (stripMode == 0) return;
             double dm = stripMonth(e.getX()) - pressMonth;
             double min = Math.min(ChartModel.MIN_SPAN, window.last() - window.first());
@@ -1342,14 +1501,14 @@ final class TimeChart extends VBox {
                 default -> window.setWindow(pressLo, Math.max(pressHi + dm, pressLo + min));
             }
             moved(false);
-        });
-        strip.setOnMouseReleased(e -> {
+        }));
+        strip.setOnMouseReleased(guarded(e -> {
             if (stripMode == 0) return;
             stripMode = 0;
             dragging = false;
             moved(true);
-        });
-        strip.setOnScroll(this::wheel);
+        }));
+        strip.setOnScroll(guarded(this::wheel));
     }
 
     /** The window moved: this chart, the charts that follow it, and - once it rests - the page. */

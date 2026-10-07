@@ -264,8 +264,8 @@ final class PeopleScreen {
         PopulationManager pm = ui.game.getPopulationManager();
         double net = month(false).net();
         double jobless = pm.getUnemploymentRate();
-        int unfilled = 0;
-        for (int v : pm.getJobVacancy()) unfilled += v;
+        long unfilled = 0;
+        for (long v : pm.getJobVacancy()) unfilled += v;
         Homes h = homes();
         double sick = ui.game.getHealth().getSickRate();
         double hunger = ui.game.getHouseholdBalance().getHungerRate();
@@ -282,12 +282,13 @@ final class PeopleScreen {
                     people(pm.getWorkforce() * sick) + " of the workforce", sickTone(sick),
                     "Services › Health › General care"),
             new Cell("GOING SHORT", String.format("%.1f%%", hunger * 100), goingShortNote(),
-                    goingShortTone(hunger), "What a month leaves each kind of household: Household money"),
+                    goingShortTone(hunger), "Who goes short, and why: Household money - struck at the top of the month"
+                    + " on the last sale, a month behind the shops' own figures"),
         };
     }
 
     /** OUT OF WORK's note: the count, and the verdict the old page printed under it. */
-    static String outOfWorkNote(double jobless, double unemployed, int unfilled) {
+    static String outOfWorkNote(double jobless, double unemployed, long unfilled) {
         if (jobless < OUT_OF_WORK_SHORT) {
             return unfilled > 0 ? "nobody spare · every new job goes unfilled"
                     : people(unemployed) + " with nothing to do · nobody spare";
@@ -301,7 +302,9 @@ final class PeopleScreen {
      * GOING SHORT's note: which of the two hungers it is (0.7.27). The share
      * is mostly empty shelves in an old city and the page never said so -
      * HouseholdBalance.getHungryAtFullShelves() is the money half, and the
-     * share the shops handed over (getDeliveredShare()) says the rest.
+     * share the shops handed over (getDeliveredShare()) says the rest. Since
+     * 0.7.43 that share is of the baskets asked for at the price, not of what
+     * the households planned (the UI spec's B4).
      */
     String goingShortNote() {
         HouseholdBalance bal = ui.game.getHouseholdBalance();
@@ -311,10 +314,10 @@ final class PeopleScreen {
         // Full shelves and nobody short of money, and still hungry: a save from before the split was
         // kept, read before its first month. The old words until the month runs.
         if (handed >= 1 && money <= 0) return "eating less than a full basket";
-        String shelves = String.format("the shops handed over %s of what was planned", shareWords(handed));
-        if (handed >= .995) return flowText(money) + " can't afford a full basket";
+        String shelves = String.format("the shops handed over %s of what was asked", shareWords(handed));
+        if (handed >= .995) return flowText(money) + " can't afford a basket";
         if (money < .5) return shelves;
-        return flowText(money) + " can't afford · " + shelves;
+        return flowText(money) + " can't afford a basket · " + shelves;
     }
 
     /** A share in words, "under 1%" when it rounds to nothing but is not nothing. */
@@ -407,7 +410,7 @@ final class PeopleScreen {
 
     Month month(boolean year) {
         HistorySave h = ui.game.getHistorySave();
-        List<Integer> pop = h.getPopulation();
+        List<Long> pop = h.getPopulation();
         int n = pop.size();
         if (year) {
             if (n < 13) return new Month(true, false, 0, 0, 0, 0, 0, 0, List.of(), List.of());
@@ -508,7 +511,7 @@ final class PeopleScreen {
     /** "100,000 people in March 2031": the last of 1k, 10k, 100k and 1M the history's population crossed in the last twelve months, or null. */
     String milestone() {
         HistorySave h = ui.game.getHistorySave();
-        List<Integer> pop = h.getPopulation();
+        List<Long> pop = h.getPopulation();
         List<Integer> axis = h.getMonth();
         String found = null;
         for (int k = Math.max(1, pop.size() - 12); k < pop.size(); k++) {
@@ -537,7 +540,7 @@ final class PeopleScreen {
     Bridge bridge() {
         Migration m = ui.game.getMigration();
         double target = m.getLastTarget();
-        int population = ui.game.getPopulationManager().getPopulation();
+        long population = ui.game.getPopulationManager().getPopulation();
         String why, tone, word;
         if (m.getLastCrowding() <= 0) {
             why = "Nobody else can fit. Every flatshare and every doubled-up household "
@@ -818,10 +821,10 @@ final class PeopleScreen {
     /** The labour line: surplus, shortage or balance, in the old page's words. */
     String[] labourWords() {
         PopulationManager pm = ui.game.getPopulationManager();
-        int workforce = pm.getWorkforce();
-        int totalJobs = pm.getTotalJobs();
-        int unfilled = 0;
-        for (int v : pm.getJobVacancy()) unfilled += v;
+        long workforce = pm.getWorkforce();
+        long totalJobs = pm.getTotalJobs();
+        long unfilled = 0;
+        for (long v : pm.getJobVacancy()) unfilled += v;
         if (workforce > totalJobs) {
             return new String[] {
                 String.format("Labour surplus: %s adults with nowhere to work.", people(workforce - totalJobs)),
@@ -995,7 +998,7 @@ final class PeopleScreen {
         if (vitals.getChildren().isEmpty() || !(vitals.getChildren().get(0) instanceof HBox bar)) return;
         if (bar.getChildren().isEmpty() || !(bar.getChildren().get(0) instanceof VBox cell)) return;
         if (cell.getChildren().size() < 2 || !(cell.getChildren().get(1) instanceof Label figure)) return;
-        List<Integer> pop = ui.game.getHistorySave().getPopulation();
+        List<Long> pop = ui.game.getHistorySave().getPopulation();
         if (pop.size() < 2) return;
         double from = pop.get(pop.size() - 2);
         double to = ui.game.getPopulationManager().getPopulation();
@@ -2102,8 +2105,8 @@ final class PeopleScreen {
     VBox workCard() {
         PopulationManager pm = ui.game.getPopulationManager();
         LabourMarket market = ui.game.getLabourMarket();
-        int unfilled = 0;
-        for (int v : pm.getJobVacancy()) unfilled += v;
+        long unfilled = 0;
+        for (long v : pm.getJobVacancy()) unfilled += v;
         HBox strip = new HBox(Palette.GAP_SECTION,
                 mini("WORKERS", people(pm.getWorkforce()), Palette.TEXT_HEAD),
                 mini("POSTS", people(pm.getTotalJobs()), Palette.TEXT_HEAD),
@@ -2133,7 +2136,7 @@ final class PeopleScreen {
         for (EducationType type : EducationType.values()) {
             if (!type.isProfessional()) continue;
             JobType job = type.licenses();
-            int posts = pm.getJobs()[job.ordinal()];
+            long posts = pm.getJobs()[job.ordinal()];
             double held = pm.getLicensed(job);
             if (posts <= 0 && held < .5) continue;
             professions.getChildren().add(chip(String.format("%s %s / %s · %s",
@@ -2495,7 +2498,7 @@ final class PeopleScreen {
         for (EducationType type : EducationType.values()) {
             if (!type.isProfessional()) continue;
             JobType job = type.licenses();
-            int posts = pm.getJobs()[job.ordinal()];
+            long posts = pm.getJobs()[job.ordinal()];
             double held = pm.getLicensed(job);
             if (posts <= 0 && held <= 0) continue;
 
@@ -2530,7 +2533,7 @@ final class PeopleScreen {
     }
 
     /** Every kind of post the city has built, and how well it is staffed. */
-    javafx.scene.layout.GridPane jobTable(int[] jobs, int[] vacancies,
+    javafx.scene.layout.GridPane jobTable(long[] jobs, long[] vacancies,
                                                   double[] fillRates, double[] jobWage) {
 
         javafx.scene.layout.GridPane table = grid(
@@ -2717,15 +2720,18 @@ final class PeopleScreen {
     }
 
     /**
-     * Going hungry, for a row below the rule: its own plan could not buy a
-     * basket - the money half of the hunger, as getHungryAtFullShelves()
-     * counts it, but for the meals eaten out, which that figure adds to the
-     * plan and this does not. (Household.isGoingShort() is a plan short of what the
-     * household WANTED, which for a pensioner with savings is a television,
-     * not a meal.)
+     * Going hungry, for a row below the rule: the baskets it asked for at the
+     * price were fewer than it needs - the money half of the hunger, as
+     * getHungryAtFullShelves() counts it, but for the meals eaten out, which
+     * that figure adds and this does not. Since 0.7.45 in baskets (the UI
+     * spec's B5, D11): eating is baskets since 0.7.43, and the money plan it
+     * read no longer reaches the grocer. (Household.isGoingShort() is a plan
+     * short of what the household WANTED, which for a pensioner with savings
+     * is a television, not a meal.)
      */
     static boolean hungry(Household own) {
-        return own.households() >= .5 && own.subsistence() > 0 && own.planned() < own.subsistence() * (1 - 1e-9);
+        return own.households() >= .5 && own.groceriesNeed() > 0
+                && own.groceriesAsked() < own.groceriesNeed() * (1 - 1e-9);
     }
 
     /** What a month leaves one of a row below the rule, against a basket (0.7.27; against what it wanted before). */
@@ -2804,10 +2810,18 @@ final class PeopleScreen {
         s.add(Pieces.Step.of("Healthcare", -toDollars(hh.getHealthcare()), Palette.BUSINESS).tip("Healthcare fees"));
         s.add(Pieces.Step.of("School fees", -toDollars(hh.getTuition()), Palette.BUSINESS));
         s.add(Pieces.Step.of("Fares", -toDollars(hh.getFares()), Palette.BUSINESS).tip("Transit fares"));
+        // ...and the drivers' fuel (0.7.49): in getSpending() since it was paid, so the waterfall foots with it.
+        s.add(Pieces.Step.of("Fuel", -toDollars(hh.getFuel()), Palette.BUSINESS).tip("Fuel for the drive to work: the city's refineries' first, the world's for the rest"));
         s.add(Pieces.Step.of("Interest", -toDollars(hh.getInterest()), Palette.BUSINESS).tip("Interest on debt"));
         s.add(Pieces.Step.of("Bank fees", -toDollars(hh.getAccountFees()), Palette.BUSINESS)
                 .tip("The bank's account fees"));
         s.add(Pieces.Step.of("Shops", -toDollars(hh.getShopping()), Palette.PEOPLE_LIGHT).tip("Spent in the shops"));
+        // ...and the food vouchers, paid into the households' savings at the till (0.7.45; the UI spec's B3):
+        // getNetSaving() adds them, and without the step the waterfall did not foot once the dial was on.
+        if (hh.getFoodAssistance() != 0) {
+            s.add(Pieces.Step.of("Food vouchers", toDollars(hh.getFoodAssistance()), Palette.MONEY_LIGHT)
+                    .tip("Food assistance, paid toward the baskets at the till"));
+        }
         double saved = hh.getNetSaving();
         s.add(Pieces.Step.total(hh.isLivingBeyondIncome() ? "Short by" : "Saved", toDollars(saved),
                 saved < 0 ? Palette.BAD : Palette.GOOD));
@@ -2895,6 +2909,10 @@ final class PeopleScreen {
         }
 
         page.getChildren().addAll(
+                sectionHead("WHO GOES SHORT, AND WHY", hint("the two hungers, and every kind of household's baskets")),
+                Pieces.whoGoesWithout(ui.game,
+                        () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().retail(), "Operations")),
+                goesShortRows(),
                 sectionHead("THE CITY'S MONTH", hint("every household together, from the wages to what was saved")),
                 cityMonthCard(hh),
                 sectionHead("WHAT THEY HAVE PUT BY", hint("every household together")),
@@ -2903,6 +2921,44 @@ final class PeopleScreen {
 
         ui.rootMenu.getChildren().add(page);
         reveal();
+    }
+
+    /** One kind of household's groceries at the last sale, worked out without drawing it (pure: the probe reads them). */
+    record ShortRow(int row, String name, double got, String gotWords, String chip) { }
+
+    /** Every kind of household with anybody in it, the hungriest first: its baskets got per basket needed, and how many hold a food voucher (0.7.45). */
+    List<ShortRow> shortRows() {
+        HouseholdBalance bal = ui.game.getHouseholdBalance();
+        HouseholdAccounts hh = ui.game.getHouseholds();
+        List<HouseholdBalance.GroceryRow> rows = new ArrayList<>();
+        for (HouseholdBalance.GroceryRow r : bal.groceriesByRow(PolicyPreview.lastSalePrice(ui.game))) {
+            if (r.households() >= .5 && r.need() > 0) rows.add(r);
+        }
+        rows.sort((a, b) -> Double.compare(a.gotShare(), b.gotShare()));
+        List<ShortRow> out = new ArrayList<>();
+        boolean counted = ui.game.getSectors().retail().isSaleCounted();
+        for (HouseholdBalance.GroceryRow r : rows) {
+            out.add(new ShortRow(r.row(), hh.getRowLabel(r.row()), counted ? r.gotShare() : 0,
+                    counted ? PolicyScreen.basketShare(r.gotShare()) : "not counted yet",
+                    r.aided() >= .5 ? people(r.aided()) + " on food assistance" : "no food voucher"));
+        }
+        return out;
+    }
+
+    /** ...as ranked bars: a row a kind, its bar the baskets it got per basket needed. */
+    VBox goesShortRows() {
+        List<Pieces.RankRow> ranked = new ArrayList<>();
+        for (ShortRow r : shortRows()) {
+            ranked.add(new Pieces.RankRow("short:" + r.row(), Icons.FOOD, r.name(), r.got(), Palette.PEOPLE,
+                    List.of(r.gotWords(), r.chip()), r.name() + ": " + r.gotWords() + (r.gotWords().startsWith("got") ? " needed" : ""), null, null, null, null));
+        }
+        VBox c = card(4);
+        if (ranked.isEmpty()) {
+            c.getChildren().add(words("Nobody needed a basket at the last sale.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        } else {
+            c.getChildren().add(Pieces.rankBars(ranked, 1, new double[] {150, 200}, 0, new java.util.HashSet<>(), () -> { }));
+        }
+        return c;
     }
 
     /** With no cell open, the books' place says what goes there. */
@@ -3085,6 +3141,9 @@ final class PeopleScreen {
         // The third fee, and the one the city used to collect from nobody. See HouseholdAccounts.fares.
         column.getChildren().add(statementLine("Transit fares",
                 tightMoney(toDollars(-hh.getFares()), false)));
+        // ...and the fuel the drivers burned getting to work (0.7.49), the fourth fee.
+        column.getChildren().add(statementLine("Fuel for the drive to work",
+                tightMoney(toDollars(-hh.getFuel()), false)));
         column.getChildren().add(statementLine("Interest on debt",
                 tightMoney(toDollars(-hh.getInterest()), false)));
         // ...and the bank's account fee (0.7.7), which getSpending() always counted and this never printed.
@@ -3520,8 +3579,11 @@ final class PeopleScreen {
     }
 
     /**
-     * What a full basket would have been, what they ate, and where the
-     * difference came from.
+     * What a full basket would have been, what they planned to spend, and
+     * where the difference came from. In money, the household's plan: since
+     * 0.7.43 the plan no longer reaches the grocer - what a household ate is
+     * the baskets it was handed at the sale (groceriesGot(), WHO GOES SHORT,
+     * AND WHY) - so the line under the basket says the plan, not the eating.
      *
      * SHARED BY BOTH PANELS since the families asked for it too. Every cell in
      * the game carries this - `want`, `planned`, `unfunded`, `drawn`,
@@ -3545,9 +3607,14 @@ final class PeopleScreen {
 
         block.getChildren().add(statementLine("A full basket would be",
                 tightMoney(wanted, false), Palette.TEXT_MUTED));
-        block.getChildren().add(statementLine("What they actually ate",
+        block.getChildren().add(statementLine("What they planned to spend",
                 tightMoney(spent, false),
                 spent < wanted - .5 ? Palette.BAD : Palette.GOOD));
+        // ...and the treasury's food voucher on it (0.7.45), into its savings at the till.
+        double voucher = toDollars(cell.assistance());
+        if (voucher >= .005) {
+            block.getChildren().add(statementLine("Food voucher, a household", "+" + tightMoney(voucher, false), Palette.ACCENT));
+        }
 
         double shortBy = toDollars(cell.unfunded());
         if (shortBy > .5) {
@@ -4101,10 +4168,16 @@ final class PeopleScreen {
          * account fee, so it read interest where nobody owed anything. Each
          * is its own line now, read from the accounts' own split of the fees
          * statementFor() charges.
+         *
+         * ...AND THE COMMUTE AT THE ROW'S OWN PRICE (0.7.49): the fares fall
+         * on the rows that ride and the fuel on the rows that drive, so a
+         * cell's are its row's per head (HouseholdAccounts.rowFaresPerHead(),
+         * rowFuelPerHead()), as statementFor() charges them.
          */
         double feesAll = toDollars(s.fees());
         double care = toDollars(hh.careAndSchoolPerHead()) * s.people();
-        double fares = toDollars(hh.faresPerHead()) * s.people();
+        double fares = toDollars(hh.rowFaresPerHead(tierIndex)) * s.people();
+        double fuel = toDollars(hh.rowFuelPerHead(tierIndex)) * s.people();
         double interest = toDollars(hh.interestPerHousehold(tier));
         double bankFees = toDollars(hh.accountFeePerHousehold(tier));
 
@@ -4113,6 +4186,9 @@ final class PeopleScreen {
         panel.getChildren().add(statementLine("Healthcare and school fees", costMoney(care)));
         if (fares > .005) {
             panel.getChildren().add(statementLine("Transit fares", costMoney(fares)));
+        }
+        if (fuel > .005) {
+            panel.getChildren().add(statementLine("Fuel for the drive to work", costMoney(fuel)));
         }
         if (interest > .005) {
             panel.getChildren().add(statementLine("Interest on what they owe",

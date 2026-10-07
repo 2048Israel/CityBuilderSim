@@ -52,7 +52,7 @@ public class OutsideCheck {
         {
             PopulationManager pm = new PopulationManager();
             pm.setWagesPerType();
-            int[] posts = new int[JobType.values().length];
+            long[] posts = new long[JobType.values().length];
             posts[JobType.NO_DIPLOMA.ordinal()] = 50;
             pm.updateJobs(posts);
             pm.applyPopulation(200, 100);
@@ -119,8 +119,8 @@ public class OutsideCheck {
             double workingSingles = f.totalOf(FamilyStructure.SINGLE_ADULT);
 
             // The cause: enough one-person doors for the families and nobody else.
-            int[] doors = new int[3];
-            doors[1] = (int) Math.floor(f.totalHouseholds());
+            long[] doors = new long[3];
+            doors[1] = (long) Math.floor(f.totalHouseholds());
             double left = f.house(doors);
             f.squeezeUnplaced(left);
             f.noteUnplaced(f.house(doors));
@@ -623,7 +623,9 @@ public class OutsideCheck {
                     double studentsBefore = g.getHouseholdBalance().students().households();
                     grantStudents[0] = g.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
                     grantWage[0] = g.getPopulationManager().getWagesPerType()[JobType.NO_DIPLOMA.ordinal()];
-                    grantIndex[0] = g.getPriceIndex().getIndex();
+                    // The expected price level since 0.7.42 (the anchor), the
+                    // price index from 0.7.19: what a FIXED grant is struck at.
+                    grantIndex[0] = g.getExpectations().getExpectedLevel();
                     g.simulateMonths(1);
                     double carried = g.getHouseholdBalance().getLastGraduated();
                     graduatedEver[0] += carried;
@@ -656,7 +658,7 @@ public class OutsideCheck {
             assertTrue("fixture: the grant is on its default basis, a fixed amount at today's prices",
                     e.getTaxPolicy().getGrantBasis() == TaxPolicy.GrantBasis.FIXED
                             && e.getTaxPolicy().getGrantAmount() == TaxPolicy.DEFAULT_FIXED_GRANT);
-            check("the grant is the fixed amount at the month's prices, for every student",
+            check("the grant is the fixed amount at the month's expected price level, for every student",
                     e.getStudentGrants(), grantStudents[0] * e.getTaxPolicy().getGrantAmount()
                             * grantIndex[0], 1e-6);
             check("the students pay the tuition (Jerus: \"students pay it\")",

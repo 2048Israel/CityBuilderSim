@@ -186,7 +186,7 @@ public class Bank {
      */
     public static final double PAID_IN_PER_BRANCH = 32_000;
 
-    /** The same, in today's money. */
+    /** The same, in today's money - struck at the expected price level since 0.7.42 (seedConstants(), from Game.restrikeMoneyConstants()). */
     private double paidInPerBranch = PAID_IN_PER_BRANCH;
 
     /* ---------------------- what a dollar of book WEIGHS ---------------------- */
@@ -3051,8 +3051,10 @@ public class Bank {
        THE ACCOUNT FEE is a month's charge on every housed household - the
        working families, the retired, the out of work and the students, not
        the orphans, the prisoners or anybody without a home - real, so
-       neither inflation nor a reform erases it: accountFee() is ACCOUNT_FEE
-       at the month's price index, in today's unit. It comes out of the
+       neither inflation nor a reform erases it: its base is ACCOUNT_FEE
+       struck at the expected price level in today's unit since 0.7.42
+       (seedConstants(), from Game.restrikeMoneyConstants()), and Game reads
+       accountFee(1) - it was the base at the month's price index. It comes out of the
        households' money with their other fixed bills (HouseholdBalance) and
        arrives here as cash from outside the audit's pools, declared the way
        the interest they pay is ("+ bank AccountFees").
@@ -3072,10 +3074,10 @@ public class Bank {
     /** The fee on new lending, a share of the principal: one per cent, a typical arrangement fee on a commercial loan. */
     public static final double LOAN_FEE = .01;
 
-    /** ACCOUNT_FEE in today's unit - reseeded and reformed with the other money constants. */
+    /** ACCOUNT_FEE in today's unit - reseeded and reformed with the other money constants, and struck at the expected price level since 0.7.42. */
     private double accountFeeBase = ACCOUNT_FEE;
 
-    /** A month's account fee per housed household at this price index, in today's money - nothing in a city with no branch, which has no bank to hold an account at. */
+    /** A month's account fee per housed household, the base times this factor (Game passes 1 since 0.7.42: the base is struck at the expected price level; it passed the price index), in today's money - nothing in a city with no branch, which has no bank to hold an account at. */
     public double accountFee(double priceIndex) {
         if (branches <= 0) return 0;
         return accountFeeBase * Math.max(0, priceIndex);
@@ -5668,7 +5670,7 @@ public class Bank {
     }
 
 
-    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    /** Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). See Denomination. */
     public void seedConstants(double unit) {
         paidInPerBranch      = PAID_IN_PER_BRANCH / unit;
         domesticCapitalScale = DOMESTIC_CAPITAL_SCALE / unit;
@@ -6315,7 +6317,7 @@ public class Bank {
     /** ...and what the businesses hold in credit. getDeposits() is these two and getForeignDeposits(). */
     public double getSectorDeposits()    { return sectorDeposits; }
 
-    /** What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed. */
+    /** What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed, and struck at the expected price level since 0.7.42 (seedConstants()). */
     public double getPaidInPerBranch()   { return paidInPerBranch; }
 
     /** The city's own savings with it: everything banked, less the world's - all of it gathered since 0.7.19 (depositsGathered()). */
@@ -6365,6 +6367,16 @@ public class Bank {
             return closing - opening - kept - fromShareholders - fromCity - founding
                     + dividends + boughtBack - issued - absorbed - treasuryBuyback + allowanceOpened
                     - preferredIn + preferredOut + preferredDividends + warrantsBoughtBack;
+        }
+
+        /** The size of the figures residual() is made of, each as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). */
+        public double scale() {
+            double[] terms = { closing, opening, kept, fromShareholders, fromCity, founding, dividends, boughtBack,
+                    issued, absorbed, treasuryBuyback, allowanceOpened, preferredIn, preferredOut,
+                    preferredDividends, warrantsBoughtBack };
+            double size = 0;
+            for (double t : terms) size += Math.abs(t);
+            return size;
         }
     }
 

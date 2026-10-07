@@ -79,8 +79,9 @@ package ham.citybuildersim;
  *      tab draws three figures - EARNED (Game.getIncome(), the header's),
  *      the budget's SURPLUS and what the cash BANKED - and the steps between
  *      them. The second walk is the bridge above; the first is
- *      Game.getEarnedToBudget(), the budget's lines EARNED leaves out and the
- *      fares it keeps, with Game.getEarnedResidual() for what they leave.
+ *      Game.getEarnedToBudget(), the budget's lines EARNED leaves out (and
+ *      until 0.7.49 the fares it kept and the budget did not), with
+ *      Game.getEarnedResidual() for what they leave.
  *      Every month of both played cities the walk comes to the budget and a
  *      city nobody touched leaves nothing - the subsidised one with its
  *      subsidies a step; then the one thing the residual is for: a dial moved
@@ -104,6 +105,30 @@ public class TreasuryCheck {
                     what, month, actual, expected);
         }
         fails++;
+    }
+
+    /**
+     * ...and the journal's reconciliation, which subtracts one cash balance
+     * from another (0.7.54): MoneyAudit.tolerance(TOLERANCE, the treasury's
+     * size) - TOLERANCE exactly below 2^27 units (1.3e8), from there 64 of a
+     * double's steps at the size (MoneyAudit.ULP_STEPS, since 0.7.64; 8 at
+     * 0.7.63) up to 1e10 units, ten trillion dollars, where a part in a
+     * trillion of the size is still under a cent, and past that the larger
+     * of the two. At ten billion people the balances are 1e13 to 1e15 units,
+     * where a double's own step is 0.002 to 0.125 of one.
+     */
+    static void near(String what, int month, double actual, double expected, double size) {
+        if (Math.abs(actual - expected) <= MoneyAudit.tolerance(TOLERANCE, size)) return;
+        if (fails < 12) {
+            System.out.printf("  FAIL  %-28s month %3d: %,.6f, expected %,.6f%n",
+                    what, month, actual, expected);
+        }
+        fails++;
+    }
+
+    /** The treasury's size this month, for the journal's reconciliation: the larger of its opening and closing balances. */
+    static double treasurySize(Game g) {
+        return Math.max(Math.abs(g.getTreasuryOpening()), Math.abs(g.getTreasuryClosing()));
     }
 
     /**
@@ -199,7 +224,7 @@ public class TreasuryCheck {
 
             /* -------- 5. and on a hands-off city there is nothing in it -------- */
             double rest = game.getTreasuryUnexplained();
-            near("nothing the budget cannot explain", month, rest, 0);
+            near("nothing the budget cannot explain", month, rest, 0, treasurySize(game));
             if (Math.abs(rest) > .5) {
                 monthsWithRest++;
                 if (Math.abs(rest) > Math.abs(biggestRest)) biggestRest = rest;
@@ -252,7 +277,7 @@ public class TreasuryCheck {
                             + funded.getTreasuryUnexplained(),
                     funded.getTreasuryChange());
             near("subsidised: nothing the budget cannot explain", month,
-                    funded.getTreasuryUnexplained(), 0);
+                    funded.getTreasuryUnexplained(), 0, treasurySize(funded));
             double[] walk = earnedWalk(funded);
             nearOf("subsidised: EARNED, its steps and the dials come to the budget", month,
                     walk[0] + walk[1] + walk[2], walk[3], walk[4]);
@@ -424,7 +449,7 @@ public class TreasuryCheck {
         near("the bridge foots through the journal", m,
                 opened.getTreasurySurplus() + opened.getTreasuryRaised() - opened.getTreasuryRepaid()
                         + explained + opened.getTreasuryResidual(),
-                opened.getTreasuryChange());
+                opened.getTreasuryChange(), treasurySize(opened));
         check("the journal explained more than it left over",
                 Math.abs(opened.getTreasuryResidual()) < Math.abs(explained));
         /*
@@ -587,6 +612,74 @@ public class TreasuryCheck {
         double[] next = earnedWalk(city);
         nearOf("a press strikes the month at the new rate, and the dials leave nothing again",
                 city.getMonth(), next[2], 0, next[4]);
+
+        /*
+         * ...AND THE FOOD VOUCHERS ARE A STEP (0.7.45; the UI spec's B1, D7):
+         * paid at the sale, as the subsidies are, and outside EARNED - so
+         * until they were a step they sat in the residual as "today's dials"
+         * on a city nobody had touched since it set the dial.
+         */
+        policy.setFoodAssistance(.5);
+        double paid = 0;
+        for (int i = 0; i < 120 && !(paid > 0); i++) {
+            press(city);
+            paid = city.getEconomyManager().getNationalAccounts().getFoodAssistance();
+        }
+        double[] aided = earnedWalk(city);
+        System.out.printf("   month %d: food assistance at half paid %,.2fk; the dials leave %,.4fk%n",
+                city.getMonth(), paid, aided[2]);
+        check("fixture: food assistance at half, and the month's vouchers paid at the sale", paid > 0);
+        nearOf("...a step on EARNED's walk, so with the dial set a month ago the dials leave nothing",
+                city.getMonth(), aided[2], 0, aided[4]);
+        check("...the step is the vouchers the treasury paid", amount(city.getEarnedToBudget(), "Food assistance") == -paid);
+
+        /*
+         * ...AND THE BUSES' BILL IS PAID (0.7.49, B9). Transit's wages and
+         * upkeep were struck every month and paid by nobody, and the fares
+         * reached the cash outside the budget - journalled on the way to the
+         * cash, and a step of their own on the walk from EARNED. A founded
+         * town with two Bus Networks, played until they carry people and
+         * their crews draw wages, then a year: the budget carries the bill
+         * and the fares, the cash moved by both (the bridge closes with
+         * nothing left after the journal - which names the buses' repairs -
+         * and no fares in it), and EARNED,
+         * which subtracts the bill with the running programmes, walks to
+         * the budget with no fares step and nothing left for the dials.
+         */
+        Game buses = founded("treasury-buses");
+        buses.setCashForTest(Founding.WEALTHY_CASH);
+        buses.getLandManager().setOwnedSqFt(buses.getLandManager().getOwnedSqFt() + 100_000_000L);
+        quietly(() -> buses.buildStack(template(buses, "Bus Network"), 2, true));
+        for (int i = 0; i < 60 && !(buses.getInfrastructureManager().getTransitRiders() > 0
+                && buses.getEconomyManager().getTransitBill() > 0 && buses.getEconomyManager().getTransitFares() > 0); i++) {
+            press(buses);
+        }
+        EconomyManager be = buses.getEconomyManager();
+        System.out.printf("   month %d: %,.0f riders, the bill %,.2fk, fares %,.2fk%n", buses.getMonth(),
+                buses.getInfrastructureManager().getTransitRiders(), be.getTransitBill(), be.getTransitFares());
+        check("fixture: the buses carry people, and their crews draw wages",
+                buses.getInfrastructureManager().getTransitRiders() > 0 && be.getTransitBill() > 0
+                        && be.getTransitFares() > 0);
+        boolean billPaid = true, earnedCounts = true, noFaresStep = true;
+        for (int i = 0; i < 12; i++) {
+            press(buses);
+            NationalAccounts bna = be.getNationalAccounts();
+            double bill = be.getTransitBill();
+            double[] walk = earnedWalk(buses);
+            billPaid &= bill > 0 && bna.getTransitSpending() == bill && bna.getTransitFares() == be.getTransitFares()
+                    && Math.abs(buses.getTreasuryResidual()) <= MoneyAudit.tolerance(TOLERANCE, treasurySize(buses))
+                    && line(buses.getTreasuryJournal(), "Took in transit fares") == null;
+            double programmes = be.getInterestAccrued() + be.getPensionsPaid() + be.getEiBenefits()
+                    + be.getStudentGrants() + be.getHealthcareBill() + be.getEducationBill() + be.getSafetyBill();
+            earnedCounts &= Math.abs(be.getExpenses() - programmes - bill) <= 1e-9 * Math.max(1, be.getExpenses())
+                    && Math.abs(walk[2]) <= 1e-9 * Math.max(1, walk[4]);
+            for (TreasuryJournal.Entry e : buses.getEarnedToBudget()) {
+                noFaresStep &= !e.label().toLowerCase(java.util.Locale.ROOT).contains("fare");
+            }
+        }
+        check("the treasury pays transit's bill and the bridge closes with it", billPaid);
+        check("...EARNED counts the bill, and walks to the budget with nothing for the dials", earnedCounts);
+        check("...and the walk has no fares step: the budget carries them", noFaresStep);
     }
 
     /** A city founded as a player founds one: newGame(), so it rolls in the same structure. */

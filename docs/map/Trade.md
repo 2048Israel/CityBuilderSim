@@ -1,6 +1,6 @@
 # Trade.java - 40 lines · 4 methods · 3 constants · model
 
-`ham/citybuildersim/Trade.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Trade.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > One fill: somebody sold somebody some units of a good at a price.
 > 
@@ -19,7 +19,7 @@
 
 **Uses:** [Good](Good.md) (1)
 
-**Used by (10):** [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [GoodsMarket](GoodsMarket.md), [LuxuryRetail](LuxuryRetail.md), [Markets](Markets.md), [Motoring](Motoring.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md)
+**Used by (12):** [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [GoodsMarket](GoodsMarket.md), [LuxuryRetail](LuxuryRetail.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [Motoring](Motoring.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SupplierCreditCheck](SupplierCreditCheck.md)
 
 ## Constants
 

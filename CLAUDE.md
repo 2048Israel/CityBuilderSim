@@ -14,8 +14,8 @@ requirement.
 
 ## Open these before reading source
 
-The tree is over 200,000 lines; `Game.java` alone is over 13,000, and the
-interface is twenty-five files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
+The tree is over 250,000 lines; `Game.java` alone is over 15,000, and the
+interface is twenty-six files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -92,14 +92,14 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; over 13,000 lines, 37 banner sections
+        Game.java                  the month, the seam every system meets at; over 15,000 lines, 40 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
                                    project's splitting-game.md)
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
-        sectors/                   fifteen sector classes; Mining.java is the shape to copy
+        sectors/                   seventeen sector classes; Mining.java is the shape to copy
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
@@ -109,7 +109,8 @@ These are Jerus's, and they do not move.
                                    the ledger of the surplus it has netted and the record; Game's ROLLING WHAT
                                    FALLS DUE reads the city and books the issues (the project's
                                    rolling-what-falls-due.md)
-        TreasuryFund.java          the city's fund (0.7.14): its cash, its dial, its rule's statics, the
+        TreasuryFund.java          the city's fund (0.7.14): its cash, its two dials (what goes in, and since
+                                   0.7.48 what it withdraws), its rule's statics, the
                                    rescues and the bank's preferred offer as a record; the books themselves
                                    are the register's and the bonds' city holdings, and Game's THE CITY'S
                                    FUND AND THE BANK'S RESCUE runs it
@@ -130,7 +131,8 @@ These are Jerus's, and they do not move.
                                    founded or loaded, saved under one key; the History chart's flags
         ChartModel.java            a time chart's arithmetic without the toolkit (0.7.23): the window and how
                                    pan, zoom and ranges move it, the year ticks, nice value scales, the
-                                   episode lane's rows and the flags; ui/TimeChart.java draws it, ChartCheck
+                                   episode lane's rows and the flags, and since 0.7.50 the copy a chart
+                                   draws from and the stack's runs; ui/TimeChart.java draws it, ChartCheck
                                    holds it
         CityNeeds.java             NEEDS YOU, measured (0.7.24): everything with a lever against its own line,
                                    in the panel's order - moved out of ui/SummaryScreen whole, so the left
@@ -139,9 +141,10 @@ These are Jerus's, and they do not move.
                                    supply over demand, its lines turned over
         BuildAdvice.java           the Build tab's categories and measures, each measure's figure before and
                                    after an order by the model's own arithmetic, and the rule behind the
-                                   overview's WHAT WOULD HELP MOST (0.7.24); advice, not a model change -
-                                   BuildAdviceCheck holds it
-        BuildCard.java             one build card's figures for all 73 buildings (0.7.25): what it gives the
+                                   overview's WHAT WOULD HELP MOST (0.7.24; since 0.7.51 priced with its
+                                   ground and sized to the businesses' projection); advice, not a model
+                                   change - BuildAdviceCheck holds it
+        BuildCard.java             one build card's figures for all 76 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them, the verdict on an order; pure - BuildCardCheck holds it
@@ -151,8 +154,30 @@ These are Jerus's, and they do not move.
                                    Operations page draws; pure - SectorFlowCheck holds it
         PolicyPreview.java         what a staged set of the Policy tab's dials would do (0.7.36): the tax take
                                    under another policy line by line, and THE BUDGET before and after, each
-                                   line its owner's read of a detached TaxPolicy.copy(); advice, not a model
-                                   change - PolicyPreviewCheck holds it
+                                   line its owner's read of a detached TaxPolicy.copy() - since 0.7.48
+                                   the fund's withdrawal, and since 0.7.52 the rule at each step of its
+                                   strictness (CentralBankCheck 21); advice, not a model change -
+                                   PolicyPreviewCheck holds it
+        Expectations.java          the anchor (0.7.42): expected inflation, the central bank's credibility and
+                                   the expected price level every money constant that prices something is
+                                   struck at, at the top of every month (Game.restrikeMoneyConstants());
+                                   ExpectationsCheck holds it (the project's spec-inflation.md)
+        SupplierCredit.java        the grocers' trade credit (0.7.44): what the shops owe their suppliers for
+                                   stock bought on credit when the till could not pay, struck at the clearing
+                                   and repaid at the next strike out of the sale it stocked, on both sides'
+                                   books, the world's share in the money audit; SupplierCreditCheck holds it
+        World.java, Resource.java, Deposit.java, CityLand.java, LandConversion.java
+                                   the world a city stands on (0.7.56: one seed's coast, lakes, river and
+                                   fields of seven resources) and the city's land on it (0.7.57: a centre
+                                   and forty lanes, one offer standing in each; an older save converted
+                                   once) - LandManager and LandMarket sell it, WorldCheck and LandCheck
+                                   hold it (the project's spec-land.md)
+        CityMap.java, TilePainter.java, TileRaster.java, BuildingVisual.java
+                                   the city map (0.7.60): the buildings by type in 7.68 km districts,
+                                   each drawn once on its own land and the roads laid plot for plot
+                                   (since 0.7.64), a tile painted and rastered when a screen asks, the
+                                   sidecar beside the save; nothing in the model reads it - MapCheck
+                                   holds it
         ui/                        the interface: UserInterface.java is the window (about 6,000 lines: the header
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's
@@ -164,14 +189,17 @@ These are Jerus's, and they do not move.
                                    tab's construction page, 0.7.22), and TimeChart.java (City History's
                                    charts, 0.7.23: pan, zoom, ranges, an overview, named crises, the
                                    decision flags, full screen), and FundScreen.java (the city's fund as a
-                                   brokerage, 0.7.39: Finances dispatches its area to it). The model never
-                                   imports it.
-        *Check.java                seventy-one harnesses, each a main() with static helpers
+                                   brokerage, 0.7.39: Finances dispatches its area to it), and MapView.java
+                                   (the city map on a canvas, 0.7.61: small in the land office, over the
+                                   window on Expand; its arithmetic is the model's MapFrame, LandMap and
+                                   MapTiles, which MapCheck holds). The model never imports it.
+        *Check.java                eighty-one harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
-                                         fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21)
+                                         fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
+                                         conversion-saves.json the five saves' land ConversionCheck converts (0.7.66)
 
 A `.java` file at the root that holds only a comment saying MOVED is a stub
 left where a class used to be, because a cloud session cannot delete on the
@@ -202,7 +230,7 @@ Conventions the code is written to, which the indexes rely on:
    the mechanic before the screen, because the screen is checked by eye.
 3. Build: NetBeans *Clean and Build*, or `mvn -q compile`. Run the suite:
    `java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -q`
-   (about two minutes). `AllChecks money bank` runs two.
+   (about nine minutes). `AllChecks money bank` runs two.
 4. `Regenerate maps.bat`. Commit the sources, `buildings.json` and `docs/`
    together; bump `GameVersion.VERSION` when the batch is player-visible.
 5. Write the batch up in the project - the why, while you still know it.

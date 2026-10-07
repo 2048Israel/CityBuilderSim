@@ -5,12 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * What a time chart shows, as numbers: the window of months it looks at and
  * how a drag, a wheel, a range button and the overview move it; the ticks on
  * its two axes; and the bands, the episodes and the decisions it lays over
- * the lines (0.7.23).
+ * the lines (0.7.23). Since 0.7.50 also what a chart draws from: the copy
+ * of the months and every series it keeps from the moment it is handed
+ * them, and the stack's runs and reach (WHAT A CHART DRAWS FROM).
  *
  * WHY THIS EXISTS
  *
@@ -258,6 +261,118 @@ public final class ChartModel {
     public static int bucket(double months, double pixels) {
         if (!(pixels >= 1)) return 1;
         return Math.max(1, (int) Math.ceil(months / pixels));
+    }
+
+    /* =====================================================================
+       WHAT A CHART DRAWS FROM: ONE SNAPSHOT, FIXED WHEN IT IS HANDED OVER
+       (0.7.50)
+
+       Jerus's game froze on Government with the pointer resting on the
+       layers chart while the clock ran. The chart kept the history's month
+       list itself - the list the history adds a month to - and the stack's
+       layers as the arrays they were on the day: a month landed, the list
+       grew under a chart still on screen, and the next redraw read one month
+       past the end of the layers ("Index 384 out of bounds for length
+       384"). That redraw was the pointer leaving the chart as the page was
+       torn down, inside JavaFX's own removal of it.
+
+       So a chart copies what it is handed: the months, and every series - a
+       line's values, a stack's layers - cut, or padded with NaN (not
+       recorded), to exactly as many months. Every index a drawing walks is
+       then inside every array by construction, however the history grows
+       afterwards. The stack's arithmetic, where the walk threw, is here as
+       well, every index bounded by the months and by the layer, so
+       ChartCheck can walk it the way the chart does.
+       ===================================================================== */
+
+    /** The months a chart draws on, copied: the caller's list can grow afterwards without moving them. */
+    public static List<Integer> fixedMonths(List<Integer> months) {
+        return months == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(months));
+    }
+
+    /** A series as a chart keeps it: a copy exactly n long, cut where it is longer and NaN (not recorded) where it is shorter. */
+    public static double[] aligned(double[] values, int n) {
+        double[] out = new double[Math.max(0, n)];
+        int have = values == null ? 0 : Math.min(values.length, out.length);
+        if (have > 0) System.arraycopy(values, 0, out, 0, have);
+        java.util.Arrays.fill(out, have, out.length, Double.NaN);
+        return out;
+    }
+
+    /** ...each of several (a stack's layers), every one its own copy; null stays null. */
+    public static double[][] aligned(double[][] series, int n) {
+        if (series == null) return null;
+        double[][] out = new double[series.length][];
+        for (int k = 0; k < series.length; k++) out[k] = aligned(series[k], n);
+        return out;
+    }
+
+    /** A series' value at index i, or NaN off either end: what a readout says of a month the series does not reach. */
+    public static double at(double[] values, int i) {
+        return values != null && i >= 0 && i < values.length ? values[i] : Double.NaN;
+    }
+
+    /**
+     * Layer p of a stack as the chart fills it: one run for each unbroken
+     * stretch of months within a month of lo..hi (so the fill reaches the
+     * plot's edges), each point {month, top, bottom} in plotted units - the
+     * layers under it summed from zero through toPlot. A month where this
+     * layer or one under it is not recorded breaks the run, and so does a
+     * month a layer does not reach.
+     */
+    public static List<List<double[]>> stackRuns(List<Integer> months, double[][] layers, int p,
+                                                 double lo, double hi, DoubleUnaryOperator toPlot) {
+        List<List<double[]>> runs = new ArrayList<>();
+        if (months == null || layers == null || p < 0 || p >= layers.length) return runs;
+        List<double[]> run = new ArrayList<>();
+        for (int i = 0; i <= months.size(); i++) {
+            boolean in = i < months.size() && months.get(i) >= lo - 1 && months.get(i) <= hi + 1;
+            double under = 0, upper = Double.NaN;
+            if (in) {
+                boolean whole = true;
+                double sum = 0;
+                for (int q = 0; q <= p; q++) {
+                    double v = at(layers[q], i);
+                    if (Double.isNaN(v)) { whole = false; break; }
+                    if (q == p) under = sum;
+                    sum += toPlot.applyAsDouble(v);
+                }
+                if (whole) upper = sum;
+            }
+            if (!Double.isNaN(upper)) {
+                run.add(new double[] {months.get(i), upper, under});
+            } else if (!run.isEmpty()) {
+                runs.add(run);
+                run = new ArrayList<>();
+            }
+        }
+        return runs;
+    }
+
+    /**
+     * The lowest and highest the first `count` layers of a stack reach,
+     * summed from zero, inside lo..hi: {low, high} in plotted units, zero
+     * always between them - what the stack's axis has to hold. A month a
+     * layer does not record (or reach) skips that layer.
+     */
+    public static double[] stackReach(List<Integer> months, double[][] layers, int count,
+                                      double lo, double hi, DoubleUnaryOperator toPlot) {
+        double low = 0, high = 0;
+        if (months == null || layers == null) return new double[] {low, high};
+        int n = Math.min(count, layers.length);
+        for (int i = 0; i < months.size(); i++) {
+            int m = months.get(i);
+            if (m < lo - 1e-9 || m > hi + 1e-9) continue;
+            double sum = 0;
+            for (int p = 0; p < n; p++) {
+                double v = at(layers[p], i);
+                if (Double.isNaN(v)) continue;
+                sum += toPlot.applyAsDouble(v);
+                low = Math.min(low, sum);
+                high = Math.max(high, sum);
+            }
+        }
+        return new double[] {low, high};
     }
 
     /* =====================================================================
@@ -526,6 +641,73 @@ public final class ChartModel {
         }
         if (run != null) out.add(new Cluster(run.get(0).month(), run));
         return out;
+    }
+
+    /* ----------------------- the basket's links (0.7.45) -----------------------
+       A mark is not a decision: it is something the model did on its own
+       that a line on the chart answers to - here the month the basket was
+       struck again (PriceIndex, THE BASKET IS CHAINED), when every
+       component's weight moved at once and the index ran on unbroken. The
+       big chart draws them as hairlines over the plot, not on the decision
+       lane (the UI spec's D12). */
+
+    /** One mark over the plot: its month and what it says. */
+    public record Mark(int month, String words) { }
+
+    /**
+     * The months the basket was linked, oldest first, each with what it says:
+     * every link the history's basketLinkedAt names (recorded since 0.7.45),
+     * at its own month while that month is on the axis, and the link in force
+     * (PriceIndex.getLinkedMonth()) - which on a city older than the series is
+     * the only one it can name. The weights are those the history recorded
+     * with it, or the basket's own for the link in force; the level is the
+     * index in the month of the link.
+     */
+    public static List<Mark> basketLinks(HistorySave h, PriceIndex px) {
+        List<Mark> out = new ArrayList<>();
+        if (h == null) return out;
+        List<Integer> months = h.getMonth();
+        double[] linkedAt = h.aligned("basketLinkedAt");
+        double[] index = h.aligned("priceIndex");
+        double[][] weights = new double[PriceIndex.COMPONENTS][];
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) weights[k] = h.aligned(HistorySave.weightKey(k));
+        java.util.Set<Integer> named = new java.util.TreeSet<>();
+        // Every link the line names, the first recorded one too (a save's link in the month recording
+        // began has no month before it to differ from), at its own month while that is on the axis.
+        int last = -1;
+        for (int i = 0; i < linkedAt.length; i++) {
+            if (!(linkedAt[i] > 0)) continue;
+            int month = (int) Math.round(linkedAt[i]);
+            if (month == last) continue;
+            last = month;
+            if (months.isEmpty() || month < months.get(0) || !named.add(month)) continue;
+            int at = months.indexOf(month);
+            double level = at >= 0 ? index[at] : Double.NaN;
+            double[] w = new double[PriceIndex.COMPONENTS];
+            for (int k = 0; k < PriceIndex.COMPONENTS; k++) w[k] = weights[k][i];
+            out.add(new Mark(month, linkWords(w, level, Double.isFinite(level) && Math.abs(level - 1) < 1e-9)));
+        }
+        if (px != null && px.isBased() && !px.isLinkPending() && !named.contains(px.getLinkedMonth())
+                && !months.isEmpty() && px.getLinkedMonth() >= months.get(0)) {
+            double[] w = new double[PriceIndex.COMPONENTS];
+            for (int k = 0; k < PriceIndex.COMPONENTS; k++) w[k] = px.getWeight(k);
+            out.add(new Mark(px.getLinkedMonth(), linkWords(w, px.getLink(), px.getLink() == 1)));
+        }
+        out.sort((a, b) -> Integer.compare(a.month(), b.month()));
+        return out;
+    }
+
+    /** What a link's mark says: the weights it struck and the level it opened at. */
+    static String linkWords(double[] weights, double level, boolean first) {
+        StringBuilder s = new StringBuilder(first ? "the basket fixed on what the city spent: "
+                : "the basket struck again on what the city spent: ");
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            if (k > 0) s.append(" · ");
+            double w = Double.isNaN(weights[k]) ? 0 : weights[k];
+            s.append(PriceIndex.COMPONENT_NAMES[k]).append(' ').append(Math.round(w * 100)).append('%');
+        }
+        if (!first && Double.isFinite(level)) s.append(String.format(" · the level runs on unbroken at %.4f", level));
+        return s.toString();
     }
 
     /** A fresh window: no data yet; the first setData() opens it on DEFAULT_RANGE. */

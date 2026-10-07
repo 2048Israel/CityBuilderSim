@@ -2499,8 +2499,1118 @@ public final class GameVersion {
      *   - WHAT NEEDS YOU LISTS IS UNCHANGED - its levels decide the list, its
      *     order, the chip and Build's suggestions - but a served row takes the
      *     one verdict's colour, so a gauge and its row read alike.
+     *
+     * 0.7.42 (2026-10-04) - THE ANCHOR: EXPECTED INFLATION AND CREDIBILITY.
+     * Jerus asked why easy money barely inflates; the answer was that nothing
+     * in the city read the target, and constants in founding money held the
+     * level. Batch P2 of the project's spec-inflation.md. Model behaviour
+     * moves; the default playtest's traces are re-baselined. SAVE_FORMAT 30:
+     * an older save has no anchor and is seeded, which is correct.
+     *   - EXPECTATIONS (new): credibility rises on target and falls on a miss
+     *     the rate does not lean against; expected inflation is the target
+     *     weighted by credibility plus recent inflation; the expected price
+     *     level compounds at it from the base month.
+     *   - THE MONEY CONSTANTS FOLLOW THE EXPECTED LEVEL, never the index
+     *     (Game.restrikeMoneyConstants()): the shelf's opening price, ground,
+     *     building costs and upkeep, fees, tuition, pensions, a share's par,
+     *     the bank's constants and account fee, the issue fee, the FIXED grant
+     *     and the new-home rebates. The transit fare dial is real.
+     *   - WAGES take half their indexing from expected inflation and half from
+     *     chasing the index: pass-through one, never both in full.
+     *   - THE RULE aims at any target (the neutral real rate plus the target);
+     *     the real rates are ex ante; the investors' hurdle is real.
+     *   - THE CURRENCY drifts at the credible part of expected inflation, and
+     *     investors expect it back toward parity (UIP).
+     *   - History and the year book record expected inflation and credibility.
+     *
+     * 0.7.43 (2026-10-04) - GROCERIES AT A PRICE, A STICKY SHELF, THE WHOLE
+     * BASKET, AND FOOD ASSISTANCE. Batch P3 of the project's
+     * spec-inflation.md: a shortage is priced, the price rations and the
+     * poorest are priced out, which Jerus chose, with a dial that buys them
+     * back in at the treasury's cost. Model behaviour moves; the default
+     * playtest's traces are re-baselined. SAVE_FORMAT 30: every new figure
+     * rides the end of an array or a key of its own, and an older save seeds
+     * it - its households' groceries from the plan they made, its index
+     * linked on its first month - which is correct.
+     *   - DEMAND AT A PRICE (HouseholdBalance.groceryDemandOf()): a household
+     *     asks for its baskets at the satiation price, SATIATION_MULTIPLE over
+     *     the opening price, fewer above it at an elasticity of
+     *     GROCERY_ELASTICITY, and never more than its food money buys.
+     *   - THE PRICE THAT CLEARS (Retail.clearingPriceOf()): what the shops
+     *     can hand over against what is wanted, found by bisection; the
+     *     baskets are shared out at it and paid for at the shelf's price, so
+     *     the poorest are handed least.
+     *   - THE SHELF IS STICKY (Retail.stickyPrice()): a sixth of the way to
+     *     the clearing price a month, in logs, between the floor and
+     *     CLEARING_CAP over it, drifting at expected inflation; the kitchens'
+     *     and counters' margins a sixth of the way to theirs; rent a lease's
+     *     way to its target, drifting too.
+     *   - RETAIL'S PLANNER builds for the baskets wanted at the floor against
+     *     what the shops can hand over, where it counted people against
+     *     coverage.
+     *   - THE INDEX IS THE WHOLE BASKET (PriceIndex): groceries, rent, meals,
+     *     luxury and the services' fees, weighted by the trailing year's
+     *     spending, luxury capped at LUXURY_WEIGHT_CAP, chained every
+     *     REBASE_MONTHS and on an older save's first month.
+     *   - FOOD ASSISTANCE (TaxPolicy.getFoodAssistance(), default 0): a share
+     *     of the baskets of every household they would take more than
+     *     FOOD_ASSISTANCE_MEANS_SHARE of the means of, bid at the sale and
+     *     paid at the till by the treasury - a promise, TreasuryLine
+     *     FOOD_ASSISTANCE, a line in the budget, the national accounts, the
+     *     money audit, the history and the year book. Its dial is on Policy's
+     *     out-of-work page, before -> after through PolicyPreview.
+     *   - HUNGER is counted in baskets got against baskets needed, meals out
+     *     included; the shops' takings are split over the households by the
+     *     baskets each was handed.
+     *   - GroceryCheck (new) holds the sale, the shelf and the assistance to
+     *     the cent; MonetaryCheck holds the five components and the chain.
+     *   - A reload builds its stacks in the order the city had them
+     *     (DataSave stackOrder), where it built them in the templates' order.
+     *
+     * 0.7.44 (2026-10-05) - THE LANDLORDS' LENDER TESTS AT THE REAL RATE, AND
+     * THE GROCERS' SUPPLIERS WAIT A MONTH. The fix round after 0.7.43's
+     * ensemble (runs/diag-0743.md): households with no home in ten cities of
+     * sixteen at the founding step, and shops that ran out of stock, not of
+     * shops, in 11.9% of the autopilot's months. Model behaviour moves; the
+     * default playtest's traces are re-baselined. SAVE_FORMAT 30: what the
+     * shops owe their suppliers rides their extras by name, and an older save
+     * owes nothing, which is correct.
+     *   - THE LENDER'S TEST IS REAL (Game.considerOnMortgage()): the
+     *     landlords' mortgage payment is read at the insured rate less
+     *     expected inflation, never under REAL_HURDLE_FLOOR of it
+     *     (BusinessInvestment.realTestRate()) - the real hurdle every other
+     *     investor has had since 0.7.42 - and written at the insured rate. A
+     *     refusal says the rate it read.
+     *   - SUPPLIER CREDIT (SupplierCredit, new; Retail.supplierCreditLimit()):
+     *     a grocer whose till and lender cannot pay for the month's stock
+     *     buys it on its suppliers' credit, up to a month of the baskets it
+     *     expects to sell at what they cost to bring in, and repays it at the
+     *     next strike out of that sale. Booked both sides - a payable on its
+     *     balance sheet, a receivable on each supplier's, a line in each
+     *     cash flow - and the world's share a financial flow in the money
+     *     audit. It buys the shelf's stock and nothing else, and is not
+     *     netted against the bills a grocer still defaults on.
+     *   - The Sectors screen's books show both, and its investor rules say the
+     *     rate each test reads.
+     *   - SupplierCreditCheck (new) holds the credit to the cent.
+     *
+     * 0.7.45 (2026-10-05) - THE SCREENS CATCH UP WITH THE PRICES. The UI pass
+     * over 0.7.42-0.7.44 (the project's spec-ui-0745.md): of the new price
+     * model only the food assistance dial and the hunger had reached a
+     * screen. Nothing reads the new figures in the month, so the default
+     * playtest's traces are unchanged; one model rule moves, behind a dial
+     * at 0 by default. SAVE_FORMAT 30: every new figure is appended or keyed,
+     * and an older save seeds it.
+     *   - THE ANCHOR on Policy › Money (expected inflation, trust in the bank
+     *     and its month's move, the lean, the level the constants are struck
+     *     at) beside THE CURRENCY'S DRIFT; the rate line's expected and
+     *     neutral ticks, its inflation judged on the smoothed rate; the dial's
+     *     real rate. The header's INFLATION line is the anchor, and NEEDS YOU
+     *     gains PRICES - amber the month trust falls, red under half
+     *     (CityNeeds.prices(), Expectations.getCredibilityStep(), saved as the
+     *     eighth slot).
+     *   - THE BASKET on PRICES: each part's weight and its own inflation;
+     *     PriceIndex keeps each component's level chained across every link
+     *     (after the ring in its save), and City History draws them, with the
+     *     links as marks over the plot (ChartModel.basketLinks()).
+     *   - THE SHELF on Sectors › Retail (the floor, the cap, the price that
+     *     clears - a price only above the floor - the baskets, what limited
+     *     the sale, the suppliers' credit), HANDED OVER as its fifth figure;
+     *     WHAT IT CHARGES on the kitchens and the counters.
+     *   - WHO GOES WITHOUT on a new Policy › Promises › Food tab and on People:
+     *     the hunger's priced-out and short-of-stock halves; the voucher's
+     *     dial previews at the price the last sale charged, so at rest it is
+     *     the month's to the bit; THE BUDGET previews it.
+     *   - FOOD ASSISTANCE'S MEANS TEST reads the year's investment income,
+     *     smoothed over MEANS_INCOME_MONTHS, not the month's: a coupon month
+     *     took a whole row in and out of assistance. A cell slot is appended.
+     *   - Fixed: EARNED's walk carries the vouchers; Government's list and
+     *     ring; People's waterfall; Trade's next month carries the anchored
+     *     drift; the fare preview and the fare, the FIXED grant, the pension's
+     *     base and the bank's paid-in read in today's money; the rule's slope;
+     *     the real rates said less the year's inflation; seven stored series
+     *     History never offered; the clearing price under the floor printed as
+     *     a price. Before an old save's first month, every read of the sale
+     *     says it is not counted yet.
+     *
+     * 0.7.46 (2026-10-05) - WHAT A SAVE CARRIES OF THE MONTH. Batch A of the
+     * model fixes (the project's spec-model-fixes.md): flows a reload read as
+     * nothing or struck again, and three history records that said something
+     * other than their names. Nothing the month reads moves, so the default
+     * playtest's traces are unchanged. SAVE_FORMAT 30: every new figure is a
+     * keyed map, an extra by name or an appended slot, and an older save
+     * reads what it always read.
+     *   - THE MONTH'S TRADE CROSSES A SAVE (A1): every sector's units shipped
+     *     and landed, carried beside the rows until the first strike
+     *     (Sector, THE MONTH'S TRADE ACROSS A SAVE). The railway billed
+     *     almost nothing the month after any load and repriced on it; a
+     *     reloaded city now plays its first month as its unsaved twin - its
+     *     people, arrivals and price index exactly, with twelve of 229 series
+     *     still parting by under a ten-thousandth, a residual left unchased.
+     *   - THE TRADE TAB'S MONTH (A2): the balance of payments' month and the
+     *     treasury's dollars bought and sold ride slots 37-44 of the foreign
+     *     accounts, so a freshly loaded city counts its month.
+     *   - CARE'S FEES BY KIND (A3): the people each kind treated, appended to
+     *     the service's state (Healthcare.STATE_BEFORE_SERVED).
+     *   - THE MEANS TEST'S INCOME (A4): each cell's income after its fixed
+     *     bills, one appended cell slot (CELL_SLOTS_BEFORE_AFTER_FIXED); a
+     *     reload struck it again from the moment of loading.
+     *   - CONSTRUCTION'S MATERIALS (A5): the row as it stood at the strike,
+     *     kept (Sector.beforeBank()), so the page shows the statement's month
+     *     and the row as "since then, so far".
+     *   - GRADUATES (A6) are the month's gains at every level
+     *     (Education.gainedThisMonth()), not the movement, which nets to 0.
+     *   - THE BANK'S LEVERAGE (A7): bankLeverageRatio and bankLeverageTarget
+     *     recorded every month; the Bank tab's capital chart draws them while
+     *     the leverage ratio binds.
+     *   - EPIDEMICS (A8) are named on Health's outbreaks (History's outbreak
+     *     series, YearBook.EPIDEMIC_OUTBREAK), not on a sick rate over a
+     *     tenth, which a city short of care held for its whole life.
+     *
+     * 0.7.47 (2026-10-05) - WHAT THE PAGES SAY, AND A FLOOR IN TODAY'S MONEY.
+     * Batch B of the model fixes (the project's spec-model-fixes.md), B1-B8;
+     * B9, the transit bill and G, waited for Jerus's word and shipped as
+     * 0.7.49's D2. B1-B7 leave the
+     * default playtest's numbers alone (B4 groups the thousands in one word
+     * of t-house's why); B8 moves the traces from month 32, re-baselined.
+     * SAVE_FORMAT 30: nothing new is saved.
+     *   - THE SAVERS' REAL RATE PREVIEWED (B1) less the inflation they expect,
+     *     as the month strikes it (PolicyPreview.realDepositRateAt()).
+     *   - THE SHELF'S FLOOR (B2) is said struck at the level this month's
+     *     constants are struck at (Expectations.getStruckLevel()), not the
+     *     one the next month will be.
+     *   - THE CAR PLANTS (B3) read the month: made of the nameplate, the parts
+     *     ordered, bought and imported at the month's rate; the full-rate
+     *     order is the note's.
+     *   - THE LANDLORDS' HOLD (B4) groups its thousands.
+     *   - A PROPERTY OFFSET (B5) is held at MAX_PROPERTY_TAX, where the dial
+     *     always stopped: no offset past it rates differently.
+     *   - A CURRENCY REFORM AND THE BUSES (B6): the month's transit bill and
+     *     fares are divided with everything else, and the ridership curve and
+     *     the fare dial's cap read the dial in founding money at the unit
+     *     (InfrastructureManager.setFareUnit(), TaxPolicy.setMoneyUnit()).
+     *   - GOVERNMENT'S "OF GDP" (B7) reads each line's last twelve months where
+     *     City History records it (GovernmentScreen.TRAILING_MONTHS), not the
+     *     month x 12.
+     *   - A BAND HELD AT THE FLOOR IN TODAY'S MONEY IS PINNED (B8):
+     *     LabourMarket.isPinned() reads cashMinimumWage(), the floor wages are
+     *     held at, not the founding figure - so a glut there leaves, as
+     *     Migration says it should, once living costs more than at founding.
+     *
+     * 0.7.48 (2026-10-05) - THE FUND'S WITHDRAWAL DIAL, AND THE FUND'S MARKS.
+     * Batch C of the model fixes (the project's spec-model-fixes.md), C1-C5.
+     * Jerus: "the city fund, you should be able to click how much to
+     * withdraw automatically, even 0 or 10% a month". C1 and C2 leave the
+     * default playtest's traces alone (the default is Norway's rule, to the
+     * bit); C3, C4 and C5 move them, re-baselined. SAVE_FORMAT 30: the dial
+     * is keyed and the month's two new figures appended, so an older save
+     * loads Norway's rule, owing nothing.
+     *   - THE WITHDRAWAL (C1): what the fund pays the budget a month, in
+     *     quarter-point steps from nothing to 10% of its value
+     *     (TreasuryFund.WITHDRAWAL_STEP, MAX_WITHDRAWAL_STEPS); one step,
+     *     the default, is the 3% a year it always paid. Over the default it
+     *     spends the fund: what its cash cannot cover is sold from its
+     *     market book at the step, pro rata, and paid at the next month's
+     *     top, and the rule buys nothing meanwhile; never the rescue book.
+     *   - ITS DIAL (C2) on Finances > The city's fund > Rules & cash, first
+     *     and full width, with what it would do next month and a year on
+     *     (PolicyPreview.fundWithdrawalAt()); the transfer's card, Government's
+     *     line and the fund's tile say what the dial sells and pays late.
+     *   - THE RULE'S BID (C3) stands at the desk's ask, fair value plus
+     *     TreasuryFund.RULE_PREMIUM: at fair value it met nobody, and its cash
+     *     sat idle.
+     *   - A STALE MARK (C4): the city's holding of a share is marked at fair
+     *     value once its last trade is Exchange.STALE_MARK_MONTHS old
+     *     (Exchange.cityMark()); trading, the households and the world read
+     *     the last trade as before.
+     *   - SHARE PRICES IN HISTORY (C5) are kept to six significant figures
+     *     (HistorySave.SHARE_PRICE_DIGITS): a consolidated company's price
+     *     per founding share was rounded to nothing.
+     *
+     * 0.7.49 (2026-10-05) - TRANSIT: THE BILL PAID, AND WHO RIDES BY WHAT IT
+     * COSTS THEM. Batch D (the project's spec-transit.md), D1-D5. Jerus: "for
+     * transit, fix the leak, and also, households shouldnt check the transit
+     * price alone to determine if they use it, they should determine the cost
+     * of their own transportation". D1 and D5 leave the default playtest's
+     * traces alone; D2, D3 and D4 move them, re-baselined. SAVE_FORMAT 30:
+     * three keyed figures, -1 in an older save (derived as before), and the
+     * households' statement takes one scalar and one row on its end.
+     *   - THE MONTH'S TRANSIT BILL CROSSES A SAVE (D1): DataSave.transitBill,
+     *     as advanceDemographics() 6d struck it; the rebuild struck it at the
+     *     fill the month ended on.
+     *   - THE BILL IS PAID (D2, B9): transit's wages and upkeep were struck
+     *     every month and paid by nobody. The treasury pays them as a promise
+     *     (TreasuryLine.TRANSIT); getExpenses() and the budget carry the bill,
+     *     the budget the fares (no longer journalled, and no step on the walk
+     *     from EARNED); the audit debits it; G counts the schools and transit
+     *     at cost. Government lists "Transit fares" and "Transit".
+     *   - THE TEST PLAYER COUNTS THE WAGES (D3): LongPlaytest buys a transit
+     *     line only while the output it frees and its fares pay its crews
+     *     (linesThatPay()).
+     *   - WHO RIDES, BY WHAT THEY PAY (D4): workers with no car of their own
+     *     (HouseholdBalance.captiveShare(); a household holds one car) ride at
+     *     any fare if a line reaches them and there is a seat, and walk if
+     *     not; owners weigh a ride against a journey's fuel
+     *     (Motoring.CAR_FUEL_PER_JOURNEY at the exchange rate) and split
+     *     (InfrastructureManager.transitChosen(), MODE_SPREAD);
+     *     TRANSIT_MAX_SHARE is the reach of each group. Drivers pay for fuel,
+     *     imported; the fares fall on the rows that ride and the fuel on the
+     *     rows that drive; a household without a car weighs a pass against a
+     *     car's full monthly cost before it buys.
+     *   - THE SCREENS (D5): Infrastructure > Transit's riders by reason; the
+     *     fare card shows its founding anchor, a drive's fuel and a pass
+     *     against an unskilled household's take-home; People's fuel; Trade's
+     *     "Households' fuel".
+     *
+     * 0.7.50 (2026-10-06) - THE CHART THAT FROZE THE GAME. Jerus played 0.7.49
+     * and on one run the window froze, the same exception in the terminal on
+     * every frame. A screen fix: nothing the month reads moves, so the default
+     * playtest's traces are unchanged. SAVE_FORMAT 30: nothing new is saved.
+     *   - THE CAUSE: a chart kept the history's month list itself - the list
+     *     the history adds each month to - and the stack's layers as the
+     *     arrays they were. A month landed under Government's layers chart
+     *     with the pointer on it; as the page was torn down, JavaFX told the
+     *     chart the pointer had left, and its redraw read a month past the
+     *     layers from inside JavaFX's removal of the page, which stopped half
+     *     way and left nodes in the page with no scene.
+     *   - A CHART DRAWS FROM A SNAPSHOT: TimeChart.setData() copies the months
+     *     and every line and layer, each as many months long (ChartModel, WHAT
+     *     A CHART DRAWS FROM), and the stack's arithmetic, now ChartModel's
+     *     stackRuns() and stackReach(), reads nothing past the months or the
+     *     layer. ChartCheck's section 8 walks it across a month landing.
+     *   - NOTHING A CHART THROWS REACHES JAVAFX: a frame that fails is skipped
+     *     and its fault logged once for the chart, with the stack trace; every
+     *     pointer handler on a chart is guarded the same way.
+     *   - A PAGE TORN DOWN HEARS NOTHING: while clearMenu() empties the page,
+     *     rootMenu swallows the pointer's exits from what it removes, so no
+     *     handler on the old page runs inside the removal.
+     *   - THE LOG PAST ITS CAP: failures still go in, each once by its first
+     *     lines, up to GameLog.FAILURE_BYTES more (RobustnessCheck).
+     *
+     * 0.7.51 (2026-10-06) - THE BUILD ADVICE, PRICED WITH ITS LAND AND SIZED
+     * AHEAD. Batch F (the project's spec-build-advice.md). Jerus, of "Build
+     * all three": "the building ideas is flawed, it doesnt take into account
+     * land price, and it doesnt build any slack, and universities ... tend to
+     * be overstated and way too early sometimes ... make it so that alot of
+     * its ideas also take into account the same as businesses do, aka a
+     * projection". Advice, not the month: the default playtest's traces are
+     * unchanged, and the two model lines it moved (planMaker()'s growth,
+     * advanceMonth()'s diplomas) are the same arithmetic, extracted. SAVE_FORMAT
+     * 30: nothing new is saved; every new read is of saved state.
+     *   - LAND: each building is ranked by its quote and its ground at the
+     *     land office's price (LandManager.getOfficePricePerSqFt(),
+     *     BuildAdvice.landValue()), a unit; the cards count the ground the
+     *     ones before take. A card's price is still the quote.
+     *   - AHEAD AND SLACK: an order is sized to the demand when it opens plus
+     *     BuildAdvice.HORIZON months, grown by the businesses' own
+     *     BusinessInvestment.growthFactor(), with BuildAdvice.SLACK on top, and
+     *     a served gauge must reach 100% of that (BuildAdvice.ahead()).
+     *   - HIGHER EDUCATION: a row for a school above the ladder - a college,
+     *     a university, a professional school - wants the students the city
+     *     would both get and hire (CityNeeds.wanted(): the smaller of who
+     *     would come, its feeder's graduates by then counted, and the posts
+     *     their degree fills); a first school needs
+     *     CityNeeds.FIRST_SCHOOL_SHARE of the smallest's seats.
+     *   - NO CASH CAP: a card is the count that keeps its need ahead, on
+     *     credit when the cash the ones before leave is short, and says by
+     *     how much. "Build all three" reads the run the model places
+     *     (Game.buildRunAhead(), buildRunStop(), buildFundingGap()) and its
+     *     total is Game.buildRunInvoice().
+     *   - THE CARDS: what the order does, when it opens and what it is sized
+     *     for, and its ground, with the ranking behind the choice in a
+     *     tooltip; a count above one says why so many. Services > Education's
+     *     school not built names the posts for its graduates beside who
+     *     would come.
+     *
+     * 0.7.52 (2026-10-06) - THE AUTOSAVE'S MONTH AND THE CENTRAL BANK'S
+     * STRICTNESS. Batch G: two small changes, and the default playtest's
+     * traces are unchanged (it plays at Standard, and its autosaves move
+     * nothing). SAVE_FORMAT 30: the one new key, the strictness, reads
+     * Standard on an older save - the rule it was played under.
+     *   - THE AUTOSAVE HOLDS A WHOLE MONTH: the twelfth month's autosave is
+     *     written at the bottom of Game.nextMonth(), once the month is
+     *     recorded. It was written near the top, after the calendar turned:
+     *     the file said month N on a city that had finished N - 1, and a city
+     *     loaded from it never ran N (Jerus's autosave: history to 1850 at
+     *     month 1851, then 1852). The autosaves before a skip and on quit
+     *     were always written between the presses; SaveSlotCheck 7b loads
+     *     all three and plays on. An old autosave loads as it did - its month
+     *     is gone and its history keeps the gap - because its top-of-month
+     *     steps had run and would run again.
+     *   - HOW STRICT: Jerus, "beside the target inflation, how strict, very
+     *     strict then it trys to have it below the target, very loose and the
+     *     target is a suggestion". Five steps under the target on Policy >
+     *     Money, set at once like it (DebtManager.Strictness): Standard is the
+     *     rule as it was, to the bit; Strict aims under the target, Very
+     *     strict DebtManager.STRICTEST_AIM under (never under 0%), answering
+     *     at up to STRICTEST_WEIGHT; Loose holds the neutral rate inside a
+     *     band either side of the target and answers only what is past it,
+     *     Very loose LOOSEST_BAND each way at LOOSEST_WEIGHT. Trust is judged
+     *     on the target as before, and the lean against what holding it takes
+     *     (DebtManager.holdingRate()). The card says what the bank aims at and
+     *     what the rule would set at the step under the thumb
+     *     (PolicyPreview.ruleAt()). CentralBankCheck 21 holds it.
+     *
+     * 0.7.53 (2026-10-06) - COUNTS TO LONG: A CITY CAN PASS 2.1 BILLION
+     * PEOPLE. Batch H1, the scale study's step 3 (the project's
+     * spec-scale.md): Jerus plans cities of five to ten billion, and every
+     * count of them was an int that wrapped silently at 2,147,483,647 - a
+     * 5.09B copy of his city read back as 938,901,759, its workforce stuck
+     * at the ceiling, and its save would not parse at all. Nothing moves at
+     * today's sizes: the default playtest's traces are byte-identical, and
+     * his autosave and both research cities load and play six months to the
+     * same bytes as 0.7.52, bar the build and the time each save is stamped
+     * with. SAVE_FORMAT 30: a JSON number has no width, so an old save loads
+     * into the long fields as it did into the ints; a save past 2^31 is
+     * unreadable to an older build, which says so.
+     *   - THE MODEL: the population, the workforce, the posts by job type and
+     *     in total, the posts filled and the people out of work
+     *     (PopulationManager), the homes and the homes by size, the household
+     *     places, the posts withheld, on site and by sector or category
+     *     (BuildingManager, BuildingsStacks, Sector), the landlords' doors
+     *     (sectors.RealEstate), the shops' coverage and baskets
+     *     (sectors.Retail), the luxury shops' coverage and the kitchens' seats,
+     *     and every int x int product of a building count and a per-building
+     *     figure, are longs; each (int) Math.round on a count is Math.round.
+     *   - THE SAVE: SaveHeader's and DataSave's population and workforce, the
+     *     businesses' population trend, and HistorySave's ten count series
+     *     (posts, workforce, out of work, population, births, deaths,
+     *     arrivals, departures, homes, construction capacity) are List<Long>;
+     *     the month axis stays an int.
+     *   - THE SCREENS read them as longs and print them through
+     *     Money.people(), Formats.count() and %,d, none cast back to an int.
+     *   - ScaleCheck scales a founded city's save past 2^31 people by the
+     *     study's method and asserts the counts whole, exactly K times the
+     *     founded city's, adding up every way, and given back by a save.
+     *
+     * 0.7.54 (2026-10-06) - THE ORDER LOOPS SEARCH, AND MONEY READS AT ANY
+     * SIZE. Batch H2, the scale study's steps 1, 4 and 5 (the project's
+     * spec-scale.md). Three loops sized an order one building at a time, and
+     * an order grows with the city: a 10 billion copy of the research city
+     * city2400 took a median of 7.0 s a month, and up to 143 s. Each is a
+     * search now, and in every run measured decided what the count decided:
+     * the default playtest's traces are byte-identical, and the two research
+     * cities - as they are, a thousand times over, and at 5 and 10 billion
+     * people - played 15 months to the same figures as 0.7.53, city2400's 10
+     * billion at a median of 46 ms a month. SAVE_FORMAT 30: nothing new is
+     * saved.
+     *   - THE TRIM (Game.consider()): the countdown's own first
+     *     Game.COUNTDOWN_SLICES slices, then doubling down from the last that
+     *     failed, then halving (largestSlice()), so an order trimmed by fewer
+     *     is decided as it always was, and the bond desk is asked at most
+     *     deskCallsMost() times an order - 58 where the count asked it 9.1
+     *     million times. The refusal keeps the rate at the whole order and
+     *     whether any slice carried it at prime.
+     *   - THE SIZE (BusinessInvestment.orderSize()) and THE MORTGAGE
+     *     (Mortgage.decide()) halve, because their tests hold on a run from
+     *     one, proved where each is (THE WAIT GROWS WITH THE ORDER, THE
+     *     LANDLORD'S ORDER IS A RUN FROM ONE); the mortgage keeps what
+     *     trimmed it and the facts for one building.
+     *   - MONEY: MoneyAudit.tolerance() - a cent, or a part in a trillion of
+     *     the figures compared, whichever is more, and a line held tighter
+     *     keeps its own floor up to ten billion units, where that part is
+     *     still under a cent - for the harness lines a 10 billion city misses:
+     *     the month's audit to the cent, a sector's cash-flow statement, the
+     *     bank's equity movement, the history's money to the cent, and the
+     *     treasury journal's reconciliation. No tolerance moves at today's
+     *     sizes. Formats and the screens' Money print quadrillions, and
+     *     Formats.cash() hands a sum past 2^53 dollars to amount() rather
+     *     than print a saturated long.
+     *   - OrderSearchCheck (new) holds the three searches to the countdowns
+     *     they replaced; ScaleCheck copies a growing city to 5 and 10 billion
+     *     with its sectors free and asserts it whole, adding up, conserved
+     *     from the first month and quick; its scaler no longer leaves the
+     *     builders' recognised revenue unscaled, the 2.7e9 residual of
+     *     0.7.53's first free month.
+     *
+     * 0.7.55 (2026-10-06) - LAND PRICED BY CROWDING AND THE DOLLAR'S OWN
+     * INFLATION, HISTORY A YEAR TO A POINT PAST FIVE HUNDRED YEARS, AND
+     * ARREARS ON THE STATEMENTS. Batch I, Jerus's decisions of 2026-10-06
+     * after the scale study (the project's spec-scale.md). The default
+     * playtest's traces move, every move the land's - with 0.7.54's premium
+     * put back in a scratch copy of this build they are byte-identical to
+     * 0.7.54's - and are re-baselined. SAVE_FORMAT 30: the land office's price
+     * state and the history each gain a field an older save reads as before.
+     *   - THE LAND PREMIUM IS CROWDING, NOT SIZE (LandMarket, THE CROWDING
+     *     PREMIUM): 1 + 119 x s, s = 1 / (1 + (4,000 / d)^5.3), d the city's
+     *     people per square kilometre of the land it owns, never past
+     *     LandMarket.CROWDING_CEILING. Fitted so the three cities held pay
+     *     about what their size gave them - city600 3.67 to 3.74, city2400
+     *     35.07 to 35.99, Jerus's 103.39 to 104.00 - where at ten billion the
+     *     size premium priced a square foot at about 19,500 times his. A copy
+     *     of a city K times over is quoted exactly what it is.
+     *   - THE DOLLAR PRICE FOLLOWS THE WORLD'S PRICES (Jerus: "usd inflation
+     *     not domestic inflation"): the base x WorldEconomy's price level x the
+     *     premium, and what the treasury pays that x the rate, as since 0.7.6.
+     *     What businesses pay keeps the domestic anchor x the premium x the
+     *     scarcity (LandMarket.basePricePerSqFt says why); the land office
+     *     names the price's parts.
+     *   - HISTORY (HistorySave, PAST FIVE HUNDRED YEARS): the newest
+     *     MONTHLY_KEPT months stay a month to an entry; a calendar year all of
+     *     whose months are older folds into one entry at its last month, each
+     *     series by the year book's rule for it - a flow added, a level's last,
+     *     a rate averaged - and the history keeps how many months each holds.
+     *     aligned() reads a folded flow a month at a time; the year book, City
+     *     History's charts and the fund's return weigh each entry by its
+     *     months. The default playtest (4,005 months) never folds.
+     *   - ARREARS ON THE STATEMENTS: what the treasury pays a sector of what
+     *     it owed it (Game.payDownArrears()) is a line of that sector's cash
+     *     flow, "Arrears paid by the city" (SectorBooks, arrearsPaid), where
+     *     until now it reached the till and no line.
+     *   - Harnesses: LandCheck 18 (crowding and the world's prices) and 5c
+     *     (a more crowded city pays more, where it was a bigger one); ScaleCheck
+     *     6 holds its 5 and 10 billion copies to the land and rents of the
+     *     city they copy and to building, and reads their statements every
+     *     month; HistoryCheck 6 grows a history past MONTHLY_KEPT and holds the
+     *     fold, the totals, the save and the readers; CentralBankCheck 6 the
+     *     arrears line. Five fixtures re-made to cause what they test under the
+     *     new land prices: BondCheck 5d's till, DeathRecordCheck's baseline,
+     *     HealthCheck's paid city's ground, PolicyPreviewCheck's homes and
+     *     SaveFileCheck's fund pay-in.
+     *
+     * 0.7.56 (2026-10-06) - THE WORLD. Batch J1a, the first of the land, water,
+     * map and fuel batches (the project's spec-land.md). A city stands on a
+     * world now - a flat square the size of the Earth, made from one seed - and
+     * nothing in the model reads it yet: the default playtest's traces are
+     * byte-identical to 0.7.55's. SAVE_FORMAT 30: the seed is one new key an
+     * older save reads without.
+     *   - THE WORLD (World): 368 x 368 cells of 61.44 km, 511.2 million km2,
+     *     plots of 30 m nested in tiles, districts and cells by powers of two.
+     *     Value noise in octaves, every value SplitMix64 of the seed and the
+     *     place and every transcendental StrictMath's, so it is the same on
+     *     every machine: the sea 71% of it at a level each world finds from
+     *     four jittered samples a cell, lakes 3.7% and forest 31% of the land,
+     *     beaches; the founding site on a coast with an iron field within 2 km,
+     *     its lake and river. The terrain a plot, a tile (65 us) or a region
+     *     at a stride at a time; built on first use, about half a second.
+     *   - THE RESOURCES (Resource, Deposit): iron, oil, stone, coal, copper,
+     *     uranium in fields - a Poisson count a cell, sites with a heavy tail,
+     *     whole tonnes that sum exactly to the cell's total - and forest as
+     *     terrain; the world's totals in one 30 ms pass.
+     *   - THE SEED IS FOUNDED (Founding.worldSeed, DataSave.worldSeed,
+     *     Game.getWorld()): DEFAULT_WORLD_SEED 4127 for the defaults, the
+     *     presets, the harnesses and the playtest; the founding screen's World
+     *     field, rolled when it opens and by its dice; an older save reads a
+     *     seed made from its name, founding treasury, ground and month.
+     *   - THE DESIGN'S LAKE AND FOREST LEVELS MOVED (0.695 to 0.7092, 0.595 to
+     *     0.5676): they were percentiles at the prototype's samples, lattice
+     *     points of every fine octave, and made 5.0% of the land lakes and 24%
+     *     forest; the sea pass jitters its samples for the same reason.
+     *   - Harnesses: WorldCheck (new) holds three worlds to the design - the
+     *     same world twice, the shares, the site's four tests and the river,
+     *     the fields' exact sums, the totals and their time, the tile and the
+     *     region against the point function; NewGameCheck 13 the seed through
+     *     founding, a save, an older save and Start New Game; SaveFileCheck the
+     *     key and the derived seed.
+     *
+     * 0.7.57 (2026-10-06) - THE LAND ON THE WORLD. Batch J1b of the land,
+     * water, map and fuel batches (the project's spec-land.md). The city's land
+     * is a piece of the world now, and the land office sells the world's
+     * ground. SAVE_FORMAT 31 (see above): an older save is converted once.
+     *   - THE CITY'S LAND (CityLand): a centre round the founding site holding
+     *     the dry ground the city was founded or converted with - a new city's
+     *     3,000,000 sq ft, 0.29 km2 in all on the default world - sized ring by
+     *     ring so it holds that ground exactly; four sides of ten lanes
+     *     fanning out from the site, each pushed out band by band by its
+     *     purchases; what each piece holds measured once - its area dry, fresh,
+     *     sea and forest, every field of the seven resources centred in it,
+     *     whole. What the city owns in square feet is its dry ground; its
+     *     water is owned too.
+     *   - THE OFFERS (LandMarket, LandParcel): forty, one a lane, each the next
+     *     band of its lane, never rerolled; an offer is a multiple of a block,
+     *     or of 1% of the city once that is more, the multiple drawn as the
+     *     parcels' were; priced at batch I's ground on its dry ground, 45% of
+     *     it on fresh water and 8% on sea, and the ore at its share of the
+     *     world's price (iron at 1/350, today's $0.40 a tonne); the best value
+     *     the most dry ground a dollar, never mostly sea; the richest in a
+     *     resource, the cheapest, the cheapest with sea; Game.bestOffer() for
+     *     each need the Build tab will ask (batch J4). The nine parcels and
+     *     their generator are gone.
+     *   - THE ORE AND THE WORLD'S LEDGER (LandManager): the iron sites and
+     *     tonnes the city owns are the world's fields in its ground; what it
+     *     takes out is one figure a resource, worked out in the order the
+     *     ground was bought; what no city owns, what remains and what was taken
+     *     out add up to the world's totals, stored with the city. Forest grows
+     *     back a 240th a month.
+     *   - THE CONVERSION (LandConversion): an older save's square feet become a
+     *     centre on its own world at a site whose square is at least 80% dry
+     *     with the sea near, its iron its own (at least its mines), forty
+     *     offers at today's prices; a save whose square feet disagree with its
+     *     land - a copy K times over - has its land drawn again to hold them,
+     *     as does ground set by hand.
+     *   - THE LAND OFFICE, FOR NOW: the best nine of the forty, each tagged
+     *     with its side and lane, in km2 (the office round the map is J4).
+     *   - Harnesses: LandCheck 5 to 5f (ten offers a side, batch I's price at
+     *     the founding, the size rule, the world's fields, the offers across a
+     *     save), 13 (an older save converts), 17 (offers by hand), and new 19
+     *     to 21: the world's totals kept to the tonne through a purchase and
+     *     extraction, the ground worked out in the order it was bought, ground
+     *     by hand, the forest's regrowth, the best offer for each need, a
+     *     city's land field for field across a save, and the three research
+     *     cities' land converted; MiningCheck 2 (a deposit from a bought offer
+     *     with iron; one site, one mine); BuildAdviceCheck (the offers'
+     *     records); ScaleCheck (the copy's land drawn to hold K times the
+     *     ground); ReadPathCheck, SaveFileCheck and NewGameCheck the new
+     *     fields. The playtest moves: see the project's write-up.
+     *
+     * 0.7.58 (2026-10-06) - EARLY IRON, LAND BOUGHT FOR WHAT IS SHORT, AND A
+     * FLEET IS NOT NEGATIVE OUTPUT. Batch J1c, between J1b and water.
+     *   - A FIELD IS SHARED SITE BY SITE (Deposit, CityLand): a field's sites
+     *     lie on a grid one site wide round its centre, nearest first, each
+     *     with an equal share of its tonnes to the tonne; a site belongs to
+     *     the centre or the band holding the site's centre. So the ground a
+     *     field lies under shares it in proportion to the area each covers,
+     *     and its shares sum to it exactly. Until now a field went whole to
+     *     the band holding its centre: the default world's founding field, 35
+     *     sites and 449 Mt, was one US$180M offer, and the playtest's first
+     *     iron came in month 1,088. A new default city's first ring now offers
+     *     single sites from about US$5.3M against its D$100M treasury.
+     *   - A SHORTFALL IS MET WITH GROUND (Game.bestOffer(), LandMarket.
+     *     bareGround()): the cheapest offer covering a shortfall of dry ground
+     *     that holds no ore - with none, the best value. The playtest's build()
+     *     buys this (what the Build shortcut will, J4) in place of the cheapest
+     *     offer standing.
+     *   - EVERY OTHER GOOD A SECTOR HOLDS IS STOCK (NationalAccounts.HELD): the
+     *     farms' crops, every sector's vans and the railway's rolling stock,
+     *     their change priced at what one costs to bring in. A railway buying
+     *     its fleet abroad read GDP of -16,056 in an ensemble month; it reads
+     *     its output now. Saved in the accounts' slots 15 on; an older save's
+     *     first month books no change in them.
+     *   - Harnesses: LandCheck 5e and 19 (a field's shares sum to it, an
+     *     offer priced by its share's tonnes, a new city's iron affordable),
+     *     GdpCheck (a fleet bought abroad, the production side, every good
+     *     held in a term, a railway town's fleet month), RailCheck (the track
+     *     its fixture lays takes its ground). The playtest moves.
+     *   - THE TEST PLAYER KEEPS ITS GROUND AHEAD (batch J1d; LongPlaytest.
+     *     keepGroundAhead()): at each look it buys the best value until no
+     *     more of its dry ground is built on than the ground in use grown
+     *     BuildAdvice.HORIZON months by the businesses' growthFactor(), with
+     *     BuildAdvice.SLACK past it - the build advice's own sizing - spending
+     *     at most a tenth of the cash. On the world's land the playtest's
+     *     city had been half 0.7.55's size from month 1,000 to 3,000: one
+     *     offer a move, each a multiple of 1% of the city and the cheapest
+     *     the oldest, added 8.7% to its ground a look in months 300-1,000
+     *     where 0.7.55's parcels added 17.1%. Nothing in the game changes;
+     *     the playtest and the ensemble move. Harnesses: LandCheck 22 (the
+     *     line, the cash share, a look stopped short, a city under the line),
+     *     CentralBankCheck 21's probe city in seed 2's shape, the calm one
+     *     under the new player (seed 5's twins now end 795 people apart).
+     *
+     * 0.7.59 (2026-10-06) - FRESH WATER HAS A LIMIT, AND THE SEA CAN BE
+     * DRUNK. Batch J2 of the land (the project's spec-land.md 2.3).
+     *   - THE FRESH WATER LIMIT (UtilitiesHandler; Game, THE FRESH WATER
+     *     LIMIT AND THE COAST): the Water Treatment Plants together treat no
+     *     more than the city's lakes and river yield, FRESH_UNITS_PER_KM2
+     *     (121,600 units a month a km2 - the world's river runoff over its
+     *     river area) times the owned fresh km2, plus the city's water
+     *     rights; past it the rest of their nameplate idles and the water is
+     *     rationed through waterRatio as any shortage is. The wells' 8,000
+     *     are groundwater, outside it. Not binding, production is the old
+     *     formula to the bit. The Services page says "fresh water limit: 62%
+     *     of the plants' nameplate idle · buy lake or river, or desalinate"
+     *     (CityNeeds.freshLimitLine()), and its "at full staff" is held to
+     *     the limit.
+     *   - THE DESALINATION PLANT (id 73, WATER, "source": "SEA" -
+     *     BuildingsTemplate.Source): the water plant's output, crew and ground at
+     *     twice its cost, drawing 10,880 kW (3.5 kWh a m3); the limit does
+     *     not reach it, and an order with no owned sea is refused NO_COAST
+     *     (Game.hasCoastFor(), BuildResult.NO_COAST, BuildCard's NO_COAST
+     *     verdict, Build's no-coast page). BuildAdvice values a fresh plant
+     *     at the water left under the limit and desalination at its output
+     *     where the city owns sea, nothing where it does not.
+     *   - THE RIGHTS (DataSave.freshRights, boxed, no format bump): a save
+     *     from before them is given its fresh plants' nameplate standing
+     *     less what its lakes yield, so loading idles nothing it had - the
+     *     research saves: Jerus's city 300,000 units (no lakes in its
+     *     centre), city2400 960,000, city600 none. A new city has none.
+     *   - THE TEST PLAYER (LongPlaytest.addWater()): a water plant while
+     *     the fresh water left under the limit covers the shortage or a
+     *     plant, and no more plants than that water feeds; past it,
+     *     desalination on owned sea, else the offer with the most lake or
+     *     river a dollar (LandMarket.bestFresh()), else the cheapest with
+     *     sea. The playtest moves (the project's write-up).
+     *   - Harnesses: WaterCheck 9-12 (the limit, rationing, the rule to the
+     *     bit unbound, desalination past the limit and its 10,880 kW, the
+     *     limit on a city's land and rights, NO_COAST and the coast bought,
+     *     a lake's share lifting the limit exactly, the rights saved,
+     *     derived and converted), BuildingDataCheck (the source, 74
+     *     buildings), SaveFileCheck and ReadPathCheck (the rights and the
+     *     new reads).
+     *
+     * 0.7.60 (2026-10-07) - THE CITY MAP'S DATA AND PAINTER. Batch J3 of the
+     * land (the project's spec-land.md 2.5 and 2.6). Model only: nothing in
+     * the model reads the map, and the playtest is byte for byte 0.7.59's.
+     *   - THE DISTRICTS (CityMap): the city's buildings counted by type in
+     *     each 7.68 km district of its land, with its owned dry plots (32 x 32
+     *     samples, recounted in every district a purchase touches), the
+     *     ground its buildings use and its owned iron and oil sites. Each
+     *     month, after the month's construction and demolitions, each type's
+     *     change goes into the first district with room - nearest the
+     *     founding site first; farms, utilities, mines, the railway and the
+     *     car plants farthest first - removals in reverse, and nothing placed
+     *     moves; mines stand on the first owned iron sites in the order the
+     *     ground was bought, those not worked out first. Drawn canonically -
+     *     each type in proportion, inner first, the remainders by largest
+     *     remainder - the first time it is asked for, for a save without its
+     *     sidecar, and for land drawn again. Dealt into each district's 64
+     *     tiles by each building's own hash, so one more building changes
+     *     one tile by one; summed two by two up a pyramid for the far view.
+     *   - THE PAINTER (TilePainter, TileRaster, BuildingVisual): a tile
+     *     painted from the seed, its ground, what is owned, its counts, its
+     *     road budget, its neighbours' roads and the sites under it, by the
+     *     mockup's rules made local to the tile - ports on shared edges,
+     *     roads grown from them, bridges over fresh water (paved 6 plots, a
+     *     highway 14, gravel none), buildings at their own hashed places
+     *     u^1.5 from the road, the mockup's footprints and colours, flats the
+     *     apartment types, home daycare and home care drawn as homes, mines
+     *     grey on their sites with a gravel spur, worked-out sites grey - and
+     *     rastered for PixelWriter at any whole number of pixels a plot.
+     *   - THE SIDECAR (GameFiles.mapFile(), DataSave.mapStamp, no format
+     *     bump): slot-NN-map.bin beside the save, deflated, its stamp in the
+     *     save; a load reads it back when the stamp matches and draws the map
+     *     again when it does not; a city never asked for its map has none and
+     *     pays nothing for it. The view, the land office around it and the
+     *     Build shortcut are batch J4.
+     *   - Harnesses: MapCheck (new): a played city's districts sum to its
+     *     counts every month; nothing placed moves; the painter's rules at
+     *     Jerus's density; the sidecar byte for byte, a stale one drawn again;
+     *     a 198-tile screen in no more than 80 ms at his city x 1, x 9,814
+     *     (5B), x 10,000 and x 19,629 (10B), each within 1.5 times x 1's, and
+     *     a month's change at 5B and 10B in no more than 5 ms. The playtest
+     *     keeps its city's map and audits it every month and every reload;
+     *     SaveFileCheck and ReadPathCheck the stamp and the new reads.
+     *   - THE MAP LOOKS LIKE A CITY (batch J3b, still model only). J3 drew a
+     *     dot for each model building, and a block of 252 people is one
+     *     building, so Jerus's city of half a million came out as scattered
+     *     dots on a field. A tile now draws its homes from the people its
+     *     homes house - houses of 5 in a thin town, flats of up to about 75
+     *     where it is dense, never more than 26% of its ground - its shops,
+     *     offices and plants from their jobs (8, 38.75 and 150 a building),
+     *     and its schools, clinics, utilities, farms and mines one for one
+     *     (BuildingVisual's visual counts, CityMap's drawCounts; both gone
+     *     since 0.7.64). A district
+     *     now spreads over the tiles within half a district of its middle,
+     *     so neighbouring districts blend, homes, shops and services lean
+     *     toward the founding site and plants toward the two highways and
+     *     away from it (CityMap's deal). Roads are the frontage the buildings need, 0.31
+     *     of their plots (the mockup's) in steps of 12, paved where people
+     *     and jobs are dense and gravel at the fringe, the model's own paved
+     *     share the least, a larger budget only growing the same roads
+     *     further; buildings prefer the two rows beside a road, placed kind
+     *     by kind, homes first and the one-for-one types last, and one with
+     *     no road beside it is laid out square (J3 laid it as a diamond).
+     *     Drawn at the mockup's widths and sizes from 4 px a plot, and as
+     *     its blocks for the middle and far views (TileRaster.blocks()).
+     *     Jerus's city is built 34%, its middle half, its edges a quarter;
+     *     17,634 homes where J3 drew 9,920 dots, one a model home or daycare.
+     *     MapCheck 6 (new): the counts drawn, mature land built 20 to 35%,
+     *     the middle denser, never a carpet, homes the most of it; MapCheck
+     *     2 and 3 now grow the city by a model building.
+     *
+     * 0.7.61 (2026-10-07) - THE MAP ON SCREEN, THE LAND OFFICE ROUND IT, AND
+     * BUILD'S SHORTCUT. Batch J4 of the land (the project's spec-land.md 2.6
+     * and 2.8). The playtest is byte for byte 0.7.59's.
+     *   - THE MAP VIEW (ui/MapView; its arithmetic MapFrame, LandMap and
+     *     MapTiles): one Canvas, small in the land office (600 x 400) and,
+     *     with Expand, over the whole window, City History's pane - drag pans,
+     *     the wheel zooms by 1.25 a notch at the pointer from the whole world
+     *     to 16 px a plot, + and - zoom, 0 fits, Esc closes; a legend and a
+     *     hover card (the ground, whose it is, an offer's size and price, the
+     *     fields and their tonnes, the building or road). The mockup's levels:
+     *     painted tiles at 4 px a plot from 3.2 px (8 past 6), its blocks of
+     *     four from 1.4, of eight below while the view holds no more than
+     *     1,024 tiles, and past that far nodes from the world's ground and the
+     *     districts' counts. Tiles paint a few each frame, at most 8 ms of it,
+     *     the middle of the view first, another level's picture standing in;
+     *     a month or a purchase stamps the tiles in view again and repaints
+     *     only those whose stamp moved. Every cache within 48 MB at the
+     *     design's size. The city's edge, its forty offers hatched, the
+     *     deposits in the far views and a scale bar over it all.
+     *   - OFF THE SCREEN'S THREAD, ARITHMETIC ONLY: a city's map is drawn the
+     *     first time on a copy of its land and counts (Game.mapDraft()) on the
+     *     view's worker and kept back on the screen's thread, caught up to the
+     *     month (Game.adoptMap(), CityMap.rebind()); far nodes' ground is read
+     *     on the worker. CityMap gains tileInput() with the ground given and
+     *     changes(), what a view stamps against.
+     *   - THE LAND OFFICE (ui/LandScreen): the map, and beside it THE CITY -
+     *     its size in km2, "107.8 km² · 89.6 dry · 0 fresh · 18.2 sea", its
+     *     share of the world's iron - the four sides as chips (each its
+     *     cheapest dry ground a km2, BEST VALUE on the best's side) and the
+     *     chosen side's ten offers as rows: lane, km2, dry, fresh and sea as a
+     *     bar, deposits with sites and tonnes, price, price a dry km2, a tag,
+     *     Buy or Fund. A click on the map picks a side or an offer, a row
+     *     lights its band. "Buy the next N" is "Buy the best N"; the Ore card
+     *     is Ore and oil. The 3 x 3 shelf of 0.7.57 goes.
+     *   - BUILD'S SHORTCUT (ui/BuildScreen, Game.bestOffer()): LAND FREE in
+     *     km2 with "Buy the best land · 3.4 km² · US$12.1M ›"; the no-land page
+     *     "Buy the best: 3.4 km² for US$12.1M", bare ground that covers the
+     *     shortfall (batch J1c's rule, said on the button); the no-deposit and
+     *     no-coast pages their own; short, the land office's funding page sized
+     *     to the offer. The build card's land in km2. Icons MAP and EXPAND.
+     *   - Harnesses: MapCheck 7 (new): the transforms, a notch at the pointer,
+     *     the clamps, the levels and the tiles a screen asks for; what a click
+     *     picks on a played city against owns() and sideLane() and the bands
+     *     outlined; the map drawn on another thread and kept; a tile restamped
+     *     only when its counts move; the view's per-tile path within section
+     *     5's bounds and no dearer than it; the caches within 48 MB.
+     *
+     * 0.7.62 (2026-10-07) - FUEL: OIL WELLS ON OWNED OIL, A REFINERY, AND
+     * CRUDE IMPORTED WHEN THE CITY HAS NONE. Batch K of the land (the
+     * project's spec-land.md 2.7). The playtest moves; re-baselined.
+     *   - TWO GOODS (Good): CRUDE, tonnes, .60 in and .50 out, a flow good -
+     *     a well ships what it lifts, as a mine does; FUEL, litres, a
+     *     journey's fuel over its 1.2 litres in (Motoring
+     *     .CAR_FUEL_PER_JOURNEY / LITRES_PER_JOURNEY), .0007 out, held in the
+     *     refiners' tanks. Freight by the file's rule, three quarters of the
+     *     half-wedge. Resource.OIL is CRUDE's, so the land office prices oil
+     *     at 5% of its world price from now on; offers listed before keep
+     *     their prices.
+     *   - TWO SECTORS on the end of Sectors.KEYS: Oil (sectors.Oil, Mining's
+     *     shape: the Oil Well, id 74, 415 t a month on an owned oil site, the
+     *     ground its limit through groundLimit(), one well a month while a
+     *     site is unworked, retired when the oil runs out) and Refining
+     *     (sectors.Refining, HeavyIndustry's shape: the Oil Refinery, id 75,
+     *     8,300 t of crude into 8,300,000 L, the wells' crude first and the
+     *     world's for the rest; planned while the investors' estimate clears,
+     *     with its crude at what it would cost to import past the wells'
+     *     spare, and only for a whole plant's worth of the city's own fuel or
+     *     its own crude - the playtest stood 120 export refineries without it).
+     *   - THE DRIVERS' FUEL IS DRAWN (Motoring.drawFuel(), at 6d): their
+     *     litres off the refiners' tanks at the market's price and the rest
+     *     imported, so with no refinery the bill is 0.7.49's at the world's
+     *     price level, as every good's and the railway's already were. A
+     *     journey's fuel, which the owners weigh a ride against, is its litres
+     *     at the landed price. THE RAILWAY DRAWS FUEL as a buyer (Rail.haul(),
+     *     eighteen litres a tonne hauled); Sector's bookImportedService goes.
+     *   - THE BOOKS: the money audit's FuelFunded and FuelImports carry only
+     *     the imported part (Game.getHouseholdFuelImports()); the refiners'
+     *     part is Refining's SalesToHouseholds, and in consumption with the
+     *     shops'; the trade by good lists FUEL with the households among its
+     *     buyers where HOUSEHOLDS_FUEL was; the refiners' tanks are the fifth
+     *     inventory term's (NationalAccounts.HELD, on the end).
+     *   - THE DEPOSIT BY ITS GOOD (Game.siteOf(), committedOn()):
+     *     minesCommitted() counts Iron Mines only, wellsCommitted() the wells,
+     *     hasDepositFor() and a run's checks the resource each building stands
+     *     on. Build's no-deposit page, its press and verdict words, the card's
+     *     deposit line and the investors' gate name iron or oil.
+     *   - THE SAVE: DataSave.householdFuel (the bill, its imported part and
+     *     the litres, as 6d drew them; a save without it imports every
+     *     litre, as it struck); the railway's imported fuel in its extras.
+     *     No SAVE_FORMAT bump.
+     *   - THE TEST PLAYER buys the richest offer in oil, sites a dollar, when
+     *     the fuel bought abroad passes 1% of a month's GDP and every oil site
+     *     has a well.
+     *   - Harnesses: OilCheck (new). Premises moved: BuildingDataCheck (76
+     *     buildings), BuildCardCheck (Industry nine groups), ForeignCheck and
+     *     RailCheck (the fuel a good's), TradeCostCheck (two goods priced),
+     *     ScaleCheck's scaler (the saved fuel). Fixtures re-made to their
+     *     premises: ScaleCheck's city copied at month 410, where its own rents
+     *     price nobody out (asserted); GroceryCheck's previews read at a month
+     *     half a dial reaches somebody under the voucher's cap.
+     *
+     * 0.7.63 (2026-10-07) - SAVES THAT RELOAD EXACTLY, AND THE AUDIT'S FLOOR
+     * AT SCALE. Batch L, on what batch K found. The playtest is byte for
+     * byte 0.7.62's.
+     *   - A RELOADED CITY PLAYS ON AS THE ONE IT WAS SAVED FROM, to the bit:
+     *     city600, city2400 and Jerus's city, each reloaded at twelve points
+     *     two months apart and compared a month on, and once each played 36
+     *     months past a reload - every pool the money audit reads, and the
+     *     people. Two figures only the month sets were not saved, both
+     *     since before 0.7.54 (0.7.54, 0.7.57 and 0.7.62 measured alike):
+     *     the ratios every sector's month was run at (SectorState's
+     *     energyRatio, waterRatio, roadRatio and healthRatio) - the month is
+     *     struck at the top of the next on them, and the load set them from
+     *     the services, which have struck next month's by then, so city2400,
+     *     short of power, billed its saved month 0.02% dear and came back
+     *     0.23 units adrift a month on; and the students who finished a
+     *     course and wait for the next census to carry their loans
+     *     (HouseholdBalance.graduatesToSave(), DataSave.householdGraduates) -
+     *     in Jerus's city their loans stayed with the students the first
+     *     month back, the families repaid 0.93% less and his treasury came
+     *     back 7,447 units short.
+     *   - A SAVE FROM BEFORE THE MONTH'S UNITS (0.7.46) has them derived on
+     *     load: the money abroad over the boundary price it crossed at
+     *     (Sector.deriveCarriedTrade()). city2400's railway hauled 2,515 t
+     *     the month after its load, 152,904 now (153,161 the month it was
+     *     saved in); Jerus's city without its units hauls as with them, to
+     *     the bit. Every save writes the units now, empty or not, so the two
+     *     are told apart.
+     *   - THE AUDIT'S FLOOR: MoneyAudit.tolerance(floor, size) is never under
+     *     MoneyAudit.ULP_FLOOR (8) of a double's steps at the size - today's
+     *     floor to the bit below 2^30 units, which every harness but
+     *     ScaleCheck's copies reads under.
+     *   - Harnesses: SaveFileCheck (a town short of power whose students
+     *     finish, its twin a month on to the bit; the railway town's save
+     *     without its units, within MoneyAudit.tolerance()); ScaleCheck (the
+     *     floor at size; the city copied at month 430, where its copies order
+     *     on their own months - the sized order at 410 was the load's; the
+     *     scaler scales the saved graduates); ReadPathCheck (their reads).
+     *
+     * 0.7.64 (2026-10-07) - WHOLE IRON FIELDS AS ONE OFFER, THE AUDIT'S FLOOR
+     * AT 64 STEPS, AND A MAP OF WHAT THE CITY HAS. Batches L and L2, on
+     * 0.7.63's saves - this batch L (whole fields, the floor at 64) made on
+     * 0.7.62's tree; 0.7.63 is an earlier batch L's save fixes, which L2
+     * put back. The playtest moves (batch L, from month 32); re-baselined.
+     *   - A FIELD GOES WHOLE WITH ITS CENTRE (CityLand; spec-land star 12).
+     *     Jerus, 2026-10-07: "Yes whole iron fields as one offer, yes that
+     *     means significant investment." Batch J1c's sharing (0.7.58) is
+     *     undone: every site and every tonne of a field belongs to the centre
+     *     or the one band of one lane holding the field's centre, wherever
+     *     its sites lie - oil's and every other resource's alike. The default
+     *     world's founding field, 35 sites and 449 Mt, is one offer of about
+     *     US$180M again, where a new city bought one shared site for about
+     *     US$5.3M, and a new default city's first ring holds no iron. Priced
+     *     as before: the ground, and the fields' tonnes at the in-ground
+     *     price. The map gives a field's sites to the holding of its centre
+     *     (CityMap), and its hover names whose a field is, whole
+     *     (LandMap.fieldOwnerWords()).
+     *   - THE WORDS SAY IT: a land office row's tooltip and the Ore card's (i)
+     *     (an offer holds every field centred in it whole, its row its sites
+     *     and tonnes), Build's no-deposit page and its Buy (the sites and the
+     *     tonnes), and the press a card and the build advice's suggestion
+     *     show for no deposit ("whole fields of ore come with land"). The
+     *     land office's funding page already sizes its bond to the offer.
+     *   - THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME
+     *     (LongPlaytest.ironWhenNeeded(), a rule beside the ground kept
+     *     ahead): when an Iron Mine would pay and every iron site the city
+     *     owns has a mine, the cheapest offer holding iron
+     *     (LandMarket.cheapestWith()) - out of the cash when it covers it,
+     *     else on the funding page's 20-year bond when the player's test for
+     *     borrowing passes; neither, it asks again at the next look. The
+     *     "bought a deposit" move goes. The playtest's first iron: month 485,
+     *     a one-site field 33 plots out (East 7, 12.8 Mt, US$6.2M, out of the
+     *     cash), where 0.7.62's player bought a shared site in month 32.
+     *   - THE AUDIT'S FLOOR RISES FROM 8 STEPS TO 64 (MoneyAudit.ULP_STEPS,
+     *     0.7.63's ULP_FLOOR): a floor of its own is never under 64 of a
+     *     double's steps at the size of the figures compared. 0.7.63's 8 was
+     *     the next power of two past the most a cash-flow statement missed by
+     *     in ScaleCheck's copies at months 410 and 430 (6 steps); at batch
+     *     L's months 410 to 570 the bank's equity movement missed by 57.7
+     *     steps and a statement by 10.75 on 9.9e9 units - rounding alone,
+     *     each identity a signed sum of figures that carry their own - so
+     *     the floor is the next power of two past the worst. The floors
+     *     under a cent the suite reads, at most 2.5e6 units, are their
+     *     floors exactly (64 steps pass 1e-6 only from 2^27 units), and a
+     *     cent never moves.
+     *   - Harnesses: LandCheck 5e and 19 back to whole fields, with the
+     *     funding page sized to the founding field and the hover's words;
+     *     LandCheck 23 (new section): the player's iron rule; MapCheck's
+     *     played city handed a whole field and a mine on it, the map's sites
+     *     the land's; ScaleCheck 8 (new section): the floor; ScaleCheck's
+     *     city copied at month 550, where it is calm, growing and its copies
+     *     order (its premise: 400 to 530 squeeze or order nothing).
+     *   - 0.7.63'S SAVE FIXES AS THE PC HAS THEM (batch L2). This batch L was
+     *     made on a tree without them; they are back as deployed: the
+     *     ratios every sector's month was run at (SectorState), the
+     *     graduates waiting for the census (HouseholdBalance,
+     *     DataSave.householdGraduates), the units of a save from before
+     *     0.7.46 derived on load (Sector.deriveCarriedTrade()), and their
+     *     harness cases. Jerus's autosave (month 416) and slot 3 (month
+     *     212), both 0.7.63's, load with every key of the file read, play
+     *     12 months, and save and reload to the bit: every pool the money
+     *     audit reads, the people.
+     *   - BUILD'S NO-DEPOSIT SHORTCUT BUYS THE CHEAPEST FIELD (Game.bestOffer()
+     *     for a deposit, LandMarket.cheapestWith(); batch L2): the cheapest
+     *     offer holding the ore, as the test player buys its iron, where it
+     *     was the most of its sites a dollar (LandMarket.richest()). Its Buy
+     *     names the offer, its sites, its tonnes and its price; short of cash,
+     *     the funding page as before; the land office still lists every offer.
+     *   - THE MAP DRAWS WHAT THE CITY HAS, NO MORE, NO LESS (CityMap,
+     *     TilePainter, BuildingVisual; batch L2). Jerus, 2026-10-07: "a brand
+     *     new city shows that it has a few houses and a shop when it doesnt".
+     *     A new default city holds one building, its Commercial Bank
+     *     (Game.foundingBank()), and no road; J3b drew homes from people and
+     *     workplaces from jobs - the bank as a shop - beside two highways of
+     *     the world's. Now each building the model has is drawn once, as its
+     *     own type, on whole plots sized to its type's land
+     *     (BuildingVisual.footprint()), a mine on its own site; the road plots
+     *     of the model's roads are laid by kind (a Gravel Road 46, a Paved
+     *     Road 26, an Elevated Highway 7) and no others. The deal keeps each
+     *     tile to its free plots, counted plot by plot (the sidecar's format
+     *     2; an older sidecar is not read and the map is drawn again once). A
+     *     building no free box of its tile holds is drawn smaller: Jerus's
+     *     city at month 416, 7 of 2,340.
+     *   - Harnesses (batch L2): MapCheck 1 (every 30th month, every tile
+     *     painted, the map draws exactly what the city has), 3 (each tile's
+     *     road plots of each kind exactly; a building added moves none placed
+     *     before it), 5 (the copies held to the 5B copy's cost, the first
+     *     whose screen is all city) and 6 (a new city as founded, a month and
+     *     a year on; the dense screen drawn one for one) - J3b's premises of a
+     *     city drawn from people and jobs go with it; LandCheck (the
+     *     shortcut's deposit offer the cheapest holding it); SaveFileCheck,
+     *     ReadPathCheck and ScaleCheck's scaler as 0.7.63 deployed them.
+     *   - EVERY AREA OF LAND THE PLAYER READS IS IN KM2 (the docs pass;
+     *     spec-land 2.2, "area in km2 everywhere"): NEEDS YOU's GROUND row,
+     *     the city panel's LAND head ("0.000137 km² · D$1,940/sq ft", its
+     *     colour the free ground's), the land office's GROUND FREE, its big
+     *     figures and bar, Build's short-of-land press and verdict, the
+     *     investors' gate on a card, the advice card's land, an order's
+     *     needs, the no-land page, the demolition card's ground and the
+     *     landlock notice - LandManager.km2Words(), three figures, where they
+     *     said square feet. Prices stay a square foot, and so do a card's land
+     *     a unit and the investors' own word ("no land - needs N sq ft",
+     *     BusinessInvestment's, which the playtest's traces carry).
+     *
+     * 0.7.65 (2026-10-07) - THE LAND AS A BLOCK GRID, BUILT PURE. Batch M1 of
+     * the project's spec-grid.md, Jerus's design of 2026-10-07: the grid and
+     * the offers six a side, on their own; nothing the game plays reads them
+     * yet (CityLand moves onto them in batch M3), and the playtest is byte
+     * for byte 0.7.64's.
+     *   - THE OWNED GROUND AS A QUADTREE (LandGrid): square blocks of 2^k
+     *     plots a side lined up with the world, from 120 m (MIN_LEVEL) to
+     *     983 km (MAX_LEVEL), nesting in its tiles, districts and cells; a
+     *     node is unowned, owned whole by one holding, mixed, or owned whole
+     *     by several. A fill claims only the plots no holding owns yet, so
+     *     the tree is rebuilt by replaying the rectangles in order and is
+     *     never saved. A city's level is the largest block of which
+     *     FACE_BLOCKS (six) fit across a square of its area.
+     *   - THE OFFERS, SIX A SIDE (GridOffers): each side's six places, left to
+     *     right facing out, each one rectangle of whole blocks against the
+     *     city's edge - one across and DEPTH_OVER_WIDTH deep, two by four
+     *     where there is room - seeded on the innermost free ground of its
+     *     lane, a notch first, clipped against the offers standing, trimmed
+     *     of ground the city owns and held to 2:1. Buying one lists only its
+     *     place's next; the other 23 never move.
+     *   - Ported from the prototype the design was measured on, and matched
+     *     to it offer for offer after every one of 4,533 purchases: three
+     *     worlds, bought evenly, on one side and for best value, to ten
+     *     billion people. Two guards it did not have: no offer reaches past
+     *     the world's edge, and a listing whose clip does not settle leaves
+     *     its place waiting rather than standing over another (none does).
+     *   - Harnesses: GridCheck (new).
+     *
+     * 0.7.66 (2026-10-07) - SAVED CITIES PUT ON THE GRID, BUILT PURE. Batch M2
+     * of the project's spec-grid.md: the conversion every older city will go
+     * through once, at load, from batch M3 - on its own; nothing the game
+     * plays calls it yet, and the playtest is byte for byte 0.7.65's.
+     *   - THE LANES, READ-ONLY (LegacyLand): spec-land's geometry - sides,
+     *     lanes, radius, a band's area, which plots a centre and forty
+     *     frontiers own - moved out of CityLand whole, CityLand delegating to
+     *     it, so nothing moved by a bit; and a format-31 save's centre, lanes
+     *     and purchases read with its own reader, totals added up in the
+     *     save's order, so batch M3 can change CityLand and LandParcel and
+     *     still read every save.
+     *   - A FORMAT-31 SAVE SNAPPED (GridConversion.fromLanes()): one level
+     *     finer than the city's offers (240 m for Jerus's city), each block
+     *     the city's by the half it owned unless a field decided it - a
+     *     field's centre, or each site of a field it held in part (a save of
+     *     0.7.58 to 0.7.63) - and split down to the plot where fields of both
+     *     kinds met. No field changes hands; a field held in part keeps
+     *     exactly its own sites. Its sites and tonnes are the save's to the
+     *     bit, E as saved; its five areas are the plots drawn (the books
+     *     follow the map: Jerus's live city +0.130 km2 dry, +1.81%); no money
+     *     moves.
+     *   - AN OLDER SAVE'S CENTRE (fromFigure()): rings of blocks round J1b's
+     *     site, the last split down to the plot, holding its dry ground to
+     *     within a plot; its iron as saved, at least its mines, with a legacy
+     *     field on its own dry ground where the world laid no iron on it.
+     *   - LandConversion.legacyPlot(): J1b's legacy field draw, the grid's
+     *     centre accepting only its own plots; J1b's draws unchanged.
+     *   - Harnesses: ConversionCheck (new), on copies of the five saves' land
+     *     (the resource conversion-saves.json): Jerus's live city and slot 3,
+     *     his older city, city600 and city2400.
+     *
+     * 0.7.67 (2026-10-07) - THE LAND ON THE BLOCK GRID. Batch M3 of the
+     * project's spec-grid.md, Jerus's design of 2026-10-07 ("the generation
+     * should only put what the city has, not more not less"): the game's land
+     * moves off spec-land's forty lanes onto the grid. SAVE_FORMAT 32.
+     *   - THE CITY'S LAND (CityLand): the centre's blocks and each purchase's
+     *     rectangle on a LandGrid, replayed from the rectangles at load and
+     *     never saved. A new city is founded on whole 120 m blocks round its
+     *     site until they hold STARTING_SQ_FT - 21 blocks, 315 dry plots on
+     *     the default world, 3,051,569 sq ft, 1.7% more - and owns what is
+     *     drawn. A field goes whole with the holding whose ground holds its
+     *     centre plot; a converted city's field held in part keeps its own
+     *     sites, its others going a site at a time to the ground that holds
+     *     each.
+     *   - THE OFFERS, SIX PLACES A SIDE (LandMarket, LandParcel): each place's
+     *     rectangle as GridOffers lists it, or none while its side has no
+     *     room - listed again after every purchase and every month until it
+     *     has, the place just bought first. A new city lists 19 offers of 1 x
+     *     2 blocks (0.0288 km2). The size rule (a drawn multiple of a block or
+     *     of 1% of the city) is gone: the city's level sets the blocks.
+     *   - THE BOOKS ARE THE PLOTS, EXACT AT EVERY SIZE (the orchestrator's
+     *     decision, 2026-10-07): an offer's ground is its rectangle's free
+     *     plots counted by class when it is listed - a whole tile the city
+     *     owns none of from a kept count, a rectangle of PARALLEL_TILES tiles
+     *     or more over the machine's cores, whole-number sums the same on any
+     *     machine - and never sampled. Its ground cannot change while it
+     *     stands.
+     *   - SAVES CONVERTED AT LOAD, ONCE (LandConversion): a format-31 save's
+     *     lanes snapped one level finer than its offers (GridConversion, batch
+     *     M2) - Jerus's live city +0.130 km2 dry (+1.81%), its 13 iron sites
+     *     and 160.6 Mt to the bit, its two shared fields keeping their 6 of 8
+     *     sites, E as saved, its 133 purchases kept as history, no money
+     *     moving; an older save's figure drawn as a centre of blocks to the
+     *     plot; either way the city's figure its dry plots, and 24 places
+     *     listed afresh at the prices the save last struck. A restatement
+     *     (setOwnedSqFt()) draws as an older save is drawn, the figure the one
+     *     set, the ground holding it to within a plot.
+     *   - The map (CityMap, LandMap, MapTiles): ownership from the grid's
+     *     cover and leaves, a site's holding its field's or its own, a
+     *     purchase recounting the districts under its rectangle, the city's
+     *     edge as runs along block lines; the sidecar FORMAT 3, its land stamp
+     *     the holdings' rectangles. The office and the view keep their shape
+     *     for batch M5, reading places where they read lanes.
+     *   - Harnesses: none new. LandCheck, ConversionCheck (section 6: the
+     *     game's own conversion at load), MapCheck, ScaleCheck, SaveFileCheck,
+     *     ReadPathCheck, NewGameCheck, MiningCheck, OilCheck and WaterCheck on
+     *     the grid; the playtest re-baselined (pt0767).
+     *   - THE TEST PLAYER, WHERE ENSEMBLE SEED 14 BROKE (batch M3b; the game
+     *     itself unchanged). Seed 14, 9,800 people at month 570, was 70% out
+     *     of work by month 600 and never recovered (17,801 at month 2,400;
+     *     126,136 at 0.7.63), and its iron was not why: a six-site field out of
+     *     the cash, as 0.7.63's. Its player spent all six moves of the looks at
+     *     months 477 to 490 on ground, its power and roads short, and in the 120
+     *     months to its next look its plants fell to 23% of nameplate; after
+     *     the crash it ordered 16 Bus Networks whose crews' wages ran to all
+     *     of its revenue (runs/fixM3b-notes.md). Three rules, each a sensible player's:
+     *     ROOM TO GROW PRICED FROM THE GROUND-AHEAD LINE (LongPlaytest.
+     *     roomToGrow()), not .85, so ground the projection already holds
+     *     outranks no throttle; NO MORE TRANSIT LINES THAN THE RIDERS FILL (the
+     *     cap was in lines against a share of output, 25 times too loose); and
+     *     AN IRON FIELD BOUGHT WHEN ITS MINES PAY IT BACK (fieldEarnings(),
+     *     fieldPayment()): the mines the city could staff, each paying on the
+     *     mining sector's screen, earn a month the level payment repaying its
+     *     price over BUILD_BOND_YEARS at the market's rate - not because the
+     *     borrowing test passed. LandCheck 22 and 23 and CarCheck (a new
+     *     section) hold them; CentralBankCheck 21's probe city is seed 11's
+     *     shape and ScaleCheck's FREE_FIXTURE_MONTHS 545, each re-made to its
+     *     own premise; the playtest re-baselined (pt0767b).
+     *
+     * 0.7.68 (2026-10-07) - LAND IN SQUARE METRES AND SQUARE KILOMETRES.
+     * Batch M4 of the project's spec-grid.md (2.5, star 10): the units the
+     * player reads land in. The model keeps square feet and prices a square
+     * foot; nothing it decides reads the words, and the playtest moves in
+     * its words only.
+     *   - EVERY AREA THE PLAYER READS (LandManager.areaWords()): in square
+     *     metres under a hundredth of a square kilometre (M2_WORDS_BELOW) -
+     *     a House's plot "743 m2", where 0.7.64 wrote "0.000743 km2" - and
+     *     in square kilometres from it, three figures either way, grouped
+     *     from a thousand ("1,760,000 km2"), the unit picked after the
+     *     rounding. Through it: NEEDS YOU's GROUND row, the city panel's
+     *     LAND, the land office's strip, figures, bar, rows and map hover,
+     *     Build's LAND FREE, card, press, verdict, gate, advice card, order
+     *     and no-land page, the demolition card and dialogs, the inbox's
+     *     demolitions and landlock notice, the skip report, the farms'
+     *     ground under cultivation (it read acres), and the log. A part of
+     *     an area reads in its whole's unit (partFigure()).
+     *   - THE INVESTORS' OWN WORDS: "no land - needs 5,570 m2, 3,900 m2
+     *     free" (BusinessInvestment.landReason()) and "Could not build ... -
+     *     needs ..., ... free" (Game) - the playtest's t-house trace carries
+     *     the first, so it moved, in its words only.
+     *   - GROUND PRICES A SQUARE METRE (LandManager.perM2(), Money.
+     *     groundPrice()): THE WORLD ASKS, INVESTORS PAY and the margin, the
+     *     price's parts ("US$7.53 x 1.00 US prices"), the details chart and
+     *     History's Land line, the city panel and Build's advice card. An
+     *     offer keeps its price a dry km2.
+     *   - Gone, unused: the land office's square-feet words and their
+     *     compact figures (LandScreen), LandManager.COST_GROWTH_PER_BLOCK.
+     *   - Harnesses: LandCheck 24 (new: the units); BuildCardCheck's word
+     *     fixtures in the shape the model now files them. The playtest
+     *     re-baselined (pt0768), every figure byte for byte pt0767b's.
      */
-    public static final String VERSION = "0.7.41";
+    public static final String VERSION = "0.7.68";
 
     /**
      * The save shape.
@@ -3003,8 +4113,57 @@ public final class GameVersion {
      *     THE OTHER DIRECTION IS SAFE: a format-29 save carries the arrays at
      *     their old lengths, which still read, and loads with those figures at
      *     0 until a month runs - what a reloaded People page showed before.
+     *
+     * 31 - THE LAND ON THE WORLD (0.7.57): the city's centre, its forty lanes,
+     *     every purchase, the forty offers standing, what has been taken out
+     *     of its ground and the world's totals (DataSave's landCentre,
+     *     landLanes, landPurchases, landOffers, nextOfferId, depletion,
+     *     worldTotals, worldSeaTheta). Here because a format-30 build handed
+     *     this save would load it WRONGLY: it carries no iron pool and no
+     *     listing, so the older build would come back with no ore under a
+     *     city whose mines stand on it, and nine fresh parcels.
+     *
+     *     THE OTHER DIRECTION IS CONVERTED, ONCE (LandConversion): a format-30
+     *     save's square feet become a centre on its own world holding exactly
+     *     that dry ground, its iron sites (at least its mines) and tonnes its
+     *     own, forty offers at today's prices, and its nine parcels go.
+     *
+     *     0.7.59 ADDS freshRights WITHOUT A BUMP: a format-31 save without it
+     *     loads rightly, given the rights its plants already pump (Game,
+     *     THE FRESH WATER LIMIT AND THE COAST).
+     *
+     *     0.7.60 ADDS mapStamp WITHOUT A BUMP: the stamp of the city map's
+     *     sidecar (slot-NN-map.bin, CityMap's format 2 since 0.7.64); a save
+     *     without it had no map, and draws one when it is first asked for.
+     *
+     *     0.7.62 ADDS householdFuel WITHOUT A BUMP: a save without it struck
+     *     its drivers' fuel as drivers x journeys x a journey's fuel, every
+     *     litre imported, and loads with exactly that (Game's load path).
+     *
+     *     0.7.63 ADDS householdGraduates AND EVERY SECTOR'S FOUR RATIOS
+     *     WITHOUT A BUMP: a save without them loads as every load did. It
+     *     also writes every sector's month's units, empty or not, so a save
+     *     without them is one from before 0.7.46 and has them derived; an
+     *     older build reads the new keys as nothing, as before.
+     *
+     * 32 - THE LAND ON THE BLOCK GRID (0.7.67): the centre's record 24 wide,
+     *     its half-side gone (landCentre), its blocks (landCentreRects), each
+     *     purchase as a rectangle 31 wide (landHoldings), the fields held in
+     *     part (landPartFields), a converted city's purchase history
+     *     (landConverted) and the offers 29 wide (landOffers); no landLanes
+     *     and no landPurchases. Here because a format-31 build handed this save
+     *     would load it WRONGLY: its centre record is the wrong width there,
+     *     so that build would draw a new centre from the figure alone and list
+     *     forty fresh offers, dropping every purchase and the offers standing.
+     *
+     *     THE OTHER DIRECTION IS CONVERTED, ONCE (LandConversion.convertLanes(),
+     *     spec-grid 2.6): a format-31 save's lanes snapped to whole blocks one
+     *     level finer than its offers, its fields deciding, its books its
+     *     drawn plots and its figure their dry ground, its sites, tonnes and
+     *     E as saved, its purchases kept as history, no money moving, and
+     *     twenty-four places listed afresh.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 30;
+    public static final int SAVE_FORMAT = 32;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

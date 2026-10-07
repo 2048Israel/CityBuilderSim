@@ -32,6 +32,20 @@ public class HouseholdCheck {
         return total;
     }
 
+    /**
+     * The shops' month for a fixture (0.7.43): every basket the households
+     * ask for at this price, or this share of them, handed over at it
+     * (HouseholdBalance.allocateGroceries(), the call Retail makes) - and
+     * what they paid, the row's shopping for the next settle. No satiation
+     * price is set, so a household asks for a basket a head or what its
+     * money buys.
+     */
+    static double shop(HouseholdBalance b, double price, double delivered) {
+        double sold = Math.floor(b.groceriesWanted(price) * delivered);
+        b.allocateGroceries(sold, price, price);
+        return sold * price;
+    }
+
     public static void main(String[] args) {
 
         /* ==================== 1. the statement ==================== */
@@ -620,11 +634,13 @@ public class HouseholdCheck {
         double basket = .25;     // per head, so a household of two needs .50
 
         /*
-         * THE SPEND FOLLOWS THE PLAN, as it does in the game: the shops sell
-         * what the households said they could buy. A fixture that charged a
-         * fixed amount every month would be testing a household nobody has,
-         * and its debt would grow without a ceiling because nothing was
-         * telling it to stop.
+         * THE SPEND FOLLOWS WHAT THE SHOPS HANDED OVER, as it does in the
+         * game: the households ask for baskets at the price and the shops hand
+         * them over (shop() below - since 0.7.43; until then the shops sold
+         * the plan, in money, and the fixture charged households x planned).
+         * A fixture that charged a fixed amount every month would be testing
+         * a household nobody has, and its debt would grow without a ceiling
+         * because nothing was telling it to stop.
          */
         bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
         double opening = bal.getSavings(U);
@@ -632,7 +648,7 @@ public class HouseholdCheck {
         assertTrue("...by about the buffer the dial names",
                 opening >= 1.0 * HouseholdBalance.OPENING_BUFFER_MONTHS - 1e-9);
 
-        spent[U] = bal.getHouseholds(U) * bal.getPlanned(U);
+        spent[U] = shop(bal, basket, 1);
         double savingsBefore = bal.getSavings(U);
         bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
         assertTrue("SAVINGS GO FIRST", bal.getSavings(U) < savingsBefore);
@@ -647,7 +663,7 @@ public class HouseholdCheck {
 
         // Run it until the savings are gone.
         for (int m = 0; m < 40; m++) {
-            spent[U] = bal.getHouseholds(U) * bal.getPlanned(U);
+            spent[U] = shop(bal, basket, 1);
             bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
         }
         assertTrue("the savings run out", bal.getSavings(U) < 1e-9);
@@ -673,7 +689,7 @@ public class HouseholdCheck {
          */
         double shortMonths = 0, fullMonths = 0, plannedTotal = 0, subsistenceTotal = 0;
         for (int m = 0; m < 400; m++) {
-            spent[U] = bal.getHouseholds(U) * bal.getPlanned(U);
+            spent[U] = shop(bal, basket, 1);
             bal.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
             if (m >= 100) {   // past the savings and the first slide into debt
                 plannedTotal += bal.getPlanned(U);
@@ -699,7 +715,7 @@ public class HouseholdCheck {
         spent[U] = 0;
         for (int m = 0; m < 6; m++) {
             rich.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
-            spent[U] = rich.getHouseholds(U) * rich.getPlanned(U);
+            spent[U] = shop(rich, basket, 1);
         }
         assertTrue("a household with a surplus banks it", rich.getSavings(U) > 0);
         assertTrue("...and owes nothing", rich.getDebt(U) == 0);
@@ -722,7 +738,7 @@ public class HouseholdCheck {
         income[U] = 100 * 4.0;
         spent[U] = 0;
         shelves.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 1);
-        spent[U] = shelves.getHouseholds(U) * shelves.getPlanned(U);
+        spent[U] = shop(shelves, basket, 0);
         shelves.advanceMonth(census, income, rentEach, fees, spent, basket, .05, 0);
         assertTrue("empty shelves are hunger even in a rich city",
                 shelves.getHungerRate() > 0);
@@ -1349,7 +1365,7 @@ public class HouseholdCheck {
          * hard no in the model. Everything else crowds.
          */
         FamilyModel onlyStudios = new FamilyModel();
-        int[] studiosOnly = new int[]{0, 0, 500};      // 500 two-person flats
+        long[] studiosOnly = new long[]{0, 0, 500};      // 500 two-person flats
         double nowhere = onlyStudios.house(studiosOnly);
         check("an empty city needs no homes", nowhere, 0);
 
@@ -1427,6 +1443,7 @@ public class HouseholdCheck {
                 pens.getRowDisposable(HouseholdAccounts.RETIRED) > 0);
 
         whatItSpendsAnswersTheRealRate();
+        theCommuteByRow();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1602,12 +1619,14 @@ public class HouseholdCheck {
             System.setOut(loud);
         }
         double pageReal = city.realDepositRate(), pageFactor = city.spendFactor();
-        System.out.printf("   a year at a dial of 40%%: savers are paid %.2f%%, inflation %+.2f%%,"
+        System.out.printf("   a year at a dial of 40%%: savers are paid %.2f%%, expected inflation %+.2f%%,"
                         + " so %+.2f%% real and a factor of %.4f%n",
-                city.getBank().depositRate() * 100, city.getPriceIndex().inflation() * 100,
+                city.getBank().depositRate() * 100, city.getExpectations().getExpectedInflation() * 100,
                 pageReal * 100, pageFactor);
-        check("the page's real deposit rate is the deposit rate less the year's inflation",
-                pageReal, city.getBank().depositRate() - city.getPriceIndex().inflation());
+        // EX ANTE SINCE 0.7.42 (the anchor, spec-inflation.md 2.4): less the
+        // inflation savers EXPECT (Expectations), where it was the year's.
+        check("the page's real deposit rate is the deposit rate less expected inflation",
+                pageReal, city.getBank().depositRate() - city.getExpectations().getExpectedInflation());
         check("...and its factor is the rule's on it", pageFactor, HouseholdBalance.spendFactor(pageReal));
         assertTrue("fixture: saving pays, so the factor is under one", pageFactor < 1 - 1e-6);
         System.setOut(hushed);
@@ -1620,5 +1639,58 @@ public class HouseholdCheck {
         check("...and it is the factor the next month's plan was struck at",
                 city.getHouseholdBalance().getSpendFactor(), pageFactor);
         assertTrue("every month of it passed the money audit", worstAudit < 1e-6);
+    }
+
+    /**
+     * THE COMMUTE, BY ROW (0.7.49). The fare followed people, so the retired,
+     * the out of work and the students paid for buses they never rode - and
+     * a car cost nothing to run. A bus town whose households have motorised,
+     * five years on: the fares fall on the rows that ride and the fuel on the
+     * rows that drive, each adding up to its bill, and both reach the
+     * waterfall with the clinic's fee (Game.getRowFeesSettled()).
+     */
+    static void theCommuteByRow() {
+        System.out.println("\n--- the fares fall on the riders and the fuel on the drivers ---");
+        Game town = new Game(GameFiles.scratch("householdcheck-commute"));
+        java.io.PrintStream out = System.out;
+        System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
+        try {
+            town.newGame();
+            town.setCashForTest(Founding.WEALTHY_CASH);
+            town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 200_000_000L);
+            BuildingManager b = town.getBuildingManager();
+            town.buildStack(b.getTemplateByName("House"), 600, true);
+            town.buildStack(b.getTemplateByName("Convenience Store"), 12, true);
+            town.buildStack(b.getTemplateByName("Small Grocery Store"), 4, true);
+            town.buildStack(b.getTemplateByName("Paved Road"), 30, true);
+            town.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            town.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            town.buildStack(b.getTemplateByName("Construction Depot"), 3, true);
+            town.buildStack(b.getTemplateByName("Bus Network"), 2, true);
+            town.simulateMonths(60);
+        } finally {
+            System.setOut(out);
+        }
+        HouseholdAccounts books = town.getHouseholds();
+        double fares = books.getFares(), fuel = books.getFuel();
+        System.out.printf("   five years on: fares $%,.2fk and fuel $%,.2fk a month%n", fares, fuel);
+        assertTrue("fixture: the town's buses carry people and its drivers burn fuel", fares > 0 && fuel > 0);
+        double faresByRow = 0, fuelByRow = 0;
+        boolean commutersOnly = true;
+        for (int r = 0; r < books.getRowCount(); r++) {
+            faresByRow += books.getRowFares(r);
+            fuelByRow += books.getRowFuel(r);
+            if (r >= HouseholdAccounts.RETIRED) commutersOnly &= books.getRowFares(r) == 0 && books.getRowFuel(r) == 0;
+        }
+        assertTrue("the fares fall on the rows that ride and the fuel on the rows that drive",
+                commutersOnly && Math.abs(faresByRow - fares) <= 1e-9 * fares && Math.abs(fuelByRow - fuel) <= 1e-9 * fuel);
+        boolean waterfall = true;
+        double fuelSettled = 0;
+        for (int r = 0; r < books.getRowCount(); r++) {
+            waterfall &= town.getRowFeesSettled(r) == books.getRowHealthcare(r) + books.getRowTuition(r)
+                    + books.getRowFares(r) + books.getRowFuel(r);
+            if (town.getRowFeesSettled(r) > 0) fuelSettled += books.getRowFuel(r);
+        }
+        assertTrue("the commute is paid out of the waterfall like the clinic's fee", waterfall && fuelSettled > 0);
     }
 }

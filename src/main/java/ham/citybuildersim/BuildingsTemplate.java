@@ -100,6 +100,25 @@ public class BuildingsTemplate {
     private SafetyType safety = SafetyType.NONE;
 
     /* =======================================================================
+       WHERE A WATER WORKS DRAWS FROM (0.7.59, batch J2; spec-land 2.3)
+
+       A Water Treatment Plant treats fresh water - a lake or the founding
+       river the city owns - and since 0.7.59 it can treat no more than the
+       city's fresh water yields (UtilitiesHandler.FRESH_UNITS_PER_KM2 a
+       square kilometre). A Desalination Plant draws the sea instead: the
+       limit does not reach it, and it needs owned sea to stand on
+       (Game.hasCoastFor()). Declared in buildings.json as "source": "SEA";
+       absent is FRESH, which is what every building that is not a water
+       works carries and never reads. The same field as `care`, for the same
+       reason: a rule that reads the label breaks at the first rename.
+       ======================================================================= */
+
+    /** What a water works draws: FRESH water, held to the city's limit, or the SEA, which is not. */
+    public enum Source { FRESH, SEA }
+
+    private Source source = Source.FRESH;
+
+    /* =======================================================================
        A BUILDING THE CITY CANNOT STAFF SHOULD NOT BE BUILDABLE (2026-09-12)
 
        The licence a building's practice is built on, or null for the forty-six
@@ -261,6 +280,9 @@ public class BuildingsTemplate {
 
     public BuildingsTemplate setCashCost(double cashCost) {
         this.cashCost = cashCost;
+        // A price set by hand is today's price: its founding figure follows,
+        // so the month's re-strike keeps it (0.7.42; see seedConstants()).
+        if (!Double.isNaN(foundingCashCost)) foundingCashCost = cashCost * struckAt;
         return this;
     }
 
@@ -276,6 +298,8 @@ public class BuildingsTemplate {
 
     public BuildingsTemplate setUpkeep(double upkeep) {
         this.upkeep = upkeep;
+        // ...and the same for the upkeep (0.7.42).
+        if (!Double.isNaN(foundingUpkeep)) foundingUpkeep = upkeep * struckAt;
         return this;
     }
 
@@ -352,6 +376,26 @@ public class BuildingsTemplate {
     public BuildingsTemplate setTeaches(EducationType teaches) {
         this.teaches = teaches == null ? EducationType.NONE : teaches;
         return this;
+    }
+
+    public BuildingsTemplate setSource(Source source) {
+        this.source = source == null ? Source.FRESH : source;
+        return this;
+    }
+
+    /** What it draws from: FRESH for every building but a desalination plant (see the field's note). */
+    public Source getSource() {
+        return source;
+    }
+
+    /** A water works that draws the sea: a Desalination Plant (0.7.59). */
+    public boolean isSeaWater() {
+        return category == BuildingType.WATER && source == Source.SEA;
+    }
+
+    /** A water works that draws fresh water, held to the city's limit: a Water Treatment Plant. */
+    public boolean isFreshWater() {
+        return category == BuildingType.WATER && source == Source.FRESH;
     }
     
     //getters
@@ -688,6 +732,7 @@ public class BuildingsTemplate {
         rememberFounding();
         cashCost *= scale;
         upkeep   *= scale;
+        if (scale > 0) struckAt /= scale;
     }
 
 
@@ -704,7 +749,23 @@ public class BuildingsTemplate {
     private double foundingCashCost = Double.NaN;
     private double foundingUpkeep   = Double.NaN;
 
-    /** Re-seeds this template's price at a given unit. See Denomination. */
+    /**
+     * What the founding figures were last divided by to give today's: the
+     * unit over the expected price level at the last re-seed, over any reform
+     * since. A price set by hand (setCashCost(), setUpkeep() - a fixture's,
+     * or the catalogue's before any seed) is today's price, and its founding
+     * figure is it times this, so the next re-seed lands on it.
+     *
+     * WHY (0.7.42): Game re-strikes every template at the expected price
+     * level at the top of every month (Game.restrikeMoneyConstants()), where
+     * it re-seeded only on the load of a reformed city before. A price set
+     * by hand after the first re-seed was undone at the next month's top -
+     * BankCheck's branch, made dear or free on purpose, was back at the
+     * catalogue's price a month later.
+     */
+    private double struckAt = 1;
+
+    /** Re-seeds this template's price at a given unit (since 0.7.42, the unit over the expected price level). See Denomination. */
     public void seedConstants(double unit) {
         if (Double.isNaN(foundingCashCost)) {
             foundingCashCost = cashCost;
@@ -712,6 +773,7 @@ public class BuildingsTemplate {
         }
         cashCost = foundingCashCost / unit;
         upkeep   = foundingUpkeep / unit;
+        struckAt = unit;
     }
 
     /**

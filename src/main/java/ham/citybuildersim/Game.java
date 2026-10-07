@@ -28,8 +28,8 @@ public class Game {
     //Game state fields
     private int month;
     private double cash;
-    private int population;   
-    private int[] jobs = new int[JobType.values().length];
+    private long population;   
+    private long[] jobs = new long[JobType.values().length];
     private BuildingManager buildingManager;
     private EconomyManager economyManager;
     private PopulationManager populationManager;
@@ -232,6 +232,7 @@ public class Game {
         historyGrapher = new HistoryGrapher();
         debtManager = new DebtManager();
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
+        businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
 
         // Every sector gets a handle on the city, for the few hooks that need
         // more than the buildings and the markets - the mines and the ground.
@@ -255,7 +256,9 @@ public class Game {
         // REBATES ON A NEW HOME, AND THE CITY'S).
         economyManager.setFoundingToToday(() -> {
             double unit = denomination.getUnit();
-            return priceIndex.getIndex() / (unit > 0 ? unit : 1);
+            // ...at the expected price level since 0.7.42, like every money
+            // constant (restrikeMoneyConstants()); the price index until then.
+            return expectations.getExpectedLevel() / (unit > 0 ? unit : 1);
         });
         economyManager.setOutwardInvestment(outward);
         economyManager.setEquity(equity);
@@ -290,7 +293,20 @@ public class Game {
         
         // Reading the rate live, so what the office charges in local money is
         // always today's (0.7.6); a lambda, so foreign is read when it is asked.
-        landManager = new LandManager(() -> foreign.getRate());
+        // ...and the world's price level, which the dollar price follows (0.7.55).
+        // ...and on the world the city was founded on, in the month (0.7.57):
+        // read when the land is founded and each offer listed.
+        landManager = new LandManager(() -> foreign.getRate(), () -> world.getPriceLevel(),
+                () -> this.founding.getWorldSeed(), () -> month);
+        // ...and the fresh water limit is the land's and the rights' (0.7.59,
+        // batch J2): read each time the services update, on every path. A new
+        // city has no rights; a load sets its own (readTheSave()).
+        freshRights = 0;
+        servicesManager.setFreshCapSource(this::getFreshCap);
+        // ...and the city map waits to be asked for (0.7.60): THE CITY MAP.
+        cityMap = null;
+        mapFailures = 0;
+        mapGeneration++;
         demolitionLog = new DemolitionLog();
         buildLog = new BuildLog();
         cohorts = new PopulationCohorts();
@@ -343,6 +359,7 @@ public class Game {
         debtManager.recordTo(decisions);
         centralBank.recordTo(decisions);
         arrears.clear();
+        arrearsPaidTo.clear();
         arrearsRefusedThisMonth = arrearsPaidThisMonth = 0;
         arrearsRefusedLifetime = arrearsPaidLifetime = 0;
         hotMoney.reset();
@@ -351,6 +368,8 @@ public class Game {
         exchange.reset();
         bondMarket.reset();
         priceIndex.reset();
+        // ...and the anchor, seeded at the city's target by its first month (0.7.42).
+        expectations.reset();
         /*
          * THE WORLD IS CHOSEN AT FOUNDING (0.7.10), and set BEFORE the reset
          * rather than after it: reset() back-casts a year of the world's
@@ -464,7 +483,7 @@ public class Game {
         // ...and an Insane city's ground, owed abroad (0.7.14).
         if (founding.getPreset() == Founding.Preset.INSANE) foundTheLandBond();
         this.population = 0;
-        this.jobs = new int[JobType.values().length];
+        this.jobs = new long[JobType.values().length];
 
         this.materialsConsumed = 0;
         this.receiptMaterials = 0;
@@ -547,9 +566,11 @@ public class Game {
                     + " over from the old save folder into " + gameFiles.getDirectory());
         }
 
-        // Nine plots have to be on offer before the player's first turn, not
-        // after their first month.
-        landManager.updateMarket(populationManager.getPopulation());
+        // Forty offers have to be standing before the player's first turn,
+        // not after their first month - on a new city. A load puts its own
+        // land and offers back (readTheSave()), so it founds none here: the
+        // default world would be built for nothing (0.7.57).
+        if (!loadingSave) landManager.updateMarket(populationManager.getPopulation());
 
         initialized = true;
         }
@@ -721,7 +742,12 @@ public class Game {
         // drop first or loadGame()'s per-index template lookups hit an empty
         // list. Same two lines, same reason, as newGame().
         initialized = false;
-        initialize();
+        loadingSave = true;
+        try {
+            initialize();
+        } finally {
+            loadingSave = false;
+        }
 
         /*
          * loadGame() is the whole load, rebuild included. There used to be a
@@ -877,6 +903,9 @@ public class Game {
        window's title and every figure written in the city's money read it
        here, and the slot list reads the name off the save, where DataSave
        writes it; see Founding for why it is a record and not constants.
+       Since 0.7.56 it carries the seed of the ground the city stands on,
+       getWorld(), which the city's land is a piece of since 0.7.57
+       (CityLand; the project's spec-land.md).
        --------------------------------------------------------------------- */
 
     private Founding founding = Founding.defaults();
@@ -884,7 +913,183 @@ public class Game {
     /** How this city was founded. Its mean inflation is the world's (WorldEconomy keeps it; see Founding). */
     public Founding getFounding() {
         return new Founding(founding.getCityName(), founding.getCurrency(), founding.getCash(),
-                founding.getReserveUsd(), world.getMeanInflation());
+                founding.getReserveUsd(), world.getMeanInflation(), founding.getWorldSeed());
+    }
+
+    /** The seed of the world this city stands on (0.7.56): chosen at founding, or derived from an older save. */
+    public long getWorldSeed() { return founding.getWorldSeed(); }
+
+    /**
+     * The world this city stands on (0.7.56): its terrain, its founding site
+     * and river, its fields of ore and oil. Shared through World.of(), and
+     * built the first time it is asked anything - about half a second, paid
+     * once, the first time the city's land, its office or its map asks.
+     */
+    public World getWorld() { return World.of(founding.getWorldSeed()); }
+
+    /** The city's land on the world (0.7.57): its centre, its forty lanes and every purchase along them (CityLand). */
+    public CityLand getCityLand() { return landManager.getCityLand(); }
+
+    /* =====================================================================
+       THE CITY MAP (0.7.60, batch J3; the project's spec-land.md 2.5)
+
+       The city's buildings counted by type in each district of its land
+       (CityMap), what the map view paints the city from (batch J4).
+       NOTHING IN THE MODEL READS IT. It is drawn the first time it is asked
+       for - canonically, each type in proportion in every district, inner
+       first - and from then on kept up at the end of every month
+       (reconcileMap(), after the month's construction and demolitions), so
+       nothing placed moves. A save carries it beside itself as a sidecar
+       (GameFiles.mapFile()) and its stamp in the save (DataSave.mapStamp); a
+       load reads it back when the stamp matches, draws it again canonically
+       when the save had a map and its sidecar is missing or stale, and
+       otherwise leaves it to be asked for. A city never asked for its map
+       pays nothing for it - most harness cities, and ScaleCheck's copies of
+       a city K times over; the playtest asks at its founding (LongPlaytest,
+       THE CITY MAP, WATCHED).
+       ===================================================================== */
+
+    /** The city map, or null until it is asked for. */
+    private CityMap cityMap;
+
+    /** How many months the map failed to keep up and was dropped (each one logged): what a harness asserts is none. */
+    private int mapFailures;
+
+    /** The city map: drawn canonically the first time it is asked for, then kept up month by month. */
+    public CityMap getCityMap() {
+        if (cityMap == null) cityMap = drawMap();
+        return cityMap;
+    }
+
+    /** Whether the city map has been drawn: a city never asked for it has none, and its months pay nothing for it. */
+    public boolean hasCityMap() { return cityMap != null; }
+
+    /* ----- THE FIRST DRAW, AWAY FROM THE SCREEN (0.7.61, batch J4) -----
+     *
+     * The land office asks for the map the first time it opens. For Jerus's
+     * city that is a few milliseconds; for a loaded city of billions with no
+     * sidecar it is seconds of measuring districts, which on the screen's
+     * thread would freeze the window. CityMap is not thread-safe - the month
+     * keeps it up (reconcileMap()), and the land it reads moves with every
+     * purchase - so it is not drawn on the live city from another thread:
+     * the screen's thread takes a DRAFT (mapDraft()), a copy of the land
+     * field for field (CityLand.copy(), restore() of its own records), what remains
+     * of each resource by holding and the counts, all as they stand; any
+     * thread draws the map on the copy (MapDraft.draw(), CityMap.canonical(),
+     * which touches nothing of the city's); and the screen's thread ADOPTS it
+     * (adoptMap()): bound to the city's own land and kept up to the month
+     * with one reconcile() - the counts and any purchase since the draft, as
+     * a month would place them. A draft drawn for another city (a load or a
+     * new city since: mapGeneration), on land drawn again since, or after the
+     * map was drawn some other way, is not kept.
+     * ------------------------------------------------------------------- */
+
+    /** Bumped whenever the city's map is thrown away (a new city, a load): a draft from before it is another city's. */
+    private int mapGeneration;
+
+    /** A map to be drawn away from the screen's thread: the city's land, remains and counts as they stood, copied. */
+    public static final class MapDraft {
+        private final Game game;
+        private final int generation;
+        private final CityLand land;
+        private final java.util.Map<Resource, double[]> remaining = new java.util.EnumMap<>(Resource.class);
+        private final BuildingVisual.Type[] types;
+        private final long[] counts;
+        private volatile CityMap map;
+
+        private MapDraft(Game game) {
+            this.game = game;
+            this.generation = game.mapGeneration;
+            this.land = game.landManager.getCityLand().copy();
+            for (Resource r : Resource.values()) remaining.put(r, game.landManager.remainingByHolding(r).clone());
+            this.types = game.getMapTypes();
+            this.counts = game.getMapCounts();
+        }
+
+        /** Draws the map on the copy: any thread, once. */
+        public void draw() {
+            if (map == null) map = CityMap.canonical(land, r -> remaining.get(r), types, counts);
+        }
+
+        /** Whether it has been drawn. */
+        public boolean drawn() { return map != null; }
+
+        /** The map drawn, or null: a harness's (MapCheck 7). */
+        CityMap map() { return map; }
+
+        /** The game it was taken from. */
+        public Game game() { return game; }
+    }
+
+    /** A draft of the city's map, for drawing away from the screen's thread; null when the map is drawn already. The screen's thread only. */
+    public MapDraft mapDraft() {
+        return cityMap != null ? null : new MapDraft(this);
+    }
+
+    /**
+     * Keeps a drawn draft as the city's map, bound to its own land and kept
+     * up to the month (reconcile()), and says whether it is the city's map
+     * now. False - and nothing kept - for another city's draft, an undrawn
+     * one, land drawn again since, or a reconcile that fails; true, keeping
+     * nothing, when the map was drawn meanwhile. The screen's thread only.
+     */
+    public boolean adoptMap(MapDraft draft) {
+        if (draft == null || draft.game != this || draft.generation != mapGeneration || draft.map == null) return false;
+        if (cityMap != null) return true;
+        CityLand live = landManager.getCityLand();
+        if (live.seed() != draft.land.seed() || live.siteX() != draft.land.siteX() || live.siteY() != draft.land.siteY()
+                || live.centreStamp() != draft.land.centreStamp() || live.purchases().size() < draft.land.purchases().size()) {
+            return false;
+        }
+        CityMap map = draft.map;
+        map.rebind(live, landManager::remainingByHolding);
+        try {
+            if (!map.reconcile(getMapCounts())) return false;
+        } catch (RuntimeException e) {
+            mapFailures++;
+            System.out.println("The city map drawn aside could not be kept up, and will be drawn again: " + e);
+            return false;
+        }
+        cityMap = map;
+        return true;
+    }
+
+    /** How many months the map failed to keep up and was dropped. */
+    public int getMapFailures() { return mapFailures; }
+
+    /** The building types as the map draws them, by id. */
+    public BuildingVisual.Type[] getMapTypes() { return BuildingVisual.table(buildingManager.getTemplates()); }
+
+    /** Every type's standing count, by id: what the map's districts sum to. */
+    public long[] getMapCounts() {
+        long[] counts = new long[buildingManager.getMaxTemplateId() + 1];
+        for (BuildingsTemplate t : buildingManager.getTemplates()) {
+            if (t.getId() >= 0 && t.getId() < counts.length) counts[t.getId()] = buildingManager.getQuantity(t.getId());
+        }
+        return counts;
+    }
+
+    /** The map drawn canonically from the city as it stands. */
+    private CityMap drawMap() {
+        return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts());
+    }
+
+    /**
+     * The month's change placed on the map (CityMap.reconcile()), after the
+     * month's construction and demolitions; the land drawn again (a
+     * restatement) draws the map again. A failure is logged and drops the map
+     * - it is the picture, and the month goes on - to be drawn again when
+     * next asked for.
+     */
+    private void reconcileMap() {
+        if (cityMap == null) return;
+        try {
+            if (!cityMap.reconcile(getMapCounts())) cityMap = drawMap();
+        } catch (RuntimeException e) {
+            mapFailures++;
+            cityMap = null;
+            System.out.println("The city map could not keep up in month " + month + " and will be drawn again: " + e);
+        }
     }
 
     /** The city's name. */
@@ -1251,8 +1456,8 @@ public class Game {
             treasuryJournal.record(String.format("Bought land with %s of reserves",
                     usdWords(paidFromVault)), paidFromVault * rate);
         }
-        // The plot's size in square kilometres since 0.7.13, as the office shows it.
-        String area = LandManager.km2Words(parcel.getSizeSqFt());
+        // The plot's size in square kilometres since 0.7.13, as the office shows it (under a hundredth of one in square metres since 0.7.68).
+        String area = LandManager.areaWords(parcel.getSizeSqFt());
         String here = getCurrency().qualifiedSymbol();
         /*
          * IN THE SCREENS' MONEY SINCE 0.7.26 (Formats.amount(), rate()): it
@@ -1338,7 +1543,7 @@ public class Game {
        the office's own order, the order the screen lays the cards in.
        ------------------------------------------------------------------- */
 
-    /** The plots on offer in the land office's order: cheapest ground first, per square foot in US dollars - the top-left card first. */
+    /** The offers standing in the land office's order: cheapest ground first, per square foot of dry ground in US dollars (0.7.57: all forty) - the top-left card first. */
     public java.util.List<LandParcel> landShelf() {
         java.util.List<LandParcel> shelf = landManager.getMarket().getListing();
         shelf.sort(java.util.Comparator.comparingDouble(LandParcel::getUsdPerSqFt));
@@ -1436,9 +1641,9 @@ public class Game {
         }
         if (bought > 1) {
             lastLandReceipt = String.format("Bought %d plots, %s in all, for %s. The last: %s",
-                    bought, LandManager.km2Words(sqFt), usdWords(usd), lastLandReceipt);
+                    bought, LandManager.areaWords(sqFt), usdWords(usd), lastLandReceipt);
             GameLog.note(String.format("Bought %d plots, %s in all, for %s.",
-                    bought, LandManager.km2Words(sqFt), usdWords(usd)));
+                    bought, LandManager.areaWords(sqFt), usdWords(usd)));
         }
         return bought;
     }
@@ -1459,13 +1664,102 @@ public class Game {
         return lastLandReceiptMonth == month ? lastLandReceipt : "";
     }
 
-    /** The plots on offer. */
+    /** The offers standing. */
     public java.util.List<LandParcel> getLandListing(){
         return landManager.getListing();
     }
 
+    /* -------------------------------------------------------------------
+       THE BEST OFFER FOR WHAT THE CITY NEEDS (0.7.57, spec-land star 14)
+
+       What the Build tab's shortcut (LAND FREE's "Buy the best land") and its
+       refusal pages buy (0.7.61, batch J4): in general the most dry ground a
+       dollar among the offers the city can afford that are not mostly sea,
+       the nearer on a tie - or, affording none, among them all, so the
+       funding page can be sized to it; for a shortfall, the cheapest offer
+       whose dry ground covers it and that is bare ground, if one does
+       (below); for a deposit, the cheapest offer holding the resource
+       (LandMarket.cheapestWith(), since 0.7.64 - what the test player buys
+       its iron with; until then the most of its sites a dollar,
+       LandMarket.richest()); for a coast, the cheapest offer with sea in it.
+
+       A SHORTFALL IS MET WITH GROUND, NOT ORE (0.7.58, batch J1c). An offer
+       holding ore is priced by its tonnes - since 0.7.64 a whole field's, the
+       default world's founding field 449 Mt at about US$180M, and even a
+       one-site field 12.8 Mt at about US$5.1M - against a few hundred
+       thousand for the ground under it. "The cheapest offer that covers it"
+       bought, for the playtest's founding village at 0.7.58 (when fields
+       were shared site by site), the one offer big enough - West 6, two
+       sites of iron, US$11.4M - where the best-value offers covered the same
+       ground for a tenth of that; the treasury it left could not afford the
+       next plant, and the city stood still for two hundred months. A
+       building short of ground has not asked for ore, so the shortfall rule
+       passes over an offer holding a priced resource
+       (LandMarket.bareGround()); with no bare offer big enough it buys the
+       best value, as for room, and what is left of the shortfall is asked
+       again.
+       ------------------------------------------------------------------- */
+
+    /** What the city needs ground for: room in general, a shortfall of dry ground, a resource's deposit, or a coast. */
+    public record LandNeed(Kind kind, double drySqFt, Resource resource) {
+
+        /** The four needs. */
+        public enum Kind { ROOM, SHORTFALL, DEPOSIT, COAST }
+
+        /** Room to grow. */
+        public static LandNeed room()                        { return new LandNeed(Kind.ROOM, 0, null); }
+
+        /** This much more dry ground than the city has free. */
+        public static LandNeed shortfall(double drySqFt)     { return new LandNeed(Kind.SHORTFALL, drySqFt, null); }
+
+        /** A site of this resource to stand a mine or a well on. */
+        public static LandNeed deposit(Resource resource)    { return new LandNeed(Kind.DEPOSIT, 0, resource); }
+
+        /** Sea, for a desalination plant (batch J2). */
+        public static LandNeed coast()                       { return new LandNeed(Kind.COAST, 0, null); }
+    }
+
+    /** The offer that best meets a need, by THE BEST OFFER's rules; null when none does. */
+    public LandParcel bestOffer(LandNeed need) {
+        LandMarket market = landManager.getMarket();
+        switch (need.kind()) {
+            case DEPOSIT:
+                return market.cheapestWith(need.resource() == null ? Resource.IRON : need.resource());
+            case COAST:
+                return market.cheapestWithSea();
+            case SHORTFALL: {
+                LandParcel cheapest = null;
+                for (LandParcel p : market.getListing()) {
+                    if (p.getSizeSqFt() < need.drySqFt() || !LandMarket.bareGround(p)) continue;
+                    if (cheapest == null || p.getPriceUsd() < cheapest.getPriceUsd()
+                            || (p.getPriceUsd() == cheapest.getPriceUsd() && market.nearer(p, cheapest))) cheapest = p;
+                }
+                if (cheapest != null) return cheapest;
+                return bestOffer(LandNeed.room());
+            }
+            default: {
+                LandParcel best = null;
+                for (LandParcel p : market.getListing()) {
+                    if (p.isMostlySea() || !canAffordParcel(p)) continue;
+                    if (best == null || p.getDryKm2PerUsd() > best.getDryKm2PerUsd()
+                            || (p.getDryKm2PerUsd() == best.getDryKm2PerUsd() && market.nearer(p, best))) best = p;
+                }
+                return best != null ? best : market.bestValue();
+            }
+        }
+    }
+
     public BusinessInvestment getBusinessInvestment(){
         return businessInvestment;
+    }
+
+    /** Harnesses only (0.7.54): what every order search decides is told here as well - see BusinessInvestment.OrderWatch. */
+    private BusinessInvestment.OrderWatch orderWatch;
+
+    /** Harnesses only: tell this watch every order the three searches decide; null to stop. Nothing in the game sets one. */
+    public void watchOrders(BusinessInvestment.OrderWatch watch) {
+        this.orderWatch = watch;
+        businessInvestment.watchOrders(watch);
     }
 
     public String getLastInvestment(String sector){
@@ -1699,6 +1993,16 @@ public class Game {
                 // ...and the health premium, off the same payslips (2026-09-19).
                 economyManager.getHealthPremiums());
         /*
+         * ...AND THE FOOD VOUCHERS (0.7.43), by the cells that were paid them
+         * at the sale these books settle - a position each cell carries, so a
+         * reloaded city's books read the same. The treasury paid exactly
+         * this (a promise); it is in the savings already, not the take-home.
+         */
+        double[] foodAid = householdBalance.foodAssistanceByRow();
+        double foodAidTotal = 0;
+        for (double a : foodAid) foodAidTotal += a;
+        households.setFoodAssistance(foodAidTotal, foodAid);
+        /*
          * WHO PAID FOR CARE, AND WHAT THE BILL WOULD HAVE BEEN (2026-09-19).
          * The clinic's fees are split over the heads who paid - a household
          * the price turned away last month is not billed for care it did not
@@ -1730,13 +2034,38 @@ public class Game {
          */
         households.setTransitFares(economyManager.getTransitFares());
         /*
+         * ...AND WHO RODE AND WHO DROVE, BY ROW (0.7.49), so the fares fall
+         * on the rows that ride and the month's fuel on the rows that drive
+         * (HouseholdAccounts, THE COMMUTE, BY ROW). The road's own split read
+         * back onto the rows: of each row's commuters with no car of their
+         * own, the share of the car-less who rode; of its owners, the share
+         * of owners who chose the bus, and the rest drove. The retired, the
+         * out of work and the students commute nowhere and pay neither.
+         */
+        {
+            InfrastructureManager im = getInfrastructureManager();
+            double[] workers = householdBalance.commuteWorkersByRow(), cars = householdBalance.commuteCarsByRow();
+            double carless = im.getCaptiveCommuters(), owners = im.getOwnerCommuters();
+            double carlessRode = carless > 0 ? im.getCaptiveRiders() / carless : 0;
+            double ownersRode = owners > 0 ? im.getChoiceRiders() / owners : 0;
+            double[] riders = new double[workers.length], drivers = new double[workers.length];
+            for (int r = 0; r < workers.length; r++) {
+                riders[r] = Math.max(0, workers[r] - cars[r]) * carlessRode + cars[r] * ownersRode;
+                drivers[r] = cars[r] * (1 - ownersRode);
+            }
+            households.setCommute(motoring.getFuelBill(), motoring.getFuelImports(), riders, drivers);
+        }
+        /*
          * ...AND THE BANK'S ACCOUNT FEE (0.7.7), struck here on both paths:
          * the fee at the month's price index, told to the cells that pay it
          * with their other fixed bills, and what each row will be charged,
          * told to the books before they are struck - from the balance's own
          * census, so the line and the money agree. See Bank, FEES.
          */
-        householdBalance.setAccountFee(bank.accountFee(priceIndex.getIndex()));
+        // Struck at the expected price level since 0.7.42, like every money
+        // constant (restrikeMoneyConstants() seeds the base); at the index
+        // until then.
+        householdBalance.setAccountFee(bank.accountFee(1));
         households.setAccountFees(householdBalance.accountFeesByRow(families::get));
 
         double interestPaid = householdBalance.totalInterest();
@@ -1814,11 +2143,14 @@ public class Game {
              * HouseholdAccounts.fares for how long and why nothing noticed.
              * Here it becomes real money: what this row's people paid to ride
              * comes out of the same waterfall the clinic's fees do.
+             * ...AND THE FUEL, SINCE 0.7.49: what this row's drivers burned
+             * getting to work, the same way (Motoring, THE FUEL).
              */
             fees[r] = households.getRowHealthcare(r) + households.getRowTuition(r)
-                    + households.getRowFares(r);
+                    + households.getRowFares(r) + households.getRowFuel(r);
             actualShopping[r] = households.getRowShopping(r);
         }
+        System.arraycopy(fees, 0, rowFeesSettled, 0, Math.min(fees.length, rowFeesSettled.length));
         ham.citybuildersim.sectors.Retail shops = getSectors().retail();
 
         /*
@@ -1838,6 +2170,14 @@ public class Game {
          * HouseholdBalance's banner AND WHAT IT SPENDS ANSWERS THE REAL RATE.
          */
         householdBalance.setSpendFactor(spendFactor());
+        /*
+         * ...AND WHAT THEY TAKE TO THE GROCER (0.7.43), on both paths: the
+         * price a full basket is still wanted at, and the food assistance
+         * dial each household's voucher is struck on as it plans. See
+         * HouseholdBalance, GROCERIES AT A PRICE.
+         */
+        householdBalance.setSatiationPrice(getSectors().retail().getSatiationPrice());
+        householdBalance.setFoodAssistance(tax.getFoodAssistance());
         if (accrue) {
             // At the month's rate, for a household that sells its paper
             // abroad to eat - see Household.settle().
@@ -2007,6 +2347,29 @@ public class Game {
      */
     private double carriedCarOwnership = -1;
 
+    /**
+     * ...and the month's transit bill as 6d struck it (0.7.49), applied
+     * inside the rebuild for the same reason: the rebuild would strike it
+     * at the fill the month ended on, not the one it was paid at. -1 means
+     * a save from before 0.7.49, and the rebuild derives it as it always
+     * did. See DataSave.transitBill.
+     */
+    private double carriedTransitBill = -1;
+
+    /**
+     * ...and the commute as 6d struck it (0.7.49): the share of the working
+     * cells' workers with no car of their own, because the cells are not
+     * back when the road ratio is first struck (carriedCarOwnership's
+     * reason), and a journey's fuel, because it was struck at 6d's exchange
+     * rate and the rate moves after it. -1 in a save from before 0.7.49:
+     * derived as the month would. See InfrastructureManager, WHO RIDES, BY
+     * WHAT THEY PAY.
+     */
+    private double carriedCaptiveShare = -1, carriedFuel = -1;
+
+    /** ...and the drivers' fuel as 6d drew it (0.7.62): bill, imported part, litres - DataSave.householdFuel; null for a save from before it. */
+    private double[] carriedFuelMonth;
+
     /** The households' car market; runs once a month, after the ledger. See Motoring. */
     private final Motoring motoring = new Motoring();
 
@@ -2019,6 +2382,18 @@ public class Game {
     /** ...what they paid for them, and what of that left the country. */
     public double getHouseholdCarSpend()   { return motoring.getHouseholdCarSpend(); }
     public double getHouseholdCarImports() { return motoring.getHouseholdCarImports(); }
+
+    /** ...and what they paid for fuel this month (0.7.49): what the cells paid - the refiners' shelf and the world's (0.7.62). */
+    public double getHouseholdFuel()       { return households.getFuel(); }
+
+    /** ...and what of it they paid the world (0.7.62): every litre with no refinery; the money audit's FuelFunded and FuelImports. */
+    public double getHouseholdFuelImports() { return households.getFuelImports(); }
+
+    /** Each row's fees as the last month's waterfall was handed them: the clinic's, the schools', the fares and the fuel (0.7.49). Zero until a month is settled; never saved. */
+    private final double[] rowFeesSettled = new double[Household.ROWS];
+
+    /** ...one row's. */
+    public double getRowFeesSettled(int row) { return row >= 0 && row < rowFeesSettled.length ? rowFeesSettled[row] : 0; }
 
     /** ...and what of it the bank advanced rather than the household finding. */
     public double getHouseholdCarCredit()  { return motoring.getHouseholdCarCredit(); }
@@ -2878,23 +3253,23 @@ public class Game {
 
     /* ------------------------------ what the fund is worth ------------------------------ */
 
-    /** Its shares, both books, at the exchange's price. */
+    /** Its shares, both books, at the city's mark (Exchange.cityMark(): the last trade, fair value once that is a year old). */
     public double fundSharesValue()       { return exchange.cityValue(equity); }
     /** ...its market book's alone. */
     public double fundMarketSharesValue() { return exchange.cityMarketValue(equity); }
     /** ...its rescue book's shares. */
     public double fundRescueSharesValue() {
         double t = 0;
-        for (int c = 0; c < Equity.COMPANIES.length; c++) t += equity.getCityRescueShares(c) * exchange.price(c);
+        for (int c = 0; c < Equity.COMPANIES.length; c++) t += equity.getCityRescueShares(c) * exchange.cityMark(c);
         return t;
     }
     /** Its bonds, at the market's valuation. */
     public double fundBondsValue()        { return bondMarket.valueHeld(CorporateBond::city, month); }
     /** Its preferred, at par. */
     public double fundPreferredValue()    { return bank.preferredOutstanding(); }
-    /** Its warrants, at Black-Scholes. */
+    /** Its warrants, at Black-Scholes, on the bank's share at the city's mark. */
     public double fundWarrantsValue() {
-        return bank.warrantValue(exchange.price(Equity.BANK), bankVolatility(), debtManager.getPolicyRate());
+        return bank.warrantValue(exchange.cityMark(Equity.BANK), bankVolatility(), debtManager.getPolicyRate());
     }
     /** Its rescue book: the rescue shares, the preferred and the warrants. */
     public double fundRescueValue()       { return fundRescueSharesValue() + fundPreferredValue() + fundWarrantsValue(); }
@@ -2907,16 +3282,16 @@ public class Game {
         double v = fundMarketSharesValue() + fundBondsValue() + Math.max(0, fund.getCash());
         return v > 0 ? fundMarketSharesValue() / v : 0;
     }
-    /** What this month's transfer is on the fund as it stands: TreasuryFund.transferOn(fundValue()). */
-    public double fundTransferDue()       { return TreasuryFund.transferOn(fundValue()); }
+    /** What this month's transfer is on the fund as it stands, at the withdrawal in force: TreasuryFund.withdrawalOn(fundValue()) - transferOn() at the default. */
+    public double fundTransferDue()       { return fund.withdrawalOn(fundValue()); }
 
-    /** One company's shares in the fund, both books, at the exchange's price: the Holdings page's line for it until 0.7.39 (FundView reads each book itself now). */
+    /** One company's shares in the fund, both books, at the city's mark: the Holdings page's line for it until 0.7.39 (FundView reads each book itself now). */
     public double fundCompanyValue(int company) {
-        return equity.getCityShares(company) * exchange.price(company);
+        return equity.getCityShares(company) * exchange.cityMark(company);
     }
     /** ...its rescue book's part. */
     public double fundCompanyRescueValue(int company) {
-        return equity.getCityRescueShares(company) * exchange.price(company);
+        return equity.getCityRescueShares(company) * exchange.cityMark(company);
     }
     /** The share of a company the city owns, 0-1, both books over the shares in issue. */
     public double fundCompanyShare(int company)  { return equity.cityShare(company); }
@@ -2945,6 +3320,18 @@ public class Game {
         fund.setDial(dial);
         if (DecisionLog.moved(was, fund.getDial())) {
             decisions.record(DecisionLog.FUND, "Fund dial to " + DecisionLog.pct(fund.getDial()) + " of the surplus");
+        }
+    }
+
+    /** The fund's withdrawal, a share of its whole value a month (0.7.48, C1): TreasuryFund.getWithdrawal(), Norway's rule by default. */
+    public double getFundWithdrawal()       { return fund.getWithdrawal(); }
+    /** ...set by the player in whole steps of TreasuryFund.WITHDRAWAL_STEP, from nothing to 10% a month, and recorded. */
+    public void setFundWithdrawal(double share) {
+        double was = fund.getWithdrawal();
+        fund.setWithdrawal(share);
+        if (DecisionLog.moved(was, fund.getWithdrawal())) {
+            decisions.record(DecisionLog.FUND, "Fund's withdrawal to " + DecisionLog.pct2(fund.getWithdrawal())
+                    + " a month (" + DecisionLog.pct(fund.getWithdrawal() * TreasuryFund.YEAR_MONTHS) + " a year)");
         }
     }
 
@@ -3082,7 +3469,7 @@ public class Game {
      */
     public void fundBuyShares(int company, double money) { fundBuyShares(company, money, 0); }
 
-    /** ...at a price a share the player names (0.7.39, the spec's D2): 0 is fair value, the rule's own. */
+    /** ...at a price a share the player names (0.7.39, the spec's D2): 0 is fair value, what the rule asks at (it bids TreasuryFund.RULE_PREMIUM over since 0.7.48). */
     public void fundBuyShares(int company, double money, double limit) {
         double spend = Math.min(money, fundCashFree());
         fund.queue(new TreasuryFund.HandOrder(false, company, -1, true, spend, month, limit));
@@ -3629,9 +4016,10 @@ public class Game {
      * go home.
      *
      * Scanning down from the requested quantity rather than solving for it: the
-     * test is very nearly monotone in quantity but not exactly, since the
-     * materials shortfall kinks once the yard is empty. The first size that
-     * passes on the way down is the largest that passes, whatever the shape.
+     * test is very nearly monotone in quantity but not provably so. Since
+     * 0.7.54 the scan is the countdown's first COUNTDOWN_SLICES slices and
+     * then a search below them - see THE LARGEST SLICE, WITHOUT COUNTING TO
+     * IT, below consider().
      */
     private void consider(BusinessInvestment.Decision decision, Investor payer){
         consider(decision, payer, null);
@@ -3748,46 +4136,14 @@ public class Game {
             return;
         }
 
-        boolean banned = credit.isBorrowingBlocked(decision.sector);
-        int affordable = 0;
-        boolean atPrime = false;
-        double firstRate = Double.NaN;
-        for (int n = decision.quantity; n >= 1; n--) {
-            double cost = businessInvestment.getCostOf(decision.template, n);
-            double borrowed = Math.max(cost - cash, 0);
-            // Under a ban the largest slice is the one its own cash pays for.
-            if (banned && borrowed > 0) continue;
-            /*
-             * AT THE RATE THE LOAN WOULD BE WRITTEN AT (0.7.8), not today's
-             * quote: the curve at the leverage this slice leaves the sector
-             * at, its building counted (BusinessDebtManager.projectRate()).
-             * Judged at the quote, a plan that takes a sector from 0.8 to 1.2
-             * times its assets was asked to earn prime and a quarter point,
-             * and then written at prime and eleven. This is the brake.
-             */
-            double rate = credit.projectRate(decision.sector, borrowed);
-            if (n == decision.quantity) firstRate = rate;
-            /*
-             * ...OR AT A BOND'S, WHERE ONE IS CHEAPER (0.7.12). Jerus:
-             * "Cheapest, within the bank's limit." The same test - the
-             * building must earn BusinessInvestment's margin over the
-             * interest - at the instrument's own rate: the bond's coupon on
-             * what the bond raises and the loan's rate on the rest, as
-             * financeProject() splits it. A plan that cannot raise the whole
-             * is judged at the loan's rate, as before, and the bank's own
-             * rules say no at the door.
-             */
-            BusinessDebtManager.Plan plan = borrowed > 0 ? financeProject(decision.sector, borrowed, rate) : null;
-            double tested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : rate;
-            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed, tested)) {
-                affordable = n;
-                break;
-            }
-            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed,
-                    credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector))) {
-                atPrime = true;
-            }
-        }
+        // The largest slice that carries its interest: the countdown's own
+        // first slices, then a search (0.7.54) - see THE LARGEST SLICE,
+        // WITHOUT COUNTING TO IT, below.
+        Afford afford = largestSliceThatCarries(decision, cash, perUnitProfit);
+        if (orderWatch != null) orderWatch.invested(decision, cash, perUnitProfit, afford);
+        int affordable = afford.quantity();
+        boolean atPrime = afford.atPrime();
+        double firstRate = afford.firstRate();
 
         if (affordable <= 0) {
             if (atPrime) refusedOnPrice.add(decision.sector);
@@ -3847,11 +4203,213 @@ public class Game {
             // and buying. Saying so beats the silence this used to leave.
             landBlockedSectors.add(decision.sector);
             lastInvestment.put(slot,
-                    String.format("Could not build %s - needs %,.0f sq ft, %,.0f free",
+                    String.format("Could not build %s - needs %s, %s free",
                             decision.template.getName(),
-                            decision.template.getLandSqFt() * (double) quantity,
-                            landManager.getAvailableSqFt()));
+                            LandManager.areaWords(decision.template.getLandSqFt() * (double) quantity),
+                            LandManager.areaWords(landManager.getAvailableSqFt())));
         }
+    }
+
+    /* =======================================================================
+       THE LARGEST SLICE, WITHOUT COUNTING TO IT (0.7.54)
+
+       consider() trims an order to the largest slice that carries its
+       interest. Until 0.7.54 it counted down from the whole order one
+       building at a time and asked the bond desk about every one
+       (financeProject()), so the month grew with the order and the order
+       with the city: the scale study (the project's spec-scale.md, section
+       4) measured months of a 1.1 billion city averaging 4.1 s and reaching
+       14.8 s, 98.5% of it in this loop.
+
+       NOW THE COUNTDOWN'S FIRST SLICES, THEN A SEARCH:
+         1. the countdown itself, from the whole order down, for at most
+            COUNTDOWN_SLICES slices - the same slices, asked the same way
+            (Slices.passes()), so an order trimmed by fewer than that is
+            decided exactly as it always was, whatever shape the test has;
+         2. below them, doubling down from the last slice that failed - one
+            less, then two, four, eight - until one passes or one is left;
+         3. then halving between that one and the last that failed.
+       The bond desk is asked at most COUNTDOWN_SLICES + 2 x 31 + 1 times an
+       order, whatever its size (deskCallsMost()).
+
+       WHY NOT HALVING FROM THE START. Halving assumes that if a slice fails,
+       every bigger one fails, and here that is not proved. The rate a slice
+       is judged at can fall as it borrows more: the leverage after the deal,
+       (owed + a) / (owns + a), falls towards one for a sector that owes more
+       than it owns (BusinessDebtManager.quote()), and a bond's fixed costs
+       can make a bigger bond cheaper a dollar than a smaller one
+       (BondMarket.plan()). The study's halving matched the countdown to
+       x1000 and drifted 0.12% in people at x10,000. Here the search can
+       differ from the countdown only if, below the slices counted, the test
+       passes at some slice, fails at a smaller one and passes again at a
+       smaller one still. In the runs measured at today's sizes - the long
+       run of OrderSearchCheck, and Jerus's city and city2400 as they are -
+       no order was trimmed into the search at all. OrderSearchCheck holds
+       the two to the same answer over that run, in a copy a thousand times
+       over whose trims do reach the search, and on tests of its own;
+       ScaleCheck holds the bond desk to deskCallsMost() at 5 and 10
+       billion. Measured beside the countdown on the research cities' copies
+       to 10 billion, every order was the countdown's, the deepest trimmed
+       by 9.1 million.
+
+       THE REFUSAL SAYS WHAT THE COUNTDOWN SAID. The rate at the whole order
+       (firstRate) is the first slice asked. Whether any slice would have
+       carried its interest at prime and its record (atPrime) matters only
+       when none passes, and then the countdown had asked every slice that.
+       Up to PRIME_SCAN_SLICES slices, so do we (Slices.askPrimeOfTheRest()),
+       which costs no bond desk. Past that we ask four, because at a fixed
+       rate that test is drawn in straight lines: none passing means even one
+       building borrows, so every slice borrows its cost less the till, and
+       the test is the profit against a fixed share of that. The cost is the
+       builders' price a building and the materials past the yard - two
+       straight pieces, the second steeper - so what the interest is short
+       by is least at one, at the whole order, or either side of where the
+       yard runs out (BusinessInvestment.yardCovers()), and if none of those
+       four carries it, none does: exactly so in real arithmetic, and to the
+       rounding of the test's own figures in a double, which the scan to
+       PRIME_SCAN_SLICES keeps out of every order today's cities place.
+       Asking every slice of an order of 280 million, as 0.7.53's count did
+       in a copy of the playtest's city at 5 billion, kept its median month
+       at 8.8 s.
+       ======================================================================= */
+
+    /** The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. */
+    public static final int COUNTDOWN_SLICES = 16;
+
+    /** The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. */
+    public static final int PRIME_SCAN_SLICES = 4096;
+
+    /** The most times an order of this many may ask the bond desk: the countdown's slices, then doubling down and halving, each at most once a bit of the order. */
+    public static int deskCallsMost(int quantity) {
+        int bits = 32 - Integer.numberOfLeadingZeros(Math.max(1, quantity));
+        return COUNTDOWN_SLICES + 2 * bits + 1;
+    }
+
+    /**
+     * What consider() decided of an order (0.7.54): the largest slice that
+     * carries its interest, 0 for none; whether any slice would have carried
+     * it at prime and its record, for the refusal; the rate at the whole
+     * order; and how many times the bond desk was asked (financeProject()).
+     */
+    public record Afford(int quantity, boolean atPrime, double firstRate, int deskCalls) { }
+
+    /** The largest slice of the order that carries its interest - see THE LARGEST SLICE, WITHOUT COUNTING TO IT. */
+    private Afford largestSliceThatCarries(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
+        Slices test = new Slices(decision, cash, perUnitProfit);
+        int pass = largestSlice(decision.quantity, test::passes);
+        if (pass == 0) test.askPrimeOfTheRest(decision.quantity);
+        return test.result(pass);
+    }
+
+    /**
+     * The largest n from 1 to quantity that passes, 0 for none, found as THE
+     * LARGEST SLICE, WITHOUT COUNTING TO IT says: the countdown's first
+     * COUNTDOWN_SLICES, then doubling down, then halving. Asks `passes` at
+     * most deskCallsMost(quantity) times. OrderSearchCheck holds it to the
+     * countdown on every boundary of a run from one.
+     */
+    static int largestSlice(int quantity, java.util.function.IntPredicate passes) {
+        int fail = Math.max(1, quantity);   // the smallest slice known to fail, once one has
+        // 1. The countdown itself, for its first COUNTDOWN_SLICES slices.
+        for (int n = quantity; n >= 1 && n > quantity - COUNTDOWN_SLICES; n--) {
+            if (passes.test(n)) return n;
+            fail = n;
+        }
+        // 2. Doubling down from the last that failed...
+        int pass = 0;              // the largest slice known to pass; 0 for none
+        for (long step = 1; fail > 1; step *= 2) {
+            int n = (int) Math.max(1, fail - step);
+            if (passes.test(n)) { pass = n; break; }
+            fail = n;
+        }
+        // 3. ...then halving between the two.
+        while (fail - pass > 1) {
+            int mid = (int) (((long) pass + fail) >>> 1);
+            if (passes.test(mid)) pass = mid; else fail = mid;
+        }
+        return pass;
+    }
+
+    /** One order's slices, each asked as the countdown asked it (until 0.7.54, consider()'s loop). */
+    private final class Slices {
+        final BusinessInvestment.Decision decision;
+        final double cash, perUnitProfit;
+        final BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        final boolean banned;
+        boolean atPrime;
+        double firstRate = Double.NaN;
+        int deskCalls;
+
+        Slices(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
+            this.decision = decision;
+            this.cash = cash;
+            this.perUnitProfit = perUnitProfit;
+            this.banned = credit.isBorrowingBlocked(decision.sector);
+        }
+
+        /** Whether n of them carry their interest; what failed at prime and the rate at the whole order are kept for the refusal. */
+        boolean passes(int n) {
+            double cost = businessInvestment.getCostOf(decision.template, n);
+            double borrowed = Math.max(cost - cash, 0);
+            // Under a ban the largest slice is the one its own cash pays for.
+            if (banned && borrowed > 0) return false;
+            /*
+             * AT THE RATE THE LOAN WOULD BE WRITTEN AT (0.7.8), not today's
+             * quote: the curve at the leverage this slice leaves the sector
+             * at, its building counted (BusinessDebtManager.projectRate()).
+             * Judged at the quote, a plan that takes a sector from 0.8 to 1.2
+             * times its assets was asked to earn prime and a quarter point,
+             * and then written at prime and eleven. This is the brake.
+             */
+            double rate = credit.projectRate(decision.sector, borrowed);
+            if (n == decision.quantity) firstRate = rate;
+            /*
+             * ...OR AT A BOND'S, WHERE ONE IS CHEAPER (0.7.12). Jerus:
+             * "Cheapest, within the bank's limit." The same test - the
+             * building must earn BusinessInvestment's margin over the
+             * interest - at the instrument's own rate: the bond's coupon on
+             * what the bond raises and the loan's rate on the rest, as
+             * financeProject() splits it. A plan that cannot raise the whole
+             * is judged at the loan's rate, as before, and the bank's own
+             * rules say no at the door.
+             */
+            BusinessDebtManager.Plan plan = null;
+            if (borrowed > 0) {
+                plan = financeProject(decision.sector, borrowed, rate);
+                deskCalls++;
+            }
+            double tested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : rate;
+            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed, tested)) return true;
+            if (carriesAtPrime(n, borrowed)) atPrime = true;
+            return false;
+        }
+
+        /** Whether n of them would carry their interest at prime and the sector's record. */
+        boolean carriesAtPrime(int n, double borrowed) {
+            return businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed,
+                    credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector));
+        }
+
+        /** When none passes: whether any of the q slices would have carried it at prime - every slice to PRIME_SCAN_SLICES, the four that decide it past that. */
+        void askPrimeOfTheRest(int q) {
+            if (q <= PRIME_SCAN_SLICES) {
+                for (int n = 1; n <= q && !atPrime; n++) askPrime(n);
+                return;
+            }
+            long yard = businessInvestment.yardCovers(decision.template);
+            for (long n : new long[] { 1, q, yard, yard + 1 }) {
+                if (n >= 1 && n <= q && !atPrime) askPrime((int) n);
+            }
+        }
+
+        /** Whether n of them would have carried it at prime, as the countdown asked it of a slice that failed. */
+        void askPrime(int n) {
+            double borrowed = Math.max(businessInvestment.getCostOf(decision.template, n) - cash, 0);
+            if (banned && borrowed > 0) return;
+            if (carriesAtPrime(n, borrowed)) atPrime = true;
+        }
+
+        Afford result(int quantity) { return new Afford(quantity, atPrime, firstRate, deskCalls); }
     }
 
     /* =======================================================================
@@ -3873,8 +4431,9 @@ public class Game {
        (RealEstate.estimatedMonthlyProfit()) less what it costs to hold -
        its maintenance and its property tax, the carry the owner's own test
        puts its margin on (EconomyManager.housingCarry()); the payment is the
-       level annuity on the principal, premium included, at the insured rate
-       over Mortgage.MORTGAGE_AMORTIZATION_MONTHS. The owner's own test,
+       level annuity on the principal, premium included, over
+       Mortgage.MORTGAGE_AMORTIZATION_MONTHS, at the rate the test is asked
+       at - the real one since 0.7.44, below. The owner's own test,
        whether the building is worth putting up at all
        (EconomyManager.housingBuildHurdle(), in RealEstate.plan()), stays; so
        does what and how much the planner orders. This decides how much of
@@ -3890,6 +4449,23 @@ public class Game {
        the cranes twice in the 0.7.10 trace: for two hundred months on
        autopilot, when the landlord's hole was added to every building's
        loan, and for 333 years at a 10% dial - see Mortgage.
+
+       THE LENDER'S TEST IS REAL (0.7.44; star 7 of spec-inflation.md,
+       extended to the landlords). The payment is read at the insured rate
+       less the inflation the city expects, never under
+       BusinessInvestment.REAL_HURDLE_FLOOR of it
+       (BusinessInvestment.realTestRate()) - the test every other investor's
+       order has been asked since 0.7.42 (servicesItsOwnDebt(), THE HURDLE IS
+       REAL), which never reached these orders because this test replaces
+       that one. The reason is the same and stronger here: the mortgage is
+       nominal, and since 0.7.43 the rent it is paid out of drifts at expected
+       inflation (RealEstate.repriceRent()). The mortgage itself is still
+       written at the insured rate; only the test reads the real one, and the
+       refusal says the rate it read. Measured (runs/diag-0743.md, section 1):
+       at the nominal rate the lender said no for 26-31 months of the founding
+       step while the rule rate stood at 8-27%, no door was added from month
+       62 to 91, and 10 of 16 ensemble cities had households with no home at
+       months 89-94; at the real rate, none.
        ======================================================================= */
 
     /** True for an order bought on an insured mortgage: a residential building the landlords order. Every template the landlords own is residential, and nothing else is. */
@@ -3901,9 +4477,9 @@ public class Game {
 
     /**
      * The landlords' order, on a mortgage: the largest slice of it the
-     * landlord's own funds can put down on and the lender's test passes,
-     * scanning down from what the planner asked for as consider() does -
-     * and the advisor's line, in the lender's words when it says no.
+     * landlord's own funds can put down on and the lender's test passes, of
+     * what the planner asked for (Mortgage.decide(), which halves since
+     * 0.7.54) - and the advisor's line, in the lender's words when it says no.
      *
      * @param perUnitRent what one of these would let for a month (estimatedMonthlyProfit())
      */
@@ -3911,13 +4487,17 @@ public class Game {
                                     double cash, double perUnitRent) {
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         BuildingsTemplate t = decision.template;
-        Mortgage.Decision d = Mortgage.decide(decision.quantity,
-                n -> businessInvestment.getCostOf(t, n), cash,
-                perUnitRent - economyManager.housingCarry(t), credit.getInsuredMortgageRate());
+        // ...tested at the real rate, written at the insured one: see THE LENDER'S TEST IS REAL.
+        double insured = credit.getInsuredMortgageRate();
+        double tested = businessInvestment.realTestRate(insured);
+        java.util.function.IntToDoubleFunction costOf = n -> businessInvestment.getCostOf(t, n);
+        double noi = perUnitRent - economyManager.housingCarry(t);
+        Mortgage.Decision d = Mortgage.decide(decision.quantity, costOf, cash, noi, tested);
+        if (orderWatch != null) orderWatch.mortgaged(decision.quantity, costOf, cash, noi, tested, d);
 
         if (d.quantity() <= 0) {
             (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);
-            lastInvestment.put(slot, d.refusal(t.getName()));
+            lastInvestment.put(slot, d.refusal(t.getName(), tested, insured));
             return;
         }
 
@@ -3959,9 +4539,9 @@ public class Game {
         } else {
             landBlockedSectors.add(decision.sector);
             lastInvestment.put(slot,
-                    String.format("Could not build %s - needs %,.0f sq ft, %,.0f free",
-                            t.getName(), t.getLandSqFt() * (double) quantity,
-                            landManager.getAvailableSqFt()));
+                    String.format("Could not build %s - needs %s, %s free",
+                            t.getName(), LandManager.areaWords(t.getLandSqFt() * (double) quantity),
+                            LandManager.areaWords(landManager.getAvailableSqFt())));
         }
     }
 
@@ -5227,8 +5807,8 @@ public class Game {
      */
     public record DemolitionQuote(BuildingsTemplate template, int buildings, double points, BuildQuote price,
                                   double salvageUnits, double salvagePrice, double salvageAffordable,
-                                  double landSqFt, double months, int homes, double households,
-                                  double places, int posts, double runningCost) {
+                                  double landSqFt, double months, long homes, double households,
+                                  double places, long posts, double runningCost) {
         /** What the builders would pay for the material today, for as much as their cash covers. */
         public double salvageProceeds() { return salvageAffordable * salvagePrice; }
     }
@@ -5272,14 +5852,14 @@ public class Game {
         double unitPrice = getMarkets().get(Good.MATERIALS).getLocalPrice();
         double affordable = unitPrice > 0
                 ? Math.min(units, Math.max(0, getSectors().construction().getCash()) / unitPrice) : 0;
-        int homes = t.getDwellings() * n;
+        long homes = (long) t.getDwellings() * n;
         double totalHomes = buildingManager.getTotalHomes();
         double occupancy = totalHomes > 0 ? Math.min(1, families.homesNeeded() / totalHomes) : 0;
-        int posts = 0;
+        long posts = 0;
         double wages = 0;
         double[] rates = economyManager.getWageRates();
         for (JobType job : JobType.values()) {
-            posts += t.getJobs(job) * n;
+            posts += (long) t.getJobs(job) * n;
             if (job.ordinal() < rates.length) wages += t.getJobs(job) * (double) n * rates[job.ordinal()];
         }
         double places = (t.getTeaches() != null && t.getTeaches() != EducationType.NONE)
@@ -5658,8 +6238,8 @@ public class Game {
             // in one month are two sales, not one read twice.
             c.sold(bought, paid);
             landManager.release(d.landSqFt);
-            GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %,.0f sq ft freed.",
-                    d.buildings, d.building, bought, paid, d.landSqFt));
+            GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %s freed.",
+                    d.buildings, d.building, bought, paid, LandManager.areaWords(d.landSqFt)));
         }
     }
 
@@ -5735,8 +6315,8 @@ public class Game {
         if (!landManager.canAllocate(landNeeded)) {
             this.hasNewReceipt = false;
             System.out.println("Not enough land (need "
-                    + formatter.format(landNeeded) + " sq ft, have "
-                    + formatter.format(landManager.getAvailableSqFt()) + ")");
+                    + LandManager.areaWords(landNeeded) + ", have "
+                    + LandManager.areaWords(landManager.getAvailableSqFt()) + ")");
             return;
         }
 
@@ -5802,7 +6382,7 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST}
 
     /* =======================================================================
        HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
@@ -5843,12 +6423,25 @@ public class Game {
      * A deposit supports one mine, and the count has to include work in progress
      * or the player could queue five mines against one deposit and have four of
      * them open onto nothing.
+     *
+     * IRON MINES ONLY since 0.7.62 (spec-land 2.4): an Oil Well is MINING too,
+     * and stands on an oil site, not an iron one - see committedOn().
      */
-    public int minesCommitted() {
+    public int minesCommitted() { return committedOn(Resource.IRON); }
+
+    /** ...and the Oil Wells standing, being built or ordered (0.7.62): one an oil site. */
+    public int wellsCommitted() { return committedOn(Resource.OIL); }
+
+    /**
+     * The MINING buildings that stand on a resource's sites - standing, on
+     * site or ordered (0.7.62): every MINING template whose good is the
+     * resource's (siteOf()).
+     */
+    public int committedOn(Resource r) {
         int committed = 0;
         int[] underConstruction = buildingManager.getUnderConstructionById();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
-            if (t.getCategory() != BuildingType.MINING) continue;
+            if (siteOf(t) != r) continue;
             committed += buildingManager.getQuantity(t.getId());
             if (t.getId() < underConstruction.length) {
                 committed += underConstruction[t.getId()];
@@ -5858,23 +6451,100 @@ public class Game {
     }
 
     /**
+     * The resource whose sites a building stands on (0.7.62): a MINING
+     * template's, the resource whose good it makes - iron for an Iron Mine,
+     * oil for an Oil Well; null for anything else. The map's rule
+     * (BuildingVisual.of()).
+     */
+    public static Resource siteOf(BuildingsTemplate t) {
+        if (t == null || t.getCategory() != BuildingType.MINING) return null;
+        for (Resource r : Resource.values()) {
+            if (r.good() != null && t.makes(r.good()) > 0) return r;
+        }
+        return null;
+    }
+
+    /**
      * Whether this order can go ahead on the ore the city owns.
      *
      * A mine needs ground with iron under it. Buying a land parcel with a
      * deposit is what unlocks one, which is the whole reason the listing has
      * deposits in it - and why the parcels that carry them cost more.
+     *
+     * BY ITS GOOD since 0.7.62: an Oil Well needs an unworked oil site and
+     * oil left in the ground, as a mine needs iron (siteOf()).
      */
     public boolean hasDepositFor(BuildingsTemplate template, int quantity) {
         return hasDepositFor(template, quantity, 0);
     }
 
-    /** ...with `before` more mines already put on site by the orders ahead of it in a run (0.7.40, buildRunAhead()). */
+    /** ...with `before` more on the same resource's sites already put on site by the orders ahead of it in a run (0.7.40, buildRunAhead()). */
     private boolean hasDepositFor(BuildingsTemplate template, int quantity, int before) {
-        if (template == null || template.getCategory() != BuildingType.MINING) {
-            return true;
-        }
-        return landManager.getIronDeposits() >= minesCommitted() + before + quantity
-                && landManager.getIronReserveTonnes() > 0;
+        Resource r = siteOf(template);
+        if (r == null) return true;
+        return landManager.getSites(r) >= committedOn(r) + before + quantity
+                && landManager.getRemaining(r) > 0;
+    }
+
+    /* -------------------------------------------------------------------
+       THE FRESH WATER LIMIT AND THE COAST (0.7.59, batch J2; spec-land 2.3)
+
+       A Water Treatment Plant treats the fresh water the city owns, and the
+       plants together treat no more than it yields: the fresh cap,
+       UtilitiesHandler.FRESH_UNITS_PER_KM2 a square kilometre of lake or
+       river, plus the city's rights (below). Past it the plants' nameplate
+       idles and the water is rationed through waterRatio, as any shortage
+       is. A Desalination Plant draws the sea instead - the cap does not
+       reach it - and it has to stand on the coast: an order for one with no
+       owned sea is refused NO_COAST, before land and money, for the reason
+       ore is: a plant with no sea to draw is not a funding problem.
+
+       THE RIGHTS are what an older city already pumped past its lakes. A
+       save from before 0.7.59 carries none, and is given the fresh plants'
+       nameplate standing less what its lakes and river yield, never below
+       nothing (spec-land 2.9), so loading idles nothing it had; a new city
+       has none, and its fresh water is its lakes'. Saved, and never
+       recomputed after: buying lakes adds to the cap on top of them.
+       ------------------------------------------------------------------- */
+
+    /** Units a month of fresh water the city may treat past what its lakes and river yield: an older city's (0.7.59). */
+    private double freshRights;
+
+    /** The city's water rights, units a month (see THE FRESH WATER LIMIT AND THE COAST). */
+    public double getFreshRights() {
+        return freshRights;
+    }
+
+    /** Harnesses and the load only: sets the rights, never below nothing. */
+    void setFreshRights(double units) {
+        this.freshRights = Math.max(0, units);
+    }
+
+    /** The fresh water limit, units a month: what the owned lakes and river yield plus the rights. */
+    public double getFreshCap() {
+        return UtilitiesHandler.FRESH_UNITS_PER_KM2 * landManager.getFreshKm2() + freshRights;
+    }
+
+    /**
+     * The rights an older save is given (spec-land 2.9): the fresh plants'
+     * nameplate standing less what the city's lakes and river yield, never
+     * below nothing - raised by the last unit in the last place when the
+     * limit they make (getFreshCap(), the yield plus them) would round under
+     * that nameplate, so a loaded city's plants are not held back by a
+     * rounding.
+     */
+    double derivedFreshRights() {
+        double nameplate = buildingManager.getTotalByCategoryDouble(BuildingType.WATER,
+                t -> t.isFreshWater() ? t.getProduction1() : 0);
+        double yields = UtilitiesHandler.FRESH_UNITS_PER_KM2 * landManager.getFreshKm2();
+        double rights = Math.max(0, nameplate - yields);
+        while (rights > 0 && yields + rights < nameplate) rights = Math.nextUp(rights);
+        return rights;
+    }
+
+    /** Whether this order can stand on the city's coast: true for everything but a desalination plant, which needs owned sea. */
+    public boolean hasCoastFor(BuildingsTemplate template, int quantity) {
+        return template == null || !template.isSeaWater() || landManager.getSeaKm2() > 0;
     }
 
     /**
@@ -5894,6 +6564,10 @@ public class Game {
 
         if (!hasDepositFor(template, quantity)) {
             return false;   // no ground with ore in it to sell them
+        }
+
+        if (!hasCoastFor(template, quantity)) {
+            return false;   // no sea to draw
         }
 
         if (!hasLicencesFor(template, quantity)) {
@@ -5978,6 +6652,13 @@ public class Game {
             return BuildResult.NO_DEPOSIT;
         }
 
+        // ...and the sea before land and money, for the same reason (0.7.59):
+        // a desalination plant with no coast is not a funding problem.
+        if (!hasCoastFor(template, quantity)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NO_COAST;
+        }
+
         // Licences before land and before money, for the same reason as ore: a
         // firm with nobody to practise is not a funding problem, and offering a
         // bond to fix it would be a lie about what is wrong.
@@ -6032,9 +6713,10 @@ public class Game {
        the same day (deliverYardToSites()), so the next order's quote has
        less of the yard to count free and buys more in: when the yard holds
        some of what the run needs but not all of it, the run costs more than
-       its orders quoted one by one, BuildAdvice.quoteTotal() (the
-       Overview's tooltip on it: "an earlier one's material from the yard
-       can make a later one dearer").
+       its orders quoted one by one, BuildAdvice.quoteTotal(). The
+       Overview's "all three" total added the quotes until 0.7.51 (its
+       tooltip said "an earlier one's material from the yard can make a
+       later one dearer"); it is this invoice now.
        Nothing else an order changes reaches the next one's price: the
        plant's stock is drawn by the crews month by month, not at the order,
        and the wages and the tax rates do not move. So buildRunInvoice() is
@@ -6070,12 +6752,12 @@ public class Game {
         return Math.max(0, buildRunInvoice(run) - cash);
     }
 
-    /** How many of the run's orders, from the first, would pass the checks money cannot fix - ore, licences, ground - each placed after the ones before it. */
+    /** How many of the run's orders, from the first, would pass the checks money cannot fix - ore, the coast, licences, ground - each placed after the ones before it. */
     public int buildRunAhead(java.util.Map<BuildingsTemplate, Integer> run) {
         return runAhead(run, null);
     }
 
-    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
+    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
     public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Integer> run) {
         BuildResult[] stop = { BuildResult.SUCCESS };
         runAhead(run, stop);
@@ -6083,13 +6765,17 @@ public class Game {
     }
 
     private int runAhead(java.util.Map<BuildingsTemplate, Integer> run, BuildResult[] stop) {
-        int ahead = 0, mines = 0;
+        int ahead = 0;
+        // ...the run's own orders on each resource's sites so far (0.7.62: iron and oil apart).
+        int[] onSites = new int[Resource.values().length];
         double ground = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue() == null ? 0 : e.getValue();
+            Resource site = siteOf(t);
             if (t != null && n > 0) {
-                BuildResult refused = !hasDepositFor(t, n, mines) ? BuildResult.NO_DEPOSIT
+                BuildResult refused = !hasDepositFor(t, n, site == null ? 0 : onSites[site.ordinal()]) ? BuildResult.NO_DEPOSIT
+                        : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
                         : !landManager.canAllocate(ground + t.getLandSqFt() * (double) n) ? BuildResult.NO_LAND
                         : null;
@@ -6097,7 +6783,7 @@ public class Game {
                     if (stop != null) stop[0] = refused;
                     return ahead;
                 }
-                if (t.getCategory() == BuildingType.MINING) mines += n;
+                if (site != null) onSites[site.ordinal()] += n;
                 ground += t.getLandSqFt() * (double) n;
             }
             ahead++;
@@ -6719,24 +7405,39 @@ public class Game {
 
     /**
      * The city's real rate against the world's, on today's figures (0.7.2):
-     * the dial less the city's inflation, less the world's base rate less the
+     * the dial less the city's inflation - expected, since 0.7.42 (below) -
+     * less the world's base rate less the
      * world's realised inflation - the one definition the month hands the
      * currency (nextMonth(), before the reprice) and the monetary page reads.
+     *
+     * EX ANTE SINCE 0.7.42: the city's side is the dial less EXPECTED
+     * inflation (Expectations), the real rate a lender actually prices; the
+     * year's inflation until then. An import spike under a credible bank no
+     * longer cuts the real rate and pushes the currency down with it. The
+     * world's side is unchanged.
      */
     public double realRateDifferential() {
-        return (debtManager.getPolicyRate() - priceIndex.inflation())
+        return (debtManager.getPolicyRate() - expectations.getExpectedInflation())
                 - (DebtManager.WORLD_BASE_RATE - world.realisedInflation());
     }
 
     /**
      * What savers earn after inflation (0.7.3): the bank's deposit rate less
-     * the year's inflation, the same PriceIndex.inflation() the real rate
-     * differential and the parity read - the one definition the month strikes
+     * the inflation savers expect (Expectations, since 0.7.42 - the same
+     * expected inflation the real rate differential reads; the year's, as
+     * the parity reads it, until then) - the one definition the month strikes
      * the households' spend factor on and the monetary page prints. See
      * HouseholdBalance's banner AND WHAT IT SPENDS ANSWERS THE REAL RATE.
      */
     public double realDepositRate() {
-        return bank.depositRate() - priceIndex.inflation();
+        // Ex ante since 0.7.42: the deposit rate less what savers expect
+        // inflation to be (Expectations), not last year's.
+        return bank.depositRate() - expectations.getExpectedInflation();
+    }
+
+    /** The policy rate less the inflation people expect (0.7.45): the dial in real terms, ex ante as every real rate here is since 0.7.42. Pure. */
+    public double realPolicyRate() {
+        return debtManager.getPolicyRate() - expectations.getExpectedInflation();
     }
 
     /**
@@ -7371,6 +8072,16 @@ public class Game {
     
     private void nextMonth() {
         /*
+         * THE MONTH'S MONEY CONSTANTS, struck before anything in it is priced
+         * (0.7.42, THE ANCHOR): at the expected price level the last month
+         * ended on, so the month lives at one level from here to the next
+         * press - and whatever is read between the presses, EARNED and a
+         * build card and a quote, is at the month's level like every other
+         * price. See Expectations, THE MONTH STRIKES ITS CONSTANTS AT ITS TOP.
+         */
+        expectations.strikeLevel();
+        restrikeMoneyConstants();
+        /*
          * WHAT FALLS DUE IS ROLLED FIRST (0.7.13), before the calendar turns -
          * in the gap between two presses, where a player's own issue lands,
          * so it settles to its buyers and crosses the audit window exactly as
@@ -7412,9 +8123,8 @@ public class Game {
         bondMarket.startMonth();
         economyManager.clearEquityFlows();
 
-        if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
-            autosave("month " + month);
-        }
+        // The autosave is written at the bottom of the month (0.7.52), once the
+        // month is recorded - see THE AUTOSAVE HOLDS A WHOLE MONTH, below.
 
         // Where every dollar in the city is right now, before anything moves.
         // Compared at the bottom against every dollar that crossed the city's
@@ -8011,9 +8721,10 @@ public class Game {
          * REAL TERMS (0.7.2).
          *
          * The city's real rate against the world's: the policy rate less the
-         * city's inflation, against the world's base rate less the world's -
-         * the same two inflations setParity() was just handed, the same
-         * instrument for both halves. This is the channel that makes the dial
+         * inflation the city expects (Expectations, since 0.7.42; the year's
+         * inflation setParity() was just handed until then), against the
+         * world's base rate less the world's realised inflation. This is the
+         * channel that makes the dial
          * a defence: raise it past inflation and the currency is supported
          * because money comes to be lent here, at the cost of every borrower
          * in the city paying more. Asia 1997, as a lever. It was the NOMINAL
@@ -8022,6 +8733,9 @@ public class Game {
          * 15 under it (ForeignAccounts, THE REAL RATE, NOT THE NOMINAL).
          */
         foreign.setRealRateDifferential(realRateDifferential());
+        // ...and the anchored drift, the credible part of expected inflation
+        // against the world's (0.7.42; ForeignAccounts, THE ANCHORED DRIFT).
+        foreign.setExpectedDrift(anchoredDrift());
         foreign.repriceCurrency();
         /*
          * ...and what the vault's dollars fetched, if the reprice defended the
@@ -8061,25 +8775,31 @@ public class Game {
         /*
          * ...AND WHAT THE MONTH COST A FAMILY.
          *
-         * Priced on the month that has closed, from the shelf price and the
-         * rent it actually charged and what households actually paid for each.
-         * Read at the top of NEXT month by the wage drift, which is what makes
-         * the wage-price loop a loop with a lag in it rather than a
-         * simultaneous equation.
+         * Priced on the month that has closed, from the prices it actually
+         * charged and what households actually paid for each - groceries and
+         * rent until 0.7.43, and since then a meal out, a piece over a luxury
+         * counter and the fees they are billed as well, on a basket chained
+         * every ten years (PriceIndex, WHAT IS IN THE BASKET). Read at the top
+         * of NEXT month by the wage drift, which is what makes the wage-price
+         * loop a loop with a lag in it rather than a simultaneous equation.
          */
-        priceIndex.takeMonth(
-                getSectors().retail().getStoreSellPrice(),
-                /*
-                 * The AVERAGE actually paid, not the family price. Rent is
-                 * two prices now and the cost of living is what households
-                 * handed over across both. Continuous with what the index
-                 * used before the split: the two prices open equal, so the
-                 * average opens on the same number the base was struck at.
-                 */
-                getSectors().realEstate().getAverageRentPaid(),
-                getSectors().retail().statement().salesToHouseholds,
-                getSectors().realEstate().statement().salesToHouseholds,
-                month);
+        priceIndex.takeMonth(indexPrices(), indexSpends(), indexFees(), indexFeeSpends(), month);
+        /*
+         * ...AND WHAT IT EXPECTS PRICES TO DO (0.7.42, THE ANCHOR), straight
+         * after the index it reads: credibility against the target, the lean
+         * the rate showed against the miss, expected inflation and the level -
+         * and the investors' and the currency's reads of it handed on. Read
+         * by the whole of next month, whose first statement strikes the money
+         * constants at the level (restrikeMoneyConstants()). See Expectations.
+         */
+        // The lean is measured against what holding the target takes - the
+        // Standard rule's advice and the neutral rate - at any strictness
+        // (0.7.52, DebtManager's HOW STRICT); at Standard they are the rule's own.
+        double target = debtManager.getInflationTarget();
+        expectations.takeMonth(priceIndex, target, debtManager.getPolicyRate(),
+                debtManager.neutralRate(),
+                debtManager.holdingRate(priceIndex.hasRate() ? priceIndex.inflation() : target));
+        handOnExpectations();
 
         // A year of the rate, so next year can tell a drift from a run.
         rateHistory[month % 12] = foreign.getRate();
@@ -8143,7 +8863,30 @@ public class Game {
 
         printEndOfTurn();
         recordMonth();
-        
+        // The city map takes the month's buildings (0.7.60): THE CITY MAP. Moves no pool.
+        reconcileMap();
+
+        /*
+         * THE AUTOSAVE HOLDS A WHOLE MONTH (0.7.52). It was written near the
+         * top of this method until 0.7.51, after the calendar had turned and
+         * before anything in the month had run, so the file carried month N
+         * on a city that had only finished N - 1, and a history that ended at
+         * N - 1. A city loaded from it pressed on to N + 1: month N never ran,
+         * and its history skipped it (Jerus's autosave, saved by 0.7.49:
+         * history to 1850 at month 1851, then 1852). Here, after
+         * recordMonth(), the counter and every month-end record agree, as
+         * they do for a save made between the presses - which is where the
+         * two other autosaves, "before skipping" (simulateMonths()) and "on
+         * quit" (toggleQuit()), were always written. The save moves no pool.
+         * SaveSlotCheck holds it. An autosave written before 0.7.52 is left as
+         * it is: its month's top had run (the fund's year end, the rollover,
+         * the startMonth()s above), and would run again if the counter were
+         * put back, so it loads at its month with that month gone from its
+         * history.
+         */
+        if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {
+            autosave("month " + month);
+        }
     }
     
     private void startOfMonthUpdate(){
@@ -8190,14 +8933,22 @@ public class Game {
         economyManager.setExchangeRate(foreign.getRate() * world.getPriceLevel());
 
         /*
-         * ...and wages start chasing what the world now charges.
+         * ...and wages start chasing what the basket now costs.
          *
-         * The exchange rate IS the price index here: the world's own prices do
-         * not move, so a rate of 1.4 means everything imported costs 40% more
-         * than it did at founding. See LabourMarket.updateCostOfLiving() for why
-         * a third, and why slowly.
+         * The price index is the cost of living - a real basket since phase 5
+         * (PriceIndex; the exchange rate stood in for it before), chained
+         * since 0.7.43. See LabourMarket.updateCostOfLiving() for why all of
+         * it, and why slowly.
          */
-        labourMarket.updateCostOfLiving(priceIndex.getIndex());
+        /*
+         * ...half of it from what people expect, once the basket is based
+         * (0.7.42): see LabourMarket, HALF WHAT PEOPLE EXPECT, HALF THE CHASE.
+         */
+        if (priceIndex.isBased()) {
+            labourMarket.updateCostOfLiving(priceIndex.getIndex(), expectations.monthlyExpected());
+        } else {
+            labourMarket.updateCostOfLiving(priceIndex.getIndex());
+        }
         /*
          * ...AND THE FLOOR HOLDS ITS WORTH. The minimum wage is a standard of
          * living now, so the cash figure is restruck from the index every month
@@ -8206,8 +8957,10 @@ public class Game {
          */
         /*
          * THE FLOOR NEEDS NO SEPARATE INDEXATION. baseWage() already multiplies
-         * it by costOfLiving, which updateCostOfLiving() has just walked a
-         * twenty-fourth of the way toward this month's prices - so the floor
+         * it by costOfLiving, which updateCostOfLiving() has just walked toward
+         * this month's prices - a twenty-fourth of the way before the basket is
+         * based, and since 0.7.42 half on what people expect and half a
+         * forty-eighth of the gap after it - so the floor
          * holds its real worth over about two years without a second
          * mechanism, and adding one put the price level into every wage twice.
          * See LabourMarket.baseWage() for the eight years of rent that took to
@@ -8325,7 +9078,12 @@ public class Game {
                         + healthcare.getGrossCost()
                         // ...and the police and the prisons, the same way: a
                         // service with no market price, valued at what it costs.
-                        + crime.getGrossCost(),
+                        + crime.getGrossCost()
+                        // ...and the schools and transit (0.7.49, B9): the schools
+                        // were left out from the start, and transit's bill was
+                        // paid by nobody until this batch.
+                        + education.getGrossCost()
+                        + economyManager.getTransitBill(),
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
@@ -8482,10 +9240,10 @@ public class Game {
      */
     public static final double FIXED_ISSUE_COST = 12;
 
-    /** The fee in today's money. See FIXED_ISSUE_COST. */
+    /** The fee in today's money: founding / unit, at the expected price level since 0.7.42 (THE ANCHOR, beside restrikeMoneyConstants()). See FIXED_ISSUE_COST. */
     private double issuanceFee() {
         double unit = denomination.getUnit();
-        return FIXED_ISSUE_COST / (unit > 0 ? unit : 1);
+        return FIXED_ISSUE_COST * expectations.getExpectedLevel() / (unit > 0 ? unit : 1);
     }
 
     /** Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003) - the businesses' bonds pay it too since 0.7.12 (BondMarket, WHAT AN ISSUE COSTS). */
@@ -8685,7 +9443,8 @@ public class Game {
         // the struck block itself is carried - see
         // NationalAccounts.governmentToSave().
         cityCapitalSpending = 0;
-        landManager.clearMonth();
+        // ...the ground's month too: the forest's regrowth, then its flows (0.7.57).
+        landManager.endMonth();
         // ...and what the same land cost in dollars, struck in the same breath
         // so the Exchange page and the land line read the budget's month (0.7.6).
         foreign.strikeLandMonth();
@@ -8713,8 +9472,10 @@ public class Game {
         double careOut     = economyManager.getHealthcareBill();
         double schoolsOut  = economyManager.getEducationBill();
         double safetyOut   = economyManager.getSafetyBill();
+        // ...and transit's wages and upkeep (0.7.49, B9), struck at 6d and paid by nobody until now.
+        double transitOut  = economyManager.getTransitBill();
         double tempCash = cash + taxIn - (interestOut + pensionsOut
-                + careOut + schoolsOut + safetyOut);
+                + careOut + schoolsOut + safetyOut + transitOut);
         // The utility books what its customers were charged - see
         // UtilitiesHandler.setBilledRevenue().
         servicesManager.getUtilitiesHandler().setBilledRevenue(
@@ -8726,6 +9487,16 @@ public class Game {
         // Every market clears and every maker produces - see Markets.clearMonth().
         // The mines ask the ground through their own hook; see sectors.Mining.
         economyManager.finalEconUpdate(this);
+        /*
+         * ...AND THE FOOD VOUCHERS THE SALE TOOK ARE PAID (0.7.43): what the
+         * households spent at the till in vouchers, which went into their
+         * savings as the baskets were handed over (HouseholdBalance
+         * .allocateGroceries()). A promise, in the month of the sale, inside
+         * the audit's window - paid whatever the guard below decides, because
+         * the groceries have been eaten. See TaxPolicy.getFoodAssistance().
+         */
+        economyManager.setFoodAssistance(treasuryPays(TreasuryLine.FOOD_ASSISTANCE,
+                householdBalance.getFoodAssistancePaid()));
 
         servicesManager.updateServices();
         economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
@@ -8741,16 +9512,16 @@ public class Game {
             treasuryPays(TreasuryLine.HEALTHCARE, careOut);
             treasuryPays(TreasuryLine.SCHOOLS, schoolsOut);
             treasuryPays(TreasuryLine.SAFETY, safetyOut);
+            treasuryPays(TreasuryLine.TRANSIT, transitOut);
             treasuryPays(TreasuryLine.CITY_SERVICES, Math.max(0, -servicesNet));
             /*
-             * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
-             * fares arrived in the cash a line above, inside getTaxIncome(),
-             * but NationalAccounts.getTotalRevenue() has no line for them, so
-             * the bridge's last row held exactly +fares every month in a city
-             * with a bus. Named here until the accounts carry it; the day they
-             * do, this line comes out. See TreasuryJournal.
+             * THE FARES ARE A BUDGET LINE SINCE 0.7.49 (B9). They arrive in the
+             * cash a line above, inside getTaxIncome(), and were journalled
+             * here as "Took in transit fares" because
+             * NationalAccounts.getTotalRevenue() had no line for them. It has
+             * one now, and the bill they are set against is paid above, so the
+             * line came out, as this note said it would. See TreasuryJournal.
              */
-            treasuryJournal.record("Took in transit fares", economyManager.getTransitFares());
         } else {
             System.out.println("Cash update blocked due to invalid value.");
         }
@@ -8797,15 +9568,15 @@ public class Game {
         refreshJobs();
     }
     
-    public int getHouseholdCapacity() {
+    public long getHouseholdCapacity() {
         return buildingManager.getTotalHouseCapacity();
 
     }
-    public int getStoreCapacity() {
+    public long getStoreCapacity() {
         return buildingManager.getTotalStoreCoverage();
 
     }
-    public int[] getJobs(){
+    public long[] getJobs(){
         return buildingManager.getTotalJobs();
     }
    
@@ -8817,7 +9588,11 @@ public class Game {
     // getters on CommercialHandler are all pure reads - the UI cannot mutate
     // economy state through this.
     private BusinessInvestment businessInvestment;
-    private LandManager landManager = new LandManager(() -> this.foreign.getRate());
+    private LandManager landManager = new LandManager(() -> this.foreign.getRate(), () -> this.world.getPriceLevel(),
+            () -> this.founding.getWorldSeed(), () -> this.month);
+
+    /** True while loadGameSave() runs initialize(), which then founds no land: the save brings its own (0.7.57). */
+    private boolean loadingSave;
 
     /** What businesses have scrapped, so the panel can say what went and when. */
     private DemolitionLog demolitionLog = new DemolitionLog();
@@ -9122,7 +9897,7 @@ public class Game {
                 populationManager));
 
         population = populationManager.applyPopulation(
-                (int) Math.round(cohorts.total()), adultsAlreadyHere);
+                Math.round(cohorts.total()), adultsAlreadyHere);
 
         /*
          * AND THE SKILLS MOVE WITH THE PEOPLE.
@@ -9137,7 +9912,7 @@ public class Game {
 
         double[] jobsByTier = new double[PayTier.values().length];
         double[] fillRate = populationManager.getJobFillRate();
-        int[] posts = populationManager.getJobs();
+        long[] posts = populationManager.getJobs();
 
         for (JobType type : JobType.values()) {
             int i = type.ordinal();
@@ -9221,7 +9996,7 @@ public class Game {
          * which CHANGES what fits where - five adults sharing need one door,
          * not five - so the second pass is what the landlords actually bill.
          */
-        int[] stock = buildingManager.homesBySize();
+        long[] stock = buildingManager.homesBySize();
         double unplaced = families.house(stock);
         families.squeezeUnplaced(unplaced);
         families.noteUnplaced(families.house(stock));
@@ -9376,8 +10151,27 @@ public class Game {
          *     costs a city with only roads exactly nothing, which is every
          *     city that exists, and stops the transit stock being staffed by
          *     volunteers.
+         *
+         *     ...AND UNPAID UNTIL 0.7.49 (B9): struck here and read by the
+         *     national accounts alone. finalUpdateEconomy() pays it now, as a
+         *     promise (TreasuryLine.TRANSIT).
+         *
+         *     ...AND WHO RIDES, BY WHAT THEY PAY (0.7.49): the commuters with
+         *     no car of their own, read off the cells, and a journey's fuel
+         *     at today's exchange rate, told to the network before the fare
+         *     so the riders below are the month's; then the drivers' fuel.
+         *
+         *     ...THE FUEL A MARKET SINCE 0.7.62 (batch K): a journey's fuel is
+         *     its litres at what a litre costs to bring in (Motoring.journeyFuel()
+         *     - the refiners' price while the city has fuel on offer, the
+         *     import price at the world's price level while it has none), and
+         *     the drivers' litres are drawn off the refiners' shelf and the
+         *     rest imported (Motoring, THE FUEL IS DRAWN).
          */
+        getInfrastructureManager().setCommute(householdBalance.captiveShare(),
+                Motoring.journeyFuel(getMarkets()));
         servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
+        motoring.drawFuel(this, getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH);
         economyManager.setTransit(
                 buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                         populationManager.getWagesPerType(), fill)
@@ -9733,9 +10527,11 @@ public class Game {
 
     /** ...and under any basis and amount, for a preview: the same rule, the same four figures. */
     public double studentGrantBillUnder(TaxPolicy.GrantBasis basis, double amount) {
+        // A FIXED grant at the expected price level since 0.7.42, like every
+        // money constant; at the price index from 0.7.19.
         return TaxPolicy.grantBill(basis, amount,
                 families.getSeekers(FamilyModel.Seeker.STUDENT), unskilledWage(),
-                priceIndex.getIndex(), treasurySurplus, education.studentBodyTuition());
+                expectations.getExpectedLevel(), treasurySurplus, education.studentBodyTuition());
     }
 
     /** What that comes to per student - the bill over this month's students, or nothing with none. */
@@ -9758,7 +10554,7 @@ public class Game {
         if (basis == null) basis = TaxPolicy.DEFAULT_GRANT_BASIS;
         double base;
         switch (basis) {
-            case FIXED:         base = priceIndex.getIndex(); break;   // a real amount (0.7.19)
+            case FIXED:         base = expectations.getExpectedLevel(); break;   // a real amount (0.7.19), at the expected level (0.7.42)
             case SURPLUS_SHARE: base = students > 0 ? Math.max(0, treasurySurplus) / students : 0; break;
             case TUITION_SHARE: base = students > 0 ? education.studentBodyTuition() / students : 0; break;
             default:            base = unskilledWage(); break;
@@ -9845,6 +10641,176 @@ public class Game {
     private final PriceIndex priceIndex = new PriceIndex();
 
     /* =====================================================================
+       THE ANCHOR (0.7.42): what the city expects prices to do, and the
+       money constants struck at what it expects them to be.
+
+       Expected inflation and the bank's credibility (Expectations) are
+       taken straight after the price index, at the bottom of the month, and
+       read by everything the following month: the wages' indexing
+       (LabourMarket.updateCostOfLiving()), the real rates
+       (realRateDifferential(), realDepositRate()), the investors' hurdle and,
+       since 0.7.44, the landlords' lender's test (BusinessInvestment
+       .servicesItsOwnDebt() and realTestRate()), the currency's drift
+       (anchoredDrift()), the drift every sticky price carries since 0.7.43
+       (handOnExpectations()) and every money constant that prices something
+       (restrikeMoneyConstants()). The project's spec-inflation.md, sections
+       2.1-2.5 and 3, is the design and its measurements.
+       ===================================================================== */
+    private final Expectations expectations = new Expectations();
+
+    /** Expected inflation, credibility and the expected price level. See Expectations. */
+    public Expectations getExpectations() { return expectations; }
+
+    /** What the city expects inflation to be, a fraction a year. See Expectations.getExpectedInflation(). */
+    public double getExpectedInflation() { return expectations.getExpectedInflation(); }
+
+    /** How far the city believes the central bank, Expectations.KMIN to KMAX. See Expectations.getCredibility(). */
+    public double getCredibility() { return expectations.getCredibility(); }
+
+    /**
+     * The currency's anchored drift, a fraction a year (ForeignAccounts, THE
+     * ANCHORED DRIFT): the credible part of expected inflation - credibility
+     * times the target - against the world's realised inflation, and nothing
+     * before the basket is based.
+     */
+    public double anchoredDrift() {
+        if (!priceIndex.isBased()) return 0;
+        return (1 + expectations.getCredibility() * debtManager.getInflationTarget())
+                / (1 + world.realisedInflation()) - 1;
+    }
+
+    /* ----- what the price index is handed (0.7.43; PriceIndex, WHAT IS IN THE BASKET) ----- */
+
+    /** Each component's price this month, in PriceIndex's order: the shelf, the average rent paid, a meal, a luxury piece; the services' price is struck by the index from the fees. */
+    double[] indexPrices() {
+        double[] p = new double[PriceIndex.COMPONENTS];
+        p[PriceIndex.GROCERIES] = getSectors().retail().getStoreSellPrice();
+        /*
+         * The AVERAGE actually paid, not the family price. Rent is two prices
+         * now and the cost of living is what households handed over across
+         * both. Continuous with what the index used before the split: the two
+         * prices open equal, so the average opens on the same number the base
+         * was struck at.
+         */
+        p[PriceIndex.RENT]   = getSectors().realEstate().getAverageRentPaid();
+        /*
+         * A meal and a piece only at a price somebody paid this month: a
+         * counter with no shop behind it strikes its ceiling margin on buyers
+         * nobody serves, and that is not a price anybody lives at. Measured
+         * in the default playtest's founding: its one Boutique closed at
+         * month 33, the margin climbed from 1.3 to 4 on nobody served, and
+         * at a twelfth of the basket it put 28 points on the index in two
+         * years. Nothing sold is no price, and the index holds the last one.
+         */
+        ham.citybuildersim.sectors.Restaurants kitchens = getSectors().restaurants();
+        ham.citybuildersim.sectors.LuxuryRetail counters = getSectors().luxuryRetail();
+        p[PriceIndex.MEALS]  = kitchens.getServed() > 0 ? kitchens.getSellPrice() : 0;
+        p[PriceIndex.LUXURY] = counters.getServed() > 0 ? counters.getSellPrice() : 0;
+        return p;
+    }
+
+    /** ...what the households spent on each: groceries and rent off the sectors' statements, meals and luxury off their own purchases; the services' is the index's sum of the fee lines. */
+    double[] indexSpends() {
+        double[] s = new double[PriceIndex.COMPONENTS];
+        s[PriceIndex.GROCERIES] = getSectors().retail().statement().salesToHouseholds;
+        s[PriceIndex.RENT]      = getSectors().realEstate().statement().salesToHouseholds;
+        s[PriceIndex.MEALS]     = householdBalance.getMealSpend();
+        s[PriceIndex.LUXURY]    = householdBalance.getLuxurySpend();
+        return s;
+    }
+
+    /**
+     * ...each fee line's price: the clinic's fee for a general visit at the
+     * player's scale, a seat's tuition (the adult kinds' fees averaged - a
+     * price, so a shift in who studies what is not inflation), the fare a
+     * ride is charged and the bank's account fee.
+     */
+    double[] indexFees() {
+        double[] f = new double[PriceIndex.FEE_LINES];
+        f[PriceIndex.HEALTH_FEE] = healthcare.feeNow(CareType.GENERAL);
+        double seats = 0, kinds = 0;
+        for (EducationType type : EducationType.values()) {
+            if (!type.isAdult()) continue;
+            seats += education.feeFor(type);
+            kinds++;
+        }
+        f[PriceIndex.TUITION]     = kinds > 0 ? seats / kinds : 0;
+        f[PriceIndex.FARE]        = economyManager.getTaxPolicy().chargedFare();
+        f[PriceIndex.ACCOUNT_FEE] = householdBalance.getAccountFee();
+        return f;
+    }
+
+    /** ...and what the households paid on each fee line, off their books. */
+    double[] indexFeeSpends() {
+        double[] s = new double[PriceIndex.FEE_LINES];
+        s[PriceIndex.HEALTH_FEE]  = households.getHealthcare();
+        s[PriceIndex.TUITION]     = households.getTuition();
+        s[PriceIndex.FARE]        = households.getFares();
+        s[PriceIndex.ACCOUNT_FEE] = households.getAccountFees();
+        return s;
+    }
+
+    /**
+     * Every money constant that prices something, struck at the expected
+     * price level: founding / unit x Expectations.getStruckLevel(), the level
+     * the last month ended on. Called as the first statement of a month
+     * (nextMonth()), and on a load once the unit is restored, at the level
+     * the saved month had struck. Idempotent - each class keeps its founding figure - so a
+     * reform needs nothing new: the unit and the level are both in the
+     * product.
+     *
+     * WHAT FOLLOWS THE LEVEL (spec-inflation.md, section 2.3): the shelf's
+     * opening price, the price of ground, every template's cash cost and
+     * upkeep (with the labour in them split off at the level -
+     * BuildingManager, THE CASH IS STRUCK AT THE EXPECTED LEVEL), the care and
+     * burial fees, the tuition table, the pension's wage base, a founding
+     * share's par, the bank's paid-in capital, its domestic-capital scale and
+     * its account fee, and the fare (TaxPolicy, THE FARE IS REAL). WHAT GAME
+     * STRIKES ITSELF - the FIXED grant, the new-home rebates and the issue
+     * fee - reads Expectations.getExpectedLevel() where it is struck: inside
+     * a month that is the level struck here (the anchor moves it only at the
+     * month's end), and between the presses it is the level the next press
+     * will strike at, so a bill read before a month runs is the bill the
+     * month pays (EducationCheck). WHAT DOES NOT: the numerical guards and grains, which follow
+     * the unit only (the seeds in the load path), and everything priced in
+     * world money.
+     *
+     * NEVER THE INDEX: a constant that prices something follows what people
+     * expect prices to be, so no constant reads a price it sets.
+     */
+    void restrikeMoneyConstants() {
+        double unit = denomination.getUnit();
+        double level = expectations.getStruckLevel();
+        if (!(level > 0)) level = 1;
+        double struck = (unit > 0 ? unit : 1) / level;
+        getSectors().retail().seedConstants(struck);
+        landManager.seedConstants(struck);
+        buildingManager.seedConstants(struck);
+        buildingManager.setExpectedLevel(level);
+        healthcare.seedConstants(struck);
+        education.seedConstants(struck);
+        economyManager.getTaxPolicy().seedConstants(struck);
+        economyManager.getTaxPolicy().setExpectedLevel(level);
+        // ...and the fare dial's cap in today's unit (B6, 0.7.47).
+        economyManager.getTaxPolicy().setMoneyUnit(unit > 0 ? unit : 1);
+        // ...and the network's fare preview, which prices a ride at it (0.7.45) - and the
+        // owners, who weigh a ride at it against a journey's fuel since 0.7.49.
+        getInfrastructureManager().setFareLevel(level);
+        // ...and the unit its ridership curve reads the dial in founding money at (B6, 0.7.47).
+        getInfrastructureManager().setFareUnit(unit > 0 ? unit : 1);
+        equity.seedConstants(struck);
+        bank.seedConstants(struck);
+    }
+
+    /** ...and what the month hands on from the anchor that is not a constant: the investors' expected inflation (0 before the basket is based), the currency's drift, and - since 0.7.43 - the drift every sticky seller's price carries (Retail.stickyPrice(): the shelf and the two rents) at expected inflation a month. Each month after the anchor, and on a load. */
+    private void handOnExpectations() {
+        businessInvestment.setExpectedInflation(priceIndex.isBased() ? expectations.getExpectedInflation() : 0);
+        foreign.setExpectedDrift(anchoredDrift());
+        getSectors().retail().setExpected(expectations.getExpectedLevel(), expectations.monthlyExpected());
+        getSectors().realEstate().setExpectedMonthly(expectations.monthlyExpected());
+    }
+
+    /* =====================================================================
        WHAT THE CITY EATS - its own class since 2026-09-18: CityBasket.java.
        The Consumption model and its lazy loader stay here because the field
        is Game's: loaded once, on first ask, and a missing consumption.json
@@ -9902,13 +10868,15 @@ public class Game {
 
     /**
      * The month across the city's edge, good by good (0.7.35): the
-     * businesses' struck statements split by good, the railway's fuel by
-     * the sector that bought it, and the households' cars among the cars
-     * bought - so it foots to the balance of payments (Sectors.tradeByGood()).
+     * businesses' struck statements split by good, an import with no good
+     * behind it by the sector that bought it, the households' cars among
+     * the cars bought and, since 0.7.62, their imported fuel among FUEL's
+     * (with the railway's; both were imports with no good until then) - so
+     * it foots to the balance of payments (Sectors.tradeByGood()).
      * The Trade tab's mirrored bars. Pure.
      */
     public Sectors.TradeByGood getTradeByGood() {
-        return economyManager.getSectors().tradeByGood(getHouseholdCarImports());
+        return economyManager.getSectors().tradeByGood(getHouseholdCarImports(), getHouseholdFuelImports());
     }
 
     /**
@@ -10281,6 +11249,8 @@ public class Game {
                 buildingManager.getContractValueById());
         // ...and who placed each part of it (0.7.19; see OLD CONTRACTS).
         dataSave.setContractRecords(buildingManager.getContractRecords());
+        // ...and the order the stacks stand in (0.7.43; DataSave.getStackOrder()).
+        dataSave.setStackOrder(buildingManager.stackOrder());
         // ...and the player's hand on the queue (0.7.22): the order, the
         // rushes, the shells, the demolitions, the buy-outs and each run.
         dataSave.setConstructionControl(buildingManager.getControl().toState());
@@ -10319,6 +11289,8 @@ public class Game {
         dataSave.setHouseholdBalance(householdBalance.toSaveArray());
         dataSave.setHouseholdCells(householdBalance.cellKeys(),
                 householdBalance.toCellSaveArray());
+        // ...and the graduates the next census carries the loans of (0.7.63).
+        dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
         dataSave.setBankCash(bank.getCash());
         dataSave.setBankBranchesCapitalised(bank.getBranchesCapitalised());
         dataSave.setBankProfitLastMonth(bank.getProfitLastMonth());
@@ -10364,6 +11336,8 @@ public class Game {
         dataSave.setEquity(equity.keys(), equity.toSaveArray());
         dataSave.setExchangeState(exchange.toState());
         dataSave.setPriceIndex(priceIndex.toSaveArray());
+        // ...and the anchor (0.7.42), under its own key.
+        dataSave.setExpectations(expectations.toSaveArray());
         dataSave.setWorldEconomy(world.toSaveArray());
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setPolicyRate(debtManager.getPolicyRate());
@@ -10378,8 +11352,10 @@ public class Game {
         // ...and how the city was founded (0.7.10): its name, its money, the
         // treasury and the vault. The world's mean rides in its own array.
         dataSave.setFounding(founding);
-        // ...and the target the rule aims at (0.7.4), under its own key.
+        // ...and the target the rule aims at (0.7.4), under its own key, and
+        // how strictly it holds it (0.7.52), by name.
         dataSave.setInflationTarget(debtManager.getInflationTarget());
+        dataSave.setPolicyStrictness(debtManager.getStrictness().name());
         // The holdings dial, the households' paper ratio, and what a buyback
         // between the presses still has to declare (0.7.1), each under its own key.
         dataSave.setQeTargetShare(centralBank.getTargetShare());
@@ -10399,6 +11375,13 @@ public class Game {
          * are gone. See DataSave.rememberedCommute.
          */
         dataSave.setCarsPerHousehold(householdBalance.carsPerHousehold());
+        // ...and the month's transit bill as 6d struck it (0.7.49). See carriedTransitBill.
+        dataSave.setTransitBill(economyManager.getTransitBill());
+        // ...and the commute as 6d struck it, not re-read from the cells (0.7.49). See carriedCaptiveShare.
+        dataSave.setCaptiveShare(getInfrastructureManager().getCaptiveShare());
+        dataSave.setFuelPerJourney(getInfrastructureManager().getFuelPerJourney());
+        // ...and the drivers' fuel as 6d drew it (0.7.62). See carriedFuelMonth.
+        dataSave.setHouseholdFuel(new double[] { motoring.getFuelBill(), motoring.getFuelImports(), motoring.getFuelLitres() });
         dataSave.setRememberedCommute(
                 getInfrastructureManager().getRememberedThroughput());
         dataSave.setDenomination(denomination.toSaveArray());
@@ -10408,12 +11391,17 @@ public class Game {
         dataSave.setSubsidisedSectors(getSubsidisedSectors());
         dataSave.setSalesTax(economyManager.getSalesTaxState());
 
-        // The land office's window and the ore under the city.
-        dataSave.setLandState(
-                landManager.getMarket().getListingState(),
-                landManager.getIronDeposits(),
-                landManager.getIronReserveTonnes());
+        // The city's land on the world, the offers standing and what has been
+        // taken out of its ground, with the world's totals (0.7.57); its
+        // blocks and holdings since 0.7.67 (SAVE_FORMAT 32).
+        CityLand land = landManager.getCityLand();
+        dataSave.setCityLand(land.centreState(), land.centreRectsState(), land.holdingsState(), land.partFieldsState(),
+                land.convertedState(), landManager.getMarket().getOffersState(), landManager.getMarket().getNextOfferId(),
+                landManager.getDepletionState(), landManager.getWorldTotalsState(),
+                landManager.getWorldSeaTheta());
         dataSave.setLandMarketPrices(landManager.getMarket().getPriceState());
+        // ...and the city's water rights (0.7.59): THE FRESH WATER LIMIT AND THE COAST.
+        dataSave.setFreshRights(freshRights);
         dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
 
         dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
@@ -10500,10 +11488,24 @@ public class Game {
         dataSave.setReports(reports);
         dataSave.setGraphs(graphs);
         dataSave.setSlotName(slotName);
+        // The city map's sidecar (0.7.60), written after the save; its stamp in the save, none when there is no map.
+        byte[] mapBytes = null;
+        if (cityMap != null) {
+            try {
+                mapBytes = cityMap.writeSidecar(month);
+            } catch (RuntimeException e) {
+                System.out.println("The city map could not be written: " + e);
+            }
+        }
+        dataSave.setMapStamp(mapBytes != null ? cityMap.lastStamp() : null);
         dataSave.stamp(GameVersion.VERSION, GameVersion.SAVE_FORMAT,
                 System.currentTimeMillis());
 
         lastSaveResult = dataSave.saveGame(gameFiles, slot);
+        if (mapBytes != null && lastSaveResult.ok) {
+            GameFiles.Result map = gameFiles.write(gameFiles.mapFile(slot), mapBytes);
+            if (!map.ok) System.out.println(map.message());
+        }
 
         // The history is written even when the save failed, on purpose: the two
         // files are independent, and one of them landing is strictly better
@@ -11453,8 +12455,9 @@ public class Game {
      * NOT A RESIDUAL TO BE HIDDEN, and not zero in this model. It is the rest
      * of what the treasury did: reserves bought or sold, capital put into the
      * bank, bonds bought back, the students' loans - none of which is a budget
-     * line - PLUS the two lines the budget balance omits (the city's repair
-     * bill and the transit fares, see TreasuryJournal), PLUS whatever the
+     * line - PLUS the line the budget balance omits (the city's repair bill,
+     * see TreasuryJournal; the transit fares were a second until 0.7.49,
+     * when the budget took them), PLUS whatever the
      * government's books date to a different month from the money. Land and
      * buildings are NOT in it: land bought and sold and buildings paid for are
      * budget lines, struck over the same window, and the bridge's first row
@@ -11508,12 +12511,13 @@ public class Game {
        EARNED is the tax take (getTaxIncomeNow(): the fares in it) less the
        running programmes (getExpenses()) plus the utilities' net. The budget
        has the same lines - measured equal to the cent in two played cities -
-       and ten more: land sold and bought, buildings, the fund's transfer,
-       the mortgage insurance's premiums and claims, subsidies, the central
-       bank's remittance and its interest, the students' loan interest; and
-       it does NOT carry the transit fares (TreasuryJournal: they reach the
-       cash outside getTotalRevenue()). Those ten and the fares are the
-       steps, each an existing getter.
+       and eleven more: land sold and bought, buildings, the fund's transfer,
+       the mortgage insurance's premiums and claims, subsidies, the food
+       vouchers (0.7.45), the central bank's remittance and its interest, the
+       students' loan interest. Those eleven are the steps, each an existing
+       getter. The transit fares were a twelfth until 0.7.49: in EARNED and in
+       the cash, and not in the budget. The budget carries them since (B9),
+       with the bill EARNED carries too.
 
        What they leave is getEarnedResidual(), and it is not a gap to hide.
        getIncome() reads today's dials (getTaxIncomeNow()); the budget was
@@ -11534,14 +12538,13 @@ public class Game {
                 new TreasuryJournal.Entry("Mortgage insurance premiums", na.getMortgagePremiums()),
                 new TreasuryJournal.Entry("Mortgage insurance claims", -na.getMortgageClaims()),
                 new TreasuryJournal.Entry("Subsidies", -na.getSubsidies()),
+                // ...and the food vouchers (0.7.45, the UI spec's B1): paid at the sale, as the
+                // subsidies are, and outside EARNED, which left them in the residual until now.
+                new TreasuryJournal.Entry("Food assistance", -na.getFoodAssistance()),
                 new TreasuryJournal.Entry("Central bank remittance", na.getCentralBankRemittance()),
                 new TreasuryJournal.Entry("Interest to the central bank", -na.getCentralBankInterest()),
-                new TreasuryJournal.Entry("Student loan interest", na.getStudentLoanInterest()),
-                new TreasuryJournal.Entry(EARNED_FARES, -economyManager.getTransitFares()));
+                new TreasuryJournal.Entry("Student loan interest", na.getStudentLoanInterest()));
     }
-
-    /** The fares' step's words: in EARNED and in the cash, not in the budget. */
-    public static final String EARNED_FARES = "Transit fares: on the cash, not the budget";
 
     /** What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. */
     public double getEarnedResidual() {
@@ -11660,6 +12663,14 @@ public class Game {
     private double arrearsRefusedLifetime, arrearsPaidLifetime;
 
     /**
+     * This month's arrears paid down, by the sector whose till they reached
+     * (0.7.55): what its statement's arrears line reads (SectorBooks,
+     * arrearsPaid), struck at the settle and read when the month is recorded,
+     * both inside the month - so not saved, like the month's total beside it.
+     */
+    private final java.util.Map<String, Double> arrearsPaidTo = new java.util.LinkedHashMap<>();
+
+    /**
      * The treasury's month with its central bank, first thing - inside the
      * audit's window, so every dollar made or destroyed here is one the month
      * declares.
@@ -11676,6 +12687,7 @@ public class Game {
     private void settleTreasury() {
         arrearsRefusedThisMonth = 0;
         arrearsPaidThisMonth = 0;
+        arrearsPaidTo.clear();
 
         double interest = treasuryPays(TreasuryLine.CENTRAL_BANK_INTEREST,
                 centralBank.advancesInterestDue(debtManager.getPolicyRate()));
@@ -11686,11 +12698,13 @@ public class Game {
         economyManager.setCentralBankLines(remitted, interest);
 
         /*
-         * ...AND THE CITY'S FUND PAYS ITS TRANSFER (0.7.14): a twelfth of
-         * TreasuryFund.TRANSFER_RATE of all it is worth, from its cash only -
-         * Norway's fiscal rule - a revenue line beside the remittance. Before
-         * the advances are settled below, so a treasury it lifts over nothing
-         * repays them with it. Nothing from an empty fund.
+         * ...AND THE CITY'S FUND PAYS ITS TRANSFER (0.7.14): the withdrawal
+         * dial's share of all it is worth (0.7.48; by default a twelfth of
+         * TreasuryFund.TRANSFER_RATE, Norway's fiscal rule), from its cash -
+         * and over the default, last month's sale first - a revenue line
+         * beside the remittance. Before the advances are settled below, so a
+         * treasury it lifts over nothing repays them with it. Nothing from an
+         * empty fund.
          */
         double transfer = fund.payTransfer(fundValue(), CityCalendar.yearOf(month));
         cash += transfer;
@@ -11772,6 +12786,8 @@ public class Game {
             if (payee == null) continue;
             double paid = treasuryPays(line, Math.min(cash, owed.getValue()));
             payee.addCash(paid);
+            // ...and onto its statement (0.7.55), the figure that reached its till.
+            arrearsPaidTo.merge(payee.key(), paid, Double::sum);
             arrearsPaidThisMonth += paid;
             arrearsPaidLifetime += paid;
             treasuryJournal.record("Paid down arrears", -paid);
@@ -11862,6 +12878,21 @@ public class Game {
         }
         return out;
     }
+
+    /** Owed and unpaid to one sector's till (0.7.55): every line payDownArrears() would pay it, by the payee it would pay. */
+    public double getArrearsOwedTo(String sectorKey) {
+        double total = 0;
+        for (java.util.Map.Entry<String, Double> e : arrears.entrySet()) {
+            TreasuryLine line = arrearsLine(e.getKey());
+            if (line == null || line == TreasuryLine.STUDENT_GRANTS) continue;
+            Sector payee = arrearsPayee(e.getKey());
+            if (payee != null && payee.key().equals(sectorKey)) total += e.getValue();
+        }
+        return total;
+    }
+
+    /** What the treasury paid this sector's till of its arrears this month (0.7.55) - its statement's arrears line. */
+    public double getArrearsPaidTo(String sectorKey) { return arrearsPaidTo.getOrDefault(sectorKey, 0.0); }
 
     public double getArrearsRefusedThisMonth() { return arrearsRefusedThisMonth; }
     public double getArrearsPaidThisMonth()    { return arrearsPaidThisMonth; }
@@ -11993,7 +13024,7 @@ public class Game {
     * before the workforce was carried gets, and what newGame() and every other
     * caller of the rebuild gets too.
     */
-   private int pendingWorkforce = -1;
+   private long pendingWorkforce = -1;
 
    /* =====================================================================
       WHY LAND IS NOT IN THE RENT FLOOR
@@ -12249,8 +13280,28 @@ public class Game {
      * dial itself is saved; what is derived from it has to be re-derived
      * HERE, above the line that reads it. See setTransit() below for the
      * money half and for how long this whole family of gap has existed.
+     *
+     * ...AND THE COMMUTE BEFORE IT (0.7.49): who has a car of their own and
+     * a journey's fuel, as the month struck them (carriedCaptiveShare,
+     * carriedFuel; derived for a save from before them), then the drivers'
+     * fuel, as advanceDemographics() 6d does.
      */
+    getInfrastructureManager().setCommute(carriedCaptiveShare >= 0 ? carriedCaptiveShare : householdBalance.captiveShare(),
+            carriedFuel >= 0 ? carriedFuel : Motoring.CAR_FUEL_PER_JOURNEY * foreign.getRate());
     servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
+    /*
+     * ...and the drivers' fuel as 6d drew it (0.7.62): the bill, its imported
+     * part and the litres, carried (carriedFuelMonth) - a draw is a month
+     * passing and cannot be run again here. A save from before 0.7.62 struck
+     * it as drivers x journeys x a journey's fuel, every litre imported, and
+     * is given exactly that.
+     */
+    if (carriedFuelMonth != null && carriedFuelMonth.length >= 3) {
+        motoring.restoreFuel(carriedFuelMonth[0], carriedFuelMonth[1], carriedFuelMonth[2]);
+    } else {
+        motoring.setFuelBill(getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH
+                * getInfrastructureManager().getFuelPerJourney());
+    }
     economyManager.setRoadRatio(getInfrastructureManager(), buildingManager);
 
     /*
@@ -12308,8 +13359,12 @@ public class Game {
      *
      * The fare SHARE goes with it and had to go FURTHER UP, above the line
      * that strikes the road ratio - see the note there.
+     *
+     * THE BILL ITSELF IS CARRIED SINCE 0.7.49 (carriedTransitBill): struck
+     * here, it read the fill the month ended on, not the one 6d paid at.
+     * A save from before then derives it as before.
      */
-    economyManager.setTransit(
+    economyManager.setTransit(carriedTransitBill >= 0 ? carriedTransitBill :
             buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                     populationManager.getWagesPerType(), populationManager.getJobFillRate())
                     + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE),
@@ -12439,6 +13494,105 @@ public class Game {
         }
     }
 
+    /*
+     * THE CITY MAP, READ BACK (0.7.60): from the slot's sidecar when the
+     * save's stamp is its stamp and it was drawn on this land in this month
+     * (CityMap.readSidecar()); a save that had a map whose sidecar is missing
+     * or stale has it drawn again canonically, once, and the picture shifts;
+     * a save with no stamp had no map, and the city waits to be asked for one.
+     */
+    private void readTheMap(int slot, Long stamp) {
+        cityMap = null;
+        mapGeneration++;
+        if (stamp == null) return;
+        try {
+            Path file = gameFiles.mapFile(slot);
+            if (Files.isRegularFile(file)) {
+                cityMap = CityMap.readSidecar(Files.readAllBytes(file), landManager.getCityLand(),
+                        landManager::remainingByHolding, getMapTypes(), month, stamp);
+            }
+            if (cityMap == null) {
+                long t0 = System.nanoTime();
+                cityMap = drawMap();
+                System.out.printf("The city map's sidecar was missing or not this save's: drawn again in %.0f ms"
+                        + " (the picture shifts once).%n", (System.nanoTime() - t0) / 1e6);
+            }
+        } catch (IOException | RuntimeException e) {
+            cityMap = null;
+            System.out.println("The city map could not be read, and will be drawn when asked for: " + e);
+        }
+    }
+
+    /*
+     * THE LAND ON THE WORLD, PUT BACK OR CONVERTED (0.7.57, SAVE_FORMAT 31;
+     * on the block grid since 0.7.67, SAVE_FORMAT 32).
+     *
+     * A format-32 save carries the city's land whole - its centre and its
+     * blocks, every purchase, the fields it holds in part, the twenty-four
+     * offers standing, what has been taken out of its ground and the world's
+     * totals - and it comes back as it was, the grid replayed from the
+     * rectangles. Its square feet (landOwned) are the land's dry ground, and
+     * are checked against it: a save whose figure is more than a plot from it
+     * has its land drawn again to hold the figure (LandConversion.restate()),
+     * and says so.
+     *
+     * A save of format 31 carries a centre and forty lanes, and is snapped to
+     * the grid, once (LandConversion.convertLanes(), spec-grid 2.6): one
+     * converted holding, its books the plots drawn, no field changing hands,
+     * no money moving. An older save carries one figure, a pool of iron and
+     * nine parcels with no place, and is converted, once (LandConversion.
+     * convert()): on its own world, a centre of blocks holding its ground to
+     * within a plot, its iron as it had it. Either way its figure becomes the
+     * converted ground's dry plots, and its old listing goes: twenty-four
+     * offers are listed afresh once the buildings are back (landConverted,
+     * readTheSave()), priced on the converted city's crowding.
+     *
+     * Returns whether the land was converted.
+     */
+    private boolean restoreLandOnTheWorld(DataSave loaded, double owned) {
+        long seed = founding.getWorldSeed();
+        double sea = loaded.getWorldSeaTheta() != null ? loaded.getWorldSeaTheta() : World.of(seed).seaTheta();
+        int format = loaded.getSaveFormat();
+        CityLand land = format > LandConversion.LAST_LANES_FORMAT
+                ? CityLand.restore(seed, loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
+                        loaded.getLandPartFields(), loaded.getLandConverted())
+                : null;
+        if (land == null) {
+            long t0 = System.nanoTime();
+            boolean lanes = format == LandConversion.LAST_LANES_FORMAT && LandConversion.convertLanes(landManager, seed,
+                    loaded.getLandCentre(), loaded.getLandLanes(), loaded.getLandPurchases(), loaded.getGameVersion(),
+                    loaded.getDepletion(), loaded.getWorldTotals(), sea);
+            if (!lanes) {
+                LandConversion.convert(landManager, seed, owned, loaded.getIronDeposits(), loaded.getIronReserveTonnes(),
+                        minesCommitted());
+            }
+            CityLand on = landManager.getCityLand();
+            System.out.printf("Put the city's land on the block grid (save format %d, %s): %s of dry ground for the save's %s,"
+                            + " %s in all, in blocks of %,.0f m at (%d, %d) on world %d, %d fields held in part; %d iron sites and"
+                            + " %,.0f t; %.0f ms.%n",
+                    format, lanes ? "its lanes snapped" : "a centre drawn to the plot",
+                    LandManager.areaWords(landManager.getOwnedSqFt()), LandManager.areaWords(owned),
+                    LandManager.areaWords(LandManager.sqFt(on.totalKm2(CityLand.TOTAL))),
+                    (1L << on.level()) * World.PLOT_M, on.siteX(), on.siteY(), seed,
+                    on.partFields().size(), landManager.getIronDeposits(), landManager.getIronReserveTonnes(),
+                    (System.nanoTime() - t0) / 1e6);
+            return true;
+        }
+        landManager.install(land, loaded.getDepletion(), loaded.getWorldTotals(), sea);
+        landManager.getMarket().restoreOffers(loaded.getLandOffers(), loaded.getNextOfferId());
+        landManager.restoreOwnedSqFt(owned);
+        double ground = landManager.getLandDrySqFt();
+        if (!LandConversion.sameGround(owned, ground)) {
+            System.out.printf("The save's ground (%s) is not its land's (%s): the land is drawn again to hold it.%n",
+                    LandManager.areaWords(owned), LandManager.areaWords(ground));
+            LandConversion.restate(landManager, owned);
+        } else {
+            // A place the save listed nothing for gets its next, at the prices restored.
+            landManager.getMarket().listMissing();
+        }
+        return false;
+    }
+
     /** The load itself; see loadGame(). */
     private void readTheSave(int slot) {
 
@@ -12524,23 +13678,12 @@ public class Game {
             this.population = loaded.getPopulation();
 
             /*
-             * The land office and the ore, before rebuildSimulationState().
-             *
-             * The listing has to be back before anything re-prices the market,
-             * or the window refills with parcels 1-10 all over again and the
-             * player's plot - possibly the deposit they were saving for - is
-             * replaced by a different one at a different price.
-             *
-             * A save from before parcels carries no listing, and updateMarket()
-             * fills a fresh one, which is the only sensible answer for a city
-             * that never had a window.
+             * The land office's prices, before rebuildSimulationState() and
+             * before anything re-prices the market. The land itself and its
+             * offers come back with the land below, after the buildings
+             * (restoreLandOnTheWorld(), 0.7.57).
              */
-            if (loaded.getLandListing() != null) {
-                landManager.getMarket().restoreListingState(loaded.getLandListing());
-            }
-            // ...and the prices it was quoting, which the listing does not hold.
             landManager.getMarket().restorePriceState(loaded.getLandMarketPrices());
-            landManager.restoreIron(loaded.getIronDeposits(), loaded.getIronReserveTonnes());
 
             /*
              * Policy. Each piece is restored only if the save carries it in this
@@ -12620,11 +13763,13 @@ public class Game {
             economyManager.setBankTax(loaded.getBankTaxCharged());
             foreign.restore(loaded.getForeignAccounts());
             /*
-             * AN OLDER LISTING WAS PRICED IN LOCAL MONEY (0.7.6), and it is
+             * AN OLDER QUOTE WAS PRICED IN LOCAL MONEY (0.7.6), and it is
              * read as dollars at the rate of the day it is loaded - which is
              * only known now, with the foreign accounts back - so the local
-             * cost the player saw is what it costs today. A dollar listing is
-             * left alone. See LandMarket.settleLocalPrices().
+             * cost the player saw is what it costs today. A dollar quote is
+             * left alone. See LandMarket.settleLocalPrices(). (An older
+             * listing was read the same way until 0.7.57; the conversion
+             * lists forty offers in its place now.)
              */
             landManager.getMarket().settleLocalPrices(foreign.getRate());
             // The central bank's books, under their own key. A save from
@@ -12658,10 +13803,6 @@ public class Game {
             debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());
             debtManager.restoreForeignStanding(loaded.getForeignStanding());
             priceIndex.restore(loaded.getPriceIndex());
-            // An older save's FIXED grant was nominal; read it as the real
-            // amount that pays the same at this index (0.7.19). See
-            // TaxPolicy.realiseFixedGrant().
-            economyManager.getTaxPolicy().realiseFixedGrant(priceIndex.getIndex());
             world.restore(loaded.getWorldEconomy());
             /*
              * ...AND HOW IT WAS FOUNDED (0.7.10), after the world, whose mean
@@ -12708,6 +13849,23 @@ public class Game {
             // and reads the default - 2%, the constant it was.
             debtManager.setInflationTarget(loaded.getInflationTarget() != null
                     ? loaded.getInflationTarget() : DebtManager.DEFAULT_INFLATION_TARGET);
+            // ...and how strictly (0.7.52): an older save has no key and reads
+            // Standard - the rule it was played under.
+            debtManager.setStrictness(loaded.getPolicyStrictness());
+            // ...and the anchor (0.7.42), after the index and the target it
+            // reads. An older save has no key and is seeded: credibility at
+            // Expectations.KSEED, the year's inflation smoothed, and the level
+            // at 1.0 - its constants are still at founding money, so nothing
+            // jumps on the load (spec-inflation.md, section 2.1).
+            if (!expectations.restore(loaded.getExpectations())) {
+                expectations.seed(priceIndex, debtManager.getInflationTarget());
+            }
+            // An older save's FIXED grant was nominal; read it as the real
+            // amount that pays the same at this level (0.7.19, at the index
+            // until 0.7.42) - and an older save's fare the same way (0.7.42).
+            // See TaxPolicy.realiseFixedGrant() and realiseFare().
+            economyManager.getTaxPolicy().realiseFixedGrant(expectations.getExpectedLevel());
+            economyManager.getTaxPolicy().realiseFare(expectations.getStruckLevel());
             // ...and the holdings dial beside it (0.7.1), after the balance
             // sheet above, whose restore() founds an empty bank first and
             // carries the setting before the dial. An older save reads 0: a
@@ -12738,6 +13896,10 @@ public class Game {
             exchange.reopen(bank);
             labourMarket.setCostOfLiving(loaded.getCostOfLiving());
             carriedCarOwnership = loaded.getCarsPerHousehold();
+            carriedTransitBill = loaded.getTransitBill();
+            carriedCaptiveShare = loaded.getCaptiveShare();
+            carriedFuel = loaded.getFuelPerJourney();
+            carriedFuelMonth = loaded.getHouseholdFuel();
             getInfrastructureManager().setRememberedThroughput(loaded.getRememberedCommute());
 
             /*
@@ -12780,6 +13942,11 @@ public class Game {
                 householdBalance.seedConstants(unit);
                 bondMarket.seedConstants(unit);
             }
+            // ...and the ones that price something, at the level the saved
+            // month struck them at as well as the unit (0.7.42) - every month
+            // does the same at its top - and what the anchor hands on.
+            restrikeMoneyConstants();
+            handOnExpectations();
             carriedRentWeight = loaded.getRentWeight();
             carriedStudioWeight = loaded.getRentWeightStudio();
 
@@ -12884,6 +14051,10 @@ public class Game {
                             loaded.getContractValueById(id));
                 }
             }
+
+            // ...stood in the order the city stood them in (0.7.43): the
+            // restore above is by id. See DataSave.getStackOrder().
+            buildingManager.orderStacks(loaded.getStackOrder());
 
             // A save that kept one order book for the whole city: spread it
             // over the sites by the work still owed, which is the rate the
@@ -13019,9 +14190,33 @@ public class Game {
                 landManager.setPricePerSqFt(loaded.getLandPricePerSqFt());
             }
 
-            landManager.setOwnedSqFt(owned);
+            boolean landConverted = restoreLandOnTheWorld(loaded, owned);
             landManager.setAllocatedSqFt(built);
+            // A converted city's offers (0.7.67, spec-grid 2.6): twenty-four
+            // places listed afresh, once, with the buildings back, at the
+            // prices the save last struck (settled above for an older save's
+            // local quote) - a load strikes no prices; the first month strikes
+            // them on the converted ground.
+            if (landConverted) landManager.getMarket().listMissing();
             landManager.clearMonth();
+
+            // The water rights (0.7.59), after the buildings and the land they
+            // are reckoned from: a save from before them carries none, and is
+            // given what its fresh plants already pump past its lakes and river.
+            if (loaded.getFreshRights() != null) {
+                freshRights = Math.max(0, loaded.getFreshRights());
+            } else {
+                freshRights = derivedFreshRights();
+                if (freshRights > 0) {
+                    System.out.printf("Water rights for what the city already pumps: %,.0f units a month past the"
+                            + " %s of lake and river it owns.%n", freshRights, LandManager.areaWords(
+                            LandManager.sqFt(landManager.getFreshKm2())));
+                }
+            }
+
+            // The city map (0.7.60), after the buildings and the land it is
+            // drawn from: THE CITY MAP.
+            readTheMap(slot, loaded.getMapStamp());
 
             TaxPolicy policy = economyManager.getTaxPolicy();
             // The one income rate, for a save whose policy array was not read
@@ -13405,6 +14600,9 @@ public class Game {
             // carries: the Schools page reads it as "received last month".
             economyManager.setStudentLoanInterest(
                     economyManager.getNationalAccounts().getStudentLoanInterest());
+            // ...and the food vouchers the month paid (0.7.43), which only the
+            // block carries: paid after the sale, struck into it at the bottom.
+            economyManager.setFoodAssistance(economyManager.getNationalAccounts().getFoodAssistance());
             loadedGovernmentMonth = null;
         }
 
@@ -13532,6 +14730,9 @@ public class Game {
             // every other stock back but not these (0.7.12 round 2 -
             // SaveFileCheck found three cells of forty-five moved).
             restoreCellBonds(restoredFlows);
+            // ...and the students waiting to carry their loans at the next
+            // census, which only the month sets (0.7.63; an older save: none).
+            householdBalance.restoreGraduates(restoredFlows.getHouseholdGraduates());
             householdBalance.setExchangeRate(foreign.getRate());
 
             /*
@@ -13593,6 +14794,10 @@ public class Game {
          */
         getInfrastructureManager().setCarOwnership(householdBalance.carsPerHousehold());
         carriedCarOwnership = -1;
+        carriedTransitBill = -1;
+        carriedCaptiveShare = -1;
+        carriedFuel = -1;
+        carriedFuelMonth = null;
 
         priceTheDebtMarket();
         refreshBank();
@@ -13647,6 +14852,9 @@ public class Game {
          * the live city's, exactly. An older save keeps the re-strike.
          */
         if (restoredFlows != null) debtManager.restoreMarket(restoredFlows.getDebtMarket());
+        // ...the month's trade in units for a save from before them (0.7.63): every price is back now.
+        // See Sector.deriveCarriedTrade().
+        for (Sector s : getSectors().all()) s.deriveCarriedTrade();
         // ...and, last, the fund's cost basis for a save from before it (0.7.39): every price is back now.
         if (fund.needsLedgerSeed()) seedFundLedger();
     }
@@ -13818,6 +15026,7 @@ public class Game {
         arrears.replaceAll((key, owed) -> owed * scale);
         arrearsRefusedThisMonth *= scale;  arrearsPaidThisMonth *= scale;
         arrearsRefusedLifetime *= scale;   arrearsPaidLifetime *= scale;
+        arrearsPaidTo.replaceAll((key, paid) -> paid * scale);
         foreign.redenominate(scale);
         hotMoney.redenominate(scale);
         outward.redenominate(scale);
@@ -13913,6 +15122,24 @@ public class Game {
          * out at 1,168 units against 918 for the same month. Every derived
          * figure is re-derived next month in its proper place.
          */
+
+        /*
+         * ...EXCEPT THE UNIT THE FARE DIAL IS READ AT (B6, 0.7.47), which is a
+         * unit and not a figure: the dial was divided with the money above
+         * (TaxPolicy.redenominate()), and the ridership curve and the dial's
+         * cap read it in founding money at the new unit, so the same real
+         * fare draws the same riders. Until then the next month read a
+         * thousandth of the fare against a cap in founding money.
+         */
+        economyManager.getTaxPolicy().setMoneyUnit(denomination.getUnit());
+        getInfrastructureManager().setFareUnit(denomination.getUnit());
+        /*
+         * ...AND THE FUEL (0.7.49), which IS a figure: the journey's price the
+         * month struck and the month's bill are money, divided where they sit,
+         * as the transit bill and the fares are (EconomyManager.redenominate()).
+         */
+        getInfrastructureManager().redenominateFuel(scale);
+        motoring.restoreFuel(motoring.getFuelBill() * scale, motoring.getFuelImports() * scale, motoring.getFuelLitres());
 
         decisions.record(DecisionLog.CURRENCY, String.format(java.util.Locale.ROOT,
                 "Currency reformed: one new %s for %s old", getCurrency().name(), Formats.INSTANCE.count(factor)));

@@ -1,6 +1,9 @@
 package ham.citybuildersim.ui;
 
 import ham.citybuildersim.*;
+import ham.citybuildersim.sectors.LuxuryRetail;
+import ham.citybuildersim.sectors.Restaurants;
+import ham.citybuildersim.sectors.Retail;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Pos;
@@ -302,12 +305,12 @@ final class SectorScreen {
      * their ranges, and the Build category the strip's door opens (D13).
      */
     record ListFigures(double kept, double before, boolean compared, String moved, String moveTone, String keptInfo,
-                       List<Sector> losing, String losers, String losingInfo, double workers, int posts,
+                       List<Sector> losing, String losers, String losingInfo, double workers, long posts,
                        String range, String throttles, String door) { }
 
     static ListFigures listFigures(SectorBooks books, List<Sector> order) {
         double total = 0, before = 0, workers = 0;
-        int posts = 0;
+        long posts = 0;
         List<Sector> losing = new ArrayList<>();
         for (Sector s : order) {
             SectorBooks.SectorMonth now = books.get(s), then = books.previous(s);
@@ -436,8 +439,9 @@ final class SectorScreen {
         VBox running = new VBox(3);
         running.setMinWidth(0);
         HBox.setHgrow(running, Priority.ALWAYS);
-        running.getChildren().add(caption(runningWords(plant), plant.none() ? Palette.TEXT_SPENT : Palette.TEXT_LABEL));
-        if (!plant.none()) running.getChildren().add(bar(Double.isFinite(plant.let()) ? plant.let() : plant.rate(), Palette.BUSINESS, 120, 4));
+        running.getChildren().add(caption(runningWords(sector, plant), plant.none() ? Palette.TEXT_SPENT : Palette.TEXT_LABEL));
+        if (!plant.none()) running.getChildren().add(bar(sector instanceof Retail shops ? shops.getHouseholdShare()
+                : Double.isFinite(plant.let()) ? plant.let() : plant.rate(), Palette.BUSINESS, 120, 4));
         HBox middle = new HBox(12, sparkline(netIncomeSeries), workers, running);
         middle.setAlignment(Pos.CENTER_LEFT);
 
@@ -460,6 +464,16 @@ final class SectorScreen {
             showSectorMenu();
         });
         return card;
+    }
+
+    /** ...the grocers' in theirs (0.7.45): "handed over 58% of what was asked · roads 70%". */
+    static String runningWords(Sector sector, SectorFlow.Plant plant) {
+        if (!(sector instanceof Retail shops) || plant.none()) return runningWords(plant);
+        int low = plant.lowest();
+        // A save from before 0.7.43 carries the old sale's want, not the baskets asked for: nothing to say until a month runs.
+        if (!shops.isSaleCounted()) return "the sale is not counted yet: a month has to run after a load";
+        return "handed over " + BuildScreen.pct(shops.getHouseholdShare()) + " of what was asked"
+                + (plant.ratios()[low] < .995 ? " · " + SectorFlow.THROTTLES[low] + " " + BuildScreen.pct(plant.ratios()[low]) : "");
     }
 
     /** A card's plant in words: "running at 39% · roads 64%" - the throttle that cuts it most, when one is under 100% - or the homes let, or "no plant standing". */
@@ -935,10 +949,34 @@ final class SectorScreen {
                 owesWords(blocked, credit.getBlockedMonths(sector.key()), now),
                 blocked ? Palette.BAD : now.leverage() > .6 ? Palette.WARN : Palette.TEXT_HEAD, null,
                 "Cash & debt: what it borrows on", () -> open("Cash & debt"));
-        String[] run = runningCell(plant);
-        VBox running = kpi(run[0], run[1], run[2], plant.none() ? Palette.TEXT_MUTED : Palette.TEXT_HEAD, null,
+        String[] run = sector instanceof Retail shops ? handedCell(shops, plant) : runningCell(plant);
+        String runTone = plant.none() ? Palette.TEXT_MUTED
+                : sector instanceof Retail shops ? handedTone(shops) : Palette.TEXT_HEAD;
+        VBox running = kpi(run[0], run[1], run[2], runTone, null,
                 "Operations: the plant, and what holds it back", () -> open("Operations"));
         return vitalsBar(kept, margin, cash, owes, running);
+    }
+
+    /**
+     * The grocers' fifth figure (0.7.45; the UI spec's D8), {label, figure,
+     * note}: the share of the baskets asked for at the price that the shops
+     * handed over (Retail.getHouseholdShare()) - for groceries the outcome, as
+     * LET is for the landlords; the operating rate is one cause of it, and the
+     * throttle that cuts the shops most is named under it.
+     */
+    static String[] handedCell(Retail shops, SectorFlow.Plant plant) {
+        if (plant.none()) return new String[] { "HANDED OVER", "—", "no shops standing" };
+        if (!shops.isSaleCounted()) return new String[] { "HANDED OVER", "—", "not counted yet: a month has to run after a load" };
+        int low = plant.lowest();
+        return new String[] { "HANDED OVER", BuildScreen.pct(shops.getHouseholdShare()),
+                "of the baskets asked for" + (plant.ratios()[low] < .995
+                        ? " · " + SectorFlow.THROTTLES[low] + " cut most, " + BuildScreen.pct(plant.ratios()[low]) : "") };
+    }
+
+    /** ...its verdict: what went unhanded, on GOING SHORT's own lines (the UI spec's D10) - one hunger rule, not a second. */
+    static String handedTone(Retail shops) {
+        if (!shops.isSaleCounted() || SectorFlow.plant(shops).none()) return Palette.TEXT_HEAD;
+        return PeopleScreen.goingShortTone(1 - shops.getHouseholdShare());
     }
 
     /** OWES's note: the ban, "owes nothing" when it owes nothing (B8: it quoted a rate on no debt), or its rate and leverage. */
@@ -1401,7 +1439,7 @@ final class SectorScreen {
         double[] pay = sector.getStaffedPayrollPerType();
         // The posts the payroll is struck on: the builders' laid-off posts
         // are not in it (0.7.17, sectors.Construction, THE CREWS THE WORK NEEDS).
-        int[] posts = sector.postsOfferedPerTier();
+        long[] posts = sector.postsOfferedPerTier();
         if (pay == null) return box;
 
         java.util.List<Integer> order = new java.util.ArrayList<>();
@@ -1411,7 +1449,7 @@ final class SectorScreen {
         order.sort((x, y) -> Double.compare(pay[y], pay[x]));
         for (int i : order) {
             JobType job = JobType.values()[i];
-            int n = posts != null && i < posts.length ? posts[i] : 0;
+            long n = posts != null && i < posts.length ? posts[i] : 0;
             box.getChildren().add(bookDetailRow(
                     n > 0 ? String.format("%s  (%d %s)", ui.buildScreen.jobLabel(job), n, n == 1 ? "post" : "posts")
                           : ui.buildScreen.jobLabel(job), -pay[i], false));
@@ -1432,9 +1470,9 @@ final class SectorScreen {
                     + "and the business would be making what its buildings can make.",
                     sector.getAverageFill() * 100, tightMoney(toDollars(full), false))));
         }
-        int standing = 0;
-        for (int p : sector.postsPerTier()) standing += p;
-        int offered = sector.getPostsOffered();
+        long standing = 0;
+        for (long p : sector.postsPerTier()) standing += p;
+        long offered = sector.getPostsOffered();
         if (!box.getChildren().isEmpty() && offered < standing) {
             box.getChildren().add(bookDetailNote(String.format(
                     "%,d of its %,d posts are laid off this month: its work does not need them. "
@@ -1674,12 +1712,13 @@ final class SectorScreen {
 
         // The sheet, on one scale.
         String[] ownsColours = { Palette.BUSINESS_LIGHT, Palette.BUSINESS, Palette.BUSINESS_DARK,
-                Palette.RAMP_REST, Palette.ORE, Palette.TEXT_SPENT };
-        String[] ownsNames = { "cash", "stock", "land", "buildings", "held abroad", "other businesses' bonds" };
+                Palette.RAMP_REST, Palette.ORE, Palette.TEXT_SPENT, Palette.MONEY_LIGHT };
+        String[] ownsNames = { "cash", "stock", "land", "buildings", "held abroad", "other businesses' bonds",
+                "owed by the shops" };
         double[] owns = { Math.max(0, now.cash()), now.inventory(), now.land(), now.buildings(),
-                now.foreignAssets(), now.bondAssets() };
+                now.foreignAssets(), now.bondAssets(), now.tradeReceivables() };
         double equity = now.equity();
-        double scale = Math.max(Math.max(0, now.totalAssets()), now.bondsPayable() + Math.max(0, equity));
+        double scale = Math.max(Math.max(0, now.totalAssets()), now.totalLiabilities() + Math.max(0, equity));
         List<Segment> ownParts = new ArrayList<>();
         List<HBox> ownKey = new ArrayList<>();
         for (int i = 0; i < owns.length; i++) {
@@ -1693,6 +1732,10 @@ final class SectorScreen {
             owedParts.add(new Segment(now.bondsPayable(), Palette.MONEY, false, null, null, "loans and bonds  " + m(now.bondsPayable()), null));
             owedKey.add(keyPart(Palette.MONEY, "loans and bonds", m(now.bondsPayable())));
         }
+        if (now.tradePayables() > 0) {
+            owedParts.add(new Segment(now.tradePayables(), Palette.MONEY_LIGHT, false, null, null, "owed to its suppliers  " + m(now.tradePayables()), null));
+            owedKey.add(keyPart(Palette.MONEY_LIGHT, "owed to its suppliers", m(now.tradePayables())));
+        }
         if (equity > 0) {
             owedParts.add(new Segment(equity, Palette.BUSINESS, false, null, null, "owners' equity  " + m(equity), null));
         }
@@ -1701,13 +1744,13 @@ final class SectorScreen {
                         + "above, its lenders' claim and its owners' below. The two are equal - equity is whatever is "
                         + "left when the lenders are paid off - unless it owes more than it owns.", null),
                 sheetRow("OWNS", ownParts, scale, m(now.totalAssets()), ownKey),
-                sheetRow("OWES + EQUITY", owedParts, scale, m(now.bondsPayable() + equity), owedKey));
+                sheetRow("OWES + EQUITY", owedParts, scale, m(now.totalLiabilities() + equity), owedKey));
         page.getChildren().add(sheet);
         if (equity < 0) {
             page.getChildren().add(alertLine(Icons.ALERT, Palette.BAD, "It is worth less than it owes", String.format(
                     "Everything this business owns comes to %s and it owes %s. It is insolvent on paper and still "
                     + "trading, which the model allows: the credit side stops lending long before the accountants "
-                    + "would stop the trading.", m(now.totalAssets()), m(now.bondsPayable())), null));
+                    + "would stop the trading.", m(now.totalAssets()), m(now.totalLiabilities())), null));
         }
 
         // The statement, with the two kinds of asset it left out (B1).
@@ -1723,8 +1766,15 @@ final class SectorScreen {
                     "Stock is held at what it would fetch today, so a price collapse shrinks this business's "
                     + "balance sheet without anything being sold."));
         }
+        if (now.tradeReceivables() != 0 || then.tradeReceivables() != 0) {
+            column.getChildren().add(withInfo(bookLine("Owed by the shops it supplies",
+                    now.tradeReceivables(), then.tradeReceivables(), known, null),
+                    "What the shops owe it for stock it let them have on credit this month; they pay it at the next "
+                    + "month's books, out of the sale it stocks."));
+        }
         column.getChildren().add(bookTotal("Current assets",
-                now.cash() + now.inventory(), then.cash() + then.inventory(), known, null));
+                now.cash() + now.inventory() + now.tradeReceivables(),
+                then.cash() + then.inventory() + then.tradeReceivables(), known, null));
 
         column.getChildren().add(bookLine("Land", now.land(), then.land(), known, null));
         column.getChildren().add(withInfo(bookLine("Buildings, at cost",
@@ -1747,6 +1797,12 @@ final class SectorScreen {
         column.getChildren().add(statementHead("What it owes, and what is left"));
         column.getChildren().add(bookLine("Loans and bonds outstanding",
                 now.bondsPayable(), then.bondsPayable(), known, null));
+        if (now.tradePayables() != 0 || then.tradePayables() != 0) {
+            column.getChildren().add(withInfo(bookLine("Owed to its suppliers",
+                    now.tradePayables(), then.tradePayables(), known, null),
+                    "The month's stock its suppliers let it have on credit. It is paid at the next month's books, "
+                    + "out of the takings of the sale that stock goes to."));
+        }
         column.getChildren().add(withInfo(bookLine("Owners' equity",
                 now.equity(), then.equity(), known,
                 now.equity() < 0 ? Palette.BAD : null),
@@ -1755,8 +1811,8 @@ final class SectorScreen {
                 + "to them and what was bought back. Who holds it, and what the market makes of it, is the owners "
                 + "card below."));
         column.getChildren().add(bookTotal("Owed and owned",
-                now.bondsPayable() + now.equity(),
-                then.bondsPayable() + then.equity(), known, null));
+                now.totalLiabilities() + now.equity(),
+                then.totalLiabilities() + then.equity(), known, null));
 
         double assets = now.totalAssets();
         double debtToAssets = assets > 0 ? now.bondsPayable() / assets : 0;
@@ -2063,15 +2119,15 @@ final class SectorScreen {
         double[][] flows = {
                 { now.netIncome() }, { now.paidEarlier() }, { now.borrowed() }, { -now.repaid() },
                 { now.bondsIssued() }, { -now.bondsRepaid() }, { -now.bondsBought() }, { now.bondCoupons() },
-                { -premisesNow }, { -now.salvage() }, { now.fromTheCity() }, { now.depositInterest() },
+                { -premisesNow }, { -now.salvage() }, { now.fromTheCity() }, { now.arrearsPaid() }, { now.depositInterest() },
                 { now.forgiven() }, { -now.investedAbroad() }, { now.equityRaised() }, { -now.dividendsPaid() },
-                { -now.sharesBoughtBack() }, { -now.stolen() } };
+                { -now.sharesBoughtBack() }, { -now.stolen() }, { now.tradeCredit() } };
         String[] flowNames = { "Kept from trading", "Stock paid for earlier", "Borrowed", "Loans repaid",
                 "Raised on bonds", "Bonds repaid", now.bondsBought() >= 0 ? "Bought others' bonds" : "Others' bonds sold",
                 "Coupons", premisesNow >= 0 ? "Its premises" : "Buildings sold back",
-                now.salvage() > 0 ? "Scrapped plant bought" : "Scrapped plant sold", "Subsidy", "Bank interest",
+                now.salvage() > 0 ? "Scrapped plant bought" : "Scrapped plant sold", "Subsidy", "Arrears paid", "Bank interest",
                 "Forgiven", now.investedAbroad() >= 0 ? "Sent abroad" : "Brought home", "From shareholders",
-                "To shareholders", "Bought back its shares", "Stolen" };
+                "To shareholders", "Bought back its shares", "Stolen", tradeCreditName(now) };
         List<Step> steps = new ArrayList<>();
         for (int i = 0; i < flows.length; i++) {
             double v = flows[i][0];
@@ -2081,6 +2137,11 @@ final class SectorScreen {
         double gap = now.unexplained();
         if (Math.abs(toDollars(gap)) > 1) steps.add(Step.of("Not accounted for", gap, Palette.WARN));
         return steps;
+    }
+
+    /** The trade credit's line (0.7.44): a buyer's suppliers waiting, or a supplier's buyers. */
+    static String tradeCreditName(SectorBooks.SectorMonth m) {
+        return m.tradePayables() > 0 || m.tradeReceivables() == 0 ? "Its suppliers' credit" : "Its buyers' credit";
     }
 
     /** The rest of Cash & debt: the bridge's card, the can't-borrow line, the reconciliation and its pictures, and the credit grid. */
@@ -2161,6 +2222,12 @@ final class SectorScreen {
             column.getChildren().add(bookLine("Subsidy from the city",
                     now.fromTheCity(), then.fromTheCity(), known, null));
         }
+        // What the city owed it and paid this month (0.7.55): cash for a
+        // subsidy or a bill the treasury refused while its ceiling bound.
+        if (now.arrearsPaid() != 0 || then.arrearsPaid() != 0) {
+            column.getChildren().add(bookLine("Arrears paid by the city",
+                    now.arrearsPaid(), then.arrearsPaid(), known, null));
+        }
         if (now.depositInterest() != 0 || then.depositInterest() != 0) {
             column.getChildren().add(bookLine("Interest on its bank balance",
                     now.depositInterest(), then.depositInterest(), known, null));
@@ -2197,6 +2264,21 @@ final class SectorScreen {
         if (now.stolen() != 0 || then.stolen() != 0) {
             column.getChildren().add(bookLine("Stolen from its till",
                     -now.stolen(), -then.stolen(), known, null));
+        }
+        // ...and its trade credit, net (0.7.44): the statement charged the
+        // whole stock bill and booked the whole sale; the cash moved by less.
+        if (now.tradeCredit() != 0 || then.tradeCredit() != 0) {
+            boolean buyer = now.tradePayables() > 0 || then.tradePayables() > 0
+                    || (now.tradeReceivables() == 0 && then.tradeReceivables() == 0);
+            column.getChildren().add(withInfo(bookLine(
+                    buyer ? "Stock on its suppliers' credit, less what it repaid"
+                          : "Repaid by the shops, less what it let them have on credit",
+                    now.tradeCredit(), then.tradeCredit(), known, null),
+                    buyer ? "Its suppliers let it have the month's stock and wait a month for the money: what it bought "
+                            + "that way stays in its till, and what it owed from the month before is paid out of the "
+                            + "takings of the sale that stock went to."
+                          : "The shops pay for what it sold them on credit a month later, out of the sale it stocked: "
+                            + "what they owe it is on its balance sheet, and the cash arrives at the next month's books."));
         }
 
         if (Math.abs(toDollars(gap)) > 1) {
@@ -2314,9 +2396,10 @@ final class SectorScreen {
         double mortgages = credit.getMortgagePrincipal(key), interim = credit.getInterimPrincipal(key);
         List<Segment> mix = new ArrayList<>();
         List<HBox> mixKey = new ArrayList<>();
-        String[] mixNames = { "bank loans", "bonds", "mortgages", "interim financing" };
-        String[] mixColours = { Palette.LADDER[0], Palette.LADDER[1], Palette.LADDER[2], Palette.RAMP_REST };
-        double[] mixFigures = { loans, bonds, mortgages, interim };
+        // ...and its suppliers (0.7.44's trade credit, here since 0.7.45), in the balance sheet's colour for them.
+        String[] mixNames = { "bank loans", "bonds", "mortgages", "interim financing", "suppliers" };
+        String[] mixColours = { Palette.LADDER[0], Palette.LADDER[1], Palette.LADDER[2], Palette.RAMP_REST, Palette.MONEY_LIGHT };
+        double[] mixFigures = { loans, bonds, mortgages, interim, now.tradePayables() };
         for (int i = 0; i < mixFigures.length; i++) {
             if (!(mixFigures[i] > 0)) continue;
             mix.add(new Segment(mixFigures[i], mixColours[i], false, null, null, mixNames[i] + "  " + m(mixFigures[i]), null));
@@ -2329,7 +2412,9 @@ final class SectorScreen {
                 + "are owed than its bonds do; interim financing, lent after a default for the bills it could not pay, "
                 + "ranks ahead of both."
                 + (plan != null ? "\n\nIts last month's borrowing to cover its cash"
-                        + Game.financingWords(plan).replaceFirst(" - ", ": ") + "." : "");
+                        + Game.financingWords(plan).replaceFirst(" - ", ": ") + "." : "")
+                + (now.tradePayables() > 0 ? "\n\nIts suppliers wait a month for the stock they let it have: what it owes"
+                        + " them is beside its borrowing, at no interest, and paid out of the sale that stock goes to." : "");
 
         VBox c = ratioColumn("WHAT ITS BORROWING COSTS",
                 head("NEW BORROWING COSTS", spreadInfo(key), rateFigure), rateBar, caption(rateWords, Palette.TEXT_MUTED),
@@ -2338,7 +2423,8 @@ final class SectorScreen {
                         + "nothing until it is under. The bar is its leverage now; its rate is priced off its last "
                         + "quarter's.", figure(String.format("%.2f", unsigned0(lev, 2)), Palette.SIZE_BODY + 3, levTone)),
                 levBar,
-                head("WHAT IT OWES, BY KIND", mixInfo, figure(m(credit.getPrincipal(key)), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD)),
+                head("WHAT IT OWES, BY KIND", mixInfo, figure(m(now.tradePayables() > 0 ? now.totalLiabilities()
+                        : credit.getPrincipal(key)), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD)),
                 mix.isEmpty() ? caption("it owes nothing", Palette.TEXT_MUTED) : segmentBar(mix, 0, List.of(), 0, 10),
                 mix.isEmpty() ? null : key(mixKey));
         c.setPrefWidth(320);
@@ -2576,17 +2662,22 @@ final class SectorScreen {
             String mortgage = String.format(
                     "An insured mortgage at %.2f%% for the rest, paid off over %d years: the rent it "
                     + "would let for, less its repairs and its property tax, against the payment on the "
-                    + "loan with the insurance premium added. What its till and its owners cannot put "
+                    + "loan with the insurance premium added - read at %.2f%%, the rate less the inflation "
+                    + "people expect, never under %.0f%% of it. What its till and its owners cannot put "
                     + "down, it does not build; an order the lender will not carry is trimmed down until "
                     + "it does, and dropped if even one would not.",
-                    credit.getInsuredMortgageRate() * 100, Mortgage.MORTGAGE_AMORTIZATION_MONTHS / 12);
+                    credit.getInsuredMortgageRate() * 100, Mortgage.MORTGAGE_AMORTIZATION_MONTHS / 12,
+                    plans.realTestRate(credit.getInsuredMortgageRate()) * 100,
+                    BusinessInvestment.REAL_HURDLE_FLOOR * 100);
             out.add(new String[] {String.format("puts %.0f%% down of its own", (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100), mortgage});
             out.add(new String[] {String.format("rent covers the mortgage %.2f×", Mortgage.MORTGAGE_DEBT_COVERAGE), mortgage});
         } else {
             out.add(new String[] {String.format("earns %.2f× its interest", BusinessInvestment.PROFIT_OVER_INTEREST),
-                    String.format("At this sector's own rate of %.2f%%, on whatever it has to borrow after its cash is "
-                            + "spent. A plan that fails this is trimmed down until it passes, and dropped if even one "
-                            + "unit cannot carry it.", now.rate() * 100)});
+                    String.format("At %.2f%%: this sector's own rate of %.2f%% less the inflation people expect, never "
+                            + "under %.0f%% of it, on whatever it has to borrow after its cash is spent. A plan that fails "
+                            + "this is trimmed down until it passes, and dropped if even one unit cannot carry it.",
+                            plans.realTestRate(now.rate()) * 100, now.rate() * 100,
+                            BusinessInvestment.REAL_HURDLE_FLOOR * 100)});
         }
         out.add(new String[] {String.format("plans %.0f mo ahead off a %d-mo trend",
                 BusinessInvestment.PLANNING_HORIZON, BusinessInvestment.TREND_WINDOW), null});
@@ -2837,6 +2928,10 @@ final class SectorScreen {
     void operationsPage(VBox page, Sector sector, boolean animate) {
         SectorFlow.Flow flow = SectorFlow.of(ui.game, sector);
         page.getChildren().add(flowCard(sector, flow, animate));
+        // The new price model, read (0.7.45): the grocers' shelf, the kitchens' and the counters' margin.
+        if (sector instanceof Retail shops) page.getChildren().add(shelfCard(shops));
+        if (sector instanceof Restaurants kitchens) page.getChildren().add(marginCard(chargesWords(kitchens)));
+        if (sector instanceof LuxuryRetail counters) page.getChildren().add(marginCard(chargesWords(counters)));
         List<Sector.Line> own = sector.ownLines(ui.game);
         if (!own.isEmpty()) {
             page.getChildren().add(sectionHead("ITS OWN FIGURES", "The lines this business writes about itself, as "
@@ -2845,6 +2940,211 @@ final class SectorScreen {
         }
         page.getChildren().add(details(sector.key() + ":every", "every line, as the page listed them before 0.7.30",
                 detailsOpen, ui::redraw, () -> everyLine(sector)));
+    }
+
+    /* ---------------------------- THE SHELF (0.7.45) ----------------------------
+       The UI spec's 2.5: what a basket costs - the shelf against its floor, its
+       cap and the price that would clear the sale, which is a price only above
+       the floor (D9) - and the baskets: needed, asked for at the price, what
+       the shops could hand over and what they sold, and what limited the sale,
+       named from the sale (D15) with a door to its fix. Every figure is
+       Retail's own read; the words are pure, for the probe. */
+
+    /** THE SHELF's words and figures, worked out without drawing them. */
+    record ShelfWords(boolean counted, double shelf, double floor, double cap, double clearing, boolean clearingDrawn,
+                      String clearsTag, String shelfLine, String floorLine, String clearingLine, String clearingTone,
+                      double needed, double asked, long pricedOut, double handOver, double supply, double sold,
+                      String limit, String limitDoor, String creditLine) { }
+
+    /** A share of the way in words: "a sixth", "a quarter", "half". */
+    static String wayWords(double speed) {
+        if (Math.abs(speed - 1.0 / 6) < 1e-9) return "a sixth";
+        if (Math.abs(speed - .25) < 1e-9) return "a quarter";
+        if (Math.abs(speed - 1.0 / 3) < 1e-9) return "a third";
+        if (Math.abs(speed - .5) < 1e-9) return "half";
+        return String.format("%.0f%%", speed * 100);
+    }
+
+    ShelfWords shelfWords(Retail r) {
+        boolean counted = r.isSaleCounted();
+        double shelf = r.getStoreSellPrice(), floor = r.getFloorPrice(), cap = r.getCapPrice(), clearing = r.getClearingPrice();
+        boolean slack = r.isSlack(), past = r.clearsPastTheCap();
+        boolean empty = !(r.getDemandAtPrice() > 0) && !(r.getSupplyBaskets() > 0);
+        boolean drawn = counted && !empty && !slack && clearing <= 2 * cap;
+        String tag = counted && !empty && !slack && clearing > 2 * cap ? "clears at " + unitPrice(clearing) + " ›" : null;
+        String shelfLine = "the shelf " + unitPrice(shelf) + String.format(" · %.2f× its floor", r.shelfOverFloor())
+                + " · moves " + wayWords(Retail.CLEAR_SPEED) + " of the way a month";
+        double opening = r.getOpeningSellPrice();
+        // The level this month's constants are struck at (B2, 0.7.47): Retail's
+        // expected level is the one the next month strikes at, a month ahead.
+        double struck = ui.game.getExpectations().getStruckLevel();
+        String floorLine = Math.abs(floor - opening) <= 1e-12 * Math.max(1e-12, opening)
+                ? String.format("the floor is the opening price struck at ×%.3f this month", struck)
+                : String.format("the floor is its stock's cost × %.1f - over the opening price, %s struck at ×%.3f",
+                        Retail.RETAIL_MARKUP, unitPrice(opening), struck);
+        String clearingLine, clearingTone = Palette.TEXT_LABEL;
+        if (!counted) {
+            clearingLine = "the price that clears it: not counted yet - a month has to run after a load";
+        } else if (empty) {
+            // A city with nobody asking and nothing to hand over: the bisection's top is no price either.
+            clearingLine = "nothing to clear: nobody asked for a basket and the shops had none to hand over";
+        } else if (slack) {
+            clearingLine = "clears on its floor: the shops could hand over more than is asked for";
+        } else if (past) {
+            clearingLine = "a price cannot fix this: even at the cap "
+                    + people(ui.game.getHouseholdBalance().groceriesWanted(cap)) + " are asked for against "
+                    + people(r.getSupplyBaskets());
+            clearingTone = handedTone(r);
+        } else {
+            clearingLine = "clears at " + unitPrice(clearing) + ": the shelf moves toward it, at most to the cap";
+        }
+        SectorFlow.Plant plant = SectorFlow.plant(r);
+        String limit, door = null;
+        if (!counted) {
+            limit = "not counted yet: a month has to run after a load";
+        } else if (r.getProductsSold() >= Math.floor(r.getDemandAtPrice())) {
+            limit = "every basket asked for at the price was handed over";
+        } else if (r.isShelfBound()) {
+            limit = "the shelf ran out: it bought what its cash and credit reached";
+            door = "Cash & debt";
+        } else if (!plant.none() && plant.rate() < .995) {
+            int low = plant.lowest();
+            limit = "the shops run at " + BuildScreen.pct(plant.rate()) + " of the " + people(r.getStoreCoverage())
+                    + " they can serve: " + SectorFlow.THROTTLES[low] + " " + BuildScreen.pct(plant.ratios()[low]);
+            door = throttleCategory(plant);
+        } else {
+            limit = "the shops can serve no more";
+            door = BuildCard.categoryOf(ui.game, r);
+        }
+        SupplierCredit credit = r.supplierCredit();
+        String creditLine = credit.boughtTotal() > 0 || credit.owedTotal() > 0
+                ? "bought " + m(credit.boughtTotal()) + " of its stock on its suppliers' credit, to be paid from this month's"
+                  + " takings · may owe up to " + m(credit.getLimit()) + " (a month of the stock it expects to sell, at cost)"
+                : null;
+        return new ShelfWords(counted, shelf, floor, cap, clearing, drawn, tag, shelfLine, floorLine, clearingLine,
+                clearingTone, r.getBasketsNeeded(), r.getDemandAtPrice(), r.getUnaffordableDemand(), r.getHandOver(),
+                r.getSupplyBaskets(), r.getProductsSold(), limit, door, creditLine);
+    }
+
+    /** The Build category that relieves the thinnest of a plant's power, road and health (D13's rule, one plant), or null. */
+    static String throttleCategory(SectorFlow.Plant plant) {
+        String go = null;
+        double least = Double.POSITIVE_INFINITY;
+        String[][] doors = { { "1", "Utilities" }, { "3", "Roads & transit" }, { "4", "Healthcare" } };
+        for (String[] d : doors) {
+            double r = plant.ratios()[Integer.parseInt(d[0])];
+            if (Double.isFinite(r) && r < least && r < .995) { least = r; go = d[1]; }
+        }
+        return go;
+    }
+
+    /** THE SHELF's (i). */
+    static final String SHELF_INFO = "A basket is one person's groceries for a month. The shelf moves a sixth of the way "
+            + "a month toward the price that would clear the sale - where what the households ask for meets what the "
+            + "shops can hand over - never under its floor and never past its cap, half again over the floor. Under "
+            + "the floor the price that clears is no price at all: the shops have more than is asked for. Past the cap "
+            + "no price the shelf will charge clears it, and only more baskets will.";
+
+    /** THE SHELF: what a basket costs, beside the baskets and what limited them. */
+    VBox shelfCard(Retail r) {
+        ShelfWords w = shelfWords(r);
+        double scale = Math.max(w.shelf(), w.cap()) * 1.1;
+        if (w.clearingDrawn()) scale = Math.max(scale, w.clearing() * 1.1);
+        List<Rule> rules = new ArrayList<>();
+        rules.add(new Rule(w.floor(), Palette.TEXT_MUTED, true, "floor " + unitPrice(w.floor()), "The floor: " + w.floorLine(), null));
+        rules.add(new Rule(w.cap(), Palette.TEXT_MUTED, true, "cap " + unitPrice(w.cap()), "The most the shelf goes to", null));
+        if (w.clearingDrawn()) {
+            rules.add(new Rule(w.clearing(), Palette.TEXT_LABEL, true, "clears " + unitPrice(w.clearing()),
+                    "The price that would clear the last sale", null));
+        }
+        ScaleRow cost = ScaleRow.of("a basket", unitPrice(w.shelf()), List.of(Run.of(0, w.shelf(), Palette.BUSINESS)
+                .tip("The shelf price " + unitPrice(w.shelf()))));
+        if (w.clearsTag() != null) cost = cost.tag(w.clearsTag(), Palette.TEXT_LABEL);
+        VBox left = new VBox(Palette.GAP, head("WHAT A BASKET COSTS", SHELF_INFO, null),
+                scaleRows(List.of(cost), scale, rules, 80, 90, 12),
+                caption(w.shelfLine(), Palette.TEXT_LABEL), caption(w.floorLine(), Palette.TEXT_MUTED),
+                caption(w.clearingLine(), w.clearingTone()));
+
+        double most = Math.max(Math.max(w.needed(), w.asked()), Math.max(w.supply(), w.sold()));
+        List<ScaleRow> rows = List.of(
+                ScaleRow.of("needed, one a head", people(w.needed()), List.of(Run.of(0, w.needed(), Palette.PEOPLE_LIGHT))),
+                ScaleRow.of("asked for at the price", people(w.asked()), List.of(Run.of(0, w.asked(), Palette.PEOPLE)))
+                        .tag(w.pricedOut() > 0 ? "priced out " + people(w.pricedOut()) : null, Palette.TEXT_MUTED),
+                ScaleRow.of("the shops could hand over", people(w.supply()), List.of(Run.of(0, w.supply(), Palette.BUSINESS_LIGHT))),
+                ScaleRow.of("sold", people(w.sold()), List.of(Run.of(0, w.sold(), Palette.BUSINESS))));
+        VBox right = new VBox(Palette.GAP, head("THE BASKETS", "The month's sale, in baskets: what the households "
+                        + "needed, a basket a head; what they asked for at the shelf price; what the shops could hand over "
+                        + "- their reach at the operating rate, or the shelf if it ran out first; and what they sold.", null),
+                scaleRows(rows, Math.max(1, most), List.of(), 150, 80, 10),
+                caption(w.limit(), Palette.TEXT_LABEL));
+        if (w.limitDoor() != null) {
+            String where = w.limitDoor();
+            right.getChildren().add("Cash & debt".equals(where)
+                    ? doorPill("Its cash & debt", Icons.COIN, Palette.BUSINESS, () -> open("Cash & debt"))
+                    : doorPill("Build · " + where, Icons.BUILD, Palette.BUILDING, () -> ui.buildScreen.openCategory(where)));
+        }
+        if (w.creditLine() != null) right.getChildren().add(caption(w.creditLine(), Palette.TEXT_LABEL));
+        left.setMinWidth(0);
+        right.setMinWidth(0);
+        left.setPrefWidth(560);
+        right.setPrefWidth(560);
+        HBox.setHgrow(left, Priority.ALWAYS);
+        HBox.setHgrow(right, Priority.ALWAYS);
+        HBox both = new HBox(24, left, right);
+        return card(head("THE SHELF", null, null), both);
+    }
+
+    /* ------------------------- WHAT IT CHARGES (0.7.45) -------------------------
+       The UI spec's 2.6: a kitchen's or a counter's margin, sticky since
+       0.7.43 - what it charges against what it aims at, between its floor and
+       its ceiling. No verdict colours. */
+
+    /** WHAT IT CHARGES' words and figures, worked out without drawing them. */
+    record ChargesWords(double floor, double ceiling, double charged, double target, String line, String served, String info) { }
+
+    /**
+     * "Served nothing" when a month counted a reach or a want and served none
+     * of it; a reload counts none of the three until its month runs (they are
+     * the month's flows, not saved), and that is not a month that served nothing.
+     */
+    static String served(double served, double reach, double wanted) {
+        return served <= 0 && (reach > 0 || wanted > 0) ? "served nothing this month: the index holds its last price" : null;
+    }
+
+    static ChargesWords chargesWords(Restaurants k) {
+        return new ChargesWords(Restaurants.MARGIN_FLOOR, Restaurants.MARGIN_CEILING, k.getMargin(), k.getTargetMargin(),
+                String.format("charges %.2f× the food in a plate · aiming at %.2f× · moves %s of the way a month",
+                        k.getMargin(), k.getTargetMargin(), wayWords(Restaurants.MARGIN_SPEED)),
+                served(k.getServed(), k.getSeats(), k.getWanted()),
+                "What a meal costs over the food in it. The kitchens aim higher the fuller their seats, between "
+                + String.format("%.0f× and %.0f×", Restaurants.MARGIN_FLOOR, Restaurants.MARGIN_CEILING)
+                + ", and the menu moves a sixth of the way there a month: a price that sticks, as a menu's does.");
+    }
+
+    static ChargesWords chargesWords(LuxuryRetail l) {
+        return new ChargesWords(LuxuryRetail.MARGIN_FLOOR, LuxuryRetail.MARGIN_CEILING, l.getMargin(), l.getTargetMargin(),
+                String.format("charges %.2f× what a piece lands at · aiming at %.2f× · moves %s of the way a month",
+                        l.getMargin(), l.getTargetMargin(), wayWords(LuxuryRetail.MARGIN_SPEED)),
+                served(l.getServed(), l.getCoverage(), l.getWanted()),
+                "What a piece costs over what it lands at. The counters aim higher the more is wanted against what they "
+                + String.format("can serve, between %.2f× and %.0f×", LuxuryRetail.MARGIN_FLOOR, LuxuryRetail.MARGIN_CEILING)
+                + ", and the price moves a sixth of the way there a month.");
+    }
+
+    /** WHAT IT CHARGES: the margin as a run from its floor to its ceiling, the target a dashed rule. */
+    VBox marginCard(ChargesWords w) {
+        double span = Math.max(1e-9, w.ceiling() - w.floor());
+        List<Rule> rules = List.of(
+                new Rule(0, Palette.TEXT_MUTED, false, String.format("%.2f×", w.floor()), "The least it charges", null),
+                new Rule(Math.max(0, Math.min(span, w.target() - w.floor())), Palette.TEXT_LABEL, true,
+                        String.format("aims at %.2f×", w.target()), "What it aims at", null),
+                new Rule(span, Palette.TEXT_MUTED, false, String.format("%.0f×", w.ceiling()), "The most it charges", null));
+        ScaleRow row = ScaleRow.of("charged", String.format("%.2f×", w.charged()),
+                List.of(Run.of(0, Math.max(0, Math.min(span, w.charged() - w.floor())), Palette.BUSINESS)));
+        VBox c = card(head("WHAT IT CHARGES", w.info(), null), scaleRows(List.of(row), span, rules, 80, 70, 12),
+                caption(w.line(), Palette.TEXT_LABEL));
+        if (w.served() != null) c.getChildren().add(caption(w.served(), Palette.TEXT_MUTED));
+        return c;
     }
 
     /** The old page, whole: Sector.operations() drawn as statement lines. */
@@ -3187,7 +3487,7 @@ final class SectorScreen {
         }
     }
 
-    /** The railway's work against its track, off Build's note (RAIL {the city's trade in tonnes, the network's capacity}); null for anyone else. Before a month has run since a load the tonnes are "not counted yet" (B14: the trade is not saved). */
+    /** The railway's work against its track, off Build's note (RAIL {the city's trade in tonnes, the network's capacity}); null for anyone else. Before a month has run since a load the tonnes are "not counted yet" (SectorFlow's counted, the page's rule for a month not run; the month's trade itself crosses a save since 0.7.46, A1). */
     static String railWords(BuildCard.Note note, boolean counted) {
         if (note == null || note.kind() != BuildCard.NoteKind.RAIL) return null;
         Formats f = Formats.INSTANCE;

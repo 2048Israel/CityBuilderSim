@@ -167,8 +167,20 @@ public class RestaurantsCheck {
          * a building against a price no diner ever paid.
          */
         report("a city with no kitchens has no tables", kitchens.seats() == 0, "");
-        close("...so the margin sits at its floor",
-                kitchens.strikeMargin(game.getMarkets(), 0) / food, Restaurants.MARGIN_FLOOR, 1e-9);
+        /*
+         * THE MARGIN CHASES ITS TARGET (0.7.43; spec-inflation.md 2.7, a
+         * premise the design changes): the position strikes the TARGET, and
+         * the margin charged moves MARGIN_SPEED of the way there a month, in
+         * logs. Until 0.7.43 the margin charged was the target, struck afresh
+         * every month, and each strike below asserted it.
+         */
+        double chargedBefore = kitchens.getMargin();
+        kitchens.strikeMargin(game.getMarkets(), 0);
+        close("...so the margin it aims at sits at its floor",
+                kitchens.getTargetMargin(), Restaurants.MARGIN_FLOOR, 1e-9);
+        close("...and the margin charged moves a sixth of the way there, in logs",
+                kitchens.getMargin(), Math.exp((1 - Restaurants.MARGIN_SPEED) * Math.log(chargedBefore)
+                        + Restaurants.MARGIN_SPEED * Math.log(Restaurants.MARGIN_FLOOR)), 1e-12);
 
         quietly(() -> {
             /*
@@ -185,24 +197,31 @@ public class RestaurantsCheck {
             game.simulateMonths(9);
         });
 
-        int seats = kitchens.seats();
+        long seats = kitchens.seats();
         report("a Diner is a Diner's worth of tables",
                 seats == diner.getCoverage(),
                 String.format("%,d meals against %,d", seats, diner.getCoverage()));
 
-        double empty = kitchens.strikeMargin(game.getMarkets(), 0);
-        double half  = kitchens.strikeMargin(game.getMarkets(), seats);
-        double mobbed = kitchens.strikeMargin(game.getMarkets(), seats * 1000.0);
+        kitchens.strikeMargin(game.getMarkets(), 0);
+        double empty = kitchens.getTargetMargin();
+        kitchens.strikeMargin(game.getMarkets(), seats);
+        double half = kitchens.getTargetMargin();
+        kitchens.strikeMargin(game.getMarkets(), seats * 1000.0);
+        double mobbed = kitchens.getTargetMargin();
         double cost = kitchens.getFoodCost();
-        out.printf("   $%.4f empty, $%.4f full, $%.4f mobbed, on $%.4f of food%n",
+        out.printf("   targets %.3fx empty, %.3fx full, %.3fx mobbed, on $%.4f of food%n",
                 empty, half, mobbed, cost);
-        close("empty tables charge the floor", empty / cost, Restaurants.MARGIN_FLOOR, 1e-9);
-        close("...a kitchen as full as it is big charges the middle",
-                half / cost, (Restaurants.MARGIN_FLOOR + Restaurants.MARGIN_CEILING) / 2, 1e-6);
-        assertTrue("...and a queue round the block charges near the ceiling",
-                mobbed / cost > Restaurants.MARGIN_CEILING * .99
-                        && mobbed / cost <= Restaurants.MARGIN_CEILING);
+        close("empty tables aim at the floor", empty, Restaurants.MARGIN_FLOOR, 1e-9);
+        close("...a kitchen as full as it is big aims at the middle",
+                half, (Restaurants.MARGIN_FLOOR + Restaurants.MARGIN_CEILING) / 2, 1e-6);
+        assertTrue("...and a queue round the block aims near the ceiling",
+                mobbed > Restaurants.MARGIN_CEILING * .99 && mobbed <= Restaurants.MARGIN_CEILING);
         assertTrue("...monotone between them", empty < half && half < mobbed);
+        for (int m = 0; m < 240; m++) kitchens.strikeMargin(game.getMarkets(), seats);
+        close("...and a kitchen held at one queue comes to charge its target",
+                kitchens.getMargin(), half, 1e-6);
+        close("...on the food it pays today, passed straight through",
+                kitchens.getSellPrice(), kitchens.getMargin() * kitchens.getFoodCost(), 1e-12);
 
         /*
          * AND THE FLOOR CLEARS A WAGE, which is the whole reason it is twice
@@ -278,8 +297,13 @@ public class RestaurantsCheck {
             cell.savings = 10_000_000;
             cell.disposable = 10;
             cell.mealWant = 1_000_000;
-            cell.planned = 0;                 // nothing was bought at a shop
+            cell.planned = 0;
             cell.subsistence = perCouple;
+            // IN BASKETS SINCE 0.7.43: two of them needed at the sale, and
+            // none handed over at a shop.
+            cell.need = 2;
+            cell.groceriesNeed = 2;
+            cell.groceriesGot = 0;
             if (mealsEach[i] > 0) {
                 // THE REAL PATH: the same call LuxuryCounter.dine() makes.
                 bench.takeMeals(mealsEach[i] * cell.households, ticket[i]);
@@ -322,6 +346,7 @@ public class RestaurantsCheck {
         repeat.mealWant = 1_000_000;
         repeat.planned = 0;
         repeat.subsistence = perCouple;
+        repeat.groceriesNeed = 2;   // in baskets since 0.7.43, none got at a shop
         twice.takeMeals(180 * repeat.households, 1.0);
         quietly(() -> {
             twice.advanceMonth((shape, tier) -> shape == FamilyStructure.COUPLE
@@ -330,6 +355,7 @@ public class RestaurantsCheck {
                     new double[Household.ROWS], grocer, 0, 0);
             repeat.planned = 0;
             repeat.subsistence = perCouple;
+            repeat.groceriesNeed = 2;
             twice.advanceMonth((shape, tier) -> shape == FamilyStructure.COUPLE
                     && tier == PayTier.SKILLED ? 1000 : 0,
                     new double[Household.ROWS], 0, new double[Household.ROWS],

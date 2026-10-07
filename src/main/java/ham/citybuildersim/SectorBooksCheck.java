@@ -87,6 +87,12 @@ public class SectorBooksCheck {
     /** Everything here is in thousands, so a tenth of a cent is plenty. */
     static final double TOLERANCE = 1e-6;
 
+    /** One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. */
+    static void check(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        System.out.printf("%-86s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
+    }
+
     static void near(String what, String sector, int month,
                      double actual, double expected) {
         if (Math.abs(actual - expected) <= TOLERANCE) return;
@@ -118,8 +124,9 @@ public class SectorBooksCheck {
                 statements++;
 
                 /* ------------------------ the sheet ------------------------ */
+                // ...what it owes is its loans and bonds and, since 0.7.44, its suppliers (SupplierCredit).
                 near("balance sheet", sector, m.month(),
-                        m.totalAssets(), m.bondsPayable() + m.equity());
+                        m.totalAssets(), m.bondsPayable() + m.tradePayables() + m.equity());
 
                 /* --------------------- the income statement --------------------- */
                 near("operating", sector, m.month(),
@@ -245,6 +252,75 @@ public class SectorBooksCheck {
         SectorBooks.SectorMonth next = reloaded.getSectorBooks().get(Sectors.RETAIL);
         near("cash flow across a reload", Sectors.RETAIL, next.month(),
                 next.unexplained(), 0);
+
+        /* ===================================================================
+           5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46)
+
+           The materials row is cleared at the strike and filled again as the
+           crews draw, so between two presses it is the month in progress - not
+           the month the statement beside it struck, which is what the page
+           printed beside it. The builder keeps the row as it stood at the
+           strike. The city above never outruns its public works yard, so this
+           is a town of its own with an order book bigger than the yard holds:
+           its crews buy the rest as they build. Nothing in it orders at the
+           top of a month, so the row the last press left is the row at the
+           strike (in a city whose planner does, part of the struck month is
+           drawn in the press before the strike - the research city at 2,400
+           months struck 539 units of which the row had shown none). Every
+           month, what the builder says it struck must be that row, and the
+           statement's month: materials imported exactly when the statement
+           booked imports of them, bought here exactly when it booked those.
+           Played until a struck month has materials in it, and saved there.
+           =================================================================== */
+        System.out.println();
+        Game building = new Game(GameFiles.scratch("sector-books-materials"));
+        building.newGame();
+        building.setCashForTest(Founding.WEALTHY_CASH);
+        building.getLandManager().setOwnedSqFt(building.getLandManager().getOwnedSqFt() + 50_000_000L);
+        building.buildStack(LongPlaytest.template(building, "Construction Depot"), 4, true);
+        building.buildStack(LongPlaytest.template(building, "House"), 300, false);
+        ham.citybuildersim.sectors.Construction builders = building.getSectors().construction();
+        int materialMonths = 0, drewMonths = 0, monthsApart = 0;
+        double worstStruck = 0;
+        for (int m = 0; m < 36 && !(drewMonths > 1 && builders.getDrawnLocal() + builders.getDrawnImported() > 0); m++) {
+            Sector.Input row = builders.inputRow(Good.MATERIALS);
+            double localWas = row == null ? 0 : row.boughtLocal, importedWas = row == null ? 0 : row.imported;
+            building.toggleNextMonth();
+            materialMonths++;
+            if (localWas + importedWas > 0) drewMonths++;
+            worstStruck = Math.max(worstStruck, Math.abs(builders.getDrawnLocal() - localWas)
+                    + Math.abs(builders.getDrawnImported() - importedWas));
+            Sector.Split booked = builders.statement().bought.get(Good.MATERIALS);
+            double bookedAbroad = booked == null ? 0 : booked.abroad, bookedHome = booked == null ? 0 : booked.atHome;
+            if ((builders.getDrawnImported() > 0) != (bookedAbroad > 0) || (builders.getDrawnLocal() > 0) != (bookedHome > 0)) {
+                monthsApart++;
+            }
+        }
+        check("fixture: the crews bought materials in more than one month, and in the month last struck",
+                drewMonths > 1 && builders.getDrawnLocal() + builders.getDrawnImported() > 0,
+                drewMonths + " of " + materialMonths + " months");
+        building.saveGame(1);
+        Game rebuiltCity = new Game(building.getGameFiles());
+        rebuiltCity.loadGame(1);
+        ham.citybuildersim.sectors.Construction rebuilt = rebuiltCity.getSectors().construction();
+        boolean struckKept = rebuilt.isDrawnKnown()
+                && Double.compare(rebuilt.getDrawnLocal(), builders.getDrawnLocal()) == 0
+                && Double.compare(rebuilt.getDrawnImported(), builders.getDrawnImported()) == 0;
+        check("Construction's struck materials are the row as it stood at the strike, and cross a save",
+                worstStruck == 0 && monthsApart == 0 && struckKept,
+                String.format("off by at most %s over %d months, %d apart from the statement; %,.1f + %,.1f units struck,"
+                        + " %,.1f + %,.1f reloaded", worstStruck, materialMonths, monthsApart, builders.getDrawnLocal(),
+                        builders.getDrawnImported(), rebuilt.getDrawnLocal(), rebuilt.getDrawnImported()));
+        // ...and a save from before they were kept says it does not know them.
+        SectorState older = rebuilt.toState();
+        older.extras.remove("drawnLocal");
+        older.extras.remove("drawnImported");
+        ham.citybuildersim.sectors.Construction fromBefore = new ham.citybuildersim.sectors.Construction();
+        fromBefore.restore(older);
+        check("...and a save from before them loads them as not counted, not as nothing",
+                !fromBefore.isDrawnKnown() && Double.isNaN(fromBefore.getDrawnLocal())
+                        && !fromBefore.toState().extras.containsKey("drawnLocal"),
+                "known " + fromBefore.isDrawnKnown());
 
         System.out.printf("%n%,d statements and %,d screen lines over %,d months: %s%n",
                 statements, screenLines, months,

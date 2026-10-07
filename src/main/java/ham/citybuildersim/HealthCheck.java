@@ -389,6 +389,8 @@ public class HealthCheck {
         double wageBillBefore = wellPop.getTotalWage();
         double payrollBefore = shops.getPayroll();
         double soldBefore = shops.getProductsSold();
+        double supplyBefore = shops.getSupplyBaskets();
+        double shelfBaskets = shops.getStoreInventory();
         double millRateBefore = well.getSectors().industry().getOperatingRate();
         double buildBefore = well.getConstructionOutput();
         assertTrue("fixture: the shops sold something at full health", soldBefore > 0);
@@ -411,8 +413,9 @@ public class HealthCheck {
          * WITHIN A UNIT, because units are whole things.
          *
          * The sick rate throttles how many baskets the shops can serve, and a
-         * shop cannot serve four fifths of a basket - productsSold is an int and
-         * always was. So the revenue lands on a whole number of units either
+         * shop cannot serve four fifths of a basket - productsSold is a whole
+         * number and always was (an int until 0.7.53, a long since). So the
+         * revenue lands on a whole number of units either
          * side of the continuous figure, and the tolerance is one unit's price.
          *
          * It used to be exact because the ratio was applied to the MONEY rather
@@ -420,10 +423,25 @@ public class HealthCheck {
          * the shops handed over every basket and were paid for four fifths of
          * them. See CommercialHandler.computeMonthlyReport().
          */
-        check("...and the shops hand over fewer baskets by exactly the sick rate",
+        /*
+         * REWRITTEN FOR 0.7.43 (spec-inflation.md 2.6, a premise the design
+         * changes): the shops sell the baskets wanted at the price or the
+         * baskets they can hand over, whichever is less - so the sick rate
+         * cuts what they CAN hand over by exactly its share, and what they
+         * sell only where that binds. Until 0.7.43 every sale was the shops'
+         * reach times the operating rate, and "they hand over fewer baskets
+         * by exactly the sick rate" said the same thing.
+         */
+        assertTrue("fixture: the shelf held more than the shops could hand over at full health",
+                shelfBaskets > supplyBefore);
+        check("...and the shops can hand over fewer baskets by exactly the sick rate",
+                shops.getSupplyBaskets(),
+                supplyBefore * (1 - sickness),
+                1e-9 * supplyBefore);
+        check("...and hand over what was wanted at the price or what they could, whichever is less",
                 shops.getProductsSold(),
-                soldBefore * (1 - sickness),
-                1);
+                Math.floor(Math.min(shops.getDemandAtPrice(), shops.getSupplyBaskets())),
+                0);
         check("the mills run slower by the same share",
                 well.getSectors().industry().getOperatingRate(),
                 millRateBefore * (1 - sickness), 1e-9);
@@ -772,6 +790,17 @@ public class HealthCheck {
         System.setOut(quiet);
         try {
             paid.run();
+            /*
+             * A HUNDRED BLOCKS MORE (0.7.55). The ground is priced by how
+             * crowded the city is now (LandMarket, THE CROWDING PREMIUM): this
+             * stock on the founding's 0.28 km2 is 4,500 people a km2, which
+             * priced its ground at 78 times the base where the size premium
+             * had charged 1.06 - and a city that cannot build is not the city
+             * that can pay, which section 14 reads (114 households past their
+             * EI paid nothing for care). With the land, 1,150 a km2 and 1.16
+             * times the base: about the ground it was written against.
+             */
+            paid.getLandManager().setOwnedSqFt(paid.getLandManager().getOwnedSqFt() + 100 * LandManager.BLOCK_SQ_FT);
             stock(paid);
             BuildingManager pb = paid.getBuildingManager();
             pb.addStack(pb.getTemplateByName("Walk-in Clinic"), 2, true);
@@ -1333,9 +1362,15 @@ public class HealthCheck {
             // both towns, so their upkeep is the same figure; the payroll
             // follows the staffing of a city the price has made smaller and
             // is not pinned.
+            // REWRITTEN FOR 0.7.42 (the anchor): a building's upkeep is a
+            // money constant struck at its city's expected price level every
+            // month (Game.restrikeMoneyConstants()), and the two towns have
+            // not lived the same inflation - so it is the same figure in
+            // founding money, each town's upkeep over the level it struck at.
             Healthcare atOne = towns[1].getHealthcare();
-            check("the buildings' upkeep is the same at a dear fee as at the founding fee",
-                    hc.getUpkeep(), atOne.getUpkeep(), 1e-9);
+            check("the buildings' upkeep is the same at a dear fee as at the founding fee, in founding money",
+                    hc.getUpkeep() / towns[2].getExpectations().getStruckLevel(),
+                    atOne.getUpkeep() / towns[1].getExpectations().getStruckLevel(), 1e-9);
             assertTrue("...and the service still costs money to run", hc.getGrossCost() > 0);
         }
 

@@ -267,7 +267,12 @@ public class FoodProcessingCheck {
             LongPlaytest.build(game, "Convenience Store", 2);
             LongPlaytest.build(game, "Construction Depot", 1);
             LongPlaytest.run(game, 5);
-            for (int i = 0; i < 400; i++) {
+            // 600, not 400, since 0.7.42: under the anchor this city grows
+            // more slowly (its price level holds after the founding's step
+            // instead of falling back to the floor), and the sector first
+            // wants a plant at month 419 - it was month 171. The bound only
+            // stops a city that never gets there; the condition is unchanged.
+            for (int i = 0; i < 600; i++) {
                 if (fp.plan(game.getBusinessInvestment(), game).build) break;
                 LongPlaytest.advise(game);
                 LongPlaytest.run(game, 1);
@@ -343,11 +348,22 @@ public class FoodProcessingCheck {
          * The fixture CAUSES both - the meat price is set here rather than
          * waited for - and what has to be true is that the planner can tell
          * them apart.
+         *
+         * IN THE CITY'S MONEY (0.7.47): off a ship is the meat market's own
+         * ceiling, the world's price landed at the city's rate with its
+         * freight, and a farm's floor its own floor - the same money the
+         * processed meat it sells is priced in. It was the world's two
+         * figures as they stand, which is a city at par with no freight: in
+         * the lived-in city meat landed 18% over the world's figure at 0.7.46,
+         * and 29% once its Diploma glut left as LabourMarket.isPinned() reads
+         * the indexed floor (B8) - so the meat the plant was said to pay fell
+         * behind the meat it sold, the dear case earned half the cheap one,
+         * and the claim below measured the currency, not the meat.
          */
         GoodsMarket meatMarket = markets.get(Good.MEAT);
-        meatMarket.setLocalPrice(Good.MEAT.worldImportPrice());
+        meatMarket.setLocalPrice(meatMarket.ceiling());
         double imported = fp.estimatedMonthlyProfit(meat, game.getBusinessInvestment());
-        meatMarket.setLocalPrice(Good.MEAT.worldExportPrice());
+        meatMarket.setLocalPrice(meatMarket.floor());
         double homegrown = fp.estimatedMonthlyProfit(meat, game.getBusinessInvestment());
         report("meat at a farm's floor is worth more to a Meat Works than meat off a ship",
                 homegrown > imported,

@@ -43,6 +43,16 @@ import java.util.Map;
  * NOTHING HERE READS THE CITY. It is a pure function of a HistorySave, which is
  * what lets a harness build a history by hand and assert the arithmetic, and
  * what lets the export run on a loaded slot as happily as on the live game.
+ *
+ * PAST FIVE HUNDRED YEARS THE HISTORY IS A YEAR TO AN ENTRY (0.7.55;
+ * HistorySave.foldOldYears()), folded by THE RULES below, so a folded year
+ * is one entry that is already this book's row for it. Everything here that
+ * counted entries as months counts HistorySave.monthsIn() instead - a row's
+ * n, a rate's mean, a spell's months, an episode's length - and everything
+ * that looked twelve entries back looks twelve MONTHS back
+ * (HistorySave.back()); a flow reads a month at a time (aligned()), so it is
+ * weighted by its months where it is added. A folded year has no single
+ * months, so the WITHIN block leaves its cells blank.
  */
 public final class YearBook {
 
@@ -123,12 +133,14 @@ public final class YearBook {
         flow(m, "contributions", "pension contributions collected, in thousands");
         flow(m, "pensionBill", "pensions paid, in thousands");
         flow(m, "healthBill", "healthcare's net cost to the treasury, in thousands");
-        flow(m, "graduates", "movement between education bands - a flow, and it can be negative");
+        flow(m, "graduates", "people who gained a qualification this month, at every level");
         flow(m, "evicted", "out-of-work households that lost their home");
         flow(m, "eiPaid", "unemployment benefit paid, in thousands");
         flow(m, "eiPremiums", "unemployment premiums collected, in thousands");
         flow(m, "healthPremiums", "health premiums collected off wages, in thousands");
         flow(m, "studentGrants", "grants paid to students, in thousands");
+        flow(m, "foodAssistance", "food assistance the treasury paid toward the households' groceries, in thousands (recorded since 0.7.43)");
+        flow(m, "fedByAssistance", "baskets the food assistance paid for, at the price the shelf charged (recorded since 0.7.43)");
         flow(m, "studentLoanInterest", "interest the graduates paid on their student loans, in thousands");
         flow(m, "remittance", "the central bank's profit paid to the treasury, in thousands");
         flow(m, "diedOfIllness", "people the long sickness killed");
@@ -144,6 +156,8 @@ public final class YearBook {
         flow(m, "caughtNotHeld", "people arrested and released for want of a cell");
         flow(m, "stolen", "taken by theft, in thousands");
         flow(m, "safetyBill", "gross cost of police and prisons, in thousands");
+        flow(m, "basketsAsked", "baskets the households asked for at the shelf price - a basket is a person-month of groceries (recorded since 0.7.45)");
+        flow(m, "basketsHanded", "baskets the shops handed over (recorded since 0.7.45)");
 
         /* ---- levels: a stock, so a row is where it STOOD at the end ---- */
         level(m, "cash", "the treasury's cash in hand - negative is an overdraft, in thousands");
@@ -182,6 +196,20 @@ public final class YearBook {
         level(m, "fundValue", "the city's fund, everything it holds at the marks and its cash, in thousands (recorded since 0.7.39)");
         level(m, "fundPutIn", "what the city has put into its fund since it began - pay-ins, rescues, the bank's preferred - in thousands (recorded since 0.7.39)");
         level(m, "fundTakenOut", "what the city has taken out of its fund since it began - the monthly transfers and draw-outs - in thousands (recorded since 0.7.39)");
+        level(m, "expectedLevel", "the price level the city expects against founding - what every money constant that prices something is struck at - 1.000 before the basket is based (recorded since 0.7.45)");
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            String name = PriceIndex.COMPONENT_NAMES[k];
+            level(m, HistorySave.indexKey(k), "the " + name + " component's own price level against founding, chained across every new basket (recorded since 0.7.45)");
+            level(m, HistorySave.weightKey(k), "the " + name + " component's weight in the basket in force, a share - the year's last month, so a row is the basket that year ended on (recorded since 0.7.45)");
+        }
+        level(m, "basketLinkedAt", "the month the basket in force was struck - a change is a new basket, linked so the level runs on (recorded since 0.7.45)");
+        level(m, "shelfPrice", "what a basket of groceries costs on the shelf, in thousands (recorded since 0.7.45)");
+        level(m, "shelfFloor", "the floor under the shelf - the opening price at the expected level, or the stock's cost plus the mark-up if more - in thousands (recorded since 0.7.45)");
+        level(m, "householdsAssisted", "households a food voucher was paid to (recorded since 0.7.45)");
+        level(m, "mealMargin", "what the kitchens charge, a multiple of the food in a plate (recorded since 0.7.45)");
+        level(m, "mealTargetMargin", "the multiple the kitchens aim at; what they charge moves a sixth of the way there a month (recorded since 0.7.45)");
+        level(m, "luxuryMargin", "what the counters charge, a multiple of what a piece lands at (recorded since 0.7.45)");
+        level(m, "luxuryTargetMargin", "the multiple the counters aim at (recorded since 0.7.45)");
 
         /* ---- rates, prices and indices: a row is the AVERAGE ---- */
         rate(m, "interestRate", "what the city pays to borrow, a fraction a year");
@@ -193,6 +221,7 @@ public final class YearBook {
         rate(m, "waterRatio", "water delivered over water drawn, capped at 1");
         rate(m, "roadRatio", "road throughput, 1 is free flow and 0.35 is the floor");
         rate(m, "sickRate", "share of the workforce off sick");
+        rate(m, "outbreak", "an outbreak's extra share of the workforce off sick, over what the city's care explains; 0 between outbreaks (recorded since 0.7.46)");
         rate(m, "careCoverage", "general-care coverage");
         rate(m, "sickRecovery", "share of the long sick who got better");
         rate(m, "landPrice", "what the world asks the city for ground, per square foot in thousands of US dollars since 0.7.6 (local money before)");
@@ -202,7 +231,10 @@ public final class YearBook {
         rate(m, "rentPrice", "rent, per month in thousands");
         rate(m, "fxRate", MONEY + " per US dollar - 1.000 at founding, HIGHER is a fallen currency");
         rate(m, "fxParity", MONEY + " per US dollar where a basket costs the same here and abroad - where the rate is pulled back to (recorded since 0.7.35)");
-        rate(m, "priceIndex", "the fixed basket against its base month, 1.000 at the base");
+        rate(m, "priceIndex", "the basket against its base month, 1.000 at the base - struck again every ten years since 0.7.43 and chained, so the level runs on unbroken");
+        rate(m, "expectedInflation", "what the city expected inflation to be, a fraction a year - the target weighted by credibility, recent inflation by the rest (recorded since 0.7.42)");
+        rate(m, "credibility", "how far the city believed the central bank, " + Expectations.KMIN + " to " + Expectations.KMAX
+                + " - the weight expected inflation puts on the target (recorded since 0.7.42)");
         rate(m, "policyRate", "the central bank's policy rate - the dial, by hand or by the autopilot - a fraction a year");
         rate(m, "bankPrime", "what a sound business pays the bank - its four costs added up - a fraction a year");
         rate(m, "bankDepositRate", "what the bank paid its savers, a fraction a year");
@@ -210,9 +242,14 @@ public final class YearBook {
         rate(m, "bankCapitalRatio", "the bank's equity over its risk-weighted book, clamped at 10 - the city requires 0.08");
         rate(m, "bankCapitalTarget", "the capital ratio the bank chooses to hold: the 0.08 minimum and a buffer for the worst year it has seen");
         rate(m, "bankReturnOnEquity", "the bank's month of net income over the equity it opened with, a year");
+        rate(m, "bankLeverageRatio", "the bank's equity over everything on its sheet, clamped at 10 - the city requires "
+                + Bank.LEVERAGE_RATIO_MIN + " (recorded since 0.7.46)");
+        rate(m, "bankLeverageTarget", "the leverage ratio the bank chooses to hold: the minimum scaled by its capital target's buffer (recorded since 0.7.46)");
         rate(m, "crimeRate", "crimes per 100,000 people a year - Canada is 5,585");
         rate(m, "policeCoverage", "staffed officers against full coverage, which is 360 per 100,000");
         rate(m, "landUse", "land allocated over land owned");
+        rate(m, "hunger", "share of the city short of a basket a month, struck at the top of the month on the last sale (recorded since 0.7.45)");
+        rate(m, "hungerPricedOut", "of the hunger, the share who could not afford a basket at the price - the rest the shelves left short (recorded since 0.7.45)");
         return m;
     }
 
@@ -406,7 +443,8 @@ public final class YearBook {
      * shows inflation adjusted gdp." Nominal GDP rises when the city makes
      * more AND when the same things cost more, and those are opposite news.
      * Divided by the INDEX rather than deflated month by month, because the
-     * index is already a ratio to the founding basket - so this comes out in
+     * index is already a ratio to the founding basket (chained through every
+     * new one since 0.7.43) - so this comes out in
      * the same money every other founding-money figure is quoted in, and is
      * comparable across a currency reform for the same reason the index is.
      *
@@ -433,19 +471,30 @@ public final class YearBook {
      * A NaN inside the window poisons that window and nothing else.
      */
     public static double[] realGdpYear(HistorySave h) {
-        return rollingYear(realGdp(h));
+        return rollingYear(realGdp(h), h);
     }
 
-    /** Twelve months summed, ending at each month; NaN before the twelfth, and wherever the window holds a NaN. */
-    private static double[] rollingYear(double[] monthly) {
+    /**
+     * Twelve months summed, ending at each month; NaN before the twelfth, and wherever the window holds a NaN.
+     *
+     * Twelve MONTHS, not entries (0.7.55): a folded year is all twelve of
+     * its own, and a window that reaches into one takes the months of it it
+     * needs at its monthly average - the series is a month at a time
+     * (HistorySave.aligned()) - so the line runs on across the fold. Summed
+     * oldest first, as it always was.
+     */
+    private static double[] rollingYear(double[] monthly, HistorySave h) {
         double[] out = new double[monthly.length];
         for (int i = 0; i < monthly.length; i++) {
-            if (i + 1 < MONTHS_A_YEAR) { out[i] = Double.NaN; continue; }
+            int from = i + 1, covered = 0;
+            while (from > 0 && covered < MONTHS_A_YEAR) covered += h.monthsIn(--from);
+            if (covered < MONTHS_A_YEAR) { out[i] = Double.NaN; continue; }
             double sum = 0;
             boolean clean = true;
-            for (int k = i - MONTHS_A_YEAR + 1; k <= i; k++) {
+            for (int k = from; k <= i; k++) {
                 if (Double.isNaN(monthly[k])) { clean = false; break; }
-                sum += monthly[k];
+                int in = k == from ? h.monthsIn(k) - (covered - MONTHS_A_YEAR) : h.monthsIn(k);
+                sum += in == 1 ? monthly[k] : monthly[k] * in;
             }
             out[i] = clean ? sum : Double.NaN;
         }
@@ -487,7 +536,7 @@ public final class YearBook {
      * before the parts were kept is twelve months after it first played one.
      */
     public static double[] realYear(HistorySave h, String key) {
-        return rollingYear(real(h, key));
+        return rollingYear(real(h, key), h);
     }
 
     /**
@@ -501,10 +550,22 @@ public final class YearBook {
         double[] index = h.aligned("priceIndex");
         double[] out = new double[index.length];
         for (int i = 0; i < out.length; i++) {
-            double then = i >= MONTHS_A_YEAR ? index[i - MONTHS_A_YEAR] : Double.NaN;
+            int back = h.back(i, MONTHS_A_YEAR);    // twelve months back, a folded year's year before (0.7.55)
+            double then = back >= 0 ? index[back] : Double.NaN;
             out[i] = then > 0 ? index[i] / then - 1 : Double.NaN;
         }
         return out;
+    }
+
+    /**
+     * One component's inflation over the last year (0.7.45; PriceIndex
+     * COMPONENTS order): its chained level now against twelve months before,
+     * off the history's line for it - NaN until a year of the line is
+     * recorded, which on a city older than 0.7.45 is its first year on this
+     * build. Policy's basket bar labels each part with it.
+     */
+    public static double componentInflation(HistorySave h, int component) {
+        return h.changeOver(HistorySave.indexKey(component), MONTHS_A_YEAR);
     }
 
     private static List<Column> columns(HistorySave h) {
@@ -555,14 +616,23 @@ public final class YearBook {
        THE FOLD
        ================================================================== */
 
-    /** A row's value for a column, by that column's own rule. */
-    private static double fold(Column c, int from, int to) {
+    /**
+     * A row's value for a column, by that column's own rule.
+     *
+     * Each entry weighs its months (0.7.55): a folded year's flow, read a
+     * month at a time, adds its twelve, and its rate counts twelve times in
+     * a mean - so a decade that is half folded years and half months is a
+     * decade of months either way. For a history that has never folded,
+     * every weight is one and the arithmetic is what it was.
+     */
+    private static double fold(Column c, int from, int to, HistorySave h) {
         switch (c.kind) {
             case FLOW: {
                 double sum = 0;
                 for (int i = from; i <= to; i++) {
                     if (Double.isNaN(c.monthly[i])) return Double.NaN;
-                    sum += c.monthly[i];
+                    int w = h.monthsIn(i);
+                    sum += w == 1 ? c.monthly[i] : c.monthly[i] * w;
                 }
                 return sum;
             }
@@ -572,16 +642,26 @@ public final class YearBook {
                 double sum = 0; int seen = 0;
                 for (int i = from; i <= to; i++) {
                     if (Double.isNaN(c.monthly[i])) continue;
-                    sum += c.monthly[i]; seen++;
+                    int w = h.monthsIn(i);
+                    sum += w == 1 ? c.monthly[i] : c.monthly[i] * w;
+                    seen += w;
                 }
                 return seen == 0 ? Double.NaN : sum / seen;
             }
         }
     }
 
-    private static double worst(Column c, int from, int to, boolean high) {
+    /** The months axis entries from..to hold (0.7.55): a row's n. */
+    private static int monthsIn(HistorySave h, int from, int to) {
+        int n = 0;
+        for (int i = from; i <= to; i++) n += h.monthsIn(i);
+        return n;
+    }
+
+    /** A row's worst or best SINGLE month: a folded year has none, so it is passed over (0.7.55). */
+    private static double worst(Column c, int from, int to, boolean high, HistorySave h) {
         double best = Double.NaN;
-        for (int i = from; i <= to; i++) {
+        for (int i = Math.max(from, h.yearlyPoints()); i <= to; i++) {
             double v = c.monthly[i];
             if (Double.isNaN(v)) continue;
             if (Double.isNaN(best) || (high ? v > best : v < best)) best = v;
@@ -738,7 +818,7 @@ public final class YearBook {
             double[] values = new double[rows.size()];
             boolean anything = false;
             for (int r = 0; r < rows.size(); r++) {
-                values[r] = fold(c, rows.get(r)[0], rows.get(r)[1]);
+                values[r] = fold(c, rows.get(r)[0], rows.get(r)[1], history);
                 if (!Double.isNaN(values[r]) && values[r] != 0) anything = true;
             }
             if (anything) { shown.add(c); folded.put(c.name, values); }
@@ -754,7 +834,7 @@ public final class YearBook {
             List<String> row = new ArrayList<>(header.size());
             row.add(String.valueOf(bucket(axis.get(from), span) + 1));
             row.add(String.valueOf(axis.get(to)));
-            row.add(String.valueOf(to - from + 1));
+            row.add(String.valueOf(monthsIn(history, from, to)));
             for (Column c : shown) row.add(compact(folded.get(c.name)[r]));
             body.add(row);
         }
@@ -771,8 +851,8 @@ public final class YearBook {
                 List<String> row = new ArrayList<>(withinHeader.size());
                 row.add(String.valueOf(bucket(axis.get(from), span) + 1));
                 for (Column c : rates) {
-                    row.add(compact(worst(c, from, to, false)));
-                    row.add(compact(worst(c, from, to, true)));
+                    row.add(compact(worst(c, from, to, false, history)));
+                    row.add(compact(worst(c, from, to, true, history)));
                 }
                 withinBody.add(row);
             }
@@ -805,7 +885,14 @@ public final class YearBook {
         out.append("A [+] cell is blank if ANY month of the row is missing, because a sum of eight months is not a ")
            .append(unit).append(".\n");
         out.append("A [~] cell is the mean of the months that WERE recorded, because a mean of eight months is still a mean.\n");
-        out.append("The n column is how many months the row actually covers; the last row of a run can be short.\n\n");
+        out.append("The n column is how many months the row actually covers; the last row of a run can be short.\n");
+        if (history.yearlyPoints() > 0) {
+            out.append("PAST FIVE HUNDRED YEARS THE CITY KEEPS A YEAR TO A POINT: months ").append(first).append('-')
+               .append(history.getMonth().get(history.yearlyPoints() - 1))
+               .append(" were folded a year at a time by the same three rules, so their rows are\n")
+               .append("exact, their WITHIN cells are blank (no single month is left), and their spells count whole years.\n");
+        }
+        out.append('\n');
 
         /* ------------------------- the columns ------------------------- */
         out.append("COLUMNS\n");
@@ -895,7 +982,7 @@ public final class YearBook {
                .append(", low ").append(compact(px[lo])).append(" in ").append(at(axis, lo))
                .append(", ended ").append(compact(lastReal(px))).append('\n');
             double[] infl = by.get("inflation");
-            double mean = meanOf(infl);
+            double mean = meanOf(infl, h);
             if (!Double.isNaN(mean)) {
                 out.append("               average inflation over the run ").append(pct(mean)).append(" a year\n");
             }
@@ -908,29 +995,29 @@ public final class YearBook {
                .append(at(axis, far)).append(", ended ").append(compact(lastReal(fx))).append('\n');
         }
 
-        spell(out, "  The bank     ", by.get("bankEquity"), axis, v -> v < 0,
+        spell(out, "  The bank     ", by.get("bankEquity"), h, v -> v < 0,
                 "equity under water", true, false);
-        spell(out, "               ", by.get("bankBranches"), axis, v -> v < 1,
+        spell(out, "               ", by.get("bankBranches"), h, v -> v < 1,
                 "no branch standing", false, false);
         double[] offs = by.get("bankWriteOffs");
         if (hasAny(offs)) {
             int worstOff = argBest(offs, true);
-            out.append("               written off ").append(compact(sumOf(offs)))
+            out.append("               written off ").append(compact(sumOf(offs, h)))
                .append(" all told, worst month ").append(compact(offs[worstOff]))
                .append(" in ").append(at(axis, worstOff)).append('\n');
         }
 
-        spell(out, "  Shortages    ", by.get("energyRatio"), axis, v -> v < 0.999, "power short", false, true);
-        spell(out, "               ", by.get("waterRatio"),  axis, v -> v < 0.999, "water short", false, true);
-        spell(out, "               ", by.get("roadRatio"),   axis, v -> v < 0.999, "roads congested", false, true);
+        spell(out, "  Shortages    ", by.get("energyRatio"), h, v -> v < 0.999, "power short", false, true);
+        spell(out, "               ", by.get("waterRatio"),  h, v -> v < 0.999, "water short", false, true);
+        spell(out, "               ", by.get("roadRatio"),   h, v -> v < 0.999, "roads congested", false, true);
 
-        spell(out, "  Land         ", by.get("landUse"), axis, v -> v >= 0.99, "at or past 99% used", true, false);
-        spell(out, "  Housing      ", by.get("unhoused"), axis, v -> v > 0, "somebody with no home", true, false);
-        spell(out, "               ", by.get("unburied"), axis, v -> v > 0, "somebody unburied", true, false);
-        spell(out, "  Work         ", by.get("unemployment"), axis, v -> v > 0.20, "unemployment past 20%", true, false);
-        spell(out, "  Health       ", by.get("sickRate"), axis, v -> v > 0.10, "sick rate past 10%", true, false);
-        spell(out, "  The treasury ", by.get("cash"), axis, v -> v < 0, "overdrawn", false, true);
-        spell(out, "  Crime        ", by.get("caughtNotHeld"), axis, v -> v > 0, "caught and let go for want of a cell", true, false);
+        spell(out, "  Land         ", by.get("landUse"), h, v -> v >= 0.99, "at or past 99% used", true, false);
+        spell(out, "  Housing      ", by.get("unhoused"), h, v -> v > 0, "somebody with no home", true, false);
+        spell(out, "               ", by.get("unburied"), h, v -> v > 0, "somebody unburied", true, false);
+        spell(out, "  Work         ", by.get("unemployment"), h, v -> v > 0.20, "unemployment past 20%", true, false);
+        spell(out, "  Health       ", by.get("sickRate"), h, v -> v > 0.10, "sick rate past 10%", true, false);
+        spell(out, "  The treasury ", by.get("cash"), h, v -> v < 0, "overdrawn", false, true);
+        spell(out, "  Crime        ", by.get("caughtNotHeld"), h, v -> v > 0, "caught and let go for want of a cell", true, false);
 
         // The named episodes - the same list the Reports page marks under its
         // chart, so the file and the chart agree about what to call a year.
@@ -963,15 +1050,16 @@ public final class YearBook {
         return runs;
     }
 
-    private static void spell(StringBuilder out, String label, double[] series, List<Integer> axis,
+    private static void spell(StringBuilder out, String label, double[] series, HistorySave h,
                               Test test, String what, boolean worstIsHigh, boolean worstIsLow) {
         if (series == null || !hasAny(series)) return;
+        List<Integer> axis = h.getMonth();
         List<int[]> runs = runsOf(series, test);
         int count = 0;
         double extreme = Double.NaN; int extremeAt = -1;
         for (int[] r : runs) {
             for (int i = r[0]; i <= r[1]; i++) {
-                count++;
+                count += h.monthsIn(i);     // a folded year's months (0.7.55)
                 boolean better = Double.isNaN(extreme)
                         || (worstIsLow ? series[i] < extreme : series[i] > extreme);
                 if (better) { extreme = series[i]; extremeAt = i; }
@@ -1038,7 +1126,9 @@ public final class YearBook {
      * THE TABLE'S THRESHOLDS, NAMED (0.7.23). They were literals in the
      * table below, and the chart now says each one in words when a band or
      * an episode is pointed at (trigger()) - so the rule and its sentence
-     * read one number. The values are the table's, unchanged.
+     * read one number. The values are the table's, unchanged - but the
+     * epidemic's, which reads Health's outbreaks since 0.7.46 (A8), not a
+     * sick rate over a tenth.
      */
 
     /** The bank's equity under this, in thousands, is a financial crisis: the bank has failed. */
@@ -1056,8 +1146,8 @@ public final class YearBook {
     /** Prices falling faster than this a year (a negative rate) is a deflation. */
     public static final double DEFLATION_EPISODE = -.10;
 
-    /** More of the workforce off sick than this is an epidemic. */
-    public static final double EPIDEMIC_SICK = .10;
+    /** An epidemic is named while an outbreak runs - more of the workforce off sick than its care explains - not while a city short of care is as sick as it always is (A8). */
+    public static final double EPIDEMIC_OUTBREAK = Health.OUTBREAK_FLOOR;
 
     /** The treasury's cash under this, in thousands, is a treasury crisis: it is overdrawn. */
     public static final double TREASURY_CASH = 0;
@@ -1100,14 +1190,14 @@ public final class YearBook {
         double[] inflation = inflation(h);
 
         //    kind          the series                       the condition                   worst is  the name
-        named(found, axis, "financial", h.aligned("bankEquity"), v -> v < FINANCIAL_EQUITY,    false, "Financial crisis of %d");
-        named(found, axis, "recession", realGrowth(h),           v -> v < RECESSION_GROWTH,    false, "Recession of %d");
-        named(found, axis, "currency",  currencyMove(h),         v -> v > CURRENCY_MOVE,       true,  "Currency crisis of %d");
-        named(found, axis, "inflation", inflation,               v -> v > INFLATION_EPISODE,   true,  "The %d inflation");
-        named(found, axis, "deflation", inflation,               v -> v < DEFLATION_EPISODE,   false, "The %d deflation");
-        named(found, axis, "epidemic",  h.aligned("sickRate"),   v -> v > EPIDEMIC_SICK,       true,  "Epidemic of %d");
-        named(found, axis, "treasury",  h.aligned("cash"),       v -> v < TREASURY_CASH,       false, "Treasury crisis of %d");
-        named(found, axis, "slump",     unemployment(h),         v -> v > SLUMP_UNEMPLOYMENT,  true,  "The %d slump");
+        named(found, h, "financial", h.aligned("bankEquity"), v -> v < FINANCIAL_EQUITY,    false, "Financial crisis of %d");
+        named(found, h, "recession", realGrowth(h),           v -> v < RECESSION_GROWTH,    false, "Recession of %d");
+        named(found, h, "currency",  currencyMove(h),         v -> v > CURRENCY_MOVE,       true,  "Currency crisis of %d");
+        named(found, h, "inflation", inflation,               v -> v > INFLATION_EPISODE,   true,  "The %d inflation");
+        named(found, h, "deflation", inflation,               v -> v < DEFLATION_EPISODE,   false, "The %d deflation");
+        named(found, h, "epidemic",  h.aligned("outbreak"),   v -> v >= EPIDEMIC_OUTBREAK,  true,  "Epidemic of %d");
+        named(found, h, "treasury",  h.aligned("cash"),       v -> v < TREASURY_CASH,       false, "Treasury crisis of %d");
+        named(found, h, "slump",     unemployment(h),         v -> v > SLUMP_UNEMPLOYMENT,  true,  "The %d slump");
 
         // A recession that ran two years is a depression, and is called one.
         for (int i = 0; i < found.size(); i++) {
@@ -1146,7 +1236,8 @@ public final class YearBook {
         List<int[]> out = new ArrayList<>();
         List<Integer> axis = h.getMonth();
         for (int[] r : runsOf(realGrowth(h), v -> v < RECESSION_GROWTH)) {
-            if (r[1] - r[0] + 1 >= EPISODE_MIN_MONTHS) out.add(new int[]{axis.get(r[0]), axis.get(r[1])});
+            // In months, a folded year twelve of them (0.7.55), from the first month of its first entry.
+            if (monthsIn(h, r[0], r[1]) >= EPISODE_MIN_MONTHS) out.add(new int[]{h.firstMonthOf(r[0]), axis.get(r[1])});
         }
         return out;
     }
@@ -1212,7 +1303,7 @@ public final class YearBook {
                     compact(CURRENCY_MOVE));
             case "inflation"  -> "prices rose faster than " + DecisionLog.pct(INFLATION_EPISODE) + " a year";
             case "deflation"  -> "prices fell faster than " + DecisionLog.pct(-DEFLATION_EPISODE) + " a year";
-            case "epidemic"   -> "more than " + DecisionLog.pct(EPIDEMIC_SICK) + " of the workforce was off sick";
+            case "epidemic"   -> "an outbreak kept " + DecisionLog.pct(EPIDEMIC_OUTBREAK) + " or more of the workforce off sick, over what its care explains";
             case "treasury"   -> "the treasury's cash went below zero: it was overdrawn";
             case "slump"      -> "more than " + DecisionLog.pct(SLUMP_UNEMPLOYMENT) + " of the labour force was out of work";
             default           -> "";
@@ -1229,11 +1320,13 @@ public final class YearBook {
        WHAT IS RUNNING NOW (0.7.37). City History's strip names the trouble
        the city is in this month, and leads with the worst of it: a crisis
        before a watch, the newest start first. One kind of episode would
-       always be in it, being so old - an epidemic that has held for most of
-       the city's life (the research's 2,400-month city: 2,213 months) - so an
-       episode that has run CHRONIC_MONTHS is listed after the others and
-       leads only when it runs alone. The order is the screen's; the
-       thresholds that name an episode are the table's, untouched.
+       always be in it, being so old - an epidemic that had held for most of
+       the city's life while one was any month over a tenth of the workforce
+       off sick (the research's 2,400-month city: 2,213 months; since 0.7.46
+       an epidemic is an outbreak, months long - A8) - so an episode that has
+       run CHRONIC_MONTHS is listed after the others and leads only when it
+       runs alone. The order is the screen's; the thresholds that name an
+       episode are the table's, untouched.
        ------------------------------------------------------------------ */
 
     /** An episode still running after this many months is chronic: City History lists it after the others that are running, and leads with it only when it runs alone (0.7.37). */
@@ -1315,7 +1408,7 @@ public final class YearBook {
             case "currency"                -> "the rate at " + compact(worst) + " times its level a year before";
             case "inflation"               -> "inflation at " + DecisionLog.pct(worst) + " a year";
             case "deflation"               -> "prices falling " + DecisionLog.pct(-worst) + " a year";
-            case "epidemic"                -> DecisionLog.pct(worst) + " of the workforce off sick";
+            case "epidemic"                -> "an outbreak kept " + DecisionLog.pct(worst) + " more of the workforce off sick";
             case "treasury"                -> "the treasury's cash at " + Formats.INSTANCE.amount(worst);
             case "slump"                   -> DecisionLog.pct(worst) + " out of work";
             default                        -> compact(worst);
@@ -1331,7 +1424,8 @@ public final class YearBook {
         double[] year = realGdpYear(h);
         double[] out = new double[year.length];
         for (int i = 0; i < out.length; i++) {
-            double then = i >= MONTHS_A_YEAR ? year[i - MONTHS_A_YEAR] : Double.NaN;
+            int back = h.back(i, MONTHS_A_YEAR);
+            double then = back >= 0 ? year[back] : Double.NaN;
             out[i] = then > 0 ? year[i] / then - 1 : Double.NaN;
         }
         return out;
@@ -1342,20 +1436,25 @@ public final class YearBook {
         double[] fx = h.aligned("fxRate");
         double[] out = new double[fx.length];
         for (int i = 0; i < out.length; i++) {
-            double then = i >= MONTHS_A_YEAR ? fx[i - MONTHS_A_YEAR] : Double.NaN;
+            int back = h.back(i, MONTHS_A_YEAR);
+            double then = back >= 0 ? fx[back] : Double.NaN;
             out[i] = then > 0 ? fx[i] / then : Double.NaN;
         }
         return out;
     }
 
     /** One row of the table: the runs of a condition, dropped, joined and named. */
-    private static void named(List<Episode> found, List<Integer> axis, String kind, double[] series,
+    private static void named(List<Episode> found, HistorySave h, String kind, double[] series,
                               Test test, boolean worstIsHigh, String name) {
+        List<Integer> axis = h.getMonth();
         List<int[]> joined = new ArrayList<>();
         for (int[] r : runsOf(series, test)) {
-            if (r[1] - r[0] + 1 < EPISODE_MIN_MONTHS) continue;
+            // Months, not entries (0.7.55): a folded year is twelve, a run's
+            // length and the relief between two alike.
+            if (monthsIn(h, r[0], r[1]) < EPISODE_MIN_MONTHS) continue;
             int[] last = joined.isEmpty() ? null : joined.get(joined.size() - 1);
-            if (last != null && r[0] - last[1] - 1 < EPISODE_JOIN_MONTHS) last[1] = r[1];
+            int relief = r[0] - last1(last) - 1 <= 0 ? 0 : monthsIn(h, last1(last) + 1, r[0] - 1);
+            if (last != null && relief < EPISODE_JOIN_MONTHS) last[1] = r[1];
             else joined.add(new int[]{r[0], r[1]});
         }
         for (int[] r : joined) {
@@ -1366,7 +1465,7 @@ public final class YearBook {
                 if (Double.isNaN(v) || !test.holds(v)) continue;
                 if (Double.isNaN(worst) || (worstIsHigh ? v > worst : v < worst)) { worst = v; worstAt = i; }
             }
-            int from = axis.get(r[0]);
+            int from = h.firstMonthOf(r[0]);
             found.add(new Episode(kind, String.format(Locale.ROOT, name, CityCalendar.yearOf(from)),
                     from, axis.get(r[1]), worst, axis.get(worstAt)));
         }
@@ -1394,17 +1493,32 @@ public final class YearBook {
         return Double.NaN;
     }
 
-    private static double sumOf(double[] v) {
+    /** A flow's months added, a folded year's twelve at its monthly average (0.7.55). */
+    private static double sumOf(double[] v, HistorySave h) {
         double sum = 0; boolean any = false;
-        for (double d : v) if (!Double.isNaN(d)) { sum += d; any = true; }
+        for (int i = 0; i < v.length; i++) {
+            if (Double.isNaN(v[i])) continue;
+            int w = h.monthsIn(i);
+            sum += w == 1 ? v[i] : v[i] * w;
+            any = true;
+        }
         return any ? sum : Double.NaN;
     }
 
-    private static double meanOf(double[] v) {
+    /** A rate's months averaged, a folded year counting its twelve (0.7.55). */
+    private static double meanOf(double[] v, HistorySave h) {
         double sum = 0; int n = 0;
-        for (double d : v) if (!Double.isNaN(d)) { sum += d; n++; }
+        for (int i = 0; i < v.length; i++) {
+            if (Double.isNaN(v[i])) continue;
+            int w = h.monthsIn(i);
+            sum += w == 1 ? v[i] : v[i] * w;
+            n += w;
+        }
         return n == 0 ? Double.NaN : sum / n;
     }
+
+    /** The last entry of a joined run, or -2 with none - so the relief before the first run is never read. */
+    private static int last1(int[] run) { return run == null ? -2 : run[1]; }
 
     private static int argBest(double[] v, boolean high) {
         int best = -1;

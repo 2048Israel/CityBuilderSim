@@ -1,6 +1,6 @@
 # FamilyModel.java - 2,211 lines · 102 methods · 10 constants · model
 
-`ham/citybuildersim/FamilyModel.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FamilyModel.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > How the city's people are arranged into households, and what each earns.
 > 
@@ -114,7 +114,7 @@
 | 437 | `private final double[] outsideDependants` | Children of the adults who left work but not the house, by band. |
 | 440 | `private double atHomeAdults` | Adults outside the families who still live with their dependants. |
 | 783 | `private double doubledUp` |  |
-| 921 | `private int[] lastHomesBySize` | The door census house() was last handed. |
+| 921 | `private long[] lastHomesBySize` | The door census house() was last handed. |
 | 950 | `private double rentWeight` | What the landlords can bill for, in person-equivalents. |
 | 982 | `private double studioRentWeight` | The part of rentWeight billed on units of size 1-2. |
 | 985 | `private double familyRentWeight` | ...and on units of size 3 and up. |
@@ -246,10 +246,10 @@
 | 1089 | 1 | `public double getRefusedByStudio()` |  |
 | 1092 | 3 | `public static double rentWeightOf(int unitSize)` | What one let home of this size bills, whoever is in it. |
 | 1111 | 10 | `public double marginalRentWeight(int unitSize)` | What one more home of this size would earn, in person-equivalents. |
-| 1128 | 15 | `public double house(int[] homesBySize)` | Matches households to homes by size, and reports what would not fit. |
-| 1155 | 106 | `private double[] match(int[] homesBySize, double[] free, boolean record)` | The match itself: house() when it records, and the room the placement has left when it does not (roomLeft(), 0.7.17) - one loop, so the two cannot come to disagree about who fits where. |
+| 1128 | 15 | `public double house(long[] homesBySize)` | Matches households to homes by size, and reports what would not fit. |
+| 1155 | 106 | `private double[] match(long[] homesBySize, double[] free, boolean record)` | The match itself: house() when it records, and the room the placement has left when it does not (roomLeft(), 0.7.17) - one loop, so the two cannot come to disagree about who fits where. |
 | 1270 | 6 | `private void bill(int unitSize, double homes)` | Books a let: its weight to the whole, and to the segment the DOOR is in. |
-| 1282 | 7 | `public void squeeze(int homesAvailable)` | Crowds households until they fit the homes available. |
+| 1282 | 7 | `public void squeeze(long homesAvailable)` | Crowds households until they fit the homes available. |
 | 1297 | 64 | `public void squeezeUnplaced(double excess)` | The same two valves, on households house() could not place. |
 | 1374 | 1 | `public double getStillUnplaced()` |  |
 | 1384 | 92 | `public void noteUnplaced(double left)` | Records what the FINAL match left over, after both valves have run. |
@@ -262,7 +262,7 @@
 | 1526 | 10 | `Room(double familyDoorsFree, double studiosFree, double doublingRoom, double seeking, double withADoor, double withDependants, ...` _(in FamilyModel.Room)_ |  |
 | 1550 | 6 | `public double households()` _(in FamilyModel.Room)_ | Households of the arrivals' mix the placement could still take. |
 | 1558 | 3 | `public double people()` _(in FamilyModel.Room)_ | ...and as people, at the arrivals' own people to a household. |
-| 1569 | 27 | `public Room roomLeft(int[] homesBySize)` | The room the placement has left against a door census, asked of the match rather than worked out from totals (see the banner above). |
+| 1569 | 27 | `public Room roomLeft(long[] homesBySize)` | The room the placement has left against a door census, asked of the match rather than worked out from totals (see the banner above). |
 
 ### AND WHEN THEY CANNOT AFFORD ONE (lines 1597-1787)
 

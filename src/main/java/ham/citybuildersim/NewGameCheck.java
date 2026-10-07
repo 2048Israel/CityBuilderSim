@@ -34,6 +34,12 @@ import java.util.Map;
  * autopilot and the treasury rolling what falls due - by both of the
  * founding screen's doors - while a city built bare keeps the hand on the
  * dial and rolls nothing, and a save keeps whatever it saved.
+ *
+ * AND THE GROUND IT STANDS ON (0.7.56), section 13: the world's seed is part
+ * of the founding record - the defaults' and every preset's the default
+ * world, a chosen one carried into the city and its World, kept by a save,
+ * derived the same way every time for a save from before it, and left behind
+ * by Start New Game; the founding screen's dice and typed seed.
  */
 public class NewGameCheck {
 
@@ -78,6 +84,8 @@ public class NewGameCheck {
         m.put("founding.names", (double) (g.getCityName() + "|" + g.getCurrency().describe()
                 + "|" + g.getCurrency().plural() + "|" + g.getCurrency().symbol()).hashCode());
         m.put("world.mean", g.getWorldEconomy().getMeanInflation());
+        // ...and the ground it stands on (0.7.56): section 13 founds a city on another world.
+        m.put("founding.worldSeed", (double) g.getWorldSeed());
         /*
          * THE OTHER HALF OF THE ENDOWMENT (2026-09-21): the founders' dollars
          * in the vault. Founded in buildWorld() beside the cash, so every door
@@ -183,6 +191,25 @@ public class NewGameCheck {
         m.put("land.allocated", g.getLandManager().getAllocatedSqFt());
         m.put("land.blocks", (double) g.getLandManager().getBlocksPurchased());
         m.put("land.price", g.getLandManager().getPricePerSqFt());
+        // ...and the land on the world (0.7.57): the centre, every purchase,
+        // the offers, what was taken out and the next id; since 0.7.67 the
+        // centre's blocks and the holdings' rectangles (the lanes until then).
+        CityLand ground = g.getCityLand();
+        double[] centre = ground.centreState();
+        for (int i = 0; i < centre.length; i++) m.put("land.centre" + i, centre[i]);
+        double[][] blocks = ground.centreRectsState();
+        m.put("land.centreBlocks", (double) blocks.length);
+        for (int i = 0; i < blocks.length; i++) m.put("land.centreBlock" + i, java.util.Arrays.hashCode(blocks[i]) * 1.0);
+        double[][] holdings = ground.holdingsState();
+        for (int i = 0; i < holdings.length; i++) m.put("land.holding" + i, java.util.Arrays.hashCode(holdings[i]) * 1.0);
+        m.put("land.purchases", (double) ground.purchases().size());
+        m.put("land.stamp", (double) ground.stamp());
+        double[][] offers = g.getLandManager().getMarket().getOffersState();
+        m.put("land.offers", (double) offers.length);
+        for (int i = 0; i < offers.length; i++) m.put("land.offer" + i, java.util.Arrays.hashCode(offers[i]) * 1.0);
+        m.put("land.nextOffer", (double) g.getLandManager().getMarket().getNextOfferId());
+        double[] taken = g.getLandManager().getDepletionState();
+        for (int i = 0; i < taken.length; i++) m.put("land.extracted" + i, taken[i]);
         // How the land office pays, and the dollars it has paid (0.7.6).
         m.put("land.paidFromVault", g.isLandPaidFromVault() ? 1.0 : 0.0);
         m.put("fx.landUsdLifetime", g.getForeignAccounts().getLandUsdLifetime());
@@ -404,6 +431,9 @@ public class NewGameCheck {
 
         /* ============ 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) ============ */
         theDialAndTheRollover(files);
+
+        /* ============ 13. THE GROUND IT STANDS ON (0.7.56) ============ */
+        theWorldsSeed(files);
 
         cleanUp(root);
 
@@ -958,6 +988,106 @@ public class NewGameCheck {
         assertTrue("a save from before either key loads with the hand on the dial",
                 !back[0].getDebtManager().isAutopilot());
         assertTrue("...and rolls nothing, as it was played", back[0].getRolloverMode() == Rollover.Mode.MANUAL);
+    }
+
+    /* =====================================================================
+       13. THE GROUND IT STANDS ON (0.7.56, batch J1a)
+
+       The founding record carries the seed of the city's World (the
+       project's spec-land.md). What has to hold:
+         - the defaults, every preset and a custom founding stand on
+           Founding.DEFAULT_WORLD_SEED, so every harness and the playtest
+           found on one world;
+         - a founding on another world founds a city on it, and its World is
+           that seed's, shared; a typed currency keeps the seed;
+         - a save keeps it; a save from before 0.7.56 reads the seed derived
+           from its name, founding treasury, ground and month, the same on
+           every load, and its next save keeps it;
+         - Start New Game leaves it behind (the snapshot sweeps it too);
+         - the founding screen's dice rolls 1 to ROLLED_SEED_MAX, and a typed
+           seed is read as a whole number or not at all.
+       ===================================================================== */
+    static void theWorldsSeed(GameFiles files) throws Exception {
+        System.out.println("\n--- 13. the ground a city stands on ---");
+
+        boolean presets = Founding.defaults().getWorldSeed() == Founding.DEFAULT_WORLD_SEED;
+        for (Founding.Preset p : Founding.Preset.values()) {
+            if (p != Founding.Preset.CUSTOM) {
+                presets &= Founding.named("Arden", p, WorldEconomy.DEFAULT_MEAN_INFLATION).getWorldSeed()
+                        == Founding.DEFAULT_WORLD_SEED;
+            }
+        }
+        presets &= Founding.custom("Arden", Game.FOUNDING_CASH, 0, WorldEconomy.DEFAULT_MEAN_INFLATION).getWorldSeed()
+                == Founding.DEFAULT_WORLD_SEED;
+        assertTrue("the defaults, every preset and a custom city: the default world", presets);
+        Game plain = quietly(() -> { Game g = new Game(files); g.run(); return g; });
+        assertTrue("...and a city founded on the defaults stands on it", plain.getWorldSeed() == Founding.DEFAULT_WORLD_SEED
+                && plain.getFounding().getWorldSeed() == Founding.DEFAULT_WORLD_SEED);
+
+        long seed = 77;
+        Founding elsewhere = Founding.custom("Arden", 62_500, 12_500, .02).withWorldSeed(seed)
+                .withCurrency(Currency.typed("Arden crown", "ARC"));
+        assertTrue("fixture: a founding on world " + seed + ", its money named by hand",
+                elsewhere.problem() == null && elsewhere.getWorldSeed() == seed);
+        Game g77 = quietly(() -> { Game g = new Game(files, elsewhere); g.run(); return g; });
+        assertTrue("a city founded on another world stands on it", g77.getWorldSeed() == seed
+                && g77.getFounding().getWorldSeed() == seed);
+        assertTrue("...and its World is that seed's, the one every asker shares",
+                g77.getWorld().seed() == seed && g77.getWorld() == World.of(seed));
+        World w77 = World.of(seed);
+        assertTrue("...and its land is on it: a centre round that world's founding site (0.7.57)",
+                g77.getCityLand().seed() == seed && g77.getCityLand().siteX() == w77.foundingX()
+                        && g77.getCityLand().siteY() == w77.foundingY());
+        assertTrue("...while the founding's other choices are as they were",
+                g77.getCityName().equals("Arden") && g77.getCurrency().code().equals("ARC") && g77.getFoundingCash() == 62_500);
+
+        quietly(() -> g77.simulateMonths(2));
+        assertTrue("saved", quietly(() -> g77.saveGame(7, "on world 77")).ok);
+        com.google.gson.JsonObject json = com.google.gson.JsonParser
+                .parseString(Files.readString(files.saveFile(7))).getAsJsonObject();
+        assertTrue("the save carries the seed", json.has("worldSeed") && json.get("worldSeed").getAsLong() == seed);
+        Game back = quietly(() -> { Game g = new Game(files); g.loadGameSave(7); return g; });
+        assertTrue("...and the city it loads stands on the same world", back.getWorldSeed() == seed
+                && back.getWorld() == World.of(seed));
+
+        json.remove("worldSeed");
+        Files.writeString(files.saveFile(8), json.toString());
+        Files.copy(files.historyFile(7), files.historyFile(8), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        long derived = Founding.derivedWorldSeed(json.get("cityName").getAsString(), json.get("foundingCash").getAsDouble(),
+                json.get("landOwned").getAsDouble(), json.get("month").getAsInt());
+        Game old = quietly(() -> { Game g = new Game(files); g.loadGameSave(8); return g; });
+        Game oldAgain = quietly(() -> { Game g = new Game(files); g.loadGameSave(8); return g; });
+        assertTrue("fixture: the save without the seed loads", old.getLoadFailure() == null && old.getMonth() == g77.getMonth());
+        assertTrue("a save from before 0.7.56 reads the seed its name, treasury, ground and month make",
+                old.getWorldSeed() == derived && derived != seed && derived != Founding.DEFAULT_WORLD_SEED);
+        assertTrue("...the same one on every load", oldAgain.getWorldSeed() == derived);
+        assertTrue("saved", quietly(() -> old.saveGame(8, "derived")).ok);
+        assertTrue("...and its next save keeps it", com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(8)))
+                .getAsJsonObject().get("worldSeed").getAsLong() == derived);
+        assertTrue("a save one month on derives another: the month is in it",
+                Founding.derivedWorldSeed("Arden", 62_500, json.get("landOwned").getAsDouble(), json.get("month").getAsInt() + 1)
+                        != derived);
+
+        quietly(() -> back.newGame());
+        assertTrue("Start New Game after a city on world " + seed + " founds on the default world",
+                back.getWorldSeed() == Founding.DEFAULT_WORLD_SEED && isDefault(back));
+
+        boolean inRange = true;
+        java.util.Set<Long> rolled = new java.util.HashSet<>();
+        for (int i = 0; i < 1000; i++) {
+            long r = Founding.rollWorldSeed();
+            inRange &= r >= 1 && r <= Founding.ROLLED_SEED_MAX;
+            rolled.add(r);
+        }
+        assertTrue("the dice rolls 1 to ROLLED_SEED_MAX (" + rolled.size() + " different of 1,000)", inRange && rolled.size() > 990);
+        assertTrue("a typed seed is a whole number: 4127, 1,234, -5",
+                Long.valueOf(4127).equals(Founding.parseWorldSeed("4127"))
+                        && Long.valueOf(1234).equals(Founding.parseWorldSeed(" 1,234 "))
+                        && Long.valueOf(-5).equals(Founding.parseWorldSeed("-5")));
+        assertTrue("...and nothing else: a word, a fraction, nothing, past a long",
+                Founding.parseWorldSeed("Arden") == null && Founding.parseWorldSeed("1.5") == null
+                        && Founding.parseWorldSeed("") == null && Founding.parseWorldSeed(null) == null
+                        && Founding.parseWorldSeed("99999999999999999999") == null);
     }
 
     static void close(String label, double actual, double expected, double tol) {

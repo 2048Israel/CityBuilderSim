@@ -77,7 +77,9 @@ public class BuildingManager {
        that much of a template's cashCost per point is its labour, at
        founding; today it is the same posts at today's wages. The rest of
        cashCost - the overhead, the equipment and the margin, most of it
-       (Low-Rise: all but 1,132 of 10,196) - stays at its founding value. Indexing
+       (Low-Rise: all but 1,132 of 10,196) - stays at its founding value
+       (struck at the expected price level since 0.7.42 - THE CASH IS STRUCK
+       AT THE EXPECTED LEVEL, below). Indexing
        the whole of cashCost by the wage index was measured by hand first
        and rejected: in Jerus's city it would have been 13.5 times cashCost
        in month 1793 - a windfall, not a price.
@@ -147,8 +149,12 @@ public class BuildingManager {
         if (buildersWages == null) return cash;
         double then = buildersWages.perPointAtFounding();
         if (!(then > 0)) return cash;
-        double labourThen = Math.min(cash, t.getConstructionPoints() * then);
-        return cash - labourThen + labourThen * buildersWageIndex();
+        // The cash cost is struck at the expected price level (0.7.42), so its
+        // founding labour is the cash over that level, taken out at the level
+        // and put back at today's wages - see THE CASH IS STRUCK AT THE
+        // EXPECTED LEVEL.
+        double labourThen = Math.min(cash / expectedLevel, t.getConstructionPoints() * then);
+        return cash - labourThen * expectedLevel + labourThen * buildersWageIndex();
     }
 
     /** ...its labour part alone, at today's wages. */
@@ -157,8 +163,32 @@ public class BuildingManager {
         if (buildersWages == null) return 0;
         double then = buildersWages.perPointAtFounding();
         if (!(then > 0)) return 0;
-        return Math.min(cash, t.getConstructionPoints() * then) * buildersWageIndex();
+        return Math.min(cash / expectedLevel, t.getConstructionPoints() * then) * buildersWageIndex();
     }
+
+    /*
+     * THE CASH IS STRUCK AT THE EXPECTED LEVEL (0.7.42, the anchor). A
+     * template's cash cost is founding / unit x the expected price level since
+     * Game re-strikes it every month (Game.restrikeMoneyConstants()), so the
+     * labour in it is not the labour at founding any more: at a level of 1.3
+     * the same points at founding wages are a smaller share of a larger cash
+     * figure. The founding labour is read off the cash over the level, capped
+     * at the cash over the level as it was capped at the cash, and the
+     * non-labour rest stays at the level - so labour moves with wages and the
+     * rest with expectations, and neither is counted twice. At a level of 1.0
+     * both read exactly as they did.
+     */
+
+    /** The expected price level the templates' cash was last struck at (Expectations.getStruckLevel(), the level the last month ended on); 1.0 until Game re-strikes. Derived each month and on a load, never saved. */
+    private double expectedLevel = 1.0;
+
+    /** Told by Game with every re-strike of the templates; anything not positive is ignored. */
+    public void setExpectedLevel(double level) {
+        if (level > 0 && Double.isFinite(level)) expectedLevel = level;
+    }
+
+    /** The level the cash costs are struck at. */
+    public double getExpectedLevel() { return expectedLevel; }
 
     /** ...and with its materials at the world's price today: what it would cost to put up now, before the sales tax. The repair bill's shape (EconomyManager.maintenanceBillFor() prices the material at the price it is handed); nothing calls it yet. */
     public double structureCost(BuildingsTemplate t) {
@@ -1090,6 +1120,36 @@ public class BuildingManager {
 
         templates.add(waterTreatmentPlant);
 
+        /*
+         * THE DESALINATION PLANT (0.7.59, batch J2; spec-land 2.3 and star 8).
+         * The water plant's output, crew, ground and road load, drawing the
+         * sea, so the fresh water limit does not reach it - and it needs owned
+         * sea to stand on (Game.hasCoastFor()). Twice the water plant's cost:
+         * seawater reverse osmosis runs two to five times a conventional
+         * plant, and the game's plant is already US$5.6M per MGD, so this is
+         * US$11M per MGD, the low end. Its power is the honest cost: 2,271,246
+         * m3 a month at 3.5 kWh a m3 (the middle of SWRO's 3 to 4) over 730.5
+         * hours is 10,880 kW, where the water plant's 900 kW works out at
+         * 0.29 kWh a m3, a real conventional figure.
+         */
+        BuildingsTemplate desalinationPlant = new BuildingsTemplate("Desalination Plant", BuildingType.WATER)
+                .setSource(BuildingsTemplate.Source.SEA)
+                .setCashCost(131568)
+                .setConstructionPoints(88000)
+                .setConstructionMaterials(4872)
+                .setProduction1(60000)
+                .setElectricityConsumption(10880)
+                .setWaterConsumption(20)
+                .setLandSqFt(800000)
+                .setRoadLoad(15)
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 14)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 4)
+                .setJobs(JobType.UNIV_SCIENCE, 3)
+                .setId(73);
+
+        templates.add(desalinationPlant);
+
         /* ------------------------------ STEEL ------------------------------
            Real electric-arc ratios, on a deliberately small plant: 1.1 tonnes
            of scrap per tonne of steel, about 450 kWh a tonne, a couple of cubic
@@ -1179,7 +1239,9 @@ public class BuildingManager {
            across a band of land prices, and InfrastructureCheck asserts it -
            at today's materials price the crossovers are about $16.50 and $28.50
            a square foot, against a ground price that starts at $0.70 and climbs
-           with every block owned and every thousand residents.
+           as the city crowds onto its land (LandMarket, THE CROWDING PREMIUM,
+           since 0.7.55; until then with every block owned and every thousand
+           residents).
 
                under $16.50/sq ft ......... Gravel Road
                $16.50 to $28.50/sq ft ..... Paved Road
@@ -1833,6 +1895,55 @@ public class BuildingManager {
                 .setId(14);
 
         templates.add(ironMine);
+
+        /* ------------------------------ FUEL (0.7.62) ------------------------------
+           spec-land 2.7. An Oil Well lifts 415 t of crude a month - a hundred
+           barrels a day at 7.33 barrels a tonne over 30.44 days - from an owned
+           oil site, on a two-acre pad (87,120 sq ft), with three people on it.
+           Its road load is the Iron Mine's a tonne (420 for 2,500 t: 70 for 415).
+
+           An Oil Refinery is a modular plant of 2,000 barrels a day: 8,300 t of
+           crude a month (2,000 x 30.44 / 7.33) into 8,300,000 L of fuel, a
+           thousand litres a tonne - 86% of a barrel's 1,165 L as transport fuels
+           - on twenty acres, with three months of it in its tanks (25M L). Its
+           road load is the Steel Mini-Mill's a tonne moved, in and out (500 for
+           12,600 t: 659 for 16,600).
+           ------------------------------------------------------------------------- */
+        BuildingsTemplate oilWell = new BuildingsTemplate("Oil Well", BuildingType.MINING)
+                .setCashCost(2000)
+                .setConstructionPoints(400)
+                .setConstructionMaterials(50)
+                .setSector("Oil")
+                .makes(Good.CRUDE, 415)         // tonnes of crude a month
+                .setElectricityConsumption(30)
+                .setWaterConsumption(5)
+                .setLandSqFt(87120)
+                .setRoadLoad(70)
+                .setJobs(JobType.NO_DIPLOMA, 2)
+                .setJobs(JobType.DIPLOMA, 1)
+                .setId(74);
+
+        templates.add(oilWell);
+
+        BuildingsTemplate oilRefinery = new BuildingsTemplate("Oil Refinery", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(60000)
+                .setConstructionPoints(30000)
+                .setConstructionMaterials(1000)
+                .setSector("Refining")
+                .makes(Good.FUEL, 8300000)      // litres of fuel a month
+                .uses(Good.CRUDE, 8300)         // tonnes of crude that takes
+                .setElectricityConsumption(1000)
+                .setWaterConsumption(250)
+                .setLandSqFt(870000)
+                .setRoadLoad(659)
+                .setJobs(JobType.NO_DIPLOMA, 50)
+                .setJobs(JobType.DIPLOMA, 30)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 15)
+                .setJobs(JobType.UNIV_SCIENCE, 5)
+                .setId(75);
+        oilRefinery.setStock(25000000);
+
+        templates.add(oilRefinery);
 
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
@@ -2958,6 +3069,30 @@ public class BuildingManager {
     }
     
     
+    /** The template ids of the stacks, in the order they stand: the order each was first bought (0.7.43; DataSave.getStackOrder()). */
+    public int[] stackOrder() {
+        int[] ids = new int[stacks.size()];
+        for (int k = 0; k < ids.length; k++) ids[k] = stacks.get(k).getBuilding().getId();
+        return ids;
+    }
+
+    /**
+     * Stands the stacks in a saved order (0.7.43): each in the place its id
+     * holds in `ids`, any the order does not name after them in the order
+     * they stand. The load path's restore is by id, and the month's crews are
+     * shared out in this order - see DataSave.getStackOrder().
+     */
+    public void orderStacks(int[] ids) {
+        if (ids == null || ids.length == 0) return;
+        java.util.Map<Integer, Integer> place = new java.util.HashMap<>();
+        for (int k = 0; k < ids.length; k++) place.putIfAbsent(ids[k], k);
+        java.util.List<BuildingsStacks> ordered = new ArrayList<>(stacks);
+        ordered.sort(java.util.Comparator.comparingInt(
+                s -> place.getOrDefault(s.getBuilding().getId(), Integer.MAX_VALUE)));
+        stacks.clear();
+        stacks.addAll(ordered);
+    }
+
     public void addStack(BuildingsTemplate template, int quantity, boolean noConstruction) {
 
         if (template.getName() == null) {
@@ -3209,7 +3344,7 @@ public class BuildingManager {
     }
 
     /** A stack's crew by the rule above: its buildings on site times the crew one of them can use, its points to CREW_SCALE_EXPONENT. */
-    static double weightOf(BuildingsTemplate t, int buildingsOnSite) {
+    static double weightOf(BuildingsTemplate t, long buildingsOnSite) {
         return buildingsOnSite * Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT);
     }
 
@@ -3263,7 +3398,10 @@ public class BuildingManager {
         for (ConstructionControl.Demolition site : control.demolitions()) {
             if (site.owed() > 0) others += demolitionWeight(site);
         }
-        double mine = weightOf(t, aheadUnits + quantity);
+        // In a long since 0.7.54: an order is sized by halving from what it
+        // needs (BusinessInvestment.orderSize()), up to 2,147,483,647 at 5
+        // billion people, which on top of a site would wrap an int.
+        double mine = weightOf(t, (long) aheadUnits + quantity);
         if (!(mine > 0)) return 0;
         double owedWith = aheadOwed + quantity * (double) t.getConstructionPoints();
         return owedWith * (others + mine) / (siteOutput * mine);
@@ -3876,9 +4014,9 @@ public class BuildingManager {
     }
 
     /** The whole posts offered of a job type's posts at a share: rounded once, the same way everywhere. */
-    public static int postsOffered(int posts, double share) {
+    public static long postsOffered(long posts, double share) {
         if (!(share < 1)) return posts;
-        return (int) Math.round(posts * Math.max(0, share));
+        return Math.round(posts * Math.max(0, share));
     }
 
     /** A sector's share of its posts on offer: 1 without the hook. */
@@ -3889,8 +4027,8 @@ public class BuildingManager {
     }
 
     /** The posts a sector offers this month, per job type - its buildings' posts at its share. */
-    public int[] getPostsOfferedBySector(String sector) {
-        int[] posts = getJobArrayBySector(sector);
+    public long[] getPostsOfferedBySector(String sector) {
+        long[] posts = getJobArrayBySector(sector);
         double share = offeredShareOf(sector);
         for (int i = 0; i < posts.length; i++) posts[i] = postsOffered(posts[i], share);
         return posts;
@@ -3989,14 +4127,14 @@ public class BuildingManager {
         return null;
     }
 
-    public int[] getTotalJobs() {
+    public long[] getTotalJobs() {
         // NOTE: this used to loop over `stacks` directly and never counted
         // `instances`, while getTotalJobs(JobType) below does include instances.
         // That meant this array and a per-type lookup could silently disagree.
         // Delegating to getTotalJobs(JobType) fixes the inconsistency and
         // removes the duplicate loop.
         JobType[] jobTypes = JobType.values();
-        int[] total = new int[jobTypes.length];
+        long[] total = new long[jobTypes.length];
         for (int i = 0; i < jobTypes.length; i++) {
             total[i] = getTotalJobs(jobTypes[i]);
         }
@@ -4117,20 +4255,20 @@ public class BuildingManager {
      * under-builds every time the city is growing, which is every time it
      * matters.
      */
-    public int getJobsUnderConstruction() {
-        int jobs = 0;
+    public long getJobsUnderConstruction() {
+        long jobs = 0;
         for (BuildingsStacks stack : getStacksUnderConstruction()) {
-            jobs += stack.getUnderConstruction() * stack.getBuilding().getTotalJobs();
+            jobs += (long) stack.getUnderConstruction() * stack.getBuilding().getTotalJobs();
         }
         return jobs;
     }
 
     /** Homes that will exist once everything on site is finished. */
-    public int getHouseCapacityUnderConstruction() {
-        int capacity = 0;
+    public long getHouseCapacityUnderConstruction() {
+        long capacity = 0;
         for (BuildingsStacks stack : getStacksUnderConstruction()) {
             if (stack.getBuilding().getCategory() == BuildingType.RESIDENTIAL) {
-                capacity += stack.getUnderConstruction() * stack.getBuilding().getCapacity();
+                capacity += (long) stack.getUnderConstruction() * stack.getBuilding().getCapacity();
             }
         }
         return capacity;
@@ -4150,15 +4288,15 @@ public class BuildingManager {
         return selected.getName();
     }
 
-    public int getTotalJobs(JobType type) {
+    public long getTotalJobs(JobType type) {
         // ...less the posts a sector does not offer this month (0.7.17): see
         // THE POSTS A SECTOR OFFERS.
         return getTotalJobsAtEveryPost(type) - getPostsWithheld(type);
     }
 
     /** Every post of a job type the city's buildings have, offered this month or not (0.7.17). */
-    public int getTotalJobsAtEveryPost(JobType type) {
-        int total = 0;
+    public long getTotalJobsAtEveryPost(JobType type) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) total += stack.getTotalJobs(type);
         for (BuildingInstance inst : instances) total += inst.getJobs(type);
         return total;
@@ -4176,23 +4314,23 @@ public class BuildingManager {
      * find (Sector.staffableShare()) - is every post, these included; only
      * the labour market and the wage bills take the posts offered.
      */
-    public int getPostsWithheld(JobType type) {
+    public long getPostsWithheld(JobType type) {
         if (offeredShare == null) return 0;
-        java.util.Map<String, Integer> bySector = new java.util.HashMap<>();
+        java.util.Map<String, Long> bySector = new java.util.HashMap<>();
         for (BuildingsStacks stack : stacks) {
-            int posts = stack.getTotalJobs(type);
-            if (posts != 0) bySector.merge(stack.getBuilding().getSector(), posts, Integer::sum);
+            long posts = stack.getTotalJobs(type);
+            if (posts != 0) bySector.merge(stack.getBuilding().getSector(), posts, Long::sum);
         }
-        int withheld = 0;
-        for (java.util.Map.Entry<String, Integer> e : bySector.entrySet()) {
+        long withheld = 0;
+        for (java.util.Map.Entry<String, Long> e : bySector.entrySet()) {
             withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey()));
         }
         return withheld;
     }
 
     /** getPostsWithheld() over every job type. */
-    public int getPostsWithheld() {
-        int withheld = 0;
+    public long getPostsWithheld() {
+        long withheld = 0;
         for (JobType type : JobType.values()) withheld += getPostsWithheld(type);
         return withheld;
     }
@@ -4212,8 +4350,8 @@ public class BuildingManager {
      * estimate - four people to a home is the House's own ratio and the least
      * surprising guess available.
      */
-    public int getTotalHomes() {
-        int homes = 0;
+    public long getTotalHomes() {
+        long homes = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
@@ -4221,7 +4359,7 @@ public class BuildingManager {
             int per = t.getDwellings() > 0
                     ? t.getDwellings()
                     : Math.max(1, t.getCapacity() / 4);
-            homes += stack.getQuantity() * per;
+            homes += (long) stack.getQuantity() * per;
         }
         return homes;
     }
@@ -4233,7 +4371,7 @@ public class BuildingManager {
      * needs to put households behind doors that actually fit them, rather than
      * against one pooled count that let a family of six into a studio.
      */
-    public int[] homesBySize() {
+    public long[] homesBySize() {
         int widest = 1;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
@@ -4241,7 +4379,7 @@ public class BuildingManager {
             widest = Math.max(widest, t.homeSize());
         }
 
-        int[] out = new int[widest + 1];
+        long[] out = new long[widest + 1];
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
@@ -4250,14 +4388,14 @@ public class BuildingManager {
                     ? t.getDwellings()
                     : Math.max(1, t.getCapacity() / 4);
             int size = Math.max(1, t.homeSize());
-            out[size] += stack.getQuantity() * per;
+            out[size] += (long) stack.getQuantity() * per;
         }
         return out;
     }
 
     /** Homes that will exist once everything on site is finished. */
-    public int getHomesUnderConstruction() {
-        int homes = 0;
+    public long getHomesUnderConstruction() {
+        long homes = 0;
         for (BuildingsStacks stack : getStacksUnderConstruction()) {
             BuildingsTemplate t = stack.getBuilding();
             if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
@@ -4265,12 +4403,12 @@ public class BuildingManager {
             int per = t.getDwellings() > 0
                     ? t.getDwellings()
                     : Math.max(1, t.getCapacity() / 4);
-            homes += stack.getUnderConstruction() * per;
+            homes += (long) stack.getUnderConstruction() * per;
         }
         return homes;
     }
 
-    public int getTotalHouseCapacity() {
+    public long getTotalHouseCapacity() {
         // was a hand-rolled loop over RESIDENTIAL stacks summing quantity*capacity;
         // that's exactly what getTotalByCategoryInteger already does.
         return 100 + getTotalByCategoryInteger(BuildingType.RESIDENTIAL, BuildingsTemplate::getCapacity);
@@ -4283,13 +4421,13 @@ public class BuildingManager {
     
     
      */
-    public int getTotalStoreCoverage() {
+    public long getTotalStoreCoverage() {
         return getTotalByCategoryInteger(BuildingType.COMMERCIAL, BuildingsTemplate::getCoverage);
     }
 
     /** Shelf room across the shops, in units. The stores' `stock` field since the sector template. */
-    public int getTotalStoreCapacity() {
-        return (int) totalBySector("Retail", BuildingsTemplate::getStock);
+    public long getTotalStoreCapacity() {
+        return (long) totalBySector("Retail", BuildingsTemplate::getStock);
     }
 
     /**
@@ -4336,12 +4474,12 @@ public class BuildingManager {
      */
     public static final int BASE_MATERIALS = 36;
 
-    public int getTotalConstructionCapacity() {
+    public long getTotalConstructionCapacity() {
         // NOTE: getProduction1() is a double; the original loop truncated it via
         // implicit int += double narrowing. Casting explicitly here to keep that
         // same truncating behavior rather than silently changing it to round.
         return BASE_CONSTRUCTION
-                + (int) totalBySector("Construction", t -> t.makes(Good.BUILDING_WORK));
+                + (long) totalBySector("Construction", t -> t.makes(Good.BUILDING_WORK));
     }
 
     /**
@@ -4366,12 +4504,12 @@ public class BuildingManager {
     
      */
     /** Kilograms of bakery goods the city's own ovens turn out a month. */
-    public int getFoodProduction() {
-        return (int) totalBySector("Industry", t -> t.makes(Good.BREAD) + t.makes(Good.BAKERY));
+    public long getFoodProduction() {
+        return (long) totalBySector("Industry", t -> t.makes(Good.BREAD) + t.makes(Good.BAKERY));
     }
 
-    public int getFoodCapacity() {
-        return (int) totalBySector("Industry", BuildingsTemplate::getStock);
+    public long getFoodCapacity() {
+        return (long) totalBySector("Industry", BuildingsTemplate::getStock);
     }
 
     /* =====================================================================
@@ -4415,12 +4553,12 @@ public class BuildingManager {
     }
 
     /** The posts a sector's finished buildings offer, per tier. */
-    public int[] getJobArrayBySector(String sector) {
-        int[] out = new int[JobType.values().length];
+    public long[] getJobArrayBySector(String sector) {
+        long[] out = new long[JobType.values().length];
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (!t.getSector().equals(sector)) continue;
-            for (JobType j : JobType.values()) out[j.ordinal()] += stack.getQuantity() * t.getJobs(j);
+            for (JobType j : JobType.values()) out[j.ordinal()] += (long) stack.getQuantity() * t.getJobs(j);
         }
         return out;
     }
@@ -4449,12 +4587,12 @@ public class BuildingManager {
     }
 
     /** People a sector's buildings hold, sites included. See getCapacityInPortfolio. */
-    public int getCapacityInPortfolioBySector(String sector) {
-        int total = 0;
+    public long getCapacityInPortfolioBySector(String sector) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (!t.getSector().equals(sector)) continue;
-            total += (stack.getQuantity() + stack.getUnderConstruction()) * t.getCapacity();
+            total += (long) (stack.getQuantity() + stack.getUnderConstruction()) * t.getCapacity();
         }
         return total;
     }
@@ -4498,14 +4636,14 @@ public class BuildingManager {
         return total;
     }
     
-    public int getTotalByCategoryInteger(BuildingType category, ToIntFunction<BuildingsTemplate> getter) {
-        int total = 0;
+    public long getTotalByCategoryInteger(BuildingType category, ToIntFunction<BuildingsTemplate> getter) {
+        long total = 0;
 
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate building = stack.getBuilding();
 
             if (building.getCategory() == category) {
-                total += stack.getQuantity() * getter.applyAsInt(building);
+                total += (long) stack.getQuantity() * getter.applyAsInt(building);
             }
         }
 
@@ -4538,11 +4676,11 @@ public class BuildingManager {
      * site and 26 standing priced the rent floor at $2.40 a head against a
      * going rate of $0.08, and the city fell from 22 residents to 5.
      */
-    public int getCapacityInPortfolio(BuildingType category) {
-        int total = 0;
+    public long getCapacityInPortfolio(BuildingType category) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getCategory() != category) continue;
-            total += (stack.getQuantity() + stack.getUnderConstruction())
+            total += (long) (stack.getQuantity() + stack.getUnderConstruction())
                     * stack.getBuilding().getCapacity();
         }
         return total;
@@ -4766,7 +4904,7 @@ public class BuildingManager {
                                      double[] wagePerType, double[] jobFillRate) {
         if (wagePerType == null) return 0;
 
-        int[] jobs = getJobArrayPerCategory(category);
+        long[] jobs = getJobArrayPerCategory(category);
         double payroll = 0;
         for (int i = 0; i < jobs.length && i < wagePerType.length; i++) {
             double fill = (jobFillRate != null && i < jobFillRate.length) ? jobFillRate[i] : 1;
@@ -4922,8 +5060,8 @@ public class BuildingManager {
      * of what a bank's income statement needs that the category total cannot
      * give it.
      */
-    public int[] getJobArrayByName(String name) {
-        int[] jobs = new int[JobType.values().length];
+    public long[] getJobArrayByName(String name) {
+        long[] jobs = new long[JobType.values().length];
         for (BuildingsStacks stack : stacks) {
             if (!stack.getBuilding().getName().equals(name)) continue;
             for (int j = 0; j < jobs.length; j++) {
@@ -4933,8 +5071,8 @@ public class BuildingManager {
         return jobs;
     }
 
-    public int[] getJobArrayPerCategory(BuildingType category) {
-        int[] jobs = new int[JobType.values().length];
+    public long[] getJobArrayPerCategory(BuildingType category) {
+        long[] jobs = new long[JobType.values().length];
 
         for (int i = 0; i < stacks.size(); i++) {
 
@@ -5385,7 +5523,7 @@ public class BuildingManager {
     }
 
 
-    /** Re-seeds every template's price at a given unit. See Denomination. */
+    /** Re-seeds every template's price at a given unit - since 0.7.42 the unit over the expected price level, every month (Game.restrikeMoneyConstants()). See Denomination. */
     public void seedConstants(double unit) {
         for (BuildingsTemplate t : templates) {
             if (t != null) t.seedConstants(unit);

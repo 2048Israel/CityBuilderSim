@@ -1,6 +1,6 @@
 # Inbox.java - 577 lines · 23 methods · 1 constants · model
 
-`ham/citybuildersim/Inbox.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Inbox.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Everything the city has had to say for itself, newest first.
 > 
@@ -28,7 +28,7 @@
 > produced no words at all. Built here, they are written the month the
 > condition is true, and the screen's only job is to draw them.
 
-**Uses:** [Notice](Notice.md) (12), [Game](Game.md) (12), [Healthcare](Healthcare.md) (6), [ConstructionControl](ConstructionControl.md) (5), [Bank](Bank.md) (5), [Crime](Crime.md) (5), [CareType](CareType.md) (5), [Health](Health.md) (4), [AgeBand](AgeBand.md) (4), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [PopulationCohorts](PopulationCohorts.md) (1)
+**Uses:** [Notice](Notice.md) (12), [Game](Game.md) (12), [Healthcare](Healthcare.md) (6), [ConstructionControl](ConstructionControl.md) (5), [Bank](Bank.md) (5), [Crime](Crime.md) (5), [CareType](CareType.md) (5), [Health](Health.md) (4), [AgeBand](AgeBand.md) (4), [TreasuryFund](TreasuryFund.md) (2), [BuildingManager](BuildingManager.md) (2), [Sickness](Sickness.md) (2), [Migration](Migration.md) (2), [LandManager](LandManager.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [PopulationCohorts](PopulationCohorts.md) (1)
 
 **Used by (3):** [Game](Game.md), [InboxCheck](InboxCheck.md), [UserInterface](UserInterface.md)
 

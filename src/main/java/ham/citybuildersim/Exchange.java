@@ -91,9 +91,10 @@ import java.util.List;
  *     household type trades"): the household types are participants, not
  *     one pool.
  *   - THE CITY'S FUND (0.7.14, TreasuryFund), last, so it takes what the
- *     others left: by its rule, under FUND, a bid at fair value for the gap
- *     to its mix, never past TreasuryFund.OWNERSHIP_LIMIT of a company, and
- *     an ask at fair value for an excess; then the player's hand, at fair
+ *     others left: by its rule, under FUND, a bid at the desk's ask for the
+ *     gap to its mix (fair value plus TreasuryFund.RULE_PREMIUM, 0.7.48),
+ *     never past TreasuryFund.OWNERSHIP_LIMIT of a company, and an ask at
+ *     fair value for an excess or a withdrawal to pay; then the player's hand, at fair
  *     value or the price it names and no further than the limit, every buy
  *     of the fund's on the company counted as filled and the rule's making
  *     way for the hand's (0.7.39, fundRoom()), under FUND_HAND. It never
@@ -130,6 +131,9 @@ public class Exchange {
 
     /** The desk's ask over its bid, as a share of fair value. What it earns for being there. */
     public static final double SPREAD = .02;
+
+    /** A share's last trade marks the city's holding for a year; older, the register's own fair value, which the rule asks at and bids TreasuryFund.RULE_PREMIUM over (C4). */
+    public static final int STALE_MARK_MONTHS = 12;
 
     /** What the world moves in a month per unit of yield over or under its hurdle, as a share of the float. */
     public static final double FOREIGN_SPEED = .10;
@@ -430,6 +434,23 @@ public class Exchange {
 
     /** True once a share of this company has traded on the book. */
     public boolean hasTraded(int c) { return books[c].lastPrice() > 0; }
+
+    /**
+     * WHAT THE CITY'S HOLDING OF A SHARE IS MARKED AT (0.7.48, C4): its last
+     * trade while that is no older than STALE_MARK_MONTHS, and fair value
+     * after - a price nobody has paid for a year says nothing about what the
+     * fund holds (city2400 held nine companies at trades 22 to 34 months
+     * old, Mining at 1.644 against a fair value of .000592). The fund's
+     * worth, its transfer, the rescue book and the warrants read it; price()
+     * stays the last trade for trading, the households, the world and the
+     * bank's strike.
+     */
+    public double cityMark(int c)   { return markedAtFair(c) ? fair[c] : price(c); }
+
+    /** ...true when that is fair value: a last trade older than STALE_MARK_MONTHS. */
+    public boolean markedAtFair(int c) {
+        return hasTraded(c) && month - books[c].lastTradeMonth() > STALE_MARK_MONTHS;
+    }
 
     /** The register's reckoning of a share, struck at the step: book, or the dividend it pays capitalised (Equity.fairValue()). */
     public double fair(int c)        { return fair[c]; }
@@ -1032,14 +1053,24 @@ public class Exchange {
      * TreasuryFund.EQUITY_WEIGHT of the fund's market book and cash in shares,
      * spread over the companies by market value (marketCap()), never past
      * TreasuryFund.OWNERSHIP_LIMIT of a company's shares; it bids for the gap
-     * at fair value and takes what is asked at or under it, and what rests
-     * waits at fair value for the month. Over TreasuryFund.REBALANCE_OVER it
+     * at the desk's ask, fair value plus TreasuryFund.RULE_PREMIUM (0.7.48,
+     * C3: at fair value it met nobody, the desk's ask being the cheapest in
+     * every book), sized by the money over that bid, and takes what is asked
+     * at or under it, and what rests waits at that bid for the month. Over TreasuryFund.REBALANCE_OVER it
      * asks fair value for the excess instead, the desk's rule for an excess
      * (postDesk()); and a holding a company's buyback has lifted past the
      * limit is asked at fair value down to it, whatever the mix. The hand's
      * orders go on after, at fair value too unless the player named a price
      * (below), under FUND_HAND. It never buys the bank's new shares: the desk's asks in them
      * are an issue, and the clearing refuses them to the fund (Settle.mayTrade()).
+     *
+     * THE WITHDRAWAL OVER THE DEFAULT (0.7.48, C1): what the month's cash
+     * could not pay of the withdrawal (TreasuryFund.getToRaise()) is sold
+     * from the market book pro rata - each company's part the shares' share
+     * of the market book, held / (held + its bonds) - at fair value, with
+     * the rebalancing and over-the-limit sales, whichever is largest; and
+     * while the dial is over the default (TreasuryFund.sellsToPay()) the rule
+     * buys nothing. Never the rescue book, the preferred or the warrants.
      *
      * THE HAND, SINCE 0.7.39 (the project's spec-fund-0739.md, D2 and B1): at
      * the price the player named, or fair value when it named none; a buy no
@@ -1064,6 +1095,7 @@ public class Exchange {
         double value = held + fundBondsValue + cash;
         if (value > 0) {
             double excess = TreasuryFund.sharesOver(held, fundBondsValue, cash);
+            double toRaise = fund.getToRaise();
             // OVER THE LIMIT without buying (0.7.14): a company's buyback, or the bank's,
             // retires shares under the fund and lifts its share past OWNERSHIP_LIMIT. The
             // rule sells what it holds over the limit at fair value - the desk's own rule
@@ -1074,10 +1106,12 @@ public class Exchange {
                 if (!(mine > 0) || fair[c] <= minFair) continue;
                 double over = mine - TreasuryFund.OWNERSHIP_LIMIT * register.getShares(c);
                 double rebalance = excess > 0 && held > 0 ? mine * excess / held : 0;
+                // ...and its part of what the withdrawal must raise (C1): the market book pro rata.
+                if (toRaise > 0 && held > 0) rebalance = Math.max(rebalance, mine * toRaise * held / (held + fundBondsValue) / held);
                 double q = Math.min(mine, Math.max(over, rebalance));
                 if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
             }
-            if (!(excess > 0) && cash > 0) {
+            if (!(excess > 0) && cash > 0 && !fund.sellsToPay()) {
                 double target = TreasuryFund.EQUITY_WEIGHT * value;
                 double caps = 0;
                 for (int c = 0; c < n; c++) {
@@ -1089,8 +1123,9 @@ public class Exchange {
                     double mine = register.getCityMarketShares(c);
                     // The room under the cap, less the hand's buys waiting for this step (0.7.39): none, the default.
                     double room = fundRoom(register, fund, c);
-                    double q = Math.min((want - mine * price(c)) / fair[c], room);
-                    if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.BUY, fair[c], q);
+                    double bid = fair[c] * (1 + TreasuryFund.RULE_PREMIUM);
+                    double q = Math.min((want - mine * price(c)) / bid, room);
+                    if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.BUY, bid, q);
                 }
             }
         }
@@ -1193,14 +1228,14 @@ public class Exchange {
     /** What the city's fund holds of every company, both books, at the price: the fund's shares' mark. */
     public double cityValue(Equity register) {
         double total = 0;
-        for (int c = 0; c < n; c++) total += register.getCityShares(c) * price(c);
+        for (int c = 0; c < n; c++) total += register.getCityShares(c) * cityMark(c);
         return total;
     }
 
     /** ...its market book alone. */
     public double cityMarketValue(Equity register) {
         double total = 0;
-        for (int c = 0; c < n; c++) total += register.getCityMarketShares(c) * price(c);
+        for (int c = 0; c < n; c++) total += register.getCityMarketShares(c) * cityMark(c);
         return total;
     }
 

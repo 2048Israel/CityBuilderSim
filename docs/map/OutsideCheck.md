@@ -1,6 +1,6 @@
-# OutsideCheck.java - 697 lines · 5 methods · 0 constants · harnesses
+# OutsideCheck.java - 699 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/OutsideCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutsideCheck.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
 
 > The people outside the families: the out of work, the students, the
 > unhoused and the orphans (2026-09-11).
@@ -38,10 +38,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16 | 682 | **type** `public class OutsideCheck` | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). |
+| 16 | 684 | **type** `public class OutsideCheck` | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). |
 | 20 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 26 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 31 | 5 | `static void quietly(Runnable work)` |  |
 | 37 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 44 | 653 | `public static void main(String[] args)` |  |
+| 44 | 655 | `public static void main(String[] args)` |  |
 

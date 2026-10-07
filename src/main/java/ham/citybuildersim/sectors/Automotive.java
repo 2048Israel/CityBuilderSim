@@ -246,25 +246,36 @@ public final class Automotive extends Sector {
         lines.add(Line.head("The plants"));
         lines.add(Line.of("Staffed", f.pct(getAverageFill()),
                 getAverageFill() < .9 ? Line.Tone.WARN : Line.Tone.NONE));
+        // The month's own figures (B3, 0.7.47): until then each line read the
+        // nameplate as if it were the month - "21,780 a month" with 102 made -
+        // and the parts the order at full rate, warned against what was bought
+        // at the month's rate. The full-rate order is the note's. Made is the
+        // default page's Made: into the shed plus the export-bound share,
+        // which leaves from the line (Sector.produceStock()).
         for (Good g : new Good[] { Good.CARS, Good.VANS, Good.ROLLING_STOCK }) {
             double cap = getCapacity(g);
             if (cap <= 0) continue;
             Output o = output(g);
-            lines.add(Line.of(g.label(), String.format("%s a month, %s sold here and %s shipped",
-                    f.count(cap), f.count(o.soldLocal), f.count(o.exported))));
+            lines.add(Line.of(g.label(), String.format("made %s of its %s a month · %s sold here · %s shipped",
+                    f.count(o.produced + o.exportBound), f.count(cap), f.count(o.soldLocal), f.count(o.exported))));
         }
 
         lines.add(Line.head("The parts"));
+        StringBuilder fullRate = new StringBuilder();
         for (Good g : new Good[] { Good.FABRICATED_STEEL, Good.MACHINERY }) {
             double want = getInputAtCapacity(g);
             if (want <= 0) continue;
             Input in = input(g);
-            lines.add(Line.of(g.label(), String.format("%s tonnes wanted, %s bought here",
-                    f.count(want), f.count(in.boughtLocal)),
-                    in.boughtLocal < want * .9 ? Line.Tone.WARN : Line.Tone.NONE));
+            lines.add(Line.of(g.label(), String.format("%s ordered at this month's rate · %s bought here · %s imported",
+                    f.count(in.bid), f.count(in.boughtLocal), f.count(in.imported)),
+                    in.boughtLocal + in.imported < in.bid * .9 ? Line.Tone.WARN : Line.Tone.NONE));
+            fullRate.append(fullRate.length() == 0 ? "" : " and ")
+                    .append(f.count(want)).append(" tonnes of ").append(g.label().toLowerCase(java.util.Locale.ROOT));
         }
 
-        lines.add(Line.note("The fabricated steel cannot be imported at any price, so a city "
+        lines.add(Line.note((fullRate.length() == 0 ? "" : "At full rate the plants would order " + fullRate
+                        + " a month; they order at the month's rate, for what they make. ")
+                + "The fabricated steel cannot be imported at any price, so a city "
                 + "that cannot make beams cannot make vehicles. The machinery can be - dearly. "
                 + "A city with its own machine works pays the local floor instead."));
         return lines;

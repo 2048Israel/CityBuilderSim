@@ -34,9 +34,9 @@ public final class Money {
        a thousand-fold apart, on one screen, at the same moment.
 
        So this converts, and it abbreviates: k above ten thousand, M above a
-       million, B above a billion, T above a trillion (0.7.20). Everything that
-       shows city money goes through it, which is what makes the two figures
-       agree.
+       million, B above a billion, T above a trillion (0.7.20), Q above a
+       quadrillion (0.7.54). Everything that shows city money goes through it,
+       which is what makes the two figures agree.
 
        WHAT DOES NOT COME HERE: anything that is not money in the model's unit.
        An exchange rate is a ratio, a percentage is a percentage, and a price
@@ -173,7 +173,8 @@ public final class Money {
      * than the cell it was in - and a mono table whose first row overflows is
      * not a table any more, it is nine columns of numbers sliding sideways past
      * each other. Compact above a hundred thousand keeps every cell inside seven
-     * characters whatever the city's size.
+     * characters up to a thousand quadrillion dollars, which only a city of
+     * billions passes ("$1,317.0Q", 0.7.54).
      */
     public static String tightMoney(double value) { return tightMoney(value, true); }
 
@@ -194,6 +195,8 @@ public final class Money {
         // Trillions (0.7.20): the load list printed a big city as "$3108.1B".
         // And each unit from where the one below it would print a thousand (0.7.40): 999.97B is
         // "$1.0T", not "$1000.0B", and 999,600 in a compact column "$1.0M", not "$1000k".
+        // ...and quadrillions (0.7.54), grouped past a thousand of them: a 10 billion city.
+        if (a >= 1e15 || tenths(a / 1e12) >= 1000)         return String.format("%s$%,.1fQ", sign, a / 1e15);
         if (a >= 1e12 || tenths(a / 1e9) >= 1000)          return String.format("%s$%.1fT", sign, a / 1e12);
         if (a >= 1_000_000_000 || tenths(a / 1e6) >= 1000) return String.format("%s$%.1fB", sign, a / 1_000_000_000);
         if (a >= 1_000_000 || (compact && Math.round(a / 1e3) >= 1000)) return String.format("%s$%.1fM", sign, a / 1_000_000);
@@ -287,6 +290,16 @@ public final class Money {
     }
 
     /**
+     * A ground price as the player reads it since 0.7.68: a square metre
+     * (LandManager.perM2()) of what the model keeps a square foot in
+     * thousands, as unitPrice() writes it - "$20,882", "$7.53". The mark is
+     * marked()'s and the "/m²" the caller's (spec-grid star 10).
+     */
+    public static String groundPrice(double thousandsPerSqFt) {
+        return unitPrice(LandManager.perM2(thousandsPerSqFt));
+    }
+
+    /**
      * An exchange rate - local dollars per US dollar, a ratio and not money,
      * so it never goes through toDollars().
      *
@@ -352,5 +365,20 @@ public final class Money {
         if (!(months >= .1)) return months > 0 ? "under 0.1 months" : "none";
         return String.format("%.1f months", months);
     }
+
+    /*
+     * THE ANCHOR'S FIGURES (0.7.45): what people expect inflation to be, to
+     * one place with a true minus, and how far they believe the bank, a
+     * whole per cent - the header, the drawer, NEEDS YOU and the Policy tab
+     * write both the one way.
+     */
+
+    /** A yearly rate to one place, with a true minus: "2.2%", "−0.5%". */
+    public static String rate1(double rate) {
+        return String.format("%.1f%%", unsigned0(rate * 100, 1)).replace('-', '−');
+    }
+
+    /** How far the city believes the bank, a whole per cent (Expectations.getCredibility()): "82%" - floored, so a trust under CityNeeds.TRUST_RED never reads as half. */
+    public static String trust(double credibility) { return String.format("%.0f%%", Math.floor(credibility * 100 + 1e-9)); }
 
 }

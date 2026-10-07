@@ -160,6 +160,10 @@ public class ReadPathCheck {
         into.put("fund.offerPending", fund.isOfferPending() ? 1.0 : 0.0);
         into.put("fund.handOrders", (double) fund.getHandOrders().size());
         into.put("fund.transferDue", fund.getTransferDue());
+        // ...and 0.7.48's withdrawal dial, and what it owes over the default.
+        into.put("fund.withdrawal", fund.getWithdrawal());
+        into.put("fund.toRaise", fund.getToRaise());
+        into.put("fund.transferPaidLate", fund.getTransferPaidLate());
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             into.put("fund.shares" + c, g.getEquity().getCityShares(c));
             into.put("fund.rescueShares" + c, g.getEquity().getCityRescueShares(c));
@@ -576,7 +580,7 @@ public class ReadPathCheck {
         java.util.List<Integer> next = g.nextLandParcels(5);
         g.landShelf(); g.landPriceUsd(next); g.landPriceLocal(next); g.landCashGap(next);
         g.landVaultGapUsd(next); g.landNeedsFunding(next); g.canAffordLandParcels(next); g.landTopUpCovers(next);
-        g.landTopUpLocal(next); g.getLandManager().getMarket().getMinSqFt();
+        g.landTopUpLocal(next); g.getLandManager().getMarket().getBlockPlots();
         double gap = Math.max(1, g.landCashGap(next));
         g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
         g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
@@ -602,6 +606,7 @@ public class ReadPathCheck {
         g.fundSharesValue(); g.fundMarketSharesValue(); g.fundRescueSharesValue(); g.fundBondsValue();
         g.fundPreferredValue(); g.fundWarrantsValue(); g.fundRescueValue(); g.fundValue(); g.fundEquityShare();
         g.fundTransferDue(); g.getFundDial(); g.getRescueMode(); g.monthOfSpending(); g.surplusThisYearSoFar();
+        g.getFundWithdrawal();
         g.fundReservation();
         // ...and 0.7.15's skip report on the central bank's advances, as the skip's screen reads it.
         g.getSkipReport().getAdvancedDuringSkip(); g.getSkipReport().getAdvancesOwedAtEnd();
@@ -620,6 +625,8 @@ public class ReadPathCheck {
         g.getExchange().getFundSoldToHouseholds(); g.getExchange().getFundSoldAbroad();
         TreasuryFund fund = g.getFund();
         fund.getCash(); fund.getDial(); fund.getRescueMode(); fund.getTransferDue(); fund.getTransferPaid();
+        fund.getWithdrawal(); fund.getWithdrawalSteps(); fund.withdrawalOn(g.fundValue()); fund.sellsToPay();
+        fund.getToRaise(); fund.getTransferPaidLate();
         fund.getTransferShort(); fund.getTransfersThisYear(); fund.getTransferShortThisYear(); fund.getRescueCost();
         fund.isOfferPending(); fund.getOfferMonth(); fund.getDeclinedMonth(); fund.getAcceptedMonth();
         fund.mayOffer(g.getMonth()); fund.getOffersMade(); fund.getOffersAccepted(); fund.getOffersDeclined();
@@ -781,8 +788,52 @@ public class ReadPathCheck {
         // the cover a purchase would buy, its verdicts, the month's goods off the
         // businesses' books, what is held where, and History's rate and parity
         g.getForeignAccounts().previewPush();
+        g.getForeignAccounts().previewDrift();
         g.getForeignAccounts().previewPull();
         g.getForeignAccounts().previewMove();
+        // ...and what 0.7.45's pass over the new price model reads: the anchor's
+        // move and miss, the real dial, the neutral rate, the index's components,
+        // the shelf's limit and its prices, who went without and the vouchers,
+        // NEEDS YOU's PRICES row, the basket's links on the chart, the year's
+        // rate per component, EARNED's walk with the vouchers in it
+        g.getExpectations().getCredibilityStep();
+        g.getExpectations().missFrom(g.getDebtManager().getInflationTarget());
+        g.realPolicyRate();
+        g.getDebtManager().neutralRate();
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            g.getPriceIndex().getComponentLevel(k);
+            YearBook.componentInflation(record, k);
+        }
+        g.getPriceIndex().isLuxuryCapped();
+        ham.citybuildersim.sectors.Retail shops = g.getSectors().retail();
+        shops.getHandOver();
+        shops.isShelfBound();
+        shops.getCapPrice();
+        shops.clearsPastTheCap();
+        shops.isSlack();
+        shops.isSaleCounted();
+        shops.getChargedPrice();
+        shops.ownLines(g);
+        g.getHouseholdBalance().getHungerPricedOut();
+        g.getHouseholdBalance().getHungerShortOfStock();
+        g.getHouseholdBalance().groceriesByRow(PolicyPreview.lastSalePrice(g));
+        g.getHouseholdBalance().getHouseholdsAssisted();
+        for (double share : new double[] {0, .5, 1}) {
+            PolicyPreview.foodAssistanceAt(g, share);
+            PolicyPreview.foodAssistanceHouseholdsAt(g, share);
+            PolicyPreview.foodAssistanceBasketsAt(g, share);
+        }
+        CityNeeds.measure(g, CityNeeds.PLAIN);
+        ChartModel.basketLinks(record, g.getPriceIndex());
+        g.getEarnedToBudget();
+        g.getEarnedResidual();
+        g.getInfrastructureManager().getFareLevel();
+        // ...and 0.7.46's load path (batch A): the month's trade in units a
+        // save carries (A1, both maps through the getters and the save's state)
+        for (Sector trader : g.getSectors().all()) {
+            for (Good good : Good.values()) { trader.unitsExported(good); trader.unitsImported(good); }
+            trader.toState();
+        }
         g.getForeignAccounts().coverWith(1_000);
         g.getForeignAccounts().coverWith(-1_000);
         g.getForeignAccounts().toCover(ForeignAccounts.THIN_COVER);
@@ -1026,6 +1077,10 @@ public class ReadPathCheck {
             }
         }
         for (BuildAdvice.Suggestion sg : BuildAdvice.suggest(g)) BuildAdvice.verdictAfter(g, sg);
+        // ...and what the advice reads since 0.7.51: the businesses' growth, the land office's price, the
+        // high schools' leavers, the students a higher school would get and hire, an order's projection,
+        // and every suggestion's ground, its runner-up and the run it makes
+        adviceReads(g);
         // the fare's dial card (0.7.38): its rows at the city's fare, at none and at the dearest
         for (double fare : new double[] {g.getEconomyManager().getTaxPolicy().getTransitFare(), 0, TaxPolicy.MAX_TRANSIT_FARE}) {
             g.getInfrastructureManager().ridersAt(fare);
@@ -1057,6 +1112,59 @@ public class ReadPathCheck {
         g.getLandManager().getAvailableSqFt();
         g.getLandManager().getPricePerSqFt();
         g.getLandListing();
+        // ...and the land on the world (0.7.57): what it holds, the offers by
+        // every measure, the best for each need, the world's ledger
+        LandManager lm = g.getLandManager();
+        LandMarket lmk = lm.getMarket();
+        g.getCityLand().centreState(); g.getCityLand().holdingsState(); g.getCityLand().centreRectsState();
+        g.getCityLand().partFieldsState(); g.getCityLand().convertedState(); g.getCityLand().stamp();
+        lm.getOwnedKm2(); lm.getFreshKm2(); lm.getSeaKm2(); lm.getForestKm2(); lm.getLandDrySqFt();
+        lm.getDepletionState(); lm.getWorldTotalsState(); lm.getWorldSeaTheta();
+        for (Resource r : Resource.values()) {
+            lm.getOwnedAmount(r); lm.getRemaining(r); lm.getExtracted(r); lm.getUnowned(r); lm.remainingByHolding(r);
+            lmk.richest(r);
+            g.bestOffer(Game.LandNeed.deposit(r));
+        }
+        for (int side = 0; side < CityLand.SIDES; side++) lmk.offersOn(side);
+        lmk.bestValue(); lmk.cheapest(); lmk.cheapestWithSea(); lmk.getLevel(); lmk.getOffersState();
+        lmk.goingUsdPerSqFt(); lmk.getBlockPlots(); for (int side = 0; side < CityLand.SIDES; side++) lmk.emptyOn(side);
+        g.bestOffer(Game.LandNeed.room()); g.bestOffer(Game.LandNeed.coast());
+        // ...and the water on it (0.7.59): the limit, the rights, the coast and their words
+        UtilitiesHandler uw = g.getServicesManager().getUtilitiesHandler();
+        g.getFreshCap(); g.getFreshRights(); lmk.bestFresh();
+        uw.getFreshCap(); uw.getFreshNameplate(); uw.getFreshDrawn(); uw.getDesalNameplate(); uw.getDesalOutput();
+        uw.isFreshCapped(); uw.getFreshIdleShare(); uw.getFreshHeadroom(); uw.getWaterAtFullStaff();
+        CityNeeds.freshLimitLine(uw);
+        g.hasCoastFor(g.getBuildingManager().getTemplateByName("Desalination Plant"), 1);
+        g.bestOffer(Game.LandNeed.shortfall(lm.getAvailableSqFt() + 1_000_000));
+        // ...and fuel (0.7.62): the oil the city owns and its wells, the refinery's crude and estimate, the
+        // drivers' and the railway's fuel and what of it was imported, a journey's fuel at the landed price
+        lm.getOilSites(); lm.getOilReserveTonnes(); lm.getOilLiftedThisMonth();
+        for (Resource r : Resource.values()) { lm.getSites(r); g.committedOn(r); }
+        g.wellsCommitted(); g.minesCommitted(); g.getHouseholdFuel(); g.getHouseholdFuelImports();
+        g.hasDepositFor(g.getBuildingManager().getTemplateByName("Oil Well"), 1);
+        g.getSectors().oil().getPotentialOutput(); g.getSectors().oil().ownLines(g);
+        BuildingsTemplate refineryT = g.getBuildingManager().getTemplateByName("Oil Refinery");
+        g.getSectors().refining().spareCrude(refineryT); g.getSectors().refining().getCrudeDemand();
+        g.getSectors().refining().estimatedMonthlyProfit(refineryT, g.getBusinessInvestment());
+        g.getMotoring().getFuelBill(); g.getMotoring().getFuelImports(); g.getMotoring().getFuelLitres();
+        Motoring.journeyFuel(g.getMarkets());
+        g.getSectors().rail().getFuelBill(); g.getSectors().rail().getFuelImported();
+        // ...and the graduates the next census carries the loans of, as the save carries them (0.7.63)
+        g.getHouseholdBalance().getGraduating(); g.getHouseholdBalance().getLastGraduated();
+        g.getHouseholdBalance().graduatesToSave();
+        // ...and the city map (0.7.60): drawn the first time it is asked, then its districts, the deal and the
+        // painter's inputs for the founding site's tile, the tile painted and rastered, the pyramid and the sidecar
+        CityMap map = g.getCityMap();
+        g.hasCityMap(); g.getMapCounts(); g.getMapTypes(); g.getMapFailures();
+        map.totals(); map.pyramid().root(); map.ownedSites(Resource.IRON);
+        long tileX = Math.floorDiv(g.getCityLand().siteX(), World.TILE), tileY = Math.floorDiv(g.getCityLand().siteY(), World.TILE);
+        TilePainter.Input tileIn = new TilePainter.Input();
+        TilePainter.Painted tileOut = new TilePainter.Painted();
+        map.tileInput(tileX, tileY, tileIn);
+        TilePainter.paint(tileIn, tileOut);
+        TileRaster.raster(tileIn, tileOut, 4, new int[(World.TILE * 4) * (World.TILE * 4)]);
+        map.writeSidecar(g.getMonth());
         for (GoodsMarket m : g.getMarkets().all()) {
             m.getLocalPrice();
             m.getDemand();
@@ -1304,7 +1412,7 @@ public class ReadPathCheck {
          * ledger says was sold, plus what the market delivered, is what is
          * on the shelf now.
          */
-        int shelfBefore = c.getStoreInventory();
+        long shelfBefore = c.getStoreInventory();
         /*
          * THIRTEEN LAWS WHERE THERE WAS ONE.
          *
@@ -1405,10 +1513,91 @@ public class ReadPathCheck {
         assertTrue("doubling the rate moves the very next month's commercial tax",
                 highTake > lowTake * 1.5);
 
+        /* ============ the build advice's reads, after a load (0.7.51) ============ */
+        out.println("\n--- the build advice reads saved state: the same after a load ---");
+        afterALoad(g, files);
+
         cleanUp(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. */
+    static Map<String, Double> adviceReads(Game g) {
+        Map<String, Double> r = new LinkedHashMap<>();
+        BusinessInvestment bi = g.getBusinessInvestment();
+        r.put("growthFactor(0)", bi.growthFactor(0));
+        r.put("growthFactor(horizon)", bi.growthFactor(BusinessInvestment.PLANNING_HORIZON));
+        r.put("growthFactor(cap + horizon)", bi.growthFactor(BusinessInvestment.MAX_ORDER_MONTHS + BusinessInvestment.PLANNING_HORIZON));
+        r.put("officePricePerSqFt", g.getLandManager().getOfficePricePerSqFt());
+        r.put("schoolLeavers", g.getEducation().schoolLeavers(g.getCohorts(), g.getLabourMarket()));
+        for (EducationType t : EducationType.values()) {
+            if (!t.isAdult()) continue;
+            r.put(t + ".wanted", CityNeeds.wanted(g, t, 0, 1));
+            r.put(t + ".wantedAhead", CityNeeds.wanted(g, t, BuildAdvice.HORIZON, 1.1));
+            r.put(t + ".hires", CityNeeds.hires(g, t, 1));
+            r.put(t + ".feederOver", CityNeeds.feederOver(g, t, BuildAdvice.HORIZON));
+        }
+        BuildAdvice.Ahead p = BuildAdvice.opening(g, Double.NaN);
+        r.put("opening(NaN).k", p.k());
+        r.put("opening(NaN).scale", p.scale());
+        java.util.List<BuildAdvice.Suggestion> advice = BuildAdvice.suggest(g);
+        int i = 0;
+        for (BuildAdvice.Suggestion s : advice) {
+            String k = "card" + (i++) + ".";
+            r.put(k + "count", (double) s.count());
+            r.put(k + "price", s.price());
+            r.put(k + "afterAtOpening", s.afterAtOpening());
+            r.put(k + "pricePerUnit", s.pricePerUnit());
+            r.put(k + "k", s.ahead().k());
+            r.put(k + "lead", s.lead());
+            r.put(k + "landValue", s.landValue());
+            r.put(k + "landShort", s.landShort());
+            r.put(k + "runnerUpPer", s.runnerUpPer());
+            r.put(k + "credit", s.credit());
+        }
+        r.put("run invoice", g.buildRunInvoice(BuildAdvice.run(advice)));
+        return r;
+    }
+
+    /**
+     * THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the
+     * businesses' growth, the land office's price, the high schools'
+     * leavers (not getNewDiplomas(), this month's flow, NaN after a load),
+     * the higher schools' students wanted and hired, each card's projection,
+     * ground and runner-up - give the same figures, to the bit, on the city
+     * saved and loaded into another game as on the city that played.
+     */
+    static void afterALoad(Game g, GameFiles files) {
+        // The fixture's buildings were stood up by fiat and took no ground; a load allocates the city's
+        // footprint (Game's load path), so the city is given it first, as a load would.
+        g.getLandManager().setAllocatedSqFt(g.getBuildingManager().getTotalLandFootprint());
+        System.setOut(quiet);
+        g.saveGame(10, "readpath");
+        Game loaded = new Game(files);
+        loaded.loadGameSave(10);
+        System.setOut(out);
+        assertTrue("fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)",
+                Double.isNaN(loaded.getEducation().getNewDiplomas()));
+        Map<String, Double> played = adviceReads(g), again = adviceReads(loaded);
+        int same = 0;
+        for (Map.Entry<String, Double> e : played.entrySet()) {
+            Double l = again.get(e.getKey());
+            if (l != null && Double.doubleToLongBits(l) == Double.doubleToLongBits(e.getValue())) same++;
+            else out.printf("   DIFFERS  %-28s %s -> %s%n", e.getKey(), e.getValue(), l);
+        }
+        out.printf("   %d of the advice's figures compared, %d cards%n", played.size(), BuildAdvice.suggest(g).size());
+        assertTrue("fixture: the city has suggestions to compare", !BuildAdvice.suggest(g).isEmpty());
+        assertTrue("every one of them the same after a load, to the bit", same == played.size() && again.size() == played.size());
+        assertTrue("...the high schools' leavers a number, not NaN", Double.isFinite(again.get("schoolLeavers")));
+        // ...and the land on the world (0.7.57), which the office's price is read from.
+        assertTrue("the land on the world is the same after a load: its centre, lanes and purchases",
+                loaded.getCityLand().same(g.getCityLand()));
+        assertTrue("...its forty offers, field for field", java.util.Arrays.deepEquals(
+                loaded.getLandManager().getMarket().getOffersState(), g.getLandManager().getMarket().getOffersState()));
+        assertTrue("...and what was taken out of its ground", java.util.Arrays.equals(
+                loaded.getLandManager().getDepletionState(), g.getLandManager().getDepletionState()));
     }
 
     static void cleanUp(Path root) {

@@ -61,7 +61,7 @@ import java.util.List;
  *                             JOURNALLED  "Paid into the fund (the dial)", "Paid into the
  *                                         fund", "Drawn from the fund" - transfers between
  *                                         the treasury and its fund, neither revenue nor
- *                                         spending; the fund's 3% transfer to the budget IS
+ *                                         spending; the fund's withdrawal to the budget IS
  *                                         a budget line (NationalAccounts.getFundTransfer())
  *                                         and is not journalled
  *   buyForeignCurrency()      JOURNALLED  "Bought reserves" - no budget line
@@ -80,7 +80,10 @@ import java.util.List;
  *                                         NationalAccounts.getTotalExpenses() does not
  *                                         carry it, so the balance omits it (measured:
  *                                         the residual was exactly -repairs every month)
- *   finalUpdateEconomy()      JOURNALLED  "Took in transit fares" - in the cash through
+ *   finalUpdateEconomy()      not         the transit fares and the bill they are set
+ *                                         against: budget lines since 0.7.49 (B9). The
+ *                                         fares were JOURNALLED "Took in transit fares"
+ *                                         until then - in the cash through
  *                                         getTaxIncome(), not in getTotalRevenue()
  *                                         (measured: the residual was exactly +fares)
  *   settleTreasury() (0.7.0)  JOURNALLED  "Advanced by the central bank (printed)",

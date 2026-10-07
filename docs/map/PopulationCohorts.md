@@ -1,6 +1,6 @@
 # PopulationCohorts.java - 604 lines · 35 methods · 2 constants · model
 
-`ham/citybuildersim/PopulationCohorts.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCohorts.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > The city's age pyramid, and since the switch, the city's POPULATION.
 > 
@@ -115,7 +115,7 @@
 | 230 | 93 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double birthFactor)` | ...and the people violence killed (2026-09-11). |
 | 340 | 19 | `public void migrate(double netArrivals)` | People moving in, or out. |
 | 368 | 8 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
-| 405 | 7 | `private void seedFrom(int livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
+| 405 | 7 | `private void seedFrom(long livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
 | 424 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
 | 431 | 14 | `private static double[] equilibriumWeights()` |  |
 

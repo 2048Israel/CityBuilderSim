@@ -119,7 +119,26 @@ public enum TreasuryLine {
     RESERVE_PURCHASES("Reserve purchases", false, true),
 
     /** A bond bought back before it is due. */
-    BUYBACKS("Bonds bought back", false, true);
+    BUYBACKS("Bonds bought back", false, true),
+
+    /**
+     * Food assistance (0.7.43): the vouchers the households spent at the
+     * shops this month, paid in the month of the sale. A promise, because
+     * the voucher has been eaten by the time the bill comes - the household
+     * paid the till with it, and refusing it would take the groceries back
+     * out of somebody's savings. Appended last: arrears are keyed by name,
+     * and nothing reads the order. See TaxPolicy.getFoodAssistance().
+     */
+    FOOD_ASSISTANCE("Food assistance", true, false),
+
+    /**
+     * Transit's wages and upkeep (0.7.49, B9): the buses' and trains' crews
+     * and what the lines cost to keep running, struck at advanceDemographics()
+     * 6d since 2026-09-16 and paid by nobody until now. A promise, because
+     * it is the city's own wages, as the schools' and the police's are.
+     * Appended last, for the food vouchers' reason.
+     */
+    TRANSIT("Transit's wages and upkeep", true, false);
 
     /** The player's words for it, for the Government tab's arrears list and the playtest. */
     public final String label;

@@ -1,8 +1,8 @@
-# FoundingScreen.java - 444 lines · 17 methods · 3 constants · interface
+# FoundingScreen.java - 486 lines · 18 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
-> Found a city: its name, its money, what the founders leave in the treasury and the vault, and the world it is founded into.
+> Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into.
 > 
 > WHY THIS EXISTS (0.7.10). "Start New Game" founded the same city every time
 > - Danzik, the Danzik dollar, D$2.5B and US$1B - and the one founding choice
@@ -47,8 +47,15 @@
 > a choice of world changes it; a keystroke only refreshes the lines that
 > depend on it - the currency, and whether Found is lit and why not - so the
 > field being typed in keeps its focus and its caret.
+> 
+> AND THE GROUND IT STANDS ON (0.7.56, batch J1a). A row for the World: the
+> seed of the city's coast, lakes, river and ore (World, the project's
+> spec-land.md), rolled when the page opens and again by the dice, or typed.
+> Any whole number is a world and the same number is the same world; it
+> cannot be changed later. The city's land stands on it since 0.7.57
+> (CityLand).
 
-**Uses:** [Palette](Palette.md) (68), [Founding](Founding.md) (32), [Currency](Currency.md) (12), [WorldEconomy](WorldEconomy.md) (5), [UserInterface](UserInterface.md) (2)
+**Uses:** [Palette](Palette.md) (76), [Founding](Founding.md) (38), [Currency](Currency.md) (12), [WorldEconomy](WorldEconomy.md) (5), [UserInterface](UserInterface.md) (2), [Icons](Icons.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -56,81 +63,85 @@
 
 | line | section |
 |---:|---|
-| 76 | · the choices, between redraws |
-| 86 | · what a keystroke refreshes |
-| 117 | THE PAGE |
-| 126 | · · the name |
-| 174 | · · what it starts with |
-| 210 | · · the world |
-| 227 | · · found it |
-| 361 | WHAT A KEYSTROKE CHANGES |
-| 380 | THE CHOICES, AS THE MODEL READS THEM |
+| 83 | · the choices, between redraws |
+| 95 | · what a keystroke refreshes |
+| 131 | THE PAGE |
+| 140 | · · the name |
+| 188 | · · what it starts with |
+| 224 | · · the ground |
+| 243 | · · the world |
+| 260 | · · found it |
+| 395 | WHAT A KEYSTROKE CHANGES |
+| 414 | THE CHOICES, AS THE MODEL READS THEM |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 69 | `FoundingScreen.SCREEN` | `"showFoundingScreen"` | This screen's name for clearMenu(), the key filter and isGameMenu(). |
-| 112 | `FoundingScreen.PANEL` | `760` | The panel's width, as the mockups draw it. |
-| 115 | `FoundingScreen.PANEL_PAD` | `40` | The panel's padding, left and right: what the cards and fields share is the rest. |
+| 76 | `FoundingScreen.SCREEN` | `"showFoundingScreen"` | This screen's name for clearMenu(), the key filter and isGameMenu(). |
+| 123 | `FoundingScreen.PANEL` | `760` | The panel's width, as the mockups draw it. |
+| 126 | `FoundingScreen.PANEL_PAD` | `40` | The panel's padding, left and right: what the cards and fields share is the rest. |
+| 129 | `FoundingScreen.SEED_FIELD` | `200` | The World's field: room for a seed of nineteen digits and a sign in the figures' face at 14 px (0.7.56). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 72 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
-| 78 | `private String cityName` |  |
-| 79 | `private boolean ownCurrency` |  |
-| 80 | `private String typedName` |  |
-| 81 | `private Founding.Preset preset` |  |
-| 83 | `private String customCash` | A custom founding, as typed: millions of the city's money, and millions of US dollars. |
-| 84 | `private double mean` |  |
-| 88 | `private Label currencyLine, whyNot` |  |
-| 89 | `private Button found` |  |
-| 90 | `private TextField nameField` |  |
+| 79 | `private final UserInterface ui` | The window this screen draws into: its game, its root, its clearMenu(). |
+| 85 | `private String cityName` |  |
+| 86 | `private boolean ownCurrency` |  |
+| 87 | `private String typedName` |  |
+| 88 | `private Founding.Preset preset` |  |
+| 90 | `private String customCash` | A custom founding, as typed: millions of the city's money, and millions of US dollars. |
+| 91 | `private double mean` |  |
+| 93 | `private String worldSeed` | The world's seed, as typed or rolled. |
+| 97 | `private Label currencyLine, whyNot` |  |
+| 98 | `private Button found` |  |
+| 99 | `private TextField nameField` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 379 | **type** `final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, and the world it is founded into. |
-| 74 | 1 | `FoundingScreen(UserInterface ui)` |  |
+| 73 | 414 | **type** `final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. |
+| 81 | 1 | `FoundingScreen(UserInterface ui)` |  |
 
-### the choices, between redraws (lines 76-85)
+### the choices, between redraws (lines 83-94)
 
-### what a keystroke refreshes (lines 86-116)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 93 | 17 | `void show()` | From the main menu: a fresh page on the defaults, whatever was typed last time. |
-
-### THE PAGE (lines 117-360)
+### what a keystroke refreshes (lines 95-130)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 120 | 159 | `void draw()` |  |
-| 281 | 5 | `private static Label caption(String text)` | A section's caption over its controls, as the mockups set it. |
-| 293 | 48 | `private VBox presetCard(Founding.Preset p)` | One of the four starts, as a card: its name, its money, and one line on how hard it is - never on what the money buys (Jerus: "even the screen shouldnt say what the money could buy"). |
-| 343 | 3 | `private static String compact(String amount)` | A whole amount without its ".0": "D$100.0M" is "D$100M" on a card, where the room is a card's. |
-| 348 | 12 | `private Button worldChip(double m, boolean first, boolean last)` | One choice of world, as one of a row of five joined segments. |
+| 102 | 19 | `void show()` | From the main menu: a fresh page on the defaults, whatever was typed last time. |
 
-### WHAT A KEYSTROKE CHANGES (lines 361-379)
+### THE PAGE (lines 131-394)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 364 | 15 | `private void refresh()` |  |
+| 134 | 179 | `void draw()` |  |
+| 315 | 5 | `private static Label caption(String text)` | A section's caption over its controls, as the mockups set it. |
+| 327 | 48 | `private VBox presetCard(Founding.Preset p)` | One of the four starts, as a card: its name, its money, and one line on how hard it is - never on what the money buys (Jerus: "even the screen shouldnt say what the money could buy"). |
+| 377 | 3 | `private static String compact(String amount)` | A whole amount without its ".0": "D$100.0M" is "D$100M" on a card, where the room is a card's. |
+| 382 | 12 | `private Button worldChip(double m, boolean first, boolean last)` | One choice of world, as one of a row of five joined segments. |
 
-### THE CHOICES, AS THE MODEL READS THEM (lines 380-444)
+### WHAT A KEYSTROKE CHANGES (lines 395-413)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 385 | 4 | `private Currency currency()` | The money as chosen, or null when a typed pair does not pass. |
-| 391 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
-| 396 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
-| 401 | 13 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse. |
-| 416 | 4 | `private Founding choices()` | The founding as chosen. |
-| 422 | 5 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
-| 428 | 8 | `private static double millions(String typed)` |  |
-| 437 | 3 | `private static String trim(double v)` |  |
-| 441 | 3 | `private static String percent(double m)` |  |
+| 398 | 15 | `private void refresh()` |  |
+
+### THE CHOICES, AS THE MODEL READS THEM (lines 414-486)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 419 | 4 | `private Currency currency()` | The money as chosen, or null when a typed pair does not pass. |
+| 425 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
+| 430 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
+| 435 | 3 | `private Long seed()` | The world's seed as typed, or null when it is not a whole number. |
+| 440 | 14 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse. |
+| 456 | 6 | `private Founding choices()` | The founding as chosen. |
+| 464 | 5 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
+| 470 | 8 | `private static double millions(String typed)` |  |
+| 479 | 3 | `private static String trim(double v)` |  |
+| 483 | 3 | `private static String percent(double m)` |  |
 

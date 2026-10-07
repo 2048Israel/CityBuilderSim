@@ -2,7 +2,7 @@
 
 A macroeconomic city simulator in Java 21 and JavaFX. You lay out a city; the
 economy underneath it is the game. An age pyramid decides the workforce, a
-labour market prices it, fifteen private sectors keep their own books and expand on
+labour market prices it, seventeen private sectors keep their own books and expand on
 their own judgement, a commercial bank funds them and cannot lend below what its
 own money costs it, a treasury borrows at a rate the market quotes it, and a
 currency floats against a world that has its own prices and its own inflation.
@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **seventy-one harnesses plus the
-4,000-odd-month playtest**, which it reports as seventy-two, in about three minutes.
+`AllChecks` runs the lot, one JVM each — **eighty-one harnesses plus the
+4,000-odd-month playtest**, which it reports as eighty-two, in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -142,8 +142,10 @@ bare home folder is not one of them.
 | Linux | `$XDG_DATA_HOME/CityBuilderSim/`, else `~/.local/share/CityBuilderSim/` |
 
 Inside it: `saves/slot-01.json` … `slot-10.json` and `saves/autosave.json`, each
-with a `-history.json` beside it carrying that slot's graphs; and `log.txt` with
-`log-previous.txt` behind it. Every `println` in the game already goes to the
+with a `-history.json` beside it carrying that slot's graphs and, once its city
+map has been drawn, a `-map.bin` carrying the map (a stamp in the save says which
+map file is its own; a missing or stale one only means the map is drawn again);
+and `log.txt` with `log-previous.txt` behind it. Every `println` in the game already goes to the
 log, because a logging system that needs a thousand edits does not get adopted —
 and in a packaged build there is no console, so all of it used to go nowhere.
 
@@ -178,7 +180,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     about 250 files
+src/main/java/ham/citybuildersim/     about 270 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
@@ -188,7 +190,7 @@ src/main/java/ham/citybuildersim/     about 250 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the fifteen sector classes
+    sectors/                          the seventeen sector classes
     BondMarket.java, CorporateBond.java, OrderBook.java
                                       the businesses' bonds, and the order book they and the shares trade on
     tools/                            the index generators (see below); not part of the game
@@ -208,7 +210,7 @@ what it makes, what it uses, what it stocks, and any hook it overrides.
 `sectors/Mining.java` is the shortest one and the shape to copy. Before the
 template the sectors were five handlers in five shapes named by hand in about a
 hundred places; the whole point of it is that the eighth costs an afternoon.
-Eight have been added since, and each did.
+Ten have been added since, and each did.
 
 **The order of `Sectors.KEYS` is load-bearing.** Equity's company index, the
 households' share arrays and the audit's pool list all follow it, so a new

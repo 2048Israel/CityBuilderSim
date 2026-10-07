@@ -101,7 +101,7 @@ public class HousingCheck {
             near("...and the landlords own what was built", month,
                     owned, built.getTotalHomes());
 
-            int[] bySize = built.homesBySize();
+            long[] bySize = built.homesBySize();
             double sized = 0;
             for (int s = 1; s < bySize.length; s++) sized += bySize[s];
             near("...and the sizes add up to the same stock", month, sized, owned);
@@ -365,7 +365,7 @@ public class HousingCheck {
                 ss.getHomes(), ss.getOccupiedHomes(), sEmpty,
                 sf.getDoubledUpHouseholds(), sf.getRefusedByStudio());
 
-        int[] sSizes = studios.getBuildingManager().homesBySize();
+        long[] sSizes = studios.getBuildingManager().homesBySize();
         double familySized = 0;
         for (int z = 3; z < sSizes.length; z++) familySized += sSizes[z];
         System.out.printf("   ...and it owns %,.0f doors a child is allowed in.%n", familySized);
@@ -547,7 +547,7 @@ public class HousingCheck {
 
         // Doors of size four and nothing else, and more of them than there are
         // households - so nothing can be left out for want of room.
-        int[] bigOnly = new int[5];
+        long[] bigOnly = new long[5];
         bigOnly[4] = (int) Math.ceil(allHouseholds) + 10;
 
         double leftOver = match.house(bigOnly);
@@ -587,7 +587,7 @@ public class HousingCheck {
          * household with a child must be turned away, and the refusals must be
          * exactly the households that have one.
          */
-        int[] studiosOnly = new int[3];
+        long[] studiosOnly = new long[3];
         studiosOnly[2] = (int) Math.ceil(allHouseholds) + 10;
 
         double refused = match.house(studiosOnly);

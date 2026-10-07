@@ -9,6 +9,7 @@ import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
+import ham.citybuildersim.SupplierCredit;
 import ham.citybuildersim.Trade;
 
 import java.util.List;
@@ -26,18 +27,25 @@ import java.util.Map;
  * two things the template does not: what it charges, and the sale to the
  * households at the bottom of the month.
  *
- * WHAT THE SHOPS CHARGE. Cost-plus with a lag, and scarcity lifts it: the
- * shelf price moves a quarter of the way each month toward what the stock
- * cost plus RETAIL_MARKUP, times a mark-up for the share of what people
- * came for that the shops could not hand over. That is where prices learned
- * to ration - see the old CommercialHandler's note, which is preserved in
- * repriceShelf() below because the reasoning is the mechanic.
+ * WHAT THE SHOPS CHARGE (0.7.43). A floor - what the stock cost plus
+ * RETAIL_MARKUP, and never under the opening price struck at the expected
+ * price level - and above it the price at which what the households want
+ * equals what the shops can hand over, capped at CLEARING_CAP over the
+ * floor. The shelf moves a sixth of the way there a month, drifting with
+ * expected inflation as it goes: sticky, as a shop's price is. See
+ * repriceShelf(), and the old CommercialHandler's note preserved there.
  *
- * WHO CAN BUY. Demand is min(coverage, population) - the shops' own capacity
- * to serve people - capped by what the households can pay at the shelf
- * price, which HouseholdBalance works out after savings and credit have
- * been drawn on and Game hands in each month. See the budget constraint in
- * sellOwnPriced().
+ * WHO CAN BUY. Each household asks for baskets at a price - a basket a head
+ * at most, a little fewer above the satiation price, never more than its
+ * money buys (HouseholdBalance.groceryDemandOf()) - and the shops hand over
+ * what coverage, the operating rate and the shelf allow. A shortage is
+ * shared out at the clearing price, so the poorest are priced out first.
+ * See sellOwnPriced().
+ *
+ * WHO PAYS FOR THE STOCK (0.7.44). The till and the lender, as for every
+ * firm - and, for what they cannot cover, the shops' suppliers, who wait a
+ * month for a month of the sale the shops expect and are repaid at the next
+ * strike out of that sale. See supplierCreditLimit() and SupplierCredit.
  *
  * The bank's branches are COMMERCIAL buildings and used to be inside this
  * sector's payroll; they belong to no sector now and their tellers are the
@@ -51,24 +59,67 @@ public final class Retail extends Sector {
     /** What the shops add to what their stock cost them. */
     public static final double RETAIL_MARKUP = 1.50;
 
-    /** How fast the shelf catches up with the invoice. A quarter, roughly. */
-    public static final double REPRICE_SPEED = .25;
-
-    /** The price the game opened at, and the floor it will not go below. */
+    /** The price the game opened at, and the floor it will not go below - struck at the expected price level since 0.7.42 (seedConstants()). */
     public static final double OPENING_SELL_PRICE = .3;
 
-    /**
-     * How far above cost-plus a total shortage can push the shelf price.
-     * Sixty per cent over cost-plus at total shortage is a real ration and a
-     * survivable one - see the old handler for the five harnesses that
-     * failed at 2.5.
+    /* ------------------------ the price that clears (0.7.43) ------------------------
+     * The project's spec-inflation.md 2.6-2.7 and its star decisions 2, 3
+     * and 17. Until 0.7.43 the shelf was cost-plus times a scarcity mark-up
+     * of at most 1.6, read off the share of a head count the shops delivered
+     * (MAX_SCARCITY_MULTIPLE, COMFORTABLE_DELIVERY, REPRICE_SPEED a quarter);
+     * no price in it read anybody's money, so easy money never reached it.
      */
-    public static final double MAX_SCARCITY_MULTIPLE = 1.6;
 
-    /** Delivery share at which scarcity stops adding anything. */
-    public static final double COMFORTABLE_DELIVERY = .95;
+    /**
+     * How far over the opening floor a full basket is still wanted: 1.5x. It
+     * keeps today's shelves - 1.33-1.41x the floor in the research cities -
+     * inside the satiated band, so an old save's demand does not jump.
+     */
+    public static final double SATIATION_MULTIPLE = 1.5;
 
-    /** The same floor, in TODAY's money - seeded from the founding value on a reform. See Denomination. */
+    /**
+     * How far a household's baskets fall with their price above satiation,
+     * an elasticity: .4, the middle of the measured food-at-home range (USDA
+     * ERS -0.3 to -0.6; Andreyeva et al. 2010, about -0.5 across foods). The
+     * budget cap adds the poor's own elasticity on top.
+     */
+    public static final double GROCERY_ELASTICITY = .4;
+
+    /** The most the shelf's target goes over its floor however short the shops are: half again. A cap of 2 was measured to run the autopilot at 3.2% a year. */
+    public static final double CLEARING_CAP = 1.5;
+
+    /** The share of the way to its target, in logs, the shelf moves in a month: a sixth - about six months to clear, slower than the old quarter. */
+    public static final double CLEAR_SPEED = 1.0 / 6;
+
+    /** How much of the gap to its floor a shelf under the floor closes in a month: half. Sellers do not stay under a floor. */
+    public static final double FLOOR_CATCH_UP = .5;
+
+    /** The clearing price is looked for between the shelf price over this and the shelf price times it. */
+    public static final double CLEARING_BAND = 50;
+
+    /** Halvings (in logs) of that band the search takes: fifty, far finer than a cent's grain. */
+    public static final int CLEARING_STEPS = 50;
+
+    /* ------------------------ its suppliers' credit (0.7.44) ------------------------
+     * See SupplierCredit, and supplierCreditLimit() below. Until 0.7.44 the
+     * shops paid for their stock at the next strike out of the sale before
+     * it, so a till that ran dry bought nothing, sold nothing the next month
+     * and stayed dry: 11.9% of the autopilot's months after month 240
+     * delivered under 5% of what was wanted (runs/diag-0743.md, section 5).
+     */
+
+    /**
+     * How much the shops' suppliers will wait for, in months of the stock
+     * for the sale the shops expect, at what it costs to bring in: one - a
+     * month's terms, repaid at the next strike out of the sale the stock went
+     * to.
+     */
+    public static final double SUPPLIER_CREDIT_MONTHS = 1;
+
+    /** What the shops owe their suppliers for the shelf's stock, struck and repaid a month at a time (0.7.44). */
+    private final SupplierCredit supplierCredit = new SupplierCredit(java.util.EnumSet.copyOf(java.util.Arrays.asList(SHELF)));
+
+    /** OPENING_SELL_PRICE, the opening floor, in TODAY's money - seeded from the founding value on a reform, and struck at the expected price level every month since 0.7.42 (seedConstants()). See Denomination. */
     private double openingSellPrice = OPENING_SELL_PRICE;
 
     private double storeSellPrice = OPENING_SELL_PRICE;
@@ -76,18 +127,33 @@ public final class Retail extends Sector {
     private double lastScarcityMultiple = 1;
     private double lastDeliveredShare = 1;
 
+    /** The month's sale at a price (0.7.43): the clearing price, the baskets demanded at the shelf price, what the shops could hand over, and the floor the last reprice stood on. */
+    private double clearingPrice, demandAtPrice, supplyBaskets, floorPrice, rNeeded;
+
+    /**
+     * ...and, recorded at the sale for the screens (0.7.45), what the shops'
+     * buildings could hand over at the operating rate - coverage times the
+     * rate, before the shelf - and the price a basket was charged. A fact of
+     * the sale: the shelf after it is not the shelf it had, and the price is
+     * repriced at the bottom of the month. NaN on a save from before.
+     */
+    private double handOver = Double.NaN, chargedPrice = Double.NaN;
+
+    /** The expected price level Game hands on after the anchor's month - the level the next month's constants are struck at - and expected inflation a month: what the shelf drifts at. Told by Game each month (setExpected()); never saved. */
+    private double expectedLevel = 1, expectedMonthly;
+
     /** Units the shops sold last month. Drives the restock target. */
-    private int lastMonthSales;
+    private long lastMonthSales;
 
     /** Who could shop, and what they could pay - set each month by Game from the households' ledger. */
-    private int population;
+    private long population;
     private double spendingCapacity;
     private double wantedSpend;
 
     /* the month's sale, for the screens */
-    private int rWantedDemand;
-    private int rDemand;
-    private int rProductsSold;
+    private long rWantedDemand;
+    private long rDemand;
+    private long rProductsSold;
 
     /* =====================================================================
        THE THIRTEEN THINGS ON THE SHELF
@@ -165,36 +231,151 @@ public final class Retail extends Sector {
        INPUTS FROM THE CITY
        =================================================================== */
 
-    public void setPopulation(int population)          { this.population = Math.max(0, population); }
+    public void setPopulation(long population)          { this.population = Math.max(0, population); }
+    /*
+     * The households' plan, in money: what they could spend and what they
+     * would like to. Kept for the screens and the playtest's columns; since
+     * 0.7.43 the sale asks the households themselves at a price
+     * (HouseholdBalance.groceriesWanted()) and reads neither.
+     */
     public void setSpendingCapacity(double money)      { this.spendingCapacity = money; }
     public void setWantedSpend(double money)           { this.wantedSpend = money; }
 
-    public int getPopulation()            { return population; }
+    /**
+     * The expected price level (Expectations.getExpectedLevel(), handed on
+     * after the anchor's month: the level the next month's money constants
+     * are struck at, and inside that month the one they are struck at) and
+     * expected inflation a month (Expectations.monthlyExpected()): the shelf
+     * drifts at the second while it moves toward its target; nothing in the
+     * model reads the first. Told by Game after the anchor and on a load;
+     * anything not finite is ignored.
+     */
+    public void setExpected(double level, double monthly) {
+        if (level > 0 && Double.isFinite(level)) expectedLevel = level;
+        if (Double.isFinite(monthly)) expectedMonthly = monthly;
+    }
+
+    public double getExpectedLevel()   { return expectedLevel; }
+    public double getExpectedMonthly() { return expectedMonthly; }
+
+    /** The price a full basket is still wanted at: SATIATION_MULTIPLE over the opening floor, in today's money at the expected level. */
+    public double getSatiationPrice() { return SATIATION_MULTIPLE * openingSellPrice; }
+
+    /** The price at which what the households want met what the shops could hand over, at the last sale - looked for within CLEARING_BAND of the shelf price. */
+    public double getClearingPrice()  { return clearingPrice; }
+
+    /** The baskets the households asked for at the shelf price, at the last sale. */
+    public double getDemandAtPrice()  { return demandAtPrice; }
+
+    /** The baskets the shops could hand over at the last sale: coverage times the operating rate, or the shelf if it ran out first. */
+    public double getSupplyBaskets()  { return supplyBaskets; }
+
+    /** The floor the shelf stood on at the last reprice: the opening price at the expected level, or the stock's cost plus RETAIL_MARKUP if more. */
+    public double getFloorPrice()     { return floorPrice > 0 ? floorPrice : openingSellPrice; }
+
+    /* ---------------------- the sale, read for the screens (0.7.45) ----------------------
+       Pure reads of what the last sale recorded: what limited it, and where
+       its clearing price stands against the floor and the cap. */
+
+    /** The baskets the shops' buildings could hand over at the last sale: coverage times the operating rate, before the shelf - recorded at the sale; on a save from before 0.7.45, today's coverage at today's rate. */
+    public double getHandOver() {
+        return Double.isNaN(handOver) ? getStoreCoverage() * getOperatingRate() : handOver;
+    }
+
+    /** True when the shelf ran out before the buildings did at the last sale: what limited it was the stock its cash and credit bought. */
+    public boolean isShelfBound() {
+        double reach = getHandOver();
+        return reach > 0 && supplyBaskets < reach * (1 - 1e-9);
+    }
+
+    /** The shelf price over its floor: 1 on the floor. */
+    public double shelfOverFloor() { return getFloorPrice() > 0 ? storeSellPrice / getFloorPrice() : 1; }
+
+    /** The most the shelf's target goes to: CLEARING_CAP over the floor. */
+    public double getCapPrice() { return CLEARING_CAP * getFloorPrice(); }
+
+    /** True when even the cap left more asked for than the shops could hand over at the last sale: a price cannot clear it. */
+    public boolean clearsPastTheCap() { return isSaleCounted() && clearingPrice > getCapPrice(); }
+
+    /** True when the shops could hand over more than is asked for at the floor at the last sale: the clearing price is under the floor, and not a price anybody would charge (the bisection's band bottom when the slack is wide). */
+    public boolean isSlack() { return isSaleCounted() && clearingPrice <= getFloorPrice(); }
+
+    /** True once a sale has been counted at a price: a save from before 0.7.43 has none until its first month. */
+    public boolean isSaleCounted() { return clearingPrice > 0 || rNeeded > 0; }
+
+    /** The price a basket was charged at the last sale: the shelf price before the bottom of the month repriced it - today's shelf price on a save from before 0.7.45. */
+    public double getChargedPrice() { return chargedPrice > 0 ? chargedPrice : storeSellPrice; }
+
+    /**
+     * The baskets the shops expect to sell next month, as the last sale reads
+     * it: what the households asked for at the shelf price, up to what the
+     * shops can hand over - coverage times the operating rate, the shelf not
+     * counted, since the shelf is what the restock fills (0.7.44).
+     */
+    public double expectedBaskets() {
+        return Math.max(0, Math.min(demandAtPrice, getStoreCoverage() * getOperatingRate()));
+    }
+
+    /**
+     * WHAT THE SHOPS' SUPPLIERS WILL WAIT FOR (0.7.44; SupplierCredit): the
+     * stock for the sale the shops expect - the expected baskets, at what a
+     * basket costs to bring in - for SUPPLIER_CREDIT_MONTHS. Bounded by the
+     * sale it is repaid out of: a shop that expects to sell nothing gets
+     * nothing, and the takings of a sale it stocks are the baskets at the
+     * shelf price, which stands on a floor RETAIL_MARKUP over their cost (a
+     * shelf catching up from under it sits about a month's drift below), so
+     * they cover what it owes for them. A till that covers its stock takes none of it
+     * (SupplierCredit.close()).
+     */
+    public double supplierCreditLimit() {
+        double limit = SUPPLIER_CREDIT_MONTHS * expectedBaskets() * basketLandedCost();
+        return limit > 0 && Double.isFinite(limit) ? limit : 0;
+    }
+
+    /** What one basket costs the shops to bring in now, at the price their orders are budgeted at (GoodsMarket.landedPrice()). */
+    public double basketLandedCost() {
+        if (markets == null) return 0;
+        double sum = 0;
+        for (Map.Entry<Good, Double> e : basket.entrySet()) {
+            double p = markets.get(e.getKey()).landedPrice();
+            if (p > 0 && Double.isFinite(p)) sum += e.getValue() * p;
+        }
+        return sum;
+    }
+
+    @Override
+    public SupplierCredit supplierCredit() { return supplierCredit; }
+
+    public long getPopulation()            { return population; }
     public double getSpendingCapacity()   { return spendingCapacity; }
     public double getWantedSpend()        { return wantedSpend; }
 
     /** People the shops can serve a month, off their buildings. */
-    public int getStoreCoverage() {
+    public long getStoreCoverage() {
         return buildings == null ? 0 : buildings.getTotalStoreCoverage();
     }
 
     /** Shelf room, off their buildings. */
-    public int getStoreCapacity() {
+    public long getStoreCapacity() {
         return buildings == null ? 0 : buildings.getTotalStoreCapacity();
     }
 
     /** What is on the shelf now, counted in person-months rather than kilograms. */
-    public int getStoreInventory() { return (int) Math.floor(basketsOnShelf()); }
+    public long getStoreInventory() { return (long) Math.floor(basketsOnShelf()); }
 
     public double getStoreSellPrice()   { return storeSellPrice; }
     public double getOpeningSellPrice() { return openingSellPrice; }
+    /** The shelf's target over its floor at the last reprice: the clearing price held between 1 and CLEARING_CAP (0.7.43; the scarcity mark-up until then). */
     public double getScarcityMultiple() { return lastScarcityMultiple; }
     public double getDeliveredShare()   { return lastDeliveredShare; }
-    public int getLastMonthSales()      { return lastMonthSales; }
-    public int getWantedDemand()        { return rWantedDemand; }
-    public int getDemand()              { return rDemand; }
-    public int getUnaffordableDemand()  { return Math.max(0, rWantedDemand - rDemand); }
-    public int getProductsSold()        { return rProductsSold; }
+    public long getLastMonthSales()     { return lastMonthSales; }
+    public long getWantedDemand()       { return rWantedDemand; }
+    public long getDemand()             { return rDemand; }
+    /** Baskets the households needed and did not ask for at the shelf price - priced out, by their money or by the price (0.7.43; the want past what they could afford until then). */
+    public long getUnaffordableDemand() { return (long) Math.min(Long.MAX_VALUE, Math.max(0, Math.floor(rNeeded) - rWantedDemand)); }
+    /** The baskets the households needed at the last sale, one a head. */
+    public double getBasketsNeeded()    { return rNeeded; }
+    public long getProductsSold()       { return rProductsSold; }
     private double rHouseholdWant;
 
     /** What the shops paid for one person-month of food this month: the basket, at the market's prices. */
@@ -223,7 +404,8 @@ public final class Retail extends Sector {
      * could afford.
      *
      * READ WHAT THIS IS BEFORE QUOTING IT. `rDemand` is already
-     * min(coverage, want, affordable), so this is the shops' performance
+     * min(coverage, the baskets wanted at the shelf price) - min(coverage,
+     * want, affordable) until 0.7.43 - so this is the shops' performance
      * against a target the shops set. It is the right number for asking "did
      * the shelf and the throttles keep up with the queue at the door". It is
      * the WRONG number for asking "did the city get what it wanted", and it
@@ -239,8 +421,9 @@ public final class Retail extends Sector {
     /**
      * ...and the share of it they actually got.
      *
-     * THE HONEST ONE. The denominator is the money households planned to spend
-     * divided by the shelf price - what they came for - rather than what the
+     * THE HONEST ONE. The denominator is the baskets the households asked
+     * for at the shelf price (0.7.43; the money they planned to spend over
+     * the price until then) - what they came for - rather than what the
      * shops decided they could serve. With nothing asked for yet (the founding
      * month) it is one, which is true: nobody went without.
      */
@@ -250,7 +433,7 @@ public final class Retail extends Sector {
     }
 
     public void setStoreSellPrice(double price) { if (price > 0) storeSellPrice = price; }
-    public void setLastMonthSales(int units)    { lastMonthSales = Math.max(0, units); }
+    public void setLastMonthSales(long units)    { lastMonthSales = Math.max(0, units); }
     /** Puts N person-months on the shelf, in the kilograms that makes - the save's way back in. */
     public void setStoreInventory(int units) {
         double n = Math.max(0, units);
@@ -264,79 +447,66 @@ public final class Retail extends Sector {
     @Override
     public void sellOwnPriced(Markets markets, Game game) {
 
-        int coverage = getStoreCoverage();
+        long coverage = getStoreCoverage();
+        ham.citybuildersim.HouseholdBalance households = game == null ? null : game.getHouseholdBalance();
+        if (households != null) households.setSatiationPrice(getSatiationPrice());
 
         /*
-         * THE BUDGET CONSTRAINT. Demand was min(storeCoverage, population) -
-         * a headcount, with no reference to what anybody earned. The third
-         * term is what the households can actually pay for, priced at the
-         * shelf price they will pay it at. Zero capacity means "nobody has
-         * told us yet", not "nobody can afford anything" - a fresh game
-         * reaches here before the first household statement exists.
-         *
-         * The headcount is no longer the ceiling either: the want comes from
-         * HouseholdBalance, subsistence for everybody plus most of whatever is
-         * left over. What survives of the old rule is storeCoverage, the
-         * shops' own capacity to serve people.
+         * WHAT THE SHOPS CAN HAND OVER (0.7.43): the people their buildings
+         * can serve, throttled by the operating rate - power, water, roads,
+         * health, staff, vans - or the shelf, if it runs out first. The
+         * utilisation ratios throttle the QUANTITY, not the revenue: a ratio
+         * of .35 means a third of the baskets, not every basket at a third.
          */
-        int wanted = Math.min(coverage, population);
-        int affordable = wanted;
-        if (spendingCapacity > 0 && storeSellPrice > 0) {
-            wanted = wantedSpend > 0
-                    ? (int) Math.floor(wantedSpend / storeSellPrice)
-                    : Math.min(coverage, population);
-            affordable = (int) Math.floor(spendingCapacity / storeSellPrice);
-        }
-        /*
-         * WHAT THE HOUSEHOLDS ASKED FOR, BEFORE ANY OF THIS CAPPED IT
-         * (2026-09-17), and it is a measurement rather than a rule: nothing
-         * below reads it.
-         *
-         * WHY IT HAD TO EXIST. `rWantedDemand` is already min(coverage, ...),
-         * so every figure this sector reported was a share of a number the
-         * shops had themselves chosen, and getSupplyRatio() - sold over
-         * rDemand - could read a comfortable three quarters while the city
-         * asked for a hundred and twenty-two times what it got. Measured at
-         * month 3,840 of seed 0: households planned 21,446,946 baskets, the
-         * shops could serve 177,760 people, and the summary line said 76%.
-         *
-         * A basket is ONE PERSON-MONTH of food and demand here is counted in
-         * person-months, so a rich household cannot buy a second stomach -
-         * which is correct, and is exactly why the gap is the interesting
-         * number rather than an embarrassment. See getHouseholdShare().
-         *
-         * AND IT IS FLOORED, WHICH IS THE MONEY-CONSTANT FAMILY WEARING ITS
-         * QUIETEST COAT. The first draft divided money by money and left the
-         * fraction, and DenominationCheck came apart 1.5e-06 at a time: the
-         * ratio is scale-invariant in arithmetic and NOT in floating point,
-         * because (a/100)/(b/100) is not bit-identical to a/b. The line this
-         * replaced was sold-over-demand with both sides INTEGERS, which was
-         * exact by luck rather than by design.
-         *
-         * So the count of baskets crosses from the money world into the
-         * physical one at a grain coarser than the dust - a whole basket, the
-         * same construction whole cars and the shops own floor use, and for
-         * the same reason. Twenty-one million baskets do not care about the
-         * fraction; the reformed twin does.
-         */
-        rHouseholdWant = wantedSpend > 0 && storeSellPrice > 0
-                ? Math.floor(wantedSpend / storeSellPrice) : 0;
-
-        rWantedDemand = Math.min(coverage, wanted);
-        rDemand = Math.min(rWantedDemand, affordable);
+        double supply = Math.min(coverage * getOperatingRate(), basketsOnShelf());
+        supplyBaskets = supply;
+        handOver = coverage * getOperatingRate();   // a record for the screens (0.7.45)
 
         /*
-         * THE SHOPS SELL WHAT THEY CAN SERVE. The utilisation ratios throttle
-         * the QUANTITY, not the revenue: a ratio of .35 means the shop can
-         * serve about a third of the people who want to buy, not that it
-         * serves everybody and charges a third. The units not sold are still
-         * on the shelf next month.
+         * WHAT THE HOUSEHOLDS ASK FOR AT THE SHELF PRICE, and the price at
+         * which it would meet the supply: the households' own curve, falling
+         * in the price (HouseholdBalance.groceriesWanted()). The clearing
+         * price is looked for in logs within CLEARING_BAND of the shelf
+         * price; a city that wants less than the shops hold even at the
+         * band's bottom clears there, one that wants more even at its top
+         * clears there. Nothing here moves the shelf - repriceShelf() does,
+         * a sixth of the way, at the bottom of the month.
          */
-        double serviceable = rDemand * getOperatingRate();
-        int sold = (int) Math.floor(Math.min(serviceable, basketsOnShelf()));
+        double price = storeSellPrice;
+        chargedPrice = price;                       // ...and so is this
+        double demand = demandAt(households, price);
+        demandAtPrice = demand;
+        rNeeded = households == null ? demand : households.groceriesNeeded();
+        clearingPrice = clearingPriceFor(households, price, supply);
+
+        /*
+         * WHOLE BASKETS, AND THE CROSSING HAPPENS ONCE. A basket is ONE
+         * PERSON-MONTH of food and the count crosses from the money world
+         * into the physical one at a grain coarser than the dust - a whole
+         * basket, the construction whole cars and the shops' own floor use.
+         * The demand is money over money (a budget over a price) and
+         * scale-invariant in arithmetic but not in floating point, which is
+         * what took DenominationCheck apart 1.5e-06 at a time when a first
+         * draft kept the fraction (2026-09-17); floored once for the city,
+         * the reformed twin sells the same baskets.
+         */
+        long sold = (long) Math.floor(Math.max(0, Math.min(demand, supply)));
+        rHouseholdWant = Math.floor(demand);
+        rWantedDemand = (long) Math.min(Long.MAX_VALUE, Math.floor(demand));
+        rDemand = (long) Math.min(Long.MAX_VALUE, Math.floor(Math.min(demand, coverage)));
         rProductsSold = sold;
-        noteShelfShort(Math.floor(serviceable) - sold, storeSellPrice);
+        noteShelfShort(Math.floor(Math.min(demand, coverage * getOperatingRate())) - sold, storeSellPrice);
         lastMonthSales = sold;
+
+        /*
+         * WHO GETS THEM: at the clearing price when the shelf charged less
+         * than it, so a shortage prices the poorest out first rather than
+         * shaving everybody's basket alike - and every basket is paid for at
+         * the price charged. The vouchers are paid on them in the same
+         * breath (HouseholdBalance.allocateGroceries()); Game pays the
+         * treasury's bill for them once the markets have cleared.
+         */
+        if (households != null) households.allocateGroceries(sold, Math.max(price, clearingPrice), price);
 
         if (sold > 0) {
             GoodsMarket m = markets.get(Good.GROCERIES);
@@ -351,6 +521,44 @@ public final class Retail extends Sector {
          * over the whole shelf rather than over what sold.
          */
         for (Good g : SHELF) usePantry(g, sold * kgPerHead(g));
+    }
+
+    /**
+     * The baskets the city asks for at a price: the households' own curve, or
+     * - with no households to ask, a harness's bare market - a basket for
+     * every person the shops could serve, at any price, which is what this
+     * sector sold before the households had a budget.
+     */
+    private double demandAt(ham.citybuildersim.HouseholdBalance households, double price) {
+        if (households == null) return Math.min(getStoreCoverage(), population);
+        return households.groceriesWanted(price);
+    }
+
+    /**
+     * The price at which the city's demand meets a supply, by bisection in
+     * logs on [price / CLEARING_BAND, price x CLEARING_BAND]: the top of the
+     * band when even it leaves more wanted than there is (or there is
+     * nothing), the bottom when even it leaves no more than there is.
+     */
+    private double clearingPriceFor(ham.citybuildersim.HouseholdBalance households, double price, double supply) {
+        return clearingPriceOf(p -> demandAt(households, p), price, supply);
+    }
+
+    /**
+     * ...the rule alone, on any demand curve that falls in the price: the
+     * smallest price in the band, to CLEARING_STEPS halvings in logs, at
+     * which no more is wanted than the supply. Pure - GroceryCheck holds it.
+     */
+    public static double clearingPriceOf(java.util.function.DoubleUnaryOperator demandAt, double price, double supply) {
+        if (!(price > 0)) return 0;
+        double lo = price / CLEARING_BAND, hi = price * CLEARING_BAND;
+        if (!(supply > 0) || demandAt.applyAsDouble(hi) > supply) return hi;
+        if (demandAt.applyAsDouble(lo) <= supply) return lo;
+        for (int i = 0; i < CLEARING_STEPS; i++) {
+            double mid = Math.sqrt(lo * hi);
+            if (demandAt.applyAsDouble(mid) > supply) lo = mid; else hi = mid;
+        }
+        return hi;
     }
 
     /**
@@ -390,7 +598,7 @@ public final class Retail extends Sector {
                     : Math.max(0, m.getLocalPrice());
             basketCost += e.getValue() * blended;
         }
-        repriceShelf(basketCost, rDemand, rProductsSold);
+        repriceShelf(basketCost);
     }
 
     /**
@@ -407,52 +615,79 @@ public final class Retail extends Sector {
      * about the city into a fact about who is poor in it - which the player
      * can act on, with the minimum wage, the sales tax, or more shops.
      *
-     * @param plannedUnits   demand people came with AND could pay for
-     * @param deliveredUnits what the shops could actually hand over
+     * AND SINCE 0.7.43 THE LIFT IS THE PRICE THAT CLEARS (spec-inflation.md
+     * 2.7). Until then it was a mark-up of at most 1.6 read off the share of
+     * a head count delivered, and nothing in it read anybody's money. The
+     * target is now the clearing price the sale found - what the households'
+     * money and appetite make the baskets there are worth - kept between the
+     * floor and CLEARING_CAP over it, and the shelf moves CLEAR_SPEED of the
+     * way there a month in logs, drifting with expected inflation as it goes:
+     *
+     *     ln p' = (1 - CLEAR_SPEED)(ln p + ln(1 + expected a month))
+     *             + CLEAR_SPEED ln target
+     *
+     * A shelf under its floor (a dearer invoice, a re-struck opening price)
+     * closes FLOOR_CATCH_UP of the gap to the floor grown a month instead.
+     * The floor's opening price is struck at the expected price level, never
+     * at the index, so no constant reads a price it sets.
      */
-    public void repriceShelf(double localUnits, double localPrice,
-                             double importUnits, double importPrice,
-                             double plannedUnits, double deliveredUnits) {
-        double units = Math.max(0, localUnits) + Math.max(0, importUnits);
-        if (units <= 0) return;
-
-        double blendedCost = (Math.max(0, localUnits) * Math.max(0, localPrice)
-                + Math.max(0, importUnits) * Math.max(0, importPrice)) / units;
-        repriceShelf(blendedCost, plannedUnits, deliveredUnits);
+    public void repriceShelf(double blendedCost) {
+        repriceShelf(blendedCost, clearingPrice);
     }
 
     /**
-     * The same rule, told what one unit cost instead of working it out.
-     *
-     * The thirteen-good shelf blends its cost per good before it gets here,
-     * because a weighted average of thirteen weighted averages is not a
-     * weighted average of the lot - the units are kilograms of different
-     * things and adding them would be adding apples to litres. The scarcity
-     * and lag below are untouched: that reasoning is the mechanic and it did
-     * not change when the shelf did.
+     * ...told the clearing price, rather than reading the last sale's: the
+     * rule alone, for a harness that causes a clearing price without a city.
      */
-    public void repriceShelf(double blendedCost, double plannedUnits, double deliveredUnits) {
+    public void repriceShelf(double blendedCost, double clearing) {
         if (blendedCost <= 0) return;
 
         double floor = Math.max(openingSellPrice, blendedCost * RETAIL_MARKUP);
+        floorPrice = floor;
+        double target = Math.max(floor, Math.min(clearing > 0 ? clearing : floor, CLEARING_CAP * floor));
 
-        double delivered = plannedUnits > 0
-                ? Math.max(0, Math.min(1, deliveredUnits / plannedUnits))
-                : 1;
-        double shortage = Math.max(0, COMFORTABLE_DELIVERY - delivered) / COMFORTABLE_DELIVERY;
-        double scarcity = 1 + shortage * (MAX_SCARCITY_MULTIPLE - 1);
+        lastScarcityMultiple = target / floor;
+        lastDeliveredShare = demandAtPrice > 0 ? Math.max(0, Math.min(1, rProductsSold / demandAtPrice)) : 1;
 
-        lastScarcityMultiple = scarcity;
-        lastDeliveredShare = delivered;
+        storeSellPrice = storeSellPrice < floor
+                ? storeSellPrice + (floor * (1 + expectedMonthly) - storeSellPrice) * FLOOR_CATCH_UP
+                : stickyPrice(storeSellPrice, target, expectedMonthly, CLEAR_SPEED);
+    }
 
-        double target = floor * scarcity;
-        storeSellPrice += (target - storeSellPrice) * REPRICE_SPEED;
+    /**
+     * ONE FORM FOR EVERY SELLER (0.7.43, spec-inflation.md 2.7): a price that
+     * keeps last month's level grown at expected inflation, and moves a share
+     * `speed` of the way to its target in logs. The shelf, and the landlords'
+     * two rents at a lease's speed (RealEstate.repriceRent()). A price or a
+     * target that is not positive steps linearly instead, as the rent always
+     * did, rather than taking a logarithm of nothing.
+     */
+    public static double stickyPrice(double price, double target, double expectedMonthly, double speed) {
+        if (!(price > 0) || !(target > 0)) return price + (target - price) * speed;
+        return Math.exp((1 - speed) * (Math.log(price) + Math.log1p(expectedMonthly))
+                + speed * Math.log(target));
     }
 
     /* ===================================================================
-       PLANNING - customers against coverage
+       PLANNING - baskets wanted against baskets the shops can hand over
        =================================================================== */
 
+    /*
+     * THE SUPPLY ANSWER TO A SHORTAGE (0.7.43; spec-inflation.md 4.3). The
+     * planner used to forecast PEOPLE against coverage, so a city whose shops
+     * covered everybody on paper and handed over 43% of it - roads at .71,
+     * power at .80, health at .77 - never built another shop, and with
+     * groceries cleared at a price that shortage would have been priced and
+     * never answered. It forecasts BASKETS now: the households' demand at the
+     * shelf's floor, grown over the order's lead time as the population is,
+     * against what the shops can hand over - coverage times the operating
+     * rate - with TARGET_HEADROOM to spare. A shop adds its coverage times the
+     * operating rate, and earns that times the margin over the food.
+     *
+     * WITH NO RATE YET - no shops, nothing to throttle - a shop is planned at
+     * full rate, as it was before: a rate of nothing would make every shop
+     * add nothing, and the first would never be built.
+     */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
@@ -461,7 +696,9 @@ public final class Retail extends Sector {
             return BusinessInvestment.Decision.no(sector, "already building");
         }
 
-        int coverage = getStoreCoverage();
+        double rate = handOverRate();
+        double supply = getStoreCoverage() * rate;
+        double atTheFloor = demandAt(game == null ? null : game.getHouseholdBalance(), getFloorPrice());
         double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
         Staffing staffingHold = null;
         String staffingHoldName = null;
@@ -473,12 +710,13 @@ public final class Retail extends Sector {
             double months = plans.leadTime(t, 1, output) + BusinessInvestment.PLANNING_HORIZON;
             // Capped at what the city could actually house - a plateaued city
             // otherwise forecasts its way to seventeen times the coverage
-            // anyone can shop in.
+            // anyone can shop in - and the baskets grown with the people.
             double projected = Math.min(population + plans.getPopulationGrowth() * months,
                     Math.max(population, plans.reachablePopulation()));
-            if (projected <= coverage * (1 + BusinessInvestment.TARGET_HEADROOM)) continue;
+            double forecast = population > 0 ? atTheFloor * projected / population : atTheFloor;
+            if (forecast <= supply * (1 + BusinessInvestment.TARGET_HEADROOM)) continue;
 
-            double monthlyIncome = t.getCoverage() * (storeSellPrice - getFoodPrice());
+            double monthlyIncome = t.getCoverage() * rate * (storeSellPrice - getFoodPrice());
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
@@ -494,34 +732,56 @@ public final class Retail extends Sector {
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
-                demandAtOpening = projected;
+                demandAtOpening = forecast;
             }
         }
 
         if (best == null) {
             return BusinessInvestment.Decision.no(sector, staffingHold != null
-                    ? staffingHold.why(staffingHoldName) : "coverage ahead of demand");
+                    ? staffingHold.why(staffingHoldName) : "what the shops can hand over is ahead of what is wanted");
         }
 
-        int quantity = plans.orderSize(demandAtOpening - coverage, best.getCoverage(), best, output);
+        int quantity = plans.orderSize(demandAtOpening - supply, best.getCoverage() * rate, best, output);
         if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         // No more of them than the city could staff together (0.7.18).
         quantity = staffableCount(best, quantity);
 
         return new BusinessInvestment.Decision(sector, best, quantity,
-                String.format("%,.0f customers forecast against %,d covered", demandAtOpening, coverage),
+                String.format("%,.0f baskets forecast against %,.0f the shops can hand over", demandAtOpening, supply),
                 true);
     }
 
-    /** Gross margin on a full store: every covered customer buys a unit a month. */
-    @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        return t.getCoverage() * (storeSellPrice - getFoodPrice());
+    /** The operating rate a new shop is planned at: the sector's own, or full with none yet (see the note above plan()). */
+    private double handOverRate() {
+        double rate = getOperatingRate();
+        return rate > 0 ? rate : 1;
     }
 
+    /** Gross margin on a store: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then). */
+    @Override
+    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        return t.getCoverage() * handOverRate() * (storeSellPrice - getFoodPrice());
+    }
+
+    /*
+     * ...AND SELLS SHOPS BY THE SAME MEASURE (0.7.43): the baskets wanted at
+     * the floor against the baskets the shops can hand over, each shop its
+     * coverage times the operating rate - the planner's own. It was people
+     * against coverage, which in a city whose shops run at a third of their
+     * reach read four shops for every customer and sold them while the city
+     * went hungry: measured in LabourCheck's crawling town, coverage 4,320
+     * cut to 2,400 against a thousand people, and hunger to .44.
+     */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
-        return new double[] { population, getStoreCoverage() };
+        return new double[] { demandAt(game == null ? null : game.getHouseholdBalance(), getFloorPrice()),
+                getStoreCoverage() * handOverRate() };
+    }
+
+    /** A shop's worth of what retirement counts: the baskets it can hand over (0.7.43; its coverage until then). */
+    @Override
+    public double unitsOf(BuildingsTemplate t) {
+        return t == null ? 0 : t.getCoverage() * handOverRate();
     }
 
     /* ===================================================================
@@ -546,17 +806,37 @@ public final class Retail extends Sector {
         lines.add(Line.of("On the shelf", f.count(getStoreInventory())));
 
         lines.add(Line.head("What people wanted"));
-        lines.add(Line.of("Wanted to buy", f.count(rWantedDemand)));
-        lines.add(Line.of("Could not afford it", f.count(getUnaffordableDemand()),
+        lines.add(Line.of("Wanted at the shelf price", f.count(rWantedDemand)));
+        lines.add(Line.of("Priced out", f.count(getUnaffordableDemand()),
                 getUnaffordableDemand() > 0 ? Line.Tone.WARN : Line.Tone.GOOD));
+        lines.add(Line.of("The shops could hand over", f.count(supplyBaskets)));
         lines.add(Line.of("Delivered", f.pct(lastDeliveredShare),
                 lastDeliveredShare < .95 ? Line.Tone.WARN : Line.Tone.GOOD));
+        /*
+         * THE CLEARING PRICE IS A PRICE ONLY ABOVE THE FLOOR (0.7.45; the UI
+         * spec's D9, B14). Under it the bisection stops at the bottom of its
+         * band, the shelf price over CLEARING_BAND - a figure nobody would
+         * charge - and past the cap the shelf will not follow it.
+         */
+        if (!isSaleCounted()) {
+            lines.add(Line.of("The price that would clear it", "not counted yet"));
+        } else if (!(getDemandAtPrice() > 0) && !(getSupplyBaskets() > 0)) {
+            lines.add(Line.of("The price that would clear it", "nothing to clear: nothing asked for, nothing to hand over"));
+        } else if (isSlack()) {
+            lines.add(Line.of("The price that would clear it", "under the floor: the shops could hand over more than is asked for"));
+        } else if (clearsPastTheCap()) {
+            lines.add(Line.of("The price that would clear it", "past the cap of " + f.amount(getCapPrice())
+                    + ": a price cannot fix this", Line.Tone.WARN));
+        } else {
+            lines.add(Line.of("The price that would clear it", f.amount(clearingPrice)));
+        }
         lines.add(Line.note("Households spend what they have left after rent and fees. A shop that "
                 + "cannot sell is as often a wage problem as a stock problem — the "
                 + "household screen is where that argument is settled."));
         if (lastScarcityMultiple > 1.01) {
-            lines.add(Line.of("Scarcity mark-up", String.format("%.2fx", lastScarcityMultiple), Line.Tone.WARN));
-            lines.add(Line.note("Empty shelves put the price up. It comes back down as stock returns."));
+            lines.add(Line.of("Its target over the floor", String.format("%.2fx", lastScarcityMultiple), Line.Tone.WARN));
+            lines.add(Line.note("A shortage puts the price up, a sixth of the way a month toward the price that clears it, "
+                    + "never past the cap. It comes back down as the shops catch up."));
         }
 
         /*
@@ -580,6 +860,15 @@ public final class Retail extends Sector {
                 importedKg > 0 ? Line.Tone.WARN : Line.Tone.NONE));
         lines.add(Line.of("A customer's month", f.amount(getFoodPrice())
                 + " of food, over " + SHELF.length + " goods"));
+        // ...and what its suppliers are waiting for (0.7.44; SupplierCredit).
+        if (supplierCredit.boughtTotal() > 0 || supplierCredit.owedTotal() > 0 || supplierCredit.repaidTotal() > 0) {
+            lines.add(Line.of("Bought this month on its suppliers' credit", f.amount(supplierCredit.boughtTotal())));
+            lines.add(Line.of("Owed to its suppliers", f.amount(supplierCredit.owedTotal())));
+            lines.add(Line.of("Its suppliers would wait for", f.amount(supplierCredit.getLimit())));
+            lines.add(Line.note("A shop whose till cannot pay for the month's stock buys it on its suppliers' "
+                    + "credit, up to a month of the stock it expects to sell, at what it costs to bring in, and pays "
+                    + "for it out of the sale it stocks, at the next month's books."));
+        }
         lines.add(Line.note("One basket is one person for one month. What is in it comes from "
                 + "the consumption model at this city's own incomes, so a richer city stocks "
                 + "a different shelf."));
@@ -612,20 +901,42 @@ public final class Retail extends Sector {
          * SaveFileCheck. A count of baskets, so a reform does not scale it.
          */
         extras.put("householdWant", rHouseholdWant);
+        // ...and the sale at a price (0.7.43), for the screens between presses.
+        extras.put("clearingPrice", clearingPrice);
+        extras.put("demandAtPrice", demandAtPrice);
+        extras.put("supplyBaskets", supplyBaskets);
+        extras.put("floorPrice", floorPrice);
+        extras.put("basketsNeeded", rNeeded);
+        // ...and what the buildings could hand over and the price charged (0.7.45), records of the sale.
+        if (!Double.isNaN(handOver)) extras.put("handOver", handOver);
+        if (!Double.isNaN(chargedPrice)) extras.put("chargedPrice", chargedPrice);
+        // ...and what it owes its suppliers (0.7.44): the next strike pays it, so a save that dropped it would not replay.
+        supplierCredit.save(extras, SUPPLIER_CREDIT_KEY);
     }
+
+    /** The prefix the suppliers' credit is saved under among the extras. */
+    private static final String SUPPLIER_CREDIT_KEY = "supplierCredit.";
 
     @Override
     protected void restoreExtras(Map<String, Double> extras) {
         storeSellPrice = extras.getOrDefault("storeSellPrice", storeSellPrice);
-        lastMonthSales = (int) Math.round(extras.getOrDefault("lastMonthSales", 0.0));
+        lastMonthSales = Math.round(extras.getOrDefault("lastMonthSales", 0.0));
         lastScarcityMultiple = extras.getOrDefault("scarcityMultiple", 1.0);
         lastDeliveredShare = extras.getOrDefault("deliveredShare", 1.0);
-        rWantedDemand = (int) Math.round(extras.getOrDefault("wantedDemand", 0.0));
-        rDemand = (int) Math.round(extras.getOrDefault("demand", 0.0));
-        rProductsSold = (int) Math.round(extras.getOrDefault("productsSold", 0.0));
+        rWantedDemand = Math.round(extras.getOrDefault("wantedDemand", 0.0));
+        rDemand = Math.round(extras.getOrDefault("demand", 0.0));
+        rProductsSold = Math.round(extras.getOrDefault("productsSold", 0.0));
         spendingCapacity = extras.getOrDefault("spendingCapacity", 0.0);
         wantedSpend = extras.getOrDefault("wantedSpend", 0.0);
         rHouseholdWant = extras.getOrDefault("householdWant", 0.0);
+        clearingPrice = extras.getOrDefault("clearingPrice", 0.0);
+        demandAtPrice = extras.getOrDefault("demandAtPrice", 0.0);
+        supplyBaskets = extras.getOrDefault("supplyBaskets", 0.0);
+        floorPrice = extras.getOrDefault("floorPrice", 0.0);
+        rNeeded = extras.getOrDefault("basketsNeeded", 0.0);
+        handOver = extras.getOrDefault("handOver", Double.NaN);
+        chargedPrice = extras.getOrDefault("chargedPrice", Double.NaN);
+        supplierCredit.restore(extras, SUPPLIER_CREDIT_KEY);
     }
 
     @Override
@@ -637,6 +948,11 @@ public final class Retail extends Sector {
         rHouseholdWant = 0;
         spendingCapacity = wantedSpend = 0;
         population = 0;
+        clearingPrice = demandAtPrice = supplyBaskets = floorPrice = rNeeded = 0;
+        handOver = chargedPrice = Double.NaN;
+        expectedLevel = 1;
+        expectedMonthly = 0;
+        supplierCredit.clear();
     }
 
     @Override
@@ -645,9 +961,13 @@ public final class Retail extends Sector {
         storeSellPrice *= scale;
         spendingCapacity *= scale;
         wantedSpend *= scale;
+        clearingPrice *= scale;
+        floorPrice *= scale;
+        chargedPrice *= scale;
+        supplierCredit.redenominate(scale);
     }
 
-    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    /** Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). See Denomination. */
     public void seedConstants(double unit) {
         openingSellPrice = OPENING_SELL_PRICE / unit;
     }

@@ -1,6 +1,8 @@
 package ham.citybuildersim.ui;
 
 import ham.citybuildersim.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Pos;
@@ -18,32 +20,37 @@ import static ham.citybuildersim.ui.Pieces.*;
 
 /**
  * The land office: whether the city has room to grow, and which ground to
- * buy. Since 0.7.26 in the style Build got in 0.7.24 and 0.7.25: a head with
- * how the city pays; THE GROUND - the ground free now and the plots the next
- * purchase would add, as one bar, with the position across its top; the nine
- * plots on offer as a three-by-three of cards, cheapest ground a square foot
- * first, each with its price, its value against the going rate and its tags;
- * what the ground is worth to the city in four cards - the margin, the ground
- * on top of the build, the ore, who is waiting; the price of ground over the
- * city's life behind "details"; and, when the city is short, the funding page
- * in the same frame.
+ * buy - since 0.7.61 round the city's map (batch J4; the project's
+ * spec-land.md 2.8): a head with how the city pays; the HERO ROW, the map
+ * (MapView, 600 x 400: the city's land and its forty offers hatched over the
+ * world, Expand to lay it over the whole window) and beside it THE CITY - its
+ * size in km2, its share of the world's iron, the four sides as chips and the
+ * chosen side's ten offers as rows, each its lane, its size, its ground and
+ * water as a bar, its deposits, its price, its price a dry km2 and Buy;
+ * then THE GROUND - the ground free now and the best N as one bar, "Buy the
+ * best N" over it; what the ground is worth to the city in four cards - the
+ * margin, the ground on top of the build, the ore and oil, who is waiting;
+ * the price of ground over the city's life behind "details"; and, when the
+ * city is short, the funding page in the same frame. (Until 0.7.60 the best
+ * nine of the forty offers stood as a three-by-three of cards.)
  *
- * BEST VALUE is the top-left card: the cheapest ground a square foot with any
- * ore on it paid for inside its price (Game.landShelf()'s order) - Jerus's
- * "the best one is always at the top left". It is not LandMarket.bestValue(),
- * which skips ore and so sits further down the shelf; this screen never called
- * it, though this comment said it did until 0.7.26. MOST ORE is
- * LandMarket.richestDeposit(). The two are tags of their own, and one card can
- * carry both.
+ * BEST VALUE is the office's best: the cheapest dry ground a square foot
+ * with any ore and water in it paid for inside its price (Game.landShelf()'s
+ * order) - Jerus's "the best one is always at the top left", the shelf's
+ * first card until 0.7.60; since 0.7.61 the tag on its row and on its side's
+ * chip, and "Buy the best N" buys the shelf's first N. It is not
+ * LandMarket.bestValue(), the most dry ground a dollar among the offers not
+ * mostly sea, which Build's shortcut buys for room (Game.bestOffer()). MOST
+ * ORE is LandMarket.richest() in iron.
  *
- * In US dollars since 0.7.6: every plot shows its dollar price and what that
- * costs in local money at today's rate, and a chip pair at the top chooses
- * whether the treasury converts cash for it (the default) or pays out of the
- * vault. Since 0.7.13 a plot's price is large in the money the toggle pays in,
- * its size in square kilometres beside its square feet (the square feet to
- * three figures since 0.7.26), its button stays live and, short, opens the
- * funding page sized to the gap (showLandFunding()), and a control buys the
- * next N plots at once (nextPlots()).
+ * In US dollars since 0.7.6: every offer shows its dollar price and what
+ * that costs in local money at today's rate, and a chip pair at the top
+ * chooses whether the treasury converts cash for it (the default) or pays
+ * out of the vault. Since 0.7.13 an offer's price is in the money the toggle
+ * pays in, its button stays live and, short, opens the funding page sized to
+ * the gap (showLandFunding()), and a control buys the best N at once
+ * (nextPlots()); since 0.7.61 its size is in square kilometres, and since
+ * 0.7.64 the ground free and the bar's figures too.
  *
  * WHY THE REDRAW (0.7.26). Jerus, on the screens not yet redone: "the others
  * are still full of text and the design could be more intuitive and fun". The
@@ -58,9 +65,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  * spec-land-0726.md.
  *
  * What it says is worked out in methods that make no node (strip(),
- * groundFigures(), plot(), margin(), and the rest), so a probe without the
- * toolkit can read every word on a played city; the drawing methods lay those
- * out. Split out of UserInterface on 2026-09-18; the rail calls
+ * groundFigures(), cityLine(), sideChips(), sideRows(), margin(), and the
+ * rest), so a probe without the toolkit can read every word on a played
+ * city; the drawing methods lay those out. Split out of UserInterface on 2026-09-18; the rail calls
  * showLandMenu(), as do Build's LAND FREE and its no-land and no-deposit
  * pages, NEEDS YOU's GROUND row, HOW THE CITY IS's GROUND USED and the
  * inbox's landlock notice.
@@ -76,21 +83,23 @@ final class LandScreen {
        THE LAND OFFICE (0.7.26)
 
        The question is "have I room for the city to grow, and which ground
-       should I buy?", and the page answers it top down:
+       should I buy?", and the page answers it top down (since 0.7.61):
 
          the head        - "Land office", its (i), the pay toggle with a line
                            under it, and the way back to Build;
-         THE GROUND      - four cells (the ground free, who is waiting, what
-                           the world asks, what investors pay) and the ground
-                           as a bar: free now solid, then the next N plots as
+         THE HERO ROW    - the map at the left, 600 x 400 (MapView), and at
+                           the right THE CITY, the sides as chips and the
+                           chosen side's ten offers as rows (THE CITY AND ITS
+                           SIDES);
+         THE BEST N      - the Buy-the-best-N control, then THE GROUND: four
+                           cells (the ground free, who is waiting, what the
+                           world asks, what investors pay) and the ground as
+                           a bar: free now solid, then the best N offers as
                            numbered ghosts, on a scale of the two together so
                            the bar always reads - at "everything owned" the
                            free ground of a built-over city is a hair;
-         ON OFFER        - the Buy-next-N control at its right, then the nine
-                           cards; the next N carry a number and a pink edge,
-                           the numbers on the bar's ghosts;
          WHAT THE GROUND IS WORTH - the margin, the ground on top of the
-                           build, the ore, who is waiting;
+                           build, the ore and oil, who is waiting;
          details         - the world's price of ground over the city's life.
 
        NOT A RING OF "USED": the share of the ground built on sits at 95-100%
@@ -104,11 +113,11 @@ final class LandScreen {
        cash cannot top it up either). A Buy button that needs a loan, or the
        vault short, says so in its label and is outlined (0.7.34; grey
        before) - where a green price sat beside "the vault is short" on the
-       same card before. Since 0.7.34 Buy is Pieces' action button, the
-       card's width, and says the price: "Buy · D$1.0B".
+       same card before. Since 0.7.61 a row's button says "Buy", filled, or
+       "Fund", outlined, the price beside it in its own column.
        ===================================================================== */
 
-    /** How many plots the next-N control buys; kept across redraws, held inside 1..listed. */
+    /** How many offers the best-N control buys; kept across redraws, held inside 1..listed. */
     int nextCount = 5;
 
     /** Whether "details" is open; kept while the game runs, as the page's place is. */
@@ -134,7 +143,7 @@ final class LandScreen {
     /** The plot ids on the shelf at the last draw, or null before the first. */
     private java.util.Set<Integer> lastShelf;
 
-    /** A card whose id is above this is NEW (ids only grow: LandMarket's next id)... */
+    /** An offer whose id is above this is NEW (ids only grow: LandMarket's next id)... */
     private int newAbove = Integer.MAX_VALUE;
 
     /** ...in this month only. */
@@ -144,12 +153,20 @@ final class LandScreen {
     private int shownMonth = -1;
     private double shownRate = Double.NaN, shownWorldUsd = Double.NaN;
 
-    /** The cards and the waiting card as last drawn, for the bar's and the strip's clicks to scroll to. */
-    private final List<Region> shelfCards = new ArrayList<>();
+    /** The waiting card as last drawn, for the strip's click to scroll to. */
     private Region waitingCard;
+
+    /** The map, the small view's and Expand's (MapView); made the first time the office is drawn, as the toolkit is up by then. */
+    private MapView map;
+
+    /** The side whose ten offers the rows show (0 north, 1 east, 2 south, 3 west), -1 until the office's best decides it; and the offer picked on it, its lane, or -1. */
+    int side = -1, lane = -1;
 
     /** A new city or a load: nothing on its shelf is new to the player, and nothing has just been bought. */
     void forget() {
+        side = -1;
+        lane = -1;
+        if (map != null) map.forget();
         freeBeforeBuying = Double.NaN;
         depositsBeforeBuying = -1;
         lastShelf = null;
@@ -167,17 +184,16 @@ final class LandScreen {
         noteShelf();
 
         VBox page = widePage();
-        shelfCards.clear();
         waitingCard = null;
+        chooseSide();
 
         Next next = next();
-        HBox head = head(null);
-        VBox ground = groundPanel(next);
-        HBox offerHead = sectionHead("ON OFFER · cheapest ground first", offerInfo(), nextPlots(next));
-        page.getChildren().addAll(head, ground, offerHead);
+        page.getChildren().addAll(head(null), hero());
         String receipt = ui.game.getLastLandReceipt();
         if (receipt != null && !receipt.isEmpty()) page.getChildren().add(receiptLine(receipt));
-        page.getChildren().add(shelf(next));
+        page.getChildren().addAll(
+                sectionHead(BEST_HEAD, offerInfo(), nextPlots(next)),
+                groundPanel(next));
         page.getChildren().addAll(
                 sectionHead("WHAT THE GROUND IS WORTH", hint("to the city, today")),
                 worthCards(),
@@ -226,32 +242,13 @@ final class LandScreen {
     /** The city's money's mark: "D$". */
     String here() { return ui.game.getCurrency().qualifiedSymbol(); }
 
-    /** An area in square feet, compact to three figures: "324k sq ft", "9.68M sq ft", "8,000 sq ft". */
-    static String sqFt(double v) { return compact3(v) + " sq ft"; }
+    /** A ground price, kept a square foot, a square metre in the city's money: "D$500.74" (a square foot's D$46.52; since 0.7.68, Money.groundPrice()). */
+    String local(double thousandsPerSqFt) { return marked(here(), groundPrice(thousandsPerSqFt)); }
 
-    /** A count to three significant figures past ten thousand - "324k", "9.68M", "13.7M" - and whole below. */
-    static String compact3(double v) {
-        if (!(Math.abs(v) >= 10_000)) return formatter.format(Math.round(v));
-        double r = new java.math.BigDecimal(v).round(new java.math.MathContext(3)).doubleValue();
-        double a = Math.abs(r);
-        double[] at = { 1e12, 1e9, 1e6, 1e3 };
-        String[] unit = { "T", "B", "M", "k" };
-        for (int i = 0; i < at.length; i++) {
-            if (a >= at[i]) {
-                return new java.math.BigDecimal(r / at[i]).round(new java.math.MathContext(3))
-                        .stripTrailingZeros().toPlainString() + unit[i];
-            }
-        }
-        return formatter.format(Math.round(r));
-    }
+    /** ...in the world's: "US$264.15". */
+    static String dollars(double thousandsPerSqFt) { return marked(Currency.FOREIGN_SYMBOL, groundPrice(thousandsPerSqFt)); }
 
-    /** A price a square foot in the city's money: "D$46.52". */
-    String local(double thousandsPerSqFt) { return marked(here(), unitPrice(thousandsPerSqFt)); }
-
-    /** ...in the world's: "US$24.54". */
-    static String dollars(double thousandsPerSqFt) { return marked(Currency.FOREIGN_SYMBOL, unitPrice(thousandsPerSqFt)); }
-
-    /** A price a square foot with its direction: "+D$29.16", "−D$3.10". */
+    /** A ground price a square metre with its direction: "+D$313.88", "−D$33.37". */
     String signedLocal(double thousandsPerSqFt) {
         return (thousandsPerSqFt < 0 ? "−" : "+") + local(Math.abs(thousandsPerSqFt));
     }
@@ -334,21 +331,22 @@ final class LandScreen {
         int waiting = blocked.size();
         double margin = land.getMarginPerSqFt();
         return new Cell[] {
-                new Cell("GROUND FREE", sqFt(free),
-                        LandManager.km2Words(free) + " · " + String.format("%.1f%%", land.getUtilisation() * 100)
-                                + " of " + LandManager.km2Words(land.getOwnedSqFt()) + " built on",
+                new Cell("GROUND FREE", LandManager.areaWords(free),
+                        String.format("%.1f%%", land.getUtilisation() * 100)
+                                + " of " + LandManager.areaWords(land.getOwnedSqFt()) + " built on",
                         BuildScreen.verdict(ground.level())),
                 new Cell("WAITING ON GROUND", waiting + (waiting == 1 ? " sector" : " sectors"),
                         waiting == 0 ? "every sector has room" : String.join(", ", waitingNames()),
                         waiting > 0 ? Palette.BAD : Palette.TEXT_HEAD),
-                new Cell("THE WORLD ASKS", dollars(land.getGroundUsdPerSqFt()) + " /sq ft",
-                        local(land.getAcquisitionCostPerSqFt()) + " today, for new plots", Palette.TEXT_HEAD),
-                new Cell("INVESTORS PAY", local(land.getPricePerSqFt()) + " /sq ft",
-                        signedLocal(margin) + " a sq ft " + (margin < 0 ? "under" : "over") + " the world",
+                new Cell("THE WORLD ASKS", dollars(land.getGroundUsdPerSqFt()) + "/m²",
+                        local(land.getAcquisitionCostPerSqFt()) + " today · crowding " + times(land.getCrowdingPremium()),
+                        Palette.TEXT_HEAD),
+                new Cell("INVESTORS PAY", local(land.getPricePerSqFt()) + "/m²",
+                        signedLocal(margin) + " a m² " + (margin < 0 ? "under" : "over") + " the world",
                         margin < 0 ? Palette.BAD : Palette.GOOD) };
     }
 
-    /** The plots "the next N" buys, in the shelf's order. */
+    /** The offers "the best N" buys, in the shelf's order. */
     List<LandParcel> nextShelf(Next next) {
         List<LandParcel> out = new ArrayList<>();
         LandMarket market = ui.game.getLandManager().getMarket();
@@ -361,8 +359,10 @@ final class LandScreen {
 
     /**
      * The big figures beside the strip: the ground free and what it holds,
-     * then what the next N would leave free - "324k sq ft free", "room for 40
-     * houses", "→ 37.6M sq ft free after the next 5", "room for 4,704 houses".
+     * then what the best N would leave free - "0.0301 km² free", "room for 40
+     * houses", "→ 3.49 km² free after the best 5", "room for 4,704 houses"
+     * (square feet until 0.7.64; under a hundredth of a km² in m² since
+     * 0.7.68, LandManager.areaWords()).
      * The last two are empty with nothing on the shelf.
      */
     String[] groundFigures(Next next) {
@@ -371,13 +371,13 @@ final class LandScreen {
         for (LandParcel p : nextShelf(next)) after += p.getSizeSqFt();
         boolean any = !next.ids().isEmpty();
         return new String[] {
-                sqFt(free) + " free",
+                LandManager.areaWords(free) + " free",
                 room(free),
-                any ? "→ " + sqFt(after) + " free after the next " + (next.n() == 1 ? "plot" : String.valueOf(next.n())) : "",
+                any ? "→ " + LandManager.areaWords(after) + " free after the best " + (next.n() == 1 ? "offer" : String.valueOf(next.n())) : "",
                 any ? room(after) : "" };
     }
 
-    /** The bar's scale: the ground free and the next N together. */
+    /** The bar's scale: the ground free and the best N together. */
     double groundScale(Next next) {
         double scale = ui.game.getLandManager().getAvailableSqFt();
         for (LandParcel p : nextShelf(next)) scale += p.getSizeSqFt();
@@ -385,23 +385,24 @@ final class LandScreen {
     }
 
     /**
-     * The bar's segments: the ground free, solid pink; then the next N, each
-     * a ghost in the light pink, numbered as its card is, with a sand stripe
-     * where it holds ore, its size and price on hover and a click to its card.
+     * The bar's segments: the ground free, solid pink; then the best N, each
+     * a ghost in the light pink, numbered in the shelf's order, with a sand
+     * stripe where it holds ore, its side and lane, size and price on hover,
+     * and a click that picks it - its side's rows, its band lit on the map.
      */
     List<Segment> groundSegments(Next next, java.util.function.IntFunction<Runnable> go) {
         double free = ui.game.getLandManager().getAvailableSqFt();
         String roomFree = room(free);
         List<Segment> parts = new ArrayList<>();
         parts.add(new Segment(free, Palette.BUILDING, false, null, null,
-                "free now · " + sqFt(free) + (roomFree.isEmpty() ? "" : " · " + roomFree), null));
+                "free now · " + LandManager.areaWords(free) + (roomFree.isEmpty() ? "" : " · " + roomFree), null));
         List<LandParcel> plots = nextShelf(next);
         for (int i = 0; i < plots.size(); i++) {
             LandParcel p = plots.get(i);
             parts.add(new Segment(p.getSizeSqFt(), Palette.BUILDING_LIGHT, true, p.hasIron() ? Palette.ORE : null,
                     String.valueOf(i + 1),
-                    "plot " + (i + 1) + " · " + sqFt(p.getSizeSqFt()) + " · " + priceInToggle(p)
-                            + (p.hasIron() ? " · ore under it" : "") + "\nClick for its card.",
+                    "offer " + (i + 1) + " · " + p.where() + " · " + LandManager.areaWords(p.getSizeSqFt()) + " dry · " + priceInToggle(p)
+                            + (p.hasIron() ? " · ore under it" : "") + "\nClick to pick it on the map.",
                     go == null ? null : go.apply(i)));
         }
         return parts;
@@ -411,7 +412,7 @@ final class LandScreen {
     List<Tick> groundTicks() {
         CityNeeds.Need ground = CityNeeds.ground(ui.game, SummaryScreen.WORDS);
         return List.of(new Tick(ground.yellow(), Palette.TEXT_MUTED, 2, "NEEDS YOU's line",
-                "NEEDS YOU lists the ground at " + sqFt(ground.yellow()) + " free or less, and in red at none."));
+                "NEEDS YOU lists the ground at " + LandManager.areaWords(ground.yellow()) + " free or less, and in red at none."));
     }
 
     /** A plot's price in the money the toggle pays in: "D$149.7M" converting, "US$211.7M" from the vault. */
@@ -420,14 +421,16 @@ final class LandScreen {
                 : marked(here(), money(p.localPrice(ui.game.getForeignAccounts().getRate())));
     }
 
-    /* ----------------------------- buy the next N ----------------------------- */
+    /* ----------------------------- buy the best N ----------------------------- */
 
     /**
-     * What "Buy the next N" buys and says: how many, out of how many listed,
+     * What "Buy the best N" buys and says: how many, out of how many listed,
      * their ids, the total in the toggle's money (neutral, red only when no
      * way pays without debt - canAffordLandParcels()), the other money small,
      * the button's words (a Pieces.Press since 0.7.34) and whether it opens
-     * the funding page.
+     * the funding page. The best N are the shelf's first N
+     * (Game.nextLandParcels()): the cheapest dry ground a square foot, from
+     * every side ("Buy the next N" until 0.7.60).
      */
     record Next(int n, int listed, List<Integer> ids, String total, String totalTone, String other,
                 Pieces.Press button, String buttonTip, boolean funding) { }
@@ -441,130 +444,207 @@ final class LandScreen {
         double usdTotal = g.landPriceUsd(ids);
         double localTotal = g.landPriceLocal(ids);
         boolean funding = g.landNeedsFunding(ids);
-        String n = nextCount == 1 ? "plot" : String.valueOf(nextCount);
+        String n = nextCount == 1 ? "offer" : String.valueOf(nextCount);
         return new Next(nextCount, listed, ids,
                 vault ? usd(usdTotal) : marked(here(), money(localTotal)),
                 g.canAffordLandParcels(ids) ? Palette.TEXT_HEAD : Palette.BAD,
                 vault ? marked(here(), money(localTotal)) + " at today's rate" : usd(usdTotal) + " listed",
                 // The total stands just left of the button, so the button says the count, not the price again.
-                !funding ? new Pieces.Press(Pieces.Look.GO, "Buy the next " + n, null)
-                        : vault ? new Pieces.Press(Pieces.Look.CREDIT, "Buy the next " + n, "the vault is short: ways to pay")
-                        : new Pieces.Press(Pieces.Look.CREDIT, "Buy the next " + n + " on credit", null),
-                !funding ? (nextCount == 1 ? "Buys this plot, as its own card's Buy would."
-                                : "Buys these " + nextCount + " plots, each as its own card's Buy would.")
+                !funding ? new Pieces.Press(Pieces.Look.GO, "Buy the best " + n, null)
+                        : vault ? new Pieces.Press(Pieces.Look.CREDIT, "Buy the best " + n, "the vault is short: ways to pay")
+                        : new Pieces.Press(Pieces.Look.CREDIT, "Buy the best " + n + " on credit", null),
+                !funding ? (nextCount == 1 ? "Buys the best offer, as its own row's Buy would."
+                                : "Buys the best " + nextCount + " offers, each as its own row's Buy would.")
                         : vault ? "The vault is short of them: opens the funding page - dollars borrowed abroad,"
                                 + " or the vault's dollars with the rest converted from cash."
                         : "The cash is short of them: opens the funding page - a loan sized to the gap.",
                 funding);
     }
 
+    /** The section's head over THE GROUND: the best N, from every side. */
+    static final String BEST_HEAD = "THE BEST OFFERS · cheapest dry ground first, from every side";
+
     /**
-     * The section's (i): the floor under every plot, worded as LandMarket
-     * moves it (0.7.26: it said the office "stops splitting them at all as
-     * the city grows"; the floor rises a block for every
-     * BLOCKS_PER_FLOOR_STEP the city has bought, to MAX_MIN_BLOCKS), and how
-     * many are listed (LISTING_SIZE, which the paragraph had as "Nine").
+     * The section's (i): the twenty-four offers, six a side, place by place;
+     * how the office ranks them (BEST VALUE, the best N); and the blocks
+     * every offer is made of, as LandMarket lists them (0.7.67: whole blocks
+     * of the city's level against its edge, spec-grid 2.2).
      */
     String offerInfo() {
         LandMarket market = ui.game.getLandManager().getMarket();
-        return String.format("The office lists %d plots at a time, cheapest ground a square foot first - any ore "
-                        + "under a plot is paid for inside that price - so the top-left card is the best value. "
-                        + "It sells nothing smaller than %s (%s) now. The smallest plot grows one block for every "
-                        + "%s blocks the city has bought, up to %s blocks. A plot listed earlier keeps the size and "
-                        + "the US$ price it was listed at.",
-                LandMarket.LISTING_SIZE, LandManager.km2Words(market.getMinSqFt()), sqFt(market.getMinSqFt()),
-                formatter.format(LandMarket.BLOCKS_PER_FLOOR_STEP), formatter.format(LandMarket.MAX_MIN_BLOCKS));
+        return String.format("The office lists up to %d offers on each side of the city, %d in all: each a rectangle "
+                        + "of whole blocks against the city's edge in one of a side's %d places, numbered 1 to %d from the "
+                        + "left as you face out; a place with no room waits. Pick a side by its chip or on the map to see "
+                        + "its offers; the map hatches them all, and a row lights its own. "
+                        + "BEST VALUE is the cheapest dry ground a km², any ore and water in an offer paid for "
+                        + "inside its price; \"Buy the best N\" buys the N cheapest so, from every side. Blocks are %,.0f m "
+                        + "a side now, the largest of which six fit across the city. "
+                        + "An offer keeps the ground and the US$ price it was listed at; buying one lists the next in its "
+                        + "place, the nearest free ground there.",
+                LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS, LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS_A_SIDE,
+                market.getBlockPlots() * World.PLOT_M);
     }
 
-    /* ----------------------------- one plot ----------------------------- */
+    /* ----------------------------- THE CITY AND ITS SIDES (0.7.61) -----------------------------
+     *
+     * Jerus's plan for the office: "click a side to see its 10 offers (km2,
+     * water share, deposits with amounts, price)", the map always in view,
+     * the city's total size in km2 shown. THE CITY's two lines, the four
+     * sides as chips - each with its cheapest dry ground a km2, and BEST
+     * VALUE on the side holding the office's best - and the chosen side's ten
+     * offers as rows, lane 1 to 10 from the left facing out.
+     * ------------------------------------------------------------------------------------------ */
+
+    /** A size in km2 as THE CITY writes it: a decimal from 1 km2 up, grouped - "107.8", "1,760,034.2" - three figures under it, "0.312". */
+    static String km2Figure(double km2) {
+        if (!(km2 > 0)) return "0";
+        if (km2 >= 1) return String.format("%,.1f", km2);
+        return new BigDecimal(km2).round(new MathContext(3)).stripTrailingZeros().toPlainString();
+    }
+
+    /** THE CITY's size, the land's five areas but forest: "107.8 km² · 89.6 dry · 0 fresh · 18.2 sea" (spec-land 2.8). */
+    String cityLine() {
+        CityLand land = ui.game.getCityLand();
+        return km2Figure(land.totalKm2(CityLand.TOTAL)) + " km² · " + km2Figure(land.totalKm2(CityLand.DRY)) + " dry · "
+                + km2Figure(land.totalKm2(CityLand.FRESH)) + " fresh · " + km2Figure(land.totalKm2(CityLand.SEA)) + " sea";
+    }
+
+    /** The world's line: "of the world's 1.12 Pt of iron, the city owns 0.0000452%" - its share of the world's tonnes, to three figures. */
+    String worldLine() {
+        LandManager land = ui.game.getLandManager();
+        double world = land.getWorldTotal(Resource.IRON), owned = land.getOwnedAmount(Resource.IRON);
+        String share = owned > 0 && world > 0
+                ? new BigDecimal(100 * owned / world).round(new MathContext(3)).stripTrailingZeros().toPlainString() + "%"
+                : "none of it";
+        return "of the world's " + LandMap.tonnes(world) + " of iron, the city owns " + share;
+    }
+
+    /** Thousands of US dollars in the money the toggle pays in: as listed from the vault, at today's rate converting. */
+    String inToggle(double usdThousands) {
+        return ui.game.isLandPaidFromVault() ? usd(usdThousands)
+                : marked(here(), money(usdThousands * ui.game.getForeignAccounts().getRate()));
+    }
+
+    /** An offer's price a dry km2, in the toggle's money: "D$5.6M"; "—" with no dry ground. */
+    String perDryKm2(LandParcel p) {
+        return p.getDryKm2() > 0 ? inToggle(p.getPriceUsd() / p.getDryKm2()) : "—";
+    }
+
+    /** The office's best offer, the shelf's first (BEST VALUE), or null with nothing listed. */
+    LandParcel officeBest() {
+        List<LandParcel> shelf = ui.game.landShelf();
+        return shelf.isEmpty() ? null : shelf.get(0);
+    }
+
+    /** The side shown before the player picks one: the office's best's, or the north. */
+    void chooseSide() {
+        if (side >= 0 && side < CityLand.SIDES) return;
+        LandParcel best = officeBest();
+        side = best == null ? 0 : best.getSide();
+        lane = -1;
+    }
+
+    /** One side's chip: its name, its cheapest dry ground a km2 in the toggle's money, and whether it holds the office's best. */
+    record SideChip(int side, String name, String best, boolean bestValue) { }
+
+    List<SideChip> sideChips() {
+        LandMarket market = ui.game.getLandManager().getMarket();
+        LandParcel office = officeBest();
+        List<SideChip> out = new ArrayList<>();
+        for (int s = 0; s < CityLand.SIDES; s++) {
+            LandParcel cheapest = null;
+            for (LandParcel p : market.offersOn(s)) {
+                if (p.getDryKm2() > 0 && (cheapest == null || p.getUsdPerSqFt() < cheapest.getUsdPerSqFt())) cheapest = p;
+            }
+            out.add(new SideChip(s, CityLand.sideName(s), cheapest == null ? "no dry ground" : perDryKm2(cheapest) + " a km²",
+                    office != null && office.getSide() == s));
+        }
+        return out;
+    }
+
+    /** A deposit on a row: its resource's colour, its sites and amount - "3 · 38.4 Mt" - and the tooltip's line. */
+    record DepositWords(String colour, String words, String tip) { }
+
+    /**
+     * One offer as its row: its lane (1 to 10), its size in km2, its dry,
+     * fresh and sea shares for the bar, its deposits (the first ROW_DEPOSITS,
+     * and "+N" for the rest), its price in the toggle's money and colour (red
+     * only when no way pays without debt), its price a dry km2, its tag
+     * (BEST VALUE, NEW, MOST ORE or MOSTLY SEA, the first that holds), Buy or
+     * Fund, and the row's tooltip.
+     */
+    record Row(LandParcel parcel, String lane, String km2, double dry, double fresh, double sea, List<DepositWords> deposits,
+               String more, String price, String priceTone, String perKm2, TagWords tag, String button, String buttonTip,
+               boolean funding, String tip) { }
+
+    /** Deposits a row shows by name before "+N": 2... */
+    static final int ROW_DEPOSITS = 2;
+
+    /** ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. */
+    static final int ROW_DEPOSIT_CHARS = 20;
+
+    /** A side's ten offers, lane by lane. */
+    List<Row> sideRows(int side) {
+        LandMarket market = ui.game.getLandManager().getMarket();
+        LandParcel office = officeBest(), richest = market.richest(Resource.IRON);
+        List<Row> out = new ArrayList<>();
+        for (LandParcel p : market.offersOn(side)) out.add(row(p, office, richest));
+        return out;
+    }
+
+    Row row(LandParcel p, LandParcel office, LandParcel richest) {
+        Game g = ui.game;
+        boolean vault = g.isLandPaidFromVault();
+        double rate = g.getForeignAccounts().getRate();
+        double km2 = p.getKm2();
+        List<DepositWords> deposits = new ArrayList<>();
+        for (Resource r : Resource.values()) {
+            if (!r.inFields() || p.getSites(r) <= 0) continue;
+            String amount = LandMap.amountWords(r, p.getAmount(r));
+            deposits.add(new DepositWords(MapView.css(0xff000000 | r.colour()), formatter.format(p.getSites(r)) + " · " + amount,
+                    r.label() + ": " + p.getSites(r) + (p.getSites(r) == 1 ? " site, " : " sites, ") + amount));
+        }
+        int shown = Math.min(deposits.size(), ROW_DEPOSITS);
+        if (shown == 2 && deposits.get(0).words().length() + deposits.get(1).words().length() > ROW_DEPOSIT_CHARS) shown = 1;
+        String more = deposits.size() > shown ? "+" + (deposits.size() - shown) : "";
+        TagWords tag = office != null && office.getId() == p.getId() ? new TagWords("BEST VALUE", Palette.GOOD)
+                : isNew(p) ? new TagWords("NEW", Palette.BUILDING)
+                : richest != null && richest.getId() == p.getId() ? new TagWords("MOST ORE", Palette.ORE)
+                : p.isMostlySea() ? new TagWords("MOSTLY SEA", Palette.TEXT_MUTED) : null;
+        boolean funding = g.landNeedsFunding(List.of(p.getId()));
+        String listedUsd = usd(p.getPriceUsd());
+        String todayHere = marked(here(), money(p.localPrice(rate)));
+        StringBuilder tip = new StringBuilder(String.format("%s: %s, %s dry, listed in month %,d at %s: %s at today's rate.",
+                p.where(), LandMap.area(km2), LandManager.partFigure(LandManager.sqFt(p.getDryKm2()), LandManager.sqFt(km2)),
+                p.getListedMonth(), listedUsd, todayHere));
+        if (p.getKm2(CityLand.FRESH) + p.getKm2(CityLand.SEA) > 0) {
+            tip.append(String.format("%nWater: %s fresh, %s sea.", LandMap.area(p.getKm2(CityLand.FRESH)), LandMap.area(p.getKm2(CityLand.SEA))));
+        }
+        for (DepositWords d : deposits) tip.append("\n").append(d.tip()).append(WHOLE_FIELDS);
+        return new Row(p, String.valueOf(p.getPlace() + 1), LandMap.area(km2),
+                km2 > 0 ? p.getKm2(CityLand.DRY) / km2 : 0, km2 > 0 ? p.getKm2(CityLand.FRESH) / km2 : 0,
+                km2 > 0 ? p.getKm2(CityLand.SEA) / km2 : 0,
+                deposits.subList(0, shown), more,
+                vault ? listedUsd : todayHere, g.canAffordParcel(p) ? Palette.TEXT_HEAD : Palette.BAD, perDryKm2(p), tag,
+                funding ? "Fund" : "Buy",
+                !funding ? "Buy " + p.where()
+                        : vault ? "Buy — the vault is short\nOpens the funding page: dollars borrowed abroad, or the "
+                                + "vault's dollars with the rest converted from cash."
+                        : "Buy — borrow for it\nOpens the funding page: a loan sized to the gap.",
+                funding, tip.toString());
+    }
+
+    /**
+     * What a row's tooltip says after each resource's sites and tonnes
+     * (0.7.64, batch L): an offer holds every field centred in its band
+     * whole, all its sites and tonnes, wherever its sites lie (CityLand) -
+     * Jerus: "whole iron fields as one offer". Until 0.7.64 the line ended
+     * "in the ground, paid for in its price", a share of each field.
+     */
+    static final String WHOLE_FIELDS = " in the ground: every field of it centred in this offer, whole, paid for in its price.";
 
     /** A tag's words and colour. */
     record TagWords(String text, String colour) { }
-
-    /**
-     * Everything one card says: its badge (1..N in the next N, else 0), the
-     * size and its caption, the price in the toggle's money and its colour,
-     * the other money, the value bar's shares (its own dollars a square foot,
-     * the going rate's and the world's, on one scale for the nine), the
-     * value's words and colour, its tags, the Buy button's words (a
-     * Pieces.Press since 0.7.34) and tooltip, and the card's own tooltip.
-     */
-    record Plot(LandParcel parcel, int badge, String size, String caption, String price, String priceTone,
-                String other, double share, double goingAt, double worldAt, String value, String valueTone,
-                List<TagWords> tags, Pieces.Press button, String buttonTip, boolean funding, String tip) { }
-
-    /**
-     * The value bars' scale: the dearest of the nine a square foot - or the
-     * going rate, or the world's price today, if either is higher, so both
-     * ticks are always on the bar.
-     */
-    double valueScale() {
-        LandMarket market = ui.game.getLandManager().getMarket();
-        double top = Math.max(market.goingUsdPerSqFt(), ui.game.getLandManager().getGroundUsdPerSqFt());
-        for (LandParcel p : ui.game.landShelf()) top = Math.max(top, p.getUsdPerSqFt());
-        return top;
-    }
-
-    Plot plot(LandParcel p, int index, Next next) {
-        Game g = ui.game;
-        LandManager land = g.getLandManager();
-        LandMarket market = land.getMarket();
-        boolean vault = g.isLandPaidFromVault();
-        String here = here();
-        double rate = g.getForeignAccounts().getRate();
-        double going = market.goingUsdPerSqFt();
-        double world = land.getGroundUsdPerSqFt();
-        double scale = valueScale();
-        double perSqFt = p.getUsdPerSqFt();
-        double against = going > 0 ? (going - perSqFt) / going * 100 : 0;
-
-        String listedUsd = usd(p.getPriceUsd());
-        String todayHere = marked(here, money(p.localPrice(rate)));
-        String roomWords = room(p.getSizeSqFt());
-
-        String value = Math.abs(against) < 1
-                ? dollars(perSqFt) + " /sq ft · the going rate"
-                : String.format("%s /sq ft · %.0f%% %s the going rate", dollars(perSqFt), Math.abs(against),
-                        against > 0 ? "under" : "over");
-
-        List<TagWords> tags = new ArrayList<>();
-        if (index == 0) tags.add(new TagWords("BEST VALUE", Palette.GOOD));
-        if (p.hasIron()) {
-            tags.add(new TagWords("ORE ×" + p.getDeposits() + " · " + shortNumber(p.getIronTonnes()) + " t",
-                    Palette.ORE));
-        }
-        LandParcel richest = market.richestDeposit();
-        if (richest != null && richest.getId() == p.getId()) tags.add(new TagWords("MOST ORE", Palette.ORE));
-        if (isNew(p)) tags.add(new TagWords("NEW", Palette.BUILDING));
-
-        boolean funding = g.landNeedsFunding(List.of(p.getId()));
-        // The button says the price in the money the toggle pays in, as the card's big figure does.
-        String priceHere = vault ? listedUsd : todayHere;
-        Pieces.Press button = !funding ? new Pieces.Press(Pieces.Look.GO, "Buy · " + priceHere, null)
-                : vault ? new Pieces.Press(Pieces.Look.CREDIT, "Buy · " + priceHere, "the vault is short: ways to pay")
-                : new Pieces.Press(Pieces.Look.CREDIT, "Buy on credit · " + priceHere, null);
-        String buttonTip = !funding ? "Buy this plot"
-                : vault ? "Buy — the vault is short\nOpens the funding page: dollars borrowed abroad, or the "
-                        + "vault's dollars with the rest converted from cash."
-                : "Buy — borrow for it\nOpens the funding page: a loan sized to the gap.";
-
-        String tip = String.format("%s (%s), listed at %s: %s at today's rate.%n%s a sq ft against the going rate "
-                        + "of %s and the world's %s today.%s",
-                sqFt(p.getSizeSqFt()), LandManager.km2Words(p.getSizeSqFt()), listedUsd, todayHere,
-                dollars(perSqFt), dollars(going), dollars(world),
-                p.hasIron() ? String.format("%nOre: %d deposit%s, %s t in the ground.", p.getDeposits(),
-                        p.getDeposits() == 1 ? "" : "s", shortNumber(p.getIronTonnes())) : "");
-
-        return new Plot(p, index < next.ids().size() ? index + 1 : 0,
-                sqFt(p.getSizeSqFt()),
-                " · " + LandManager.km2Words(p.getSizeSqFt()) + (roomWords.isEmpty() ? "" : " · " + roomWords),
-                vault ? listedUsd : todayHere,
-                g.canAffordParcel(p) ? Palette.TEXT_HEAD : Palette.BAD,
-                " · " + (vault ? todayHere + " at today's rate" : listedUsd + " listed"),
-                scale > 0 ? perSqFt / scale : 0, scale > 0 ? going / scale : -1, scale > 0 ? world / scale : -1,
-                value, against > -1 ? Palette.GOOD : Palette.WARN,
-                tags, button, buttonTip, funding, tip);
-    }
 
     /* ----------------------------- what the ground is worth ----------------------------- */
 
@@ -579,7 +659,31 @@ final class LandScreen {
      * three statement lines with their notes, as they stood, and one line on
      * why investors pay what they pay, from the model's own reads.
      */
-    record Margin(BarWords world, BarWords investors, String chip, String chipTone, String lastMonth, String info) { }
+    record Margin(BarWords world, BarWords investors, String chip, String chipTone, String lastMonth, String info,
+                  String parts) { }
+
+    /**
+     * THE WORLD'S PRICE, IN ITS PARTS (0.7.55): the founding's dollars, what
+     * US prices have done since, and the premium for the city's crowding -
+     * "US$7.53 × 1.14 US prices × 104 crowding: 5,684 people a km² of the
+     * city's land", the founding's dollars a square metre since 0.7.68 - each the model's, as the ground was last priced
+     * (LandManager.getUsPriceLevel(), getCrowdingPremium(), getCrowding()).
+     * A save from before 0.7.55 knows its premium and not its crowding until
+     * its first month here, and says only the premium.
+     */
+    String partsWords() {
+        LandManager land = ui.game.getLandManager();
+        double crowding = land.getCrowding();
+        return dollars(LandMarket.openingUsdPerSqFt()) + " × " + String.format("%.2f", land.getUsPriceLevel())
+                + " US prices × " + times(land.getCrowdingPremium()).substring(1) + " crowding"
+                + (crowding > 0 ? String.format(": %,.0f people a km\u00b2 of the city's land", crowding) : "");
+    }
+
+    /** A multiple as the land office writes it: "×1.65", "×36.0", "×104". */
+    static String times(double multiple) {
+        return "×" + (multiple < 10 ? String.format("%.2f", multiple)
+                : multiple < 100 ? String.format("%.1f", multiple) : String.format("%.0f", multiple));
+    }
 
     Margin margin() {
         Game g = ui.game;
@@ -591,12 +695,14 @@ final class LandScreen {
         double sold = g.getEconomyManager().getNationalAccounts().getLandSales();
         double multiple = land.getMarket().scarcityMultiplier(land.getOwnedSqFt(), land.getAllocatedSqFt());
         String here = here();
-        String info = "Outside, you buy at " + dollars(land.getGroundUsdPerSqFt()) + " /sq ft (" + local(world)
-                + " today). Rises with the city — with the land owned, and with the people. Asked in US"
+        String info = "Outside, you buy at " + dollars(land.getGroundUsdPerSqFt()) + "/m² (" + local(world)
+                + " today): " + partsWords() + ". The more people on each km² the city owns, the dearer the"
+                + " next plot - buying ground spreads them out and makes it cheaper; a bigger city as crowded pays"
+                + " the same. It follows US prices, not the city's own. Asked in US"
                 + " dollars, so a weaker currency makes it dearer here and a stronger one cheaper.\n\n"
-                + "Inside, they buy at " + local(inside) + " /sq ft. Supply against demand — the more land"
+                + "Inside, they buy at " + local(inside) + "/m². Supply against demand — the more land"
                 + " standing free, the cheaper. Local money, and the exchange rate does not reach it.\n\n"
-                + "Margin " + signedLocal(margin) + " /sq ft. " + (margin < 0
+                + "Margin " + signedLocal(margin) + "/m². " + (margin < 0
                         ? "You are selling ground for less than it would cost you today - more of it"
                                 + " stands free than anyone wants to build on, or the currency has made"
                                 + " the world's price dear."
@@ -607,10 +713,10 @@ final class LandScreen {
         return new Margin(
                 new BarWords("the world, today", local(world), Palette.MONEY, scale > 0 ? world / scale : 0),
                 new BarWords("investors pay", local(inside), Palette.BUILDING, scale > 0 ? inside / scale : 0),
-                signedLocal(margin) + " a sq ft", margin < 0 ? Palette.BAD : Palette.GOOD,
+                signedLocal(margin) + " a m²", margin < 0 ? Palette.BAD : Palette.GOOD,
                 sold > 0 ? "investors paid " + marked(here, money(sold)) + " for ground last month"
                         : "investors paid nothing for ground last month",
-                info);
+                info, partsWords());
     }
 
     /** One stacked bar on the second card: the building, its ground and its build, and the ground's share. */
@@ -642,28 +748,33 @@ final class LandScreen {
     /** The second card's (i), the 0.7.6 note word for word, and what the bars are. */
     static final String ON_TOP_INFO = "The ground is charged on top of the build, so a cheap building on"
             + " expensive land is not a cheap building.\n\nEach bar is the building's plot at what investors pay"
-            + " a square foot today, then the building's own cash cost; the figure at its right is the ground's"
+            + " a square metre today, then the building's own cash cost; the figure at its right is the ground's"
             + " share of the two.";
 
-    /** The Ore card: the deposits, the tonnes, the mines on them, and whether ore lies undug. */
-    record Ore(String deposits, String tonnes, String mines, boolean undug, String popped) { }
+    /** The Ore card: the deposits, the tonnes, the mines on them, whether ore lies undug, and the oil (0.7.61). */
+    record Ore(String deposits, String tonnes, String mines, boolean undug, String popped, String oil) { }
 
     Ore ore() {
         LandManager land = ui.game.getLandManager();
         int deposits = land.getIronDeposits();
         int mines = ui.game.minesCommitted();
         int gained = depositsBeforeBuying >= 0 ? deposits - depositsBeforeBuying : 0;
+        long oilSites = ui.game.getCityLand().totalSites(Resource.OIL);
         return new Ore(formatter.format(deposits) + (deposits == 1 ? " deposit" : " deposits"),
                 shortNumber(land.getIronReserveTonnes()) + " t in the ground",
                 formatter.format(mines) + (mines == 1 ? " mine" : " mines") + " on them, standing or on site",
                 mines < deposits,
-                gained > 0 ? "+" + gained + (gained == 1 ? " deposit" : " deposits") : null);
+                gained > 0 ? "+" + gained + (gained == 1 ? " deposit" : " deposits") : null,
+                oilSites > 0 ? "oil: " + formatter.format(oilSites) + (oilSites == 1 ? " site, " : " sites, ")
+                        + LandMap.tonnes(land.getRemaining(Resource.OIL)) + " in the ground" : "oil: none owned");
     }
 
     /** The Ore card's (i). */
     static final String ORE_INFO = "A mine stands on one deposit, and every mine draws on the city's tonnes"
-            + " together. Deposits come only with land: a plot with ORE on its card brings them, and the ore"
-            + " is paid for inside its price. Click the card for Build › Industry, where the Iron Mine is.";
+            + " together. Deposits come only with land, a whole field at a time: an offer holds every field whose"
+            + " centre lies in it - all its sites and all its tonnes, its row says how many - and the ore is paid"
+            + " for inside its price. Oil lies in the world's fields as ore does, sold the same way, and an Oil Well"
+            + " stands on an oil site. Click the card for Build › Industry, where the Iron Mine is.";
 
     /** The sectors waiting on ground, by name: Game.getLandBlockedSectors(), as the sector pages and the inbox read it. */
     List<String> waitingNames() {
@@ -689,7 +800,7 @@ final class LandScreen {
     }
 
     /** The chart's (i). */
-    static final String DETAILS_INFO = "What the world asks for a square foot of ground, as each month recorded"
+    static final String DETAILS_INFO = "What the world asks for a square metre of ground, as each month recorded"
             + " it - in US dollars since 0.7.6; the months an older save recorded before then are in local money,"
             + " and are drawn as they were recorded. The share of the ground built on is not drawn: it sits near"
             + " 100% for centuries.";
@@ -809,8 +920,9 @@ final class LandScreen {
         top.setAlignment(Pos.CENTER_LEFT);
 
         double scale = groundScale(next);
+        List<LandParcel> best = nextShelf(next);
         SegmentBar bar = segmentBar(groundSegments(next, i -> () -> {
-            if (i < shelfCards.size()) scrollTo(shelfCards.get(i));
+            if (i < best.size()) picked(best.get(i).getSide(), best.get(i).getPlace());
         }), scale, groundTicks(), 0, 18);
         if (Double.isFinite(freeBeforeBuying)) bar.animateFirst(freeBeforeBuying, 300);
 
@@ -820,12 +932,12 @@ final class LandScreen {
         key.setAlignment(Pos.CENTER);
         if (!next.ids().isEmpty()) {
             key.getChildren().add(ghostSwatch(Palette.BUILDING_LIGHT,
-                    next.n() == 1 ? "the next plot" : "the next " + next.n() + ", numbered as their cards"));
+                    next.n() == 1 ? "the best offer" : "the best " + next.n() + ", cheapest dry ground first"));
             boolean ore = false;
             for (LandParcel p : nextShelf(next)) ore |= p.hasIron();
             if (ore) key.getChildren().add(keySwatch(Palette.ORE, "ore under it"));
         }
-        Label end = new Label(sqFt(scale));
+        Label end = new Label(LandManager.areaWords(scale));
         end.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         Region a = new Region(), b = new Region();
         HBox.setHgrow(a, Priority.ALWAYS);
@@ -866,18 +978,18 @@ final class LandScreen {
         scroller.setVvalue(Math.max(0, Math.min(1, (at.getMinY() - 12) / span)));
     }
 
-    /* ----------------------------- BUY THE NEXT N PLOTS (0.7.13) -----------------------------
+    /* ----------------------------- BUY THE BEST N (0.7.13; "the next N" until 0.7.61) -----------------------------
      *
      * Jerus: "add a button to buy multiple, so for example buy the next 5
      * land options, and then also debt popup appears if not enough". The
-     * first N plots in the office's order (Game.nextLandParcels()), their
+     * first N offers in the office's order (Game.nextLandParcels()), their
      * price together in the money the toggle pays in with the other money
-     * beside it, and a button that buys them each as its own card's button
+     * beside it, and a button that buys them each as its own row's button
      * would (Game.buyLandParcels()) - or, short, opens the same funding page,
      * sized to the whole gap. N starts at five and runs from one to what is
-     * listed. Since 0.7.26 at the right of ON OFFER, and the N cards it buys
-     * carry their numbers and a pink edge, as the bar's ghosts do.
-     * ---------------------------------------------------------------------------------------- */
+     * listed. Since 0.7.61 at the right of THE BEST OFFERS, over the bar
+     * whose ghosts are the N it buys (each a click to pick on the map).
+     * ---------------------------------------------------------------------------------------------------------------- */
     HBox nextPlots(Next next) {
         Button fewer = stepper("−", 26, () -> { nextCount--; showLandMenu(); });
         fewer.setDisable(next.n() <= 1);
@@ -942,164 +1054,221 @@ final class LandScreen {
         depositsBeforeBuying = ui.game.getLandManager().getIronDeposits();
     }
 
-    /* ----------------------------- ON OFFER: the shelf -----------------------------
+    /* ----------------------------- THE HERO ROW (0.7.61) -----------------------------
      *
-     * SORTED, CHEAPEST GROUND FIRST, so the best buy is always the top-left
-     * card. Jerus: "sorted by best value so the best one is always at the
-     * top left". Price per square foot ascending, which is the only ranking
-     * that means anything across plots of different sizes - a big plot is
-     * not a better deal for being big. The order is the model's since 0.7.13
-     * (Game.landShelf()), because "Buy the next N plots" buys the first N of
-     * it and the cards must be those N.
+     * The map at the left, 600 x 400 (MapView: a click on it picks a side, or
+     * an offer's band, and Expand lays it over the window), and at the right,
+     * in what the content area leaves at 1,389 x 868 (CITY_PANEL, 657 px),
+     * THE CITY's two lines, the sides as chips and the chosen side's ten
+     * offers as ROW_H rows: hovering one lights its band on the map, a click
+     * picks it, Buy buys it - or, short, Fund opens the funding page sized to
+     * it, as a card's Buy did.
      *
-     * ORE IS A DIFFERENT QUESTION and is not folded into the ranking beyond
-     * its price: whether a deposit's premium is worth paying depends on
-     * whether the city wants a mine, which no single number can decide. It
-     * keeps its own tag.
-     *
-     * AND THE "JUST BUY THE CHEAPEST" BUTTON IS GONE. Jerus: "remove the buy
-     * cheapest button since best value is always better and two is
-     * confusing." Cheapest by PRICE is whichever plot is smallest, which is
-     * the one piece of ground least worth owning per dollar.
-     *
-     * THREE BY THREE, THE PAGE'S WIDTH (0.7.26): nine wide cards rather than
-     * 250 px tiles centred in a page five times as wide; nine stays a square,
-     * as Jerus asked ("make it so its only 9 cards").
-     * ------------------------------------------------------------------------------- */
-    javafx.scene.layout.GridPane shelf(Next next) {
-        javafx.scene.layout.GridPane grid = equalColumns(3, TILE_GAP);
-        List<LandParcel> shelf = ui.game.landShelf();
-        boolean turned = shownMonth >= 0 && shownMonth != ui.game.getMonth()
-                && ui.game.getForeignAccounts().getRate() != shownRate;
-        for (int i = 0; i < shelf.size(); i++) {
-            Region card = plotCard(plot(shelf.get(i), i, next), turned);
-            shelfCards.add(card);
-            grid.add(card, i % 3, i / 3);
-        }
-        return grid;
+     * WHAT A ROW STOPPED SAYING: the 0.7.26 card's value bar against the
+     * going rate and its words ("44% under the going rate"). Ten rows of
+     * 28 px have no room for them; the price a dry km2 in its own column is
+     * the same comparison read down a side, and BEST VALUE marks the best of
+     * all forty.
+     * ---------------------------------------------------------------------------------- */
+
+    /** The map's width and the hero row's height (spec-land 2.8). */
+    static final double MAP_W = MapView.SMALL_W, HERO_H = MapView.SMALL_H;
+
+    /** The gap between the map and THE CITY... */
+    static final double HERO_GAP = 16;
+
+    /** ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). */
+    static final double CITY_PANEL = 657;
+
+    /** A row's height: 28 px (spec-land 2.8), ten of them and THE CITY's head inside HERO_H. */
+    static final double ROW_H = 28;
+
+    /** The rows' columns, in pixels: lane, size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. */
+    static final double[] ROW_COLUMNS = { 24, 74, 64, 158, 82, 78, 76, 58 };
+
+    /** The gap between a row's columns. */
+    static final double ROW_GAP = 4;
+
+    /** The rows' column names. */
+    static final String[] ROW_HEADS = { "lane", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" };
+
+    HBox hero() {
+        if (map == null) map = new MapView(ui, this::picked, this::showLandMenu);
+        map.refresh(side, lane);
+        VBox city = cityPanel();
+        city.setPrefWidth(CITY_PANEL);
+        city.setMinWidth(0);
+        HBox.setHgrow(city, Priority.ALWAYS);
+        HBox row = new HBox(HERO_GAP, map.smallNode(), city);
+        row.setAlignment(Pos.TOP_LEFT);
+        row.setMinHeight(HERO_H);
+        return row;
     }
 
-    /**
-     * One plot, as a card: the land icon in its square (with its number when
-     * it is in the next N), then its size and what it holds, its price, and
-     * its value - its dollars a square foot as a bar, with the going rate's
-     * tick and the world's price today as a hairline, and the verdict in
-     * words; at the right its tags; under it all, Buy, the card's width
-     * (0.7.34). The card itself does nothing on a click; only Buy acts.
-     *
-     * THE PRICE PER SQUARE FOOT IS THE POINT, and it was the one figure the
-     * first listing did not carry. A plot's total price says nothing on its
-     * own - a big expensive plot and a small cheap one are the same deal - so
-     * comparing nine meant nine divisions done in the player's head. Against
-     * the going rate on this listing (LandMarket.goingUsdPerSqFt()) it is a
-     * verdict: this one is a bargain, that one is not.
-     *
-     * BOTH PRICES (0.7.6), THE ONE THE TOGGLE PAYS IN LARGE (0.7.13). Jerus:
-     * "if you are on convert currency to usd to buy, even tho you pay usd, the
-     * land should show your own currency cost, and if you have it on use
-     * reserves then the cost is shown is usd".
-     *
-     * THE BUTTON STAYS CLICKABLE (0.7.13). Short, it opens the funding page
-     * rather than greying out - the build screen's way. From the vault, a
-     * vault short of the dollars opens it too, even with the cash to convert
-     * the rest: that way is one of the page's choices, not what the button
-     * does by itself.
-     *
-     * @param turned the month has turned and moved the rate: the price in
-     *               local money pops
-     */
-    Region plotCard(Plot p, boolean turned) {
-        boolean vault = ui.game.isLandPaidFromVault();
+    /** The map picked a side, and an offer's lane on it (-1 for none): its rows, the offer's lit. */
+    void picked(int side, int lane) {
+        this.side = side;
+        this.lane = lane;
+        showLandMenu();
+    }
 
-        StackPane square = new StackPane(iconSquare(Icons.LAND, Palette.BUILDING, 36, 18));
-        square.setMinSize(36, 36);
-        square.setMaxSize(36, 36);
-        if (p.badge() > 0) {
-            Label badge = new Label(String.valueOf(p.badge()));
-            badge.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.ON_FILL)
-                    + " -fx-background-color: " + Palette.BUILDING + "; -fx-background-radius: 8;"
-                    + " -fx-padding: 0 4 0 4;");
-            badge.setMinSize(16, 16);
-            badge.setAlignment(Pos.CENTER);
-            StackPane.setAlignment(badge, Pos.TOP_LEFT);
-            badge.setTranslateX(-6);
-            badge.setTranslateY(-6);
-            square.getChildren().add(badge);
+    /** THE CITY, its sides, and the chosen side's offers. */
+    VBox cityPanel() {
+        Label title = new Label("THE CITY");
+        title.setStyle(Palette.strong(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+        Label size = new Label(cityLine());
+        size.setStyle(Palette.figure(Palette.SIZE_SECTION, Palette.TEXT_HEAD));
+        Label world = new Label(worldLine());
+        world.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        VBox head = new VBox(1, title, size, world);
+        // The month moved the rate: a row's price in local money pops, as a card's did (0.7.26).
+        boolean turned = shownMonth >= 0 && shownMonth != ui.game.getMonth() && ui.game.getForeignAccounts().getRate() != shownRate
+                && !ui.game.isLandPaidFromVault();
+        VBox panel = new VBox(6, head, sideChipsNode(), rowsNode(sideRows(side), turned));
+        panel.setMaxHeight(HERO_H);
+        return panel;
+    }
+
+    /** The four sides as Pieces' chips, each its cheapest dry ground a km2 after its name and BEST VALUE on the best's side. */
+    javafx.scene.layout.FlowPane sideChipsNode() {
+        List<SideChip> chips = sideChips();
+        String[] names = new String[chips.size()];
+        for (int i = 0; i < names.length; i++) names[i] = chips.get(i).name();
+        javafx.scene.layout.FlowPane strip = chipStrip(names, CityLand.sideName(side), Palette.SIZE_LABEL, name -> {
+            for (SideChip c : chips) if (c.name().equals(name)) side = c.side();
+            lane = -1;
+            showLandMenu();
+        });
+        strip.setAlignment(Pos.CENTER_LEFT);
+        strip.setPrefWrapLength(CITY_PANEL);
+        for (int i = 0; i < chips.size() && i < strip.getChildren().size(); i++) {
+            if (!(strip.getChildren().get(i) instanceof Button b)) continue;
+            SideChip c = chips.get(i);
+            Label best = new Label(c.best());
+            best.setStyle(Palette.figureRegular(Palette.SIZE_CAPTION, c.side() == side ? Palette.TEXT_HEAD : Palette.TEXT_MUTED));
+            HBox graphic = new HBox(5, best);
+            graphic.setAlignment(Pos.CENTER_LEFT);
+            if (c.bestValue()) graphic.getChildren().add(tag("BEST VALUE", Palette.GOOD));
+            b.setGraphic(graphic);
+            b.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+            b.setGraphicTextGap(7);
+            Tooltip tip = new Tooltip(c.name() + "'s ten offers. Its cheapest dry ground: " + c.best()
+                    + (c.bestValue() ? ", and the office's BEST VALUE." : "."));
+            tip.setShowDelay(Duration.millis(250));
+            b.setTooltip(tip);
         }
-        VBox left = new VBox(square);
-        left.setMinWidth(40);
+        return strip;
+    }
 
-        javafx.scene.text.Text size = BuildScreen.textRun(p.size(), Palette.Fonts.sansSemiBold(),
-                Palette.SIZE_SECTION, Palette.TEXT_HEAD);
-        javafx.scene.text.Text caption = BuildScreen.textRun(p.caption(), null, Palette.SIZE_CAPTION + .5,
-                Palette.TEXT_MUTED);
-        javafx.scene.text.TextFlow sizeLine = new javafx.scene.text.TextFlow(size, caption);
-        sizeLine.setMinWidth(0);
-
-        javafx.scene.text.Text price = BuildScreen.textRun(p.price(), Palette.Fonts.monoSemiBold(), 14, p.priceTone());
-        javafx.scene.text.Text other = BuildScreen.textRun(p.other(), null, Palette.SIZE_CAPTION + .5,
-                Palette.TEXT_MUTED);
-        javafx.scene.text.TextFlow priceLine = new javafx.scene.text.TextFlow(price, other);
-        priceLine.setMinWidth(0);
-
-        List<Tick> ticks = new ArrayList<>();
-        if (p.goingAt() >= 0) {
-            ticks.add(new Tick(p.goingAt(), Palette.TEXT_LABEL, 2, null,
-                    "the going rate on this listing: the middle of the nine a square foot"));
+    /** The rows: the column names, then the side's offers, lane by lane; `turned`, their local prices pop. */
+    VBox rowsNode(List<Row> rows, boolean turned) {
+        HBox heads = new HBox(ROW_GAP);
+        for (int c = 0; c < ROW_HEADS.length; c++) {
+            heads.getChildren().add(column(gridCell(ROW_HEADS[c], Palette.TEXT_LABEL, Palette.SIZE_CAPTION, c != 2 && c != 3), c));
         }
-        if (p.worldAt() >= 0) {
-            ticks.add(new Tick(p.worldAt(), Palette.TEXT_MUTED, 1, null,
-                    "what the world asks a square foot today, for a plot listed now"));
+        heads.setStyle("-fx-padding: 0 6 1 6;");
+        VBox box = new VBox(0, heads);
+        for (Row r : rows) box.getChildren().add(rowNode(r, turned));
+        return box;
+    }
+
+    /** A cell held to its column's width. */
+    private static Region column(Region cell, int c) {
+        cell.setMinWidth(ROW_COLUMNS[c]);
+        cell.setPrefWidth(ROW_COLUMNS[c]);
+        cell.setMaxWidth(ROW_COLUMNS[c]);
+        return cell;
+    }
+
+    /** One offer's row: hover lights its band, a click picks it, its button buys it or opens the funding page. */
+    HBox rowNode(Row r, boolean turned) {
+        LandParcel p = r.parcel();
+        boolean picked = p.getPlace() == lane && p.getSide() == side;
+        HBox bar = new HBox(0);
+        double[] shares = { r.dry(), r.fresh(), r.sea() };
+        int[] ground = { TileRaster.GROUND[World.GRASS], TileRaster.GROUND[World.FRESH], TileRaster.GROUND[World.SALT] };
+        double barW = ROW_COLUMNS[2] - 6;
+        for (int k = 0; k < 3; k++) {
+            if (!(shares[k] > 0)) continue;
+            Region part = new Region();
+            double w = Math.max(1, shares[k] * barW);
+            part.setMinSize(w, 8);
+            part.setPrefSize(w, 8);
+            part.setMaxSize(w, 8);
+            part.setStyle("-fx-background-color: " + MapView.css(ground[k]) + ";");
+            bar.getChildren().add(part);
         }
-        SegmentBar valueBar = segmentBar(List.of(Segment.of(p.share(), Palette.BUILDING)), 1, ticks, 0, 6);
-        valueBar.setPrefWidth(180);
-        valueBar.setMaxWidth(180);
-        Label value = new Label(p.value());
-        value.setWrapText(true);
-        value.setMinWidth(0);
-        value.setStyle(Palette.words(Palette.SIZE_CAPTION + 1, p.valueTone()));
-        VBox valueBox = new VBox(2, valueBar, value);
-
-        VBox middle = new VBox(4, sizeLine, priceLine, valueBox);
-        middle.setMinWidth(0);
-        HBox.setHgrow(middle, Priority.ALWAYS);
-
-        VBox tags = new VBox(3);
-        tags.setAlignment(Pos.TOP_RIGHT);
-        for (TagWords t : p.tags()) tags.getChildren().add(tag(t.text(), t.colour()));
-        VBox right = new VBox(4, tags);
-        right.setAlignment(Pos.TOP_RIGHT);
-        right.setMinWidth(Region.USE_PREF_SIZE);
-
-        // Buy, the card's width under what it buys (0.7.34): Pieces' action button, saying the price.
-        List<Integer> just = List.of(p.parcel().getId());
-        Pieces.ActionButton buy = actionButton(Icons.LAND, Palette.BUILDING, ACTION_TALL, p.button(),
-                () -> buyOrFund(just));
-        Tooltip buyTip = new Tooltip(p.buttonTip());
+        bar.setAlignment(Pos.CENTER_LEFT);
+        bar.setMaxHeight(8);
+        HistoryScreen.tip(bar, String.format("dry %.0f%% · fresh water %.0f%% · sea %.0f%%", r.dry() * 100, r.fresh() * 100, r.sea() * 100));
+        HBox deposits = new HBox(6);
+        deposits.setAlignment(Pos.CENTER_LEFT);
+        for (DepositWords d : r.deposits()) {
+            Region dot = new Region();
+            dot.setMinSize(8, 8);
+            dot.setMaxSize(8, 8);
+            dot.setStyle("-fx-background-color: " + d.colour() + "; -fx-background-radius: 4; -fx-border-color: #0b1118;"
+                    + " -fx-border-radius: 4; -fx-border-width: 1;");
+            Label words = new Label(d.words());
+            words.setStyle(Palette.figureRegular(Palette.SIZE_CAPTION, Palette.TEXT_BODY));
+            HBox one = new HBox(3, dot, words);
+            one.setAlignment(Pos.CENTER_LEFT);
+            HistoryScreen.tip(one, d.tip());
+            deposits.getChildren().add(one);
+        }
+        if (!r.more().isEmpty()) deposits.getChildren().add(gridCell(r.more(), Palette.TEXT_MUTED, Palette.SIZE_CAPTION, false));
+        Region tagCell = r.tag() == null ? new Region() : tag(r.tag().text(), r.tag().colour());
+        HBox tagBox = new HBox(tagCell);
+        tagBox.setAlignment(Pos.CENTER_LEFT);
+        Button buy = new Button(r.button());
+        String colour = Palette.BUILDING;
+        buy.setStyle(Palette.strong(Palette.SIZE_LABEL, r.funding() ? colour : Palette.ON_FILL)
+                + " -fx-background-color: " + (r.funding() ? "transparent" : colour) + "; -fx-border-color: " + colour + ";"
+                + " -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 2 0 2 0; -fx-cursor: hand;");
+        buy.setMaxWidth(Double.MAX_VALUE);
+        List<Integer> just = List.of(p.getId());
+        buy.setOnAction(e -> buyOrFund(just));
+        // The press is the button's: the row under it does not pick its offer over the page the button opened.
+        buy.setOnMouseClicked(javafx.event.Event::consume);
+        Tooltip buyTip = new Tooltip(r.buttonTip());
         buyTip.setShowDelay(Duration.millis(250));
-        Tooltip.install(buy, buyTip);
-
-        HBox upper = new HBox(10, left, middle, right);
-        VBox.setVgrow(upper, Priority.ALWAYS);
-        VBox card = new VBox(10, upper, buy);
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setMaxHeight(Double.MAX_VALUE);
-        card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
-                + " -fx-background-radius: 8; -fx-border-radius: 8;"
-                + (p.badge() > 0 ? " -fx-border-color: " + Palette.BUILDING + "; -fx-border-width: 2;"
-                                 : " -fx-border-color: " + Palette.EDGE + "; -fx-border-width: 1;"));
-        Tooltip cardTip = new Tooltip(p.tip());
-        cardTip.setShowDelay(Duration.millis(400));
-        Tooltip.install(card, cardTip);
-
-        // The month moved the rate: the local price - large converting, small from the vault - pops.
-        if (turned) popText(vault ? other : price);
-        return card;
-    }
-
-    /** popPip()'s quarter second, for a run of text in a flow: its flow pops. */
-    private static void popText(javafx.scene.text.Text run) {
-        if (run.getParent() instanceof Region flow) UserInterface.popPip(flow);
+        buy.setTooltip(buyTip);
+        Label price = gridCell(r.price(), r.priceTone(), Palette.SIZE_BODY, true);
+        if (turned) UserInterface.popPip(price);
+        HBox row = new HBox(ROW_GAP,
+                column(gridCell(r.lane(), Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), 0),
+                column(gridCell(r.km2(), Palette.TEXT_HEAD, Palette.SIZE_BODY, true), 1),
+                column(new HBox(bar), 2),
+                column(deposits, 3),
+                column(price, 4),
+                column(gridCell(r.perKm2(), Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), 5),
+                column(tagBox, 6),
+                column(buy, 7));
+        ((HBox) row.getChildren().get(2)).setAlignment(Pos.CENTER_LEFT);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMinHeight(ROW_H);
+        row.setPrefHeight(ROW_H);
+        row.setMaxHeight(ROW_H);
+        String rest = "-fx-padding: 0 6 0 6; -fx-background-radius: 4;"
+                + (picked ? " -fx-background-color: " + Palette.RAISED + "; -fx-border-color: " + Palette.BUILDING
+                        + "; -fx-border-width: 0 0 0 2;" : "");
+        row.setStyle(rest + " -fx-cursor: hand;");
+        row.setOnMouseEntered(e -> {
+            row.setStyle(rest + " -fx-cursor: hand; -fx-background-color: " + Palette.CONTROL + ";");
+            map.light(p.getSide(), p.getPlace());
+        });
+        row.setOnMouseExited(e -> {
+            row.setStyle(rest + " -fx-cursor: hand;");
+            map.light(-1, -1);
+        });
+        row.setOnMouseClicked(e -> {
+            lane = p.getPlace();
+            showLandMenu();
+        });
+        Tooltip tip = new Tooltip(r.tip());
+        tip.setShowDelay(Duration.millis(400));
+        Tooltip.install(row, tip);
+        return row;
     }
 
     /* ----------------------------- WHAT THE GROUND IS WORTH ----------------------------- */
@@ -1169,8 +1338,13 @@ final class LandScreen {
         Label last = new Label(m.lastMonth());
         last.setWrapText(true);
         last.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        // The world's price in its parts, under its bar (0.7.55), in the
+        // On-top card's caption style.
+        Label parts = new Label(m.parts());
+        parts.setWrapText(true);
+        parts.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         return worthCard(Icons.COIN, Palette.MONEY, "Margin", m.info(),
-                namedBar(m.world()), namedBar(m.investors()), chipLine, last);
+                new VBox(2, namedBar(m.world()), parts), namedBar(m.investors()), chipLine, last);
     }
 
     VBox onTopCard() {
@@ -1216,7 +1390,10 @@ final class LandScreen {
         Label mines = new Label(o.mines());
         mines.setWrapText(true);
         mines.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));
-        VBox card = worthCard(Icons.ORE, Palette.ORE, "Ore", ORE_INFO, top, tonnes, mines);
+        Label oil = new Label(o.oil());
+        oil.setWrapText(true);
+        oil.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        VBox card = worthCard(Icons.ORE, Palette.ORE, "Ore and oil", ORE_INFO, top, tonnes, mines, oil);
         if (o.undug()) {
             Label undug = new Label("ore that nothing is digging");
             undug.setWrapText(true);
@@ -1284,7 +1461,7 @@ final class LandScreen {
                 new String[] { "The world's price of ground" },
                 new double[][] { h.aligned("landPrice") },
                 new String[] { Palette.BUILDING },
-                v -> dollars(v) + " /sq ft"));
+                v -> dollars(v) + "/m²"));
         Label spent = new Label(spentLine());
         spent.setWrapText(true);
         spent.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_BODY));

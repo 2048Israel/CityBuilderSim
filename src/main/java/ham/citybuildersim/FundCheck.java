@@ -51,8 +51,20 @@ import java.io.PrintStream;
  *      the dial's share first.
  *   8. The rule: 70/30, the 10% limit, the rebalancing band, cash that
  *      cannot be placed waits, and a holding over 10% is asked down to the
- *      limit and no further.
- *   9. The 3% transfer, from cash only.
+ *      limit and no further; since 0.7.48 (C3) its bid stands at the desk's
+ *      ask.
+ *  8b. The city's mark (0.7.48, C4): a holding whose last trade is older
+ *      than Exchange.STALE_MARK_MONTHS is marked at fair value; trading
+ *      still reads the last trade.
+ *   9. The transfer at the default withdrawal, Norway's 3% a year, from cash
+ *      only.
+ *  9b. The withdrawal dial (0.7.48, C1; Jerus: "even 0 or 10% a month"): at
+ *      the default it is the transfer to the bit; whole steps from nothing
+ *      to MAX_WITHDRAWAL_STEPS; at nothing it pays and sells nothing; over
+ *      the default what the cash cannot cover is sold from the market book
+ *      at the step, pro rata, and paid at the next month's top, it buys
+ *      nothing, and the rescue book is never sold; at or under the default a
+ *      short is not paid.
  *  10. The hand: its orders at fair value, or at a price the player names,
  *      and one cancelled before the step (0.7.39); pay-in and draw-out off
  *      the surplus.
@@ -189,7 +201,9 @@ public class FundCheck {
         theOffer();
         theDial();
         theRule();
+        theStaleMark();
         theTransfer();
+        theWithdrawal();
         theHand();
         theSave();
         insane();
@@ -782,6 +796,19 @@ public class FundCheck {
         check("what does not fit waits as its cash", cash > 0);
         check("...and nothing was lost in the placing: at the marks it is what was paid in, less its transfer",
                 v + f.getTransferPaid() >= lump * (1 - 1e-9));
+        // THE RULE'S BID (0.7.48, C3): at the desk's ask as postDesk() strikes it - fair value plus half the
+        // spread, the cheapest price anybody stands ready to sell at - not at fair value, where it met nobody.
+        int ruleBids = 0;
+        boolean atTheAsk = true;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            for (OrderBook.Order b : ex.bookOf(c).bids()) {
+                if (!b.who().equals(Exchange.FUND)) continue;
+                ruleBids++;
+                atTheAsk &= b.price() == ex.fair(c) * (1 + Exchange.SPREAD / 2);
+            }
+        }
+        check("fixture: the rule's bids rest on the books", ruleBids > 0);
+        check("the rule's bid stands at the desk's ask", atTheAsk && TreasuryFund.RULE_PREMIUM == Exchange.SPREAD / 2);
 
         // The band: the fund given its market book in shares and no cash.
         Game h = copy();
@@ -840,10 +867,45 @@ public class FundCheck {
                 1e-6 * ro.getShares(company));
     }
 
+    /* ================= 8b. the city's mark (0.7.48, C4) ================= */
+
+    static void theStaleMark() {
+        out.println("\n--- 8b. the city's mark: a last trade a year old gives way to fair value ---");
+        Game g = copy();
+        Equity reg = g.getEquity();
+        Exchange ex = g.getExchange();
+        int company = -1;
+        for (int c = 0; c < Sectors.KEYS.length; c++) {
+            if (reg.getShares(c) > 0 && ex.hasTraded(c) && ex.price(c) != ex.fair(c)
+                    && g.getHouseholdBalance().sharesHeld(c) >= .05 * reg.getShares(c)
+                    && (company < 0 || reg.getShares(c) > reg.getShares(company))) company = c;
+        }
+        check("fixture: a listed company that has traded away from its fair value", company >= 0);
+        double take = .05 * reg.getShares(company), households = g.getHouseholdBalance().sharesHeld(company);
+        double keep = 1 - take / households;
+        for (Household cell : g.getHouseholdBalance().cellsForMarket()) cell.shares[company] *= keep;
+        reg.moveCity(company, take);
+        int last = ex.bookOf(company).lastTradeMonth();
+        double traded = ex.price(company), fair = ex.fair(company);
+        check("fixture: the fund holds it and nothing else", g.fundValue() == g.fundCompanyValue(company) && take > 0);
+        // A year with no trade, then a month more: the exchange's clock moved on, its book left alone.
+        ex.attach(reg, g.getHouseholdBalance(), g.getBank(), null, last + Exchange.STALE_MARK_MONTHS);
+        boolean aYear = ex.cityMark(company) == traded && !ex.markedAtFair(company)
+                && g.fundCompanyValue(company) == take * traded;
+        ex.attach(reg, g.getHouseholdBalance(), g.getBank(), null, last + Exchange.STALE_MARK_MONTHS + 1);
+        out.printf("   %s last traded m%d at %.6f, fair %.6f: the fund's holding $%,.3fk a year on, $%,.3fk a month later%n",
+                Equity.COMPANIES[company], last, traded, fair, take * traded, g.fundCompanyValue(company));
+        check("a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value", aYear
+                && ex.markedAtFair(company) && ex.cityMark(company) == fair
+                && g.fundCompanyValue(company) == take * fair && g.fundValue() == take * fair
+                && FundView.sharePosition(g, company, false).price() == fair);
+        check("...and the price trading reads is still the last trade", ex.price(company) == traded);
+    }
+
     /* ================= 9. the transfer ================= */
 
     static void theTransfer() {
-        out.println("\n--- 9. the 3% transfer: a twelfth a month, from its cash only ---");
+        out.println("\n--- 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only ---");
         Game g = copy();
         g.setCashForTest(g.getCash() + 10_000);
         g.fundPayIn(10_000);
@@ -855,13 +917,171 @@ public class FundCheck {
         close("a twelfth of 3% of all it is worth", f.getTransferDue(), due, 1e-9);
         close("...paid from its cash", f.getTransferPaid(), due, 1e-9);
         close("...a revenue line in the budget", g.getEconomyManager().getNationalAccounts().getFundTransfer(), due, 1e-9);
-        // A fund with nothing in cash pays nothing: its rule never sells to pay.
+        // A fund with nothing in cash pays nothing: at the default its rule never sells to pay.
         TreasuryFund bare = new TreasuryFund();
         close("a fund worth something with no cash pays nothing", bare.payTransfer(1_000_000, 2000), 0, 0);
         close("...and says so", bare.getTransferShort(), TreasuryFund.transferOn(1_000_000), 1e-12);
         bare.receive(100);
         close("with some cash, what it has", bare.payTransfer(1_000_000, 2000), 100, 1e-12);
         check("fixture: the treasury was not what paid it", treasury > 0);
+    }
+
+    /* ================= 9b. the withdrawal dial (0.7.48, C1) ================= */
+
+    /**
+     * A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX
+     * TIMES THAT, WITH NO CASH: each company's households hand it 5% of the
+     * company (a fixture of a holding, not a trade, as section 8's band) and
+     * the bank issues the rescue book its shares, as warrants exercised do.
+     * With no cash the month's withdrawal is all short, and with the rescue
+     * book in the value it is more than the band would sell.
+     */
+    static int[] holdTwoAndARescueBook(Game g) {
+        Equity reg = g.getEquity();
+        Exchange ex = g.getExchange();
+        int[] two = { -1, -1 };
+        int k = 0;
+        double market = 0;
+        for (int c = 0; c < Sectors.KEYS.length && k < 2; c++) {
+            if (c == Equity.BANK || !(reg.getShares(c) > 0) || !(ex.fair(c) > 0)) continue;
+            double take = .05 * reg.getShares(c), households = g.getHouseholdBalance().sharesHeld(c);
+            if (households < take) continue;
+            double keep = 1 - take / households;
+            for (Household cell : g.getHouseholdBalance().cellsForMarket()) cell.shares[c] *= keep;
+            reg.moveCity(c, take);
+            market += take * ex.price(c);
+            two[k++] = c;
+        }
+        if (k == 2 && ex.price(Equity.BANK) > 0) reg.issueToCityRescue(Equity.BANK, 6 * market / ex.price(Equity.BANK));
+        return two;
+    }
+
+    /** What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. */
+    static double soldOrAsked(Game g, int c, double before) {
+        return before - g.getEquity().getCityMarketShares(c) + g.getExchange().bookOf(c).resting(Exchange.FUND, OrderBook.Side.SELL);
+    }
+
+    static void theWithdrawal() {
+        out.println("\n--- the withdrawal dial ---");
+        TreasuryFund dial = new TreasuryFund();
+        boolean bit = dial.getWithdrawalSteps() == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS
+                && dial.getWithdrawal() == TreasuryFund.TRANSFER_RATE / TreasuryFund.YEAR_MONTHS;
+        for (double v : new double[] { 0, 1, 12_345.678, 9.87e9, 1e-7, -5 }) bit &= dial.withdrawalOn(v) == TreasuryFund.transferOn(v);
+        Game live = copy();
+        live.setCashForTest(live.getCash() + 10_000);
+        live.fundPayIn(10_000);
+        bit &= live.fundTransferDue() == TreasuryFund.transferOn(live.fundValue()) && !live.getFund().sellsToPay();
+        check("at the default the withdrawal is today's transfer to the bit", bit);
+        boolean whole = true;
+        for (int k = 0; k <= TreasuryFund.MAX_WITHDRAWAL_STEPS; k++) {
+            dial.setWithdrawal(k * TreasuryFund.WITHDRAWAL_STEP);
+            whole &= dial.getWithdrawalSteps() == k && dial.getWithdrawal() == k * TreasuryFund.WITHDRAWAL_STEP;
+            dial.setWithdrawal((k + .4) * TreasuryFund.WITHDRAWAL_STEP);
+            whole &= dial.getWithdrawalSteps() == Math.min(k, TreasuryFund.MAX_WITHDRAWAL_STEPS);
+        }
+        dial.setWithdrawal(-.01);
+        whole &= dial.getWithdrawalSteps() == 0 && dial.getWithdrawal() == 0;
+        dial.setWithdrawal(.5);
+        whole &= dial.getWithdrawalSteps() == TreasuryFund.MAX_WITHDRAWAL_STEPS;
+        dial.setWithdrawal(1.6 * TreasuryFund.WITHDRAWAL_STEP);
+        whole &= dial.getWithdrawalSteps() == 2;
+        check("the dial takes whole steps from nothing to MAX_WITHDRAWAL_STEPS", whole);
+        close("...the most of them 10% of its value a month",
+                TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP, .10, 1e-15);
+
+        // At nothing: a fund with cash, which the rule places, pays nothing and asks nothing.
+        Game zero = copy();
+        zero.setCashForTest(zero.getCash() + 1_000_000);
+        zero.fundPayIn(1_000_000);
+        zero.setFundWithdrawal(0);
+        play(zero);
+        TreasuryFund z = zero.getFund();
+        double askedZero = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) askedZero += zero.getExchange().bookOf(c).resting(Exchange.FUND, OrderBook.Side.SELL);
+        for (CorporateBond b : zero.getBondMarket().getBonds()) askedZero += zero.getBondMarket().bookOf(b).resting(BondMarket.FUND, OrderBook.Side.SELL);
+        check("fixture: at nothing the fund holds cash its rule places", z.getCash() > 0 && z.getWithdrawalSteps() == 0);
+        check("at nothing it pays nothing and sells nothing", z.getTransferDue() == 0 && z.getTransferPaid() == 0
+                && z.getToRaise() == 0 && zero.getEconomyManager().getNationalAccounts().getFundTransfer() == 0
+                && z.getMonthSold() == 0 && askedZero == 0);
+
+        // Over the default with cash: the cash pays the month, and the rule buys nothing; its twin at the default buys.
+        Game spend = copy(), twin = copy();
+        for (Game x : java.util.List.of(spend, twin)) {
+            x.setCashForTest(x.getCash() + 1_000_000);
+            x.fundPayIn(1_000_000);
+        }
+        spend.setFundWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + 1) * TreasuryFund.WITHDRAWAL_STEP);
+        play(spend);
+        play(twin);
+        double bidSpend = 0, bidTwin = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            bidSpend += spend.getExchange().bookOf(c).resting(Exchange.FUND, OrderBook.Side.BUY);
+            bidTwin += twin.getExchange().bookOf(c).resting(Exchange.FUND, OrderBook.Side.BUY);
+        }
+        for (CorporateBond b : spend.getBondMarket().getBonds()) bidSpend += spend.getBondMarket().bookOf(b).resting(BondMarket.FUND, OrderBook.Side.BUY);
+        for (CorporateBond b : twin.getBondMarket().getBonds()) bidTwin += twin.getBondMarket().bookOf(b).resting(BondMarket.FUND, OrderBook.Side.BUY);
+        check("fixture: its twin at the default bids for its book with the same cash",
+                bidTwin > 0 || twin.getFund().getMonthBought() > 0);
+        check("it buys nothing while over the default", spend.getFund().sellsToPay() && bidSpend == 0
+                && spend.getFund().getMonthBought() == 0 && spend.getFund().getToRaise() == 0
+                && spend.getFund().getTransferPaid() == spend.getFund().getTransferDue());
+
+        // Over the default with no cash: the month's withdrawal is sold for, and paid at the next top.
+        Game over = copy();
+        int[] two = holdTwoAndARescueBook(over);
+        check("fixture: a market book in two companies, a rescue book, no cash and no bonds",
+                two[1] >= 0 && over.getFund().getCash() == 0 && over.fundBondsValue() == 0
+                        && over.fundRescueSharesValue() > 0);
+        over.setFundWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
+        double a0 = over.getEquity().getCityMarketShares(two[0]), b0 = over.getEquity().getCityMarketShares(two[1]);
+        double rescue0 = over.getEquity().getCityRescueShares(Equity.BANK);
+        play(over);
+        TreasuryFund o = over.getFund();
+        double fa = soldOrAsked(over, two[0], a0) / a0, fb = soldOrAsked(over, two[1], b0) / b0;
+        out.printf("   at %s a month: due $%,.1fk, paid $%,.1fk, to raise $%,.1fk; %.4f of each holding sold or asked (%.4f, %.4f)%n",
+                DecisionLog.pct2(o.getWithdrawal()), o.getTransferDue(), o.getTransferPaid(), o.getToRaise(), fa, fa, fb);
+        check("fixture: its cash could not cover the month, all of it to raise", o.getTransferPaid() == 0
+                && o.getToRaise() == o.getTransferDue() && o.getToRaise() > 0);
+        final Exchange ox = over.getExchange();
+        boolean atFair = true;
+        for (int c : two) atFair &= ox.bookOf(c).asks().stream().filter(x -> x.who().equals(Exchange.FUND))
+                .allMatch(x -> Math.abs(x.price() - ox.fair(c)) < 1e-12);
+        check("over the default, what the cash cannot cover is sold from the market book at the step, pro rata",
+                Math.abs(fa - fb) <= 1e-9 && fa > 1 - TreasuryFund.EQUITY_WEIGHT && fa <= 1);
+        check("...asked at fair value", atFair);
+        // A bid caused: the world takes whatever of the fund's asks still rests, at the fund's own price.
+        for (int c : two) {
+            double resting = ox.bookOf(c).resting(Exchange.FUND, OrderBook.Side.SELL);
+            if (resting > 0) ox.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, ox.fair(c), resting);
+        }
+        check("fixture: a bid took every share the fund asked", ox.bookOf(two[0]).resting(Exchange.FUND, OrderBook.Side.SELL) == 0
+                && ox.bookOf(two[1]).resting(Exchange.FUND, OrderBook.Side.SELL) == 0 && o.getCash() > 0);
+        double owed = o.getToRaise(), cashThen = o.getCash(), shortThen = o.getTransfersShort(), paidThen = o.getTransfersPaid();
+        play(over);
+        double late = Math.min(owed, cashThen);
+        close("...and paid at the next month's top", o.getTransferPaidLate(), late, 1e-9);
+        close("...to the treasury with the month's own", over.getEconomyManager().getNationalAccounts().getFundTransfer(),
+                late + o.getTransferPaid(), 1e-9);
+        close("...off the short it was counted in", o.getTransfersShort(), shortThen - late + o.getTransferDue() - o.getTransferPaid(), 1e-6);
+        close("...and into the paid", o.getTransfersPaid(), paidThen + late + o.getTransferPaid(), 1e-6);
+        check("the rescue book is never sold to pay it", over.getEquity().getCityRescueShares(Equity.BANK) == rescue0
+                && ox.bookOf(Equity.BANK).resting(Exchange.FUND, OrderBook.Side.SELL) == 0);
+
+        // The same fund at the default: the short is not paid, and the only sale is the band's.
+        Game rule = copy();
+        int[] same = holdTwoAndARescueBook(rule);
+        double r0 = rule.getEquity().getCityMarketShares(same[0]);
+        play(rule);
+        TreasuryFund r = rule.getFund();
+        double short1 = r.getTransfersShort();
+        double fr = soldOrAsked(rule, same[0], r0) / r0;
+        check("fixture: at the default its cash could not cover the month either", r.getTransferPaid() == 0 && short1 > 0);
+        play(rule);
+        check("at or under the default a short is not paid", r.getToRaise() == 0 && r.getTransferPaidLate() == 0
+                && Math.abs(r.getTransfersShort() - (short1 + r.getTransferDue() - r.getTransferPaid())) <= 1e-9);
+        // The band asks the excess over EQUITY_WEIGHT of its book and cash, and the month's dividends are cash by the step.
+        check("...and what it asked is the band's, no more than its 30% - under what the withdrawal asked of the same fund",
+                fr > 0 && fr <= 1 - TreasuryFund.EQUITY_WEIGHT + 1e-12 && fr < fa);
     }
 
     /* ================= 10. the hand ================= */

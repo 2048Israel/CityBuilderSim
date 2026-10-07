@@ -1,6 +1,6 @@
-# ServicesScreen.java - 3,123 lines · 124 methods · 23 constants · interface
+# ServicesScreen.java - 3,150 lines · 124 methods · 23 constants · interface
 
-`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > The services tab: the four systems the city runs for its people - health,
 > education, utilities and safety - each opening on an Overview whose one
@@ -21,7 +21,7 @@
 > system and page are open (serviceArea, servicePage) for the rail and the
 > scroll memory.
 
-**Uses:** [Palette](Palette.md) (418), [CityNeeds](CityNeeds.md) (132), [CareType](CareType.md) (89), [EducationType](EducationType.md) (49), [BuildAdvice](BuildAdvice.md) (46), [Healthcare](Healthcare.md) (40), [BuildScreen](BuildScreen.md) (32), [Icons](Icons.md) (28), [Crime](Crime.md) (26), [Sickness](Sickness.md) (22), [AgeBand](AgeBand.md) (21), [Education](Education.md) (21), [BuildingManager](BuildingManager.md) (19), [Health](Health.md) (17), [SafetyType](SafetyType.md) (17), [Money](Money.md) (11), [Migration](Migration.md) (7), [LabourMarket](LabourMarket.md) (5), [UtilitiesHandler](UtilitiesHandler.md) (5), [Pieces](Pieces.md) (4), [PopulationManager](PopulationManager.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [UserInterface](UserInterface.md) (2), [BuildingType](BuildingType.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SummaryScreen](SummaryScreen.md) (1), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [WageBand](WageBand.md) (1)... and 2 more
+**Uses:** [Palette](Palette.md) (420), [CityNeeds](CityNeeds.md) (135), [CareType](CareType.md) (89), [EducationType](EducationType.md) (49), [BuildAdvice](BuildAdvice.md) (46), [Healthcare](Healthcare.md) (40), [BuildScreen](BuildScreen.md) (32), [Icons](Icons.md) (28), [Crime](Crime.md) (26), [Sickness](Sickness.md) (22), [AgeBand](AgeBand.md) (21), [Education](Education.md) (21), [BuildingManager](BuildingManager.md) (19), [Health](Health.md) (17), [SafetyType](SafetyType.md) (17), [Money](Money.md) (11), [Migration](Migration.md) (7), [UtilitiesHandler](UtilitiesHandler.md) (6), [LabourMarket](LabourMarket.md) (5), [Pieces](Pieces.md) (4), [PopulationManager](PopulationManager.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [UserInterface](UserInterface.md) (2), [BuildingType](BuildingType.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SummaryScreen](SummaryScreen.md) (1), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [WageBand](WageBand.md) (1)... and 2 more
 
 **Used by (4):** [BuildScreen](BuildScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [UserInterface](UserInterface.md)
 
@@ -38,23 +38,23 @@
 | 786 | · the Overview |
 | 944 | · the care cards |
 | 1090 | · general care |
-| 1267 | · childcare and senior care |
-| 1352 | · death care |
-| 1486 | EDUCATION |
-| 1581 | · the pipeline |
-| 1767 | · the basic ladder |
-| 1852 | · a course |
-| 2142 | UTILITIES |
-| 2392 | SAFETY (2026-09-11) |
-| 2688 | THE BOOKS. |
-| 2713 | · HEALTH |
-| 2800 | · · what it costs |
-| 2812 | · · where the money goes |
-| 2860 | · EDUCATION |
-| 2928 | · · what it costs |
-| 2937 | · · where the money goes |
-| 2964 | · UTILITIES |
-| 3074 | · SAFETY |
+| 1268 | · childcare and senior care |
+| 1353 | · death care |
+| 1487 | EDUCATION |
+| 1582 | · the pipeline |
+| 1778 | · the basic ladder |
+| 1863 | · a course |
+| 2153 | UTILITIES |
+| 2418 | SAFETY (2026-09-11) |
+| 2714 | THE BOOKS. |
+| 2739 | · HEALTH |
+| 2827 | · · what it costs |
+| 2839 | · · where the money goes |
+| 2887 | · EDUCATION |
+| 2955 | · · what it costs |
+| 2964 | · · where the money goes |
+| 2991 | · UTILITIES |
+| 3101 | · SAFETY |
 
 ## Constants
 
@@ -68,21 +68,21 @@
 | 1053 | `ServicesScreen.BURIAL_INFO` | `"A household that can save a plot's price over ten years chooses burial; " + ...` | The burial choice (the death care page's note). |
 | 1159 | `ServicesScreen.LONG_SICK_INFO` | `String.format("Everybody sick this month, by how long they have been ill: the...` | The long sick's (i): who can die of it, at what chance by age (the elders' too, which the old note left out). |
 | 1168 | `ServicesScreen.RECOVERY_INFO` | `String.format("The share of the sick who get better in a month: %.0f%% with n...` | What care cures, in words. |
-| 1415 | `ServicesScreen.PLOTS_INFO` | `"Plots are consumed permanently — the land never comes back, and a cemetery "...` | Plots are permanent (the ground's note). |
-| 1419 | `ServicesScreen.CREMATORIA_INFO` | `"A rate rather than a stock, and it needs almost no land — which makes it " +...` | The crematoria's note. |
-| 1746 | `ServicesScreen.DIPLOMA_INFO` | `"Teens age out at a steady rate and the ones who were in school leave with " ...` | The diplomas' (i): the teens' note, and what the figure is (and is not). |
-| 1754 | `ServicesScreen.LADDER_INFO` | `String.format("The ladder serves the minimum of its three stages, not the ave...` | The basic ladder's notes: the minimum of three, and the four-and-three split. |
-| 1762 | `ServicesScreen.PROFESSIONS_INFO` | `"A band row on the People screen can say the city has eight hundred " + "grad...` | The professions page's sentence. |
-| 1979 | `ServicesScreen.GATES_INFO` | `String.format("The funnel is why that many and not more.Who could enrol holds...` | The gates' (i): why that many and not more, as the old page said it under its five lines. |
-| 1991 | `ServicesScreen.COULD_ENROL` | `"Who holds the level this course takes, in the workforce - and for a " + "pro...` | Who could enrol, in words (the old page's note). |
-| 1995 | `ServicesScreen.RETURN_INFO_PREFIX` | `"How much better off somebody is for doing it - 0 means not worth it.\n\n"` | The wage return's (i) opens on this, then says what the return is measured against (returnNote()). |
-| 2346 | `ServicesScreen.POWER_INFO` | `"Power is counted in kilowatts, a rate - the screens wrote watts until " + "0...` | The power row's (i): the unit, the staff discount, one workforce, who is billed. |
-| 2356 | `ServicesScreen.BROWNOUT_INFO` | `"Every industrial and commercial building's output is cut in proportion " + "...` | A brownout's (i), as the grid's old alert said it. |
-| 2361 | `ServicesScreen.WATER_INFO` | `"Water is counted in units of 10,000 gallons a month.The people draw " + "the...` | The water row's (i). |
-| 2547 | `ServicesScreen.CAUSES_INFO` | `"Every adult at liberty is counted once, at the heaviest reason they have.The...` | The causes' (i). |
-| 2553 | `ServicesScreen.STOLEN_INFO` | `"What is stolen goes to the offenders' households.The killings are next" + " ...` | What is stolen, and the injured (the old "what it did" note). |
-| 2557 | `ServicesScreen.CAUGHT_INFO` | `"Anybody caught with no staffed cell free stays on the street and keeps" + " ...` | Anybody caught with no cell (the prisons' note). |
-| 2562 | `ServicesScreen.OFFICERS_INFO` | `crime -> String.format("%s officers per 100,000 people.Canada has %s; full co...` | The officers against Canada, and the founding constabulary. |
+| 1416 | `ServicesScreen.PLOTS_INFO` | `"Plots are consumed permanently — the land never comes back, and a cemetery "...` | Plots are permanent (the ground's note). |
+| 1420 | `ServicesScreen.CREMATORIA_INFO` | `"A rate rather than a stock, and it needs almost no land — which makes it " +...` | The crematoria's note. |
+| 1757 | `ServicesScreen.DIPLOMA_INFO` | `"Teens age out at a steady rate and the ones who were in school leave with " ...` | The diplomas' (i): the teens' note, and what the figure is (and is not). |
+| 1765 | `ServicesScreen.LADDER_INFO` | `String.format("The ladder serves the minimum of its three stages, not the ave...` | The basic ladder's notes: the minimum of three, and the four-and-three split. |
+| 1773 | `ServicesScreen.PROFESSIONS_INFO` | `"A band row on the People screen can say the city has eight hundred " + "grad...` | The professions page's sentence. |
+| 1990 | `ServicesScreen.GATES_INFO` | `String.format("The funnel is why that many and not more.Who could enrol holds...` | The gates' (i): why that many and not more, as the old page said it under its five lines. |
+| 2002 | `ServicesScreen.COULD_ENROL` | `"Who holds the level this course takes, in the workforce - and for a " + "pro...` | Who could enrol, in words (the old page's note). |
+| 2006 | `ServicesScreen.RETURN_INFO_PREFIX` | `"How much better off somebody is for doing it - 0 means not worth it.\n\n"` | The wage return's (i) opens on this, then says what the return is measured against (returnNote()). |
+| 2363 | `ServicesScreen.POWER_INFO` | `"Power is counted in kilowatts, a rate - the screens wrote watts until " + "0...` | The power row's (i): the unit, the staff discount, one workforce, who is billed. |
+| 2373 | `ServicesScreen.BROWNOUT_INFO` | `"Every industrial and commercial building's output is cut in proportion " + "...` | A brownout's (i), as the grid's old alert said it. |
+| 2378 | `ServicesScreen.WATER_INFO` | `"Water is counted in units of 10,000 gallons a month.The people draw " + "the...` | The water row's (i). |
+| 2573 | `ServicesScreen.CAUSES_INFO` | `"Every adult at liberty is counted once, at the heaviest reason they have.The...` | The causes' (i). |
+| 2579 | `ServicesScreen.STOLEN_INFO` | `"What is stolen goes to the offenders' households.The killings are next" + " ...` | What is stolen, and the injured (the old "what it did" note). |
+| 2583 | `ServicesScreen.CAUGHT_INFO` | `"Anybody caught with no staffed cell free stays on the street and keeps" + " ...` | Anybody caught with no cell (the prisons' note). |
+| 2588 | `ServicesScreen.OFFICERS_INFO` | `crime -> String.format("%s officers per 100,000 people.Canada has %s; full co...` | The officers against Canada, and the founding constabulary. |
 
 ## Fields (state)
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 3085 | **type** `final class ServicesScreen` | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one picture answers the system's question, then the pages behind it and the... |
+| 39 | 3112 | **type** `final class ServicesScreen` | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one picture answers the system's question, then the pages behind it and the... |
 | 44 | 1 | `ServicesScreen(UserInterface ui)` |  |
 
 ### SERVICES - WHAT THE CITY PROVIDES, AND HOW WELL IT COVERS. (lines 46-125)
@@ -203,7 +203,7 @@
 | 1059 | 22 | `VBox careCard(CareWords w)` | One care card: head, ring and what it buys, its places as a supply bar, and its two doors. |
 | 1083 | 6 | `static javafx.scene.text.Text textRun(String text, double size, String tone, boolean mono)` | A run of text in a flow: a figure in mono, or words. |
 
-### general care (lines 1090-1266)
+### general care (lines 1090-1267)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -212,132 +212,132 @@
 | 1175 | 14 | `javafx.scene.layout.GridPane deathChances()` | The death chances by age, with the share of each band past two months and its dead last month. |
 | 1198 | 22 | `VBox careFunnel(CareType care)` | Who a kind of care reaches, as a funnel: the people (or, for senior care, the places) it is measured against, the places built, the places staffed, and those it treated - with the people the fee turned away as a step ... |
 | 1222 | 21 | `List<FunnelStep> careSteps(CareType care)` | ...its steps, worked out without drawing them. |
-| 1249 | 6 | `boolean healthNotRunYet()` | True when a save has been loaded and no month has run since: care that stands treated nobody, by the count (Healthcare's served[] is not saved), while the fees it raised are. |
-| 1257 | 9 | `HBox feeLine(CareType care, String per)` | "fee $10 a visit · Set the fee ›": the price of a kind of care, and the dial (Policy › Promises › Health). |
+| 1250 | 6 | `boolean healthNotRunYet()` | True when a save from before 0.7.46 has been loaded and no month has run since: care that stands treated nobody, by the count (Healthcare's served[] was not saved until A3), while the fees it raised were. |
+| 1258 | 9 | `HBox feeLine(CareType care, String per)` | "fee $10 a visit · Set the fee ›": the price of a kind of care, and the dial (Policy › Promises › Health). |
 
-### childcare and senior care (lines 1267-1351)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1277 | 43 | `void livingCarePage(VBox page, CareType care, List<CityNeeds.Need> all)` | Childcare or senior care: what does it buy? |
-| 1322 | 4 | `HBox scaleRow(String label, double now, double atNone, double atAll, boolean log, String whole)` | One effect: its name, the scale, and today's figure with the old note behind its (i). |
-| 1328 | 23 | `VBox careStatement(CareType care)` | The old page's first block - covers, the people or places it serves, built, staffed, short by - as it was. |
-
-### death care (lines 1352-1485)
+### childcare and senior care (lines 1268-1352)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1362 | 51 | `void deathCarePage(VBox page, List<CityNeeds.Need> all, List<Event> events)` | Death care, which is the one service in the game that is a STOCK. |
-| 1423 | 28 | `void deathNotices(VBox page)` | The two alerts the death care page always had - nowhere to bury them, filling up - as lines, on that page and on Health's Overview. |
-| 1453 | 8 | `String outbreakWhole()` | The outbreak's (i), as the old alert said it. |
-| 1463 | 22 | `VBox deathStatement()` | The old page's three blocks - this month, the ground, the crematoria - as they were, but for the ground's words. |
+| 1278 | 43 | `void livingCarePage(VBox page, CareType care, List<CityNeeds.Need> all)` | Childcare or senior care: what does it buy? |
+| 1323 | 4 | `HBox scaleRow(String label, double now, double atNone, double atAll, boolean log, String whole)` | One effect: its name, the scale, and today's figure with the old note behind its (i). |
+| 1329 | 23 | `VBox careStatement(CareType care)` | The old page's first block - covers, the people or places it serves, built, staffed, short by - as it was. |
 
-### EDUCATION (lines 1486-1580)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1507 | 34 | `List<Kpi> educationKpis(List<CityNeeds.Need> all)` |  |
-| 1555 | 5 | `boolean educationNotRunYet()` | True when a save has been loaded and no month has run since. |
-| 1561 | 19 | `void educationPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
-
-### the pipeline (lines 1581-1766)
+### death care (lines 1353-1486)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1591 | 2 | **type** `record SchoolNode(EducationType type, String ring, double arc, String ringTone, String line1, String line2,...` | One school as the pipeline draws it, worked out without drawing it: its ring - since 0.7.41 what it serves in the one verdict on it: a basic stage's coverage, a school above the ladder its seats over who would come (i... |
-| 1594 | 34 | `SchoolNode schoolNode(EducationType t, List<CityNeeds.Need> all)` |  |
-| 1635 | 1 | **type** `record Gate(String binding, String words)` | Which gate holds a course above the ladder, from the reads the course page draws its funnel from: no seats built (and how many would come), built and unstaffed, the seats, nobody able to afford it, or the students - w... |
-| 1637 | 18 | `Gate gate(EducationType t)` |  |
-| 1656 | 33 | `void educationOverview(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
-| 1691 | 7 | `static Node lane(HBox row)` | A lane of nodes that wraps rather than overflowing a narrow window. |
-| 1699 | 6 | `static Label chevron()` |  |
-| 1707 | 19 | `VBox node(SchoolNode n)` | One node of the pipeline: icon, name and ring; two lines; the gate as a chip. |
-| 1728 | 16 | `VBox diplomaNode()` | The ladder's end: the diplomas the school leavers took this month (Education.getNewDiplomas(), gross), or "not recorded yet" after a load. |
+| 1363 | 51 | `void deathCarePage(VBox page, List<CityNeeds.Need> all, List<Event> events)` | Death care, which is the one service in the game that is a STOCK. |
+| 1424 | 28 | `void deathNotices(VBox page)` | The two alerts the death care page always had - nowhere to bury them, filling up - as lines, on that page and on Health's Overview. |
+| 1454 | 8 | `String outbreakWhole()` | The outbreak's (i), as the old alert said it. |
+| 1464 | 22 | `VBox deathStatement()` | The old page's three blocks - this month, the ground, the crematoria - as they were, but for the ground's words. |
 
-### the basic ladder (lines 1767-1851)
+### EDUCATION (lines 1487-1581)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1777 | 50 | `void basicLadderPage(VBox page, List<CityNeeds.Need> all)` | The three stages a child passes through, and the one holding up the rest. |
-| 1829 | 22 | `javafx.scene.layout.GridPane ladderTable()` | The old ladder table: stage, to teach, seats, staffed, in class, served ("covered" until 0.7.41). |
+| 1508 | 34 | `List<Kpi> educationKpis(List<CityNeeds.Need> all)` |  |
+| 1556 | 5 | `boolean educationNotRunYet()` | True when a save has been loaded and no month has run since. |
+| 1562 | 19 | `void educationPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
 
-### a course (lines 1852-2141)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1863 | 7 | `void coursePage(VBox page, EducationType course, List<CityNeeds.Need> all)` | One adult course: why that many and not more. |
-| 1872 | 4 | `static String courseHead(EducationType course)` | A course's heading line: its length and who it takes. |
-| 1884 | 61 | `VBox courseView(EducationType course, boolean compact)` | The course's picture: the funnel (could enrol, willing, start a month, seats free, enrolling) with the gate that binds outlined, the two gauges (the wage return, who can afford it), and the cohort bars - or, for a cou... |
-| 1951 | 26 | `List<FunnelStep> courseSteps(EducationType course)` | A course's gates as funnel steps, worked out without drawing them: who could enrol, of whom willing, who start in a month, the seats free and who enrols - the old page's figures, from the same reads. |
-| 1998 | 15 | `static String affordNote(double afford)` | Who can afford it, in words. |
-| 2015 | 18 | `String returnNote(EducationType course, LabourMarket market, double back)` | What the wage return is actually comparing, in words. |
-| 2040 | 30 | `static VBox gauge(double share, String name, String info, double size)` | A gauge: half a ring, filled to a share (held to one - a return past a doubling is full participation already), its figure in the middle and its name under it, with its (i). |
-| 2072 | 19 | `void professionsPage(VBox page, List<CityNeeds.Need> all)` | The four schools that gate a job rather than raise a level, two by two. |
-| 2093 | 28 | `VBox courseStatement(EducationType course)` | The old course block's lines - the pipeline, the gates, the two things that move it - as they were. |
-| 2129 | 12 | `HBox tuitionLine(EducationType course)` | The price of a seat, and the dial that decides who pays it, in one line (0.7.28: "What a seat costs" and its three lines). |
-
-### UTILITIES (lines 2142-2391)
+### the pipeline (lines 1582-1777)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2166 | 26 | `List<Kpi> utilityKpis(List<CityNeeds.Need> all)` | SERVED (0.7.41): POWER, WATER and ROADS read what they serve, in the one verdict - they were the share supplied, held to 100%, and the road's flow, in NEEDS YOU's colour for the load (ui9's decision 5). |
-| 2193 | 11 | `void utilityPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
-| 2213 | 26 | `VBox roadCard(List<CityNeeds.Need> all)` | The road, as one card (0.7.29): its two figures as every screen writes them - "62% served · 56% flow" since 0.7.41 ("162% full" until then) - the first in the one verdict on what it serves, and the door to Infrastruct... |
-| 2248 | 4 | **type** `record UtilityRow(String name, String icon, String figure, String figureWords, String tone, double could, d...` | One capacity row, worked out without drawing it: its name and icon; the verdict figure - what it serves, unclamped, in the one verdict on it (0.7.41; the share supplied, held to 100%, in NEEDS YOU's colour for the loa... |
-| 2253 | 37 | `List<UtilityRow> utilityRows(List<CityNeeds.Need> all)` |  |
-| 2298 | 7 | `static String shortWords(double asked, double now, double could, java.util.function.DoubleFunction<String> unit)` | How short or spare a supply is, both ways (spec bug 17: the page's "Short by" was full staff against the draw and its alert was now against the draw, and neither said which): "short 38.9 MW now · 26.6 MW even fully st... |
-| 2307 | 37 | `VBox utilityCard(UtilityRow r)` | One capacity row: the name and its verdict figure; the bar with who draws it under it; how short, and the door. |
-| 2370 | 21 | `VBox utilityStatement(String key)` | A row's old lines, in its fold - kW for watts, and the homes for "resident draw". |
+| 1592 | 2 | **type** `record SchoolNode(EducationType type, String ring, double arc, String ringTone, String line1, String line2,...` | One school as the pipeline draws it, worked out without drawing it: its ring - since 0.7.41 what it serves in the one verdict on it: a basic stage's coverage, a school above the ladder its seats over who would come (i... |
+| 1595 | 34 | `SchoolNode schoolNode(EducationType t, List<CityNeeds.Need> all)` |  |
+| 1637 | 1 | **type** `record Gate(String binding, String words)` | Which gate holds a course above the ladder, from the reads the course page draws its funnel from: no seats built (how many would come, and since 0.7.51 the posts for them, CityNeeds.hires()), built and unstaffed, the ... |
+| 1639 | 20 | `Gate gate(EducationType t)` |  |
+| 1660 | 33 | `void educationOverview(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
+| 1695 | 7 | `static Node lane(HBox row)` | A lane of nodes that wraps rather than overflowing a narrow window. |
+| 1703 | 6 | `static Label chevron()` |  |
+| 1711 | 26 | `VBox node(SchoolNode n)` | One node of the pipeline: icon, name and ring; two lines; the gate as a chip. |
+| 1739 | 16 | `VBox diplomaNode()` | The ladder's end: the diplomas the school leavers took this month (Education.getNewDiplomas(), gross), or "not recorded yet" after a load. |
 
-### SAFETY (2026-09-11) (lines 2392-2687)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2407 | 21 | `List<Kpi> safetyKpis(List<CityNeeds.Need> all)` |  |
-| 2429 | 8 | `void safetyPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
-| 2444 | 14 | `List<Part> crimeParts()` | The crime's reasons as parts of the month's crime: Crime's own split (getCrimes(cause), each cause's share of the pressure), in the causes' order and the categories' colours - never a verdict's. |
-| 2460 | 69 | `void crimeOverview(VBox page, List<CityNeeds.Need> all)` | Where the crime comes from, and what the police and the cells are doing about it. |
-| 2531 | 7 | `HBox footDoors(String pageName, BuildAdvice.Measure m)` | A card's two doors: its page, and Build on its ring. |
-| 2540 | 5 | `static VBox didLine(String name, String value, String line)` | One line of what the crime did: a count, its name, and a smaller line. |
-| 2570 | 19 | `VBox causesTable()` | The old "Where it comes from" table: reason, adults, weight, crimes. |
-| 2591 | 40 | `void policePage(VBox page)` | What the police are doing, and what more of them would: with no police against with these, the officers, one more station. |
-| 2633 | 10 | `static HBox crimeRow(String name, double crimes, double scale, String colour)` | One of the police page's two bars: its name, the bar on the shared scale, the crimes a month. |
-| 2645 | 42 | `void prisonsPage(VBox page)` | Who is inside, and whether the city can hold who the police catch. |
-
-### THE BOOKS. (lines 2688-2712)
+### the basic ladder (lines 1778-1862)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2709 | 3 | `HBox bookRow(String label, double thousands, String tone)` | One line of a set of books: label, figure, and a colour when it matters. |
+| 1788 | 50 | `void basicLadderPage(VBox page, List<CityNeeds.Need> all)` | The three stages a child passes through, and the one holding up the rest. |
+| 1840 | 22 | `javafx.scene.layout.GridPane ladderTable()` | The old ladder table: stage, to teach, seats, staffed, in class, served ("covered" until 0.7.41). |
 
-### HEALTH (lines 2713-2859)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2715 | 18 | `void healthBooksPage(VBox page)` |  |
-| 2735 | 13 | `String pricedOutWords()` | ...and who the price turned away (2026-09-19): the dial is on the Policy tab's Health page; this line says what it did. |
-| 2755 | 104 | `VBox healthBooksStatement()` | The old Health books, every line: what care charges for, what it costs, where the money goes. |
-
-### EDUCATION (lines 2860-2963)
+### a course (lines 1863-2152)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2862 | 20 | `void educationBooksPage(VBox page)` |  |
-| 2890 | 73 | `VBox educationBooksStatement()` | The old Education books, every line but two: "Tuition the city covers" listed as a cost and the alert that the subsidy was counted twice. |
+| 1874 | 7 | `void coursePage(VBox page, EducationType course, List<CityNeeds.Need> all)` | One adult course: why that many and not more. |
+| 1883 | 4 | `static String courseHead(EducationType course)` | A course's heading line: its length and who it takes. |
+| 1895 | 61 | `VBox courseView(EducationType course, boolean compact)` | The course's picture: the funnel (could enrol, willing, start a month, seats free, enrolling) with the gate that binds outlined, the two gauges (the wage return, who can afford it), and the cohort bars - or, for a cou... |
+| 1962 | 26 | `List<FunnelStep> courseSteps(EducationType course)` | A course's gates as funnel steps, worked out without drawing them: who could enrol, of whom willing, who start in a month, the seats free and who enrols - the old page's figures, from the same reads. |
+| 2009 | 15 | `static String affordNote(double afford)` | Who can afford it, in words. |
+| 2026 | 18 | `String returnNote(EducationType course, LabourMarket market, double back)` | What the wage return is actually comparing, in words. |
+| 2051 | 30 | `static VBox gauge(double share, String name, String info, double size)` | A gauge: half a ring, filled to a share (held to one - a return past a doubling is full participation already), its figure in the middle and its name under it, with its (i). |
+| 2083 | 19 | `void professionsPage(VBox page, List<CityNeeds.Need> all)` | The four schools that gate a job rather than raise a level, two by two. |
+| 2104 | 28 | `VBox courseStatement(EducationType course)` | The old course block's lines - the pipeline, the gates, the two things that move it - as they were. |
+| 2140 | 12 | `HBox tuitionLine(EducationType course)` | The price of a seat, and the dial that decides who pays it, in one line (0.7.28: "What a seat costs" and its three lines). |
 
-### UTILITIES (lines 2964-3073)
+### UTILITIES (lines 2153-2417)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2966 | 28 | `void utilityBooksPage(VBox page)` |  |
-| 3007 | 4 | `double roadUpkeep()` | THE ROADS' REPAIR BILL, which until 2026-09-09 could only ever read ZERO. |
-| 3013 | 1 | `static double billedShare(double billed, double draw)` | The share of a draw that is billed: the measured share, where the books said "four fifths" (0.7.28). |
-| 3023 | 50 | `VBox utilityBooksStatement()` | The old utilities' books, every line - but: kW for watts; the unbilled draw is the homes and the city's own buildings, not "resident draw"; households are not billed, rather than "have no cash account" (they have bala... |
+| 2177 | 26 | `List<Kpi> utilityKpis(List<CityNeeds.Need> all)` | SERVED (0.7.41): POWER, WATER and ROADS read what they serve, in the one verdict - they were the share supplied, held to 100%, and the road's flow, in NEEDS YOU's colour for the load (ui9's decision 5). |
+| 2204 | 11 | `void utilityPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
+| 2224 | 26 | `VBox roadCard(List<CityNeeds.Need> all)` | The road, as one card (0.7.29): its two figures as every screen writes them - "62% served · 56% flow" since 0.7.41 ("162% full" until then) - the first in the one verdict on what it serves, and the door to Infrastruct... |
+| 2262 | 4 | **type** `record UtilityRow(String name, String icon, String figure, String figureWords, String tone, double could, d...` | One capacity row, worked out without drawing it: its name and icon; the verdict figure - what it serves, unclamped, in the one verdict on it (0.7.41; the share supplied, held to 100%, in NEEDS YOU's colour for the loa... |
+| 2267 | 38 | `List<UtilityRow> utilityRows(List<CityNeeds.Need> all)` |  |
+| 2313 | 7 | `static String shortWords(double asked, double now, double could, java.util.function.DoubleFunction<String> unit)` | How short or spare a supply is, both ways (spec bug 17: the page's "Short by" was full staff against the draw and its alert was now against the draw, and neither said which): "short 38.9 MW now · 26.6 MW even fully st... |
+| 2322 | 39 | `VBox utilityCard(UtilityRow r)` | One capacity row: the name and its verdict figure; the bar with who draws it under it; how short, and the door. |
+| 2392 | 25 | `VBox utilityStatement(String key)` | A row's old lines, in its fold - kW for watts, and the homes for "resident draw". |
 
-### SAFETY (lines 3074-3123)
+### SAFETY (2026-09-11) (lines 2418-2713)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3077 | 38 | `void safetyBooksPage(VBox page)` | What it costs. |
-| 3117 | 6 | `static String perHead(Crime crime, double police, double prisons)` | "$X an officer on shift a year, and $Y a prisoner a year" - the officers past the founding constabulary, which costs nothing. |
+| 2433 | 21 | `List<Kpi> safetyKpis(List<CityNeeds.Need> all)` |  |
+| 2455 | 8 | `void safetyPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
+| 2470 | 14 | `List<Part> crimeParts()` | The crime's reasons as parts of the month's crime: Crime's own split (getCrimes(cause), each cause's share of the pressure), in the causes' order and the categories' colours - never a verdict's. |
+| 2486 | 69 | `void crimeOverview(VBox page, List<CityNeeds.Need> all)` | Where the crime comes from, and what the police and the cells are doing about it. |
+| 2557 | 7 | `HBox footDoors(String pageName, BuildAdvice.Measure m)` | A card's two doors: its page, and Build on its ring. |
+| 2566 | 5 | `static VBox didLine(String name, String value, String line)` | One line of what the crime did: a count, its name, and a smaller line. |
+| 2596 | 19 | `VBox causesTable()` | The old "Where it comes from" table: reason, adults, weight, crimes. |
+| 2617 | 40 | `void policePage(VBox page)` | What the police are doing, and what more of them would: with no police against with these, the officers, one more station. |
+| 2659 | 10 | `static HBox crimeRow(String name, double crimes, double scale, String colour)` | One of the police page's two bars: its name, the bar on the shared scale, the crimes a month. |
+| 2671 | 42 | `void prisonsPage(VBox page)` | Who is inside, and whether the city can hold who the police catch. |
+
+### THE BOOKS. (lines 2714-2738)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2735 | 3 | `HBox bookRow(String label, double thousands, String tone)` | One line of a set of books: label, figure, and a colour when it matters. |
+
+### HEALTH (lines 2739-2886)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2741 | 18 | `void healthBooksPage(VBox page)` |  |
+| 2761 | 13 | `String pricedOutWords()` | ...and who the price turned away (2026-09-19): the dial is on the Policy tab's Health page; this line says what it did. |
+| 2782 | 104 | `VBox healthBooksStatement()` | The old Health books, every line: what care charges for, what it costs, where the money goes. |
+
+### EDUCATION (lines 2887-2990)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2889 | 20 | `void educationBooksPage(VBox page)` |  |
+| 2917 | 73 | `VBox educationBooksStatement()` | The old Education books, every line but two: "Tuition the city covers" listed as a cost and the alert that the subsidy was counted twice. |
+
+### UTILITIES (lines 2991-3100)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2993 | 28 | `void utilityBooksPage(VBox page)` |  |
+| 3034 | 4 | `double roadUpkeep()` | THE ROADS' REPAIR BILL, which until 2026-09-09 could only ever read ZERO. |
+| 3040 | 1 | `static double billedShare(double billed, double draw)` | The share of a draw that is billed: the measured share, where the books said "four fifths" (0.7.28). |
+| 3050 | 50 | `VBox utilityBooksStatement()` | The old utilities' books, every line - but: kW for watts; the unbilled draw is the homes and the city's own buildings, not "resident draw"; households are not billed, rather than "have no cash account" (they have bala... |
+
+### SAFETY (lines 3101-3150)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3104 | 38 | `void safetyBooksPage(VBox page)` | What it costs. |
+| 3144 | 6 | `static String perHead(Crime crime, double police, double prisons)` | "$X an officer on shift a year, and $Y a prisoner a year" - the officers past the founding constabulary, which costs nothing. |
 

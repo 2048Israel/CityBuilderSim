@@ -1,6 +1,6 @@
 # ConstructionScreen.java - 1,064 lines · 39 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/ConstructionScreen.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ConstructionScreen.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > The construction page (0.7.22): the builders' gauge, every site with its
 > order, its crews, its time and its money and the player's hand on it -
@@ -25,7 +25,7 @@
 > site. The cancel, the demolition and the buy-out ask first, with the
 > money in the dialog (UserInterface.confirm()).
 
-**Uses:** [Palette](Palette.md) (178), [Game](Game.md) (24), [ConstructionControl](ConstructionControl.md) (14), [BuildingManager](BuildingManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (6), [BuildingsStacks](BuildingsStacks.md) (4), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (2), [SafetyType](SafetyType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [EducationType](EducationType.md) (1), [CareType](CareType.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Palette](Palette.md) (178), [Game](Game.md) (24), [ConstructionControl](ConstructionControl.md) (14), [BuildingManager](BuildingManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (6), [BuildingsStacks](BuildingsStacks.md) (4), [LandManager](LandManager.md) (4), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (2), [SafetyType](SafetyType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [EducationType](EducationType.md) (1), [CareType](CareType.md) (1), [Sector](Sector.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 

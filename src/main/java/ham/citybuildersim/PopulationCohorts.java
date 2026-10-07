@@ -343,7 +343,7 @@ public class PopulationCohorts {
 
         if (t <= 0) {
             if (netArrivals > 0) {
-                seedFrom((int) Math.round(netArrivals));
+                seedFrom(Math.round(netArrivals));
                 lastMigration = netArrivals;
             }
             return;
@@ -402,7 +402,7 @@ public class PopulationCohorts {
      * small gap is growth: a city whose births exceed its deaths runs slightly
      * younger than a perfectly stationary one.
      */
-    private void seedFrom(int livePopulation) {
+    private void seedFrom(long livePopulation) {
         if (livePopulation <= 0) return;
 
         for (AgeBand b : AgeBand.values()) {

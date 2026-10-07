@@ -1,6 +1,6 @@
 # DecisionLog.java - 206 lines · 24 methods · 8 constants · model
 
-`ham/citybuildersim/DecisionLog.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DecisionLog.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > What the player decided, and when: every change of a policy and every
 > spend at scale, one short line each, at the month it was made (0.7.23).
@@ -45,7 +45,7 @@
 
 **Uses:** [Formats](Formats.md) (1)
 
-**Used by (22):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [CentralBank](CentralBank.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [Education](Education.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [LabourMarket](LabourMarket.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [TaxPolicy](TaxPolicy.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [YearBook](YearBook.md)
+**Used by (27):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [CentralBank](CentralBank.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DataSave](DataSave.md), [DebtManager](DebtManager.md), [Education](Education.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [TaxPolicy](TaxPolicy.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 

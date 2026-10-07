@@ -65,15 +65,17 @@ import static ham.citybuildersim.ui.Levers.*;
  * AND EVERY DIAL IS STILL A PROPOSAL UNTIL IT IS APPLIED (the spec's D4,
  * unchanged): the taxes' and the schools' dials stage into the tray at the
  * foot of the stage and one press applies them; the wage floor, the policy
- * rate and the promises' dials keep an Apply on their own card; the target,
- * the central bank's holdings and ceiling, the hand on the dial and the
- * subsidies apply at once; and a page change throws the staged set away.
+ * rate and the promises' dials keep an Apply on their own card; the target
+ * and since 0.7.52 how strictly the rule holds it, the central bank's
+ * holdings and ceiling, the hand on the dial and the subsidies apply at
+ * once; and a page change throws the staged set away.
  *
  * Split out of UserInterface on 2026-09-18. The shell reads which area and
  * page are open (policyArea, policyPage) for the rail and the scroll memory,
  * and other screens open a page by setting them and calling showPolicyMenu();
- * the transit fare on Infrastructure is staged with ownLadder() and
- * applied with applyFoot(), which is why they stay here. Every dial is drawn
+ * the transit fare on Infrastructure, and since 0.7.48 the fund's
+ * withdrawal on Finances, are staged with ownLadder() and applied with
+ * applyFoot(), which is why they stay here. Every dial is drawn
  * by one class, Ladder (0.7.6).
  */
 final class PolicyScreen {
@@ -127,7 +129,7 @@ final class PolicyScreen {
             {"Everything", "Profit", "Sales", "Wage", "Property"};
     static final String[] POLICY_WAGE_PAGES    = {"The floor"};
     static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
-    static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Health", "Schools", "Subsidies"};
+    static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Food", "Health", "Schools", "Subsidies"};
 
     /** Each page's icon on its tab, in the pages' order. */
     static final String[] TAX_ICONS = {Icons.OVERVIEW, Icons.SECTOR, Icons.SHOPS, Icons.STAFF, Icons.HOMES};
@@ -135,8 +137,8 @@ final class PolicyScreen {
     static final String[] WAGE_ICONS = {Icons.STAFF};
     /** ...Money's: the bank for the policy rate, the banknote for the currency reform. */
     static final String[] MONEY_ICONS = {Icons.BANK, Icons.BANKNOTE};
-    /** ...and the promises': the cane, the staff, health, education and the sector icon for the subsidies. */
-    static final String[] PROMISE_ICONS = {Icons.CANE, Icons.STAFF, Icons.HEALTH, Icons.EDUCATION, Icons.SECTOR};
+    /** ...and the promises': the cane, the staff, food, health, education and the sector icon for the subsidies. */
+    static final String[] PROMISE_ICONS = {Icons.CANE, Icons.STAFF, Icons.FOOD, Icons.HEALTH, Icons.EDUCATION, Icons.SECTOR};
 
     /** What the player has opened - a fold, a payer's own dial, the folded zero payers - by key, so a redraw on the clock leaves it open (Land's rule: kept while the game runs, not saved; the spec's D15). */
     final Set<String> openLines = new HashSet<>();
@@ -214,6 +216,7 @@ final class PolicyScreen {
                         case "Schools"     -> schoolsPage(page);
                         case "Subsidies"   -> subsidyPage(page);
                         case "Out of work" -> outOfWorkPage(page);
+                        case "Food"        -> foodPage(page);
                         case "Health"      -> healthPage(page);
                         default            -> pensionPage(page);
                     }
@@ -298,10 +301,10 @@ final class PolicyScreen {
                     + "multiple of it, so moving it moves all of them - and it is why unemployment exists in this "
                     + "game at all: a surplus at the floor cannot be priced away, so it leaves.";
             case MONEY -> "The price of money, and the units it is counted in: the policy rate under every other "
-                    + "rate in the city, the rule beside it, the central bank's holdings and its ceiling, and the "
-                    + "currency reform.";
-            case PROMISES -> "Pensions, EI, the clinic's price, school fees, and the sectors the city will not let "
-                    + "fail: what the city has promised, what it collects for it and what it costs.";
+                    + "rate in the city, the rule beside it, what people expect prices to do and how far they trust "
+                    + "the bank, the central bank's holdings and its ceiling, and the currency reform.";
+            case PROMISES -> "Pensions, EI, food assistance, the clinic's price, school fees, and the sectors the city "
+                    + "will not let fail: what the city has promised, what it collects for it and what it costs.";
             default -> "Each tax's own rate, and the moves off it by band and by sector. Profit, sales and wage tax "
                     + "each move off a base of their own; property is charged on what things are worth rather "
                     + "than on anything anybody earned.";
@@ -587,6 +590,7 @@ final class PolicyScreen {
             case "pension"       -> p.setPensionReplacement(v);
             case "eiPremium"     -> p.setEiPremiumRate(v);
             case "eiBenefit"     -> p.setEiBenefitRate(v);
+            case "foodAssistance" -> p.setFoodAssistance(v);
             case "healthFee"     -> p.setHealthFeeScale(v);
             case "healthPremium" -> p.setHealthPremiumRate(v);
             default -> { }
@@ -719,8 +723,9 @@ final class PolicyScreen {
     /**
      * The lever itself: a Ladder (0.7.6) that STAGES a change rather than
      * making one, for a dial that keeps its own Apply - the wage floor, the
-     * policy rate, the pension's two, EI's two, the clinic's two, and the
-     * fare on Infrastructure (on its own dial card since 0.7.38). Handed
+     * policy rate, the pension's two, EI's two, the clinic's two, the
+     * fare on Infrastructure (on its own dial card since 0.7.38) and the
+     * fund's withdrawal on Finances (0.7.48). Handed
      * back unbuilt for a dial card to mark, track and build.
      *
      * Dropping the thumb back where it started clears the proposal rather than
@@ -749,7 +754,7 @@ final class PolicyScreen {
     /**
      * Apply, or put it back (0.7.34's action button since 0.7.36: a GO in
      * the money blue that says what it sets, and "Leave it as it is" beside it). The
-     * fare on Infrastructure has it too.
+     * fare on Infrastructure and the fund's withdrawal on Finances have it too.
      */
     HBox applyBar(String label, Runnable apply) {
         Pieces.ActionButton go = actionButton(Icons.TICK, Palette.MONEY, ACTION_INLINE,
@@ -790,6 +795,17 @@ final class PolicyScreen {
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, tone));
         return l;
+    }
+
+    /**
+     * A Pe-struck price's sentence for an (i) (0.7.45; the UI spec's D13):
+     * the level its founding figure is struck at this month - never set
+     * against the index, which an old save's level of 1 would misread.
+     */
+    String struckWords(String what) {
+        return String.format(" Every %s here is its founding figure struck at ×%.3f this month (what money constants"
+                + " are struck at): it follows what people expect prices to be, not what they were.", what,
+                ui.game.getExpectations().getStruckLevel());
     }
 
     /** A card's head: its icon in a square tinted in its colour, its title in capitals, an (i) when `info` is not null, and at its right `right` (null: nothing) - BankScreen's. */
@@ -1105,10 +1121,11 @@ final class PolicyScreen {
         VBox picture = new VBox(3, segmentBar(List.of(), top, ticks, 0, 6),
                 muted("dial " + pct2(dial) + (Double.isFinite(rule) ? " · rule " + pct2(rule) : "")
                         + " · city " + pct2(city) + " · world " + pct2(world)));
+        // ...and the anchor (0.7.45): what people expect, and how far they trust the bank.
+        String anchor = "expect " + rate1(ui.game.getExpectedInflation()) + " · trust " + trust(ui.game.getCredibility());
         String line = px.hasRate()
-                ? "the rule says " + pct2(rule) + " · inflation " + signedPct1(px.inflation()) + " against "
-                  + DebtManager.targetWords(market.getInflationTarget())
-                : "no year of prices yet, so the rule has nothing to say";
+                ? "the rule says " + pct2(rule) + " · " + anchor
+                : "no year of prices yet, so the rule has nothing to say · " + anchor;
         return areaCard(Icons.BANK, "MONEY", pct2(dial), picture, line,
                 market.isAutopilot() ? "in the rule's hand" : "in your hand", () -> open(MONEY, "The policy rate"));
     }
@@ -1120,14 +1137,22 @@ final class PolicyScreen {
                 new Slice("The pension gap", p.pensionGap(), Palette.MONEY_DARK),
                 new Slice("EI past its premiums", p.eiPastPremiums(), Palette.MONEY),
                 new Slice("Sectors kept alive", p.subsidies(), Palette.MONEY_LIGHT),
-                new Slice("Students' grants", p.grants(), Palette.RAMP_REST));
+                new Slice("Students' grants", p.grants(), Palette.RAMP_REST),
+                // Its own colour (0.7.45; the UI spec's B15): it shared the grants' grey.
+                new Slice("Food assistance", p.foodAssistance(), Palette.PEOPLE_LIGHT));
         int protectedCount = 0;
         for (Sector s : ui.game.getSectors().all()) if (ui.game.isAutoSubsidised(s)) protectedCount++;
         return areaCard(Icons.POPULATION, "PROMISES", money(p.total()) + " a month", sliceBar(parts),
                 em.getPensionsPaid() > 0 ? "contributions cover " + pct0(em.getPensionCoverage()) + " of pensions"
                         : "no pension is being paid",
                 protectedCount == 0 ? "no sector protected" : protectedCount + (protectedCount == 1 ? " sector" : " sectors") + " protected",
-                () -> open(PROMISES, "Pensions"));
+                () -> open(PROMISES, promisesDoor(p)));
+    }
+
+    /** Where the PROMISES card opens (0.7.45): Food when the vouchers are the largest slice, else Pensions. */
+    static String promisesDoor(PolicyPreview.Promises p) {
+        double largest = Math.max(Math.max(p.pensionGap(), p.eiPastPremiums()), Math.max(p.subsidies(), p.grants()));
+        return p.foodAssistance() > 0 && p.foodAssistance() > largest ? "Food" : "Pensions";
     }
 
     /** Slices as one bar filling its card, each part's name and money its tooltip (a part below nothing draws nothing). */
@@ -1183,8 +1208,8 @@ final class PolicyScreen {
         PriceIndex px = ui.game.getPriceIndex();
 
         /* --------------------------- the wage floor ---------------------------
-         * isPinned() as the model has it (the spec's D7: until B8 is decided,
-         * the screen does not disagree with the model).
+         * isPinned() as the model has it (the spec's D7), against the floor in
+         * today's money since 0.7.47 (the model fixes' B8).
          */
         for (WageBand band : WageBand.values()) {
             double surplus = people.surplusInBand(band);
@@ -1268,6 +1293,18 @@ final class PolicyScreen {
                         px.inflation() * 100, DebtManager.targetWords(market.getInflationTarget())),
                         MONEY, "The policy rate", "The policy rate"));
             }
+        }
+
+        /* ----------------------- trust in the bank (0.7.45) -----------------------
+         * NEEDS YOU's PRICES row, on the same condition: trust fell this month.
+         */
+        CityNeeds.Need trust = CityNeeds.prices(ui.game);
+        if (trust.level() > 0) {
+            out.add(new Flag(trust.level() >= 2 ? Palette.BAD : Palette.WARN, "Trust is falling",
+                    "People trust the bank " + trust(ui.game.getCredibility()) + ", and less this month: "
+                    + trust.reading().replace("trust falling: ", "") + ". What they expect follows prices the less they"
+                    + " trust it, and every wage and fee follows what they expect; leaning the rate against the miss"
+                    + " stops the fall.", MONEY, "The policy rate", "The policy rate"));
         }
 
         /* ---------------------------- the money itself ---------------------------- */
@@ -1593,9 +1630,10 @@ final class PolicyScreen {
 
     /** P9, the offsets' note. */
     static final String OFFSET_INFO = "A move is in POINTS off the tax's own rate, so a row left at zero is taxed "
-            + "at exactly that rate and follows it wherever it goes. The offsets are capped at "
-            + String.format("%.0f", TaxPolicy.MAX_OFFSET * 100) + " points either way; a property offset's dial stops at "
-            + String.format("%.0f", TaxPolicy.MAX_PROPERTY_TAX * 100) + ".";
+            + "at exactly that rate and follows it wherever it goes. A wage, profit or sales offset is capped at "
+            + String.format("%.0f", TaxPolicy.MAX_OFFSET * 100) + " points either way, a property offset at "
+            + String.format("%.0f", TaxPolicy.MAX_PROPERTY_TAX * 100) + ": the property rate itself is held between 0 and "
+            + String.format("%.0f", TaxPolicy.MAX_PROPERTY_TAX * 100) + "%, so no offset past that could move it.";
 
     /** A tax's base on a dial card: what it raises and THE BUDGET before and after (and, for profit, the bank at Retail's rate - B5). */
     VBox baseCard(String which, TaxPolicy live) {
@@ -2081,7 +2119,7 @@ final class PolicyScreen {
        spec's D6 and B7: the tab printed the founding figure as a wage - the
        floor read $3,460 where the unskilled job is paid $3,827); each band
        says whether it is pinned, as the model reads it (D7: LabourMarket
-       .isPinned() is left as it is until B8 is decided). A staged floor
+       .isPinned(), against the floor in today's money since 0.7.47, B8). A staged floor
        moves a ghost rule, and each job's ghost bar is where its wage heads
        at the new floor. Then the dial on its card, beside the city's own
        payroll.
@@ -2239,6 +2277,16 @@ final class PolicyScreen {
        world's - and a staged dial's rates as ghosts; under it what the city
        pays over the world, plain and real. Then three cards: THE DIAL, THE
        RULE, THE CENTRAL BANK. Then the prices.
+
+       WILL PEOPLE BELIEVE IT (0.7.45; the UI spec's D5): since 0.7.42 what
+       people expect prices to do is what the wages and every money constant
+       follow, and how far they trust the bank decides what they expect. So
+       the page asks that before it asks where the rate is: the rate line,
+       then THE ANCHOR - expected inflation, the bank's credibility, how it
+       moved and whether the rate leans against the miss - beside THE
+       CURRENCY'S DRIFT, the credible part of expected inflation the currency
+       slides at; then the three cards; then the prices, with the basket the
+       index is struck on.
        ===================================================================== */
 
     /** The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. */
@@ -2288,10 +2336,17 @@ final class PolicyScreen {
             + "Against what the city actually pays (2026-09-12), not against the dial: hot money reads the city's "
             + "rate and the bank's deposit rate.";
 
-    /** P28's second half: the real differential. */
-    static final String REAL_INFO = "The currency follows this one: a dial under inflation is a real rate "
-            + "the world is paid to leave, and it pushes the currency down however high "
-            + "the number on the dial is. The dial less inflation, against the world's rate less its own.";
+    /** P28's second half: the real differential - against the inflation people expect since 0.7.42 (the UI spec's B9). */
+    static final String REAL_INFO = "The currency follows this one: a dial under the inflation people expect is a "
+            + "real rate the world is paid to leave, and it pushes the currency down however high "
+            + "the number on the dial is. The dial less the inflation people expect, against the world's rate less "
+            + "its own inflation.";
+
+    /** The dial's own real rate (0.7.45): REAL_INFO's first half, for the dial alone. */
+    static final String REAL_DIAL_INFO = "The dial less the inflation people expect: what saving at the dial earns "
+            + "in what money buys, and what borrowing at it really costs. Under nothing, prices pay the borrower and "
+            + "charge the saver; it is the real rate the currency and the households answer to. Struck against what "
+            + "people expect, not last year's prices, as every real rate here is.";
 
     void ratePage(VBox page) {
         DebtManager market = ui.game.getDebtManager();
@@ -2306,7 +2361,12 @@ final class PolicyScreen {
                 rateCell("OVER THE WORLD", points(market.overTheWorld()), moved
                         ? "→ " + points(market.overTheWorldAt(want)) + " at the staged dial" : "the city's rate less the world's " + pct2(DebtManager.WORLD_BASE_RATE), OVER_INFO),
                 rateCell("REAL, AGAINST THE WORLD", points(ui.game.realRateDifferential()),
-                        "the dial less inflation, against the world's", REAL_INFO))));
+                        "the dial less expected inflation, against the world's", REAL_INFO),
+                rateCell("REAL, THE DIAL", points(ui.game.realPolicyRate()),
+                        "the dial less the " + pct2(ui.game.getExpectedInflation()) + " people expect", REAL_DIAL_INFO))));
+
+        // Will people believe it (0.7.45): the anchor, and the drift it hands the currency.
+        page.getChildren().add(split(anchorCard(), driftCard(), 2.0 / 3));
 
         VBox dial = theDialCard(market, px, rate, want);
         VBox rule = ruleCard(market, px);
@@ -2332,12 +2392,17 @@ final class PolicyScreen {
                         new TimeChart.Line("priceIndex", "price level", Palette.MONEY_LIGHT, 0, h.aligned("priceIndex"),
                                 v -> HistoryScreen.plotScale("index", v), v -> ui.historyScreen.fmtUnit("index", v), ""),
                         new TimeChart.Line("policyRate", "the policy rate", Palette.MONEY, 1, h.aligned("policyRate"),
-                                v -> HistoryScreen.plotScale("percent", v), Money::pct2, "")),
+                                v -> HistoryScreen.plotScale("percent", v), Money::pct2, ""),
+                        // ...and what people expected (0.7.45), dashed: where the rate was aimed against.
+                        new TimeChart.Line("expectedInflation", "expected inflation", Palette.TEXT_2, 1,
+                                h.aligned("expectedInflation"), v -> HistoryScreen.plotScale("percent", v), Money::pct2, "")
+                                .asDashed()),
                 HistoryScreen.axisFor("index"), HistoryScreen.axisFor("percent"), false, false, null, List.of(),
                 List.of(), List.of(), "no months recorded yet");
         chart.setSize(1100, 180);
         FlowPane key = new FlowPane(14, 4, keySwatch(Palette.MONEY_LIGHT, "the price level, founding = 1 (left)"),
-                keySwatch(Palette.MONEY, "the policy rate (right)"));
+                keySwatch(Palette.MONEY, "the policy rate (right)"),
+                keySwatch(Palette.TEXT_2, "expected inflation, dashed (right; recorded since 0.7.42)"));
         return new VBox(4, chart, key);
     }
 
@@ -2367,18 +2432,29 @@ final class PolicyScreen {
         Bank bank = ui.game.getBank();
         List<RateMark> out = new ArrayList<>();
         double target = market.getInflationTarget();
+        Expectations e = ui.game.getExpectations();
         if (px.hasRate()) {
             double inflation = px.inflation();
+            // Amber on what trust is judged on (0.7.45; the UI spec's D4): the year's rate smoothed, against
+            // Expectations.TOLERANCE - the model's own line for "on target". The header keeps Jerus's 3 and 5 points.
             out.add(new RateMark(inflation, "inflation " + signedPct1(inflation),
-                    Math.abs(inflation - target) > .01 ? Palette.WARN : Palette.TEXT_LABEL, false,
-                    "Inflation, year on year: " + signedPct1(inflation)));
+                    offTarget(e, target) ? Palette.WARN : Palette.TEXT_LABEL, false,
+                    "Inflation, year on year: " + signedPct1(inflation) + "; smoothed over a year, what trust in the bank"
+                    + " is judged on: " + signedPct1(e.getSmoothedInflation())));
             out.add(new RateMark(market.advisedPolicyRate(inflation), "rule " + pct2(market.advisedPolicyRate(inflation)),
                     Palette.TEXT_LABEL, true, "What the rule would set at this inflation"
                     + (Math.abs(market.ruleRate(inflation) - market.advisedPolicyRate(inflation)) > 1e-9
                         ? " - it says " + pct2(market.ruleRate(inflation)) + ", and the dial stops there" : "")));
         }
         out.add(new RateMark(target, "target " + DebtManager.targetWords(target), Palette.TEXT_MUTED, true,
-                "The inflation target the rule aims at"));
+                market.getStrictness() == DebtManager.Strictness.STANDARD ? "The inflation target the rule aims at"
+                        : "The inflation target: the rule " + market.aimWords()));
+        // What people expect, and the rate the rule sets on target (0.7.45).
+        out.add(new RateMark(e.getExpectedInflation(), "expected " + rate1(e.getExpectedInflation()), Palette.TEXT_LABEL, true,
+                "What people expect inflation to be: " + rate1(e.getExpectedInflation()) + " a year"));
+        out.add(new RateMark(market.neutralRate(), "neutral " + pct2(market.neutralRate()), Palette.TEXT_MUTED, true,
+                "The neutral rate, the neutral real " + pct0(DebtManager.NEUTRAL_RATE - DebtManager.DEFAULT_INFLATION_TARGET)
+                + " plus the target: " + pct2(market.neutralRate()) + " - what the rule sets on target at Standard"));
         out.add(new RateMark(rate, "dial " + pct2(rate), Palette.MONEY, false, "The policy rate: your dial"));
         out.add(new RateMark(bank.depositRate(), "savers " + ratePct(bank.depositRate()), Palette.PEOPLE, false,
                 "What savers were paid last month"));
@@ -2439,7 +2515,7 @@ final class PolicyScreen {
                 + "basket a head. A deposit rate over inflation pays people to wait, and what they do not spend "
                 + "is demand the shops do not see; one under it pays them to buy now. Only what "
                 + "is above a basket a head moves, and never below %.0f%% or past %.0f%% of it. Savers earn %s "
-                + "after inflation now.", ui.game.spendFactor() * 100,
+                + "after the inflation they expect.", ui.game.spendFactor() * 100,
                 HouseholdBalance.SPEND_FLOOR * 100, HouseholdBalance.SPEND_CEILING * 100,
                 signedPct1(ui.game.realDepositRate()));
     }
@@ -2502,7 +2578,8 @@ final class PolicyScreen {
      * THE RULE (R6): what it aims at - the target, set at once by its chips
      * and its ladder (0.7.4: it moves no price this month, only what the rule
      * says) - and what it says at two targets, and inflation against the
-     * target as a bar in its band.
+     * target as a bar in its band; and since 0.7.52 how strictly it holds the
+     * target, a ladder of five steps under the target's (strictPart()).
      */
     VBox ruleCard(DebtManager market, PriceIndex px) {
         double target = market.getInflationTarget();
@@ -2524,17 +2601,37 @@ final class PolicyScreen {
         double otherTarget = target > 1e-9 ? 0 : DebtManager.DEFAULT_INFLATION_TARGET;
         String reason = px.hasRate() ? market.adviceReason(inflation)
                 : "There is not yet a year of prices to measure inflation against. The rule has nothing to say until there is.";
+        // A point of target moves the rule's rate by 1 - TAYLOR_WEIGHT at any inflation since 0.7.42
+        // (DebtManager.ruleRate(): the target lifts the neutral rate a point, and the gap it fights
+        // TAYLOR_WEIGHT times over falls a point) - the UI spec's B8: it said TAYLOR_WEIGHT. Since 0.7.52
+        // the weight is the strictness's, and a loose step's band moves with the target too. At a target
+        // nearer MIN_INFLATION_TARGET than a strict step's slack, the step's aim is held there, so a point
+        // of target moves it less than a point (aimHeld): the sentence says from which target up it holds.
+        DebtManager.Strictness how = market.getStrictness();
+        double perPoint = 1 - how.weight;
+        boolean aimHeld = how.slack < 0 && target + how.slack < DebtManager.MIN_INFLATION_TARGET;
         String whole = reason + " " + String.format(
-                "The rule aims prices here. At %s with inflation at %.1f%% it sets %.1f%%; at %s "
-                + "it would set %.1f%%. A point of target is %.1f points off the rule's rate at "
-                + "any inflation - the same slope, aimed somewhere else.",
+                "%s At %s with inflation at %.1f%% it sets %.1f%%; at %s "
+                + "it would set %.1f%%. A point more of target sets the rule's rate %s %s at any "
+                + "inflation%s: it lifts the neutral rate a point, and the gap the rule fights %s times over falls "
+                + "a point. On target it sets %s.",
+                how.aim(target) < target ? "The rule aims prices under here." : "The rule aims prices here.",
                 DebtManager.targetWords(target), example * 100, market.ruleRate(example) * 100,
                 DebtManager.targetWords(otherTarget), market.ruleRate(example, otherTarget) * 100,
-                DebtManager.TAYLOR_WEIGHT);
+                pointsOf(Math.abs(perPoint)), perPoint < 0 ? "lower" : "higher",
+                how.band() > 0 ? " past its band (inside it, a point higher)"
+                        : aimHeld ? " from a " + DebtManager.targetWords(DebtManager.MIN_INFLATION_TARGET - how.slack)
+                                + " target up (under it, its aim is held at "
+                                + DebtManager.targetWords(DebtManager.MIN_INFLATION_TARGET) + ")" : "",
+                plain(how.weight),
+                how == DebtManager.Strictness.STANDARD ? "the neutral rate, " + pct2(market.neutralRate())
+                        : pct2(market.ruleRate(target)) + ", the neutral rate being " + pct2(market.neutralRate()));
         VBox c = card(cardHead(Icons.POLICY, Palette.MONEY, "THE RULE", whole, null),
                 figure(DebtManager.targetWords(target) + " a year", Palette.SIZE_LEAD, Palette.TEXT_HEAD),
-                muted("the inflation target it aims at · set at once"),
+                muted(how.aim(target) < target ? "the inflation target it aims under · set at once"
+                        : "the inflation target it aims at · set at once"),
                 line(firstWords(reason), reason));
+        c.getChildren().add(cardLine("On target it sets", pct2(market.ruleRate(target)), null));
         if (px.hasRate()) {
             double advised = market.advisedPolicyRate(inflation), ruleSays = market.ruleRate(inflation);
             c.getChildren().add(cardLine("What the rule would set", pct2(ruleSays), null));
@@ -2543,16 +2640,72 @@ final class PolicyScreen {
                         pct2(advised), null));
             }
             c.getChildren().add(cardLine("Inflation, year on year", signedPct1(inflation), null));
-            c.getChildren().add(bandBar(inflation, target - .01, target, target + .01,
-                    Math.abs(inflation - target) > .01 ? Palette.WARN : Palette.MONEY, 0, 10, true,
-                    "Inflation " + signedPct1(inflation) + " against the target " + DebtManager.targetWords(target)
-                    + " and a point either side of it"));
+            // The band reads what trust is judged on (0.7.45; the UI spec's D4): the year's rate smoothed,
+            // a TOLERANCE either side of the target.
+            Expectations e = ui.game.getExpectations();
+            double smoothed = e.getSmoothedInflation();
+            c.getChildren().add(cardLine("...smoothed over a year", signedPct1(smoothed), null));
+            c.getChildren().add(bandBar(smoothed, target - Expectations.TOLERANCE, target, target + Expectations.TOLERANCE,
+                    offTarget(e, target) ? Palette.WARN : Palette.MONEY, 0, 10, true,
+                    "Inflation smoothed over a year, " + signedPct1(smoothed) + ", against the target "
+                    + DebtManager.targetWords(target) + " and the point either side of it that trust counts as on target"));
         }
         c.getChildren().add(muted(String.format("at %s it sets %s · at %s %s", DebtManager.targetWords(target),
                 pct2(market.ruleRate(example)), DebtManager.targetWords(otherTarget), pct2(market.ruleRate(example, otherTarget)))
                 + (px.hasRate() ? "" : " (on 5% inflation, as an example)")));
-        c.getChildren().addAll(chips, ladder);
+        c.getChildren().addAll(chips, ladder, strictPart(market));
         return c;
+    }
+
+    /** A weight or a move in points as it is: "1.5", "1.375", "2" - one place would read 1.375 as 1.4. */
+    static String plain(double v) { return java.math.BigDecimal.valueOf(v).stripTrailingZeros().toPlainString(); }
+
+    /** ...as points: "1 point", "1.25 points". */
+    static String pointsOf(double v) { return plain(v) + (v == 1 ? " point" : " points"); }
+
+    /* ----- HOW STRICT (0.7.52): the dial beside the target - DebtManager's HOW STRICT ----- */
+
+    /** HOW STRICT's (i): what each end does, from the model's own numbers. */
+    static String strictInfo() {
+        return String.format("How strictly the bank holds the target. Standard is the rule as it was before this dial. Strict "
+                + "aims under the target and treats it as a ceiling, answering inflation over its aim harder; very strict "
+                + "aims %s under, never under 0%%, and answers each point over it with %s of rate. Loose lets inflation "
+                + "be inside a band either side of the target and answers only what is past it, more gently; very "
+                + "loose's band is %s each way, and it answers each point past it with %s of rate. Trust is still "
+                + "judged on the target itself, and the lean that spares it is measured against what holding the "
+                + "target takes - so a looser bank loses trust as far as it falls short. It moves no price this "
+                + "month, only what the rule says, and the dial with it while the rule holds the dial.",
+                pointsOf(DebtManager.STRICTEST_AIM * 100), pointsOf(DebtManager.STRICTEST_WEIGHT),
+                pointsOf(DebtManager.LOOSEST_BAND * 100), pointsOf(DebtManager.LOOSEST_WEIGHT));
+    }
+
+    /** The preview's words at a step (pure: the probe reads them): "Very strict: aims under 2.0%, at 1.0% · on target it sets 4.00% · at this inflation 5.10%". */
+    static String strictWords(PolicyPreview.RuleAt r) {
+        return r.step().words + ": " + r.aims() + " · on target it sets " + pct2(r.onTarget())
+                + (Double.isNaN(r.advised()) ? "" : " · at this inflation " + pct2(r.advised()));
+    }
+
+    /** The step under a ladder's thumb. */
+    static DebtManager.Strictness strictAt(double v) { return DebtManager.Strictness.at((int) Math.round(v)); }
+
+    /**
+     * HOW STRICT (0.7.52): Jerus's dial beside the target, its five steps on
+     * a Ladder set at once like the target's, and under it what the bank
+     * would aim at and what the rule would set at the step under the thumb
+     * (PolicyPreview.ruleAt()), following it as it is dragged.
+     */
+    VBox strictPart(DebtManager market) {
+        DebtManager.Strictness now = market.getStrictness();
+        Label says = words(strictWords(PolicyPreview.ruleAt(ui.game, now)), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
+        VBox ladder = Ladder.of(0, DebtManager.Strictness.values().length - 1, 1, v -> strictAt(v).words)
+                .current(now.ordinal())
+                .stepReads(v -> "one setting")
+                .onTrack(v -> says.setText(strictWords(PolicyPreview.ruleAt(ui.game, strictAt(v)))))
+                .appliesAtOnce(v -> { market.setStrictness(strictAt(v)); showPolicyMenu(); })
+                .wide(360).build();
+        HBox head = new HBox(Palette.GAP_TIGHT, muted("how strictly it holds it · set at once"), infoButton(strictInfo(), true));
+        head.setAlignment(Pos.CENTER_LEFT);
+        return new VBox(4, head, ladder, says);
     }
 
     /** P35, both layers. */
@@ -2569,9 +2722,14 @@ final class PolicyScreen {
                 + "market's price, as the Fed rolls its own. What it holds past its dial is repaid "
                 + "instead, and so is what last year's surplus pays off. It never lends the treasury "
                 + "new money that way: that is the advances' line. The book moves a quarter of the way to the dial "
-                + "a month, from the next press.",
+                + "a month, from the next press. (What the model does: it swaps paper for money; it does not lend to "
+                + "the shops.)",
                 CentralBank.FULL_COMPRESSION_SHARE * 100, market.compression(360) * 100);
     }
+
+    /** How QE reaches prices, in one plain line on the holdings card (0.7.45; the UI spec's D20). */
+    static final String QE_LINE = "Buys term paper only: it reaches prices through what people own and through the "
+            + "currency, not through the shops.";
 
     /** THE CENTRAL BANK's holdings (R8): the share of the term paper it aims to hold, set at once; the thirty-year rate once the book has moved there (M9). */
     VBox holdingsCard(DebtManager market) {
@@ -2590,7 +2748,8 @@ final class PolicyScreen {
         return dialCard(new DialCard(Icons.SAFE, Palette.MONEY, "THE CENTRAL BANK: ITS HOLDINGS", holdingsInfo(),
                 pct0(cb.getTargetShare()) + " of the term paper",
                 "holds " + money(cb.getPaperHeld()) + ", " + pct0(market.centralBankShareOfTerm()) + " of it · set at once",
-                List.of(chips), ladder, cb.getTargetShare(), effects, null, null, null), 360, true);
+                List.of(words(QE_LINE, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL), chips), ladder, cb.getTargetShare(),
+                effects, null, null, null), 360, true);
     }
 
     /** The holdings' effects at any value of its thumb (pure: the probe reads them). */
@@ -2637,15 +2796,228 @@ final class PolicyScreen {
                 Effect.of("The ceiling", cb.ceiling(), cb.ceilingAt(v), PolicyScreen::amount).delta(PolicyScreen::moneyMove));
     }
 
+    /* ----------------------- THE ANCHOR AND THE DRIFT (0.7.45) -----------------------
+       The UI spec's 2.2 item 2. Expectations, read: what people expect,
+       how far they trust the bank and how that moved this month, whether the
+       rate leans against a miss, and the level every money constant is
+       struck at; and the drift that trust hands the currency. Every figure a
+       getter; the words pure, for the probe. */
+
+    /** True when what trust is judged on - inflation smoothed over a year - is off the target by more than Expectations.TOLERANCE: the rate line's inflation tick and the rule's band go amber (the UI spec's D4). */
+    static boolean offTarget(Expectations e, double target) { return Math.abs(e.missFrom(target)) > Expectations.TOLERANCE; }
+
+    /** THE ANCHOR's (i): Expectations, in a player's words. */
+    static final String ANCHOR_INFO = "What people expect prices to do decides what they do next. Wages are asked "
+            + "for half on what people expect and half on what prices did; every fee, build cost and upkeep, the "
+            + "price of land, the shelf's floor, the pension's wage base, the fare and the grants are struck each "
+            + "month at the price level people expect. What they expect is a blend: your target, weighted by how far "
+            + "they trust the bank, and inflation lately, weighted by the rest. Trust is won slowly while inflation, "
+            + "smoothed over a year, sits on the target, and lost while it misses - unless the policy rate leans "
+            + "against the miss: set at the rule's advice, a miss costs no trust at all, whatever caused it. The lean "
+            + "is measured against what holding the target takes - the Standard rule's advice, however strict the "
+            + "bank - so a looser bank loses trust as far as it falls short.";
+
+    /** The struck level's (i). */
+    static final String STRUCK_INFO = "Fees, build costs and upkeep, land, the shelf's floor, the pension's wage base, "
+            + "the fare and the grants follow what people expect prices to be, not what they were. Each is its "
+            + "founding figure times this level, struck at the top of every month.";
+
+    /** THE CURRENCY'S DRIFT's (i). */
+    static final String DRIFT_INFO = "The currency slides every month by the credible part of the "
+            + "inflation people expect, against the world's: your target, weighted by how far people trust the bank, "
+            + "against the world's own inflation - a twelfth of the year's slide a month. On top of it the month's "
+            + "trade pushes the rate and the basket pulls it back towards parity; a real rate held under the world's "
+            + "holds it weaker than parity for as long as it lasts. Trade › The currency shows all three.";
+
+    /** The anchor's words, worked out without drawing them (pure: the probe reads them). */
+    record AnchorWords(String figure, double trust, String trustWords, String move, String moveTone, String lean,
+                       String judged, String struck) { }
+
+    AnchorWords anchorWords() {
+        Game g = ui.game;
+        Expectations e = g.getExpectations();
+        double target = g.getDebtManager().getInflationTarget();
+        boolean based = g.getPriceIndex().isBased();
+        double step = e.getCredibilityStep();
+        String move;
+        if (!based) move = "waiting: the basket is not fixed yet";
+        else if (step > 0) move = "rising " + stepPts(step) + " a month";
+        else if (step < 0) move = "falling " + stepPts(step) + " a month";
+        else move = e.getCredibility() >= Expectations.KMAX - 1e-9 ? "at its most" : "steady this month";
+        int level = CityNeeds.prices(g).level();
+        String moveTone = step < 0 ? (level >= 2 ? Palette.BAD : Palette.WARN) : Palette.TEXT_LABEL;
+        double miss = e.missFrom(target);
+        String lean;
+        if (!based) lean = "the target, until the basket is fixed";
+        else if (!offTarget(e, target)) lean = "on target: trust builds";
+        else if (e.getLean() >= .995) lean = "leaning against it";
+        else if (e.getLean() > 0) lean = "leaning " + pct0(e.getLean()) + " of the way";
+        else lean = notLeaningWords(g, miss);
+        String judged = based
+                ? String.format("What trust is judged on: inflation smoothed over a year, %s (%.1f pts %s the %s target)",
+                        rate2(e.getSmoothedInflation()), Math.abs(miss) * 100, miss >= 0 ? "over" : "under",
+                        DebtManager.targetWords(target))
+                : "What trust is judged on: inflation smoothed over a year, once the basket is fixed - until then "
+                  + "everyone expects the target";
+        String struck = String.format("Money constants are struck at ×%.3f their founding figures this month"
+                + " (×%.3f expected next)", e.getStruckLevel(), e.getExpectedLevel());
+        return new AnchorWords(rate2(e.getExpectedInflation()) + " expected", e.getCredibility(),
+                "trust " + trust(e.getCredibility()), move, moveTone, lean, judged, struck);
+    }
+
+    /**
+     * Why the month's lean is nothing, on the model's own condition
+     * (Expectations.takeMonth()): the lean counts only when the advice that
+     * holds the target - the Standard rule's at any strictness since 0.7.52
+     * (DebtManager.holdingRate()), which reads the year's rate - points
+     * against the smoothed miss, and then only as far as the dial stands past
+     * neutral toward it.
+     */
+    static String notLeaningWords(Game g, double miss) {
+        DebtManager market = g.getDebtManager();
+        PriceIndex px = g.getPriceIndex();
+        double target = market.getInflationTarget(), neutral = market.neutralRate();
+        // The lean's own yardstick since 0.7.52: what holding the target takes - the Standard rule's advice.
+        double rule = market.holdingRate(px.hasRate() ? px.inflation() : target), dial = market.getPolicyRate();
+        if (miss > 0 ? rule <= neutral : rule >= neutral) {
+            return "no lean counted: " + (market.getStrictness() == DebtManager.Strictness.STANDARD ? "the rule" : "the Standard rule")
+                    + " reads the year's rate, on the other side of the target";
+        }
+        if (miss > 0 ? dial <= neutral : dial >= neutral) {
+            return miss > 0 ? "not leaning: the dial is not over neutral while inflation runs over the target"
+                    : "not leaning: the dial is not under neutral while inflation runs under the target";
+        }
+        return "no lean counted yet: it is measured as the month runs";
+    }
+
+    /** A month's move in trust, in points, signed with a true minus: "+0.2 pts", "−0.91 pts" (two places under a twentieth of a point). */
+    static String stepPts(double step) {
+        double pts = step * 100;
+        String s = Math.abs(pts) < .05 ? String.format("%.2f", Math.abs(pts)) : String.format("%.1f", Math.abs(pts));
+        return (pts < 0 ? "−" : "+") + s + " pts";
+    }
+
+    /** A yearly rate to two places with a true minus: "2.15%", "−0.40%". */
+    static String rate2(double rate) { return String.format("%.2f%%", unsigned0(rate * 100, 2)).replace('-', '−'); }
+
+    /**
+     * THE ANCHOR (the UI spec's 2.2 item 2): what people expect; how far they
+     * trust the bank, as a gauge from nothing to all with the least and the
+     * most it can be; how trust moved this month and whether the rate leans
+     * against the miss; what trust is judged on; and the level every money
+     * constant is struck at. No verdict colour but the move, which is NEEDS
+     * YOU's PRICES row.
+     */
+    VBox anchorCard() {
+        AnchorWords w = anchorWords();
+        List<Tick> ticks = List.of(
+                new Tick(Expectations.KMIN, Palette.TEXT_MUTED, 2, trust(Expectations.KMIN) + " the least", null),
+                new Tick(Expectations.KMAX, Palette.TEXT_MUTED, 2, trust(Expectations.KMAX) + " the most", null));
+        SegmentBar gauge = segmentBar(List.of(new Segment(w.trust(), Palette.MONEY, false, null, null,
+                "How far people trust the bank: " + trust(w.trust()), null)), 1, ticks, 0, 10);
+        Label trustLabel = figure(w.trustWords(), Palette.SIZE_BODY + 1, Palette.TEXT_HEAD);
+        return card(cardHead(Icons.POLICY, Palette.MONEY, "THE ANCHOR", ANCHOR_INFO, null),
+                figure(w.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                muted("the inflation people expect a year - wages and every money constant move on it"),
+                trustLabel, gauge,
+                chips(chip(w.move(), w.moveTone()), chip(w.lean(), Palette.TEXT_LABEL)),
+                line(w.judged(), null),
+                noteLine(w.struck(), w.struck() + ". " + STRUCK_INFO, 560));
+    }
+
+    /** The drift's words, worked out without drawing them (pure: the probe reads them). */
+    record DriftWords(String figure, String line, String uip) { }
+
+    DriftWords driftWords() {
+        Game g = ui.game;
+        ForeignAccounts fx = g.getForeignAccounts();
+        double uip = fx.uipLevel() - 1, dev = fx.deviationFromParity();
+        String uipLine = String.format("the real rate alone would hold it %s; it is %s",
+                parityWords(uip), parityWords(dev));
+        if (fx.isPinned()) return new DriftWords("Pinned: no drift", "the rate is held where it was pinned", uipLine);
+        double d = fx.getExpectedDrift();
+        String figure = Math.abs(d) < 5e-5 ? "no drift" : rate2(Math.abs(d)) + " a year " + (d > 0 ? "weaker" : "stronger");
+        String line = g.getPriceIndex().isBased()
+                ? String.format("trust × your target (%s × %s) against the world's %s", trust(g.getCredibility()),
+                        DebtManager.targetWords(g.getDebtManager().getInflationTarget()),
+                        rate2(g.getWorldEconomy().realisedInflation()))
+                : "none until the basket is fixed";
+        return new DriftWords(figure, line, uipLine);
+    }
+
+    /** Where the currency stands against parity, in words: "25.9% weaker than parity", "25.2% stronger", "at parity". */
+    static String parityWords(double deviation) {
+        if (Math.abs(deviation) < .0005) return "at parity";
+        return String.format("%.1f%% %s than parity", Math.abs(deviation) * 100, deviation > 0 ? "weaker" : "stronger");
+    }
+
+    /** THE CURRENCY'S DRIFT (the UI spec's 2.2 item 2): the slide the anchor hands the currency, what it is struck from, and where the real rate alone would hold it. */
+    VBox driftCard() {
+        DriftWords w = driftWords();
+        return card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE CURRENCY'S DRIFT", DRIFT_INFO, null),
+                figure(w.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                line(w.line(), null),
+                line(w.uip(), null),
+                doorPill("The currency · Trade", Icons.EXCHANGE, Palette.MONEY, () -> ui.tradeScreen.open(TradeScreen.CURRENCY)));
+    }
+
+    /* ----------------------------- THE BASKET (0.7.45) ----------------------------- */
+
+    /** The basket's five parts' colours, groceries to services: the money ramp, then the rest - areas, not verdicts. */
+    static final String[] BASKET_RAMP = {Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, Palette.TEXT_SPENT};
+
+    /** One part of the basket: its name, its weight, its colour and what its key says. */
+    record BasketPart(String name, double weight, String colour, String words) { }
+
+    /**
+     * The basket in force, part by part (pure: the probe reads them): each
+     * component's weight (PriceIndex.getWeight()) and its own inflation over
+     * the year off History's line for it (YearBook.componentInflation()) -
+     * or, with less than a year of the line, its change since the line began.
+     */
+    List<BasketPart> basketParts() {
+        PriceIndex px = ui.game.getPriceIndex();
+        HistorySave h = ui.game.getHistorySave();
+        List<BasketPart> out = new ArrayList<>();
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            String name = PriceIndex.COMPONENT_NAMES[k];
+            double w = px.getWeight(k);
+            String share = Math.round(w * 100) + "%" + (k == PriceIndex.LUXURY && px.isLuxuryCapped()
+                    ? ", capped at " + pct0(PriceIndex.LUXURY_WEIGHT_CAP) : "");
+            double year = YearBook.componentInflation(h, k);
+            String move;
+            if (Double.isFinite(year)) {
+                move = signedPct1(year) + " over the year";
+            } else {
+                int recorded = h.monthsRecorded(HistorySave.indexKey(k));
+                double since = recorded >= 2 ? h.changeOver(HistorySave.indexKey(k), recorded - 1) : Double.NaN;
+                List<Integer> months = h.getMonth();
+                move = Double.isFinite(since) && !months.isEmpty()
+                        ? signedPct1(since) + String.format(" since m%,d", months.get(months.size() - recorded))
+                        : "recorded from this build on";
+            }
+            out.add(new BasketPart(name, w, BASKET_RAMP[k], name + " " + share + " · " + move));
+        }
+        return out;
+    }
+
+    /** What the PRICES card says of the basket in force: when it was struck, or that it is still to be. */
+    String basketWords() {
+        PriceIndex px = ui.game.getPriceIndex();
+        if (!px.isBased()) return "no basket yet: it is fixed after " + PriceIndex.SETTLING_MONTHS + " months of real shopping";
+        if (px.isLinkPending()) return "basket linked next month: the five-part basket opens where this save's left off";
+        return String.format("a basket of m%,d", px.getLinkedMonth());
+    }
+
     /** P30. */
     static final String SWING_INFO = "Prices here have more than doubled and come back at some point. "
             + "Wages, rents and every debt in the city were struck against "
             + "those levels as they passed, and the people who lived through "
             + "it did not get that back. Today's number does not show it.";
     /** P31, once the money has been reformed. */
-    static final String REFORMED_INFO = "The index is measured against the FOUNDING basket in founding money, "
-            + "and stays comparable across reforms precisely because a reform "
-            + "divides its base too.";
+    static final String REFORMED_INFO = "The index is measured against the city's first basket in founding money, "
+            + "chained through every basket struck since, and stays comparable across reforms precisely because a "
+            + "reform divides every base too.";
 
     /**
      * THE PRICES (R4): the index since founding; where it has been - the
@@ -2660,7 +3032,8 @@ final class PolicyScreen {
                 + "can have been to three times them and back, and those are not the same place to live. "
                 + (px.swing() >= 2 ? SWING_INFO + " " : "") + (unit.getReforms() > 0 ? REFORMED_INFO : "");
         VBox c = card(cardHead(Icons.COIN, Palette.MONEY, "PRICES", info,
-                figure(String.format("%.3f", px.getIndex()) + "× founding", Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD)));
+                figure(String.format("%.3f", px.getIndex()) + "× founding", Palette.SIZE_HEADING + 2, Palette.TEXT_HEAD)),
+                muted(basketWords()));
         if (px.swing() > 1.005) {
             List<Tick> ticks = List.of(
                     new Tick(px.getTrough(), Palette.TEXT_MUTED, 2, String.format("cheapest %.3f, m%,d", px.getTrough(), px.getTroughMonth()), null),
@@ -2670,6 +3043,23 @@ final class PolicyScreen {
             c.getChildren().add(muted(String.format("swung %.2fx between its cheapest and its dearest", px.swing())));
         } else {
             c.getChildren().add(muted("The dearest and the cheapest it has been are still today's: no range yet."));
+        }
+        /*
+         * THE BASKET (0.7.45): the weights it is struck on, one bar, each part
+         * keyed with its own inflation over the year - so a player sees which
+         * price is moving the index, and that a link re-weighs it.
+         */
+        if (px.isBased() && !px.isLinkPending()) {
+            List<BasketPart> parts = basketParts();
+            List<Segment> segs = new ArrayList<>();
+            FlowPane key = new FlowPane(14, 4);
+            for (BasketPart p : parts) {
+                if (!(p.weight() > 0)) continue;
+                segs.add(new Segment(p.weight(), p.colour(), false, null, null, p.words(), null));
+                key.getChildren().add(keySwatch(p.colour(), p.words()));
+            }
+            c.getChildren().addAll(words("THE BASKET", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                    segmentBar(segs, 1, List.of(), 0, 12), key);
         }
         List<Node> lines = new ArrayList<>();
         if (world != null) lines.add(cardLine("The world's, likewise", String.format("%.3f", world.getPriceLevel()), null));
@@ -2947,11 +3337,15 @@ final class PolicyScreen {
         Ladder ladder = ownLadder("pension", replacement, 0, TaxPolicy.MAX_REPLACEMENT, .01, PolicyScreen::pct0);
         double want = staged("pension", replacement);
         DoubleFunction<List<Effect>> effects = pensionEffects(policy);
+        // The wage base is struck at the expected price level since 0.7.42 (the UI spec's B10, D13): it keeps up
+        // with what people expect prices to do; wages pull ahead of it. Its founding figure behind the (i).
         return dialCard(new DialCard(Icons.CANE, Palette.MONEY, "WHAT SENIORS RECEIVE",
                 "Of the founding unskilled wage, paid flat to every senior in the city: " + pct0(replacement) + " of "
-                + moneyFull(policy.pensionPerSeniorAt(1)) + " a month. The founding wage is carried in today's money and "
-                + "does not move with the labour market, so the pension is frozen in real terms - a design question "
-                + "the model has filed and not yet answered.",
+                + unitPrice(policy.pensionPerSeniorAt(1)) + " a month in today's money - founding "
+                + unitPrice(policy.foundingPensionWage()) + String.format(" × %.3f", policy.getExpectedLevel())
+                + " (what money constants are struck at). It keeps up with what people expect prices to do, not with"
+                + " the labour market, so wages pull ahead of it as the city grows richer - a design question the"
+                + " model has filed and not yet answered.",
                 pct0(replacement) + " of the founding unskilled wage",
                 "Of the founding unskilled wage, paid flat to every senior in the city.", null, ladder, want, effects,
                 "Against today's number of seniors.", "Against today's number of seniors. " + CAVEAT,
@@ -3026,10 +3420,128 @@ final class PolicyScreen {
                 cardLine("Insured to", moneyFull(u.getInsuredCap()) + " a month", null),
                 cardLine("EI past its premiums, a month", money(p.eiPastPremiums()), null),
                 cardLine("Grants to " + people(students) + " students", money(p.grants()), null),
-                doorPill("A student is granted " + grantWords(policy.getGrantBasis(), policy.getGrantAmount()) + " · Schools",
+                doorPill("A student is granted " + grantWords(policy.getGrantBasis(), policy.getGrantAmount(),
+                        ui.game.getExpectations().getExpectedLevel()) + " · Schools",
                         Icons.EDUCATION, Palette.MONEY, () -> open(PROMISES, "Schools")));
         page.getChildren().add(cover);
         page.getChildren().add(row(eiPremiumCard(em, policy), eiBenefitCard(em, policy, u)));
+        // Food assistance has its own tab since 0.7.45 (the UI spec's D6): a door to it stays here.
+        page.getChildren().add(doorPill("Food assistance " + pct0(policy.getFoodAssistance()) + " · Promises › Food",
+                Icons.FOOD, Palette.MONEY, () -> open(PROMISES, "Food")));
+    }
+
+    /* =====================================================================
+       PROMISES - food (0.7.45; the UI spec's 2.3 and D6)
+
+       WHO GOES WITHOUT leads, because the dial below it reaches only one of
+       the two hungers: a voucher is money, and money feeds a household the
+       price shut out; it cannot put a basket on a shelf the shops could not
+       fill. In the 2,400-month research city 0.04 of its 26.8 points of
+       hunger were priced out. Then the dial, before and after at the last
+       sale - the vouchers paid, the households who would hold one, the
+       baskets they buy, THE BUDGET - and who would get it, row by row.
+       ===================================================================== */
+
+    void foodPage(VBox page) {
+        TaxPolicy policy = policy();
+        page.getChildren().add(Pieces.whoGoesWithout(ui.game,
+                () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().retail(), "Operations")));
+        page.getChildren().add(foodAssistanceCard(policy));
+        page.getChildren().add(whoWouldGetIt());
+    }
+
+    /** The dial card's status (pure: the probe reads it): who a voucher would go to at the last sale's price. */
+    String foodStatus(double share) {
+        double households = PolicyPreview.foodAssistanceHouseholds(ui.game);
+        if (!(households > 0)) return "Nobody's baskets take more than half of what they have after their bills: a voucher would go to nobody.";
+        return Money.people(households) + (share > 0 ? " households hold a voucher" : " households would hold a voucher")
+                + ": their baskets take more than half of what they have after their bills.";
+    }
+
+    /**
+     * FOOD ASSISTANCE (0.7.43; its own tab since 0.7.45), its own Apply: the
+     * treasury's voucher toward an eligible household's baskets - what it
+     * would have paid at the last sale, the households who would hold one,
+     * the baskets they buy and THE BUDGET, before and after, through
+     * PolicyPreview at the price that sale charged, so at rest each row is
+     * the month's own.
+     */
+    VBox foodAssistanceCard(TaxPolicy policy) {
+        double share = policy.getFoodAssistance();
+        Ladder ladder = ownLadder("foodAssistance", share, 0, TaxPolicy.MAX_FOOD_ASSISTANCE, .05, PolicyScreen::pct0);
+        double want = staged("foodAssistance", share);
+        DoubleFunction<List<Effect>> effects = foodEffects(policy);
+        String status = foodStatus(share);
+        return dialCard(new DialCard(Icons.FOOD, Palette.MONEY, "FOOD ASSISTANCE",
+                status + " The treasury pays this share of their baskets at the shelf price, on the baskets they get, "
+                + "in the month of the sale; the means test reads what a household has after its fixed bills and its "
+                + "investment income over the year.",
+                pct0(share) + " of an eligible household's baskets", status, null, ladder, want, effects,
+                "Against the last sale: a voucher bids, so who gets the baskets moves too.",
+                "Against the last sale: a voucher bids, so who gets the baskets moves too. " + CAVEAT,
+                applyFoot("foodAssistance", "Set food assistance to " + pct0(want), () -> policy.setFoodAssistance(want))), 380, true);
+    }
+
+    /** The food assistance dial's effects at any value of its thumb (pure: the probe reads them). */
+    DoubleFunction<List<Effect>> foodEffects(TaxPolicy policy) {
+        double share = policy.getFoodAssistance();
+        return v -> List.of(
+                Effect.of("Paid a month, at the last sale", PolicyPreview.foodAssistanceAt(ui.game, share),
+                        PolicyPreview.foodAssistanceAt(ui.game, v), PolicyScreen::amount).delta(PolicyScreen::moneyMove),
+                Effect.of("Households with a voucher", PolicyPreview.foodAssistanceHouseholdsAt(ui.game, share),
+                        PolicyPreview.foodAssistanceHouseholdsAt(ui.game, v), Money::people),
+                Effect.of("Baskets it pays for", PolicyPreview.foodAssistanceBasketsAt(ui.game, share),
+                        PolicyPreview.foodAssistanceBasketsAt(ui.game, v), Money::people),
+                budgetEffect(with("foodAssistance", v), stagedShare()));
+    }
+
+    /** One row of WHO WOULD GET IT, worked out without drawing it (pure: the probe reads them). */
+    record AidRow(int row, String name, double got, String gotWords, String figures) { }
+
+    /** WHO WOULD GET IT's rows: every household row a voucher would reach or did, most eligible first. */
+    List<AidRow> aidRows() {
+        HouseholdBalance hb = ui.game.getHouseholdBalance();
+        HouseholdAccounts hh = ui.game.getHouseholds();
+        List<HouseholdBalance.GroceryRow> rows = new ArrayList<>();
+        for (HouseholdBalance.GroceryRow r : hb.groceriesByRow(PolicyPreview.lastSalePrice(ui.game))) {
+            if (r.eligible() > 0 || r.aided() > 0) rows.add(r);
+        }
+        rows.sort((a, b) -> Double.compare(b.eligible(), a.eligible()));
+        List<AidRow> out = new ArrayList<>();
+        // A save from before 0.7.43 has no baskets counted until its first month: no share to draw.
+        boolean counted = ui.game.getSectors().retail().isSaleCounted();
+        for (HouseholdBalance.GroceryRow r : rows) {
+            out.add(new AidRow(r.row(), hh.getRowLabel(r.row()), counted ? r.gotShare() : 0,
+                    counted ? basketShare(r.gotShare()) : "not counted yet",
+                    people(r.eligible()) + " eligible · " + people(r.aided()) + " paid at the last sale"));
+        }
+        return out;
+    }
+
+    /** Baskets got per basket needed, as a row says it: "got .58 of a basket", "got every basket". */
+    static String basketShare(double share) {
+        if (share >= .995) return "got every basket";
+        return "got " + String.format("%.2f", Math.max(0, share)).replaceFirst("^0", "") + " of a basket";
+    }
+
+    /** WHO WOULD GET IT (the UI spec's 2.3 item 3): a row a household kind, its baskets got per basket needed, who a voucher reaches. */
+    VBox whoWouldGetIt() {
+        List<AidRow> rows = aidRows();
+        VBox c = card(cardHead(Icons.POPULATION, Palette.PEOPLE, "WHO WOULD GET IT",
+                "Each kind of household a voucher would reach at the last sale's price: how much of what it needs it got"
+                + " at that sale - the bar, a basket a head the whole of it - how many of them its means test lets in,"
+                + " and how many were paid one. Before the dial is on, nobody was paid.", null));
+        if (rows.isEmpty()) {
+            c.getChildren().add(muted("Nobody: every household's baskets take less than half of what it has after its bills."));
+            return c;
+        }
+        List<RankRow> ranked = new ArrayList<>();
+        for (AidRow r : rows) {
+            ranked.add(new RankRow("aid:" + r.row(), Icons.FOOD, r.name(), r.got(), Palette.PEOPLE,
+                    List.of(r.gotWords(), r.figures()), r.name() + ": " + r.gotWords() + (r.gotWords().startsWith("got") ? " needed" : ""), null, null, null, null));
+        }
+        c.getChildren().add(rankBars(ranked, 1, new double[] {150, 300}, 0, openLines, this::showPolicyMenu));
+        return c;
     }
 
     /** What workers pay for EI (E-3), its own Apply: raised, and what EI and the grants take from the treasury. */
@@ -3223,7 +3735,8 @@ final class PolicyScreen {
                 + "do: a dearer fee turns some of them away, and they leave the bill and the "
                 + "clinic together.";
         return dialCard(new DialCard(Icons.HEALTH, Palette.MONEY, "WHAT A PATIENT PAYS",
-                status + " Funeral fees are not scaled: the cemetery against the crematorium is its own design.",
+                status + " Funeral fees are not scaled: the cemetery against the crematorium is its own design."
+                + struckWords("fee"),
                 times(scale) + " the founding fee", status, null, ladder, want, effects,
                 "Who it turns away is not projected.", caveat + " " + CAVEAT,
                 applyFoot("healthFee", "Set the fee to " + times(want), () -> policy.setHealthFeeScale(want))), 380, true);
@@ -3335,10 +3848,14 @@ final class PolicyScreen {
     static String scaleWords(double scale) { return times(scale); }
 
     /** The grant in words, for a line that names it: "15% of an unskilled wage a month". */
-    static String grantWords(TaxPolicy.GrantBasis basis, double amount) {
+    static String grantWords(TaxPolicy.GrantBasis basis, double amount, double level) {
         if (basis == null) basis = TaxPolicy.DEFAULT_GRANT_BASIS;
         return switch (basis) {
-            case FIXED         -> moneyFull(amount) + " a month at founding prices, kept up with the cost of living";
+            // In today's money since 0.7.45 (the UI spec's B11, D13): set at founding prices, paid at the
+            // expected price level - not "kept up with the cost of living", which is the index. The founding
+            // figure and the level are behind the card's (i), grantInfo(). To the cent (unitPrice()): a reform
+            // makes it a few dollars, which whole-dollar rounding would lose.
+            case FIXED         -> unitPrice(amount * level) + " a month in today's money";
             case SURPLUS_SHARE -> String.format("%.0f%% of last month's surplus, shared out", amount * 100);
             case TUITION_SHARE -> String.format("%.0f%% of their course's tuition", amount * 100);
             default            -> String.format("%.0f%% of an unskilled wage a month", amount * 100);
@@ -3356,8 +3873,8 @@ final class PolicyScreen {
     }
 
     /** How a basis's amount reads on its dial: dollars, or a percentage of the thing it is a share of. */
-    static String amountWords(TaxPolicy.GrantBasis basis, double amount) {
-        return basis == TaxPolicy.GrantBasis.FIXED ? moneyFull(amount) + " at founding prices"
+    static String amountWords(TaxPolicy.GrantBasis basis, double amount, double level) {
+        return basis == TaxPolicy.GrantBasis.FIXED ? unitPrice(amount * level) + " in today's money"
                 : String.format("%.0f%%", amount * 100);
     }
 
@@ -3629,7 +4146,7 @@ final class PolicyScreen {
         });
         if (split) ladder.idle("a price per school");
         DoubleFunction<List<Effect>> effects = everySchoolEffects(policy);
-        return dialCard(new DialCard(Icons.EDUCATION, Palette.MONEY, "WHAT A PLACE IS PRICED AT", PRICE_INFO,
+        return dialCard(new DialCard(Icons.EDUCATION, Palette.MONEY, "WHAT A PLACE IS PRICED AT", PRICE_INFO + struckWords("price"),
                 split ? "a price per school" : scaleWords(policy.getTuitionScale()), "Every school at once.", null, ladder,
                 staged(EVERY_SCHOOL, lever.current()), effects, CAVEAT_LINE, SCHOOL_CAVEAT + " " + CAVEAT, null), 360, true);
     }
@@ -3659,7 +4176,12 @@ final class PolicyScreen {
                         : "; nobody is studying this month.")
                 + " What it does not cover, a student loan does. The unskilled wage it "
                 + "can be a share of is " + moneyFull(ui.game.getUnskilledWage())
-                + " a month; last month's surplus was " + signedTight(ui.game.getTreasurySurplus(), false) + ".";
+                + " a month; last month's surplus was " + signedTight(ui.game.getTreasurySurplus(), false) + "."
+                + (policy.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
+                        ? " A fixed grant is set at founding prices and paid in today's money: founding "
+                          + unitPrice(policy.getGrantAmount())
+                          + String.format(" × %.3f", ui.game.getExpectations().getExpectedLevel())
+                          + " (what next month's money constants are struck at, the month it is paid in)." : "");
     }
 
     /**
@@ -3697,7 +4219,7 @@ final class PolicyScreen {
         double amountMax = policy.maxGrantAmount(wantBasis);
         double amountStep = wantBasis == TaxPolicy.GrantBasis.FIXED ? Math.max(1e-9, amountMax / 100) : .01;
         Lever amountLever = new Lever("grantAmount", "...at", amountNow, 0, amountMax, amountStep,
-                v -> amountWords(wantBasis, v), v -> policy.setGrant(wantBasis, v));
+                v -> amountWords(wantBasis, v, ui.game.getExpectations().getExpectedLevel()), v -> policy.setGrant(wantBasis, v));
         Ladder ladder = ladderOf(amountLever);
         double each = ui.game.grantPerStudentUnder(basis, amount);
         DoubleFunction<List<Effect>> effects = grantEffects(policy);
@@ -3706,7 +4228,8 @@ final class PolicyScreen {
                 + (wantBasis == TaxPolicy.GrantBasis.SURPLUS_SHARE
                         ? "; and a share of the surplus is nothing in a deficit month, whoever is studying." : ".");
         return dialCard(new DialCard(Icons.EDUCATION, Palette.MONEY, "WHAT A STUDENT IS GRANTED", grantInfo(policy),
-                null, grantWords(basis, amount), List.of(pick), ladder, staged("grantAmount", amountNow), effects,
+                null, grantWords(basis, amount, ui.game.getExpectations().getExpectedLevel()), List.of(pick), ladder,
+                staged("grantAmount", amountNow), effects,
                 firstWords(caveat), caveat + " " + CAVEAT, null), 380, true);
     }
 

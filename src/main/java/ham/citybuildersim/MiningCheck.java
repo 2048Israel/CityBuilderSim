@@ -45,20 +45,87 @@ public class MiningCheck {
         throw new IllegalStateException("no template named " + name);
     }
 
-    /** Buys land until the city can fit what is coming, deposits included. */
+    /**
+     * Buys land until the city can fit what is coming, deposits included.
+     *
+     * A DEPOSIT COMES FROM A BOUGHT OFFER WITH IRON (0.7.57). The parcels drew
+     * ore at random, a fifth of them or so; the offers are the world's ground,
+     * and a new city's are a few hundred metres out, which seldom hold a
+     * field's centre. So a city wanting a deposit buys the richest offer in
+     * iron when one stands, and otherwise buys toward the nearest iron field
+     * it does not own - the founding site has one within World.SITE_IRON_KM -
+     * the offer nearest it each time, until an offer holds it (0.7.67; that
+     * field's lane pushed out before).
+     */
     static void makeRoom(Game game, double sqFt, boolean wantDeposit) {
         for (int i = 0; i < 200; i++) {
             if (game.getLandManager().getAvailableSqFt() >= sqFt
                     && (!wantDeposit || game.getLandManager().getIronDeposits() > 0)) {
                 return;
             }
-            LandParcel target = wantDeposit && game.getLandManager().getIronDeposits() == 0
-                    ? game.getLandManager().getMarket().richestDeposit()
+            boolean ore = wantDeposit && game.getLandManager().getIronDeposits() == 0;
+            LandParcel target = ore ? game.getLandManager().getMarket().richest(Resource.IRON)
                     : game.getLandManager().getMarket().bestValue();
+            if (ore && target == null) target = towardIron(game);
+            // The ore is priced in the ground at 1/350 of its world price. The
+            // world's fields come whole - the field the default world puts by
+            // its founding site is 35 sites, about US$180M, more than a new
+            // city's treasury (0.7.57, and again since 0.7.64; from 0.7.58 to
+            // 0.7.63 they were shared site by site, a site about US$5.3M).
+            // Either way the fixture is given the price of a deposit it cannot
+            // pay for, so it is the deposit that is tested and not the
+            // treasury.
+            if (ore && target != null && target.hasIron() && !game.canAffordParcel(target)) {
+                game.setCashForTest(game.getCash() + target.localPrice(game.getForeignAccounts().getRate()));
+            }
             if (target == null || !game.buyLandParcel(target.getId())) {
                 if (!game.buyLandBlock()) return;
             }
         }
+    }
+
+    /** The offer standing nearest the iron field nearest the city's site that it does not own: buying toward it is the shortest way to a deposit (0.7.67; that field's lane pushed out until 0.7.66). Null when no field lies in the nine cells round the site. */
+    static LandParcel towardIron(Game game) {
+        CityLand land = game.getCityLand();
+        World world = game.getWorld();
+        long cx = land.siteX() / World.CELL, cy = land.siteY() / World.CELL;
+        Deposit nearest = null;
+        double best = Double.MAX_VALUE;
+        for (long y = cy - 1; y <= cy + 1; y++) {
+            for (long x = cx - 1; x <= cx + 1; x++) {
+                if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
+                for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), Resource.IRON)) {
+                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    if (land.ownsPlot(d.x(), d.y()) || r >= best) continue;
+                    best = r;
+                    nearest = d;
+                }
+            }
+        }
+        if (nearest == null) return null;
+        return nearestOffer(game.getLandManager().getMarket(), nearest.x(), nearest.y());
+    }
+
+    /**
+     * The offer standing nearest plot (x, y), L-infinity from its rectangle,
+     * the lower id on a tie; null with nothing listed. On the block grid
+     * (0.7.67) buying it, and then the next nearest, grows the city toward
+     * the plot until an offer holds it: what the harnesses that want a field
+     * or the sea do where they pushed out a lane before.
+     */
+    static LandParcel nearestOffer(LandMarket market, long x, long y) {
+        LandParcel best = null;
+        long far = Long.MAX_VALUE;
+        for (LandParcel p : market.getListing()) {
+            long dx = x < p.getX0() ? p.getX0() - x : x >= p.getX1() ? x - (p.getX1() - 1) : 0;
+            long dy = y < p.getY0() ? p.getY0() - y : y >= p.getY1() ? y - (p.getY1() - 1) : 0;
+            long d = Math.max(dx, dy);
+            if (best == null || d < far || (d == far && p.getId() < best.getId())) {
+                best = p;
+                far = d;
+            }
+        }
+        return best;
     }
 
     public static void main(String[] args) throws Exception {
@@ -225,11 +292,16 @@ public class MiningCheck {
         assertTrue("...and now the mine can be ordered",
                 allowed == Game.BuildResult.SUCCESS);
 
-        System.setOut(quiet);
-        Game.BuildResult second = city.buildStack(mine, 1, false);
-        System.setOut(out);
-        assertTrue("but one deposit only supports one mine",
-                second == Game.BuildResult.NO_DEPOSIT);
+        /*
+         * ONE SITE, ONE MINE (0.7.57). This was "but one deposit only supports
+         * one mine", ordering a second and seeing it refused: a parcel's ore
+         * was usually one site. A deposit is a field of the world now, and the
+         * one by the founding site holds many; what stands is that each site
+         * takes one mine - as many more as the sites left, and not one more.
+         */
+        int sites = city.getLandManager().getIronDeposits();
+        assertTrue("but each site supports only one mine: as many more as the sites left, and not one more",
+                city.minesCommitted() == 1 && city.hasDepositFor(mine, sites - 1) && !city.hasDepositFor(mine, sites));
 
         /* ================= 3. does it actually pay? ================= */
         out.println("\n--- and now the only question that matters ---");
@@ -320,7 +392,7 @@ public class MiningCheck {
         // rest abroad, strike.
         double[] rates = new double[11];
         rates[0] = .800; rates[1] = 1.500; rates[4] = 4.000;
-        int[] crew = new int[11];
+        long[] crew = new long[11];
         crew[0] = mine.getJobs(JobType.NO_DIPLOMA);
         crew[1] = mine.getJobs(JobType.DIPLOMA);
         crew[4] = mine.getJobs(JobType.COLLEGE_ENGINEERING);

@@ -1,6 +1,6 @@
-# BankScreen.java - 4,265 lines · 161 methods · 24 constants · interface
+# BankScreen.java - 4,276 lines · 161 methods · 24 constants · interface
 
-`ham/citybuildersim/ui/BankScreen.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankScreen.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > The bank tab: whether the city's bank is healthy and what it charges, on
 > an Overview - its state in a sentence, its capital in its band, eight
@@ -59,7 +59,7 @@
 > a borrower's line, a fold, the waterfall's year (openLines, profitYear) -
 > all survive a redraw.
 
-**Uses:** [Palette](Palette.md) (578), [Bank](Bank.md) (368), [Icons](Icons.md) (72), [BusinessDebtManager](BusinessDebtManager.md) (27), [Equity](Equity.md) (21), [Exchange](Exchange.md) (20), [TimeChart](TimeChart.md) (19), [Ladder](Ladder.md) (13), [Game](Game.md) (13), [HistorySave](HistorySave.md) (10), [Sectors](Sectors.md) (10), [CityNeeds](CityNeeds.md) (9), [Mortgage](Mortgage.md) (9), [ChartModel](ChartModel.md) (6), [CityCalendar](CityCalendar.md) (6), [TreasuryFund](TreasuryFund.md) (6), [UserInterface](UserInterface.md) (4), [CentralBank](CentralBank.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [BondMarket](BondMarket.md) (4), [OrderBook](OrderBook.md) (4), [DecisionLog](DecisionLog.md) (4), [HistoryScreen](HistoryScreen.md) (4), [CorporateBond](CorporateBond.md) (3), [Pieces](Pieces.md) (3), [YearBook](YearBook.md) (3), [BuildAdvice](BuildAdvice.md) (2), [BuildScreen](BuildScreen.md) (2), [SummaryScreen](SummaryScreen.md) (2), [DebtManager](DebtManager.md) (2)... and 7 more
+**Uses:** [Palette](Palette.md) (580), [Bank](Bank.md) (369), [Icons](Icons.md) (72), [BusinessDebtManager](BusinessDebtManager.md) (27), [Equity](Equity.md) (21), [Exchange](Exchange.md) (20), [TimeChart](TimeChart.md) (19), [Ladder](Ladder.md) (13), [Game](Game.md) (13), [HistorySave](HistorySave.md) (10), [Sectors](Sectors.md) (10), [CityNeeds](CityNeeds.md) (9), [Mortgage](Mortgage.md) (9), [ChartModel](ChartModel.md) (6), [CityCalendar](CityCalendar.md) (6), [TreasuryFund](TreasuryFund.md) (6), [UserInterface](UserInterface.md) (4), [CentralBank](CentralBank.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [BondMarket](BondMarket.md) (4), [OrderBook](OrderBook.md) (4), [DecisionLog](DecisionLog.md) (4), [HistoryScreen](HistoryScreen.md) (4), [CorporateBond](CorporateBond.md) (3), [Pieces](Pieces.md) (3), [YearBook](YearBook.md) (3), [BuildAdvice](BuildAdvice.md) (2), [BuildScreen](BuildScreen.md) (2), [SummaryScreen](SummaryScreen.md) (2), [DebtManager](DebtManager.md) (2)... and 7 more
 
 **Used by (3):** [FinancesScreen](FinancesScreen.md), [SectorScreen](SectorScreen.md), [UserInterface](UserInterface.md)
 
@@ -180,7 +180,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 4179 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and what it charges, on an Overview - its state in a sentence, its capital in its band, eight figures and the ladder of its rates drawn in their parts - with its profit... |
+| 87 | 4190 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and what it charges, on an Overview - its state in a sentence, its capital in its band, eight figures and the ladder of its rates drawn in their parts - with its profit... |
 | 92 | 1 | `BankScreen(UserInterface ui)` |  |
 
 ### THE BANK (0.7.33): THE FRAME (lines 94-165)
@@ -524,14 +524,14 @@
 |---:|---:|---|---|
 | 4006 | 86 | `VBox preferredOffer()` |  |
 
-### HISTORY (lines 4093-4265)
+### HISTORY (lines 4093-4276)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4123 | 95 | `void historyPage(VBox page)` |  |
-| 4220 | 4 | `TimeChart.Line percentLine(HistorySave h, String key, String name, String colour)` | A line of a History series in per cent, read out as a rate. |
-| 4226 | 4 | `TimeChart.Line moneyLine(HistorySave h, String key, String name, String colour)` | ...in money. |
-| 4232 | 6 | `static TimeChart.Line flatLine(HistorySave h, String key, String name, double level, String colour, String unit)` | A reference line at one level for every month: what its owners want, the 100% line. |
-| 4240 | 9 | `TimeChart chart(HistorySave h, List<TimeChart.Line> lines, String unit, List<YearBook.Band> bands, List<ChartModel.Flag> flags,...` | One of the charts, on the tab's window (it follows `leader` when there is one), without controls. |
-| 4251 | 13 | `VBox smallCard(String title, String info, String unit, TimeChart leader, HistorySave h, List<YearBook.Band> bands, List<TimeCha...` | A small chart's card: its title and (i), the chart following the rates' window, its key, and its statistics as chips. |
+| 4123 | 106 | `void historyPage(VBox page)` |  |
+| 4231 | 4 | `TimeChart.Line percentLine(HistorySave h, String key, String name, String colour)` | A line of a History series in per cent, read out as a rate. |
+| 4237 | 4 | `TimeChart.Line moneyLine(HistorySave h, String key, String name, String colour)` | ...in money. |
+| 4243 | 6 | `static TimeChart.Line flatLine(HistorySave h, String key, String name, double level, String colour, String unit)` | A reference line at one level for every month: what its owners want, the 100% line. |
+| 4251 | 9 | `TimeChart chart(HistorySave h, List<TimeChart.Line> lines, String unit, List<YearBook.Band> bands, List<ChartModel.Flag> flags,...` | One of the charts, on the tab's window (it follows `leader` when there is one), without controls. |
+| 4262 | 13 | `VBox smallCard(String title, String info, String unit, TimeChart leader, HistorySave h, List<YearBook.Band> bands, List<TimeCha...` | A small chart's card: its title and (i), the chart following the rates' window, its key, and its statistics as chips. |
 

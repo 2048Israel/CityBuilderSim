@@ -771,14 +771,19 @@ public class FundLedgerCheck {
         k.fundPayIn(lump);
         k.fundBuyShares(c, each);
         k.fundBuyShares(c, each);
+        double mktBefore = rk.getCityMarketShares(c);
         play(k);
         OrderBook bk = xk.bookOf(c);
         double cap = TreasuryFund.OWNERSHIP_LIMIT * rk.getShares(c);
         double mkt = rk.getCityMarketShares(c);
         double ruleBid = bk.resting(Exchange.FUND, OrderBook.Side.BUY), handBids = bk.resting(Exchange.FUND_HAND, OrderBook.Side.BUY);
         List<TreasuryFund.HandOrder> posted = fk.getPosted();
-        check("fixture: the rule bids for the company at the step, and both orders were posted beside it",
-                ruleBid > FundLedger.DUST && posted.size() == 2);
+        // Since 0.7.48 (C3) the rule bids at the desk's ask, which fills at the step: what it bid is what rests and what it took.
+        double handTook = 0;
+        for (TreasuryFund.HandOrder o : posted) handTook += o.filled();
+        double ruleTook = mkt - mktBefore - handTook;
+        check("fixture: the rule bids for the company at the step - resting, or taken at the desk's ask - and both orders were posted beside it",
+                ruleBid + ruleTook > FundLedger.DUST && posted.size() == 2);
         if (posted.size() != 2) return;
         double asked1 = posted.get(0).amount() / posted.get(0).price(), asked2 = posted.get(1).amount() / posted.get(1).price();
         out.printf("   the cap %,.0f shares: alone the rule bids %,.0f; the orders ask %,.0f and %,.0f - %.1f%% of the company"
@@ -844,10 +849,14 @@ public class FundLedgerCheck {
                 qw != null && !qw.capped() && Math.abs(qw.room() - (capW - heldW)) <= 1e-9 * capW
                         && Math.abs(qw.ruleGivesWay() - qw.units()) <= 1e-9 * capW
                         && Math.abs(qw.capAfter() * rw.getShares(c) - capW) <= 1e-9 * capW);
-        w.fundBuyShares(c, each);
-        w.fundBuyShares(c, each);
+        // ...each 4% of the company, or two-fifths of the room the step left when that is less: since 0.7.48 (C3) the
+        // rule's bid fills part of its room at the step, at the desk's ask, and the orders are to fit what it still bids for.
+        double eachW = Math.min(each, .4 * (capW - heldW) * xw.fair(c));
+        w.fundBuyShares(c, eachW);
+        w.fundBuyShares(c, eachW);
         double queuedW = xw.handOnOrder(fw, c);
-        close("fixture: two orders placed after it, for 4% of the company each", queuedW, 2 * each / xw.fair(c), 1e-9 * capW);
+        close("fixture: two orders placed after it, for 4% of the company each or two-fifths of the room left", queuedW,
+                2 * eachW / xw.fair(c), 1e-9 * capW);
         check("...everything the fund could hold of it, every buy filled, the rule's as far as it may, is still the cap",
                 xw.fundCouldHold(rw, fw, c, 0) <= capW * (1 + 1e-12));
         double before = rw.getCityMarketShares(c);

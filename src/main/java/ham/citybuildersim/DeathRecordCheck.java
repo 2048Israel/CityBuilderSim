@@ -137,6 +137,21 @@ public class DeathRecordCheck {
            city. That is what it counts now.
            ================================================================= */
         double orphansBefore = g.getFamilies().getOrphansTotal();
+        /*
+         * ...AGAINST THE MOST THE SECTION HELD IN THE YEAR BEFORE (0.7.55),
+         * not the closing month's reading alone. The builder's residual drifts
+         * by about an orphan a month on its own, and this city's had been
+         * falling for five months when the mill closed: 7.09 to 5.58 under
+         * 0.7.55's land prices (7.53 to 6.32 under 0.7.54's), and a twin left
+         * open fell on to 3.5. The closing month was a trough, and an orphan
+         * over a trough is not the section filling behind a wave. The old rule
+         * would have orphaned over a hundred; the allowance stays one.
+         */
+        double[] orphanHistory = g.getHistorySave().aligned("orphans");
+        double orphansLately = orphansBefore;
+        for (int i = Math.max(0, orphanHistory.length - 12); i < orphanHistory.length; i++) {
+            if (!Double.isNaN(orphanHistory[i])) orphansLately = Math.max(orphansLately, orphanHistory[i]);
+        }
         double atHomeBefore = g.getFamilies().getAtHomeAdults();
         double[] peakOutOfWork = { atHomeBefore };
         double[] peakOrphans = { orphansBefore };
@@ -166,7 +181,8 @@ public class DeathRecordCheck {
                 + " %,.2f after; their children %,.2f%n",
                 atHomeBefore, peakOutOfWork[0], g.getFamilies().getAtHomeAdults(),
                 g.getFamilies().getOutsideDependantsTotal());
-        System.out.printf("   orphans peaked at %,.2f against %,.2f before%n", peakOrphans[0], orphansBefore);
+        System.out.printf("   orphans peaked at %,.2f against %,.2f before, and %,.2f at most in the year before%n",
+                peakOrphans[0], orphansBefore, orphansLately);
         assertTrue("fixture: the closing put adults out of work",
                 peakOutOfWork[0] > atHomeBefore);
         /*
@@ -185,7 +201,7 @@ public class DeathRecordCheck {
         assertTrue("...and big enough that the old rule would have at least doubled the orphans",
                 wouldHaveOrphaned > orphansBefore);
         assertTrue("the orphan section does not fill behind it, in any month of the two years",
-                peakOrphans[0] <= orphansBefore + 1);
+                peakOrphans[0] <= orphansLately + 1);
         assertTrue("...because the children went with their parents",
                 g.getFamilies().getOutsideDependantsTotal() > 0);
         assertTrue("fixture: the city still has orphans for the record to count",

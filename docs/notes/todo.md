@@ -1,12 +1,41 @@
 # The list — what is open
 
-Updated 2026-10-01 (the manual brought to 0.7.23, published as version 11 and its tree copy deployed as tag 1001e, see `the-manual-at-0-7-23.md`; before it 0.7.23, the chart you can move — the last interface batch, built while Jerus slept; deployed and verified as tag 1001c (66 files); 0.7.21 to 0.7.23 still to be seen on the PC; the four interface batches are done, and next is the check by eye and HealthCheck's own batch; before it 0.7.22, the player takes the queue — the construction panel with priority, rush, cancel, demolish and buy-outs, built while Jerus slept; deployed and verified as tag 1001b (72 files), not yet seen on the PC; 0.7.23 (the charts) is next; before it 0.7.21, a front door and a dashboard — colour, the header, the main menu and the founding screen, the model untouched; deployed and verified as tag 1001a (283 files), not yet seen on the PC; before it 0.7.20, the page stays put — the interface's bugs and its layout, the first of four batches from the play-through of 0.7.19, the model untouched; deployed and verified as tag 0930b, checked by eye with two fixes the same night; 0.7.21 (colour, the header, the menu, the founding screen) is next; before it 0.7.19, the price keeps up — round 3 of Jerus's fixes: the builders' labour at today's wages with an escalation clause and the sales tax in the quote (business credits, the purpose-built rental rebate, the city's tax coming home), the grant a real amount at the price index for new cities, the bank's branches by their customers with the charter exempt from the fee rule and its upkeep and the deposit cap gone, Luxury's markup on the buyers at its price; deployed and verified as tag 0930a (269 files); the held-25% city's collapse accepted ("Let it fail"); before it 0.7.18, workers take the best-paid job — round 2 of Jerus's fixes: every planner that builds posts checks staffing, "truly unfillable" bands only, workers taking the best-paid job they qualify for, some unskilled migrants for a dear wage; deployed and verified with 0.7.17 as one commit, tag 0929a (287 files); round 3 (0.7.19, prices) is built and measured badly, waiting on Jerus's decisions; before it 0.7.17, the crew a building can use — round 1 of Jerus's fixes from his 0.7.14 city: Bromilow-weighted crews and nothing parked, the builders counting repairs and staffing, the landlords holding 12 months of work, arrivals bounded by room, payroll by job type with idle crews laid off; before it 0.7.16, the year book as CSV beside the text — four CSV files from one table, the text unchanged; deployed and verified as tag 0928c; next is 0.7.17, Jerus's fixes from his 0.7.14 city in three rounds, then HealthCheck's own batch; before it 0.7.15, the central bank as backstop — Insane from day one, the skip through an empty treasury, the target to 20%, the holdings dial to 100% with the central bank rolling its own; deployed and verified as tag 0928a; the manual brought to 0.7.15 the same day as version 10, its tree copy deployed as tag 0928b; HealthCheck's own batch is next; before it 0.7.14, the city takes the shares — the city's fund, a failed bank resolved for its shares with its owners wiped out, TARP preferred for a weak bank, and the Insane start; deployed and verified as tag 0927a; HealthCheck's own batch is next; before it 0.7.13, rolling what falls due — the land office in the paying currency, new games on the autopilot, the treasury's rollover, the bank's balance sheet; deployed and verified as tag 0926b; before it 0.7.12, the firms sell bonds — corporate bonds and shares on one order book, recoveries by instrument, the cash-flow test, credit lines, interim financing and "buy only what it can pay for"; deployed and verified as tag 0926a, shipped with HealthCheck red on Jerus's word; the treasury fund and rescue-for-shares are next; before it, 0.7.11, the landlords take insured mortgages and the bank holds a leverage ratio — deployed and verified as tag 0924c; concentration is next, as corporate notes and bonds; 0.7.10, founding a city — a founding endowment of D$100M and US$25M, and a Found a city screen — deployed and verified as tag 0924b, with the build screen's 20-year bond; 0.7.8, the bank keeps its capital and a sector defaults a slice at a time, and 0.7.9, the Bank tab rebuilt — deployed and verified as tag 0924a, one deploy; before them 0.7.6 and 0.7.7 as tags 0923d and 0923e; 0.7.4's to 0.7.9's screens are still to be checked by eye, and whether converting for land should push the currency is open, Jerus's call). What shipped is in `changelog.md`,
+Updated 2026-10-06 (0.7.53 and 0.7.54: cities past 2.1 billion, deployed and
+verified as tag 1006c, not yet seen on the PC). Next: the land, the water and
+the world's deposits, then fuel. Open now: the PC check of 0.7.34 to 0.7.54 and
+Jerus's word on the ★ decisions; the manual is at version 13.
+What shipped is in `changelog.md`,
 newest first, with the state of the tree in its top block; this file is the
 list alone. `index.md` maps the design notes by subsystem, and `CLAUDE.md` in
 the repository is what a session reads before touching source. A session that
 has been away reads the changelog's top block and section 0 here, then works.
 
 ## 0. Do this week — costs nothing, saves weeks
+
+- **WORKING LEANER (agreed with Jerus, 2026-10-03; usage hit 98% after the
+  0.7.32-0.7.39 run).** From the next session on:
+  - **Start each session fresh:** read this section and the changelog's top
+    block, not a long carried-over conversation.
+  - **Sonnet trial:** the next records pass runs on Sonnet; the orchestrator
+    checks its figures against the notes, missed ★ decisions and stale
+    markers, and reports. If clean, records and write-ups stay on Sonnet;
+    implementers and docs passes stay on Opus.
+  - **Keep:** the fresh-context docs pass (it caught the fund's cap gap, the
+    small charts' missing flags, false strings), the research spec for big
+    screens, the full gate.
+  - **Leaner briefs:** name the exact methods; agents navigate by `docs/map`
+    instead of reading whole files.
+  - **Shorter notes:** a fixed, capped shape (headline, changes, PC checks,
+    ★ decisions, gate).
+  - **A shared probe kit** in the tree for loading the research cities.
+  - **Less repetition:** records and write-ups once a session; the
+    generated docs deployed once at the end, sources each time; smaller
+    batches so no agent's context fills.
+  - **Jerus answers CONFIRM in one message**, and does the PC check himself
+    with a checklist, sending only what looks wrong (screen control only
+    for what he can't judge by eye).
+  - **Model fixes he approves go in one batch.**
+  - **One message per batch** from the orchestrator.
 
 - ~~**NEXT: THE TREASURY FUND AND RESCUE-FOR-SHARES**~~ — shipped as 0.7.14
   (tag 0927a), see `the-city-takes-the-shares.md`: the fund, resolution for
@@ -21,6 +50,2021 @@ has been away reads the changelog's top block and section 0 here, then works.
   2026-10-01 as version 11, see `the-manual-at-0-7-23.md`; `docs/manual.md`,
   `docs/manual.html` and the three `docs/notes/` copies deployed and verified
   the same day as tag 1001e.
+- ~~**NEXT: THE RAIL'S SCREENS ONE AT A TIME**~~ — **every rail screen done,
+  0.7.24 to 0.7.37** (~~0.7.25, the build card; 0.7.26, the Land office;
+  0.7.27, People; 0.7.28, Services; 0.7.29, Infrastructure; 0.7.30, Sectors;
+  0.7.31, Government; 0.7.32, Finances; 0.7.33, the Bank; 0.7.35, Trade;
+  0.7.36, Policy; 0.7.37, City History~~, with 0.7.34's buttons between them);
+  ~~0.7.38, the loose ends of the redraw~~, **done 2026-10-02** (below).
+  Jerus, 2026-10-01, after seeing 0.7.24:
+  "also the build card for every building, i think the card itself needs a
+  redesign dont you think?", then "also im going to work, so try to ask the
+  minimal amount of questions, and try to work on all the rails one by one by
+  one". One batch a screen (`playing-0-7-23-ui-notes.md` §4 has a row for
+  each):
+  - ~~**0.7.25, the build card**~~ — **done 2026-10-01**: built and gated from
+    the design study `runs/card-spec-0725.md`, deployed and verified as tag
+    1001j (36 files), seen on the PC on 2026-10-01 in Jerus's own play of
+    0.7.31 (below), see `one-card-for-every-building.md`;
+  - ~~**0.7.26, the Land office**~~ — **done 2026-10-01**: built and gated from
+    the design study `runs/spec-land-0726.md`, deployed and verified with
+    0.7.27 as tag 1001k (72 files), seen on the PC on 2026-10-01 in Jerus's own
+    play of 0.7.31 (below), see `the-land-office-redrawn.md`;
+  - ~~**0.7.27, People**~~ — **done 2026-10-01**: built in a worktree from
+    `runs/spec-people-0727.md` while 0.7.26's docs pass ran on the main tree,
+    merged three ways (every merge clean, the full gate green on the merged
+    tree, Maps regenerated), SAVE_FORMAT 30; deployed and verified with 0.7.26
+    as tag 1001k, seen on the PC on 2026-10-01 in Jerus's own play of 0.7.31
+    (below), see `people-at-a-glance.md`;
+  - ~~**0.7.28, Services**~~ — **done 2026-10-01**: built in a worktree from
+    `runs/spec-services-0728.md` while 0.7.27's docs pass ran on the main tree,
+    merged three ways (every merge clean, the full gate green on the merged
+    tree), its docs pass run on the merged tree; SAVE_FORMAT 30; deployed and
+    verified with 0.7.29 to 0.7.31 as tag 1001m, seen on the PC on 2026-10-01
+    in Jerus's own play of 0.7.31 (below), see `services-at-a-glance.md`;
+  - ~~**0.7.29, Infrastructure**~~ — **done 2026-10-01**: built in a worktree
+    from `runs/spec-infra-0729.md` while 0.7.28's docs pass ran, merged three
+    ways (one conflict, in ServicesScreen, where the implementer had deleted
+    `roadInfo()`/`ROAD_INFO` and the docs pass had edited their text: the
+    orchestrator took the deletion; the full gate green on the merged tree),
+    its docs pass run; SAVE_FORMAT 30; deployed and verified with 0.7.28,
+    0.7.30 and 0.7.31 as tag 1001m, seen on the PC on 2026-10-01 in Jerus's own
+    play of 0.7.31 (below), see `the-road-in-one-picture.md`;
+  - ~~**0.7.30, Sectors**~~ — **done 2026-10-01**: built in a worktree from
+    `runs/spec-sectors-0730.md` while 0.7.29's docs pass ran, merged three ways
+    (every merge clean, the full gate green on the merged tree, 68/69 with the
+    new SectorFlowCheck), its docs pass run; SAVE_FORMAT 30; deployed and
+    verified with 0.7.28, 0.7.29 and 0.7.31 as tag 1001m, seen on the PC on
+    2026-10-01 in Jerus's own play of 0.7.31 (below), see
+    `the-sectors-as-flows.md`;
+  - ~~**0.7.31, Government**~~ — **done 2026-10-01**: built in a worktree from
+    `runs/spec-government-0731.md` while 0.7.30's docs pass ran, merged three
+    ways (the merge clean, the full gate green on the merged tree), its docs
+    pass run on the merged tree (the implementer was cut off after its gate, so
+    the docs pass also wrote `runs/ui12-notes.md` §§1–8 from the code);
+    SAVE_FORMAT 30; deployed and verified with 0.7.28 to 0.7.30 as tag 1001m
+    (134 files: the 57 source, CLAUDE and README files staged back and
+    identical byte for byte, the docs files committed), seen on the PC on
+    2026-10-01 in Jerus's own play of 0.7.31 (below), see
+    `earned-surplus-banked.md`;
+  - ~~**0.7.32, Finances**~~ — **done 2026-10-01**: built on the main tree from
+    `runs/spec-finances-0732.md` (from 0.7.31 final, after its docs pass), its
+    docs pass run; SAVE_FORMAT 30; deployed and verified with 0.7.33 as tag
+    1001n (25 source files identical byte for byte on the PC), seen on the PC
+    in the orchestrator's one look at 0.7.33 (below), see
+    `the-debt-at-a-glance.md`;
+  - ~~**0.7.33, the Bank**~~ — **done 2026-10-01**: built in a worktree from
+    `runs/spec-bank-0733.md` while 0.7.32's docs pass ran, merged three ways
+    (clean, the full gate green on the merged tree), its docs pass run; B5
+    fixed on the load path with the eight traces byte-identical; SAVE_FORMAT
+    30; deployed and verified with 0.7.32 as tag 1001n, seen on the PC (below),
+    see `the-bank-at-a-glance.md`;
+  - ~~**0.7.34, buttons that ask to be pressed**~~ — **done 2026-10-01**:
+    Jerus's one request after playing 0.7.31, with the look's two other
+    findings (Finances' "later", Sectors after a load); built in a worktree
+    from the brief (`runs/brief-ui15-0734.md`; there was no study) while
+    0.7.33's docs pass ran, merged three ways (clean, the full gate green), its
+    docs pass run; committed with 0.7.35 and 0.7.36 as tag 1001o, not yet
+    verified, then deployed and verified as tag 1001p (2026-10-02), not yet
+    seen on the PC (below), see `buttons-that-ask-to-be-pressed.md`;
+  - ~~**0.7.35, Trade**~~ — **done 2026-10-02**: built in a worktree from
+    `runs/spec-trade-0734.md` (its D4 not built: MODEL BUGS item 2) while
+    0.7.34's docs pass ran, merged three ways (clean, the full gate green), its
+    docs pass run; `fxParity` a new History series, SAVE_FORMAT 30; committed
+    as tag 1001o, then deployed and verified as tag 1001p, not yet seen on the
+    PC (below), see `trade-at-a-glance.md`;
+  - ~~**0.7.36, Policy**~~ — **done 2026-10-02**: built in a worktree from
+    `runs/spec-policy-0735.md` (its D7 and D18's step 1 not built: MODEL BUGS
+    item 4) while 0.7.35's docs pass ran, merged three ways (clean, the full
+    gate green at 69/70 with the new PolicyPreviewCheck), its docs pass run;
+    SAVE_FORMAT 30; committed as tag 1001o, then deployed and verified as tag
+    1001p, not yet seen on the PC (below), see `policy-at-a-glance.md`;
+  - ~~**0.7.37, City History**~~ — **done 2026-10-02**: built in a worktree
+    from `runs/spec-history-0736.md` while 0.7.36's docs pass ran, merged three
+    ways with one conflict, in `UserInterface`'s screens index (both paragraphs
+    kept; the full gate green on the merged tree), its docs pass run
+    (`runs/ui18-docs-pass.md`: one player string on History, comments in five
+    sources, DecisionLog's outside the changed set; the deploy set 28 paths);
+    SAVE_FORMAT 30; deployed and verified as tag 1001p, not yet seen on the PC
+    (below), see `city-history-finished.md`;
+  - ~~**0.7.38, the loose ends of the redraw**~~ — **done 2026-10-02**: built
+    in a worktree from `runs/brief-ui19-0738.md` (no study) while 0.7.37's docs
+    pass ran, merged three ways (clean: two files, HistoryScreen and YearBook,
+    merged with 0.7.37's docs pass's edits; the full gate green on the merged
+    tree), its docs pass run (`runs/ui19-docs-pass.md`: comments in 7 files,
+    no player string).
+    Eleven display fixes the redraw left, none needing Jerus's word: a small
+    chart's flags; the founding month's decisions on Trade's, Finances' and the
+    Bank's lanes; "0.0 months" of cover; the floor in founding money on People
+    and History; the fare onto `Levers.dialCard`; a shut-out sector's red name;
+    Sectors' rate bar on `quoteParts()`; the drawer's "vs parity"; a method
+    name in the pension card's (i); `adviceTotal()` on `quoteTotal()`; four
+    dead members (nine went). Each is marked "done in 0.7.38" where this list
+    carried it. SAVE_FORMAT 30; deployed and verified as tag 1001p after its
+    docs pass, not yet seen on the PC (below), see
+    `the-loose-ends.md`.
+
+  Noticed for them in 0.7.24:
+  - ~~Finances' and Trade's hubs look narrow in the stage 0.7.24 widened;~~ —
+    done in 0.7.32 and 0.7.35, both at Build's width;
+  - the drawer's content (the City overview) is still in the old ledger
+    style.
+- ~~**NEXT: THE CITY'S FUND AS A BROKERAGE**~~ — **done 2026-10-02 as
+  0.7.39**, deployed and verified as tag 1002a (2026-10-02: 61 files, the 20
+  source, CLAUDE and README files compared byte for byte). Jerus, early on
+  2026-10-02, after the overnight batches: "Oh additional note, when you get
+  to the city fund, when you click buy manually i want it to be like
+  wealthsimple trade type kinda like a brokerage, where you can search the
+  shares and bonds and see and all, and also the city fund should show pnl
+  and acb and all that". Built on the main tree from the read-only study
+  `runs/spec-fund-0739.md` (its ★ D1–D12 decided as it recommends) by the
+  brief `runs/brief-ui20-0739.md`; the implementer's notes
+  `runs/ui20-notes.md`, its changed list `runs/ui20-changed.txt` (61 paths, 8
+  new); its docs pass run (`runs/ui20-docs-pass.md`: comments in nine sources
+  and README, two player strings, twelve flags, the gate green again), then
+  three fixes in the same version (`runs/ui20b-notes.md`: the 10% cap
+  counting every order the fund has on a company, the rule's bid making way
+  for the hand's, ★; a seeded rescue lot asserted; Search's young-city words;
+  FundLedgerCheck 87 → 129 checks; the gate green again, the traces
+  byte-identical). Finances › The city's fund as four pages (Portfolio,
+  Search, Activity, Rules & cash) and a page a security with YOUR POSITION
+  beside THE ORDER TICKET; `FundLedger`, each holding's adjusted cost base by
+  the average-cost method with its realized P&L and its income, booked where
+  the holdings already move, an older save seeded at market value ("cost
+  from"); three History series; the hand names its price (★D2) and a waiting
+  order can be cancelled (★D3); a hand buy stops at the 10% cap (★B1) and a
+  queued buy's cash is held from the rule (★B9). FundLedgerCheck the 71st
+  harness; the gate 70/71, HealthCheck the known red; SAVE_FORMAT 30; the
+  eight traces byte-identical. Not yet seen on the PC (CHECK, below); its ★
+  decisions under CONFIRM, its model finds MODEL BUGS items 19–22; see
+  `the-fund-as-a-brokerage.md`.
+- ~~**CITIES PAST 2.1 BILLION**~~ — **done 2026-10-06 as 0.7.53 and 0.7.54**,
+  deployed and verified as tag 1006c (140 files; the 77 code files compared byte
+  for byte), see `spec-scale.md` (the study, read-only on 0.7.52; the builds are
+  in `runs/fixH1-notes.md`, `runs/fixH2-notes.md` and `runs/docs-0754.md`).
+  Jerus plans cities of 5 to 10 billion and asked for confirmation that "an
+  enormous city, utterly enormous, can still run with no issue"; the study said
+  yes, after named fixes, and he said to start on "the pop limit fix and the
+  size stuff". Built, from the study's §8: step 1 (the three order searches),
+  step 3 (counts to `long`), step 4 (money tolerances and quadrillions) and step
+  5 (`ScaleCheck` and `OrderSearchCheck`); SAVE_FORMAT 30, traces
+  byte-identical. Not built: step 2, the land premium (Jerus's call, CONFIRM
+  from 0.7.53 to 0.7.54), and steps 6 and 7, land purchases proportional to the
+  city, the map and the world, which are in the NEXT item below. Not yet seen on
+  the PC (CHECK 0.7.53 TO 0.7.54 ON THE PC, below).
+- **NEXT: THE LAND, THE WATER AND THE WORLD'S DEPOSITS, THEN FUEL** (Jerus's
+  plan, 2026-10-06: to be designed, then built). **Units and water:** land in
+  km², the city's total size shown; the world is the Earth's surface, water
+  included. Fresh water refills monthly up to a limit per km² that ordinary
+  water plants draw on; salt water feeds a new desalination plant (needs a
+  coast, costs more, uses a lot of electricity; **Jerus, 2026-10-06: salt water
+  is cheap and unused for now**). **World totals** (iron ore, oil, stone,
+  forest, coal, copper, uranium): buying land with a deposit moves it from the
+  world to the city, extraction depletes the city's share, forest regrows; at
+  first only iron ore and oil (fuel, next) are used. **Buying:** click a side
+  for its offers; a Build shortcut buys the best of any side. **Old saves:**
+  owned land stays the center, with new sides; the save format changes.
+  - **Nine chunks:** the center (nearly all the land); four owned newest strips
+    (N, S, E, W), the latest purchase each way, about 5% of the city; four offer
+    strips beyond them, each touching only its strip. ~~When a side doubles its
+    older part rolls into the center (rule open; the mockup did it on each
+    purchase).~~ **No side rolls** (Jerus, 2026-10-06): the world is generated
+    around the city and its deposits are visible on the map. **Offers** follow
+    what a side's newest strip holds, by density, not presence; they are at
+    least about 1% of the city and price deposits at world prices; ~~they
+    refresh on a timer and after a purchase on that side~~ **10 offers a side,
+    never rerolled, and each stays listed until bought** (Jerus, 2026-10-06);
+    ~~optionally, surveys as estimates~~ **no surveys** (Jerus, 2026-10-06).
+    **Finite fields:** a side striking oil draws a field size (most small, a few
+    huge); offers follow what is left, then fall back to the background rate;
+    fields come out of the world's remaining total, so grow scarcer.
+  - **The map** (painted, procedural): roads grow from their ends as gravel,
+    paved or highway; buildings take plots beside roads first, then the rows
+    behind, never blocking one; it pans and zooms with level of detail, stored
+    per strip as aggregates plus a seed, so cost follows the screen, not the
+    population (10B+ people). Mockup 2026-10-06:
+    https://claude.ai/artifact/2qoejEU7PqCG4xCAce4a1K (★ calls in
+    `runs/mockup/map-notes.md`). ~~**Awaiting** his reaction and answers on
+    double-the-side rule, water's uses, offers per side, surveys as estimates.~~
+    **Answered 2026-10-06** (Jerus): no side rolls; 10 offers a side, never
+    rerolled, each listed until bought; no surveys; salt water cheap and unused
+    for now. **Still awaiting** his go for this batch.
+  - **What the scale study binds** (`spec-scale.md` §6 to §9; Jerus plans cities
+    of 5 to 10 billion, and 0.7.53 and 0.7.54 made the model ready for them).
+    The design above has to keep to these:
+    - **Land purchases proportional to the city,** like the mockup's 5.5% strips
+      (§8 step 6): his parcels are 0.2 to 2.4 km² (`landListing`), so 10B people
+      (1.76M km²) would take on the order of a million purchases at today's
+      size.
+    - **The map stored as districts** (§6, ★7), in a binary, deflated sidecar
+      file beside the save, not in the JSON: about 11 MB at 10B (29,830
+      districts at Jerus's density; 5.4 MB at 5B), against about 90 MB if tiles
+      were stored (1.9M records). Tile counts are derived on demand by a stable
+      per-building deal, tiles are painted from seed + counts, and terrain comes
+      from the seed and is never stored; plot coordinates 64-bit or
+      tile-relative (3.28B plots at the sparser density pass 2^31).
+    - **The world in 64 km cells** (§7, ★8): 124,512 cells over the Earth's 510M
+      km², the deposits of six kinds drawn from the seed in 52 ms; **only the
+      depletion is stored**, per district and kind (about 1.4 MB at 10B); world
+      totals from one 64 km pass at founding, or the closed form; visible
+      deposits generated per km² in view.
+    - **The land premium** (§8 step 2, ★3; `LandMarket.java` :152-155 and
+      :328-329, 0.7.52's lines): linear in absolute size, about 19,500 times
+      today's price per sq ft at 10B, and at 5 to 10B a city scaled to size
+      builds nothing and loses about 1% of its people a month. Jerus's call
+      (CONFIRM from 0.7.53 to 0.7.54); recommended: tie it to density rather
+      than to absolute size (the study's other option was to saturate it); about
+      half a day once he decides.
+    - **A gameplay question as well as a scale one** (§9): 10B people on a 1,326
+      km square, at Jerus's density, means travel, the reach of services and one
+      city's two highways.
+- **STANDING: THE PC CHECK OF 0.7.34 TO 0.7.54, AND THE CONFIRM LISTS AWAITING
+  JERUS.** With 0.7.53 and 0.7.54 built, docs-passed and deployed (tag 1006c)
+  after 0.7.52 (tag 1006b), 0.7.50 and 0.7.51 (tag 1006a), 0.7.46 to 0.7.49 (tag
+  1005b), 0.7.42 to 0.7.45 (tag 1005a) and 0.7.40 and 0.7.41 (tag 1004a): the
+  check by eye of 0.7.34 to 0.7.54 on his PC, none of it yet rendered (CHECK
+  0.7.53 TO 0.7.54 ON THE PC, CHECK 0.7.52 ON THE PC, CHECK 0.7.50 TO 0.7.51 ON
+  THE PC, CHECK 0.7.46 TO 0.7.49 ON THE PC, CHECK 0.7.42 TO 0.7.45 ON THE PC,
+  CHECK 0.7.40 AND 0.7.41 ON THE PC and CHECK 0.7.34 TO 0.7.39 ON THE PC,
+  below); ~~the manual,
+  still version 11 at 0.7.23, which now has to run to 0.7.45, from its entries
+  "And 0.7.24" to "And 0.7.39" (below), the docs passes' "The manual" sections
+  and, for 0.7.40 to 0.7.45, the false sections listed here~~ — **done
+  2026-10-05: published as version 12 at 0.7.49** (the same artifact, version id
+  1791223550-debf; `docs/manual.md` and `docs/manual.html` regenerated), see
+  `model-fixes-fund-and-transit.md` §5, **and as version 13 at 0.7.51 on
+  2026-10-06** (version id 1791264114-68fa), see
+  `chart-crash-and-build-advice.md` §4 (version 14, for 0.7.54, is to be
+  published with the next batch); ~~Jerus's word on the model questions:
+  Trade's D4 (MODEL BUGS item 2), Policy's D7 / B8 (item 4), the epidemic (item
+  18) and the fund's stale mark, history precision, idle bids and cheap ten-year
+  bonds (items 19–22)~~ — **all built** as A2, B8, A8, C4, C5 and C3 (item 22
+  dropped with proof); and Jerus's word on the CONFIRM lists' ★ decisions:
+  0.7.53 to 0.7.54's first (the land premium at 5 to 10B, history trimming, the
+  arrears line, `Formats.cash()` at 2^53, the 1,500 ms bound, the halving
+  proofs, H1's and H2's other ★ calls), then 0.7.52's (the strictness dial's
+  ends, the 0% floor at his 0.5% target, credibility against the Standard rule,
+  old autosaves left as they were), then
+  0.7.50 to 0.7.51's (the build advice's 5% slack and 100% target, its
+  6-month horizon with the wait capped at 12, the cash cap removed, land at the
+  office's price, higher education only for students who would be hired, a
+  first school half full, one building type per need; the Home Daycare counts,
+  the two land figures on one card, the freeze tied to the chart fault,
+  `clearMenu`'s filter, the log past its cap), then 0.7.46 to 0.7.49's (B8's
+  large effect on the default playtest, the
+  ensemble's two new fails K2 and R3, the fare cap at 27.6% of an unskilled
+  household's take-home, fuel real and imported, the withdrawal's sale at fair
+  value, the fund summary's amber, `SAVE_FORMAT` 30 against a 0.7.45 build),
+  then 0.7.42 to 0.7.45's (S1's window, H1's acceleration, rent through the
+  landlords' interest, the shelf cap and A2, the grocers at their floor, B16's
+  smoothing, credibility's speeds), then 0.7.40's and 0.7.41's (the road's red
+  line at 111% served, care over 100% on the rings, a run funded only up to a
+  refusal), then 0.7.39's D2 and D7.
+  - ~~**The manual's false sections at 0.7.45** (`runs/ui26-docs-pass.md` §3;
+    `docs/manual.md` was not edited): the header table and §1, 2, 3, 4, 7, 8, 9,
+    11, 12, 14–16, 18 and 21–25, in short:~~ **all rewritten in version 12
+    (2026-10-05); the list stays as the record of what was false:**
+    - **Header and intro:** 0.7.45, format 30, 252 files, ~233,000 lines, 74
+      harnesses; the anchor, prices that clear, vouchers.
+    - **§1 The month:** a new first step (constants struck at the expected
+      level); step 3 wages half on expected inflation; step 6 the strike settles
+      supplier credit; step 13 vouchers paid after the markets; step 15 the
+      anchored drift, the five-part index and the anchor.
+    - **§2 Households:** groceries asked for at a price (a basket a head,
+      satiation 1.5× the floor, elasticity .4, its money); the plan is the
+      discretionary plan; hunger is baskets got against needed (priced out, or
+      short of stock); the real deposit rate less EXPECTED inflation; 37 cell
+      slots (+4 groceries, +1 smoothed means income).
+    - **§3, §11, §4, §9, §14, §18:** the FIXED grant at the expected level and
+      the pension base struck at it (no longer frozen); §11's wages half
+      expected inflation, half a forty-eighth of the gap (LabourCheck's sentence
+      about DRIFT_PER_MONTH is out of date); the price at the door, "The price
+      keeps up", fees and paid-in, and land, struck at Pe.
+    - **§7 Goods and §8:** Groceries "cost-plus" becomes a floor, a clearing
+      price over it, a 1.5× cap, a sixth a month, drifting, with supplier
+      credit; §8's hurdle and the landlords' lender at the real rate (0.7.42,
+      0.7.44) and Retail's planner on baskets against hand-over.
+    - **§12 Policy:** Promises has six tabs (Food) and a food assistance dial;
+      EARNED's walk has the vouchers.
+    - **§15 and §16:** on target the rule sets the neutral real 1% plus the
+      target; realDepositRate on expected inflation; the box "The channel ...
+      moves very little" is overturned (the index is five parts, the shelf
+      answers money); the spread at 0.7.43 is 8.61 points (§6); the dials table
+      needs the anchor's (KMIN .25, KMAX .95, KSEED .80, TOLERANCE 1 point, LOSS
+      24, GAIN 60) and the shelf's dials. §16: five components on trailing-year
+      weights, luxury capped at 15%, chained every 120 months, "1.6× at total
+      shortage" gone; rent log-sticky with the expected drift; the currency's
+      anchored drift, UIP reversion .15, the real gap ex ante and five forces;
+      the INFLATION tile's line is the anchor.
+    - **§21 to §25:** §21 the fare, the dial at founding prices, charged at the
+      struck level and shown in today's money; §22 NEEDS YOU's PRICES, Money's
+      anchor and drift, Promises › Food, the shelf and margins, WHO GOES SHORT,
+      History's new series and basket marks; §23 the year book's columns; §24
+      ExpectationsCheck, GroceryCheck, SupplierCreditCheck; §25 "The index's
+      base period", "a floor doing a price's job" and "priced by coverage, not
+      by money" are answered by 0.7.42 and 0.7.43.
+  - ~~**The manual's five false sections at 0.7.41** (`runs/ui21-docs-pass.md`,
+    "Manual sections that are now false"; `docs/manual.md` was not edited):~~
+    **all rewritten in version 12 (2026-10-05); kept as the record:**
+  1. §13 The city's borrowing, "Issuance costs…": "When the treasury cannot pay
+     for an order, the Build screen offers two things…". Since 0.7.40 any Build
+     press that is more than the cash (a card, the order bar, Enter, Build all
+     three or a suggestion) opens one page for the whole run, Build › Funding,
+     in the land office's shape: the run's price against the cash, what it is
+     short by, the same two offers as cards side by side, each sized to the
+     run's gap (its invoice, each order priced on the yard the ones before it
+     leave, less the cash) and each button saying the run. A run that would stop
+     at an order short of ground, ore or licences borrows only for the orders
+     before it and says so; an order not placed stays on its card.
+  2. §22 The page stays put: "a Needs you line whose fix is already on site …
+     falls from red to amber". No longer true of the served rows (power, water,
+     road, care, schools): since 0.7.41 they keep the verdict's colour while
+     their sites are on the way; sites change only the listing and the order.
+  3. §22 The summary is a problem list: "yellow near the line and red past it",
+     the same red-to-amber sentence, and "They read load — demand over supply —
+     now, against the 75%…". Since 0.7.41 the served rows read supply over
+     demand, unclamped ("233% served", "62% served · 56% flow"); they are still
+     listed on the load or cover lines as before (power and water from 75% of
+     capacity) but coloured by one verdict: green only at 100% or more and off
+     the list, red at or under the red line, amber between ("short" under 100%,
+     "tight" from it); the drawer's RESOURCES line counts "1 short · 1 tight"
+     and can be red.
+  4. §22 The inbox: "Since 0.7.5 … Enter … stops at the first refusal with the
+     rest still pending". Add that since 0.7.40 Enter places the page's orders
+     as one run, funded whole through Build › Funding when it costs more than
+     the cash; it still stops at the first refusal; every order not placed stays
+     on its card, the refused one included (it used to lose its count).
+  5. §21 The instrument panel, "Roads: … the free-flow curve as a banded meter"
+     (already stale at 0.7.29). Since 0.7.41 the Roads page shows SERVED, not
+     FULL, and a curve of the flow against what the road serves (0–200%, red,
+     amber and green from the left, better to the right).
+  Missing, not false: §23 Time runs on its own (the redraw is held while a mouse
+  button is down and drawn after the release, 0.7.40); §22 City History's chart
+  (the charts follow the window and are cut at their edge); the borrow page's
+  typed, scaled ask and its presets; the masthead (still Build 0.7.23, save
+  format 29, 233 files, 66 harnesses).
+- ~~**FIXES FROM PLAYING 0.7.39**~~ — **done 2026-10-04 as 0.7.40 and 0.7.41,
+  tag 1004a** (49 files, verified byte for byte). Jerus's finds and the gauges'
+  one rule, built as he chose; not yet seen on the PC (CHECK, below); see
+  `fixes-from-playing-0-7-39.md`.
+- ~~**INFLATION THAT ANSWERS TO MONEY**~~ — **done 2026-10-04/05 as 0.7.42 to
+  0.7.45, tag 1005a** (179 files: 50 staged back from the PC identical byte for
+  byte, the other 34 sources matching by size). Jerus's question why 100% QE, a
+  20% target and 0% rates gave almost no inflation, answered with a Phillips
+  curve mixed with clearing on money and built in four versions by fresh Opus
+  agents; the five-policy ensemble went from 8/15 at 0.7.41 to 22/25 at 0.7.44,
+  with A2, S1 and H1 left failing for his word. Not yet seen on the PC (CHECK,
+  below); its ★ decisions under CONFIRM, its finds under FOUND ON THE WAY; see
+  `inflation-that-answers-to-money.md`.
+- ~~**THE MODEL FIXES, THE FUND'S WITHDRAWAL AND TRANSIT**~~ — **done 2026-10-05
+  as 0.7.46 to 0.7.49, tag 1005b** (170 files: CLAUDE.md, 74 sources and 95 documents, among them the manual, the map and the notes; the 75 code files staged back and matched byte for byte). Jerus's
+  "go for the model fixes, manual up to date and also, the city fund ... even 0
+  or 10% a month", then "for transit, fix the leak": a read-only triage of the
+  open model bugs against 0.7.45 (`runs/spec-model-fixes.md`), then four
+  versions by fresh Opus agents: the load path and saved flows (0.7.46),
+  government, labour and accounts (0.7.47), the fund's withdrawal dial from 0 to
+  10% a month (0.7.48) and transit, the bill paid and households choosing by
+  what their own commute costs (0.7.49, after a design study,
+  `runs/spec-transit.md`); and the manual to 0.7.49 as version 12. The ensemble
+  went from 22/25 at 0.7.44 to 20/25 at 0.7.49 (K2 and R3 new fails; A2, S1 and
+  H1 still fail). Not yet seen on the PC (CHECK, below); its ★ decisions under
+  CONFIRM, its finds under FOUND ON THE WAY; see
+  `model-fixes-fund-and-transit.md`.
+- ~~**THE CHART CRASH AND THE BUILD ADVICE**~~ — **done 2026-10-06 as 0.7.50 and
+  0.7.51, tag 1006a** (53 files: CLAUDE.md, 20 sources and 32 documents, among
+  them the manual, the map and dials, harnesses and month-order; the 21 code
+  files staged back and matched byte for byte, the documents' sizes matched).
+  Jerus, after 0.7.49: "hmm ok pretty good, but on one test run, the game got
+  stuck"; then, going to sleep, "the building ideas is flawed, it doesnt take
+  into account land price, and it doesnt build any slack" and universities
+  "overstated and way too early". 0.7.50: the chart that drew from a history
+  list that grew under it, now one snapshot, with every chart handler guarded
+  and the log keeping failures past its cap (`runs/fixE-notes.md`); 0.7.51:
+  Build's advice priced with its land, sized to the businesses' projection with
+  5% to spare, higher education only for students the city would get and hire,
+  and "Build all three" reading the run, after a design study
+  (`runs/spec-build-advice.md`, `runs/fixF-notes.md`); and the manual to version
+  13. The traces are byte-identical to `pt0749` and the ensemble was not run.
+  Not yet seen on the PC (CHECK, below); its ★ decisions under CONFIRM, its
+  finds under FOUND ON THE WAY; see `chart-crash-and-build-advice.md`.
+- **THE RESEARCH SPECS' BUGS — FIXED AS EACH SCREEN IS REDONE** (found
+  2026-10-01 by the read-only specs for the Land office, People, Services,
+  Infrastructure, Sectors, Government, Finances, the Bank, Trade, Policy and
+  City History, on the playtest's 2,400- and 600-month cities; nothing
+  changed). Each went with its screen's batch, and since 0.7.37 every screen's
+  batch has run; what each left is below, and the model bugs the specs found
+  are the next item:
+  - **The railway bills almost nothing in the first month after every load**
+    (`runs/spec-infra-0729.md` §9 B1, §10 D2): a model bug, under MODEL BUGS
+    FOUND BY THE SCREEN RESEARCH, below. The spec's other findings went with
+    the Infrastructure screen (0.7.29, below).
+  - ~~**Land office** (`runs/spec-land-0726.md` §8)~~ — **done in 0.7.26**
+    (`the-land-office-redrawn.md` §4): "Who is waiting" from the blocked
+    sectors; the red "% used" off the office, Build's LAND FREE and the left
+    panel; the receipt in the screens' money; the funding pages on the rail
+    and back to the office when nothing needs funding; the floor's wording;
+    the going rate in the model; the stale tile sizes; `Palette.ORE`; vault
+    mode's mixed verdicts; per-sq-ft prices through `Money`; "last month"
+    from `NationalAccounts`; SectorScreen's "land tab". §8.1 (BEST VALUE not
+    `bestValue()`) was decided as ★1: kept on card 1, the class comment made
+    true, the tags independent. **Left:** §8.14's first half, Build's "Not
+    enough land" page quoting "roughly" a block the office no longer sells,
+    with ★12 (CONFIRM, below).
+  - ~~**People** (`runs/spec-people-0727.md` §8, nineteen)~~ — **all done in
+    0.7.27** (`people-at-a-glance.md` §4), the eighteenth on the Services side
+    only: NEEDS YOU's CARE rows and Build's rings still read the beds, not the
+    priced out (D16, CONFIRM below):
+    - ~~Household Cash Flow's "Every kind of household covers its month" over
+      red rows (only the family cells are counted);~~
+    - ~~GOING SHORT is mostly empty shelves and the page never says so, and
+      `HouseholdBalance.lastDelivered` is not restored on load (reads 1.0
+      until the first month);~~
+    - ~~the rows below the rule measured against `want()`, not a basket;~~
+    - ~~Pensions' "They can afford to eat" under −$3,004 (`PolicyScreen`
+      colours by one test and words by another; its three lines do not
+      foot);~~
+    - ~~fractional households ("4,910.54": `Pieces.cell()` unrounded) and
+      fractional people ("0.02 at 1.01x");~~
+    - ~~the pay row at the founding wages, not the live ones;~~
+    - ~~the city's month does not foot, by the bank's account fees
+      ($667,264), and the opened panel files them as "interest" and the fares
+      under "Healthcare and school fees";~~
+    - ~~after a load, Why people come is wrong (`Migration` saves no
+      last-month figures);~~
+    - ~~"Kept from last month" above the total (50,206 against 34,667);~~
+    - ~~the omissions list half stale; PER WORKER's caption wrong; three
+      "carry" ratios on two pages;~~
+    - ~~verdict colours as categories (the working-age pyramid bars, the Born
+      line);~~
+    - ~~the dashboard's HUNGRY reads the sickness points, the page it opens
+      the share of people;~~
+    - ~~figures shown twice on the page; the retired in the unskilled column
+      of "all households";~~
+    - ~~Services' care coverage from beds, not `Healthcare.getCoverage()`~~
+      (THINNEST COVER only; see above);
+    - ~~Household Cash Flow reachable only from a bare button under the
+      scroller.~~
+  - ~~**Services** (`runs/spec-services-0728.md` §8, nineteen)~~ — **done in
+    0.7.28** (`services-at-a-glance.md` §4), all that are the screen's.
+    **Left:** bug 6, History's "Graduates" line 0 by construction (MODEL BUGS,
+    item 7, below), and the second half of bug 5, `Education.everGraduated`
+    counting only the months a band grew (a model record, now in the ladder's
+    details under an honest label):
+    - ~~power in kW labelled W, and "units a month" elsewhere for a rate;~~
+    - ~~"GROUND LEFT plenty" on full ground (`monthsOfPlotsLeft` is
+      `Double.MAX_VALUE` when nobody is buried);~~
+    - ~~Utilities › Roads' "Spare" can never read "Over by" ("Spare 0" in
+      green at 163%), struck on the raw load beside an effective "In use";~~
+    - ~~Education's Books list the tuition the city covers as a cost the gross
+      leaves out, and the alert says it is counted twice;~~
+    - ~~"New diplomas this month" is a net band movement (−18)~~ (the leavers'
+      diplomas gross since 0.7.28, `getNewDiplomas()`); the ever-taught count
+      still undercounts, and History's "Graduates" line is 0 by construction
+      (above);
+    - ~~coverage from beds, not what the model applied; Senior care's "People
+      to serve" is places; the death-chance note leaves out the elders (8%);
+      the Senior care page shows only the senior band's deaths;~~
+    - ~~"Four fifths of the water leaves unpaid for", a literal (measured 59%
+      to 74%); "Resident draw" is not residents, and "Households have no cash
+      account" is stale;~~
+    - ~~the utilities called "privately owned, city-regulated" while their net
+      income goes to the city's cash;~~
+    - ~~Health's Books read 0 for "seen" and "raised" right after a load;~~
+    - ~~verdict colours that disagree with NEEDS YOU for the same figure;~~
+    - ~~the OFF SICK door opens whatever page was last open; the power page's
+      two shortfalls unlabelled; "Build water →" opens Utilities on its worst
+      measure; Canada's 127 prisoners per 100k a literal.~~
+  - ~~**Infrastructure** (`runs/spec-infra-0729.md` §9, fourteen)~~ — **done
+    in 0.7.29** (`the-road-in-one-picture.md` §4), all but three:
+    - ~~"Room before it slows" and the spare capacity on the raw load (B3;
+      fixed in the model's getters);~~
+    - ~~`Rail.rAllowed` not saved, "$0.00" allowed just after a load (B2);~~
+    - ~~Services' Utilities › Roads lines (B4; retired with the row);~~
+    - ~~Freight's "paid abroad" that was the saving (B5); a commuter's 1.00×
+      (B6); the drawer's three decimals and changing meaning (B7);~~
+    - ~~five verdict scales for one road, the meter's bands missing NEEDS
+      YOU's 85% (B8, B12); verdict colours as categories (B10);~~
+    - ~~Build's transit ring "carries 62.5k" when 41.4k ride (B9); the lorry
+      grid's row of noughts (B11);~~
+    - **left:** B1, the railway's after-load bill (MODEL BUGS, item 1); B13,
+      rail's tightness flipping across a load in a city with no track (B1's
+      zero month; nothing shows it); B14, `Pieces.TILE_HEIGHT` with no reader
+      (section 6, 0.7.25's flags).
+  - ~~**Sectors** (`runs/spec-sectors-0730.md` §8, fourteen)~~ — **done in
+    0.7.30** (`the-sectors-as-flows.md` §4), all that are the screen's:
+    - ~~the balance sheet missing held abroad and other businesses' bonds
+      (B1); Cash & debt missing the stolen and the shares bought back (B2);~~
+    - ~~the operating rate's note "whichever is thinnest", of five (B3);
+      "Staffed 100%" and "Running at 43%" in red with nothing standing (B4);~~
+    - ~~"Sold" and "Could not build" in green (B7); OWES quoting a rate on no
+      debt (B8); the scrapping alert with nothing to scrap (B9);~~
+    - ~~verdict colours as categories (B10); a negative zero (B11); two month
+      flows reading 0 after a load (B14);~~
+    - **left:** B6 and B12, the sectors' own figures, and B13's Real Estate
+      comma (MODEL BUGS, items 8–10); B13's other two, Agriculture's repeated
+      "Brought in a month" and Heavy Industry's green "Exported 0 tonnes", in
+      the old page's fold, untouched; B5, the vans block on every default
+      page, which is not among the fixes the implementer lists.
+  - ~~**Government** (`runs/spec-government-0731.md` §9, seventeen)~~ — **done
+    in 0.7.31** (`earned-surplus-banked.md` §4), all that are the screen's:
+    - ~~the GDP history empty after every load (B1; fixed on the load path,
+      MODEL BUGS item 3);~~
+    - ~~Repairs in the spending ring and list but not in the total, the key
+      adding to 111.0% (B2); the net of care and schools printed with its sign
+      inverted (B3);~~
+    - ~~verdict colours as series and category colours, the amber "Paid out"
+      bar among them (B4); "Steel exported" and "Scrap imported" (B5's
+      labels);~~
+    - ~~"of the change" at 1,038% and −1,545% (B6); `getIncome()` writing four
+      of the month's fields each time the header drew (B8); the header's (i)
+      under-listing what EARNED leaves out (B9);~~
+    - ~~the pension alert every month (B11); "the city's own staff" that was
+      care and schools (B12); `donutKey`'s unused parameter (B13); the revenue
+      ring's centre counting a line its arcs dropped (B14); hyphen and minus
+      mixed (B15); care fees with no care bill (B16, traced: the founding
+      endowment's);~~
+    - **left:** B7, EARNED moving with the dials between presses, named as the
+      bridge's step "Today's dials, not the month's" rather than changed; B10
+      and B5's G (MODEL BUGS, items 11 and 12); B17, THE DEBT's coupon chip for
+      a month after a load (section 3, GOVERNMENT).
+  - ~~**Finances** (`runs/spec-finances-0732.md` §8, B1–B19)~~ — **all done in
+    0.7.32** (`the-debt-at-a-glance.md`): B15, GDP after a load, checked gone
+    since 0.7.31; B17, Government's "maturity strip" sentence, fixed there;
+    B13's Finances half there and its Policy half in 0.7.36. Three more found
+    on the way and fixed: a dollar piece valued at the city's short rate where
+    a buyback pays the world's curve; the net position taking an overdraft off
+    twice; the default scar called points of the city's rate. B20's oddities
+    print nothing false.
+  - ~~**Bank** (`runs/spec-bank-0733.md` §8, seventeen)~~ — **done in 0.7.33**
+    (`the-bank-at-a-glance.md`): B1–B15 and B17 fixed, B5 on the load path
+    (MODEL BUGS item 5). **Left:** B16, a hyphen for a minus inside the
+    verbatim folds and on History's money charts (`Money.tightMoney()`, every
+    screen's: section 3, THE BANK).
+  - ~~**Trade** (`runs/spec-trade-0734.md` §8, twenty)~~ — **done in 0.7.35**
+    (`trade-at-a-glance.md`), eighteen fixed. **Left, shown honestly:** B1, the
+    month's flows after a load, which read "not counted yet" (saving them is
+    the spec's D4, MODEL BUGS item 2); B14, freight after a load (MODEL BUGS
+    item 1).
+  - ~~**Policy** (`runs/spec-policy-0735.md` §8, 21)~~ — **done in 0.7.36**
+    (`policy-at-a-glance.md`), twenty fixed, B3 checked gone. **Left:** B8,
+    `isPinned` against the founding floor (the spec's D7, MODEL BUGS item 4).
+  - ~~**City History** (`runs/spec-history-0736.md` §8, B1–B12)~~ — **done in
+    0.7.37** (`city-history-finished.md`), all addressed; B10 was already done
+    in 0.7.31. **Left:** B5, the epidemic of 2,213 months, changed only in the
+    screen's order and words (MODEL BUGS item 18).
+- **MODEL BUGS FOUND BY THE SCREEN RESEARCH — all closed 2026-10-05, as 0.7.46
+  to 0.7.49** (found 2026-10-01 and 2026-10-02 by the read-only screen specs and
+  by 0.7.27's to 0.7.39's implementers and docs passes, on the playtest's 2,400-
+  and 600-month cities). Items 3 and 5 were fixed on the load path in 0.7.31 and
+  0.7.33. On 2026-10-05 Jerus said "go for the model fixes", and a read-only
+  triage against 0.7.45 (`runs/spec-model-fixes.md`) built the other eighteen in
+  four versions, each struck below with its version, and dropped items 16 and 22
+  with proof; see `model-fixes-fund-and-transit.md`. The items read as they were
+  found:
+  1. ~~**The railway bills almost nothing in the first month after every
+     load** (`runs/spec-infra-0729.md` §9 B1, §10 D2). `Rail.haul()` reads
+     this month's exports and imports, month flows the save does not carry,
+     so right after a load they total 0 t. At month 2,401 of the probe city:
+     trade tonnes 154,577 → 2,695, billed $21.3M → $0.6M, the quote 0.337 →
+     0.503 (still 0.433 two months on), goods' bands widened for a month, road
+     use +1,519 trips. Every Continue does this; it is the cause of 0.7.25's
+     "Rail's trade tonnes jump across a load" (`runs/ui6-notes.md` §8.3). The
+     spec's fix: save last month's per-stream tonnes and truck bill in
+     `Rail`, bill at them the first month after a load and do not reprice
+     (0.7.25's D11 pattern). Not the Infrastructure screen's batch.
+     **On screen since 0.7.29** (`runs/ui10-notes.md` §8.3,
+     `the-road-in-one-picture.md` §7): the railway page shows it a month after
+     any load. In the 2,400-month city 2,695 t crossed, the quote went 43% →
+     57%, net income −$4.7M and "bigger than its city" fired, and goods lost
+     their rail share for the month. Its twin, the spec's B13 (rail's
+     tightness flipping across a load in a city with no track), shows nowhere.
+     **On Trade since 0.7.35 and on City History since 0.7.37** (the Trade
+     spec's B14, shown, not fixed): right after Continue every good's freight
+     factor is 0, so What we trade's popover and price grid and History's
+     PRICES THIS MONTH say their prices may step a month on.~~ — **done in
+     0.7.46** (A1, with its twins B13 and Trade's B14): `Sector` carries the
+     month's units shipped and landed across a save (`carriedExports`,
+     `carriedImports`, saved as `SectorState.exported` and `imported`), so the
+     railway bills a reloaded city's first month as the live one: city2400
+     reload+1 reads 157,717 t, D$27.74M billed and a quote of .4017 (0.7.45:
+     2,700 t, D$0.77M, .568); the traces byte-identical.
+  2. ~~**Trade's month flows are not saved** (`runs/spec-trade-0734.md` B1).
+     `ForeignAccounts.toSaveArray` holds trailing figures, not the month's
+     exports, imports, foreign interest, financial flows, valuation, or what
+     the vault bought and sold. Just loaded, both probe cities read SOLD
+     ABROAD $0, BOUGHT ABROAD $0 and THE MONTH +$0 in green; the river says
+     nothing crossed the city's edge while the sectors' saved statements hold
+     D$393.3M of exports; and the forces page's previews read a deficit
+     city's vault as selling nothing. Nothing in the month reads them before
+     `takeMonth()`, so saving them moves no trace; the spec saves them with
+     no SAVE_FORMAT bump (its D4).
+     **Ready to build, awaits Jerus** (put to him on the evening of 2026-10-01;
+     the spec's D4, not built in 0.7.35, `runs/ui16-notes.md` §4 decision 4):
+     append the eight flows to `toSaveArray()` and read them by length in
+     `restore()`; `isMonthCounted()` is then true after a load of a save that
+     carried them, and nothing on the screen changes but that the "not counted
+     yet" states stop appearing. Until then, since 0.7.35, SOLD ABROAD, BOUGHT
+     ABROAD and THE MONTH read "not counted yet" after a load (or a founding),
+     never $0, and What we trade shows the month the city was saved in from the
+     businesses' saved books.~~ — **done in 0.7.46** (A2):
+     `ForeignAccounts.toSaveArray()` slots 37–44 carry the month's exports,
+     imports, foreign interest, financial flows, valuation and the vault's
+     trades; `restore()` counts the month when they are there, and an older save
+     still reads "not counted yet". No `SAVE_FORMAT` bump.
+  3. ~~**Government's GDP history is not restored on load**
+     (`runs/spec-government-0731.md` B1). `NationalAccounts` deliberately
+     does not restore it, though `HistorySave` keeps every month's GDP. Just
+     loaded, a 2,400-month city has "not a year of output recorded yet", and
+     for the next 11 months every "of GDP" is scaled up from the months since
+     the load ($5.4B against the true $5.7B; 36.39% against 34.4%). It is the
+     cause of the walkthrough's §2.1, the GDP tile after a load (Housekeeping,
+     "Not persisted across save/load").~~ — **done in 0.7.31** (the spec's
+     D5, in the Government batch): `NationalAccounts.seedHistory()` puts the
+     last 120 months back from `HistorySave.getGdp()` on the load path, so
+     right after Continue every "of GDP", the Output page and the header's
+     GDP tile read a year; SaveFileCheck holds it, and the eight traces
+     stayed byte-identical (`earned-surplus-banked.md` §4, §5).
+  4. ~~**Policy's `LabourMarket.isPinned` compares the wage with the floor in
+     founding money** (`runs/spec-policy-0735.md` §8 B8, its ★D7). It tests
+     against $3,460 while the wage is clamped at `cashMinimumWage()`, $3,827,
+     so in the 2,400 city the Diploma band, 21,182 spare and paid exactly
+     $3,827, is "not pinned", and the Policy flag, NEEDS YOU's WAGES and
+     Migration's surplus departures all skip it. The fix (`cashMinimumWage()`
+     in `isPinned`, with a LabourCheck section) moves migration: **the
+     playtest's labour and pop traces will change**. The spec puts it in a
+     small batch before the Policy screen's.
+     **Ready to build, awaits Jerus** (put to him on the evening of 2026-10-01;
+     0.7.36's ★D7, its D18 step 1 not built, `runs/ui17-notes.md` §4 decision
+     1): `cashMinimumWage()` in `isPinned`, and a LabourCheck section "a band
+     held at the indexed floor with people spare is pinned at a cost of living
+     of 1.1"; the labour and pop traces will move. **On screen since 0.7.36:**
+     the Wages page reads `isPinned` as it is and adds no verdict of its own,
+     so in the 2,400-month city Diploma reads "has room · 21,161 spare" while
+     it is paid exactly the floor ($3,827).~~ — **done in 0.7.47** (B8):
+     `LabourMarket.isPinned()` reads `max(baseWage × MIN_MULTIPLE,
+     cashMinimumWage())`, and Migration, CityNeeds and PolicyScreen follow. **It
+     moved the default playtest a lot:** the first difference is m32; population
+     at m1000 21,845 → 15,740 and at m4000 198,194 → 191,012; departures over
+     the run 65,805 → 1,090,944; re-baselined as `pt0747` (CONFIRM, first).
+  5. ~~**The Bank's sector rates miss their surcharge after a load**
+     (`runs/spec-bank-0733.md` B5, its ★D10). Just loaded, every sector's rate
+     lacks its record and its concentration charge: Mining in the 2,400 city
+     reads 3.07% just loaded and 6.38% a month on, with no change in the
+     sector. The charges are pushed only in the month, and the load path
+     apparently prices credit before the record is restored (the spec says to
+     verify the call order). The playtest's reloads match, so the month
+     re-prices before any loan is written. The spec fixes it on the load path
+     only if the eight traces stay byte-identical.
+     **Traced by 0.7.30's implementer** (`runs/ui11-notes.md` §8, found 1;
+     `the-sectors-as-flows.md` §7): the bank quotes a sector's rate without
+     its record of defaults right after a load. `rebuildSimulationState()`
+     prices every sector's rate before `restoreCreditRecord()` puts the
+     restructure counts back, and the concentration charges are not set until
+     the month: in the 2,400-month city Manufacturing (record 1.00 point)
+     reads 2.92%, the prime, after Continue where its books struck 3.60%, and
+     Mining 3.07% against 6.37%. Harmless to the simulation (repriced at the
+     next month's top before any loan is priced); since 0.7.30 the Sectors
+     screen's Cash & debt shows both rates until a month runs. A load-order
+     fix, Jerus's.~~ — **done in 0.7.33** (the Bank spec's D10,
+     `the-bank-at-a-glance.md`): two lines at the end of Game's load path push
+     the concentration charges and re-price (`updateRates()`), so a city just
+     loaded quotes each sector with its record and the book's concentration;
+     Mining in the 2,400-month city reads 6.38% after Continue (it read 3.07%).
+     The eight traces stayed byte-identical, and BankCheck §13b's three B5
+     labels fail without the two lines. The Sectors screen's Cash & debt rate
+     bar reads the parts the rate was struck from (`quoteParts()`) since
+     0.7.38; the sector (i)s beside it still read the quarter as it stands
+     (section 3, THE BANK).
+  6. ~~**A reloaded city drifts a little in its first month**
+     (`runs/ui8-notes.md` §9, "Found on the way" 1; older than 0.7.27). The
+     2,400-month city, saved after a month and played one more month both live
+     and from the reloaded save: 112,810 against 112,812 people, $1,072 of cash,
+     arrivals 156.40 against 157.76. After a load the cells' month ledger reads
+     differently, so the first month plans differently (Senior alone afterFixed
+     $194 against $181; EI run out drew $0 against $422; dividends $0 against
+     $49.4M; cars bought 0 against 222). The playtest's round trip does not
+     compare that far.~~ — **mostly done in 0.7.46** (A1, with A2–A5): with the
+     trade carried and each cell's income after fixed bills saved, the series
+     that differ a month after a reload fall from 62 of 226 to 12 of 229 (by at
+     most 8.3e-5; city600 0 of 223). The ★2 residual is not chased (sector net
+     incomes ±D$0.4k, `bankDeposits` +D$64.6k, cash 5.6e-9).
+  7. ~~**History's "Graduates" line is zero by construction**
+     (`runs/spec-services-0728.md` §8 bug 6; `runs/ui9-notes.md` §8.2;
+     0.7.28's D9). `HistorySave` records the sum of the net band movements,
+     and every +1 has its −1: in the fixture city (the 600-month city with
+     schools) it read 0.000 every month while the licences climbed to 0.59 a
+     month. If it should be the gross diplomas, `Education.getNewDiplomas()`
+     (0.7.28, not saved) is that figure. Not fixed in 0.7.28; Jerus's call.~~ —
+     **done in 0.7.46** (A6): History records the gross gains,
+     `Education.gainedThisMonth()`, the sum `everGraduated` accrues; months
+     before stay 0.
+  8. ~~**Automotive's page mixes nameplate with the month**
+     (`runs/spec-sectors-0730.md` §8 B6). "Cars 21,780 a month" is nameplate
+     while 9,178 were made; "Fabricated steel 76,230 tonnes wanted, 32,018
+     bought here" is amber, but "wanted" is `getInputAtCapacity()`, and the
+     month's bid was 32,018, all of it bought. 0.7.30's flow shows both
+     figures; the sector's own lines need a model look.~~ — **done in 0.7.47**
+     (B3): `Automotive.ownLines()` reads the month: "made N of its CAP a month ·
+     N sold here · N shipped" (made is produced plus export-bound: city2400
+     9,211 of 21,780) and the parts "N ordered at this month's rate · N bought
+     here · N imported", a WARN only when bought plus imported fall under .9 of
+     the bid; the note says what the plants would order at full rate.
+  9. ~~**Construction's materials disagree with its statement**
+     (`runs/spec-sectors-0730.md` §8 B12; confirmed by `runs/ui11-notes.md`
+     §8, found 2). Building materials are $6.2M on the statement, all
+     imported, and 0 units on its production row: `Sector.bank()` zeroes the
+     `Input` counters, and the builders buy as the sites draw. 0.7.30's flow
+     says "bought as it was drawn: no units on its row this month". Which
+     month each figure is about needs a model look.~~ — **done in 0.7.46** (A5):
+     `Sector.beforeBank()` and `Construction.beforeBank()` keep the struck
+     month's materials (bought from the plant, imported), saved as extras once
+     known, beside a muted "Since then, so far". The triage's "about 476 units"
+     for D$6.20M was really 539 units at about D$11.5.
+  10. ~~**Real Estate's word has no thousands comma**
+      (`runs/spec-sectors-0730.md` §8 B13; 0.7.30's decision 22): "housing
+      ahead of jobs (64210 now, 0 coming)". The word is written into a
+      playtest trace (`t-house.csv`), so fixing it changes that trace; left
+      for Jerus to schedule.~~ — **done in 0.7.47** (B4): `%,d now, %,d coming`;
+      in t-house only the why column's digit grouping moved ("116322" →
+      "116;322").
+  11. ~~**The transit bill nobody seems to pay** (`runs/spec-government-0731.md`
+      §9 B10, its D17; `runs/ui12-notes.md` §8, found 1;
+      `runs/ui12-docs-pass.md` flag 1; `earned-surplus-banked.md` §7).
+      `EconomyManager.setTransit()` keeps the INFRASTRUCTURE category's payroll
+      and upkeep; it is read by `NationalAccounts.setTransitLines()`, which
+      `getTotalExpenses()` does not sum, by `getTransitNet()` and by
+      Infrastructure's pages, and by nothing that moves cash. `getExpenses()`
+      leaves it out; the spec's probe found the treasury bridge closing to $0
+      with no transit row, so the bill (the Infrastructure spec's $23.9M in the
+      2,400-month city) never left the treasury, and MoneyAudit has payroll
+      debits for utilities, care, schools and safety and none for transit.
+      **Verify before calling it a leak.** If the bill is real,
+      Infrastructure's "net cost" is a cost the treasury does not pay. Section
+      4's TWO BUDGET LINES THE BALANCE OMITS has carried it since 2026-09-19 as
+      "Transit wages are paid by nobody".~~ — **done in 0.7.49** (D2, the
+      triage's B9, built after Jerus's "for transit, fix the leak"): a real
+      leak, D$23.96M a month in city2400 against D$4.12M of fares.
+      `TreasuryLine.TRANSIT` (a promise, after the police), `getExpenses()`,
+      `NationalAccounts`' totals, `MoneyAudit`'s "- transit Bill" and the bridge
+      without its fares step now carry it; the test player counts transit's
+      wages (D3, `linesThatPay()`).
+  12. ~~**The schools and transit are missing from government output** (the
+      Government spec's B5, its D13 and D17; `runs/ui12-notes.md` §8, found 2;
+      `runs/ui12-docs-pass.md` flag 2). G is the utilities' payroll, care's
+      gross cost and police and prisons (`Game`'s `updateNationalAccounts()`
+      call). Since 0.7.31 the Output page's GOVERNMENT card's (i) says what is
+      counted; the manual's §12 already calls Education's cost outside G an
+      inconsistency, and section 2's "Education's cost is not in GDP" is the
+      same question.~~ — **done in 0.7.49** (D2): G adds the schools' gross cost
+      and transit's bill, and Government's (i) and GOVERNMENT_INFO say so.
+  13. ~~**After a load, Healthcare fees' panel does not add up to its line for a
+      month** (`runs/ui12-notes.md` §8, found 3; `runs/ui12-docs-pass.md` flag
+      5). Display only. In the implementer's probe, just loaded and
+      saved-and-loaded: the line $1.0M, the panel general $0, childcare $0,
+      senior $0, burials $879k; a month on, $94k, $30k, $26k and $878k.
+      `Healthcare.feesFrom(care)` is a flow the load path does not restore;
+      burials survive because they are counted × the fee.~~ — **done in 0.7.46**
+      (A3): `Healthcare.getState()` appends the three kinds' served counts
+      (`STATE_BEFORE_SERVED` = 16; lengths 12, 13, 16 and 19 restore), so a
+      reload's fees add up to their line.
+  14. ~~**The busy month annualises** (the Government spec's D11;
+      `runs/ui12-notes.md` §8, found 6). Every "of GDP" on Government is this
+      month × 12 against the year (true since B1), so a lumpy month annualises
+      one-off buildings: in the 600-month city's busy month spending read
+      129.81% of annual GDP. The spec's later fix reads the trailing year from
+      History (`YearBook.nominalYear(h, key)`, `rollingYear()` on a saved
+      flow).~~ — **done in 0.7.47** (B7): every "of GDP" on Government reads the
+      trailing twelve months of its line where History records it
+      (`TRAILING_MONTHS` = 12; city2400 TAX TAKE 36.4%, the month × 12 said
+      34.5%); Healthcare and Education keep the month × 12, since History's
+      bills are net and the rows gross.
+  15. ~~**The bank's capital ratio is stored clamped at 1,000%, and its return
+      on equity reaches −105%** (`runs/ui18-notes.md` §8 items 2 and 3, and its
+      docs pass's flag 5; `runs/ui14-notes.md` §8 item 5 and §4 items 7 and 8).
+      `HistorySave` records `bankCapitalRatio` clamped at ten ("and ten with
+      nothing lent"), so a bank like the 2,400-month city's, risk-weighted at
+      1,990.7% (a weighted book of $2.9M, the rest insured mortgages at no
+      weight), draws a flat line at the ceiling: "1000.0%" on City History,
+      which offers the series since 0.7.37 (D9). In the 600-month city's view
+      its return on equity reaches −105.2%, and in both cities its provisions go
+      negative (a release). Model figures, shown as they are. The Bank spec's
+      D11 model half, History series `bankLeverageRatio` and
+      `bankLeverageTarget` (no format bump), would make the capital chart useful
+      and let the Overview's gauge grow on a month while the leverage ratio
+      binds (0.7.33's ★7 and ★8). Section 4's FOUND BY 0.7.9'S IMPLEMENTER has
+      the clamp's older half.~~ — **done in 0.7.46** (A7): History records
+      `bankLeverageRatio` (clamped at 10) and `bankLeverageTarget`, and the
+      capital card reads THE LEVERAGE RATIO while the leverage binds; the ×10
+      clamp on `bankCapitalRatio` stays, and the ROE of 18.75% in city2400 is a
+      true figure.
+  16. ~~**Two inflation colours disagree** (`runs/ui17-notes.md` §8 item 1, ★).
+      The Policy tab colours inflation amber more than a point off the target
+      (the old screen's rule, kept by the spec's §3.5); the header strip calls
+      it green within `STRIP_INFLATION_QUIET`, three points of the target. At
+      the research city's 0.2% against 2% the header is green and Policy's tick
+      and band are amber. One rule for both is Jerus's (the header's rule is
+      his: "Red at target + 5 points"). Not in 0.7.38.~~ — **dropped with proof,
+      2026-10-05** (the triage's §4): 0.7.45's D4 changed it. Policy's amber is
+      now `Expectations.TOLERANCE` on the smoothed rate, "what trust is judged
+      on", while the header keeps Jerus's 3 and 5 points; two questions, each
+      labelled, no bug.
+  17. ~~**A property offset's dial stops at ±10 points; the model clamps it at
+      ±30** (`runs/ui17-docs-pass.md` flag 7). Every offset, property's too, is
+      clamped at `MAX_OFFSET` (`TaxPolicy.clampOffset()`), while a property
+      offset's ladder runs ±`MAX_PROPERTY_TAX`; since 0.7.36 its (i) says both.
+      Whether the dial or the clamp is meant is Jerus's; older than 0.7.36
+      (0.7.35's rows were ±10 too). Not in 0.7.38.~~ — **done in 0.7.47** (B5):
+      `clampPropertyOffset()` holds a property offset at ±`MAX_PROPERTY_TAX`
+      (±10), so the dial was right and the clamp wrong; an older save's offset
+      past ±10 loads at ±10 at the same rates, and the (i) says wage, profit and
+      sales offsets ±30, property ±10.
+  18. ~~**An epidemic that never ends** (`runs/spec-history-0736.md` §8 B5;
+      `runs/ui18-notes.md` §8 item 1). "Epidemic of 2015" runs 2,213 months in
+      the 2,400-month city (413 in the 600), its worst "45% of the workforce
+      off sick at Jun 2052": more than 10% of the workforce
+      (`YearBook.EPIDEMIC_SICK`) has been off sick for the city's whole life
+      since. Put to Jerus on the evening of 2026-10-01; awaits his word. Since
+      0.7.37 City History lists it last, "chronic" (`YearBook.CHRONIC_MONTHS`,
+      120), and never leads with it while anything else runs; the threshold and
+      the sick rate are untouched, and HealthCheck is still the known red. Not
+      in 0.7.38.~~ — **done in 0.7.46** (A8): epidemics are named on Health's
+      outbreaks (`outbreak` recorded from `Health.getOutbreakSeverity()`;
+      `YearBook.EPIDEMIC_OUTBREAK` = `Health.OUTBREAK_FLOOR`, `EPIDEMIC_SICK`
+      retired); the 2,213-month epidemic of city2400 is gone, and months before
+      0.7.46 name none.
+  19. ~~**A share's price is its last trade, however old** (the fund study's
+      B3, `runs/spec-fund-0739.md` §7; `runs/ui20-notes.md` §8). The
+      2,400-month city's prices are 20–32 months old; Mining is marked at its
+      March 2198 trade, D$1,644 a share, against a fair value of D$0.35, and
+      the fund's D$351k line, `fundValue` and the 3% transfer rest on it.
+      Re-marking moves the traces, so the study's D12 left it out of 0.7.39.
+      **On screen since 0.7.39:** every page of the fund says "last traded
+      <month>".~~ — **done in 0.7.48** (C4): `Exchange.cityMark(c)` marks the
+      city's holdings at fair value once a share's last trade is
+      `STALE_MARK_MONTHS` (12) old, and positions say "marked at fair value:
+      last traded <month>" (city2400: Mining D$0.59 a share, not D$1,644).
+  20. ~~**Consolidated share prices record as zero** (the fund study's B6;
+      `runs/ui20-notes.md` §8). `HistorySave` rounds a price per founding
+      share to four places, so Materials' and, after a reform, Mining's and
+      Business Services' prices record as zero (Search: "1Y: not recorded
+      precisely enough"), and a very old move reads huge ("+121,687,262.6%
+      from Mar 2000 to Dec 2199" on Construction, a real 200-year move off a
+      tiny founding price). Recording more places also changes the bank's
+      series, which the warrants' value reads, so `fundValue` and the traces
+      move: its own batch, with its trace check.~~ — **done in 0.7.48** (C5):
+      `HistorySave.SHARE_PRICE_DIGITS` = 6 significant figures (`roundSig()`),
+      so a consolidated company's price is a figure from 0.7.48's months on.
+  21. ~~**A buy at fair value fills nothing, and the rule's bids idle** (the
+      fund study's B2 and B10; `runs/ui20-notes.md` §8). Not one company book
+      in either research city had an ask at or under fair at load (the desk
+      asks at fair + 1%, and where nobody asks the best bid is the company's
+      own buyback at fair + 10%), so a hand buy at fair filled nothing in both,
+      and the 2,400-month city's rule, bidding at fair, had not filled in 13
+      months, its cash idling (D$50.4M of D$375.3M). Since 0.7.39 the hand
+      names its price (★D2, CONFIRM), and "Best bid" is the price that fills;
+      the rule's design is Jerus's.~~ — **done in 0.7.48** (C3): the rule bids a
+      share at the desk's ask, fair × (1 + `RULE_PREMIUM`), `RULE_PREMIUM` =
+      `Exchange.SPREAD` / 2 (1%); bonds unchanged. C3–C5 move the traces from
+      m1882; re-baselined as `pt0748`.
+  22. ~~**The 600-month city's ten-year bonds rest at 75–78 per 100 against
+      values of about 102** (#141–#148; the fund study's B11;
+      `runs/ui20-notes.md` §8) until the fund's rule takes them, so its lots
+      read "bought 24–26% below value" and +32–36% unrealized at once. A
+      market observation, not chased.~~ — **dropped, 2026-10-05** (the triage's
+      §4): a market observation, not a defect; the fund's rule already takes the
+      bonds, its bond bids filling under value.
+- **CONFIRM (from 0.7.53 to 0.7.54).** Jerus, 2026-10-06: he plans cities of 5
+  to 10 billion and asked for confirmation that "an enormous city, utterly
+  enormous, can still run with no issue"; after the study, before any work: "for
+  now start doing the necessary stuff that can be done aka the pop limit fix and
+  the size stuff". The study (`spec-scale.md`) said yes, after named fixes, and
+  0.7.53 and 0.7.54 are the fixes that could be done without him. He has not yet
+  answered what is below, nor given his go for the land, water, world, map and
+  fuel batch (the NEXT item). Every call was the study's ★ (§9), an
+  implementer's (`runs/fixH1-notes.md` §6, `runs/fixH2-notes.md` §5) or a
+  docs-pass flag (`runs/docs-0754.md` §4), written down with its reason:
+  - **The land premium at 5 to 10B** (the study's ★3, §8 step 2; fixH2 §6 item
+    1), the most visible. It is linear in absolute size (`LandMarket.java`
+    :152-155 and :328-329, 0.7.52's lines): at 10B land costs about 19,500 times
+    today's price per sq ft. A ×10 copy of his city (5.1M people) saw rents
+    ×3.9, prices ×2.3 and 18% of its people leave in 30 months; the same copy
+    with the premium read at the original size tracked his real city. In the 5B
+    copy's first month (fixH2 §3) land reads 2,490 a sq ft against 0.0013 and
+    the property tax on business land comes to 3.2e13, which the sectors borrow;
+    a scaled city builds nothing, pays about 3e13 a month in property tax and
+    loses about 1% of its people a month. Read at the original size that copy's
+    treasury moved 8.37e11 to 8.39e11, so the jump to 3.30e13 is this premium,
+    not the scaler (the audit residual of 2.7e9 was the scaler's, and is fixed).
+    Saturate it, or make it depend on density (about half a day once he
+    decides); recommended: density, not absolute size. Bigger cities can have
+    dearer land, but not that much dearer.
+  - **History trimming** (the study §5 and §9): monthly forever, or monthly for
+    recent decades and yearly before? History grows with months, not people (3.2
+    KB a month in Jerus's city); 1,000 years would be about 37 MB on disk (the
+    `.bak` copies double the disk), about 110 MB of heap and about 1 s per
+    autosave, none of it depending on population. The study judged that
+    acceptable; trimming is his call.
+  - **Arrears paid do not reach a sector's cash-flow statement** (fixH2 §5,
+    found and left: entangled). What the treasury pays down of a sector's
+    arrears (`Game.payDownArrears`) reaches the sector's till but not its
+    cash-flow statement, because `fromTheCity` is subsidies only; in the scaled
+    copies Construction's statement missed 2.1e12. It holds at any size. Does
+    the line belong on the statement? A later batch.
+  - **`Formats.cash()` is compact only past 2^53 dollars** (fixH2 ★7). It hands
+    sums at or past 2^53 dollars to `amount()` ("$26.0Q", "$1,317.0Q" grouped
+    past a thousand) and is unchanged below, never a saturated long; the study
+    had $10^12 as the switch. `ui/Money` gets the Q step too.
+  - **The 1,500 ms bound** (fixH2 ★8). `ScaleCheck`'s median month must stay
+    under 1,500 ms at 5B and 10B: about 170 times the 6 and 7 ms measured on
+    this 2-core machine, and a sixth of 0.7.53's 8.8 s for the same city. Is
+    that the right slack for his machine?
+  - **The halving search's monotonicity proofs** (the study's ★2; fixH2 ★1 and
+    ★3). `orderSize` and `Mortgage.decide` halve, with the proofs in their
+    comments: the wait grows with the order, and the landlord's order is a run
+    from one (cost convex through 0, so outright, the down payment and the
+    lender's test each hold on a run from 1), with rounding margins. The trim is
+    not proved (the rate falls with borrowing past leverage 1; bond fixed
+    costs), so it asks the countdown's first 16 slices exactly, doubles down
+    from the last failure and halves: exact for trims under 16, and otherwise
+    relying on no pass, fail, pass below the counted slices. Evidence, 0
+    decisions differing in every run: 1,320 months of the playtest's city and
+    120 at a 15% dial, its month-400 copy at ×1000, a mortgage grid of 35,280
+    orders, and `WatchProbe` on city2400 and Jerus's city at ×1, ×1000, 5B and
+    10B. A plain halving had drifted 0.12% in population at ×10,000 in the
+    study. Does he accept proofs, not shadows?
+  - **The money tolerances** (fixH2 §2, ★6). `MoneyAudit.tolerance(scale)` is
+    max(0.01, 1e-12 × scale), and `tolerance(floor, scale)` keeps a tighter
+    floor exactly while 1e-12 × scale is at most 0.01 (scale up to 1e10 units).
+    Only the lines `ScaleCheck` measured failing at 5B and 10B moved, plus the
+    treasury journal's reconciliation, in BankCheck, CreditCheck,
+    EducationCheck, HoldersCheck, MortgageCheck, HistoryCheck and TreasuryCheck
+    (fixH2 §2 lists each, before and after). Never looser at today's sizes: a
+    copy of `MoneyAudit` that prints whenever the relative part engages ran
+    under all seven and printed 0 times in each (330 in `ScaleCheck`). Long
+    cents were rejected (the study's ★6): they hold 9.2e13 units, less than a
+    10B city's lifetime exports.
+  - **H1's other ★ calls** (`runs/fixH1-notes.md` §6): a new `ScaleCheck`, not a
+    section in an existing check (★1); the study's scaler ported except that it
+    leaves the works yard alone, since the yard fills at its base a month
+    whatever the size (★2); every sector held in H1's sections, so the order
+    loops never ran there (★3); the month axis stays `Integer` while ten series
+    became `Long` (★4); K targets 5e9, Jerus's smaller plan (★5); Retail's
+    baskets, luxury coverage and the kitchens' seats and food held widened too
+    (★6). Left as `int` (§4): building counts, order sizes, land blocks and
+    months, the works yard and materials orders, construction output, the
+    per-building template figures and the trade counters.
+  - **H2's other ★ calls** (`runs/fixH2-notes.md` §5): the trim's countdown,
+    gallop and halving, 16 slices chosen as cheap and above every trim seen at
+    today's sizes, which is none (★1); `PRIME_SCAN_SLICES` 4096 and the
+    four-slice rule past it (★2); the `OrderWatch` hook in the model and the
+    countdowns in the harness (★4); a new `OrderSearchCheck`, not a `ScaleCheck`
+    section (★5); `ScaleCheck`'s free fixture the playtest's city at month 400
+    (★8); the scaler's names fixed (Construction's `recognisedThisMonth` had
+    been left unscaled; an EXTENSIVE override list, and seven ratios no longer
+    scaled) but the registers still unscaled (★9, FOUND below).
+  - **The study's other ★ calls** (§9): ★1 the scaling method (extensive state
+    scaled, per-household figures kept; the bank's statements, the equity and
+    exchange registers, the bond market and the fund not scaled); ★4 `long` for
+    counts, not `double` (built); ★5 no `SAVE_FORMAT` bump (kept at 30: an old
+    build shows a save over 2^31 as unreadable rather than loading it wrong); ★6
+    a relative money tolerance, not long cents (built); ★7 districts, not tiles,
+    and ★8 the world in 64 km cells (the NEXT item).
+  - **Not in the manual** (`runs/docs-0754.md` §4 flag 5): its open questions
+    (fifty-nine) are unchanged; the land premium, described in `ScaleCheck`'s
+    row, is an open question on this list only.
+- **CONFIRM (from 0.7.52).** Jerus, 2026-10-06: "ok seems to be working fine"
+  (0.7.50 to 0.7.51). On the ensemble's inflation fails he asked for "just a
+  very simple fix, aka beside the target inflation, how strict, very strict then
+  it trys to have it below the target, very loose and the target is a
+  suggestion", and for the autosave bug to be fixed; K2 and R3 are therefore
+  accepted, not chased. Every call below was the implementer's
+  (`runs/fixG-notes.md` §5, seven ★) or a docs-pass flag (`runs/docs-0752.md`
+  §4), written down with its reason:
+  - **The ends' values** (★1). Very strict aims 1 point under the target, never
+    below 0%, at weight 2.0; Very loose ignores 2 points either side of the
+    target, at weight 1.25. One point under is the furthest below the target
+    that still counts as on target for trust (`Expectations.TOLERANCE`), so
+    hitting the aim costs no trust; 2.0 doubles 1.5's margin over one. Very
+    loose's outer point (2 points) is a miss that trust counts and the bank does
+    not answer; 1.25 halves the margin but stays above one, so the Taylor
+    principle holds past the band and there is no spiral. The inner steps sit
+    halfway: Strict aims 0.5 point under at weight 1.75, Loose ignores 1 point
+    either side at 1.375. Standard (0, 1.5) is the old rule to the bit.
+  - **At his 0.5% target, Strict and Very strict both aim at 0%** (★3). The aim
+    is floored at `MIN_INFLATION_TARGET`, whose own sentence says no bank aims
+    at falling prices, so there they differ only in weight; Loose and Very loose
+    act only past 1.5% or 2.5% (or under −0.5% or −1.5%). Is that what he wants?
+  - **Credibility is judged against the Standard rule** (★2). `Game` hands
+    `Expectations` `neutralRate()` and `holdingRate()`, the Standard rule's
+    advice, and not the dial's own advice. On the dial's own, a loose bank on
+    the autopilot would "lean all the way" whenever inflation is past its band,
+    so it would lose trust only inside its band and Loose (band = `TOLERANCE`)
+    would never lose any. Measured against holding the target, a looser bank
+    loses trust as far as it falls short, through the existing lean; a strict
+    bank can lean no more than 1. Bit-identical at Standard. NEEDS YOU's PRICES
+    row, the anchor card's "not leaning" words, `ANCHOR_INFO` and the header's
+    INFLATION help read the same.
+  - **Old saves are not repaired** (★6). An old mid-month autosave has already
+    run month N's opening steps (`fundYearEnd`, `rollMaturities`,
+    `closeDemolished`, and the bank, fund, register and bond market's
+    `startMonth`), so rolling the counter back would run them twice (by reading,
+    not run: `rollMaturities` would roll what falls due a second time, and
+    `fundYearEnd` could pay in twice at a year's end), and a history row for N
+    would invent a month that never ran. The one month's gap stays: the charts
+    place points by month number and draw across it, and, by reading, the year
+    book's "n" counts 11 months for that year. Jerus's own autosave (saved by
+    0.7.49 as "Autosave - month 1851", history 2 to 1850) loads at 1851 with the
+    gap; its last rollover was at 1693 and its fund dial is 0, so nothing was
+    doubled at 1851.
+  - **A 0.7.51 build drops the setting** (docs flag 2). It reads a 0.7.52 save
+    at Standard and its next save drops the key: no format bump (`SAVE_FORMAT`
+    stays 30), as for the other keyed dials, so the strictness is lost silently.
+  - **The (i) says nothing of the downward side** (docs flag 1; fixG ★4). HOW
+    STRICT's (i) says a strict bank answers "each point over" its aim, but one
+    weight serves both sides of the aim, so a strict bank also cuts harder below
+    it; Loose's band is symmetric, so in a deflation it holds until prices fall
+    past the band. True as far as it goes; left.
+  - **fixG's other ★ calls** (`runs/fixG-notes.md` §5): the halfway inner steps
+    and the five names, Standard the middle one (★1); the probe city is seed 5
+    (4,834 people at month 600), a calm city whose twins differ only in the rule
+    from m600, playing without advice from the branch, the branch and the
+    240-month horizon being the ensemble's own month and window (★5); "no
+    spiral" means the dial never reaches `MAX_POLICY_RATE` and the last year
+    ends within a full miss (`TOLERANCE` + `MISS_SCALE`) of the target, plus
+    every weight above 1 (★7).
+  - **The probe's figures** (`runs/fixG-notes.md` §2), inflation a year over 240
+    months from m600 on seed 5: Very loose 3.290%, Loose 3.201%, Standard
+    2.225%, Strict 2.153%, Very strict 2.036%. The ends on other seeds, Very
+    strict / Standard / Very loose: seed 2 2.528 / 2.734 / 3.158; seed 3 2.057 /
+    2.139 / 2.251; seed 4 2.468 / 2.795 / 3.450; seed 1 1.195 / 1.650 / 1.588,
+    its Very loose 0.06 points under Standard; seed 0 1.765 / 1.572 / 1.287,
+    inverted, a shrinking city with 22–28% out of work. From the founding (480
+    months) the boom swamps the dial: Very strict's peaks at 56.7%, Standard's
+    at 38.0%, Very loose's at 24.9%; all three come back down and none reaches
+    the stop.
+  - **Not in the manual** (`runs/docs-0752.md` §4): its open questions (59) are
+    unchanged; the dial's ★ calls and the 0.5% target are on this list only.
+- **CONFIRM (from 0.7.50 to 0.7.51).** Jerus made two requests, after 0.7.49 and
+  before going to sleep (2026-10-05/06): "hmm ok pretty good, but on one test
+  run, the game got stuck", with the terminal pasted, and "can you also check
+  the build all three button, you see first of all, the building ideas is
+  flawed, it doesnt take into account land price, and it doesnt build any slack,
+  and universities and education other than elemn middl and high schools tend to
+  be overstated and way too early sometimes, so fix that, and make it so that
+  alot of its ideas also take into account the same as businesses do, aka a
+  projection". He was not answering during the run, so every call below was the
+  design study's (`runs/spec-build-advice.md` §6, 11 ★), an implementer's
+  (`runs/fixE-notes.md` §6, `runs/fixF-notes.md` §6) or the orchestrator's,
+  written down with its reason. **The most visible, for Jerus to confirm first
+  (the build advice's ★ calls):**
+  - **A 5% slack and a 100% target** (★3). `BuildAdvice.SLACK` is the
+    businesses' `TARGET_HEADROOM` (.05), and a served gauge must reach 100% of
+    demand × 1.05 at its projection, which turns care's 80% line and childcare's
+    70% line into green (before, 40 clinics left city2400's care at 81%, back on
+    the list at 80% the month they opened). The cost is bigger orders:
+    city2400's clinics 40 to 55, his roads 37 Elevated Highways at k = 1 to 54
+    (+17, the slack alone, his projection being flat), so more cards are on
+    credit or short of land. On a big network 5% is 5% of all traffic.
+  - **A 6-month horizon, the build wait capped at 12** (★4, ★5). `HORIZON` is
+    `PLANNING_HORIZON` (6) and the opening's wait is capped at
+    `MAX_ORDER_MONTHS` (12), so a card is sized at most 18 months out. Quoted
+    city waits reach 47 months (his highways) and 122 (playtest m1,200); sizing
+    to them would chase the builders' queue, and the firms refuse anything past
+    12. Growth is the population trend only, through the firms' `growthFactor`;
+    workers enter through posts on site; income is not projected (no income
+    trend is kept). The projection is inert in a city above its homes (his: k =
+    1) and strong in a young one (k 3.05 at playtest month 9, 12.4 at month 3,
+    capped by the homes).
+  - **The cash cap removed, credit stated on the card** (★7). One count per
+    card, the one that keeps the need ahead; the cash only colours the button.
+    Measured: the cap fired 0 times against credit 106 in 50 playtest looks and
+    the three cities, and a capped card beside a credit card was ordered short
+    and borrowed anyway. A card says "More than the treasury holds after the
+    ones before, by $X: Build offers a loan" and the button "Build all three on
+    credit / short $X" (his city with no cash: "short $40.4B"). To bring the cap
+    back is the old BuildAdviceCheck §3b.
+  - **Land at the land office's price, in the ranking and not in "all in"** (★1,
+    ★2). Free ground is valued at the cheaper of the office's price and what a
+    business pays, ground to buy at the office's, the city's marginal cost of
+    ground; the office is below the inside price in all three cities (about ×2.7
+    to ×3.7), so in practice it is one price. The card's "$X all in" stays what
+    Build charges, the city paying nothing for its own ground; the land has a
+    line of its own.
+  - **Higher education only for students who would come and be hired, and a
+    first school half full** (★6, ★11). `wanted` is the smaller of who would
+    come and the posts for them (standing, on site, and those their holders
+    retire from in a course); the first school needs half the smallest
+    (`FIRST_SCHOOL_SHARE` .5, the firms' first-plant share); the feeder-cohort
+    term never bound (+5.2% on his city's college). The playtest city sees its
+    first college row at month 960 (54,218 people) and no university by month
+    1,200; city2400's four red rows become one, city600's two go. A city that
+    never gets graduate jobs is never advised a university (posts do arrive with
+    migrants). No "ladder first" gate on colleges. Elementary, middle and high
+    school keep their rule (★9).
+  - **One building type per need** (★10): a bus network plus a road is not
+    tried, to keep it within one batch. "Build all three" reads the run (★8).
+  - **Large Home Daycare counts and their crowding of the builders** (the
+    orchestrator's addition; `runs/fixF-notes.md` §7). City600's third card is
+    133 Home Daycare ($20.7M, 105%), the cheapest per child with its land
+    ($14.60k against the Centre's $26.13k); the count reaches 1,598 at playtest
+    m1,200. The quoted wait is the model's own (`BuildingManager.waitFor()`),
+    but the crew rule gives every small building its own crew: 133 daycares
+    carry 1.61× the crew weight of the 5 Childcare Centres that seat the same
+    children (1,759 against 1,093) and owe half the points, so they open in
+    about half the time (city600 6.17 months against 12.76) and push other sites
+    back: 3 Walk-in Clinics wait 4.18 months alone, 21.30 with the daycares on
+    site, 14.82 with the centres (city2400 0.45, 2.32 against 1.61; his city
+    2.18, 3.37 against 2.92). The ranking counts price per child, not this
+    crowding. The card says how many and why, on every card with a count above
+    one. Fine, or rank by something else?
+  - **Two land figures on one card** (`runs/fixF-notes.md` §7). When an earlier
+    card is short of land, a later card's line (3) counts its land after the
+    cards before it ("798,000 sq ft more than is free"), while its own Build
+    button (BuildCard's verdict, this order alone against all the free land)
+    says "Short 543k". Both are true; which should the card say?
+  - **The freeze tied to the chart fault, with moderate confidence, not proven**
+    (E's ★; `runs/fixE-notes.md` §1). `Parent.java:1704-1705` walks the dirty
+    children down from the end, so index -1 means a parent counts more dirty
+    children than its 2-child list holds, the bookkeeping an aborted children
+    change corrupts, and nothing in the code touches the graph off the FX
+    thread; but the 23:11 damage healed (no exceptions from m399 to the cap), so
+    00:03 would be a fresh recurrence past the cap, and the exact -1 sequence
+    was not rebuilt. If it freezes again the log now keeps the first failure.
+  - **`clearMenu`'s filter** (E's ★). A `tearingDown` flag and a filter on
+    `rootMenu` that consumes MOUSE_EXITED_TARGET while the page clears, rather
+    than stripping handlers or hover state node by node: one place, covering
+    every handler on every page, present and future, whatever it would have
+    done; the page is thrown away, so no exit needs delivering. The reused
+    History charts drop their hover through the scene listener, and their stuck
+    `hover` flag styles nothing.
+  - **The log keeps every failure past its cap** (E's ★). Every
+    `GameLog.failure()`, not only uncaught exceptions (a failed month or a
+    corrupt save is the same kind of record), each once by its first four lines,
+    up to `FAILURE_BYTES` 200,000 more, then the file says so and closes. The
+    cap is counted per stream, so the file can near twice 2,000,000 (as at
+    0.7.49).
+  The other starred calls, for Jerus to confirm:
+  - **The chart batch** (`runs/fixE-notes.md` §6): ★ the snapshot plus bounded
+    indexes in the stack helpers (the bounds are cheap and stop a later caller
+    bringing the crash back); ★ the full-screen button and the settle callback
+    are left unguarded on purpose, a fault there being the screen's, and the
+    crash handler logs it as before; ★ a frame that fails is cleared, not left
+    half-drawn, and only `RuntimeException` is caught.
+  - **The advice batch** (`runs/fixF-notes.md` §6 and §2): ★ a card's credit is
+    its own shortfall (its quote less the cash the cards before leave) and the
+    button's is `buildFundingGap(run)`, the loan the run will take; ★ "why so
+    many" is on every card with a count above one, since a threshold would mean
+    inventing a number; ★ a school's own posts do not create its demand; ★ the
+    stop's ordinal names the card holding the building where the run stops, two
+    cards for one building being merged in the run; ★ the Services chip wraps
+    rather than abbreviating the spec's words ("1 post" when it rounds to one).
+    Departures from the spec: `Suggestion` gains one field, `credit`;
+    `BuildAdvice.run(advice)`; the tooltip's office price goes through
+    `unitPrice()`, since `money()` rounds $1.32 to "$1"; `opening()` holds an
+    infinite lead to 12; the runner-up is the true second in order.
+- **CONFIRM (from 0.7.46 to 0.7.49).** Jerus made two calls: "ok sure go for the
+  model fixes, manual up to date and also, the city fund, you should be able to
+  click how much to withdraw automatically, even 0 or 10% a month" (2026-10-05),
+  and, on the transit bill, asked mid-run: "for transit, fix the leak",
+  households deciding by "the cost of their own transportation", the fare
+  "anchored to inflation", and the test player taught to count bus wages. Every
+  other call below was the triage's, the transit study's or an implementer's,
+  written down with its reason (`runs/spec-model-fixes.md` §3,
+  `runs/spec-transit.md` §6, `runs/fixA-notes.md` to `runs/fixD-notes.md` §4).
+  **The most visible, for Jerus to confirm first:**
+  - **B8 moved the default playtest a lot** (0.7.47; the triage's item 4, the
+    Policy spec's ★D7). `LabourMarket.isPinned()` now reads the floor in today's
+    money, so more bands read as pinned and Migration's surplus departures
+    leave. The first difference is m32 (pop 296 → 294); population at m1000
+    21,845 → 15,740, m2000 95,353 → 79,534, m3000 166,145 → 129,470 and m4000
+    198,194 → 191,012; departures over the run 65,805 → 1,090,944 and arrivals
+    885,622 → 1,694,356; cash at m4000 D$428.4T → D$196.0T and the fund's value
+    D$521.8B → D$55.4B, the fund first valued at m1881 (it was m500, so the fund
+    batch's own first differences read differently from the triage's). The
+    traces were re-baselined as `pt0747`. It is the fix Jerus approved; is a
+    city that sheds that many people to the floor the one he wants? B8 is one
+    change, in `isPinned()` and what reads it (Migration, CityNeeds,
+    PolicyScreen), with two harness premises moved (LabourCheck's settling,
+    FoodProcessingCheck §5's meat prices).
+  - **The ensemble's two new fails, K2 and R3** (16 seeds on 0.7.49: 20/25
+    against 0.7.44's 22/25). K2, SHOCK's inflation at m720-840: 3.18% a year
+    [0.95 to 6.35] against ≤3.00% (0.7.44: 2.87%; its margin over the twin,
+    +0.39 against ≤1, passes). R3, HIGH's m660-720 minus its twin: the median
+    -2.88 passes (≤0), but 3 seeds are over +1 point where 2 are allowed
+    (0.7.44: 2). A2 (worst spell 18 months, median 6), S1 (5.52% [3.57 to
+    10.92], peak yoy 32.01%) and H1 (3.67%; -0.06; +2.04) still fail as at
+    0.7.44; A1 reads 2.22% [2.05 to 2.74], 16/16 in band, takeoffs 16/16 (median
+    m1,458), the audit and the findings clean. The ensemble ran on 0.7.44 and
+    then on 0.7.49 (AUTO2 alone on 0.7.48), so which batch moved K2 and R3 is
+    not measured (B8's departures, the fund or transit). Accept them, or run the
+    five policies on 0.7.46 to 0.7.48 in turn.
+  - **The fare cap reaches 27.6% of an unskilled household's take-home** (D4,
+    D5; the transit study's risk 1). 73% of workers in the research cities have
+    no car of their own (74,948 commuters in city2400): they ride at any fare if
+    a line reaches them and there is a seat, so a dearer fare loses only the
+    owners who switch and fare revenue rises. At the $50 cap city2400 takes
+    D$97.3M a month in fares (the fare ladder reads D$97.6M), a month's pass
+    being 27.6% of an unskilled household's take-home; the fare card now says so
+    in a third line. The design study's figure for the same cap was D$101M and
+    about 54% of an unskilled household's disposable income (one riding worker's
+    household pays about 1.7 passes). Jerus said "if you raise ransit price alot
+    its ok"; capping it (a lower `MAX_TRANSIT_FARE`, or the car-less walking
+    above a share of income) is his call.
+  - **Fuel is real and imported** (D4, ★6). A drive's fuel costs $2.00 in world
+    money at the exchange rate (`Motoring.CAR_FUEL_PER_JOURNEY` .002: fifteen
+    kilometres at eight litres a hundred and about $1.65 a litre), forty
+    journeys a month, so $80 at founding against the default pass of $100 (his
+    example). Drivers pay it out of the fee waterfall and it leaves as a TRADE
+    pair like the cars, through `MoneyAudit` and Trade's "Households' fuel";
+    before, a car cost nothing to run. It is not in the price index (a fee line
+    changes the index's saved shape: a follow-up), and a weak currency now puts
+    people on the bus. City600's drivers burn D$75k–83k a month.
+  - **The withdrawal's sale asks at fair value, where nobody bids** (C1, ★12;
+    `runs/fixC-notes.md` §9). Over the default (0.25% a month) the fund sells
+    its market book pro rata at fair value and is paid at the next month's top;
+    SaveFileCheck's town at 10% asked D$467k and was paid D$52k late, while
+    city2400 sells into household bids. Selling at the desk's bid would be C3's
+    mirror (the rule now buys at the ask). At the dial's ends: at 0% the default
+    playtest ends 13% smaller (pop 166,409 against 191,012 at m4000, the fund
+    D$859.8B against D$55.4B), the transfer being real revenue there; at 10% the
+    fund ends as its rescue book alone (pop 164,463), and city2400's market book
+    falls from D$149.7M to D$16.0M in 8 months. His call.
+  - **The fund summary turns amber while the dial sells** (the docs pass's flag
+    2). The hero tints TO THE TREASURY LAST MONTH as a warning whenever the
+    transfer is short, also over the default, where it reads "sold for, to pay
+    next month" (fixC's ★: no WARN there), and TO THE TREASURY's "This year so
+    far · N not paid" counts what is being sold for. Words only, left as built:
+    should selling to pay read as a warning?
+  - **`SAVE_FORMAT` stays 30, and a 0.7.46 or later save does not read whole in
+    a 0.7.45 build** (the docs pass's flag 3). A 0.7.45 build refuses a 0.7.49
+    save's cells (one new slot, A4), care state (A3) and households' statement
+    (D4) whole, their widths being new: the downgrade that `GameVersion`'s
+    header says the number guards, while CLAUDE.md's rule asks only old-in-new.
+    House practice since 0.7.45's `meansIncome` slot. Bump it to 31, or keep the
+    practice.
+  The other starred calls, for Jerus to confirm:
+  - **The triage** (`runs/spec-model-fixes.md` §3, 17 ★): 1, A1 saves the sector
+    units, not Rail's per-stream figures; 2, A1 stops at its residual (12
+    series, at most 8.3e-5); 3, A5 shows the statement's month on Construction's
+    row and the month in progress as "since then"; 4, A6 Graduates are gross
+    gains at every level; 5, A7 keeps the ×10 clamp and adds the leverage
+    series; 6, A8 keys epidemics to Health's outbreaks; 7, B5 the dial is right,
+    the property offset clamped at ±10; 8, B6 converts the fare to founding
+    money through a derived unit; 9, B7 the trailing year where History records
+    the line; 10, B9 to be built last, once Jerus had seen it (built as 0.7.49's
+    D2); 11, C1 quarter-point steps a month, 0–10%, 41 positions; 12, C1 above
+    the default the fund sells its market book pro rata, a month late, and buys
+    nothing; 13, C1 the share of the whole value, the rescue book included and
+    never sold; 14, C2 THE WITHDRAWAL first, full width, a year being 12 × the
+    rate with a halving time; 15, C4 marks at fair value after a year, the
+    city's holdings only; 16, C5 six significant figures; 17, C3 bids at the
+    desk's ask, fair + 1%.
+  - **The transit study** (`runs/spec-transit.md` §6, 11 ★): 1, σ = 1/3
+    (`MODE_SPREAD`): a cell is all on the bus at half the drive's cost and all
+    in the car at twice it; 2, `TRANSIT_MAX_SHARE` becomes reach, applied to
+    each group, with the car-less first for seats (riders 58% of commuters at
+    m1000 against 65% under "captive first"; the young playtest 11.6k against
+    17.5k at m1000); 3, one car per household as today, so a couple's second
+    earner and four of five flatmates are car-less, and a car-less commuter out
+    of reach or without a seat walks; 4, the jam rule stays, walked down by its
+    old fare curve; 5, the road's car factor unchanged; 6, fuel real, imported,
+    not in the index; 7, fares follow riders and fuel drivers by row (the
+    retired, the out of work and students stop paying fares); 8, the buyer's
+    comparison widens the existing ceiling, not the adoption rate; 9, three
+    carried scalars (captive share, fuel price, bill), saved as the month struck
+    them; 10, the test player's gate is myopic and ignores lines on site; 11, B9
+    as the triage specified, plus G at gross cost.
+  - **0.7.46** (`runs/fixA-notes.md` §4, the implementer's own): RailCheck's
+    fixture is its own steel town, played until the railway hauls (on 0.7.45 it
+    reads 340 t and D$0.27M against 63,954 t and D$11.8M); SaveFileCheck's twin
+    is a two-spur steel town with a based index; the carried getters return the
+    row itself when nothing is carried; BusinessServicesCheck keeps its count by
+    hand (+1) and adds "...which is CELL_SLOTS"; GroceryCheck saves and loads
+    its twin every month for a year (2 of 12 months cross the threshold on
+    0.7.45); A5's harness is a building town of its own; A6's is
+    EducationCheck's funded town with two of each basic school; A7 records the
+    ratio clamped at 10 and the card switches once two months are recorded; A8
+    names an outbreak while `v >= EPIDEMIC_OUTBREAK`, not `>`.
+  - **0.7.47** (`runs/fixB-notes.md` §4): B3's "made" is produced plus
+    export-bound (`o.produced` alone is 99 of 9,211 in city2400); B4's
+    InvestCheck town is its own; B6's `restorePolicyState()` puts the money unit
+    to 1 first, and B6 adds "...and the fare dial's cap is the founding cap in
+    the new unit" with a standing Bus Network in DenominationCheck's towns; B7
+    keeps the month × 12 for Healthcare and Education (History's bills are net,
+    the rows gross: 1,341 against 310 in city2400), reads business tax as
+    `taxBusiness` + `taxIndustrial`, takes Paid out's year as revenue's less
+    surplus's, and names the year's sign on the balance line and the card's bar.
+  - **0.7.48** (`runs/fixC-notes.md` §4): `stepsFor()` is shared by the setter
+    and the preview, so the preview's due equals `fundTransferDue()` to the bit;
+    a late payment comes off the year's short no further than it holds; "neither
+    book buys" means the rule's bids, and the player's own orders still post;
+    the bond raise sale is capped at the face held; over the default the
+    transfer readouts say "sold for, to pay next month" (no WARN) and "paid from
+    what it sold"; the preview's cash is the fund's less what last month's sale
+    still owes; halving time in months under two years, in years after; THE RULE
+    card reads "a share at the desk's ask, fair value plus 1%", and the ticket's
+    words were corrected by the docs pass; C4's tag is on the city's positions
+    only; C5 records a non-finite price as 0.
+  - **0.7.49** (`runs/fixD-notes.md` §4): `statementFor()` charges the row's
+    fares and fuel per head, so the cell panel's lines still add to "Left over";
+    Trade's "The households" row carries their fuel with their cars; two pure
+    reads for the harnesses, `Motoring.getOwnershipCeiling()` and
+    `Game.getRowFeesSettled(r)`; `getRowSpending()` leaves out the fuel as it
+    leaves out the fares; `InfrastructureManager.reset()` resets the captive
+    share (1) and the fuel (0); the owners' (i) says "would ride, and the seats
+    the car-less leave carry N of them" (a flat "49% ride" was false in city600,
+    which has no seats); CarCheck §8's towns are read after two months.
+  - **Not built, from the triage:** Q1, the grocers at their floor
+    (`Retail.estimatedMonthlyProfit()` counts no wages; the recommendation is to
+    count them in the investment test only, which moves the traces) and Q2, the
+    floor's catch-up from below (unmeasured). Both stay with the 0.7.42 to
+    0.7.45 CONFIRM, below.
+- **CONFIRM (from 0.7.42 to 0.7.45).** Jerus made four calls before the build
+  (the checks re-baselined with every changed premise listed and no tolerance
+  loosened; "you can deploy all, if something ill use github to bring it back to
+  life"; "yes price rations, with an optional government assistance, defualt
+  zero"; "full ui pass at the end"). Every other call below was the study's, an
+  implementer's or the orchestrator's, written down with its reason
+  (`runs/spec-inflation.md` §7, `runs/ui23-notes.md` §6, `runs/ui24-notes.md`
+  §7, `runs/ui25-notes.md` §6, `runs/ui26-notes.md` §4, `runs/spec-ui-0745.md`
+  §4, `runs/diag-0743.md` §7). **The most visible, for Jerus to confirm first:**
+  - **S1's window is a city at takeoff, not a slack one** (the diagnosis's ★1;
+    0.7.44's left-alone (a)). ZERO_SLACK holds 0% from month 600; on 0.7.43 the
+    twin's unemployment was 14.9% at the switch and fell to about 5% while the
+    population grew ×2.44 in 240 months. S1 read 7.07% a year [5.02 to 11.65] at
+    0.7.44, peak yoy 22.77%, against a median of 3% or less and every seed 5% or
+    less. The same hold from month 1800 (a scratch variant on 0.7.43) ran 3.16%
+    [2.62 to 5.58], +1.07 over its twin, peak yoy 13.7%. Keep S1 as written and
+    read it beside that variant, or move the window to a mature city.
+  - **H1 asks for accelerating inflation, which the spec's ★1 rules out**
+    (diagnosis ★3; 0.7.44's (b)). ★1 made the Phillips curve the existing level
+    wage curve plus expectations, and KMIN .25 keeps expected inflation from
+    being fully adaptive, so a held 0% gives a persistent burst and not a rising
+    rate; and months 42 to 282 are the young city's slack years (unemployment
+    about 24% in both runs). H1 read 3.60% [1.59 to 8.93], -0.81 against the
+    first half and +1.68 against the twin (it asks 5% or more, +1 and +3); H2 is
+    vacuous. Change the premise, or add a wage-growth term (the spec rejected
+    it); KMIN .1 was measured to lock the founding at 10% (spec ★14).
+  - **A held high rate pushes rent up through the landlords' mortgage interest**
+    (his 0.7.11 rule, "keep it"; diagnosis ★2; 0.7.44's (c)). `rentBreakEven()`
+    includes the interest and `carryLift()` puts it into rent. With 0.7.44's
+    lender at the real rate the mortgaged stock is larger: in the diagnosis's
+    scratch run 15% for ten years sent rent up 38-57% in seeds 0, 3 and 11
+    (break-even ×1.9-2.1). The final ensemble's R3 passes with 2 seeds over +1
+    (2 allowed) and R1 reads -2.85. Is that the city he wants? If not, strike
+    the carry's interest at the real rate or cap the lift.
+  - **The shelf cap (spec ★17) and A2's hot spells** (diagnosis ★4; 0.7.44's
+    (d)). The cap is 1.5× the floor, approached a sixth of the way a month: any
+    shortage that reaches it is +11% on the index (ln 1.5 × a grocery weight
+    near .27). A2 read 8 [0 to 13] at 0.7.44: seed 12 13 months (its grocers
+    sold shops for losses, then the shelf went to its cap) and seed 3 12 (a boom
+    outrunning coverage), against a limit under 12.
+  - **The grocers at their floor lose money** (0.7.44's §9, item 1). At
+    RETAIL_MARKUP over cost and operating rates of .3-.65 the margin does not
+    pay the staff: seed 12 m490-520 net -0.5 to -1.1M a month (payroll 1.5-1.65M
+    of 5.7-6.6M revenue), seed 9 m700 -2.1M. They sell shops for losses mid-boom
+    (seed 12 coverage 13,120 to 10,240 at m520; seed 9 down to 0-480 for 33
+    months, hunger .84, the 0.1% of stock-outs left), and
+    `Retail.estimatedMonthlyProfit()` counts no wages. Wages in the shelf floor
+    were measured to bankrupt the shops (spec ★13: 81% hungry), so the answer is
+    his.
+  - **B16's smoothing** (0.7.45's ★). The voucher means test reads investment
+    income smoothed by a twelfth of the gap a month (one appended cell slot,
+    `Household.meansIncome`, seeded from the month's figure on an older save)
+    instead of one lumpy month. At a 50% dial over 24 months city2400's
+    unemployed row is aided every month (before, it lost its vouchers in
+    m2418-m2424, when the month's bill went from $3.27M to $2.9k) and the rows
+    crossing the line fall from 3 to 1; city600's retired row spends longer
+    outside the dial (m606-m624 against m605-m619) because a lump decays slowly.
+    It changes who gets vouchers once the dial is on.
+  - **Credibility's speeds** (spec ★14): adapt 12 months, gain 60, loss 24, KMIN
+    .25, KMAX .95, KSEED .80, tolerance 1 point, scale 4 points, loss
+    lean-aware: hard to win and slow to lose while the bank fights. On 0.7.45
+    trust bottomed at .76 over 125 held months (the spec's probe on 0.7.43,
+    city600 held at 0.2%, had κ .483 by m684), and red was caused by setting
+    trust to .504.
+  The other starred calls, for Jerus to confirm:
+  - **The spec** (`runs/spec-inflation.md` §7, 18 ★): 1, Phillips = the existing
+    level wage curve plus expectations, no new rate term; 2, satiation at 1.5×
+    the anchor price (today's shelves sit at 1.33-1.41× the floor); 3,
+    elasticity .4 (food at home measured -0.3 to -0.6; the budget cap adds the
+    poor's); 4, no wealth term in housing; 5, `want`, `planned` and
+    `isGoingShort()` stay as the discretionary plan (DenominationCheck's
+    share-path fault); 6, luxury's index weight capped at .15; 7, the investment
+    hurdle real, floored at a quarter of the rate; 8, assistance for a basket
+    over half of income after fixed bills; 9, the fare follows Pe; 10, QE
+    unchanged; 11, `investAbroad` unchanged; 12, the savers' trap bounded, not
+    fixed; 13, no wages in the shelf or meal floors; 14, the speeds (above); 15,
+    Pe drift-only, seeded 1.0 on old saves; 16, the currency's drift at κ × the
+    target and UIP at .15 a year; 17, cap 1.5, a sixth a month, floor catch-up
+    .5, rent a twelfth; 18, a rebase every 120 months on trailing-year weights,
+    chain-linked at 0.7.43's first month.
+  - **0.7.42** (`runs/ui23-notes.md` §6): 1, constants struck at the top of each
+    month (the spec said straight after the index; at month end TreasuryCheck's
+    hands-off month and EducationCheck's re-strike fail; one preview premise
+    moved, EducationCheck's TUITION_SHARE); 2, a hand-set building price
+    survives the re-strike (BankCheck §19); 3, the FIXED grant's ceiling divides
+    by the level; 4, the fare is the dial × the struck level, an old save's fare
+    realised at 1.0, "at founding prices"; 5, before the basket is based
+    smoothed inflation is the target; 6, MonetaryCheck's noise allowance left at
+    .100 and the check red (0.165), settled on 0.7.43 (.056) with no change; 7,
+    FoodProcessingCheck's growth bound 400 to 600 months; 8, new files LF; 9 and
+    10, the `Game.getExpectedInflation()` and `getCredibility()` delegates and
+    `LandMarket.getBasePricePerSqFt()`; 11, CurrencyCheck §1 and §2 keep their
+    off-parity fixture and add the UIP term.
+  - **0.7.43** (`runs/ui24-notes.md` §7; the implementer wrote none down, so P3b
+    found these in the code): 1, meals and luxury enter the index only in months
+    they were served (the playtest's founding step was a shut Boutique's ceiling
+    margin); 2, a reload stands the stacks in the city's order (pre-existing,
+    exposed by the reload parity); 3, the food assistance dial took the cheap
+    path, a Levers dial card on Policy's out-of-work page (moved to Promises ›
+    Food in 0.7.45); 4, `SAVE_FORMAT` stays 30; 5, MonetaryCheck's noise passes
+    on this model with no change.
+  - **0.7.44** (`runs/ui25-notes.md` §6): 1, the suppliers' credit is on top of
+    the floored cash budget, not netted against the bills (retention of title;
+    netted, seed 1 kept 2.4% stock-outs and hunger .106, this way 0% and .052,
+    against 35% and .409 at 0.7.43); 2, the bound is a month of expected baskets
+    at landed cost, not probe C's takings at the shelf price, net 30, no
+    interest, no fee (harness: $240.3k repaid out of $384.3k of takings); 3,
+    Restaurants and luxury left alone (neither served under 5% of what was
+    wanted in any AUTO2 month: min 14% and 26%); 4, both sides booked (the
+    world's share a foreign trade credit, $222.0k of $240.3k owed abroad in the
+    harness city); 5, the lender reads both sides as if the credit were not
+    there, the cash-flow test reads what the strike asked; 6, the fleet: till
+    and lender only; 7, fix 1 is ★7 through one shared method, and the refusal
+    and the screen name the rate; 8, `SAVE_FORMAT` 30.
+  - **0.7.45** (`runs/ui26-notes.md` §4; D1-D21 of `runs/spec-ui-0745.md` §4
+    stand as written; the implementer's own): B16 (above); the food preview
+    priced at the sale's charged price, recorded at the sale; B19's harness
+    label in GroceryCheck's twin city (PolicyPreviewCheck's city has nobody
+    eligible); link words "struck again on what the city spent" (an old save's
+    first link weighs one month), the marks naming every recorded link; the
+    trust gauge's ticks solid (segmentBar has no dashed); trust floored to a
+    whole percent, so a red "under half" never reads 50%; the lean chip giving
+    the model's own reason when there is no lean (the spec's one sentence was
+    wrong at city600 m601); every read of the sale saying "not counted yet"
+    until an old save's first month; Government's "▸ who" reading the vouchers
+    at the sale while People's waterfall keeps the household books a month
+    behind; `struckWords()` giving the level only; rule names stacking on up to
+    4 lines.
+  - **The UI spec's D1-D21, in brief:** D1 the header's INFLATION line becomes
+    the anchor and its figure takes the inflation verdict; D2 one PRICES row in
+    NEEDS YOU, amber when trust fell this month and red when it fell under half;
+    D3 credibility reads "trust NN%"; D4 Policy's tick and band judge the
+    smoothed rate against TOLERANCE; D5 the Money page leads with the rate line,
+    then the anchor and the drift; D6 food assistance gets its own Promises tab;
+    D7 the vouchers are a step on EARNED's walk; D8 Retail's fifth figure is
+    HANDED OVER; D9 the clearing price shows as a number only above the floor;
+    D10 a shop's shortfall is judged on GOING SHORT's lines; D11 People's "Going
+    hungry" reads baskets asked at the price; D12 History draws each component's
+    chained level and the links as marks; D13 Pe is always worded "struck at ×N
+    their founding figures"; D14 hunger is shown a month late and the (i) says
+    so; D15 the supply limit is named from the sale; D16 new series are recorded
+    from 0.7.45, no back-fill; D17 one year-book column per series; D18 Trade
+    shows the drift as a force and UIP as a line; D19 the credibility step is a
+    saved record (slot 8); D20 QE gets one plain line; D21 supplier credit is
+    shown as books, with no verdict colour.
+  - **The diagnosis's other ★** (`runs/diag-0743.md` §7): 5, the shops' working
+    capital against the 0.7.12 rule (supplier credit ends the stock-outs and
+    most of the hunger but is credit that rule did not grant; built in 0.7.44,
+    ★1 and ★2 above); 6, the lender fix changes ★7's reach to the landlords
+    (built in 0.7.44); 7, 0.7.42's F1 diagnosis ("the rule's rate about 10%")
+    was wrong, it was land: 95 months of "no land".
+- **CONFIRM (from 0.7.40 and 0.7.41).** Jerus chose the gauge rule ("Served %,
+  higher = better") and the borrow design ("Type it + scaling buttons") before
+  the build; every other call below was the implementers' or the orchestrator's,
+  written down with its reason (`runs/ui21-notes.md` §4, `runs/ui22-notes.md`
+  §5, the docs pass's flags in `runs/ui21-docs-pass.md`). **The most visible,
+  for Jerus to confirm first:**
+  - **The road's red line is 111% served (0.7.41's ★1; the docs pass's flag
+    1).** It is FREE_FLOW, the model's own red line for the road (NEEDS YOU's)
+    and where the flow starts to fall, read as served. A road serving 100–111%
+    is red and "tight", where power and water go red at 100%. The alternative,
+    red at 100% like the networks, would have shown NEEDS YOU's red road rows
+    amber. Red means "at or under" the line, as NEEDS YOU strikes it (★2), so a
+    network at exactly 100% reads red.
+  - **Care over 100% on Build's rings and NEEDS YOU's rows, and two "served"
+    figures for care (0.7.41's ★3; the docs pass's flag 2).** Build's and
+    People's rings and NEEDS YOU's rows read staffed places ÷ people, unclamped,
+    so a city with spare places reads over 100% (104% and 184% in the fixture).
+    Services' care cards, LEAST SERVED, the drawer and People's (i) keep
+    Healthcare's coverage for the month, cut for those the fee turned away and
+    held at 100% by the model; the basic ladder keeps Education's figure, also
+    held at 100%. Under 100% the numbers do not change. After a load and before
+    a month runs the two can be far apart (17% against 90% in the fixture); they
+    are coloured separately.
+  - **A run is funded only up to an order the city would refuse (0.7.40's ★1).**
+    If the second of three orders is short of ground, ore or licences, the page
+    borrows for the first alone and says the run stops there; after the loan the
+    first is built and the second shows its own refusal page. Why:
+    `buildStack()`'s own rule is that the city is never sold a loan for a
+    building it has nowhere to put, and the brief's "fund the run, then show the
+    refusal" would borrow for orders that cannot be placed.
+    `Game.buildRunAhead()` walks the run as it will be placed, each order
+    against the ground and deposits the ones before it take.
+  - **The order bar's and "Build all three"'s price can be a little under the
+    press (0.7.40's ★3; the docs pass's flag 3).** The bar shows the sum of the
+    orders' alone-quotes (`BuildAdvice.quoteTotal()`, which counts the yard free
+    for every order); the press is charged the run's invoice
+    (`Game.buildRunInvoice()`): $161.0M against $160.8M in the 600-month city.
+    So the button can say GO and the press open Build › Funding.
+  The implementers' other starred calls, for Jerus to confirm:
+  - **0.7.40** (`runs/ui21-notes.md` §4): 2, an order not placed stays on its
+    card everywhere (a card's Build, the order bar and Enter take a card's count
+    off only once its order is placed; before, each card was emptied before its
+    order was tried, so a refused or unfunded order lost its count); 4, the
+    ask's steps: ±one unit of the leading digit and ±a tenth of it, never under
+    a lot (one pair when they meet: a term loan at D$1B, ±D$100M only), ÷10 and
+    ×10 once there is an ask, one lot at nothing, a step or scale starting from
+    what is typed and not yet set; 5, the presets, each shown only when above
+    nothing: at home the minimum, what falls due within a year, a month's
+    spending, a year of tax (labelled "a year of tax", not "revenue": it is tax
+    only) and overdrawn by; abroad the minimum in dollars and what the dollar
+    paper asks within a year; 6, the box: empty with a prompt, Enter sets and
+    redraws, leaving it sets and redraws after the button is up, a bad entry
+    said in red under it with the ask kept; k, M, B and T in either case (m is
+    million), commas only in groups of three, a leading D$, $ or US$ ignored, no
+    negatives or exponents; 7, a `TimeChart` clips its sides only (a hover card
+    may still hang below a short chart) and has min width 0; 8, `Money`'s unit
+    edges fixed in `tightMoney()` for every screen (999.97B reads "$1.0T",
+    999,600 compact "$1.0M"), `Pieces.tidyMoney()` now a no-op. Unstarred: the
+    funding page's offers sit in three columns as the land office's (the third
+    empty when converting) and Cancel is a plain button there.
+  - **0.7.41** (`runs/ui22-notes.md` §5): 2 (with 1, above); 4, a served row
+    takes the verdict's colour wherever it is drawn (NEEDS YOU rows, NEXT TO
+    WATCH, Build's tiles, the Services strip's dot), the level still deciding
+    what is listed, the order and the chip, so a short row with sites on the way
+    sorts with the ambers but reads red (0.7.29 made the road amber everywhere
+    while its sites were on the way; it reads red now); 5, City History keeps
+    every label and series, having no load series ("Power supplied", "Water
+    supplied" and "Road throughput" keep their meaning), so Services' POWER,
+    WATER and ROADS KPIs lose their sparkline and change line; 6, the flow curve
+    redrawn against served (0–200%, better to the right), the FULL cell now
+    SERVED; 7, a higher school's ring on the Services pipeline is seats ÷ who
+    would come, in the verdict's colour (it was seats in use, in teal).
+    Unstarred: 8, the words ("served, short", "served, tight", "served, enough";
+    NEEDS YOU rows carry the figure only; 99.5% to just under 100% prints
+    "99%"); 9, suggestions still stop at NEEDS YOU's lines, so a care order
+    closing at 81% reads amber "short" and the order bar turns green only at
+    enough; 10, the RESOURCES header counts by the verdict and can now be red
+    (it was amber at most, and a congested road was not counted).
+- **CONFIRM (from 0.7.32 to 0.7.39), and what was left out of them.** The
+  specs' ★ decisions were decided by the orchestrator as each spec recommended:
+  Finances' D1–D20 (D20 adjusted), the Bank's D1–D18, Trade's D1–D25 but D4,
+  Policy's D1–D18 but D7 and D18's step 1, City History's D1–D11, the fund's
+  D1–D12 (0.7.39, `runs/spec-fund-0739.md`); 0.7.34 had no study, its design
+  the brief's, from Jerus's words, and nor had 0.7.38.
+  **The most visible, for
+  Jerus to confirm first:**
+  - **The fund's hand names its price (0.7.39's ★D2).** Fair value stays the
+    default; the ticket offers Fair value (the rule's) · Best bid · Best ask ·
+    Last and a ±1% stepper on fair, with no upper cap, and prints the premium
+    ("Over fair value +10.0% - the seller is paid more than the register
+    reckons; the fund carries it at the last trade"). It is the batch's one
+    behaviour change, with cancelling (★D3): in both research cities a buy at
+    fair filled nothing (MODEL BUGS item 21), and "Best bid" is the price that
+    fills. The playtest places no hand orders, so it never reaches the traces.
+  - **P&L in green and red, and only P&L (0.7.39's ★D7).** `GOOD_MONEY` and
+    `BAD` from `BRIDGE_NOTHING` (D$0.5k) up; under it the body's ink with its
+    sign and arrow ("▲ +D$368 (+0.2%)"); a figure that rounds to nothing plain
+    "D$0". Prices, moves, yields, chart lines and Search's moves stay ink; one
+    home, `Pieces.pnl`. Percentages to one place, two under a tenth of a
+    point, none under a two-hundredth: never "+0.0%". (Unsigned under D$0.5k
+    was tried: "D$451" on a 2.6% gain read as a value.)
+  - **The header's rate line changes colour (0.7.35's D8).** One parity rule,
+    `ForeignAccounts.PARITY_WATCH` (25%) and `PARITY_FAR` (50%) either side,
+    for the Trade tab, the drawer's THE CURRENCY row and the header's RATE
+    tile's second line: grey under 25% from parity, amber from 25%, red from
+    50%, grey when pinned. It was grey near parity or stronger by any amount,
+    amber more than 5% weaker and red past 25% weaker. So a currency 25–50%
+    stronger now reads amber (both probe cities, 26–31% stronger), 5–25% weaker
+    grey, and 25–50% weaker amber where it read red. The drawer's Dashboard
+    TRADE "vs parity" line, amber past 15%, was a fourth reader off the rule;
+    it is on the rule since 0.7.38.
+  - **Build at none sets the count to 1 (0.7.34's ★1).** A press on "Build ·
+    choose how many" chooses one and prices it and never orders; a second,
+    separate press orders. A double-click is one press on every action button
+    and pill (★2): a single click does what it did, but until now a
+    double-click on the land office's Buy bought the card that slid into its
+    place too.
+  - **PROMISES no longer counts the tuition the city waives (0.7.36's D13):**
+    revenue forgone, not money out of the treasury. The KPI, the hub card and
+    "out of the treasury" changed ($8.1M in the 2,400-month city, "$5.6M of it
+    the pension gap"), and Schools says "The city waived $X of tuition:
+    forgone, outside the sum." in grey.
+  - **The button colours.** The land office takes Build's building pink
+    (0.7.34's ★6); GO is white on the pink's darker step, `BUILDING_DARK`
+    #cf5590 (3.9:1, where the pink itself would carry white at 2.5:1), lighter
+    under the pointer and darker pressed (★7: does it still read as the
+    building pink?). Trade's exchange and Policy's every Apply are the same
+    button in the money blue, and so is City History's "Write the year book",
+    not the CONFIRM green its spec named (0.7.37's ★1: the GO look is built on
+    an area colour).
+  The implementers' other starred calls, for Jerus to confirm:
+  - **0.7.32** (`runs/ui13-notes.md` §4): 1, the three icons PAPER, BANKNOTE
+    and SAFE, by eye; 2, more model reads than "no new figures", so nothing
+    shown is the screen's arithmetic; 3, COUPON plain while comfortable, amber
+    felt, red constrained, never green; 4, the service gauge leads with the
+    larger of its two marks (a note the rollover will mostly net still reads
+    "constrained": 113% in the 600-month city); 5, "later" on the same scale as
+    the years (since 0.7.34 drawn broken past twice the tallest); 6, the
+    heaviest tag red past `CityNeeds.YEAR_WALL`, half a year of revenue; 7,
+    NEXT DUE's chip, "paid ✓" or "rolled", from the rollover's record; 8, the
+    last roll dated by the month it fell due; 9, import cover's one tick, the
+    model's six months (the old three was a screen literal); 10, FOREIGN red
+    only while the window abroad is shut; 11, the stress bars plain; 12, the
+    default scar off the rate built up (it is on the world's premium only); 13,
+    the offer card's green "Cash it brings", the land office's; 14, Issued's
+    receipt only when the booking matches the quote; 15, NEXT DUE the soonest
+    piece.
+  - **0.7.33** (`runs/ui14-notes.md` §4): 1, B5 on the load path (D10); 2, the
+    branch verdict `planBank()`'s, the planner read pure (D9); 3, HOW FULL at
+    NEEDS YOU's THE BANK level, amber past 100%, red only failed or with no
+    bank (the spec said red past 100%); 4, the action cards at the top of the
+    page, not in the frame; 5, ticks named by their figure, the words in a key
+    line; 6, SectorScreen's owners card untouched, with its 0.7.30 colours; 7,
+    the capital gauge grows on a month only while the risk-weighted ratio binds
+    (his city binds on leverage); 8, D11's leverage series for later (MODEL
+    BUGS item 15); 9, the walk's totals the model's, in grey, a step under half
+    a dollar "nothing"; 10, the equity's walk without opening and closing
+    columns; 11, PAYOUT against last month's profit; 12, two ratios of model
+    figures worked on the screen; 13, prime's move on the strip and the Prime
+    rung.
+  - **0.7.34** (`runs/ui15-notes.md` §4): 1, 2, 6 and 7 (above); 3, a HELD
+    press opens the refusal page, whose pill is the door, though the line's "›"
+    promises the door itself (the docs pass's flag 1: Jerus's call; one line in
+    `orderControls()` sends the press straight there); 5, "No land free" only
+    with none free, else "Short 476k sq ft of land"; 9, "Buy the next 5"
+    carries the count, its total beside it; 10, the land office's credit words
+    ("Buy on credit · D$1.0B"; from the vault and short "Buy · US$…" over "the
+    vault is short: ways to pay"); 13, "Build all three" held when any of its
+    cards is; 15, "loaded or founded" on the Sectors line; 19, `LATER_BREAK` 2
+    and `LATER_CAP` 1.2.
+  - **0.7.35** (`runs/ui16-notes.md` §4): 1, D8 (above); 2, D25's words (the
+    section hints; the gauge chips "crisis pricing" / "thin" / "comfortable",
+    "a run likely" / "thin" / "covered", "near" / "far" / "very far"; "Fuel for
+    the railway"; "the treasury's position"; "openness: trade ≥ output (100%)";
+    "not counted yet" with "since the city was loaded or founded: a month on,
+    it is"; "WHAT WE TRADE, THE MONTH THE CITY WAS SAVED IN"; "The month's
+    surplus" or "deficit"; "income from abroad, net"; "Buy reserves"; "Buy
+    foreign money / choose how much above"; "‹ stronger" and "weaker ›"; "land
+    cost US$X since founding, none of it from the vault"), with the docs pass's
+    flag 2 (a founded city reads as just loaded); 4, D4 not built (MODEL BUGS
+    item 2); 5, What we trade after a load shows the month the city was saved
+    in, from the businesses' saved books; 6, the river draws the balance of
+    payments only, the treasury's purchases as chips below the line; 9, D13,
+    `fxParity` a History series (his parity line starts the month he first
+    plays 0.7.35); 16, `ForeignAccounts.THIN_COVER` = 3 named in the model; 17,
+    the pull struck as the reprice applies it (+0.142% then, +0.143% now in the
+    2,400-month city).
+  - **0.7.36** (`runs/ui17-notes.md` §4): 1, D7 / B8 ready to build (MODEL BUGS
+    item 4); 2, the bank's row is next month's bill, taxed in arrears; 3, M11
+    shows only what a pensioner household has, not what it has left after rent
+    and bills; 4, D13 (above); 5, the fare's Apply restyled as the same blue
+    button, through `applyBar()`; 6, D18 step 6, the fare onto the dial card,
+    not done (done in 0.7.38); 7, the People screen's founding floor (done in
+    0.7.38); and §8.1, the two inflation colours (MODEL BUGS item 16).
+  - **0.7.37** (`runs/ui18-notes.md` §4): 1 (above); 2, no "200 years · since
+    Feb 2000" hint in the head, THE CITY saying it under it; 3, "2,400 months
+    recorded · since Feb 2000", not "founded Feb 2000" (a city is founded in
+    month 1 and its history's axis starts at month 2); 4, RUNNING NOW's note
+    for one episode alone, "since Aug 2199 · 6 months"; 8, "at" an end of a
+    band within 1e-6 of the market's own index (`AT_END`); 11, the seller's
+    door as its name with "›" in the figure column ("Retail ›"); 16, D9's
+    labels, all 69 ("GDP: consumption", "M0, the central bank's money",
+    "<Sector> net income", "<Company> fair value" and the rest); 25, the
+    canvases' first draw at the last known width, 1,234, snapping on the first
+    layout.
+  - **0.7.38** (`runs/ui19-notes.md` §4): 2, the Bank's ITS RATES (i) no
+    longer promises a drag, and the drag is not built (a pan on a small chart
+    is new behaviour, not a display fix; the (i) names "Over the years", City
+    History, as the way back); 4, the drawer's Import cover takes Trade's
+    verdict, red under 3 months (`THIN_COVER`), amber under 6
+    (`COMFORTABLE_COVER`), plain above (it was amber under a literal 3; in both
+    research cities, and probably his, it turns from amber to red); 6, History
+    draws no floor in today's money (neither the cost of living nor its
+    adjustment is a series the history keeps, and a line from the price index
+    would be invented; offering it is a saved series, a model batch); 8, the
+    fare card "THE FARE" in capitals and stacked (the ladder at 520, its four
+    effect rows under it), as Policy's dial cards are; 11, right after Apply,
+    until the month turns, the fare card shows a move at the new fare (riders
+    41,491 → 32,756): the network's fare share is struck when the month turns,
+    as in Policy's decision 13.
+  - **0.7.39** (`runs/ui20-notes.md` §4): D2 and D7 (above); D1, Search finds
+    every listed company, every bond outstanding, the preferred and warrants
+    while held, and a closed lot only when named (kind CLOSED), ranked
+    starts-with, then held, then size, an issuer's bonds by maturity; D3,
+    cancel only an order still waiting for the step (one already posted rests
+    under ON THE BOOK, without Cancel); D4, buy by amount and sell by
+    quantity, the toggle converting at the order's price, a new ticket on
+    Buy, by amount, at fair; D5, one position a company (the rule's and the
+    hand's pooled), two lots for the bank with their sum on its page; D6, an
+    older save seeded at market value at the load month, tagged "cost from",
+    the dividends before shown apart, the rescue lot exact, the headline
+    exact from the counters; D8, the house ranges, 10Y the default; B1, a
+    hand buy past the 10% cap stopped at the cap at posting, since past it
+    the rule asks the excess back at fair from the next step, a certain loss
+    the player cannot see; B9, a queued buy's cash held from the rule's bids
+    (`TreasuryFund.handReserve()`, the rule's mix still reading the whole
+    cash; new buys clamped to `fundCashFree()`; Draw out only free cash);
+    after the docs pass (`runs/ui20b-notes.md` §4), ★ **the hand first for
+    the room, as for the cash**: the 10% cap counts every order the fund has
+    on a company as if it filled, and the rule's bid makes way for the hand's
+    (sized at the step while the hand's orders still wait in the queue,
+    filled between steps no further than the room they leave), so the rule's
+    bid and every hand order, all filled, stop at the cap and the hand is
+    never starved by a bid that will not fill; built rule first, as the
+    brief's words read, a fund worth more than about a seventh of the market
+    bid the whole 10% of every company at fair, where nothing fills (MODEL
+    BUGS item 21), and the ticket said "No room" on every company while the
+    fund held none, so it was withdrawn; `BARGAIN` = 5%, a new dial ("bought
+    N% below value"); `ACTIVITY_ROWS` = 1000 (about 18 rows a month in the
+    default playtest, about 4½ years kept; about two years of the 600-month
+    city's; each row about 100 bytes of save, the dropped ones counted; its
+    dial sentence still gives the study's count, the docs pass's flag 5,
+    section 6).
+
+  Not in these batches: Trade's D4 and Policy's D7 (MODEL BUGS items 2 and 4);
+  the Bank's D11 leverage series (item 15); the fare onto the dial card and the
+  floor on People (done in 0.7.38); the drag on the Bank's rates chart
+  (0.7.38's ★2; section 3, THE BANK); the vitals counting up on Policy (People's
+  `countUp` is PeopleScreen's own); a `cardChart` for History's pins (the
+  spec's Trade piece did not land); Build's credit page adopting
+  `Pieces.offerCard()`; Government's "Bought land with … reserves" step still
+  opening the last Trade page; 0.7.39's D12, B3's mark, B6's precision and
+  B10's rule (MODEL BUGS items 19–21), a bond's price history and a cap on the
+  hand's limit.
+- **CONFIRM (from 0.7.31), and what was left out of it.** The spec's ★
+  decisions (§10, D1–D18) were made by the orchestrator while Jerus was at
+  work, as the spec recommended: the four pages and their names kept (D1);
+  EARNED · SURPLUS · BANKED everywhere (D2); `getEarnedToBudget()` and its
+  residual in the model (D3); repairs and the fares outside the totals, named
+  there (D4); the GDP history seeded on load (D5); taken in and paid out as the
+  money blue and its darker step (D6); one verdict each, from NEEDS YOU (D7);
+  "of the change" cut (D8); ranked lists, the lines at nothing folded (D9); the
+  pension chip on NEEDS YOU's row (D10); "of GDP" as this month × 12 for now
+  (D11); Output led by History's real layers (D12); B5's labels (D13); wide
+  pages (D14); doors where each line is decided (D15); the open state kept
+  through a month (D16); B10 and B5's G reported (D17); "Care and schools
+  staff" (D18).
+  **The most visible, for Jerus to confirm first: D2.** The header's line under
+  the cash now reads "+$X earned a month" (it read "+$X a month"), and the
+  drawer's "Net income" reads "Earned". It changes wording Jerus chose on the
+  morning of 2026-10-01; the figure, `Game.getIncome()`, is unchanged. The
+  tooltip and the (i) say EARNED, SURPLUS and BANKED.
+  The other starred calls (`runs/ui12-notes.md` §4, written by the docs pass
+  from the code), for Jerus to confirm:
+  - **D3,** the walk from EARNED to the budget is the model's
+    (`Game.getEarnedToBudget()`, `getEarnedResidual()`, the fares' step named
+    once as `Game.EARNED_FARES`), held by TreasuryCheck §8; the list carries
+    every line at $0 too, and the bridge leaves out steps under half a
+    thousand;
+  - **D4,** repairs and the fares stay outside the budget's totals and are
+    named there, in the rings' feet and on the bridge. **For Jerus: a model
+    batch** in which `NationalAccounts` carries both and the two
+    `TreasuryJournal.record` calls come out; it changes `getBalance()`, so
+    `getTreasurySurplus()`, the student grant's SURPLUS_SHARE basis and NEEDS
+    YOU's budget row, and the traces move (section 4, TWO BUDGET LINES THE
+    BALANCE OMITS);
+  - **D5 / B1,** the GDP history seeded on the load path from
+    `HistorySave.getGdp()` (the last 120 months; a city with no history file
+    keeps the rebuild's month); `EconomyManager.setPreviousGdp()` now finds a
+    year where it found a month, which only the drawer and the console's
+    economy report read;
+  - **B8,** `getIncome()` writes nothing (`EconomyManager.getTaxIncomeNow()`).
+    The consequence: after a dial is moved between presses, a screen reading
+    the month's struck wage tax, contributions and premiums (the pension card's
+    contributions, the wage-tax line) keeps the month's figures until the next
+    press, as the budget does; before, the header's draw quietly re-struck
+    them;
+  - **B7,** "Today's dials, not the month's": EARNED is read at today's rates
+    and the budget at the month's, and their difference is the last step of the
+    bridge's first column, a door to Policy › Taxes; $0 in any month nobody
+    touched a dial (five points of wage tax on the 2,400-month city made it
+    −$12.3M); the header's (i) says "read at today's tax rates";
+  - **D7,** one verdict each and no thresholds of the screen's own: SURPLUS in
+    NEEDS YOU's THE BUDGET colour; OWED red only at BORROWING red
+    (`atCeiling()`), here and on Finances' OWED cell; EARNED and BANKED plain.
+    The 60%/120% thresholds went from both OWED cells only (section 3,
+    GOVERNMENT);
+  - **D17,** B10 and B5's G reported, not fixed (MODEL BUGS, items 11 and 12);
+  - **9,** SURPLUS alone carries a sparkline and "▲ … on last month": History
+    keeps a `surplus` series and none for EARNED, and BANKED has neither; the
+    spec gave the change to all three money figures, and no reason is written
+    down;
+  - **10,** a line under half a thousand ($500) is "nothing": no arc, no row,
+    and a bridge step under it is left out (section 3, GOVERNMENT).
+
+  Not in this batch: D4's model batch (above); D11's trailing year
+  (`YearBook.nominalYear`, MODEL BUGS item 14); D18's payroll of every city
+  post (`Game.getCityPayroll()`, with D4's batch); `Sparkline` moved to Pieces
+  (the SURPLUS cell uses the header's `Pieces.sparkline()`); ~~Finances' two
+  other 60%/120% judgements~~ (done in 0.7.32, the Finances spec's D7).
+- **CONFIRM (from 0.7.28 to 0.7.30), and what was left out of them.** The
+  specs' ★ decisions were decided by the orchestrator while Jerus was at work,
+  as the specs recommended. Services' eighteen: an Overview first in every
+  system; Utilities as Overview and Books; power in kW; the rings on the
+  coverage the model applied, Build on the beds; one verdict judge,
+  `CityNeeds`; category colours for the stacked bars; the sick bar
+  part-to-whole; senior care's places; a read for the leavers' diplomas; the
+  frame fixed; who draws in three parts; doors both ways with Build; five
+  events; teal icon squares; Books last; a door on every figure; "Set the fee
+  ›"; Infrastructure split out first. Infrastructure's twenty: small pure
+  model reads; the after-load railway bill left for Jerus; one verdict and one
+  wording for the road; the curve's fixed scale; the streams' colours; the
+  per-good bars on the import price; no tonnes per good; the lorries in one
+  line; Infrastructure owns the road; History opened without a pin; doors both
+  ways with Build; BUS and LORRY; five figures; the fare on Transit; wide
+  pages; the details state kept; the page names kept; the split first; money
+  neutral. Sectors' thirteen: `SectorFlow` and its harness; the word's kind in
+  the model; `operations()` in two halves; three columns in Build's order
+  under their groups; one investors' record per sector; the first gate only;
+  notes behind (i)s by rule; B1–B4 and B7 fixed, B6 and B12 for Jerus; money
+  in and out in the revenue and spending colours; chevrons, not a Sankey; the
+  owners block redrawn once, the Bank's with it; the names kept; RUNNING AT a
+  door to Build.
+  The two most visible, for Jerus to confirm: **power in kW** (0.7.28's D3),
+  scaled to MW and GW, on Services and Build (the coal plant's 280,000 is what
+  the model's own comment calls "the 325 MW this plant actually is"; water
+  keeps "units a month"); and **the road worded "162% full · 56% flow"
+  everywhere** (0.7.29's D3 and D4), in NEEDS YOU's one colour, in the drawer,
+  NEEDS YOU, Build's tile and rings, Services' road card and Infrastructure.
+  The implementers' starred calls, for Jerus to confirm:
+  - **0.7.28** (`runs/ui9-notes.md` §4):
+    - **D9 (the spec's), `Education.getNewDiplomas()` is not saved:** a loaded
+      city's Diplomas node and NEW LICENCES read "not recorded yet" until a
+      month runs; SAVE_FORMAT stays 30;
+    - **1,** the figures, the systems strip and the page strip sit at the
+      left, as Build's do (the old ones were centred);
+    - **2,** sparklines only where the history keeps the figure, 13 cells of
+      16 (none on THINNEST COVER, GROUND LEFT or THEY EARN);
+    - **4,** POLICE COVER and THEY EARN are plain: no NEEDS YOU row judges
+      them, and the old screen coloured both;
+    - **5,** POWER and WATER show the share supplied in the colour of NEEDS
+      YOU's POWER and WATER rows, which judge the load (the fixture city's
+      water reads "100%" in amber at 90% load); ROADS likewise;
+    - **8,** three new icons, DROP, CANE and CELL, drawn by hand; childcare
+      and death care take the People page's child and headstone;
+    - **10,** the road row (capacity solid, the load a tick, "free flow
+      ends"); replaced by 0.7.29's road card;
+    - **13,** the pipeline's connectors are the lane hints, not drawn elbows,
+      which would point at nothing once the lanes wrap;
+    - **16,** crime's reasons coloured in the enum's order, and three of them
+      doors (Too few police → Police; No home and Crowded → Build › Homes),
+      which the spec did not name;
+    - **18,** the ground's words ("no ground", "full", "not in use", "100+
+      years", "N mo"), coloured only while NEEDS YOU lists the plots;
+    - **20,** TAUGHT EVER's figure moved to the ladder's details as
+      "Diploma-holders gained since the founding", with a note that it counts
+      only the months the band grew.
+  - **0.7.29** (`runs/ui10-notes.md` §4):
+    - **1,** the railway's two saved figures (what the rule allows it to bill,
+      what went abroad) are not known after loading an older save, rather than
+      read as 0: "—" and "known after a month". His Continue shows this for
+      one month;
+    - **2,** four more pure reads than the spec listed (the free-flow load,
+      the funnel's steps, what the railway kept and its replacement sets, the
+      world's margin and the railway's part of the wedge), so no figure is the
+      model's arithmetic done in the screen;
+    - **4,** B3 fixed in the model's getters (`getHeadroom()`,
+      `getSpareCapacity()` on the effective load), not with a second getter;
+      nothing in the model reads either;
+    - **5,** the one wording reached NEEDS YOU's own reading and Build's road
+      tile and ring; Services' ROADS figure stays the flow alone (the brief
+      limited ServicesScreen to the card);
+    - **6,** Build's doors: "what is on the road: Infrastructure ›" on Road
+      capacity and "who rides: Infrastructure ›" on Transit, in place of
+      0.7.28's "why ›";
+    - **9,** the walk's rule names in the house's short numbers ("capacity
+      88k", "slows past 79k"), the exact figures in their tooltips;
+    - **13,** the old CONGESTED alert is the second half of the flow line's
+      (i).
+  - **0.7.30** (`runs/ui11-notes.md` §4):
+    - **1,** a twelfth word kind, **supply** (amber), for "the world will not
+      sell a beam at any price" and its like (the fixture town's Automotive
+      word would otherwise read "other");
+    - **2,** phrases beyond the spec's table, each with an example in
+      BuildCardCheck;
+    - **3,** `investorsWords()` and `gateWords()` stay on BuildScreen, and
+      Sectors calls them, rather than moving to a new class;
+    - **5,** the owners card's chart is the old trend chart, not a City
+      History chart;
+    - **6,** the flow's units and its money are two months, as the old pages
+      were: the units the month the plants ran, the money the struck
+      statement;
+    - **7,** after a load the flow's units read "not counted yet", not 0;
+    - **8,** B3 and B4 fixed in the model's base block (`plantLines()`), so
+      the console and the fold say what the flow says;
+    - **10,** Cash & debt's rate bar reads what new borrowing costs today
+      (`getRate()`) in its parts, with the month's own rate beside it when the
+      two differ;
+    - **12,** RUNNING AT's door goes to the thinnest of power, the road and
+      health; water and vans have no Build page and are only named;
+    - **13,** WHAT YOU CONTROL's fourth door is Policy › Money's policy rate,
+      not the bank's page;
+    - **15,** Real Estate's housing row reads "rent on the homes let, a
+      month", with no count (its units are billed per head of room, not
+      doors);
+    - **22,** B13 not fixed: a comma in Real Estate's word would change a
+      playtest trace (MODEL BUGS, item 10).
+
+  Not in these batches: the first-licence event (0.7.28's D13, waiting for
+  per-profession licences in the history); a model read for a course's intake
+  in the month (the funnel's last step); History's "Graduates" (MODEL BUGS,
+  item 7); Services' ROADS figure as the pair; the railway's after-load bill
+  (MODEL BUGS, item 1); the Sectors spec's B6, B12 and B13 (MODEL BUGS, items
+  8–10); NEEDS YOU's CARE rows and Build's rings on the beds (0.7.27's D16,
+  below).
+- **CONFIRM (from 0.7.26 and 0.7.27), and what was left out of them.** The
+  specs' ★ decisions were decided by the orchestrator while Jerus was at
+  work, as the specs recommended. The Land office's fifteen: BEST VALUE kept
+  on card 1 with independent tags; square feet leading; the ground bar's
+  scale the free ground plus the N picked; no verdict colour on "% used"
+  anywhere; a 3 × 3 of wide cards; neutral prices, red only when no way pays;
+  badges and a pink edge on the next N; no "listed when"; the going rate as
+  `LandMarket.goingUsdPerSqFt()`; `Palette.ORE` and `Icons.ORE`; waiting
+  sectors by name; arriving from Build left out; the funding page in the
+  frame; `landPrice` alone behind details; the receipt through `Formats`.
+  People's nineteen: one page plus Household money; never green as a series;
+  the settled ghost; Migration's month saved (SAVE_FORMAT 30); the dead by
+  cause, the leavers and the draw's halves as getters; care rings opening
+  Build › Healthcare; death care as one ring; a verdict that counts every
+  row; the hunger split; the books beside the grid; the live wage; INCOME PER
+  RESIDENT; four omissions cut; the Pensions fix; HUNGRY on the share of
+  people; the bank's fees as a step; Work kept on People. The implementers'
+  starred calls, for Jerus to confirm:
+  - **0.7.26** (`runs/ui7-notes.md` §4):
+    - **D1, the receipt** is its own wrapped line under ON OFFER, not a
+      truncated chip beside the button: nothing may be cut, and a two-plot
+      receipt is about 150 characters;
+    - **D2, the left panel's LAND header** leads with the ground free ("51.0M
+      free · D$46.52/sq ft") in the GROUND row's colour; "Used 95%" moved
+      inside, and the red alert row reads "Land · none free" only at none;
+    - **D8, MOST ORE** is its own sand tag beside "ORE ×2 · 7.7M t", not
+      inside it (a pill does not wrap in the 110 px column);
+    - **D12, NEW** lasts until the month turns, through redraws (the
+      stepper's first click would otherwise wipe it);
+    - **D16, `Icons.ORE`** is drawn by hand; Lucide's own pickaxe could not
+      be checked in the cloud. Look at it.
+  - **0.7.27** (`runs/ui8-notes.md` §4):
+    - **D1,** the month's "start → end" is a line over the waterfall, not
+      captions over its first and last columns;
+    - **D2,** the fourth care ring is "Death care", as Build titles it, not
+      "Burial ground";
+    - **D3,** "going hungry" below the rule is a plan that could not buy a
+      basket (`planned < subsistence`), not `isGoingShort()`, a plan short of
+      what the household wanted; both pick the orphans in both probe cities;
+    - **D4,** the retired rows keep their statement figure: Senior and Elder
+      alone read $0, where against a basket they would read −$218, "living
+      on savings";
+    - **D5,** the homes' verdict is the old sentence's, red when doubled up or
+      short of doors, so SPARE HOMES is red where it was amber;
+    - **D8,** the mosaic's short words ("+ baby", "+ child, teen", "five
+      sharing", "large family"), the full names in the tooltips, its glyphs
+      drawn shapes;
+    - **D9,** the mosaic's strips on one scale, the biggest tiles
+      proportional and the rest at 56 px, the smallest folding into "+n more"
+      only when the minimums do not fit (the spec's literal rule would show 4
+      of 11 family shapes; its worked example shows 8).
+
+  For Jerus to decide: **0.7.27's D16**, NEEDS YOU's CARE rows and Build's
+  rings still read the beds, not the beds less the priced out
+  (`CityNeeds.careCover()`, `BuildAdvice.cover()`); changing them would move
+  NEEDS YOU's levels. Not in these batches: arriving at the Land office from
+  Build's "Not enough land" with N preset (`Game.plotsToCover(sqFt)`) and
+  that page's "roughly" quote (★12, spec §8.14); the red tick at a waiting
+  sector's need (`Game.landWantedSqFt()`, ★11); Build's "Order on credit"
+  page adopting `Pieces.offerCard()`; Policy's pension cover as a bullet
+  bar; the Government's treasury bridge as a waterfall; the HEALTH, COIN and
+  FOOD icons on People; a clickable Services › Health link in the care (i)s.
+- **CONFIRM (from 0.7.25), and two left out of it.** The spec's five ★
+  questions were decided while Jerus was at work, as the spec recommended:
+  land as the market cards' second bar (offices: the posts the city couldn't
+  staff); value added at today's prices for producers; an amber "this one:";
+  the city cards' (i), "runs" and +100 back; an order bar on market pages,
+  with no measure. The implementer's four for Jerus to confirm
+  (`runs/ui6-notes.md` §4):
+  - **D3, the market headings' subtitles.** The maker groups' come from the
+    goods they make and use ("STEEL · from iron ore"); the rest are the
+    implementer's words ("a door for every household", "food for every
+    household", "the city's bank, a counter at a time", "the crews every site
+    waits on", "work the world buys", "freight across the city's boundary",
+    "somewhere for the well-off to spend", "the city's food, cooked").
+  - **D4, one tag rule for every card:** two cards or more, and the lowest
+    strictly below the highest. On the city cards 0.7.24 tagged every card
+    when all cost the same.
+  - **D9, the empty word:** "Investors: nothing recorded since the city was
+    loaded or founded" (the spec had "…since the city was loaded").
+  - **D11, no 0 after a load:** the luxury and restaurant notes say only "the
+    counters serve C" / "the kitchens serve C" until a month runs, because
+    `LuxuryRetail.getWanted()` and `Restaurants.getWanted()` are not saved.
+
+  Not in this batch, for Jerus: saving `lastInvestment` with the city, so the
+  investors' line and the Investors page survive a load (a save-format
+  change); and the Restaurants note (spec §9.5), "N meals wanted; the kitchens
+  serve C" beside "tables ahead of diners" (the planner builds only past 5%
+  headroom: 3,383,854 wanted against 3,226,500 in the spec's probe city),
+  which could say "investors build past N".
 - **FOUND IN JERUS'S 0.7.14 CITY** (his year book, 2026-09-28, copy in
   the cloud at `runs/yb0714/year-book.txt`). The city ran 150 years to 1.05M
   people with no bank failure; 0.7.15 would have played it the same unless the
@@ -240,6 +2284,1625 @@ has been away reads the changelog's top block and section 0 here, then works.
     clinic door without open credit (reverses his 2026-09-19 call); O4 feed
     everyone's first basket before anyone's want above it; O5 a banned firm
     can finance its stock (item below). Nothing applied.
+- **UI NOTES FROM PLAYING 0.7.23, 2026-10-01** (`playing-0-7-23-ui-notes.md`,
+  on his PC in his autosave city, nothing changed; then the Build mockups,
+  `build-screen-mockups-round-2.md`). What 0.7.24 closed, see
+  `the-build-screen-and-the-frame.md`:
+  - ~~**The money barely visible:** the TREASURY tile read "TREA…", its cash
+    the size of every other figure, its income cut to "+$1.5B thi…".~~ —
+    **done in 0.7.24:** TREASURY is its own block by the clock, the cash at
+    28 px and "+$X a month" under it.
+  - ~~**The header's labels cut:** "OUT OF W…", "RATE ·…", "5,119 this m…",
+    "8.9 points unde…".~~ — **done in 0.7.24:** each tile shows the longest
+    wording that fits and never cuts; seen whole at 1,389 on the PC.
+  - ~~**Build opens on Residential**, so a player who does not read thinks he
+    must build houses.~~ — **done in 0.7.24:** Build opens on an Overview,
+    and a new game or a load sets it back there.
+  - ~~**The inbox popover stays open** through the main menu and across
+    screens.~~ — **done in 0.7.24:** it closes on a screen change, the main
+    menu and Esc.
+  - ~~**The left City overview panel, the right Under construction panel and
+    the NEXT DUE debt strip** sit on every screen and leave the centre about
+    55% of the width.~~ — **done in 0.7.24** (frame B): a drawer behind the
+    "Needs you" chip, a 44 px tab, and a card on the Finances hub with its red
+    maturity as the NEEDS YOU row FALLS DUE.
+  What 0.7.26 and 0.7.27 closed, see `the-land-office-redrawn.md` and
+  `people-at-a-glance.md`:
+  - ~~**Household cash flow and Pensions contradicting themselves in green**
+    (§2.2, §2.3): "Every kind of household in this city covers its month"
+    over red rows and GOING SHORT 35.2%; "They can afford to eat." under a
+    shop budget of −$3,004.~~ — **done in 0.7.27:** Household money's verdict
+    counts every row and says who is short, who lives on savings and who
+    went hungry; the Pensions page's three lines come from the ledger and
+    foot, under a red, amber or green sentence.
+  - ~~**People's fractional households (5,468.87) and a pay row at the
+    founding wages ($3,460)** (§2.7).~~ — **done in 0.7.27:** whole
+    households, and the live wage per earner (`wagePerEarner()`).
+  - ~~**§4's People row:** a ledger, the heatmap behind a button.~~ —
+    **done in 0.7.27:** the drawn pyramid, the month as a waterfall, the
+    household mosaic, care as rings and homes as a gauge; Household money a
+    page of its own, the heatmap kept.
+  - ~~**§4's Land office row:** the top sentence behind (i).~~ — **done in
+    0.7.26:** the "how" sentence and every paragraph behind an (i), and the
+    office redrawn round THE GROUND.
+  What 0.7.28 to 0.7.30 closed, see `services-at-a-glance.md`,
+  `the-road-in-one-picture.md` and `the-sectors-as-flows.md`:
+  - ~~**§2.8, power units:** the grid read "Asked for 1,177,434 W" for 1.36
+    million people.~~ — **done in 0.7.28:** the model's unit is the kilowatt;
+    `Money.power()` writes kW, MW and GW on Services and Build (his city asks
+    about 1.18 GW), and the console's report says kW.
+  - ~~**§4's Services row:** label…number rows with grey paragraphs under
+    them.~~ — **done in 0.7.28:** an Overview per system, care as rings, the
+    sick rate as one stacked bar, capacity bars for power, water and the road,
+    the schools as a pipeline; every table behind "details".
+  - ~~**§4's Infrastructure row:** the road meter, then paragraphs, then dense
+    mono tables (freight "25 goods × 4 columns").~~ — **done in 0.7.29:** the
+    flow curve beside the three streams stacked from trips to the road,
+    transit as a funnel of the three ceilings, freight as a bar a good (19
+    with both prices); the grids behind "details".
+  - ~~**§4's Sectors row:** a sector's page five tabs of lists, Investors as
+    paragraphs.~~ — **done in 0.7.30:** inputs → plant → outputs as a flow,
+    the operating rate as a ring with its cascade, the investors' decision in
+    one line with an icon; the list kept as cards, in three columns with a
+    running-at bar.
+  What 0.7.31 closed, see `earned-surplus-banked.md`:
+  - ~~**§1, two "incomes":** the tile's +$1.5B the budget's net income, while
+    Finances and Government said the cash grew $2.3B, and nothing said which
+    was which.~~ — **done in 0.7.31:** three figures, named everywhere: the
+    header's line is what the month EARNED ("+$1.5B earned a month"), beside
+    the budget's SURPLUS and what the cash BANKED; the header's (i) names all
+    three, and Government's Overview walks from one to the next with every step
+    named (FROM EARNED TO BANKED). D2's wording is for Jerus to confirm
+    (above).
+  - ~~**§2.1, GDP after a load:** "$0 / yr" on load and "annualised · first
+    year" a month on.~~ — **done in 0.7.31:** the load path seeds the GDP
+    history from the history file (`NationalAccounts.seedHistory()`; MODEL BUGS
+    item 3).
+  - ~~**§2.9, Government's "Paid out" bar amber.**~~ — **done in 0.7.31:** paid
+    out in the money blue's darker step, kept or short outlined in the verdict
+    colour, and no verdict colour left as a category on the tab (B4).
+  - ~~**§4's Government row:** two rings, a surplus bar, the treasury bridge;
+    "Keep it. Fix the amber bar, and cut the bridge's paragraphs".~~ — **done
+    in 0.7.31:** the rings kept, the bar recoloured, the bridge one card of
+    named steps with every paragraph behind an (i).
+  What 0.7.32 to 0.7.37 closed, see `the-debt-at-a-glance.md`,
+  `the-bank-at-a-glance.md`, `buttons-that-ask-to-be-pressed.md`,
+  `trade-at-a-glance.md`, `policy-at-a-glance.md` and
+  `city-history-finished.md`:
+  - ~~**§4's Finances, Bank, Trade, Policy and History rows.**~~ — **done in
+    0.7.32, 0.7.33, 0.7.35, 0.7.36 and 0.7.37**: each screen one picture first
+    at Build's width, its paragraphs behind (i)s and its tables behind
+    "details"; the rail's last screen redrawn in 0.7.37.
+  - ~~**§2's Bank "−0.00% a year".**~~ — **done in 0.7.33** (B1: a true minus
+    through `Money`'s new rate writers).
+  - ~~**§2's verdict colours used as series colours (the Bank ladder,
+    Trade).**~~ — **done in 0.7.33** (B2: the families teal, interest, coupons
+    and reserves plain) **and 0.7.35** (D7: colours by kind, never verdict).
+  - **Still open from the note's §2:** YOUR CITIES cards cut; the Taxes heading
+    over one slider (Policy redrawn in 0.7.36 as dial cards under a hub: to
+    look at on the PC).
+- **CHECK 0.7.53 TO 0.7.54 ON THE PC** (`runs/fixH2-notes.md` §6;
+  `runs/docs-0754.md` §2 and §4). **Not yet seen:** nothing rendered; the
+  figures come from `ScaleCheck`'s copies at 5B and 10B (it asserts the strings)
+  and from the docs pass's reading of the screens' own helpers. At 1,389 × 868.
+  1. **The land premium at 5 to 10B** (fixH2 1; CONFIRM above). The copies build
+     nothing, pay about 3e13 a month in property tax and lose about 1% of their
+     people a month. Your call: by density, or saturated.
+  2. **The arrears line** (fixH2 2; CONFIRM above). Whether what the treasury
+     pays down of a sector's arrears belongs on its cash-flow statement, for a
+     later batch.
+  3. **AllChecks on your PC** (fixH2 3). OrderSearchCheck takes about 30 s here
+     and the whole suite 408 s; check that `ScaleCheck`'s 1,500 ms median bound
+     holds on your machine.
+  4. **Any screen that shows a big figure** (docs flags 1 to 3). If a city of
+     billions is to hand, look at People, Summary and the sector pages: a count
+     past 2,147,483,647 should read whole, money past a quadrillion should read
+     "$26.0Q" (grouped past a thousand), and the three known edges are Finances'
+     typed ask (no Q), a sector page's "$1000.0T" and "19000.0M sq ft" (FOUND,
+     below).
+- **FOUND ON THE WAY IN 0.7.53 TO 0.7.54** (`runs/fixH1-notes.md` §7,
+  `runs/fixH2-notes.md` §5, `runs/docs-0754.md` §4, `spec-scale.md` §9):
+  - **The docs pass's flags** (`runs/docs-0754.md` §4), none changing behaviour:
+    1. **Finances' typed bond amount (its typed ask) takes k, M, B or T, not Q**
+       (`askFromWords`, `ASK_TYPED_INFO`). Its presets print through `Money`, so
+       in a 10B city a preset reading "$26.0Q" cannot be typed back.
+    2. **The sector pages print "$1000.0T"** (`Formats.amount()`): it has no
+       carry like `ui/Money`'s of 0.7.40, so 999.97T prints "$1000.0T" where the
+       screens print "$1.0Q", as "$1000.0B" already did below it.
+    3. **The short format stops at M for land and trips**
+       (`ui/Money.shortNumber()`): billions of square feet read "19000.0M sq
+       ft".
+    4. **`ScaleCheck.NAMED` changes nothing it scales:** `sc()` reads the names
+       inside every TOP key alike (ported as `scale_save.py` had it). Its
+       javadoc now says only what it lists.
+  - **The scaler does not scale the bond market, the exchange, the equity
+    register or the fund** (the study's ★1; fixH2 ★9). In a copy the bank is
+    resolved in its first month at ×1000 and up, and the treasury journal
+    carries 8.7, then about 0.1 to 0.8 a month, unnamed (read, not asserted). At
+    ×1000 to ×10,000 the study's copies' currency weakened faster than at ×1 (FX
+    1.43 against 0.83 after 30 months); not traced.
+  - **History is never trimmed** (the study §5 and §9): about 37 MB on disk and
+    110 MB of heap at 1,000 years, about 1 s per autosave, none of it depending
+    on population. Jerus's call is in CONFIRM above.
+  - **Arrears on the cash-flow statement** (fixH2 §5): what the treasury pays
+    down reaches a sector's till but not its statement, at any size; in CONFIRM
+    above.
+  - **`needed` in `orderSize` saturates, not wraps,** at 2,147,483,647 at 5B
+    (fixH2 §5); the order is then capped by the wait and the plots.
+    `BuildingManager.weightOf` takes a long, because halving probes `needed`
+    first and the saturated count plus a site's units had wrapped the int.
+  - **What the docs pass found false** (prose only, `runs/docs-0754.md` §1):
+    `consider()`'s javadoc ("a search from the top"; it searches below the
+    counted slices) and THE LARGEST SLICE's "that test is a straight line" (two
+    straight pieces at a fixed rate); TreasuryCheck's `near(..., size)` ("below
+    1e6 units this is TOLERANCE exactly"; it holds to 1e10) and MoneyAudit's "a
+    harness city is a few hundred thousand units" (TreasuryCheck's bus town is
+    2.5 million); `Mortgage.Decision`'s "the first that failed on the way down";
+    ScaleCheck's "took up to 14.8 s a month at this size" (the study's 1.1B
+    city; the 10B copy, up to 143 s); HealthCheck's "productsSold is an int and
+    always was" (a long since 0.7.53); `ui/Money`'s ladder, which stopped at T;
+    `GameVersion`'s two entries; and six dials with blank sentences.
+  - **The incidents:** none reported by H1, H2 or the docs pass; the study used
+    no `/dev`.
+- **CHECK 0.7.52 ON THE PC** (`runs/fixG-notes.md` §6). **Not yet seen:**
+  nothing rendered; the words and figures come from the implementer's probes,
+  and the fit was measured with java.awt in Plex. At 1,389 × 868.
+  1. **Policy › Money** (fixG 1). THE RULE card's new ladder should sit under
+     the target's, and the words line should follow as you drag it.
+  2. **Your target is 0.5%** (fixG 2). Strict and Very strict both aim at 0%
+     there, and Loose and Very loose act only past 1.5% or 2.5% (or under −0.5%
+     or −1.5%). Decide whether that is what you want.
+  3. **Your current autosave** (fixG 3) still loads at 1851 with the gap at
+     1851. The next autosave, 12 months after a load, will hold a whole month.
+  4. **On a loose setting** (fixG 4), NEEDS YOU's PRICES row reads "the dial X
+     pts under the Standard rule" while trust falls. Check that it reads
+     clearly.
+- **CHECK 0.7.50 TO 0.7.51 ON THE PC** (`chart-crash-and-build-advice.md` §8;
+  the full lists are `runs/fixE-notes.md` and `runs/fixF-notes.md` §8). **Not
+  yet seen:** nothing rendered; every word and figure was composed by the
+  implementers' probes on the playtest's 600- and 2,400-month cities and a copy
+  of Jerus's own city, since JavaFX nodes cannot be built headless here (the
+  strings were rebuilt from the screens' own helpers), so his figures will
+  differ. At 1,389 × 868.
+  1. **Try to reproduce the crash** (fixE 1). Open Government's output page
+     (WHAT THE CITY MAKES, the layers chart) and run time at 20x or 50x. Rest
+     the pointer on the chart, move it a little and leave it there while months
+     land, then switch tab with the pointer still on it. Expect no freeze and no
+     "!!!" in `log.txt`.
+  2. **The same on City History** (fixE 2), with real GDP pinned and layers on,
+     and once in full screen with Esc while time runs. Back on History, no
+     crosshair or card should be left where the pointer was.
+  3. **Hover any chart** (fixE 3: Bank, Finances, Trade, Fund) while months
+     land: the card and crosshair should still follow the pointer.
+  4. **A long run whose log reaches 2,000,000 bytes** (fixE 4): the cap line
+     should say failures still go in, with any later failure after it.
+  5. **Build › Overview at 1,389 × 868** (fixF 1). The cards are taller now
+     (three lines, up to about 8 rows of text). Check the row still reads well,
+     and hover the land line to see the ranking tooltip.
+  6. **A city short of land** (fixF 2). The button should read HELD with "it
+     stops at the first: short of land - buy it at the land office first". Buy
+     the land and press it: the whole run should place, or go to funding when it
+     says "on credit / short $X".
+  7. **The two land figures** (fixF 3), when an earlier card takes the ground:
+     the card's button says "Short 543k" while its line says "798,000 sq ft more
+     than is free". Decide which the card should say.
+  8. **Big Home Daycare counts** (fixF 4; 133 in city600): they open fast but
+     push your other sites back (CONFIRM, above). Your call whether that is
+     fine.
+  9. **Services › Education** (fixF 5): a school not built reads "not built: N
+     would come, M posts for them" on two lines in its node; check it.
+- **FOUND ON THE WAY IN 0.7.50 TO 0.7.51** (`runs/fixE-notes.md` §7,
+  `runs/fixF-notes.md` §2 and §7, `runs/spec-build-advice.md` §7,
+  `runs/docs-0751.md` §4):
+  - ~~**The autosave is written mid-month** (fixE). `Game.nextMonth` autosaves
+    (:7553) after `month++` and the month's opening steps, but before
+    `recordMonth`. A city loaded from it skips a month of history: Jerus's
+    autosave holds history to 1850 at game month 1851, and a month after loading
+    records 1852. Not touched (model).~~ — **fixed in 0.7.52** (2026-10-06,
+    `runs/fixG-notes.md` §1): the autosave now sits after `recordMonth()`, so
+    it holds a whole month. Old autosaves are not repaired (CONFIRM from
+    0.7.52); Jerus's still loads at 1851 with its gap.
+  - **Each card's "Opens" is quoted alone** (fixF §7): it does not count the
+    cards before it, nor the crew weight they will put on the builders (the Home
+    Daycare finding, CONFIRM above).
+  - **The later card's credit tooltip** (docs flag 2). A card's button on credit
+    says "short $(quote − all the cash)", recomputed on screen, while line (1)
+    says "by $X", the shortfall after the cards before. For a later card whose
+    own quote fits the cash it reads $0 or less, and the button says "on credit"
+    though its own press borrows nothing. The expression is 0.7.49's; 0.7.51's
+    lifted cap reaches it more often.
+  - **The "cheapest" qualifier's extra words** (docs flag 3). It is on every
+    card its rank gives it, true but redundant where no cheaper building sits
+    lower (Jerus's roads: "...that keeps it ahead and fits the land left"). The
+    card carries only its runner-up; a model field for the cheapest of all would
+    let the screen drop it. Your call.
+  - **The docs pass's other flags** (`runs/docs-0751.md` §4): `&mp;` is not
+    broken, it is the HTML entity for ∓ ("bid/ask = mid ∓ half of a 2% spread"),
+    and version 12's publish step had turned it into "mid & half" (0.7.49's
+    FOUND, and its write-up, called it an invalid entity); it was restored in
+    version 13 and the fix should be dropped next edition. GameLog counts the
+    cap per stream (out and err each to 2,000,000 before failures only), so the
+    file can near twice the cap, as at 0.7.49. The manual's §25 still counts
+    0.7.49's 59 open questions.
+  - **`suggest()` is slower on a cold first call** (fixF §7): 18-21 ms against
+    9-10 ms at 0.7.50.
+  - **What the docs pass found false** (prose only, `runs/docs-0751.md` §1): the
+    advice's RULE said the ground was "priced at the land office's" (free ground
+    is the lesser of that and what a business pays);
+    `BuildScreen.adviceTotal()`'s javadoc had its two figures the wrong way
+    round (the cards' quotes added were $85.5M and the run charged $98.4M at
+    playtest month 24); `GameLog.MAX_BYTES` said "the file is rotated mid-run"
+    (false at 0.7.49 too); `GameVersion`'s 0.7.51 entry covered "a college or
+    university row" where it is every school above the ladder.
+  - **Fixtures where the spec's premise did not hold** (fixF §2; all in
+    BuildAdviceCheck): §7's ×10 does not flip the short city's roads (×1000 does
+    not either; the flip is asserted with no ground free, at ×486.6); §9's short
+    city had 899 would come, not past 1,000 (its fees paid, 1,171); §11 leaves
+    ground for the first card only.
+  - **The design study's risks, as built** (`runs/spec-build-advice.md` §7):
+    bigger orders and more cards on credit or short of land; the run stops at
+    card 1 for land more often; graduate posts are endogenous, so a city that
+    never gets them is never advised a university; the office price is the best
+    plot's, so a large purchase walks up the listing (about +0.8% a block on the
+    premium); the projection is inert in a city above its homes; two model files
+    were touched, bit for bit.
+  - **The `/dev` rule was broken again, without harm:** E redirected to
+    `/dev/stdout`, the design study and F each to `/dev/null`, and the docs pass
+    listed `/dev/null` as its gate asks; `/dev/null` stayed the character
+    device. No `rm`. E left an empty `sec8.java` in its scratch.
+- **CHECK 0.7.46 TO 0.7.49 ON THE PC** (`model-fixes-fund-and-transit.md` §10;
+  the full lists are `runs/fixA-notes.md`, `fixB-notes.md`, `fixC-notes.md` and
+  `fixD-notes.md` §3; the docs pass added none). **Not yet seen:** nothing
+  rendered; every word and figure was composed by the implementers' probes on
+  the playtest's 600- and 2,400-month cities, since JavaFX nodes cannot be built
+  headless here (the strings were rebuilt from the screens' own helpers), so his
+  figures will differ. At 1,389 × 868.
+  1. **A 0.7.45 save, no press (A1, A5):** Trade still says "not counted yet";
+     Sectors › Construction › Materials reads "Last month, as on its statement",
+     Bought and Imported "not counted yet", and the muted "Since then, so far".
+  2. **Press, save to slot 10, load, don't press (A1–A5):** Trade reads the
+     month; care's fees by kind add up to the treatment line; the Food tab's
+     eligible count matches the count before the save; Construction shows the
+     struck pair. Press once more: the Freight figures match the city that never
+     reloaded.
+  3. **The Bank tab in city2400 (A7):** two months after loading, the capital
+     card reads THE LEVERAGE RATIO and the chip has no "(not yet recorded over
+     time)"; check how its description wraps at 1,389; City History offers "Bank
+     leverage ratio" and "Bank leverage target".
+  4. **City History's episodes and the year book (A6, A8):** an old city's
+     lifelong epidemic is gone; epidemics are named only from 0.7.46 months, and
+     only for an outbreak of 3 months or more (read the (i) words); the year
+     book export has `bankLeverageRatio`, `bankLeverageTarget` and `outbreak`,
+     and Graduates are gains.
+  5. **Policy › Money and Sectors › Retail (B1, B2):** the households' spend
+     factor previewed at the dial in force sits a hair from the page's real
+     rate, not about 1.6 points off; THE SHELF's floor line "struck at ×1.001"
+     matches Policy › Money's struck level.
+  6. **Sectors › Automotive and Real Estate (B3, B4), city2400-like:** the three
+     lines and the note, with machinery mostly imported and no WARN; the hold
+     reads "(64,210 now, 320 coming)" there and in the investment log.
+  7. **Policy › Taxes › Property and Infrastructure › Transit's ladder (B5,
+     B6):** the (i) says wage, profit and sales offsets ±30 and property ±10,
+     and an older save with a property offset past ±10 loads at ±10 at the same
+     rates; the fare ladder still runs to $50 a ride, and in a reformed save to
+     the cap in the new money.
+  8. **Government and the floor (B7, B8):** TAX TAKE's "of annual GDP, the last
+     twelve months", the balance block's "a year's surplus, N%", the AGAINST THE
+     ECONOMY bars and tooltips, the lists' "of GDP" column and (i) (under 12
+     recorded months: the old month × 12 words); in an old city whose cost of
+     living has risen, Policy's pinned bands and the WAGES flag now show, and
+     departures come.
+  9. **Finances › The city's fund › Rules & cash (C1, C2):** THE WITHDRAWAL
+     comes first, full width: "0.25% a month", "3% a year - Norway's rule…";
+     drag the ladder from 0 to 10%: the four effects follow, "…sold from its
+     market book" replacing "…not paid" above 0.25%, and Apply reads "Withdraw
+     0.50% a month" or "Withdraw nothing"; check the card at 1,389 px and
+     History's fund flag; at 0, "nothing to the treasury" and the budget's
+     Transfer from the fund is 0; a 0.7.47 save loads at 0.25%.
+  10. **A fund at 10% for a few months, city2400-like (C1):** TO THE TREASURY
+      shows "…sold for, to pay next month" and "…and the month before's, paid
+      from what it sold"; the Finances tile reads "selling D$X to pay its
+      withdrawal"; Government's Transfer line adds up to its row.
+  11. **The rule and the mark (C3–C5):** THE RULE card's sentence; in city2400
+      the positions Heavy Industry, Mining, Materials and Business Services read
+      "marked at fair value: last traded …" (Mining D$0.59 a share, not D$1,644)
+      and a security page's price note says so; a consolidated company's History
+      price line is a figure from 0.7.48's months on, not 0.
+  12. **Transit, People and Trade (D2–D5), city2400-like:** Infrastructure ›
+      Transit shows "Riders by reason" and its (i) under the ceilings: "No car
+      of their own: 74,948 (73%) · in reach 48,716 · riding 48,716", "walking:
+      26,232", "With a car: 27,557 · in reach 17,912 · chose the bus 8,059",
+      "Drive (chose the car): 19,498" and "Riders: 56,775", the long names
+      wrapping at 230 px, the fold with the same rows; THE FARE reads "$100 a
+      month for 40 journeys · set at $2.50 at founding prices, ×1.001 the prices
+      people expect" and "a drive's fuel: $1.42 a journey at today's exchange
+      rate · a month's pass is 1.4% of an unskilled household's take-home"
+      (27.6% at $50), the ladder bottoming out at the car-less (48,716 at $50)
+      with fares up to D$97.6M; Government lists "Transit fares" and "Transit",
+      the two "outside the total" lines are gone and EARNED's walk has no fares
+      step; People's waterfall has a "Fuel" step, its statement a fuel line and
+      an opened cell its fuel; Trade lists "Households' fuel".
+- **FOUND ON THE WAY IN 0.7.46 TO 0.7.49** (`runs/spec-model-fixes.md`,
+  `runs/spec-transit.md` §7, `runs/fixA-notes.md` to `runs/fixD-notes.md` §9,
+  `runs/docs-0749.md` §4, `runs/manual-a.md`, `runs/manual-b.md`):
+  - **Closed from the earlier lists, left unstruck there:** `afterFixed` is not
+    saved (A4) and a ×0.001 reform misleads the means test and ridership (B6),
+    both in FOUND ON THE WAY IN 0.7.42 TO 0.7.45, and that list's docs-pass
+    flags 1 (`PolicyPreview.realDepositRateAt()`, B1) and 2 (THE SHELF's level,
+    B2). Still open there: `Retail.estimatedMonthlyProfit()` counting no wages,
+    the grocers at their floor and the shelf's catch-up (the triage's Q1 and
+    Q2).
+  - **The UI probe caught a crash a batch introduced** (0.7.48): C3's
+    `capRule()` put "1%, a bond" into a `String.format` pattern and Rules & cash
+    threw `FormatFlagsConversionMismatchException`; fixed (%s), rebuilt and
+    re-gated. No harness builds that page, and JavaFX nodes cannot be built
+    headless here ("no suitable pipeline"), so screens are checked through
+    probes that rebuild their strings (0 flags on both cities and ×0.001).
+  - **The ★2 residual** (A1): 12 of 229 series still differ a month after a
+    reload, by at most 8.3e-5 (sector net incomes ±D$0.4k, `bankDeposits`
+    +D$64.6k, cash 5.6e-9). The bank's deposit snapshot and the households'
+    month rate are ruled out; the sectors' energy ratio (.80360 against .80319)
+    and Retail's purchase budget are candidates. City600 had an outbreak running
+    at the load (.0436), which History cannot name, by design.
+  - **A5's struck month is partly drawn in the same press:** city2400's planner
+    orders at the top of the month, so it struck 539 units where the row the
+    press before showed none; statement and pair agree. The triage's "about 476
+    units" for D$6.20M (at D$13.03) is really 539 units at about D$11.5.
+  - **BondCheck's "save from before 0.7.12" cuts one slot,** stale the same way
+    HoldersCheck's cut was (§7, fixed in A), but it still passes, since its
+    young city holds no bonds. Left alone.
+  - **The fund batch's measurements moved with B8:** the playtest's fund first
+    opens at m1881, not m500, so the triage's C3 (m501) and C4 (m505) first
+    differences were taken on `pt0744`'s fund.
+  - **The fund's two halves value a stale share differently** (0.7.48):
+    `Exchange.postFund()`'s 70/30 mix reads `price()`, while `BondMarket`'s
+    `fundSharesValue` reads `cityMarketValue` (the mark) since C4; the triage
+    kept `price()` for trading, so it is left.
+  - **G lags every service's cost by a month** (0.7.49): it is struck at the top
+    of the month (`startOfMonthUpdate`) from the costs 6d struck the month
+    before, so GdpCheck's fixture reads the costs a month earlier.
+    `getTreasuryUnexplained()` includes the journal (a bus town's repairs);
+    `getTreasuryResidual()` is what is left after it, and TreasuryCheck's bus
+    town reads the residual.
+  - **Trade's "+N more goods" door counts the hidden "Households' fuel" row as a
+    good** and names only the railway's (`TradeScreen` ~916; the docs pass's
+    flag 1). `GovernmentScreen.journalIcon()` and `journalDoor()`'s "transit"
+    branches are dead now that no journal line names transit, left in place.
+    People's statement column writes outflows with tightMoney's "-$", the house
+    style.
+  - **The design study's risks, as built** (`runs/spec-transit.md` §7): the
+    young playtest grows slower (population at m1000 15,740 → 11,553, takeoff
+    m1435 → m1472) and catches up by m2000; the 16-seed AUTO2 takeoffs are 16/16
+    in both 0.7.48 and 0.7.49 (median m1,448 → m1,458); the playtest is chaotic,
+    one change moving m4000 by up to a quarter; a Bus Network has one post per
+    ten seats and fares covered 8–24% of the bill in the study's playtest, so
+    transit is cheap to build and dear to run (balance it with the template's
+    staff or the fare, not the model); `transitChosen()` reads two money
+    figures, the family of WHOLE CARS (round `s` and `p` to a millionth if a
+    twin ever parts); the prototype's last-millennium hunger read 0.40 against
+    0.23 in the reference, within its variants' spread (0.16 to 0.50), to watch.
+  - **The `/dev` rule was broken again, without harm:** batch A redirected to
+    `/dev/stdout`, the transit study to `/dev/stderr` and read `/dev/null`, the
+    docs pass wrote one `2>/dev/null`; `/dev/null` stayed the character device.
+    Batch D left a stray `/tmp/x`. `javac` writes classes for the files that
+    compiled even when another file fails: one partial build ran stale harnesses
+    until the build output was read (fixA).
+  - **The manual** (`runs/manual-a.md`, `runs/manual-b.md`): §10 carries `&mp;`
+    ("mid &mp; half of a 2% spread"), an invalid entity older than both writers,
+    left alone; it carries the build's transit figures (56,775 riders, 48,716 at
+    $50, D$97.6M), not the design study's (56,223, 48,650, D$101M) the docs pass
+    quoted; §25's 59 questions and NEEDS YOU's "twenty-two" follow the docs
+    passes' running counts, not a line-by-line count; HealthCheck is still red
+    (10.1 points against 5).
+- **CHECK 0.7.42 TO 0.7.45 ON THE PC** (`inflation-that-answers-to-money.md` §8;
+  the full list is `runs/ui26-notes.md` §3, with the spec's probe cases in
+  `runs/spec-ui-0745.md` §6; 0.7.42 to 0.7.44 had no list of their own, being
+  model changes whose effects show on these screens). **Not yet seen:** nothing
+  rendered; every word and figure was composed by the implementers' probes on
+  the playtest's 600- and 2,400-month cities, which are 0.7.41 saves and load in
+  the old-save state, so his figures will differ. At 1,389 × 868.
+  1. **A pre-0.7.45 city, no press:** the INFLATION line reads "expect x% ·
+     trust 80%" in grey, and shortens to "exp x% · 80%" without being cut; on
+     Sectors › Retail, HANDED OVER and THE SHELF say "not counted yet".
+  2. **Press a month, then Policy › Money › The policy rate:** the rate line,
+     then THE ANCHOR (2/3) beside THE CURRENCY'S DRIFT (1/3), then the dials;
+     the gauge's 25%/95% labels and chips and the rate line's stacked names
+     don't overlap.
+  3. **Hold the dial low with inflation over the target:** the PRICES row and
+     the header line turn amber, the hub flags "Trust is falling", and the row
+     opens the rate page; put the dial at the rule and it reads "leaning against
+     it" and the row clears. Red needs trust under half, which the implementer's
+     125-month hold never reached (.76), so red may not show.
+  4. **PRICES:** "a basket of m…", the five-part bar with its keys, luxury
+     "capped at 15%".
+  5. **Promises:** all 6 tabs fit, Food third; set Food to 50% and read the
+     effects, THE BUDGET and WHO WOULD GET IT; apply, then press: the effects at
+     rest equal what was paid, Government's Food assistance "▸ who" adds up to
+     the line, People's month shows Food vouchers a month behind, and the hub's
+     slice has its own colour.
+  6. **Sectors › Retail › Operations:** THE SHELF's two columns; past the cap
+     the "clears at $X ›" tag and the Roads pill; when slack, "clears on its
+     floor"; WHAT IT CHARGES on Restaurants and Luxury Retail.
+  7. **People › Household money:** WHO GOES SHORT, AND WHY, and the words and
+     (i) in GOING SHORT.
+  8. **Trade › The currency:** 3 forces plus next month, and the UIP and drift
+     lines on the rate card.
+  9. **The fare and Build:** the fare reads "$2.55 a ride" once the price level
+     is past 1, with the ladder in today's money and the (i) showing founding ×
+     level; Build's Commercial Bank paid-in and the money bar's (i).
+  10. **City History:** the new traces and 3 presets; with an index line drawn,
+     dashed "basket" hairlines with a hover card, on the big chart only; old
+     cities have the series from 0.7.45 on.
+  11. **The year book export** has the new columns.
+  12. **An old save across the links, the first month after the load:** the
+     year's rate steps (city600 in the probe: 0.59% to 2.16%, the index +1.6%),
+     and in city2400 (index 1.11) the FIXED grant, the new-home rebates and the
+     account fee fall about 10% as Pe is seeded at 1; say whether it looks
+     wrong.
+  13. **A mature city on the autopilot:** inflation near 2% a year (the
+     ensemble's median from month 240 is 2.28%) with trust rising toward its 95%
+     ceiling; then the dial held low or high, to see the PRICES row and the
+     shelf.
+- **FOUND ON THE WAY IN 0.7.42 TO 0.7.45** (`runs/ui23-notes.md` §9,
+  `runs/ui24-notes.md` §10, `runs/diag-0743.md` §5 and §7, `runs/ui25-notes.md`
+  §9, `runs/ui26-notes.md` §9, `runs/spec-ui-0745.md` §5,
+  `runs/ui26-docs-pass.md` §4), the closed ones struck:
+  - ~~**MonetaryCheck's timing noise**~~ (0.7.42's ★6): 0 / 0.024 / 0.074 /
+    0.165 points against the 0.100 allowance on 0.7.42's model — **done in
+    0.7.43**: 0 / .010 / .020 / .056 on its model, the allowance untouched.
+  - **`AllChecks -q` hides a second failing assertion inside a known-red
+    harness** (0.7.42): HealthCheck's upkeep check went red under the anchor and
+    showed only as "HealthCheck FAILED"; a per-label baseline for known reds
+    would catch it.
+  - **Old saves lose about 10% on the FIXED grant, the new-home rebates and the
+    account fee at first load** (0.7.42; city2400, index 1.11): they move from
+    the index to Pe = 1, as the spec's design said (§2.3, Pe seeded 1.0).
+  - ~~**`InfrastructureManager.faresAt(fare)` and the Transit page priced a ride
+    at the dial, not at `chargedFare()`**~~ (0.7.42) — **done in 0.7.45** (B7).
+  - **The FoodProcessing fixture city stagnates near 5k people with 12-35%
+    unemployment for two centuries** (0.7.42; 0.7.41 wanted its plant at 3.3k,
+    m171; the prototype slows there too): a young-city episode to watch, with
+    A2's spells.
+  - ~~**Hunger up about 7 points under the anchor**~~ (0.7.42: AUTO2 .239 to
+    .312; the default playtest's checkpoints read 23-43%) — **done in 0.7.43**:
+    AUTO2 .312 to .117 on the new definition (baskets), .033 at 0.7.44.
+  - ~~**Total stock-outs, 0.7.43's new failure mode**~~ (11.9% of AUTO2 months
+    after m240 under 5% delivered; seed 1: 35%, hunger .8 for years; the till
+    empties, a loan refills the shelf) — **done in 0.7.44**: 0.1% of months, one
+    seed (9) at 2%, its shops sold down to no coverage.
+  - **The grocers at their floor lose money** (0.7.44's §9, item 1; CONFIRM,
+    above): seed 12 m490-520 net -0.5 to -1.1M a month, seed 9 m700 -2.1M; they
+    sell shops for losses mid-boom, which is where A2's 13 and the last 0.1% of
+    stock-outs come from.
+  - **`Retail.estimatedMonthlyProfit()` counts no wages** (gross margin on food
+    only, since 0.7.42): the grocers' investment test; see CONFIRM, the grocers
+    at their floor.
+  - **The default playtest's 76-month hot spell at 0.7.43** (m639-714) was the
+    occasional player holding 1.5% through a 100-month skip during the takeoff,
+    the S1 mechanism; it is 30 months at 0.7.44.
+  - ~~**F1: households with no home in 10/16 seeds at 0.7.43**~~ (m89-94, one
+    month each) — **done in 0.7.44**: the landlords' lender tested the nominal
+    rate for 26-31 months while the rule sat at 8-27%.
+  - **The shelf's floor catch-up hides shortages** (0.7.44's §9, item 2): under
+    its floor the shelf takes FLOOR_CATCH_UP's branch, which never reads the
+    clearing price, and a floor drifting at expected inflation holds it there.
+    Of AUTO2's months with the clearing price over 1.2× the floor, 41% had the
+    shelf within 1% of it (0.7.43: 47%); seed 9 m728-800 had the price at 2-55×
+    the floor with the shelf on it. Pricing them with a sticky step from below
+    too is spec §2.7's rule and unmeasured: Jerus's call.
+  - **MoneyAudit's detail prints two decimals** (a declared line reads back to
+    .005); **AllChecks' map is soft-old for Stale** (0.7.44).
+  - **`afterFixed` is not saved; a reload recomputes it** (0.7.45's §9; also in
+    0.7.44): between presses the Food tab's eligible count can move (city600
+    m601 reads 766, and 513 after a reload) and "on the shelf" too (7,160
+    against 7,146); the next month equals an unsaved twin.
+  - **A ×0.001 reform** (city2400, the same on 0.7.44): the next month every
+    working row's `afterFixed` goes negative, so 49,133 households would qualify
+    instead of 12,294; ridership reads the reformed fare against
+    MAX_TRANSIT_FARE in founding money, so riders jump about 5%; the transit
+    fares flow isn't rescaled until the month runs.
+  - **The spec's red state did not occur** (0.7.45's §9): on 0.7.45 trust
+    bottomed at .76 over 125 held months, and red was caused by setting trust to
+    .504 (CONFIRM, credibility's speeds).
+  - **B17, hunger is a month behind the sale** (labelled in an (i), not
+    re-struck): `getHungerRate()` is struck at the top of month t from sale t-1;
+    on an old save's first month city2400 reads 0.04% hungry while every row got
+    .49 of a basket, and People shows "handed over 3%" while WHO GOES WITHOUT
+    shows no shortage of stock.
+  - **B18, an old save's first month steps the year's rate** (city600: 0.59% to
+    2.16% on the shelf's first sticky month, the index +1.6%): the spec's
+    "old-save step", true, so the screen shows it.
+  - ~~**B16, the food assistance means test flickered**~~ (it read one month's
+    lumpy investment income; city2400 at 50%, the unemployed row 11,203-14,172
+    eligible at m2403-2416, none at m2417-2423) — **done in 0.7.45** (CONFIRM,
+    B16's smoothing).
+  - ~~**Bank's javadoc said "PAID_IN_PER_BRANCH, reformed"**~~ (0.7.45's §9) —
+    **done in the docs pass**: the paid-in is struck at Pe.
+  - **The docs pass's flags** (`runs/ui26-docs-pass.md` §4; no behaviour
+    changed), one each:
+    - **1:** `PolicyPreview.realDepositRateAt()` still subtracts the YEAR's
+      inflation, so Money's "Households spend, of what they would at zero"
+      differs at rest from `game.spendFactor()` by (inflation - expected).
+    - **2:** THE SHELF's floor line prints `Retail.getExpectedLevel()` as
+      "struck at ×N this month", which between presses is next month's, not
+      `getStruckLevel()` (one getter in `SectorScreen.shelfWords()`).
+    - **3:** `LongPlaytest`'s `-Dplaytest.wages` copy is the pre-0.7.42 chase
+      alone, so with the flag on it parts from costOfLiving by design (comment
+      fixed; LabourCheck's LagWatch has the new recurrence).
+    - **4:** People's open-cell shopping block compares want with planned
+      (money) while eating is baskets since 0.7.43: relabelled, it probably
+      wants `groceriesGot` and `groceriesNeed`.
+    - **5:** `LongPlaytest`'s report "scarcity mark-up" prints the target
+      (left).
+    - **6:** `BalanceSheet`'s header still calls land and bonds payable zero
+      placeholders (pre-existing, not this batch).
+- **CHECK 0.7.40 AND 0.7.41 ON THE PC** (`fixes-from-playing-0-7-39.md`; the
+  full lists are `runs/ui21-notes.md` §3 and `runs/ui22-notes.md` §4, the docs
+  pass's flags `runs/ui21-docs-pass.md`). **Not yet seen:** nothing rendered;
+  every word and figure was composed by the implementers' probes on the
+  playtest's 600- and 2,400-month cities, so his figures will differ (the
+  600-month city's power reads 233% served). At 1,389 × 868, in his autosave
+  (Continue). This supersedes the lines on Build's credit page in CHECK 0.7.34
+  TO 0.7.39, below: that page is now Build › Funding (item 5).
+  1. **City History, the clock at 20x, hands off:** the big chart and both pins
+     stay still, the page's right edge never moves, no horizontal scroll bar.
+     Resize the window or open the drawer: the charts follow once and stop (the
+     big chart ends 2 px short of the page edge, the pins 2 px inside their
+     cards). Full screen (P): the chart fills the window and does not grow; with
+     many lines picked (a wrapped legend) the overview strip may be cut off at
+     the bottom (known: FOUND ON THE WAY, below).
+  2. **Bank, Finances, Trade, Government, Policy and the fund's charts:** each
+     as in 0.7.39, nothing cut at its right edge (a chart may now shrink and be
+     cut rather than push, but only on a row too narrow for it).
+  3. **Build › any city category, two or three cards dialled up:** the order
+     bar's stacked bar stays still with the clock running, its track the control
+     grey with 1 px between parts; its key reads "served" for a served measure
+     and "covered" for death care, police and cells.
+  4. **At 20x:** click Build's +, a page chip, a Finances chip, a slider: each
+     acts on the first click. Drag a Policy slider: it is not rebuilt under the
+     hand, the page catching up on release.
+  5. **Build › Overview, "Build all three" with too little cash:** Build ›
+     Funding opens (the rail's Build lit): the run's names and price, a "short
+     by" chip, the cash-against-gap bar, the 20-year bond and the 6-month note
+     as cards side by side, each button "Build 3 orders · $X"; take either: all
+     three are built, back on the Overview. The same from a category's order bar
+     and with Enter; a single card reads "Build 5 · $X"; Cancel (or "‹ page")
+     returns with the counts still on the cards. A run whose second order lacks
+     ground: "Then 2 × Paved Road cannot go ahead - not enough ground is free
+     for it - so the run stops there: this borrows only for the order before
+     it."; take it: the first is built, then NOT ENOUGH LAND, the unbuilt orders
+     still on their cards. The land office's credit page and Build's look alike.
+  6. **Finances › Borrow:** HOW MUCH reads "D$2,500,000,000,000 · D$2.5T" once
+     asked; type "40B" and Enter, "2.5t" and click elsewhere; "4o0B" shows the
+     red line and the ask stays; ÷10 and ×10; the steps relabel with the ask (at
+     D$3.4B: −D$1.0B −D$100.0M +D$100.0M +D$1.0B); the presets, only those that
+     are something; clear. Type while the clock runs at 20x: the box keeps its
+     focus and every key. Abroad the same in US$, "the minimum" the minimum in
+     dollars, and the note "nothing under" prints the dollar minimum too.
+  7. **Drawer › RESOURCES, HEALTH, SCHOOLS:** "Energy N% served", "Water N%
+     served", "Roads N% served · N% flow", each green, amber or red; the header
+     "all clear" or "1 short · 1 tight" in the worst colour; nothing ends in
+     "…". HEALTH "General care N% served  6.2k/6.0k", plain when enough, amber
+     or red when short; SCHOOLS "N% served".
+  8. **NEEDS YOU:** "POWER N% served", "ROADS 62% served · 56% flow", "GENERAL
+     CARE N% served", "SCHOOLS elementary N% served"; with nothing listed, NEXT
+     TO WATCH is amber if a care is at 90%.
+  9. **Build's rings, Overview and suggestions:** a category with nothing listed
+     but a care under 100% shows that ring amber, "general care served, short",
+     with no ✓ (a ✓ only when everything is enough); the Utilities, Roads,
+     Healthcare and Education rings show the served figure (power can read
+     233%), full when enough, "served, tight · 1.2 MW spare"; Transit blue,
+     "served · room for…"; a ring's order bar "served 92% now · … · 140% with
+     these", green only when enough; a suggestion's chip "Power 80% served",
+     "80% → 134%", a care order stopping at 81% amber.
+  10. **Services:** Utilities (POWER, WATER and ROADS served with words and no
+     sparkline; the cards "233% served, enough"; the road card "62% served,
+     short · 56% flow"); Health (LEAST SERVED; the care rings coloured by their
+     own figure, "served, short · …"); Education (BASIC LADDER "served, short ·
+     held up by …"; the pipeline's higher schools red, amber, green or blue);
+     the strip's Health dot amber when a care is under 100% though not listed.
+  11. **Infrastructure:** Roads, the SERVED cell "62%" ("served, short: its
+     capacity over the trips on it"), the hero "62% served, short → 56% flow",
+     the curve flat at 35% on the left, rising to 100% at 111%, flat after it,
+     red, amber and green bands from the left, a road over 200% at the right
+     edge with "›"; Transit, "Build's transit ring reads 61% served: room on the
+     stock for 61% of commuters. 41% ride."
+  12. **Anywhere:** nothing ends in "…" at 1,389 × 868, and no "% full", "%
+     used" or "covered" stands beside a gauge that is now served (Health's (i)s
+     and notes are the known exception: FOUND ON THE WAY, below).
+- **FOUND ON THE WAY IN 0.7.40 AND 0.7.41** (`runs/ui21-notes.md` §8,
+  `runs/ui22-notes.md` §9, `runs/ui21-docs-pass.md` flags 4 to 9), none changed
+  but the two the orchestrator closed:
+  - **A full-screen chart with a wrapped legend is a row too tall.**
+    `TimeChart.heightBesidePlot()` assumes a one-row toolbar; with the legend
+    wrapped to two rows the full-screen chart is a row taller than the window
+    gives it and its foot is cut (no longer a loop).
+  - **The order bar's and "Build all three"'s figure is not the run's invoice.**
+    `BuildAdvice.quoteTotal()` counts the yard free for every order; the run's
+    invoice is the model's own (CONFIRM, 0.7.40's ★3).
+  - ~~**Finances' "nothing under D$X" under a dollar ask printed the local
+    minimum**~~ (the docs pass's flag 5), next to "the minimum · US$Y" — **done
+    after the docs pass**: it prints the dollar minimum.
+  - ~~**The order bar's key read "served" for every measure**~~ (the docs pass's
+    flag 9; 0.7.41's §9, item 3: the key was 0.7.40's "covered") — **done**:
+    "covered" became "served" after the merge, and after the docs pass "served"
+    only for a served measure, "covered" for death care, police and cells, whose
+    first segment is `cover()`.
+  - **A tile and the page it opens can disagree** (the docs pass's flag 4).
+    Build's tile shows an unlisted row that is short or tight, such as water at
+    120% or childcare at 90%; a click opens the category on `worstMeasure()`,
+    which reads listed rows only, so it opens on power or general care instead.
+  - **A higher school's NEEDS YOU row has no % served** (0.7.41's §9, item 4;
+    the docs pass's flag 6): it still reads counts, "0 seats, 653 would come".
+  - **Before a month runs after a load, Services' care rings and NEEDS YOU's
+    care rows can differ widely** (0.7.41's §9, item 5): the month's coverage
+    against staffed beds now, 17% against 90% in the fixture. They are coloured
+    separately now (CONFIRM, the care's two figures).
+  - **Two strings are true but loose** (the docs pass's flag 7): the quote
+    line's and a suggestion's "short $X — you will be offered a bill" (the page
+    offers the 20-year bond first, then the note); Health's (i) and notes still
+    say "covered" beside served gauges: SICK_INFO, RECOVERY_INFO, General care's
+    statement note, the living-care scale notes and People's "At this cover".
+  - **Neither research city shows the Healthcare tile's ✓** (0.7.41's §9, item
+    6): neither has a basic school (elementary 0%) and both list burial plots;
+    BuildCardCheck's fixture holds the tick.
+  - **`BuildAdvice.Measure.isLoad()` has no caller** (already true at 0.7.39).
+  - **`BuildScreen.figureText()`'s SCHOOL branch and default are unreachable**
+    now: only measures that are not served reach it.
+  - **`CityNeeds.network()`'s `ratio` parameter is unread** (its javadoc says
+    so).
+  - **`Pieces.tidyMoney()` is a no-op** after Money's fix, left in place.
+  - **`Game.hasDepositFor`'s run count matters only once there is a second
+    MINING template** (there is one, Iron Mine).
+  - **What the run's invoice adds:** in the 600-month city a run costs $190k
+    more than its orders alone (6 units in the yard); the 2,400-month city's
+    yard is empty, so the two agree.
+- **CHECK 0.7.34 TO 0.7.39 ON THE PC** (`buttons-that-ask-to-be-pressed.md`,
+  `runs/ui15-notes.md` §3; `trade-at-a-glance.md`, `runs/ui16-notes.md` §3;
+  `policy-at-a-glance.md`, `runs/ui17-notes.md` §3; `city-history-finished.md`,
+  `runs/ui18-notes.md` §3; `the-loose-ends.md`, `runs/ui19-notes.md` §3;
+  `the-fund-as-a-brokerage.md`, `runs/ui20-notes.md` §3; the docs passes'
+  corrections, `runs/ui15-docs-pass.md` to `runs/ui18-docs-pass.md`; 0.7.39's
+  `runs/ui20-docs-pass.md` flag 12 and its fixes' `runs/ui20b-notes.md` §3).
+  **Seen, on the evening of 2026-10-01:** Jerus played 0.7.31 on his PC
+  himself and wrote "ok i
+  checked it and so far im loving it, just tiny thing, everywhere you have
+  build, like the build button, it should be more intuitive aka like an actual
+  button that is basically asking to be pressed, cause currently its a tiny
+  text"; that play saw 0.7.24's fix round to 0.7.31. He allowed one look by
+  remote control ("you can open and check out the ui, but please just once")
+  and went to sleep. The orchestrator deployed 0.7.32 and 0.7.33 first (tag
+  1001n: 25 source files, verified byte for byte), backed up his autosave and
+  settings (`restore-1001n`), opened 0.7.33 on his PC once, looked at Build,
+  the Land office, People, Services, Infrastructure, Sectors, Government,
+  Finances and the Bank, quit, and restored the saves (slots 1–9 untouched).
+  Everything drew cleanly. It found three things, which became 0.7.34: the tiny
+  Build button; Finances' "later" column squashing the twelve years; Sectors
+  after a load saying "no word yet" on 14 of 15 cards. Screenshots:
+  `runs/0733-look/` (bank-overview, build-healthcare-cards, build-home,
+  finances-hub, government, infrastructure, land-office, people,
+  sectors-after-load, services-health). So 0.7.31 is seen by Jerus, 0.7.32 and
+  0.7.33 by the orchestrator's one look, and 0.7.24's fix round to 0.7.30 by
+  Jerus's own play.
+
+  **Not yet seen: 0.7.34 to 0.7.39**, none of it rendered: the toolkit cannot
+  start in the cloud, and every word and figure was composed by the
+  implementers' probes on the playtest's 600- and 2,400-month cities (just
+  loaded, a month on, saved and loaded fresh, and in caused states), so his
+  figures will differ. The look did not open Trade, Policy or City History,
+  still 0.7.31's then. Two things it could not have shown: the flags that
+  Finances' OWED AND THE RATE and the Bank's ITS RATES promise, which a small
+  chart did not draw (0.7.38 gives it a lane: below), and the Bank's rates
+  chart's drag (never built; since 0.7.38 its (i) no longer promises it). In
+  his autosave at 1,389 × 868, the drawer closed:
+
+  **Buttons that ask to be pressed (0.7.34)** (his treasury is about $64k, so
+  CREDIT is the look he will see most):
+  - **Throughout:** the action button as wide as its card, 40 px, radius 8, the
+    Build icon (or the land icon) at the left of a bold 13 px label, a 9 px
+    line under it in some looks: GO filled in the darker pink (#cf5590) with
+    white words; CHOOSE and CREDIT transparent with a faint pink tint and a 1.5
+    px pink edge; HELD the control grey. Hover each (GO lightens, the outlined
+    looks tint deeper, HELD goes to the hover grey) and press and hold (GO
+    darkens; **CHOOSE and CREDIT turn a deeper pink, which on the dark card is
+    lighter**, the docs pass's correction of the notes' "each darkens"); the
+    hand cursor over all of it. The pill 30 px, fully rounded, a 1 px pink edge
+    on a faint tint, the icon, pink words and "›". Nothing ends in "…" ("Nobody
+    licensed to work in it" and "Short 24.1M sq ft of land" on a 300 px card;
+    "Build 100 on credit · $1.23B" on one line). A card must not jump when its
+    count leaves 0 or its verdict changes (every look is 40 px). Verdict
+    colours stay on the quote line under the button.
+  - **Build › Healthcare:** each card "Build · choose how many" outlined under
+    the stepper; press it at 0: the count reads 1, the border turns pink, the
+    button reads "Build 1 on credit · $X" in his city, the quote line fills,
+    nothing is ordered; **double-click at 0: the count goes to 1 and stops
+    there**; +10 reprices in place; Build with a count opens the credit page,
+    whose offers end in a filled 560 px "Build 11 · $56.1M" over "issues the
+    20-year bond, then builds" [0.7.40: now Build › Funding, see CHECK 0.7.40
+    AND 0.7.41, item 5]; a General Hospital ×100 goes HELD, "Short … sq ft
+    of land" over "more ground: the Land office ›", and its press opens NOT
+    ENOUGH LAND, whose "Go to the Land Office" is a pill; the order bar's
+    "Build 21 on credit · $X".
+  - **Build › Industry and the Overview:** an Iron Mine with no deposit free
+    reads "No iron deposit" over "ore comes with land: the Land office ›"; an
+    Engineering Services Office without engineers "Nobody licensed to work in
+    it" over "a school licenses them: Education ›", its page's "Go to Build ·
+    Education" a pill. On the Overview each suggestion ends in a full-width
+    button with a "Show" pill above it, and "Build all three" (32 px) takes its
+    cards' look.
+  - **The land office:** each card's full-width "Buy on credit · D$…" in his
+    city (filled "Buy · D$…" where the cash covers it; from the vault and
+    short, "Buy · US$…" over "the vault is short: ways to pay"); **the cards of
+    a row end their buttons on one line**; "Buy the next 5" (32 px) beside its
+    total; the funding page's filled "Buy · D$…" over "issues the 20-year bond,
+    then buys"; **a double-click buys one plot.**
+  - **The pills,** each opening what the old link opened: Services' "Build them
+    on Build" and "Build for it" (inside a clickable card it opens Build, not
+    the card); Infrastructure's "Build · Roads & transit", "Build transit" and
+    "Rail on Build"; Sectors' "Build · Homes" and the Investors page's "Land
+    office"; People's "Build homes"; the Bank's "Build a Commercial Bank".
+  - **Finances' hub:** "later" (D$721.4B) a ghost up to the plot's top, two
+    slashes across it a third of the way down with the card's ground between
+    them, its figure on top; the twelve years fill the height (2155's D$47.9B
+    about 83% of it); Borrow's and Issued's ladders the same, the gap matching
+    their ground.
+  - **Sectors, right after Continue:** one grey line over the cards; fourteen
+    word lines empty, Real Estate's "building · investors are building · 468 on
+    site …" as before; press the clock: the line goes, the words fill in, and
+    no card changes height.
+
+  **Trade (0.7.35)** (figures the 2,400-month city's; his is bigger):
+  - **Throughout:** nothing ends in "…" (the goods' names, which wrap; THE
+    MONTH's note on two or three lines in its 190 px cell; "BACKING FOR THE
+    MONEY THAT CAN LEAVE"; the forces' names; the river's band names); one
+    scrollbar (`STAGE_REST` 36); verdict colours only on THE CURRENCY, IN THE
+    VAULT, the gauges' chips and bands, the action cards' edges, "walked away
+    from", the city's own reserves when negative, the exchange's cover and a
+    defence month's chip, with SOLD, BOUGHT, THE MONTH, the goods, the forces,
+    the claim bar and the river plain; "D$" and a true minus on every local
+    figure.
+  - **The frame:** the violet swatch, "Trade & the world" (i), "Over the years
+    ›"; the chips, **the new EXCHANGE icon by eye**; **five figures across at
+    1,389 (5 × 190)**; **right after Continue SOLD ABROAD, BOUGHT ABROAD and
+    THE MONTH read "not counted yet", "since the city was loaded or founded: a
+    month on, it is"**, never $0, and fill in a month on; press the clock: SOLD
+    and BOUGHT count up. The action card, probably "Under 3 months of import
+    cover" in red on every page, with "Buy reserves ›".
+  - **Overview:** WHAT WE TRADE, bought left and sold right, eight rows with
+    the goods' icons (`Icons.ofGood()`) and "+N more goods and the railway's
+    fuel"; hover a row (it greys; who sold or bought it), click it (What we
+    trade opens on that good's popover), press the clock (the bars grow from
+    the axis); THE CURRENCY with **parity a short line at the right edge**,
+    recorded since he first plays 0.7.35; the three gauge cards.
+  - **The month:** the steps and the river toggle; the river's closing band an
+    outlined grey "The month's surplus" (it was a red "deficit, financed");
+    right after Continue "Not counted yet since the load" and no picture; the
+    holdings card; the old ledger under "details".
+  - **What we trade:** by good or by business; Cars' popover with "Automotive
+    ›"; right after Continue "WHAT WE TRADE, THE MONTH THE CITY WAS SAVED IN";
+    SINCE FOUNDING's waterfall; the price grid, building materials a unit in
+    D$.
+  - **The currency:** THE RATE's parity gauge either side of its middle; **THE
+    RATE OVER TIME at 794 px, not the notes' 824** (the hero row 400 + 10 + 794
+    = 1,204), with no Full screen button; drag, wheel and double-click pan,
+    zoom and reset, and a month keeps the window; "Parity is recorded from
+    0.7.35 on: N months so far."; WHAT IS MOVING IT, NEXT MONTH with no red or
+    green.
+  - **The reserves:** WHOSE IT IS and its claim bar; HOW LONG IT WOULD LAST
+    with its "3" and "6 months" ticks; BUY OR SELL FOREIGN MONEY: the outlined
+    blue "Buy foreign money" over "choose how much above" (a press picks the
+    smallest step and prices it, never trades); pick "to 3 months": WHAT IT
+    WOULD DO, and the button filled ("Buy D$… of foreign money"); press it: a
+    "bought …" chip, the cover 3.0 months; **a double-click is one purchase**.
+  - **Elsewhere:** **the header's rate line in the drawer's THE CURRENCY row's
+    colour** (D8: amber if his rate is 25–50% from parity either way); that row
+    opening The currency whatever page was last open; City History's "Parity"
+    line; Finances' "The currency ›" and its reserves door landing on their
+    pages.
+
+  **Policy (0.7.36)** (figures the 2,400-month city's; his is about twelve
+  times bigger):
+  - **Throughout:** nothing ends in "…" (the dial cards' names wrap, the effect
+    rows' labels, the payers' names at 220 px and their figures at 230, the
+    four figures' notes); one scrollbar, and with something staged the page
+    stops above the tray at the stage's foot; verdict colours only on the four
+    figures in their NEEDS YOU rows' colours, WHAT IS BITING, "at its legal
+    maximum", "pinned · N spare", the pensioner's chip, the schools' burden,
+    the priced out, the ceiling and the inflation tick (amber more than a point
+    off the target, where the header is green within three: MODEL BUGS item
+    16); every Apply the blue GO beside a grey "Leave it as it is".
+  - **The frame:** the four area chips, the breadcrumb and the tabs; **four
+    figures across at 1,389**; **THE FLOOR his cash floor, in today's money**,
+    not the founding figure; PROMISES without the waived tuition.
+  - **The hub:** four area cards across at 1,389, their words wrapping; **only
+    the Taxes card has a "last moved" foot** (the docs pass's correction of the
+    notes); WHAT IS BITING (one green "Nothing is binding" card, or alert cards
+    with NEW and a door pill); RECENT DECISIONS and its "History" pill.
+  - **Taxes:** THE TAX TAKE with a GDP share right after Continue (B3); EVERY
+    TAX AT ONCE: **drag it and the rows follow the thumb**, release stages it
+    and the tray appears; parted (set Sales apart and come back): three chips,
+    three named ticks, "three rates" in grey. The tax pages: WHO PAYS, the bank
+    a Profit payer "taxed at Retail's rate, in arrears", Automotive's refund
+    with a true minus, zero payers in one row; **a row opens its own offset's
+    dial card, which stays open through a month**; the four columns fit at
+    1,389; **on Property, an opened offset's (i) ends "...capped at 30 points
+    either way; a property offset's dial stops at 10."**; WHAT A PAYSLIP LOSES
+    plain; FARMLAND. The tray: chips with ×, THE BUDGET, "Apply all 2" and
+    "Discard"; Apply moves the dials and puts the decisions on History's flags;
+    changing page drops the staged set.
+  - **Wages:** THE WAGE LADDER's chips (Diploma "has room" while paid exactly
+    the floor is B8, as the model has it); a staged floor's dashed rule and
+    ghosts; THE FLOOR's ladder in today's money, the founding figure behind its
+    (i).
+  - **Money:** THE RATE LINE's tick names not overlapping at the low end (the
+    dial, savers, the rule); THE DIAL, THE RULE and THE CENTRAL BANK; PRICES;
+    **"details ▸ the price level and the policy rate, since founding", a chart
+    never seen: check it draws, its two axes read and it fits the card**;
+    Currency reform locked or open.
+  - **Promises:** Pensions' four cards, each with its own Apply; Out of work
+    previewing from a zero dial; Health's patient card of five rows and its
+    "Fees cover …"; Schools' statement footing with the waived tuition in grey,
+    and with no school a "Build · Education" pill; Subsidies.
+  - **Elsewhere:** Infrastructure's fare Apply the same blue GO ("Set the fare
+    to $X", "Make it free"); the left panel's "Min wage" today's floor; save,
+    load and Continue: the figures there at once; a staged tax set, open payer
+    rows and folds surviving the clock's redraw.
+
+  **City History (0.7.37)** (with its docs pass's two additions,
+  `runs/ui18-docs-pass.md` flags 12 and 13; 0.7.38's renamed floor line is
+  below):
+  - **Throughout:** nothing ends in "…" (RUNNING NOW's note in its 190 px cell,
+    the cards' names, the decision rows' labels, the goods' names at 220 px,
+    the hard times' worst lines); one scrollbar under the fixed frame; **resize
+    the window narrower, wider and maximised: the big chart and both pins
+    follow within a moment, with no horizontal scrollbar left behind; at a
+    window size other than 1,389 watch for a one-frame jump on the first draw**
+    (★25); verdict colours only on RUNNING NOW, the hard times' tags and icons,
+    and a failed write; a true minus on every figure the page prints (the
+    crosshair card keeps its hyphen).
+  - **The frame:** "City History" with its (i) and a blue "Write the year book"
+    (hover lightens, press darkens; check it is not cut and the head does not
+    wrap at 1,389); press it: the result card, "Written to <folder>", a line of
+    files a book, and its ×. The strip: THE CITY, HARD TIMES, RUNNING NOW and
+    YOUR DECISIONS; **in his city the epidemic should sit last ("chronic")
+    unless it runs alone, when it reads "running since <its start>"**; HARD
+    TIMES and YOUR DECISIONS scroll to their section, RUNNING NOW moves the
+    chart to its episode.
+  - **The page:** the pins as two cards, 120 tall (hover the move; click a
+    name: that line alone over ten years, the pins unchanged; the big chart's
+    plot ending above the window's foot on arrival); the big chart at the
+    page's width, and **on All the first flag on the "you" lane at the axis's
+    first month, its card's head beginning "Jan 2000"** (B4, where
+    founding-month decisions are logged); WHAT EACH LINE DID three across, the
+    range bars and their tooltips, a hidden line's card at half strength, the
+    figures counting on and the dots sliding when a month lands; HARD TIMES AND
+    YOUR DECISIONS (a row moves the chart; "+1 more in view ›"; a decision this
+    month first with "this month"; the by-kind fold opening without the page
+    jumping); PICK WHAT TO DRAW, "3 drawn · 217 lines", a group's icon, "net
+    income" opening SECTORS with its 15; PRICES THIS MONTH's counts and its
+    fold (the goods on their bands, "Open at one end", whose caption's (i) now
+    ends "On the open side the city's market sets the bound: twice the floor
+    where the world sets no ceiling, and zero where it sets no floor.", "Set by
+    their seller" with "Retail ›" and the rest as doors, and right after
+    Continue the freight line).
+  - **Elsewhere:** the header's tiles open History as before, landing at the
+    chart when already there (now in `openHistory()`'s javadoc); the doors
+    into History open at the page's top; full screen as before.
+
+  **The loose ends (0.7.38)** (`the-loose-ends.md`, `runs/ui19-notes.md` §3;
+  its docs pass running, so look in `runs/ui19-docs-pass.md` for corrections;
+  figures the 2,400-month city's, his 1,851-month city's will differ):
+  - **Throughout:** nothing cut ("Minimum wage, founding money" on History's
+    reading card; the fare card's rows wrapping in a column of about 612 at
+    1,389; the drawer's "Import cover under 0.1 months" on one line in its
+    290 px panel); on a small chart's lane a single flag's label ends in "…"
+    where the next flag starts, as on the big chart (hover shows it whole).
+  - **Bank › History, ITS RATES** (1,180 wide): a "you" lane under the years,
+    18 px, "you" at its left, the chart about 20 px taller; flags as on City
+    History, wherever he moved the policy rate or a rescue or preferred offer
+    came in the last ten years; hover one: its card above the lane and a
+    dashed line up the plot; the (i) no longer says "Drag to look back"; **the
+    six small charts under it unchanged** (no lane, the same height).
+  - **Finances › OWED AND THE RATE** (1,160 wide): the same lane with the
+    borrowing decisions (an issue, a buyback, the rollover's setting, a
+    default abroad) of the last ten years; hover one.
+  - **The founding month:** out of the Bank's and Finances' ten-year view in
+    his city; on Trade › The currency press All: a founding-month currency
+    decision, if he has one, on the axis's first month, its card saying its
+    own month.
+  - **Import cover:** Finances › the currency page's WHAT IS BEHIND IT,
+    "Import cover under 0.1 months" and its bar's tooltip; the drawer's TRADE
+    section the same **in red** (it was amber "0.0 mo"); in a young city the
+    founders' note "... - N.N months of imports" or "over 10 years of
+    imports".
+  - **The drawer's "vs parity":** plain at 15–25% either side where it was
+    amber; amber from 25%, red past 50%, plain when pinned.
+  - **People › the jobs card's foot:** "Minimum wage $X a month; ..." matching
+    Policy's THE FLOOR and the left panel's "Min wage". **City History:** the
+    MONEY group's "Minimum wage, founding money", the same line as before.
+    **The year book:** minimumWage's note "in founding money".
+  - **Infrastructure › Transit › THE FARE**, a dial card: the bus icon, "$2.50
+    a ride", "$100 a month for 40 journeys, $2.50 each", the ladder at 520 px,
+    WHAT IT WOULD DO's four rows over their bars and a grey caveat line with
+    its (i). **Drag the thumb: the rows follow** (at $5.00 riders 41,416 →
+    39,236, fares $4.1M → $7.8M, net $19.8M → $16.1M, +4,871 trips back onto
+    the road; free: −4,871 trips). Release: "Set the fare to $5.00" and "Leave
+    it as it is"; Apply, and the funnel's fare row moves a month on. **Right
+    after Apply, until the month turns,** the rows still show a move (★11).
+  - **The Bank's ladder** (Overview and Lending): a shut-out sector's name red
+    with its "›" beside the red "shut N mo" chip, a click still opening its
+    Cash & debt page.
+  - **Sectors › a sector › Cash & debt, NEW BORROWING COSTS:** the bar's parts
+    and its caption as struck; a white mark only where a concentration
+    discount takes points off; the (i) itemising the same parts.
+  - **Policy › Promises › Pensions, WHAT SENIORS RECEIVE (i):** ending "a
+    design question the model has filed and not yet answered."; **Build's
+    Overview:** "all three ≈ $X" and "Build all three" as before.
+
+  **The city's fund as a brokerage (0.7.39)** (`the-fund-as-a-brokerage.md`,
+  `runs/ui20-notes.md` §3; its docs pass's corrections,
+  `runs/ui20-docs-pass.md` flag 12, and its three fixes' words,
+  `runs/ui20b-notes.md` §3, in the last item; every word was read by the
+  probe on the two research cities, not on his 1,855-month city of 1.38
+  million):
+  - **Load the city (an older save):** Finances › the hub's "The city's fund"
+    card → **Portfolio**. The worth in 28 px mono; the return line "not
+    recorded yet: its worth is kept from this build on, a month at a time"
+    (the series start this version); "Since it began: …" with an (i) naming
+    the parts: **check it reads sensibly for his fund**; CASH / INCOME LAST
+    MONTH / TO THE TREASURY LAST MONTH under it. Every holding tagged "cost
+    from <the load month>" with unrealized D$0 (seeded at market value); a
+    rescue book, if he has one, exact with its real P&L.
+  - **The hero's chart** appears after two months, 800 × 230 to fit the hero
+    card at 1,389 (1,234 content − 32 padding − 360 − 24 gap = 818): **check
+    it sits inside the card and nothing is cut at its right**; its range
+    chips, drag and wheel move it and the return line follows ("over 10Y"
+    only when the window holds a full 10Y of record, else "from <month> to
+    <month>").
+  - **HOLDINGS** (name 250 · units 120 · price 110 · worth 110 · average cost
+    110 · unrealized 160 · share bar): **nothing ends in "…" and the long tags
+    wrap** ("cost from Dec 2199 · bought 26% below value"); bonds folded by
+    issuer ("▸ Automotive · 8 bonds"); lots under D$1k folded into "and N
+    more under D$1k ▸".
+  - **SINCE IT BEGAN, BY KIND** in a 612 card: **the GAIN column wraps its
+    percentage under the figure rather than pushing past the card** ("▲
+    +D$439.1M (+3,320.8%)").
+  - **Let the clock run a month on the Portfolio:** the worth counts up from
+    last month's (about half a second), and lots paid that month show "paid
+    +D$… this month" in the money blue, popping once; arriving from another
+    page must not count.
+  - **Search:** type "re" quickly while the clock runs: **the box must keep
+    its focus and every key**; chips All · Shares · Bonds · Held; rows 44 high
+    (icon, name, tag, price, the 1Y move in ink, "unchanged" for a stale
+    price, a 12-month sparkline, "held D$…", "›"). Empty: YOUR HOLDINGS,
+    SHARES, BONDS.
+  - **Click a holding:** the security page, the breadcrumb "Finances › The
+    city's fund › Automotive", "‹ Portfolio" at the right, **no page chip
+    lit**; left (the head, the price chart 782 × 220, KEY STATS 4 × 2, THE
+    BOOK, ITS RECORD) and right 412 (YOUR POSITION, THE ORDER TICKET). **The
+    right column's lines wrap rather than run past the card**: the longest is
+    "Offered at or under it today | 193.70 for D$19.7M, D$101,771 on
+    average"; those lines wrap their figures (`narrowLine`), unlike the rest
+    of Finances.
+  - **The ticket:** Buy | Sell, by amount | by quantity, the steps (D$1k …
+    D$1M; ¼ ½ all on Sell; "all its free cash" on Buy), the price chips and
+    the ±1% stepper. The action button: "Choose an amount" → "Review: buy
+    D$4.0M of Construction" → "Place it: buy D$4.0M / on the book at the next
+    step, good for a month"; "Change it" backs out of the review. The order
+    appears under WAITING FOR THE NEXT STEP with **Cancel**. With no free cash
+    the button is HELD, "The fund's free cash is D$0", with a **"Pay in ›"**
+    pill that opens Rules & cash with the amount set.
+  - **A month on:** the order under ON THE BOOK UNTIL THE NEXT STEP ("…: 0 of
+    39.47 filled"); a month after, Activity: "Your order: bought 0 of 39.47
+    shares of Construction - 39.47 lapsed, D$4.0M back to the fund" (in both
+    research cities a buy at fair filled nothing; "Best bid" is the price
+    that fills).
+  - **The bank's page** (if he holds it): both books when both exist and
+    their sum; the stake ring and **"The bank's owners ›"** → the Bank tab's
+    Capital & owners.
+  - **Activity:** chips All · Trades · Income · Money in and out · Events; a
+    month's rule trades in one market one line ("The rule bought 36 bonds")
+    that opens ▾ into the lots; "Show older" adds 60 months; before tracking,
+    the rescues and the FUND and BANK decisions "(from the decision log)".
+  - **Rules & cash:** THE DIAL, ITS 3% TO THE TREASURY and THE RESCUE BOOK
+    (now with the preferred's terms and the warrants' strike and expiry when
+    held) as three columns; PAY IN, DRAW OUT with two action buttons (Draw
+    out takes only free cash); THE RULE with the aim bar and the cap in
+    words, and the rescue setting's pointer.
+  - **Elsewhere:** Government's "Transfer from the fund" door still lands on
+    the fund, now on Portfolio; **save and reload:** Portfolio and Activity
+    read the same, and the "cost from" month does not move.
+  - **Since its docs pass and fixes** (none of it seen either): in a city
+    with a rescue book Activity's first row reads "Cost tracking began with N
+    holdings: those bought on the market counted at their market value this
+    month", and the bank's rescue lot shows no "cost from" tag and its exact
+    cost: **check it reads sensibly against "Since it began"**; THE ORDER
+    TICKET's (i) says "A buy's money is held for it from the moment you place
+    it" and that a buy counts what the fund holds and your other buys, the
+    rule's own bid making way for yours; the cap line's note "the rule's bid
+    makes way for N shares of yours; room for …"; a buy with no room (only
+    when what the fund holds and your own orders fill the cap): the line "The
+    market book against the cap | X% held, Y% more in your orders | no room
+    for this order under the 10% cap: the step would post none of it" and the
+    button HELD, "No room under the 10% cap"; THE RULE's cap words, a
+    company's buyback the one way past it; and in a city under thirteen
+    months old, Search's "1Y: its record is shorter than a year".
+- ~~**CHECK 0.7.24 TO 0.7.31 ON THE PC**~~ — **seen on 2026-10-01**: 0.7.24's
+  fix round to 0.7.31 in Jerus's own play of 0.7.31 that evening, and 0.7.32
+  and 0.7.33 in the orchestrator's one look (CHECK 0.7.34 TO 0.7.39, above).
+  Kept below as the record of what each batch asked to be looked at
+  (`the-build-screen-and-the-frame.md`
+  §5; `runs/ui5-notes.md` §9, "What to look at on the PC (this round)";
+  `one-card-for-every-building.md` §11; `runs/ui6-notes.md` §3, "What to look
+  at on the PC"; `the-land-office-redrawn.md` §9; `runs/ui7-notes.md` §3;
+  `people-at-a-glance.md` §9; `runs/ui8-notes.md` §3;
+  `services-at-a-glance.md` §9; `runs/ui9-notes.md` §3;
+  `the-road-in-one-picture.md` §9; `runs/ui10-notes.md` §3;
+  `the-sectors-as-flows.md` §9; `runs/ui11-notes.md` §3;
+  `earned-surplus-banked.md` §9; `runs/ui12-notes.md` §3). On 2026-10-01
+  computer use's approval had lapsed after 30 idle minutes, and re-approving
+  needs Jerus, who was at work; the checks of 0.7.24's fix round, 0.7.25,
+  0.7.26 and 0.7.27 all wait for him (about 9pm), and so do 0.7.28 to 0.7.31,
+  deployed and verified together as tag 1001m. The check by eye of 0.7.24 came
+  before tag 1001i, so the fix round and the docs pass's strings are unseen: the chip opening
+  on Summary after Dashboard was picked in the drawer; the verbs per measure
+  (Police, Road capacity, Education, Cells); no staff bar on roads and "needs
+  no staff"; "posts the city can't fill" and Healthcare's "fewest unfilled
+  posts per patient" tag; the amber TREASURY row (only on a city with less
+  cash than a month's tax); Settings' Esc line. Nothing of 0.7.24 has been
+  seen at 1,280 or 1,920. **0.7.25 (tag 1001j)** has not been seen rendered
+  at all; every word below was read by probes on the playtest's 2,400-month
+  city, so his figures will differ. In his 1,851-month autosave (Continue),
+  at 1,389 × 868:
+  - **Every Build page:** cards 300 px wide, left-aligned, as tall as their
+    content, 10 px gaps; nothing ends in "…" (the name, the have-line, the
+    hero, the detail, the bar labels, the investors' line, the needs line and
+    the quote all wrap). The (i) at each card's top right: hover covers the
+    card with its stat cover, a click keeps it and turns the dot blue, a
+    second click clears it. The cover: the name in capitals, the
+    `whatItDoes` sentences, Materials, Build points, Road load, Electricity,
+    Water, Wages and the job mix; on a market card it ends "Investors'
+    estimate: $X a month to its owner."; a long cover scrolls inside the card.
+  - **Homes:** "HOMES · a door for every household" with the door shortfall at
+    its right. Low-Rise Apartments: the violet square, a tag, "houses 252
+    residents" over "in 63 homes for 4 · children welcome", the price green
+    when the cash covers it, "cost per resident" (blue bar), "land per
+    resident" (pink bar, land icon), "Investors holding: housing ahead of jobs
+    (…)", "needs no staff · 60,000 sq ft · … · nothing to run" (no share under
+    1%, as in his city with 51M sq ft free). Studio "in 80 homes for 2 · adults
+    only"; House "in 1 home for 6 · children welcome".
+  - **Shops:** GROCERIES with its note, THE BANK'S BRANCHES with none. Small
+    Grocery Store "serves 1,600 customers a month", its posts and "runs
+    $Nk/mo" ("the city could staff N%" only below 99.5%). Commercial Bank "a
+    branch for 16,000 customers · brings $32.0M of shareholders' capital",
+    both bars as figures with no track, the bank's own word.
+  - **Industry:** seven headings in order (Food mills, Food processing, Steel,
+    Fabrication & machinery, Iron, Building materials, Builders), each maker
+    note "the city used N …; plants here make C". Steel Foundry "makes 1,200 t
+    of steel a month", "from 1,320 t of iron ore · adds $Nk a month at today's
+    prices", "its price, in months of what it adds", "land per $1k it adds a
+    month". Machine Works: no "this one:" where the word names it. Iron Mine
+    "lifts 2,500 t of iron ore a month" with its deposit line, and with no
+    deposit free the quote at 1 reads "no iron deposit" in red. Construction
+    Depot "adds 400 building points a month".
+  - **Offices:** Contact Centre "exports 300 seat-months of support work a
+    month · worth $N a month at $N a seat-month" and "posts the city couldn't
+    staff, of 100" (teal bar, staff icon). Engineering Services Office with no
+    high-tech licences: the line ends in amber "· this one: needs N spare
+    high-tech engineers; the city has M", and + gives "… · nobody licensed"
+    in red.
+  - **Farms:** "FARMS · crops, dairy and eggs, meat, vegetables and fruit"
+    with its note. Mixed Farm "grows 69 t of crops a month · and 5,000 kg of
+    dairy and eggs and 1,400 kg of meat · adds $N a month at today's prices";
+    built over, its needs line red ("600,000 sq ft - more than is free"), the
+    line's amber "this one: no land - …", and the quote at 1 "short N sq ft of
+    land".
+  - **Restaurants:** "RESTAURANTS · the city's food, cooked" with "N meals
+    wanted; the kitchens serve C", and right after a load only "the kitchens
+    serve C" (D11). Diner "serves 13,500 meals a month", "cost per 1,000 meals
+    a month", "land per 1,000 meals a month".
+  - **The city cards** (Healthcare, General care): the needs line ends "· N%
+    of what is free" (1% or more) and "· runs $Nk/mo"; the stepper has +100;
+    the Walk-in Clinic's (i) reads "Treats 2,500 people a month when fully
+    staffed." with the general-care sentence, the figures and the wage line;
+    the Childcare Centre's cover carries "Childcare is the strongest lever in
+    the game…"; Education › Medical School, a group of one, has both bars'
+    figures and no track; no "cheapest" tag where every card costs the same
+    (D4).
+  - **The order bar on a market page:** on Industry, + on two cards in
+    different groups gives "1 × Bakery + 1 × Steel Foundry", "$X all in, of
+    your $Y", the posts and land (red when short) and "Build 2", with no
+    measure and no stacked bar; the cards' borders pink while ordered; Enter
+    builds both, Backspace clears them.
+  - **The investors' line, both states:** their word ("Investors holding: …",
+    "Investors built N X - …") with amber "· this one: …" where a gate stops
+    this one and the word does not name it; hover for the whole word and the
+    estimate; a click opens the owner's books on Investors. On site (in the
+    probe city at month 2,406, Luxury Retail's three Boutiques): the head
+    "you have N · 3 on site · under a month at today's queue", pink and
+    underlined, a link to the site; the line "Investors are building · 3 on
+    site · …" with no "this one:", and ", yours among them" when the city has
+    an order on the same site.
+  - **Just loaded:** every market card reads "Investors: nothing recorded
+    since the city was loaded or founded"; after one month the bank's line
+    must **not** read "no bank" (the load-path fix).
+
+  **0.7.26 and 0.7.27 (tag 1001k)** have not been seen rendered at all; every
+  word was read by probes on the playtest's 2,400- and 600-month cities
+  (`ProbeLandWords`, `ProbePeopleWords`), so his figures will differ. The
+  same window and autosave, with the drawer closed and the construction tab
+  folded. **The Land office (0.7.26):**
+  - **Throughout:** nothing ends in "…" (the cell notes, the card lines, the
+    value words, the tags, the worth cards' lines and the receipt all wrap).
+    Verdict colours only on GROUND FREE, WAITING ON GROUND, INVESTORS PAY and
+    the margin chip, the going-rate words, a price no way pays, "ore that
+    nothing is digging", the waiting rows, and the funding page's short
+    figures and rate lines.
+  - **The head:** "Land office" with a pink square and an (i) ("Investors
+    build only on ground the city owns…"); the chips "Convert D$" and "From
+    the vault" (tooltips "Pay by converting cash", "Pay from the vault");
+    under them "D$x per US$ · vault US$y untouched" and an (i) holding the
+    whole "Land is priced in US dollars…" sentence; "‹ Build" at the far
+    right.
+  - **THE GROUND:** GROUND FREE **green** on his city (about 51M free; it is
+    never red for the share used), with "… km² · N% of … km² built on" under
+    it; WAITING ON GROUND "0 sectors" with a "›" that scrolls to the Waiting
+    card; THE WORLD ASKS; INVESTORS PAY in green; the big figures and, in
+    pink, "→ … sq ft free after the next 5". The bar: a solid pink start
+    (wide in his city), five pale-pink outlined ghosts numbered 1–5 with a
+    sand stripe where there is ore, a grey tick "NEEDS YOU's line", the
+    scale row under it. Hover a ghost ("plot 2 · … / Click for its card.")
+    and click it: the page scrolls to its card. **Check** the numbers fit
+    inside the ghosts and hide on any too narrow.
+  - **ON OFFER:** its (i) ("The office lists 9 plots at a time… grows one
+    block for every 40 blocks the city has bought, up to 15 blocks…"); "− 5
+    +", the total, "US$… listed", a green "Buy the next 5". − drops a ghost,
+    card 5's badge and edge, and the total; + the reverse; they stop at 1
+    and 9. At one plot the button's tooltip reads "Buys this plot, as its
+    own card's Buy would." (the docs pass's fix).
+  - **The nine cards,** three rows of three, about 400 px each: cards 1–5
+    with a pink 2 px edge and a number badge on the land icon; the size, km²
+    and room; the price **white, not green**, "· US$… listed"; a short pink
+    value bar with a grey going-rate tick and a fainter world hairline; "US$x
+    /sq ft · N% under the going rate" in green (amber over); green BEST VALUE
+    and sand "ORE ×1 · …" tags on card 1, "ORE ×2 · …" and "MOST ORE" side by
+    side on the richest; a green Buy. Hover a card: a three-line summary;
+    hover Buy: "Buy this plot". **Check** the value words wrap under the bar
+    and the tags are not cut.
+  - **Buy:** the solid ground widens over a third of a second; card 1 leaves
+    and the refill carries a pink NEW until the month turns; a pink-ticked
+    receipt under ON OFFER in compact amounts ("for US$…M", not
+    "US$…,…k"); an ore plot pops "+1 deposit" on the Ore card. The next 2:
+    "Bought 2 plots, … km² in all, for … The last: …" and "+2 deposits".
+  - **WHAT THE GROUND IS WORTH:** **Margin** (blue coin; two bars on one
+    scale, a green "margin +D$… a sq ft" pill, last month's land sales; its
+    (i) the three old statement lines plus "Investors pay ×N …"); **On top of
+    the build** (pink house; House and Food plant as pink | grey bars with
+    their shares, a key); **Ore** (sand pick; deposits, tonnes, "N mines on
+    them, standing or on site", amber "ore that nothing is digging"; hover
+    turns the edge blue, a click opens Build › Industry; **look at the pick
+    icon**, D16); **Waiting on ground** (a green tick ring and "every sector
+    has room to build"; with a sector waiting, a red icon and a red row such
+    as "Real Estate ›", its word in the tooltip, a click to its Investors
+    page).
+  - **details ▸:** "THE WORLD'S PRICE OF GROUND" with an (i), a pink line in
+    US$/sq ft over the years, "spent on ground since the founding: … (… from
+    the vault)"; leave and come back and it stays open; click again to close.
+  - **From the vault:** the caption "vault holds US$… (D$…)"; every price the
+    US$ figure, white, "· D$… at today's rate"; every Buy grey, "Buy · vault
+    short" (tooltip "Buy — the vault is short…"); the next-N button grey,
+    "Buy the next 5 · vault short", its total white. **No green price beside
+    a "short" button any more.**
+  - **The funding page from the vault** (press "Buy the next 5 · vault
+    short"): the rail's Land office lit; "Land office › Funding" with a pink
+    square, "Land office" clicking back; a red "short by US$…" pill; a panel
+    "5 plots cost …", a bar mostly red-outlined after a thin blue start, "the
+    vault holds … short …"; "WAYS TO PAY" and three cards: the 20-year dollar
+    bond (yield and coupon, Face, Cash it brings in green, Monthly cost, Cost
+    of the credit all in, the ending, "Market rate: … (+N pts…)", "Issue it
+    abroad and buy from the vault"), the 6-month dollar note with its rate in
+    amber, and "The vault's dollars, and the rest converted from cash"
+    ("Take what the vault has and convert the rest"); Cancel at the foot.
+    **Converting** is reachable only when the cash is short (his city has
+    US$4.4B, so slot 10 or a small city): "TWO WAYS TO BORROW IT", the bond
+    and note cards and an empty third column; let a month land on a city
+    whose cash has since covered the gap, and the page goes back to the
+    office.
+  - **Elsewhere:** Build › any city category: LAND FREE **white** on his
+    95%-used city (it was red, "51.0M sq ft"), amber at a block or less, red
+    at none, still a door to the office. The drawer › Dashboard › LAND: the
+    header "51.0M free · D$x.xx/sq ft" in plain white (it was red "95% used ·
+    $x.xx/sq ft"); inside, Owned, Free, **Used 95%** and Price/sq ft with
+    "D$"; the red alert block without "Land 95% used". Build › Construction:
+    the gauge's queue bar (10 px band, its mark at twelve months), the
+    sites' progress bars and the shells' grey bars exactly as before
+    (`Pieces.segmentBar` now). Build: the cards' green tags, the stepper's −,
+    +, +10, +100 and ↺, the Overview's heads and hints, and the funding
+    page's colours unchanged. Sectors › a business waiting on ground: "…buy
+    a plot at the Land office and it will build next month."
+
+  **People and Household money (0.7.27):**
+  - **The first look is special: his save is format 29.** Before a month
+    runs, the bridge card says "Not recorded yet: this city was saved before
+    0.7.27 kept the month's draw…", the Moved in / Moved out popovers say the
+    same, the Died bar has a grey part "not split: a save from before
+    0.7.27", and GOING SHORT reads "eating less than a full basket". **Then
+    press the clock once while on People:** LIVING HERE counts from last
+    month's figure to this one, the waterfall's bars grow out of the zero
+    line over 0.6 s, and the bridge appears. Do the rest after that month.
+  - **Throughout:** nothing ends in "…" (the vitals' notes, the waterfall
+    names, the mosaic labels, the bridge captions, the ring lines and the
+    chips all wrap). **The pyramid has no green.** Verdict colours only on
+    the vitals, the rings, the homes' chip, the why chip and the housing
+    ring, pay chips over 1.05×, profession chips short of licences, the No
+    home and Orphans counts, the outbreak and crime chips, the alerts, and
+    Household money's verdict chip, cells, put-by figures and Saved total.
+  - **The head and the vitals:** "People" with a teal square and an (i),
+    "What this model does not do yet:" with four lines; the chips People
+    (raised) and "Household money ›". Five vitals, each label with a blue
+    "›": LIVING HERE scrolls to the month card, OUT OF WORK to Work, SPARE
+    HOMES (red where households are doubled up, D5) to Homes; OFF SICK opens
+    Services › Health › General care, GOING SHORT Household money; hover
+    each for its tooltip. **Check** GOING SHORT, the last cell, keeps no rule
+    at its right after a hover and shows a hand.
+  - **WHO LIVES HERE**, "N of working age (N%)" at the right: six rows,
+    Elders at the top, each with its ages ("85–120", "0–5"), a bar on a thin
+    axis, a 1 px grey outline (the settled share) and "count / share". The
+    adults' bar should poke past its outline; elders and seniors sit inside
+    theirs. Light teal, teal, dark teal; a key; "Each 100 working adults
+    carry N" with an (i). Hover a row: count, share, settled share, % off
+    sick, died of illness.
+  - **THIS MONTH**, month/year chips at the right: "a → b living here a
+    month ago, and now"; Born, Died (stacked dark teal of age, violet
+    illness, pink killed, light blue aged out), Moved in, Moved out, Net,
+    with icons, names and dashed links, a key under them. Hover a Died part:
+    its figure, then the illness deaths by age. **Click Moved in:** a
+    popover "Moved in: N, by the skill they hold", a skill bar, the table
+    and the note. **Click year:** "a → b living here a year ago, and now" and
+    the year's sums. A city that crime drove people out of shows a red chip
+    under the head ("Crime drove out 5" in the 600 city).
+  - **WHY PEOPLE COME** (i), "how big a city this good draws" at the right:
+    [jobs × people per job · ¾] + [homes for N · ¼] = [jobs and homes] ×
+    three grey pull chips = [a city this good draws]. The jobs and homes
+    boxes turn blue on hover; jobs scrolls to Work, homes opens Build ›
+    Homes. At the right a teal bullet bar with a white tick ("N living here
+    against the draw · N room to grow"), a 44 px ring and the why chip with
+    its line and (i). **Check** the boxes wrap rather than overflow at 1,389.
+  - **CARE**, "Build's rings: click one to build for it": four cards with
+    56 px rings as Build › Healthcare draws them (General care, Childcare,
+    Senior care, Death care), each with an (i); hover blue; click → Build ›
+    Healthcare with that ring picked (pinned ground, pink edge). Death care's
+    alerts under the row when they fire.
+  - **HOMES AND HOUSEHOLDS:** HOMES with its verdict chip, a teal bar with a
+    light-teal spare end (pink only for homes on site), the key, "N
+    households want a home · N homes · N on site", the line and its (i), the
+    flatshare and doubled-up chips, "Build homes ›". HOUSEHOLDS ("click one
+    for its books", a "Household money ›" chip): three strips, retired
+    (half-filled glyphs), families (a 3 px tier ramp at each tile's foot)
+    and outside; the families' strip fills the card and the others are as
+    long as their households; the biggest tiles proportional, the rest at
+    56 px, "+n more" only at a narrow window, its tooltip naming them. Then
+    the ramp key, "N households · average N people · N adults unplaced" and
+    its (i) ("Kept from last month, before flatmates pair up…"), and
+    "details ▸". Click a tile → Household money with that cell open. In
+    details: the pay row "one earner was paid …" at the live wages, whole
+    households (no ".54"), and a "working households" totals row. **Look at
+    the glyph sizes** (adult 8 px, teen 6.4, child 5.2, baby 3.6, senior
+    half-filled).
+  - **OUTSIDE THE FAMILIES** (i): five tiles with teal icon squares and
+    120 × 24 sparklines of the last ten years (Out of work "N on EI · N run
+    out", Students, No home, Orphans in red, In prison "N caught, not held").
+    Students → Services › Education; In prison → Services › Safety ›
+    Prisons; Out of work and No home → Household money with the out-of-work
+    row open; Orphans → the biggest orphan row. THE POOL THIS MONTH ("in"
+    and "out" bars on one scale, their parts named; "N reached the end of
+    their EI this month" with an (i)); EI paid against premiums as a blue
+    bullet bar with "The premiums cover N% of what EI paid." Then a red
+    "NOBODY FEEDS THE ORPHANS" alert, and "details ▸" for the table by age
+    in whole people.
+  - **WORK:** WORKERS · POSTS · UNFILLED (amber) · IN A JOB · LOOKING; the
+    labour line in amber with its (i); THE SKILL LADDER (i) with a key, four
+    rows of teal open posts over a light-teal outlined queue, "N open · N
+    queue", "chance N%" and "pay N×" chips, red pay chips over 1.05× with
+    "reach N%"; "Licensed:" chips, red when short; three "details ▸", each
+    remembered while the game runs; the foot "Minimum wage $… a month…".
+  - **Household money:** "People › Household money" with the teal square,
+    "People" clicking back, an (i) saying every figure is in dollars, the
+    chips "‹ People" and Household money (raised). THEY KEEP, RENT TAKES,
+    GOING SHORT ("N can't afford · the shops handed over N%…", a door to
+    Build › Shops), INCOME PER RESIDENT ("an average filled job pays $…").
+    The verdict row: a chip, the sentence naming who lives on savings and who
+    went hungry, an (i), the One household / All of them chips. Tier heads
+    in two lines ("Unskilled / $… a wage"; "no earners" where nobody earns).
+    Below the rule each caption has an (i), which now says the retired read
+    their statement (the docs pass): Senior/Elder alone "$0" grey,
+    Senior/Elder couple green, On EI green, **EI run out amber**, orphans
+    red. At 1,389 the books sit **beside** the grid ("Click a cell to open
+    its books"); open Couple, no children / Unskilled: "Healthcare and school
+    fees", "Transit fares" and "Bank fees" each its own line, no interest
+    line. **Scroll the page:** the books stay at the top of the view while
+    the grid passes and stop at its foot; under about 1,240 wide they go
+    under the grid, and a click scrolls the two into view.
+  - **THE CITY'S MONTH:** 17 columns from Wages to Saved, with "Bank fees"
+    its own violet step; **check "Contributions" and "Health premium" are
+    not cut** (narrow columns, 4 px gaps); "$… saved since founding. A
+    record, not a pot."; "details ▸ the month as a statement" with "The
+    bank's account fees" as a line. **WHAT THEY HAVE PUT BY:** SAVED, OWED,
+    DIVIDENDS THIS MONTH, CARS with its (i); in his city the chips "N at
+    their credit ceiling · M discharged ›" and "N flatsharing because one
+    wage won't cover a home ›", each opening a cell.
+  - **Elsewhere:** the drawer › HOW THE CITY IS › HUNGRY reads "x% of
+    people" in red (it read the sickness points); its tooltip gives the
+    points; a click opens Household money. Policy › Promises › Pensions ›
+    "And what it does to people": "A pensioner household has to spend …",
+    "…its rent and bills come to …", "…leaving for the shop …", which foot,
+    then one of the green, amber ("…eating out of savings ($X drawn this
+    month).") or red sentences; the page that read "−$3,004" over "They can
+    afford to eat." in his city should now be amber. Build › Healthcare's
+    four rings, picked and not, and Education's nine small rings exactly as
+    before (`Pieces.ringCard`); Construction's status chips unchanged
+    (`Pieces.chip`); Services › Health's THINNEST COVER on the month's
+    coverage (the same unless fees bite).
+
+  **0.7.28 to 0.7.30 (deployed and verified with 0.7.31 as tag 1001m)** have
+  not been seen rendered at all: the toolkit cannot start in the cloud, and
+  every word was read by probes on the playtest's 2,400- and 600-month cities
+  (`ProbeServicesWords`, `ProbeInfraWords`, `ProbeSectorWords`), so his
+  figures will differ. The same window and autosave, with the drawer closed
+  and the construction tab folded. **Services (0.7.28):**
+  - **Throughout:** nothing ends in "…" (the figures' notes and changes, the
+    chips, the card names, the funnel and cause-bar names and keys, the node
+    lines, the hints). Only the page under the frame scrolls (`FRAME_CHROME`
+    268 px): a second scrollbar on the whole menu means the allowance is too
+    small, a page stopping short of the stage's foot too big. Verdict colours
+    only on the figures NEEDS YOU judges, the systems' dots, the care and
+    basic-ladder rings, a seat-bound gate chip, the utility rows' figures, the
+    crime scale and "caught, not held", and the event lines.
+  - **The frame (Health › Overview):** "Services › Health" with the teal
+    swatch, "Services" clicking back, a pink "build them on Build ›"; the
+    systems strip at the left, Health, Education, Utilities and Safety with
+    their icons and 7 px dots (hover: the worst NEEDS YOU row), a "!" chip on
+    a system with the month's news until it is opened; four figures with a
+    blue "›" each, OFF SICK with its 64 × 16 sparkline and "▲ … pts on last
+    month", THINNEST COVER opening Build › Healthcare on that ring (pink
+    edge), GROUND LEFT opening Death care, THE BILL Health › Books; the page
+    strip.
+  - **WHERE THE SICK RATE COMES FROM:** the figure at the left; the bar's big
+    parts named under themselves, the small ones in a key ("none" greyed);
+    hover every part; clicks: no doctor → General care, hunger → People ›
+    Household money, no home → Build › Homes, the unburied → Death care,
+    violence → Safety (the floor and outbreak are not hands). **Check the
+    bar's height settles**: it lays its key out by its own width.
+  - **THE CARE THE CITY RUNS:** four cards (cross, child, cane, headstone), 64
+    px rings, what each buys with its range, the supply bar, "details ›" and a
+    pink "Build for it ›"; hover a card for a blue edge; the two doors open
+    their own targets, not the card's.
+  - **Health's pages:** General care's 13 long-sick bars behind a dashed "can
+    die from here", the cure scale (hover for its three figures), the "Who
+    gets a doctor" funnel, the fee line's "Set the fee ›" (Policy › Promises ›
+    Health); Childcare and Senior care as scale rows, infant deaths on a log
+    scale, Elder deaths new; Death care's ground and this month's dead (a red
+    line only in the month the last plot goes); Books, cost against fees back.
+    **After a load, before a month:** "seen" and "raised" read "—" and the
+    funnels' "treated" "after a month".
+  - **Education (in his city: the probe city had no schools):** THE BASIC
+    LADDER's nodes and rings, the chip "the narrowest stage" on the narrowest
+    only; Diplomas and NEW LICENCES "not recorded yet" until a month runs;
+    ADULT STUDY and THE LICENSED PROFESSIONS, "not built: N would come";
+    **check the lanes wrap and "Institute of technology" wraps inside its
+    node**; a node opens its page. University: the funnel with the binding
+    step outlined, the two half-ring gauges, the cohort bars, "Set the subsidy
+    ›". Professions 2 × 2; the Basic ladder's supply bars; Books' forgiven
+    tuition in grey with its (i), and no "Tuition the city covers" or "counted
+    twice" in its details.
+  - **Utilities:** the power row in MW (his city asks about 1.18 GW): now, at
+    full staff and asked, the white "asked" tick and a faint tick at NEEDS
+    YOU's line, who draws it, "short … now · … even fully staffed", and "Build
+    for it ›" opening Build › Utilities **on Power**; water's door **on
+    Water**; THEY EARN plain, "the city's own, after wages"; Books' power and
+    water cards and "The plants are the city's own…". The road is one card
+    since 0.7.29 (below).
+  - **Safety:** the crime figure on its 0–2× scale with Canada's tick; the
+    seven reasons' bar and its three doors; Police, Cells and What it did; the
+    Police page's two bars on one scale and "One more police station: …";
+    Prisons' six bars by months served and Canada's 127 in details.
+  - **Elsewhere:** the drawer's OFF SICK opens Services › Health › Overview;
+    Build › any city category: a teal "why ›" at the ring heading, to its
+    Services page (Road capacity and Transit go to Infrastructure since
+    0.7.29); Build › Utilities › Power: "generates 8.1 MW", "cheapest per kW",
+    the stat cover's Electricity in kW, the ring's and the Overview tile's "…
+    MW short"; water still "units a month"; the three new icons, DROP, CANE
+    and CELL, drawn by hand.
+
+  **Infrastructure (0.7.29):**
+  - **The first look is special: his save predates 0.7.29.** Before a month
+    runs the railway's bar reads billed at home and a grey "paid abroad or
+    kept: known after a month", and "the rule allows —"; the first month after
+    is B1's (the railway bills almost nothing, the quote jumps, "bigger than
+    its city" may fire): the model's, not the screen's.
+  - **Throughout:** nothing ends in "…" (CARS' note wraps to two lines; the
+    walk's and the funnel's row names, the rule names, the freight bars'
+    figures, the drawer's road figure); only the page scrolls (`FRAME_CHROME`
+    232). Verdict colours only on FULL and FLOW (and the hero's figure, the
+    curve dot's ring, the CONGESTED or BUSY chip) in NEEDS YOU's road colour,
+    the curve's three bands, the drawer's road row, the railway's and the
+    lorries' shortfalls, and a railway losing money.
+  - **The frame:** "Infrastructure" with a pink "Build › Roads & transit ›"
+    (the Road capacity ring picked) and a blue "The road over the years ›"
+    (City History with Road throughput alone, ten years; **check the pins did
+    not change**); FULL "108%" and FLOW "83%" in amber, FLOW's change on last
+    month; ON TRANSIT, CARS and BY RAIL, each opening its page; the four chips
+    with their icons.
+  - **Roads:** "108% full → 83% flow" with its (i) and the CONGESTED chip; the
+    curve and its bands, the white dot ringed in amber with its drops, **the
+    pink hollow dot for his 22 road sites** and its line under the curve; FROM
+    TRIPS TO THE ROAD's five rows, **the two rule names not touching and both
+    lines running through all five rows**; hover every stretch; clicks
+    (commuters, the transit and car rows → Transit; goods, bulk and the rail
+    row → The railway; "capacity" → Build on Road capacity); the three stream
+    cards; the network strip; "details" staying open through a month.
+  - **Transit:** WHO RIDES and the funnel (the road's row cut at the track's
+    end with "›", the "lowest" tag); **the fare row scrolls the page to the
+    fare card**; "Build's transit ring reads 61%: … ride." and "Build transit
+    ›"; the books card; stage a fare and see the preview and the apply bar.
+  - **The railway:** the quote's gauge with its floor and lorry ticks, the
+    bill three ways and its key, the fuel line; Track and trains, What it
+    hauls, The business ("its books on Sectors ›" opening Rail's Income page);
+    the line rule and "Rail on Build ›".
+  - **Freight:** six bulk bars then thirteen goods, each with its icon and the
+    white "by lorry" mark; hover for the four old figures; the freight bill
+    strip, each figure opening The railway; the lorries line (or bars and an
+    amber chip with a sector short); details without Materials' row of
+    noughts.
+  - **Elsewhere:** the drawer's "Roads 108% full · 83% flow" in amber, never
+    cut (it was red "83.23% flow"); NEEDS YOU's ROADS row wrapping; Services ›
+    Utilities' one road card and its door; Build › Roads & transit: the Road
+    capacity ring "83% flow · N trips over capacity", the Transit ring "room
+    for 63k of 102k · 41k ride", "what is on the road: Infrastructure ›" and
+    "who rides: Infrastructure ›" at the heading, the Overview's road tile
+    "full · 83% flow"; BUS and LORRY.
+
+  **Sectors (0.7.30):**
+  - **The first look is special:** after Continue, before a month runs, every
+    investors' word is a grey "no word yet", the flow's rows say "units not
+    counted yet" (the money shown), and Cash & debt's "New borrowing costs it"
+    differs from "...the month's books struck it at". **Then press the clock
+    once:** KEPT and each card's figure count up from last month's over 0.4 s,
+    the plant's ring sweeps up from 0, the waterfall's bars grow, and a
+    "Built" word flashes its line pink once; a redraw by a click does none of
+    these.
+  - **Throughout:** nothing ends in "…" (card names and groups, the investors'
+    words over two or three lines, the figures' notes, the flow's names, the
+    grids' labels, the gate words, the rule chips); **watch the cash bridge's
+    figures on a sector with many steps**, which could touch. No second
+    scrollbar on the list or on any business, **Retail included** (its
+    investors' line has two lines; the page is sized from the frame's laid-out
+    height plus 36 px). Verdict colours only on a negative kept figure and the
+    moves, MARGIN, CASH overdrawn, OWES, the ratio chips, a cost above its
+    price, the cascade's thinnest throttle, the investors' kinds, borrowing
+    yes or no, the loss pips and "Not accounted for"; revenue, taxes,
+    interest, bids and asks plain.
+  - **The list:** the four figures (RUNNING AT's "›" opening Build's Roads &
+    transit, Utilities or Healthcare by the thinnest); fifteen cards in
+    Build's order, three columns, **the icons MILL, CAN and INGOT, drawn by
+    hand, and GEAR and PICK**, the name's tooltip the blurb, the group, the
+    sparkline, the running bar ("no plant standing" for Mining, Materials and
+    Business Services; "95% of its homes let" for Real Estate), the investors'
+    word; a card opens Operations, its word Investors; the cards of a grid row
+    one height; Show more as 3 + 2.
+  - **A business:** "Sectors" clicking back, the icon square, the (i), the
+    pink Build door; five figures, each a door (OWES "owes nothing" with
+    nothing owed); the investors' line under them on every page (Retail's
+    second line for its bank branches); the chips with icons.
+  - **Operations:** the flow card's three columns and chevrons; Retail's and
+    Restaurants' "▸ 13 foods" opening in place and staying open through a
+    month; Construction's materials "bought as it was drawn"; the plant's ring
+    and cascade with the thinnest amber, Real Estate's homes-let ring, the
+    empty grey ring where nothing stands; the outputs' bars and price chips;
+    ITS OWN FIGURES' (i)s; the old page in "details", its plant note naming
+    six.
+  - **Income:** the waterfall; **click Revenue, Bought in, Wages or Sales
+    tax** and its line opens in the statement under it; the ratio chips.
+  - **Balance sheet:** the two bars and their keys; the "Held abroad" and
+    "Other businesses' bonds" lines; ITS OWNERS, the order book behind
+    "details", the chart. **And Bank › Capital & owners:** the same card at
+    560 (D11), under two headings in a row ("Its owners", then the card's "ITS
+    OWNERS").
+  - **Cash & debt:** the bridge with "Stolen" and "Bought back its shares"
+    among its steps; the reconciliation's two new lines; the rate bar, with
+    **a white mark where the rate ends inside it** if his concentration charge
+    is a discount; the leverage bar; the debt by kind; the credit grid; a
+    banned sector's red line.
+  - **Investors:** the decision card (no "Sold" or "Could not build" in
+    green); ITS BUILDINGS with each first gate (a row opens Build on its
+    category); WHAT STOPS IT's tiles and pips; THE RULES IT BUILDS BY as
+    chips; WHAT YOU CONTROL's four doors.
+  - **Elsewhere:** a build card's investors' line, NEEDS YOU's BUILDERS row,
+    the inbox's "shedding" notice and Infrastructure's "its books on Sectors
+    ›" still open the right page.
+
+  **Government (0.7.31)** has not been seen rendered at all: every figure and
+  word was printed by the implementer's probe (`ProbeGovWords`) on the
+  playtest's 2,400- and 600-month cities, loaded from 0.7.25, a month on, saved
+  by 0.7.31 and loaded fresh, a month on, and in the busy month, so his figures
+  will differ; those below are the 2,400-month city's at month 2,401. The list
+  is `runs/ui12-notes.md` §3 (25 items), written by the docs pass from the
+  code. The same window and autosave, with the drawer closed:
+  - **Throughout:** nothing ends in "…" (the five figures' notes, the ring
+    keys' names, the ranked rows' names at 236 px, the bridge's step words such
+    as "Transit fares: on the cash, not the budget" and "Bought land with US$…
+    of reserves", the cards' lines, the payer rows, which wrap now). One
+    scrollbar: the page is sized from the frame's laid-out height plus
+    `STAGE_REST` 36 (232 until laid out); a second scrollbar on the whole menu
+    means 36 is too small, a page stopping short of the stage's foot too big.
+    Verdict colours only on SURPLUS/DEFICIT (its figure, THE BALANCE's word and
+    the "kept"/"short" outline), OWED's figure (red only when priced out of the
+    market), the pension chip, the central bank's ring and its arrears rows,
+    the mortgage insurance's "ahead/behind" and the fund's "Not paid, for want
+    of cash": **no amber "Paid out" bar, plain totals, a grey net exports,
+    plain growth figures**. A true minus everywhere ("−$3.5M"), the opened
+    payer rows included. A month landing leaves the opened lines, the "details"
+    folds and a column's "N more" as the player left them.
+  - **The header (any tab):** under the cash **"+$1.5B earned a month"** (was
+    "+$1.5B a month"), green, red, or grey at nothing; **check the extra word
+    costs the tiles to its right nothing at 1,389 px**. Hover: EARNED "at
+    today's tax rates", not the budget's surplus nor the change in the cash,
+    "which was +$2.3B". Its (i): EARNED, SURPLUS and BANKED in turn, the steps
+    between them, and "Government's Overview walks from one to the next, step
+    by step." **The GDP tile right after Continue: "$…B / yr" with a
+    real-growth line, not "$0 / yr" and "first year"** (B1). The drawer's
+    pinned vitals: Cash · Earned · Population.
+  - **The frame:** the blue swatch, "Government" and its (i), which now says
+    most lines open into who paid them and every line has a door (the docs
+    pass's string); "Taxes on Policy ›" (Policy › Taxes › Everything) and "Over
+    the years ›" (City History with Revenue and Surplus / deficit picked, ten
+    years, nothing pinned). Five figures, each a door: EARNED "+$133.5M" plain
+    → the bridge; SURPLUS "+$130.3M" green, "80% of what it took in", its
+    sparkline and "▲ $1.4M on last month" → THE BALANCE; BANKED "+$130.9M"
+    "$102.1B → $102.3B" → the bridge; OWED "$0" "nothing owed · rated AAA" →
+    Finances; TAX TAKE "34.4%" → Revenue. **In his city EARNED must equal the
+    header's line to the digit.** The pages as chips with icons.
+  - **Overview:** the revenue ring "taken in $162.5M" with its key **adding to
+    100%** (B14), "less utility income −$471k" and "outside the total: transit
+    fares +$4.1M ›"; the spending ring "paid out $32.2M" with **no Repairs**
+    (B2) and "outside the total: repairs −$3.5M ›"; hover an arc; **click an
+    arc or a key row: Revenue or Spending opens with that line open and
+    scrolled to**, "Everything else" at the page's top. THE BALANCE: "SURPLUS"
+    green, "+$130.3M", taken in in the money blue and paid out in its darker
+    step on one scale, the taken-in overhang outlined green with "kept
+    $130.3M", "27.6% of annual GDP". FROM EARNED TO BANKED: the three tiles and
+    their steps, each a 56 × 6 bar on the card's one scale, a step with a door
+    in the accent; **in his city the steps must account by name for the gap
+    between EARNED (+$1.5B) and BANKED (+$2.3B), "Not accounted for" $0 or a
+    coupon's timing**; the "mostly: …" and "printed $X" chips when they apply;
+    "details ▸" with the old statement, one column, no "of the change" (B6).
+    AGAINST THE ECONOMY right after Continue showing its bars (taken in 34.42%,
+    paid out 6.83%, surplus 27.59%, care and schools staff 0.18%), not the
+    empty state (B1).
+  - **Revenue and Spending:** the head line ("$162.5M taken in · 34.4% of
+    annual GDP · January 2200"); rows of 36 px with icon squares, "▸ who" on
+    the lines that open, Utility income's −$471k drawn leftward from a grey
+    axis, a door at each row's end ("set it ›" to its Policy page, "Finances
+    ›", "Services ›", "Build ›", "Land office ›", "Bank ›"); click Business
+    tax: one stacked bar of the payers and a row per sector and the Bank,
+    staying open through a month; "nothing this month: …" in grey; the totals
+    plain, with the muted "Outside the budget's total" doors under them.
+    Spending's twelve lines with no Repairs, then THE DEBT ("The city owes
+    nothing."; the busy 600-month city's "notes $21.0M · no coupon: the
+    discount ($290k) was the price · falls due whole in 5 mo"), THE SERVICES
+    THAT CHARGE ("care: fees cover 77% of $1.3M · net cost $311k": **a cost
+    reads as a cost**, B3) and PENSIONS (**no chip unless NEEDS YOU lists
+    PENSIONS**, B11).
+  - **Output:** the layers chart at 880 × 220 over the last 120 months with its
+    key, "GDP this month $446.4M", "▼ 2.0% real, 12 mo", "Over the years ›";
+    the four cards, NET EXPORTS with **no "Steel exported" and no "Scrap
+    imported"** (B5); THIS MONTH, AS ONE BAR, **a negative part (investment
+    −$129k) drawn as a grey length that adds** (docs pass flag 7); the growth
+    strip all plain; "details ▸ how many months are recorded" reading **120
+    right after Continue** (it read 1, in amber, before B1).
+  - **Elsewhere:** Finances › OWED white unless the market has priced the city
+    out (no amber at 60% or red at 120% of GDP); City History from "Over the
+    years ›" showing Revenue and Surplus / deficit together, ten years in view.
 - **UI NOTES FROM PLAYING 0.7.19, 2026-09-30** (`playing-0-7-19-ui-notes.md`;
   Jerus asked for a play-through for the interface only, nothing changed).
   Likely bugs:
@@ -477,6 +4140,9 @@ has been away reads the changelog's top block and section 0 here, then works.
 - **CHECK 0.7.14 BY EYE ON THE PC** (`the-city-takes-the-shares.md`). None of
   it can run in the cloud; `build-ui.sh` compiling it is the only check it has
   had.
+  - *The fund's two pages below (Holdings, By hand) are superseded: 0.7.39
+    redrew the fund as four pages and a page a security, so check it under
+    CHECK 0.7.34 TO 0.7.39 instead.*
   - **Finances landing:** a sixth row, "The city's fund": its value, and last
     month's transfer or its shortfall, or the dial.
   - **The city's fund, Holdings:** the equity share against the aim; shares by
@@ -519,6 +4185,9 @@ has been away reads the changelog's top block and section 0 here, then works.
     strike the quotes (about a second).
 - **CHECK 0.7.13 BY EYE ON THE PC** (`rolling-what-falls-due.md`). None of it
   can run in the cloud.
+  - *The land office's parts below (the tiles, the FREE cell, the next-N row,
+    the funding page and the receipt) are superseded: 0.7.26 redrew the
+    office, so check it under CHECK 0.7.24 TO 0.7.27 instead.*
   - **Land office tiles:**
     - the large price in local money when converting and US$ from the
       vault, with the other as a caption on the same baseline;
@@ -866,7 +4535,9 @@ has been away reads the changelog's top block and section 0 here, then works.
   crosshair's four part readings; the log chip refusing while the layers are
   on. The land office: the chip pair, the sentence under it and the receipt
   after a purchase (a short vault's included), the two prices on each tile,
-  the US$ market cell, "Not enough in the vault or cash". The Exchange page's
+  the US$ market cell, "Not enough in the vault or cash" (superseded by
+  0.7.26's redraw: check the office under CHECK 0.7.24 TO 0.7.27). The
+  Exchange page's
   "Spent on land" lines; the Government tab's "Land bought" opened into its
   three rows; the history's land axis in US$.
 - **CHECK 0.7.5'S SCREENS BY EYE ON THE PC** — none of it can run in the
@@ -1461,6 +5132,577 @@ to the PC with 0.7.2 and 0.7.3 on 2026-09-23, tag 0922c, verified.**
     receipt's last five; the Dashboard's annualised GDP; `UserInterface`
     about 4,650 lines;
   - §11: "of GDP, annualised".
+- **And 0.7.24 as of 2026-10-01: the Build screen and the frame — the money
+  block, five tiles, the City overview as a drawer behind the "Needs you"
+  chip, the construction tab, NEXT DUE on Finances and FALLS DUE in NEEDS
+  YOU, Build's Overview and `BuildAdvice`; 236 files, 197,112 lines; save
+  format 29 unchanged; 67 harnesses.** What version 11 now says that is not
+  so (`runs/ui5-docs-pass.md`, "The manual", with what each should say):
+  - the masthead (0.7.23, 233 files, 66 harnesses) and its closing line;
+  - §9's "reached from the right panel's *Open*" (a tab at the stage's right
+    edge since 0.7.24);
+  - §16's "two of the header's six tiles" (five);
+  - §19's Build grouping (fourteen categories under the new names;
+    Healthcare's four rings);
+  - §22's introduction, its header paragraph, its inbox paragraph, "The
+    interface is a package" and "The summary is a problem list".
+
+  It wants §22 to gain the money block, the five tiles, the chip and the
+  drawer, the construction tab, FALLS DUE and a Build Overview subsection;
+  §24 a BuildAdviceCheck row and BuildMenuCheck's new section; §25 the open
+  questions the docs pass lists.
+- **And 0.7.25 as of 2026-10-01: one card for every building — the one
+  300 px card for all 73 (`BuildCard`), the market's nine in their sectors'
+  groups, the investors' line, the city cards' (i), "runs" and +100 back,
+  and `setBank()` on the load path; 238 files, 198,540 lines; save format 29
+  unchanged; 68 harnesses.** What version 11 now says that is not so, on top
+  of 0.7.24's list, which all still stands (`runs/ui6-docs-pass.md`, "The
+  manual", with what each should say):
+  - the masthead and its table (build 0.7.25; 238 files, about 198,500
+    lines; 68 harnesses plus the playtest, AllChecks listing 69) and its
+    closing line (the suite's 396 s on 1 October: 68 run, 67 green,
+    HealthCheck red, BuildMenuCheck 73 of 73 on its own);
+  - §19's paragraph after the catalogue table: "Every row of the build menu
+    prices itself …" is the 0.7.21 row. Every building is one card now: the
+    head, the tags, the hero, "$X all in · sticker $Y", two bars scaled
+    within the group (bar 1 the price per unit, or months of value added,
+    an office's months of its exports; bar 2 the land per unit, unfilled
+    posts per 10,000 served on city cards, the posts the city couldn't staff
+    of 100 on offices), the investors' line, the needs line, +10 and +100,
+    the quote and the (i). The market's nine in groups: Industry seven,
+    Shops two.
+
+  It wants §22 to gain the one card (its parts, the groups and their notes,
+  value added, the strict tag rule, no track in a group of one, the
+  investors' line and its gates, the quote's "no iron deposit" and "nobody
+  licensed", the city cards' (i) and +100, the market order bar); §24 a
+  BuildCardCheck row (it fails without the load fix), its counts and "the
+  tree, and the prose that describes it" (238 files, 198,540 lines, 1,158
+  dials, 6,346 labelled assertions); optionally a line in §14 or §23 on the
+  load fix; and §25 the open questions the docs pass lists (saving
+  `lastInvestment`, the Restaurants note, the two unsaved month flows,
+  Rail's tonnes across a load, "1 business college", the maker hero's first
+  good, and its flags 1 to 5). The ★ decisions D3, D4, D9 and D11 are open.
+- **And 0.7.26 as of 2026-10-01: the land office redrawn — THE GROUND bar,
+  the 3 × 3 shelf with independent tags, the four worth cards, the funding
+  page in the frame, "% used" without a verdict on the office, Build and the
+  left panel (`CityNeeds.ground()`), the going rate as
+  `LandMarket.goingUsdPerSqFt()`, the receipt in the screens' money; 238
+  files, 199,964 lines; save format 29 unchanged; 68 harnesses.** What
+  version 11 now says that is not so, on top of 0.7.24's and 0.7.25's lists,
+  which still stand (`runs/ui7-docs-pass.md`, "The manual", with what each
+  should say):
+  - the masthead and its table (build 0.7.26; 238 files, about 200,000
+    lines; 68 harnesses plus the playtest, AllChecks listing 69) and its
+    closing line (the suite on 1 October: 68 run, 67 green, HealthCheck red;
+    BuildMenuCheck 73 of 73 on its own);
+  - §18 Land: "areas read in km² … and so do the Summary's land panel" (the
+    office leads with square feet to three figures, the km² after them; the
+    left panel's LAND header reads "N free · D$x/sq ft", and only its Owned
+    and Free lines are in km²); "its button opens a funding page built from
+    the build screen's own pieces" (the office's own page now, "Land office ›
+    Funding": the rail lit, a summary bar and a "short by" pill, the offers
+    as cards, back to the office when a month lands and nothing needs
+    funding); Buy the next N could add the numbered cards and ghosts;
+  - §18's "land sits at 88–90% for the last decade of most long runs" wants
+    the 0.7.26 measurement beside it: the 2,400-month playtest city was 95%
+    used or more in 120 months of 120 with no sector waiting, which is why
+    no screen colours the share used any more.
+
+  It wants §18 (or §22) to gain the office redrawn: THE GROUND; GROUND FREE,
+  Build's LAND FREE and the left panel coloured by NEEDS YOU's GROUND row;
+  the going rate as a model read; the tags (BEST VALUE is card 1, not
+  `bestValue()`; MOST ORE is `richestDeposit()`; one card can carry both);
+  neutral prices; the worth cards and details; the receipt in the screens'
+  money; "Who is waiting" from the sectors the month found blocked. §22 a
+  subsection "The land office redrawn (0.7.26)": Jerus's ask, the layout,
+  no verdict on "% used", the funding pages on the rail, the `Pieces` a
+  redrawn screen is built from, Construction's bars among them. §24 the
+  LandCheck row's section 17 (the going rate, the GROUND row's levels, the
+  receipt), "What no harness looks at" (the office's words are read by no
+  harness; none of it seen rendered) and the counts (238 files, 199,964
+  lines, `Game.java` 13,573 lines and thirty-seven banners, 1,168 dials,
+  6,360 labelled assertions). §25 the open questions: arriving from *Not
+  enough land* with N preset and that page's "roughly" quote (★12), the red
+  tick at a waiting sector's need (★11), Build's "Order on credit" adopting
+  `offerCard()`, `Icons.ORE` not yet seen (D16). "The interface is a
+  package" still says `UserInterface` is about 5,500 lines (5,863; older
+  than the batch).
+- **And 0.7.27 as of 2026-10-01: people at a glance — the People page as
+  pictures (the pyramid and its settled ghost, the month as a waterfall, the
+  bridge, the care rings, the homes gauge, the household mosaic, the outside
+  tiles, the ladder as bars), Household money as a page of its own,
+  Migration's month, the dead by cause and the hunger's two halves saved,
+  `wagePerEarner()` and the fees named apart, HUNGRY, Pensions and THINNEST
+  COVER; 238 files, 202,529 lines; save format 30; 68 harnesses.** What
+  version 11 now says that is not so, on top of 0.7.24's to 0.7.26's lists
+  (`runs/ui8-docs-pass.md`, "The manual", with what each should say):
+  - the masthead, its table and the footer (build 0.7.27, save format 30;
+    238 files, about 202,500 lines; the suite on 1 October, 68 run in 402 s,
+    67 green, HealthCheck red; BuildMenuCheck 73 of 73 on its own);
+  - §23's "The save format is at 29": 30, with a sentence in the house
+    shape — thirty is the month the People page draws: Migration's last
+    month after its wage history, the pyramid's dead by cause after its
+    flows, the shops' delivered share and the hungry at full shelves after
+    the households' row array; a format-29 build refuses each array whole,
+    and a format-29 save loads with those figures at 0 until a month runs;
+  - §22's "The summary is a problem list": HOW THE CITY IS's *hungry* reads
+    the share of people since 0.7.27, with the sick-rate points in its
+    tooltip (it read Health's points, 6.3 against 42.2, and opened a page
+    showing the other figure).
+
+  It wants §2 People to gain the dead by cause saved and Migration's month
+  saved (a format-29 save reads "Not recorded yet" until its first month;
+  before, a reloaded page read "a city this good draws 0"), and Household
+  money as a page: the live wage at each tier's head, the books beside the
+  grid, the verdict that counts every row, the rows outside the families
+  against a basket (the students had read −$29,448 in Jerus's city), the
+  retired on their statement, INCOME PER RESIDENT for PER WORKER; its
+  household-books paragraph is now true of the opened cell (until 0.7.27
+  the fares sat under "Healthcare and school fees" and the account fee under
+  "Interest on what they owe"). §7's hunger box the split
+  (`getHungryAtFullShelves()` the money half, the delivered share the rest,
+  both saved: in the 2,400-month city GOING SHORT read 42.2%, 49 people
+  could not afford a basket, and the shops handed over 3% of what was
+  planned). §22 a subsection "The People page redrawn (0.7.27)": Jerus's
+  ask, the one page and its sections, every table behind "details", Household
+  money, and the `Pieces` it added. §24's SaveFileCheck · ReadPathCheck row
+  (the People page's month reloads figure for figure, format-29 arrays still
+  load, an unknown length refused whole), "What no harness looks at" (none of
+  0.7.27 seen rendered) and the counts (202,529 lines, 1,194 dials, 6,401
+  labelled assertions). §25 the open questions: NEEDS YOU's CARE rows and
+  Build's rings on the beds (D16), the first-month drift after a load,
+  "People are leaving" on any departure, and the hunger said as
+  people-equivalents. "The interface is a package" still says about 5,500
+  lines (5,870).
+- **And 0.7.28 as of 2026-10-01: services at a glance — the Services screen
+  redrawn (an Overview per system: the sick rate as a bar of its causes over
+  the care cards, the schools as a pipeline, power, water and the road as
+  capacity rows, the crime as a bar of its reasons), power in kW, MW and GW on
+  Services and Build, Build's "why ›", the Infrastructure tab moved to
+  `InfrastructureScreen`, `getNewDiplomas()` and the homes' draws; 239 files,
+  204,593 lines; save format 30; 68 harnesses.** What version 11 now says that
+  is not so, on top of 0.7.24's to 0.7.27's lists (`runs/ui9-docs-pass.md`,
+  "The manual", with what each should say):
+  - the masthead, its table and the footer (build 0.7.28; 239 files, about
+    204,600 lines; 68 harnesses plus the playtest, AllChecks listing 69; the
+    suite on 1 October, 68 run in 410 s, 67 green, HealthCheck red;
+    BuildMenuCheck 73 of 73 on its own);
+  - §20's "Power and water": "The grid starts with 10,000 W free" (10,000 kW),
+    "Power is $0.01 a watt" ($10 a kilowatt a month), "the water plant's own
+    900 watts" (900 kW);
+  - §22's "The interface is a package": "twenty-three" (twenty-four, with
+    `InfrastructureScreen`), "the Infrastructure tab drawn by
+    `ServicesScreen`" (by `InfrastructureScreen`), "about 5,500 lines" (about
+    5,900);
+  - §12's "the fare on Services" (the dial is on Infrastructure › Transit).
+
+  It wants §22 to gain a subsection "The Services screen redrawn (0.7.28)"
+  (Jerus's ask; the four Overviews and their pictures; the pages behind; every
+  table behind "details", every paragraph behind an (i), Books the last chip;
+  the frame's dots, "!", five events and sparklines; power in kW, MW and GW on
+  Services and Build; Build's "why ›"; the `Pieces` it added), and "The
+  summary is a problem list" OFF SICK opening Health's Overview on
+  `CityNeeds`' lines; §20 kW, the plants the city's own (their net into the
+  city's cash, a loss paid as the city's services promise) and the homes'
+  draws apart from the city's own buildings; §24's rows (SicknessCheck's ring
+  in people, EducationCheck's leavers' diplomas gross and not saved,
+  WaterCheck's draws against the templates, ReadPathCheck's reads), "What no
+  harness looks at" (none of 0.7.28 seen rendered) and the counts (239 files,
+  204,593 lines; 1,226 dials; 6,412 labelled assertions). It could add to §11
+  (the leavers' diplomas as a read of their own; the DIPLOMA band nets off
+  every college and university finisher, which is why it read −18), §5
+  (Canada's 127 prisoners per 100,000), §21 (the tab drawn by
+  `InfrastructureScreen`), §23 (the console's report in kW) and §25 (History's
+  "Graduates", `everGraduated`, the month's figures not saved, a course's
+  "enrolling" step, Medical "held by students", `buildings.json`'s watts).
+- **And 0.7.29 as of 2026-10-01: the road in one picture — the Infrastructure
+  screen redrawn (the flow curve and the walk from trips to the road,
+  Transit's funnel, the railway's bill three ways, Freight's bar a good), the
+  road as "N% full · N% flow" in one verdict everywhere, the room before it
+  slows on the effective load, the railway's allowed bill and what went abroad
+  saved in its extras; 239 files, 206,384 lines; save format 30; 68
+  harnesses.** What version 11 now says that is not so, on top of 0.7.24's to
+  0.7.28's lists (`runs/ui10-docs-pass.md`, "The manual", with what each
+  should say):
+  - the masthead, its table and the footer (build 0.7.29; 239 files, about
+    206,400 lines; 68 harnesses plus the playtest, AllChecks listing 69; the
+    suite on 1 October, 68 run in 513 s beside the playtest, 67 green,
+    HealthCheck red; BuildMenuCheck 73 of 73 on its own);
+  - §21's "The instrument panel", false throughout about the pages: the banded
+    meter, the streams' table, "a box", and the freight bill's "half that
+    leaves inside the band" (which was the shippers' saving when the railway
+    carried everything).
+
+  It wants §21's panel rewritten for the redrawn tab, or a §22 subsection "The
+  Infrastructure screen redrawn (0.7.29)": the frame and its doors both ways
+  with Build; Roads' curve with the city's dot and the walk from trips to the
+  road; Transit's funnel and the line that reconciles Build's ring with who
+  rides; the railway's bill three ways and its quote on a gauge; Freight's bar
+  a good; every table behind "details"; InfrastructureCheck's tenth section.
+  §24's rows (InfrastructureCheck 10; RailCheck's bill three ways, the reload
+  and an older save loaded as not known; ReadPathCheck) and the counts
+  (206,384 lines; 1,250 dials; 6,435 labelled assertions). It could add to §20
+  (the road as one pair everywhere; the room before it slows and the spare on
+  the load the curve reads, where they read the raw trips: 585 trips of room
+  on a road 161% full), §21's railway (the bill three ways, allowed and abroad
+  kept across a save in its extras and "not known" from an older one, B1),
+  §22's problem list (the ROADS row's pair; the drawer's road line in that
+  row's colour), §23's saves (the railway's two extras), §7 or §16 (the
+  wedge's four reads) and §25 (B1, B13, `Money.money(NaN)`, Services' ROADS
+  figure, the flow's wording against the transit blend; not "the road getters
+  mix", which B3 fixed).
+- **And 0.7.30 as of 2026-10-01: the sectors as flows — the Sectors screen
+  redrawn (fifteen cards under four figures; each business as a flow, a
+  waterfall, two bars and an owners card shared with the Bank, a cash bridge,
+  and its investors in one line), `SectorFlow` and SectorFlowCheck,
+  `wordKind()`, `operations()` in two halves; 241 files, 209,056 lines; save
+  format 30; 69 harnesses.** What version 11 now says that is not so, on top
+  of 0.7.24's to 0.7.29's lists (`runs/ui11-docs-pass.md`, "The manual", with
+  what each should say):
+  - the masthead, its table and the footer (build 0.7.30; 241 files, about
+    209,000 lines; 69 harnesses plus the playtest, AllChecks listing 70; the
+    suite on 1 October, 69 run in 415 s beside the playtest, 68 green,
+    HealthCheck red; BuildMenuCheck 73 of 73 on its own);
+  - §10's *Its owners* block, false in shape: since 0.7.30 it is ITS OWNERS, a
+    card on the Balance sheet page, which the Bank's Capital & owners page
+    draws too (who holds it as a bar, the figures, the order book behind
+    "details" in plain figures, the chart, the regime behind its (i));
+  - §22's Sector economy paragraph ("Since 0.7.4 the Sector economy list draws
+    on each card …"): fifteen cards in three columns in Build's order under
+    four figures, each with its icon, group, running-at bar and investors'
+    word;
+  - §22's "The statement opens": the Sectors screen keeps each business's
+    opened lines too, and its waterfall's Revenue, Bought in, Wages and Sales
+    tax bars open them;
+  - §24's "The sector pages are the only screen whose text a harness reads":
+    they are pictures now, their figures held by SectorFlowCheck and
+    BuildCardCheck, their old lines by SectorBooksCheck.
+
+  It wants a §22 subsection "The Sectors screen redrawn (0.7.30)" (Jerus's
+  ask; the list; the frame; Operations, Income, Balance sheet, Cash & debt and
+  Investors; the fixes B1–B4, B7–B11 and B14; `SectorFlow`, the `Pieces` and
+  icons it added); §24's rows (SectorFlowCheck new; BuildCardCheck section 8;
+  ReadPathCheck; SectorBooksCheck, whose "no plant standing" passes as words)
+  and the counts (241 files, 209,056 lines; 1,282 dials; 6,463 labelled
+  assertions in 70 harness files). It could add to §6 (the fill and the five
+  as a cascade whose last step is the rate; B3's note; B4's "no plant
+  standing"), §8 (the investors' word in twelve kinds, `sectorInvestors()`)
+  and §25 (B6, B12, B13, the credit book quoting without the record after a
+  load, a sector with nothing standing quoted 26–28%, the docs pass's flags
+  1–3).
+- **And 0.7.31 as of 2026-10-01: earned, surplus, banked — the Government
+  screen redrawn (five figures; the two rings with THE BALANCE; the bridge FROM
+  EARNED TO BANKED; Revenue and Spending as ranked bars with doors; THE DEBT,
+  THE SERVICES THAT CHARGE and PENSIONS; Output led by the GDP layers), the
+  city's money named EARNED, SURPLUS and BANKED everywhere ("+$X earned a
+  month"; the drawer's "Earned"), `getEarnedToBudget()` and TreasuryCheck §8,
+  the GDP history seeded on load; 241 files, 210,334 lines; save format 30; 69
+  harnesses.** What version 11 now says that is not so, on top of 0.7.24's to
+  0.7.30's lists (`runs/ui12-docs-pass.md`, "The manual", with what each should
+  say):
+  - the masthead, its table and the footer (build 0.7.31; 241 files, about
+    210,000 lines; 69 harnesses plus the playtest, AllChecks listing 70; the
+    suite on 1 October, 69 run in 377 s beside the playtest, 68 green,
+    HealthCheck red; BuildMenuCheck 73 of 73 on its own);
+  - §12's *What the treasury actually did*, false in shape: since 0.7.31 the
+    Overview's FROM EARNED TO BANKED is three tiles, EARNED (the tax take less
+    the running programmes plus the utilities' net, at today's rates), the
+    budget's SURPLUS and what the cash BANKED, with every step named and each a
+    door: from EARNED to the budget `Game.getEarnedToBudget()` and "Today's
+    dials, not the month's" (TreasuryCheck §8); from the budget to the cash
+    paper raised and repaid, every journal line by name and "Not accounted
+    for"; the old statement behind "details", its "of the change" column cut.
+    And "the city's own repair bill and the transit fares are on the Government
+    screen and not in the budget's totals, which are journalled by name until
+    they are": neither is drawn as a budget line now (repairs had made the key
+    add to 111%), both are named under the totals as "outside the budget's
+    total" and on the bridge, and carrying them in `NationalAccounts` is a
+    model batch for Jerus;
+  - §22's "The inbox, and the money on the screen" (the bridge "opens into the
+    treasury's journal and lists the arrears by line": every journal line is a
+    step on the bridge card now, and the arrears are rows of the CENTRAL BANK
+    card) and "The statement opens" (the bridge's last row opening into the
+    journal; "every other screen's opened lines still snap shut": the
+    Government tab keeps its opened lines, folds and bridge columns through a
+    month, as Sectors has since 0.7.30);
+  - §22's "Colour, type, the header and the menu": the line under the cash
+    reads "+$1.5B earned a month", its (i) naming EARNED, SURPLUS and BANKED
+    and the steps between them; the City overview's vitals read Cash · Earned ·
+    Population; a loaded city's GDP is its own year at once.
+
+  It wants a §22 subsection "The Government screen redrawn (0.7.31)" (Jerus's
+  two asks, "the others are still full of text and the design could be more
+  intuitive and fun if you get what i mean" and "the money one has is barely
+  visible to see as well as ones income"; the three names everywhere; the five
+  figures; the Overview's rings, THE BALANCE, the bridge, the central bank and
+  AGAINST THE ECONOMY; Revenue and Spending as ranked bars that open into who
+  pays, with doors to each line's setting; the three cards; Output led by the
+  layers; the fixes B2–B6, B9 and B11–B15; Pieces' split ring, ranked bars and
+  bridge); §12 GDP's load sentence (until 0.7.31 every load reset the record to
+  one month, 36.4% for 34.4%, "Months recorded 1", the header's GDP tile "$0 /
+  yr · first year"; since then `NationalAccounts.seedHistory()` puts the last
+  ten years back from the graph history, SaveFileCheck holds it, and the traces
+  did not move); §24's rows (TreasuryCheck's "and EARNED walks to the budget";
+  SaveFileCheck's year after a load; ReadPathCheck's walk and EARNED read
+  without striking), "What no harness looks at" (the Government tab not seen
+  rendered) and the counts (241 files, 210,334 lines; 1,317 dials; 6,476
+  labelled assertions in 70 harness files). It could add to §25 (B10, B5's G,
+  D4's model batch, D11's trailing year, D18's payroll of every city post).
+- **And 0.7.32 as of 2026-10-01: finances at a glance — the Finances screen
+  redrawn (the hub as the debt's dashboard: five figures, WHEN IT FALLS DUE by
+  calendar year with NEXT DUE beside it, the rollover and the rescue said once,
+  six area cards; every page one picture first; Issued a receipt; "Finances ›
+  Default abroad" its own page), `DebtManager.ladder()` and ForeignDebtCheck
+  §9; 241 files, 211,757 lines; save format 30; 69 harnesses.** What version 11
+  now says that is not so, on top of 0.7.24's to 0.7.31's lists
+  (`runs/ui13-docs-pass.md`, "The manual", with what each should say):
+  - the masthead, its table and the footer (build 0.7.32; 241 files, about
+    212,000 lines; 69 harnesses plus the playtest, AllChecks listing 70; the
+    suite on 1 October, 69 run in 357 s, 68 green, HealthCheck red;
+    BuildMenuCheck 73 of 73 on its own);
+  - §13's "The dial, and the curve on it": the borrow page "lists the curve one
+    row per maturity" and its chips "step by ten"; since 0.7.32 the terms at
+    home are columns of their rate, re-struck for the amount asked, and chips
+    abroad, and Your rate draws THE CURVE at ten maturities;
+  - §13's "Rolling what falls due": the setting "on both borrow pages" is said
+    once, on the hub, since 0.7.32, with next month's bar (netted, the central
+    bank's own, each issue, from the cash: `Rollover.Plan.fromCash()`) and the
+    last roll dated by the month it fell due;
+  - §13's "Borrowing in somebody else's money": the confirmation is "Finances ›
+    Default abroad", two equal cards, reached from Borrow › Abroad, and the
+    rail lights Finances, not Trade; the scar is on the city's premium abroad
+    only;
+  - §22's "The inbox, and the money on the screen": the Money page "with a year
+    of each", the borrow pages carrying the rollover and the rescue, and the
+    book page saying who holds each bond;
+  - §22's "City History's chart" ("the Bank tab's six, Finances' two":
+    Finances' charts are City History's own since 0.7.32) and "The decision
+    log" ("shown nowhere but the chart": its borrowing decisions are meant as
+    flags on OWED AND THE RATE, which a small chart does not draw until
+    0.7.38).
+
+  It wants a §22 subsection "The Finances screen redrawn (0.7.32)" (Jerus's
+  ask; the hub as the debt's dashboard, one verdict each; the ladder and NEXT
+  DUE; the settings once; the six areas; every page one picture first; Issued;
+  D$ and US$; the fixes, B1–B19 and the three found on the way;
+  `Pieces.columns()` and `setting()`; PAPER, BANKNOTE and SAFE), §22's NEEDS
+  YOU doors (B8), §24's ForeignDebtCheck §9 row and the counts (241 files,
+  211,757 lines; 1,375 dials; 6,501 labelled assertions in 70 harness files),
+  and could add to §25 (the default page's 10 points; a buyback quote that
+  reprices the market; the bank's capital-limited room; a new issue's holders a
+  month late; the rollover's record without the central bank).
+- **And 0.7.33 as of 2026-10-01: the bank at a glance — the Bank screen redrawn
+  (an Overview: the stance as a banner, the capital gauge on the ratio that
+  binds, eight figures with HOW FULL, the ladder of its rates in parts; six
+  pages, each one picture first, the old statements under "details"),
+  `quoteParts()`, a sector's rate after a load fixed on the load path; 241
+  files, 214,266 lines; save format 30; 69 harnesses.** What version 11 now
+  says that is not so (`runs/ui14-docs-pass.md`, "The manual"):
+  - the masthead (build 0.7.33; about 214,000 lines; the suite 69 run in 333 s,
+    68 green; BuildMenuCheck 73 of 73);
+  - §14's "The Bank tab", false whole: the landing's status sentence, its
+    scorecard with the capital ratio on a bar, the rate ladder labelled in
+    points, "Behind it are six pages", "Since 0.7.14 the landing carries the
+    resolution and the preferred offer" (cards at the top of every page now),
+    and the branch verdict that could disagree with its own figures (the
+    planner's since 0.7.33);
+  - §22's "City History's chart" ("the Bank tab's six") and "The decision log"
+    (the Bank's ITS RATES is meant to carry the central bank's and the bank's
+    decisions, not drawn as built until 0.7.38).
+
+  It wants a §22 subsection "The Bank screen redrawn (0.7.33)", §14's B5
+  sentence (since 0.7.33 a city just loaded quotes each sector with its record
+  and the book's concentration; until then Mining read 3.07% after Continue and
+  6.38% a month on, the simulation never lending at the wrong rate), §24's
+  BankCheck §13b row and the counts (1,398 dials; 6,522 labelled assertions),
+  and could add to §25 (the Sectors rate bar; a true minus inside the
+  statements; the leverage ratio as a History series and `bankCapitalRatio`
+  clamped at 1,000%; the chart flags).
+- **And 0.7.34 as of 2026-10-01: buttons that ask to be pressed — `Pieces`'
+  action button on every Build and Buy, the door pill on every link to Build or
+  the land office, Build at none choosing one; Finances' "later" drawn broken;
+  the Sectors list's one line after a load; `BuildAdvice.quoteTotal()`; 241
+  files, 214,752 lines; save format 30; 69 harnesses.** What version 11 now
+  says that is not so (`runs/ui15-docs-pass.md`, "The manual"):
+  - the masthead (build 0.7.34; about 214,750 lines; the suite 69 run in 317 s,
+    68 green);
+  - §19's "The catalogue" (the card's Build, a small grey button disabled at
+    none: since 0.7.34 a button the card's width that says the order, in four
+    looks, "Build · choose how many" at none, a double-click one press);
+  - §13's "When the treasury cannot pay for an order" (each offer ends in
+    "Build 3 · $37.5M" over "issues the 20-year bond, then builds");
+  - §18's "Land" (a plot's Buy, "Buy the next N" and the funding offers say
+    their price and their paper; a double-click buys one plot).
+
+  It wants a §22 subsection "Buttons that ask to be pressed (0.7.34)" (Jerus's
+  words; the two pieces; where each sits; what was left as it was; the
+  double-click rule; Build and the land office in one pink; no keyboard focus),
+  the Finances ladder's broken "later" and the Sectors list's line in their §22
+  subsections, §24's counts (ReadPathCheck reads `quoteTotal()`; 1,404 dials;
+  6,522 labelled assertions), and could add to §25 (the HELD line's "›"; the
+  land office's pink; focus).
+- **And 0.7.35 as of 2026-10-02: trade at a glance — the Trade screen redrawn
+  (five pages under five figures; the goods off the businesses' books; the
+  month as steps and the river; the rate on City History's chart with parity;
+  the forces; the reserves and the exchange), one parity rule for the tab, the
+  drawer and the header, `fxParity` a new History series; 241 files, 216,714
+  lines; save format 30; 69 harnesses.** What version 11 now says that is not
+  so (`runs/ui16-docs-pass.md`, "The manual"):
+  - the masthead (build 0.7.35; about 216,700 lines; the suite on 2 October, 69
+    run in 297 s, 68 green);
+  - §16's "The city's dollar, and what moves it" ("The Trade tab's forces page
+    shows the four terms": The currency's WHAT IS MOVING IT, the model's
+    previews, the push and the pull adding to the move);
+  - §16's "The vault" (the Exchange page's founding line; the reserves in
+    0.7.35's shape, `THIN_COVER` the model's, "under 0.1 months");
+  - §16's "And the header carries them" (RATE's colours on the one parity rule
+    since 0.7.35);
+  - §22's forces sentence, "City History's chart" (a Parity line; the Trade
+    chart without full screen) and "The summary is a problem list" (the
+    currency row's rule and door);
+  - §23's year book (an `fxParity` column).
+
+  It wants a §22 subsection "Trade & the world (0.7.35)" and §24's counts
+  (ForeignCheck's goods footing and §15, RailCheck, HistoryCheck; 1,448 dials;
+  6,548 labelled assertions), and could add to §25 (D4; B14; the small charts'
+  flags; the drawer's 15%; the D25 words).
+- **And 0.7.36 as of 2026-10-02: policy at a glance — the Policy screen redrawn
+  (a hub of four areas; dial cards whose before → after follow the thumb; the
+  staged tray and THE BUDGET), `PolicyPreview` and PolicyPreviewCheck, the
+  floor in today's money, PROMISES without the waived tuition; 243 files,
+  218,729 lines; save format 30; 70 harnesses.** What version 11 now says that
+  is not so (`runs/ui17-docs-pass.md`, "The manual"):
+  - the masthead (build 0.7.36; 243 files, about 218,700 lines; 70 harnesses
+    plus the playtest, AllChecks listing 71; the suite on 2 October, 70 run in
+    283 s, 69 green; BuildMenuCheck 73 of 73);
+  - §12's "Setting them: five pages, one proposal" (the hub, the dial cards,
+    the staged tray and THE BUDGET as `PolicyPreview`'s; every tax at once
+    parted; WHO PAYS; the payslip);
+  - §11's "Four bands, one price each" (the floor in today's money and the
+    Wages ladder) and "The price of a place" (the tray, WHO CAN AFFORD A PLACE,
+    the statement footing);
+  - §4's "The price at the door" (Health's corner chip, WHO PAYS FOR CARE,
+    "Fees cover 0%" no longer said of a service that cost nothing);
+  - §12's PROMISES (without the waived tuition), §22's money page, and §22's
+    "The interface is a package" (`Ladder`'s marks, `Levers`' dial card,
+    `Pieces`' tray).
+
+  It wants a §22 subsection "Policy (0.7.36)", §24's counts and a
+  PolicyPreviewCheck row (1,506 dials; 6,615 labelled assertions in 71 harness
+  files), and §25's B8, the inflation colours and the founding floor's last
+  readers.
+- **And 0.7.37 as of 2026-10-02: City History finished — the last rail screen
+  redrawn (a fixed frame over a page at the stage's width; the pins as cards; a
+  card a line; HARD TIMES AND YOUR DECISIONS; 217 lines; PRICES THIS MONTH),
+  `YearBook.running()` and `ChartModel.onAxis()`; 243 files, 220,058 lines
+  after its docs pass; save format 30; 70 harnesses.** What version 11 now
+  says that is not so (`runs/ui18-docs-pass.md`, "The manual"):
+  - the masthead, its table and the footer (build 0.7.37; 243 files, about
+    220,100 lines; 70 harnesses plus the playtest, AllChecks listing 71; the
+    suite on 2 October, 70 run in 312 s, 69 green, HealthCheck red;
+    BuildMenuCheck 73 of 73 on its own);
+  - §22's "City History's chart", in 0.7.37's shape: the head with "Write the
+    year book" on 0.7.34's button and its result card; the strip (THE CITY,
+    HARD TIMES, RUNNING NOW with a chronic episode last, YOUR DECISIONS); the
+    page at the stage's width with the pins as cards; WHAT EACH LINE DID, a
+    card a line in neutral ink with a range bar (B1); HARD TIMES AND YOUR
+    DECISIONS with the by-kind details; PICK WHAT TO DRAW's 217 lines (148
+    before); PRICES THIS MONTH; the founding month's decisions on the lane
+    (B4; on Trade's, Finances' and the Bank's lanes too since 0.7.38); the
+    episodes' red by `YearBook.isSevere()`;
+  - §22's "The decision log" (Policy's RECENT DECISIONS and City History's
+    lists show it too), "The interface is a package" (`Pieces`' chart card
+    head and range bar, `Icons`' episode and decision icons; the reading
+    cards grow a card a line) and "Colour, type, the header and the menu" (a
+    tile clicked on History lands at the chart);
+  - §12's "GDP" (the four parts lines of their own) and §23's year book (the
+    button in History's head, its result a card with a "×").
+
+  It wants §24's counts and ChartCheck's sections 3 and 6 (243 files, 220,058
+  lines; 70 harnesses plus the playtest; 69/70 in 312 s; 6,626 labelled
+  assertions; 1,520 dials) and "what no harness looks at" (City History
+  redrawn, not seen rendered), and could add to §25 (B5, the epidemic; the
+  bank's capital ratio drawn as a flat 1000%; the pins without flags; the ★
+  decisions of `runs/ui18-notes.md` §4).
+- **And 0.7.38 as of 2026-10-02: the loose ends of the redraw — the small
+  charts' flags, the founding month on every lane, "under 0.1 months" of cover
+  through one formatter, the floor in today's money on People, the fare on the
+  dial card, and six more display fixes; 243 files, 220,148 lines by the
+  implementer's Maps; save format 30; 70 harnesses.** Its docs pass is running,
+  so its list of what version 11 now says that is not so will be in
+  `runs/ui19-docs-pass.md`, "The manual". From the implementer's notes: the
+  masthead (build 0.7.38; 6,632 labelled assertions; 1,522 dials); the 0.7.37
+  list's lane (every chart's founding month on its lane, the Bank's ITS RATES
+  and Finances' OWED AND THE RATE drawing their flags); "under 0.1 months" of
+  cover on Finances and in the drawer, and the drawer's cover and "vs parity"
+  on Trade's rules; the floor in today's money on People, History's line and
+  the year book's column named founding money; Infrastructure's fare as a dial
+  card; a shut-out sector's red name on the Bank's ladder; and for §25, the
+  Bank chart's drag and the sector (i)s' drift.
+- **And 0.7.39 as of 2026-10-02: the fund as a brokerage — Finances › The
+  city's fund as four pages (Portfolio, Search, Activity, Rules & cash) and a
+  page a security with YOUR POSITION and the order ticket; `FundLedger`, each
+  holding's adjusted cost base by the average-cost method, its realized P&L
+  and its income; `FundView`; the hand's price and cancelling; a hand buy
+  stopped at the 10% cap and its cash held from the rule; three History
+  series; save format 30; 71 harnesses.** What version 11 now says that is
+  not so (`runs/ui20-docs-pass.md`, "The manual", eleven sections; with the
+  fixes' one addition to §12, `runs/ui20b-notes.md` §10):
+  - the masthead, its table and the footer (build 0.7.39, save format 30; 247
+    source files, about 225,500 lines after the fixes, 225,090 at the docs
+    pass; 71 harnesses plus the playtest, AllChecks listing 72; the suite on
+    2 October, 71 run, 70 green, HealthCheck red, 299 s at the docs pass and
+    313 s after the fixes; BuildMenuCheck PASS 73 of 73 on its own);
+  - §10's "One book for each company", its last bullet: the rule at fair
+    value, then the player's hand at fair value or a price the player names
+    (the best bid, the best ask, the last trade, or fair value in steps of
+    1%), a buy no further than the room under the 10% cap, its money held out
+    of the cash the rule's bids settle with from the moment it is placed; a
+    waiting order can be cancelled; one that cannot be posted lapses, and the
+    fund's record says why;
+  - §10's "The firms sell bonds", its last paragraph: "The player does not
+    trade, bar the fund's hand" stands; where trading shows gains the fund's
+    Search and a page a security (its price chart, KEY STATS, THE BOOK, its
+    record, YOUR POSITION and the order ticket);
+  - §12's "The city's fund": "never more than 10% of any company" now stops a
+    hand buy too, counting what the fund holds and every order it has on the
+    company as if filled, the rule's bid making way for the hand's (★B1, and
+    the fixes' ★); the hand at fair or a price it names, cancellable before
+    the step, a buy's money held from the rule's bids (★B9); "Order: buy … at
+    …" in the decision log, fills and lapses on Activity; four pages and a
+    security's page where there were Holdings and By hand; a new paragraph on
+    the cost basis (ACB by the average-cost method; one lot a company's
+    market book, the rule's and the hand's pooled, one for the rescue book,
+    one a bond; income apart; what a sale, a maturity, a write-down and the
+    rescue realize; a split leaves the ACB; bookkeeping only, the eight
+    traces 0.7.38's to the byte; an older save at market value in its load
+    month, tagged "cost from"; P&L green and red and nothing else, ★D7); its
+    measured paragraph could gain the playtest's ledger line;
+  - §14's "When the bank fails": the fund's market-book bank shares go with
+    everyone's, for nothing, and their cost is realized as a loss; the rescue
+    book sold from the bank's page under the fund, the market book first,
+    each at its own cost, the page showing both books and their sum;
+  - §22's "City History's chart" (the fund's worth on Portfolio and a
+    security's price on the big chart, with the fund's decisions as flags;
+    the three series kept but not on the picker) and "The decision log"
+    ("Order: …" and "Cancelled: …"; fills and lapses on Activity);
+  - §23's "The year book, as text and as CSV" (three columns, the fund's
+    worth and what was put in and taken out, from 0.7.39) and "Saves" (no
+    bump; the ledger and the hand's posted orders inside the fund's own
+    state; an older save's ledger seeded at its load, one row saying so).
+
+  It wants §24's counts and rows (247 files, 225,525 lines after the fixes;
+  71 harnesses plus the playtest; 70/71; BuildMenuCheck 73 of 73; the eight
+  traces byte-identical; 6,782 labelled assertions after the fixes, 6,735 at
+  the docs pass; 1,557 dials; a FundLedgerCheck row, the cap counting every
+  order among it; FundCheck's row, a named price and a cancel; SaveFileCheck
+  · ReadPathCheck's row, the ledger through a save and a 0.7.38 save seeded;
+  LongPlaytest's ledger identity; "what no harness looks at": the fund's
+  pages not seen rendered), and could add to §25 (★D2, ★D7, ★B1 with the hand
+  first, ★B9, `ACTIVITY_ROWS` 1000 and `BARGAIN` 5%; B3's stale mark, B6's
+  precision, B10's idle rule, B11's cheap bonds; the fund's worth not on
+  History's picker; `Money`'s "$1000k").
 
 ~~**The repo has no README.**~~ **Written 2026-09-12** — `README.md` at the repo
 root, verified byte-for-byte on the PC: what the game is, requirements, build
@@ -2131,6 +6373,532 @@ Ranked by how likely they are to read as "this game is broken".
 - **`-$0` prints for any debt-free household**, and the orphan bands are three
   orders of magnitude apart — two of the four anomalies read off slot 3 at month
   2305; see the top entries.
+- ~~**Two incomes on screen.** The header's TREASURY line is `Game.getIncome()`,
+  the month's net income: what the budget earned. Finances' TREASURY cell is
+  `Game.getTreasuryChange()`, the change in the cash, which also counts the
+  city's own building and land, borrowing raised and repaid, and the rest of
+  the treasury's month. In Jerus's city the tile said +$1.5B while Finances
+  and Government said the cash grew $2.3B (`playing-0-7-23-ui-notes.md` §1).
+  Since 0.7.24 the money block's tooltip names its figure and gives the
+  change in the cash beside it; the figure itself is unchanged
+  (`runs/ui5-notes.md` §8.1). Still two figures a player sees.~~
+  — **closed in 0.7.31** (`earned-surplus-banked.md`): three figures, named
+  everywhere: the header's line is what the month EARNED ("+$X earned a month";
+  the drawer's "Earned"), beside the budget's SURPLUS and what the cash BANKED;
+  the header's (i) names all three, and Government's FROM EARNED TO BANKED
+  names every step between them, the first column from
+  `Game.getEarnedToBudget()`. D2's wording is for Jerus to confirm (section 0).
+- **THE BUILD CARD'S TWO BUGS AND ITS WORDING** (found 2026-10-01 by 0.7.25's
+  docs pass and implementer: `runs/ui6-docs-pass.md` flags 1–5,
+  `runs/ui6-notes.md` §8.7–8.9; `one-card-for-every-building.md` §10), none
+  changed:
+  - **The bank's branch card prints a founding constant.** Its detail ("brings
+    $32.0M of shareholders' capital") reads `Bank.PAID_IN_PER_BRANCH`, not the
+    bank's own `getPaidInPerBranch()`, which `redenominate()` scales; after a
+    currency reform the card states the old unit's figure. One read plus a
+    harness line (BuildCardCheck does not hold the detail line); behaviour,
+    so left.
+  - **"this one:" is hidden by a substring.** `Investors.showOwn()` tests
+    `!word.contains(building)`, and "Bakery" is inside "Industrial Bakery",
+    the only such pair in `buildings.json`: when Industry's word names an
+    Industrial Bakery, the Bakery card loses its own gate. A whole-name test
+    would fix it.
+  - **Wording, Jerus's:** "nobody licensed" on the quote whenever the spare
+    licences fall short, even with some spare (20 against the 39 one
+    Engineering Services Office needs; "too few licensed" would always be
+    true; it is the spec's word); "you will be offered a bill" on every
+    card's quote line now (the short-of-cash page offers a 20-year bond
+    first; carried from 0.7.24); the maker groups' "the city used N t of
+    steel" prints the month's demand, which a short market did not meet
+    ("wanted" would match the Restaurants note); "1 business college" beside
+    "13 business-college graduates" (one post is `jobLabel()`, several
+    `jobPlural()`); a maker's hero names its first good in `Good`'s order,
+    so the Snack & Oils Plant "makes 8,000 kg of cooking fats" with "and
+    10,000 kg of snacks" in the detail.
+  - Not a bug: in a city 99.9% built over nearly every industry and farm card
+    reads "this one: no land" and quotes "short N sq ft of land". That is
+    land as bar 2 doing its job; his 95% city will show fewer.
+- **THE LAND OFFICE'S WORDING** (found 2026-10-01 by 0.7.26's docs pass:
+  `runs/ui7-docs-pass.md` flags 1, 2, 5 and 6; `the-land-office-redrawn.md`
+  §7), none changed:
+  - **The value bar's tick says "the middle of the nine a square foot"**
+    (`LandScreen.plotCard()`). True while `LISTING_SIZE` is 9, which it
+    always is (the listing refills to it), but it is the one player string
+    that names the count, after `offerInfo()` was changed to read
+    `LISTING_SIZE`. The same "nine" is in LandScreen's header and banner and
+    GameVersion's 0.7.26 entry.
+  - **The Margin card's (i)** works "Investors pay ×N the ground's price at
+    the founding rate, because X% … is built on" live from
+    `scarcityMultiplier()`, while "investors pay" beside it was struck at the
+    month's re-price or the last purchase. On a city that builds between
+    presses, the multiple and the two prices on the card need not multiply
+    out exactly.
+  - **One plot's funding tooltips** say "The vault is short of them" / "The
+    cash is short of them" (`next()`): a number slip.
+  - **Build's no-land and no-deposit pages' buttons read "Go to the Land
+    Office"**, where the rail, the title and SectorScreen say "Land office"
+    (older than the batch).
+- **PEOPLE AND HOUSEHOLD MONEY: WORDING AND ODD CASES** (found 2026-10-01
+  by 0.7.27's docs pass and implementer: `runs/ui8-docs-pass.md` flags 1–4,
+  6, 9 and 10; `runs/ui8-notes.md` §9.4; `people-at-a-glance.md` §7), none
+  changed:
+  - **The hunger is people times how far short, not a headcount.**
+    `getHungerRate()` sums `people × (1 − ate / subsistence)`, so a city
+    where everybody ate 58% of a basket reads 42%, not 100%. Yet the
+    drawer's HUNGRY says "42.2% of people", its tooltip "42.2% of the city
+    ate less than a basket this month", GOING SHORT's dials "share of the
+    city eating less than a basket", and "49 can't afford" is the same
+    people-equivalent. In the 2,400 city the shops handed over 3% of what was
+    planned, so far more than 42.2% of people ate less than a basket. "The
+    city is 42.2% short of its baskets" would be exact; a wording decision
+    for Jerus, not a slip.
+  - **Pensions' red sentence** ("They are eating less than they need, and
+    that is in the sick rate.") fires on `isGoingShort(RETIRED)`, a plan
+    short of what the row wanted, so a pensioner row that bought a full
+    basket and less than it wanted reads red. Spec ★16 chose this form; D3
+    measures the rows below the rule by the basket instead.
+  - **The matrix's "working households" row** sums the rows that have a tier
+    (D11), but its last cell, under "total", is every household with the
+    retired: 24,941 working against 34,667 on one row.
+  - **Services disagrees with itself on care cover.** THINNEST COVER reads
+    `Healthcare.getCoverage()`, net of the priced out, and its note still
+    says "<care> — build that next" when what binds is the fee; the same
+    page's General care / Childcare / Senior care "Covers" lines read the
+    beds, and so do NEEDS YOU and Build (0.7.27's D16). Equal until fees
+    bite. ServicesScreen was left alone for the 0.7.28 merge.
+    **Services' half closed in 0.7.28:** its rings read `getCoverage()` (its
+    D4), the priced out a step of the funnel; NEEDS YOU and Build still read
+    the beds (D16, CONFIRM in section 0).
+  - **The why sentence's "People are leaving. N% of the city's payroll sits
+    in trades that have been shrinking…" fires on any departure**, crime's 5
+    in the 600 city among them, while the decline share can be 0 (it did not
+    fire there: housing won first). Kept word for word;
+    `getLastWorkDepartures()` would make it true.
+  - **The month's key** reads "died " + the part's name: "died of age",
+    "died of illness they did not get over", "died killed", "died aged out
+    at 120".
+  - **"Nobody feeds the orphans"**, the alert's new title, shows when
+    anybody has no home and there are no orphans: the condition is the old
+    sentence's (`orphans >= .5 || unhoused >= .5`), and its first sentence
+    speaks of the orphans.
+  - **When the evacuation guard bites** (a month that would remove more than
+    the whole population), `getLastWorkDepartures()` is scaled with the mix
+    and the broke and the crime leavers are not, so the three causes can add
+    to more than `getLastDepartures()`. The Moved-out bar stacks its parts in
+    proportion, so its height is right; the popover's "Moved out: N - W for
+    want of work, B broke, C driven out by crime" would not foot.
+- **SERVICES: WORDING AND ODD CASES** (found 2026-10-01 by 0.7.28's docs pass
+  and implementer: `runs/ui9-docs-pass.md` flags 1, 3 and 8;
+  `runs/ui9-notes.md` §8; `services-at-a-glance.md` §7), none changed:
+  - **The ADULT STUDY lane draws a chevron from College to University**
+    (`educationOverview()`), a sequence the model does not have: both take
+    diploma-holders (`EducationType.requires()`). The hint under the heading
+    now says "go on to college or to university"; dropping the chevron is a
+    code change.
+  - **Death care's "Set the fee ›"** opens Policy › Promises › Health, whose
+    dial does not move the funeral fees (that page prints them as "Funeral
+    fees, unscaled"). The (i) beside the door now says so; whether the door
+    belongs on that line is a design call.
+  - **`Money.power()` can print four figures at a boundary:** 999.6 kW rounds
+    to "1,000 kW", and 99.96 MW reads "100.0 MW"; its javadoc says three
+    figures at most. Display only.
+  - **A course's "seats free" is struck after the month's enrolment** (the
+    staffed seats less those in flight, this month's intake among them), so
+    the funnel's "enrolling" step is not the month's own intake; the old page
+    had the same. A model read for the month's intake would make it so.
+  - **Medical school "held by students" while NEEDS YOU lists it red** (the
+    fixture city: 408 seats, 1,103 would come): this month the enrolment rate
+    binds, in the long run the seats would. Both are the model's; the chip
+    stays grey, as the spec says.
+  - **Month figures not saved:** the licences, the graduates and Healthcare's
+    served; a loaded city's Services pages say "not recorded yet" or "after a
+    month" until a month runs, instead of 0.
+  - Closed by 0.7.29: the road's getters mixing the raw and the effective load
+    (`runs/ui9-notes.md` §8.5; 0.7.29's B3).
+- **INFRASTRUCTURE: WORDING AND ODD CASES** (found 2026-10-01 by 0.7.29's docs
+  pass and implementer: `runs/ui10-docs-pass.md` flags 1–3 and 10;
+  `runs/ui10-notes.md` §8.4; `the-road-in-one-picture.md` §7), none changed:
+  - **The flow is worded as every business's output, and with transit it is
+    not.** The Roads hero's "every shop, plant and site works at 56% of its
+    output", FLOW's "congested: output at 56%", the congested words and
+    Services' road card say so, but a sector's commuters who ride are not in
+    the jam (`throughputFor(mix)`): in his city, 41% riding at 83% flow, a
+    commuter-heavy shop works at about 90%. Construction and freight work at
+    the plain flow. The (i) now says so; the docs pass suggests for the hero
+    "every site works at 56% of its output; a shop or plant at that or better
+    as more of the city rides transit".
+  - **Freight's "BULK · rail-eligible"** implies goods are not; across the
+    boundary both are, and `Rail.haul()` takes goods once bulk is served.
+    "BULK · railed first" would say what the model does.
+  - **Services' ROADS figure is still the flow alone** with its status word
+    ("56% congested"; 0.7.29's decision 5, the brief having limited
+    ServicesScreen to the card). The pair there, if wanted.
+  - **`Money.money(NaN)` prints "$0"** (`Math.round(NaN)` is 0).
+    Infrastructure guards with its own `moneyOr()`; any other screen that
+    shows a figure which can be NaN (the railway's allowed bill, what went
+    abroad or was kept, after an older save) would print "$0".
+- **SECTORS: WORDING AND ODD CASES** (found 2026-10-01 by 0.7.30's docs pass
+  and implementer: `runs/ui11-docs-pass.md` flags 1–3 and 5;
+  `runs/ui11-notes.md` §8; `the-sectors-as-flows.md` §7), none changed:
+  - **Three leverage verdicts for one figure.** OWES, in the frame, is amber
+    over 0.6; the credit grid's "Leverage" line amber over 0.5 and red over
+    0.7 (the old page's literals); the LEVERAGE bar green to the bank's watch
+    line (0.9), amber past it and red at the default point (1.5). A sector at
+    0.8 reads amber in OWES, red in the grid and green on the bar. The model's
+    lines are the bar's.
+  - **Two "bank loans" on Cash & debt:** the debt mix's is
+    `getTermLoanPrincipal()` (no mortgages, no interim); the grid's "Bank
+    loans" line is `getLoanPrincipal()` (both in it), and "...its debt in
+    bonds" divides by it. On the landlords' page they differ by the mortgages.
+    A label or the figure, Jerus's choice.
+  - **CAN IT BORROW THE REST reads the ban alone:** past the default point the
+    bank lends nothing and the tile still says yes (the docs pass changed only
+    the line under it, now "no ban: at its own rate, within the bank's
+    limits"). A "no" there is a screen change.
+  - **The Bank's Capital & owners page has two headings in a row,** "Its
+    owners" and the card's own "ITS OWNERS". For the PC look.
+  - **A sector with nothing standing is quoted 26–28%** (its risk 24.60 points
+    at no leverage); OWES says "owes nothing", and the rate bar still shows
+    the quote.
+  - **Fractions of a van a month** (Retail's vans, the railway's rolling
+    stock) on the production rows: the flow says "under 1 van".
+- **GOVERNMENT: WORDING AND ODD CASES** (found 2026-10-01 by 0.7.31's docs pass
+  and implementer: `runs/ui12-docs-pass.md` flags 4–8; `runs/ui12-notes.md` §8;
+  `earned-surplus-banked.md` §7), none changed:
+  - ~~**Finances still judges debt at 60%/120% in two places D7 did not name:**
+    the landing's "The position" row (red over 120% of GDP, FinancesScreen
+    ~184) and The position page's sentence, coloured ("comfortable" /
+    "carryable" / "more than a year of output", ~655). OWED's cell, which D7
+    named, is done. Finances is 0.7.32.~~ — **done in 0.7.32** (the Finances
+    spec's D7: the thresholds gone everywhere on the tab).
+  - **Half a thousand is "nothing" on the rings and lists** (`drawn()`,
+    `listPage()`): a $400 line draws no arc and is listed in "nothing this
+    month", though `money()` would print "$400"; `signedTight()`'s "$0" is
+    under half a thousand, `money()`'s under half a dollar. Left with a
+    `TODO(docs)` in `drawn()`'s javadoc (0.7.31's decision 10, CONFIRM in
+    section 0). The 600-month city's mortgage claims, a fraction of a cent, are
+    nothing either way.
+  - **THIS MONTH, AS ONE BAR draws each part at its size,** so a negative
+    investment or net exports is a grey length that adds; since B4 its colour
+    no longer says it subtracts, only the key's and the tooltip's sign. For the
+    PC look (the 2,400-month city's investment is −$129k).
+  - **The header's line is seven characters longer** ("earned"): at 1,389 px
+    check that the tiles to its right lose nothing (the CHECK item, section 0).
+  - **THE DEBT's coupon chip after a load** (the spec's B17): for the first
+    month after a load the card can show "coupon … a month, booked …: not
+    struck yet", since the interest is struck from what was paid over a
+    completed month. A load artefact; B1's scaled year, its twin, is gone.
+  - Healthcare fees' panel after a load and the busy month annualising are
+    under MODEL BUGS FOUND BY THE SCREEN RESEARCH (section 0, items 13 and 14).
+- **FINANCES: WORDING AND ODD CASES** (found 2026-10-01 by 0.7.32's docs pass
+  and implementer: `runs/ui13-docs-pass.md` flags 1–7; `runs/ui13-notes.md` §8;
+  `the-debt-at-a-glance.md`), none changed:
+  - **The default page's cost is out by half.** WHAT IT COSTS reads "No lender
+    abroad will take this city's paper for five years, / and 10 points on its
+    rate when they will again, / fading over about five years after that." The
+    scar fades from the month of the default (`SCAR_DECAY` .9885, a half-life
+    of about five years) and the window reopens at 60 months, when half of it
+    is left: about 5 points, not 10. The alert band and WHAT EACH MEASURE HAS
+    USED say it "fades over about five years", which reads as gone where it is
+    half. The model is right and the words are not: a sentence for Jerus to
+    choose.
+  - **Money's two charts draw ten years** (`ChartModel.DEFAULT_RANGE`); the
+    docs pass took ", A YEAR" off their titles. If a year was meant, the change
+    is the charts' window.
+  - **WHO HOLDS THEM on the bond market carries the prices' (i)**
+    (`PRICES_INFO`), which says nothing of who holds them: a holders (i), or
+    none.
+  - **Government's "Bought back a bond" door** asks for the "Buy back" page,
+    which went in 0.7.32, and lands on The book by the fallback. It works; the
+    page name in GovernmentScreen is stale ("Every piece").
+  - **NEXT DUE shows a serial bond's whole principal at its last date**
+    ("D$570.0M SERIAL Jan 2205"), though most of it falls due in yearly slices
+    before then; the ladder puts each slice in its year. As the 0.7.24 card
+    did.
+  - **`TERMS_INFO`** begins "Each column is the rate ..." and is the (i) on
+    Abroad too, where the terms are chips.
+  - ~~**Policy's floor sentence** calling the dial the floor (B13's other
+    half).~~ — done in 0.7.36 (its B16).
+  - ~~**OWED AND THE RATE draws no flags** (a small chart has no flag lane:
+    found by 0.7.33's docs pass, confirmed by 0.7.35's implementer), and a
+    founding-month borrowing decision is off its lane~~ — **both done in
+    0.7.38** (`the-loose-ends.md`): a small chart handed decisions draws its
+    lane, the founding month's on its first month; in a city over ten years old
+    the founding month is out of the chart's fixed ten-year view (THE BANK,
+    below). ~~**WHAT IS BEHIND IT's "0.0 months"** of cover~~ — **done in
+    0.7.38**: "under 0.1 months", through `Money.coverMonths()`.
+  - **The model's, shown as it is** (the implementer's §8):
+    `Game.quoteRepurchase()` writes (it reprices the debt market and the
+    standing rate; the screen reads `marketValue()` instead, and
+    `repurchaseGain()` calls it); the 2,400-month city's bank has D$7.7M of
+    room against D$53B of deposits, so WHO BUYS IT's ghost for any real issue
+    dwarfs it; a foreign quote's `rateBefore` is the world's rate before the
+    issue, not the city's; the rollover's record has no central bank part; a
+    piece issued between presses settles to its buyers at the next press, so
+    the holders bars read the bank before the issue for that month.
+- **THE BANK: WORDING AND ODD CASES** (found 2026-10-01 by 0.7.33's docs pass
+  and implementer: `runs/ui14-docs-pass.md` flags 1–9; `runs/ui14-notes.md` §8;
+  `the-bank-at-a-glance.md`), none changed:
+  - **ITS RATES cannot be dragged** (its flags done in 0.7.38).
+    `BankScreen.chart()` builds a TimeChart that is not the main one, and a
+    small chart registers no pan or zoom, so the six small charts follow a
+    window nothing moves. ~~It drew no flag lane either, so the
+    `flagsOf(CENTRAL_BANK, BANK)` it is handed were never drawn~~ — **done in
+    0.7.38**: a small chart handed flags draws its lane, the founding month's
+    bank decisions on its first month. **The drag is still not built**
+    (0.7.38's ★2, CONFIRM): the (i) no longer promises it and names "Over the
+    years" (City History) as the way back; building it is a pan on a small
+    chart (`listen()`'s press, drag and release, without the wheel), new
+    behaviour, Jerus's. Until then the founding month's bank and borrowing
+    decisions are out of view on the Bank's and Finances' charts in any city
+    over ten years old, and `BankScreen`'s `historyWindow` javadoc, the
+    HISTORY banner, GameVersion's 0.7.33 entry, `ChartModel.flagsOf()`'s
+    javadoc and BankCheck §13b still speak of a chart dragged back
+    (`runs/ui19-notes.md` §8.1, §8.7).
+  - ~~**A shut-out sector's name never reads red on the ladder**
+    (`Pieces.rateLadder()` inks every door's name in the accent; the red "shut
+    N mo" tag does show)~~ — **done in 0.7.38**: the name takes the rung's own
+    tone first, red, keeping its "›" and its click.
+  - ~~**The Sectors screen's Cash & debt rate bar** adds `getRiskSpread()` as it
+    stands now to prime, record and concentration, where the rate was struck on
+    `quoteParts()` (0.10–0.25 points apart after a month of statements)~~ —
+    **done in 0.7.38**: the bar, its caption and its (i) read `quoteParts()`.
+    **Left: the two sector (i)s read a risk struck earlier beside the quarter
+    as it is now.** The Bank's sector (i) and, since 0.7.38, Sectors' print the
+    quote's risk part beside the quarter's default rate and leverage read now
+    (`runs/ui19-notes.md` §4 decision 9, §8.2). `QuoteParts` keeps the parts
+    but not the default rate and leverage they were struck from; making it
+    exact is a model read (keep both in `QuoteParts`), not a display fix.
+  - **B16 inside the folds and on History's money charts:**
+    `Money.tightMoney()` hyphenates a negative ("-$26.86"); a true minus there
+    touches every screen's money, a small batch of its own (Government's B15 is
+    the same).
+  - **Small words, for the Bank's next pass:** the empty ladder's caption
+    leaves out the record and the concentration; INTEREST MARGIN's note "net,
+    on what it lent, the last 12 months" lacks "over"; a bond rung's chip says
+    "holds them" whether or not the bank holds any ("would hold them" would be
+    exact); NEEDS YOU's THE BANK row lands wherever the tab was left, not reset
+    as Finances' rows are since 0.7.32; `stanceInfo()` names the risk-weighted
+    target and minimum while the leverage ratio binds.
+  - **The model's, shown as it is** (the implementer's §8): the 2,400-month
+    city's bank lends 1% of what it has gathered ($664.7M of $52.8B), so BESIDE
+    THE SHEET reads about 73× the sheet; its risk-weighted ratio is 1,990.7%,
+    pinned at the end of the gauge's scale; `bankCapitalRatio` clamped at 10
+    (MODEL BUGS item 15); CREDIT LOSSES 0.006%, non-zero only at three places.
+- **THE BUTTONS: WORDING AND ODD CASES** (found 2026-10-01 by 0.7.34's docs
+  pass and implementer: `runs/ui15-docs-pass.md` flags 1–4;
+  `runs/ui15-notes.md` §8; `buttons-that-ask-to-be-pressed.md`), none changed:
+  - **A HELD button's line promises a door its press does not open.** "more
+    ground: the Land office ›", "ore comes with land: the Land office ›" and "a
+    school licenses them: Education ›" each end in the "›" every door carries,
+    but the press opens NOT ENOUGH LAND, NO IRON DEPOSIT or NOBODY QUALIFIED
+    first, whose pill is the door (★3). Either the press goes straight there
+    (one line in `orderControls()`) or the line drops the "›". Jerus's call;
+    not in 0.7.38.
+  - ~~**`adviceTotal()` still adds the suggestions' prices up in the screen**
+    for "all three ≈ $X" and "Build all three"'s over-the-cash look, where the
+    order bar reads `BuildAdvice.quoteTotal()`~~ — **done in 0.7.38**: it calls
+    `BuildAdvice.quoteTotal(List<Suggestion>)`, the old sum to the bit.
+  - **"Buy the next 1":** `next()` writes "Buy the next " + n, and N runs from
+    one.
+  - **Build's credit page is still the old statement layout** with the new
+    button at its foot; `Pieces.offerCard()`'s comment still says the page is
+    to take the card in Build's own pass (0.7.26's ★13).
+  - **Neither piece takes keyboard focus:** the old Build could be pressed with
+    Space; Enter and Backspace on Build pages are unchanged.
+- **TRADE: WORDING AND ODD CASES** (found 2026-10-02 by 0.7.35's docs pass and
+  implementer: `runs/ui16-docs-pass.md` flags 1–7; `runs/ui16-notes.md` §8;
+  `trade-at-a-glance.md`), none changed:
+  - ~~**"One parity rule" has a fourth reader not on it:** the drawer's
+    Dashboard TRADE section turns "vs parity" amber past 15% either side, so at
+    20% stronger THE CURRENCY row and the header are grey and that line
+    amber~~ — **done in 0.7.38**: amber at `PARITY_WATCH`, red at `PARITY_FAR`,
+    plain when pinned. ~~Its import cover line under a literal 3~~ — **done in
+    0.7.38** too, on Trade's `coverLevel()` (CONFIRM, its ★4). **Left:** its
+    banner's "Red when the currency is weakening" (the head goes amber on a
+    current-account deficit; "vs parity" is now red past `PARITY_FAR` either
+    side), a comment; and "vs parity" prints a hyphen-minus (`%+.1f%%`,
+    "-26.2%") where the redrawn screens print a true minus, its format kept in
+    0.7.38 (`runs/ui19-notes.md` §8.3, §8.4).
+  - **A city just founded reads as just loaded on Trade** (`isMonthCounted()`
+    is false after a founding as after a load): What we trade's "THE MONTH THE
+    CITY WAS SAVED IN" and its line, the ledger's and the vault's "since the
+    load" and the freight line's "Just loaded". Brief, since a month runs in
+    seconds; neutral words, or a founded-or-loaded read in the model. With the
+    D25 words (CONFIRM, 0.7.35).
+  - ~~**"0.0 months" of cover** on Finances' WHAT IS BEHIND IT and in the
+    drawer's TRADE section~~ — **done in 0.7.38**, on Trade's "under 0.1
+    months" through one formatter, `Money.coverMonths()`.
+  - ~~**Two (i)s promise flags their charts cannot draw** (the Bank's ITS
+    RATES, Finances' OWED AND THE RATE); and a founding-month currency decision
+    is off Trade's own rate chart's lane~~ — **both done in 0.7.38**.
+  - **The year book's preamble** names fxRate as the exception to "rates are
+    fractions" and not `fxParity`, now a rate column in the same units; its own
+    column note gives the unit, and YearBookCheck asserts the fxRate wording.
+  - **Loosely true, left:** `NOT_SAVED_INFO` lists the treasury's purchases
+    among flows struck at the month's end (they are booked when made);
+    `HOLDINGS_INFO`'s "at their price, the last trade" (the fair value before a
+    first trade); `forceReadings()`' "Openness of the economy 100%" under
+    details, without the chip's clamp words; "tap one" on a PC;
+    `COMFORTABLE_COVER`'s dial sentence, "fully absorb" (they absorb
+    `MAX_ABSORPTION`, .85).
+  - **From the implementer's §8:** B14, freight after a load, shown, not fixed
+    (MODEL BUGS item 1); the households' car imports are on no sector's books
+    and not saved, so a loaded month's What we trade lacks them (its (i) says
+    so); Finances still opens Trade through `tradeArea` and the old page arrays
+    (`open(TradeScreen.CURRENCY)` and `open(TradeScreen.RESERVES)` the one-line
+    replacements); `Pieces.bandMeter()` has no caller (not on 0.7.38's list;
+    section 6); Government's "Bought land with … reserves" step still opens the
+    last Trade page.
+- **POLICY: WORDING AND ODD CASES** (found 2026-10-02 by 0.7.36's docs pass and
+  implementer: `runs/ui17-docs-pass.md` flags 1–8; `runs/ui17-notes.md` §8;
+  `policy-at-a-glance.md`), none changed:
+  - ~~**The floor in founding money** on the People screen ("Minimum wage %s a
+    month; every wage in the city is a multiple of it.", PeopleScreen ~2159:
+    $3,460 under jobs paid from $3,827 in the research city; B7's other
+    half)~~ — **done in 0.7.38**, in today's money (`cashMinimumWage()`).
+    ~~City History's "Minimum wage" line and the year book's `minimumWage`
+    column, which record the founding figure~~ — **done in 0.7.38**: "Minimum
+    wage, founding money" and the column's note, the series unchanged; a
+    today's-money line on History is not offered (CONFIRM, 0.7.38's ★6: it
+    needs a saved series).
+  - **"Pensions to N% of a wage"**, the pension's decision line, is now on the
+    hub's RECENT DECISIONS as well as History's flags, where the pension is a
+    share of the founding unskilled wage (B10); ChartCheck asserts the words,
+    so left. SocialSecurity's comment is of the same family.
+  - ~~**A method name in the player's text:** WHAT SENIORS RECEIVE's (i) ends
+    "(TaxPolicy.pensionPerSenior())"~~ — **done in 0.7.38**: "a design
+    question the model has filed and not yet answered."
+  - **`TAKE_INFO`'s "three of the four a move off it by sector or by band"**:
+    property has a move off it by sector too. Older than 0.7.36.
+  - **Loosely true, left:** `LEAD_INFO`'s "nothing reaches the model until
+    Apply" (the target, the holdings, the ceiling, the hand and the subsidies
+    apply at once); `TRAY_INFO` lists the tax bases on Schools too; RECENT
+    DECISIONS' empty line on a save from before the log; the payslip's door
+    opening Pensions only; `rateInfo()`'s "up to N points" an upper bound;
+    "Your per-sector changes stay" (band offsets stay too).
+  - ~~**Members left without a caller:** `PolicyScreen.promisesCost()`,
+    `Levers.leverHead()`, `arrow()` and `previewCaveat()`~~ — **done in
+    0.7.38**, with the four the fare's dial card then left without one
+    (`Levers.wouldHead()`, `wouldBe()`, `wouldTotal()`,
+    `PolicyScreen.stagedLadder()`). `LabourMarket.floorForCash()` is read only
+    by the harnesses.
+  - **Not in 0.7.36, from its notes:** the vitals do not count up on a month
+    (People's `countUp` is PeopleScreen's own); ~~the fare onto
+    `Levers.dialCard` (D18 step 6)~~ — **done in 0.7.38**, its four rows the
+    model's. The property offset's ±10 against ±30 and the two inflation
+    colours are MODEL BUGS items 17 and 16.
+  - **The model's, shown as it is** (the implementer's §8): the policy rate
+    barely reaches demand (at a 5% dial savers would get 0.30%, and spending
+    moves 100.2% → 99.9%); a quarter point does not move what the city borrows
+    at (the floor is the bank's cost of funds, 1.01% against a 0.13% dial);
+    EI's bill at the month's top ($6.6M) is not the pool's restrike ($6.4M),
+    and the preview uses the pool's; after Apply on the pension, until the
+    month turns, "A pensioner household has" reads against the month the
+    household had.
+- **CITY HISTORY: WORDING AND ODD CASES** (found 2026-10-02 by 0.7.37's
+  implementer and docs pass: `runs/ui18-notes.md` §8; `runs/ui18-docs-pass.md`
+  flags 1–11; `city-history-finished.md`), none changed but the one 0.7.38
+  closed:
+  - The epidemic of 2,213 months (MODEL BUGS item 18); the bank's capital ratio
+    "1000.0%" and its return on equity at −105.2% (MODEL BUGS item 15).
+  - **Rolling stock sits at exactly half its import price** in the 600-month
+    city ($897,693.61 of $1,795,387.22): an import-only good nobody makes or
+    takes strikes the band's middle (`GoodsMarket.strike()`); shown as "under
+    the world's ceiling of …".
+  - **History's pins draw no flags** (the docs pass's flag 8): since 0.7.38 a
+    small chart draws the decisions it is handed, but the pins are handed none
+    (`runs/ui19-notes.md` §8.5); handing them History's flags was not asked.
+  - **"0.0 pts" beside "from 1.2%" and "1.1%":** a 0.04-point move, two
+    one-place figures rounding apart (`changeText()`'s rounding, unchanged).
+  - ~~**B4's fix is History's alone:** Trade's rate chart, Finances' and the
+    Bank's draw their own flags without `ChartModel.onAxis()`, so a
+    founding-month currency, borrowing or bank decision is off their lanes
+    (the docs pass's flag 6)~~ — **done in 0.7.38**, one `onAxis()` each.
+  - **The chart's crosshair card keeps its hyphen-minus:** `fmtUnit()` is
+    unchanged, because the Bank, Finances, Government and Policy hand it to
+    their charts' cards.
+  - **Words, Jerus's** (the docs pass's flags 2, 3 and 7): **"N drawn" counts
+    picked lines, hidden ones included** (PICK WHAT TO DRAW's head is
+    `historyPicked.size()`; a line switched off in the legend is still picked;
+    "N picked" would be exact, as the groups say "N of M picked"; the spec
+    chose "drawn"); **the Market preset's tooltip** "what a founding share of
+    each company is worth" draws the share prices, and since 0.7.37 the picker
+    also offers each company's "fair value" (not false, but the two read
+    alike); **"+N more" under the decisions in view** opens the by-kind
+    details, ticks over the whole history, not a longer list of the rest in
+    view (notes decision 18).
+  - **"no ceiling" on an export-only good is the world's** (flag 4): the city's
+    market caps it at twice the floor (`NO_CEILING_MULTIPLE`), which the "Open
+    at one end" caption's (i) has said since the docs pass.
+- **THE LOOSE ENDS: ODD CASES** (found 2026-10-02 by 0.7.38's implementer:
+  `runs/ui19-notes.md` §4 and §8; `the-loose-ends.md`; its docs pass running,
+  `runs/ui19-docs-pass.md` not yet written), none changed; its other finds
+  are under THE BANK, TRADE and CITY HISTORY above and in section 6:
+  - **A flag's label on a small chart's lane is cut with "…"** to the room
+    before the next flag, as on the big chart (decision 3: canvas text cannot
+    wrap; hovering shows it whole). There is no click to pin: a small chart
+    takes no press.
+  - **A small chart handed decisions of its kinds draws its lane even with
+    none in view** (decision 1), so its height never jumps: the Bank's chart in
+    the 600-month city shows an empty "you" lane, all its decisions older than
+    ten years.
+  - **Right after a fare Apply, until the month turns,** the fare card shows a
+    move at the new fare (riders 41,491 → 32,756; CONFIRM, 0.7.38's ★11), and
+    Transit's funnel row "the fare: X% still ride" keeps the old fare's share
+    likewise: `getTransitRiders()` carries the fare share struck at the old
+    fare until the month turns (§8.8).
+- **THE CITY'S FUND: ODD CASES** (found 2026-10-02 by 0.7.39's implementer
+  and docs pass: `runs/ui20-notes.md` §4 and §8; `runs/ui20-docs-pass.md`
+  flags 1, 2, 4 and 10; `the-fund-as-a-brokerage.md`), none changed but the
+  two its fixes closed (`runs/ui20b-notes.md`); its model finds are MODEL
+  BUGS items 19–22, its comment and harness flags in section 6:
+  - ~~**`Money`'s "$1000k":** `Money.tightMoney()` writes 999,500–999,999 as
+    "$1000k" (and 999.95M as "$1000.0M"), so every screen that lands there
+    shows it. The fund's words go through `Pieces.tidyMoney()` ("$1.0M"); the
+    one-line fix in `Money` would change every screen at that edge, so it is
+    left for Jerus, with THE BANK's B16 (above), the same formatter's hyphen.~~
+    — **done in 0.7.40**: `tightMoney()` moves each unit up from where the one
+    below would print a thousand, for every screen (999.97B reads "$1.0T",
+    999,600 compact "$1.0M"); `Pieces.tidyMoney()` is now a no-op, left in
+    place.
+  - **The fund's worth is not on City History's picker:** its three series
+    (`fundValue`, `fundPutIn`, `fundTakenOut`) are in the history and the year
+    book, not in HistoryScreen's list of lines. One line; not 0.7.39's batch.
+  - **A hand buy at fair rests and lapses** in a market priced over fair
+    (MODEL BUGS item 21): "Your order: bought 0 of 39.47 shares of
+    Construction - 39.47 lapsed, D$4.0M back to the fund". "Best bid" is the
+    price that fills.
+  - ~~**★B1's cap was checked against what the fund held when the hand
+    posted, not against the rule's resting bid or another hand order on the
+    same book** (the docs pass's flag 1), so both could fill past 10% and the
+    rule then ask the excess back at fair value, the loss B1 was built to
+    stop (12.9–18.1% of a company on the old model; FundLedgerCheck §8's own
+    fixture was one)~~ — **done after the docs pass**, in 0.7.39:
+    `Exchange.fundRoom()` counts the holding and the hand's buys on the book
+    and waiting as if filled, read by the step and the ticket; the rule's bid
+    makes way for the hand's (★ the hand first, CONFIRM); the ticket says "No
+    room under the 10% cap" when there is none, and THE RULE names only a
+    company's buyback as the way past it.
+  - ~~**Search said "1Y: not recorded precisely enough" in any city younger
+    than thirteen months**, for every company (the docs pass's flag 2:
+    `FundView.move()` is NaN for a short history as for B6's zero prices)~~ —
+    **done after the docs pass**: "1Y: its record is shorter than a year"
+    when `FundView.recordShort()` holds; B6's words kept for a price recorded
+    as zero (MODEL BUGS item 20).
+  - **A reopened lot's income runs on while its "since" restarts** (flag 4):
+    `FundLedger.reopen()` moves `since` to the month a sold-out lot is bought
+    again and leaves `income` and `realized` as they were, so YOUR POSITION
+    prints "Dividends D$X / since <the reopening month>" with X including the
+    earlier holding's, while `Lot`'s and `FundView.Position`'s javadocs say
+    "the income it paid since `since`". Which is meant is Jerus's. Akin, and
+    untested: a city with two resolutions whose rescue book sold out between
+    them, where `seed()` dates the rescue lot from the first and a tracked
+    lot would restart (`runs/ui20b-notes.md` §9).
+  - **The fund area's (i) on Finances' hub** (flag 10; `AREA_INFO[5]`: "Its
+    shares and bonds, the bank's rescue, the dial, and the share of its worth
+    it pays the treasury every month") says nothing of cost, P&L, search or
+    orders; true as far as it goes. Words, Jerus's.
 
 ---
 
@@ -2563,6 +7331,13 @@ Ranked by how likely they are to read as "this game is broken".
   save slot, and then the two `record()` calls come out. **Transit wages are
   paid by nobody** beside it: `EconomyManager.getExpenses()` has no
   `transitBill`. 2026-09-19.
+  **Since 0.7.31** the Government screen draws the budget exactly as
+  `NationalAccounts` strikes it: repairs left Spending's list and ring (they
+  had made the key add to 111%), and both lines are named under the totals as
+  "outside the budget's total" and as steps on the bridge FROM EARNED TO
+  BANKED. Carrying both in `NationalAccounts` is 0.7.31's D4 model batch,
+  recommended to Jerus (CONFIRM from 0.7.31, section 0); the transit bill is
+  the Government spec's B10 (MODEL BUGS, item 11).
 - **THREE THINGS A NEW CITY OR A REFORM DOES NOT RESET OR SCALE.**
   `buildWorld()` does not reset `treasuryRecorded` and its siblings (a second
   new game after a played one opens its first window at the old closing
@@ -2761,7 +7536,13 @@ Ranked by how likely they are to read as "this game is broken".
 - ~~**Construction now pays sales tax for the first time.** Still a decision
   nobody has made~~ — **made 2026-09-10 (night)**: it pays sales tax and profit
   tax, like the other five.
-- **The founding endowment bills for care it costs nothing to provide.**
+- **The founding endowment bills for care it costs nothing to provide.** Seen
+  on Government in 0.7.31 (the spec's B16, traced by the implementer's
+  `ProbeCare`): care fees of $104k with a care bill of $0 in the 600-month city
+  are the founding endowment's; the doctor, the nursery, the almshouse and the
+  churchyard charge and cost nothing. In the 2,400-month city most of the $1.0M
+  of care fees is burials ($878k for 293). THE SERVICES THAT CHARGE's (i) says
+  so.
 - **`squeezeUnplaced()`'s two valves count households, not doors.** Found
   2026-09-10 while fixing the crowding floor: given no doors at all it will still
   report every household placed, because flatshares and doubling are pure
@@ -3321,6 +8102,321 @@ each one Jerus's call, in the order they pay back:
     `BuildingManager.java` L3285;
   - `the-crew-a-building-can-use.md` §3 names its first two versions two ways.
   Full list in `the-manual-at-0-7-23.md` §4.
+- **FLAGGED BY 0.7.24'S DOCS PASS, 2026-10-01** (`runs/ui5-docs-pass.md`,
+  "Flags"), none changed:
+  - FALLS DUE prints everything due within three months beside the soonest
+    maturity's months: $1.0M next month and $4.0M in three read "$5.0M in 1
+    mo". The fix is wording ("$5.0M within 3 mo, the soonest in 1") or the
+    soonest's own principal; it is behaviour, so left;
+  - Settings' Esc line is 72 characters on a 560 px row, about 37 px to
+    spare, measured and not seen; if it cuts, a second line;
+  - "you will be offered a bill" on the 0.7.21 card's quote line, the need
+    card's quote line and the suggestion card's "Order on credit" tooltip:
+    the short-of-cash page offers a 20-year bond first, so "offered a loan"
+    would be true (older than 0.7.24);
+  - `BuildAdvice.categoryOf(BuildingType)` and `categoryOf(CityNeeds.Go)` have
+    no caller; `ServicesScreen.buildLink()`'s `types` parameter is unused;
+    `BuildScreen.unitWords()` is reached only for care since the fix round;
+    `Pieces.ring()` draws its own copy of `Icons.TICK`'s path;
+  - older than the batch: BuildScreen's THE HALF OF THE CATALOGUE THAT BUILDS
+    ITSELF says six types where `investorTypes()` lists twelve; README's
+    "about 230 files" is 236, and "about three minutes" is about five and a
+    half in the cloud.
+  - Closed: `BuildAdvice`'s header points at "the project's design note for
+    0.7.24", which is `the-build-screen-and-the-frame.md`.
+- **FLAGGED BY 0.7.25'S DOCS PASS AND IMPLEMENTER, 2026-10-01**
+  (`runs/ui6-docs-pass.md` flags 6–14, `runs/ui6-notes.md` §8.4–8.5), none
+  changed; the two bugs and the wording are under section 3:
+  - code with no reader: `Pieces.TILE_HEIGHT` (its javadoc now says so; the
+    land office's plot was never that height); `BuildScreen.careSubtitle()`
+    and `schoolSubtitle()`, no caller since 0.7.24 (Jerus's words, kept for a
+    city page's rings: his call); `unitWords()`' seven non-care branches;
+    `BuildCardCheck.bits()`, defined and never called;
+    `BuildAdvice.categoryOf(CityNeeds.Go)` and `ServicesScreen.buildLink()`'s
+    `types`, carried from 0.7.24 (`categoryOf(BuildingType)` has a caller
+    now, `BuildCard`);
+  - `docs/harnesses.md` counts 43 labels for BuildCardCheck against 44
+    assertions: Maps cannot read the one labelled by a `String.format` (L531);
+  - GameVersion's 0.7.25 entry gives bar 1 as months of value added for the
+    makers, farms and vehicle plants, and does not say an office's is months
+    of its exports (incomplete, not false);
+  - the tooltip on a bank branch says "Click for Retail's Investors page",
+    which is right (retail's money, D17), though the word is the bank's;
+  - BuildScreen's class header has a ragged line ("building. The shell still
+    reads"), true;
+  - older than the batch: README's "in about three minutes" is about six and
+    a half in the cloud (its "about 230 files" is "about 240" since this docs
+    pass); THE HALF OF THE CATALOGUE THAT BUILDS ITSELF's six types against
+    `investorTypes()`' twelve, carried from 0.7.24.
+  - Closed: `BuildCard`'s WHY and BuildScreen's ONE CARD FOR ALL 73 point at
+    "the project's design note for 0.7.25", which is
+    `one-card-for-every-building.md`.
+- **FLAGGED BY 0.7.26'S DOCS PASS AND IMPLEMENTER, 2026-10-01**
+  (`runs/ui7-docs-pass.md` flags 3, 4 and 7–10, `runs/ui7-notes.md`
+  §8.4–8.6), none changed; the wording is under section 3:
+  - **ReadPathCheck** "calls every read path the UI and the treasury use",
+    but not the reads 0.7.26 added or newly uses:
+    `LandMarket.goingUsdPerSqFt()` and `scarcityMultiplier()`,
+    `CityNeeds.ground()`, `Game.getLandBlockedSectors()` and
+    `minesCommitted()`, `ForeignAccounts.getLandUsdLifetime()` and
+    `getLandUsdFromVaultLifetime()`, `NationalAccounts.getLandSales()`. By
+    inspection each is a pure read; adding them is a harness change, so left.
+  - **Dates not checked:** `ON_TOP_INFO` and `WAITING_INFO` are "the 0.7.6
+    note word for word"; no snapshot older than 0.7.6 has the screen.
+  - **`UserInterface.tabFor()`'s javadoc** says the debt-issuance flow is not
+    on the rail; `showDebtResultMenu` lights Finances, and since 0.7.26 the
+    land office's funding pages light Land (older than the batch).
+  - code with no reader: `SummaryScreen.refreshCityPanel()`'s `land` local,
+    since the alert moved to `CityNeeds.ground()`; and no screen reads
+    `LandManager.getLandSalesThisMonth()` / `getLandPurchasesThisMonth()` now
+    (only the month, MoneyAudit and the history, where the cleared flow is
+    right).
+  - Stale's soft finding at `LandMarket.java:628`, "rollIron()", older than
+    the batch.
+  - Closed by the docs pass: UserInterface's WHERE THE SCREENS WENT
+    (LandScreen holds neither of its old banners) and HistoryScreen's GOODS
+    ROW (THE STATEMENT is no longer LandScreen's).
+- **FLAGGED BY 0.7.27'S DOCS PASS AND IMPLEMENTER, 2026-10-01**
+  (`runs/ui8-docs-pass.md` flags 5, 7, 8, 11 and 12, `runs/ui8-notes.md`
+  §9.3), none changed; the wording is under section 3:
+  - **`UserInterface.showSectorReport()` has no caller since 0.7.27**
+    (Household Cash Flow, the last, became a page of its own), so it, its
+    reveal branch reading `peopleScreen.revealTop` / `revealBottom` and its
+    "Fifteen screens come through here" are dead. Its javadoc now says so;
+    removing it is a code change for a cleanup.
+  - **The bridge's "· ¾" and "· ¼"**, its tooltips' "three parts in four" /
+    "one part in four" and `WHY_INFO`'s "three parts to the homes' one" are
+    literals, true while `Migration.JOB_WEIGHT` is .75 and `HOME_WEIGHT` .25
+    (as 0.7.26's "nine" is while `LISTING_SIZE` is 9).
+  - **The retired rows' statement is struck at the unskilled tier**
+    (`statementFor(families, shape, PayTier.values()[0])` in `otherRows()`
+    and `rowLeft()`), so their fees carry the unskilled tier's interest and
+    account fee per household. Older than the batch; D4 kept the figure; not
+    traced whether it is what Senior and Elder alone's "$0" is made of.
+  - **The design studies are cited as the project's** ("the project's
+    spec-people-0727.md" in PeopleScreen's header and Pieces' 0.7.27 banner;
+    LandScreen cites spec-land-0726.md the same way), but neither is in the
+    claude.ai project yet; both are in `runs/`. Put them in the project.
+  - older than the batch: THE TIER TABLE, AS A TABLE. sits over the opened
+    cell's bar (no tier table has been drawn since before 0.7.26);
+    `householdPerFamily`'s javadoc says "the per-tier table";
+    `Pieces.Slice`'s javadoc mentions "what it opens into", which it has no
+    field for; an empty "Small helpers..." sub-banner at PeopleScreen's foot;
+    `PeopleScreen.SHAPE_COL` blank in dials.md.
+  - left to keep the merge with 0.7.28 small: `ringWords()`'s "measureCard()
+    draws it" (People's care row does too) and `PAGE_WIDE`'s list of pages
+    (People and Household money use `widePage()` too), incomplete, not
+    false.
+  - Closed by the docs pass: WHERE THE SCREENS WENT (PeopleScreen holds two
+    of its six old banners), `scrolled()`'s "now wraps the People screen",
+    `showSectorReport()`'s javadoc, and DataSave's prose on the migration and
+    household arrays (format 30).
+- **FLAGGED BY 0.7.28'S DOCS PASS AND IMPLEMENTER, 2026-10-01**
+  (`runs/ui9-docs-pass.md` flags 2 and 4–7, `runs/ui9-notes.md` §8.6), none
+  changed; the wording is under section 3:
+  - **EducationCheck's label** "with no college to leave for, the net movement
+    is the leavers' diplomas": university finishers come off the DIPLOMA band
+    too. The fixture has neither school, so the assertion is right and the
+    label understates its condition; a docs pass does not change labels.
+  - **`UtilitiesHandler.billedWaterDraw`'s javadoc** says residents "have no
+    cash to pay with, so billing them would be revenue from nowhere";
+    households have balance sheets, and whether residents draw "the majority"
+    is a city's figure (29% of the water was billed in the 2,400-month city).
+    Why households are not billed now that they could pay is `TODO(docs)`
+    material for whoever owns the utilities.
+  - **`buildings.json`'s `_readme`** says "watts for ELECTRICITY": kilowatts.
+    The docs pass does not touch `buildings.json`.
+  - **`UserInterface`'s routing comment** "THE UTILITIES' BOOKS AND THE
+    BUILDERS' BOOKS ARE BUSINESS" sits over no case of its own; since 0.7.28
+    the utilities' books are a Services page and the plants the city's own.
+  - **`Pieces.PAGE_WIDE`'s javadoc** lists Build and the land office; People
+    and Services use `widePage()` too (carried from 0.7.27). Incomplete, not
+    false.
+  - Closed by the docs pass: WHERE THE SCREENS WENT (ServicesScreen's nine
+    banners, INFRASTRUCTURE moved whole), the console's utilities report in
+    kW, TradeScreen's `bandMeter()` borrower, PolicyScreen's fare on
+    Infrastructure, four blank dials. Closed by 0.7.28:
+    `ServicesScreen.buildLink()` and its unused `types` (0.7.24's and 0.7.25's
+    flags), gone with the old pages.
+- **FLAGGED BY 0.7.29'S DOCS PASS AND IMPLEMENTER, 2026-10-01**
+  (`runs/ui10-docs-pass.md` flags 4–8, `runs/ui10-notes.md` §8.2), none
+  changed; the wording is under section 3:
+  - **`sectors/Rail.java`'s header** says the railway's road relief "is a
+    relief of 70%, not of 100%"; `InfrastructureManager.RAIL_ROAD_RELIEF` is
+    .75 and has been since cbs-pristine, and the screen and the manual say
+    75%. A one-word fix.
+  - **`InfrastructureManager.getEffectiveLoad()`'s javadoc** leaves out the
+    cars and the railway, which it counts, and says "every city that exists
+    today" has neither transit nor highways; `throughputOf()`'s "Every city
+    that exists today has no transit" likewise. The walk now takes the method
+    apart, so its javadoc is the one a reader lands on.
+  - **InfrastructureCheck's class header** lists "Three things have to hold"
+    over ten sections, a summary of its first purpose.
+  - **`Pieces.vitalsBar()`' javadoc** counts four, and People's five;
+    Infrastructure's frame and Freight's bill strip are five too. Incomplete,
+    not false.
+  - **The specs are cited as the project's** ("the project's
+    spec-infra-0729.md" in InfrastructureScreen, Pieces, SummaryScreen and
+    ServicesScreen), as 0.7.27's flag found for People and the Land office;
+    none of them is in the claude.ai project, all are in `runs/`. Put them in
+    the project, or make the comments say `runs/`.
+  - Found and fixed by the implementer: `Rail.rAllowed` was never scaled on a
+    redenomination (harmless until it was shown and saved). Closed by the docs
+    pass: WHERE THE SCREENS WENT (InfrastructureScreen redrawn, five banners),
+    `INFRA_PAGES`' sentence, TradeScreen's `bandMeter()` (no borrower since
+    0.7.29).
+- **FLAGGED BY 0.7.30'S DOCS PASS AND IMPLEMENTER, 2026-10-01**
+  (`runs/ui11-docs-pass.md` flags 4, 6 and 7), none changed; the wording is
+  under section 3:
+  - **The study is cited as the project's** ("the project's
+    spec-sectors-0730.md" in SectorScreen's header, Sector's NOTHING STANDING,
+    SectorFlow's WHY, BuildCard's two banners and Pieces' banner); it is in
+    `runs/`. With 0.7.29's.
+  - ~~**WHERE THE SCREENS WENT and 0.7.31:** the docs pass's SectorScreen
+    sentence sits where 0.7.31's GovernmentScreen sentence would go; the merge
+    keeps both.~~ — closed by 0.7.31's docs pass: GovernmentScreen's sentence
+    follows the Sectors one.
+  - **Comments loosely true, left:** `Game.printSectorInfo()`'s "the same
+    lines the screen draws" (the fold and the grid draw them; the flow is
+    SectorFlow's); `investorsLine()`'s and BuildCard's "under every page's
+    strip" (the strip of five figures; the page chips are under the line);
+    Pieces' FACT GRID banner names `ownLines()` only (Cash & debt's credit
+    lines use it too); FinancesScreen's "the same shape as the Sector
+    economy"; Icons' "the mills' ingot" (the steelworks'); HistoryCheck 2b's
+    "the sector list's ... head count".
+  - Closed by the docs pass: WHERE THE SCREENS WENT (SectorScreen redrawn,
+    eight banners), BuildScreen's "What it takes to get a yes", CLAUDE.md's
+    tree naming SectorFlow, the batch's blank dials.
+- **FLAGGED BY 0.7.31'S DOCS PASS AND IMPLEMENTER, 2026-10-01**
+  (`runs/ui12-docs-pass.md` flags 9–12), none changed; the wording is under
+  section 3:
+  - **The study is cited as the project's** ("the project's
+    spec-government-0731.md" in GovernmentScreen's header, Game's FROM EARNED
+    TO THE BUDGET and Pieces' banner); it is in `runs/`. With 0.7.29's and
+    0.7.30's.
+  - **"the probe"** in `kpis()`'s and `debtLines()`'s javadocs ("pure: the
+    probe reads them") is the implementer's scratch `ProbeGovWords`, not in the
+    tree.
+  - **Comments loosely true, left:** GameVersion's 0.7.31 entry, the bridge's
+    steps "each a door to where it is decided" ("Not accounted for" and a
+    journal line `journalDoor()` does not know have none); `journalDoor()`'s
+    javadoc lists six of its nine places; THE OVERVIEW banner's "when the city
+    owes it or has ever printed" leaves out arrears (which need advances
+    first); `DEFICIT_INFO`'s "That gap is borrowed" (it may be paid from cash;
+    the old P1); `realGrowthWords()`' "in its words" (the tile's first-year
+    words differ from the card's); `COUPON_INFO`'s chip "not struck yet" in a
+    month a bond was issued or retired part-way.
+  - **ReadPathCheck's sweep**, "whose entire premise is that nothing in it
+    changes anything", still calls the striking `getTaxIncome()` and
+    `getTotalIncome()`: idempotent between presses at fixed dials, as before
+    0.7.31; B8 made `getIncome()` not strike, not those two.
+  - Closed by the docs pass: WHERE THE SCREENS WENT (GovernmentScreen redrawn,
+    six banners; 0.7.30's flag, above), Game's FROM EARNED TO THE BUDGET (ten
+    budget lines EARNED leaves out, not eleven; `getTaxIncomeNow()`), the
+    repairs comments in Game and TreasuryJournal, TreasuryJournal's first
+    sentence, NationalAccounts' `HISTORY_MONTHS` sentence and `seedHistory()`'s
+    readers, UserInterface's THE MONEY BLOCK and `moneyBlock()`, SectorScreen's
+    `budgetLine()` reference (Stale's one new unresolved member),
+    GovernmentScreen's verdict paragraph, `drawn()`, THE TWO LISTS and the one
+    bar's comment.
+- **FLAGGED BY 0.7.32'S TO 0.7.36'S DOCS PASSES AND IMPLEMENTERS, 2026-10-01
+  AND 02** (`runs/ui13-docs-pass.md` flags 9–12; `runs/ui14-docs-pass.md` flags
+  11–13; `runs/ui15-docs-pass.md` flags 5 and 7; `runs/ui16-docs-pass.md` flags
+  6, 7 and 11; `runs/ui17-docs-pass.md` flag 9), none changed; the wording is
+  under section 3:
+  - **The studies are cited as the project's:** "the project's
+    spec-finances-0732.md" (FinancesScreen's header, Pieces' banner), "the
+    project's spec-bank-0733.md" (BankScreen's header, Pieces' banner, Game's
+    load path, BusinessDebtManager's QuoteParts, BankCheck §13b, Money's banner
+    by its B-numbers), "the project's spec-policy-0735.md" (PolicyScreen's
+    header, PolicyPreviewCheck, GameVersion's entry; PolicyPreview's WHY says
+    "runs/spec-policy-0735.md"). All are in `runs/`, none in the claude.ai
+    project. With 0.7.29's to 0.7.31's.
+  - **"the probe" and "a probe"** in the pure methods' javadocs (Finances'
+    `kpis()` and `areaWords()`, the Bank's pure methods, `Pieces.Press.words()`
+    and `orderPress()`, Trade's `kpiCells()`, `GoodRow`, `Gauge` and `Moved`,
+    Policy's "(pure: the probe reads them)") are the implementers' scratch
+    probes, `ProbeFinWords`, `ProbeBankWords`, `ProbeButtons`, `ProbeTrade` and
+    `ProbePolicy`, not in the tree.
+  - **Comments loosely true, left:** Finances' alert bands "on every page"
+    (Issued and Default abroad draw their own frame), `ladderChart()`'s "a
+    quarter of the heaviest" (the tallest), WHERE THE SCREENS WENT's "YOUR
+    RATE, TAKEN APART" reading as two titles, `Rollover.words()`' "for the log
+    and the Finances tab", TreasuryFund's "Fund page", UserInterface's "banner
+    sections ... named in its own header", and CLAUDE.md's DecisionLog line,
+    "the History chart's flags" (Finances' and the Bank's carry, or are meant
+    to carry, theirs); GameVersion's 0.7.32 entry leaving out `YEAR_WALL` and
+    the scar's words; the Bank's LENDING banner's "the landlords' mortgages
+    among the businesses since 0.7.11", `statusStrip()`'s "until 0.7.33",
+    `BANK_HOME`'s "lit until the player picks another" and UserInterface
+    `deal()`'s "at the top of the landing"; LandScreen's plot tooltips "Buy —
+    borrow for it" and "Buy — the vault is short", Sectors' LIST_INFO and THE
+    LIST AS CARDS (true once a month has run), BankScreen's preferred offer "as
+    the land office's cards side by side" (the land office's button is pink
+    now), Pieces' "as wide as its card" (the credit page's is 560 px), and
+    `fundingOffer()`'s and `offerCard()`'s "is to take this in Build's own
+    pass"; Pieces' "next readers" naming Trade (`bandBar()`, `statusBanner()`,
+    the split ring), which 0.7.35 drew with other pieces.
+  - **A file outside the write areas:** 0.7.36's docs pass redirected a sorted
+    list of 71 harness names to `/tmp/x` (1,023 bytes) by a slip, and left it
+    there; it can go.
+- **FLAGGED BY 0.7.37'S DOCS PASS AND 0.7.38'S IMPLEMENTER, 2026-10-02**
+  (`runs/ui18-docs-pass.md` flags 9 and 11; `runs/ui19-notes.md` §4 decision
+  17, §8.6), none changed; the wording is under section 3:
+  - **code with no reader:** `Pieces.bandMeter()`, no caller since 0.7.35
+    (`runs/ui16-notes.md` §8.8); not on 0.7.38's list, so it stays.
+  - **The study is cited as the project's:** "the project's
+    spec-history-0736.md" (HistoryScreen's banners, Pieces' banner,
+    GameVersion's entry); it is in `runs/`. With 0.7.29's to 0.7.36's. "The
+    research's 2,400-month city" in YearBook's banner is scratch-research's,
+    and "the probe" in HistoryScreen's "Pure" javadocs is the implementer's
+    scratch `ProbeHistory37`.
+  - **HistoryScreen's class header**, "nothing else in the shell reads it but
+    the rail", is the 2026-09-18 reason it was split first; the window has
+    read `historyValues()` for the tiles since 0.7.21 and `openOn()` since
+    0.7.37. Left as the split's why.
+  - **For 0.7.38's docs pass:** the implementer left TimeChart's class javadoc
+    ("or, small, the same lines and years without the controls") and
+    HistoryScreen's TRACES without a new comment, to keep the merge clean
+    while 0.7.37's docs pass ran.
+  - Closed by 0.7.37's docs pass: HistoryScreen's "of 147" (148),
+    `shownIndices()`, `pickChip()`, SEEDED ONCE, `shownBefore` and two blank
+    dials; `Icons.ofEpisode()`'s "the heart"; YearBook's WHAT IS RUNNING NOW
+    (flag 10); UserInterface's `openHistory()` and "the Reports tab";
+    DecisionLog's "nowhere else".
+- **FLAGGED BY 0.7.39'S DOCS PASS, 2026-10-02** (`runs/ui20-docs-pass.md`
+  flags 3, 5, 6, 7, 9 and 11), none changed but flag 7, closed by its fixes;
+  flags 1, 2, 4 and 10 are under section 3, THE CITY'S FUND, flag 8 is the
+  CONFIRM list's 0.7.39 entry and flag 12 the CHECK's:
+  - **The playtest report's ledger line** (flag 3) reads "1593 bond lot(s)
+    repaid and 8196 written down": `ledgerWrittenDown` counts WRITTEN_DOWN
+    rows, one a lot a month (twelve for #135 Mining's year), not lots, and
+    "lot-month(s) traded by the rule" counts BUY and SELL rows, so a lot
+    bought and sold in one month is two. A harness's output line, so left.
+  - **`ACTIVITY_ROWS`' and `WRITE_DOWN_ROW`'s sentences** (flag 5): the first
+    is the study's shadow-ledger count ("0-5 a month ... some fifteen years
+    of a quiet fund and two of a busy one"), where the shipped rows measured
+    about 18 a month in the default playtest (about 4½ years kept; CONFIRM's
+    `ACTIVITY_ROWS`); the second's "the default playtest, some thirteen a
+    month" is nothing the report counts. Jerus's dials.
+  - **Code with no reader** (flag 6): five Game getters lost their last
+    caller but ReadPathCheck with the old Holdings page,
+    `fundCompanyValue()`, `fundCompanyRescueValue()`, `fundCompanyShare()`,
+    `fundBondValue()` and `fundBondsValueOf()` (`fundCompanyMarketShare()`
+    had none in 0.7.38 either). Remove in a later batch.
+  - ~~**FundLedgerCheck's header item 5 promised an older save's rescue lot
+    seeded from the counters, and no label asserted it** (flag 7;
+    SaveFileCheck's fixture has the preferred but no rescue)~~ — **done after
+    the docs pass**: §5's 13 assertions on a save with a rescue book loaded
+    with its ledger taken out, the lot at `getRescueCost()` exactly,
+    untagged, dated from the rescue, the tracked lot's twin. No bug.
+  - **FundCheck §10's printed title** (flag 9), "the hand: its orders at fair
+    value, and pay-in and draw-out off the surplus", heads labels about a
+    named price and a cancel; a harness's output line, so left (its header
+    item 10 was fixed by the docs pass).
+  - **Carried** (flag 11): README's "in about three minutes" and CLAUDE.md's
+    "(about two minutes)" for the suite (299 s at the docs pass, 313 s after
+    the fixes, one JVM each), with 0.7.24's and 0.7.25's.
 - **Do not move the harnesses to their own package yet**: about twenty
   package-private model members at seventy-odd call sites would need a seam.
 - **Sixteen classes no harness names** (`docs/harnesses.md`, as of
@@ -3336,9 +8432,11 @@ each one Jerus's call, in the order they pay back:
   month's figure instead of 0 — found on the way through `calculateExpenses()`.*
 - Aggregation helpers ignore `instances` — latent until `addInstance()` is used.
 - `LandMarket.rollIron()` comment says "a century or two"; it is 50–200 years.
-- **Not persisted across save/load:** the 12-month GDP history (annual GDP and
-  growth read short for a year after a load). *The solvency record, the placement
-  residual, the doors let, and the bank's last closed month were all carried on
+- **Not persisted across save/load:** ~~the 12-month GDP history (annual GDP
+  and growth read short for a year after a load)~~ (restored on load since
+  0.7.31: `NationalAccounts.seedHistory()`, held by SaveFileCheck). *The
+  solvency record, the placement residual, the doors let, and the bank's last
+  closed month were all carried on
   2026-09-10; that night, the borrower's default record, the economy's traded
   exchange rate, the land office's prices, the world's level ring and the labour
   market's diagnostics joined them, and later the same night the shops' last
@@ -3351,6 +8449,30 @@ each one Jerus's call, in the order they pay back:
   and the ring of the long sick alike — so their width comes from the save rather
   than from the reading build, with `shapeNames` beside it doing the same for
   the household matrix. See the top entries.*
+  ~~**Seen 2026-10-01:** the header's GDP tile reads "$0 / yr · first year"
+  right after a load, and is scaled up from the months recorded for a year
+  after (`NationalAccounts.restore()`'s javadoc says the history is not
+  saved; `runs/ui5-notes.md` §8.2, and on his PC in the 0.7.23 walkthrough).~~
+  **Closed by 0.7.31** (the Government spec's B1, `earned-surplus-banked.md`
+  §4).
+  **And `Game.lastInvestment` is not saved:** after a load every investors'
+  word, on the Investors page and on 0.7.25's investors' line, reads
+  "nothing recorded" until a month runs (`runs/card-spec-0725.md` §9.3;
+  saving it is a save-format change, Jerus's, section 0).
+  **Found by 0.7.25:** `LuxuryRetail.getWanted()` and `Restaurants.getWanted()`
+  are month flows the save does not carry, and read 0 right after a load. The
+  build card's notes wait a month (D11); any other screen that prints them
+  right after a load shows 0 (`runs/ui6-notes.md` §8.2). And Rail's trade
+  tonnes jump across a load (154,577 t right after loading month 2,400,
+  2,695 t a month later, §8.3): the railway bills almost nothing in its
+  first month after every load, traced by the Infrastructure spec (section
+  0, MODEL BUGS FOUND BY THE SCREEN RESEARCH, with the GDP history's cause
+  (fixed in 0.7.31), Trade's month flows and the Bank's sector surcharges
+  after a load (fixed in 0.7.33)).
+  **Carried since 0.7.27 (SAVE_FORMAT 30):** Migration's last month, the
+  cohorts' dead by cause, and the shops' delivered share with the hungry at
+  full shelves, so People's month, Why people come and GOING SHORT read the
+  same after a load (`people-at-a-glance.md` §5).
 - `SteelCheck.java`, `SolvencyCheck.java`, `PlaytestRun.java`, `MillCount.java`,
   `RealismCheck.java`, `JerusSave.java`, `HouseProbe.java` and `BankProbe2.java`
   exist in the working set but are not in the NetBeans source folder. Harmless —

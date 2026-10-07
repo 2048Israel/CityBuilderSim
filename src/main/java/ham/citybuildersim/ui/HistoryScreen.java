@@ -225,6 +225,10 @@ final class HistoryScreen {
         new Trace("reserves",       "Reserves at the central bank", "MONEY", "money"),
         new Trace("advancesToTreasury", "Advances to the treasury", "MONEY", "money"),
         new Trace("remittance",     "Central bank remittance", "MONEY",  "money"),
+        // The city's fund (0.7.39), kept for the fund's pages and the year book and never offered here until 0.7.45 (B13).
+        new Trace("fundValue",      "The fund's worth",   "MONEY",      "money"),
+        new Trace("fundPutIn",      "Paid into the fund", "MONEY",      "money"),
+        new Trace("fundTakenOut",   "Taken out of the fund", "MONEY",   "money"),
 
         new Trace("population",     "Population",         "PEOPLE",     "count"),
         new Trace("workforce",      "Workforce",          "PEOPLE",     "count"),
@@ -240,6 +244,11 @@ final class HistoryScreen {
         new Trace("departures",     "Departures",         "PEOPLE",     "count"),
         new Trace("netMigration",   "Net migration",      "PEOPLE",     "count"),
         new Trace("naturalIncrease","Births - deaths",    "PEOPLE",     "count"),
+        // Who goes without (0.7.43's vouchers, offered since 0.7.45 - B13 - and 0.7.45's own series).
+        new Trace("hunger",         "Hungry",             "PEOPLE",     "percent"),
+        new Trace("hungerPricedOut","Hungry: priced out", "PEOPLE",     "percent"),
+        new Trace("householdsAssisted", "Households on food assistance", "PEOPLE", "count"),
+        new Trace("fedByAssistance","Baskets paid by vouchers", "PEOPLE", "count"),
 
         /* The running totals of who has died (2026-09-11) - derived, see historyValues(). */
         new Trace("cumulative:deaths",         "Died since founding", "THE DEAD", "count"),
@@ -282,6 +291,22 @@ final class HistoryScreen {
         new Trace("foodPrice",      "Food",               "PRICES",     "unitprice"),
         new Trace("materialsPrice", "Materials",          "PRICES",     "unitprice"),
         new Trace("orePrice",       "Ore",                "PRICES",     "unitprice"),
+        // The basket and the shelf (0.7.45; recorded from this build on): each component's own level,
+        // chained across every new basket, and its weight in the basket in force; the shelf and its floor.
+        new Trace(HistorySave.indexKey(PriceIndex.GROCERIES), "Index: groceries", "PRICES", "index"),
+        new Trace(HistorySave.indexKey(PriceIndex.RENT),      "Index: rent",      "PRICES", "index"),
+        new Trace(HistorySave.indexKey(PriceIndex.MEALS),     "Index: meals",     "PRICES", "index"),
+        new Trace(HistorySave.indexKey(PriceIndex.LUXURY),    "Index: luxury",    "PRICES", "index"),
+        new Trace(HistorySave.indexKey(PriceIndex.SERVICES),  "Index: services",  "PRICES", "index"),
+        new Trace(HistorySave.weightKey(PriceIndex.GROCERIES), "Basket weight: groceries", "PRICES", "percent"),
+        new Trace(HistorySave.weightKey(PriceIndex.RENT),      "Basket weight: rent",      "PRICES", "percent"),
+        new Trace(HistorySave.weightKey(PriceIndex.MEALS),     "Basket weight: meals",     "PRICES", "percent"),
+        new Trace(HistorySave.weightKey(PriceIndex.LUXURY),    "Basket weight: luxury",    "PRICES", "percent"),
+        new Trace(HistorySave.weightKey(PriceIndex.SERVICES),  "Basket weight: services",  "PRICES", "percent"),
+        new Trace("shelfPrice",     "Groceries on the shelf", "PRICES", "unitprice"),
+        new Trace("shelfFloor",     "The shelf's floor",  "PRICES",     "unitprice"),
+        new Trace("basketsAsked",   "Baskets asked for",  "PRICES",     "count"),
+        new Trace("basketsHanded",  "Baskets handed over","PRICES",     "count"),
 
         /* =====================================================================
            EVERYTHING THE CITY GREW AFTER THE GRAPH WAS WRITTEN.
@@ -310,6 +335,10 @@ final class HistoryScreen {
 
         new Trace("priceIndex",     "Price level",        "CREDIT",     "index"),
         new Trace("inflation",      "Inflation (yr)",     "CREDIT",     "percent"),
+        // The anchor (0.7.42, offered since 0.7.45 - B13) and the level every money constant is struck at.
+        new Trace("expectedInflation", "Expected inflation", "CREDIT",  "percent"),
+        new Trace("credibility",    "Trust in the bank",  "CREDIT",     "percent"),
+        new Trace("expectedLevel",  "Expected price level", "CREDIT",   "index"),
         new Trace("businessDebt",   "Business debt",      "CREDIT",     "money"),
         new Trace("policyRate",     "Policy rate",        "CREDIT",     "percent"),
         new Trace("bankPrime",      "Bank prime",         "CREDIT",     "percent"),
@@ -331,6 +360,9 @@ final class HistoryScreen {
         new Trace("bankCapitalRatio","Bank capital ratio","CREDIT",     "percent"),
         new Trace("bankCapitalTarget","Bank capital target","CREDIT",   "percent"),
         new Trace("bankReturnOnEquity","Bank return on equity","CREDIT","percent"),
+        // ...and the other measure (0.7.46): the leverage ratio and its target.
+        new Trace("bankLeverageRatio","Bank leverage ratio","CREDIT",   "percent"),
+        new Trace("bankLeverageTarget","Bank leverage target","CREDIT", "percent"),
 
         new Trace("taxWage",        "Income tax",         "BUDGET",     "money"),
         new Trace("taxProperty",    "Property tax",       "BUDGET",     "money"),
@@ -340,6 +372,7 @@ final class HistoryScreen {
         new Trace("contributions",  "CPP contributions",  "BUDGET",     "money"),
         new Trace("pensionBill",    "Pensions paid",      "BUDGET",     "money"),
         new Trace("healthBill",     "Healthcare (net)",   "BUDGET",     "money"),
+        new Trace("foodAssistance", "Food assistance",    "BUDGET",     "money"),
 
         new Trace("rentPrice",      "Rent a head",        "HOUSING",    "rent"),
         new Trace("homes",          "Homes",              "HOUSING",    "count"),
@@ -367,6 +400,12 @@ final class HistoryScreen {
         new Trace("studentGrants",  "Student grants",     "OUTSIDE THE FAMILIES", "money"),
         new Trace("studentLoansOwed","Student loans owed","OUTSIDE THE FAMILIES", "money"),
         new Trace("studentLoanInterest","Student loan interest","OUTSIDE THE FAMILIES", "money"),
+
+        // What the kitchens and the counters charge (0.7.45; recorded from this build on).
+        new Trace("mealMargin",         "Meals: margin charged",   "SECTORS", "ratio"),
+        new Trace("mealTargetMargin",   "Meals: margin aimed at",  "SECTORS", "ratio"),
+        new Trace("luxuryMargin",       "Luxury: margin charged",  "SECTORS", "ratio"),
+        new Trace("luxuryTargetMargin", "Luxury: margin aimed at", "SECTORS", "ratio"),
     }))));
 
     /** One series per reason for crime, added to CRIME. See HistorySave.crimeKey(). */
@@ -552,6 +591,15 @@ final class HistoryScreen {
                 new String[] {"revenue", "surplus", "debt"}),
         new Preset("Money and credit", "prices, and what the bank is carrying",
                 new String[] {"inflation", "bankLent", "bankCapacity"}),
+        // The new price model's three questions (0.7.45).
+        new Preset("What people expect", "inflation, what people expect it to be, and how far they trust the bank",
+                new String[] {"inflation", "expectedInflation", "credibility"}),
+        new Preset("The basket", "the price level, and each part of the basket's own",
+                new String[] {"priceIndex", HistorySave.indexKey(PriceIndex.GROCERIES), HistorySave.indexKey(PriceIndex.RENT),
+                              HistorySave.indexKey(PriceIndex.MEALS), HistorySave.indexKey(PriceIndex.LUXURY),
+                              HistorySave.indexKey(PriceIndex.SERVICES)}),
+        new Preset("Groceries", "the shelf, its floor, and who went without",
+                new String[] {"shelfPrice", "shelfFloor", "hunger"}),
         new Preset("The world", "the city's edge, in both directions",
                 new String[] {"exportsAbroad", "importsAbroad", "currentAccount"}),
         new Preset("Can people live here", "wages against rent, school and room",
@@ -1503,6 +1551,7 @@ final class HistoryScreen {
                             v -> plotScale(t.unit(), v), v -> fmtUnit(t.unit(), v), "")),
                     axisFor(t.unit()), null, false, false, stack, bands, List.of(), List.of(),
                     t.label().endsWith("(yr)") ? "from the end of the first year" : "nothing recorded yet");
+            chart.setYearly(h.yearlyPoints());
             chart.setSize(wide, SMALL_CHART);
             card = new VBox(6, head, chart);
             if (layered) card.getChildren().add(layersKey(stack.layers(), wide));
@@ -1791,9 +1840,28 @@ final class HistoryScreen {
                 units.isEmpty() || squashed ? null : axisFor(units.get(0)),
                 units.size() == 2 ? axisFor(units.get(1)) : null,
                 squashed, log, layered ? gdpStack(h, units.get(0)) : null,
-                bands, episodes, flags, empty);
+                bands, episodes, flags, drawsAnIndex(keys) ? ChartModel.basketLinks(h, ui.game.getPriceIndex()) : List.of(),
+                empty);
+        // Past five hundred years the oldest entries are years (0.7.55): drawn
+        // at their year's end, a flow a month at a time (HistorySave.aligned()).
+        bigChart.setYearly(h.yearlyPoints());
         if (!chartFull) bigChart.setSize(bigChartWidth(), BIG_CHART);
         return bigChart;
+    }
+
+    /**
+     * Whether the picked lines include a price index - the level, what people
+     * expect it to be, or a part of the basket - whose line answers to the
+     * basket's links: the big chart marks them only then (0.7.45; the UI
+     * spec's D12). A link is the model's doing, not the player's, so it is a
+     * hairline over the plot and not a flag on the decision lane.
+     */
+    boolean drawsAnIndex(List<String> keys) {
+        for (String key : keys) {
+            Trace t = traceFor(key);
+            if (t != null && "index".equals(t.unit()) && ("CREDIT".equals(t.group()) || "PRICES".equals(t.group()))) return true;
+        }
+        return false;
     }
 
     /** One value axis: its gridlines in the unit's own words (axisTick()), and from zero when a per cent. */
@@ -1969,7 +2037,7 @@ final class HistoryScreen {
             case "rate"      -> money.rateUnit();
             case "usd"       -> "US dollars";
             case "index"     -> "index, founding = 1";
-            case "land"      -> "US dollars a square foot";
+            case "land"      -> "US dollars a square metre";
             case "unitprice" -> "dollars a unit";
             case "rent"      -> "dollars a head a month";
             case "share"     -> "dollars a founding share";
@@ -1983,11 +2051,13 @@ final class HistoryScreen {
      * The model counts money in thousands and rates as fractions, and an axis
      * that reads 0.03 for a 3% rate is an axis nobody can use. fmtUnit() already
      * knows every one of these conversions for text; this is the same table for
-     * a number.
+     * a number. Ground, kept a square foot, is drawn a square metre since
+     * 0.7.68, as the land office prices it (LandManager.perM2()).
      */
     static double plotScale(String unit, double v) {
         return switch (unit) {
-            case "money", "usd", "land", "unitprice", "rent", "share" -> v * 1000;
+            case "land"    -> LandManager.perM2(v) * 1000;
+            case "money", "usd", "unitprice", "rent", "share" -> v * 1000;
             case "percent" -> v * 100;
             default        -> v;
         };
@@ -2448,7 +2518,8 @@ final class HistoryScreen {
             case "cumulative:deathsOrphans":
             case "cumulative:deathsUnhoused":
             case "cumulative:deathsKilled":
-                return HistorySave.runningTotal(h.aligned(key.substring("cumulative:".length())));
+                // Off the stored figures: a folded year adds its sum (0.7.55).
+                return h.runningTotal(key.substring("cumulative:".length()));
             case "naturalIncrease": return minus(h.aligned("births"), h.aligned("deaths"));
 
             /*
@@ -2508,8 +2579,9 @@ final class HistoryScreen {
             case "percent":   return String.format("%.1f%%", unsigned0(v * 100, 1));
             // Ground is kept per square foot in thousands, and the land screen
             // already shows it multiplied out. Two screens, one convention -
-            // and in US dollars since 0.7.6, which is what the world asks.
-            case "land":      return String.format("US$%.2f", unsigned0(v * 1000, 2));
+            // and in US dollars since 0.7.6, which is what the world asks, a
+            // square metre since 0.7.68 (LandManager.perM2()).
+            case "land":      return String.format("US$%.2f", unsigned0(LandManager.perM2(v) * 1000, 2));
             // A world price - food, materials, ore - kept in thousands like
             // every other price in the game. Multiplied out for the same reason
             // rent is: printed raw it reads as cents.
@@ -2994,14 +3066,16 @@ final class HistoryScreen {
     /**
      * The fold: the goods traded both ways on their bands, the world's floor
      * and ceiling a rule through every row; then those open at one end and
-     * those their seller prices, in words. Right after a load the railway's
-     * freight on each good is not struck yet, so a band can step a month on;
-     * a line says so (TradeScreen's B14).
+     * those their seller prices, in words. Before a month is counted - a
+     * city just founded, or loaded from a save before 0.7.46, which did not
+     * carry the month's trade (A1) - the railway's freight on each good is
+     * not struck yet, so a band can step a month on; a line says so
+     * (TradeScreen's B14).
      */
     javafx.scene.Node goodsRows() {
         VBox box = new VBox(10);
         if (!ui.game.getForeignAccounts().isMonthCounted()) {
-            box.getChildren().add(quiet("Just loaded: the railway's freight on each good is struck when the month "
+            box.getChildren().add(quiet("Not counted yet: the railway's freight on each good is struck when the month "
                     + "turns, so these bands may step a month on."));
         }
         List<ScaleRow> both = new ArrayList<>(), oneSide = new ArrayList<>(), sellers = new ArrayList<>();

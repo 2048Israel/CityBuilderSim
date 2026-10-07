@@ -1,6 +1,6 @@
-# Automotive.java - 272 lines · 7 methods · 1 constants · sectors
+# Automotive.java - 283 lines · 7 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > The automobile industry. THE THIRTEENTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -62,7 +62,7 @@
 
 **Uses:** [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (10), [Game](Game.md) (5), [Formats](Formats.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
 
-**Used by (1):** [Sectors](Sectors.md)
+**Used by (2):** [CarCheck](CarCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -81,7 +81,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 200 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 73 | 211 | **type** `public final class Automotive extends Sector` | The automobile industry. |
 | 111 | 13 | `public Automotive()` |  |
 
 ### PLANNING - can the city supply it, and then is it worth it (lines 125-235)
@@ -93,10 +93,10 @@
 | 148 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with HeavyIndustry's supply gate in front of it. |
 | 234 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
 
-### the screen (lines 236-272)
+### the screen (lines 236-283)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 239 | 1 | `public boolean hasPlantBlock()` |  |
-| 242 | 30 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 242 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
 

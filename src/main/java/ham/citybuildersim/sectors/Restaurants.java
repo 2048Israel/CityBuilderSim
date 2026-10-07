@@ -47,7 +47,8 @@ import java.util.Map;
  * A city at the wall can feed some of its people through a kitchen instead,
  * and the hunger measure sees it, because a meal is a meal wherever it was
  * cooked. See HouseholdBalance.advanceMonth(), where meals eaten are added to
- * what a household ate before it is compared against subsistence.
+ * what a household ate before it is compared against the baskets it needs
+ * (against subsistence, in money, until 0.7.43).
  *
  * TWO: SOMEWHERE FOR THE MONEY TO GO. A meal out costs a multiple of what the
  * same food costs at home, and the multiple is the sector's whole revenue.
@@ -120,11 +121,23 @@ public class Restaurants extends Sector {
     /** ...and what a kitchen with a queue at the door charges. */
     public static final double MARGIN_CEILING = 8.0;
 
+    /**
+     * The share of the way, in logs, a kitchen's charged margin moves toward
+     * the one its queue strikes in a month: a sixth (0.7.43; spec-inflation.md
+     * 2.7). A menu is reprinted, not re-struck every evening; the food under
+     * it passes through at once, so only the margin is sticky, and it carries
+     * no drift of its own - the food's price already does.
+     */
+    public static final double MARGIN_SPEED = 1.0 / 6;
+
     /** What one meal sells for this month. Struck, not quoted from a table. */
     private double sellPrice;
 
-    /** The month's reading, for the screen and the harness. */
-    private double rMargin = MARGIN_FLOOR, rWanted, rServed, rSeats, rFoodCost;
+    /** The month's reading, for the screen and the harness: the margin CHARGED, and the one the queue struck (the target). */
+    private double rMargin = MARGIN_FLOOR, rTargetMargin = MARGIN_FLOOR, rWanted, rServed, rSeats, rFoodCost;
+
+    /** The margin the kitchens charge, carried month to month (0.7.43); NaN until the first strike, and on a save from before, which opens at the target. */
+    private double chargedMargin = Double.NaN;
 
     /**
      * Kilograms of each good in one person-month, handed in by Game.
@@ -176,9 +189,9 @@ public class Restaurants extends Sector {
        =================================================================== */
 
     /** Meals the kitchens can serve a month, off their buildings. */
-    public int seats() {
+    public long seats() {
         return buildings == null ? 0
-                : (int) Math.round(buildings.totalBySector(key(), b -> b.getCoverage()));
+                : Math.round(buildings.totalBySector(key(), b -> b.getCoverage()));
     }
 
     /**
@@ -209,7 +222,10 @@ public class Restaurants extends Sector {
         return sum;
     }
 
+    /** The margin charged this month: a sixth of the way from last month's to the target, in logs. */
     public double getMargin()    { return rMargin; }
+    /** The margin the queue struck this month, which the charged one chases. */
+    public double getTargetMargin() { return rTargetMargin; }
     public double getWanted()    { return rWanted; }
     public double getServed()    { return rServed; }
     public double getSeats()     { return rSeats; }
@@ -218,8 +234,9 @@ public class Restaurants extends Sector {
 
     /**
      * Strikes the margin against the queue and returns what a meal costs this
-     * month. Nothing is served yet - the households have to be asked at this
-     * price before they can answer.
+     * month - since 0.7.43 the queue strikes the TARGET, and the margin
+     * charged moves MARGIN_SPEED of the way to it. Nothing is served yet -
+     * the households have to be asked at this price before they can answer.
      *
      * THE TWO-PASS SHAPE IS THE HOUSE'S, for the reason written at
      * HouseholdBalance.clearUsedCars() and used again for the boutiques:
@@ -230,7 +247,7 @@ public class Restaurants extends Sector {
      * @param wanted meals the households came for, before any cap
      */
     public double strikeMargin(Markets markets, double wanted) {
-        int seats = seats();
+        long seats = seats();
         rSeats = seats;
         rWanted = Math.max(0, wanted);
         wanted = rWanted;
@@ -244,7 +261,17 @@ public class Restaurants extends Sector {
          * ceiling, and with no kitchens at all there is nothing to strike.
          */
         double position = wanted + seats <= 0 ? 0 : wanted / (wanted + seats);
-        rMargin = MARGIN_FLOOR + (MARGIN_CEILING - MARGIN_FLOOR) * position;
+        rTargetMargin = MARGIN_FLOOR + (MARGIN_CEILING - MARGIN_FLOOR) * position;
+        /*
+         * ...AND THE MENU CHASES IT (0.7.43): MARGIN_SPEED of the way a month,
+         * in logs, between the floor and the ceiling. Until 0.7.43 the margin
+         * WAS the position, struck afresh every month. The first strike - and
+         * a save from before, which carries no charged margin - opens at it.
+         */
+        chargedMargin = Double.isNaN(chargedMargin) ? rTargetMargin
+                : Math.max(MARGIN_FLOOR, Math.min(MARGIN_CEILING,
+                        Retail.stickyPrice(chargedMargin, rTargetMargin, 0, MARGIN_SPEED)));
+        rMargin = chargedMargin;
         sellPrice = food * rMargin;
 
         rServed = 0;
@@ -261,7 +288,7 @@ public class Restaurants extends Sector {
      * @return meals served
      */
     public double serve(Markets markets, double meals) {
-        int seats = seats();
+        long seats = seats();
         double servable = Math.min(Math.max(0, meals), seats) * getOperatingRate();
         // Whole meals: a quantity crossing from the money world into the
         // physical one crosses at a grain coarser than the dust. Nobody is
@@ -336,7 +363,7 @@ public class Restaurants extends Sector {
             return BusinessInvestment.Decision.no(sector, "already building");
         }
 
-        int seats = seats();
+        long seats = seats();
         double queue = rWanted;
         if (queue <= seats * (1 + BusinessInvestment.TARGET_HEADROOM)) {
             return BusinessInvestment.Decision.no(sector, "tables ahead of diners");
@@ -461,5 +488,30 @@ public class Restaurants extends Sector {
                 + " market, at the same prices. They add no food to this city. What they"
                 + " add is a second door to the food it has.", MEALS_A_PERSON_MONTH)));
         return lines;
+    }
+    /* ===================================================================
+       SAVE, RESET (0.7.43)
+       =================================================================== */
+
+    /** The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. */
+    @Override
+    protected void saveExtras(Map<String, Double> extras) {
+        if (!Double.isNaN(chargedMargin)) extras.put("chargedMargin", chargedMargin);
+        extras.put("targetMargin", rTargetMargin);
+    }
+
+    /** A save from before 0.7.43 has none, and the first strike opens at its target. */
+    @Override
+    protected void restoreExtras(Map<String, Double> extras) {
+        chargedMargin = extras.getOrDefault("chargedMargin", Double.NaN);
+        // ...and the month's two readings, for the screen between presses.
+        if (!Double.isNaN(chargedMargin)) rMargin = chargedMargin;
+        rTargetMargin = extras.getOrDefault("targetMargin", rMargin);
+    }
+
+    @Override
+    protected void resetExtras() {
+        chargedMargin = Double.NaN;
+        rMargin = rTargetMargin = MARGIN_FLOOR;
     }
 }

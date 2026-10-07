@@ -209,7 +209,8 @@ final class InfrastructureScreen {
 
         double commuters = roads.getLoad(Traffic.COMMUTERS);
         double owned = roads.getCarOwnership();
-        double fare = ui.game.getEconomyManager().getTaxPolicy().getTransitFare();
+        // In today's money (0.7.45; the UI spec's B7, D13): what a rider is charged, the dial at the struck level.
+        double fare = ui.game.getEconomyManager().getTaxPolicy().chargedFare();
 
         VBox full = limitCell("SERVED", CityNeeds.servedPct(served.share()),
                 BuildScreen.servedWords(served) + ": its capacity over the trips on it", tone,
@@ -786,9 +787,11 @@ final class InfrastructureScreen {
 
        The page's question: how many ride, what stops more, and what does the
        fare do? A funnel from the commuters through the three ceilings - the
-       stock, the road under it, the share any city rides - the lowest of
-       which wins, then the fare and the cars walking it down to the riders.
-       Then the books and the fare, side by side.
+       stock, the road under it, the share a city's lines reach - the lowest
+       of which wins, then the riders by reason (0.7.49): the commuters with
+       no car of their own, who ride at any fare if a line reaches them, and
+       the owners, who weigh a ride against a journey's fuel. Then the books
+       and the fare, side by side.
        ===================================================================== */
 
     void transitPage(VBox page) {
@@ -801,7 +804,7 @@ final class InfrastructureScreen {
         double commuters = roads.getLoad(Traffic.COMMUTERS);
         double stock = roads.getTransitCapacity();
         double riders = roads.getTransitRiders();
-        double fare = policy.getTransitFare();
+        double fare = policy.chargedFare();   // today's money (0.7.45)
         BuildAdvice.Measure transit = BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT);
 
         VBox fareCard = fareCard(roads, econ, policy);
@@ -824,14 +827,14 @@ final class InfrastructureScreen {
                             Palette.SIZE_BODY, Palette.TEXT_LABEL),
                     words(fare <= 0 ? "free to ride" : unitPrice(fare) + " a ride · " + money(policy.monthlyFare()) + " a month",
                             Palette.SIZE_BODY, Palette.TEXT_LABEL));
-            page.getChildren().add(heroCard(left, 300, transitFunnel(roads, fareCard, transit)));
+            page.getChildren().add(heroCard(left, 300, transitFunnel(roads, policy, transit)));
         }
 
         javafx.scene.layout.GridPane cards = equalColumns(2, TILE_GAP);
         cards.add(transitBooks(econ), 0, 0);
         cards.add(fareCard, 1, 0);
         page.getChildren().add(cards);
-        page.getChildren().add(details("transit", "the ceilings, the walk-down, the books and the fare, line by line",
+        page.getChildren().add(details("transit", "the ceilings, the riders by reason, the books and the fare, line by line",
                 detailsOpen, ui::redraw, () -> transitStatement(roads, econ, policy)));
     }
 
@@ -846,24 +849,25 @@ final class InfrastructureScreen {
             + "and no city on earth puts everybody on public transport. Those are the "
             + "second and third lines. The first is the only one a player buys.";
 
-    /** The cars' step's (i) (P8): how the remembered commute walks the drivers onto the tram. */
-    static String carsRideInfo(InfrastructureManager roads) {
-        if (roads.getCarOwnership() <= 0) {
-            return "Nobody owns a car, so everybody under the ceiling who will pay the fare rides.";
-        }
-        return String.format(
-                "A household with a car in the drive does not ride on a clear morning - "
-                + "which is what makes a motorised city jam in the first place - and %.0f%% "
-                + "of them ride when nothing is moving. The commute this city remembers "
-                + "is %.0f%% of free-flowing, so %.0f%% of its drivers are on a tram. "
-                + "People drive until the road is full, then take the tram.",
-                InfrastructureManager.CAR_OWNER_RIDES_AT_GRIDLOCK * 100,
-                roads.getRememberedThroughput() * 100,
-                InfrastructureManager.CAR_OWNER_RIDES_AT_GRIDLOCK * roads.getJam() * 100);
+    /**
+     * The owners' row's (i) (P8, rewritten for 0.7.49): what a ride costs
+     * against a journey's fuel and the share that choose the bus on it
+     * (InfrastructureManager.ownersChoosingAt()), and what the remembered
+     * commute adds (ownersRidingAt()).
+     */
+    static String carsRideInfo(InfrastructureManager roads, TaxPolicy policy) {
+        double dial = policy.getTransitFare();
+        double chose = roads.ownersChoosingAt(dial), ride = roads.ownersRidingAt(dial);
+        return String.format("%s against a journey's fuel %s: %s choose the bus on cost, and the jam adds "
+                        + "the rest. The commute this city remembers is %s of free-flowing, so %s of the owners "
+                        + "in reach would ride, and the seats the car-less leave carry %s of them. All on the bus "
+                        + "at half the fuel's cost, all in the car at twice it.",
+                dial <= 0 ? "A free ride" : "A ride " + unitPrice(policy.chargedFare()), unitPrice(roads.getFuelPerJourney()),
+                pct(chose), pct(roads.getRememberedThroughput()), pct(ride), people(roads.getChoiceRiders()));
     }
 
-    /** The funnel: commuters, the three ceilings with the lowest tagged, the fare's step and the cars' to the riders - on one scale, the commuters full. */
-    VBox transitFunnel(InfrastructureManager roads, VBox fareCard, BuildAdvice.Measure transit) {
+    /** The funnel: commuters, the three ceilings with the lowest tagged, and the riders by reason (0.7.49) - on one scale, the commuters full. */
+    VBox transitFunnel(InfrastructureManager roads, TaxPolicy policy, BuildAdvice.Measure transit) {
         double commuters = roads.getLoad(Traffic.COMMUTERS);
         double stock = roads.getTransitCapacity(), road = roads.getTransitRoadCeiling(), share = roads.getTransitShareCeiling();
         double lowest = roads.getTransitCeiling();
@@ -876,7 +880,7 @@ final class InfrastructureScreen {
         rows.add(ScaleRow.caption("Three ceilings: the lowest wins", CEILINGS_INFO));
         String[] names = {"the stock could carry",
                 String.format("the road under it allows (%.0f× street capacity)", InfrastructureManager.TRANSIT_NEEDS_ROAD),
-                pct(InfrastructureManager.TRANSIT_MAX_SHARE) + " of commuters, the most any city rides"};
+                pct(InfrastructureManager.TRANSIT_MAX_SHARE) + " of each group, the most a city's lines reach"};
         double[] at = {stock, road, share};
         Runnable[] go = {() -> ui.buildScreen.openOn(transit), () -> open("Roads"), null};
         for (int k = 0; k < 3; k++) {
@@ -888,14 +892,7 @@ final class InfrastructureScreen {
             if (go[k] != null) row = row.go(go[k]);
             rows.add(row);
         }
-        rows.add(ScaleRow.of("the fare: " + pct(roads.getFareShare()) + " still ride", people(roads.getRidersAtFare()),
-                        List.of(Run.of(0, roads.getRidersAtFare(), Palette.PEOPLE).go(() -> scrollTo(fareCard))))
-                .go(() -> scrollTo(fareCard)).tip("The fare walks the ceiling down: the fare card is under this."));
-        rows.add(ScaleRow.of(roads.getCarOwnership() <= 0 ? "the cars: nobody owns one"
-                        : "the cars: " + pct(roads.willingToRide()) + " of the rest still ride",
-                        people(roads.getTransitRiders()),
-                        List.of(Run.of(0, roads.getTransitRiders(), Palette.PEOPLE)))
-                .strong().info(carsRideInfo(roads)));
+        rows.addAll(ridersByReason(roads, policy));
 
         VBox box = new VBox(8, caption("FROM COMMUTERS TO RIDERS", null), scaleRows(rows, scale, List.of(), 230, 84, 14));
         HBox ring = new HBox(Palette.GAP_LOOSE,
@@ -908,6 +905,41 @@ final class InfrastructureScreen {
         box.getChildren().add(ring);
         return box;
     }
+
+    /**
+     * THE RIDERS BY REASON (0.7.49), under the ceilings: the commuters with
+     * no car of their own - in reach, riding, and walking, out of reach or
+     * with no seat - then the owners - in reach, and who chose the bus - and
+     * those who drive, and the riders. Each the network's own read.
+     */
+    List<ScaleRow> ridersByReason(InfrastructureManager roads, TaxPolicy policy) {
+        double carless = roads.getCaptiveCommuters(), inReach = roads.getCaptiveDemand(), riding = roads.getCaptiveRiders();
+        double walking = roads.getWalking();
+        double owners = roads.getOwnerCommuters(), ownersInReach = owners * InfrastructureManager.TRANSIT_MAX_SHARE;
+        double chose = roads.getChoiceRiders(), drivers = roads.getDrivers(), riders = roads.getTransitRiders();
+        List<ScaleRow> rows = new ArrayList<>();
+        rows.add(ScaleRow.caption("Riders by reason", RIDERS_INFO));
+        rows.add(ScaleRow.of("No car of their own: " + people(carless) + " (" + pct(roads.getCaptiveShare()) + ") · in reach "
+                        + people(inReach) + " · riding " + people(riding), people(riding),
+                List.of(Run.of(0, riding, Palette.PEOPLE), Run.of(riding, walking, Palette.PEOPLE).outlined())));
+        rows.add(ScaleRow.of("walking: " + people(walking), people(walking),
+                List.of(Run.of(0, walking, Palette.PEOPLE + "59"))).tip("no line near them or no seat"));
+        rows.add(ScaleRow.of("With a car: " + people(owners) + " · in reach " + people(ownersInReach)
+                        + " · chose the bus " + people(chose), people(chose),
+                List.of(Run.of(0, chose, Palette.PEOPLE), Run.of(chose, drivers, Palette.PEOPLE).outlined()))
+                .info(carsRideInfo(roads, policy)));
+        rows.add(ScaleRow.of("Drive (chose the car): " + people(drivers), people(drivers),
+                List.of(Run.of(0, drivers, Palette.PEOPLE + "59"))));
+        rows.add(ScaleRow.of("Riders: " + people(riders), people(riders),
+                List.of(Run.of(0, riders, Palette.PEOPLE))).strong());
+        return rows;
+    }
+
+    /** The riders' caption's (i) (0.7.49). */
+    static final String RIDERS_INFO = "A household holds one car at most, so a couple's second earner and four of five "
+            + "flatmates have none. Those with no car of their own ride whatever the fare if a line reaches them and "
+            + "there is a seat, and walk if not - the seats go to them first. Owners weigh a ride against a journey's "
+            + "fuel. The same share of each group lives in reach of a line.";
 
     /** WHAT IT COSTS THE CITY: the bill as a bar, the fares in it, and the net - neutral, with signs: a net cost is a policy, not a failure. */
     VBox transitBooks(EconomyManager econ) {
@@ -925,7 +957,10 @@ final class InfrastructureScreen {
                 column(statementLine("Drivers, crews and upkeep", signedTight(bill, true)),
                         statementLine("Fares collected", signedTight(fares, false)),
                         statementTotal(net > 0 ? "Net cost to the city" : "Net profit to the city",
-                                signedTight(Math.abs(net), net > 0), Palette.TEXT_HEAD)));
+                                signedTight(Math.abs(net), net > 0), Palette.TEXT_HEAD)),
+                // ...and who pays it (0.7.49, B9): the treasury, a promise, on the budget's Transit line.
+                door("paid by the treasury every month · Government › Spending", Palette.ACCENT,
+                        () -> ui.governmentScreen.open("Spending", null)));
         return card;
     }
 
@@ -941,19 +976,62 @@ final class InfrastructureScreen {
     VBox fareCard(InfrastructureManager roads, EconomyManager econ, TaxPolicy policy) {
         double fare = policy.getTransitFare();
         double want = ui.policyScreen.staged("fare", fare);
-        java.util.function.DoubleFunction<String> reads = r -> r <= 0 ? "free" : unitPrice(r);
+        /*
+         * IN TODAY'S MONEY (0.7.45; the UI spec's B7, D13): the dial is a ride's
+         * price at founding prices, and the month charges it at the expected
+         * price level the money constants are struck at - so the card, its
+         * ladder and its Apply read the charged fare, and the dial's founding
+         * figure and the level are behind the (i), as the floor card does.
+         */
+        double level = policy.getExpectedLevel();
+        java.util.function.DoubleFunction<String> reads = r -> r <= 0 ? "free" : unitPrice(r * level);
+        // ...to the cap in today's unit (B6, 0.7.47), as TaxPolicy.setTransitFare() holds it.
         Ladder ladder = ui.policyScreen.ownLadder("fare", fare, 0,
-                TaxPolicy.MAX_TRANSIT_FARE, TaxPolicy.MAX_TRANSIT_FARE / 20, reads);
-        return dialCard(new Levers.DialCard(Icons.BUS, Palette.PEOPLE, "THE FARE", FARE_INFO,
-                        fare <= 0 ? "free" : unitPrice(fare) + " a ride",
+                policy.maxTransitFare(), policy.maxTransitFare() / 20, reads);
+        /*
+         * ...AND THE ANCHOR ON THE CARD (0.7.49): the dial's founding price
+         * and the level it is charged at, which the (i) alone carried; and a
+         * third line, what the fare is weighed against and who it weighs on -
+         * a drive's fuel, and a month's pass against an unskilled household's
+         * take-home (the transit spec's risk 1: a commuter with no car pays
+         * whatever the fare is).
+         */
+        return dialCard(new Levers.DialCard(Icons.BUS, Palette.PEOPLE, "THE FARE", fareInfo(policy),
+                        fare <= 0 ? "free" : unitPrice(policy.chargedFare()) + " a ride",
                         fare <= 0 ? "free: nobody pays to ride"
                                 : money(policy.monthlyFare()) + " a month for " + String.format("%.0f", TaxPolicy.JOURNEYS_A_MONTH)
-                                  + " journeys, " + unitPrice(fare) + " each",
-                        null, ladder, want, fareEffects(roads, econ),
+                                  + " journeys · set at " + unitPrice(fare) + " at founding prices, "
+                                  + String.format("×%.3f", policy.getExpectedLevel()) + " the prices people expect",
+                        List.of(words(fareWeighs(roads, policy), Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
+                        ladder, want, fareEffects(roads, econ),
                         "this month's ceilings at the new fare - the second round is not in it", PREVIEW_INFO,
-                        ui.policyScreen.applyFoot("fare", want <= 0 ? "Make it free" : "Set the fare to " + unitPrice(want),
+                        ui.policyScreen.applyFoot("fare", want <= 0 ? "Make it free" : "Set the fare to " + unitPrice(want * level),
                                 () -> policy.setTransitFare(want))),
                 FARE_LADDER, true);
+    }
+
+    /**
+     * The fare card's third line (0.7.49): a drive's fuel a journey, as the
+     * month struck it at the exchange rate, and a month's pass as a share of
+     * an unskilled household's take-home - its row's take-home over its
+     * households (HouseholdAccounts.getRowDisposable()).
+     */
+    String fareWeighs(InfrastructureManager roads, TaxPolicy policy) {
+        HouseholdAccounts books = ui.game.getHouseholds();
+        int unskilled = PayTier.UNSKILLED.ordinal();
+        double homes = books.getRowHouseholds(unskilled);
+        double takeHome = homes > 0 ? books.getRowDisposable(unskilled) / homes : 0;
+        String fuel = "a drive's fuel: " + unitPrice(roads.getFuelPerJourney()) + " a journey at today's exchange rate";
+        if (!(takeHome > 0) || policy.getTransitFare() <= 0) return fuel;
+        return fuel + " · a month's pass is " + String.format("%.1f%%", policy.monthlyFare() / takeHome * 100)
+                + " of an unskilled household's take-home";
+    }
+
+    /** The fare's (i) with the dial behind it (0.7.45): its founding figure and the level it is charged at. */
+    static String fareInfo(TaxPolicy policy) {
+        return FARE_INFO + String.format(" The dial is set at founding prices - %s a ride - and charged at the price level"
+                        + " people expect, ×%.3f this month (what money constants are struck at): %s.",
+                unitPrice(policy.getTransitFare()), policy.getExpectedLevel(), unitPrice(policy.chargedFare()));
     }
 
     /** The fare's ladder, and its effects under it: the card is one of two across the page. */
@@ -962,15 +1040,22 @@ final class InfrastructureScreen {
     /**
      * What the fare would do at any value of its thumb (pure: the probe reads
      * them), each the model's read at that fare against this month's: the
-     * riders (InfrastructureManager.ridersAt()), a month of fares from them
+     * riders (InfrastructureManager.ridersAt()) and the car owners among them
+     * (choiceRidersAt(), 0.7.49), a month of fares from them
      * (faresAt()), what the system then costs the city net
      * (EconomyManager.transitNetAt()), and the trips the change puts back
      * onto the road (backOnTheRoadAt()). Area colours, never a verdict: a
      * dear fare and a free one are both a policy.
      */
     java.util.function.DoubleFunction<List<Pieces.Effect>> fareEffects(InfrastructureManager roads, EconomyManager econ) {
+        // The riders' (i) splits them (0.7.49): the car-less ride at any fare, the owners choose.
+        String split = String.format("This month %s of the riders have no car of their own and ride whatever the fare; "
+                        + "%s are car owners who chose the bus. A fare moves only the owners.",
+                Money.people(roads.getCaptiveRiders()), Money.people(roads.getChoiceRiders()));
         return v -> List.of(
                 Pieces.Effect.of("Riders", roads.getTransitRiders(), roads.ridersAt(v), Money::people)
+                        .colour(Palette.PEOPLE).info(split),
+                Pieces.Effect.of("Car owners on the bus", roads.getChoiceRiders(), roads.choiceRidersAt(v), Money::people)
                         .colour(Palette.PEOPLE),
                 Pieces.Effect.of("Fares collected, a month", econ.getTransitFares(), roads.faresAt(v), Money::money)
                         .delta(PolicyScreen::moneyMove),
@@ -987,12 +1072,10 @@ final class InfrastructureScreen {
     }
 
     /** The fare's (i) (P9). */
-    static final String FARE_INFO = "A FARE IS A PRICE AND NOT A CHARGE, which is what makes this different "
-            + "from a clinic's fee: the person on the tram chose to be there and can "
-            + "choose a car instead. The fare and the riders move against each other - a "
-            + "fare high enough to turn a profit is a fare people will not pay, and "
-            + "everybody who will not pay it is back on the road this was built to "
-            + "relieve. That is the whole decision.";
+    static final String FARE_INFO = "A FARE IS A PRICE TO CAR OWNERS AND A CHARGE TO EVERYONE ELSE. Commuters with no car "
+            + "of their own ride whatever it costs if a line reaches them; owners weigh it against a journey's fuel - all "
+            + "on the bus at half its cost, all in the car at twice it. A dearer fare takes more money and puts owners "
+            + "back on the road; it does not empty the buses.";
 
     /** The preview's (i) (P10). */
     static final String PREVIEW_INFO = "The riders line is this month's ceilings at the new fare, which is the "
@@ -1008,17 +1091,24 @@ final class InfrastructureScreen {
                 statementLine(String.format("...what the road under it allows (%.0fx street capacity)",
                                 InfrastructureManager.TRANSIT_NEEDS_ROAD),
                         String.format("%,.0f", roads.getTransitRoadCeiling()), Palette.TEXT_MUTED),
-                statementLine(String.format("...and the most any city ever rides (%.0f%% of commuters)",
+                statementLine(String.format("...and the most a city's lines reach (%.0f%% of each group)",
                                 InfrastructureManager.TRANSIT_MAX_SHARE * 100),
                         String.format("%,.0f", roads.getTransitShareCeiling()), Palette.TEXT_MUTED),
                 statementTotal("The lowest of them", String.format("%,.0f", roads.getTransitCeiling()), Palette.TEXT_HEAD),
                 statementNote(CEILINGS_INFO),
-                statementHead("...and then two things walk it down"),
-                statementLine("Put off by the fare", String.format("%.0f%% still ride", roads.getFareShare() * 100)),
-                statementLine("Driving instead, because they own a car",
-                        roads.getCarOwnership() <= 0 ? "nobody owns one"
-                                : String.format("%.0f%% still ride", roads.willingToRide() * 100)),
-                roads.getCarOwnership() > 0 ? statementNote(carsRideInfo(roads)) : null,
+                statementHead("Riders by reason"),
+                statementLine(String.format("No car of their own (%s)", pct(roads.getCaptiveShare())),
+                        people(roads.getCaptiveCommuters())),
+                statementLine("...in reach of a line", people(roads.getCaptiveDemand()), Palette.TEXT_MUTED),
+                statementLine("...riding, whatever the fare", people(roads.getCaptiveRiders())),
+                statementLine("...walking: no line near them or no seat", people(roads.getWalking()), Palette.TEXT_MUTED),
+                statementLine("With a car", people(roads.getOwnerCommuters())),
+                statementLine("...in reach of a line",
+                        people(roads.getOwnerCommuters() * InfrastructureManager.TRANSIT_MAX_SHARE), Palette.TEXT_MUTED),
+                statementLine("...chose the bus", people(roads.getChoiceRiders())),
+                statementNote(carsRideInfo(roads, policy)),
+                statementLine("Drive (chose the car)", people(roads.getDrivers())),
+                statementTotal("Riders", people(roads.getTransitRiders()), Palette.TEXT_HEAD),
                 statementHead("What it costs the city"),
                 statementLine("Drivers, crews and upkeep", signedTight(econ.getTransitBill(), true)),
                 statementLine("Fares collected", signedTight(econ.getTransitFares(), false)),
@@ -1027,7 +1117,9 @@ final class InfrastructureScreen {
                 statementHead("The fare"),
                 statementLine(String.format("...and what a month of riding costs one commuter (%.0f journeys)",
                                 TaxPolicy.JOURNEYS_A_MONTH),
-                        fare <= 0 ? "nothing" : money(policy.monthlyFare()), fare <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_HEAD));
+                        fare <= 0 ? "nothing" : money(policy.monthlyFare()), fare <= 0 ? Palette.TEXT_MUTED : Palette.TEXT_HEAD),
+                statementLine("...against a drive's fuel, a journey at today's exchange rate",
+                        unitPrice(roads.getFuelPerJourney())));
         return c;
     }
 
@@ -1144,7 +1236,8 @@ final class InfrastructureScreen {
                         money(truck), ""),
                 bar, key);
         if (rail.getFuelBill() > 0) {
-            box.getChildren().add(words(money(rail.getFuelBill()) + " of the railway's own bill is fuel bought abroad",
+            box.getChildren().add(words(money(rail.getFuelBill()) + " of the railway's own bill is fuel"
+                    + abroadWords(rail.getFuelBill(), rail.getFuelImported(), " bought abroad"),
                     Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         }
         if (truck <= 0) box.getChildren().add(words("Nothing crossed the boundary last month.", Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -1223,7 +1316,8 @@ final class InfrastructureScreen {
                 bulletBar(billed, allowed, Palette.BUSINESS, 0,
                         "billed " + money(billed) + " · the rule allows "
                         + (Double.isFinite(allowed) ? money(allowed) : "— (" + UNKNOWN_YET + ")")),
-                words("fuel " + money(rail.getFuelBill()) + " a month, bought abroad", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+                words("fuel " + money(rail.getFuelBill()) + " a month"
+                        + abroadWords(rail.getFuelBill(), rail.getFuelImported(), ", bought abroad"), Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 netLine,
                 words("track " + money(rail.getBuildingsValue()) + " and land " + money(rail.getLandValue()) + " on its books",
                         Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -1524,5 +1618,16 @@ final class InfrastructureScreen {
                 + "nobody needs a lorry. The first farm, mine or mill changes that.") : fleets);
         c.getChildren().add(statementNote(LORRY_INFO));
         return c;
+    }
+
+    /**
+     * How much of a fuel bill was bought abroad (0.7.62), after the bill's own
+     * words: all of it, `whole` (", bought abroad"); part, ", $1.2M of it
+     * bought abroad"; none, ", off the city's refineries".
+     */
+    static String abroadWords(double bill, double imported, String whole) {
+        if (!(imported < bill - 1e-9 * Math.max(1, bill))) return whole;
+        if (!(imported > 0)) return ", off the city's refineries";
+        return ", " + money(imported) + " of it bought abroad";
     }
 }

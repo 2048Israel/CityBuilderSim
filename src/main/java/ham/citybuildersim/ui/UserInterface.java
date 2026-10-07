@@ -521,6 +521,11 @@ public class UserInterface extends Application {
         // stage since 0.7.21 - the clock is in the header - so nothing has to
         // be left clear for it.
         this.rootMenu.setPadding(new javafx.geometry.Insets(8, 0, 14, 0));
+        // A page torn down hears nothing (0.7.50; see clearMenu): while it is emptied, the pointer's
+        // exits from what it removes stop here, before any handler on the old page runs.
+        this.rootMenu.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_EXITED_TARGET, e -> {
+            if (tearingDown) e.consume();
+        });
 
         // Persistent construction panel down the right-hand side. The menu system
         // swaps the contents of rootMenu constantly, so the panel lives outside it
@@ -1141,8 +1146,9 @@ public class UserInterface extends Application {
            top of a new screen" means.
            ================================================================= */
         // The chart's full screen is City History's, and goes when another screen comes (0.7.23) -
-        // without History redrawing itself in the middle of this one's drawing.
-        if (chartFull != null && !"showHistoryMenu".equals(screen)) leaveChartFullScreen(false);
+        // without History redrawing itself in the middle of this one's drawing. Since 0.7.61 the pane is
+        // the screen's that laid it (the land office's map too), and its own redraws on the clock keep it.
+        if (chartFull != null && !screen.equals(chartFullOwner)) leaveChartFullScreen(false);
         // ...and City History, left, lets go of its chart's drag and its pending redraw (after the docs pass).
         if ("showHistoryMenu".equals(currentScreen) && !"showHistoryMenu".equals(screen)) historyScreen.leaving();
         boolean sameScreen = screen.equals(currentScreen) && !railJump;
@@ -1220,7 +1226,32 @@ public class UserInterface extends Application {
         }
         final boolean releasePage = heldPage;
 
-        rootMenu.getChildren().clear();
+        /* =================================================================
+           A PAGE TORN DOWN HEARS NOTHING (0.7.50).
+
+           Removing a node the pointer is over makes JavaFX tell it the
+           pointer left - from INSIDE the children list's change, child by
+           child: each child before it has already been taken off the scene,
+           and the list is emptied only after the last. Jerus's game, 0.7.49:
+           a chart on Government redrew on that exit from data the month had
+           moved under it and threw, the change stopped half way, and the
+           children it had taken off stayed in the list with no scene. Picking
+           threw on every move of the mouse after that, and a Parent whose
+           books disagree with its list is the likeliest cause of the freeze
+           that came later.
+
+           The page is being thrown away, so nothing on it needs telling:
+           while the flag is up, rootMenu's filter (start()) swallows every
+           exit from what is being removed, before any handler on the old page
+           runs, whatever that handler would have done. The charts guard
+           their own drawing as well (TimeChart.draw()).
+           ================================================================= */
+        tearingDown = true;
+        try {
+            rootMenu.getChildren().clear();
+        } finally {
+            tearingDown = false;
+        }
         // The main menu and the founding screen are drawn over the whole window
         // (0.7.21); every other screen takes the layer away. See THE MAIN MENU.
         // ...and so are the menu's own Settings, Load and Save while no city
@@ -1305,6 +1336,9 @@ public class UserInterface extends Application {
 
     /** Which show*Menu drew what is on screen; see clearMenu. */
     String currentScreen = "";
+
+    /** True while clearMenu empties the page: rootMenu swallows the pointer's exits from what it removes (0.7.50). */
+    private boolean tearingDown;
 
     /** How to draw it again after a month passes; see clearMenu. */
     private Runnable redrawScreen = () -> { };
@@ -1877,7 +1911,7 @@ public class UserInterface extends Application {
         PopulationCohorts pyramid = game.getCohorts();
         Migration flows = game.getMigration();
         Health illness = game.getHealth();
-        int population = pm.getPopulation();
+        long population = pm.getPopulation();
         double born = pyramid.getLastBirths(), died = pyramid.getLastDeaths();
         double in = flows.getLastArrivals(), left = flows.getLastDepartures();
         double net = in - left + born - died;
@@ -1978,33 +2012,26 @@ public class UserInterface extends Application {
             inflLine = words("target " + DebtManager.targetWords(target));
             inflTone = Palette.TEXT_MUTED;
         }
-        double index = prices.isBased() ? prices.getIndex() : 1;
-        out.add(new Headline("INFLATION", Palette.MONEY, inflValue, Palette.TEXT_HEAD, inflLine, inflTone,
+        /*
+         * THE ANCHOR ON THE LINE (0.7.45; the UI spec's D1). The figure takes
+         * the verdict the line carried - the year's rate against the target,
+         * Jerus's 3 and 5 points - and the line says what people expect and
+         * how far they believe the bank, in NEEDS YOU's PRICES colour: the
+         * figure is where prices were, the line where they are going, since
+         * expected inflation is what the wages and every money constant move
+         * on next month. "N points over the target" is in the tooltip.
+         */
+        out.add(new Headline("INFLATION", Palette.MONEY, inflValue,
+                prices.hasRate() ? inflTone : Palette.TEXT_HEAD, anchorLine(game), anchorTone(game),
                 historyScreen.historyValues(h, "priceIndex"),
-                String.format("Inflation: what a household's month costs against twelve months before."
-                        + " The target is %s a year - yours, on the Policy tab's money page.%n"
-                        + "Prices are %s what they were when the basket was fixed; the sparkline is"
-                        + " that price level.%nClick for both lines in City History.",
-                        DebtManager.targetWords(target),
-                        String.format(index < 100 ? "×%.2f" : "×%,.0f", index)),
-                String.format("Good within %.0f points of your target, amber further off, red more than"
-                        + " %.0f points over it or with prices falling more than %.0f%% a year.%s",
-                        STRIP_INFLATION_QUIET * 100, STRIP_INFLATION_OVER_TARGET * 100,
-                        STRIP_DEFLATION_ALARM * 100,
-                        prices.hasRate() ? ""
-                        : String.format("%n%nNo rate yet. The basket is fixed after %d months of the"
-                                + " households' real shopping, so its mix of food and rent is a"
-                                + " settled city's; the first rate comes a year of readings after"
-                                + " that, about %d months from now. The index reads ×1.00 until"
-                                + " the basket is fixed, and inflation is taken as zero everywhere"
-                                + " in the game until the first rate.",
-                                PriceIndex.SETTLING_MONTHS, prices.monthsUntilRate())),
+                inflationTip(game, prices.hasRate() ? inflLine[0] : null),
+                inflationMore(game),
                 new String[] {"inflation", "priceIndex"}));
 
         /* -------------- OUT OF WORK, with a shortage read as watch -------------- */
         double jobless = pm.getUnemploymentRate();
-        int unfilled = 0;
-        for (int v : pm.getJobVacancy()) unfilled += Math.max(0, v);
+        long unfilled = 0;
+        for (long v : pm.getJobVacancy()) unfilled += Math.max(0, v);
         String workTone = PeopleScreen.outOfWorkTone(jobless);
         String[] workLine = jobless > PeopleScreen.OUT_OF_WORK_FAR ? words("far too many idle", "too many idle", "idle")
                 : jobless > PeopleScreen.OUT_OF_WORK_HIGH ? words("high")
@@ -2055,29 +2082,25 @@ public class UserInterface extends Application {
      * actual month change ... sometimes cause of land buybacks or sales it was
      * actually more or less." What the month EARNED (the tax take less the
      * running programmes, at today's tax rates) is not the budget's SURPLUS,
-     * which adds land, buildings and the smaller lines and leaves out the
-     * fares (Game.getEarnedToBudget(), each step by name - it named three of
-     * the eleven until 0.7.31), and neither is what the treasury BANKED,
+     * which adds land, buildings and the smaller lines (Game.getEarnedToBudget(),
+     * each step by name - it named three of the eleven until 0.7.31, and the
+     * fares were a step of their own until 0.7.49), and neither is what the treasury BANKED,
      * which counts its borrowing and the player's own moves too.
      */
     private String treasuryWhy(double income, double moved) {
         StringBuilder why = new StringBuilder(String.format(
                 "EARNED %s: the month's taxes and fees less the running programmes - interest, pensions, EI,"
-                + " the grants, care, schools and the police - plus the utilities' net, read at today's tax"
+                + " the grants, care, schools, the police and transit - plus the utilities' net, read at today's tax"
                 + " rates.", signedTight(income, false)));
         java.util.List<String> adds = new java.util.ArrayList<>();
-        double fares = 0;
         for (TreasuryJournal.Entry e : game.getEarnedToBudget()) {
-            if (Game.EARNED_FARES.equals(e.label())) { fares = -e.amount(); continue; }
             if (Math.abs(e.amount()) >= .5) adds.add(e.label().toLowerCase() + " " + signedTight(e.amount(), false));
         }
         double dials = game.getEarnedResidual();
-        why.append(String.format("%n%nSURPLUS %s: the budget. %s%s%s",
+        why.append(String.format("%n%nSURPLUS %s: the budget. %s.%s",
                 signedTight(game.getEconomyManager().getNationalAccounts().getBalance(), false),
                 adds.isEmpty() ? "It has nothing EARNED leaves out this month"
                         : "It adds what EARNED leaves out - " + String.join(", ", adds),
-                Math.abs(fares) >= .5 ? String.format(" - and leaves out the transit fares (%s), which reach"
-                        + " the cash and not the budget.", signedTight(fares, false)) : ".",
                 Math.abs(dials) >= .5 ? String.format(" A dial moved since the last press moves EARNED and not"
                         + " the budget: %s.", signedTight(dials, false)) : ""));
         if (!Double.isNaN(moved)) {
@@ -2664,6 +2687,89 @@ public class UserInterface extends Application {
             case "AAA", "AA", "A", "BBB" -> Palette.GOOD;
             case "BB", "B"               -> Palette.WARN;
             default                      -> Palette.BAD;
+        };
+    }
+
+    /* ----------------- THE INFLATION TILE'S WORDS (0.7.45), pure for the probe ----------------- */
+
+    /**
+     * The INFLATION tile's line, longest first: what people expect inflation
+     * to be and how far they believe the bank - "expect 2.2% · trust 82%",
+     * "exp 2.2% · 82%", "exp 2.2%" - and before the basket is based, when
+     * everyone expects the target, "expect 2.0% (the target) · trust 80%".
+     */
+    static String[] anchorLine(Game g) {
+        Expectations e = g.getExpectations();
+        String expect = rate1(e.getExpectedInflation());
+        String trust = trust(e.getCredibility());
+        if (!g.getPriceIndex().isBased()) {
+            return words("expect " + expect + " (the target) · trust " + trust, "exp " + expect + " · " + trust,
+                    "exp " + expect);
+        }
+        return words("expect " + expect + " · trust " + trust, "exp " + expect + " · " + trust, "exp " + expect);
+    }
+
+    /** ...its tone: NEEDS YOU's PRICES row - plain at rest, amber in a month trust fell, red when it fell under half. */
+    static String anchorTone(Game g) {
+        int level = CityNeeds.prices(g).level();
+        return level >= 2 ? Palette.BAD : level == 1 ? Palette.WARN : Palette.TEXT_MUTED;
+    }
+
+    /** ...its tooltip: the year's rate, how far off the target (`off`, the old line, or null with no rate yet), what people expect and why, and the level. */
+    static String inflationTip(Game g, String off) {
+        PriceIndex prices = g.getPriceIndex();
+        Expectations e = g.getExpectations();
+        double target = g.getDebtManager().getInflationTarget();
+        double index = prices.isBased() ? prices.getIndex() : 1;
+        StringBuilder s = new StringBuilder(String.format("Inflation: what a household's month costs against twelve"
+                + " months before. The target is %s a year - yours, on the Policy tab's money page.",
+                DebtManager.targetWords(target)));
+        if (off != null) s.append("\n").append(Character.toUpperCase(off.charAt(0))).append(off.substring(1)).append('.');
+        s.append(String.format("%nPeople expect prices to rise %s a year. They believe the bank %s: expected inflation"
+                        + " is that share the target, the rest recent prices.",
+                rate1(e.getExpectedInflation()), trust(e.getCredibility())));
+        s.append(String.format("%nPrices are %s the city's first basket, chained; the sparkline is that price level.",
+                String.format(index < 100 ? "×%.2f" : "×%,.0f", index)));
+        s.append("\nClick for both lines in City History.");
+        return s.toString();
+    }
+
+    /** ...and its (i): the figure's colours, the trust paragraph, and before the first rate when it comes. */
+    static String inflationMore(Game g) {
+        PriceIndex prices = g.getPriceIndex();
+        return String.format("Good within %.0f points of your target, amber further off, red more than"
+                        + " %.0f points over it or with prices falling more than %.0f%% a year.%n%n"
+                        + "The line under it is what people expect inflation to be, and how far they trust the"
+                        + " central bank: from %s at the least to %s at the most. Trust grows a %s of the way"
+                        + " to %s each month inflation, smoothed over a year, stays within %.0f point of the"
+                        + " target, and falls while it misses by more, up to a %s of the way to %s a month at"
+                        + " %.0f points off - unless the policy"
+                        + " rate leans against the miss: set at the rule's advice - the Standard rule's, however"
+                        + " strict the bank - it costs no trust at all."
+                        + " The line is amber in a month trust fell, red when it fell under %s.%s",
+                STRIP_INFLATION_QUIET * 100, STRIP_INFLATION_OVER_TARGET * 100,
+                STRIP_DEFLATION_ALARM * 100,
+                trust(Expectations.KMIN), trust(Expectations.KMAX), ordinal(Expectations.GAIN_MONTHS),
+                trust(Expectations.KMAX), Expectations.TOLERANCE * 100, ordinal(Expectations.LOSS_MONTHS),
+                trust(Expectations.KMIN), (Expectations.TOLERANCE + Expectations.MISS_SCALE) * 100,
+                trust(CityNeeds.TRUST_RED),
+                prices.hasRate() ? ""
+                : String.format("%n%nNo rate yet. The basket is fixed after %d months of the"
+                        + " households' real shopping, so its mix is a"
+                        + " settled city's; the first rate comes a year of readings after"
+                        + " that, about %d months from now. The index reads ×1.00 until"
+                        + " the basket is fixed, and inflation is taken as zero everywhere"
+                        + " in the game until the first rate.",
+                        PriceIndex.SETTLING_MONTHS, prices.monthsUntilRate()));
+    }
+
+    /** "sixtieth", "twenty-fourth": a month's share of the way, as the (i) says it. */
+    static String ordinal(int n) {
+        return switch (n) {
+            case 12 -> "twelfth";
+            case 24 -> "twenty-fourth";
+            case 60 -> "sixtieth";
+            default -> n + "th";
         };
     }
 
@@ -4117,7 +4223,7 @@ public class UserInterface extends Application {
         /* ------------------------------- land ------------------------------- */
         VBox land = reportSection("LAND",
                 String.format("%-20s%s%s", "Bought", skip.getLandBlocksBought() < 0 ? "-" : "+",
-                        LandManager.km2Words(Math.abs(skip.getLandBlocksBought()) * LandManager.BLOCK_SQ_FT)),
+                        LandManager.areaWords(Math.abs(skip.getLandBlocksBought()) * LandManager.BLOCK_SQ_FT)),
                 String.format("%-20s%.1f%% used at the end",
                         "Utilisation", skip.getEndLandUtilisation() * 100));
         column.getChildren().add(land);
@@ -4634,7 +4740,7 @@ public class UserInterface extends Application {
         // ...and the crews kept on, when the builders have laid some off
         // (sectors.Construction, THE CREWS THE WORK NEEDS).
         ham.citybuildersim.sectors.Construction builders = game.getSectors().construction();
-        int postsStanding = builders.getPostsStanding(), postsKept = builders.getPostsOffered();
+        long postsStanding = builders.getPostsStanding(), postsKept = builders.getPostsOffered();
         Label capacity = monoLabel("Output: " + formatter.format(output) + " pts/mo"
                 + (postsStanding > 0 && postsKept < postsStanding
                         ? " (crews kept on: " + formatter.format(postsKept) + " of " + formatter.format(postsStanding) + " posts)"
@@ -5092,7 +5198,7 @@ public class UserInterface extends Application {
             case "handleAllBuildingMenus": case ConstructionScreen.SCREEN:
             case "showNoDepositMenu": case "showNoLandMenu":
             case "showBuildFunding": case "showBuildFellShort":
-            case "showNoLicenceMenu":
+            case "showNoLicenceMenu": case "showNoCoastMenu":
                 return "build";
             /*
              * ...AND ITS FUNDING PAGE AND THE PAGE AFTER IT (0.7.26): the
@@ -5885,13 +5991,19 @@ public class UserInterface extends Application {
        running or paused - and its day ticks on the pane's own line, since
        the header's is covered. Esc, the pane's button, and any other screen
        taking over (clearMenu()) close it. F11 is separate: the window's own
-       full screen, which this does not read or change.
+       full screen, which this does not read or change. Since 0.7.61 the land
+       office's map expands into the same pane (MapView), and "any other
+       screen" is any but the one that laid it, whose redraws on the clock
+       go on under the pane.
        ===================================================================== */
 
     /** The chart's pane while it has the window, its clock line, and what closes it; null otherwise. */
     private javafx.scene.Node chartFull;
     private Label chartFullClock;
     private java.util.function.Consumer<Boolean> chartFullLeave;
+
+    /** The screen that laid the pane (a clearMenu() name): its own redraws keep it, any other screen closes it (0.7.61: City History's chart, the land office's map). */
+    private String chartFullOwner;
 
     /**
      * Lays the chart's pane over the whole window. `leave` is the screen's
@@ -5905,6 +6017,7 @@ public class UserInterface extends Application {
         chartFull = pane;
         chartFullClock = clockLine;
         chartFullLeave = leave;
+        chartFullOwner = currentScreen;
         if (clockLine != null) clockLine.setText(clockWords());
         windowStack.getChildren().add(pane);
     }
@@ -5915,6 +6028,7 @@ public class UserInterface extends Application {
         chartFull = null;
         chartFullClock = null;
         chartFullLeave = null;
+        chartFullOwner = null;
     }
 
     /** Esc, P or another screen: the screen's own way back, which calls closeChartFullScreen(). */

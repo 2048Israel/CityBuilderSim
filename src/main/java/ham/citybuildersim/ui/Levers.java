@@ -14,7 +14,8 @@ import static ham.citybuildersim.ui.Pieces.*;
 /**
  * The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36)
  * - the dial on a card with what it does beside it, which every dial on the
- * Policy tab and, since 0.7.38, the fare on Infrastructure are drawn with -
+ * Policy tab, since 0.7.38 the fare on Infrastructure and since 0.7.48 the
+ * fund's withdrawal on Finances are drawn with -
  * and the arithmetic of snapping a slider to its step. The dial itself is
  * Ladder (0.7.6), which knows nothing of the staged set; the wiring to it
  * and the apply bar stay with the policy screen, because they read and

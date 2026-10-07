@@ -42,7 +42,8 @@ import javafx.scene.layout.Priority;
  * diverging bars, and the Trade tab's band meter, moved here; and since
  * 0.7.36 a figure before and after a move, and the staged tray; and since
  * 0.7.37 a chart card's head and a range bar; and since 0.7.39 a search box
- * and a gain or a loss in its colour.
+ * and a gain or a loss in its colour; and since 0.7.45 who goes without,
+ * the hunger in its two halves.
  *
  * Static for the same reason as Money and Statement: no state, used
  * everywhere, called unqualified through an import static. The scroller is
@@ -2694,7 +2695,10 @@ public final class Pieces {
          * and how many lines of names that takes (the last entry's line + 1,
          * 0 with none named). A name is centred on its rule; two that would
          * touch are pulled apart - the left one ending at its rule, the right
-         * one starting at its - and a pair still touching takes a second line.
+         * one starting at its - and a pair still touching takes a second line,
+         * or the first line under it a name fits on (0.7.45: the rate line's
+         * expected and neutral ticks crowd three names into a tenth of a point,
+         * and a second line still overlapped).
          */
         private double[][] ruleNameAt(double w) {
             double x0 = nameWidth + GAP, x1 = Math.max(x0 + 10, w - figureWidth - GAP), barW = x1 - x0;
@@ -2704,7 +2708,7 @@ public final class Pieces {
             for (int k = 0; k < n; k++) order[k] = k;
             java.util.Arrays.sort(order, (p, q) -> Double.compare(rules.get(p).at(), rules.get(q).at()));
             int lines = 0;
-            double[] lastRight = {-1e9, -1e9};
+            double[] lastRight = {-1e9, -1e9, -1e9, -1e9};
             int prev = -1;
             for (int k : order) {
                 Rule rule = rules.get(k);
@@ -2719,7 +2723,10 @@ public final class Pieces {
                     at[prev][0] = pLeft;
                     lastRight[0] = pLeft + pw;
                     left = Math.max(x0, Math.min(x1 - rw, x + 2));
-                    if (left < lastRight[0] + 6) line = 1;
+                    if (left < lastRight[0] + 6) {
+                        line = 1;
+                        while (line < lastRight.length - 1 && left < lastRight[line] + 6) line++;
+                    }
                 }
                 at[k][0] = left;
                 at[k][1] = line;
@@ -5236,5 +5243,65 @@ public final class Pieces {
         l.setMinWidth(Region.USE_PREF_SIZE);
         l.setStyle(BuildScreen.figureAt(size, p.tone()));
         return l;
+    }
+
+    /* =====================================================================
+       WHO GOES WITHOUT (0.7.45)
+
+       The hunger in its two halves, one picture on two screens - Policy ›
+       Promises › Food leads with it and People's Household money shows it
+       with its rows - because the two are fixed in different places: a
+       household that could not afford a basket at the price is reached by
+       money (the food voucher, the floor, the taxes); one the shelves left
+       short is reached only by the shops. HouseholdBalance strikes both at
+       the top of the month on the last sale (getHungerPricedOut(),
+       getHungerShortOfStock(), which add to getHungerRate()).
+       ===================================================================== */
+
+    /** WHO GOES WITHOUT's words (pure: the probe reads them): the figure, each half's key, whether the shelves are the larger half, the sentence and the (i). */
+    public record Hunger(double rate, double pricedOut, double shortOfStock, String figure, String pricedOutWords,
+                         String shortWords, boolean shortLarger, String sentence, String info) { }
+
+    /** The (i): when the measure is struck, and what each half means. */
+    static final String HUNGER_INFO = "The measure is struck at the top of the month on the last sale: what each "
+            + "household was handed and the meals it ate out, against a basket a head - a month behind the shops' own "
+            + "figures, which are the sale that has just happened. The priced out would have gone short even had the "
+            + "shops handed over every basket asked for at the price: their money ran out first. The rest went short "
+            + "because the shelves did.";
+
+    public static Hunger hunger(Game g) {
+        HouseholdBalance hb = g.getHouseholdBalance();
+        double rate = hb.getHungerRate(), priced = hb.getHungerPricedOut(), shortOf = hb.getHungerShortOfStock();
+        String figure = rate > 0 ? smallShare(rate) + " of people ate less than a basket" : "nobody ate less than a basket";
+        String sentence = rate > 0 ? "A voucher reaches the first. It cannot put a basket on an empty shelf."
+                : "Everybody was handed a basket a head or ate out.";
+        return new Hunger(rate, priced, shortOf, figure, "can't afford one, " + smallShare(priced),
+                "the shelves ran short, " + smallShare(shortOf), shortOf > priced, sentence, HUNGER_INFO);
+    }
+
+    /** A share of the people, to one place, two under a tenth of a point: "26.8%", "0.04%", "none". */
+    public static String smallShare(double share) {
+        if (!(share > 0)) return "none";
+        double p = share * 100;
+        if (p < .005) return "under 0.01%";
+        return String.format(p < .1 ? "%.2f%%" : "%.1f%%", p);
+    }
+
+    /** WHO GOES WITHOUT as a card: the figure, the two halves on a bar of the whole city, the sentence, and a door to the shops when they are the larger half. */
+    public static VBox whoGoesWithout(Game g, Runnable shops) {
+        Hunger h = hunger(g);
+        List<Segment> halves = List.of(
+                new Segment(h.pricedOut(), Palette.PEOPLE, false, null, null, h.pricedOutWords(), null),
+                new Segment(h.shortOfStock(), Palette.PEOPLE_LIGHT, false, null, null, h.shortWords(), null));
+        javafx.scene.layout.FlowPane key = new javafx.scene.layout.FlowPane(14, 4,
+                keySwatch(Palette.PEOPLE, h.pricedOutWords()), keySwatch(Palette.PEOPLE_LIGHT, h.shortWords()));
+        VBox c = PolicyScreen.card(PolicyScreen.cardHead(Icons.FOOD, Palette.PEOPLE, "WHO GOES WITHOUT", h.info(), null),
+                PolicyScreen.figure(h.figure(), Palette.SIZE_LEAD, Palette.TEXT_HEAD),
+                segmentBar(halves, 1, List.of(), 0, 12), key,
+                PolicyScreen.words(h.sentence(), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        if (h.shortLarger() && shops != null) {
+            c.getChildren().add(doorPill("The shops · Sectors › Retail", Icons.SHOPS, Palette.BUSINESS, shops));
+        }
+        return c;
     }
 }

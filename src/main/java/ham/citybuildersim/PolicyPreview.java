@@ -36,6 +36,17 @@ import java.util.Map;
  * sector's and band's tax line is the month's booked figure (property's on
  * the roll as it stands): PolicyPreviewCheck holds it.
  *
+ * AND ONE DIAL OFF THE POLICY TAB (0.7.48, C2): the fund's withdrawal, on
+ * Finances > The city's fund > Rules & cash - what it would pay next month,
+ * from its cash and from its market book, and the fund a year on
+ * (fundWithdrawalAt()), struck as TreasuryFund.payTransfer() strikes it.
+ *
+ * AND THE RULE'S STRICTNESS (0.7.52): at any step of the dial beside the
+ * inflation target, what the bank would aim at, what the rule sets on
+ * target and what it would advise at this year's inflation (ruleAt()),
+ * struck by DebtManager.ruleRate() at that step; CentralBankCheck 21
+ * holds it, the preview at the step in force being the rule's own.
+ *
  * WHAT NONE OF IT KNOWS is who changes what they do. A business taxed
  * harder earns less, a dearer clinic turns people away, a cheaper school
  * fills; that arrives in the month's own books, and every card on the tab
@@ -119,7 +130,8 @@ public final class PolicyPreview {
      * nobody made); the tuition households pay at the scales and the city's
      * share (`shareNow`, `shareThen`: Education's dial, not the policy's - the
      * share the city waives is forgone revenue, not spending: D13); the
-     * students' grant; and the interest on the graduates' loans.
+     * students' grant; the interest on the graduates' loans; and (0.7.45, the
+     * UI spec's B19) the food vouchers at the last sale, foodAssistanceAt().
      */
     public static double change(Game g, TaxPolicy live, TaxPolicy after, double shareNow, double shareThen) {
         EconomyManager em = g.getEconomyManager();
@@ -143,6 +155,8 @@ public final class PolicyPreview {
 
         HouseholdBalance hb = g.getHouseholdBalance();
         moved += hb.studentInterestAt(after.getStudentLoanRate()) - hb.studentInterestAt(live.getStudentLoanRate());
+
+        moved -= foodAssistanceAt(g, after.getFoodAssistance()) - foodAssistanceAt(g, live.getFoodAssistance());
         return moved;
     }
 
@@ -170,9 +184,9 @@ public final class PolicyPreview {
        THE POLICY RATE, THE FLOOR AND THE PENSIONER
        ===================================================================== */
 
-    /** What savers would earn after inflation next month at this dial (M7): the bank's own choice at it, less the year's inflation - Game.realDepositRate()'s rule. */
+    /** What savers would earn after inflation next month at this dial (M7): the bank's own choice at it, less the inflation savers expect - Game.realDepositRate()'s rule since 0.7.42, so at the dial in force it parts from the month's own only by the bank's step toward its funding (B1, 0.7.47; until then it took the year's inflation, the rule before 0.7.42). */
     public static double realDepositRateAt(Game g, double policy) {
-        return g.getBank().depositRateAt(policy) - g.getPriceIndex().inflation();
+        return g.getBank().depositRateAt(policy) - g.getExpectations().getExpectedInflation();
     }
 
     /** ...and the share of their spending above a basket a head the households would plan at it: HouseholdBalance.spendFactor() on that. */
@@ -205,21 +219,60 @@ public final class PolicyPreview {
     /**
      * What the promises cost the treasury in a month, net of what they
      * collect: the pension's gap, the sectors kept alive, EI past its
-     * premiums and the students' grants - the Policy tab's PROMISES, which
+     * premiums, the students' grants and - since 0.7.43 - the food vouchers
+     * paid at the month's sale - the Policy tab's PROMISES, which
      * the screen summed itself until 0.7.36. NOT the school subsidy, which
      * that sum held (the Policy spec's B17, D13): the tuition the city waives
      * is revenue it does not collect (Education.getSubsidy()), not money out
      * of the treasury.
      */
-    public record Promises(double pensionGap, double eiPastPremiums, double subsidies, double grants) {
-        public double total() { return pensionGap + eiPastPremiums + subsidies + grants; }
+    public record Promises(double pensionGap, double eiPastPremiums, double subsidies, double grants,
+                           double foodAssistance) {
+        public double total() { return pensionGap + eiPastPremiums + subsidies + grants + foodAssistance; }
     }
 
     /** ...this month's. */
     public static Promises promises(Game g) {
         EconomyManager em = g.getEconomyManager();
         return new Promises(em.getPensionShortfall(), Math.max(0, em.getEiBenefits() - em.getEiPremiums()),
-                g.getTotalSubsidyPaid(), em.getStudentGrants());
+                g.getTotalSubsidyPaid(), em.getStudentGrants(), em.getFoodAssistance());
+    }
+
+    /**
+     * What the food vouchers would have cost at the last sale at a dial of
+     * the caller's (0.7.43): each eligible household's voucher at that share
+     * of its baskets at the price that sale charged, up to the baskets it got
+     * - HouseholdBalance.foodAssistanceAt(). Against the baskets of the sale
+     * that has happened: a voucher bids, so the baskets would have moved too.
+     *
+     * AT THE PRICE THE SALE CHARGED since 0.7.45 (Retail.getChargedPrice()),
+     * not the shelf as the bottom of the month repriced it: the vouchers were
+     * struck at that price, so at the city's own dial this is what the month
+     * paid, to the bit (HouseholdBalance.getFoodAssistancePaid()) - the house
+     * rule for a dial card's rows at rest.
+     */
+    public static double foodAssistanceAt(Game g, double share) {
+        return g.getHouseholdBalance().foodAssistanceAt(share, lastSalePrice(g));
+    }
+
+    /** ...and the households a voucher would go to at that price, at any dial over 0. */
+    public static double foodAssistanceHouseholds(Game g) {
+        return g.getHouseholdBalance().householdsEligibleForFoodAssistance(lastSalePrice(g));
+    }
+
+    /** ...the same at a dial of the caller's (0.7.45): none at 0, every eligible household at any dial over it. */
+    public static double foodAssistanceHouseholdsAt(Game g, double share) {
+        return share > 0 ? foodAssistanceHouseholds(g) : 0;
+    }
+
+    /** ...and the baskets the vouchers would have paid for at it (0.7.45): foodAssistanceAt() over the price. */
+    public static double foodAssistanceBasketsAt(Game g, double share) {
+        return g.getHouseholdBalance().foodAssistanceBasketsAt(share, lastSalePrice(g));
+    }
+
+    /** The price a basket was charged at the last sale, which the vouchers were struck at (Retail.getChargedPrice()). */
+    public static double lastSalePrice(Game g) {
+        return g.getSectors().retail().getChargedPrice();
     }
 
     /** What the treasury paid towards care this month: the service's cost less the fees it collected, the funerals' and the health premium (the Health page's "the treasury's share"). */
@@ -303,5 +356,62 @@ public final class PolicyPreview {
         EconomyManager em = g.getEconomyManager();
         return g.getHouseholdBalance().disposableWithRowMoved(HouseholdAccounts.RETIRED,
                 em.pensionsPaidUnder(after) - em.getPensionsPaid());
+    }
+
+    /* =====================================================================
+       THE FUND'S WITHDRAWAL (0.7.48, C2)
+       ===================================================================== */
+
+    /**
+     * What the fund's withdrawal would pay the treasury next month at a dial
+     * of the caller's, on the fund as it stands: the due; what its cash
+     * would pay of it; the rest - over the default sold from its market book
+     * (toSell), at or under it not paid (unpaid); and what it would be worth
+     * in a year earning nothing.
+     */
+    public record Withdrawal(double due, double fromCash, double toSell, double unpaid, double yearOn) { }
+
+    /**
+     * ...struck as TreasuryFund.payTransfer() strikes it: the due at the
+     * rate's whole steps on Game.fundValue() (TreasuryFund.withdrawalAt() -
+     * Game.fundTransferDue() at the dial in force, to the bit); its cash
+     * after what last month's sale still owes (getToRaise()), which the top
+     * of the month pays first; and the value times (1 - the rate) to the
+     * twelfth, a year of withdrawals with nothing earned. Prices, dividends
+     * and what the book takes of a sale all move it by the month's top.
+     */
+    public static Withdrawal fundWithdrawalAt(Game g, double rate) {
+        TreasuryFund f = g.getFund();
+        double value = g.fundValue();
+        int steps = TreasuryFund.stepsFor(rate);
+        double due = TreasuryFund.withdrawalAt(rate, value);
+        double cash = Math.max(0, f.getCash() - Math.max(0, f.getToRaise()));
+        double fromCash = Math.max(0, Math.min(due, cash));
+        boolean sells = steps > TreasuryFund.DEFAULT_WITHDRAWAL_STEPS;
+        double yearOn = value > 0 ? value * Math.pow(1 - steps * TreasuryFund.WITHDRAWAL_STEP, TreasuryFund.YEAR_MONTHS) : 0;
+        return new Withdrawal(due, fromCash, sells ? due - fromCash : 0, sells ? 0 : due - fromCash, yearOn);
+    }
+
+    /* =====================================================================
+       THE RULE'S STRICTNESS (0.7.52)
+       ===================================================================== */
+
+    /**
+     * What the rule would do at one step of the strictness dial, at the
+     * city's target: the step; what it aims at, in words
+     * (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past
+     * 4.0% (or under 0.0%)"); the rate it sets on target; and its advice at
+     * this year's inflation, inside the dial - NaN before there is a year of
+     * prices to read.
+     */
+    public record RuleAt(DebtManager.Strictness step, String aims, double onTarget, double advised) { }
+
+    /** ...struck by DebtManager.ruleRate() and advisedPolicyRate() at that step; at the step in force, the rule's own to the bit. */
+    public static RuleAt ruleAt(Game g, DebtManager.Strictness step) {
+        DebtManager m = g.getDebtManager();
+        PriceIndex px = g.getPriceIndex();
+        double target = m.getInflationTarget();
+        return new RuleAt(step, DebtManager.aimWords(target, step), DebtManager.ruleRate(target, target, step),
+                px.hasRate() ? m.advisedPolicyRate(px.inflation(), step) : Double.NaN);
     }
 }

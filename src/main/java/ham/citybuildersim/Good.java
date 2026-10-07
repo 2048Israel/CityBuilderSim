@@ -309,8 +309,10 @@ public enum Good {
 
     /**
      * What the shops sell: food, on a shelf, to a household. One unit of
-     * food becomes one unit of this. Priced by the shops, cost-plus with a
-     * scarcity mark-up (see sectors.Retail), never traded with the world.
+     * food becomes one unit of this. Priced by the shops - a cost-plus
+     * floor, and over it the price that clears the sale, moved a sixth of the
+     * way a month (0.7.43; a scarcity mark-up until then - see
+     * sectors.Retail) - never traded with the world.
      */
     GROCERIES("Groceries", "unit", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false),
 
@@ -664,7 +666,42 @@ public enum Good {
        with the world - nobody ships a dinner - so the band would be zero wide
        and the restaurants strike their own margin. See Restaurants.
        ======================================================================= */
-    MEALS("Restaurant meals", "meal", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false);
+    MEALS("Restaurant meals", "meal", Double.NaN, Double.NaN, 0, false, Pricing.SELLER, false),
+
+    /* =======================================================================
+       FUEL, AND THE OIL IT IS MADE FROM (0.7.62, batch K; spec-land 2.7)
+
+       Until this batch the city's drivers and its railway burned fuel that
+       was an import with no good behind it - Motoring's CAR_FUEL_PER_JOURNEY
+       and Rail's WORLD_FUEL_PER_TONNE, money paid to the world for nothing a
+       market could see. The oil was in the ground all along (Resource.OIL,
+       batch J1a), and the wells that lift it (sectors.Oil) and the refinery
+       that makes it fuel (sectors.Refining) are what make those two bills a
+       market: the refiners' shelf first, the world for the rest.
+
+       CRUDE, IN TONNES. .60 IN AND .50 OUT: US$550 a tonne is about US$75 a
+       barrel at 7.33 barrels a tonne, the import a little over it and the
+       export a little under. Freight .0375, three quarters of the half-wedge
+       by this file's rule (THE SPLIT IS THREE QUARTERS FREIGHT) - the spec's
+       .075 was three quarters of the whole wedge, which would put the
+       world's own margin below nothing. NOT STOCKABLE, where the spec says
+       stockable: a well ships what it lifts, as a mine does, so the ground
+       limits it through the same hook (Sector.groundLimit() reads only a
+       flow good) and a well needs no tank the spec never sized.
+
+       FUEL, IN LITRES. The import price is a journey's fuel over a journey's
+       litres - Motoring.CAR_FUEL_PER_JOURNEY over LITRES_PER_JOURNEY, $2.00
+       over 1.2 L (fifteen kilometres at eight litres a hundred) - so a city
+       with no refinery pays exactly the fuel it paid before, now at the
+       world's price level as every good is. The export .0007 is wholesale
+       at US$75 crude; freight .0003625, the same rule. Stockable: a refinery
+       holds three months in its tanks, and the drivers and the railway draw
+       on that shelf (Markets.draw()) before the world.
+       ======================================================================= */
+    CRUDE("Crude oil", "tonne", .60, .50, .0375, false, Pricing.BAND, false),
+
+    FUEL("Fuel", "litre", Motoring.CAR_FUEL_PER_JOURNEY / Motoring.LITRES_PER_JOURNEY, .0007, .0003625,
+            true, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -805,6 +842,10 @@ public enum Good {
             // A case of watches is light and dear, which is what makes it a
             // thing the world ships and not a thing the railway argues about.
             case "piece":     return .02;
+            // A litre of fuel is a kilogram: the refinery's own yield, a
+            // thousand litres from a tonne of crude (sectors.Refining), so a
+            // tonne goes in and a tonne comes out.
+            case "litre":     return .001;
             // A meal is served where it stands. What it is made of travelled
             // as the thirteen foods and was counted then; counting it twice
             // would put a restaurant's dinners on the road as freight.
@@ -838,6 +879,9 @@ public enum Good {
             case MATERIALS: case FABRICATED_STEEL: case MACHINERY:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
+            // ...and crude, in tank wagons, as ore goes in hoppers. Fuel is a
+            // tanker at a filling station's back door: GOODS, the default.
+            case CRUDE:
                 return Traffic.BULK;
             case GROCERIES: case HOUSING: case BUILDING_WORK:
             case SUPPORT_WORK: case BACK_OFFICE_WORK: case ENGINEERING_WORK:

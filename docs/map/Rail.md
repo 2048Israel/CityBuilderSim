@@ -1,6 +1,6 @@
-# Rail.java - 861 lines · 36 methods · 9 constants · sectors
+# Rail.java - 891 lines · 37 methods · 10 constants · sectors
 
-`ham/citybuildersim/sectors/Rail.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Rail.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > The railway. THE TWELFTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -56,130 +56,133 @@
 > WHAT IT CHARGES
 > =======================================================================
 > 
-> Retail's shelf rule in shape - a floor that pays for the business and a
-> scarcity term that lifts it (Retail.repriceShelf()) - but the floor is a
+> Retail's shelf rule in shape, as it was until 0.7.43 - a floor that pays
+> for the business and a scarcity term that lifts it (the shelf aims at the
+> price that clears since, Retail.repriceShelf()) - but the floor is a
 > REGULATED NETWORK'S and not a shop's, and that difference was measured
 > rather than guessed. See TARGET_RETURN for the run that made the case.
 > 
-> The quote is a FRACTION OF THE LORRY RATE and never a price in money, which
-> ... (38 more lines in the source)
+> ... (39 more lines in the source)
 
-**Uses:** [Traffic](Traffic.md) (21), [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (6), [Formats](Formats.md) (5), [Sector](Sector.md) (4), [Game](Game.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [Traffic](Traffic.md) (21), [Good](Good.md) (16), [BusinessInvestment](BusinessInvestment.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (6), [Formats](Formats.md) (5), [Sector](Sector.md) (4), [Game](Game.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [Sectors](Sectors.md) (1), [Markets](Markets.md) (1)
 
-**Used by (6):** [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [Game](Game.md), [InfrastructureScreen](InfrastructureScreen.md), [RailCheck](RailCheck.md), [Sectors](Sectors.md)
+**Used by (9):** [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [OilCheck](OilCheck.md), [RailCheck](RailCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 307 | THE MONTH |
-| 501 | · the fleet |
-| 535 | · what it is doing, for everyone else |
-| 605 | PLANNING - the freight nobody is carrying |
-| 724 | · the books |
-| 743 | · the screen |
-| 791 | · save/load |
+| 326 | THE MONTH |
+| 522 | · the fleet |
+| 556 | · what it is doing, for everyone else |
+| 629 | PLANNING - the freight nobody is carrying |
+| 750 | · the books |
+| 769 | · the screen |
+| 817 | · save/load |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 132 | `Rail.RAIL_FLOOR` | `.30` | The cheapest the railway will ever quote, as a share of the lorry rate. |
-| 135 | `Rail.OPENING_QUOTE` | `.60` | What a city with no railway assumes the first line could charge. |
-| 156 | `Rail.MIN_LINE_UTILISATION` | `.60` | How much of a line's nameplate has to be freight nobody is carrying before it is worth laying. |
-| 175 | `Rail.TONNES_PER_SET` | `2500` | Tonnes a month one wagon set can haul. |
-| 178 | `Rail.SET_LIFE_MONTHS` | `240` | How long a wagon set lasts before it is scrap. |
-| 209 | `Rail.TARGET_RETURN` | `.012` | What it tries to earn a month ON THE TRACK IT HAS SUNK, before scarcity. |
-| 212 | `Rail.MAX_SCARCITY_MULTIPLE` | `1.6` | How far a network that cannot keep up can push the quote above cost-plus. |
-| 215 | `Rail.REPRICE_SPEED` | `.25` | How fast the quote walks to where it should be. |
-| 237 | `Rail.WORLD_FUEL_PER_TONNE` | `.03` | What a tonne of haulage burns, IN THE WORLD'S MONEY. |
+| 134 | `Rail.RAIL_FLOOR` | `.30` | The cheapest the railway will ever quote, as a share of the lorry rate. |
+| 137 | `Rail.OPENING_QUOTE` | `.60` | What a city with no railway assumes the first line could charge. |
+| 158 | `Rail.MIN_LINE_UTILISATION` | `.60` | How much of a line's nameplate has to be freight nobody is carrying before it is worth laying. |
+| 177 | `Rail.TONNES_PER_SET` | `2500` | Tonnes a month one wagon set can haul. |
+| 180 | `Rail.SET_LIFE_MONTHS` | `240` | How long a wagon set lasts before it is scrap. |
+| 211 | `Rail.TARGET_RETURN` | `.012` | What it tries to earn a month ON THE TRACK IT HAS SUNK, before scarcity. |
+| 214 | `Rail.MAX_SCARCITY_MULTIPLE` | `1.6` | How far a network that cannot keep up can push the quote above cost-plus. |
+| 217 | `Rail.REPRICE_SPEED` | `.25` | How fast the quote walks to where it should be. |
+| 245 | `Rail.WORLD_FUEL_PER_TONNE` | `.03` | What a tonne of haulage burns, IN THE WORLD'S MONEY. |
+| 253 | `Rail.FUEL_LITRES_PER_TONNE` | `WORLD_FUEL_PER_TONNE / Good.FUEL.worldImportPrice()` | Litres of fuel a tonne hauled burns (0.7.62): WORLD_FUEL_PER_TONNE over a litre's import price (Good.FUEL), eighteen - so a city with no refinery pays the railway's fuel bill it always paid, at the world's price level. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 240 | `private double quote` | The share of the lorry rate it is charging, today. |
-| 247 | `private final double[] carried` | What it is actually carrying, by stream - the share in force for the month now running, and therefore the share the band was set from and the share the invoice will be raised at when that month is struck. |
-| 250 | `private double rTonnes, rHauled, rTruckBill, rHaulage, rFuel` | the month just billed, for the screens |
-| 251 | `private double rCapacity, rTightness, rFx` |  |
-| 259 | `private double rPaidAbroad` | The part of the month's lorry bill that went abroad with the cargo (0.7.29): what the lorries were paid for the tonnes the railway did not carry, at the shares the month was billed at. |
-| 271 | `private boolean allowedKnown` | Whether the two above are this railway's own figures (0.7.29). |
-| 287 | `private boolean fleetKnown` | Whether this railway's fleet is a figure it actually knows. |
+| 256 | `private double quote` | The share of the lorry rate it is charging, today. |
+| 263 | `private final double[] carried` | What it is actually carrying, by stream - the share in force for the month now running, and therefore the share the band was set from and the share the invoice will be raised at when that month is struck. |
+| 266 | `private double rTonnes, rHauled, rTruckBill, rHaulage, rFuel` | the month just billed, for the screens |
+| 269 | `private double rFuelImported` | The part of the month's fuel the world sold it (0.7.62). |
+| 270 | `private double rCapacity, rTightness, rFx` |  |
+| 278 | `private double rPaidAbroad` | The part of the month's lorry bill that went abroad with the cargo (0.7.29): what the lorries were paid for the tonnes the railway did not carry, at the shares the month was billed at. |
+| 290 | `private boolean allowedKnown` | Whether the two above are this railway's own figures (0.7.29). |
+| 306 | `private boolean fleetKnown` | Whether this railway's fleet is a figure it actually knows. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 119 | 743 | **type** `public final class Rail extends Sector` | The railway. |
-| 289 | 17 | `public Rail()` |  |
+| 121 | 771 | **type** `public final class Rail extends Sector` | The railway. |
+| 308 | 17 | `public Rail()` |  |
 
-### THE MONTH (lines 307-500)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 334 | 132 | `public void haul(Sectors sectors)` | Bills last month's freight, re-prices, and moves the band for the month about to run. |
-| 472 | 5 | `private double monthlyCost(double tonnesHauled, double fx)` | What a month of railway costs to RUN. |
-| 489 | 11 | `private double rateBase()` | The capital the return is measured against: the track and the ground under it, at what the balance sheet says they are worth. |
-
-### the fleet (lines 501-534)
+### THE MONTH (lines 326-521)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 504 | 3 | `public double trackTonnes()` | Tonnes a month of track standing, whether or not there is anything to run on it. |
-| 509 | 1 | `public double fleet()` | Wagon sets owned. |
-| 512 | 1 | `public double setsNeeded()` | ...and how many the track standing would need. |
-| 515 | 1 | `public double replacementSets()` | What the fleet wears out a month, in sets: the replacements it asks for for ever (0.7.29, the railway page's line; haul()'s wear). |
-| 530 | 4 | `public double bid(Good g)` | What it asks the market for: the gap between the fleet it has and the fleet its track needs. |
+| 353 | 134 | `public void haul(Sectors sectors)` | Bills last month's freight, re-prices, and moves the band for the month about to run. |
+| 493 | 5 | `private double monthlyCost(double fuelBill)` | What a month of railway costs to RUN. |
+| 510 | 11 | `private double rateBase()` | The capital the return is measured against: the track and the ground under it, at what the balance sheet says they are worth. |
 
-### what it is doing, for everyone else (lines 535-604)
+### the fleet (lines 522-555)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 537 | 1 | `public double getQuote()` |  |
-| 538 | 1 | `public double getCapacityTonnes()` |  |
-| 539 | 1 | `public double getTradeTonnes()` |  |
-| 540 | 1 | `public double getHauledTonnes()` |  |
-| 541 | 1 | `public double getTightness()` |  |
-| 542 | 1 | `public double getTruckBill()` |  |
-| 543 | 1 | `public double getHaulageBilled()` |  |
-| 544 | 1 | `public double getFuelBill()` |  |
-| 553 | 1 | `public double getAllowedRevenue()` | What a month has to bring in: everything it costs to run, plus the return on the track. |
-| 565 | 1 | `public double getPaidAbroad()` | THE MONTH'S LORRY BILL, THREE WAYS (0.7.29). |
-| 568 | 1 | `public double getKept()` | ...and what the shippers kept: the lorry bill less what was billed at home and what was paid abroad, never below zero (NaN while the split is not known). |
-| 571 | 1 | `public double getScarcity()` | The multiple a network that cannot reach the city's freight can charge on top. |
-| 574 | 1 | `public double[] getCarried()` | The share of each stream the railway is carrying, for the road relief. |
-| 590 | 11 | `public void reapplyBand()` | Puts the band back where the saved month left it. |
-| 603 | 1 | `public double lorryRatePerTonne()` | What a tonne of the city's own freight costs by lorry, this month. |
+| 525 | 3 | `public double trackTonnes()` | Tonnes a month of track standing, whether or not there is anything to run on it. |
+| 530 | 1 | `public double fleet()` | Wagon sets owned. |
+| 533 | 1 | `public double setsNeeded()` | ...and how many the track standing would need. |
+| 536 | 1 | `public double replacementSets()` | What the fleet wears out a month, in sets: the replacements it asks for for ever (0.7.29, the railway page's line; haul()'s wear). |
+| 551 | 4 | `public double bid(Good g)` | What it asks the market for: the gap between the fleet it has and the fleet its track needs. |
 
-### PLANNING - the freight nobody is carrying (lines 605-723)
+### what it is doing, for everyone else (lines 556-628)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 625 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more line would earn: the freight it could pick up, at today's quote, less what it costs to run and to stand. |
-| 641 | 69 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
-| 717 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
-| 722 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
+| 558 | 1 | `public double getQuote()` |  |
+| 559 | 1 | `public double getCapacityTonnes()` |  |
+| 560 | 1 | `public double getTradeTonnes()` |  |
+| 561 | 1 | `public double getHauledTonnes()` |  |
+| 562 | 1 | `public double getTightness()` |  |
+| 563 | 1 | `public double getTruckBill()` |  |
+| 564 | 1 | `public double getHaulageBilled()` |  |
+| 565 | 1 | `public double getFuelBill()` |  |
+| 568 | 1 | `public double getFuelImported()` | ...and the part of it bought from the world (0.7.62): all of it with no refinery in the city. |
+| 577 | 1 | `public double getAllowedRevenue()` | What a month has to bring in: everything it costs to run, plus the return on the track. |
+| 589 | 1 | `public double getPaidAbroad()` | THE MONTH'S LORRY BILL, THREE WAYS (0.7.29). |
+| 592 | 1 | `public double getKept()` | ...and what the shippers kept: the lorry bill less what was billed at home and what was paid abroad, never below zero (NaN while the split is not known). |
+| 595 | 1 | `public double getScarcity()` | The multiple a network that cannot reach the city's freight can charge on top. |
+| 598 | 1 | `public double[] getCarried()` | The share of each stream the railway is carrying, for the road relief. |
+| 614 | 11 | `public void reapplyBand()` | Puts the band back where the saved month left it. |
+| 627 | 1 | `public double lorryRatePerTonne()` | What a tonne of the city's own freight costs by lorry, this month. |
 
-### the books (lines 724-742)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 732 | 7 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
-| 741 | 1 | `public String inputLabel()` |  |
-
-### the screen (lines 743-790)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 746 | 1 | `public boolean hasPlantBlock()` |  |
-| 749 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
-
-### save/load (lines 791-861)
+### PLANNING - the freight nobody is carrying (lines 629-749)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 794 | 18 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 814 | 20 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 836 | 8 | `protected void resetExtras()` |  |
-| 854 | 7 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
+| 649 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more line would earn: the freight it could pick up, at today's quote, less what it costs to run and to stand. |
+| 667 | 69 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
+| 743 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
+| 748 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
+
+### the books (lines 750-768)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 758 | 7 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
+| 767 | 1 | `public String inputLabel()` |  |
+
+### the screen (lines 769-816)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 772 | 1 | `public boolean hasPlantBlock()` |  |
+| 775 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
+
+### save/load (lines 817-891)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 820 | 19 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 841 | 22 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 865 | 8 | `protected void resetExtras()` |  |
+| 883 | 8 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
 

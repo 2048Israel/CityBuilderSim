@@ -161,11 +161,14 @@ public class InfrastructureManager {
        TRANSIT takes people off the road entirely, and three things stop it
        from being the answer to everything:
 
-         1. NOT EVERYONE TAKES IT. TRANSIT_MAX_SHARE is a hard ceiling on the
-            share of commuters transit can ever carry, whatever is built. Jerus:
-            "transit cannot work without road, and not everyone takes transit."
-            New York is about 56% and most North American cities are under 10%;
-            65% is already generous for a city that can build freely.
+         1. NOT EVERYONE TAKES IT. TRANSIT_MAX_SHARE is the share of every
+            group of commuters a city's lines reach - the car-less and the car
+            owners alike since 0.7.49 - so it is still a hard ceiling on the
+            share transit can ever carry, whatever is built. Jerus: "transit
+            cannot work without road, and not everyone takes transit." New
+            York is about 56% and most North American cities are under 10%;
+            65% is already generous for a city that can build freely. Who of
+            those in reach rides is WHO RIDES, BY WHAT THEY PAY, below.
 
          2. IT RUNS ON THE ROAD IT IS SUPPOSED TO REPLACE. Buses are road
             vehicles and a metro station still needs a street outside it, so
@@ -182,7 +185,11 @@ public class InfrastructureManager {
        halved and it can never be deleted, which is exactly the shape asked for.
        ======================================================================= */
 
-    /** The most of its commuters any city can ever put on transit. */
+    /**
+     * The share of every group of commuters a city's lines reach (0.7.49):
+     * the car-less and the owners alike, so also the most of its commuters
+     * any city can ever put on transit.
+     */
     public static final double TRANSIT_MAX_SHARE = .65;
 
     /** Transit capacity a city can use, per unit of road capacity under it. */
@@ -350,6 +357,12 @@ public class InfrastructureManager {
      *
      * 1 exactly with no cars - see carRoadFactor() for why that is an early
      * return and not an arithmetic identity.
+     *
+     * NOT THE RIDERS' RULE SINCE 0.7.49: it read cars per HOUSEHOLD as the
+     * share of commuters who could drive, and a household holds one car for
+     * all its workers. The riders are counted by who has a car of their own
+     * now (WHO RIDES, BY WHAT THEY PAY); its owner term lives on in
+     * ownersRidingAt().
      */
     public double willingToRide() {
         if (!(carOwnership > 0)) return 1;
@@ -462,23 +475,32 @@ public class InfrastructureManager {
     /* ----------------------------- the fare ----------------------------- */
 
     /**
-     * What share of the ceiling actually rides, at a given fare.
+     * What share of the ceiling would ride at a given fare, on the first
+     * pass's straight line.
      *
-     * A FARE IS A PRICE AND NOT A CHARGE, which is what makes transit
-     * different from the clinics and the schools: the person on the bus chose
-     * to be, and can choose a car instead. So the ridership ceiling is what a
-     * FREE system would carry and the fare walks it down from there.
+     * SINCE 0.7.49 IT WALKS DOWN THE JAM'S RIDERS AND NOTHING ELSE. A fare
+     * is a price to car owners and a charge to everyone else: a commuter
+     * with no car of their own rides whatever it costs, and an owner chooses
+     * on what the ride and the fuel cost (transitChosen()). What this curve
+     * still prices is the owners the jam puts on the bus (ownersRidingAt():
+     * without it, jammed owners rode at the ceiling fare) and the old
+     * funnel's step (getRidersAtFare()).
      *
      * The shape is a straight line to zero at MAX_TRANSIT_FARE, which is
      * crude and is the right kind of crude for a first pass: it is monotone,
-     * it has no constants in money of its own (the fare is measured against
-     * the cap, so a currency reform moves both and the ridership does not
-     * budge), and a player can read it off the screen in one go. A real
-     * elasticity is a later argument and wants a measurement behind it.
+     * it has no constants in money of its own, and a player can read it off
+     * the screen in one go. A real elasticity is a later argument and wants a
+     * measurement behind it.
      *
-     * AT THE DEFAULT FARE about ninety-five percent still ride, which is the
-     * point of the default: a city that has not touched the dial is running
-     * a normally-priced bus service, not an experiment.
+     * IN FOUNDING MONEY, BOTH OF THEM. The cap is founding money and the dial
+     * is founding money in today's unit, so every caller here hands it the
+     * dial times the unit (fareUnit, B6, 0.7.47) - until then a reform by a
+     * thousand read a fare a thousandth of the cap's, and riders went from
+     * 41,107 to 43,627 at the same real fare.
+     *
+     * AT THE DEFAULT FARE it reads ninety-five percent, which is the point
+     * of the default: a city that has not touched the dial is running a
+     * normally-priced bus service, not an experiment.
      */
     public static double ridershipAt(double fare) {
         if (!(fare > 0)) return 1;
@@ -488,53 +510,207 @@ public class InfrastructureManager {
 
     private double fareShare = 1;
 
-    /** Told to the network each month, because the dial is the player's. */
+    /** The dial as the month was told it (0.7.49): what the owners weigh, at fareLevel. Derived each month, never saved. */
+    private double fareDial = TaxPolicy.DEFAULT_TRANSIT_FARE;
+
+    /** Told to the network each month, because the dial is the player's: in today's unit, read in founding money (fareUnit). */
     public void setFare(double fare) {
-        this.fareShare = ridershipAt(fare);
+        this.fareShare = ridershipAt(fare * fareUnit);
+        this.fareDial = fare;
     }
 
     public double getFareShare() { return fareShare; }
 
+    /* =======================================================================
+       WHO RIDES, BY WHAT THEY PAY (0.7.49)
+
+       Jerus: "households shouldnt check the transit price alone to determine
+       if they use it, they should determine the cost of their own
+       transportation ... if one household category has 3k workers and 2k
+       cars, then well, 1k has to take transit cause they have no choice ...
+       but if they already have car they look at oil costs".
+
+       SO THE COMMUTERS ARE SPLIT BY WHETHER THEY HAVE A CAR OF THEIR OWN,
+       counted per worker in the working cells
+       (HouseholdBalance.captiveShare()): a household holds one car at most,
+       so a couple's second earner and four of five flatmates have none. In
+       the 2,400-month research city that is 73% of its workers, and the old
+       rule, which read cars per household, left 21,000 seats empty there
+       while the streets jammed.
+
+         THE CAR-LESS (getCaptiveCommuters()) ride whatever the fare, if a
+         line reaches them and there is a seat. TRANSIT_MAX_SHARE of them are
+         in reach (getCaptiveDemand()), the seats go to them first
+         (getCaptiveRiders()), and the rest walk (getWalking()): at no money
+         cost, on the street at today's car factor, so the jam is what it
+         costs them. A dearer fare takes more of their money and does not
+         empty the buses.
+
+         THE OWNERS (getOwnerCommuters()) weigh a ride, the dial at the level
+         people expect (fareLevel), against a journey's fuel (fuelPerJourney:
+         Motoring.CAR_FUEL_PER_JOURNEY at today's exchange rate), and a cell
+         splits rather than flips (transitChosen(), MODE_SPREAD). The jam puts
+         more of them on the bus, as it always did, walked down by the old
+         fare curve, so owners who chose the car ride exactly as they did
+         before (ownersRidingAt()). TRANSIT_MAX_SHARE of them are in reach
+         too, and they take the seats the car-less left (getChoiceRiders());
+         the rest drive (getDrivers()).
+
+       THE CEILING DID NOT MOVE: the car-less in reach and the owners in reach
+       are never more than TRANSIT_MAX_SHARE of the commuters, and the stock
+       and the road under it cap both (getTransitCeiling()). The road reads
+       what is not on a bus at carRoadFactor(), cars per household, as it
+       did (the transit spec's star 5).
+
+       THE FARE STAYS ANCHORED: the dial is founding money charged at the
+       expected level (TaxPolicy.chargedFare()), so it keeps its real worth;
+       the fuel it is weighed against is today's, so a weak currency puts
+       owners on the bus.
+
+       Told by Game at advanceDemographics() 6d, and on the load path from
+       the save's carried figures (DataSave.captiveShare, fuelPerJourney):
+       the share because the cells are not back when the road is first
+       struck, the fuel because it was struck at 6d's exchange rate.
+       ======================================================================= */
+
     /**
-     * Commuters actually carried off the road this month.
-     *
-     * Three ceilings and the lowest wins: what the stock could carry, what the
-     * road under it allows, and what the ceiling on any city's transit share
-     * permits - then the fare walks that down.
+     * How a cell splits between two costs: all on the bus at half the
+     * drive's cost, all in the car at twice it, the straight line between.
+     * A cell is thousands of households with commutes of every length.
+     */
+    public static final double MODE_SPREAD = 1.0 / 3;
+
+    /** The share of the working cells' workers with no car of their own; 1 until told (no cars). */
+    private double captiveShare = 1;
+
+    /** What a journey to work by car burns, in today's money; 0 until told. */
+    private double fuelPerJourney;
+
+    /** Told by Game each month: the captive share (0 to 1; 1 if not finite) and a journey's fuel in today's money (0 or more). */
+    public void setCommute(double captive, double fuel) {
+        this.captiveShare = Double.isFinite(captive) ? Math.max(0, Math.min(1, captive)) : 1;
+        this.fuelPerJourney = Double.isFinite(fuel) ? Math.max(0, fuel) : 0;
+    }
+
+    public double getCaptiveShare()   { return captiveShare; }
+    public double getFuelPerJourney() { return fuelPerJourney; }
+
+    /** A currency reform: the fuel struck is money, divided where it sits. */
+    public void redenominateFuel(double scale) { fuelPerJourney *= scale; }
+
+    /**
+     * The share of a cell that chooses transit, driving at one cost and
+     * riding at the other: 1/2 at equal costs, 1 at a ride of half the drive
+     * or less, 0 at twice it or more, the straight line in
+     * (drive - ride) / (drive + ride) between. 1 when the ride is free, 0
+     * when the drive is (and the ride is not).
+     */
+    public static double transitChosen(double driveCost, double rideCost) {
+        if (!(rideCost > 0)) return 1;
+        if (!(driveCost > 0)) return 0;
+        double x = (driveCost - rideCost) / (driveCost + rideCost);
+        return Math.max(0, Math.min(1, .5 + x / (2 * MODE_SPREAD)));
+    }
+
+    /** The owners in reach who choose the bus on cost, at a dial: a ride (the dial at fareLevel) against a journey's fuel. */
+    public double ownersChoosingAt(double dial) { return transitChosen(fuelPerJourney, dial * fareLevel); }
+
+    /** ...and who ride, at a dial: those, and of the rest the jam's share, walked down by the old fare curve (ridershipAt()). */
+    public double ownersRidingAt(double dial) {
+        double s = ownersChoosingAt(dial);
+        return s + (1 - s) * CAR_OWNER_RIDES_AT_GRIDLOCK * getJam() * ridershipAt(dial * fareUnit);
+    }
+
+    /** The commuters with no car of their own: the captive share of the commuters. */
+    public double getCaptiveCommuters() { return getLoad(Traffic.COMMUTERS) * captiveShare; }
+
+    /** ...those of them a line reaches: TRANSIT_MAX_SHARE of them. */
+    public double getCaptiveDemand() { return getCaptiveCommuters() * TRANSIT_MAX_SHARE; }
+
+    /** ...and those who ride, whatever the fare: all in reach, to the seats. */
+    public double getCaptiveRiders() { return Math.min(getTransitCeiling(), getCaptiveDemand()); }
+
+    /** The car-less who walk: out of reach of a line, or with no seat on it. */
+    public double getWalking() { return Math.max(0, getCaptiveCommuters() - getCaptiveRiders()); }
+
+    /** The commuters with a car of their own. */
+    public double getOwnerCommuters() { return getLoad(Traffic.COMMUTERS) * (1 - captiveShare); }
+
+    /** The owners who ride at a dial: those in reach who ride (ownersRidingAt()), to the seats the car-less left. */
+    public double choiceRidersAt(double dial) {
+        return Math.max(0, Math.min(getTransitCeiling() - getCaptiveRiders(),
+                getOwnerCommuters() * TRANSIT_MAX_SHARE * ownersRidingAt(dial)));
+    }
+
+    /** ...at the month's dial. */
+    public double getChoiceRiders() { return choiceRidersAt(fareDial); }
+
+    /** The owners who drive: those who are not on a bus. */
+    public double getDrivers() { return Math.max(0, getOwnerCommuters() - getChoiceRiders()); }
+
+    /**
+     * Commuters actually carried off the road this month (0.7.49): the
+     * car-less in reach, to the seats (getCaptiveRiders()), and the owners in
+     * reach who chose the bus or were put on it by the jam, to the seats left
+     * (getChoiceRiders()). Under three ceilings, and the lowest wins: what the
+     * stock could carry, what the road under it allows, and the share a
+     * city's lines reach. See WHO RIDES, BY WHAT THEY PAY.
      */
     public double getTransitRiders() {
-        return Math.min(getUsableTransit(),
-                getLoad(Traffic.COMMUTERS) * TRANSIT_MAX_SHARE) * fareShare * willingToRide();
+        return getCaptiveRiders() + getChoiceRiders();
     }
 
     /*
      * THE SAME, ONE STEP AT A TIME (0.7.29), for the Transit page's funnel:
-     * the three ceilings, the lowest of them, what the fare leaves of it -
-     * and getTransitRiders() is that times willingToRide(), to the bit
-     * (InfrastructureCheck). Pure reads.
+     * the three ceilings and the lowest of them. Since 0.7.49 the riders
+     * under them are the car-less and the owners who chose the bus, and
+     * getTransitRiders() is getCaptiveRiders() + getChoiceRiders() to the bit
+     * (InfrastructureCheck). What the fare leaves of the ceiling
+     * (getRidersAtFare()) is the old funnel's step. Pure reads.
      */
 
     /** The second ceiling: what the road under the transit lets it carry, TRANSIT_NEEDS_ROAD times the street capacity. */
     public double getTransitRoadCeiling() { return capacity * TRANSIT_NEEDS_ROAD; }
 
-    /** The third: the most of its commuters any city rides, TRANSIT_MAX_SHARE of them. */
+    /** The third: TRANSIT_MAX_SHARE of the commuters, of each group - the most a city's lines reach. */
     public double getTransitShareCeiling() { return getLoad(Traffic.COMMUTERS) * TRANSIT_MAX_SHARE; }
 
     /** The lowest of the three ceilings - the stock, the road under it, the share - which is what a free system would carry. */
     public double getTransitCeiling() { return Math.min(getUsableTransit(), getTransitShareCeiling()); }
 
-    /** ...what the fare leaves of it, before the cars walk it down. */
+    /** ...what the fare's curve (ridershipAt()) leaves of it: the funnel's step until 0.7.49, before the cars walked it down (willingToRide()); the Transit page draws the riders by reason since, and nothing in the month reads this. */
     public double getRidersAtFare() { return getTransitCeiling() * fareShare; }
 
-    /** The riders at a fare the city has not set, with today's ceilings and cars: the fare dial's preview. */
-    public double ridersAt(double fare) { return getTransitCeiling() * ridershipAt(fare) * willingToRide(); }
+    /** The riders at a fare the city has not set, with today's ceilings, cars and fuel: the car-less, who ride at any fare, and the owners at it. The fare dial's preview. */
+    public double ridersAt(double fare) { return getCaptiveRiders() + choiceRidersAt(fare); }
 
     /**
      * ...and a month of fares from them (0.7.38): those riders at a month of
-     * journeys each (TaxPolicy.monthlyFareAt()), the product the month books
-     * as the city's fares - the fare dial card's "Fares collected". Pure.
+     * journeys each, each journey charged the dial at the level the fare is
+     * struck at (TaxPolicy.chargedFare(), since 0.7.45 - the UI spec's B7:
+     * it priced a ride at the dial in founding money while the month charged
+     * the dial at the expected level), the product the month books as the
+     * city's fares - the fare dial card's "Fares collected". Pure.
      */
-    public double faresAt(double fare) { return ridersAt(fare) * TaxPolicy.monthlyFareAt(fare); }
+    public double faresAt(double fare) { return ridersAt(fare) * TaxPolicy.monthlyFareAt(fare * fareLevel); }
+
+    /** The level a ride is charged at - the level the month's money constants are struck at (TaxPolicy.getExpectedLevel(), Expectations.getStruckLevel()): told by Game with every re-strike; 1 until it is. The owners weigh a ride at it since 0.7.49 (ownersChoosingAt()). Derived, never saved. */
+    private double fareLevel = 1;
+
+    /** Told by Game.restrikeMoneyConstants(); anything not positive is ignored. */
+    public void setFareLevel(double level) { if (level > 0 && Double.isFinite(level)) fareLevel = level; }
+
+    /** The level a ride is charged at. */
+    public double getFareLevel() { return fareLevel; }
+
+    /** The currency's unit (Denomination.getUnit()), which turns the dial into founding money for the ridership curve (B6, 0.7.47): told by Game with every re-strike and at a reform's end; 1 until it is. Derived, never saved. */
+    private double fareUnit = 1;
+
+    /** Told by Game.restrikeMoneyConstants() and Game.reformCurrency(); anything not positive is ignored. */
+    public void setFareUnit(double unit) { if (unit > 0 && Double.isFinite(unit)) fareUnit = unit; }
+
+    /** The unit the dial is read in founding money at. */
+    public double getFareUnit() { return fareUnit; }
 
     /**
      * The trips a fare would put back onto the road (0.7.38), negative for
@@ -864,6 +1040,11 @@ public class InfrastructureManager {
         copy.transitCapacity = transitCapacity + Math.max(0, transitAdded);
         System.arraycopy(railShare, 0, copy.railShare, 0, railShare.length);
         copy.fareShare = fareShare;
+        copy.fareDial = fareDial;
+        copy.captiveShare = captiveShare;
+        copy.fuelPerJourney = fuelPerJourney;
+        copy.fareLevel = fareLevel;
+        copy.fareUnit = fareUnit;
         return copy;
     }
 
@@ -872,5 +1053,7 @@ public class InfrastructureManager {
         load = 0;
         carOwnership = 0;
         rememberedThroughput = 1;
+        captiveShare = 1;
+        fuelPerJourney = 0;
     }
 }

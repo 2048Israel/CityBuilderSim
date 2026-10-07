@@ -48,6 +48,12 @@ public class BalanceSheet {
     private double land;
 
     /**
+     * What its buyers owe it for stock it let them have on credit, which the
+     * next strike collects (0.7.44; SupplierCredit): a current asset.
+     */
+    private double tradeReceivables;
+
+    /**
      * Buildings at construction cost: cash paid plus materials at market. It
      * excludes construction labour, which is paid by the construction sector
      * rather than capitalised here, so this understates true cost somewhat.
@@ -59,6 +65,13 @@ public class BalanceSheet {
 
     /** Not modelled yet - city debt is not attributed to individual businesses. */
     private double bondsPayable;
+
+    /**
+     * What it owes its suppliers for stock they let it have on credit, which
+     * the next strike pays (0.7.44; SupplierCredit): a current liability, the
+     * first this sheet has had.
+     */
+    private double tradePayables;
 
     public BalanceSheet(String owner) {
         this.owner = owner;
@@ -104,6 +117,16 @@ public class BalanceSheet {
         return this;
     }
 
+    public BalanceSheet setTradeReceivables(double owedToIt) {
+        this.tradeReceivables = Math.max(0, owedToIt);
+        return this;
+    }
+
+    public BalanceSheet setTradePayables(double owedByIt) {
+        this.tradePayables = Math.max(0, owedByIt);
+        return this;
+    }
+
     //getters
     public String getOwner()              { return owner; }
     public double getCash()               { return cash; }
@@ -113,10 +136,12 @@ public class BalanceSheet {
     public double getLand()               { return land; }
     public double getBuildings()          { return buildings; }
     public double getBondsPayable()       { return bondsPayable; }
+    public double getTradeReceivables()   { return tradeReceivables; }
+    public double getTradePayables()      { return tradePayables; }
 
     //derived
     public double getCurrentAssets() {
-        return cash + inventory;
+        return cash + inventory + tradeReceivables;
     }
 
     public double getNonCurrentAssets() {
@@ -127,13 +152,13 @@ public class BalanceSheet {
         return getCurrentAssets() + getNonCurrentAssets();
     }
 
-    /** Nothing is due within the year yet - no payables, no short-term debt. */
+    /** What is due within the year: what it owes its suppliers, since 0.7.44 (its loans and bonds are not split by term here). */
     public double getCurrentLiabilities() {
-        return 0;
+        return tradePayables;
     }
 
     public double getTotalLiabilities() {
-        return bondsPayable;
+        return bondsPayable + tradePayables;
     }
 
     /** The balancing figure. See the class note. */
@@ -148,9 +173,10 @@ public class BalanceSheet {
     /* ------------------------------ RATIOS ------------------------------ */
 
     /**
-     * Current ratio. Undefined while there are no current liabilities, which is
-     * always, for now - returns 0 rather than infinity so nothing downstream has
-     * to handle a non-finite number.
+     * Current ratio. Undefined while there are no current liabilities - for
+     * every business but one owing its suppliers (0.7.44) - and returns 0
+     * rather than infinity so nothing downstream has to handle a non-finite
+     * number.
      */
     public double getCurrentRatio() {
         double cl = getCurrentLiabilities();

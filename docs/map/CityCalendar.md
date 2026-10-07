@@ -1,6 +1,6 @@
 # CityCalendar.java - 146 lines · 13 methods · 4 constants · model
 
-`ham/citybuildersim/CityCalendar.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityCalendar.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Turns the month counter into a date a person can hold in their head.
 > 
@@ -23,7 +23,7 @@
 > they floor at the epoch rather than counting backwards into 1999. A date is
 > cosmetic; crashing the status bar over one is not.
 
-**Used by (22):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CalendarCheck](CalendarCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (23):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CalendarCheck](CalendarCheck.md), [ChartCheck](ChartCheck.md), [ChartModel](ChartModel.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [PeopleScreen](PeopleScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 

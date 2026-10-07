@@ -33,6 +33,8 @@ import java.util.List;
  *      honest place for it - the lender is willing, the business shouldn't be.
  *      Since 0.7.11 a landlord's home is asked the mortgage lender's test
  *      instead (Mortgage.decide()); every other order still asks this one.
+ *      Both read the rate less the inflation the owners expect since 0.7.42
+ *      and 0.7.44 (THE HURDLE IS REAL, realTestRate()).
  *
  * SINCE THE SECTOR TEMPLATE (2026-09-11) this class is the shared
  * arithmetic and the two generic rules - the maker's expansion and the two
@@ -108,7 +110,7 @@ public class BusinessInvestment {
     private final BuildingManager buildingManager;
     private final EconomyManager economyManager;
 
-    private final List<Integer> populationHistory = new ArrayList<>();
+    private final List<Long> populationHistory = new ArrayList<>();
 
     /** Consecutive months each sector has lost money. Resets on a profitable one. */
     private final java.util.Map<String, Integer> lossMonths = new java.util.HashMap<>();
@@ -168,7 +170,7 @@ public class BusinessInvestment {
     }
 
     /** Call once a month, before the sectors are asked what they want to build. */
-    public void recordMonth(int population) {
+    public void recordMonth(long population) {
         populationHistory.add(population);
         while (populationHistory.size() > TREND_WINDOW) {
             populationHistory.remove(0);
@@ -182,8 +184,8 @@ public class BusinessInvestment {
      */
     public double getPopulationGrowth() {
         if (populationHistory.size() < 2) return 0;
-        int first = populationHistory.get(0);
-        int last = populationHistory.get(populationHistory.size() - 1);
+        long first = populationHistory.get(0);
+        long last = populationHistory.get(populationHistory.size() - 1);
         return (last - first) / (double) (populationHistory.size() - 1);
     }
 
@@ -230,6 +232,11 @@ public class BusinessInvestment {
      * land to sell. Floored at one, because a sector that has decided it is
      * short should place an order even when the builders are backed up. Land
      * is the exception and the only thing that can return zero.
+     *
+     * At a few billion people what an order needs can pass an int: the cast
+     * saturates at 2,147,483,647 rather than wrapping, and the order is then
+     * what the wait and the plots allow (ScaleCheck's 5 billion copy sizes
+     * one from there).
      */
     public int orderSize(double shortfall, double capacityPerUnit,
                          BuildingsTemplate template, double siteOutput) {
@@ -237,20 +244,80 @@ public class BusinessInvestment {
         int needed = (capacityPerUnit > 0) ? (int) Math.ceil(shortfall / capacityPerUnit) : 1;
 
         // The wait only grows with the order (each building adds its points
-        // and its crew), so count up until it passes.
+        // and its crew), so the largest order inside MAX_ORDER_MONTHS is
+        // found by halving - see THE WAIT GROWS WITH THE ORDER, below.
         int deliverable = 0;
+        int waitsRead = 0;
         if (template.getConstructionPoints() > 0 && siteOutput > 0) {
-            for (int n = 1; n <= needed; n++) {
-                if (leadTime(template, n, siteOutput) > MAX_ORDER_MONTHS) break;
-                deliverable = n;
+            if (needed >= 1) {
+                int fits = 0, over = needed;   // fits: inside the months (0: none known); over: past them
+                waitsRead++;
+                if (!(leadTime(template, needed, siteOutput) > MAX_ORDER_MONTHS)) fits = needed;
+                else while (over - fits > 1) {
+                    int mid = (int) (((long) fits + over) >>> 1);
+                    waitsRead++;
+                    if (!(leadTime(template, mid, siteOutput) > MAX_ORDER_MONTHS)) fits = mid; else over = mid;
+                }
+                deliverable = fits;
             }
         } else {
             deliverable = needed;
         }
+        if (orderWatch != null) orderWatch.sized(template, needed, siteOutput, deliverable, waitsRead);
 
         int size = Math.max(1, Math.min(needed, deliverable));
         return Math.min(size, plotsAvailableFor(template));
     }
+
+    /*
+     * THE WAIT GROWS WITH THE ORDER (0.7.54). orderSize() counted up from one
+     * building, reading the wait for each, until it passed MAX_ORDER_MONTHS;
+     * the order grows with the city, and at 1.1 billion people this loop took
+     * 94% of a month (the project's spec-scale.md, section 4). It halves now,
+     * which finds the same order because the wait strictly grows with it.
+     *
+     * The proof, from BuildingManager.waitWith(). With u of the building on
+     * site owing a = max(0, u p - progress) of its points p, the others'
+     * crews O >= 0 and c = p^CREW_SCALE_EXPONENT, an order of q waits
+     *
+     *     W(q) = (a + q p) (O + (u + q) c) / (S (u + q) c).
+     *
+     * Put m = u + q and g = u p - a, which is at least 0 (progress is never
+     * negative, and a is 0 when it is past u p). Then a + q p = m p - g and
+     *
+     *     S W = m p - g + O p / c - g O / (m c),
+     *     S dW/dm = p + g O / (m^2 c) > 0.
+     *
+     * So the wait rises with every building added, by at least p / S, which
+     * is at least one part in (m + O / c) of itself - one in ten billion for
+     * a stack of 10^9 behind the crews of 10^10 more, and more than a hundred
+     * thousand times the rounding of the seven operations in it that read q.
+     * The first order past MAX_ORDER_MONTHS is therefore the one the count
+     * stopped at.
+     * OrderSearchCheck holds the two to the same order over a long run.
+     */
+
+    /**
+     * HARNESSES ONLY (0.7.54): told every order the three searches decide -
+     * orderSize() here, and Game.consider() and Mortgage.decide() through
+     * Game.watchOrders() - with what each was asked, so a harness can ask
+     * the countdown they replaced the same question at the same moment
+     * (OrderSearchCheck, ScaleCheck). Nothing in the game sets one.
+     */
+    public interface OrderWatch {
+        /** orderSize(): what it needed, at what site output, the order inside MAX_ORDER_MONTHS (0 for none), and the waits it read. */
+        default void sized(BuildingsTemplate t, int needed, double siteOutput, int deliverable, int waitsRead) { }
+        /** Game.consider(): the order, the till it was judged on, one building's profit, and what was found. */
+        default void invested(Decision decision, double cash, double perUnitProfit, Game.Afford found) { }
+        /** Game.considerOnMortgage(): what Mortgage.decide() was asked, and its answer. */
+        default void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash,
+                               double noiPerUnit, double annualRate, Mortgage.Decision found) { }
+    }
+
+    private OrderWatch orderWatch;
+
+    /** Harnesses only: see OrderWatch; Game.watchOrders() sets it. */
+    public void watchOrders(OrderWatch watch) { this.orderWatch = watch; }
 
     /*
      * THE LANDLORDS HOLD WORK, NOT ONE ORDER (0.7.17). Jerus: "Landlords may
@@ -309,10 +376,10 @@ public class BusinessInvestment {
         return (int) Math.floor(landAvailable / land);
     }
 
-    /** Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one. */
+    /** Why a sector could not build, when land is what stopped it - with the numbers, because the player can fix this one: "no land - needs 743 m\u00b2, 301 m\u00b2 free" (in square feet until 0.7.68; LandManager.areaWords()). */
     public String landReason(BuildingsTemplate template) {
-        return String.format("no land - needs %,.0f sq ft, %,.0f free",
-                template.getLandSqFt(), landAvailable);
+        return "no land - needs " + LandManager.areaWords(template.getLandSqFt()) + ", "
+                + LandManager.areaWords(landAvailable) + " free";
     }
 
     /* =====================================================================
@@ -389,14 +456,14 @@ public class BusinessInvestment {
         if (saved != null) lossMonths.putAll(saved);
     }
 
-    public java.util.List<Integer> getPopulationHistory() {
+    public java.util.List<Long> getPopulationHistory() {
         return new ArrayList<>(populationHistory);
     }
 
-    public void restorePopulationHistory(java.util.List<Integer> saved) {
+    public void restorePopulationHistory(java.util.List<Long> saved) {
         populationHistory.clear();
         if (saved == null) return;
-        for (Integer p : saved) if (p != null) populationHistory.add(p);
+        for (Long p : saved) if (p != null) populationHistory.add(p);
         while (populationHistory.size() > TREND_WINDOW) populationHistory.remove(0);
     }
 
@@ -634,11 +701,9 @@ public class BusinessInvestment {
          * units a month against 0 made" and ordered two hundred and
          * ninety-eight food plants - every plot it owned. The demand a
          * maker plans against can grow by at most the ratio of the people
-         * the city could house to the people it has.
+         * the city could house to the people it has. Since 0.7.51 that line
+         * is growthFactor(), which the city's build advice reads too.
          */
-        double pop = populationHistory.isEmpty() ? 0 : populationHistory.get(populationHistory.size() - 1);
-        double growthCap = pop > 0 ? Math.max(1, reachablePopulation() / pop) : 1;
-
         for (BuildingsTemplate t : buildingManager.getTemplatesBySector(key)) {
             if (t.makes(good) <= 0) continue;
 
@@ -673,7 +738,7 @@ public class BusinessInvestment {
                 return Decision.no(key, String.format("%s would take %.0f months to build", t.getName(), lead));
             }
             double months = lead + PLANNING_HORIZON;
-            double projected = demand * Math.min(growthCap, Math.max(1, 1 + growthShare() * months));
+            double projected = demand * growthFactor(months);
 
             if (projected <= currentOutput * (1 + TARGET_HEADROOM)) continue;
 
@@ -742,6 +807,20 @@ public class BusinessInvestment {
         double read = Math.min(market.getDemandTrend(),
                 Math.max(market.getDemand(), market.getLocalFilled() + market.getImported()));
         return Math.min(read, sector.visibleDemandOver(market.good().planningMonths(), economyManager));
+    }
+
+    /**
+     * THE CITY'S FUTURE, READ ONE WAY (0.7.51): how much bigger demand will
+     * be in `months`, by the population trend over the window - never below
+     * today, and never past where the people could live (the cap above
+     * planMaker()'s loop: reachablePopulation() over the people there are).
+     * planMaker() sizes a plant by it, and BuildAdvice.opening() sizes the
+     * city's own orders by it, so the firms and the city read one future.
+     */
+    public double growthFactor(double months) {
+        double pop = populationHistory.isEmpty() ? 0 : populationHistory.get(populationHistory.size() - 1);
+        double growthCap = pop > 0 ? Math.max(1, reachablePopulation() / pop) : 1;
+        return Math.min(growthCap, Math.max(1, 1 + growthShare() * months));
     }
 
     /** The population trend as a share a month, for projecting a good's demand forward. */
@@ -907,6 +986,8 @@ public class BusinessInvestment {
      * Whether a project can carry the debt it needs: if the new capacity
      * cannot out-earn the interest on the money that built it, by a margin,
      * the business declines the project even though the lender would fund it.
+     * The interest at the real rate since 0.7.42 (realTestRate(), THE HURDLE
+     * IS REAL).
      * Every order but a landlord's home since 0.7.11, which is bought on an
      * insured mortgage and asked the mortgage lender's test instead
      * (Mortgage.decide(), in Game.consider()).
@@ -914,9 +995,51 @@ public class BusinessInvestment {
     public boolean servicesItsOwnDebt(double estimatedMonthlyProfit,
                                       double amountBorrowed, double annualRate) {
         if (amountBorrowed <= 0) return true;
+        // In real terms since 0.7.42: see THE HURDLE IS REAL.
+        annualRate = realTestRate(annualRate);
         double monthlyInterest = amountBorrowed * annualRate / 12;
         return estimatedMonthlyProfit >= monthlyInterest * PROFIT_OVER_INTEREST;
     }
+
+    /*
+     * THE HURDLE IS REAL (0.7.42, the anchor; star 7). The debt is nominal and
+     * the profits grow with prices, so a project is tested against the rate
+     * LESS the inflation its owners expect - a 6% loan in a city expecting 2%
+     * costs 4% in what the profits will buy - floored at REAL_HURDLE_FLOOR of
+     * the rate, so expected inflation near the rate never makes borrowing
+     * free. Game hands expected inflation in every month once the basket is
+     * based (setExpectedInflation()); until then, and in a fixture that never
+     * hands it, it is 0 and the test is the nominal one it always was.
+     * Measured in the prototype as neutral to positive for growth.
+     *
+     * AND SINCE 0.7.44 THE LANDLORDS' LENDER ASKS IT TOO (star 7 extended):
+     * the mortgage lender's test, which replaces this one for a landlord's
+     * home, reads the payment at realTestRate() of the insured rate - see
+     * Game.considerOnMortgage(), THE LENDER'S TEST IS REAL.
+     */
+
+    /**
+     * The rate a project is tested at: this one less the inflation its owners
+     * expect, never under REAL_HURDLE_FLOOR of it. What servicesItsOwnDebt()
+     * reads, and the landlords' mortgage lender since 0.7.44.
+     */
+    public double realTestRate(double annualRate) {
+        return Math.max(annualRate * REAL_HURDLE_FLOOR, annualRate - expectedInflation);
+    }
+
+    /** The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. */
+    public static final double REAL_HURDLE_FLOOR = .25;
+
+    /** Expected inflation, a fraction a year, as Game last handed it; 0 for the nominal test. Derived, never saved. */
+    private double expectedInflation;
+
+    /** Told each month by Game (Expectations.getExpectedInflation() once the basket is based, 0 before). */
+    public void setExpectedInflation(double expected) {
+        this.expectedInflation = Double.isFinite(expected) ? expected : 0;
+    }
+
+    /** What servicesItsOwnDebt() takes off the rate, a fraction a year. */
+    public double getExpectedInflation() { return expectedInflation; }
 
     /** The household mix, so a residential building can be priced on who would actually live in it. */
     private FamilyModel families;
@@ -1004,5 +1127,19 @@ public class BusinessInvestment {
 
     public double getCostOf(BuildingsTemplate t, int quantity) {
         return totalCostOf(t, quantity);
+    }
+
+    /**
+     * How many of this building the city's yard of construction materials
+     * covers before getCostOf() buys the rest at the market - where its cost
+     * turns steeper; Integer.MAX_VALUE for a building that needs none. For
+     * the refusal's test at prime (Game, THE LARGEST SLICE, WITHOUT COUNTING
+     * TO IT).
+     */
+    public int yardCovers(BuildingsTemplate t) {
+        double per = t.getConstructionMaterials();
+        if (!(per > 0)) return Integer.MAX_VALUE;
+        double covered = Math.floor(Math.max(0, buildingManager.getConstructionMaterials()) / per);
+        return (int) Math.min(Integer.MAX_VALUE, covered);
     }
 }

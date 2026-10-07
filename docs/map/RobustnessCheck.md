@@ -1,6 +1,6 @@
-# RobustnessCheck.java - 376 lines · 5 methods · 0 constants · harnesses
+# RobustnessCheck.java - 425 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RobustnessCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RobustnessCheck.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > What the game does when something is already broken.
 > 
@@ -21,7 +21,7 @@
 > No message, no error, no load: the exception reached the FX thread's default
 > handler and a stderr that does not exist in a packaged build.
 
-**Uses:** [Game](Game.md) (24), [GameLog](GameLog.md) (6), [GameFiles](GameFiles.md) (5), [GameVersion](GameVersion.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Construction](Construction.md) (1)
+**Uses:** [Game](Game.md) (24), [GameLog](GameLog.md) (19), [GameFiles](GameFiles.md) (5), [GameVersion](GameVersion.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Construction](Construction.md) (1)
 
 ## Sections
 
@@ -47,10 +47,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 351 | **type** `public class RobustnessCheck` | What the game does when something is already broken. |
+| 26 | 400 | **type** `public class RobustnessCheck` | What the game does when something is already broken. |
 | 30 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 35 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 46 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 53 | 315 | `public static void main(String[] args) throws Exception` |  |
-| 369 | 7 | `static void cleanUp(Path root)` |  |
+| 53 | 364 | `public static void main(String[] args) throws Exception` |  |
+| 418 | 7 | `static void cleanUp(Path root)` |  |
 

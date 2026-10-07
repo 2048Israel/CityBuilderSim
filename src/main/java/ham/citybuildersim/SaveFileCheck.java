@@ -251,9 +251,10 @@ public class SaveFileCheck {
         data.setIncomeTaxRate(.15);
         data.setPropertyTaxRate(.015);
         // ...and how the city was founded (0.7.10): a name, money named by
-        // hand, and figures no preset has, so nothing can pass by default.
+        // hand, and figures no preset has, so nothing can pass by default -
+        // and since 0.7.56 a world that is not the default's.
         Founding arden = Founding.custom("Arden", 62_500, 12_500, .02)
-                .withCurrency(Currency.typed("Arden crown", "ARC"));
+                .withCurrency(Currency.typed("Arden crown", "ARC")).withWorldSeed(987_654_321L);
         data.setFounding(arden);
 
         GameFiles.Result wrote = data.saveGame(trip, 1);
@@ -264,7 +265,7 @@ public class SaveFileCheck {
 
         assertEquals("cash survived", read.getCash(), 123456.75);
         assertEquals("month survived", read.getMonth(), 87);
-        assertEquals("population survived", read.getPopulation(), 1904);
+        assertEquals("population survived", read.getPopulation(), 1904L);
         assertEquals("buildings survived", read.getBuildingQuantity(0), 141);
         assertEquals("household savings survived", read.getHouseholdSavings(), -2200.5);
         assertEquals("land survived", read.getLandOwned(), 4000000.0);
@@ -276,6 +277,69 @@ public class SaveFileCheck {
         assertEquals("...and the vault", readBack.getReserveUsd(), 12_500.0);
         assertEquals("...and the world's mean is handed back, not saved twice",
                 readBack.getMeanInflation(), .02);
+        assertEquals("...and the world it stands on, its seed (0.7.56)", readBack.getWorldSeed(), 987_654_321L);
+        assertEquals("...saved under worldSeed", read.getWorldSeed(), 987_654_321L);
+
+        // THE LAND ON THE WORLD (0.7.57): a city's land, its offers and what
+        // it took out, written and read back field for field - a land office
+        // that has bought an offer and lifted some of its ground.
+        LandManager office = new LandManager();
+        office.updateMarket(0);
+        office.buyParcel(office.getMarket().bestValue().getId(), 1e12, 0);
+        office.restoreIron(3, 4_000_000.5);
+        office.extractIron(1_000.25);
+        CityLand ground = office.getCityLand();
+        DataSave landSave = new DataSave();
+        landSave.setBuildingNum(13);
+        landSave.setCityLand(ground.centreState(), ground.centreRectsState(), ground.holdingsState(), ground.partFieldsState(),
+                ground.convertedState(), office.getMarket().getOffersState(), office.getMarket().getNextOfferId(),
+                office.getDepletionState(), office.getWorldTotalsState(), office.getWorldSeaTheta());
+        assertTrue("fixture: the land wrote itself", landSave.saveGame(trip, 2).ok);
+        String landJson = Files.readString(trip.saveFile(2));
+        DataSave landRead = gson.fromJson(landJson, DataSave.class);
+        assertTrue("the centre survived, every field", java.util.Arrays.equals(landRead.getLandCentre(), ground.centreState()));
+        assertTrue("...its blocks (0.7.67)", java.util.Arrays.deepEquals(landRead.getLandCentreRects(), ground.centreRectsState()));
+        assertTrue("...the purchase, its rectangle and all (0.7.67)", java.util.Arrays.deepEquals(landRead.getLandHoldings(), ground.holdingsState()));
+        assertTrue("...the twenty-four offers", java.util.Arrays.deepEquals(landRead.getLandOffers(), office.getMarket().getOffersState()));
+        assertTrue("...and no lanes, which only a format-31 save is read for (0.7.67)",
+                landRead.getLandLanes() == null && landRead.getLandPurchases() == null);
+        assertEquals("...the next offer's id", landRead.getNextOfferId(), office.getMarket().getNextOfferId());
+        assertTrue("...what was taken out", java.util.Arrays.equals(landRead.getDepletion(), office.getDepletionState()));
+        assertTrue("...the world's totals", java.util.Arrays.equals(landRead.getWorldTotals(), office.getWorldTotalsState()));
+        assertEquals("...and its sea's level", landRead.getWorldSeaTheta(), office.getWorldSeaTheta());
+        // ...and the city's water rights (0.7.59), boxed: absent on an older save.
+        landSave.setFreshRights(12_345.5);
+        assertTrue("fixture: the rights wrote themselves", landSave.saveGame(trip, 2).ok);
+        assertEquals("the water rights survived (0.7.59)",
+                gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getFreshRights(), 12_345.5);
+        // ...and the city map's sidecar stamp (0.7.60), boxed: absent when the city had no map.
+        landSave.setMapStamp(-1_234_567_890_123_456_789L);
+        assertTrue("fixture: the map's stamp wrote itself", landSave.saveGame(trip, 2).ok);
+        assertEquals("the city map's stamp survived, every bit (0.7.60)",
+                gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getMapStamp(), -1_234_567_890_123_456_789L);
+        landSave.setMapStamp(null);
+        // ...and the drivers' fuel as 6d drew it (0.7.62): the bill, its imported part and the litres.
+        landSave.setHouseholdFuel(new double[] { 1_234.567, 456.789, 987_654.321 });
+        assertTrue("fixture: the fuel month wrote itself", landSave.saveGame(trip, 2).ok);
+        assertTrue("the drivers' fuel month survived, every figure (0.7.62)", java.util.Arrays.equals(
+                gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getHouseholdFuel(),
+                new double[] { 1_234.567, 456.789, 987_654.321 }));
+        assertTrue("fixture: ...and a save with no map wrote itself", landSave.saveGame(trip, 2).ok);
+        assertTrue("...and a save with no map carries no stamp", !Files.readString(trip.saveFile(2)).contains("\"mapStamp\""));
+        CityLand rebuilt = CityLand.restore(ground.seed(), landRead.getLandCentre(), landRead.getLandCentreRects(),
+                landRead.getLandHoldings(), landRead.getLandPartFields(), landRead.getLandConverted());
+        assertTrue("...and the land it rebuilds is the land written", ground.same(rebuilt));
+        assertTrue("a save written now carries no parcels and no iron pool, which only an older save is read for",
+                !landJson.contains("\"landListing\"") && !landJson.contains("\"ironDeposits\"")
+                        && !landJson.contains("\"ironReserveTonnes\""));
+        DataSave format30 = gson.fromJson("{\"ironDeposits\": 155, \"ironReserveTonnes\": 508088779.4794291}", DataSave.class);
+        assertEquals("...and an older save's iron pool reads, for the conversion: its sites", format30.getIronDeposits(), 155);
+        assertEquals("...and its tonnes", format30.getIronReserveTonnes(), 508088779.4794291);
+        assertTrue("...and no land of its own", format30.getLandCentre() == null && format30.getWorldSeaTheta() == null);
+        assertTrue("...and no water rights, which the load derives (0.7.59)", format30.getFreshRights() == null);
+        assertTrue("...and no city map, which waits to be asked for (0.7.60)", format30.getMapStamp() == null);
+        assertTrue("...and no fuel month, which the load derives as that build struck it (0.7.62)",
+                format30.getHouseholdFuel() == null);
         assertEquals("the slot list reads the same name off the same file",
                 trip.readHeader(1).getCityName(), "Arden");
         DataSave older = gson.fromJson("{\"cash\": 5.0}", DataSave.class);
@@ -287,6 +351,13 @@ public class SaveFileCheck {
                         && before0710.getReserveUsd() == Founding.WEALTHY_RESERVE_USD);
         assertTrue("...and its header says Danzik", new com.google.gson.Gson()
                 .fromJson("{\"month\": 3}", SaveHeader.class).getCityName().equals(Founding.DEFAULT_CITY_NAME));
+        assertTrue("...and its world is the one its name, treasury, ground and month make (0.7.56)",
+                older.getWorldSeed() == null && before0710.getWorldSeed() == Founding.derivedWorldSeed(
+                        Founding.DEFAULT_CITY_NAME, Founding.WEALTHY_CASH, older.getLandOwned(), older.getMonth()));
+        DataSave before0756 = gson.fromJson("{\"cityName\": \"Arden\", \"foundingCash\": 62500.0,"
+                + " \"landOwned\": 4000000.0, \"month\": 87}", DataSave.class);
+        assertEquals("a save from 0.7.10 to 0.7.55 reads the seed its own fields make",
+                before0756.getFounding(.02).getWorldSeed(), Founding.derivedWorldSeed("Arden", 62_500, 4_000_000, 87));
 
         // The transient path fields that used to live on DataSave were dropped;
         // make sure nothing crept into the file that should not be in it.
@@ -337,6 +408,13 @@ public class SaveFileCheck {
         city.buildStack(template(city, "Industrial Bakery"), 1, false);
         city.simulateMonths(90);
 
+        // Ground for them by fiat (0.7.67): a new city owns its drawn dry
+        // plots now, 1.7% more than STARTING_SQ_FT, and its ninety months fill
+        // all of it - so the depots and the stores are given their own room.
+        LandManager room = city.getLandManager();
+        room.setOwnedSqFt(room.getAllocatedSqFt() + 2 * depot.getLandSqFt() + 4 * store.getLandSqFt()
+                + Math.max(0, room.getOwnedSqFt() - room.getAllocatedSqFt()));
+
         // Started now and deliberately NOT finished, so the save is taken with
         // real work in progress.
         city.buildStack(depot, 2, false);
@@ -357,7 +435,7 @@ public class SaveFileCheck {
         // later would compare against a city that other sections have since
         // touched, and getIncome() recomputes as it goes.
         double incomeBefore = city.getIncome();
-        int peopleBefore = city.getPopulationManager().getPopulation();
+        long peopleBefore = city.getPopulationManager().getPopulation();
 
         // History the city cannot recompute from its present. Recorded here
         // rather than waited for, so the assertion does not depend on whether
@@ -381,7 +459,7 @@ public class SaveFileCheck {
         reloaded.loadGameSave(1);
 
         double incomeAfter = reloaded.getIncome();
-        int peopleAfter = reloaded.getPopulationManager().getPopulation();
+        long peopleAfter = reloaded.getPopulationManager().getPopulation();
 
         BuildingManager after = reloaded.getBuildingManager();
         assertEquals("depots still under construction",
@@ -770,7 +848,7 @@ public class SaveFileCheck {
 
         EconomyManager ge = growing.getEconomyManager();
         double gIncome = growing.getIncome();
-        int gWorkforce = gp.getWorkforce();
+        long gWorkforce = gp.getWorkforce();
         double gWageTax = ge.getWageTax();
         double gSalesTax = ge.getSalesTax();
         double gRetail = gc.statement().revenue;
@@ -1124,10 +1202,18 @@ public class SaveFileCheck {
          * day it was placed. It no longer does; some sector still loses
          * money in some month, and the loop waits for that month.
          */
+        /*
+         * ...AND FOR THE SHOPS TO FALL SHORT AT THE PRICE (0.7.43): groceries
+         * are sold as baskets wanted at a price now, and a city whose shelf
+         * has climbed to what clears it can hand over every basket asked for
+         * while its poorest are priced out - hungry, with the delivered share
+         * at one. The share is read below, so the loop waits for it too.
+         */
         for (int extra = 0; extra < 240
                 && (full.getHealth().getHungerRate() <= 0
                     || full.getTotalSubsidyPaid() <= 0
-                    || full.getBank().depositRate() <= 0); extra++) {
+                    || full.getBank().depositRate() <= 0
+                    || full.getHouseholdBalance().getDeliveredShare() >= 1); extra++) {
             full.simulateMonths(1);
         }
 
@@ -1176,6 +1262,7 @@ public class SaveFileCheck {
         same("...the vault", back.getFoundingReserveUsd(), full.getFoundingReserveUsd());
         same("...and the world it was founded into", back.getFounding().getMeanInflation(),
                 full.getFounding().getMeanInflation());
+        assertEquals("...and the ground it stands on (0.7.56)", back.getWorldSeed(), full.getWorldSeed());
 
         /*
          * WHAT A LOAN COSTS, STRUCK AT THE CLOSE (0.7.7). The bank prices
@@ -1449,6 +1536,26 @@ public class SaveFileCheck {
                 full.getHouseholds().getHealthPremiums());
         same("...the treatment bill at full service", back.getHealthcare().fullTreatmentFees(),
                 full.getHealthcare().fullTreatmentFees());
+        /*
+         * ...AND THE FEES BY KIND (A3, 0.7.46): each is the people that kind
+         * treated times its fee, and the people were not saved, so a reloaded
+         * Care page read 0 for every kind under a treatment line carried
+         * whole. Added in the order the month adds them, the three are the
+         * line - in the live city, and in its reload.
+         */
+        Healthcare careLive = full.getHealthcare(), careBack = back.getHealthcare();
+        double kindsLive = careLive.feesFrom(CareType.GENERAL) + careLive.feesFrom(CareType.CHILDCARE)
+                + careLive.feesFrom(CareType.SENIOR);
+        double kindsBack = careBack.feesFrom(CareType.GENERAL) + careBack.feesFrom(CareType.CHILDCARE)
+                + careBack.feesFrom(CareType.SENIOR);
+        assertTrue("fixture: the live city's care charged fees, and they add up to its line",
+                careLive.getTreatmentFees() > 0 && careLive.feesFrom(CareType.GENERAL) > 0
+                        && Math.abs(kindsLive - careLive.getTreatmentFees()) <= 1e-9 * careLive.getTreatmentFees());
+        boolean kindsKept = Math.abs(kindsBack - careBack.getTreatmentFees()) <= 1e-9 * Math.max(1, careBack.getTreatmentFees());
+        for (CareType care : new CareType[] { CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR }) {
+            kindsKept &= Math.abs(careBack.feesFrom(care) - careLive.feesFrom(care)) < 1e-9;
+        }
+        assertTrue("just loaded, care's fees by kind add up to its line as the live city's do", kindsKept);
         for (int r = 0; r < full.getHouseholds().getRowCount(); r++) {
             same("row " + r + " care bill", back.getHouseholds().getRowCareBilled(r),
                     full.getHouseholds().getRowCareBilled(r));
@@ -1597,6 +1704,65 @@ public class SaveFileCheck {
         same("...and nobody hungry at full shelves", olderRows.getHungryAtFullShelves(), 0);
         same("...but still its hungry", olderRows.getHungryPeople(), fed.getHungryPeople());
 
+        /*
+         * THE MONTH'S TRADE IN UNITS (A1, 0.7.46): what every sector shipped
+         * and landed this month, which the railway bills at the top of the
+         * next one before the strike clears it. The rows were never saved,
+         * so a reloaded railway's first haul read nothing; the save carries
+         * the units beside the rows now (Sector, THE MONTH'S TRADE ACROSS A
+         * SAVE), and the two getters the railway reads add them.
+         */
+        double shipped = 0, landed = 0;
+        boolean unitsKept = true;
+        for (Sector was : full.getSectors().all()) {
+            Sector now = back.getSectors().byKey(was.key());
+            for (Good good : Good.values()) {
+                shipped += was.unitsExported(good);
+                landed += was.unitsImported(good);
+                unitsKept &= now != null && Double.compare(now.unitsExported(good), was.unitsExported(good)) == 0
+                        && Double.compare(now.unitsImported(good), was.unitsImported(good)) == 0;
+            }
+        }
+        assertTrue("fixture: the city shipped goods and landed goods this month", shipped > 0 && landed > 0);
+        assertTrue("every sector's units shipped and landed this month cross a save", unitsKept);
+
+        /*
+         * ...AND THE MONTH'S BALANCE OF PAYMENTS (0.7.46, A2; the Trade spec's
+         * D4): the flows takeMonth() struck, and the treasury's purchases and
+         * sales of dollars, saved with the foreign accounts - so the Trade tab
+         * of a city just loaded reads the month, and says so.
+         */
+        ForeignAccounts paid = full.getForeignAccounts(), paidAgain = back.getForeignAccounts();
+        assertTrue("fixture: the city sold abroad and bought from abroad this month",
+                paid.getExports() > 0 && paid.tradeImports() > 0 && paid.isMonthCounted());
+        assertTrue("a freshly loaded city reads the month's balance of payments the live one read",
+                Double.compare(paidAgain.getExports(), paid.getExports()) == 0
+                        && Double.compare(paidAgain.tradeImports(), paid.tradeImports()) == 0
+                        && Double.compare(paidAgain.getForeignInterest(), paid.getForeignInterest()) == 0
+                        && Double.compare(paidAgain.getFinancialIn(), paid.getFinancialIn()) == 0
+                        && Double.compare(paidAgain.getFinancialOut(), paid.getFinancialOut()) == 0
+                        && Double.compare(paidAgain.valuationChange(), paid.valuationChange()) == 0
+                        && Double.compare(paidAgain.getBoughtThisMonth(), paid.getBoughtThisMonth()) == 0
+                        && Double.compare(paidAgain.getSoldThisMonth(), paid.getSoldThisMonth()) == 0);
+        assertTrue("the month is counted after a load of a save that carried it", paidAgain.isMonthCounted());
+
+        /*
+         * ...AND EACH CELL'S INCOME AFTER ITS FIXED BILLS (A4, 0.7.46): struck
+         * by the month from that month's disposable income, rent and fees, and
+         * read between presses by the food assistance's means test. A reload
+         * struck it again from the moment of loading, which is not the month's.
+         */
+        int cellsStruck = 0, cellsKept = 0;
+        for (Household c : full.getHouseholdBalance().cells()) {
+            if (c.households() < .5) continue;
+            cellsStruck++;
+            Household again = back.getHouseholdBalance().cellByKey(c.key());
+            if (again != null && Double.compare(again.afterFixed(), c.afterFixed()) == 0) cellsKept++;
+        }
+        assertTrue("fixture: the city's households had incomes after their fixed bills", cellsStruck > 0);
+        assertTrue("each cell's income after its fixed bills crosses a save (" + cellsStruck + " cells)",
+                cellsKept == cellsStruck);
+
         /* ============ 14. a reloaded city PLAYS ON as the one it was saved from ============ */
         System.out.println("\n--- and a reloaded city plays on as the one it was saved from ---");
 
@@ -1626,8 +1792,18 @@ public class SaveFileCheck {
         Game early = new Game(new GameFiles(root.resolve("early"), root.resolve("no-legacy")));
         early.run();
         early.setCashForTest(Founding.WEALTHY_CASH);
+        /*
+         * TWO SHOPS, AND THE SHOPS' PLANNER HELD (0.7.43). Twelve stood here,
+         * and at a head count capped by coverage they could not serve the
+         * queue; with groceries sold as baskets wanted at a price, twelve
+         * hand over everything this town eats, and two are answered by the
+         * planner inside a year (it builds against what its shops can hand
+         * over, Retail.plan()). Two shops and no more, in the city and in
+         * its reload alike - the hold is the harness's, not the save's.
+         */
+        early.getBusinessInvestment().holdSector(Sectors.RETAIL);
         early.buildStack(template(early, "House"), 300, true);
-        early.buildStack(template(early, "Convenience Store"), 12, true);
+        early.buildStack(template(early, "Convenience Store"), 2, true);
         early.buildStack(template(early, "Bakery"), 3, true);
         early.buildStack(template(early, "Construction Depot"), 3, true);
         early.buildStack(template(early, "Coal Power Plant"), 2, true);
@@ -1642,6 +1818,7 @@ public class SaveFileCheck {
 
         Game replay = new Game(early.getGameFiles());
         replay.loadGameSave(2);
+        replay.getBusinessInvestment().holdSector(Sectors.RETAIL);
         same("the share the shops handed over came back",
                 replay.getSectors().retail().getHouseholdShare(),
                 early.getSectors().retail().getHouseholdShare());
@@ -1662,6 +1839,230 @@ public class SaveFileCheck {
             same("  " + k + ": its till", replay.getEconomyManager().getSectorCash(k),
                     early.getEconomyManager().getSectorCash(k));
         }
+
+        /*
+         * ...AND A CITY WHOSE RAILWAY HAULS (A1, 0.7.46). The railway bills
+         * the month a save was taken in at the top of the next one, from the
+         * units every sector shipped and landed; the rows they were read from
+         * were not saved, so the first month back billed almost nothing,
+         * repriced on it, and the reload parted from the city it came from
+         * in its people and its prices. A steel town with its own track - the
+         * railway's planner held, as RailCheck holds it, so what hauls is the
+         * track laid here - played until the trains run, saved, and both
+         * pressed once.
+         */
+        Game hauls = new Game(new GameFiles(root.resolve("railway"), root.resolve("no-legacy")));
+        hauls.run();
+        hauls.setCashForTest(Founding.WEALTHY_CASH);
+        hauls.getBusinessInvestment().holdSector(Sectors.RAIL);
+        hauls.getLandManager().setOwnedSqFt(hauls.getLandManager().getOwnedSqFt() + 400_000_000L);
+        for (String[] order : new String[][] {
+                {"House", "900"}, {"Convenience Store", "20"}, {"Small Grocery Store", "6"},
+                {"Paved Road", "60"}, {"Coal Power Plant", "1"}, {"Water Treatment Plant", "1"},
+                {"Construction Depot", "4"}, {"Steel Foundry", "30"} }) {
+            hauls.buildStack(template(hauls, order[0]), Integer.parseInt(order[1]), true);
+        }
+        // ...and two spurs, paid for: the town above leaves the treasury short of
+        // them, and an order refused for funding would leave a city with no track.
+        // Two carry its steel and its groceries both, so a first haul that read
+        // nothing would move the groceries' freight, and the shelves with it.
+        BuildingsTemplate spur = template(hauls, "Rail Spur");
+        hauls.setCashForTest(hauls.getCash() + 2 * spur.getCashCost());
+        assertTrue("fixture: the town laid two spurs of its own",
+                hauls.buildStack(spur, 2, true) == Game.BuildResult.SUCCESS
+                        && hauls.getBuildingManager().countByName("Rail Spur") == 2);
+        // ...played until the trains run AND the price index is based: an index
+        // still settling reads 1 whatever the shelves did, and could not part.
+        for (int m = 0; m < 120 && (hauls.getSectors().rail().getHauledTonnes() <= 0
+                || !hauls.getPriceIndex().isBased()); m++) hauls.simulateMonths(1);
+        hauls.simulateMonths(1);
+        assertTrue("fixture: the railway hauled in the month the city was saved",
+                hauls.getSectors().rail().getHauledTonnes() > 0 && hauls.getSectors().rail().getHaulageBilled() > 0);
+        assertTrue("fixture: ...its groceries among the freight, and its price index based",
+                hauls.getSectors().rail().getCarried()[Traffic.GOODS.ordinal()] > 0 && hauls.getPriceIndex().isBased());
+        assertTrue("saved a city whose railway hauls", hauls.saveGame(1, "railway").ok);
+        Game twin = new Game(hauls.getGameFiles());
+        twin.loadGameSave(1);
+        /*
+         * ...AND THE SAME SAVE AS A BUILD FROM BEFORE THE UNITS WROTE IT
+         * (0.7.63, batch L): no sector carries them, only the ledger's money
+         * split home and abroad. The first haul of such a save read nothing -
+         * city2400 (0.7.38) hauled 2,515 t the month after its load against
+         * 153,161 the month it was saved in - and the load now derives the
+         * units from the money (Sector.deriveCarriedTrade()). Held to the
+         * city that never reloaded within MoneyAudit.tolerance(), not to the
+         * bit: each good's units are one division of its money by its price,
+         * which rounds. The history goes with it, as a player's would.
+         */
+        com.google.gson.JsonObject unitless = com.google.gson.JsonParser
+                .parseString(Files.readString(hauls.getGameFiles().saveFile(1))).getAsJsonObject();
+        int unitMaps = 0;
+        for (com.google.gson.JsonElement e : unitless.getAsJsonArray("sectors")) {
+            if (e.getAsJsonObject().remove("exported") != null) unitMaps++;
+            if (e.getAsJsonObject().remove("imported") != null) unitMaps++;
+        }
+        assertTrue("fixture: every sector's save carried the month's units, and the copy carries none, as before 0.7.46",
+                unitMaps == 2 * Sectors.KEYS.length);
+        Files.writeString(hauls.getGameFiles().saveFile(4), new com.google.gson.Gson().toJson(unitless));
+        Files.copy(hauls.getGameFiles().historyFile(1), hauls.getGameFiles().historyFile(4));
+        Game unitlessTwin = new Game(hauls.getGameFiles());
+        unitlessTwin.loadGameSave(4);
+        hauls.simulateMonths(1);
+        twin.simulateMonths(1);
+        unitlessTwin.simulateMonths(1);
+        // To the bit, not to SaveFileCheck's usual 1e-9: a twin's month is the same arithmetic.
+        boolean twinSame = twin.getPopulationManager().getPopulation() == hauls.getPopulationManager().getPopulation()
+                && Double.compare(twin.getMigration().getLastArrivals(), hauls.getMigration().getLastArrivals()) == 0
+                && Double.compare(twin.getPriceIndex().getIndex(), hauls.getPriceIndex().getIndex()) == 0;
+        assertTrue("a reloaded city's first month is its unsaved twin's: population, arrivals and the price index", twinSame);
+        if (!twinSame) System.out.printf("     population %d against %d, arrivals %s against %s, index %s against %s%n",
+                twin.getPopulationManager().getPopulation(), hauls.getPopulationManager().getPopulation(),
+                twin.getMigration().getLastArrivals(), hauls.getMigration().getLastArrivals(),
+                twin.getPriceIndex().getIndex(), hauls.getPriceIndex().getIndex());
+        ham.citybuildersim.sectors.Rail liveRail = hauls.getSectors().rail(), unitlessRail = unitlessTwin.getSectors().rail();
+        System.out.printf("   the first haul from a save without its units: %,.6f t, %,.6fk billed; the live city's %,.6f t, %,.6fk%n",
+                unitlessRail.getTradeTonnes(), unitlessRail.getHaulageBilled(), liveRail.getTradeTonnes(), liveRail.getHaulageBilled());
+        assertTrue("...and from its save without the month's units, the first haul is the month's: its tonnes and its bill",
+                liveRail.getTradeTonnes() > 0
+                        && Math.abs(unitlessRail.getTradeTonnes() - liveRail.getTradeTonnes())
+                                <= MoneyAudit.tolerance(liveRail.getTradeTonnes())
+                        && Math.abs(unitlessRail.getHaulageBilled() - liveRail.getHaulageBilled())
+                                <= MoneyAudit.tolerance(liveRail.getHaulageBilled()));
+        double[] livePools = MoneyAudit.pools(hauls), unitlessPools = MoneyAudit.pools(unitlessTwin);
+        boolean poolsNear = unitlessTwin.getPopulationManager().getPopulation() == hauls.getPopulationManager().getPopulation();
+        for (int p = 0; p < livePools.length; p++) {
+            poolsNear &= Math.abs(unitlessPools[p] - livePools[p]) <= MoneyAudit.tolerance(livePools[p]);
+        }
+        assertTrue("...a month on, every pool the money audit reads, and the people", poolsNear);
+
+        /*
+         * ...AND A TOWN SHORT OF POWER WHOSE STUDENTS FINISH (0.7.63, batch L).
+         * Two figures only the month sets parted a reload from the city it
+         * came from, found by playing three saved cities a month past a reload
+         * beside the city that never reloaded (city2400's treasury 0.23 units
+         * adrift, Jerus's 7,447):
+         *
+         *   - the ratios every sector's month was run at. The month is struck
+         *     at the top of the next, its power and water bills on the
+         *     sector's own ratio, and the load set every sector's from the
+         *     services, which have struck next month's by then - so a city
+         *     short of power billed its saved month at the next month's ratio
+         *     (SectorState.energyRatio).
+         *   - the students who finished a course and wait for the next census
+         *     to carry their loans to the working families
+         *     (HouseholdBalance.setGraduates()). Unsaved, the first census back
+         *     carried none, and the families repaid that much less.
+         *
+         * So the fixture causes both - no power plant and twelve foundries, so
+         * the grid's ratio moves as the town fills, and a community college
+         * whose first students have finished - and either alone parts the twin
+         * (measured with the other copied across). Held to the bit: a twin's
+         * month is the same arithmetic as the month it was saved from.
+         */
+        Game college = new Game(new GameFiles(root.resolve("college"), root.resolve("no-legacy")));
+        college.run();
+        college.setCashForTest(Founding.WEALTHY_CASH);
+        college.getLandManager().setOwnedSqFt(college.getLandManager().getOwnedSqFt() + 100_000_000L);
+        for (String[] order : new String[][] {
+                {"House", "600"}, {"Convenience Store", "8"}, {"Bakery", "3"}, {"Construction Depot", "3"},
+                {"Water Treatment Plant", "1"}, {"Community College", "1"}, {"Steel Foundry", "12"} }) {
+            college.buildStack(template(college, order[0]), Integer.parseInt(order[1]), true);
+        }
+        Sector grocers = college.getSectors().retail();
+        for (int m = 0; m < 120 && !(college.getHouseholdBalance().getGraduating() > 0
+                && grocers.getEnergyRatio() < 1 && grocers.getEnergyRatio() != college.getEnergyRatio()); m++) {
+            college.simulateMonths(1);
+        }
+        assertTrue("fixture: the college town is short of power, and its services have struck next month's ratio over the one its month ran at",
+                grocers.getEnergyRatio() < 1 && grocers.getEnergyRatio() != college.getEnergyRatio());
+        assertTrue("fixture: ...and students who finished a course wait for the next census to carry what they borrowed",
+                college.getHouseholdBalance().getGraduating() > 0 && college.getHouseholdBalance().totalStudentDebt() > 0);
+        assertTrue("saved the college town", college.saveGame(3, "college").ok);
+        Game collegeTwin = new Game(college.getGameFiles());
+        collegeTwin.loadGameSave(3);
+        assertTrue("the reload holds the month's power ratio and the graduates waiting",
+                Double.compare(collegeTwin.getSectors().retail().getEnergyRatio(), grocers.getEnergyRatio()) == 0
+                        && Double.compare(collegeTwin.getHouseholdBalance().getGraduating(),
+                                college.getHouseholdBalance().getGraduating()) == 0);
+        college.simulateMonths(1);
+        collegeTwin.simulateMonths(1);
+        double[] collegePools = MoneyAudit.pools(college), twinPools = MoneyAudit.pools(collegeTwin);
+        boolean poolsSame = collegeTwin.getPopulationManager().getPopulation() == college.getPopulationManager().getPopulation();
+        for (int p = 0; p < collegePools.length; p++) {
+            if (Double.compare(twinPools[p], collegePools[p]) != 0) {
+                poolsSame = false;
+                System.out.printf("     %s: %.9f against %.9f%n", MoneyAudit.POOL_NAMES[p], twinPools[p], collegePools[p]);
+            }
+        }
+        assertTrue("a month on, its twin is the town that never reloaded: every pool the money audit reads, and the people, to the bit",
+                poolsSame);
+        same("...the student loans repaid", collegeTwin.getStudentLoansRepaid(), college.getStudentLoansRepaid());
+
+        /*
+         * ...AND A CITY WITH BUSES (0.7.49, D1). The month's transit bill is
+         * struck at 6d, at the month's fill, and the treasury pays it at the
+         * month's end; the rebuild struck it again at the fill the month
+         * ENDED on, so a reload could report a different bill for the month
+         * it was saved in. A town with two Bus Networks, played until its
+         * buses carry people and their staff draw wages, saved and loaded;
+         * and the same save without the key, which derives it as before.
+         *
+         * ...AND THE COMMUTE (D4): the share of the workers with no car of
+         * their own and a journey's fuel, as 6d struck them, so a reload
+         * carries the riders, the fuel price and the drivers' fuel bill the
+         * month did - the town played on until its households own cars and
+         * drive them.
+         */
+        Game buses = new Game(new GameFiles(root.resolve("buses"), root.resolve("no-legacy")));
+        buses.run();
+        buses.setCashForTest(Founding.WEALTHY_CASH);
+        buses.getLandManager().setOwnedSqFt(buses.getLandManager().getOwnedSqFt() + 100_000_000L);
+        for (String[] order : new String[][] {
+                {"House", "600"}, {"Convenience Store", "8"}, {"Bakery", "3"}, {"Construction Depot", "3"},
+                {"Coal Power Plant", "2"}, {"Water Treatment Plant", "1"}, {"Bus Network", "2"} }) {
+            buses.buildStack(template(buses, order[0]), Integer.parseInt(order[1]), true);
+        }
+        for (int m = 0; m < 120 && !(buses.getInfrastructureManager().getTransitRiders() > 0
+                && buses.getEconomyManager().getTransitBill() > 0 && buses.getMotoring().getFuelBill() > 0); m++) {
+            buses.simulateMonths(1);
+        }
+        buses.simulateMonths(1);
+        assertTrue("fixture: the buses carried people and their staff drew wages",
+                buses.getInfrastructureManager().getTransitRiders() > 0 && buses.getEconomyManager().getTransitBill() > 0);
+        assertTrue("fixture: ...and its households own cars, and their drivers burn fuel",
+                buses.getInfrastructureManager().getCaptiveShare() < 1 && buses.getMotoring().getFuelBill() > 0);
+        assertTrue("saved a city with buses", buses.saveGame(1, "buses").ok);
+        Game rode = new Game(buses.getGameFiles());
+        rode.loadGameSave(1);
+        System.out.printf("   the bus town's bill: $%,.4fk saved, $%,.4fk reloaded%n",
+                buses.getEconomyManager().getTransitBill(), rode.getEconomyManager().getTransitBill());
+        assertTrue("a reloaded city has the month's transit bill",
+                Double.compare(rode.getEconomyManager().getTransitBill(), buses.getEconomyManager().getTransitBill()) == 0);
+        InfrastructureManager rodeRoads = rode.getInfrastructureManager(), busRoads = buses.getInfrastructureManager();
+        System.out.printf("   riders %,.4f saved, %,.4f reloaded; fuel $%.6fk a journey, $%.6fk; the drivers' fuel $%,.4fk, $%,.4fk%n",
+                busRoads.getTransitRiders(), rodeRoads.getTransitRiders(), busRoads.getFuelPerJourney(),
+                rodeRoads.getFuelPerJourney(), buses.getMotoring().getFuelBill(), rode.getMotoring().getFuelBill());
+        assertTrue("a reloaded city has the same riders, fuel price and bill",
+                Double.compare(rodeRoads.getTransitRiders(), busRoads.getTransitRiders()) == 0
+                        && Double.compare(rodeRoads.getCaptiveShare(), busRoads.getCaptiveShare()) == 0
+                        && Double.compare(rodeRoads.getFuelPerJourney(), busRoads.getFuelPerJourney()) == 0
+                        && Double.compare(rode.getMotoring().getFuelBill(), buses.getMotoring().getFuelBill()) == 0
+                        && Double.compare(rode.getEconomyManager().getTransitBill(), buses.getEconomyManager().getTransitBill()) == 0);
+        com.google.gson.JsonObject unbilled = com.google.gson.JsonParser
+                .parseString(Files.readString(buses.getGameFiles().saveFile(1))).getAsJsonObject();
+        assertTrue("fixture: the save carries the bill and the commute by name",
+                unbilled.has("transitBill") && unbilled.has("captiveShare") && unbilled.has("fuelPerJourney"));
+        unbilled.remove("transitBill");
+        unbilled.remove("captiveShare");
+        unbilled.remove("fuelPerJourney");
+        Files.writeString(buses.getGameFiles().saveFile(2), new com.google.gson.Gson().toJson(unbilled));
+        Game derived = new Game(buses.getGameFiles());
+        derived.loadGameSave(2);
+        same("...and a save from before 0.7.49 derives it, as the load always did",
+                derived.getEconomyManager().getTransitBill(),
+                derived.getBuildingManager().getCategoryPayroll(BuildingType.INFRASTRUCTURE,
+                        derived.getPopulationManager().getWagesPerType(), derived.getPopulationManager().getJobFillRate())
+                        + derived.getBuildingManager().getUpkeepByCategory(BuildingType.INFRASTRUCTURE));
 
         /* ============ the city's fund, its rescue setting and the bank's preferred (0.7.14) ============ */
         System.out.println("\n--- and the city's fund, its rescue setting and the bank's preferred ---");
@@ -1752,6 +2153,34 @@ public class SaveFileCheck {
         assertTrue("...and the fund's worth on the history, month by month",
                 worthIs.length == worthWas.length && java.util.Arrays.equals(worthIs, worthWas)
                         && worthWas.length > 0 && !Double.isNaN(worthWas[worthWas.length - 1]));
+        /*
+         * THE NEW PRICE MODEL, READ (0.7.45): the twenty-three series City
+         * History draws of it, the month's move in credibility (the anchor's
+         * eighth slot) and each price component's chained level (the index's
+         * tail, after its ring) - each through a save, or a reloaded city's
+         * NEEDS YOU and its chart would read another city's.
+         */
+        java.util.List<String> priceSeries = new java.util.ArrayList<>(java.util.List.of("expectedLevel"));
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) priceSeries.add(HistorySave.indexKey(k));
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) priceSeries.add(HistorySave.weightKey(k));
+        priceSeries.addAll(java.util.List.of("basketLinkedAt", "shelfPrice", "shelfFloor", "basketsAsked", "basketsHanded",
+                "hunger", "hungerPricedOut", "householdsAssisted",
+                "mealMargin", "mealTargetMargin", "luxuryMargin", "luxuryTargetMargin"));
+        boolean priceSeriesBack = priceSeries.size() == 23;
+        for (String name : priceSeries) {
+            double[] seriesWas = fundCity.getHistorySave().aligned(name), seriesIs = bought.getHistorySave().aligned(name);
+            priceSeriesBack &= seriesWas.length > 0 && java.util.Arrays.equals(seriesWas, seriesIs)
+                    && !Double.isNaN(seriesWas[seriesWas.length - 1]);
+        }
+        assertTrue("the new price model's twenty-three series come back on the history, month by month", priceSeriesBack);
+        same("...the month's move in credibility, the anchor's eighth slot",
+                bought.getExpectations().getCredibilityStep(), fundCity.getExpectations().getCredibilityStep());
+        double worstComponent = 0;
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            worstComponent = Math.max(worstComponent,
+                    Math.abs(bought.getPriceIndex().getComponentLevel(k) - fundCity.getPriceIndex().getComponentLevel(k)));
+        }
+        same("...and every price component's chained level, the index's tail", worstComponent, 0);
         com.google.gson.JsonObject noLedger = com.google.gson.JsonParser
                 .parseString(Files.readString(fundCity.getGameFiles().saveFile(4))).getAsJsonObject();
         assertTrue("fixture: the save carries the ledger inside the fund",
@@ -1769,6 +2198,55 @@ public class SaveFileCheck {
         same("...its holdings and cash what they were",
                 seeded.getFund().getCash() + seeded.fundSharesValue() + seeded.fundBondsValue() + seeded.fundPreferredValue(),
                 bought.getFund().getCash() + bought.fundSharesValue() + bought.fundBondsValue() + bought.fundPreferredValue());
+        /*
+         * THE WITHDRAWAL DIAL (0.7.48, C1): the dial by name, and over the
+         * default what the month's cash could not cover - which the step
+         * sells the market book for and the next month's top pays - and what
+         * that top paid late, the month's slots 7 and 8. A save from before
+         * it has neither: Norway's rule, owing nothing.
+         */
+        Game drawing = new Game(fundCity.getGameFiles());
+        drawing.loadGameSave(4);
+        drawing.fundDrawOut(drawing.fundCashFree());
+        drawing.setFundWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
+        // ...and nothing paid in (0.7.55): under the crowding premium this
+        // city's treasury runs a surplus whose pay-in met the transfer every
+        // month, so the fund never sold (its cash $136.6M after a year).
+        drawing.setFundDial(0);
+        // A month for what it held to run short, and one to pay what it sold late: pressed until both, no more than a year.
+        for (int m = 0; m < 12 && !(drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0); m++) {
+            drawing.simulateMonths(1);
+        }
+        System.out.printf("   drawing %s a month: due $%,.2fk, paid $%,.2fk, to raise $%,.2fk, paid late $%,.2fk, cash $%,.2fk%n",
+                DecisionLog.pct2(drawing.getFundWithdrawal()), drawing.getFund().getTransferDue(), drawing.getFund().getTransferPaid(),
+                drawing.getFund().getToRaise(), drawing.getFund().getTransferPaidLate(), drawing.getFund().getCash());
+        assertTrue("fixture: over the default it owes what it sells for, and paid some late",
+                drawing.getFund().sellsToPay() && drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0);
+        assertTrue("saved it drawing 10% a month", drawing.saveGame(9, "drawing").ok);
+        Game drawn = new Game(fundCity.getGameFiles());
+        drawn.loadGameSave(9);
+        assertTrue("the withdrawal and what it owes cross a save",
+                drawn.getFundWithdrawal() == drawing.getFundWithdrawal()
+                        && drawn.getFund().getWithdrawalSteps() == TreasuryFund.MAX_WITHDRAWAL_STEPS
+                        && drawn.getFund().getToRaise() == drawing.getFund().getToRaise()
+                        && drawn.getFund().getTransferPaidLate() == drawing.getFund().getTransferPaidLate());
+        com.google.gson.JsonObject undialled = com.google.gson.JsonParser
+                .parseString(Files.readString(fundCity.getGameFiles().saveFile(9))).getAsJsonObject();
+        com.google.gson.JsonObject undialledFund = undialled.getAsJsonObject("fund");
+        assertTrue("fixture: the save carries the dial and the month's two new slots",
+                undialledFund.has("withdrawalSteps") && undialledFund.getAsJsonArray("month").size() == 9);
+        undialledFund.remove("withdrawalSteps");
+        com.google.gson.JsonArray sevenSlots = new com.google.gson.JsonArray();
+        for (int i = 0; i < 7; i++) sevenSlots.add(undialledFund.getAsJsonArray("month").get(i));
+        undialledFund.add("month", sevenSlots);
+        Files.writeString(fundCity.getGameFiles().saveFile(9), new com.google.gson.Gson().toJson(undialled));
+        Game beforeTheDial = new Game(fundCity.getGameFiles());
+        beforeTheDial.loadGameSave(9);
+        assertTrue("...an older save loads Norway's rule, owing nothing",
+                beforeTheDial.getFund().getWithdrawalSteps() == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS
+                        && beforeTheDial.getFundWithdrawal() == TreasuryFund.TRANSFER_RATE / TreasuryFund.YEAR_MONTHS
+                        && beforeTheDial.getFund().getToRaise() == 0 && beforeTheDial.getFund().getTransferPaidLate() == 0
+                        && beforeTheDial.getFund().getTransferDue() == drawing.getFund().getTransferDue());
 
         /*
          * THE CITY'S OWN RATE AS THE MONTH LAST STRUCK IT (0.7.14). The debt

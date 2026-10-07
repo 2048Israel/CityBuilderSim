@@ -1,6 +1,6 @@
 # PopulationCheck.java - 1,422 lines · 11 methods · 1 constants · harnesses
 
-`ham/citybuildersim/PopulationCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCheck.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > The demographics: do they hold together, and do they move the city the way
 > they were told to?
@@ -63,7 +63,7 @@
 |---:|---:|---|---|
 | 29 | 1394 | **type** `public class PopulationCheck` | The demographics: do they hold together, and do they move the city the way they were told to? |
 | 49 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
-| 61 | 8 | `static double arrivalsFrom(Migration mig, PopulationCohorts people, FamilyModel households, int totalJobs, int[] census)` | One month's arrivals into a city of these people and households against this door census, with this many posts pulling - the census handed to migration the way Game hands it (Migration.setDoors()). |
+| 61 | 8 | `static double arrivalsFrom(Migration mig, PopulationCohorts people, FamilyModel households, int totalJobs, long[] census)` | One month's arrivals into a city of these people and households against this door census, with this many posts pulling - the census handed to migration the way Game hands it (Migration.setDoors()). |
 | 70 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 75 | 1021 | `public static void main(String[] args) throws Exception` |  |
 | 1098 | 36 | `static double[] play(Path root, String name, int months) throws Exception` | Plays a standard city for a given number of months and reports it. |

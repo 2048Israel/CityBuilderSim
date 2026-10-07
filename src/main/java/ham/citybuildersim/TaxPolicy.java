@@ -102,7 +102,8 @@ public class TaxPolicy {
      *
      * Bounded so a single offset cannot express a policy the base rate could not
      * express on its own - an offset is a discount or a surcharge, not a
-     * separate tax system.
+     * separate tax system. A property offset is held tighter, at
+     * MAX_PROPERTY_TAX (clampPropertyOffset(), B5).
      */
     public static final double MAX_OFFSET = .30;
 
@@ -251,8 +252,9 @@ public class TaxPolicy {
      * in founding thousands - $525 a month, the Canada Student Grant (2026-27)
      * this basis's share was read off, so at founding, when the price index
      * is one and the unskilled wage is PayTier's $3,460, it pays exactly what
-     * DEFAULT_STUDENT_GRANT_SHARE of that wage did. Kept up with the city's
-     * cost of living by the price index (grantBill()), the way Canada's
+     * DEFAULT_STUDENT_GRANT_SHARE of that wage did. Kept up with prices by
+     * the expected price level since 0.7.42 (grantBill(); the price index
+     * from 0.7.19), the way Canada's
      * grants are fixed dollar amounts reviewed against the cost of living
      * rather than a share of any wage (the full-time grant was $3,000 a year
      * to 2021 and $4,200 from 2023-24, set by budget, not by a wage - see
@@ -271,6 +273,39 @@ public class TaxPolicy {
 
     public double getEiPremiumRate()     { return eiPremiumRate; }
     public double getEiBenefitRate()     { return eiBenefitRate; }
+
+    /* ------------------------- FOOD ASSISTANCE (0.7.43) -------------------------
+
+       Jerus's dial, the project's spec-inflation.md 2.9: groceries are priced
+       now, and a price rations - the poorest are priced out first. The city
+       can answer with a voucher: the treasury pays this share of an eligible
+       household's baskets at the shelf price (HouseholdBalance
+       .foodAssistanceFor(), FOOD_ASSISTANCE_MEANS_SHARE says who is
+       eligible), on the baskets it actually got, as a promise
+       (TreasuryLine.FOOD_ASSISTANCE). A share of a basket, so it is real
+       whatever prices do. 0 by default: a city without it is the city it was.
+       Measured on the founding at 50%: hunger at year ten 4.1% to 2.9%, the
+       clearing price 3-4% dearer, the same food sold - to the poor.
+       --------------------------------------------------------------------------- */
+
+    /** No voucher: the city it was. */
+    public static final double DEFAULT_FOOD_ASSISTANCE = 0;
+
+    /** A voucher for every basket an eligible household eats is the most there is. */
+    public static final double MAX_FOOD_ASSISTANCE = 1.00;
+
+    private double foodAssistance = DEFAULT_FOOD_ASSISTANCE;
+
+    /** The share of an eligible household's baskets, at the shelf price, the treasury's voucher covers. */
+    public double getFoodAssistance() { return foodAssistance; }
+
+    public void setFoodAssistance(double share) {
+        double was = foodAssistance;
+        foodAssistance = clamp(share, MAX_FOOD_ASSISTANCE);
+        if (DecisionLog.moved(was, foodAssistance)) {
+            decided(DecisionLog.PROMISE, "Food assistance to " + DecisionLog.pct(foodAssistance));
+        }
+    }
 
     /**
      * The share of the unskilled wage a student is granted a month: the
@@ -391,7 +426,7 @@ public class TaxPolicy {
     public enum GrantBasis {
         /** A share of the unskilled wage, per student per month - the founding rule until 0.7.19, and what an older save that chose nothing keeps. */
         WAGE_SHARE,
-        /** A fixed REAL amount per student per month, in founding thousands, kept up with the price index (0.7.19; a nominal amount until then) - the default since 0.7.19. Money, so a currency reform scales it. */
+        /** A fixed REAL amount per student per month, in founding thousands, kept up with prices - by the expected price level since 0.7.42, the price index from 0.7.19 (a nominal amount until then) - the default since 0.7.19. Money, so a currency reform scales it. */
         FIXED,
         /** A share of last month's budget surplus as ONE POOL, split evenly over this month's students; a deficit month pays nothing. */
         SURPLUS_SHARE,
@@ -413,7 +448,8 @@ public class TaxPolicy {
      * THE BASIS ALREADY EXISTED: FIXED, a fixed amount a month. It is now a
      * REAL amount - in founding thousands, times the price index the city
      * already keeps (PriceIndex, what a month costs a household against
-     * founding) - so it keeps what it buys, and it is the default, at
+     * founding; the expected price level since 0.7.42, the anchor's, like
+     * every money constant) - so it keeps what it buys, and it is the default, at
      * DEFAULT_FIXED_GRANT: at founding, the old default's bill to the cent.
      * The source is the grant's own shape. Canada Student Grants are fixed
      * dollar amounts per year of study set in the federal budget and
@@ -432,7 +468,7 @@ public class TaxPolicy {
      * does not jump on the load and keeps up with prices from there.
      */
 
-    /** Where the grant starts: a fixed real amount, kept up with the price index (0.7.19; the founding rule, a share of the unskilled wage, until then). */
+    /** Where the grant starts: a fixed real amount, kept up with prices - the expected price level since 0.7.42, the price index from 0.7.19 (the founding rule, a share of the unskilled wage, until then). */
     public static final GrantBasis DEFAULT_GRANT_BASIS = GrantBasis.FIXED;
 
     /** A fixed grant of more than one unskilled wage a month is a wage: the FIXED ceiling, in founding unskilled wages, struck against that wage in today's money. */
@@ -470,7 +506,7 @@ public class TaxPolicy {
      */
     private double grantAmount = DEFAULT_FIXED_GRANT;
 
-    /** True while a FIXED amount read from a save before 0.7.19 is still nominal, until realiseFixedGrant() reads it at the load month's price index. Never saved. */
+    /** True while a FIXED amount read from a save before 0.7.19 is still nominal, until realiseFixedGrant() reads it at the load month's level (the expected price level since 0.7.42; the price index before). Never saved. */
     private boolean fixedGrantNominal;
 
     /** Annual interest on the treasury's student loans. An old save reads none. */
@@ -534,13 +570,15 @@ public class TaxPolicy {
     /**
      * The ceiling on the amount under a basis: a share of a wage up to one
      * wage, a fixed amount up to an unskilled wage (the founding wage in
-     * today's unit, which pensionWageBase carries - a real amount against a
-     * real one since 0.7.19), the whole surplus, twice the tuition.
+     * today's unit - a real amount against a real one since 0.7.19), the
+     * whole surplus, twice the tuition. pensionWageBase carries that wage at
+     * the expected price level since 0.7.42 (seedConstants()), so the
+     * ceiling takes the level back out: the amount is in founding money.
      */
     public double maxGrantAmount(GrantBasis basis) {
         if (basis == null) return MAX_STUDENT_GRANT;
         switch (basis) {
-            case FIXED:         return MAX_FIXED_GRANT_WAGES * pensionWageBase;
+            case FIXED:         return MAX_FIXED_GRANT_WAGES * pensionWageBase / expectedLevel;
             case SURPLUS_SHARE: return MAX_SURPLUS_GRANT_SHARE;
             case TUITION_SHARE: return MAX_TUITION_GRANT_SHARE;
             default:            return MAX_STUDENT_GRANT;
@@ -627,8 +665,9 @@ public class TaxPolicy {
      *   WAGE_SHARE     students x amount x the unskilled wage, in that order:
      *                  the founding expression until 0.7.19, and at the
      *                  founding share it is bit for bit the bill it always was.
-     *   FIXED          students x amount x the price index: a real amount,
-     *                  kept up with the cost of living (0.7.19).
+     *   FIXED          students x amount x the expected price level: a real
+     *                  amount (0.7.19), kept up with what prices are expected
+     *                  to be since 0.7.42 (the price index until then).
      *   SURPLUS_SHARE  amount x last month's surplus, as ONE pool - a deficit
      *                  is a pool of nothing - and nothing at all with nobody
      *                  to split it over. Per student it is the pool over the
@@ -640,8 +679,9 @@ public class TaxPolicy {
      *
      * @param students           full-time students this month
      * @param unskilledWage      what an unskilled post pays a month, today
-     * @param priceIndex         what a month costs a household against founding
-     *                           (PriceIndex.getIndex()), for the FIXED basis
+     * @param priceIndex         the expected price level against founding
+     *                           (Expectations.getExpectedLevel(), since 0.7.42;
+     *                           PriceIndex.getIndex() before), for the FIXED basis
      * @param lastSurplus        last month's budget balance, as the Government
      *                           tab shows it; negative in a deficit month
      * @param studentBodyTuition the whole adult student body's tuition a month
@@ -741,9 +781,12 @@ public class TaxPolicy {
      * household matrix that would not come into line.
      *
      * (The wage this is struck against does not move with the labour market
-     * either, so a pension is frozen in real terms for three centuries. That is
-     * a separate design question and not this one's to answer - filed, not
-     * fixed.)
+     * either. Until 0.7.42 it did not move with prices, so a pension was
+     * frozen in nominal terms for three centuries; since then its base is
+     * struck at the expected price level every month (seedConstants()), so a
+     * pension keeps up with what prices are expected to be while wages pull
+     * ahead of it. The labour-market half is a separate design question -
+     * filed, not fixed.)
      */
     public double pensionPerSenior() {
         return pensionReplacement * pensionWageBase;
@@ -761,7 +804,10 @@ public class TaxPolicy {
         return Math.max(0, Math.min(MAX_REPLACEMENT, replacement)) * pensionWageBase;
     }
 
-    /** The wage a pension is a share of, carried in today's money. */
+    /** The founding unskilled wage the pension is a share of, in today's unit at founding prices: the wage base over the level it is struck at (0.7.45, for the Policy tab's (i)). Pure. */
+    public double foundingPensionWage() { return pensionWageBase / expectedLevel; }
+
+    /** The wage a pension is a share of, carried in today's money - struck at the expected price level since 0.7.42 (seedConstants()). */
     private double pensionWageBase = PayTier.UNSKILLED.getMonthlyWage();
 
     public void redenominate(double scale) {
@@ -780,8 +826,9 @@ public class TaxPolicy {
          * AND A FIXED GRANT (2026-09-21), for the fare's reason: it is dollars
          * a student a month, not a share of anything, and a reform that left
          * it alone would hand every student a hundred times the grant. Real
-         * since 0.7.19 - founding dollars, in today's unit - and the price
-         * index it is multiplied by is a ratio a reform does not move, so the
+         * since 0.7.19 - founding dollars, in today's unit - and the level
+         * it is multiplied by (the expected price level since 0.7.42, the
+         * price index before) is a ratio a reform does not move, so the
          * amount alone scales. The grant's other three bases are shares and
          * do not move; nor do the loan rate and the tuition scale, which are
          * ratios.
@@ -801,6 +848,11 @@ public class TaxPolicy {
        to the point you can even make it profitable by alot" - and it can be,
        at a ridership the city may not want.
 
+       A PRICE TO THE CAR OWNERS ONLY, SINCE 0.7.49. A commuter with no car of
+       their own rides whatever the fare if a line reaches them, so a fare set
+       high takes more of their money and puts only the owners back on the
+       road (InfrastructureManager, WHO RIDES, BY WHAT THEY PAY).
+
        ZERO IS A LEGITIMATE SETTING and the default is not it. Free transit is
        a real policy with a real bill attached; the default is a fare that
        covers a decent share of the wages, because a city that has not thought
@@ -810,7 +862,7 @@ public class TaxPolicy {
     /** What a single journey costs a rider, in thousands. $2.50 a ride. */
     public static final double DEFAULT_TRANSIT_FARE = .0025;
 
-    /** Past this nobody rides at all, as a multiple of the default. */
+    /** The dial's cap, $50 a ride, twenty times the default, in founding money: past it no car owner rides while a journey's fuel costs under half of it, and the commuters with no car of their own still do (0.7.49, InfrastructureManager, WHO RIDES, BY WHAT THEY PAY). */
     public static final double MAX_TRANSIT_FARE = .05;
 
     /* =======================================================================
@@ -861,24 +913,94 @@ public class TaxPolicy {
      * and the national accounts collect it; anything that multiplies a rider
      * headcount by a fare wants this and not getTransitFare().
      */
-    public double monthlyFare() { return monthlyFareAt(transitFare); }
+    public double monthlyFare() { return monthlyFareAt(chargedFare()); }
 
     /** ...at a fare the city has not set (0.7.38): the fare dial's preview, the same one multiplication. */
     public static double monthlyFareAt(double fare) { return fare * JOURNEYS_A_MONTH; }
 
     private double transitFare = DEFAULT_TRANSIT_FARE;
 
+    /* ------------------- THE FARE IS REAL (0.7.42, the anchor; star 9) -------------------
+
+       The dial is a ride's price IN FOUNDING MONEY, like the minimum wage and
+       a FIXED grant: what the player set keeps the worth they gave it. A
+       rider is charged the dial times the level the month's money constants
+       are struck at (Expectations.getStruckLevel(), the expected price level
+       the last month ended on - told here by Game with every re-strike,
+       setExpectedLevel()), so a $2.50
+       fare in a city expecting prices 20% over founding charges $3.00. The
+       ridership curve (InfrastructureManager.ridershipAt()) reads the dial
+       against MAX_TRANSIT_FARE, both in founding money, so a fare's real
+       price, not its nominal one, walks the riders down. Since 0.7.49 that
+       curve walks down only the owners the jam puts on the bus: the owners
+       choose by the charged fare against a journey's fuel at today's
+       exchange rate, and the car-less ride at any fare (InfrastructureManager,
+       WHO RIDES, BY WHAT THEY PAY). Until 0.7.42 the fare
+       was a nominal price and inflation ate it. A save from before carries a
+       nominal fare and is read as the real one that charges the same the
+       month it loads (realiseFare()) - the same fare, because such a save
+       loads at a level of 1.0.
+       ---------------------------------------------------------------------- */
+
+    /** The expected price level the fare is charged at; 1.0 until Game tells it. Derived, never saved. */
+    private double expectedLevel = 1.0;
+
+    /** True while a fare read from a save before 0.7.42 is still nominal, until realiseFare() reads it at the load month's level. Never saved. */
+    private boolean fareNominal;
+
+    /** The fare dial: a ride's price in founding money, in today's unit. What a rider pays is chargedFare(). */
     public double getTransitFare() { return transitFare; }
+
+    /** What a ride is charged today: the dial at the expected price level (THE FARE IS REAL). */
+    public double chargedFare() { return transitFare * expectedLevel; }
+
+    /** Told by Game with every re-strike of the money constants; anything not positive is ignored. */
+    public void setExpectedLevel(double level) {
+        if (level > 0 && Double.isFinite(level)) expectedLevel = level;
+    }
+
+    /** The level the fare is charged at. */
+    public double getExpectedLevel() { return expectedLevel; }
+
+    /**
+     * The currency's unit (Denomination.getUnit(), B6, 0.7.47): the dial is
+     * founding money in today's unit and MAX_TRANSIT_FARE is founding money,
+     * so the dial stops at the cap over the unit (maxTransitFare()). Told by
+     * Game with every re-strike and at a reform's end; 1 until it is, and on a
+     * restore, which runs before the load's re-strike - so a unit left from the
+     * city loaded before cannot cut a saved fare. Derived, never saved.
+     */
+    private double moneyUnit = 1.0;
+
+    /** Told by Game.restrikeMoneyConstants() and Game.reformCurrency(); anything not positive is ignored. */
+    public void setMoneyUnit(double unit) {
+        if (unit > 0 && Double.isFinite(unit)) moneyUnit = unit;
+    }
+
+    /** The most the fare dial takes in today's unit: MAX_TRANSIT_FARE over the unit, where no car owner rides. */
+    public double maxTransitFare() { return MAX_TRANSIT_FARE / moneyUnit; }
 
     public void setTransitFare(double fare) {
         double was = transitFare;
-        this.transitFare = Math.max(0, Math.min(MAX_TRANSIT_FARE, fare));
+        this.transitFare = Math.max(0, Math.min(maxTransitFare(), fare));
         if (DecisionLog.moved(was, transitFare)) {
-            decided(DecisionLog.PROMISE, "Transit fare to " + DecisionLog.money(transitFare));
+            decided(DecisionLog.PROMISE, "Transit fare to " + DecisionLog.money(transitFare) + " at founding prices");
         }
     }
 
-    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    /**
+     * An older save's fare, read as the real fare that charges the same at
+     * the load month's expected level (0.7.42): the nominal fare over the
+     * level. Nothing for a save from 0.7.42 on, or a second call. Game's load
+     * path calls it once the anchor is restored.
+     */
+    public void realiseFare(double level) {
+        if (!fareNominal) return;
+        fareNominal = false;
+        if (level > 0) transitFare = transitFare / level;
+    }
+
+    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. Since 0.7.42 Game calls it every month at the unit over the expected price level (Game.restrikeMoneyConstants()), so the pension's wage base keeps up with what prices are expected to be. */
     public void seedConstants(double unit) {
         pensionWageBase = PayTier.UNSKILLED.getMonthlyWage() / unit;
     }
@@ -1028,11 +1150,11 @@ public class TaxPolicy {
         offsetDecided("Sales tax", sector, was, getSalesOffset(sector));
     }
 
-    /** In ANNUAL points, matching the rate it offsets. */
+    /** In ANNUAL points, matching the rate it offsets; held at MAX_PROPERTY_TAX either way (clampPropertyOffset()), on a load too. */
     public void setPropertyOffset(String sector, double points) {
         if (sector == null) return;
         double was = getPropertyOffset(sector);
-        propertyOffset.put(sector, clampOffset(points));
+        propertyOffset.put(sector, clampPropertyOffset(points));
         offsetDecided("Property tax", sector, was, getPropertyOffset(sector));
     }
 
@@ -1210,6 +1332,10 @@ public class TaxPolicy {
         c.healthPremiumRate = healthPremiumRate;
         c.pensionWageBase = pensionWageBase;
         c.transitFare = transitFare;
+        c.foodAssistance = foodAssistance;
+        c.expectedLevel = expectedLevel;
+        c.moneyUnit = moneyUnit;
+        c.fareNominal = fareNominal;
         System.arraycopy(wageOffset, 0, c.wageOffset, 0, wageOffset.length);
         c.profitOffset.putAll(profitOffset);
         c.salesOffset.putAll(salesOffset);
@@ -1239,8 +1365,14 @@ public class TaxPolicy {
     /** ...and one from before the real FIXED grant (0.7.19): a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. */
     public static final int STATE_BEFORE_REAL_GRANT = STATE_BEFORE_SCHOOLS + EducationType.values().length - 1;
 
-    /** This build's array: one slot on top saying the FIXED amount is real, in founding money (0.7.19) - see realiseFixedGrant(). */
-    public static final int STATE_SLOTS = STATE_BEFORE_REAL_GRANT + 1;
+    /** ...and one from before the real fare (0.7.42): one slot on top saying the FIXED amount is real, in founding money (0.7.19) - see realiseFixedGrant(). */
+    public static final int STATE_BEFORE_REAL_FARE = STATE_BEFORE_REAL_GRANT + 1;
+
+    /** ...and one from before food assistance (0.7.43): one slot on top saying the fare is real, in founding money (0.7.42) - see realiseFare(). */
+    public static final int STATE_BEFORE_FOOD_ASSISTANCE = STATE_BEFORE_REAL_FARE + 1;
+
+    /** This build's array: the food assistance dial on top (0.7.43). */
+    public static final int STATE_SLOTS = STATE_BEFORE_FOOD_ASSISTANCE + 1;
 
     /**
      * The city rates and the wage-band offsets as one array, city rates
@@ -1319,6 +1451,13 @@ public class TaxPolicy {
         // is in founding money. An older save is one slot shorter, and a FIXED
         // amount in it was nominal - see realiseFixedGrant().
         state[i++] = 1;
+        // The real fare of 0.7.42, on the end: 1 says the fare above is in
+        // founding money. An older save is one slot shorter, and its fare
+        // was nominal - see realiseFare().
+        state[i++] = 1;
+        // The food assistance dial of 0.7.43, on the end: an older save is one
+        // slot shorter and reads none, which is the city it was.
+        state[i++] = foodAssistance;
         return state;
     }
 
@@ -1334,6 +1473,9 @@ public class TaxPolicy {
 
         if (state == null || state.length < STATE_BEFORE_EI || state.length > STATE_SLOTS) return false;
 
+        // The fare is clamped at the cap over the unit, and the load re-strikes
+        // the unit after this (Game.restrikeMoneyConstants()): founding's until then.
+        moneyUnit = 1.0;
         int i = 0;
         // All three income bases at the one rate slot 0 carries; a save from
         // 0.7.4 on overrides each from the end of the array below.
@@ -1356,6 +1498,7 @@ public class TaxPolicy {
         healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
         healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
         studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
+        foodAssistance = DEFAULT_FOOD_ASSISTANCE;
         setTuitionScale(DEFAULT_TUITION_SCALE);
         if (i < state.length) setEiPremiumRate(state[i++]);
         if (i < state.length) setEiBenefitRate(state[i++]);
@@ -1386,16 +1529,22 @@ public class TaxPolicy {
         // A FIXED amount is real only in an array that says so (0.7.19).
         boolean real = i < state.length && state[i++] > 0;
         fixedGrantNominal = grantBasis == GrantBasis.FIXED && !real;
+        // ...and the fare is real only in an array that says so (0.7.42).
+        boolean fareReal = i < state.length && state[i++] > 0;
+        fareNominal = !fareReal;
+        if (i < state.length) setFoodAssistance(state[i++]);
         return true;
     }
 
     /**
      * An older save's FIXED grant, read as the real amount that pays the same
-     * at the load month's price index (0.7.19): its nominal amount over the
-     * index, so the bill the month after the load is the bill the save was
-     * paying, and it keeps up with prices from there. Nothing for any other
-     * basis, a save from 0.7.19 on, or a second call. Game's load path calls
-     * it once the price index is restored.
+     * at the load month's level (0.7.19): its nominal amount over the level,
+     * so the bill the month after the load is the bill the save was paying,
+     * and it keeps up with prices from there. The level is the expected price
+     * level since 0.7.42 - 1.0 on any save this reaches - and was the price
+     * index until then. Nothing for any other basis, a save from 0.7.19 on,
+     * or a second call. Game's load path calls it once the anchor is
+     * restored.
      */
     public void realiseFixedGrant(double priceIndex) {
         if (!fixedGrantNominal) return;
@@ -1451,11 +1600,15 @@ public class TaxPolicy {
         grantBasis = DEFAULT_GRANT_BASIS;
         grantAmount = DEFAULT_FIXED_GRANT;
         fixedGrantNominal = false;
+        fareNominal = false;
+        expectedLevel = 1.0;
+        moneyUnit = 1.0;
         studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
         setTuitionScale(DEFAULT_TUITION_SCALE);
         farmlandRelief = DEFAULT_FARMLAND_RELIEF;
         healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
         healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
+        foodAssistance = DEFAULT_FOOD_ASSISTANCE;
         java.util.Arrays.fill(wageOffset, 0);
         profitOffset.clear();
         salesOffset.clear();
@@ -1472,5 +1625,17 @@ public class TaxPolicy {
     private double clampOffset(double points) {
         if (Double.isNaN(points)) return 0;
         return Math.max(-MAX_OFFSET, Math.min(points, MAX_OFFSET));
+    }
+
+    /**
+     * A property offset is held at MAX_PROPERTY_TAX either way (B5, 0.7.47),
+     * not MAX_OFFSET: the rate is the base plus the offset held within 0 and
+     * MAX_PROPERTY_TAX, and the base itself is within them, so no offset past
+     * them can give a rate one at them does not - the dial always stopped
+     * there. An older save's offset past it loads at it, and rates the same.
+     */
+    private double clampPropertyOffset(double points) {
+        if (Double.isNaN(points)) return 0;
+        return Math.max(-MAX_PROPERTY_TAX, Math.min(points, MAX_PROPERTY_TAX));
     }
 }

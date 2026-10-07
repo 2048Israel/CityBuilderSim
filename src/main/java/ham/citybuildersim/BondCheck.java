@@ -70,7 +70,8 @@ import java.util.Map;
  *      whole; one over it and short of cash buys only what its cash and the
  *      credit it can get cover, and does not default on the stock it did not
  *      buy; the same sector still defaults on a bill it cannot avoid, and
- *      buys nothing that month; the audit closes.
+ *      buys nothing that month but the stock its suppliers will wait for,
+ *      all of it on their credit (0.7.44); the audit closes.
  *  11. CAN'T PAY MEANS DEFAULT, IN PLAY (rounds 4 and 5; section 5c): a bank
  *      short of capital still covers a healthy sector's short month - the
  *      working-capital line - and refuses it a building; a short sector
@@ -591,13 +592,11 @@ public class BondCheck {
         // The yield every resting best bid gives a buyer, over every bond.
         double lowest = Double.POSITIVE_INFINITY, highest = Double.NEGATIVE_INFINITY;
         Map<Integer, List<Double>> restingBids = new LinkedHashMap<>();
-        Map<Integer, Double> lastBefore = new LinkedHashMap<>();
         for (CorporateBond b : bm.getBonds()) {
             OrderBook book = bm.bookOf(b);
             List<Double> prices = new ArrayList<>();
             for (OrderBook.Order o : book.bids()) prices.add(o.price());
             restingBids.put(b.id(), prices);
-            lastBefore.put(b.id(), book.lastPrice());
             if (book.bids().isEmpty() || !(b.households() > 0)) continue;
             double y = CorporateBond.yieldAtPrice(b.coupon(), b.remainingMonths(m), book.bestBid());
             lowest = Math.min(lowest, y);
@@ -619,18 +618,27 @@ public class BondCheck {
         // Credit dearer than every bid's yield: the bids meet it.
         double need = Math.min(1, .25 * before);
         double savings = cell.savings();
+        Map<Integer, Double> faceBefore = new LinkedHashMap<>();
+        for (CorporateBond b : bm.getBonds()) faceBefore.put(b.id(), cell.bondFace(b.id()));
         double per = bm.sellForCell(cell, need, highest + .05);
         assertTrue("a household whose credit costs more than the bids' yield sells into them", per > 0 && cell.bonds() < before);
         close("...raising what it was short, and banking what the higher bids paid past it", per, need, 1e-9);
         assertTrue("...the rest in its savings", cell.savings() >= savings);
         cell.savings += per;   // what the waterfall would have spent; here it is banked
+        /*
+         * WHICH BONDS IT SOLD, BY ITS OWN HOLDINGS (0.7.43, the fixture
+         * re-caused): a bond whose face the household holds less of traded
+         * this month. It was read off a last price that moved, and a sale at
+         * a resting bid equal to the market step's last trade - every book in
+         * this city by 0.7.43 - moves no price and read as no sale at all.
+         */
         boolean atResting = true;
         int traded = 0;
         for (CorporateBond b : bm.getBonds()) {
             OrderBook book = bm.bookOf(b);
             double now = book.lastPrice();
-            Double was = lastBefore.get(b.id());
-            if (book.lastTradeMonth() != m || (was != null && (now == was || Double.isNaN(now)))) continue;
+            Double held = faceBefore.get(b.id());
+            if (book.lastTradeMonth() != m || held == null || !(cell.bondFace(b.id()) < held)) continue;
             traded++;
             if (!restingBids.get(b.id()).contains(now)) atResting = false;
         }
@@ -656,16 +664,23 @@ public class BondCheck {
         BusinessDebtManager credit = em.getBusinessDebtManager();
         Bank bank = g.getBank();
         double T = BusinessDebtManager.INSOLVENCY_TRIGGER;
-        // The company holding the most of the other sectors' bonds; if none
-        // does, one handed half the world's holding between months - a claim,
-        // no money moved.
+        // The company holding the most of the other sectors' bonds (Retail
+        // if none does), handed half the world's holding between months - a
+        // claim, no money moved.
+        //
+        // HANDED IT WHETHER OR NOT IT HELD ANY, SINCE 0.7.43 (the fixture
+        // re-caused): the sale this section asserts needs a bid resting at
+        // the settle that is not the bank's - a rationing bank buys nothing
+        // (BondMarket.bankBuys()) - and the world under its target is that
+        // bidder. By 0.7.43 this city's world held its target on every bond,
+        // so only the bank bid, and the shops sold no bond at all.
         String y = null;
         for (String s : Sectors.KEYS) {
             if (s.equals(ISSUER) || !(credit.getAssets(s) > 0) || !(bm.faceHeldBy(s) > 0)) continue;
             if (y == null || bm.faceHeldBy(s) > bm.faceHeldBy(y)) y = s;
         }
-        if (y == null) {
-            y = Sectors.RETAIL;
+        {
+            if (y == null) y = Sectors.RETAIL;
             for (CorporateBond b : bm.getBonds()) {
                 if (b.issuer.equals(y) || !(b.world > 0)) continue;
                 double f = .5 * b.world;
@@ -675,6 +690,24 @@ public class BondCheck {
         }
         final String Y = y;
         g.getBusinessInvestment().holdSector(Y);
+        /*
+         * ...AND A BID THAT IS NOT THE BANK'S, RESTING AT THE SETTLE (0.7.43,
+         * the fixture re-caused). A rationing bank buys nothing
+         * (BondMarket.bankBuys()), and by 0.7.43 nobody else in this city bid
+         * on Y's bonds that month - its world held its target and its hot
+         * money was not arriving - so Y sold no bond however short. So the
+         * city's fund bids, by the player's hand: paid in from the treasury
+         * and posted at the next step, it rests through the month after,
+         * where Y comes up short.
+         */
+        double handSpend = 0;
+        for (CorporateBond b : bm.getBonds()) {
+            if (!b.issuer.equals(Y) && b.company(Y) > 0) handSpend += .5 * b.company(Y);
+        }
+        g.fundPayIn(2 * handSpend);
+        for (CorporateBond b : bm.getBonds()) {
+            if (!b.issuer.equals(Y) && b.company(Y) > 0) g.fundBuyBond(b.id(), .5 * b.company(Y));
+        }
         // Past the line on the quarter the bank reads: owing 1.6 times what it
         // owns, taken on between months - a claim, no money moved.
         credit.issueLoan(Y, Math.max(0, 1.6 * credit.getAssets(Y) - credit.getPrincipal(Y)), g.getMonth());
@@ -699,8 +732,11 @@ public class BondCheck {
         }
         double held = bm.faceHeldBy(Y);
         // Short, between months: Y by twice what its bonds are worth at par,
-        // W by a twentieth of what it owns.
-        em.setSectorCash(Y, -2 * held - 1_000);
+        // and past its dollars abroad, which the waterfall recalls first
+        // (0.7.43: by then this city's shops held enough abroad to cover the
+        // whole of the old short, and sold no bond); W by a twentieth of what
+        // it owns.
+        em.setSectorCash(Y, -em.getForeignAssets(Y) - 2 * held - 1_000);
         double wShort = .05 * credit.getAssets(W);
         em.setSectorCash(W, -wShort);
         // ...and a sector the desk will lend to: the least levered of the
@@ -813,7 +849,7 @@ public class BondCheck {
         // UNDER ITS CEILING: its shelf cut, between months, to a month and a
         // fifth of what it sells, so the month's sales are whole and its
         // order is most of its cover.
-        int sells = Math.max(1, shops.getProductsSold());
+        long sells = Math.max(1, shops.getProductsSold());
         shops.setStoreInventory((int) Math.ceil(1.2 * sells));
         assertTrue("fixture: the shops owe under the shortfall desk's ceiling",
                 credit.getPrincipal(R) < credit.getAssets(R) * BusinessDebtManager.MAX_LOAN_TO_ASSETS);
@@ -829,7 +865,7 @@ public class BondCheck {
 
         // OVER ITS CEILING AND SHORT: owing 1.2 times what it owns - a claim
         // taken on between months, the quarter the bank reads with it - and
-        // its till emptied, between months, with the shelf cut again.
+        // its till cut, between months, with the shelf cut again.
         credit.issueLoan(R, Math.max(0, 1.2 * credit.getAssets(R) - credit.getPrincipal(R)), g.getMonth());
         assertTrue("fixture: the month the bank books the claim closes", closes(play(g)));
         for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) {
@@ -837,19 +873,42 @@ public class BondCheck {
         }
         sells = Math.max(1, shops.getProductsSold());
         shops.setStoreInventory((int) Math.ceil(1.2 * sells));
-        em.setSectorCash(R, 0);
+        /*
+         * ...ITS TILL CUT TO A MONTH OF ITS RUNNING COSTS (0.7.43), where it
+         * was emptied: groceries are sold as the baskets wanted at a price
+         * since 0.7.43, and these shops' month no longer pays their staff -
+         * from an empty till they defaulted on their payroll at the settle,
+         * which is not the stock they did not buy. With the month's running
+         * costs in the till, what it can pay for is what its sales bring in.
+         */
+        Sector.Statement last = shops.statement();
+        em.setSectorCash(R, Math.max(0, last.payroll + last.electricity + last.water + last.maintenance
+                + last.propertyTax + last.interest));
         assertTrue("fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter",
                 credit.getPrincipal(R) > credit.getAssets(R) * BusinessDebtManager.MAX_LOAN_TO_ASSETS
                         && credit.getQuarterLeverage(R) < BusinessDebtManager.INSOLVENCY_TRIGGER);
         assertTrue("the month closes", closes(play(g)));
         double[] over = stockBought(shops);
         double budget = shops.getPurchaseBudget(), ordered = shops.getOrderValue();
-        out.printf("   over the ceiling, till emptied: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk,"
+        out.printf("   over the ceiling, a month's running costs in the till: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk,"
                 + " did not buy $%,.1fk%n", ordered, budget, over[0], shops.getPurchasesForgone());
         assertTrue("fixture: it could pay for some of its order and not all of it", budget > 0 && budget < ordered);
         assertTrue("a sector over its ceiling and short buys only what its cash and the credit it can get cover",
                 over[0] > 0 && over[0] <= budget * (1 + 1e-9));
         assertTrue("...and does not order the rest", shops.wasPurchaseLimited() && shops.getPurchasesForgone() > 0);
+        /*
+         * ...AND A MONTH'S RUNNING COSTS IN THE TILL AGAIN FOR THE SETTLE
+         * (0.7.55), between months, as before the month it bought short: the
+         * question is the stock it did not buy, so its running costs must be
+         * met. Under 0.7.54's land prices what it kept covered them by about
+         * $3k; under the crowding premium its ground is dearer on its books,
+         * the claim of 1.2 times what it owns is larger (interest $178k a
+         * month against $125k), and the settle came $17.7k short of its
+         * payroll and interest, with nothing owed for stock.
+         */
+        Sector.Statement shortMonth = shops.statement();
+        em.setSectorCash(R, Math.max(shops.getCash(), shortMonth.payroll + shortMonth.electricity + shortMonth.water
+                + shortMonth.maintenance + shortMonth.propertyTax + shortMonth.interest));
         MoneyAudit.Result r = play(g);
         out.printf("   the settle after: $%,.1fk unpaid (%s), the month asked $%,.1fk%n", credit.getCannotPayShort(R),
                 credit.getCannotPayReason(R), credit.getMonthObligations(R));
@@ -871,16 +930,46 @@ public class BondCheck {
         double[] owing = stockBought(shops);
         out.printf("   owing $%,.1fk that falls due: could pay for $%,.1fk of stock, bought $%,.1fk%n",
                 due, shops.getPurchaseBudget(), owing[0]);
-        assertTrue("a sector whose unavoidable bills outrun its cash and credit can pay for no stock",
-                shops.getPurchaseBudget() == 0 && shops.wasPurchaseLimited());
-        check0("...and buys none", owing[0]);
+        /*
+         * ...BUT WHAT ITS SUPPLIERS WILL WAIT FOR (0.7.44; SupplierCredit):
+         * the grocers' suppliers let them have the month's stock on credit,
+         * which buys stock and nothing else and is not netted against the
+         * bills - so a sector whose bills outrun its cash and its lender's
+         * credit can pay for that stock and no more, all of it on credit,
+         * and still defaults on the bill below. Until 0.7.44: "can pay for
+         * no stock", "...and buys none".
+         */
+        SupplierCredit suppliers = shops.supplierCredit();
+        assertTrue("a sector whose unavoidable bills outrun its cash and its lender's credit can pay for no stock"
+                        + " but what its suppliers will wait for",
+                shops.getPurchaseBudget() == suppliers.getLimit() && shops.wasPurchaseLimited());
+        close("...and buys only that, all of it on their credit", owing[0], suppliers.boughtTotal(),
+                1e-9 * Math.max(1, owing[0]));
+        // A month's running costs in the till for this settle too (0.7.55, as
+        // above): what it cannot pay must be the principal and its suppliers,
+        // not its payroll - with the settle above met, it fell $5.9k short of it.
+        Sector.Statement owingMonth = shops.statement();
+        em.setSectorCash(R, Math.max(shops.getCash(), owingMonth.payroll + owingMonth.electricity + owingMonth.water
+                + owingMonth.maintenance + owingMonth.propertyTax + owingMonth.interest));
         r = play(g);
         out.printf("   the settle after: $%,.1fk unpaid (%s) of $%,.1fk the month asked%n", credit.getCannotPayShort(R),
                 credit.getCannotPayReason(R), credit.getMonthObligations(R));
         assertTrue("the same sector still defaults on a bill it cannot avoid: principal that fell due",
                 credit.getCannotPayShort(R) > 0);
-        assertTrue("...on no more than the principal: nothing it bought is in what it could not pay",
-                credit.getCannotPayShort(R) <= due * (1 + 1e-9) && shops.statement().inputs - shops.statement().paidEarlier <= 1e-9);
+        /*
+         * ...and since 0.7.44 what it owed its suppliers for stock it has
+         * since sold, which this strike repaid - a bill it cannot avoid, like
+         * the principal - but nothing the strike asked it to pay for the
+         * stock it bought this month: that it bought on its suppliers'
+         * credit. Until 0.7.44: "on no more than the principal: nothing it
+         * bought is in what it could not pay", unpaid <= due, inputs nil.
+         */
+        out.printf("   ...of which it repaid its suppliers $%,.1fk for stock it had sold%n", shops.getTradeCreditRepaid());
+        assertTrue("...on no more than the principal and what it owed its suppliers for stock it has sold:"
+                        + " nothing it bought this month is in what it could not pay",
+                credit.getCannotPayShort(R) <= (due + shops.getTradeCreditRepaid()) * (1 + 1e-9)
+                        && shops.statement().inputs - shops.statement().paidEarlier - shops.getTradeCreditTaken()
+                                <= 1e-9 * Math.max(1, shops.statement().inputs));
         assertTrue("the month closes", closes(r));
     }
 
@@ -1443,8 +1532,10 @@ public class BondCheck {
     static void maturity(Game g) {
         out.println("\n--- 1c. at maturity the issuer pays every holder its face, and the bond and its book go ---");
         BondMarket bm = g.getBondMarket();
+        // The largest the city's fund holds none of (0.7.43): 5c's hand
+        // bought some, and the classes summed below are the other four.
         CorporateBond bond = null;
-        for (CorporateBond b : bm.getBonds()) if (bond == null || b.face() > bond.face()) bond = b;
+        for (CorporateBond b : bm.getBonds()) if (!(b.city() > 0) && (bond == null || b.face() > bond.face())) bond = b;
         assertTrue("fixture: a bond outstanding", bond != null);
         if (bond == null) return;
         bond.maturityMonth = g.getMonth() + 1;

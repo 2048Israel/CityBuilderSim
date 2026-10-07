@@ -60,9 +60,10 @@ import static ham.citybuildersim.ui.FinancesScreen.words;
  * to the fund (and so FundLedger's cost basis): nothing here adds a column
  * up. The words each page composes are worked out without a node, by the
  * static methods under WORDS, so a probe reads every one of them on a played
- * city. The cards that were the Holdings page - the dial, the 3% transfer,
- * the rescue book, WHAT IT HOLDS and the rule's aim - moved here whole
- * (Rules & cash, Portfolio); By hand's amount, chips and buttons are the
+ * city. The cards that were the Holdings page - the dial, the transfer to
+ * the treasury, the rescue book, WHAT IT HOLDS and the rule's aim - moved
+ * here whole (Rules & cash, Portfolio; the withdrawal's dial joined Rules &
+ * cash in 0.7.48); By hand's amount, chips and buttons are the
  * ticket, Search and a security's page (the spec's 4.8, nothing lost).
  *
  * COLOURS. P&L is a verdict - did this purchase make or lose the city money -
@@ -378,8 +379,9 @@ final class FundScreen {
         String incomeNote = p.transferLastMonth() > 0 && p.incomeLastMonth() > 0
                 ? "covered " + pct1(p.incomeLastMonth() / p.transferLastMonth()).replace(".0%", "%") + " of the transfer"
                 : "dividends and coupons";
-        String transferNote = p.transferShort() > 0 ? d(g, p.transferShort()) + " of it not paid, for want of cash"
-                : String.format("a twelfth of %.0f%% of its worth", TreasuryFund.TRANSFER_RATE * 100);
+        String transferNote = p.transferShort() > 0 ? d(g, p.transferShort()) + (g.getFund().getToRaise() > 0
+                        ? " of it sold for, to pay next month" : " of it not paid, for want of cash")
+                : withdrawalShare(g.getFund().getWithdrawal());
         return new Hero(d(g, p.value()), ret, tone, since, sinceInfo, d(g, p.cash()), cashNote, d(g, p.incomeLastMonth()),
                 incomeNote, d(g, p.transferLastMonth()), transferNote, p.transferShort() > 0 ? Palette.WARN : null, recorded);
     }
@@ -435,7 +437,8 @@ final class FundScreen {
                 case FundView.PREFERRED -> String.format("%.0f%% a year, at par", Bank.PREFERRED_RATE * 100);
                 default -> "bought back or exercised; they cost nothing";
             };
-            String priceNote = p.stale(now) ? "last traded " + month(p.priceMonth())
+            String priceNote = p.stale(now) ? (p.company() >= 0 && g.getExchange().markedAtFair(p.company())
+                    ? "marked at fair value: last traded " : "last traded ") + month(p.priceMonth())
                     : p.isShare() && p.priceMonth() < 0 ? "fair value: never traded" : null;
             String avg = FundView.WARRANTS.equals(p.kind()) ? "nothing"
                     : FundView.PREFERRED.equals(p.kind()) ? "at par" : price(g, bond, p.average());
@@ -554,7 +557,8 @@ final class FundScreen {
             OrderBook book = ex.bookOf(c);
             double p = ex.price(c);
             String note = ex.hasTraded(c) ? "last trade, " + month(book.lastTradeMonth())
-                    + (now - book.lastTradeMonth() > FundView.STALE_MONTHS ? " - every holding is marked at it" : "")
+                    + (ex.markedAtFair(c) ? " - the city's holding is marked at fair value, a year on; the others' at it"
+                        : now - book.lastTradeMonth() > FundView.STALE_MONTHS ? " - every holding is marked at it" : "")
                     : "fair value: it has never traded";
             double div = reg.dividendPerShareAnnual(c);
             facts.add(new String[] {"PRICE", price(g, false, p), ex.hasTraded(c) ? "the last trade" : "fair value"});
@@ -651,8 +655,9 @@ final class FundScreen {
             }
             out.add(new PositionLine("Adjusted cost base", d(g, p.acb()), null, FundView.WARRANTS.equals(p.kind())
                     ? "they came with the preferred, for nothing" : null));
-            out.add(new PositionLine("Market value", d(g, p.value()), null, p.stale(g.getMonth())
-                    ? "at its last trade, " + month(p.priceMonth()) : null));
+            out.add(new PositionLine("Market value", d(g, p.value()), null, !p.stale(g.getMonth()) ? null
+                    : p.company() >= 0 && g.getExchange().markedAtFair(p.company())
+                    ? "at fair value: last traded " + month(p.priceMonth()) : "at its last trade, " + month(p.priceMonth())));
             Pnl un = pnl(sym(g), p.unrealized(), p.unrealizedPct());
             out.add(new PositionLine("Unrealized", un.text(), un.tone(), null));
             Pnl re = pnl(sym(g), p.realized(), Double.NaN);
@@ -689,7 +694,7 @@ final class FundScreen {
     /** What the ticket says: its quote's lines, the press, and the sentence under the button (null: none). */
     record Ticket(FundView.Quote quote, List<PositionLine> lines, Press press, String held, double limit) { }
 
-    /** The price a unit the ticket would post at for its kind, and 0 for fair value (the rule's own). */
+    /** The price a unit the ticket would post at for its kind, and 0 for fair value (what the rule asks at; a bond's value is its bid too). */
     static double limitFor(Game g, String key, boolean buy, String kind, int steps) {
         int c = FundView.companyOf(key);
         CorporateBond b = c < 0 ? g.getBondMarket().bond(FundView.bondIdOf(key)) : null;
@@ -724,7 +729,8 @@ final class FundScreen {
         String u = bond ? "of face" : "shares";
         String unitsWord = bond ? d(g, q.units()) + " of face" : shares(q.units()) + " shares";
         lines.add(new PositionLine("At", price(g, bond, q.price()), null, limit > 0 ? null : bond
-                ? "its value: the price the rule posts at" : "fair value: the price the rule posts at"));
+                ? "its value: the price the rule posts at" : "fair value: what the rule asks; it bids "
+                        + pct1(TreasuryFund.RULE_PREMIUM).replace(".0", "") + " over, at the desk's ask"));
         if (q.units() > 0) {
             lines.add(new PositionLine(buy ? "You would buy" : "You would sell", unitsWord + " · " + d(g, q.money()), null,
                     q.capped() ? "capped at the room under the " + pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", "")
@@ -924,7 +930,7 @@ final class FundScreen {
             };
             case FundLedger.PAY_IN -> { what = a.hand() ? "Paid in from the treasury" : "Paid in by the dial, at the year end"; by = a.hand() ? "you" : "the dial"; }
             case FundLedger.DRAW_OUT -> { what = "Drawn out to the treasury"; by = "you"; }
-            case FundLedger.TRANSFER -> what = String.format("The %.0f%% transfer to the treasury", TreasuryFund.TRANSFER_RATE * 100);
+            case FundLedger.TRANSFER -> what = "The withdrawal to the treasury";
             case FundLedger.SPLIT -> what = name + " split " + (a.note() == null ? "" : a.note());
             case FundLedger.TRACKING -> what = a.units() > 0 ? "Cost tracking began with " + (int) Math.round(a.units())
                     + (Math.round(a.units()) == 1 ? " holding" : " holdings")
@@ -1804,7 +1810,8 @@ final class FundScreen {
     static final String TICKET_INFO = "An order goes on the book at the next month's step, after every other participant "
             + "has posted - the rule first - and is good for that month: it takes what is offered at or better than its "
             + "price, at the offers' own prices, and what is left waits at its price until the step after withdraws it. "
-            + "Fair value is the rule's own price; you may name another. A buy's money is held for it from the moment you "
+            + "Fair value is what the rule asks at, and a bond's value what it bids; a share it bids at the desk's ask, "
+            + pct1(TreasuryFund.RULE_PREMIUM).replace(".0", "") + " over fair. You may name another. A buy's money is held for it from the moment you "
             + "place it until it fills or lapses, and the rule bids with the rest. A buy goes no further than the room "
             + "under the cap the rule keeps of a company, counting what the fund holds of it and your other buys on it, on "
             + "the book or waiting, as if all of them filled; the rule's own bid makes way for yours, from the moment you "
@@ -1905,7 +1912,7 @@ final class FundScreen {
         return card;
     }
 
-    /** The price chips: fair value (the rule's), the best bid, the best ask, the last trade, and a step of 1% of fair either way. */
+    /** The price chips: fair value (the rule's ask; a bond's value, the rule's), the best bid, the best ask, the last trade, and a step of 1% of fair either way. */
     Node priceChips(Game g, String key, boolean bond) {
         Map<String, String> kinds = priceChoices(g, key);
         List<String> names = new ArrayList<>(kinds.keySet());
@@ -1927,7 +1934,7 @@ final class FundScreen {
         return new VBox(4, cap, chips, own);
     }
 
-    /** The price chips' words and the kind each picks: fair value (the rule's) first, then the best bid, the best ask and the last trade where the book has them. */
+    /** The price chips' words and the kind each picks: fair value (the rule's ask; a bond's value, the rule's price both ways) first, then the best bid, the best ask and the last trade where the book has them. */
     static Map<String, String> priceChoices(Game g, String key) {
         int c = FundView.companyOf(key);
         boolean bond = c < 0;
@@ -1935,7 +1942,7 @@ final class FundScreen {
         double fair = c >= 0 ? g.getExchange().fair(c) : b != null ? g.getBondMarket().modelPrice(b, g.getMonth()) : Double.NaN;
         OrderBook book = c >= 0 ? g.getExchange().bookOf(c) : b != null ? g.getBondMarket().bookOf(b) : null;
         Map<String, String> kinds = new LinkedHashMap<>();
-        kinds.put((bond ? "Value " : "Fair value ") + price(g, bond, fair) + " (the rule's)", FAIR);
+        kinds.put((bond ? "Value " : "Fair value ") + price(g, bond, fair) + (bond ? " (the rule's)" : " (the rule's ask)"), FAIR);
         if (book != null && book.bestBid() > 0) kinds.put("Best bid " + price(g, bond, book.bestBid()), BID);
         if (book != null && book.bestAsk() > 0) kinds.put("Best ask " + price(g, bond, book.bestAsk()), ASK);
         if (book != null && book.lastPrice() > 0) kinds.put("Last " + price(g, bond, book.lastPrice()), LAST);
@@ -2126,12 +2133,15 @@ final class FundScreen {
 
     /* =====================================================================
        RULES & CASH - how does it run, and how do I move money?
-       (THE DIAL, ITS 3% TO THE TREASURY and THE RESCUE BOOK are
-       FinancesScreen's cards of 0.7.32, moved here whole.)
+       (THE DIAL, TO THE TREASURY and THE RESCUE BOOK are FinancesScreen's
+       cards of 0.7.32, moved here whole; THE WITHDRAWAL, first and full
+       width, is 0.7.48's dial - Jerus: "the city fund, you should be able to
+       click how much to withdraw automatically, even 0 or 10% a month".)
        ===================================================================== */
 
     void rulesPage(VBox page) {
         Game g = ui.game;
+        page.getChildren().add(withdrawalCard(g));
         GridPane three = equalColumns(3, TILE_GAP);
         VBox dial = dialCard(g), transfer = transferCard(g), rescue = rescueBookCard(g);
         for (VBox c : List.of(dial, transfer, rescue)) GridPane.setFillHeight(c, true);
@@ -2184,21 +2194,120 @@ final class FundScreen {
         return card;
     }
 
-    /** The transfer's (i). */
-    static String transferInfo() {
-        return String.format("A twelfth of %.0f%% of everything the fund holds, every month, as the budget's revenue line "
-                + "\"Transfer from the fund\" - Norway's fiscal rule. It is paid from the fund's cash only: the rule never "
-                + "sells to pay it, and what the cash cannot cover is not paid.", TreasuryFund.TRANSFER_RATE * 100);
+    /* ----- THE WITHDRAWAL (0.7.48, C2) ----- */
+
+    /** The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. */
+    static final double WITHDRAWAL_LADDER = 520;
+
+    /** The withdrawal's (i). */
+    static String withdrawalInfo() {
+        return String.format("What the fund pays the budget every month, as a share of everything it holds - its cash and "
+                + "both books at their marks - as the revenue line \"Transfer from the fund\". A step is %s a month, a "
+                + "twelfth of the %.0f%% a year Norway's fiscal rule takes, which is the default: about what the fund is "
+                + "expected to earn, so it keeps its worth. At nothing it pays nothing and keeps all it earns. At or under the "
+                + "default it pays from its cash only, and what the cash cannot cover is not paid. Over it the dial spends the "
+                + "fund: what its cash cannot cover is sold from its market book at the step, shares and bonds pro rata, at "
+                + "fair value - never the rescue book - and paid at the next month's top, and the rule buys nothing "
+                + "meanwhile; what the sale does not raise is not paid. Up to %s a month.",
+                pct2(TreasuryFund.WITHDRAWAL_STEP), TreasuryFund.TRANSFER_RATE * 100,
+                pct2(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP));
     }
 
-    /** ITS 3% TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. */
+    /** The withdrawal's caveat, under what it would do. */
+    static final String WITHDRAWAL_CAVEAT = "next month's on the fund as it stands - its prices and what the book takes will move it";
+    /** ...and the sentence behind it, its (i). */
+    static final String WITHDRAWAL_CAVEAT_INFO = "Next month's withdrawal is struck on what the fund is worth at the top of "
+            + "next month; this reads it on the fund as it stands. Its prices move by then, its dividends and coupons come "
+            + "in, and a sale fills only as far as somebody bids for it - what it cannot sell is not paid.";
+
+    /**
+     * The withdrawal's status line (pure: the probe reads it): nothing at 0,
+     * Norway's rule at the default, and otherwise the year it makes - twelve
+     * times the rate, the rule's own arithmetic - and how soon, earning
+     * nothing, it would halve: ln 0.5 / ln(1 - the rate) months.
+     */
+    static String withdrawalWords(double rate) {
+        int steps = TreasuryFund.stepsFor(rate);
+        if (steps <= 0) return "nothing to the treasury: it keeps all it earns";
+        double share = steps * TreasuryFund.WITHDRAWAL_STEP;
+        String year = String.format("%.0f%% a year", share * TreasuryFund.YEAR_MONTHS * 100);
+        if (steps == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS) return year + " - Norway's rule: what it is expected to earn";
+        double months = Math.log(.5) / Math.log(1 - share);
+        String halve = months < 2 * TreasuryFund.YEAR_MONTHS ? String.format("%.1f months", months)
+                : String.format("%.1f years", months / TreasuryFund.YEAR_MONTHS);
+        return year + " (12 × the rate) · earning nothing it would halve in " + halve
+                + (steps > TreasuryFund.DEFAULT_WITHDRAWAL_STEPS ? " · past its cash it sells to pay" : "");
+    }
+
+    /** The withdrawal in a few words, as the page's head reads it: "0.25% of its worth a month". */
+    static String withdrawalShare(double rate) {
+        return rate > 0 ? pct2(rate) + " of its worth a month" : "the withdrawal at nothing";
+    }
+
+    /**
+     * What the withdrawal would do at any value of its thumb (pure: the
+     * probe reads them), each PolicyPreview.fundWithdrawalAt() against the
+     * dial in force: next month's to the treasury, what its cash pays of it,
+     * the rest - sold from its market book over the default, not paid at or
+     * under it - and what it would be worth in a year earning nothing. Money
+     * colours only: a fund spent and a fund kept are both a policy.
+     */
+    static java.util.function.DoubleFunction<List<Pieces.Effect>> withdrawalEffects(Game g) {
+        PolicyPreview.Withdrawal now = PolicyPreview.fundWithdrawalAt(g, g.getFundWithdrawal());
+        java.util.function.DoubleFunction<String> money = v -> d(g, v), move = v -> signed(g, v);
+        return v -> {
+            PolicyPreview.Withdrawal then = PolicyPreview.fundWithdrawalAt(g, v);
+            boolean sells = TreasuryFund.stepsFor(v) > TreasuryFund.DEFAULT_WITHDRAWAL_STEPS;
+            return List.of(
+                    Pieces.Effect.of("To the treasury next month", g.fundTransferDue(), then.due(), money).delta(move),
+                    Pieces.Effect.of("...from its cash", now.fromCash(), then.fromCash(), money).delta(move),
+                    sells ? Pieces.Effect.of("...sold from its market book", now.toSell(), then.toSell(), money).delta(move)
+                            : Pieces.Effect.of("...not paid, for want of cash", now.unpaid(), then.unpaid(), money).delta(move),
+                    Pieces.Effect.of("Worth in a year, earning nothing", now.yearOn(), then.yearOn(), money).delta(move));
+        };
+    }
+
+    /** THE WITHDRAWAL (0.7.48, C2): the dial on a Levers card, as the fare's on Infrastructure - its reading, its status, the ladder, what it would do, and its Apply once staged. */
+    VBox withdrawalCard(Game g) {
+        double rate = g.getFundWithdrawal();
+        double want = ui.policyScreen.staged("fundWithdrawal", rate);
+        Ladder ladder = ui.policyScreen.ownLadder("fundWithdrawal", rate, 0,
+                TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP, TreasuryFund.WITHDRAWAL_STEP,
+                v -> pct2(v) + " a month");
+        return Levers.dialCard(new Levers.DialCard(Icons.SAFE, Palette.MONEY, "THE WITHDRAWAL", withdrawalInfo(),
+                        pct2(rate) + " a month", withdrawalWords(rate), null, ladder, want, withdrawalEffects(g),
+                        WITHDRAWAL_CAVEAT, WITHDRAWAL_CAVEAT_INFO,
+                        ui.policyScreen.applyFoot("fundWithdrawal", want <= 0 ? "Withdraw nothing"
+                                : "Withdraw " + pct2(want) + " a month", () -> g.setFundWithdrawal(want))),
+                WITHDRAWAL_LADDER, false);
+    }
+
+    /** The transfer's (i): the withdrawal dial in force, read. */
+    static String transferInfo(TreasuryFund fund) {
+        return String.format("The withdrawal's share of everything the fund holds, every month - %s a month now, %.0f%% a "
+                + "year - as the budget's revenue line \"Transfer from the fund\". At or under Norway's rule, %.0f%% a year "
+                + "and the default, it is paid from the fund's cash only, and what the cash cannot cover is not paid; over "
+                + "it, what the cash cannot cover is sold from its market book and paid the month after. THE WITHDRAWAL, "
+                + "above, sets it.", pct2(fund.getWithdrawal()), fund.getWithdrawal() * TreasuryFund.YEAR_MONTHS * 100,
+                TreasuryFund.TRANSFER_RATE * 100);
+    }
+
+    /** TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. */
     VBox transferCard(Game g) {
         TreasuryFund fund = g.getFund();
-        VBox card = card(caption(String.format("ITS %.0f%% TO THE TREASURY", TreasuryFund.TRANSFER_RATE * 100), transferInfo()));
+        VBox card = card(caption("TO THE TREASURY", transferInfo(fund)));
         card.getChildren().add(cardLine("Last month's, on what it was worth", d(g, fund.getTransferDue()), null));
         card.getChildren().add(cardLine("...paid from its cash", d(g, fund.getTransferPaid()), null));
-        card.getChildren().add(cardLine("...not paid, for want of cash", d(g, fund.getTransferShort()),
-                fund.getTransferShort() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+        // Over the default the short is what the step sells for, paid at the next top (0.7.48): its own words, no warning.
+        if (fund.getToRaise() > 0) {
+            card.getChildren().add(cardLine("...sold for, to pay next month", d(g, fund.getToRaise()), null));
+        } else {
+            card.getChildren().add(cardLine("...not paid, for want of cash", d(g, fund.getTransferShort()),
+                    fund.getTransferShort() > 0 ? Palette.WARN : Palette.TEXT_SPENT));
+        }
+        if (fund.getTransferPaidLate() > 0) {
+            card.getChildren().add(cardLine("...and the month before's, paid from what it sold", d(g, fund.getTransferPaidLate()), null));
+        }
         card.getChildren().add(cardLine("This year so far", d(g, fund.getTransfersThisYear())
                 + (fund.getTransferShortThisYear() > 0 ? " · " + d(g, fund.getTransferShortThisYear()) + " not paid" : ""), null));
         card.getChildren().add(cardLine("Next month's, on what it is worth now", d(g, g.fundTransferDue()), null));
@@ -2301,9 +2410,10 @@ final class FundScreen {
         return String.format("It holds no more than %s of any company on its market book, counting its bid and your "
                         + "orders as if they filled, its own bid making way for yours; past it - a company's buyback can "
                         + "lift it there - it asks the excess back at fair value from the next "
-                        + "step. The rescue book is outside the cap. Each month it bids for its aim at fair value and takes only "
-                        + "what is asked at or under it; what does not fit waits as cash.",
-                pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", ""));
+                        + "step. The rescue book is outside the cap. Each month it bids for its aim - a share at the desk's ask, "
+                        + "fair value plus %s, a bond at its value - and takes only what is asked at or under it; what does "
+                        + "not fit waits as cash.",
+                pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", ""), pct1(TreasuryFund.RULE_PREMIUM).replace(".0", ""));
     }
 
     /** THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. */

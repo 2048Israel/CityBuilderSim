@@ -129,7 +129,7 @@ public class Healthcare {
     public static final double CHILDCARE_FEE = .150;
     public static final double SENIOR_FEE    = .300;
 
-    /** The same three, in today's money - reformed with every other price. */
+    /** The same three, in today's money - reformed with every other price, and struck at the expected price level since 0.7.42 (seedConstants()). */
     private double generalFee   = GENERAL_FEE;
     private double childcareFee = CHILDCARE_FEE;
     private double seniorFee    = SENIOR_FEE;
@@ -500,8 +500,9 @@ public class Healthcare {
          * on and was thrown away, which left the treatment fees as one lump
          * that no screen could take apart - and "childcare raised $2.1M of it"
          * is the only form of that number anybody can act on. Reporting only:
-         * nothing reads this back into the model, and it is not saved, because
-         * it is this month's flow like everything else here.
+         * nothing reads this back into the model. SAVED since 0.7.46 (A3), as
+         * this month's flows here are: a reloaded city read its fees by kind
+         * as 0 beside a treatment line that came back whole.
          *
          * THE PRICED OUT ARE NOT IN served[] (2026-09-19). What arrives is what
          * the beds could do; what is treated is that times the share of those
@@ -862,7 +863,13 @@ public class Healthcare {
             // a load and the beds cannot rebuild it.
             coverage[CareType.CHILDCARE.ordinal()],
             coverage[CareType.GENERAL.ordinal()],
-            coverage[CareType.SENIOR.ordinal()]
+            coverage[CareType.SENIOR.ordinal()],
+            // ...and the people each of the three treated (A3, 0.7.46): the
+            // fees by kind are served x the fee, and a reloaded city read 0
+            // of each against a treatment line that was carried whole.
+            served[CareType.CHILDCARE.ordinal()],
+            served[CareType.GENERAL.ordinal()],
+            served[CareType.SENIOR.ordinal()]
         };
     }
 
@@ -872,17 +879,22 @@ public class Healthcare {
     /** ...and before the three coverages were, the same day. */
     static final int STATE_BEFORE_COVERAGE = 13;
 
+    /** ...and before the three kinds' served counts were (A3, 2026-10). */
+    static final int STATE_BEFORE_SERVED = 16;
+
     /**
      * Refused whole on a length mismatch, per the standing rule - the shapes
      * from before the full-service bill and before the coverages (both
-     * 2026-09-19) are the exceptions, and each restores what it carries: that
-     * city's full bill was the bill it charged, because nobody could be
-     * turned away, and its coverage reads 1 until the first month strikes it.
+     * 2026-09-19) and before the served counts (0.7.46) are the exceptions,
+     * and each restores what it carries: that city's full bill was the bill
+     * it charged, because nobody could be turned away, its coverage reads 1
+     * and its fees by kind 0 until the first month strikes them.
      */
     public boolean restore(double[] state) {
         if (state == null || (state.length != getState().length
                 && state.length != STATE_BEFORE_FULL_BILL
-                && state.length != STATE_BEFORE_COVERAGE)) return false;
+                && state.length != STATE_BEFORE_COVERAGE
+                && state.length != STATE_BEFORE_SERVED)) return false;
 
         int i = 0;
         plotsUsed     = state[i++];
@@ -902,7 +914,13 @@ public class Healthcare {
         if (state.length > i) {
             coverage[CareType.CHILDCARE.ordinal()] = clamp(state[i++]);
             coverage[CareType.GENERAL.ordinal()]   = clamp(state[i++]);
-            coverage[CareType.SENIOR.ordinal()]    = clamp(state[i]);
+            coverage[CareType.SENIOR.ordinal()]    = clamp(state[i++]);
+        }
+        java.util.Arrays.fill(served, 0);
+        if (state.length > i) {
+            served[CareType.CHILDCARE.ordinal()] = Math.max(0, state[i++]);
+            served[CareType.GENERAL.ordinal()]   = Math.max(0, state[i++]);
+            served[CareType.SENIOR.ordinal()]    = Math.max(0, state[i]);
         }
         return true;
     }
@@ -920,7 +938,7 @@ public class Healthcare {
     }
 
 
-    /** Re-seeds the money CONSTANTS at a given unit. See Denomination. */
+    /** Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). See Denomination. */
     public void seedConstants(double unit) {
         generalFee   = GENERAL_FEE / unit;
         childcareFee = CHILDCARE_FEE / unit;

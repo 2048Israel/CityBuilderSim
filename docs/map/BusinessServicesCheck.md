@@ -1,6 +1,6 @@
-# BusinessServicesCheck.java - 380 lines · 5 methods · 3 constants · harnesses
+# BusinessServicesCheck.java - 387 lines · 5 methods · 3 constants · harnesses
 
-`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > The sector whose customer is not in the city.
 > 
@@ -21,7 +21,7 @@
 > rather than waiting for a school; the currency test moves the rate rather
 > than hoping a run drifts.
 
-**Uses:** [Good](Good.md) (20), [JobType](JobType.md) (13), [Game](Game.md) (12), [Sectors](Sectors.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [Equity](Equity.md) (5), [BuildingManager](BuildingManager.md) (3), [GoodsMarket](GoodsMarket.md) (2), [GameFiles](GameFiles.md) (2), [BusinessServices](BusinessServices.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [PopulationManager](PopulationManager.md) (1), [PayTier](PayTier.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [SectorBooks](SectorBooks.md) (1), [Household](Household.md) (1)
+**Uses:** [Good](Good.md) (20), [JobType](JobType.md) (13), [Game](Game.md) (12), [Sectors](Sectors.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [Equity](Equity.md) (5), [BuildingManager](BuildingManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GoodsMarket](GoodsMarket.md) (2), [GameFiles](GameFiles.md) (2), [BusinessServices](BusinessServices.md) (2), [PopulationManager](PopulationManager.md) (1), [PayTier](PayTier.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [SectorBooks](SectorBooks.md) (1), [Household](Household.md) (1)
 
 ## Sections
 
@@ -54,10 +54,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 351 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
+| 30 | 358 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
 | 36 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 41 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 51 | 5 | `static void quietly(Runnable r)` |  |
-| 62 | 312 | `public static void main(String[] args) throws Exception` |  |
-| 375 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 62 | 319 | `public static void main(String[] args) throws Exception` |  |
+| 382 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
 

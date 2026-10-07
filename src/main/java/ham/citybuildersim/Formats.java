@@ -24,10 +24,21 @@ public final class Formats {
         money.setMaximumFractionDigits(2);
     }
 
-    /** A field in thousands, as dollars: 0.12 is "$120.00". */
+    /**
+     * The most dollars cash() prints whole (0.7.54): 2^53, about nine
+     * quadrillion, the last whole number a double holds exactly. Past it the
+     * low digits are the double's rounding, and from 2^63 Math.round()
+     * saturates and printed every larger sum as $9,223,372,036,854,775,807;
+     * cash() hands those to amount(). A 10 billion city's treasury reached
+     * $1.3 quintillion in ScaleCheck's copy.
+     */
+    public static final double WHOLE_DOLLARS_MOST = 0x1p53;
+
+    /** A field in thousands, as dollars: 0.12 is "$120.00"; past WHOLE_DOLLARS_MOST, amount()'s "$1,300.0Q". */
     public String cash(double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         double dollars = thousands * 1000;
+        if (Math.abs(dollars) >= WHOLE_DOLLARS_MOST) return amount(thousands);
         if (Math.abs(dollars) >= 1_000_000) return "$" + whole.format(Math.round(dollars));
         return "$" + money.format(dollars);
     }
@@ -47,11 +58,16 @@ public final class Formats {
      * EVERY SECTOR PAGE SINCE 0.7.21, with the text cut: each sector's
      * operations() writes its money in this form, as Construction's did from
      * 0.7.20. The planners' reasons still use cash().
+     *
+     * AND QUADRILLIONS (0.7.54), "$26.0Q" where a 10 billion city's treasury
+     * read "$26000.0T"; past a thousand of them it groups, "$1,300.0Q", the
+     * quintillion a land premium read at that size sent it to.
      */
     public String amount(double thousands) {
         if (!Double.isFinite(thousands)) return "—";
         double dollars = thousands * 1000;
         double a = Math.abs(dollars);
+        if (a >= 1e15) return sign(dollars, a / 1e15, 1) + String.format("$%,.1fQ", a / 1e15);
         if (a >= 1e12) return sign(dollars, a / 1e12, 1) + String.format("$%.1fT", a / 1e12);
         if (a >= 1e9)  return sign(dollars, a / 1e9, 1) + String.format("$%.1fB", a / 1e9);
         if (a >= 1e6)  return sign(dollars, a / 1e6, 1) + String.format("$%.1fM", a / 1e6);

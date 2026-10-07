@@ -11,17 +11,17 @@ import java.util.Locale;
  * @author Jerus
  */
 public class PopulationManager {
-    private int population;
+    private long population;
     //dont use this one for anything other than create different jobs
     JobType[] jobTypes = JobType.values();
     //
-    private int[] jobs = new int[jobTypes.length];
+    private long[] jobs = new long[jobTypes.length];
     private double[] jobWage = new double[jobs.length];
     private double[] totalWagePerType = new double[jobWage.length];
-    private int totalJobs;
+    private long totalJobs;
     //temporary
     private double adultPercent = .5;
-    private int workforce;
+    private long workforce;
 
     /* =====================================================================
        WHO THE WORKFORCE ACTUALLY IS
@@ -116,12 +116,12 @@ public class PopulationManager {
      * @param newPopulation      what the demographics arrived at
      * @param adultsAlreadyHere  the adult band before this month's migration
      */
-    public int applyPopulation(int newPopulation, double adultsAlreadyHere){
-        workforce = (int) Math.max(0, adultsAlreadyHere);
+    public long applyPopulation(long newPopulation, double adultsAlreadyHere){
+        workforce = (long) Math.max(0, adultsAlreadyHere);
         return population = Math.max(0, newPopulation);
     }
     
-    public void updateJobs(int[] newJobs){
+    public void updateJobs(long[] newJobs){
         //change later
         totalJobs = 0;
         for(int i = 0; i < jobs.length; i++){
@@ -134,11 +134,11 @@ public class PopulationManager {
     
     
     //getters
-    public int getTotalJobs(){
+    public long getTotalJobs(){
         return totalJobs;
     }
     
-    public int getPopulation(){
+    public long getPopulation(){
         return population;
     }
     
@@ -153,13 +153,13 @@ public class PopulationManager {
      * in them, which is what the wage bill is actually paid on and therefore
      * the right denominator for an average wage.
      */
-    public int getJobsFilled(){
+    public long getJobsFilled(){
         double[] fillRate = getJobFillRate();
         double filled = 0;
         for(int i = 0; i < jobs.length; i++) {
             filled += jobs[i] * fillRate[i];
         }
-        return (int) Math.round(filled);
+        return Math.round(filled);
     }
 
     public double getTotalWage(){
@@ -278,7 +278,7 @@ public class PopulationManager {
         double[] priced = market.getWages();
         System.arraycopy(priced, 0, jobWage, 0, Math.min(priced.length, jobWage.length));
     }
-    public void setPopulation(int population){
+    public void setPopulation(long population){
         this.population = population;
     }
 
@@ -300,7 +300,7 @@ public class PopulationManager {
      * rebuildSimulationState(), and would clamp the restored city to 0.
      */
     public void recomputeWorkforce(){
-        workforce = (int)(population * adultPercent);
+        workforce = (long)(population * adultPercent);
     }
 
     /**
@@ -321,11 +321,11 @@ public class PopulationManager {
      * recomputeWorkforce() stays as the fallback for saves written before this,
      * where it is still much better than the zero it originally replaced.
      */
-    public void restoreWorkforce(int workforce){
+    public void restoreWorkforce(long workforce){
         this.workforce = Math.max(0, workforce);
     }
 
-    public int getWorkforceForSave(){
+    public long getWorkforceForSave(){
         return workforce;
     }
     
@@ -356,9 +356,9 @@ public class PopulationManager {
      * because enum order is arbitrary and would otherwise decide that the city
      * staffs its lawyers before its doctors.
      */
-    public int[] getJobVacancy() {
+    public long[] getJobVacancy() {
 
-        int[] vacancy = new int[totalWagePerType.length];
+        long[] vacancy = new long[totalWagePerType.length];
         BandFill fill = fillByBand(staffablePostsByBand());
 
         for (int b = 0; b < WageBand.values().length; b++) {
@@ -404,7 +404,7 @@ public class PopulationManager {
                 idealSoFar += jobs[i] * share;
                 double give = Math.max(0, Math.min(jobs[i], Math.round(idealSoFar) - givenSoFar));
                 givenSoFar += give;
-                vacancy[i] = Math.max(0, jobs[i] - (int) give);
+                vacancy[i] = Math.max(0, jobs[i] - (long) give);
             }
         }
 
@@ -514,14 +514,14 @@ public class PopulationManager {
         /** Each band's supply: its posts over this are its tightness, the figure LabourMarket prices. */
         public final double[] supply;
         /** Licence holders in each gated job type's posts, by JobType ordinal: whole people, booked first. */
-        public final int[] licensedIn;
+        public final long[] licensedIn;
         /** The highest band of the market each band was filled in: its own when alone, the top of the tie when joined. */
         public final int[] market;
 
         BandFill(int bands, int types) {
             placed = new double[bands];
             supply = new double[bands];
-            licensedIn = new int[types];
+            licensedIn = new long[types];
             market = new int[bands];
         }
 
@@ -578,7 +578,7 @@ public class PopulationManager {
             // Rounded ONCE, and the same rounded figure taken off the pool.
             // Booking a fractional person against the pool while filling a
             // whole one leaves half a worker behind on every gated type.
-            int taken = (int) Math.round(staffed);
+            long taken = Math.round(staffed);
             f.licensedIn[i] = taken;
             left[b] -= taken;
             gated[b] += taken;
@@ -916,8 +916,8 @@ public class PopulationManager {
     public double spareLicences(JobType job) {
         if (job == null) return 0;
         int i = job.ordinal();
-        int[] posts = getJobs();
-        int[] vacant = getJobVacancy();
+        long[] posts = getJobs();
+        long[] vacant = getJobVacancy();
         double staffed = 0;
         if (posts != null && i < posts.length) {
             staffed = posts[i] - (vacant != null && i < vacant.length ? vacant[i] : 0);
@@ -1058,7 +1058,7 @@ public class PopulationManager {
     
     public double[] getJobFillRate(){
         double[] fillRate = new double[jobs.length];
-        int[] vacancy = getJobVacancy().clone();
+        long[] vacancy = getJobVacancy().clone();
         for(int i = 0; i < jobs.length; i++){
             if(jobs[i]>0){
                 fillRate[i] = (jobs[i] - vacancy[i]) / (double) jobs[i];
@@ -1070,7 +1070,7 @@ public class PopulationManager {
         return fillRate;
     }
     
-    public int getWorkforce(){
+    public long getWorkforce(){
         return workforce;
     }
 
@@ -1089,8 +1089,8 @@ public class PopulationManager {
      * copies disagreed, which is how a reloaded city came to tax a different
      * payroll from the live one; one definition, and it cannot happen again.
      */
-    public int getUnemployed(){
-        return (int) Math.max(0, Math.round(getLabourForce() - getJobsFilled()));
+    public long getUnemployed(){
+        return Math.max(0, Math.round(getLabourForce() - getJobsFilled()));
     }
 
     /**
@@ -1115,7 +1115,7 @@ public class PopulationManager {
         return force > 0 ? getUnemployed() / force : 0;
     }
     
-    public int[] getJobs(){
+    public long[] getJobs(){
         return jobs.clone();
     }
     
@@ -1138,11 +1138,11 @@ public class PopulationManager {
         /* -------------------------------------------------------------------
        LABOR MARKET SUMMARY
        ------------------------------------------------------------------- */
-        int[] vacancies = getJobVacancy();
+        long[] vacancies = getJobVacancy();
         double[] fillRates = getJobFillRate();
 
-        int totalVacancies = 0;
-        for (int v : vacancies) {
+        long totalVacancies = 0;
+        for (long v : vacancies) {
             totalVacancies += v;
         }
 

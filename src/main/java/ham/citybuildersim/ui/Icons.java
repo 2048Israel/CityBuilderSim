@@ -375,6 +375,8 @@ public final class Icons {
         if (good == null) return TRADE;
         switch (good) {
             case IRON:                        return ORE;
+            // ...the oil and what it is refined into (0.7.62), a drop of each.
+            case CRUDE: case FUEL:            return DROP;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: return INDUSTRY;
             case CARS: case VANS:             return VEHICLES;
             case ROLLING_STOCK:               return RAIL;
@@ -406,6 +408,9 @@ public final class Icons {
             case ham.citybuildersim.Sectors.AUTOMOTIVE:        return VEHICLES;
             case ham.citybuildersim.Sectors.LUXURY_RETAIL:     return LUXURY;
             case ham.citybuildersim.Sectors.RESTAURANTS:       return FOOD;
+            // ...the wells, a drop of oil, and the refinery, a plant (0.7.62).
+            case ham.citybuildersim.Sectors.OIL:               return DROP;
+            case ham.citybuildersim.Sectors.REFINING:          return INDUSTRY;
             default:                                           return SECTOR;
         }
     }
@@ -470,6 +475,16 @@ public final class Icons {
             default:                                          return PIN;
         }
     }
+
+    /** A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). The square is written as arcs; the pips are dots. */
+    public static final String DICE = "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"
+            + " M8 8h.01 M16 8h.01 M12 12h.01 M8 16h.01 M16 16h.01";
+
+    /** A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's "Buy the best land" (0.7.61). */
+    public static final String MAP = "M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15";
+
+    /** Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). */
+    public static final String EXPAND = "M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7";
 
     /** A gear. Nothing draws it since 0.7.21: the rail's foot is Menu. */
     public static final String SETTINGS =

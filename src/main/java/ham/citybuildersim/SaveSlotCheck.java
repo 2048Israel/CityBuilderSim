@@ -11,6 +11,14 @@ import java.nio.file.Path;
  * slots and quietly writes them all to the same file, or draws slot 3's label
  * from slot 7's city, is worse than a single save - it invites a player to
  * spread a hundred hours across ten slots that were never really there.
+ *
+ * AND THE AUTOSAVE HOLDS A WHOLE MONTH (0.7.52). Until 0.7.51 the twelfth
+ * month's autosave was written near the top of Game.nextMonth(), after the
+ * calendar had turned and before the month ran: the file said month N, its
+ * history ended at N - 1, and a city loaded from it never ran N. Each of the
+ * three autosaves - the twelfth month's, the one before a skip and the one on
+ * quit - is loaded here and played on: its month is its history's last, and
+ * the history has no gap and no month twice.
  */
 public class SaveSlotCheck {
 
@@ -91,7 +99,7 @@ public class SaveSlotCheck {
         assertTrue("saved to slot 1", game.saveGame(1, "early").ok);
 
         int monthAt1 = game.getMonth();
-        int popAt1 = game.getPopulationManager().getPopulation();
+        long popAt1 = game.getPopulationManager().getPopulation();
 
         game.buildStack(template(game, "House"), 60, false);
         game.buildStack(template(game, "Convenience Store"), 2, false);
@@ -236,6 +244,20 @@ public class SaveSlotCheck {
         }
         System.out.printf("%-58s %s%n", "the autosave never touches a numbered slot", "OK");
 
+        /* ============ 7b. the autosave holds a whole month (0.7.52) ============ */
+        System.out.println("\n--- the autosave holds a whole month, and plays on from it ---");
+
+        // Single steps to the twelfth, so the interval is what writes it.
+        while (auto.getMonthsUntilAutosave() > 1) auto.simulateMonths(1);
+        auto.simulateMonths(1);
+        wholeMonth("the twelfth month's", auto, autoFiles);
+        // A skip writes it on the way in, before its first month...
+        auto.simulateMonths(5);
+        wholeMonth("the one before a skip", auto, autoFiles, auto.getMonth() - 5);
+        // ...and quitting writes it where the city stands (toggleQuit() then exits).
+        auto.autosave("on quit");
+        wholeMonth("the one on quit", auto, autoFiles);
+
         /* ==================== 8. histories are per slot ==================== */
         System.out.println("\n--- and each city keeps its own past ---");
 
@@ -252,6 +274,35 @@ public class SaveSlotCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** The autosave as `city` stands now: wholeMonth(which, city, files, city.getMonth()). */
+    static void wholeMonth(String which, Game city, GameFiles files) {
+        wholeMonth(which, city, files, city.getMonth());
+    }
+
+    /**
+     * Loads the autosave and plays two single months on (single, so neither
+     * writes it again): it carries `month`, its history ends at that month,
+     * and after the two its history runs one month at a time to the city's.
+     */
+    static void wholeMonth(String which, Game city, GameFiles files, int month) {
+        Game back = new Game(files);
+        back.loadGameSave(GameFiles.AUTOSAVE_SLOT);
+        java.util.List<Integer> axis = back.getHistorySave().getMonth();
+        assertEquals(which + ": it holds month " + month, back.getMonth(), month);
+        assertEquals("...and its history ends at it", axis.isEmpty() ? null : axis.get(axis.size() - 1), month);
+        back.simulateMonths(1);
+        back.simulateMonths(1);
+        axis = back.getHistorySave().getMonth();
+        int gaps = 0, twice = 0;
+        for (int i = 1; i < axis.size(); i++) {
+            int step = axis.get(i) - axis.get(i - 1);
+            if (step > 1) gaps++;
+            if (step < 1) twice++;
+        }
+        assertEquals("...two months on, its history ends at the city's", axis.get(axis.size() - 1), back.getMonth());
+        assertTrue("...with no month missing (" + gaps + ") and none twice (" + twice + ")", gaps == 0 && twice == 0);
     }
 
     static void cleanUp(Path root) {

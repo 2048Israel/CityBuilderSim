@@ -1,6 +1,6 @@
 # GoodsMarket.java - 493 lines · 51 methods · 3 constants · model
 
-`ham/citybuildersim/GoodsMarket.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoodsMarket.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Where one good clears between whoever makes it and whoever wants it.
 > 
@@ -43,7 +43,7 @@
 
 **Uses:** [Trade](Trade.md) (5), [Good](Good.md) (3)
 
-**Used by (27):** [AgricultureCheck](AgricultureCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServicesCheck](BusinessServicesCheck.md), [EconomyManager](EconomyManager.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [HistoryScreen](HistoryScreen.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md)
+**Used by (30):** [AgricultureCheck](AgricultureCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServicesCheck](BusinessServicesCheck.md), [EconomyManager](EconomyManager.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [GdpCheck](GdpCheck.md), [HistoryScreen](HistoryScreen.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Refining](Refining.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md)
 
 ## Sections
 

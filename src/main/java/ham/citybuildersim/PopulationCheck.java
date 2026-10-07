@@ -59,9 +59,9 @@ public class PopulationCheck {
      * migration the way Game hands it (Migration.setDoors()).
      */
     static double arrivalsFrom(Migration mig, PopulationCohorts people, FamilyModel households,
-                               int totalJobs, int[] census) {
-        int doors = 0;
-        for (int n : census) doors += n;
+                               int totalJobs, long[] census) {
+        long doors = 0;
+        for (long n : census) doors += n;
         mig.setDoors(census);
         mig.monthlyNet((int) people.total(), totalJobs, (int) people.total(), doors, households, ADULT_MIX);
         return mig.getLastArrivals();
@@ -556,8 +556,8 @@ public class PopulationCheck {
         studiosOnly.rebuild(crowd, mix);
 
         int doors = (int) Math.ceil(spacious.totalHouseholds());
-        int[] asFamily  = new int[7];
-        int[] asStudios = new int[7];
+        long[] asFamily  = new long[7];
+        long[] asStudios = new long[7];
         asFamily[6]  = doors;                  // six-person homes: anybody fits
         asStudios[2] = doors;                  // studios: no household with a child
 
@@ -608,7 +608,7 @@ public class PopulationCheck {
         overfull.rebuild(crowd, mix);
         // Game's own sequence, both passes: place, run the valves on what would
         // not go, then place again and note whoever still has nowhere.
-        int[] tooFewStudios = new int[7];
+        long[] tooFewStudios = new long[7];
         tooFewStudios[2] = doors / 8;
         overfull.squeezeUnplaced(overfull.house(tooFewStudios));
         overfull.noteUnplaced(overfull.house(tooFewStudios));
@@ -637,7 +637,7 @@ public class PopulationCheck {
          */
         FamilyModel doubled = new FamilyModel();
         doubled.rebuild(crowd, mix);
-        int[] shortOfDoors = new int[7];
+        long[] shortOfDoors = new long[7];
         shortOfDoors[6] = (int) Math.floor(doubled.totalHouseholds()) - 200;   // family doors, two hundred short
         doubled.squeezeUnplaced(doubled.house(shortOfDoors));
         doubled.noteUnplaced(doubled.house(shortOfDoors));
@@ -669,7 +669,7 @@ public class PopulationCheck {
          * read against the households with a door of their own, the studio
          * city is crowded - and the family city still reads one.
          */
-        int[] familyHomes = new int[7], studioHomes = new int[7];
+        long[] familyHomes = new long[7], studioHomes = new long[7];
         FamilyModel fam = new FamilyModel(), stu = new FamilyModel();
         fam.rebuild(crowd, mix);
         stu.rebuild(crowd, mix);

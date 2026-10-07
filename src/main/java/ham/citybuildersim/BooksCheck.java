@@ -34,7 +34,7 @@ public class BooksCheck {
         double[] wages = new double[11];
         wages[0] = .800; wages[1] = 1.500; wages[4] = 4.000;
 
-        int[] jobs = new int[11];
+        long[] jobs = new long[11];
         jobs[0] = 140; jobs[1] = 120; jobs[4] = 10;   // one Food Processing Plant
 
         double[] fullFill = new double[11];
@@ -215,7 +215,7 @@ public class BooksCheck {
         t.setEnergyRatio(1);
         t.setWaterRatio(1);
         t.updateJobFillRate(fullFill);
-        t.updateWages(new double[11], new int[11]);
+        t.updateWages(new double[11], new long[11]);
         t.setTaxRate(taxRate);
         // Two calls, because the month is struck and then banked - the sales
         // tax is computed FROM the statement and then belongs ON it, so the

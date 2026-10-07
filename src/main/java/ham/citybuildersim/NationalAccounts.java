@@ -139,6 +139,65 @@ public class NationalAccounts {
     private double lastMaterialUnits;
     private double lastLuxuryUnits;
 
+    /* =====================================================================
+       EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM (0.7.58, batch J1c)
+
+       FOURTH SIGHTING OF THE SHAPE the luxury note below names. Seed 15 of
+       the ensemble's import shock read GDP of -16,056 in month 637: raw
+       imports of 127,175 against GDP of about 120,000 the months either
+       side. The fixJ1b notes put it down to the mills stocking up on
+       imported ore; measured, the mills' ore that month was 3,786, and
+       there is no ore to stock - iron is not stockable and the mills buy
+       what they smelt in the month. It was the city's new railway buying
+       its fleet abroad: twenty sets of rolling stock, 90,460, paid to the
+       world and landed in NX, with nothing anywhere saying the railway
+       still had them. The vans every sector keeps are the same shape, and
+       the farms' crops are a maker's stock like a mill's food.
+
+       So the goods in HELD are measured as the others are: each one's
+       units held, every sector's stock and pantry together, the change
+       from last month priced at what one costs to bring in today
+       (GoodsMarket.landedPrice() - the local price while the city has some
+       on offer, the import price while it has none, which is what the
+       import was paid at). A fleet bought abroad nets to nothing in the
+       month it lands; its wear, month by month, is its use, as a shelf's
+       sale is.
+
+       A fleet is fixed capital in real accounts, and gross fixed investment
+       would count the purchase and never the wear. Here it is counted as
+       stock held: Sector keeps it as a pantry worn down monthly, a local
+       van's maker books its sale when the fleet takes it, and treating the
+       purchase and the wear as one change in what is held is the same rule
+       as the four terms before it. Construction stays the only fixed
+       investment.
+
+       NOT CARS. The car makers' showroom is the one stock left out, on
+       purpose: the households' new cars are not in C (EconomyManager names
+       why), so a showroom's sale at home would read as a fall in stock with
+       nothing bought against it. The day C counts the households' cars,
+       CARS joins HELD. GdpCheck asserts that every good a sector declares
+       it holds is in one of the five terms or named here.
+       ===================================================================== */
+
+    /**
+     * The goods the fifth term measures, in the order the save keeps their
+     * units (slots 15 on, EconomyManager.getNationalAccountsState()): a new
+     * one goes on the end. FUEL since 0.7.62 (batch K): the refiners' tanks
+     * are made output not yet sold, as a mill's shed is.
+     */
+    public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.FUEL };
+
+    /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
+    public static final int HELD_BEFORE_FUEL = 3;
+
+    /** ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. */
+    public static final Good NOT_HELD = Good.CARS;
+
+    private final double[] lastHeldUnits = new double[HELD.length];
+
+    /** Whether lastHeldUnits is a real baseline: false only after loading a save from before 0.7.58, whose first month books no change in these goods. */
+    private boolean heldBaselineKnown = true;
+
     /*
      * WORK IN HAND IS NOT AN INVENTORY TERM ANY MORE (2026-09-11).
      *
@@ -162,6 +221,7 @@ public class NationalAccounts {
     private double invFood;
     private double invMaterials;
     private double invLuxuries;
+    private double invHeld;
 
     /**
      * Whether last month's stock is actually known.
@@ -238,7 +298,24 @@ public class NationalAccounts {
     public double getInventoryFood()         { return invFood; }
     public double getInventoryMaterials()    { return invMaterials; }
     public double getInventoryLuxuries()     { return invLuxuries; }
+    /** The fifth term: the change in every good in HELD that the sectors hold, priced at what one costs to bring in (0.7.58). */
+    public double getInventoryHeld()         { return invHeld; }
+    /** Last month's units of each good in HELD, in its order (0.7.58). */
+    public double[] getLastHeldUnits()       { return lastHeldUnits.clone(); }
     public boolean isBaselineKnown()     { return inventoryBaselineKnown; }
+
+    /**
+     * ...and the units of HELD's goods last month (0.7.58), or null for a
+     * save from before them: then the first month books no change in them,
+     * rather than booking every fleet in the city as that month's output.
+     */
+    public void restoreHeld(double[] lastHeld) {
+        java.util.Arrays.fill(lastHeldUnits, 0);
+        // A save from before FUEL was held (0.7.58 to 0.7.61) carries the three
+        // before it and held no fuel: its baseline is known, fuel's is zero.
+        heldBaselineKnown = lastHeld != null && lastHeld.length >= HELD_BEFORE_FUEL;
+        if (heldBaselineKnown) System.arraycopy(lastHeld, 0, lastHeldUnits, 0, Math.min(HELD.length, lastHeld.length));
+    }
 
     /**
      * Measures the month.
@@ -260,6 +337,26 @@ public class NationalAccounts {
                        double governmentServices,
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue) {
+        update(retailSales, rentPaid, constructionWorkDone, foodUnits, foodStockWrittenOff, foodPrice,
+                materialUnits, materialPrice, luxuryUnits, luxuryPrice, governmentServices,
+                foodImports, materialImports, rawMaterialImports, exportRevenue, null, null);
+    }
+
+    /**
+     * ...and with every other good the sectors hold (0.7.58): heldUnits and
+     * heldPrices in HELD's order - the units held, every sector's stock and
+     * pantry together, and what one costs to bring in today. Null for none,
+     * which is what the shorter overload passes.
+     */
+    public void update(double retailSales, double rentPaid,
+                       double constructionWorkDone,
+                       double foodUnits, double foodStockWrittenOff, double foodPrice,
+                       double materialUnits, double materialPrice,
+                       double luxuryUnits, double luxuryPrice,
+                       double governmentServices,
+                       double foodImports, double materialImports,
+                       double rawMaterialImports, double exportRevenue,
+                       double[] heldUnits, double[] heldPrices) {
 
         consumptionGoods = retailSales;
         consumptionHousing = rentPaid;
@@ -334,15 +431,27 @@ public class NationalAccounts {
                ============================================================= */
             invLuxuries = (luxuryUnits - lastLuxuryUnits) * luxuryPrice;
 
-            investmentInventories = invFood + invMaterials + invLuxuries;
+            // ...and every other good held, a good at a time (0.7.58): see
+            // EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM.
+            invHeld = 0;
+            if (heldBaselineKnown) {
+                for (int i = 0; i < HELD.length; i++) {
+                    invHeld += (held(heldUnits, i) - lastHeldUnits[i]) * held(heldPrices, i);
+                }
+            }
+
+            investmentInventories = invFood + invMaterials + invLuxuries + invHeld;
         } else {
             investmentInventories = 0;
+            invHeld = 0;
             inventoryBaselineKnown = true;
         }
+        heldBaselineKnown = true;
 
         lastFoodVolume = foodUnits;
         lastMaterialUnits = materialUnits;
         lastLuxuryUnits = luxuryUnits;
+        for (int i = 0; i < HELD.length; i++) lastHeldUnits[i] = held(heldUnits, i);
 
         government = governmentServices;
 
@@ -398,6 +507,12 @@ public class NationalAccounts {
         while (history.size() > HISTORY_MONTHS) {
             history.remove(0);
         }
+    }
+
+    /** One good's figure from an array in HELD's order: 0 past its end, for null, or for anything not a finite number. */
+    private static double held(double[] values, int i) {
+        if (values == null || i >= values.length || !Double.isFinite(values[i])) return 0;
+        return values[i];
     }
 
     /**
@@ -588,9 +703,10 @@ public class NationalAccounts {
     public double getMortgagePremiums() { return mortgagePremiums; }
 
     /**
-     * THE TRANSFER FROM THE CITY'S FUND (0.7.14): a twelfth of
-     * TreasuryFund.TRANSFER_RATE of the fund's value, paid from its cash -
-     * Norway's fiscal rule - in, a revenue line beside the central bank's
+     * THE TRANSFER FROM THE CITY'S FUND (0.7.14): the withdrawal dial's share
+     * of the fund's value (0.7.48; by default a twelfth of
+     * TreasuryFund.TRANSFER_RATE, Norway's fiscal rule), paid from its cash
+     * and over the default from what it sold - in, a revenue line beside the central bank's
      * remittance, with its own setter for the same reason. Game moves the
      * cash where the treasury settles at the top of the month. It is part of
      * the budget's balance, and so of the surplus the fund's dial takes a
@@ -603,6 +719,19 @@ public class NationalAccounts {
 
     /** What the city's fund paid the budget this month - a revenue line. */
     public double getFundTransfer() { return fundTransfer; }
+
+    /**
+     * FOOD ASSISTANCE (0.7.43): the vouchers the treasury paid toward the
+     * households' groceries, a transfer like EI - a spending line, with its
+     * own setter for the fund transfer's reason: Game moves the cash where it
+     * is paid, after the month's sale (TreasuryLine.FOOD_ASSISTANCE).
+     */
+    private double foodAssistance;
+
+    public void setFoodAssistance(double paid) { this.foodAssistance = Math.max(0, paid); }
+
+    /** What the treasury paid toward the households' groceries this month - a spending line. */
+    public double getFoodAssistance() { return foodAssistance; }
     /** What the city's insurance paid the bank this month on insured mortgages written down - a spending line. */
     public double getMortgageClaims()   { return mortgageClaims; }
 
@@ -626,6 +755,10 @@ public class NationalAccounts {
      * which already takes seventeen positional doubles and is exactly the
      * machine for transposing two of them silently that HistorySave's header
      * warns about. Safety went in this way for the same reason.
+     *
+     * IN THE TOTALS SINCE 0.7.49 (B9): the fares in getTotalRevenue() and
+     * the bill in getTotalExpenses(). Until then the bill was paid by nobody
+     * and the fares were journalled, outside the budget.
      */
     private double transitFares, transitSpending;
 
@@ -708,19 +841,24 @@ public class NationalAccounts {
             mortgagePremiums, mortgageClaims,
             // ...and the transfer from the city's fund, appended in 0.7.14:
             // an older save reads zero, a city with no fund.
-            fundTransfer };
+            fundTransfer,
+            // ...and food assistance, appended in 0.7.43: an older save reads
+            // zero, a city that paid none.
+            foodAssistance };
     }
 
     void restoreGovernment(double[] saved) {
-        // Twenty-eight since the city's fund; twenty-seven since the mortgage
+        // Twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
         // the student loan interest; twenty-two since the health premium;
         // twenty-one since the police; twenty since EI and the grants;
         // seventeen from a save before them.
         if (saved == null || (saved.length != 17 && saved.length != 20
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
-                && saved.length != 25 && saved.length != 27 && saved.length != 28)) return;
+                && saved.length != 25 && saved.length != 27 && saved.length != 28
+                && saved.length != 29)) return;
         fundTransfer          = saved.length >= 28 ? saved[27] : 0;
+        foodAssistance        = saved.length >= 29 ? saved[28] : 0;
         centralBankRemittance = saved.length >= 25 ? saved[23] : 0;
         centralBankInterest   = saved.length >= 25 ? saved[24] : 0;
         mortgagePremiums      = saved.length >= 27 ? saved[25] : 0;
@@ -782,7 +920,7 @@ public class NationalAccounts {
         return total;
     }
 
-    public double getGdpPerCapita(int population) {
+    public double getGdpPerCapita(long population) {
         return (population > 0) ? getAnnualGdp() / population : 0;
     }
 
@@ -878,7 +1016,10 @@ public class NationalAccounts {
                 // ...and the premiums on the mortgages it insures (0.7.11).
                 + mortgagePremiums
                 // ...and the transfer from the city's fund (0.7.14).
-                + fundTransfer;
+                + fundTransfer
+                // ...and the transit fares (0.7.49, B9): in the cash through the
+                // tax take since 2026-09-16, and on no line of the budget until now.
+                + transitFares;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -892,7 +1033,11 @@ public class NationalAccounts {
                 // ...and the interest on the central bank's advances (0.7.0).
                 + centralBankInterest
                 // ...and what its mortgage insurance paid the bank (0.7.11).
-                + mortgageClaims;
+                + mortgageClaims
+                // ...and the food vouchers it paid (0.7.43).
+                + foodAssistance
+                // ...and transit's wages and upkeep, which the treasury pays since 0.7.49 (B9).
+                + transitSpending;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */
@@ -916,7 +1061,9 @@ public class NationalAccounts {
         lastFoodVolume = 0;
         lastMaterialUnits = 0;
         lastLuxuryUnits = 0;
+        java.util.Arrays.fill(lastHeldUnits, 0);
         inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
+        heldBaselineKnown = true;
         gdp = 0;
     }
 
@@ -951,7 +1098,7 @@ public class NationalAccounts {
         utilityIncome *= scale;  landSales *= scale;
         propertyTax *= scale;  interestExpense *= scale;
         capitalSpending *= scale;  landPurchases *= scale;
-        invFood *= scale;  invMaterials *= scale;  invLuxuries *= scale;
+        invFood *= scale;  invMaterials *= scale;  invLuxuries *= scale;  invHeld *= scale;
 
         /*
          * ...AND THE ROLLING HISTORY, which is ten years of GDP and is what
@@ -968,6 +1115,7 @@ public class NationalAccounts {
         centralBankRemittance *= scale;  centralBankInterest *= scale;
         mortgagePremiums *= scale;  mortgageClaims *= scale;
         fundTransfer *= scale;
+        foodAssistance *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

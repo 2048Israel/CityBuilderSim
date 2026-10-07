@@ -704,7 +704,7 @@ public final class FundLedger {
             double rescueIncome = c == Equity.BANK ? f.getDividendsRescue() : 0;
             if (market > DUST) {
                 Lot l = shareLot(name, false, month);
-                l.acb = market * ex.price(c);
+                l.acb = market * ex.cityMark(c);
                 l.seeded = true;
                 l.incomeBefore = Math.max(0, reg.getLifetimeDividendsCity(c) - rescueIncome);
                 held++;

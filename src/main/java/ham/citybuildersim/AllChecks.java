@@ -25,16 +25,16 @@ public class AllChecks {
 
     /** In the order they are cheapest to fail. LongPlaytest last: it is the slow one. */
     static final String[] HARNESSES = {
-        "BuildingDataCheck", "NewGameCheck", "CalendarCheck", "BooksCheck", "WaterCheck",
+        "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "CalendarCheck", "BooksCheck", "WaterCheck",
         "PolicyCheck", "LandCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck",
         "ConstructionControlCheck", "BuildAdviceCheck", "BuildCardCheck", "SectorFlowCheck", "PolicyPreviewCheck",
         "RestructureCheck", "ConservationCheck", "MoneyCheck", "GdpCheck", "HistoryCheck",
-        "BankCheck", "ForeignCheck", "CurrencyCheck", "ForeignDebtCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "MonetaryCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
+        "BankCheck", "ForeignCheck", "CurrencyCheck", "ForeignDebtCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "MonetaryCheck", "ExpectationsCheck", "GroceryCheck", "SupplierCreditCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
         "DenominationCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck",
-        "SaveSlotCheck", "SkipReportCheck", "InboxCheck", "BuildMenuCheck",
-        "ConsumptionCheck", "SectorBooksCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "YearBookCheck", "ChartCheck", "StaleCheck", "LongPlaytest"
+        "SaveSlotCheck", "ScaleCheck", "MapCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "BuildMenuCheck",
+        "ConsumptionCheck", "SectorBooksCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "YearBookCheck", "ChartCheck", "StaleCheck", "LongPlaytest"
     };
 
     public static void main(String[] args) throws Exception {

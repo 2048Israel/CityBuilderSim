@@ -1,6 +1,6 @@
-# Markets.java - 394 lines · 18 methods · 0 constants · model
+# Markets.java - 411 lines · 19 methods · 0 constants · model
 
-`ham/citybuildersim/Markets.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Markets.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Every goods market in the city, and the month they clear in.
 > 
@@ -39,71 +39,72 @@
 > NOTHING HERE MOVES MONEY. Trades land in the sectors' ledgers and are
 > banked at the strike; see Sector.
 
-**Uses:** [Sector](Sector.md) (21), [Good](Good.md) (18), [GoodsMarket](GoodsMarket.md) (15), [Trade](Trade.md) (6), [Sectors](Sectors.md) (4), [Game](Game.md) (1)
+**Uses:** [Sector](Sector.md) (22), [Good](Good.md) (20), [GoodsMarket](GoodsMarket.md) (16), [Trade](Trade.md) (6), [Sectors](Sectors.md) (4), [Game](Game.md) (1), [SupplierCredit](SupplierCredit.md) (1)
 
-**Used by (19):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [RailCheck](RailCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md)
+**Used by (21):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 77 | THE MONTH |
-| 265 | DRAWS - taken on demand, at the price of the month |
-| 340 | READERS |
-| 348 | SAVE, RESET, THE REFORM |
+| 282 | DRAWS - taken on demand, at the price of the month |
+| 357 | READERS |
+| 365 | SAVE, RESET, THE REFORM |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 48 | `private final Map<Good, GoodsMarket> markets` |  |
-| 354 | `public String good` |  |
-| 355 | `public double price, flow, stock, demand` |  |
-| 356 | `public double[] taken` |  |
+| 371 | `public String good` |  |
+| 372 | `public double price, flow, stock, demand` |  |
+| 373 | `public double[] taken` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 349 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
+| 46 | 366 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
 | 50 | 3 | `public Markets()` |  |
 | 54 | 1 | `public GoodsMarket get(Good g)` |  |
 | 56 | 1 | `public Iterable<GoodsMarket> all()` |  |
 | 59 | 3 | `public void setExchangeRate(double rate)` | City money per dollar, times the world's price level. |
 | 72 | 4 | `public double getExchangeRate()` | The one rate every market here was told, read off one of them. |
 
-### THE MONTH (lines 77-264)
+### THE MONTH (lines 77-281)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 53 | `public void clearMonth(Sectors sectors, Game game)` |  |
-| 136 | 12 | `private double orderValue(Sector s, boolean stock)` | What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. |
-| 150 | 105 | `private void clear(Good g, Sectors sectors)` | Prices one good, then everybody trades it. |
-| 257 | 7 | `private void trade(GoodsMarket m, Sector seller, Sector buyer, double units, double price)` | One local fill between two sectors, booked both sides. |
+| 81 | 54 | `public void clearMonth(Sectors sectors, Game game)` |  |
+| 137 | 12 | `private double orderValue(Sector s, boolean stock)` | What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. |
+| 151 | 14 | `private double coveredOrderValue(Sector s)` | ...and what its orders for the stock its suppliers' credit covers would come to (0.7.44; SupplierCredit): nothing without one. |
+| 167 | 105 | `private void clear(Good g, Sectors sectors)` | Prices one good, then everybody trades it. |
+| 274 | 7 | `private void trade(GoodsMarket m, Sector seller, Sector buyer, double units, double price)` | One local fill between two sectors, booked both sides. |
 
-### DRAWS - taken on demand, at the price of the month (lines 265-339)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 270 | 3 | **type** `public record Draw(double units, double local, double imported, double localCost, double importCost)` | What a draw came to. |
-| 271 | 1 | `public double cost()` _(in Markets.Draw)_ |  |
-| 279 | 11 | `public Draw quote(Good g, double units, Sectors sectors)` | What a draw WOULD come to, at today's prices, without taking anything - the quote the build screen shows and the affordability check uses. |
-| 298 | 41 | `public Draw draw(Good g, Sector buyer, String buyerKey, double units, Sectors sectors)` | Takes units of a good now, from whoever makes and holds it, and imports the rest. |
-
-### READERS (lines 340-347)
+### DRAWS - taken on demand, at the price of the month (lines 282-356)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 345 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
-| 346 | 1 | `public double exportedUnits(Good g)` |  |
+| 287 | 3 | **type** `public record Draw(double units, double local, double imported, double localCost, double importCost)` | What a draw came to. |
+| 288 | 1 | `public double cost()` _(in Markets.Draw)_ |  |
+| 296 | 11 | `public Draw quote(Good g, double units, Sectors sectors)` | What a draw WOULD come to, at today's prices, without taking anything - the quote the build screen shows and the affordability check uses. |
+| 315 | 41 | `public Draw draw(Good g, Sector buyer, String buyerKey, double units, Sectors sectors)` | Takes units of a good now, from whoever makes and holds it, and imports the rest. |
 
-### SAVE, RESET, THE REFORM (lines 348-394)
+### READERS (lines 357-364)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 353 | 5 | **type** `public static final class State` | One market as a save carries it: the price it traded at and the strike behind it. |
-| 359 | 14 | `public List<State> toState()` |  |
-| 374 | 12 | `public void restore(List<State> saved)` |  |
-| 387 | 3 | `public void reset()` |  |
-| 391 | 3 | `public void redenominate(double scale)` |  |
+| 362 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
+| 363 | 1 | `public double exportedUnits(Good g)` |  |
+
+### SAVE, RESET, THE REFORM (lines 365-411)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 370 | 5 | **type** `public static final class State` | One market as a save carries it: the price it traded at and the strike behind it. |
+| 376 | 14 | `public List<State> toState()` |  |
+| 391 | 12 | `public void restore(List<State> saved)` |  |
+| 404 | 3 | `public void reset()` |  |
+| 408 | 3 | `public void redenominate(double scale)` |  |
 

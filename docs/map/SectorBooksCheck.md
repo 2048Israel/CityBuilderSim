@@ -1,6 +1,6 @@
-# SectorBooksCheck.java - 256 lines · 4 methods · 1 constants · harnesses
+# SectorBooksCheck.java - 332 lines · 5 methods · 1 constants · harnesses
 
-`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits every sector's statements, every month. Not part of
 > the game.
@@ -34,18 +34,21 @@
 >      cash. This is the one that would actually catch a bug: if any other part
 >      of the game moves a sector's cash, the residual appears here first.
 
-**Uses:** [Sector](Sector.md) (9), [Sectors](Sectors.md) (7), [Game](Game.md) (5), [SectorBooks](SectorBooks.md) (5), [GameFiles](GameFiles.md) (1), [Statement](Statement.md) (1)
+**Uses:** [Sector](Sector.md) (11), [Game](Game.md) (9), [Sectors](Sectors.md) (7), [SectorBooks](SectorBooks.md) (5), [Construction](Construction.md) (4), [GameFiles](GameFiles.md) (2), [LongPlaytest](LongPlaytest.md) (2), [Good](Good.md) (2), [Statement](Statement.md) (1), [Founding](Founding.md) (1), [SectorState](SectorState.md) (1)
+
+**Used by (1):** [SupplierCreditCheck](SupplierCreditCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 45 | 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) |
-| 120 | · · the sheet |
-| 124 | · · the income statement |
-| 135 | · · the cash flow |
-| 211 | · AND IT HAS TO SURVIVE A SAVE. |
-| 243 | · · and the month after |
+| 126 | · · the sheet |
+| 131 | · · the income statement |
+| 142 | · · the cash flow |
+| 218 | · AND IT HAS TO SURVIVE A SAVE. |
+| 250 | · · and the month after |
+| 256 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
 
 ## Constants
 
@@ -66,14 +69,15 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 219 | **type** `public class SectorBooksCheck` | Plays a city and audits every sector's statements, every month. |
+| 38 | 295 | **type** `public class SectorBooksCheck` | Plays a city and audits every sector's statements, every month. |
 
-### 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) (lines 45-256)
+### 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) (lines 45-332)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 61 | 10 | `static boolean isAFigure(String value)` |  |
 | 72 | 14 | `static void pageIsReadable(Game game)` |  |
-| 90 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` |  |
-| 100 | 156 | `public static void main(String[] args)` |  |
+| 91 | 4 | `static void check(String label, boolean ok, String detail)` | One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. |
+| 96 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` |  |
+| 106 | 226 | `public static void main(String[] args)` |  |
 

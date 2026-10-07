@@ -83,6 +83,13 @@ public class SectorFlowCheck {
                 BuildingsTemplate t = LongPlaytest.template(g, w[0]);
                 built.put(w[0], t != null && g.buildStack(t, Integer.parseInt(w[1]), true) == Game.BuildResult.SUCCESS);
             }
+            /*
+             * ...AND NONE OF ITS OWN, EITHER (0.7.43): this city's offices'
+             * planner left it officeless for five years until groceries were
+             * sold at a price; since then it opens one in them. The section
+             * needs a sector with nothing standing, so it is held.
+             */
+            g.getBusinessInvestment().holdSector(Sectors.BUSINESS_SERVICES);
             g.simulateMonths(60);
         });
         return g;

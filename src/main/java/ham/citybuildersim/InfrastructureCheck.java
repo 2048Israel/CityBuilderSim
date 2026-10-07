@@ -422,14 +422,36 @@ public class InfrastructureCheck {
            What roads actually do is MOVE GOODS, and the delivered share says so
            by a factor of two and a half. That is the clean signal, it is the
            one this section is about, and unlike consumption it cannot be
-           satisfied by charging more for less.
+           satisfied by charging more for less. (Until 0.7.43: since then the
+           shops' planner builds to what its shops can hand over, the delivered
+           share no longer separates the two cities, and the signal is the
+           share of their reach the shops can work - the rate, below.)
            ------------------------------------------------------------------- */
         double deliveredWith = withRoads.getSectors().retail().getDeliveredShare();
         double deliveredWithout = without.getSectors().retail().getDeliveredShare();
+        for (Game g : new Game[] { withRoads, without }) {
+            ham.citybuildersim.sectors.Retail r = g.getSectors().retail();
+            System.out.printf("   shops %s: coverage %d at a rate of %.3f (roads %.3f), hand over %.0f, %.0f wanted at %.4f (floor %.4f)%n",
+                    g == withRoads ? "with roads" : "without   ", r.getStoreCoverage(), r.getOperatingRate(),
+                    r.getRoadRatio(), r.getSupplyBaskets(), r.getDemandAtPrice(), r.getStoreSellPrice(), r.getFloorPrice());
+        }
         System.out.printf("   and the shelves: %.0f%% of what customers came for"
                 + " against %.0f%%%n", deliveredWith * 100, deliveredWithout * 100);
-        assertTrue("...and its shops can actually be supplied",
-                deliveredWith > deliveredWithout * 1.5);
+        /*
+         * REWRITTEN FOR 0.7.43 (spec-inflation.md 4.3, a premise the design
+         * changes): the shops' planner forecasts baskets against what its
+         * shops can HAND OVER - coverage times the operating rate - so a city
+         * whose roads hold its shops to a third of their reach builds three
+         * times the shops (above: 4,640 of coverage against 1,600), and the
+         * delivered share no longer tells the two cities apart. What roads do
+         * to the shops is the share of their reach they can work, and that
+         * is what is asserted: the road city's shops at more than half again
+         * the rate of the jammed city's. Until 0.7.43 the planner counted
+         * people against coverage, and the delivered share said the same.
+         */
+        assertTrue("...and its shops can actually be supplied: each hands over more of its reach",
+                withRoads.getSectors().retail().getOperatingRate()
+                        > without.getSectors().retail().getOperatingRate() * 1.5);
         /* -------------------------------------------------------------------
            AND THERE IS NO SECOND OUTCOME ASSERTION HERE, ON PURPOSE.
 
@@ -721,6 +743,8 @@ public class InfrastructureCheck {
         states[2].setModes(4000, 20_000);
         states[2].setFare(TaxPolicy.MAX_TRANSIT_FARE);
         states[2].setCarOwnership(1);
+        // ...every commuter with a car of their own (0.7.49): with nobody car-less, the most fare there is puts nobody on a bus.
+        states[2].setCommute(0, Motoring.CAR_FUEL_PER_JOURNEY);
         for (int i = 0; i < 40; i++) states[2].noteCongestion(InfrastructureManager.MIN_THROUGHPUT);
 
         states[3].setBuiltCapacity(10_000);
@@ -833,6 +857,8 @@ public class InfrastructureCheck {
         ridden.setModes(4000, 20_000);
         ridden.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
         ridden.setCarOwnership(.6);
+        // ...four commuters in ten with no car of their own, and a journey's fuel at the founding price (0.7.49).
+        ridden.setCommute(.4, Motoring.CAR_FUEL_PER_JOURNEY);
         ridden.setRailShare(new double[] {0, .5, 1});
         for (int i = 0; i < 40; i++) ridden.noteCongestion(InfrastructureManager.MIN_THROUGHPUT);
 
@@ -881,16 +907,24 @@ public class InfrastructureCheck {
         assertTrue("the curve is flat to free flow and floors where FREE_FLOW / MIN_THROUGHPUT says",
                 floorOk);
 
+        /*
+         * THE RIDERS BY REASON (0.7.49): the car-less in reach and the owners
+         * who chose the bus are the riders, to the bit - and at the ceiling
+         * fare, where no owner chooses the bus on cost and the jam's curve is
+         * at nothing, the car-less alone (with a journey's fuel under half
+         * the ceiling fare, as every fixture here has it).
+         */
         boolean funnelOk = true;
         for (InfrastructureManager n : walked) {
-            funnelOk &= Double.compare(n.getRidersAtFare() * n.willingToRide(), n.getTransitRiders()) == 0
-                    && Double.compare(n.ridersAt(TaxPolicy.MAX_TRANSIT_FARE), 0.0) == 0
+            funnelOk &= Double.compare(n.getCaptiveRiders() + n.getChoiceRiders(), n.getTransitRiders()) == 0
+                    && (!(n.getFuelPerJourney() < TaxPolicy.MAX_TRANSIT_FARE / 2)
+                        || Double.compare(n.ridersAt(TaxPolicy.MAX_TRANSIT_FARE), n.getCaptiveRiders()) == 0)
                     && n.getTransitCeiling() <= n.getTransitCapacity() + 1e-9
                     && n.getTransitCeiling() <= n.getTransitRoadCeiling() + 1e-9
                     && n.getTransitCeiling() <= n.getTransitShareCeiling() + 1e-9;
         }
-        assertTrue("the funnel's last step is the riders, to the bit, under all three ceilings",
-                ridden.getTransitRiders() > 0 && funnelOk);
+        assertTrue("the funnel's last step is the riders: the car-less in reach and the owners who chose the bus, under all three ceilings",
+                ridden.getTransitRiders() > 0 && ridden.getChoiceRiders() > 0 && funnelOk);
 
         /*
          * THE FARE DIAL CARD'S ROWS (0.7.38): what a fare would do, each the
@@ -910,6 +944,7 @@ public class InfrastructureCheck {
         dear.setModes(4000, 20_000);
         dear.setFare(dearFare);
         dear.setCarOwnership(.6);
+        dear.setCommute(.4, Motoring.CAR_FUEL_PER_JOURNEY);
         dear.setRailShare(new double[] {0, .5, 1});
         for (int i = 0; i < 40; i++) dear.noteCongestion(InfrastructureManager.MIN_THROUGHPUT);
         assertTrue("fixture: the ridden network is at the city's own fare, and the dear one rides fewer",
@@ -922,6 +957,22 @@ public class InfrastructureCheck {
                 ridden.ridersAt(dearFare), dear.getTransitRiders());
         close("...and the trips back onto the road, its load less this one's",
                 ridden.backOnTheRoadAt(dearFare), dear.getEffectiveLoad() - ridden.getEffectiveLoad());
+        /*
+         * ...AND IN TODAY'S MONEY (0.7.45; the UI spec's B7): the month
+         * charges a ride the dial at the expected price level the money
+         * constants are struck at, and the card's fares did not - at any level
+         * but 1 its "Fares collected" at rest was not the month's.
+         */
+        TaxPolicy struckDial = new TaxPolicy();
+        struckDial.setExpectedLevel(1.2);
+        ridden.setFareLevel(1.2);
+        assertTrue("fixture: the fare struck at a level of 1.2, the dial unmoved",
+                struckDial.getTransitFare() == ownFare && struckDial.chargedFare() > ownFare);
+        assertTrue("...where the card's fares at its own fare are what the month books, the riders at the charged fare",
+                Double.compare(ridden.faresAt(ownFare), ridden.getTransitRiders() * struckDial.monthlyFare()) == 0);
+        close("...and its riders are the dial's, which reads the fare in founding money",
+                ridden.ridersAt(ownFare), ridden.getTransitRiders());
+        ridden.setFareLevel(1);
 
         boolean roomOk = true;
         for (InfrastructureManager n : walked) {
@@ -979,6 +1030,91 @@ public class InfrastructureCheck {
         assertTrue("with no railway the band is the band by lorry, and nothing is billed at home",
                 lorryOk);
         assertTrue("no good's world margin is below zero, so a bar of it can be drawn", marginOk);
+
+        /* ======= 11. WHO RIDES, BY WHAT THEY PAY (0.7.49) =======
+
+           Jerus: "if one household category has 3k workers and 2k cars, then
+           well, 1k has to take transit cause they have no choice ... but if
+           they already have car they look at oil costs". The commuters with
+           no car of their own ride at any fare if a line reaches them and
+           there is a seat, and walk if not; the owners weigh a ride against a
+           journey's fuel and split rather than flip; and the riders never
+           pass the share a city's lines reach. Every figure against the
+           model's own constants.
+           ==================================================================== */
+        System.out.println("\n--- who rides, by what they pay ---");
+
+        InfrastructureManager mixed = new InfrastructureManager();
+        mixed.setBuiltCapacity(10_000);
+        mixed.setLoad(12_000);
+        mixed.setBreakdown(new double[] {8600, 400, 3000});
+        mixed.setModes(0, 1_000_000);
+        mixed.setCarOwnership(.5);
+        mixed.setCommute(.6, Motoring.CAR_FUEL_PER_JOURNEY);
+        double[] dials = {0, TaxPolicy.DEFAULT_TRANSIT_FARE, TaxPolicy.MAX_TRANSIT_FARE / 2, TaxPolicy.MAX_TRANSIT_FARE};
+        mixed.setFare(dials[0]);
+        double carless = mixed.getCaptiveRiders();
+        assertTrue("fixture: six commuters in ten with no car, seats for all, every one in reach riding",
+                carless > 0 && Double.compare(carless, mixed.getCaptiveDemand()) == 0
+                        && Double.compare(mixed.getCaptiveDemand(),
+                                mixed.getLoad(Traffic.COMMUTERS) * .6 * InfrastructureManager.TRANSIT_MAX_SHARE) == 0);
+        boolean anyFare = true, ownersFall = true;
+        double ownersBefore = Double.POSITIVE_INFINITY;
+        for (double dial : dials) {
+            mixed.setFare(dial);
+            anyFare &= Double.compare(mixed.getCaptiveRiders(), carless) == 0 && mixed.ridersAt(dial) >= carless;
+            ownersFall &= mixed.getChoiceRiders() <= ownersBefore;
+            ownersBefore = mixed.getChoiceRiders();
+        }
+        assertTrue("the car-less in reach ride at any fare the dial allows", anyFare);
+        assertTrue("...while the owners on the bus fall as the fare rises", ownersFall);
+
+        double f = TaxPolicy.DEFAULT_TRANSIT_FARE;
+        boolean monotone = true;
+        double lastShare = -1;
+        for (int k = 0; k <= 30; k++) {
+            double s = InfrastructureManager.transitChosen(f * k / 10.0, f);
+            monotone &= s >= lastShare;
+            lastShare = s;
+        }
+        assertTrue("an owner switches when the fuel costs more than the fare",
+                InfrastructureManager.transitChosen(2 * f, f) == 1 && InfrastructureManager.transitChosen(f, 2 * f) == 0
+                        && InfrastructureManager.transitChosen(f, f) == .5 && monotone);
+        double near = InfrastructureManager.transitChosen(.9 * f, f), nearOther = InfrastructureManager.transitChosen(f, .9 * f);
+        assertTrue("...and a cell splits rather than flips",
+                near > 0 && near < .5 && nearOther > .5 && nearOther < 1);
+
+        InfrastructureManager short_ = new InfrastructureManager();
+        short_.setBuiltCapacity(10_000);
+        short_.setLoad(12_000);
+        short_.setBreakdown(new double[] {8600, 400, 3000});
+        short_.setModes(0, 2_000);
+        short_.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
+        short_.setCommute(.6, Motoring.CAR_FUEL_PER_JOURNEY);
+        assertTrue("a commuter out of reach or without a seat walks",
+                Double.compare(short_.getWalking(), short_.getCaptiveCommuters() - short_.getCaptiveRiders()) == 0
+                        && short_.getWalking() > short_.getCaptiveCommuters() * (1 - InfrastructureManager.TRANSIT_MAX_SHARE)
+                        && Double.compare(mixed.getWalking(),
+                                mixed.getCaptiveCommuters() - mixed.getCaptiveDemand()) == 0);
+
+        boolean reach = true;
+        for (double captive : new double[] {0, .3, .6, 1}) {
+            for (double dial : dials) {
+                for (double remembered : new double[] {1, InfrastructureManager.MIN_THROUGHPUT}) {
+                    InfrastructureManager n = new InfrastructureManager();
+                    n.setBuiltCapacity(10_000);
+                    n.setLoad(12_000);
+                    n.setBreakdown(new double[] {8600, 400, 3000});
+                    n.setModes(0, 1_000_000);
+                    n.setCarOwnership(.5);
+                    n.setCommute(captive, Motoring.CAR_FUEL_PER_JOURNEY);
+                    n.setFare(dial);
+                    for (int i = 0; i < 40; i++) n.noteCongestion(remembered);
+                    reach &= n.getTransitRiders() <= n.getLoad(Traffic.COMMUTERS) * InfrastructureManager.TRANSIT_MAX_SHARE + 1e-9;
+                }
+            }
+        }
+        assertTrue("the riders never pass the share any city's lines reach", reach);
 
         cleanUp(root);
 

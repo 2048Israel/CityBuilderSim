@@ -121,6 +121,14 @@ public final class GameFiles {
     public Path saveFile(int slot)    { return savesDirectory().resolve(stem(slot) + ".json"); }
     public Path historyFile(int slot) { return savesDirectory().resolve(stem(slot) + "-history.json"); }
 
+    /**
+     * The slot's city map, beside its save (0.7.60, batch J3): slot-NN-map.bin,
+     * the districts' counts deflated (CityMap's sidecar). Its stamp is in the
+     * save (mapStamp), so a sidecar that is not that save's is never read as
+     * if it were; a missing or stale one only means the map is drawn again.
+     */
+    public Path mapFile(int slot)     { return savesDirectory().resolve(stem(slot) + "-map.bin"); }
+
     /*
      * THE YEAR BOOK AND THE DECADE BOOK
      *
@@ -368,6 +376,11 @@ public final class GameFiles {
     }
 
     public Result write(Path file, String contents) {
+        return write(file, contents.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    /** The same, for bytes (0.7.60: the city map's sidecar): the .tmp, the .bak, then the swap. */
+    public Result write(Path file, byte[] contents) {
 
         Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
 
@@ -376,7 +389,7 @@ public final class GameFiles {
 
             // Everything lands in the temporary file first. If this is the call
             // that runs out of disk, the existing save has not been touched.
-            Files.writeString(tmp, contents);
+            Files.write(tmp, contents);
 
             if (Files.exists(file)) {
                 Files.copy(file, file.resolveSibling(file.getFileName() + ".bak"),

@@ -1,6 +1,6 @@
 # Health.java - 403 lines · 20 methods · 14 constants · model
 
-`ham/citybuildersim/Health.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Health.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > How much of the workforce is off sick this month.
 > 
@@ -50,7 +50,7 @@
 
 **Uses:** [Unemployment](Unemployment.md) (1)
 
-**Used by (14):** [BuildAdvice](BuildAdvice.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (17):** [BuildAdvice](BuildAdvice.md), [BuildScreen](BuildScreen.md), [ChartCheck](ChartCheck.md), [CityNeeds](CityNeeds.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 

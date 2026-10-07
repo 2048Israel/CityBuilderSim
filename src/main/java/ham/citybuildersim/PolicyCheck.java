@@ -88,6 +88,29 @@ public class PolicyCheck {
         check("a city-wide rise carries the offsets with it",
                 p.effectiveWageRate(WageBand.UNIVERSITY), universityBefore + .05);
 
+        // A PROPERTY OFFSET IS HELD AT MAX_PROPERTY_TAX (B5, 0.7.47), not
+        // MAX_OFFSET: the base is within 0 and MAX_PROPERTY_TAX and so is the
+        // rate, so no offset past it rates differently - from the dial, or
+        // from an older save that held one past it.
+        TaxPolicy prop = new TaxPolicy();
+        boolean held = true, rates = true;
+        for (double base : new double[] { 0, .02, .05, TaxPolicy.MAX_PROPERTY_TAX }) {
+            prop.setPropertyTaxRate(base);
+            for (double past : new double[] { .25, -.25, TaxPolicy.MAX_OFFSET, -TaxPolicy.MAX_OFFSET, 1 }) {
+                prop.setPropertyOffset(Sectors.RETAIL, past);
+                double rate = prop.effectivePropertyRate(Sectors.RETAIL);
+                held &= prop.getPropertyOffset(Sectors.RETAIL) == Math.signum(past) * TaxPolicy.MAX_PROPERTY_TAX;
+                prop.setPropertyOffset(Sectors.RETAIL, Math.signum(past) * TaxPolicy.MAX_PROPERTY_TAX);
+                rates &= rate == prop.effectivePropertyRate(Sectors.RETAIL);
+            }
+        }
+        TaxPolicy.SectorOffsets older = new TaxPolicy.SectorOffsets();
+        older.sector = Sectors.RETAIL;
+        older.property = -.25;
+        prop.restoreSectorOffsets(java.util.List.of(older));
+        held &= prop.getPropertyOffset(Sectors.RETAIL) == -TaxPolicy.MAX_PROPERTY_TAX;
+        assertTrue("a property offset is held at MAX_PROPERTY_TAX and rates the same as past it", held && rates);
+
         /* ============ 3. the wage tax is banded, not averaged ============ */
         System.out.println("\n--- the wage tax is summed per job type ---");
 

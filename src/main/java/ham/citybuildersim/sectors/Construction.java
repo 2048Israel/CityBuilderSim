@@ -176,17 +176,17 @@ public final class Construction extends Sector {
     public double getFillStruckOn() { return fillStruckOn; }
 
     /** The posts its depots have, offered or not. */
-    public int getPostsStanding() {
-        int total = 0;
-        for (int p : postsPerTier()) total += p;
+    public long getPostsStanding() {
+        long total = 0;
+        for (long p : postsPerTier()) total += p;
         return total;
     }
 
     /** The wage bill on the posts it offers: its depots' posts at the struck share, rounded as the city counts them. */
     @Override
-    public void updateWages(double[] wagePerType, int[] posts) {
+    public void updateWages(double[] wagePerType, long[] posts) {
         if (posts == null) { super.updateWages(wagePerType, null); return; }
-        int[] offered = new int[posts.length];
+        long[] offered = new long[posts.length];
         for (int i = 0; i < posts.length; i++) offered[i] = BuildingManager.postsOffered(posts[i], postsOfferedShare);
         super.updateWages(wagePerType, offered);
     }
@@ -209,6 +209,32 @@ public final class Construction extends Sector {
      * the accounts and the screens; so they are not cleared with the ledger.
      */
     private double repairsThisMonth;
+
+    /*
+     * THE MATERIALS OF THE MONTH STRUCK (A5, 0.7.46). The materials row is
+     * cleared at the strike and filled again as the crews draw, so between two
+     * presses it holds the draws since the strike - a different month from the
+     * statement beside it, which is the month the strike banked (the triage's
+     * M9: the 2,400-month research city's row read 791 units imported beside
+     * a statement that had booked D$6.20M for 539). Kept at the strike
+     * (beforeBank()) so the page can show the statement's month, and the row
+     * as "since then".
+     */
+
+    /** Materials bought from the plant in the month last struck, in units: the row as it stood at the strike. */
+    private double rDrawnLocal;
+
+    /** ...and imported. */
+    private double rDrawnImported;
+
+    /**
+     * Whether the two above are this builder's own figures: FALSE AFTER
+     * LOADING A SAVE FROM BEFORE THEY WERE KEPT, until its first strike - the
+     * row they come from was never saved. The getters read NaN meanwhile and
+     * the page says "not counted yet"; the save leaves the keys out rather
+     * than writing a guess (Rail's allowedKnown, the same pattern).
+     */
+    private boolean drawnKnown = true;
 
     public Construction() {
         super("Construction", "Construction", BuildingType.CONSTRUCTION);
@@ -406,6 +432,24 @@ public final class Construction extends Sector {
      */
     public double getOrderBookForAudit() { return unearnedRevenue + recognisedThisMonth; }
     public double getUtilisation()      { return utilisation; }
+
+    /** Materials bought from the plant in the month last struck, in units - the statement's month; NaN until a loaded older save's first strike. */
+    public double getDrawnLocal()       { return drawnKnown ? rDrawnLocal : Double.NaN; }
+
+    /** ...and imported in it. */
+    public double getDrawnImported()    { return drawnKnown ? rDrawnImported : Double.NaN; }
+
+    /** Whether the month last struck's materials are known: false after loading a save from before 0.7.46, until its first strike. */
+    public boolean isDrawnKnown()       { return drawnKnown; }
+
+    /** The materials row as it stands at the strike, kept before bank() clears it (A5). */
+    @Override
+    protected void beforeBank() {
+        Input row = inputRow(Good.MATERIALS);
+        rDrawnLocal = row == null ? 0 : row.boughtLocal;
+        rDrawnImported = row == null ? 0 : row.imported;
+        drawnKnown = true;
+    }
 
     /** The order book, put back on load. See the old ConstructionHandler.restoreOrderBook. */
     public void restoreOrderBook(double cash, double unearned, double backlog) {
@@ -720,7 +764,7 @@ public final class Construction extends Sector {
         lines.add(Line.of("Output", f.count(output) + " pts a month"));
         lines.add(Line.of("Busy", f.pct(utilisation),
                 utilisation > .95 ? Line.Tone.WARN : utilisation < .3 ? Line.Tone.WARN : Line.Tone.GOOD));
-        int standing = getPostsStanding(), offered = getPostsOffered();
+        long standing = getPostsStanding(), offered = getPostsOffered();
         if (standing > 0 && offered < standing) {
             lines.add(Line.of("Crews kept on", f.count(offered) + " of " + f.count(standing) + " posts",
                     postsOfferedShare <= IDLE_PAYROLL_FLOOR + 1e-9 ? Line.Tone.WARN : Line.Tone.NONE));
@@ -749,10 +793,15 @@ public final class Construction extends Sector {
                     + (game != null && game.getSalvageUsedThisMonth() > 0
                             ? ", " + f.count(game.getSalvageUsedThisMonth()) + " built with this month" : "")));
         }
-        lines.add(Line.of("Bought from the plant", f.units(in.boughtLocal, Good.MATERIALS),
-                in.boughtLocal > 0 ? Line.Tone.GOOD : Line.Tone.NONE));
-        lines.add(Line.of("Imported", f.units(in.imported, Good.MATERIALS),
-                in.imported > 0 ? Line.Tone.WARN : Line.Tone.NONE));
+        // The month struck, as on its statement (A5, 0.7.46); the row is the
+        // draws since the strike, so it is the muted line under them.
+        lines.add(Line.of("Last month, as on its statement", "", Line.Tone.MUTED));
+        lines.add(Line.of("Bought from the plant", drawnKnown ? f.units(rDrawnLocal, Good.MATERIALS) : "not counted yet",
+                !drawnKnown ? Line.Tone.MUTED : rDrawnLocal > 0 ? Line.Tone.GOOD : Line.Tone.NONE));
+        lines.add(Line.of("Imported", drawnKnown ? f.units(rDrawnImported, Good.MATERIALS) : "not counted yet",
+                !drawnKnown ? Line.Tone.MUTED : rDrawnImported > 0 ? Line.Tone.WARN : Line.Tone.NONE));
+        lines.add(Line.of("Since then, so far", f.units(in.boughtLocal, Good.MATERIALS) + " from the plant, "
+                + f.units(in.imported, Good.MATERIALS) + " imported", Line.Tone.MUTED));
         // The screens' money form, not cash()'s digits and cents (0.7.20; Formats.amount()).
         lines.add(Line.of("Price each", f.amount(buildings == null ? 0 : buildings.getConstructionMaterialPrice())));
         lines.add(Line.of("Owed to the sites", f.units(buildings == null ? 0 : buildings.getMaterialsOwed(), Good.MATERIALS),
@@ -808,6 +857,12 @@ public final class Construction extends Sector {
                 if (overtimeWages[i] != 0) extras.put("overtimeWages." + i, overtimeWages[i]);
             }
         }
+        // ...and the materials of the month struck (A5, 0.7.46), only when they
+        // are figures (see drawnKnown): an older save has neither.
+        if (drawnKnown) {
+            extras.put("drawnLocal", rDrawnLocal);
+            extras.put("drawnImported", rDrawnImported);
+        }
     }
 
     @Override
@@ -833,6 +888,9 @@ public final class Construction extends Sector {
                 if (i < overtimeWages.length) overtimeWages[i] = e.getValue();
             } catch (NumberFormatException ignored) { }
         }
+        rDrawnLocal = extras.getOrDefault("drawnLocal", 0.0);
+        rDrawnImported = extras.getOrDefault("drawnImported", 0.0);
+        drawnKnown = extras.containsKey("drawnLocal");
     }
 
     @Override
@@ -843,9 +901,11 @@ public final class Construction extends Sector {
         postsOfferedShare = crewsNeeded = fillStruckOn = 1;
         overtimeThisMonth = 0;
         overtimeWages = null;
+        rDrawnLocal = rDrawnImported = 0;
+        drawnKnown = true;
     }
 
-    /** Points and the utilisation are work, not money; the book is money. */
+    /** Points, the utilisation and the materials struck are work, not money; the book is money. */
     @Override
     protected void redenominateExtras(double scale) {
         unearnedRevenue *= scale;

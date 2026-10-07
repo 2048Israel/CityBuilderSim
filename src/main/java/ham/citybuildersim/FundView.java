@@ -17,8 +17,9 @@ import java.util.Locale;
  * The project's spec-fund-0739.md, sections 3.4 and 4.
  *
  * EVERY FIGURE IS THE MODEL'S. A holding's units are the register's and the
- * bonds' (Equity, CorporateBond.city()), its price the exchange's last trade
- * or fair value (Exchange.price()) or the bond market's valuation
+ * bonds' (Equity, CorporateBond.city()), its price the city's mark - the
+ * exchange's last trade, or fair value before one or once it is a year old
+ * (Exchange.cityMark(), 0.7.48) - or the bond market's valuation
  * (BondMarket.modelPrice()), its cost FundLedger's (or TreasuryFund's for the
  * rescue book), its income the ledger's and the counters'. The fund's gain
  * since it began, and by kind, is the counters' alone - exact on any save,
@@ -31,7 +32,7 @@ public final class FundView {
 
     /* ============================== the dials ============================== */
 
-    /** A share's last trade older than this many months is called stale on every page that shows it (the spec's B3: a price is its last trade, however old). */
+    /** A share's last trade older than this many months is called stale on every page that shows it (the spec's B3: a price is its last trade, however old - and since 0.7.48 the city's own holding is marked at fair value once that trade is Exchange.STALE_MARK_MONTHS old). */
     public static final int STALE_MONTHS = 3;
 
     /** The least a price per founding share, as the history records it to four places, can be and still carry three significant figures: a move off less is not shown (the spec's B6 - a consolidated share records 0.0000). */
@@ -108,7 +109,8 @@ public final class FundView {
         double units = rescue ? reg.getCityRescueShares(c) : reg.getCityMarketShares(c);
         if (!(units > FundLedger.DUST)) return null;
         FundLedger.Lot lot = ledger.lot(rescue ? FundLedger.rescueKey(name) : FundLedger.shareKey(name));
-        double price = ex.price(c);
+        // The city's mark (0.7.48, C4): the last trade, or fair value once that is STALE_MARK_MONTHS old.
+        double price = ex.cityMark(c);
         int priceMonth = ex.hasTraded(c) ? ex.bookOf(c).lastTradeMonth() : -1;
         double value = units * price;
         // The rescue book's cost is the fund's own record of it; a market lot's the ledger's.
@@ -258,7 +260,8 @@ public final class FundView {
         kinds.add(new Kind("Preferred & warrants", f.getPreferredBought(), backPw, pw, f.getPreferredDividends(),
                 pw + backPw + f.getPreferredDividends() - f.getPreferredBought(),
                 preferredCancelled(f) > 0 ? "cancelled by a rescue" : null));
-        return new Portfolio(value, f.getCash(), f.getMonthDividends() + f.getMonthCoupons(), f.getTransferPaid(),
+        // What the treasury had of it last month: the month's own and, over the default withdrawal, the month before's sale (0.7.48).
+        return new Portfolio(value, f.getCash(), f.getMonthDividends() + f.getMonthCoupons(), f.getTransferPaid() + f.getTransferPaidLate(),
                 f.getTransferShort(), putIn, takenOut, gain, putIn > 0 ? (value + takenOut) / putIn : Double.NaN,
                 g.fundMarketSharesValue(), bonds, g.fundRescueValue(), kinds, f.handReserve(), g.fundCashFree());
     }
@@ -290,12 +293,16 @@ public final class FundView {
         int from = axis.get(i0), to = axis.get(i1);
         if (Double.isNaN(v[i0]) || Double.isNaN(v[i1]) || i1 <= i0) return new RangeReturn(Double.NaN, Double.NaN, from, to, recordedFrom);
         double flows = 0, weighted = 0;
-        int span = i1 - i0;
+        // Weighted by the MONTHS left after each flow, read off the axis
+        // (0.7.55): past five hundred years an entry is a year
+        // (HistorySave.foldOldYears()). On an axis of months it is the
+        // entries counted, as it always was.
+        int span = to - from;
         for (int i = i0 + 1; i <= i1; i++) {
             double fi = (in[i] - in[i - 1]) - (out[i] - out[i - 1]);
             if (Double.isNaN(fi)) continue;
             flows += fi;
-            weighted += fi * (double) (i1 - i) / span;
+            weighted += fi * (double) (to - axis.get(i)) / span;
         }
         double gain = v[i1] - v[i0] - flows;
         double base = v[i0] + weighted;
@@ -501,7 +508,7 @@ public final class FundView {
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             if (!(reg.getShares(c) > 0)) continue;
             String name = Equity.COMPANIES[c];
-            double held = reg.getCityShares(c) * ex.price(c);
+            double held = reg.getCityShares(c) * ex.cityMark(c);
             out.add(new Hit(FundLedger.shareKey(name), name, SHARE, c, -1, ex.price(c),
                     ex.hasTraded(c) ? ex.bookOf(c).lastTradeMonth() : -1, move(h, name, MOVE_MONTHS), Double.NaN, -1,
                     spark(h, name, MOVE_MONTHS), held, ex.marketCap(reg, c), null, null, 0, -1));
@@ -562,8 +569,8 @@ public final class FundView {
     /**
      * An order the ticket would place: the lot's key, buy or sell, the
      * figure - money on a buy by amount, units (shares or face) otherwise -
-     * and the price a unit it is to post at (0: fair value, the rule's own; a
-     * bond's: its value).
+     * and the price a unit it is to post at (0: fair value, what the rule
+     * asks at; a bond's: its value).
      */
     public record Order(String key, boolean buy, boolean byAmount, double figure, double limit) { }
 

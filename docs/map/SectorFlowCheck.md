@@ -1,6 +1,6 @@
-# SectorFlowCheck.java - 300 lines · 11 methods · 3 constants · harnesses
+# SectorFlowCheck.java - 307 lines · 11 methods · 3 constants · harnesses
 
-`ham/citybuildersim/SectorFlowCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorFlowCheck.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
 
 > The flow (0.7.30): SectorFlow's figures - what went into each business,
 > what its plant made of it and what held it back, and what came out - held
@@ -36,26 +36,26 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [SectorFlow](SectorFlow.md) (28), [Sector](Sector.md) (18), [Game](Game.md) (14), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [Formats](Formats.md) (3), [BuildCard](BuildCard.md) (3), [Founding](Founding.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LongPlaytest](LongPlaytest.md) (1), [SectorBooks](SectorBooks.md) (1), [BuildAdvice](BuildAdvice.md) (1)
+**Uses:** [SectorFlow](SectorFlow.md) (28), [Sector](Sector.md) (18), [Game](Game.md) (14), [Good](Good.md) (5), [GameFiles](GameFiles.md) (3), [Formats](Formats.md) (3), [BuildCard](BuildCard.md) (3), [Founding](Founding.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LongPlaytest](LongPlaytest.md) (1), [Sectors](Sectors.md) (1), [SectorBooks](SectorBooks.md) (1), [BuildAdvice](BuildAdvice.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 132 | 1. THE MONEY |
-| 155 | 2. THE CASCADE |
-| 188 | 3. NOTHING STANDING |
-| 211 | 4. THE UNITS |
-| 256 | 5. AFTER A LOAD |
-| 284 | 6. THE PAGE |
+| 139 | 1. THE MONEY |
+| 162 | 2. THE CASCADE |
+| 195 | 3. NOTHING STANDING |
+| 218 | 4. THE UNITS |
+| 263 | 5. AFTER A LOAD |
+| 291 | 6. THE PAGE |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 57 | `SectorFlowCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 92 | `SectorFlowCheck.ORDERS` | `{ { "House", "400" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders, and whether each went on site. |
-| 98 | `SectorFlowCheck.built` | `new java.util.LinkedHashMap<>()` | ...whether each went on site, as city() found it. |
+| 99 | `SectorFlowCheck.ORDERS` | `{ { "House", "400" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders, and whether each went on site. |
+| 105 | `SectorFlowCheck.built` | `new java.util.LinkedHashMap<>()` | ...whether each went on site, as city() found it. |
 
 ## Fields (state)
 
@@ -69,46 +69,46 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 256 | **type** `public class SectorFlowCheck` | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held to the model's own reads in a played city. |
+| 45 | 263 | **type** `public class SectorFlowCheck` | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held to the model's own reads in a played city. |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 5 | `static void quietly(Runnable r)` |  |
-| 73 | 17 | `static Game city(Path root)` | A played city with a bit of every chain in it - homes, shops and a diner; bakeries; a mine, a foundry and a fabrication shop; builders; power, water, roads and a rail spur, so the shippers pay a railway for haulage, a... |
-| 100 | 18 | `public static void main(String[] args) throws Exception` |  |
-| 120 | 11 | `static void printCity(Game g)` | The city as the flow reads it, for the record. |
+| 73 | 24 | `static Game city(Path root)` | A played city with a bit of every chain in it - homes, shops and a diner; bakeries; a mine, a foundry and a fabrication shop; builders; power, water, roads and a rail spur, so the shippers pay a railway for haulage, a... |
+| 107 | 18 | `public static void main(String[] args) throws Exception` |  |
+| 127 | 11 | `static void printCity(Game g)` | The city as the flow reads it, for the record. |
 
-### 1. THE MONEY (lines 132-154)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 134 | 20 | `static void theMoney(Game g)` |  |
-
-### 2. THE CASCADE (lines 155-187)
+### 1. THE MONEY (lines 139-161)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 157 | 30 | `static void theCascade(Game g)` |  |
+| 141 | 20 | `static void theMoney(Game g)` |  |
 
-### 3. NOTHING STANDING (lines 188-210)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 190 | 20 | `static void nothingStanding(Game g)` |  |
-
-### 4. THE UNITS (lines 211-255)
+### 2. THE CASCADE (lines 162-194)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 213 | 42 | `static void theUnits(Game g)` |  |
+| 164 | 30 | `static void theCascade(Game g)` |  |
 
-### 5. AFTER A LOAD (lines 256-283)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 258 | 25 | `static void afterALoad(Path root, Game g)` |  |
-
-### 6. THE PAGE (lines 284-300)
+### 3. NOTHING STANDING (lines 195-217)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 286 | 14 | `static void thePage(Game g)` |  |
+| 197 | 20 | `static void nothingStanding(Game g)` |  |
+
+### 4. THE UNITS (lines 218-262)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 220 | 42 | `static void theUnits(Game g)` |  |
+
+### 5. AFTER A LOAD (lines 263-290)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 265 | 25 | `static void afterALoad(Path root, Game g)` |  |
+
+### 6. THE PAGE (lines 291-307)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 293 | 14 | `static void thePage(Game g)` |  |
 

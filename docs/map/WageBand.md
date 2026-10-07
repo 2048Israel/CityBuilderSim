@@ -1,6 +1,6 @@
 # WageBand.java - 170 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/WageBand.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WageBand.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > The four education bands the wage tax is set by.
 > 
@@ -17,7 +17,7 @@
 
 **Uses:** [JobType](JobType.md) (1)
 
-**Used by (25):** [BankCheck](BankCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EducationType](EducationType.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyCheck](PolicyCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md)
+**Used by (26):** [BankCheck](BankCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EducationType](EducationType.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyCheck](PolicyCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md)
 
 ## Sections
 

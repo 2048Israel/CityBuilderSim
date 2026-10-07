@@ -322,9 +322,11 @@ public class MortgageCheck {
                         >= g.getEconomyManager().getNationalAccounts().getMortgagePremiums());
         assertTrue("the loan was no more than MORTGAGE_MAX_LOAN_TO_COST of what the building cost",
                 loans <= Mortgage.MORTGAGE_MAX_LOAN_TO_COST * spent * (1 + 1e-9) && spent > 0);
-        close("the month's money audit closes", g.getLastMoneyAudit().residual, 0, .01);
+        close("the month's money audit closes", g.getLastMoneyAudit().residual, 0,
+                MoneyAudit.tolerance(g.getLastMoneyAudit().moved()));
         close("...and the landlords' cash-flow statement, handed the loan less its fee and not the premium",
-                g.getSectorBooks().get(RE).unexplained(), 0, .01);
+                g.getSectorBooks().get(RE).unexplained(), 0,
+                MoneyAudit.tolerance(g.getSectorBooks().get(RE).unexplainedScale()));
     }
 
     /* ============================ 3. THE DOWN PAYMENT ============================ */
@@ -534,8 +536,9 @@ public class MortgageCheck {
         close("the treasury paid the bank exactly the written-down insured balance", bank.getInsuranceClaims(), claimsAll, 1e-12);
         close("...on its claims line", na.getMortgageClaims(), claimsAll, 1e-12);
         close("the bank's equity moved by its income, its named causes and the fixture's own loan, and nothing else",
-                bank.equityMovement().residual(), claim, 1e-6);
-        close("the month's money audit closes", g.getLastMoneyAudit().residual, 0, .01);
+                bank.equityMovement().residual(), claim, MoneyAudit.tolerance(1e-6, bank.equityMovement().scale()));
+        close("the month's money audit closes", g.getLastMoneyAudit().residual, 0,
+                MoneyAudit.tolerance(g.getLastMoneyAudit().moved()));
         assertTrue("a slice is not on the landlord's record", lender.getRestructureCount(RE) == recordBefore);
 
         out.println("\n--- 6. ...and the backstop: a landlord with nothing left is written down whole ---");
@@ -556,8 +559,10 @@ public class MortgageCheck {
         close("...cash the bank received", g.getBank().getInsuranceClaims(), lender.getInsuredWrittenOffThisMonth(), 1e-12);
         assertTrue("the default is still the landlord's: on its record, and banned",
                 lender.getRestructureCount(RE) == recordBefore + 1 && lender.isBorrowingBlocked(RE));
-        close("the bank's equity moved by its income and its named causes", g.getBank().equityMovement().residual(), 0, 1e-6);
-        close("the month's money audit closes", g.getLastMoneyAudit().residual, 0, .01);
+        close("the bank's equity moved by its income and its named causes", g.getBank().equityMovement().residual(), 0,
+                MoneyAudit.tolerance(1e-6, g.getBank().equityMovement().scale()));
+        close("the month's money audit closes", g.getLastMoneyAudit().residual, 0,
+                MoneyAudit.tolerance(g.getLastMoneyAudit().moved()));
         close("over the city's life the claims grew by what the two write-downs took off insured mortgages",
                 lender.getInsuredWrittenOffTotal(RE) - claimsBefore, insured + wholeInsured, 1e-9);
     }

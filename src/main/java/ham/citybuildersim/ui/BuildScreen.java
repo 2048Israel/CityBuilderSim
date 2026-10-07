@@ -512,13 +512,88 @@ final class BuildScreen {
                 // block free or less amber, none red), not by the share used, which a city
                 // sits at 95-100% of for centuries with nothing wrong - it read 51.0M sq ft
                 // free in red. The land office and the left panel take the same row.
-                limitCell("LAND FREE", shortNumber(free) + " sq ft",
-                        String.format("%.0f%% of the city used", used * 100),
-                        groundTone(CityNeeds.ground(ui.game, SummaryScreen.WORDS).level()),
-                        "Go to the land office and buy more",
-                        () -> ui.landScreen.showLandMenu()),
+                landFreeCell(free, used),
                 lastCell);
         return bar;
+    }
+
+    /* ----------------------------- THE BUILD SHORTCUT (0.7.61, spec-land star 14) -----------------------------
+     *
+     * LAND FREE says the ground free in km2 (sq ft until 0.7.61; under a
+     * hundredth of one in m2 since 0.7.68, LandManager.areaWords()) and gains
+     * "Buy the best land · 3.4 km² · US$12.1M ›", and the refusal pages each
+     * gain a Buy for what they are short of - each Game.bestOffer() of its
+     * need: for room, the most dry ground a dollar among the offers the city
+     * can afford that are not mostly sea; on the no-land page the cheapest
+     * offer of BARE GROUND that covers the shortfall (0.7.58, batch J1c: a
+     * building short of ground has not asked for ore, so an offer holding a
+     * priced resource is passed over - the button says so - and with none big
+     * enough, the best value, bought again until it is covered); on the
+     * no-deposit page the cheapest offer holding the deposit (0.7.64; the most
+     * iron sites a dollar until then); on the no-coast page the
+     * cheapest offer with sea. Bought as the land office's Buy buys it, paid
+     * the way its toggle says, or - short - the land office's funding page,
+     * sized to that offer.
+     * ------------------------------------------------------------------------------------------------------- */
+
+    /** LAND FREE's width with its shortcut under it: the cell's own 190 and room for the shortcut's words on one line. */
+    static final double LAND_FREE_CELL = 236;
+
+    /** LAND FREE: the ground free in km2, the share used, a door to the land office, and the shortcut to buy the best land. */
+    VBox landFreeCell(double free, double used) {
+        VBox cell = limitCell("LAND FREE", LandManager.areaWords(free), String.format("%.0f%% of the city used", used * 100),
+                groundTone(CityNeeds.ground(ui.game, SummaryScreen.WORDS).level()),
+                "Go to the land office and buy more", () -> ui.landScreen.showLandMenu());
+        LandParcel best = ui.game.bestOffer(Game.LandNeed.room());
+        if (best == null) return cell;
+        boolean funding = ui.game.landNeedsFunding(List.of(best.getId()));
+        Label shortcut = new Label(bestLandWords(best));
+        shortcut.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
+        shortcut.setMaxWidth(LAND_FREE_CELL - 28);
+        shortcut.setOnMouseClicked(e -> {
+            e.consume();
+            buyBestLand(best, this::showBuildMenu);
+        });
+        Tooltip tip = new Tooltip(bestLandTip(best, funding));
+        tip.setShowDelay(Duration.millis(250));
+        Tooltip.install(shortcut, tip);
+        cell.getChildren().add(shortcut);
+        cell.setPrefWidth(LAND_FREE_CELL);
+        return cell;
+    }
+
+    /** The shortcut's words: "Buy the best land · 3.4 km² · US$12.1M ›" - the offer's size and its listed price. */
+    static String bestLandWords(LandParcel p) {
+        return "Buy the best land · " + LandMap.area(p.getKm2()) + " · " + usd(p.getPriceUsd()) + " ›";
+    }
+
+    /** ...and its tooltip: which offer, why it is the best, and what a short city's click opens. */
+    static String bestLandTip(LandParcel p, boolean funding) {
+        return p.where() + ": the most dry ground a dollar the city can afford, not mostly sea - "
+                + LandMap.area(p.getDryKm2()) + " dry." + (funding
+                        ? "\nShort of the money: opens the land office's funding page, sized to it."
+                        : "\nBought at once, paid the way the land office's toggle says.");
+    }
+
+    /** Buys an offer as the land office's Buy would, then `after`; short, the land office's funding page for it. */
+    void buyBestLand(LandParcel p, Runnable after) {
+        List<Integer> ids = List.of(p.getId());
+        if (ui.game.landNeedsFunding(ids)) {
+            ui.landScreen.showLandFunding(ids);
+            return;
+        }
+        ui.game.buyLandParcels(ids);
+        after.run();
+    }
+
+    /** A refusal page's Buy: Pieces' action button, outlined and "on credit" when the city is short. */
+    Pieces.ActionButton bestLandButton(LandParcel p, String words, String sub, Runnable after) {
+        boolean funding = ui.game.landNeedsFunding(List.of(p.getId()));
+        Pieces.Press press = new Pieces.Press(funding ? Pieces.Look.CREDIT : Pieces.Look.GO, words,
+                funding ? sub + " · short: ways to pay" : sub);
+        Pieces.ActionButton b = actionButton(Icons.MAP, Palette.BUILDING, ACTION_TALL, press, () -> buyBestLand(p, after));
+        b.setMaxWidth(Region.USE_PREF_SIZE);
+        return b;
     }
 
     /** LAND FREE's colour: the GROUND row's verdict, amber or red, and the strip's plain figure while it is fine. */
@@ -702,7 +777,7 @@ final class BuildScreen {
         String one, two;
         switch (f.kind()) {
             case CITY:   one = "cheapest per " + f.perTag(); two = "fewest unfilled posts per " + f.perTag(); break;
-            case MAKER:  one = "adds the most per $"; two = "adds the most per sq ft"; break;
+            case MAKER:  one = "adds the most per $"; two = "adds the most per m²"; break;
             case OFFICE: one = "exports the most per $"; two = "easiest to staff"; break;
             default:     one = "cheapest per " + f.perTag(); two = "least land per " + f.perTag();
         }
@@ -819,7 +894,12 @@ final class BuildScreen {
         boolean track = group.track() && !f.addsNothing();
         String[] words = barWords(f, m);
         List<javafx.scene.Node> out = new ArrayList<>();
-        out.add(barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track));
+        VBox money = barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track);
+        // ...and what its money is struck at (0.7.45; the UI spec's 2.10), behind an (i) after its words.
+        if (!money.getChildren().isEmpty() && money.getChildren().get(0) instanceof HBox head) {
+            head.getChildren().add(1, infoButton(moneyBarInfo(), false));
+        }
+        out.add(money);
         // None for a city building with no posts: its needs line says so.
         if (words[2] == null) return out;
         boolean land = f.bar2Kind() == BuildCard.Bar2.LAND;
@@ -841,7 +921,7 @@ final class BuildScreen {
         switch (f.bar2Kind()) {
             case LAND:
                 return new String[] {label1, value1,
-                        f.inMonths() ? "land per $1k it adds a month" : "land per " + f.per(), sqFt(f.bar2())};
+                        f.inMonths() ? "land per $1k it adds a month" : "land per " + f.per(), landWords(f.bar2())};
             case UNSTAFFABLE:
                 return new String[] {label1, value1, "posts the city couldn't staff, of 100",
                         Double.isFinite(f.bar2()) ? String.format("%.0f", f.bar2()) : "—"};
@@ -853,10 +933,10 @@ final class BuildScreen {
         }
     }
 
-    /** Square feet a bar reads: a tenth below a hundred, whole and grouped above; a dash for none. */
-    static String sqFt(double v) {
-        if (!Double.isFinite(v)) return "—";
-        return (v >= 100 ? formatter.format(Math.round(v)) : String.format("%.1f", v)) + " sq ft";
+    /** The land a bar reads, kept in square feet, as every area reads since 0.7.68 (LandManager.areaWords(): "23.2 m²", "0.0743 km²"); a dash for none. */
+    static String landWords(double sqFt) {
+        if (!Double.isFinite(sqFt)) return "—";
+        return LandManager.areaWords(sqFt);
     }
 
     /**
@@ -919,16 +999,16 @@ final class BuildScreen {
     String gateWords(BuildCard.Gate gate) {
         switch (gate.kind()) {
             case DEPOSIT:
-                return "no iron deposit free (the city owns " + formatter.format(gate.a()) + ", "
-                        + formatter.format(gate.b()) + " spoken for)";
+                return "no " + (gate.why() == null ? "iron" : gate.why()) + " deposit free (the city owns "
+                        + formatter.format(gate.a()) + ", " + formatter.format(gate.b()) + " spoken for)";
             case LICENCE:
                 return "needs " + formatter.format(Math.ceil(gate.a() - 1e-9)) + " spare " + jobPlural(gate.licence())
                         + "; the city has " + formatter.format(Math.floor(gate.b() + 1e-9));
             case STAFFING:
                 return gate.why();
             case LAND:
-                return "no land - needs " + formatter.format(Math.round(gate.a())) + " sq ft, "
-                        + formatter.format(Math.round(gate.b())) + " free";
+                return "no land - needs " + LandManager.areaWords(gate.a()) + ", "
+                        + LandManager.areaWords(gate.b()) + " free";
             default:
                 return gate.a() > 0 ? "would lose " + money(gate.a()) + " a month" : "would make nothing";
         }
@@ -964,7 +1044,7 @@ final class BuildScreen {
         double free = f.landFree();
         double land = t.getLandSqFt();
         boolean noRoom = land > free;
-        line.append(" · ").append(formatter.format(land)).append(" sq ft");
+        line.append(" · ").append(LandManager.areaWords(land));
         if (noRoom) line.append(" - more than is free");
         else if (free > 0 && land / free >= .01) line.append(String.format(" · %.1f%% of what is free", land / free * 100));
         line.append(" · ").append(f.running() > 0 ? "runs " + money(f.running()) + "/mo" : "nothing to run");
@@ -1116,12 +1196,14 @@ final class BuildScreen {
         if (n <= 0 || v == null) return new Pieces.Press(Pieces.Look.CHOOSE, "Build", "choose how many");
         String count = formatter.format(n), total = money(v.quote().total);
         switch (v.kind()) {
-            case NO_DEPOSIT: return new Pieces.Press(Pieces.Look.HELD, "No iron deposit",
-                    "ore comes with land: the Land office ›");
+            case NO_DEPOSIT: return new Pieces.Press(Pieces.Look.HELD, "No " + BuildCard.depositWord(v.site()) + " deposit",
+                    "whole fields of " + (v.site() == Resource.OIL ? "oil" : "ore") + " come with land: the Land office ›");
+            case NO_COAST:   return new Pieces.Press(Pieces.Look.HELD, "No sea to draw",
+                    "sea comes with land: the Land office ›");
             case NO_LICENCE: return new Pieces.Press(Pieces.Look.HELD, "Nobody licensed to work in it",
                     "a school licenses them: Education ›");
             case NO_LAND:    return new Pieces.Press(Pieces.Look.HELD, v.quote().landFree <= 0 ? "No land free"
-                    : "Short " + shortNumber(v.figure()) + " sq ft of land", "more ground: the Land office ›");
+                    : "Short " + LandManager.areaWords(v.figure()) + " of land", "more ground: the Land office ›");
             case BILL:       return new Pieces.Press(Pieces.Look.CREDIT, "Build " + count + " on credit · " + total, null);
             default:         return new Pieces.Press(Pieces.Look.GO, "Build " + count + " · " + total, null);
         }
@@ -1129,16 +1211,18 @@ final class BuildScreen {
 
     /**
      * The quote's verdict and its colour, in buildStack()'s order: no
-     * deposit and nobody licensed in red - warned here since 0.7.25, where
-     * they were found only after the click - then short of land in red,
+     * deposit, no coast (0.7.59) and nobody licensed in red - warned here
+     * since 0.7.25, where they were found only after the click - then short
+     * of land in red,
      * short of cash in amber (the bill and the credit offers follow the
      * click), else the wait at today's queue in green.
      */
     String[] quoteVerdict(BuildCard.Verdict v) {
         switch (v.kind()) {
-            case NO_DEPOSIT: return new String[] {"no iron deposit", Palette.BAD};
+            case NO_DEPOSIT: return new String[] {"no " + BuildCard.depositWord(v.site()) + " deposit", Palette.BAD};
+            case NO_COAST:   return new String[] {"no sea owned to draw", Palette.BAD};
             case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
-            case NO_LAND:    return new String[] {"short " + shortNumber(v.figure()) + " sq ft of land", Palette.BAD};
+            case NO_LAND:    return new String[] {"short " + LandManager.areaWords(v.figure()) + " of land", Palette.BAD};
             case BILL:       return new String[] {"short " + money(v.figure()) + " — you will be offered a bill", Palette.WARN};
             default:         return new String[] {atTodaysQueue(v.figure()), Palette.GOOD};
         }
@@ -1408,9 +1492,12 @@ final class BuildScreen {
          the panel's own verdict, not a second scoring), a caption, a smaller
          line and what is on site;
          WHAT WOULD HELP MOST - up to three orders by BuildAdvice's rule, each
-         with the need, before and after, the count and the building, a line,
-         the quote its button charges, Show and the button (Show and Order
-         until 0.7.34: a pill now, and Build's action button saying the order);
+         with the need, before and after, the count and the building, three
+         lines (a line until 0.7.51: what it does, then when it opens and what
+         it is sized for, and its ground - cardWords()), the quote its button
+         charges, Show and the button (Show and Order until 0.7.34: a pill
+         now, and Build's action button saying the order); over them what the
+         run charges and "Build all three", read off the run the model places;
          THE MARKET BUILDS THESE - the nine the investors build, quieter, with
          what stands and what is on site.
 
@@ -1550,8 +1637,9 @@ final class BuildScreen {
                         sd[1] - sd[0] >= .5 ? "short " + people(sd[1] - sd[0]) + " places" : "a place for every child");
             case HIGHER_SCHOOL:
                 // Seats over who would come, served (0.7.41): it read "of would-be students seated", held to 100%.
+                // ...and be hired (0.7.51): the row's second number is CityNeeds.wanted() now.
                 return new Shown(CityNeeds.servedPct(s.share()), arc(s), said,
-                        people(sd[0]) + " seats · " + people(sd[1]) + " would come");
+                        people(sd[0]) + " seats · " + people(sd[1]) + " would come and be hired");
             case CRIME:
                 return new Shown(String.format("%.1f×", v), v > 0 ? Math.min(1, 1 / v) : 1, "Canada's crime rate",
                         String.format("police at %.0f%% of full cover", share * 100));
@@ -1684,10 +1772,17 @@ final class BuildScreen {
 
     /* ----------------------------- what would help most ----------------------------- */
 
-    /** "all three ≈ $X of your $Y", and the button that orders them ("Build all three", 0.7.34; a step chip, "Order all three", before). */
+    /**
+     * "all three ≈ $X of your $Y", and the button that orders them ("Build
+     * all three", 0.7.34; a step chip, "Order all three", before). X is what
+     * placing the run charges (0.7.51, Game.buildRunInvoice() of the run
+     * orderAll() places, BuildAdvice.run()): each card's quote added up was
+     * $85.5M where the run charged $98.4M (the founded playtest city at
+     * month 24, 0.7.49).
+     */
     javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> advice) {
         if (advice.isEmpty()) return null;
-        double sum = BuildAdvice.quoteTotal(advice);   // each one's quote, added by the model (0.7.38)
+        double sum = ui.game.buildRunInvoice(BuildAdvice.run(advice));
         String all = advice.size() == 3 ? "all three" : advice.size() == 2 ? "both" : "it";
         Label what = new Label(all + " ≈ ");
         what.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
@@ -1702,41 +1797,53 @@ final class BuildScreen {
         if (advice.size() > 1) {
             // The cards' button, inline (0.7.34): it orders every suggestion, as each card's would.
             Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_INLINE,
-                    allPress(advice, sum > ui.game.getCash()), () -> orderAll(advice));
+                    allPress(advice), () -> orderAll(advice));
             order.setMinWidth(Region.USE_PREF_SIZE);
             HBox.setMargin(order, new javafx.geometry.Insets(0, 0, 0, 10));
             row.getChildren().add(order);
         }
-        Tooltip.install(row, new Tooltip("Each is the quote its own Build charges now. Ordered one after another, "
-                + "an earlier one's material from the yard can make a later one dearer."));
+        Tooltip.install(row, new Tooltip("What placing them in this order charges now, each on the yard the ones "
+                + "before it leave. Land is not in it: the city builds on its own ground."));
         return row;
     }
 
     /**
-     * "Build all three" or "Build both" (0.7.34), in the look of the cards
-     * under it: held when one of them is - orderAll() stops at the first the
-     * city refuses, so it says so - else "... on credit" when one is, or
-     * when together they are more than the cash.
+     * "Build all three" or "Build both" (0.7.34), read off the run the model
+     * will place (0.7.51; each card's own look, until then, said GO for runs
+     * the model stopped): held when Game.buildRunAhead() stops it short,
+     * with the card it stops at and why; on credit when the run's invoice is
+     * more than the cash (Game.buildFundingGap()), with by how much.
      */
-    Pieces.Press allPress(List<BuildAdvice.Suggestion> advice, boolean overCash) {
-        int held = 0;
-        boolean credit = overCash;
-        for (BuildAdvice.Suggestion s : advice) {
-            Pieces.Look look = suggestionPress(s).look();
-            if (look == Pieces.Look.HELD) held++;
-            if (look == Pieces.Look.CREDIT) credit = true;
-        }
+    Pieces.Press allPress(List<BuildAdvice.Suggestion> advice) {
+        Game g = ui.game;
+        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = BuildAdvice.run(advice);
         String all = advice.size() == 3 ? "Build all three" : "Build both";
-        if (held > 0) return new Pieces.Press(Pieces.Look.HELD, all, held == advice.size()
-                ? "none can go ahead as it stands" : "it stops at the first that cannot go ahead");
-        return new Pieces.Press(credit ? Pieces.Look.CREDIT : Pieces.Look.GO, all + (credit ? " on credit" : ""), null);
+        int ahead = g.buildRunAhead(run);
+        if (ahead < run.size()) {
+            BuildingsTemplate at = null;
+            int i = 0;
+            for (BuildingsTemplate t : run.keySet()) if (i++ == ahead) { at = t; break; }
+            int card = 0;
+            while (card < advice.size() - 1 && advice.get(card).template() != at) card++;
+            String ordinal = card == 0 ? "first" : card == 1 ? "second" : "third";
+            BuildingsTemplate stopAt = at;
+            String why = switch (g.buildRunStop(run)) {
+                case NO_DEPOSIT -> Game.siteOf(stopAt) == Resource.OIL ? "no oil left to drill" : "no ore left to dig";
+                case NO_COAST   -> "no sea owned to draw";
+                case NO_LICENCE -> "nobody licensed to practise";
+                default         -> "short of land - buy it at the land office first";
+            };
+            return new Pieces.Press(Pieces.Look.HELD, all, "it stops at the " + ordinal + ": " + why);
+        }
+        double gap = g.buildFundingGap(run);
+        if (gap > 0) return new Pieces.Press(Pieces.Look.CREDIT, all + " on credit",
+                "short " + money(gap) + ": Build offers a loan");
+        return new Pieces.Press(Pieces.Look.GO, all, null);
     }
 
-    /** The suggestions as one run (0.7.40, placeRun()): funded whole when it is more than the cash, each placed in turn by its own button's path; the first refusal stops the run, as Enter's does. */
+    /** The suggestions as one run (0.7.40, placeRun(); BuildAdvice.run() since 0.7.51): funded whole when it is more than the cash, each placed in turn by its own button's path; the first refusal stops the run, as Enter's does. */
     void orderAll(List<BuildAdvice.Suggestion> advice) {
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        for (BuildAdvice.Suggestion s : advice) run.merge(s.template(), s.count(), Integer::sum);
-        placeRun(run, new RunFrom(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class), false));
+        placeRun(BuildAdvice.run(advice), new RunFrom(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class), false));
     }
 
     /** Up to three cards, or a line saying there is nothing to suggest. */
@@ -1803,25 +1910,6 @@ final class BuildScreen {
         return line;
     }
 
-    /** What closing the need means, for the line that gives the full count - a served measure's line read as served (0.7.41: "bring the load under 75%" became "bring power over 133% served"). */
-    static String goal(BuildAdvice.Measure m) {
-        double[] lines = BuildAdvice.servedLines(m);
-        switch (m.kind()) {
-            case POWER:  return "bring power over " + pct(lines[0]) + " " + CityNeeds.SERVED;
-            case WATER:  return "bring water over " + pct(lines[0]) + " " + CityNeeds.SERVED;
-            case ROADS:  return "bring the road over " + pct(lines[0]) + " " + CityNeeds.SERVED;
-            case CARE:   return "bring " + m.label().toLowerCase() + " over " + pct(lines[0]) + " " + CityNeeds.SERVED;
-            case DEATH:  return "leave nobody unburied";
-            case PLOTS:  return String.format("give over %.0f months of plots", CityNeeds.PLOTS_YELLOW);
-            case SCHOOL: return m.school().isBasic()
-                    ? "bring " + m.label().toLowerCase() + " over " + pct(lines[0]) + " " + CityNeeds.SERVED
-                    : "seat everyone who would come";
-            case POLICE: return String.format("bring crime under %.1f× Canada's", CityNeeds.CRIME_YELLOW);
-            case CELLS:  return "hold everyone caught";
-            default:     return "close it";
-        }
-    }
-
     /** The measure Show opens a category on, for a suggestion: transit's ring for a line, death care's for the plots. */
     static BuildAdvice.Measure showOn(BuildAdvice.Suggestion s) {
         BuildAdvice.Measure m = s.measure();
@@ -1830,7 +1918,7 @@ final class BuildScreen {
         return m;
     }
 
-    /** One suggested order: the need, before and after, the count and the building, a line, its price, Show, and its Build button. */
+    /** One suggested order: the need, before and after, the count and the building, its three lines (cardWords(), 0.7.51), its price, Show, and its Build button. */
     VBox suggestionCard(BuildAdvice.Suggestion s) {
         CityNeeds.Need need = s.need();
         // SERVED (0.7.41): a served need's chip, its before and its after read what it serves, each in
@@ -1859,23 +1947,18 @@ final class BuildScreen {
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         HBox what = new HBox(0, count, name);
         what.setAlignment(Pos.BASELINE_LEFT);
-        String said;
-        if (s.needsCredit()) {
-            said = formatter.format(s.fullCount()) + " would " + goal(s.measure()) + ", for " + money(s.fullPrice())
-                    + ": more than the treasury holds, so Build offers a loan.";
-        } else if (s.capped()) {
-            said = formatter.format(s.count()) + " is what the cash left affords. "
-                    + formatter.format(s.fullCount()) + " would " + goal(s.measure()) + ", for ≈ " + money(s.fullPrice()) + ".";
-        } else if (!s.closes()) {
-            said = doesWhat(s) + " - as far as " + s.template().getName() + "s go.";
-        } else {
-            said = doesWhat(s) + ".";
-        }
-        if (s.landShort() > 0) said += " Short " + shortNumber(s.landShort()) + " sq ft of land.";
-        Label line = new Label(said);
+        CardWords cw = cardWords(s);
+        Label line = new Label(cw.does());
         line.setWrapText(true);
-        line.setStyle(wordsAt(10.5, s.landShort() > 0 ? Palette.WARN : Palette.TEXT_LABEL));
-        VBox words = new VBox(2, what, line);
+        line.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
+        Label sized = new Label(cw.sized());
+        sized.setWrapText(true);
+        sized.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
+        Label land = new Label(cw.land());
+        land.setWrapText(true);
+        land.setStyle(wordsAt(10.5, s.landShort() > 0 ? Palette.WARN : Palette.TEXT_LABEL));
+        Tooltip.install(land, new Tooltip(cw.landTip()));
+        VBox words = new VBox(2, what, line, sized, land);
         HBox.setHgrow(words, Priority.ALWAYS);
         words.setMinWidth(0);
         HBox middle = new HBox(10, iconSquare(Icons.ofCategory(s.measure().category()), CITY_DOT, 34, 18), words);
@@ -1914,10 +1997,64 @@ final class BuildScreen {
     }
 
     /**
+     * A suggestion card's three lines (0.7.51), worked out without drawing
+     * them (a probe reads them): what the order does - and, on credit, by
+     * how much the cash the cards before leave falls short; when it opens
+     * and what it is sized for; and its ground - what it is worth, any of
+     * it to buy first, and with more than one, why so many - with the
+     * ranking behind the choice in the land line's tooltip.
+     */
+    record CardWords(String does, String sized, String land, String landTip) { }
+
+    CardWords cardWords(BuildAdvice.Suggestion s) {
+        String name = s.template().getName();
+        String does = doesWhat(s) + (s.closes() ? "." : " - as far as " + name + "s go.");
+        if (s.needsCredit()) does += " More than the treasury holds after the ones before, by " + money(s.credit())
+                + ": Build offers a loan.";
+
+        BuildAdvice.Ahead a = s.ahead();
+        String growth = a.k() > 1 ? "people +" + pct1(a.k() - 1) + " on the trend"
+                : ui.game.getBusinessInvestment().getPopulationGrowth() <= 0 ? "no growth on the trend"
+                : "people held at the homes there are";
+        String sized = "Opens " + monthsWait(s.lead()) + "; sized " + formatter.format(Math.round(a.months()))
+                + " mo out: " + growth + ", " + pct(BuildAdvice.SLACK) + " to spare.";
+
+        String per = BuildCard.perWords(s.measure());
+        String land = "Land " + LandManager.areaWords(s.landSqFt()) + " ≈ " + money(s.landValue())
+                + (s.landShort() > 0 ? " · " + LandManager.areaWords(s.landShort()) + " more than is free: buy it first" : "") + ".";
+        // HOW MANY, AND WHY (0.7.51): a big count of a small building - 133 home daycares - is the
+        // cheapest per unit with its ground, at what one of them serves.
+        // ...OF THOSE IN ITS RANK. The rule ranks a building that keeps the need ahead over one that
+        // cannot, and one that fits the land left over one that does not, before the price
+        // (BuildAdvice.suggestFor()), so the card is the cheapest of those, and its own two say which:
+        // city600's 11 gravel roads, $8,200 a trip, were "the cheapest" beside 2 bus networks at $3,431
+        // that cannot keep the road ahead (the docs pass, 0.7.51; the runner-up alone cannot tell).
+        String which = s.closes() ? (s.landShort() > 0 ? " that keeps it ahead" : " that keeps it ahead and fits the land left")
+                : s.landShort() > 0 ? "" : " that fits the land left";
+        if (s.count() > 1) {
+            land += " " + formatter.format(s.count()) + " of them: the cheapest per " + per + " with its land" + which
+                    + ", at " + shortNumber(s.unit()) + " " + BuildCard.perPlural(s.measure()) + " each.";
+        }
+        String next = s.runnerUp() == null ? ""
+                : switch (s.runnerUpLost()) {
+                    case DEARER       -> "; next, " + s.runnerUp().getName() + " at " + money(s.runnerUpPer());
+                    case CANNOT_CLOSE -> "; " + s.runnerUp().getName() + " cannot keep it ahead";
+                    case NO_ROOM      -> "; " + s.runnerUp().getName() + " needs more land than is left";
+                };
+        String tip = "Cheapest per " + per + " with its land" + which + ": " + money(s.pricePerUnit()) + next
+                + ". Land at the land office's " + groundPrice(ui.game.getLandManager().getOfficePricePerSqFt()) + "/m².";
+        return new CardWords(does, sized, land, tip);
+    }
+
+    /** A share as a percentage to one place: .0135 reads "1.4%" (the card's growth line puts its own "+"). */
+    static String pct1(double share) { return Double.isFinite(share) ? String.format("%.1f%%", share * 100) : "—"; }
+
+    /**
      * A suggestion's button (0.7.34): a card's words for its count, off the
-     * same verdict (orderPress()) - on credit as well when the cash left
-     * after the suggestions before it affords none (Suggestion.needsCredit(),
-     * the old "Order on credit").
+     * same verdict (orderPress()) - on credit as well when its quote is more
+     * than the cash the suggestions before it leave (Suggestion.needsCredit(),
+     * the old "Order on credit"; until 0.7.51 a card was cut to that cash
+     * first, and on credit only when it afforded none).
      */
     Pieces.Press suggestionPress(BuildAdvice.Suggestion s) {
         BuildCard.Verdict v = BuildCard.verdict(ui.game, s.template(), s.count());
@@ -2021,10 +2158,10 @@ final class BuildScreen {
     /**
      * A measure's verdict. Since 0.7.41 a served measure's is the one verdict
      * on what it serves (BuildAdvice.verdict()) - transit's and a school's
-     * fewer than a class would come to none, -1 - which also reads a stage of
-     * the basic ladder that is not the bottleneck on the SCHOOLS row's lines,
-     * as this did; the dead, the plots, the police and the cells, their NEEDS
-     * YOU row's level, or -1 with none.
+     * NEEDS YOU would not list (CityNeeds.listsSchool()) none, -1 - which
+     * also reads a stage of the basic ladder that is not the bottleneck on
+     * the SCHOOLS row's lines, as this did; the dead, the plots, the police
+     * and the cells, their NEEDS YOU row's level, or -1 with none.
      */
     int levelOf(BuildAdvice.Measure m, List<CityNeeds.Need> all) {
         if (BuildAdvice.isServed(m)) return BuildAdvice.verdict(ui.game, m, java.util.Map.of()).level();
@@ -2223,8 +2360,9 @@ final class BuildScreen {
                 figure = CityNeeds.servedPct(served.share());
                 arc = arc(served);
                 // ROOM, NOT RIDERS (0.7.29): the ring is what the stock could carry, and it
-                // said "carries 62.5k" where 41.4k rode - the ceiling, the fare and the cars
-                // walk it down (Infrastructure › Transit draws the steps).
+                // said "carries 62.5k" where 41.4k rode - the riders under it are the car-less
+                // in reach and the owners who chose the bus since 0.7.49 (Infrastructure ›
+                // Transit draws them by reason).
                 shortLine = sd[0] > 0 ? says + "room for " + shortNumber(Math.min(sd[0], sd[1])) + " of " + shortNumber(sd[1])
                         + " · " + shortNumber(game.getInfrastructureManager().getTransitRiders()) + " ride"
                         : "no transit yet";
@@ -2247,8 +2385,8 @@ final class BuildScreen {
                 figure = CityNeeds.servedPct(served.share());
                 shortLine = says + (m.school().isBasic()
                         ? (gap >= .5 ? "short " + people(gap) + " places" : "a place for every child")
-                        : sd[1] < CityNeeds.SEATS_FLOOR ? people(sd[1]) + " would come"
-                        : people(sd[0]) + " seats, " + people(sd[1]) + " would come");
+                        : sd[1] < CityNeeds.SEATS_FLOOR ? people(sd[1]) + " would come and be hired"
+                        : people(sd[0]) + " seats · " + people(sd[1]) + " would come and be hired");
                 break;
             case POLICE: {
                 double vs = need != null ? need.value() : BuildAdvice.figure(game, m, java.util.Map.of());
@@ -2357,6 +2495,13 @@ final class BuildScreen {
 
     // A card's tag - the best of these on one count - is Pieces.tag() in green since 0.7.26.
 
+    /** The money bar's (i) (0.7.45): what a build's money is struck at this month. */
+    String moneyBarInfo() {
+        return String.format("Cash costs and upkeep are struck at ×%.3f their founding figures this month (what money"
+                + " constants are struck at: what people expect prices to be); the builders' labour at today's wage.",
+                ui.game.getExpectations().getStruckLevel());
+    }
+
     /**
      * One of the card's two bars: what it measures, its figure, and the bar
      * scaled across its group - with no track when `track` is false (0.7.25):
@@ -2431,7 +2576,7 @@ final class BuildScreen {
         }
         if (staff.length() > 0) staff.append(" · ");
         double land = needs[needs.length - 1];
-        staff.append(shortNumber(land)).append(" sq ft");
+        staff.append(LandManager.areaWords(land));
         Label wants = new Label(staff.toString());
         wants.setWrapText(true);
         wants.setStyle(wordsAt(9.5,
@@ -2775,9 +2920,9 @@ final class BuildScreen {
                         formatter.format(e.getValue()), Formats.plural(g.unit()), g.label().toLowerCase(),
                         price > 0 ? " - " + money(e.getValue() * price) + " at today's price" : ""));
             }
-            if (t.getCategory() == BuildingType.MINING) {
-                out.add("Needs a land parcel with iron under it - cash and space alone"
-                        + " will not put one up.");
+            if (Game.siteOf(t) != null) {
+                out.add("Needs land with an " + (Game.siteOf(t) == Resource.OIL ? "oil" : "iron")
+                        + " field under it - cash and space alone will not put one up.");
             }
             return out;
         }
@@ -2789,7 +2934,9 @@ final class BuildScreen {
                 out.add(String.format("A branch of the city's bank. Another opens only while there are "
                         + "more than %,.0f customers for each one standing, and each brings %s of "
                         + "shareholders' capital with it, which is what lets the bank lend.",
-                        Bank.CUSTOMERS_PER_BRANCH, money(Bank.PAID_IN_PER_BRANCH)));
+                        // In today's money (0.7.45; the UI spec's B12): the bank's paid-in is struck at the
+                        // expected price level; PAID_IN_PER_BRANCH is its founding figure.
+                        Bank.CUSTOMERS_PER_BRANCH, money(ui.game.getBank().getPaidInPerBranch())));
                 out.add("Every branch after the first has to be paid for by its customers' "
                         + "account fees - its staff, its repairs and its running costs - or it closes.");
                 break;
@@ -2799,8 +2946,20 @@ final class BuildScreen {
                 break;
 
             case WATER:
-                out.add(String.format("Treats %s units of water a month.",
-                        formatter.format(t.getProduction1())));
+                // Where it draws from (0.7.59): fresh water up to the city's
+                // limit, or the sea, which the limit does not reach.
+                if (t.isSeaWater()) {
+                    out.add(String.format("Desalinates %s units of seawater a month, and draws %s of power doing it.",
+                            formatter.format(t.getProduction1()), power(t.getElectricityConsumption())));
+                    out.add("The fresh water limit does not reach it, but it has to stand on the coast: the city"
+                            + " must own some sea.");
+                } else {
+                    out.add(String.format("Treats %s units of fresh water a month.",
+                            formatter.format(t.getProduction1())));
+                    out.add(String.format("The plants together treat no more than the city's lakes and river yield:"
+                            + " %s units a month for each km² of them it owns.",
+                            formatter.format(UtilitiesHandler.FRESH_UNITS_PER_KM2)));
+                }
                 break;
 
             case INFRASTRUCTURE: {
@@ -2820,12 +2979,11 @@ final class BuildScreen {
                  * city has less of.
                  */
                 if (t.getCapacity() > 0) {
-                    out.add(String.format("Per 1,000 trips carried that is %s sq ft of"
+                    out.add(String.format("Per 1,000 trips carried that is %s of"
                             + " ground and %s construction points - the whole choice"
                             + " between the roads is which of those two you have less"
                             + " of.",
-                            formatter.format(Math.round(
-                                    t.getLandSqFt() * 1000.0 / t.getCapacity())),
+                            LandManager.areaWords(t.getLandSqFt() * 1000.0 / t.getCapacity()),
                             formatter.format(Math.round(
                                     t.getConstructionPoints() * 1000.0 / t.getCapacity()))));
                 }
@@ -3324,29 +3482,41 @@ final class BuildScreen {
      * specific. A mine is not short of cash or short of space, it is short of
      * ore, and the only thing that fixes that is a land parcel with iron under
      * it. Sending the player to the funding screen would sell them a bond that
-     * cannot help.
+     * cannot help. Since 0.7.61 it buys the most iron sites a dollar (THE
+     * BUILD SHORTCUT). Since 0.7.64 (batch L) it says plainly that an offer
+     * holds every field centred in it whole, and its Buy names the sites and
+     * the tonnes: the founding field of the default world is 35 sites and
+     * 449 Mt, about US$180M, which the land office's funding page sizes a
+     * bond to when the city is short.
+     *
+     * ...AND AN OIL WELL'S (0.7.62, batch K): the same page on its own
+     * resource - an Oil Well is short of an oil site - and the same Buy
+     * (Game.bestOffer(LandNeed.deposit(OIL))).
+     *
+     * ...THE CHEAPEST FIELD (0.7.64, batch L2): the Buy offers what the test
+     * player buys (LongPlaytest.ironWhenNeeded()) - the cheapest offer holding
+     * the deposit, LandMarket.cheapestWith() - where it offered the most sites
+     * a dollar, which on the default world is the 35-site founding field at
+     * about US$180M while a one-site field lies further out for a thirtieth of
+     * that. Its words name the offer, its sites, tonnes and price; short of
+     * cash, the land office's funding page, sized to it, as before. The land
+     * office still lists every offer.
      */
     void showNoDepositMenu(BuildingsTemplate selected, int quantity,
                                    String menuTitle, EnumSet<BuildingType> categories) {
         ui.clearMenu("showNoDepositMenu", () -> showNoDepositMenu(selected, quantity, menuTitle, categories));
 
         LandManager land = ui.game.getLandManager();
+        Resource site = Game.siteOf(selected) == null ? Resource.IRON : Game.siteOf(selected);
+        String[] words = noDepositPage(site, selected.getName(), quantity, land.getSites(site),
+                ui.game.committedOn(site), land.getRemaining(site));
 
-        Label title = new Label("NO IRON DEPOSIT");
+        Label title = new Label(words[0]);
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
-        VBox explanation = reportSection("WHY",
-                quantity + " x " + selected.getName() + " needs "
-                        + (ui.game.minesCommitted() + quantity) + " deposit(s).",
-                "The city owns " + land.getIronDeposits()
-                        + ", with " + ui.game.minesCommitted() + " already spoken for.",
-                "",
-                "A mine has to stand on ground with ore under it. Deposits come",
-                "with land: some parcels in the land office have iron, and they",
-                "cost more because of it.");
+        VBox explanation = reportSection("WHY", words[1], words[2], "", words[3], words[4], words[5]);
 
-        Label reserves = monoLabel(String.format(
-                "Ore still in the ground: %,.0f tonnes", land.getIronReserveTonnes()));
+        Label reserves = monoLabel(words[6]);
         reserves.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
 
         HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
@@ -3354,7 +3524,94 @@ final class BuildScreen {
         Button back = new Button("Back");
         back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
 
-        ui.rootMenu.getChildren().addAll(title, explanation, reserves, toLand, back);
+        ui.rootMenu.getChildren().addAll(title, explanation, reserves);
+        // The Build shortcut (0.7.61, star 14): since 0.7.64 the cheapest offer holding the resource, then back to the order.
+        LandParcel cheapest = ui.game.bestOffer(Game.LandNeed.deposit(site));
+        if (cheapest != null) {
+            ui.rootMenu.getChildren().add(bestLandButton(cheapest, noDepositWords(cheapest, site), words[7],
+                    () -> handleAllBuildingMenus(menuTitle, categories)));
+        }
+        ui.rootMenu.getChildren().addAll(toLand, back);
+    }
+
+    /**
+     * The no-deposit page's words, for iron or oil (0.7.62; pure, so a probe
+     * measures them): the title, the WHY section's five lines, the reserve
+     * line and the Buy's sub-line.
+     */
+    static String[] noDepositPage(Resource site, String building, int quantity, int owned, int committed, double left) {
+        boolean oil = site == Resource.OIL;
+        String word = BuildCard.depositWord(site);
+        return new String[] {
+            "NO " + word.toUpperCase(java.util.Locale.ROOT) + " DEPOSIT",
+            quantity + " x " + building + " needs " + (committed + quantity) + (oil ? " oil site(s)." : " deposit(s)."),
+            "The city owns " + owned + ", with " + committed + " already spoken for.",
+            oil ? "A well has to stand on ground with oil under it. Sites are" : "A mine has to stand on ground with ore under it. Deposits are",
+            oil ? "the world's oil fields, sold whole: an offer holds every" : "the world's iron fields, sold whole: an offer holds every",
+            "field centred in it, all its sites and tonnes, in its price.",
+            String.format(oil ? "Oil still in the ground: %,.0f tonnes" : "Ore still in the ground: %,.0f tonnes", left),
+            oil ? "the cheapest offer holding oil: whole fields, the oil in its price"
+                : "the cheapest offer holding iron: whole fields, the ore in its price" };
+    }
+
+    /** The no-deposit page's Buy: "Buy the cheapest: East 7 · 1 iron site, 12.8 Mt for US$6.16M" (or oil sites, 0.7.62) - its sites and, since 0.7.64, its tonnes: the whole of every field centred in it; "the cheapest" since 0.7.64 ("the best" was the most sites a dollar). */
+    static String noDepositWords(LandParcel p, Resource site) {
+        Resource r = site == null ? Resource.IRON : site;
+        int sites = p.getSites(r);
+        String word = BuildCard.depositWord(r);
+        return "Buy the cheapest: " + p.where() + " · " + sites + " " + word + (sites == 1 ? " site, " : " sites, ")
+                + LandMap.tonnes(p.getAmount(r)) + " for " + usd(p.getPriceUsd());
+    }
+
+    /**
+     * The city has the money and the land, and no sea to draw (0.7.59).
+     *
+     * Its own refusal for the reason the deposit has one: a desalination
+     * plant is not short of cash or ground, it is short of a coast, and the
+     * only thing that fixes that is an offer that runs out to the sea. The
+     * page names the cheapest one standing (Game.bestOffer(LandNeed.coast())),
+     * and since 0.7.61 buys it (THE BUILD SHORTCUT), or sends the player to
+     * the land office.
+     */
+    void showNoCoastMenu(BuildingsTemplate selected, int quantity,
+                         String menuTitle, EnumSet<BuildingType> categories) {
+        ui.clearMenu("showNoCoastMenu", () -> showNoCoastMenu(selected, quantity, menuTitle, categories));
+
+        LandParcel coast = ui.game.bestOffer(Game.LandNeed.coast());
+
+        Label title = new Label("NO COAST");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        VBox explanation = reportSection("WHY",
+                quantity + " x " + selected.getName() + " needs the sea to draw.",
+                "The city owns none: its land is all dry ground, lake and river.",
+                "",
+                "A desalination plant stands on the coast and draws seawater, so",
+                "the fresh water limit does not reach it. Offers in the land office",
+                "that run out to the sea carry some, its square kilometre priced",
+                String.format("at %.0f%% of dry ground's.", LandMarket.SEA_PRICE_SHARE * 100));
+
+        Label cheapest = monoLabel(coast == null
+                ? "No offer standing reaches the sea."
+                : String.format("Cheapest with sea: %s, %s of sea for %s",
+                        coast.where(), LandManager.areaWords(LandManager.sqFt(coast.getKm2(CityLand.SEA))),
+                        usd(coast.getPriceUsd())));
+        cheapest.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-padding: 6 0 0 0;");
+
+        HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> handleAllBuildingMenus(menuTitle, categories));
+
+        ui.rootMenu.getChildren().addAll(title, explanation, cheapest);
+        // The Build shortcut (0.7.61, star 14): the cheapest offer with sea, then back to the order.
+        if (coast != null) {
+            ui.rootMenu.getChildren().add(bestLandButton(coast, "Buy the cheapest with sea: " + coast.where() + " for "
+                            + usd(coast.getPriceUsd()), LandManager.areaWords(LandManager.sqFt(coast.getKm2(CityLand.SEA)))
+                            + " of sea for the plant to draw",
+                    () -> handleAllBuildingMenus(menuTitle, categories)));
+        }
+        ui.rootMenu.getChildren().addAll(toLand, back);
     }
 
     /**
@@ -3412,7 +3669,10 @@ final class BuildScreen {
      * Its own separate screen rather than a line on the funding screen, because
      * the two refusals have opposite answers: no cash is solved by borrowing,
      * no land only by annexing, and offering a T-Bill for a land shortage would
-     * sell debt that cannot fix the problem.
+     * sell debt that cannot fix the problem. Since 0.7.61 it buys the
+     * cheapest bare ground that covers the shortfall (THE BUILD SHORTCUT);
+     * its "Buying N costs roughly" line, priced a block at a time, went with
+     * the blocks. Its areas in square kilometres since 0.7.64.
      */
     void showNoLandMenu(BuildingsTemplate selected, int quantity,
                                 String prevTitle, EnumSet<BuildingType> prevCats) {
@@ -3422,31 +3682,48 @@ final class BuildScreen {
         double needed = ui.game.landNeededFor(selected, quantity);
         double have = land.getAvailableSqFt();
         double short_ = Math.max(needed - have, 0);
-        double blocks = Math.ceil(short_ / LandManager.BLOCK_SQ_FT);
 
         Label warning = new Label("NOT ENOUGH LAND");
         warning.setStyle("-fx-text-fill: " + Palette.BAD + "; -fx-font-weight: bold; -fx-font-size: 14px;");
 
         Label details = new Label(String.format(
-                "%,d x %s needs %s sq ft%n"
-                        + "The city has %s sq ft free%n"
-                        + "Short by %s sq ft - about %s",
-                quantity, selected.getName(), formatter.format(needed),
-                formatter.format(have), formatter.format(short_),
-                LandManager.km2Words(short_)));
-
-        Label cost = new Label(String.format(
-                "Buying %s costs roughly %s",
-                LandManager.km2Words(blocks * LandManager.BLOCK_SQ_FT),
-                money(land.getNextBlockCost() * blocks)));
-        cost.setStyle("-fx-text-fill: " + Palette.TEXT_MUTED + ";");
+                "%,d x %s needs %s%n"
+                        + "The city has %s free%n"
+                        + "Short by %s",
+                quantity, selected.getName(), LandManager.areaWords(needed),
+                LandManager.areaWords(have), LandManager.areaWords(short_)));
 
         HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
 
         Button back = new Button("Back");
         back.setOnAction(e -> handleAllBuildingMenus(prevTitle, prevCats));
 
-        ui.rootMenu.getChildren().addAll(warning, details, cost, toLand, back);
+        ui.rootMenu.getChildren().addAll(warning, details);
+        // The Build shortcut (0.7.61, star 14): the cheapest bare ground that covers the shortfall - back to the
+        // order once it is covered, this page again (its next best) while it is not.
+        LandParcel best = ui.game.bestOffer(Game.LandNeed.shortfall(short_));
+        if (best != null) {
+            ui.rootMenu.getChildren().add(bestLandButton(best, noLandWords(best), noLandSub(best, short_), () -> {
+                if (ui.game.landNeededFor(selected, quantity) <= ui.game.getLandManager().getAvailableSqFt()) {
+                    handleAllBuildingMenus(prevTitle, prevCats);
+                } else {
+                    showNoLandMenu(selected, quantity, prevTitle, prevCats);
+                }
+            }));
+        }
+        ui.rootMenu.getChildren().addAll(toLand, back);
+    }
+
+    /** The no-land page's Buy: "Buy the best: 3.4 km² for US$12.1M" (spec-land 2.8). */
+    static String noLandWords(LandParcel p) {
+        return "Buy the best: " + LandMap.area(p.getKm2()) + " for " + usd(p.getPriceUsd());
+    }
+
+    /** ...and what it is: bare ground that covers the shortfall, the ore left to the deposit's own page (batch J1c) - or, with no bare offer big enough, the best value, and buy again. */
+    static String noLandSub(LandParcel p, double shortSqFt) {
+        return p.getSizeSqFt() >= shortSqFt && LandMarket.bareGround(p)
+                ? p.where() + ", bare ground with no ore to pay for, covers the " + LandManager.areaWords(shortSqFt) + " short"
+                : p.where() + ", the best value: no bare offer covers it all, so buy again after";
     }
 
     /* =====================================================================
@@ -3563,6 +3840,7 @@ final class BuildScreen {
         switch (p.stop()) {
             case NO_LAND    -> showNoLandMenu(t, n, from.title(), from.categories());
             case NO_DEPOSIT -> showNoDepositMenu(t, n, from.title(), from.categories());
+            case NO_COAST   -> showNoCoastMenu(t, n, from.title(), from.categories());
             case NO_LICENCE -> showNoLicenceMenu(t, n, from.title(), from.categories());
             default -> {
                 if (paper == null) showBuildFunding(p.left(), from);
@@ -3623,7 +3901,8 @@ final class BuildScreen {
                 if (i++ == ahead) { at = e; break; }
             }
             String why = switch (g.buildRunStop(run)) {
-                case NO_DEPOSIT -> "no iron deposit is free for it";
+                case NO_DEPOSIT -> "no " + BuildCard.depositWord(Game.siteOf(at.getKey())) + " deposit is free for it";
+                case NO_COAST   -> "the city owns no sea for it to draw";
                 case NO_LICENCE -> "nobody is licensed to work in it";
                 default         -> "not enough ground is free for it";
             };

@@ -901,7 +901,7 @@ public class LongPlaytest {
 
     static void bankYear(Game g) {
         Bank bk = g.getBank();
-        int pop = g.getPopulationManager().getPopulation();
+        long pop = g.getPopulationManager().getPopulation();
         // -Dplaytest.capital=true (0.7.8): a line for every month the bank
         // provided or wrote anything off, and every five years - the trace the
         // batch's capital target was measured with (Bank.MAX_BUFFER).
@@ -932,6 +932,7 @@ public class LongPlaytest {
         countMortgages(g);
         countLeverage(g);
         countBonds(g);
+        countFuel(g);
         // -Dplaytest.defaults=true (0.7.8): every month the bank failed, a
         // sector went under whole, or the provision took a quarter of the
         // equity it opened with - and the sectors behind it: what each owes
@@ -1164,11 +1165,11 @@ public class LongPlaytest {
             NationalAccounts na = e.getNationalAccounts();
             flag(month, "negative monthly GDP", String.format(
                     "%.2f  (C %.0f  Iconstr %.0f  Istock %.0f  G %.0f  NX %.0f)"
-                    + "  Ifood %.0f  Imatl %.0f  | imports food %.0f matl %.0f raw %.0f exports %.0f",
+                    + "  Ifood %.0f  Imatl %.0f  Iheld %.0f  | imports food %.0f matl %.0f raw %.0f exports %.0f",
                     e.getMonthGdp(), na.getConsumption(),
                     na.getInvestmentConstruction(), na.getInvestmentInventories(),
                     na.getGovernment(), na.getNetExports(),
-                    na.getInventoryFood(), na.getInventoryMaterials(),
+                    na.getInventoryFood(), na.getInventoryMaterials(), na.getInventoryHeld(),
                     na.getImportsFood(), na.getImportsMaterials(), na.getImportsRawMaterial(), na.getExports()));
         }
         if (e.getNationalAccounts().getAnnualGdp() < 0) {
@@ -1643,7 +1644,7 @@ public class LongPlaytest {
         finite(month, "SAVE: accrued city interest", e.getExpenses());
 
         finiteArray(month, "SAVE: national accounts", e.getNationalAccountsState());
-        finiteArray(month, "SAVE: land listing", l.getMarket().getListingState());
+        for (double[] offer : l.getMarket().getOffersState()) finiteArray(month, "SAVE: land offers", offer);
 
         finite(month, "iron reserves", l.getIronReserveTonnes());
 
@@ -1654,9 +1655,16 @@ public class LongPlaytest {
             flag(month, "more mines than deposits",
                     g.minesCommitted() + " on " + l.getIronDeposits());
         }
-        if (l.getListing().size() != LandMarket.LISTING_SIZE) {
-            flag(month, "the land office window is the wrong size",
-                    "" + l.getListing().size());
+        // ...and the wells on the oil (0.7.62).
+        if (l.getOilReserveTonnes() < 0) flag(month, "negative oil reserves", "" + l.getOilReserveTonnes());
+        if (g.wellsCommitted() > l.getOilSites()) {
+            flag(month, "more wells than oil sites", g.wellsCommitted() + " on " + l.getOilSites());
+        }
+        // Six places a side (0.7.67): a place may wait empty, but only while its side has no room for it.
+        int roomy = l.getMarket().emptyWithRoom();
+        if (roomy > 0) {
+            flag(month, "the land office leaves a place empty with room for it",
+                    roomy + " of " + (LandMarket.OFFERS - l.getListing().size()) + " empty");
         }
 
         // Every band-priced good stays inside its band.
@@ -2008,7 +2016,7 @@ public class LongPlaytest {
         if (traceLabour == null) return;
         PopulationManager p = g.getPopulationManager();
         LabourMarket lm = g.getLabourMarket();
-        int[] jobs = p.getJobs();
+        long[] jobs = p.getJobs();
         double[] fill = p.getJobFillRate();
         double[] own = p.workforceByBand();
         double[] supply = p.supplyByBand();
@@ -2028,8 +2036,8 @@ public class LongPlaytest {
         double grads = Math.max(0, filled[none] - Math.min(own[none], filled[none]));
         double[] mix = g.getMigration().getLastArrivalMix();
         double[] cat = new double[4];
-        int[] hp = g.getBuildingManager().getJobArrayPerCategory(BuildingType.HEALTHCARE);
-        int[] ep = g.getBuildingManager().getJobArrayPerCategory(BuildingType.EDUCATION);
+        long[] hp = g.getBuildingManager().getJobArrayPerCategory(BuildingType.HEALTHCARE);
+        long[] ep = g.getBuildingManager().getJobArrayPerCategory(BuildingType.EDUCATION);
         for (int i = 0; i < hp.length && i < fill.length; i++) {
             cat[0] += hp[i]; cat[1] += hp[i] * fill[i];
             cat[2] += ep[i]; cat[3] += ep[i] * fill[i];
@@ -2156,8 +2164,8 @@ public class LongPlaytest {
         ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
         BusinessDebtManager cr = g.getEconomyManager().getBusinessDebtManager();
         String key = re.key();
-        int jobs = g.getPopulationManager().getTotalJobs();
-        int capacity = g.getHouseholdCapacity();
+        long jobs = g.getPopulationManager().getTotalJobs();
+        long capacity = g.getHouseholdCapacity();
         double mortgages = cr.getMortgagePrincipal(key);
         String why = String.valueOf(g.getLastInvestment(key)).replace(',', ';');
         traceHouse.printf(java.util.Locale.ROOT,
@@ -2253,11 +2261,16 @@ public class LongPlaytest {
        for the life of a run. -Dplaytest.wages=true prints, at every
        checkpoint and at the end, the three figures that say whether that is
        still true: costOfLiving, the price index, and the level the two-year
-       lag IMPLIES - this harness's own copy of LabourMarket's recurrence,
-       walked a DRIFT_PER_MONTH of the way each month toward the index the
-       month was handed. A second indexation, a jump on a reform or a load,
-       or any path that moves the wage index without the lag, shows as the
-       two drifting apart. Unset, nothing is computed or printed.
+       lag IMPLIES - this harness's own copy of LabourMarket's recurrence as
+       it stood until 0.7.42, walked a DRIFT_PER_MONTH of the way each month
+       toward the index the month was handed. A second indexation, a jump on
+       a reform or a load, or any path that moves the wage index without the
+       lag, shows as the two drifting apart. Unset, nothing is computed or
+       printed. SINCE 0.7.42 THE COPY IS THE CHASE ALONE: once the basket is
+       based a wage takes half its indexing from expected inflation and a
+       forty-eighth of the gap (LabourMarket, HALF WHAT PEOPLE EXPECT, HALF
+       THE CHASE), which this copy does not, so the two part by that too -
+       LabourCheck.wagesAgainstTheIndex() holds the new recurrence.
        ===================================================================== */
 
     /** -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. */
@@ -2393,12 +2406,12 @@ public class LongPlaytest {
      */
     static void ensureSchools(Game g) {
         if (!SCHOOLS) return;
-        int people = g.getPopulationManager().getPopulation();
-        ensure(g, "Elementary School", people < 1_000 ? 0 : 1 + people / 10_000);
-        ensure(g, "Middle School", people < 1_000 ? 0 : 1 + people / 10_000);
-        ensure(g, "High School", people < 2_000 ? 0 : 1 + people / 15_000);
-        ensure(g, "Community College", people < 5_000 ? 0 : 1 + people / 40_000);
-        ensure(g, "University", people < 10_000 ? 0 : 1 + people / 40_000);
+        long people = g.getPopulationManager().getPopulation();
+        ensure(g, "Elementary School", people < 1_000 ? 0 : (int) (1 + people / 10_000));
+        ensure(g, "Middle School", people < 1_000 ? 0 : (int) (1 + people / 10_000));
+        ensure(g, "High School", people < 2_000 ? 0 : (int) (1 + people / 15_000));
+        ensure(g, "Community College", people < 5_000 ? 0 : (int) (1 + people / 40_000));
+        ensure(g, "University", people < 10_000 ? 0 : (int) (1 + people / 40_000));
     }
 
     /** What the flag has ordered of each school, so one under construction is not ordered twice. */
@@ -2479,7 +2492,7 @@ public class LongPlaytest {
         Health health = g.getHealth();
 
         double gdp = Math.max(1, e.getMonthGdp());
-        int population = p.getPopulation();
+        long population = p.getPopulation();
         double perHead = population > 0 ? gdp / population : 0;
 
         /* ================================================================
@@ -2543,22 +2556,45 @@ public class LongPlaytest {
 
         java.util.List<Move> moves = new java.util.ArrayList<>();
 
+        /*
+         * GROUND KEPT AHEAD (0.7.58, batch J1d), the way the build advice
+         * keeps slack - Jerus, of the advice: "it doesnt build any slack".
+         * When a look finds more of the city's dry ground built on than
+         * groundAheadUtilisation() allows - the ground the city will be using
+         * BuildAdvice.HORIZON months out, by the businesses' growthFactor(),
+         * with BuildAdvice.SLACK past it - the player buys the best value
+         * (Game.bestOffer(LandNeed.room())) until it does not, spending no
+         * more than GROUND_AHEAD_CASH_SHARE of the cash. A rule, as the war
+         * chest is, not a scored move; the room-to-grow move below is still
+         * scored when the ground is past .85.
+         *
+         * WHY: that move buys one offer a move, three moves a look, and a look
+         * comes six to a hundred and twenty months apart. On the world's land
+         * (0.7.57) an offer is a multiple of 1% of the city, where 0.7.55's
+         * parcels had a floor of a block more for every forty owned, and the
+         * cheapest a square foot is the oldest, listed when the city was
+         * smaller: in months 300-1,000 a look's offers added 8.7% to the
+         * city's ground where 0.7.55's added 17.1%, and from month 1,000 to
+         * 3,000 the city was half 0.7.55's size (19,846 and 59,965 people on
+         * average against 41,222 and 126,562). Keeping its ground ahead, it is
+         * 43,217 and 119,800 (runs/fixJ1d-notes.md).
+         */
+        keepGroundAhead(g);
+
+        // Iron, a whole field at a time (0.7.64, batch L): a rule, as the
+        // ground kept ahead is - see ironWhenNeeded().
+        ironWhenNeeded(g);
+
         /* --- room to grow. Not a building, and it gates every building. --- */
-        double utilisation = land.getOwnedSqFt() > 0
-                ? land.getAllocatedSqFt() / land.getOwnedSqFt() : 1;
-        if (utilisation > .85) {
+        double roomLost = roomToGrow(g);
+        if (roomLost > 0) {
             LandParcel room = land.getMarket().bestValue();
             if (room != null) {
-                /*
-                 * Priced as the whole city's output, because a city with no
-                 * ground stops entirely - measured, in an earlier playtest: it
-                 * ran down to 8,000 spare square feet with $106M in the bank
-                 * and then shed its construction sector from 2,900 capacity to
-                 * 100 over four months.
-                 */
-                moves.add(new Move("bought room to grow",
-                        gdp * (utilisation - .85) / .15,
-                        () -> g.buyLandParcel(room.getId())));
+                moves.add(new Move("bought room to grow", roomLost, () -> {
+                    boolean bought = g.buyLandParcel(room.getId());
+                    if (bought) roomMovesBought++;
+                    return bought;
+                }));
             }
         }
 
@@ -2583,8 +2619,7 @@ public class LongPlaytest {
         double powerGain = gdp * (1 - g.getEnergyRatio());
         addThrottle(moves, g, "Wind Farm", "wind farm", powerGain);
         addThrottle(moves, g, "Coal Power Plant", "power plant", powerGain);
-        addThrottle(moves, g, "Water Treatment Plant", "water plant",
-                gdp * (1 - g.getWaterRatio()));
+        addWater(moves, g, gdp * (1 - g.getWaterRatio()));
 
         /*
          * ROADS, AND ALL THREE OF THEM. The old rule only ever built Paved
@@ -2790,14 +2825,15 @@ public class LongPlaytest {
                     gdp * .05);
         }
 
-        /* --- ore, which is the one thing the private sector cannot buy --- */
-        if (land.getIronDeposits() <= g.minesCommitted()) {
-            LandParcel deposit = land.getMarket().richestDeposit();
-            if (deposit != null) {
-                moves.add(new Move("bought a deposit", gdp * .03,
-                        () -> g.buyLandParcel(deposit.getId())));
-            }
-        }
+        /*
+         * --- ore, which is the one thing the private sector cannot buy ---
+         * A rule since 0.7.64, called with the ground kept ahead above
+         * (ironWhenNeeded()). Until then a move here, "bought a deposit",
+         * bought the richest offer in iron (sites a dollar) out of the cash
+         * whenever every site the city owned had a mine on it or ordered,
+         * whether or not a mine would pay, weighed at gdp x .03 against the
+         * look's other moves.
+         */
         /*
          * ...AND ONLY A MINE THAT WOULD PAY (2026-09-10). A deposit the city
          * owns is not a reason to sink a mine on it, and this used to be one:
@@ -2812,6 +2848,28 @@ public class LongPlaytest {
          */
         if (land.hasUnminedDeposit(g.minesCommitted()) && wouldPay(g, "Iron Mine", Sectors.MINING)) {
             addThrottle(moves, g, "Iron Mine", "mine", gdp * .05);
+        }
+
+        /*
+         * --- and oil, when the city's fuel is a bill abroad (0.7.62, batch K;
+         * spec-land 3's K entry) ---
+         *
+         * The richest offer in oil, sites a dollar, while the fuel the world
+         * sold the city last month - its drivers' and its railway's - passes
+         * OIL_FUEL_IMPORTS_SHARE of a month's GDP and every oil site it owns
+         * has a well on it or ordered. The wells and the refinery are left to
+         * the investors (spec star 13), so what follows a purchase is the
+         * private response this tests. The deposit's weight, as iron's.
+         */
+        if (fuelBoughtAbroad(g) > OIL_FUEL_IMPORTS_SHARE * gdp && land.getOilSites() <= g.wellsCommitted()) {
+            LandParcel oil = land.getMarket().richest(Resource.OIL);
+            if (oil != null) {
+                moves.add(new Move("bought oil", gdp * .03, () -> {
+                    boolean bought = g.buyLandParcel(oil.getId());
+                    if (bought) oilBought++;
+                    return bought;
+                }));
+            }
         }
 
         /* --- and jobs, when there are people with nothing to do --- */
@@ -2838,6 +2896,194 @@ public class LongPlaytest {
         return null;
     }
 
+    /*
+     * IRON, A WHOLE FIELD AT A TIME (0.7.64, batch L). Jerus, 2026-10-07:
+     * "Yes whole iron fields as one offer, yes that means significant
+     * investment." An offer holds every field centred in its band whole
+     * (CityLand), so the default world's founding field is 35 sites and
+     * 449 Mt in one offer of about US$180M, and its nearest one-site fields
+     * about US$5.1M of ore each with their ground. The player's rule, a
+     * sensible player's:
+     *
+     *   - WHEN IT NEEDS IRON: an Iron Mine would pay on the private sector's
+     *     screen (wouldPay()) - the test it already reads before it sinks a
+     *     mine; a field nobody would work is not worth a field's price;
+     *   - AND OWNS NO UNWORKED SITE: every iron site it owns has a mine on it
+     *     or ordered (Game.minesCommitted()), the old move's test;
+     *   - IT BUYS THE CHEAPEST WHOLE-FIELD OFFER STANDING
+     *     (LandMarket.cheapestWith()), whatever its size;
+     *   - WHEN THE MINES IT WILL BUILD PAY THE FIELD BACK (0.7.67, batch M3b):
+     *     the mines the field would carry earn in a month at least the level
+     *     payment that repays its price over BUILD_BOND_YEARS, the funding
+     *     page's own term, at the rate the market quotes for that much money
+     *     (fieldPayment()). The mines are the ones the city could staff
+     *     (Sector.staffableCount(), every planner's test before it builds
+     *     posts), up to the field's sites, each that would pay on the mining
+     *     sector's own screen with the ones before it lifting: the mills'
+     *     projected demand first, the rest at the export price
+     *     (fieldEarnings()). Jerus, of the build advice: "take into account
+     *     the same as businesses do, aka a projection". Not paying back, it
+     *     asks again at the next look, counted;
+     *   - ONCE IT CAN PAY FOR IT: out of the cash when the cash covers it, as
+     *     the land office's Buy does; short, with the land office's funding
+     *     page's bond - BUILD_BOND_YEARS, sized to Game.landCashGap() - when
+     *     the player's own test for borrowing passes (canService(): the
+     *     interest on all it owes with the bond in it within
+     *     DEBT_SERVICE_LIMIT of the tax take, the test every building it
+     *     borrows for passes). Neither, it asks again at the next look: it
+     *     waits only until the city can carry the cheapest field standing,
+     *     and never for a cheaper one to be listed.
+     *
+     * A rule, as the ground kept ahead is, not a scored move: a look carries
+     * out its one weightiest move that succeeds, and when the city buys its
+     * iron should not hang on what else the look found.
+     *
+     * WHY THE PAYBACK (M3b): wouldPay() asks of one more mine, and the
+     * borrowing test of the city's tax take; neither asks whether the field
+     * is worth its price. On the block grid the founding field's offer can
+     * be the cheapest holding iron, and the rule bought all 35 sites for
+     * what the borrowing test would carry: the 0.7.67 playtest at month 356
+     * with 2,759 people, US$206.2M on a D$251.6M bond, worked by two mines
+     * at month 608 and three at month 759; with the room move priced from
+     * the line, at month 123 with 666 people on a D$271.4M bond, the tax
+     * take the test read that month raised sevenfold (D$5.1M against
+     * D$0.74M) by the building the city had borrowed for the month before.
+     * On 0.7.67's ensemble seeds 0 and 4 took it on the bond with 869 and
+     * 2,273 people (runs/fixM3b-notes.md).
+     */
+    static void ironWhenNeeded(Game g) {
+        LandManager land = g.getLandManager();
+        if (land.getIronDeposits() > g.minesCommitted()) return;
+        if (!wouldPay(g, "Iron Mine", Sectors.MINING)) return;
+        if (firstIronNeedMonth == 0) firstIronNeedMonth = g.getMonth();
+        LandParcel field = land.getMarket().cheapestWith(Resource.IRON);
+        if (field == null) {
+            ironNoneListed++;
+            return;
+        }
+        if (!(fieldEarnings(g, field.getDeposits())[1] >= fieldPayment(g, field))) {
+            ironDoesNotPay++;
+            return;
+        }
+        int sitesBefore = land.getIronDeposits();
+        String paid = buyWhole(g, field, "an iron field");
+        if (paid == null) {
+            ironCouldNotPay++;
+            return;
+        }
+        ironFieldsBought++;
+        if (paid.equals("bond")) ironFieldsOnBond++;
+        if (firstIronMonth == 0) {
+            firstIronMonth = g.getMonth();
+            firstIron = String.format("m%d: %s, %d site(s), %,.1f Mt, US$%,.0fk, %s (the city %,d people)",
+                    g.getMonth(), field.where(), land.getIronDeposits() - sitesBefore, field.getIronTonnes() / 1e6,
+                    field.getPriceUsd(), paid.equals("bond") ? "the funding page's bond for the rest" : "out of the cash",
+                    g.getPopulationManager().getPopulation());
+        }
+    }
+
+    /**
+     * Buys an offer as the land office does (0.7.64): out of the cash when it
+     * covers it - "cash" - or, converting and short, the funding page's
+     * BUILD_BOND_YEARS bond for the gap when canService() carries it, then
+     * the offer - "bond"; null when nothing was bought. Paying from the vault
+     * is not this rule's (the playtest converts): null.
+     */
+    static String buyWhole(Game g, LandParcel p, String purpose) {
+        java.util.List<Integer> ids = java.util.List.of(p.getId());
+        if (!g.landNeedsFunding(ids)) return g.buyLandParcel(p.getId()) ? "cash" : null;
+        if (g.isLandPaidFromVault()) return null;
+        double gap = g.landCashGap(ids);
+        if (!canService(g, gap)) return null;
+        g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        notePaper(g, purpose + " (the land office's funding page)");   // the trace; nothing else reads it
+        if (g.landNeedsFunding(ids)) return null;
+        return g.buyLandParcel(p.getId()) ? "bond" : null;
+    }
+
+    /** Over the run (0.7.64): iron offers bought, how many on the funding page's bond, the first look that needed iron, the first purchase's month and words, and the looks that needed iron and could not pay for the cheapest field or found none listed. */
+    static int ironFieldsBought, ironFieldsOnBond, firstIronNeedMonth, firstIronMonth, ironCouldNotPay, ironNoneListed;
+    static String firstIron = "never";
+
+    /** Over the run (0.7.67, M3b): the looks that needed iron whose cheapest field would not pay itself back (fieldEarnings() under fieldPayment()). */
+    static int ironDoesNotPay;
+
+    /**
+     * What a field of `sites` iron sites would earn the city's mines a month
+     * (0.7.67, M3b): {mines, their monthly profit}. The mines are no more
+     * than the sites and than the mining sector could staff
+     * (Sector.staffableCount()), and each counted would pay on the sector's
+     * own screen (BusinessInvestment.estimatedMonthlyProfit()) with the ones
+     * before it lifting: the first is that figure, and each after it sells
+     * at home what the planners' forecast of the mills' demand leaves of the
+     * room (BusinessInvestment.forecast(), less the mines standing and on
+     * site) and the rest at the export price, as estimatedMakerProfit()
+     * splits it. The first that would not pay ends the count.
+     */
+    static double[] fieldEarnings(Game g, int sites) {
+        BuildingsTemplate mine = template(g, "Iron Mine");
+        Sector mining = g.getSectors().byKey(Sectors.MINING);
+        if (mine == null || mining == null || sites <= 0) return new double[] { 0, 0 };
+        BusinessInvestment plans = g.getBusinessInvestment();
+        GoodsMarket ore = g.getEconomyManager().getMarkets().get(Good.IRON);
+        double units = mine.makes(Good.IRON);
+        double room = Math.max(0, plans.forecast(mining, ore) - mining.getCapacity(Good.IRON) - mining.getPipeline(Good.IRON));
+        double first = plans.estimatedMonthlyProfit(Sectors.MINING, mine);
+        double homeFirst = Math.min(units, room);
+        double abroad = Good.IRON.exportable() ? Math.max(0, ore.netExportPrice()) : 0;
+        double perTonneAtHome = (ore.getLocalPrice() - abroad) * BusinessInvestment.operatingRateOf(mining.getOperatingRate());
+        int staffable = mining.staffableCount(mine, sites);
+        int mines = 0;
+        double monthly = 0;
+        for (int i = 0; i < staffable; i++) {
+            double home = Math.max(0, Math.min(units, room - i * units));
+            double profit = first + (home - homeFirst) * perTonneAtHome;
+            if (!(profit > 0)) break;
+            mines++;
+            monthly += profit;
+        }
+        return new double[] { mines, monthly };
+    }
+
+    /**
+     * The month's payment that repays a field's price here over
+     * Game.BUILD_BOND_YEARS (0.7.67, M3b): the level payment at the rate the
+     * market quotes for that much money at that term
+     * (DebtManager.quoteRate()) - the funding page's bond, whether or not the
+     * cash would cover it, because cash sunk in ground is cash the city does
+     * not lend or spend.
+     */
+    static double fieldPayment(Game g, LandParcel field) {
+        double price = field.localPrice(fxRate(g));
+        int months = Game.BUILD_BOND_YEARS * 12;
+        double monthlyRate = g.getDebtManager().quoteRate(price, months) / 12;
+        return monthlyRate > 0 ? price * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months)) : price / months;
+    }
+
+    /** The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. */
+    static final double OIL_FUEL_IMPORTS_SHARE = .01;
+
+    /** Offers with oil the test player bought over the run (0.7.62). */
+    static int oilBought;
+
+    /** The fuel the world sold the city last month (0.7.62): its drivers' (Game.getHouseholdFuelImports()) and its railway's (Rail.getFuelImported()). */
+    static double fuelBoughtAbroad(Game g) {
+        return g.getHouseholdFuelImports() + g.getSectors().rail().getFuelImported();
+    }
+
+    /** Over the run (0.7.62): the drivers' and the railway's fuel, what of it was bought abroad, the first well and refinery, and the most refineries standing. */
+    static double fuelBillRun, fuelAbroadRun;
+    static int firstWellMonth, firstRefineryMonth, mostRefineries;
+
+    static void countFuel(Game g) {
+        fuelBillRun += g.getHouseholdFuel() + g.getSectors().rail().getFuelBill();
+        fuelAbroadRun += fuelBoughtAbroad(g);
+        int wells = qty(g, "Oil Well"), refineries = qty(g, "Oil Refinery");
+        if (firstWellMonth == 0 && wells > 0) firstWellMonth = g.getMonth();
+        if (firstRefineryMonth == 0 && refineries > 0) firstRefineryMonth = g.getMonth();
+        mostRefineries = Math.max(mostRefineries, refineries);
+    }
+
     /**
      * How much of a gain arrives later rather than now.
      *
@@ -2848,6 +3094,157 @@ public class LongPlaytest {
      * the one number that replaces that ordering.
      */
     static final double GROWTH_DISCOUNT = .15;
+
+    /**
+     * The share of the treasury's cash one look spends keeping ground ahead
+     * (0.7.58, J1d): a tenth, the share the war chest tops the reserves up
+     * from and the every-13th-stop purchase is held under.
+     */
+    static final double GROUND_AHEAD_CASH_SHARE = .10;
+
+    /** Over the run: offers bought to keep ground ahead, their dry square feet and US dollars (thousands), and the looks the cash share stopped short. */
+    static int groundAheadBought, groundAheadShort;
+    static double groundAheadSqFt, groundAheadUsd;
+
+    /**
+     * The most of its dry ground a look leaves built on (0.7.58, J1d): the
+     * ground in use grown BuildAdvice.HORIZON months by the businesses'
+     * growthFactor(), with BuildAdvice.SLACK past it - the build advice's
+     * own sizing (0.7.51), applied to the ground. About .95 in a city that
+     * is not growing, lower in one that is.
+     */
+    static double groundAheadUtilisation(Game g) {
+        return 1 / (g.getBusinessInvestment().growthFactor(BuildAdvice.HORIZON) * (1 + BuildAdvice.SLACK));
+    }
+
+    /**
+     * ROOM TO GROW, PRICED FROM THE LINE (0.7.67, batch M3b): the output a
+     * look's room-to-grow move is weighed at - none while no more of the
+     * dry ground is built on than groundAheadUtilisation(), rising to the
+     * whole month's GDP when all of it is, because a city with no ground
+     * stops entirely (measured, in an earlier playtest: it ran down to 8,000
+     * spare square feet with $106M in the bank and then shed its
+     * construction sector from 2,900 capacity to 100 over four months).
+     *
+     * WHY: the move was priced from .85, gdp x (u - .85) / .15, from before
+     * the ground was kept ahead (0.7.58). keepGroundAhead() leaves a look at
+     * the line, .92 to .95, where the projection says the ground holds six
+     * months' growth with the slack - and there the old price claimed 45 to
+     * 67% of the month's output was being lost for want of ground, and beat
+     * the power and the roads the city was short of. On 0.7.67's ensemble the
+     * move won 670 of 1,036 moves to month 1,200 (0.7.63: 711 of 1,048), 388
+     * of them over a throttle costing 10% of output or more. Seed 14 drew it
+     * at months 477-490: all six moves bought ground (8 offers, 0.66 km2)
+     * while power stood at 73% and the roads at 83%; a 120-month skip later
+     * they ran at 54% and 45%, its plants at 23% of nameplate, and its jobs
+     * fell from 4,337 to 1,614 (runs/fixM3b-notes.md). One line now says how
+     * much ground is enough: the build advice's, which keepGroundAhead()
+     * already keeps.
+     */
+    static double roomToGrow(Game g) {
+        LandManager land = g.getLandManager();
+        double used = land.getOwnedSqFt() > 0 ? land.getAllocatedSqFt() / land.getOwnedSqFt() : 1;
+        double line = groundAheadUtilisation(g);
+        if (!(used > line)) return 0;
+        return Math.max(1, g.getEconomyManager().getMonthGdp()) * Math.min(1, (used - line) / (1 - line));
+    }
+
+    /** Over the run (0.7.67, M3b): offers the room-to-grow move bought. */
+    static int roomMovesBought;
+
+    /**
+     * GROUND KEPT AHEAD (see advise()): buys the best value for room while
+     * more of the dry ground is built on than groundAheadUtilisation(), the
+     * offers together costing no more than GROUND_AHEAD_CASH_SHARE of the
+     * cash at the look. Stops at the first offer past what is left of that
+     * share, and counts the look as stopped short.
+     */
+    static void keepGroundAhead(Game g) {
+        LandManager land = g.getLandManager();
+        double most = groundAheadUtilisation(g);
+        double budget = Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE;
+        int guard = 0;
+        while (land.getOwnedSqFt() > 0 && land.getAllocatedSqFt() / land.getOwnedSqFt() > most
+                && guard++ < 60) {
+            LandParcel best = g.bestOffer(Game.LandNeed.room());
+            if (best == null) break;
+            double local = best.localPrice(g.getForeignAccounts().getRate());
+            if (local > budget || !g.canAffordParcel(best)) {
+                groundAheadShort++;
+                break;
+            }
+            if (!g.buyLandParcel(best.getId())) break;
+            budget -= local;
+            groundAheadBought++;
+            groundAheadSqFt += best.getSizeSqFt();
+            groundAheadUsd += best.getPriceUsd();
+        }
+    }
+
+    /**
+     * WATER, AND WHERE IT COMES FROM (0.7.59, batch J2; spec-land 3, J2's
+     * playtest rule). A Water Treatment Plant treats no more than the city's
+     * lakes and river yield (UtilitiesHandler, THE FRESH WATER LIMIT), so a
+     * shortage is met with a water plant only while one more would deliver:
+     * while the fresh water left under the limit, after the plants standing
+     * and on site, covers what is short or a whole plant, and then no more
+     * plants than that water feeds. When it does not - the limit binds -
+     * the player builds desalination if the city owns sea; otherwise buys
+     * the offer with the most lake or river a dollar
+     * (LandMarket.bestFresh()); and with no fresh water on offer, the
+     * cheapest offer with sea (Game.bestOffer(LandNeed.coast())), the
+     * desalination plant following at a later move. Each priced, as the
+     * plant always was, at the output the shortage is costing.
+     */
+    static void addWater(java.util.List<Move> moves, Game g, double lost) {
+        if (lost <= 0) return;
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        BuildingsTemplate plant = template(g, "Water Treatment Plant");
+        if (plant == null) return;
+        double fill = u.getAverageUtilityFill();
+        double onSite = 0;
+        for (BuildingsStacks s : g.getBuildingManager().getStacksUnderConstruction()) {
+            if (s.getBuilding().isFreshWater()) onSite += s.getUnderConstruction() * s.getBuilding().getProduction1();
+        }
+        double headroom = Math.max(0, u.getFreshCap() - (u.getFreshNameplate() + onSite) * fill);
+        double shortage = Math.max(0, u.getWaterConsumption() - u.getWaterProduction());
+        double onePlant = plant.getProduction1() * fill;
+        if (headroom >= Math.min(shortage, onePlant)) {
+            // No more plants than the fresh water left feeds, the last of them in part.
+            int fed = (int) Math.max(1, Math.min(25, Math.ceil(headroom / Math.max(1, onePlant))));
+            double gap = lost / Math.max(1, g.getEconomyManager().getMonthGdp());
+            addThrottle(moves, g, "Water Treatment Plant", "water plant", lost, Math.min(gap, (fed - .5) / 25.0));
+            return;
+        }
+        LandManager land = g.getLandManager();
+        if (land.getSeaKm2() > 0) {
+            addThrottle(moves, g, "Desalination Plant", "desalination", lost);
+            return;
+        }
+        LandParcel lake = land.getMarket().bestFresh();
+        LandParcel buy = lake != null ? lake : g.bestOffer(Game.LandNeed.coast());
+        if (buy == null) return;
+        waterLandOffered++;
+        moves.add(new Move(lake != null ? "bought fresh water" : "bought a coast",
+                lost * (1 - moves.size() * 1e-6), () -> {
+                    if (!g.buyLandParcel(buy.getId())) return false;
+                    if (lake != null) freshBought++; else coastsBought++;
+                    return true;
+                }));
+    }
+
+    /** Over the run: offers bought for their lakes and river past the fresh water limit, offers bought for a coast, and the moves that offered either (0.7.59). */
+    static int freshBought, coastsBought, waterLandOffered;
+
+    /**
+     * THE CITY MAP, WATCHED (0.7.60, batch J3): the run asks for its city's
+     * map at the founding, so every month keeps it up (Game.reconcileMap())
+     * and every save writes its sidecar - nothing in the model reads it, so
+     * the traces are the proof. The months it was kept, the months its
+     * districts did not sum to the buildings (a finding), and the reloads
+     * that read it back the same.
+     */
+    static int mapMonths, mapMismatches, mapReloads, mapReloadsSame;
 
     /**
      * The road constraint, and every way there is of easing it.
@@ -2889,8 +3286,30 @@ public class LongPlaytest {
             if (seats > 0) {
                 if (room <= 0) continue;                 // the buses are already full
                 trips = Math.min(seats, room) * perRider;
-                // ...and never order more of them than the city could use.
-                gap = Math.min(roadGap, room / seats);
+                // ...and never order more of them than the city could use:
+                // room / seats LINES, and gap is a share of addThrottle()'s 25
+                // at a full outage, so the lines over 25 (0.7.67, M3b). Until
+                // then the cap was 25 times too loose: ensemble seed 14, its
+                // roads at 66% after its plants closed, ordered 16 Bus Networks
+                // in two moves (months 613-614) for a city of 8,000, and their
+                // crews' wages, the treasury's since 0.7.49, ran from D$28M to
+                // D$130M a month - half to all of its revenue - with the cash
+                // below nothing from month 654 (runs/fixM3b-notes.md).
+                gap = Math.min(roadGap, room / seats / 25.0);
+                /*
+                 * ...NOR MORE THAN THE OUTPUT AND THE FARES THEY GIVE BACK PAY
+                 * THE WAGES OF (0.7.49, D3). The treasury pays transit's crews
+                 * since B9, and a Bus Network is a post per ten seats: this
+                 * player had 25 of them at m1000 in a city of 15,740, and at
+                 * the transit spec's checkpoints their bill, unpaid, was up to
+                 * 54% of a month's output. Jerus chose to teach it to count
+                 * the wages: the police station's rule above - bought when
+                 * what it takes off is more than it costs to run - with the
+                 * riders' fares counted (linesThatPay()).
+                 */
+                int lines = linesThatPay(g, t, (int) Math.max(1, Math.min(25, Math.ceil(gap * 25))));
+                if (lines <= 0) continue;
+                gap = Math.min(gap, (lines - .5) / 25.0);
             } else {
                 trips = t.getCapacity();
                 gap = roadGap;
@@ -2952,6 +3371,34 @@ public class LongPlaytest {
                 () -> build(g, name, quantity)));
     }
 
+    /**
+     * The most of these transit lines, up to most, that pay their way this
+     * month (0.7.49, D3): the output the road gives back with them standing
+     * (the month's GDP times the throughput they add, on the network as it
+     * would be - InfrastructureManager.with()) and a month of fares from the
+     * riders they add, against their running cost (runningCost()), all k of
+     * them. The first k from most down that pays; 0 when none does. Myopic
+     * on purpose, and blind to lines already on site: Jerus asked for the
+     * wages, and counting the sites was measured to cost a tenth of the
+     * city at m4000 (the transit spec's ★10).
+     */
+    static int linesThatPay(Game g, BuildingsTemplate t, int most) {
+        InfrastructureManager roads = g.getInfrastructureManager();
+        double gdp = Math.max(1, g.getEconomyManager().getMonthGdp());
+        double now = roads.getThroughputRatio(), ridersNow = roads.getTransitRiders();
+        double pass = g.getEconomyManager().getTaxPolicy().monthlyFare();
+        double run = runningCost(g, t);
+        for (int k = most; k >= 1; k--) {
+            double[] streams = new double[Traffic.values().length];
+            for (Traffic s : Traffic.values()) streams[s.ordinal()] = k * t.loadOf(s);
+            InfrastructureManager after = roads.with(0, 0, k * t.getTransitCapacity(), k * t.getRoadLoad(), streams);
+            double gain = gdp * (after.getThroughputRatio() - now);
+            double fares = (after.getTransitRiders() - ridersNow) * pass;
+            if (gain + fares >= k * run) return k;
+        }
+        return 0;
+    }
+
     /** What one of these costs the city a month to run, fully staffed at today's wages. */
     static double runningCost(Game g, BuildingsTemplate t) {
         double[] wages = g.getPopulationManager().getWagesPerType();
@@ -2988,11 +3435,28 @@ public class LongPlaytest {
         BuildingsTemplate t = template(g, name);
         if (t == null) return false;
 
-        // Land first, exactly as buildStack() checks it first.
+        /*
+         * Land first, exactly as buildStack() checks it first - AND WHAT THE
+         * BUILD SHORTCUT BUYS (0.7.58, batch J1c; the shortcut since 0.7.61): the
+         * cheapest offer of bare ground, no ore to pay for, whose dry ground
+         * covers the shortfall (Game.bestOffer(LandNeed.shortfall())),
+         * and, when none covers it, the most dry ground a dollar the city can
+         * afford, then the shortfall that is left. Until 0.7.58 this bought
+         * the cheapest offer standing, which on forty offers is nearly always
+         * the smallest: purchases fell to 0.04-0.15 km2 a time in the middle
+         * of the run, and the city was half the size from month 1,000 to
+         * 3,000 (fixJ1b-notes).
+         */
         int guard = 0;
         while (g.getLandManager().getAvailableSqFt() < t.getLandSqFt() * quantity
                 && guard++ < 60) {
-            if (!g.buyLandBlock()) break;
+            double shortfall = t.getLandSqFt() * quantity - g.getLandManager().getAvailableSqFt();
+            LandParcel covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
+            if (covers == null) {
+                g.getLandManager().updateMarket(g.getPopulationManager().getPopulation());
+                covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
+            }
+            if (covers == null || !g.buyLandParcel(covers.getId())) break;
         }
 
         Game.BuildResult result = g.buildStack(t, quantity, false);
@@ -3222,6 +3686,13 @@ public class LongPlaytest {
             double indexHanded = g.getPriceIndex().getIndex();
             if (WAGES && Double.isNaN(lagImplied)) lagImplied = g.getLabourMarket().getCostOfLiving();
             g.simulateMonths(1);
+            if (g.hasCityMap()) {
+                mapMonths++;
+                if (!java.util.Arrays.equals(g.getCityMap().totals(), g.getMapCounts())) {
+                    mapMismatches++;
+                    flag(g.getMonth(), "the city map's districts do not sum to the buildings", "month " + g.getMonth());
+                }
+            }
             lifetimeWriteOffs += g.getBank().getWriteOffs();
             lifetimeHouseholdWriteOffs += g.getHouseholdBalance().getWrittenOff();
 
@@ -3304,8 +3775,8 @@ public class LongPlaytest {
 
         double cash = g.getCash();
         double income = g.getIncome();
-        int pop = g.getPopulationManager().getPopulation();
-        int workforce = g.getPopulationManager().getWorkforce();
+        long pop = g.getPopulationManager().getPopulation();
+        long workforce = g.getPopulationManager().getWorkforce();
         double gdp = g.getEconomyManager().getMonthGdp();
         double retail = g.getSectors().retail().statement().revenue;
         double interest = g.getEconomyManager().getExpenses();
@@ -3322,6 +3793,12 @@ public class LongPlaytest {
         if (back.getLoadFailure() != null) {
             flag(month, "a load failed", back.getLoadFailure());
             return;
+        }
+        // The city map (0.7.60): read back from its sidecar, the same map.
+        if (g.hasCityMap()) {
+            mapReloads++;
+            if (back.hasCityMap() && back.getCityMap().same(g.getCityMap())) mapReloadsSame++;
+            else flag(month, "the city map across a save", "slot " + slot);
         }
 
         same(month, "cash across a save", back.getCash(), cash);
@@ -3544,9 +4021,9 @@ public class LongPlaytest {
         same(month, "the land office's ground price across a save",
                 back.getLandManager().getAcquisitionCostPerSqFt(),
                 g.getLandManager().getAcquisitionCostPerSqFt());
-        same(month, "the land office's minimum lot across a save",
-                back.getLandManager().getMarket().getMinBlocks(),
-                g.getLandManager().getMarket().getMinBlocks());
+        same(month, "the land office's block level across a save",
+                back.getLandManager().getMarket().getLevel(),
+                g.getLandManager().getMarket().getLevel());
         for (WageBand band : WageBand.values()) {
             same(month, "the labour market's tightness across a save (" + band + ")",
                     back.getLabourMarket().getTightness(band),
@@ -3806,6 +4283,8 @@ public class LongPlaytest {
              */
             g.getDebtManager().setAutopilot(AUTOPILOT);
             g.setRolloverMode(ROLLOVER);
+            // ...and its map, kept up from here on (0.7.60): THE CITY MAP, WATCHED.
+            g.getCityMap();
             // ...and the rescue setting and the fund's dial (0.7.14), as the
             // flags say: the constructor founds on the button at 0.
             g.setRescueMode(RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
@@ -4670,13 +5149,13 @@ public class LongPlaytest {
             }
             out.printf("  the city's fund over the run (dial %.0f%%): worth $%,.0fk at the end (cash $%,.0fk, shares"
                             + " $%,.0fk, bonds $%,.0fk, the rescue book $%,.0fk), at most $%,.0fk; paid in $%,.0fk from"
-                            + " the surplus and $%,.0fk from the treasury's cash; the 3%% transfer $%,.0fk paid and"
+                            + " the surplus and $%,.0fk from the treasury's cash; its withdrawal at %s a month $%,.0fk paid and"
                             + " $%,.0fk short; dividends $%,.0fk (the rescue book's $%,.0fk), coupons $%,.0fk; bought"
                             + " shares $%,.0fk and bonds $%,.0fk, sold $%,.0fk and $%,.0fk; its cash a mean %.1f%% of"
                             + " its value; its market book at the end:%s%n",
                     FUND_DIAL * 100, g.fundValue(), fundEnd.getCash(), g.fundMarketSharesValue(), g.fundBondsValue(),
                     g.fundRescueValue(), fundPeak, fundEnd.getPaidInFromSurplus(), fundEnd.getPaidInFromCash(),
-                    fundEnd.getTransfersPaid(), fundEnd.getTransfersShort(),
+                    DecisionLog.pct2(fundEnd.getWithdrawal()), fundEnd.getTransfersPaid(), fundEnd.getTransfersShort(),
                     fundEnd.getDividendsMarket() + fundEnd.getDividendsRescue(), fundEnd.getDividendsRescue(),
                     fundEnd.getCoupons(), fundEnd.getSharesBought(), fundEnd.getBondsBought(),
                     fundEnd.getSharesSold(), fundEnd.getBondsSold(),
@@ -5089,6 +5568,42 @@ public class LongPlaytest {
                         : String.format("%.1f%% %s than at the founding rate", Math.abs(landLocalRun
                                 / fx.getLandUsdLifetime() - 1) * 100,
                                 landLocalRun < fx.getLandUsdLifetime() ? "cheaper" : "dearer"));
+        out.printf("  ...ground kept ahead (0.7.58): %,d offer(s) bought over the run, %.2f km2 dry, US$%,.0fk; the"
+                + " cash share stopped a look short %,d time(s)%n", groundAheadBought,
+                LandManager.km2(groundAheadSqFt), groundAheadUsd, groundAheadShort);
+        out.printf("  ...room to grow past the ground-ahead line (0.7.67, M3b): %,d offer(s) bought by the move; %,d Bus"
+                + " Network(s), %,d Light Rail Line(s), %,d Metro Line(s) standing at the end%n", roomMovesBought,
+                qty(g, "Bus Network"), qty(g, "Light Rail Line"), qty(g, "Metro Line"));
+        out.printf("  ...iron a whole field at a time (0.7.64): %,d offer(s) bought, %,d on the funding page's bond; first"
+                + " needed %s, the first bought %s; looks that needed iron and could not pay %,d, found none listed %,d,"
+                + " and whose cheapest field would not pay itself back (0.7.67) %,d; %,d iron site(s) and %d mine(s) at the"
+                + " end%n", ironFieldsBought, ironFieldsOnBond,
+                firstIronNeedMonth > 0 ? "m" + firstIronNeedMonth : "never", firstIron,
+                ironCouldNotPay, ironNoneListed, ironDoesNotPay, g.getLandManager().getIronDeposits(), qty(g, "Iron Mine"));
+        UtilitiesHandler water = g.getServicesManager().getUtilitiesHandler();
+        if (g.hasCityMap()) {
+            CityMap map = g.getCityMap();
+            out.printf("  the city map (0.7.60): kept up %,d month(s), its districts off the buildings in %,d; %,d of %,d"
+                    + " reload(s) read it back the same; %d district(s) at the end, %,d of its %,d owned iron sites"
+                    + " under mines; dropped %d time(s)%n", mapMonths, mapMismatches, mapReloadsSame, mapReloads,
+                    map.districts().size(), qty(g, "Iron Mine"), map.ownedSites(Resource.IRON),
+                    g.getMapFailures());
+        }
+        // A map dropped mid-run is gone from the city, so this is asked whether or not one stands now.
+        if (g.getMapFailures() > 0) flag(g.getMonth(), "the city map was dropped", g.getMapFailures() + " time(s)");
+        out.printf("  ...water past the fresh water limit (0.7.59): %,d offer(s) bought for lake or river and %,d for a"
+                + " coast, of %,d move(s) offered; the city ends with %.2f km2 of lake and river and %.2f of sea, %d water"
+                + " plant(s) and %d desalination plant(s), a limit of %,.0f units (rights %,.0f), %.0f%% of the fresh"
+                + " plants idle%n", freshBought, coastsBought, waterLandOffered, g.getLandManager().getFreshKm2(),
+                g.getLandManager().getSeaKm2(), qty(g, "Water Treatment Plant"), qty(g, "Desalination Plant"),
+                water.getFreshCap(), g.getFreshRights(), water.getFreshIdleShare() * 100);
+        out.printf("  ...fuel (0.7.62): %,d offer(s) with oil bought; the first well %s, the first refinery %s; at the end"
+                + " %d well(s) on %,d oil site(s) with %,.0f t of crude left, and %d refinery(ies), at most %d; the"
+                + " drivers' and the railway's fuel $%,.0fk over the run, %.1f%% of it bought abroad%n", oilBought,
+                firstWellMonth > 0 ? "m" + firstWellMonth : "never", firstRefineryMonth > 0 ? "m" + firstRefineryMonth : "never",
+                qty(g, "Oil Well"), g.getLandManager().getOilSites(), g.getLandManager().getOilReserveTonnes(),
+                qty(g, "Oil Refinery"), mostRefineries, fuelBillRun,
+                fuelBillRun > 0 ? fuelAbroadRun / fuelBillRun * 100 : 0);
         out.printf("  ...the vault at its lowest US$%,.0fk (m%d); half the founders' dollars gone %s; all but a"
                 + " hundredth gone %s%n", vaultLow == Double.MAX_VALUE ? 0 : vaultLow, vaultLowMonth,
                 halfGoneMonth > 0 ? "by month " + halfGoneMonth : "never",

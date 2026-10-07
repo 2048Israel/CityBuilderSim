@@ -105,8 +105,20 @@ public class LuxuryRetail extends Sector {
      */
     public static final double MARGIN_CEILING = 4.0;
 
+    /**
+     * The share of the way, in logs, a shop's charged margin moves toward the
+     * fixed point its buyers strike in a month: a sixth (0.7.43;
+     * spec-inflation.md 2.7). The landed cost passes through at once; only
+     * the margin is sticky, with no drift of its own - the landed price,
+     * read at today's rate, already carries the currency and the world.
+     */
+    public static final double MARGIN_SPEED = 1.0 / 6;
+
     /** What one shop's counter is worth a month, before anybody has told it anything. */
     private double sellPrice;
+
+    /** The margin the shops charge, carried month to month (0.7.43); NaN until the first strike, and on a save from before, which opens at the target. */
+    private double chargedMargin = Double.NaN;
 
     /* =====================================================================
        WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG
@@ -156,7 +168,7 @@ public class LuxuryRetail extends Sector {
     }
 
     /** The month's reading, for the screen and the harness. */
-    private double rMargin = MARGIN_FLOOR, rWanted, rServed, rCoverage, rLanded;
+    private double rMargin = MARGIN_FLOOR, rTargetMargin = MARGIN_FLOOR, rWanted, rServed, rCoverage, rLanded;
 
     public LuxuryRetail() {
         super("Luxury Retail", "Luxury Retail", BuildingType.LUXURY);
@@ -181,12 +193,15 @@ public class LuxuryRetail extends Sector {
        =================================================================== */
 
     /** People the shops can serve a month, off their buildings. */
-    public int coverage() {
+    public long coverage() {
         return buildings == null ? 0
-                : (int) Math.round(buildings.totalBySector(key(), b -> b.getCoverage()));
+                : Math.round(buildings.totalBySector(key(), b -> b.getCoverage()));
     }
 
+    /** The margin charged this month: a sixth of the way from last month's to the fixed point, in logs (0.7.43). */
     public double getMargin()    { return rMargin; }
+    /** The fixed point the buyers struck this month (strikeMargin()), which the charged margin chases. */
+    public double getTargetMargin() { return rTargetMargin; }
     public double getWanted()    { return rWanted; }
     public double getServed()    { return rServed; }
     public double getCoverage()  { return rCoverage; }
@@ -219,8 +234,8 @@ public class LuxuryRetail extends Sector {
      * is exactly one, and strikeMargin() finds it by bisection on the
      * households' own demand (HouseholdBalance.luxuriesWanted()), the curve
      * the counter already sells on. It is the equilibrium the two-pass shape
-     * approximated with a floor reading; nothing is smoothed and nothing is
-     * carried from last month.
+     * approximated with a floor reading. Since 0.7.43 it is the TARGET: the
+     * margin charged moves MARGIN_SPEED of the way to it a month.
      *
      * WHY THE BUYERS AT THE PRICE, AND NOT THE PIECES SERVED. Served is
      * capped by the counters (serve()), so a position on served against the
@@ -242,7 +257,7 @@ public class LuxuryRetail extends Sector {
      *                 piece - HouseholdBalance.luxuriesWanted(), before any cap
      */
     public double strikeMargin(Markets markets, java.util.function.DoubleUnaryOperator buyersAt) {
-        int cover = coverage();
+        long cover = coverage();
         rCoverage = cover;
 
         double landed = landedCost(markets.get(Good.LUXURIES));
@@ -266,7 +281,17 @@ public class LuxuryRetail extends Sector {
                 if (excess(buyersAt, landed, cover, mid) >= 0) hi = mid; else lo = mid;
             }
         }
-        rMargin = hi;
+        rTargetMargin = hi;
+        /*
+         * ...AND THE COUNTER CHASES IT (0.7.43): MARGIN_SPEED of the way a
+         * month, in logs. Until 0.7.43 the margin charged WAS the fixed point.
+         * The buyers counted are the ones at the margin actually charged. The
+         * first strike - and a save from before - opens at the fixed point.
+         */
+        chargedMargin = Double.isNaN(chargedMargin) ? rTargetMargin
+                : Math.max(MARGIN_FLOOR, Math.min(MARGIN_CEILING,
+                        Retail.stickyPrice(chargedMargin, rTargetMargin, 0, MARGIN_SPEED)));
+        rMargin = chargedMargin;
         sellPrice = landed * rMargin;
         rWanted = Math.max(0, buyersAt.applyAsDouble(sellPrice));
 
@@ -275,7 +300,7 @@ public class LuxuryRetail extends Sector {
     }
 
     /** The rule's gap at a margin: the margin less what the buyers at its price would strike. Rises with the margin. */
-    private static double excess(java.util.function.DoubleUnaryOperator buyersAt, double landed, int cover, double margin) {
+    private static double excess(java.util.function.DoubleUnaryOperator buyersAt, double landed, long cover, double margin) {
         double buyers = Math.max(0, buyersAt.applyAsDouble(landed * margin));
         double position = buyers + cover <= 0 ? 0 : buyers / (buyers + cover);
         return margin - (MARGIN_FLOOR + (MARGIN_CEILING - MARGIN_FLOOR) * position);
@@ -292,7 +317,7 @@ public class LuxuryRetail extends Sector {
      * @return pieces sold
      */
     public double serve(Markets markets, double pieces) {
-        int cover = coverage();
+        long cover = coverage();
         double servable = Math.min(Math.max(0, pieces), cover) * getOperatingRate();
         double onShelf = getPantry(Good.LUXURIES);
         // Whole pieces: a quantity crossing from the money world into the
@@ -369,7 +394,7 @@ public class LuxuryRetail extends Sector {
             return BusinessInvestment.Decision.no(sector, "already building");
         }
 
-        int cover = coverage();
+        long cover = coverage();
         double queue = rWanted;
         if (queue <= cover * (1 + BusinessInvestment.TARGET_HEADROOM)) {
             return BusinessInvestment.Decision.no(sector, "counters ahead of customers");
@@ -489,5 +514,30 @@ public class LuxuryRetail extends Sector {
         lines.add(Line.head("THE SHELF"));
         lines.add(Line.of("Pieces in stock", f.count(onShelf())));
         return lines;
+    }
+    /* ===================================================================
+       SAVE, RESET (0.7.43)
+       =================================================================== */
+
+    /** The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. */
+    @Override
+    protected void saveExtras(java.util.Map<String, Double> extras) {
+        if (!Double.isNaN(chargedMargin)) extras.put("chargedMargin", chargedMargin);
+        extras.put("targetMargin", rTargetMargin);
+    }
+
+    /** A save from before 0.7.43 has none, and the first strike opens at its fixed point. */
+    @Override
+    protected void restoreExtras(java.util.Map<String, Double> extras) {
+        chargedMargin = extras.getOrDefault("chargedMargin", Double.NaN);
+        // ...and the month's two readings, for the screen between presses.
+        if (!Double.isNaN(chargedMargin)) rMargin = chargedMargin;
+        rTargetMargin = extras.getOrDefault("targetMargin", rMargin);
+    }
+
+    @Override
+    protected void resetExtras() {
+        chargedMargin = Double.NaN;
+        rMargin = rTargetMargin = MARGIN_FLOOR;
     }
 }

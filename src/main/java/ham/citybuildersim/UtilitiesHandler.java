@@ -56,8 +56,52 @@ public class UtilitiesHandler {
      */
     private double pricePerWaterUnit = .05;
 
+    /* =====================================================================
+       THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7)
+
+       A Water Treatment Plant treats fresh water, and since the city's land
+       is on the world (0.7.57) the city owns a measured area of lake and
+       river. The plants together can treat no more than that area yields a
+       month - the fresh cap - and the rest of their nameplate idles:
+
+           fresh cap  = FRESH_UNITS_PER_KM2 x owned fresh km2 + the rights
+           production = (the wells + desalination) x fill
+                        + min(the fresh plants x fill, the fresh cap)
+
+       The wells' BASE_WATER_SUPPLY is groundwater, outside the cap, so at
+       zero fill production is still the wells', as before. A desalination
+       plant draws the sea and the cap does not reach it. The rights are what
+       an older city already pumped beyond its lakes (Game.getFreshRights()),
+       so loading one idles nothing it had. Nothing is stored: the cap is the
+       land's and the rights', read again each month (setFreshCap()).
+
+       WITH THE CAP NOT BINDING THIS IS THE OLD FORMULA TO THE BIT - the
+       nameplate total plus the wells times the fill, as it always was -
+       and a handler nobody has told about any land (a bare fixture, as
+       WaterCheck's first sections build) has an infinite cap.
+       ===================================================================== */
+
+    /**
+     * Units of fresh water a month one square kilometre of owned lake or
+     * river yields: the world's renewable river runoff (about 42,700 km3 a
+     * year, Shiklomanov) over the world's river and stream area (773,000 km2,
+     * Allen & Pavelsky 2018) is 5.524e7 m3 a km2 a year, 4.603e6 m3 a month,
+     * or 121,600 units of 37.854 m3 (10,000 gallons). One Water Treatment
+     * Plant's 60,000 needs 0.49 km2 of it.
+     */
+    public static final double FRESH_UNITS_PER_KM2 = 121_600;
+
     public double waterProduction;
     public double baseWaterProduction;
+
+    /** The fresh plants' nameplate and the desalination plants', standing - the two parts of baseWaterProduction past the wells (0.7.59). */
+    private double freshNameplate, desalNameplate;
+
+    /** What the city's fresh water yields a month, the rights included; infinite until the city's land says otherwise (setFreshCap()). */
+    private double freshCap = Double.POSITIVE_INFINITY;
+
+    /** This month's fresh water treated - the fresh plants at their staffing, held to the cap - and the sea desalinated. */
+    private double freshDrawn, desalOutput;
     public double buildingWaterDraw;
     public double residentWaterDraw;
 
@@ -72,7 +116,7 @@ public class UtilitiesHandler {
 
     //jobs
     private double[] utilityWages = new double[11];
-    private int[] utilityJobs = new int[11];
+    private long[] utilityJobs = new long[11];
 
     // Same payroll, split by which utility the job belongs to, so the report
     // can show two businesses rather than one lump.
@@ -122,6 +166,54 @@ public class UtilitiesHandler {
     public double getBilledWaterDraw()     { return billedWaterDraw; }
     public double getUnbilledWaterDraw()   { return waterConsumption - billedWaterDraw; }
     public double getWaterRatio()          { return waterRatio; }
+
+    /** The fresh water limit this month: FRESH_UNITS_PER_KM2 x the owned lakes and river, plus the rights (0.7.59); infinite when no land was given. */
+    public double getFreshCap()            { return freshCap; }
+    /** The Water Treatment Plants' nameplate, standing. */
+    public double getFreshNameplate()      { return freshNameplate; }
+    /** The fresh water treated this month: the fresh plants at their staffing, held to the cap. */
+    public double getFreshDrawn()          { return freshDrawn; }
+    /** The Desalination Plants' nameplate, standing. */
+    public double getDesalNameplate()      { return desalNameplate; }
+    /** The sea desalinated this month: their nameplate at the staffing. */
+    public double getDesalOutput()         { return desalOutput; }
+
+    /** Whether the fresh water limit holds the plants back this month: what they would treat at their staffing is more than the cap. */
+    public boolean isFreshCapped() {
+        return freshNameplate * averageUtilityFill > freshCap;
+    }
+
+    /** The share of what the fresh plants would treat at their staffing that the limit idles, 0 to 1: the Services page's "62% of the plants' nameplate idle". */
+    public double getFreshIdleShare() {
+        double could = freshNameplate * averageUtilityFill;
+        return could > 0 ? Math.max(0, 1 - freshDrawn / could) : 0;
+    }
+
+    /** The fresh water a plant more would add at the staffing: what is left under the cap, never below nothing. */
+    public double getFreshHeadroom() {
+        return Math.max(0, freshCap - freshNameplate * averageUtilityFill);
+    }
+
+    /** What the works would produce fully staffed, held to the fresh water limit: the Services page's "at full staff" (0.7.59; baseWaterProduction until then). */
+    public double getWaterAtFullStaff() {
+        return freshNameplate > freshCap ? BASE_WATER_SUPPLY + desalNameplate + freshCap : baseWaterProduction;
+    }
+
+    /**
+     * The water the works produce at a staffing, by the rule above, from
+     * its parts: the nameplate and the wells times the fill, unless the
+     * fresh plants' share would pass the cap, when the wells and the sea are
+     * times the fill and the fresh water is the cap; at no staffing at all,
+     * the wells. updateWaterRatio()'s rule, written once for BuildAdvice to
+     * reckon an order with and WaterCheck to assert against (the handler
+     * keeps its own uncapped line, which sums the nameplate as it always
+     * did).
+     */
+    public static double waterOutput(double fresh, double desal, double fill, double cap) {
+        if (fill == 0) return BASE_WATER_SUPPLY;
+        if (fresh * fill > cap) return (BASE_WATER_SUPPLY + desal) * fill + cap;
+        return (fresh + desal + BASE_WATER_SUPPLY) * fill;
+    }
     public double getPricePerWaterUnit()   { return pricePerWaterUnit; }
 
     /**
@@ -289,6 +381,17 @@ public class UtilitiesHandler {
         this.baseWaterProduction = water + BASE_WATER_SUPPLY;
     }
 
+    /** The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. Set beside it by ServicesManager. */
+    public void setWaterSources(double fresh, double desal) {
+        this.freshNameplate = Math.max(0, fresh);
+        this.desalNameplate = Math.max(0, desal);
+    }
+
+    /** The fresh water limit, from the city's land and rights (Game.getFreshCap()); infinite for none. */
+    public void setFreshCap(double cap) {
+        this.freshCap = Double.isNaN(cap) ? Double.POSITIVE_INFINITY : Math.max(0, cap);
+    }
+
     /** Summed draw of every building standing, from the templates. */
     public void setBuildingWaterDraw(double water) {
         this.buildingWaterDraw = water;
@@ -304,7 +407,7 @@ public class UtilitiesHandler {
      * which of the two is actually eating the supply - that is the difference
      * between "stop building housing" and "stop building food plants".
      */
-    public void setPopulation(int population) {
+    public void setPopulation(long population) {
         this.residentWaterDraw = population * WATER_PER_PERSON;
     }
 
@@ -326,9 +429,24 @@ public class UtilitiesHandler {
         waterConsumption = buildingWaterDraw + residentWaterDraw;
 
         waterProduction = baseWaterProduction * averageUtilityFill;
+        freshDrawn = freshNameplate * averageUtilityFill;
+        desalOutput = desalNameplate * averageUtilityFill;
+
+        // ...unless the fresh plants would treat more than the city's fresh
+        // water yields: then they treat the cap and the rest idles (0.7.59,
+        // THE FRESH WATER LIMIT). Not binding, the line above is the old
+        // formula to the bit.
+        if (freshDrawn > freshCap) {
+            freshDrawn = freshCap;
+            waterProduction = (BASE_WATER_SUPPLY + desalNameplate) * averageUtilityFill + freshCap;
+        }
 
         // The legacy wells keep running with nobody on shift, same as the base grid.
-        if (averageUtilityFill == 0) waterProduction = BASE_WATER_SUPPLY;
+        if (averageUtilityFill == 0) {
+            waterProduction = BASE_WATER_SUPPLY;
+            freshDrawn = 0;
+            desalOutput = 0;
+        }
 
         // Nothing consumes water yet, so this would be 0/0 -> NaN, and a NaN
         // ratio silently poisons everything downstream that multiplies by it
@@ -353,7 +471,7 @@ public class UtilitiesHandler {
      * attribute payroll to one utility or the other, and that is impossible to
      * recover once the arrays have been added together.
      */
-    public void updateUtilitiyWages(double[] wages, int[] electricityJobs, int[] waterJobs) {
+    public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs) {
 
         if (wages == null || electricityJobs == null || waterJobs == null || utilityWages == null) {
             System.out.println("null stores");
@@ -366,7 +484,7 @@ public class UtilitiesHandler {
                 Math.min(wages.length, utilityWages.length),
                 Math.min(electricityJobs.length, waterJobs.length));
 
-        int[] jobs = new int[utilityJobs.length];
+        long[] jobs = new long[utilityJobs.length];
         for (int i = 0; i < length; i++) {
             jobs[i] = electricityJobs[i] + waterJobs[i];
         }
@@ -384,7 +502,7 @@ public class UtilitiesHandler {
 
         }
         double totalFilled = 0;
-        int totalJobsUtility = 0;
+        long totalJobsUtility = 0;
 
         if (fillRate != null) {
 
@@ -463,6 +581,10 @@ public class UtilitiesHandler {
         System.out.printf("  of which billed:        %s units%n", formatter.format(billedWaterDraw));
         System.out.printf("  of which unbilled:      %s units%n", formatter.format(getUnbilledWaterDraw()));
         System.out.printf("Maximum Capacity:         %s units%n", formatter.format(baseWaterProduction));
+        if (isFreshCapped()) {
+            System.out.printf("Fresh Water Limit:        %s units (%.0f%% of the plants' nameplate idle)%n",
+                    formatter.format(freshCap), getFreshIdleShare() * 100);
+        }
         System.out.printf("Current Output:           %s units%n", formatter.format(waterProduction));
         System.out.printf("Price per Unit:           $%s%n", formatter.format(pricePerWaterUnit));
 

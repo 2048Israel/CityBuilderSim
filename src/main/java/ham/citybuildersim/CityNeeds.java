@@ -23,13 +23,15 @@ import java.util.List;
  * PLAIN is the same shapes without the toolkit, for a harness.
  *
  * One row is new: FALLS DUE, the bottom strip's red maturity, which left the
- * frame in 0.7.24 (see fallsDue()).
+ * frame in 0.7.24 (see fallsDue()). Since 0.7.45 another: PRICES, whether the
+ * city still believes the central bank (prices()).
  *
  * Since 0.7.41 the rows that are a supply against a demand - power, water,
  * the road, care and the basic ladder - read what they serve (a school above
- * the ladder still reads its seats and who would come), and the one verdict
- * every screen colours such a gauge by is here too (SERVED, below). What is
- * listed, and in what order, is still read on the lines as they stood.
+ * the ladder still reads its seats and, since 0.7.51, who would come and be
+ * hired), and the one verdict every screen colours such a gauge by is here
+ * too (SERVED, below). What is listed, and in what order, is still read on
+ * the lines as they stood.
  *
  * Reads the city; changes nothing. Every figure is a getter the screens
  * already read.
@@ -41,13 +43,17 @@ public final class CityNeeds {
     /** What a need is about - the measure the Build tab's advice and rings read. */
     public enum Kind {
         POWER, WATER, ROADS, CARE, DEAD, PLOTS, BASIC_SCHOOLS, HIGHER_SCHOOL, CRIME, CELLS,
-        HOMES, GROUND, BUILDERS, TREASURY, BANK, BORROWING, FALLS_DUE, PENSIONS, WAGES, BUDGET
+        HOMES, GROUND, BUILDERS, TREASURY, BANK, BORROWING, FALLS_DUE, PENSIONS, WAGES, BUDGET,
+        /** Whether the city still believes the central bank (0.7.45): the anchor's row. */
+        PRICES
     }
 
     /** Where a need's fix is: the screen its row opens. */
     public enum Go {
         UTILITIES, ROADS, HEALTHCARE, EDUCATION, SAFETY, HOMES,
-        LAND, BUILDERS, FINANCES, BANK, PENSIONS, WAGES, TAXES
+        LAND, BUILDERS, FINANCES, BANK, PENSIONS, WAGES, TAXES,
+        /** Policy › Money › The policy rate (0.7.45). */
+        MONEY
     }
 
     /**
@@ -71,9 +77,9 @@ public final class CityNeeds {
      * @param a       the reading's second figure where it has one: a higher
      *                school's seats, a network's supply, the road's capacity,
      *                a care's staffed places (the last two since 0.7.41); b
-     *                its third, who would come, the demand, the load the
-     *                road's curve reads, the people - so a served row is a
-     *                over b
+     *                its third, who would come and be hired, the demand,
+     *                the load the road's curve reads, the people - so a
+     *                served row is a over b
      */
     public record Need(String label, String reading, int level, double near,
                        Kind kind, Go go, CareType care, EducationType school,
@@ -175,10 +181,10 @@ public final class CityNeeds {
     /** The basic ladder's bottleneck, its coverage (read as served since 0.7.41; "taught" until then). */
     public static final double SCHOOLS_YELLOW = .90, SCHOOLS_RED = .60;
 
-    /** A school above the ladder: who would come over its seats. */
+    /** A school above the ladder: who would come and be hired (wanted(), 0.7.51; who would come until then) over its seats. */
     public static final double SEATS_YELLOW = 1.05, SEATS_RED = 2;
 
-    /** A class's worth: fewer would-be students than this and a school is not a row (measured: 3 would-be law students in a city of 1,650). */
+    /** A class's worth: fewer students than this the city would get and hire (would-be students until 0.7.51) and a school is not a row (measured: 3 would-be law students in a city of 1,650). */
     public static final double SEATS_FLOOR = 25;
 
     /** Crime against Canada's rate. */
@@ -258,9 +264,9 @@ public final class CityNeeds {
        where its flow starts to fall - NEEDS YOU's red for it, the model's
        own; care at GENERAL_RED or OTHER_CARE_RED; the basic ladder at
        SCHOOLS_RED; a school above it at 1/SEATS_RED, seats for half of who
-       would come); amber between - "short" under 100%, "tight" at 100% or
-       more. What NEEDS YOU lists is untouched: its levels still decide what
-       is listed, in what order, and the chip.
+       would come and be hired); amber between - "short" under 100%, "tight"
+       at 100% or more. What NEEDS YOU lists is untouched: its levels still
+       decide what is listed, in what order, and the chip.
        ===================================================================== */
 
     /** The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. */
@@ -306,7 +312,7 @@ public final class CityNeeds {
         return new Served(share, level, level == 0 ? ENOUGH : share < 1 ? SHORT : TIGHT);
     }
 
-    /** ...and a share no line judges (transit; a school fewer than a class would come to): no colour, no word. */
+    /** ...and a share no line judges (transit; a school above the ladder NEEDS YOU does not list, listsSchool()): no colour, no word. */
     public static Served unjudged(double share) {
         return new Served(share, -1, null);
     }
@@ -315,7 +321,8 @@ public final class CityNeeds {
      * A served kind's two lines in served terms (0.7.41), {off the list past
      * this, red at or under this} - NEEDS YOU's own lines turned over where
      * its figure was a load (a network, the road) or a crowd (who would come
-     * over the seats); null for a kind that is not a supply against a demand.
+     * and be hired over the seats); null for a kind that is not a supply
+     * against a demand.
      */
     public static double[] servedLines(Kind kind, CareType care) {
         switch (kind) {
@@ -341,6 +348,21 @@ public final class CityNeeds {
         return lines == null ? null : served(share, lines[0], lines[1]);
     }
 
+    /**
+     * THE FRESH WATER LIMIT'S LINE (0.7.59, batch J2): what the Services
+     * page says under the water when the city's lakes and river hold its
+     * plants back - "fresh water limit: 62% of the plants' nameplate idle ·
+     * buy lake or river, or desalinate" - off UtilitiesHandler's own share
+     * (getFreshIdleShare()); null when the limit does not bind. The way out
+     * names both doors, because which is open depends on the land: lake or
+     * river from the land office, or a desalination plant on owned sea.
+     */
+    public static String freshLimitLine(UtilitiesHandler utilities) {
+        if (utilities == null || !utilities.isFreshCapped()) return null;
+        return "fresh water limit: " + String.format("%.0f%%", utilities.getFreshIdleShare() * 100)
+                + " of the plants' nameplate idle · buy lake or river, or desalinate";
+    }
+
     /* =====================================================================
        THE LIST
        ===================================================================== */
@@ -364,7 +386,7 @@ public final class CityNeeds {
         Bank bank = game.getBank();
         PopulationCohorts cohorts = game.getCohorts();
         double[] staffing = game.getPopulationManager().getJobFillRate();
-        int population = game.getPopulationManager().getPopulation();
+        long population = game.getPopulationManager().getPopulation();
 
         /* ---------------------------- the networks ---------------------------- */
         int at = out.size();
@@ -512,6 +534,8 @@ public final class CityNeeds {
 
         fallsDue(game, w, out);
 
+        out.add(prices(game));
+
         /* -------------------------------- the promises -------------------------------- */
         /*
          * MEASURED: the gap grows with the pensioner count in every city; an
@@ -544,6 +568,49 @@ public final class CityNeeds {
     /** Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. */
     public static final double GROUND_YELLOW = LandManager.BLOCK_SQ_FT;
 
+    /** Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. */
+    public static final double TRUST_RED = .5;
+
+    /**
+     * PRICES (0.7.45; the UI spec's D2): whether the city still believes the
+     * central bank. Amber in a month credibility fell - which by Expectations'
+     * own rule is a miss past TOLERANCE that the rate did not lean all the way
+     * against - and red when it fell under TRUST_RED. It reads the move, not
+     * the level: a row that watched the level would stay red through the whole
+     * recovery the player bought by leaning against it. Its reading names the
+     * miss and, while the rate does not lean all the way, how far the dial
+     * sits from the advice the lean is measured against - the Standard
+     * rule's at any strictness (0.7.52; DebtManager.holdingRate()), named so
+     * off Standard; at rest, how far the city trusts the bank.
+     * The lever is the policy rate (Go.MONEY). The header's INFLATION tile
+     * and the Policy tab's flag read the same row, so the three agree.
+     */
+    public static Need prices(Game game) {
+        Expectations e = game.getExpectations();
+        DebtManager rates = game.getDebtManager();
+        double trust = e.getCredibility();
+        double step = e.getCredibilityStep();
+        boolean falling = step < 0;
+        int level = falling ? (trust < TRUST_RED ? 2 : 1) : 0;
+        String reading;
+        if (!falling) {
+            reading = String.format("trusted %.0f%%", Math.floor(trust * 100 + 1e-9));
+        } else {
+            double miss = e.missFrom(rates.getInflationTarget());
+            reading = String.format("trust falling: %.1f pts %s the target", Math.abs(miss) * 100, miss >= 0 ? "over" : "under");
+            if (e.getLean() < 1) {
+                PriceIndex index = game.getPriceIndex();
+                double rule = rates.holdingRate(index.hasRate() ? index.inflation() : rates.getInflationTarget());
+                double gap = rule - rates.getPolicyRate();
+                reading += String.format(", the dial %.1f pts %s the %s", Math.abs(gap) * 100, gap >= 0 ? "under" : "over",
+                        rates.getStrictness() == DebtManager.Strictness.STANDARD ? "rule" : "Standard rule");
+            }
+            if (level == 2) reading += " · under half, what people expect follows prices more than the bank";
+        }
+        return new Need("PRICES", reading, level, 0, Kind.PRICES, Go.MONEY, CareType.NONE, EducationType.NONE,
+                trust, 1, TRUST_RED, false, 0, Double.NaN, step, 0);
+    }
+
     /**
      * The GROUND row on its own (0.7.26), as measure() lists it: what the
      * land office's GROUND FREE, Build's LAND FREE and the left panel's land
@@ -554,13 +621,15 @@ public final class CityNeeds {
      * GROUND THE CITY OWNS AND HAS NOT BUILT ON - not
      * isPrivateInvestmentLandLocked(), which probed true at month 12 with
      * 1,974,000 sq ft free and never cleared. Listed at a block free or less,
-     * red at none.
+     * red at none. The ground free in square kilometres since 0.7.64, in
+     * square metres under a hundredth of one since 0.7.68, as every area the
+     * player reads (LandManager.areaWords()).
      */
     public static Need ground(Game game, Words w) {
         double free = game.getLandManager().getAvailableSqFt();
         List<Need> one = new ArrayList<>();
         under(one, "GROUND TO BUILD ON",
-                free > 0 ? w.shortNumber(free) + " sq ft free" : "none - nobody can break ground",
+                free > 0 ? LandManager.areaWords(free) + " free" : "none - nobody can break ground",
                 free, GROUND_YELLOW, 0, Kind.GROUND, Go.LAND, CareType.NONE, EducationType.NONE, 0, 0);
         return one.get(0);
     }
@@ -748,31 +817,135 @@ public final class CityNeeds {
 
     /**
      * SEATS AGAINST WHO WOULD COME, for the schools above the basic ladder:
-     * what the schools hold, and the student body this city would sustain if
-     * seats were free - intake demand times the course - so a bigger second
-     * number means another building fills. One row per school, and none below
-     * a class's worth (SEATS_FLOOR).
+     * what the schools hold, and the student body this city would sustain -
+     * so a bigger second number means another building fills. One row per
+     * school, and none below a class's worth (SEATS_FLOOR) or, with no seats
+     * of its kind yet, half the smallest school (below).
+     *
+     * ...AND BE HIRED (0.7.51). Jerus: "universities and education other
+     * than elem middl and high schools tend to be overstated and way too
+     * early sometimes". The second number was who would come if seats were
+     * free (wouldCome()), the whole band under the school times who is
+     * willing; nothing asked whether the city had work for the graduates.
+     * A founded city of 118 people with five university posts was told to
+     * build a $417M university for 33; his own city has 11,583 university
+     * seats with nobody in them, and 1,043 lawyers for 75 law posts. It is
+     * the student body the city would both get and hire now (wanted()):
+     * the smaller of who would come and the posts the degree fills. A first
+     * school is listed only once those would fill half the smallest that
+     * teaches it (listsSchool()) - the businesses' first-plant rule.
      */
     static void seatsWanted(Game game, Words w, List<Need> out) {
-        Education schools = game.getEducation();
         PopulationManager pm = game.getPopulationManager();
-        LabourMarket market = game.getLabourMarket();
         double[] seatsBy = game.getBuildingManager().getStaffedEducationPlaces(pm.getJobFillRate());
 
         for (EducationType type : EducationType.values()) {
             if (type == EducationType.NONE || type.isBasic()) continue;
-            double couldHold = wouldCome(game, type);
-            if (couldHold < SEATS_FLOOR) continue;
+            double want = wanted(game, type, 0, 1);
             double seats = seatsBy[type.ordinal()];
+            if (!listsSchool(game, type, want, seats)) continue;
             over(out, type.getLabel().toUpperCase(),
-                    String.format("%s seats, %s would come", w.people(seats), w.people(couldHold)),
-                    couldHold / Math.max(seats, 1), SEATS_YELLOW, SEATS_RED,
-                    Kind.HIGHER_SCHOOL, Go.EDUCATION, CareType.NONE, type, seats, couldHold);
+                    String.format("%s seats, %s would come and be hired", w.people(seats), w.people(want)),
+                    want / Math.max(seats, 1), SEATS_YELLOW, SEATS_RED,
+                    Kind.HIGHER_SCHOOL, Go.EDUCATION, CareType.NONE, type, seats, want);
             onTheWay(game, w, out, t -> t.getTeaches() == type);
         }
     }
 
-    /** The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. */
+    /* ----- the student body the city would get and hire (0.7.51) ----- */
+
+    /** A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FARM_UTILISATION). */
+    public static final double FIRST_SCHOOL_SHARE = .5;
+
+    /** Whether a school above the ladder is a row: a class's worth wanted (SEATS_FLOOR), and with no seats of its kind yet, FIRST_SCHOOL_SHARE of the smallest school's. */
+    public static boolean listsSchool(Game game, EducationType type, double want, double seats) {
+        if (!(want >= SEATS_FLOOR)) return false;
+        return seats > 0 || want >= FIRST_SCHOOL_SHARE * smallestSchool(game, type);
+    }
+
+    /** The seats of the smallest building that teaches this; 0 when none does. */
+    public static double smallestSchool(Game game, EducationType type) {
+        double least = Double.MAX_VALUE;
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (t.getTeaches() == type && t.getCapacity() > 0) least = Math.min(least, t.getCapacity());
+        }
+        return least == Double.MAX_VALUE ? 0 : least;
+    }
+
+    /**
+     * The student body the city would get and hire, `months` from now with
+     * its posts grown by k: the smaller of who would come by then
+     * (wouldComeAt()) and the posts their degree would fill (hires()).
+     * wanted(type, 0, 1) is now: NEEDS YOU's row and the Build tab's ring.
+     */
+    public static double wanted(Game game, EducationType type, double months, double k) {
+        return Math.min(wouldComeAt(game, type, months), hires(game, type, k));
+    }
+
+    /** Who would come `months` from now: wouldCome()'s arithmetic with the feeder's graduates by then added to the band (feederOver()); at 0 it is wouldCome(). */
+    public static double wouldComeAt(Game game, EducationType type, double months) {
+        if (type == EducationType.NONE || type.isBasic()) return 0;
+        Education schools = game.getEducation();
+        double eligible = schools.eligibleFor(type, game.getPopulationManager()) + feederOver(game, type, months);
+        return eligible * schools.willingShare(type, game.getLabourMarket()) * Education.ENROLMENT_RATE * type.months();
+    }
+
+    /**
+     * The feeder's graduates over the next `months`: for a college or a
+     * university the high schools' diplomas a month at the ladder's saved
+     * coverage (Education.schoolLeavers(), advanceMonth()'s flow) times the
+     * months; for a professional school the first whole `months` of the
+     * university's cohorts in flight. None at 0.
+     */
+    public static double feederOver(Game game, EducationType type, double months) {
+        if (!(months > 0)) return 0;
+        Education e = game.getEducation();
+        if (type.isProfessional()) {
+            double[] q = e.cohortsInFlight(EducationType.UNIVERSITY);
+            double sum = 0;
+            for (int i = 0; i < Math.min(q.length, (int) Math.floor(months)); i++) sum += q[i];
+            return sum;
+        }
+        return e.schoolLeavers(game.getCohorts(), game.getLabourMarket()) * months;
+    }
+
+    /**
+     * The posts this school's graduates would take, as a student body: the
+     * posts of the band it qualifies for (a professional school: its
+     * licence's posts), standing and on site, grown by k, less the people
+     * already qualified for them - and the posts their holders leave as they
+     * age out over one course (AgeBand.ADULT's outflow), which a school has
+     * to replace however many there are.
+     */
+    public static double hires(Game game, EducationType type, double k) {
+        if (type == EducationType.NONE || type.isBasic()) return 0;
+        BuildingManager bm = game.getBuildingManager();
+        PopulationManager pm = game.getPopulationManager();
+        long[] posts = bm.getTotalJobs();
+        double[] coming = new double[JobType.values().length];
+        for (BuildingsStacks site : bm.getStacksUnderConstruction()) {
+            for (JobType j : JobType.values()) coming[j.ordinal()] += site.getUnderConstruction() * (double) site.getBuilding().getJobs(j);
+        }
+        double standing = 0, onSite = 0, qualified;
+        if (type.isProfessional()) {
+            JobType j = type.licenses();
+            standing = posts[j.ordinal()];
+            onSite = coming[j.ordinal()];
+            qualified = pm.getLicensed(j);
+        } else {
+            for (JobType j : JobType.values()) {
+                if (WageBand.of(j) != type.produces()) continue;
+                standing += posts[j.ordinal()];
+                onSite += coming[j.ordinal()];
+            }
+            qualified = pm.workforceByBand()[type.produces().ordinal()];
+        }
+        double vacant = Math.max(0, k * (standing + onSite) - qualified);
+        double leaving = Math.min(qualified, standing) * type.months() * AgeBand.ADULT.monthlyOutflowRate();
+        return vacant + leaving;
+    }
+
+    /** The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. The Services page's; NEEDS YOU reads wanted() since 0.7.51, no more than would be hired. */
     public static double wouldCome(Game game, EducationType type) {
         if (type == EducationType.NONE || type.isBasic()) return 0;
         Education schools = game.getEducation();

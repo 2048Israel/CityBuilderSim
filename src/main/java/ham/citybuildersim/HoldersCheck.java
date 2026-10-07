@@ -195,7 +195,7 @@ public class HoldersCheck {
         close("the paper's household share is the sum of every cell's paper",
                 hb.totalPaper(), ledger.householdPrincipal(), 1e-9);
         close("...and the treasury is owed nothing more for it", bond.getSettleDue(), 0, 0);
-        assertTrue("the audit closed on the settle month", Math.abs(settled.residual) <= .01);
+        assertTrue("the audit closed on the settle month", Math.abs(settled.residual) <= MoneyAudit.tolerance(settled.moved()));
 
         /* ================= 2. the coupon ================= */
         out.println("\n--- 2. the coupon reaches each holder in its share ---");
@@ -305,7 +305,7 @@ public class HoldersCheck {
                 price * hhFace / principal, 1e-6);
         close("...and the central bank destroys its share", cb.getBoughtBack(), price * cbFace / principal, 1e-6);
         close("...so nothing is carried any more", city.getBuybackUnsettled(), 0, 1e-9);
-        assertTrue("the audit closes on it", Math.abs(after.residual) <= .01);
+        assertTrue("the audit closes on it", Math.abs(after.residual) <= MoneyAudit.tolerance(after.moved()));
         assertTrue("...and M0 moved by exactly the money made, the redemption among it",
                 Math.abs((cb.m0() - m0) - (cb.getIssued() - cb.getRetired())) <= .005);
         close("the central bank kept nothing: its gain against face is in the month's profit",
@@ -351,15 +351,21 @@ public class HoldersCheck {
                 twin.getHouseholdsBoughtPaper(), city.getHouseholdsBoughtPaper(), 1e-9);
         close("...and pay the households the same coupons", twin.getCouponsToHouseholds(),
                 city.getCouponsToHouseholds(), 1e-9);
-        assertTrue("...and both months close", Math.abs(mine.residual) <= .01 && Math.abs(theirs.residual) <= .01);
+        assertTrue("...and both months close", Math.abs(mine.residual) <= MoneyAudit.tolerance(mine.moved())
+                && Math.abs(theirs.residual) <= MoneyAudit.tolerance(theirs.moved()));
 
         /* ================= 7. an old save ================= */
         out.println("\n--- 7. a save from before the holders loads with the bank holding everything ---");
         quietly(() -> city.saveGame(4, "before the holders"));
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(4))).getAsJsonObject();
-        // The cell array two slots shorter a cell - the paper was the last
-        // slot, and the businesses' bonds have come after it since 0.7.12.
+        // The cell array at the width it had before the paper was appended -
+        // CELL_SLOTS_BEFORE_PAPER, the model's own mark. "Two slots shorter",
+        // as this read until 0.7.46, was that width while the paper and the
+        // bonds were the last two; past 0.7.43's groceries it was a width no
+        // build wrote, the cells were refused whole and the households held
+        // nothing for that reason - until 0.7.46's slot made it 0.7.45's own
+        // width, paper and all.
         com.google.gson.JsonArray keys = json.getAsJsonArray("householdCellKeys");
         com.google.gson.JsonArray cells = json.getAsJsonArray("householdCells");
         assertTrue("fixture: the save carries the cells", keys != null && cells != null);
@@ -367,7 +373,7 @@ public class HoldersCheck {
         assertTrue("fixture: at today's width", slots == HouseholdBalance.CELL_SLOTS);
         com.google.gson.JsonArray shorter = new com.google.gson.JsonArray();
         for (int c = 0; c < n; c++) {
-            for (int s = 0; s < slots - 2; s++) shorter.add(cells.get(c * slots + s));
+            for (int s = 0; s < HouseholdBalance.CELL_SLOTS_BEFORE_PAPER; s++) shorter.add(cells.get(c * slots + s));
         }
         for (int t = n * slots; t < cells.size(); t++) shorter.add(cells.get(t));
         json.add("householdCells", shorter);
@@ -426,7 +432,7 @@ public class HoldersCheck {
         close("the next month declares the whole price leaving the country", city.getBuybackAbroad(),
                 dollarPrice, 1e-6);
         close("...so nothing is carried any more", city.getBuybackUnsettled(), 0, 1e-9);
-        assertTrue("the audit closes on it", Math.abs(abroad.residual) <= .01);
+        assertTrue("the audit closes on it", Math.abs(abroad.residual) <= MoneyAudit.tolerance(abroad.moved()));
 
         theWholeBook();
 
@@ -535,7 +541,8 @@ public class HoldersCheck {
         close("it paid them the curve's market value", cb.getBoughtFromHouseholds(), expectedPrice, 1e-6);
         close("...its gain against face in the month's profit", cb.getPaperGains(),
                 fromBank + fromHouseholds - cb.getBoughtPaper(), 1e-6);
-        assertTrue("the money it made for them is declared: the audit closes", Math.abs(r.residual) <= .01);
+        assertTrue("the money it made for them is declared: the audit closes",
+                Math.abs(r.residual) <= MoneyAudit.tolerance(r.moved()));
         assertTrue("...and M0 moved by exactly the money made, the audit's MONEY lines the same",
                 Math.abs((cb.m0() - m0Before) - (cb.getIssued() - cb.getRetired())) <= .005
                         && Math.abs(r.moneyMade() - (cb.getIssued() - cb.getRetired())) <= .005);

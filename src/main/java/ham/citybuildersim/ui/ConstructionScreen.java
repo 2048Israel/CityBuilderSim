@@ -780,12 +780,12 @@ final class ConstructionScreen {
             card.getChildren().add(effect("   the building, at its value to them", money(b.buildingValue()),
                     "its cost and its material at today's price", Palette.TEXT_LABEL));
             card.getChildren().add(effect("   its ground, at the land market's price", money(b.ground()),
-                    String.format("%,.0f sq ft", q.landSqFt()), Palette.TEXT_LABEL));
+                    LandManager.areaWords(q.landSqFt()), Palette.TEXT_LABEL));
             card.getChildren().add(effect("   their business loss", money(b.businessLoss()),
                     String.format("%.1f%% of their operating profit, for the %s a replacement would take",
                             b.profitShare() * 100, monthsWait(b.replacementMonths())), Palette.TEXT_LABEL));
         }
-        card.getChildren().add(effect("Ground freed", String.format("%,.0f sq ft", q.landSqFt()),
+        card.getChildren().add(effect("Ground freed", LandManager.areaWords(q.landSqFt()),
                 "back on the land office's books when the work is done", Palette.TEXT_HEAD));
         if (q.posts() > 0) {
             card.getChildren().add(effect("Staff let go", String.format("%,d", q.posts()),
@@ -909,7 +909,7 @@ final class ConstructionScreen {
         List<String[]> lines = new ArrayList<>();
         lines.add(new String[] { "Cost to clear", money(q.price().total) });
         lines.add(new String[] { "Material back, at today's price", money(q.salvageProceeds()) });
-        lines.add(new String[] { "Ground freed", String.format("%,.0f sq ft", q.landSqFt()) });
+        lines.add(new String[] { "Ground freed", LandManager.areaWords(q.landSqFt()) });
         ui.confirm(String.format("Demolish %,d %s?", n, t.getName()),
                 "They close as the month starts. This cannot be undone.",
                 lines, "Demolish " + n, () -> {
@@ -966,7 +966,7 @@ final class ConstructionScreen {
         List<String[]> lines = new ArrayList<>();
         lines.add(new String[] { "Cost to clear", money(q.price().total) });
         lines.add(new String[] { "Material back, at today's price", money(q.salvageProceeds()) });
-        lines.add(new String[] { "Ground freed", String.format("%,.0f sq ft", q.landSqFt()) });
+        lines.add(new String[] { "Ground freed", LandManager.areaWords(q.landSqFt()) });
         ui.confirm(String.format("Demolish the shell of %,d %s?", shell.buildings, shell.building),
                 "Its work is lost; its material and its ground come back when the demolition is done.",
                 lines, "Demolish it", () -> {

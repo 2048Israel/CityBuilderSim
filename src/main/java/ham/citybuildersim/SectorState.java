@@ -28,6 +28,20 @@ public final class SectorState {
     public double interest, propertyTax, maintenance, taxRate;
 
     /**
+     * ...and the four ratios its month was run at - power, water, the road
+     * and the clinics - as the sector held them when the save was taken
+     * (0.7.63). The month is struck at the top of the next (strikeSectors()),
+     * its power and water bills on the first two, and the load path set
+     * every sector's from the services, which have struck next month's by
+     * then: a city short of power billed the month it was saved in at the
+     * next month's ratio, city2400's bills 0.02% dearer and its treasury
+     * 0.23 units adrift a month after a reload. Null in a save from before
+     * them, or for a ratio that was not a number, which keeps the load's
+     * derivation. See Sector.restoreBills().
+     */
+    public Double energyRatio, waterRatio, roadRatio, healthRatio;
+
+    /**
      * Whether this sector's van fleet is a fact about the sector.
      *
      * Absent - and so false - in every save written before 2026-09-17, which
@@ -44,6 +58,18 @@ public final class SectorState {
 
     public LedgerState ledger;
     public StatementState statement;
+
+    /**
+     * The month's trade in units by good name: what it shipped and what it
+     * landed in the month the save was taken (A1, 0.7.46). The railway bills
+     * it at the top of the next month, before the strike clears it, so a
+     * loaded city carries it until then - see Sector, THE MONTH'S TRADE
+     * ACROSS A SAVE. Absent in an older save, and so null, written empty
+     * when nothing crossed (since 0.7.63, so the load can tell the two
+     * apart): a save from before them has its units derived from the
+     * ledger's money abroad - Sector.deriveCarriedTrade().
+     */
+    public Map<String, Double> exported, imported;
 
     /**
      * A good's money in a save: what it sold or bought at home and abroad.

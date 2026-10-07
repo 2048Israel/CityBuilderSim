@@ -34,9 +34,15 @@
   "For a store, 'coverage' is people it can serve a month and it makes that many",
   "GROCERIES out of that much FOOD. For a home, 'makes' HOUSING is its dwellings.",
   "A mine also needs a DEPOSIT: buy a land parcel with iron under it, and one",
-  "deposit supports one mine.",
+  "deposit supports one mine. An Oil Well needs an oil site the same way, one a",
+  "well: a MINING building stands on the sites of the resource whose good it makes.",
+  "CRUDE is tonnes of crude oil, lifted by the wells and refined; FUEL is litres,",
+  "made by the refinery and drawn by the city's drivers and its railway.",
   "production1 / production2 survive only for the utilities: watts for ELECTRICITY,",
   "water units for WATER.",
+  "A WATER building draws fresh water unless it says \"source\": \"SEA\". Fresh water is",
+  "held to what the lakes and river the city owns yield (121,600 units a month a km2);",
+  "a SEA building is not held to it, and needs the city to own some sea.",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -58,7 +64,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 69,
+ "nextId": 76,
  "buildings": [
   {
    "id": 0,
@@ -1694,6 +1700,72 @@
     "DRINKS": 5400
    },
    "stock": 36000
+  },
+  {
+   "id": 73,
+   "name": "Desalination Plant",
+   "category": "WATER",
+   "source": "SEA",
+   "cashCost": 131568,
+   "constructionPoints": 88000,
+   "constructionMaterials": 4872,
+   "production1": 60000,
+   "electricity": 10880,
+   "water": 20,
+   "jobs": {
+    "NO_DIPLOMA": 8,
+    "DIPLOMA": 14,
+    "COLLEGE_ENGINEERING": 4,
+    "UNIV_SCIENCE": 3
+   },
+   "land": 800000,
+   "roadLoad": 15
+  },
+  {
+   "id": 74,
+   "name": "Oil Well",
+   "category": "MINING",
+   "sector": "Oil",
+   "cashCost": 2000,
+   "constructionPoints": 400,
+   "constructionMaterials": 50,
+   "electricity": 30,
+   "water": 5,
+   "jobs": {
+    "NO_DIPLOMA": 2,
+    "DIPLOMA": 1
+   },
+   "land": 87120,
+   "roadLoad": 70,
+   "makes": {
+    "CRUDE": 415
+   }
+  },
+  {
+   "id": 75,
+   "name": "Oil Refinery",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 60000,
+   "constructionPoints": 30000,
+   "constructionMaterials": 1000,
+   "electricity": 1000,
+   "water": 250,
+   "jobs": {
+    "NO_DIPLOMA": 50,
+    "DIPLOMA": 30,
+    "COLLEGE_ENGINEERING": 15,
+    "UNIV_SCIENCE": 5
+   },
+   "land": 870000,
+   "roadLoad": 659,
+   "makes": {
+    "FUEL": 8300000
+   },
+   "uses": {
+    "CRUDE": 8300
+   },
+   "stock": 25000000
   }
  ]
 }

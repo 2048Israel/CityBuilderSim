@@ -375,8 +375,8 @@ public class BuildingsStacks {
     }
 
     //getters
-    public int getTotalJobs(JobType type) {
-        return template.getJobs(type) * quantity;
+    public long getTotalJobs(JobType type) {
+        return (long) template.getJobs(type) * quantity;
     }
 
     public int getQuantity() {

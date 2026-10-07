@@ -36,6 +36,16 @@ import java.util.List;
  * record says what the city started with; the treasury and the vault say what
  * it has.
  *
+ * AND THE WORLD IT STANDS ON (0.7.56, batch J1a): the seed of the World the
+ * city is founded on - its coast, its lakes and river, the fields of ore and
+ * oil under it - saved as worldSeed. Founding.defaults() and every preset take
+ * DEFAULT_WORLD_SEED, so the harnesses and the playtest found on one world;
+ * the founding screen rolls a new one when it opens (rollWorldSeed()). A save
+ * from before 0.7.56 has none, and reads one made from what it does carry
+ * (derivedWorldSeed()), the same every time it is loaded until a save keeps
+ * it. The city's land stands on it since 0.7.57 (CityLand; the project's
+ * spec-land.md).
+ *
  * @author Jerus
  */
 public final class Founding {
@@ -175,6 +185,43 @@ public final class Founding {
     /** The longest city name: room for the window's title and the slot list's line, not a policy. */
     public static final int MAX_CITY_NAME_LENGTH = 24;
 
+    /* ------------------------------------------------------------ the world */
+
+    /** The world a founding stands on when nobody rolls another: 4127, the map mockup's default seed (city-map.html), so every harness and the playtest found on the same ground. */
+    public static final long DEFAULT_WORLD_SEED = 4127;
+
+    /** The largest seed the founding screen's dice rolls: 999,999,999, nine digits a player can read back and type. Any whole number is a world; this is only the dice's range. */
+    public static final long ROLLED_SEED_MAX = 999_999_999;
+
+    /** A seed for the founding screen's dice, 1 to ROLLED_SEED_MAX. Not deterministic, on purpose: nothing in the model calls it. */
+    public static long rollWorldSeed() {
+        return java.util.concurrent.ThreadLocalRandom.current().nextLong(1, ROLLED_SEED_MAX + 1);
+    }
+
+    /** A typed seed as a whole number - digits, a leading minus, commas ignored - or null when it is not one. */
+    public static Long parseWorldSeed(String typed) {
+        String t = typed == null ? "" : typed.replace(",", "").trim();
+        if (!t.matches("-?[0-9]{1,19}")) return null;
+        try {
+            return Long.parseLong(t);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * The seed a save from before 0.7.56 is read with (spec-land 2.9): SplitMix64
+     * of its city's name's hash, the bits of the treasury it was founded with,
+     * the bits of the ground it owns and the month, XORed - what the save
+     * carries, so the same save gives the same world on every load, and two
+     * cities almost never share one.
+     */
+    public static long derivedWorldSeed(String cityName, double foundingCash, double landOwnedSqFt, int month) {
+        long z = (cityName == null ? 0 : cityName.hashCode()) ^ Double.doubleToLongBits(foundingCash)
+                ^ Double.doubleToLongBits(landOwnedSqFt) ^ month;
+        return World.mix(z);
+    }
+
     /* ------------------------------------------------------------ the record */
 
     private final String cityName;
@@ -182,6 +229,7 @@ public final class Founding {
     private final double cash;
     private final double reserveUsd;
     private final double meanInflation;
+    private final long worldSeed;
 
     /**
      * A founding exactly as given. The load path's door, and the one the
@@ -191,13 +239,21 @@ public final class Founding {
      * @param meanInflation the world's average inflation the city is founded
      *        into. Chosen here; kept by WorldEconomy, not in the save's
      *        founding fields - a loaded record is handed back the world's.
+     * @param worldSeed the seed of the World it stands on (0.7.56)
      */
-    public Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation) {
+    public Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation,
+                    long worldSeed) {
         this.cityName = cityName;
         this.currency = currency;
         this.cash = cash;
         this.reserveUsd = reserveUsd;
         this.meanInflation = meanInflation;
+        this.worldSeed = worldSeed;
+    }
+
+    /** ...on the default world, DEFAULT_WORLD_SEED. */
+    public Founding(String cityName, Currency currency, double cash, double reserveUsd, double meanInflation) {
+        this(cityName, currency, cash, reserveUsd, meanInflation, DEFAULT_WORLD_SEED);
     }
 
     /** The defaults: Danzik, its money named after it, the Standard preset, the default world - what "Found with defaults" founded until 0.7.21. */
@@ -219,7 +275,12 @@ public final class Founding {
 
     /** The same founding with money the player named by hand - Currency.typed(), which is null when the typed pair does not pass, and problem() then says so. */
     public Founding withCurrency(Currency typed) {
-        return new Founding(cityName, typed, cash, reserveUsd, meanInflation);
+        return new Founding(cityName, typed, cash, reserveUsd, meanInflation, worldSeed);
+    }
+
+    /** The same founding on another world: the founding screen's World field and its dice (0.7.56). */
+    public Founding withWorldSeed(long seed) {
+        return new Founding(cityName, currency, cash, reserveUsd, meanInflation, seed);
     }
 
     /** What a save from before 0.7.10 was founded with. See the class header. */
@@ -239,6 +300,8 @@ public final class Founding {
     public double getMeanInflation()   { return meanInflation; }
     /** Which of the five this is. */
     public Preset getPreset()          { return Preset.of(cash, reserveUsd); }
+    /** The seed of the world it stands on (0.7.56): World.of(getWorldSeed()) is its ground. */
+    public long getWorldSeed()         { return worldSeed; }
 
     /* ------------------------------------------------------------ is it a city */
 

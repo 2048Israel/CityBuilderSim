@@ -49,6 +49,15 @@ public class DataSave {
     private Double foundingCash;
     private Double foundingReserveUsd;
 
+    /*
+     * ...AND THE WORLD IT STANDS ON (0.7.56): the seed of the city's World.
+     * Boxed, so a save without it is told apart from a world seeded 0; a
+     * save from before 0.7.56 reads one made from what it does carry
+     * (Founding.derivedWorldSeed(), in getFounding()), and the next save
+     * keeps it.
+     */
+    private Long worldSeed;
+
     //save variables
     private double cash;
     private int[] buildings;
@@ -165,21 +174,68 @@ public class DataSave {
      * PopulationManager.restoreWorkforce(). -1 means a save from before this
      * was carried, where the load recomputes as it always did.
      */
-    private int workforce = -1;
+    private long workforce = -1;
 
     /* ------------------------------ land and ore ----------------------------
      *
-     * The listing is written out in full rather than regenerated from a seed.
-     * Regenerating would be smaller and would tie every existing save to the
-     * exact contents of the parcel generator forever - change one weighting and
-     * every player's window silently reshuffles, including the expensive plot
-     * they were saving up for.
+     * THE LAND ON THE WORLD (0.7.57, SAVE_FORMAT 31; the project's
+     * spec-land.md 2.9), ON THE BLOCK GRID SINCE 0.7.67 (SAVE_FORMAT 32;
+     * spec-grid.md 2.6 and 3). The city's land is written out whole: the
+     * world's sea level and totals as stored at founding, so a load needs no
+     * pass over the world; the centre (CityLand.centreState(): its five areas
+     * - total, dry, fresh, sea, forest - its sites and amounts of the seven
+     * resources, the legacy iron field's plot and sites, and the site's plot,
+     * 24 wide) and its blocks (landCentreRects: x0, y0, x1, y1 a block);
+     * every purchase in the order it was made (landHoldings,
+     * LandParcel.purchaseRow(), 31 wide: its rectangle, month, price, what was
+     * paid, its contents, its id and month listed); the fields a converted
+     * city holds only part of (landPartFields: kind, cell, index, the sites
+     * owned); a converted city's purchase records as its save had them
+     * (landConverted, history); the twenty-four offers standing, every field
+     * (LandParcel.offerRow(), 29 wide), and the next offer's id; and what has
+     * been taken out of the ground, a resource at a time. The grid itself is
+     * never written: the load replays the rectangles. Written in full rather
+     * than drawn again from the world, for the reason the parcels always
+     * were: drawing again would tie every save to the exact counting and
+     * pricing rules forever, and every player's offers would move with them.
+     *
+     * READ ONLY TO CONVERT: landListing (the nine parcels), ironDeposits and
+     * ironReserveTonnes, which a save of format 30 or older carries and
+     * LandConversion reads - the iron, that is; the parcels go; and a format-31
+     * save's landLanes and landPurchases, with its 25-wide landCentre, which
+     * LandConversion.convertLanes() snaps to the grid. Boxed or null, so a save
+     * written now does not carry them.
      * ---------------------------------------------------------------------- */
+    private Double worldSeaTheta;
+    private double[] worldTotals;
+    private double[] landCentre;
+    private double[][] landCentreRects;
+    private double[][] landHoldings;
+    private double[][] landPartFields;
+    private double[][] landConverted;
+    private double[] landLanes;
+    private double[][] landPurchases;
+    private double[][] landOffers;
+    private Integer nextOfferId;
+    private double[] depletion;
     private double[] landListing;
-    /** The office's struck prices and minimum lot - see LandMarket.getPriceState(). */
+    /** The office's struck prices and the unit it lists at - see LandMarket.getPriceState(). */
     private double[] landMarketPrices;
-    private int ironDeposits;
-    private double ironReserveTonnes;
+    private Integer ironDeposits;
+    private Double ironReserveTonnes;
+    /**
+     * The city's water rights, units a month of fresh water it may treat past
+     * what its lakes and river yield (0.7.59; Game, THE FRESH WATER LIMIT AND
+     * THE COAST). Boxed: a save from before them carries none, and the load
+     * gives it what its fresh plants already pump.
+     */
+    private Double freshRights;
+    /**
+     * The stamp of the city map's sidecar written with this save (0.7.60,
+     * batch J3; CityMap.writeSidecar()): a load reads slot-NN-map.bin only
+     * when its stamp is this one. Boxed: null when the city had no map.
+     */
+    private Long mapStamp;
 
     /* ------------------------- the shedding warning -------------------------
      *
@@ -258,7 +314,7 @@ public class DataSave {
 
     /** The city's own yard, in units. */
     private int constructionMaterials;
-    private int population;
+    private long population;
     
     /*
      * THE SECTOR STATEMENTS, this month and last.
@@ -343,6 +399,7 @@ public class DataSave {
         currencyQualified = c.qualifiedSymbol();
         foundingCash = f.getCash();
         foundingReserveUsd = f.getReserveUsd();
+        worldSeed = f.getWorldSeed();
     }
 
     /**
@@ -350,7 +407,10 @@ public class DataSave {
      * has just restored. A field that is missing reads as the legacy
      * founding's (Founding.legacy()) - all eight are on a save written since
      * 0.7.10 and none before it, so a mixture is a hand-edited file, and each
-     * missing piece still reads as what every older city had.
+     * missing piece still reads as what every older city had. A save from
+     * before 0.7.56 has no world seed and reads one derived from its name,
+     * its founding treasury, its ground and its month
+     * (Founding.derivedWorldSeed()).
      */
     public Founding getFounding(double meanInflation) {
         Founding old = Founding.legacy(meanInflation);
@@ -361,11 +421,16 @@ public class DataSave {
                 currencyCode != null ? currencyCode : was.code(),
                 currencySymbol != null ? currencySymbol : was.symbol(),
                 currencyQualified != null ? currencyQualified : was.qualifiedSymbol());
-        return new Founding(cityName != null ? cityName : old.getCityName(), money,
-                foundingCash != null ? foundingCash : old.getCash(),
+        String name = cityName != null ? cityName : old.getCityName();
+        double cash = foundingCash != null ? foundingCash : old.getCash();
+        return new Founding(name, money, cash,
                 foundingReserveUsd != null ? foundingReserveUsd : old.getReserveUsd(),
-                meanInflation);
+                meanInflation,
+                worldSeed != null ? worldSeed : Founding.derivedWorldSeed(name, cash, landOwned, month));
     }
+
+    /** The world seed as saved, or null on a save from before 0.7.56 - which getFounding() derives one for. */
+    public Long getWorldSeed() { return worldSeed; }
 
     /** The city's name as saved, or null on a save from before 0.7.10. */
     public String getCityName() { return cityName; }
@@ -521,7 +586,7 @@ public class DataSave {
         this.constructionMaterials = constructionMaterials;
     }
     
-    public void setPopulation(int population){
+    public void setPopulation(long population){
         this.population = population;
     }
     public void setReports(boolean reports){
@@ -629,6 +694,20 @@ public class DataSave {
   
     /* ------------------------- construction, by id ------------------------- */
 
+    /**
+     * THE ORDER THE CITY'S BUILDINGS STAND IN (0.7.43): their template ids in
+     * BuildingManager's list, which is the order each was first bought. The
+     * stacks are restored by id, so a reloaded city stood its sites in id
+     * order and shared the month's crews out in a different order from the
+     * city it was saved from - the same work to the last bit only by luck
+     * (ConstructionControlCheck's twin parted at 1e-16 once the luck ran out).
+     * A save without it restores in id order, as it always did.
+     */
+    private int[] stackOrder;
+
+    public void setStackOrder(int[] templateIds) { this.stackOrder = templateIds; }
+    public int[] getStackOrder() { return stackOrder; }
+
     public void setConstructionById(int[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue) {
         this.underConstructionById = underConstruction;
         this.constructionProgressById = progress;
@@ -697,22 +776,67 @@ public class DataSave {
     public void setCityInterestAccrued(double value) { this.cityInterestAccrued = value; }
     public double getCityInterestAccrued()           { return cityInterestAccrued; }
 
-    public void setWorkforce(int workforce) { this.workforce = workforce; }
+    public void setWorkforce(long workforce) { this.workforce = workforce; }
 
     /** -1 when the save predates this field. */
-    public int getWorkforce()               { return workforce; }
+    public long getWorkforce()              { return workforce; }
 
-    public void setLandState(double[] listing, int deposits, double reserveTonnes) {
-        this.landListing = listing;
-        this.ironDeposits = deposits;
-        this.ironReserveTonnes = reserveTonnes;
+    /** The city's land on the world, whole (0.7.57; on the block grid since 0.7.67, format 32): see land and ore above. */
+    public void setCityLand(double[] centre, double[][] centreRects, double[][] holdings, double[][] partFields,
+                            double[][] converted, double[][] offers, int nextOfferId,
+                            double[] depletion, double[] worldTotals, double worldSeaTheta) {
+        this.landCentre = centre;
+        this.landCentreRects = centreRects;
+        this.landHoldings = holdings;
+        this.landPartFields = partFields;
+        this.landConverted = converted;
+        this.landLanes = null;
+        this.landPurchases = null;
+        this.landOffers = offers;
+        this.nextOfferId = nextOfferId;
+        this.depletion = depletion;
+        this.worldTotals = worldTotals;
+        this.worldSeaTheta = worldSeaTheta;
     }
 
+    /** The centre's record: 24 wide in format 32, 25 (with a half-side) in format 31. */
+    public double[] getLandCentre()         { return landCentre; }
+    /** The centre's blocks (format 32). */
+    public double[][] getLandCentreRects()  { return landCentreRects; }
+    /** The purchases since, 31 wide (format 32). */
+    public double[][] getLandHoldings()     { return landHoldings; }
+    /** The fields held in part (format 32), or null. */
+    public double[][] getLandPartFields()   { return landPartFields; }
+    /** A converted city's purchase history (format 32), or null. */
+    public double[][] getLandConverted()    { return landConverted; }
+    /** A format-31 save's lanes: read only to convert. */
+    public double[] getLandLanes()          { return landLanes; }
+    /** A format-31 save's purchases, 28 wide: read only to convert. */
+    public double[][] getLandPurchases()    { return landPurchases; }
+    public double[][] getLandOffers()       { return landOffers; }
+    /** The next offer's id, 1 on a save that has none. */
+    public int getNextOfferId()             { return nextOfferId != null ? nextOfferId : 1; }
+    public double[] getDepletion()          { return depletion; }
+    public double[] getWorldTotals()        { return worldTotals; }
+    /** The world's sea level as stored, or null on a save from before 0.7.57. */
+    public Double getWorldSeaTheta()        { return worldSeaTheta; }
+
+    public void setFreshRights(double units) { this.freshRights = units; }
+    /** The water rights as saved, or null on a save from before 0.7.59. */
+    public Double getFreshRights()          { return freshRights; }
+
+    public void setMapStamp(Long stamp)     { this.mapStamp = stamp; }
+    /** The city map's sidecar stamp, or null when the city had no map (or the save is from before 0.7.60). */
+    public Long getMapStamp()               { return mapStamp; }
+
+    /** An older save's nine parcels, read by nothing since 0.7.57 but kept to say what the save carried. */
     public double[] getLandListing()        { return landListing; }
     public void setLandMarketPrices(double[] state) { this.landMarketPrices = state; }
     public double[] getLandMarketPrices()   { return landMarketPrices; }
-    public int getIronDeposits()            { return ironDeposits; }
-    public double getIronReserveTonnes()    { return ironReserveTonnes; }
+    /** An older save's pool of iron sites, 0 when it carries none: what LandConversion reads. */
+    public int getIronDeposits()            { return ironDeposits != null ? ironDeposits : 0; }
+    /** ...and its tonnes. */
+    public double getIronReserveTonnes()    { return ironReserveTonnes != null ? ironReserveTonnes : 0; }
 
 
     /* -------------------------- policy --------------------------
@@ -1144,6 +1268,20 @@ public class DataSave {
     public double[] getPriceIndex()           { return priceIndex; }
 
     /**
+     * The anchor (0.7.42): credibility, smoothed inflation, expected
+     * inflation, the expected price level and whether it was seeded, then the
+     * month's lean, the level its money constants are struck at and (0.7.45)
+     * the month's move in credibility - Expectations.toSaveArray(). The level is a
+     * compounding stock and cannot be rebuilt from anything else the city
+     * holds. Null on an older save, which the load seeds (Expectations.seed())
+     * - correct, not wrong, so SAVE_FORMAT did not move.
+     */
+    private double[] expectations;
+
+    public void setExpectations(double[] state) { this.expectations = state; }
+    public double[] getExpectations()           { return expectations; }
+
+    /**
      * The world's price level and what it is rising at.
      *
      * The level is a compounding stock and cannot be rebuilt from anything the
@@ -1262,6 +1400,18 @@ public class DataSave {
     public Double getInflationTarget()            { return inflationTarget; }
 
     /**
+     * How strictly the rule holds the target (0.7.52) - DebtManager
+     * .getStrictness(), by name, beside the target for the same reason. Null
+     * on an older save, which reads STANDARD: the rule it was played under,
+     * so no format bump.
+     */
+    private String policyStrictness;
+
+    public void setPolicyStrictness(String name) { this.policyStrictness = name; }
+    /** The strictness as saved; STANDARD for an older save or a name this build does not know. */
+    public DebtManager.Strictness getPolicyStrictness() { return DebtManager.Strictness.named(policyStrictness); }
+
+    /**
      * The central bank's holdings dial (0.7.1): the share of the city's term
      * paper it aims to hold - CentralBank.getTargetShare(). Under its own key
      * rather than in the balance sheet's array, because it is the player's
@@ -1368,6 +1518,60 @@ public class DataSave {
 
     public void setCarsPerHousehold(double v) { this.carsPerHousehold = v; }
     public double getCarsPerHousehold()       { return carsPerHousehold; }
+
+    /**
+     * The month's transit bill as advanceDemographics() 6d struck it
+     * (0.7.49): the buses' and trams' wages and upkeep. CARRIED, NOT
+     * RE-DERIVED, because the load path would strike it at the fill the
+     * month ENDED on, and the month paid it at the fill 6d read - a reload
+     * reported a different bill for the month it was saved in. -1 in a save
+     * from before 0.7.49, where the load derives it as it always did. See
+     * Game.carriedTransitBill.
+     */
+    private double transitBill = -1;
+
+    public void setTransitBill(double v) { this.transitBill = v; }
+    public double getTransitBill()       { return transitBill; }
+
+    /**
+     * ...and the commute as 6d struck it (0.7.49): the share of the working
+     * cells' workers with no car of their own, and a journey's fuel in the
+     * month's money. Carried for the reasons Game.carriedCaptiveShare gives:
+     * the cells are not back when the road is first struck, and the fuel was
+     * struck at 6d's exchange rate. -1 in a save from before 0.7.49: derived
+     * as the month would.
+     */
+    private double captiveShare = -1, fuelPerJourney = -1;
+
+    public void setCaptiveShare(double v)   { this.captiveShare = v; }
+    public double getCaptiveShare()         { return captiveShare; }
+    public void setFuelPerJourney(double v) { this.fuelPerJourney = v; }
+    public double getFuelPerJourney()       { return fuelPerJourney; }
+
+    /**
+     * ...and the drivers' fuel as 6d drew it (0.7.62, batch K): the bill, the
+     * part of it imported and the litres - a draw off the refiners' shelf is
+     * a month passing and cannot be run again by a load. Null in a save from
+     * before it, which struck the bill as drivers x journeys x a journey's
+     * fuel, every litre imported (Game's load path).
+     */
+    private double[] householdFuel;
+
+    public void setHouseholdFuel(double[] v) { this.householdFuel = v == null ? null : v.clone(); }
+    public double[] getHouseholdFuel()       { return householdFuel == null ? null : householdFuel.clone(); }
+
+    /**
+     * ...and the students who finished a course and wait for the next census
+     * to carry their loans to the working families, beside the ones who
+     * carried theirs at this month's (0.7.63; HouseholdBalance.graduatesToSave()).
+     * The month sets the first at its demographics and the next month's
+     * census reads it, so every save holds one. Null in a save from before
+     * it, which loads with nobody waiting, as every load until then did.
+     */
+    private double[] householdGraduates;
+
+    public void setHouseholdGraduates(double[] v) { this.householdGraduates = v == null ? null : v.clone(); }
+    public double[] getHouseholdGraduates()       { return householdGraduates == null ? null : householdGraduates.clone(); }
 
     public void setRememberedCommute(double v) { this.rememberedCommute = v; }
     public double getRememberedCommute() {
@@ -1645,7 +1849,7 @@ public class DataSave {
      * borrowing rate, since the debt market prices off GDP.
      */
     private java.util.Map<String, Integer> sectorLossMonths;
-    private java.util.List<Integer> populationTrend;
+    private java.util.List<Long> populationTrend;
     private double cityCapitalSpending;
     private double monthlyMaterialImports;
     /**
@@ -1659,8 +1863,8 @@ public class DataSave {
 
     public void setSectorLossMonths(java.util.Map<String, Integer> m){ this.sectorLossMonths = m; }
     public java.util.Map<String, Integer> getSectorLossMonths(){ return sectorLossMonths; }
-    public void setPopulationTrend(java.util.List<Integer> l){ this.populationTrend = l; }
-    public java.util.List<Integer> getPopulationTrend(){ return populationTrend; }
+    public void setPopulationTrend(java.util.List<Long> l){ this.populationTrend = l; }
+    public java.util.List<Long> getPopulationTrend(){ return populationTrend; }
     public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }
     public double getCityCapitalSpending(){ return cityCapitalSpending; }
 
@@ -1802,7 +2006,7 @@ public class DataSave {
         return constructionMaterials;
     }
     
-    public int getPopulation(){
+    public long getPopulation(){
         return population;
     }
     public boolean getReports(){

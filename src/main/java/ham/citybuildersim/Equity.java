@@ -152,7 +152,7 @@ public class Equity {
     /** A founding share in today's money. See foundingPrice. */
     public double foundingPrice() { return foundingPrice; }
 
-    /** Re-seeds the yardstick at a given unit. See Denomination. */
+    /** Re-seeds the yardstick at a given unit - since 0.7.42 the unit over the expected price level it is struck at, every month (Game.restrikeMoneyConstants()). See Denomination. */
     public void seedConstants(double unit) {
         foundingPrice = FOUNDING_PRICE / (unit > 0 ? unit : 1);
     }

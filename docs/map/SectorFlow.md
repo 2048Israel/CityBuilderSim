@@ -1,6 +1,6 @@
 # SectorFlow.java - 260 lines · 17 methods · 1 constants · model
 
-`ham/citybuildersim/SectorFlow.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorFlow.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > One business's month as a flow (0.7.30): what went in, what its plant made
 > of it and what held the plant back, and what came out - each good's units
@@ -64,7 +64,7 @@
 | 90 | 1 | `public double intoStock()` _(in SectorFlow.Out)_ | Made and not sold or shipped this month: into the warehouse (0 when the month sold more than it made). |
 | 92 | 1 | `public double fromStock()` _(in SectorFlow.Out)_ | Sold or shipped beyond what was made: out of the warehouse (0 when it made more than it sold). |
 | 94 | 1 | `public boolean underwater()` _(in SectorFlow.Out)_ | Whether a unit costs more to make than the city pays for it. |
-| 112 | 11 | **type** `public record Plant(int standing, int onSite, int posts, double workers, double[] ratios, double[] cascade,...` | The plant. |
+| 112 | 11 | **type** `public record Plant(int standing, int onSite, long posts, double workers, double[] ratios, double[] cascade...` | The plant. |
 | 114 | 1 | `public boolean none()` _(in SectorFlow.Plant)_ |  |
 | 116 | 6 | `public int lowest()` _(in SectorFlow.Plant)_ | The throttle that cuts most: the lowest ratio, the first of equals; -1 with nothing standing. |
 | 133 | 15 | **type** `public record Flow(Sector sector, List<In> inputs, List<Out> outputs, Plant plant, boolean counted, BuildCa...` | The flow. |

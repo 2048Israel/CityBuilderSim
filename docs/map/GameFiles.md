@@ -1,6 +1,6 @@
-# GameFiles.java - 412 lines · 35 methods · 7 constants · model
+# GameFiles.java - 425 lines · 37 methods · 7 constants · model
 
-`ham/citybuildersim/GameFiles.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameFiles.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Where the game keeps its files, and how it writes them.
 > 
@@ -43,7 +43,7 @@
 
 **Uses:** [SaveHeader](SaveHeader.md) (3), [GameLog](GameLog.md) (1)
 
-**Used by (76):** [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CalendarCheck](CalendarCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityBuilderSim](CityBuilderSim.md), [ConservationCheck](ConservationCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyCheck](CurrencyCheck.md), [DataSave](DataSave.md), [DeathRecordCheck](DeathRecordCheck.md), [DenominationCheck](DenominationCheck.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GamePrefs](GamePrefs.md), [GdpCheck](GdpCheck.md), [HealthCheck](HealthCheck.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [InboxCheck](InboxCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OutsideCheck](OutsideCheck.md), [PolicyCheck](PolicyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PopulationCheck](PopulationCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RestructureCheck](RestructureCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [ShadowBasket](ShadowBasket.md), [SicknessCheck](SicknessCheck.md), [SkipReportCheck](SkipReportCheck.md), [TradeCostCheck](TradeCostCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md), [YearBookCheck](YearBookCheck.md)
+**Used by (84):** [AgricultureCheck](AgricultureCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CalendarCheck](CalendarCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [CityBuilderSim](CityBuilderSim.md), [ConservationCheck](ConservationCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyCheck](CurrencyCheck.md), [DataSave](DataSave.md), [DeathRecordCheck](DeathRecordCheck.md), [DenominationCheck](DenominationCheck.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GamePrefs](GamePrefs.md), [GdpCheck](GdpCheck.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [InboxCheck](InboxCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [OilCheck](OilCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OutsideCheck](OutsideCheck.md), [PolicyCheck](PolicyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PopulationCheck](PopulationCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RestructureCheck](RestructureCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [ShadowBasket](ShadowBasket.md), [SicknessCheck](SicknessCheck.md), [SkipReportCheck](SkipReportCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TradeCostCheck](TradeCostCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md), [WaterCheck](WaterCheck.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 
@@ -51,9 +51,9 @@
 |---:|---|
 | 59 | · slots |
 | 111 | · locations |
-| 214 | · migration |
-| 272 | · reading |
-| 329 | · writing |
+| 222 | · migration |
+| 280 | · reading |
+| 337 | · writing |
 
 ## Constants
 
@@ -73,15 +73,15 @@
 |---:|---|---|
 | 78 | `private final Path directory` |  |
 | 79 | `private final Path legacyDirectory` |  |
-| 339 | `public final boolean ok` |  |
-| 340 | `public final Path file` |  |
-| 341 | `public final String error` |  |
+| 347 | `public final boolean ok` |  |
+| 348 | `public final Path file` |  |
+| 349 | `public final String error` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 361 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
+| 52 | 374 | **type** `public final class GameFiles` | Where the game keeps its files, and how it writes them. |
 
 ### slots (lines 59-110)
 
@@ -91,7 +91,7 @@
 | 86 | 4 | `GameFiles(Path directory, Path legacyDirectory)` | For tests, which must never touch the real user's save folder. |
 | 102 | 8 | `public static GameFiles scratch(String label)` | A throwaway folder for a harness city. |
 
-### locations (lines 111-213)
+### locations (lines 111-221)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -101,46 +101,48 @@
 | 119 | 1 | `public Path savesDirectory()` |  |
 | 121 | 1 | `public Path saveFile(int slot)` |  |
 | 122 | 1 | `public Path historyFile(int slot)` |  |
-| 134 | 1 | `public Path yearBookFile()` | THE YEAR BOOK AND THE DECADE BOOK |
-| 135 | 1 | `public Path decadeBookFile()` |  |
-| 143 | 1 | `public Path yearBookCsv()` | ...AND THEIR TABLES AS CSV (0.7.16), beside them under the same stem: each book's main table, and its WITHIN table of the [~] columns' worst and best months. |
-| 144 | 1 | `public Path yearBookWithinCsv()` |  |
-| 145 | 1 | `public Path decadeBookCsv()` |  |
-| 146 | 1 | `public Path decadeBookWithinCsv()` |  |
-| 152 | 3 | `private static String stem(int slot)` | Zero-padded, so the folder sorts the way a person reads it and slot 10 does not land between 1 and 2. |
-| 156 | 3 | `public static boolean isValidSlot(int slot)` |  |
-| 161 | 3 | `public static String slotLabel(int slot)` | "Autosave", "Slot 1"... |
-| 165 | 7 | `public static Path defaultDirectory()` |  |
-| 173 | 3 | `public static Path defaultLegacyDirectory()` |  |
-| 185 | 24 | `static Path resolveDirectory(String osName, String appData, String xdgDataHome, String userHome)` | The convention for each platform, as a pure function of its inputs. |
-| 210 | 3 | `private static boolean notBlank(String s)` |  |
+| 130 | 1 | `public Path mapFile(int slot)` | The slot's city map, beside its save (0.7.60, batch J3): slot-NN-map.bin, the districts' counts deflated (CityMap's sidecar). |
+| 142 | 1 | `public Path yearBookFile()` | THE YEAR BOOK AND THE DECADE BOOK |
+| 143 | 1 | `public Path decadeBookFile()` |  |
+| 151 | 1 | `public Path yearBookCsv()` | ...AND THEIR TABLES AS CSV (0.7.16), beside them under the same stem: each book's main table, and its WITHIN table of the [~] columns' worst and best months. |
+| 152 | 1 | `public Path yearBookWithinCsv()` |  |
+| 153 | 1 | `public Path decadeBookCsv()` |  |
+| 154 | 1 | `public Path decadeBookWithinCsv()` |  |
+| 160 | 3 | `private static String stem(int slot)` | Zero-padded, so the folder sorts the way a person reads it and slot 10 does not land between 1 and 2. |
+| 164 | 3 | `public static boolean isValidSlot(int slot)` |  |
+| 169 | 3 | `public static String slotLabel(int slot)` | "Autosave", "Slot 1"... |
+| 173 | 7 | `public static Path defaultDirectory()` |  |
+| 181 | 3 | `public static Path defaultLegacyDirectory()` |  |
+| 193 | 24 | `static Path resolveDirectory(String osName, String appData, String xdgDataHome, String userHome)` | The convention for each platform, as a pure function of its inputs. |
+| 218 | 3 | `private static boolean notBlank(String s)` |  |
 
-### migration (lines 214-271)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 224 | 30 | `public List<String> migrateLegacy()` | Brings saves over from the old folder. |
-| 255 | 16 | `private void copyIfAbsent(Path from, Path to, String description, List<String> copied)` |  |
-
-### reading (lines 272-328)
+### migration (lines 222-279)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 281 | 18 | `public SaveHeader readHeader(int slot)` | Reads just enough of a slot to label it, or null if the slot is empty. |
-| 301 | 3 | `public boolean slotIsEmpty(int slot)` | No file at all. |
-| 319 | 3 | `public boolean slotIsUnreadable(int slot)` | True when a slot holds a file the game cannot make sense of. |
-| 324 | 4 | `public boolean slotIsLoadable(int slot)` | Loadable: something is there, and it can be read. |
+| 232 | 30 | `public List<String> migrateLegacy()` | Brings saves over from the old folder. |
+| 263 | 16 | `private void copyIfAbsent(Path from, Path to, String description, List<String> copied)` |  |
 
-### writing (lines 329-412)
+### reading (lines 280-336)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 337 | 32 | **type** `public static final class Result` | What a write attempt did. |
-| 343 | 5 | `private Result(boolean ok, Path file, String error)` _(in GameFiles.Result)_ |  |
-| 349 | 1 | `static Result succeeded(Path file)` _(in GameFiles.Result)_ |  |
-| 352 | 3 | `static Result failed(Path file, String reason)` _(in GameFiles.Result)_ | For a failure that is not an exception - see DataSave.saveGame(). |
-| 356 | 6 | `static Result failed(Path file, Throwable cause)` _(in GameFiles.Result)_ |  |
-| 364 | 4 | `public String message()` _(in GameFiles.Result)_ | One line, fit to show a player. |
-| 370 | 34 | `public Result write(Path file, String contents)` |  |
-| 405 | 7 | `private static void deleteQuietly(Path path)` |  |
+| 289 | 18 | `public SaveHeader readHeader(int slot)` | Reads just enough of a slot to label it, or null if the slot is empty. |
+| 309 | 3 | `public boolean slotIsEmpty(int slot)` | No file at all. |
+| 327 | 3 | `public boolean slotIsUnreadable(int slot)` | True when a slot holds a file the game cannot make sense of. |
+| 332 | 4 | `public boolean slotIsLoadable(int slot)` | Loadable: something is there, and it can be read. |
+
+### writing (lines 337-425)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 345 | 32 | **type** `public static final class Result` | What a write attempt did. |
+| 351 | 5 | `private Result(boolean ok, Path file, String error)` _(in GameFiles.Result)_ |  |
+| 357 | 1 | `static Result succeeded(Path file)` _(in GameFiles.Result)_ |  |
+| 360 | 3 | `static Result failed(Path file, String reason)` _(in GameFiles.Result)_ | For a failure that is not an exception - see DataSave.saveGame(). |
+| 364 | 6 | `static Result failed(Path file, Throwable cause)` _(in GameFiles.Result)_ |  |
+| 372 | 4 | `public String message()` _(in GameFiles.Result)_ | One line, fit to show a player. |
+| 378 | 3 | `public Result write(Path file, String contents)` |  |
+| 383 | 34 | `public Result write(Path file, byte[] contents)` | The same, for bytes (0.7.60: the city map's sidecar): the .tmp, the .bak, then the swap. |
+| 418 | 7 | `private static void deleteQuietly(Path path)` |  |
 

@@ -1191,9 +1191,9 @@ final class ServicesScreen {
      * Who a kind of care reaches, as a funnel: the people (or, for senior
      * care, the places) it is measured against, the places built, the places
      * staffed, and those it treated - with the people the fee turned away as
-     * a step when there are any. Healthcare.getServed() is the month's, and
-     * is not kept by a save: until a month runs after a load, the last step
-     * says so rather than nought.
+     * a step when there are any. Healthcare.getServed() is the month's, kept
+     * by a save since 0.7.46 (A3): until a month runs after loading an older
+     * save, the last step says so rather than nought.
      */
     VBox careFunnel(CareType care) {
         BuildingManager bm = ui.game.getBuildingManager();
@@ -1237,14 +1237,15 @@ final class ServicesScreen {
                 "turned away at the door for want of the fee"));
         steps.add(new FunnelStep("treated", measured ? service.getServed(care) : 0,
                 measured ? people(service.getServed(care)) : "after a month", measured ? null
-                : "Not measured yet: a loaded city counts who was treated when a month runs."));
+                : "Not measured yet: a save from before 0.7.46 did not keep who was treated - a month run counts them."));
         return steps;
     }
 
     /**
-     * True when a save has been loaded and no month has run since: care that
-     * stands treated nobody, by the count (Healthcare's served[] is not
-     * saved), while the fees it raised are. The Health books read "—" for it.
+     * True when a save from before 0.7.46 has been loaded and no month has
+     * run since: care that stands treated nobody, by the count (Healthcare's
+     * served[] was not saved until A3), while the fees it raised were. The
+     * Health books read "—" for it.
      */
     boolean healthNotRunYet() {
         Healthcare service = ui.game.getHealthcare();
@@ -1628,7 +1629,8 @@ final class ServicesScreen {
 
     /**
      * Which gate holds a course above the ladder, from the reads the course
-     * page draws its funnel from: no seats built (and how many would come),
+     * page draws its funnel from: no seats built (how many would come, and
+     * since 0.7.51 the posts for them, CityNeeds.hires()),
      * built and unstaffed, the seats, nobody able to afford it, or the
      * students - with the wage return that is not drawing them.
      */
@@ -1644,7 +1646,9 @@ final class ServicesScreen {
         double inFlight = schools.getEnrolled(t);
         if (seats <= 0 && inFlight <= 0) {
             return built > 0 ? new Gate("staff", "built: no teachers")
-                    : new Gate("built", "not built: " + people(CityNeeds.wouldCome(ui.game, t)) + " would come");
+                    : new Gate("built", "not built: " + people(CityNeeds.wouldCome(ui.game, t)) + " would come, "
+                            + people(CityNeeds.hires(ui.game, t, 1))
+                            + (Math.round(CityNeeds.hires(ui.game, t, 1)) == 1 ? " post" : " posts") + " for them");
         }
         double free = Math.max(0, seats - inFlight);
         double wanted = schools.eligibleFor(t, pm) * schools.willingShare(t, market) * Education.ENROLMENT_RATE;
@@ -1716,7 +1720,14 @@ final class ServicesScreen {
         VBox c = card(head, words(n.line1(), Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 words(n.line2(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         c.setSpacing(4);
-        if (n.gate() != null) c.getChildren().add(chip(n.gate(), n.gateTone()));
+        if (n.gate() != null) {
+            // Since 0.7.51 a school not built says the posts for its graduates too, past the node's
+            // 228 with a five-figure intake ("not built: 24,395 would come, 133 posts for them"): it wraps.
+            Label gate = chip(n.gate(), n.gateTone());
+            gate.setWrapText(true);
+            gate.setMinWidth(0);
+            c.getChildren().add(gate);
+        }
         c.setMinWidth(228);
         c.setPrefWidth(228);
         c.setMaxWidth(228);
@@ -2243,12 +2254,15 @@ final class ServicesScreen {
      * (0.7.41; the share supplied, held to 100%, in NEEDS YOU's colour for the
      * load until then); what it could do at full staff, what it does
      * now and what is asked, in its unit, with its other ticks; who draws it;
-     * how short or spare; its door; its (i); and the old page's lines.
+     * how short or spare; its door; its (i); and the old page's lines; and
+     * since 0.7.59 a line under the bar when a limit holds the plants back
+     * (the water's fresh water limit, CityNeeds.freshLimitLine()), null when
+     * none does.
      */
     record UtilityRow(String name, String icon, String figure, String figureWords, String tone,
                       double could, double now, double asked, List<Tick> ticks, List<Part> draws,
                       String shortWords, String info, Runnable go, String goWords,
-                      java.util.function.DoubleFunction<String> unit, String key) { }
+                      java.util.function.DoubleFunction<String> unit, String key, String limit) { }
 
     List<UtilityRow> utilityRows(List<CityNeeds.Need> all) {
         UtilitiesHandler uh = ui.game.getServicesManager().getUtilitiesHandler();
@@ -2268,9 +2282,10 @@ final class ServicesScreen {
                         Part.of("the city's own", Math.max(0, asked - billed - homes), Palette.MONEY)),
                 shortWords(asked, now, could, Money::power), POWER_INFO,
                 () -> ui.buildScreen.openOn(BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)), "Build for it",
-                Money::power, "power"));
+                Money::power, "power", null));
 
-        double wAsked = uh.getWaterConsumption(), wNow = uh.getWaterProduction(), wCould = uh.getBaseWaterProduction();
+        // "At full staff" is held to the fresh water limit (0.7.59): a plant the lakes cannot feed adds nothing.
+        double wAsked = uh.getWaterConsumption(), wNow = uh.getWaterProduction(), wCould = uh.getWaterAtFullStaff();
         double wBilled = uh.getBilledWaterDraw(), wHomes = uh.getHomesWaterDraw();
         CityNeeds.Served water = CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, uh.getWaterServed());
         out.add(new UtilityRow("Water", Icons.DROP, CityNeeds.servedPct(water.share()), BuildScreen.servedWords(water),
@@ -2284,7 +2299,7 @@ final class ServicesScreen {
                         Part.of("the city's own", Math.max(0, uh.getBuildingWaterDraw() - wBilled - wHomes), Palette.MONEY)),
                 shortWords(wAsked, wNow, wCould, v -> people(v) + " units"), WATER_INFO,
                 () -> ui.buildScreen.openOn(BuildAdvice.Measure.of(BuildAdvice.Kind.WATER)), "Build for it",
-                v -> people(v) + " units", "water"));
+                v -> people(v) + " units", "water", CityNeeds.freshLimitLine(uh)));
         return out;
     }
 
@@ -2327,6 +2342,8 @@ final class ServicesScreen {
                 + " · the city asks " + r.unit().apply(r.asked());
         VBox middle = new VBox(4, bar, words(says, Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
                 causeBar(r.draws(), 0, 6, r.unit()));
+        // ...and the limit holding the plants back, in amber under the bar (0.7.59).
+        if (r.limit() != null) middle.getChildren().add(1, words(r.limit(), Palette.SIZE_CAPTION, Palette.WARN));
         HBox.setHgrow(middle, Priority.ALWAYS);
         middle.setMaxWidth(Double.MAX_VALUE);
 
@@ -2364,7 +2381,12 @@ final class ServicesScreen {
             + "buildings. Splitting the residents from the buildings is the difference between \"stop building "
             + "housing\" and \"stop building food plants\", and no single total says which.\n\nOnly commercial and "
             + "industrial draw is invoiced; households are not billed for water. Short, industrial and "
-            + "commercial output is cut in proportion.";
+            + "commercial output is cut in proportion.\n\nA Water Treatment Plant treats fresh water, and the plants "
+            + "together treat no more than the city's lakes and river yield - "
+            + String.format("%,.0f", UtilitiesHandler.FRESH_UNITS_PER_KM2) + " units a month for each km² "
+            + "owned, plus what an older city already pumped. Past that limit the rest of their nameplate idles: "
+            + "buy lake or river at the land office, or build a Desalination Plant on owned sea, which the limit "
+            + "does not reach.";
 
     /** A row's old lines, in its fold - kW for watts, and the homes for "resident draw". */
     VBox utilityStatement(String key) {
@@ -2386,7 +2408,11 @@ final class ServicesScreen {
                 statementLine("Billed", people(uh.getBilledWaterDraw()) + " units"),
                 statementLine("Unbilled", people(uh.getUnbilledWaterDraw()) + " units"),
                 statementLine("Produced", people(uh.getWaterProduction()) + " units"),
-                statementLine("Could produce", people(uh.getBaseWaterProduction()) + " units"));
+                statementLine("Could produce", people(uh.getWaterAtFullStaff()) + " units"),
+                statementLine("...of which fresh water, treated", people(uh.getFreshDrawn()) + " units"),
+                statementLine("...and the sea, desalinated", people(uh.getDesalOutput()) + " units"),
+                statementLine("Fresh water limit", Double.isFinite(uh.getFreshCap())
+                        ? people(uh.getFreshCap()) + " units" : "none"));
     }
 
     /* =====================================================================
@@ -2748,9 +2774,10 @@ final class ServicesScreen {
 
     /**
      * The old Health books, every line: what care charges for, what it costs,
-     * where the money goes. AFTER A LOAD the month's patients are not kept
-     * (Healthcare's served[] is not saved), so "seen" and "raised" read "—"
-     * until a month runs, where they read nought beside the saved fees.
+     * where the money goes. AFTER LOADING A SAVE FROM BEFORE 0.7.46 the
+     * month's patients are not known (Healthcare's served[] was not saved
+     * until A3), so "seen" and "raised" read "—" until a month runs, where
+     * they read nought beside the saved fees.
      */
     VBox healthBooksStatement() {
         Healthcare service = ui.game.getHealthcare();

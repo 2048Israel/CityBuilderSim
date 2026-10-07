@@ -318,13 +318,14 @@ public class HouseholdBalance {
        that take it, and the world's rate is reached through investAbroad()'s
        own choice, which answers to it already. One rate, one dial.
 
-       REAL, on the same year-on-year inflation the parity and the real rate
-       differential read: Game.realDepositRate(), one definition for the
-       month and for the monetary page. Struck once a month by Game before
-       the households plan and handed in (setSpendFactor()). Nothing is
-       saved - the load path derives it again from the deposit rate and the
-       price index a save restores - and a caller that hands nothing plans at
-       1, which is the model as it was.
+       REAL, ex ante since 0.7.42: the deposit rate less the inflation the
+       city expects, as the real rate differential reads it (the year-on-year
+       rate the parity reads, until then) - Game.realDepositRate(), one
+       definition for the month and for the monetary page. Struck once a
+       month by Game before the households plan and handed in
+       (setSpendFactor()). Nothing is saved - the load path derives it again
+       from the deposit rate and the anchor a save restores - and a caller
+       that hands nothing plans at 1, which is the model as it was.
        ===================================================================== */
 
     /** How hard a household's spending above subsistence answers the real deposit rate: at 1.0 ten points of real return cut it by a tenth and ten points of negative real return raise it by a tenth (provisional - Jerus's number to settle). */
@@ -787,7 +788,10 @@ public class HouseholdBalance {
      * @param riskFreeAnnual   the bank's household rate, which each household's
      *                         months owed sit on (Bank.householdRate() since
      *                         0.7.7; the city's own borrowing rate before it)
-     * @param supplyRatio      the share of what was planned that the shops had
+     * @param supplyRatio      the share of the baskets asked for at the price that
+     *                         the shops handed over (Retail.getHouseholdShare();
+     *                         of what was planned until 0.7.43) - the screens'
+     *                         figure, which the hunger no longer reads
      */
     public void advanceMonth(ToDoubleBiFunction<FamilyStructure, PayTier> census,
                              double[] rowDisposable, double rentPerHousehold,
@@ -807,12 +811,13 @@ public class HouseholdBalance {
         /*
          * HUNGER, BEFORE ANYTHING IS OVERWRITTEN.
          *
-         * Last month's plan is what each household set out to buy; the supply
-         * ratio is the share of it the shops actually had. Both bite, and they
-         * are different failures - one is a household with no money, the other
-         * is a city with no stock - so a player who fixes the wrong one gets
-         * nowhere. Measured against SUBSISTENCE, because a household that
-         * wanted a better television and bought a worse one is not hungry.
+         * What each household was handed at the last sale against the baskets
+         * it needs (0.7.43; its plan times the supply ratio until then). Two
+         * failures make it, and they are different - one is a household priced
+         * out, the other is a city with no stock - so a player who fixes the
+         * wrong one gets nowhere. Measured against a basket a head, because a
+         * household that wanted a better television and bought a worse one is
+         * not hungry.
          */
         hungryPeople = 0;
         totalPeople = 0;
@@ -827,17 +832,12 @@ public class HouseholdBalance {
         for (Household c : cells) c.dividends = 0;
         /*
          * WHAT THE SHOPS ACTUALLY HANDED OVER, as a share of what was asked
-         * for (2026-09-17). Game passes Retail.getHouseholdShare() now; it
-         * used to pass getSupplyRatio(), whose denominator the shops had
-         * already capped at their own coverage.
-         *
-         * AND THE DIFFERENCE IS THE WHOLE OF WHETHER THE LINE BELOW MEANS
-         * ANYTHING. `ate` is a household's plan times this share, so with the
-         * honest denominator the eating adds up to what was sold, and with the
-         * old one it added up to more than the shops had. The city was being
-         * fed groceries that were never on a shelf - not in money, which came
-         * from the real takings, but in the one number anybody reads to ask
-         * whether people are being fed.
+         * for at the price (2026-09-17; Retail.getHouseholdShare(), sold over
+         * the baskets demanded at the shelf price since 0.7.43). It used to
+         * be getSupplyRatio(), whose denominator the shops had already capped
+         * at their own coverage. Since 0.7.43 it is the screen's figure and
+         * nothing more: the eating below reads the baskets each household was
+         * actually handed, which add up to what was sold by construction.
          */
         double delivered = Math.max(0, Math.min(1, supplyRatio));
         lastDelivered = delivered;
@@ -867,33 +867,48 @@ public class HouseholdBalance {
            get dearer rather than bigger.
 
            A MONTH LATE, AND ON THE RIGHT SIDE OF THE BOUNDARY. `ate` is
-           already last month's plan against last month's delivery - the shops
-           sold against the plan this line is reading - so last month's meals
-           belong beside it. See Household.mealsEaten.
+           already last month's - the baskets each household was handed at last
+           month's sale (last month's plan against last month's delivery until
+           0.7.43) - so last month's meals belong beside it. See
+           Household.mealsEaten.
            ================================================================= */
-        double subsistencePerMeal = Math.max(0, foodPricePerHead)
-                * ham.citybuildersim.sectors.Restaurants.PERSON_MONTHS_PER_MEAL;
+        /*
+         * IN BASKETS SINCE 0.7.43 (spec-inflation.md 4.2). What a household
+         * ate is the baskets the shops handed it at the last sale
+         * (allocateGroceries()) and the meals it ate out, a ninetieth of a
+         * basket each, against the baskets it needed at that sale - all three
+         * positions the sale wrote, so a reload counts what the live city
+         * counts (a cell struck empty at the plan and grown since needed
+         * nothing at the sale, whatever a re-struck plan says) - the same comparison the
+         * money one was, with the price taken out of both sides. It used to be
+         * the plan times the share delivered, in money, against subsistence:
+         * one share for the whole city, so the shortage fell on everybody
+         * alike; the allocation prices the poorest out first now, and this is
+         * where that shows.
+         */
+        double basketsPerMeal = ham.citybuildersim.sectors.Restaurants.PERSON_MONTHS_PER_MEAL;
         lastMealsEaten = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             double people = fresh[i] * c.headcount();
             totalPeople += people;
             lastMealsEaten += c.mealsEaten * c.households;
-            double ate = c.planned * delivered + c.mealsEaten * subsistencePerMeal;
-            if (c.subsistence > 0 && ate < c.subsistence) {
-                hungryPeople += people * (1 - ate / c.subsistence);
+            double ate = c.groceriesGot + c.mealsEaten * basketsPerMeal;
+            if (c.groceriesNeed > 0 && ate < c.groceriesNeed) {
+                hungryPeople += people * (1 - ate / c.groceriesNeed);
             }
             /*
-             * ...AND THE SAME AT FULL SHELVES (0.7.27): what the household's
-             * own plan would have left it short of had the shops handed over
-             * all of it. That is the money half of the hunger above; the rest
-             * is the shelves. The People page splits GOING SHORT by it, so a
-             * player can tell the two failures apart. Nothing reads it in the
-             * month.
+             * ...AND THE SAME AT FULL SHELVES (0.7.27): what the household
+             * would have been short of had the shops handed over every basket
+             * it asked for at the price they charged (groceriesAsked, 0.7.43;
+             * its plan until then). That is the money half of the hunger
+             * above - priced out; the rest is the shelves. The People page
+             * splits GOING SHORT by it, so a player can tell the two failures
+             * apart. Nothing reads it in the month.
              */
-            double planFed = c.planned + c.mealsEaten * subsistencePerMeal;
-            if (c.subsistence > 0 && planFed < c.subsistence) {
-                hungryAtFullShelves += people * (1 - planFed / c.subsistence);
+            double askedFed = c.groceriesAsked + c.mealsEaten * basketsPerMeal;
+            if (c.groceriesNeed > 0 && askedFed < c.groceriesNeed) {
+                hungryAtFullShelves += people * (1 - askedFed / c.groceriesNeed);
             }
             /*
              * READ, THEN CLEARED, here rather than in clearWorking(), because
@@ -905,23 +920,25 @@ public class HouseholdBalance {
         }
 
         /*
-         * WHO DID THE SHOPPING, decided before the plan is overwritten.
+         * WHO DID THE SHOPPING, decided before anything is overwritten.
          *
-         * The shops sold against last month's plan, and the row's takings are
-         * split across its cells by the same plan - a cell that could not
-         * afford to shop is a cell that bought less, not one that ran a
-         * deficit. With no plan yet (the founding month) the split follows
-         * people, which is what the model did before there was a budget.
+         * The row's takings are split across its cells by the baskets each
+         * was handed at the sale (0.7.43; by the plan until then) - a cell
+         * that was priced out is a cell that bought less, not one that ran a
+         * deficit, and since every basket was charged the one price, each
+         * cell pays exactly its baskets at it. With nothing handed over yet
+         * (the founding month) the split follows people, which is what the
+         * model did before there was a budget.
          */
         double[] shopWeight = new double[cells.length];
         double[] rowShopWeight = new double[ROWS];
         boolean[] rowHasPlan = new boolean[ROWS];
         for (Household c : cells) {
-            if (c.planned * c.households > 0) rowHasPlan[c.row()] = true;
+            if (c.groceriesGot * c.households > 0) rowHasPlan[c.row()] = true;
         }
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            shopWeight[i] = rowHasPlan[c.row()] ? c.planned * c.households : fresh[i] * c.headcount();
+            shopWeight[i] = rowHasPlan[c.row()] ? c.groceriesGot * c.households : fresh[i] * c.headcount();
             rowShopWeight[c.row()] += shopWeight[i];
         }
 
@@ -990,6 +1007,12 @@ public class HouseholdBalance {
             lastWrittenOff += c.discharge();
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
+            // The food assistance voucher, on the month just settled, before
+            // the plan adds it to the money the household takes to the grocer -
+            // its means test on the year's investment income, smoothed here
+            // once a month (0.7.45; see MEANS_INCOME_MONTHS).
+            c.meansIncome += (Math.max(0, c.investmentIncome) - c.meansIncome) / MEANS_INCOME_MONTHS;
+            c.voucher = foodAssistanceFor(c, foodPricePerHead);
             plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor, bondRatio) * c.households;
 
             /*
@@ -1676,7 +1699,10 @@ public class HouseholdBalance {
      * The other half of Jerus's rule. This is the ONLY place transit touches
      * the decision to BUY; what it does to the decision to DRIVE, on a given
      * morning, with a car already in the drive, is InfrastructureManager's and
-     * is a different mechanism.
+     * is a different mechanism. Since 0.7.49 it is scaled by the share of the
+     * households to whom a month's pass beats a car's full monthly cost
+     * (Motoring, THE BUYER WEIGHS THE FARE): at the default fare that share
+     * is 1 and the ceiling is what it was.
      *
      * IT IS A CEILING ON OWNERSHIP AND NOT A BRAKE ON ADOPTION, and the
      * difference is the whole of whether a player has a move here. Scaled
@@ -1858,6 +1884,44 @@ public class HouseholdBalance {
 
     /** Every car in the city. */
     public double totalCars() { return sum(Household::totalCars); }
+
+    /*
+     * WHO HAS A CAR OF THEIR OWN (0.7.49), Jerus's arithmetic per cell: "if
+     * one household category has 3k workers and 2k cars, then well, 1k has
+     * to take transit cause they have no choice". The working cells only
+     * (rows under RETIRED_ROW): each household's grown-ups are its commuters,
+     * and it holds at most one car, so a couple's second earner and four of
+     * five flatmates have none. Pure reads of the cells; see
+     * InfrastructureManager, WHO RIDES, BY WHAT THEY PAY.
+     */
+
+    /** The working cells' commuters by row: households times grown-ups. */
+    public double[] commuteWorkersByRow() {
+        double[] w = new double[Household.ROWS];
+        for (Household c : cells) {
+            if (!c.isEmpty() && c.row() < Household.RETIRED_ROW) w[c.row()] += c.households * c.grownUps();
+        }
+        return w;
+    }
+
+    /** ...and the cars they hold by row, at most one per grown-up: households times the lesser of the two. */
+    public double[] commuteCarsByRow() {
+        double[] k = new double[Household.ROWS];
+        for (Household c : cells) {
+            if (!c.isEmpty() && c.row() < Household.RETIRED_ROW) {
+                k[c.row()] += c.households * Math.min(c.cars, c.grownUps());
+            }
+        }
+        return k;
+    }
+
+    /** The share of those commuters with no car of their own; 1 with no commuters. */
+    public double captiveShare() {
+        double[] w = commuteWorkersByRow(), k = commuteCarsByRow();
+        double workers = 0, cars = 0;
+        for (int r = 0; r < w.length; r++) { workers += w[r]; cars += k[r]; }
+        return workers > 0 ? Math.max(0, workers - cars) / workers : 1;
+    }
 
     /** Cars per household, 0 to 1 - what the road reads. */
     public double carsPerHousehold() {
@@ -2135,6 +2199,241 @@ public class HouseholdBalance {
         // crossing from the money world into the physical one crosses at a
         // grain coarser than the dust.
         return Math.floor(Math.min(c.cars, need / floorPrice) * c.households);
+    }
+
+    /* =====================================================================
+       GROCERIES AT A PRICE, AND FOOD ASSISTANCE (0.7.43)
+
+       The project's spec-inflation.md 2.6 and 2.9. The grocer used to be
+       handed `want` in money - subsistence and most of what was left over,
+       the wealth term included - so the city asked for fourteen to seventeen
+       times the baskets it could eat, and the shelf's price answered a head
+       count capped by the shops' coverage rather than anybody's money. A
+       household now asks for what it eats, at a price:
+
+           q(p) = min( need x min(1, (p_sat / p) ^ GROCERY_ELASTICITY),
+                       foodMoney / p )
+
+       a basket a head at most (Engel's law by construction: the richer
+       shelf is Consumption's composition, not a second stomach), all of it
+       up to the satiation price - Retail's SATIATION_MULTIPLE over its floor
+       - and a little less above it, and never more than its money buys. The
+       city's demand is the cells' sum, and it falls as the price rises, so
+       there is one price at which it meets what the shops can hand over
+       (Retail.sellOwnPriced()).
+
+       FOOD ASSISTANCE is the treasury's voucher toward a household's
+       groceries (TaxPolicy.getFoodAssistance(), 0 by default): the dial's
+       share of its baskets at the shelf price, for a household whose baskets
+       would take more than FOOD_ASSISTANCE_MEANS_SHARE of what it has after
+       its fixed bills and its investment income (smoothed over a year since
+       0.7.45, MEANS_INCOME_MONTHS). It is added to the money
+       the household bids with, and paid only on the baskets it actually got
+       - into its savings at the till, by the treasury in the same month
+       (Game, TreasuryLine.FOOD_ASSISTANCE).
+       ===================================================================== */
+
+    /**
+     * A household is eligible for food assistance when a basket a head would
+     * take more than this share of what it has after its fixed bills and its
+     * investment income over the year: half. Targets those priced out first (spec star 8),
+     * and takes in everybody with nothing after their fixed bills - the
+     * unemployed off EI, the orphans, students without grant cover.
+     */
+    public static final double FOOD_ASSISTANCE_MEANS_SHARE = .5;
+
+    /**
+     * Months the means test's investment income is smoothed over, as an
+     * exponential average - a twelfth of the gap a month, the year
+     * Expectations smooths inflation over (0.7.45; the UI spec's B16). A
+     * coupon or a dividend lands in one month, and a test that read that
+     * month alone took a whole row in and out of assistance: the unemployed
+     * of the 2,400-month research city at a half dial were 11,203-14,172
+     * eligible, then none for seven months, then 13,691 again - $3.2M a month
+     * paid, then $3k, then $3.2M. Read only by the test: the plan's own
+     * reading of the month's income is untouched, and at a dial of 0 nothing
+     * reads it at all.
+     */
+    public static final int MEANS_INCOME_MONTHS = 12;
+
+    /** The price a full basket is still wanted at, in today's money: told by Retail at its sale and by Game where the households plan (Retail.getSatiationPrice()). */
+    private double satiationPrice;
+
+    /** The food assistance dial, 0 to 1: the share of an eligible household's baskets the treasury's voucher covers. Told by Game where the households plan. */
+    private double foodAssistance;
+
+    /** What the treasury paid toward the households' groceries at the last sale, and the baskets that bought. */
+    private double lastFoodAssistancePaid, lastFedByAssistance;
+
+    public void setSatiationPrice(double price) { if (price > 0 && Double.isFinite(price)) satiationPrice = price; }
+    public double getSatiationPrice() { return satiationPrice; }
+
+    public void setFoodAssistance(double share) {
+        foodAssistance = Double.isFinite(share) ? Math.max(0, Math.min(1, share)) : 0;
+    }
+    public double getFoodAssistance() { return foodAssistance; }
+
+    /** What the treasury paid toward the groceries at the last sale: every voucher, up to the baskets got at the price charged. Game pays it. */
+    public double getFoodAssistancePaid() { return lastFoodAssistancePaid; }
+
+    /** ...and the baskets that bought, at the price charged. */
+    public double getFedByAssistance() { return lastFedByAssistance; }
+
+    /**
+     * What one of these households would buy at this price, in baskets: the
+     * curve in the banner. Nothing for an empty cell, a household that needs
+     * nothing, or no price.
+     */
+    public double groceryDemandOf(Household c, double price) {
+        if (c.isEmpty() || !(price > 0) || !(c.need > 0)) return 0;
+        double appetite = satiationPrice > 0
+                ? Math.min(1, Math.pow(satiationPrice / price,
+                        ham.citybuildersim.sectors.Retail.GROCERY_ELASTICITY))
+                : 1;
+        return Math.min(c.need * appetite, Math.max(0, c.foodMoney) / price);
+    }
+
+    /** What the city's households would buy at this price, in baskets: every cell's demand times its households. Falls as the price rises. */
+    public double groceriesWanted(double price) {
+        double total = 0;
+        for (Household c : cells) total += groceryDemandOf(c, price) * c.households;
+        return total;
+    }
+
+    /** The baskets the city's households need, one a head: what the demand is a share of. */
+    public double groceriesNeeded() {
+        double total = 0;
+        for (Household c : cells) if (!c.isEmpty()) total += c.need * c.households;
+        return total;
+    }
+
+    /**
+     * Hands out the baskets the shops sold, and pays the vouchers on them.
+     *
+     * THE POOREST ARE PRICED OUT FIRST. Each cell gets its demand at the
+     * ALLOCATION price, scaled so the cells add up to what was sold: at the
+     * clearing price when the shelf charged less than it (a shortage), so the
+     * households whose money runs out first are the ones who go without -
+     * which is what a price does and a queue does not - and at the price
+     * charged otherwise. Every basket is paid for at the price charged.
+     *
+     * @param sold     baskets the shops handed over
+     * @param pAlloc   the price the shortage is shared out at: the larger of
+     *                 the clearing price and the price charged
+     * @param pCharged what a basket cost at the till
+     */
+    public void allocateGroceries(double sold, double pAlloc, double pCharged) {
+        lastFoodAssistancePaid = 0;
+        lastFedByAssistance = 0;
+        double total = groceriesWanted(pAlloc);
+        double scale = total > 0 && sold > 0 ? sold / total : 0;
+        for (Household c : cells) {
+            c.groceriesGot = groceryDemandOf(c, pAlloc) * scale;
+            c.groceriesAsked = groceryDemandOf(c, pCharged);
+            c.groceriesNeed = c.isEmpty() ? 0 : c.need;
+            c.assistance = 0;
+            if (!(c.voucher > 0) || !(c.groceriesGot > 0) || !(pCharged > 0)) continue;
+            double aid = Math.min(c.voucher, c.groceriesGot * pCharged);
+            c.assistance = aid;
+            c.savings += aid;
+            lastFoodAssistancePaid += aid * c.households;
+            lastFedByAssistance += aid / pCharged * c.households;
+        }
+    }
+
+    /**
+     * The voucher one of these households holds at this shelf price: the
+     * dial's share of its baskets at the price, when they would take more
+     * than FOOD_ASSISTANCE_MEANS_SHARE of what it has after its fixed bills
+     * and its investment income; nothing otherwise, or at a dial of 0.
+     */
+    public double foodAssistanceFor(Household c, double price) {
+        return foodAssistanceFor(c, price, foodAssistance);
+    }
+
+    /** ...at a dial of the caller's: the Policy tab's preview (PolicyPreview.foodAssistanceAt()). */
+    double foodAssistanceFor(Household c, double price, double share) {
+        if (!(share > 0) || c.isEmpty() || !(price > 0)) return 0;
+        double basket = c.baskets() * price;
+        // The investment income smoothed over the year, not the month's (0.7.45, MEANS_INCOME_MONTHS).
+        double means = c.afterFixed + Math.max(0, c.meansIncome);
+        if (basket <= FOOD_ASSISTANCE_MEANS_SHARE * means) return 0;
+        return share * basket;
+    }
+
+    /**
+     * What the vouchers would have paid at the last sale at another dial: each
+     * eligible household's voucher at that share, up to the baskets it got at
+     * the price - the same rule allocateGroceries() pays by, against the
+     * baskets of the sale that has happened. A preview, not a forecast: a
+     * voucher bids, so the baskets would have moved too.
+     */
+    public double foodAssistanceAt(double share, double price) {
+        double total = 0;
+        for (Household c : cells) {
+            double voucher = foodAssistanceFor(c, price, share);
+            if (voucher > 0) total += Math.min(voucher, c.groceriesGot * price) * c.households;
+        }
+        return total;
+    }
+
+    /** Households whose baskets would take more than FOOD_ASSISTANCE_MEANS_SHARE of their means at this price: who a voucher would go to. */
+    public double householdsEligibleForFoodAssistance(double price) {
+        double total = 0;
+        for (Household c : cells) if (foodAssistanceFor(c, price, 1) > 0) total += c.households;
+        return total;
+    }
+
+    /** What the treasury paid toward each row's groceries at the last sale, row by row: the cells that were paid, summed. The household books' line. */
+    public double[] foodAssistanceByRow() {
+        double[] out = new double[ROWS];
+        for (Household c : cells) out[c.row()] += c.assistance * c.households;
+        return out;
+    }
+
+    /* ----------------- who goes without, read for the screens (0.7.45) -----------------
+       Pure reads of the last sale's positions, which add up to the city's
+       own figures: the rows' baskets to what Retail sold, the rows' vouchers
+       to what the treasury paid. */
+
+    /** The baskets one row of households needed at the last sale, asked for at the price, and got; its households, those a voucher would go to at a price, and those a voucher was paid to. */
+    public record GroceryRow(int row, double need, double asked, double got,
+                             double households, double eligible, double aided) {
+        /** Baskets got per basket needed: 1 is fed. */
+        public double gotShare()   { return need > 0 ? got / need : 1; }
+        /** Baskets asked for at the price per basket needed: under 1 is priced out. */
+        public double askedShare() { return need > 0 ? asked / need : 1; }
+    }
+
+    /** Every row's groceries at the last sale, with who a voucher would go to at this price (ROWS order). */
+    public GroceryRow[] groceriesByRow(double price) {
+        double[] need = new double[ROWS], asked = new double[ROWS], got = new double[ROWS];
+        double[] households = new double[ROWS], eligible = new double[ROWS], aided = new double[ROWS];
+        for (Household c : cells) {
+            if (c.isEmpty()) continue;
+            int r = c.row();
+            need[r] += c.groceriesNeed * c.households;
+            asked[r] += c.groceriesAsked * c.households;
+            got[r] += c.groceriesGot * c.households;
+            households[r] += c.households;
+            if (foodAssistanceFor(c, price, 1) > 0) eligible[r] += c.households;
+            if (c.assistance > 0) aided[r] += c.households;
+        }
+        GroceryRow[] out = new GroceryRow[ROWS];
+        for (int r = 0; r < ROWS; r++) out[r] = new GroceryRow(r, need[r], asked[r], got[r], households[r], eligible[r], aided[r]);
+        return out;
+    }
+
+    /** The households a voucher was paid to at the last sale. */
+    public double getHouseholdsAssisted() {
+        double total = 0;
+        for (Household c : cells) if (c.assistance > 0) total += c.households;
+        return total;
+    }
+
+    /** The baskets the vouchers would have paid for at the last sale at another dial: foodAssistanceAt() at the price, in baskets. */
+    public double foodAssistanceBasketsAt(double share, double price) {
+        return price > 0 ? foodAssistanceAt(share, price) / price : 0;
     }
 
     /* =====================================================================
@@ -3361,6 +3660,27 @@ public class HouseholdBalance {
     /** Students who left the student body with what they carried, at the last month's census. */
     public double getLastGraduated() { return lastGraduated; }
 
+    /** The students who finished and wait for the next census to carry their loans (setGraduates()). */
+    public double getGraduating() { return graduating; }
+
+    /**
+     * ...AND BOTH ACROSS A SAVE (0.7.63). The month sets the first at its
+     * demographics and the next month's census reads it, so every save is
+     * taken holding one, and the load left it at nothing: the graduates'
+     * loans stayed with the students for the first month back and the
+     * working families repaid that much less - 0.93% of Jerus's repayments
+     * and interest, his treasury 7,447 units short a month after a reload
+     * (batch L; the second is the record the census leaves, for the screens).
+     */
+    public double[] graduatesToSave() { return new double[] { graduating, lastGraduated }; }
+
+    /** ...and back; null, a save from before 0.7.63, leaves both at nothing, as every load until then did. */
+    public void restoreGraduates(double[] saved) {
+        if (saved == null || saved.length < 2) return;
+        graduating = Math.max(0, saved[0]);
+        lastGraduated = Math.max(0, saved[1]);
+    }
+
     /* ------------------------- what the bank is owed ------------------------- */
 
     /** Written off this month, which is the bank's loss. */
@@ -3433,6 +3753,7 @@ public class HouseholdBalance {
             c.restrike(disposablePer[i], rentPerHousehold * c.rentShare,
                     feesPer[i] + accountFeeFor(c, c.households),
                     foodPricePerHead, riskFreeAnnual);
+            c.voucher = foodAssistanceFor(c, foodPricePerHead);
             plannedSpend += c.plan(localPerUsd, paperRatio, spendFactor, bondRatio) * c.households;
         }
     }
@@ -3449,19 +3770,23 @@ public class HouseholdBalance {
     public double getSubsistence(int row) { return perHousehold(row, Household::subsistence); }
 
     /**
-     * The share of each row's planned spend, for splitting what retail actually
+     * The share of each row's groceries, for splitting what retail actually
      * sold back across the rows.
      *
      * This is what makes the tier table honest: the shops' takings are divided
      * by who could afford to shop, not by headcount, so a tier that cannot pay
-     * shows up as buying less rather than as an unexplained deficit.
+     * shows up as buying less rather than as an unexplained deficit. By the
+     * baskets each row was handed at the last sale since 0.7.43 - every basket
+     * went at one price, so that is each row's share of the takings exactly;
+     * by the plan until then.
      */
     public double[] plannedShare() {
         double[] out = new double[ROWS];
         double total = 0;
         for (Household c : cells) {
-            out[c.row()] += c.totalPlanned();
-            total += c.totalPlanned();
+            double got = c.groceriesGot * c.households;
+            out[c.row()] += got;
+            total += got;
         }
         if (total > 0) for (int r = 0; r < ROWS; r++) out[r] /= total;
         else java.util.Arrays.fill(out, 0);
@@ -3476,18 +3801,33 @@ public class HouseholdBalance {
     public double getHungryPeople()          { return hungryPeople; }
 
     /**
+     * Of getHungerRate(), the share of the city short of a basket that could
+     * not afford one at the price - the money half, at full shelves - and the
+     * share the shelves left short (0.7.45): the two add to the rate. Struck
+     * where the rate is, at the top of the month on the last sale.
+     */
+    public double getHungerPricedOut() {
+        return totalPeople > 0 ? Math.min(getHungerRate(), Math.min(hungryAtFullShelves, hungryPeople) / totalPeople) : 0;
+    }
+
+    /** ...and the rest of it: the shelves ran short. */
+    public double getHungerShortOfStock() { return Math.max(0, getHungerRate() - getHungerPricedOut()); }
+
+    /**
      * Of getHungryPeople(), the ones who would have gone hungry even with
-     * the shelves full: their own plan, at every unit the shops were asked
-     * for, came up short of a basket - the money half of the hunger (0.7.27).
-     * The rest went short because the shops could not hand over what was
-     * planned (getDeliveredShare()). Counted the same way, people times how
-     * far short, and saved with it.
+     * the shelves full: the baskets they asked for at the price (0.7.43;
+     * their own plan until then), every one handed over, came up short of a
+     * basket - the money half of the hunger (0.7.27), priced out. The rest
+     * went short because the shops could not hand over what was asked for
+     * (getDeliveredShare()). Counted the same way, people times how far
+     * short, and saved with it.
      */
     public double getHungryAtFullShelves()  { return hungryAtFullShelves; }
 
     /**
-     * The share of what households planned to buy that the shops could hand
-     * over - and therefore which of the two hungers is biting.
+     * The share of what households asked for at the price (0.7.43; what they
+     * planned to buy until then) that the shops could hand over - and
+     * therefore which of the two hungers is biting.
      *
      * A household short of money and a city short of stock both come out as
      * hunger, and a player who fixes the wrong one gets nowhere. This is the
@@ -3925,8 +4265,40 @@ public class HouseholdBalance {
      */
     public static final int CELL_SLOTS_BEFORE_BONDS = CELL_SLOTS_BEFORE_PAPER + 1;
 
-    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care, the city's paper, its bonds. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_BONDS + 1;
+    /**
+     * ...and the last sale's groceries, appended 0.7.43: the baskets each
+     * household got, the baskets it asked for at the price, the baskets it
+     * needed, and the food assistance paid on them - written at the bottom of
+     * the month and read at the next one's top (the hunger, the shop split),
+     * so they cross a save.
+     *
+     * A save from before has none; the reader checks the width and seeds
+     * the baskets from the measure that save's hunger was struck on
+     * (seedGroceries()), so its first month eats as it did - no SAVE_FORMAT
+     * bump.
+     */
+    public static final int CELL_SLOTS_BEFORE_GROCERIES = CELL_SLOTS_BEFORE_BONDS + 1;
+
+    /**
+     * ...and the investment income the food assistance means test reads,
+     * smoothed over MEANS_INCOME_MONTHS, appended 0.7.45. A save from before
+     * has none, and seeds it at the month's investment income it carries -
+     * the figure that save's test read - so its first month tests as it did.
+     */
+    public static final int CELL_SLOTS_BEFORE_MEANS_INCOME = CELL_SLOTS_BEFORE_GROCERIES + 4;
+
+    /**
+     * ...and before each cell's income after its fixed bills was carried (A4).
+     * Struck by the month (Household.settle()) from that month's
+     * disposable income, rent and fees, and read between presses by the food
+     * assistance's means test; a reload struck it again from the moment of
+     * loading (Household.restrike(), on the rebuild's planOnly()), which is
+     * not the month's. A save from before keeps that re-strike, as it always did.
+     */
+    public static final int CELL_SLOTS_BEFORE_AFTER_FIXED = CELL_SLOTS_BEFORE_MEANS_INCOME + 1;
+
+    /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care, the city's paper, its bonds, the last sale's baskets got, asked and needed and its food assistance, the means test's smoothed investment income, and the month's income after its fixed bills. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_AFTER_FIXED + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public String[] cellKeys() {
@@ -3957,6 +4329,12 @@ public class HouseholdBalance {
             out[i++] = c.carePaid;
             out[i++] = c.paper;
             out[i++] = c.bonds;
+            out[i++] = c.groceriesGot;
+            out[i++] = c.groceriesAsked;
+            out[i++] = c.groceriesNeed;
+            out[i++] = c.assistance;
+            out[i++] = c.meansIncome;
+            out[i++] = c.afterFixed;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -4011,11 +4389,16 @@ public class HouseholdBalance {
         final int wasBeforeCare    = wasBeforeMeals + 1;
         final int wasBeforePaper   = wasBeforeCare + 1;
         final int wasBeforeBonds   = wasBeforePaper + 1;
-        final int wasFull          = wasBeforeBonds + 1;
+        final int wasBeforeGroceries = wasBeforeBonds + 1;
+        final int wasBeforeMeans   = wasBeforeGroceries + 4;
+        final int wasBeforeAfterFixed = wasBeforeMeans + 1;
+        final int wasFull          = wasBeforeAfterFixed + 1;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeBonds && slots != wasBeforePaper
+                || (slots != wasFull && slots != wasBeforeAfterFixed
+                    && slots != wasBeforeMeans && slots != wasBeforeGroceries
+                    && slots != wasBeforeBonds && slots != wasBeforePaper
                     && slots != wasBeforeCare && slots != wasBeforeMeals
                     && slots != wasBeforeIncome && slots != wasBeforeCars
                     && slots != wasBeforeStudent && slots != wasBeforeAbroad
@@ -4089,7 +4472,24 @@ public class HouseholdBalance {
             if (slots >= wasBeforeBonds) c.paper = Math.max(0, saved[i++]);
             // ...and one from before the businesses' bonds holds none (0.7.12).
             c.bonds = 0;
-            if (slots >= wasFull) c.bonds = Math.max(0, saved[i++]);
+            if (slots >= wasBeforeGroceries) c.bonds = Math.max(0, saved[i++]);
+            // ...and one from before groceries had a price ate what its own
+            // hunger measure said (0.7.43; see seedGroceries()).
+            if (slots >= wasBeforeMeans) {
+                c.groceriesGot   = Math.max(0, saved[i++]);
+                c.groceriesAsked = Math.max(0, saved[i++]);
+                c.groceriesNeed  = Math.max(0, saved[i++]);
+                c.assistance     = Math.max(0, saved[i++]);
+            } else {
+                seedGroceries(c);
+            }
+            // ...and one from before 0.7.45 tested its means on the month's
+            // investment income alone: seeded at that, so it tests as it did.
+            c.meansIncome = slots >= wasBeforeAfterFixed ? Math.max(0, saved[i++]) : Math.max(0, c.investmentIncome);
+            // ...and the month's income after its fixed bills (A4, 0.7.46),
+            // over the rebuild's re-strike from the moment of loading - this
+            // runs after it. One from before keeps the re-strike, as it did.
+            if (slots >= wasFull) c.afterFixed = saved[i++];
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -4161,6 +4561,26 @@ public class HouseholdBalance {
             lastDelivered       = Math.max(0, Math.min(1, saved[rows * 8 + 3]));
             hungryAtFullShelves = Math.max(0, saved[rows * 8 + 4]);
         }
+        // The last sale's baskets, from the measure this save's hunger was
+        // struck on; restoreCells() overrides them where the save has them.
+        for (Household c : cells) seedGroceries(c);
+    }
+
+    /**
+     * The last sale's baskets for a household from a save before 0.7.43,
+     * which carries the money measure its hunger was struck on: its plan
+     * times the share the shops handed over, against subsistence - turned
+     * into baskets by the same price on both sides. So the first month after
+     * the load counts the hunger that save would have counted; the sale at
+     * its bottom is the first at a price. No voucher was ever paid.
+     */
+    private void seedGroceries(Household c) {
+        double n = c.subsistence > 0 ? c.baskets() : 0;
+        double planned = c.subsistence > 0 ? c.planned / c.subsistence : 1;
+        c.groceriesGot   = n * Math.max(0, Math.min(1, planned * lastDelivered));
+        c.groceriesAsked = n * Math.max(0, Math.min(1, planned));
+        c.groceriesNeed  = n;
+        c.assistance     = 0;
     }
 
     /** The row array alone, with no census: the cells wait for the plan to count them. */
@@ -4190,6 +4610,10 @@ public class HouseholdBalance {
         hungryPeople = 0;
         totalPeople = 0;
         hungryAtFullShelves = 0;
+        satiationPrice = 0;
+        foodAssistance = 0;
+        lastFoodAssistancePaid = 0;
+        lastFedByAssistance = 0;
     }
 
     /**
@@ -4208,6 +4632,10 @@ public class HouseholdBalance {
         plannedSpend *= scale;
         lastDepositInterest *= scale;
         lastCareSkipped *= scale;
+        // The grocer's prices and the vouchers paid are money (0.7.43); the
+        // baskets they bought are not.
+        satiationPrice *= scale;
+        lastFoodAssistancePaid *= scale;
         forEach(c -> c.redenominate(scale));
     }
 

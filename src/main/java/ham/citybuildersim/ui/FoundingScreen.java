@@ -17,7 +17,7 @@ import static ham.citybuildersim.ui.Statement.*;
 import static ham.citybuildersim.ui.Pieces.*;
 
 /**
- * Found a city: its name, its money, what the founders leave in the treasury and the vault, and the world it is founded into.
+ * Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into.
  *
  * WHY THIS EXISTS (0.7.10). "Start New Game" founded the same city every time
  * - Danzik, the Danzik dollar, D$2.5B and US$1B - and the one founding choice
@@ -62,6 +62,13 @@ import static ham.citybuildersim.ui.Pieces.*;
  * a choice of world changes it; a keystroke only refreshes the lines that
  * depend on it - the currency, and whether Found is lit and why not - so the
  * field being typed in keeps its focus and its caret.
+ *
+ * AND THE GROUND IT STANDS ON (0.7.56, batch J1a). A row for the World: the
+ * seed of the city's coast, lakes, river and ore (World, the project's
+ * spec-land.md), rolled when the page opens and again by the dice, or typed.
+ * Any whole number is a world and the same number is the same world; it
+ * cannot be changed later. The city's land stands on it since 0.7.57
+ * (CityLand).
  */
 final class FoundingScreen {
 
@@ -82,6 +89,8 @@ final class FoundingScreen {
     /** A custom founding, as typed: millions of the city's money, and millions of US dollars. */
     private String customCash = "", customUsd = "";
     private double mean = WorldEconomy.DEFAULT_MEAN_INFLATION;
+    /** The world's seed, as typed or rolled. */
+    private String worldSeed = String.valueOf(Founding.DEFAULT_WORLD_SEED);
 
     /* ------------------------------------------------ what a keystroke refreshes */
 
@@ -100,6 +109,8 @@ final class FoundingScreen {
         customCash = trim(Founding.Preset.STANDARD.cash() / 1000);
         customUsd = trim(Founding.Preset.STANDARD.reserveUsd() / 1000);
         mean = WorldEconomy.DEFAULT_MEAN_INFLATION;
+        // A new world every time the page opens (spec-land, J1a): the dice's first roll.
+        worldSeed = String.valueOf(Founding.rollWorldSeed());
         draw();
         // The name is where a player's hands go first; Enter founds from it.
         if (nameField != null) {
@@ -113,6 +124,9 @@ final class FoundingScreen {
 
     /** The panel's padding, left and right: what the cards and fields share is the rest. */
     static final double PANEL_PAD = 40;
+
+    /** The World's field: room for a seed of nineteen digits and a sign in the figures' face at 14 px (0.7.56). */
+    static final double SEED_FIELD = 200;
 
     /* =====================================================================
        THE PAGE
@@ -207,6 +221,25 @@ final class FoundingScreen {
             startBlock.getChildren().addAll(fields, bounds);
         }
 
+        /* --------------------------- the ground ---------------------------- */
+        TextField seedField = new TextField(worldSeed);
+        seedField.setPrefWidth(SEED_FIELD);
+        seedField.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 14px;");
+        seedField.textProperty().addListener((o, was, now) -> { worldSeed = now; refresh(); });
+        seedField.setTooltip(new Tooltip("The seed of the city's ground: its coast, lakes, river and ore."
+                + " The same number is the same world."));
+        Button dice = new Button();
+        dice.setGraphic(icon(Icons.DICE, Palette.TEXT_LABEL, 18));
+        dice.setStyle("-fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 8; -fx-padding: 6 10 6 10; -fx-cursor: hand;");
+        dice.setTooltip(new Tooltip("Roll another world"));
+        dice.setOnAction(e -> seedField.setText(String.valueOf(Founding.rollWorldSeed())));
+        Label seedLine = new Label("The same number makes the same coast, lakes and ore.");
+        seedLine.setStyle(Palette.words(Palette.SIZE_SECTION - 1, Palette.TEXT_MUTED));
+        HBox seedRow = new HBox(Palette.GAP, seedField, dice, seedLine);
+        seedRow.setAlignment(Pos.CENTER_LEFT);
+        VBox groundBlock = new VBox(8, caption("THE WORLD"), seedRow);
+
         /* --------------------------- the world ----------------------------- */
         HBox worldRow = new HBox(0);
         worldRow.setAlignment(Pos.CENTER_LEFT);
@@ -249,7 +282,7 @@ final class FoundingScreen {
         whyNot.setMaxWidth(PANEL - 2 * PANEL_PAD);
         whyNot.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.BAD_SOFT));
 
-        VBox panel = new VBox(22, title, nameBlock, startBlock, worldBlock, bar, whyNot);
+        VBox panel = new VBox(22, title, nameBlock, startBlock, groundBlock, worldBlock, bar, whyNot);
         panel.setPrefWidth(PANEL);
         panel.setMinWidth(PANEL);
         panel.setMaxWidth(PANEL);
@@ -263,8 +296,9 @@ final class FoundingScreen {
          * panel sits in a page as tall as the viewport, centred; on a window
          * shorter than the panel the page grows past it and the scroller
          * scrolls. About 630 pixels tall with nothing opened (the implementer's
-         * measure of its parts; unrendered in the cloud), so a 768-pixel window
-         * shows it whole.
+         * measure of its parts; unrendered in the cloud), and about 710 since
+         * the World's row (0.7.56: a caption, a 32-pixel row and 22 between
+         * blocks), so a 768-pixel window still shows it whole.
          */
         StackPane page = new StackPane(panel);
         page.setStyle("-fx-padding: 16;");
@@ -397,6 +431,11 @@ final class FoundingScreen {
         return preset == Founding.Preset.CUSTOM ? millions(customUsd) : preset.reserveUsd();
     }
 
+    /** The world's seed as typed, or null when it is not a whole number. */
+    private Long seed() {
+        return Founding.parseWorldSeed(worldSeed);
+    }
+
     /** Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse. */
     private String problem() {
         if (ownCurrency) {
@@ -409,12 +448,15 @@ final class FoundingScreen {
             if (!Double.isFinite(cash())) return "Type the treasury in millions: 100 is " + money(100_000) + ".";
             if (!Double.isFinite(reserveUsd())) return "Type the vault in millions of US dollars: 25 is " + usd(25_000) + ".";
         }
+        if (seed() == null) return "Type the world as a whole number, like " + Founding.DEFAULT_WORLD_SEED + ", or roll the dice.";
         return choices().problem();
     }
 
     /** The founding as chosen. */
     private Founding choices() {
-        Founding f = Founding.custom(cityName, cash(), reserveUsd(), mean);
+        Long seed = seed();
+        Founding f = Founding.custom(cityName, cash(), reserveUsd(), mean)
+                .withWorldSeed(seed != null ? seed : Founding.DEFAULT_WORLD_SEED);
         return ownCurrency ? f.withCurrency(currency()) : f;
     }
 

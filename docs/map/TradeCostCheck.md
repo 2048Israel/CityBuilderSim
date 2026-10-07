@@ -1,6 +1,6 @@
-# TradeCostCheck.java - 534 lines · 6 methods · 1 constants · harnesses
+# TradeCostCheck.java - 551 lines · 6 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TradeCostCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TradeCostCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > The wedge between what the world charges and what it pays, and what it is
 > made of.
@@ -33,15 +33,15 @@
 > the traffic split, the modes, and the haulage sector's price. See
 > claude/transport-and-the-freight-band.md.
 
-**Uses:** [Traffic](Traffic.md) (46), [Good](Good.md) (44), [TaxPolicy](TaxPolicy.md) (12), [InfrastructureManager](InfrastructureManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Formats](Formats.md) (7), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Good](Good.md) (46), [Traffic](Traffic.md) (46), [TaxPolicy](TaxPolicy.md) (12), [InfrastructureManager](InfrastructureManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Formats](Formats.md) (7), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [BuildingManager](BuildingManager.md) (1), [Motoring](Motoring.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 171 | · the traffic split (2026-09-16) |
-| 269 | · the modes (2026-09-16) |
-| 437 | · the fare (2026-09-16) |
+| 176 | · the traffic split (2026-09-16) |
+| 274 | · the modes (2026-09-16) |
+| 442 | · the fare (2026-09-16) |
 
 ## Constants
 
@@ -59,11 +59,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 500 | **type** `public class TradeCostCheck` | The wedge between what the world charges and what it pays, and what it is made of. |
+| 35 | 517 | **type** `public class TradeCostCheck` | The wedge between what the world charges and what it pays, and what it is made of. |
 | 39 | 7 | `static void quietly(Runnable r)` |  |
 | 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 52 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 104 | 3 | `static boolean same(double a, double b)` | Bit-for-bit, not to a tolerance. |
-| 108 | 420 | `public static void main(String[] args)` |  |
-| 529 | 5 | `static int countTraded()` |  |
+| 109 | 3 | `static boolean same(double a, double b)` | Bit-for-bit, not to a tolerance. |
+| 113 | 432 | `public static void main(String[] args)` |  |
+| 546 | 5 | `static int countTraded()` |  |
 

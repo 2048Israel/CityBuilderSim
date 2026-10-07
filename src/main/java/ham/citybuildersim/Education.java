@@ -110,6 +110,12 @@ public class Education {
        Seeded at construction and re-seeded on load like every other money
        constant, and scaled in redenominate() so a reform needs no re-seed.
 
+       AND STRUCK AT THE EXPECTED PRICE LEVEL (0.7.42, the anchor). Game
+       re-seeds the array at the top of every month at the unit over the
+       level people expect prices to be at (Game.restrikeMoneyConstants()),
+       so a seat's price keeps up with what prices are expected to be; the
+       founding table still never moves.
+
        AND THE TABLE IS AT 1x (2026-09-21). Jerus: "make it so that you can
        tweak the price of tuition as well." What a seat is actually charged
        at is the table times the player's TaxPolicy.getTuitionScale(), 0 to
@@ -478,9 +484,7 @@ public class Education {
          * teens there are and how long they stay, and a second copy of that
          * clock in here is a second thing to keep in step with it.
          */
-        double leavingSchool = teens / (double) AgeBand.TEEN.spanMonths();
-        double afford = affordability(EducationType.HIGH, market, WageBand.NONE);
-        double newDiplomas = leavingSchool * basic * afford;
+        double newDiplomas = diplomas(teens, basic, affordability(EducationType.HIGH, market, WageBand.NONE));
         diplomasThisMonth = newDiplomas;
 
         /*
@@ -534,6 +538,24 @@ public class Education {
         }
 
         refreshStudying();
+    }
+
+    /** The school leavers' diplomas a month: the teens ageing out, at the ladder's coverage, who could afford the high school's fees. */
+    static double diplomas(double teens, double basic, double afford) {
+        double leavingSchool = teens / (double) AgeBand.TEEN.spanMonths();
+        return leavingSchool * basic * afford;
+    }
+
+    /**
+     * The diplomas a month the high schools hand out at the ladder's saved
+     * coverage (0.7.51): advanceMonth()'s arithmetic (diplomas()) on these
+     * teens and these wages - on saved state, where getNewDiplomas() is this
+     * month's flow and NaN after a load. The build advice reads it as the
+     * feeder of a college or a university (CityNeeds.feederOver()).
+     */
+    public double schoolLeavers(PopulationCohorts pyramid, LabourMarket market) {
+        if (pyramid == null) return 0;
+        return diplomas(pyramid.get(AgeBand.TEEN), basicCoverage(), affordability(EducationType.HIGH, market, WageBand.NONE));
     }
 
     /** Recounts who is in a lecture theatre, by the band they came from. */
@@ -752,6 +774,19 @@ public class Education {
      * negative where they left. See advanceMonth - it is a flow, not a count.
      */
     public double[] getGraduates() { return graduates; }
+
+    /**
+     * People who gained a qualification this month, at every level (A6,
+     * 0.7.46): the positive half of getGraduates(), the sum everGraduated
+     * accrues. The movement itself nets to nothing - every +1 at a band has
+     * its -1 at the band left - so History, which recorded its sum, recorded
+     * nothing but rounding. Pure.
+     */
+    public double gainedThisMonth() {
+        double gained = 0;
+        for (double moved : graduates) gained += Math.max(0, moved);
+        return gained;
+    }
 
     /** People who became able to hold a gated job this month. */
     public double[] getLicences() { return licences; }

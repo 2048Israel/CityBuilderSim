@@ -72,6 +72,7 @@ public class YearBookCheck {
         theCurrencyNoteReadsTheRightWay();
         theBookAgreesWithTheModelOnAPlayedCity();
         theEpisodesAreTheOnesTheFixtureCaused();
+        anEpidemicIsAnOutbreak();
         theCsvIsTheTextsTables();
 
         System.out.printf("%n%d assertions: %s%n", checks,
@@ -358,7 +359,7 @@ public class YearBookCheck {
         for (int i = 0; i < 14; i++) game.toggleNextMonth();
         HistorySave h = game.getHistorySave();
         PopulationManager people = game.getPopulationManager();
-        List<Integer> pool = h.getOutOfWork();
+        List<Long> pool = h.getOutOfWork();
         same("the history records the pool the People screen shows",
                 pool.get(pool.size() - 1).doubleValue(), (double) people.getUnemployed());
 
@@ -651,6 +652,45 @@ public class YearBookCheck {
         if (one.size() == 1) {
             same("...from the first month of the first", one.get(0).fromMonth(), 1.0);
             same("...to the last month of the second", one.get(0).toMonth(), back + 3.0);
+        }
+    }
+
+    /* ==================================================================
+       14b - AN EPIDEMIC IS AN OUTBREAK (A8, 0.7.46)
+
+       An epidemic was any month with more than a tenth of the workforce off
+       sick, and a city short of general care sits near Health.UNTREATED_RATE
+       for its whole life - the research's 2,400-month city named one epidemic
+       2,213 months long. It is named on Health's outbreaks now. Two
+       hand-built histories, each as sick as UNTREATED_RATE every month: one
+       with no outbreak, and one whose outbreak runs Health's own decay from
+       OUTBREAK_MAX_PEAK until it falls under OUTBREAK_FLOOR, recorded to four
+       places as HistorySave records it.
+       ================================================================== */
+    private static void anEpidemicIsAnOutbreak() {
+        final int months = 96;
+        HistorySave chronic = built(months, new String[] {"sickRate", "outbreak"},
+                flat(months, Health.UNTREATED_RATE), flat(months, 0));
+        boolean named = false;
+        for (YearBook.Episode e : YearBook.episodes(chronic)) named |= e.kind().equals("epidemic");
+        yes("a city as sick as Health.UNTREATED_RATE with no outbreak names no epidemic", !named);
+
+        double[] outbreak = flat(months, 0);
+        final int first = 30;                                    // index; month 31
+        int last = first - 1;
+        for (double s = Health.OUTBREAK_MAX_PEAK; s >= Health.OUTBREAK_FLOOR; s *= Health.OUTBREAK_DECAY) {
+            outbreak[++last] = Math.round(s * 10000.0) / 10000.0;
+        }
+        List<YearBook.Episode> got = YearBook.episodes(built(months, new String[] {"sickRate", "outbreak"},
+                flat(months, Health.UNTREATED_RATE), outbreak));
+        yes("fixture: the outbreak runs at least EPISODE_MIN_MONTHS", last - first + 1 >= YearBook.EPISODE_MIN_MONTHS);
+        yes("an outbreak is named from its first month to its last",
+                got.size() == 1 && got.get(0).kind().equals("epidemic")
+                        && got.get(0).fromMonth() == first + 1 && got.get(0).toMonth() == last + 1);
+        if (got.size() == 1) {
+            same("...its worst is the outbreak's peak", got.get(0).worst(), outbreak[first]);
+            yes("...in the outbreak's words", YearBook.worstWords("epidemic", got.get(0).worst())
+                    .equals("an outbreak kept " + DecisionLog.pct(outbreak[first]) + " more of the workforce off sick"));
         }
     }
 

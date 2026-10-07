@@ -110,8 +110,9 @@ public final class Markets {
          */
         for (Sector s : sectors.all()) {
             double budget = game == null ? Double.POSITIVE_INFINITY : game.purchaseBudget(s);
-            // A maker's inputs come out of it first: they are bought whole.
-            s.openPurchases(budget - orderValue(s, false), orderValue(s, true));
+            // A maker's inputs come out of it first: they are bought whole. And
+            // the orders its suppliers' credit covers apart (0.7.44; SupplierCredit).
+            s.openPurchases(budget - orderValue(s, false), orderValue(s, true), coveredOrderValue(s));
         }
 
         // 3. the traded goods, in turn
@@ -137,6 +138,22 @@ public final class Markets {
         double total = 0;
         for (Good g : Good.values()) {
             if (!g.traded() || !s.isUser(g) || s.hasPantry(g) != stock) continue;
+            GoodsMarket m = markets.get(g);
+            if (m == null) continue;
+            double units = Math.max(0, s.bid(g));
+            double unit = m.landedPrice();
+            if (units > 0 && unit > 0 && Double.isFinite(unit)) total += units * unit;
+        }
+        return total;
+    }
+
+    /** ...and what its orders for the stock its suppliers' credit covers would come to (0.7.44; SupplierCredit): nothing without one. */
+    private double coveredOrderValue(Sector s) {
+        SupplierCredit credit = s.supplierCredit();
+        if (credit == null) return 0;
+        double total = 0;
+        for (Good g : Good.values()) {
+            if (!g.traded() || !s.isUser(g) || !s.hasPantry(g) || !credit.covers(g)) continue;
             GoodsMarket m = markets.get(g);
             if (m == null) continue;
             double units = Math.max(0, s.bid(g));
@@ -172,7 +189,7 @@ public final class Markets {
             // ...the share of an order for stock the buyer can pay for (0.7.12
             // round 6): an order it cannot pay for is not placed, so it is not
             // demand. A maker's input is bought whole - see Sector.
-            bids[j] = users.get(j).hasPantry(g) ? asked[j] * users.get(j).purchaseShare() : asked[j];
+            bids[j] = users.get(j).hasPantry(g) ? asked[j] * users.get(j).purchaseShare(g) : asked[j];
             wanted += bids[j];
         }
         // ...and what was drawn on demand since the last strike counts as wanted too

@@ -52,7 +52,7 @@ import static ham.citybuildersim.ui.Pieces.*;
  *
  * THE GOODS ARE THE BUSINESSES' OWN BOOKS (Game.getTradeByGood()): each
  * sector's statement split by good, home and abroad, which foots to the
- * balance of payments to the bit (ForeignCheck), the railway's fuel named;
+ * balance of payments to the bit (ForeignCheck), the railway's fuel and the households' named;
  * not the markets' tally, which does not (the spec's B13). Colours say the
  * kind - exports the business violet, imports its darker step, income and
  * capital the money blues - and the verdict colours stay on the gauges,
@@ -61,10 +61,11 @@ import static ham.citybuildersim.ui.Pieces.*;
  * PARITY_FAR) for this tab, the drawer's THE CURRENCY row and the
  * header's rate line (D8).
  *
- * AFTER A LOAD the month's flows are not saved (ForeignAccounts
- * .isMonthCounted()): the tab says "not counted yet since the load" until a
- * month turns, rather than printing their zeros as the month's figures.
- * Saving them is the spec's D4, waiting on Jerus.
+ * BEFORE A MONTH IS COUNTED (ForeignAccounts.isMonthCounted()) - a city
+ * just founded, or loaded from a save before 0.7.46 - the tab says "not
+ * counted yet" until a month turns, rather than printing the flows' zeros
+ * as the month's figures. Since 0.7.46 the save carries the month's flows
+ * (the spec's D4, A2 in the model fixes), so a newer save loads counted.
  *
  * The shell reads which page is open (tradePage) for the rail and the
  * scroll memory, and FinancesScreen's doors set tradeArea, which names a
@@ -365,7 +366,8 @@ final class TradeScreen {
                 + "books; the last ten years, the record since founding, and what the world pays and charges.",
         "What a US dollar costs, and which way it is going: the rate against parity, its history with the city's "
                 + "decisions on it, and the forces on it next month - the trade term, the real rate, the vault's "
-                + "defence and the pull back to parity. Then what the rate is doing to the dollar debt and the vault.",
+                + "defence, the anchored drift and the pull back to parity. Then what the rate is doing to the dollar "
+                + "debt and the vault.",
         "What the vault holds, whose it is and how long it would last; the money that can leave on no notice; what "
                 + "else moved the vault; and the exchange - cash into the vault, or the vault into cash.",
     };
@@ -403,7 +405,7 @@ final class TradeScreen {
     static final String NOT_COUNTED = "not counted yet";
 
     /** ...and its note. */
-    static final String NOT_COUNTED_NOTE = "since the city was loaded or founded: a month on, it is";
+    static final String NOT_COUNTED_NOTE = "since the city was founded, or loaded from a save before 0.7.46: a month on, it is";
 
     /**
      * THE FIVE (pure: the probe reads them as the strip shows them). SOLD
@@ -777,8 +779,9 @@ final class TradeScreen {
     /**
      * Every good that crossed the edge this month, largest side first (the
      * spec's D6: a good with nothing either way is not a row), then what was
-     * bought abroad with no good behind it - the railway's fuel - by the
-     * sector that bought it (pure).
+     * bought abroad with no good behind it, by the sector that bought it
+     * (pure). The railway's fuel and the households' were such rows until
+     * fuel was a good (0.7.62); they are FUEL's buyers now.
      */
     List<GoodRow> goodRows(Sectors.TradeByGood t) {
         List<Sectors.GoodTrade> goods = new ArrayList<>(t.goods().values());
@@ -791,18 +794,13 @@ final class TradeScreen {
         }
         for (Map.Entry<String, Double> e : t.services().entrySet()) {
             if (!(e.getValue() > 0)) continue;
-            boolean rail = Sectors.RAIL.equals(e.getKey());
-            out.add(new GoodRow(rail ? Icons.RAIL : Icons.ofSector(sector(e.getKey())),
-                    rail ? FUEL : "Bought abroad by " + e.getKey(), e.getValue(), 0, -e.getValue(),
-                    (rail ? FUEL : "Bought abroad by " + e.getKey()) + "\n" + dFull(e.getValue())
-                            + (rail ? "\nThe railway's diesel: an import with no good behind it, until the game has oil."
-                                    : "\nAn import with no good behind it."), null, e.getKey()));
+            out.add(new GoodRow(Icons.ofSector(sector(e.getKey())), "Bought abroad by " + e.getKey(),
+                    e.getValue(), 0, -e.getValue(),
+                    "Bought abroad by " + e.getKey() + "\n" + dFull(e.getValue())
+                            + "\nAn import with no good behind it.", null, e.getKey()));
         }
         return out;
     }
-
-    /** The railway's fuel, as a row (the spec's D25: a word of the implementer's). */
-    static final String FUEL = "Fuel for the railway";
 
     /** A good's tooltip: what crossed each way, and who. */
     String goodTip(Sectors.GoodTrade g) {
@@ -828,7 +826,8 @@ final class TradeScreen {
     /**
      * A row a business (pure, the spec's D19): every sector that sold or
      * bought abroad this month, off its statement's exports and imports, and
-     * the households' cars when they bought any.
+     * the households' cars when they bought any - and their fuel (0.7.49), on
+     * the same row, so the rows add up to what the city bought.
      */
     List<GoodRow> businessRows(Sectors.TradeByGood t) {
         List<GoodRow> out = new ArrayList<>();
@@ -839,9 +838,12 @@ final class TradeScreen {
                     s.key() + "\nsold abroad " + dFull(st.exports) + "\nbought abroad " + dFull(st.imports)
                             + "\nClick: its books.", null, s.key()));
         }
-        if (t.householdCars() > 0) {
-            out.add(new GoodRow(Icons.POPULATION, "The households", t.householdCars(), 0, Double.NaN,
-                    "The households\nbought abroad " + dFull(t.householdCars()) + " of cars", null, null));
+        double householdFuel = t.householdFuel();
+        if (t.householdCars() > 0 || householdFuel > 0) {
+            out.add(new GoodRow(Icons.POPULATION, "The households", t.householdCars() + householdFuel, 0, Double.NaN,
+                    "The households\nbought abroad " + (t.householdCars() > 0 ? dFull(t.householdCars()) + " of cars" : "")
+                            + (t.householdCars() > 0 && householdFuel > 0 ? " and " : "")
+                            + (householdFuel > 0 ? dFull(householdFuel) + " of fuel" : ""), null, null));
         }
         out.sort((a, b) -> Double.compare(Math.max(b.sold(), b.bought()), Math.max(a.sold(), a.bought())));
         return out;
@@ -892,16 +894,13 @@ final class TradeScreen {
         c.getChildren().add(bars);
         if (all.size() > shown) {
             double sold = 0, bought = 0;
-            boolean fuel = false;
             for (GoodRow r : all.subList(shown, all.size())) {
                 sold += r.sold();
                 bought += r.bought();
-                fuel |= FUEL.equals(r.name());
             }
-            int goods = all.size() - shown - (fuel ? 1 : 0);
-            String more = "+" + goods + " more good" + (goods == 1 ? "" : "s") + (fuel ? " and the railway's fuel" : "")
+            int goods = all.size() - shown;
+            String more = "+" + goods + " more good" + (goods == 1 ? "" : "s")
                     + " · " + d(sold) + " sold · " + d(bought) + " bought";
-            if (goods == 0 && fuel) more = "+ the railway's fuel · " + d(bought) + " bought";
             c.getChildren().add(door(more, Palette.ACCENT, () -> open(GOODS)));
         }
         return doorCard(c, () -> open(GOODS));
@@ -910,8 +909,8 @@ final class TradeScreen {
     /** WHAT WE TRADE's (i). */
     static final String TRADE_INFO = "Every good the city's businesses sold abroad and bought abroad this month, from "
             + "their own books - each line of revenue and of cost split home and abroad as it was traded - so it adds to "
-            + "SOLD ABROAD and BOUGHT ABROAD to the dollar. The railway's fuel is an import with no good behind it, named "
-            + "on its own. Every world price is quoted in the world's money and converted at the rate, so a weaker "
+            + "SOLD ABROAD and BOUGHT ABROAD to the dollar. Fuel is a good: the railway and the households' drivers buy it "
+            + "off the city's refineries first and from the world for the rest. Every world price is quoted in the world's money and converted at the rate, so a weaker "
             + "currency raises what imports cost at home and what exports earn at home, both at once.";
 
     /** The empty month's whole (the spec's M2). */
@@ -975,8 +974,8 @@ final class TradeScreen {
         return rows;
     }
 
-    /** The prices just after a load (the spec's B14, Infrastructure's open question, shown and not fixed). */
-    static final String FREIGHT_AFTER_LOAD = "Just loaded: the railway's freight on each good is struck when the month "
+    /** The prices before a month is counted - a city just founded, or loaded from a save before 0.7.46 (the spec's B14; a newer save carries the month's trade the freight is struck on, A1). */
+    static final String FREIGHT_AFTER_LOAD = "Not counted yet: the railway's freight on each good is struck when the month "
             + "turns, so these prices may step a month on.";
 
     /* ------------------------------ the currency, as a card ------------------------------ */
@@ -1265,7 +1264,7 @@ final class TradeScreen {
      * THE MONTH ACROSS THE EDGE: the two accounts as chips at the right, the
      * toggle "steps · river", the picture, the month in one sentence, and the
      * treasury's hand and the claims written off as chips when there were
-     * any. Before a month has turned since the load, one line says so.
+     * any. Before a month is counted (a founding, or an older save's load), one line says so.
      */
     VBox monthHero() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
@@ -1285,8 +1284,8 @@ final class TradeScreen {
         right.getChildren().add(toggle);
         VBox c = card(cardHead(Icons.COIN, Palette.MONEY, "THE MONTH ACROSS THE EDGE", MONTH_INFO, right));
         if (!fx.isMonthCounted()) {
-            c.getChildren().add(line("Not counted yet since the load: the balance of payments is struck when a month "
-                    + "ends, and none has ended since the city was loaded or founded.", NOT_SAVED_INFO));
+            c.getChildren().add(line("Not counted yet: the balance of payments is struck when a month ends, and none "
+                    + "has ended since the city was founded or loaded from a save before 0.7.46.", NOT_SAVED_INFO));
             return c;
         }
         if (showRiver) {
@@ -1327,11 +1326,11 @@ final class TradeScreen {
             + "the axis a total, the model's own figure: the trade balance, the current account and the month. River: "
             + "the same month as one conserved flow, sources at the left and uses at the right, a band's width its money.";
 
-    /** Why a loaded city reads nothing yet (the spec's B1; D4 awaits Jerus). */
+    /** Why a city reads nothing yet (the spec's B1): founded, or loaded from a save before 0.7.46, which did not carry the month's flows (D4, built as A2). */
     static final String NOT_SAVED_INFO = "The month's flows across the edge - what was sold and bought abroad, the income, "
-            + "the capital, the treasury's purchases - are struck at the end of each month and are not kept in the save, "
-            + "so a city just loaded has none until its first month back ends. The businesses' own books are saved: What "
-            + "we trade shows the month the city was saved in, good by good.";
+            + "the capital, the treasury's purchases - are struck at the end of each month. A save keeps them since 0.7.46; "
+            + "a city just founded, or loaded from an older save, has none until its first month ends. The businesses' own "
+            + "books are saved: What we trade shows the month the city was saved in, good by good.";
 
     /** The treasury's hand (the spec's A6). */
     static final String HAND_INFO = "Below the line, and deliberately: an intervention does not earn or spend anything "
@@ -1620,7 +1619,7 @@ final class TradeScreen {
     VBox ledger() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         VBox column = column();
-        if (!fx.isMonthCounted()) column.getChildren().add(statementNote("Not counted yet since the load: the figures "
+        if (!fx.isMonthCounted()) column.getChildren().add(statementNote("Not counted yet: the figures "
                 + "below are the month's flows, which a month on will read again."));
         column.getChildren().add(statementHead("The current account"));
         column.getChildren().add(statementLine("Sold abroad", signedTight(fx.getExports(), false), Palette.TEXT_HEAD));
@@ -1750,8 +1749,8 @@ final class TradeScreen {
         c.getChildren().add(figure("sold " + d(t.sold()) + " · bought " + d(t.bought()) + " · balance " + signedD(t.balance()),
                 Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         if (!fx.isMonthCounted()) c.getChildren().add(noteLine("From the businesses' saved books: the balance of payments "
-                + "counts again a month on.", NOT_SAVED_INFO + " The households' own imports - their cars - are counted "
-                + "from the next month.", 1100));
+                + "counts again a month on.", NOT_SAVED_INFO + " The households' own imports - their cars, and since 0.7.49 "
+                + "their fuel - are counted from the next month.", 1100));
         List<GoodRow> rows = byBusiness ? businessRows(t) : goodRows(t);
         if (rows.isEmpty()) {
             c.getChildren().add(line("Nothing crossed the city's edge this month.", NOTHING_CROSSED));
@@ -2003,6 +2002,12 @@ final class TradeScreen {
         if (moved != null) c.getChildren().add(muted(moved));
         c.getChildren().add(cardLine("parity " + sym() + fxRate(fx.getParity()) + " · where a basket costs the same", "",
                 null, parityLineInfo(fx)));
+        // ...where the real rate alone would hold it, and the drift the anchor hands it (0.7.45; the UI spec's D18).
+        if (!fx.isPinned()) {
+            PolicyScreen.DriftWords drift = ui.policyScreen.driftWords();
+            c.getChildren().add(muted("the real rate alone would hold it " + PolicyScreen.parityWords(fx.uipLevel() - 1)));
+            c.getChildren().add(muted(("no drift".equals(drift.figure()) ? "no drift" : "drifts " + drift.figure()) + ": " + drift.line()));
+        }
         if (fx.isPinned()) {
             c.getChildren().add(chips(chip("held fixed", Palette.TEXT_LABEL)));
         } else {
@@ -2067,10 +2072,12 @@ final class TradeScreen {
 
     /**
      * WHICH COMES TO (pure): the month's push - the pressure less what the
-     * vault meets, times the openness, at DRIFT_SPEED - and the basket's
-     * pull back to parity, and the next month's move, all the model's
-     * previews (ForeignAccounts.previewPush(), previewPull(), previewMove()).
-     * A pinned rate moves by none of it.
+     * vault meets, times the openness, at DRIFT_SPEED - the anchored drift
+     * (0.7.45; the UI spec's B6, D18: the month applies it, and the preview
+     * left it out), and the basket's pull back to parity, and the next
+     * month's move, all the model's previews (ForeignAccounts.previewPush(),
+     * previewDrift(), previewPull(), previewMove()). A pinned rate moves by
+     * none of it.
      */
     List<Force> comesToForces() {
         ForeignAccounts fx = ui.game.getForeignAccounts();
@@ -2079,6 +2086,10 @@ final class TradeScreen {
                 new Force("the month's push", fx.previewPush(), false, fx.isPinned(),
                         "What the month is doing to the currency: the pressure, less what the vault's sale meets of it, "
                                 + "times how open the city is, at the rate a month's pressure moves the currency.", null),
+                new Force("the anchored drift", fx.previewDrift(), false, fx.isPinned(),
+                        "The credible part of the inflation people expect, against the world's: trust in the bank times "
+                                + "the target, against the world's own inflation - a twelfth of the year's slide a month. "
+                                + "Policy › Money's THE CURRENCY'S DRIFT.", null),
                 new Force("the basket's pull", fx.previewPull(), false, fx.isPinned(),
                         "The basket dragging it back to what the same goods cost abroad - the force that never lets go.",
                         null),
@@ -2110,13 +2121,18 @@ final class TradeScreen {
                 + "small trade is a small push - and a surplus financed by money going back out is no push at all.";
     }
 
-    /** The real rate's sentence (F2), with the dial, the inflations and the world's rate. */
+    /**
+     * The real rate's sentence (F2), with the dial, the inflation people
+     * expect and the world's rate - ex ante since 0.7.42, as the model strikes
+     * it (Game.realRateDifferential()); it printed the year's inflation as the
+     * subtrahend until 0.7.45 (the UI spec's B9).
+     */
     String realRateInfo(ForeignAccounts fx) {
-        return String.format("The dial less the city's inflation (%s less %s), against the world's rate less the world's "
-                + "(%s less %s). Money goes where it is paid better in real terms: a dial under inflation is a rate the world "
-                + "is paid to leave, and the currency falls on the outflow; a dial over it holds the currency however fast "
-                + "prices are rising.",
-                ratePct(ui.game.getDebtManager().getPolicyRate()), ratePct(fx.getLocalInflation()),
+        return String.format("The dial less the inflation people expect (%s less %s), against the world's rate less the "
+                + "world's inflation (%s less %s). Money goes where it is paid better in real terms: a dial under what "
+                + "people expect is a rate the world is paid to leave, and the currency falls on the outflow; a dial over "
+                + "it holds the currency however fast prices are rising.",
+                ratePct(ui.game.getDebtManager().getPolicyRate()), ratePct(ui.game.getExpectedInflation()),
                 ratePct(DebtManager.WORLD_BASE_RATE), ratePct(fx.getWorldInflation()));
     }
 
@@ -2150,7 +2166,7 @@ final class TradeScreen {
         VBox right = new VBox(8, words("WHICH COMES TO", Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 divergingBars(comes, cs, 170, 110, Palette.MONEY_LIGHT, Palette.MONEY, "‹ stronger", "weaker ›",
                         TradeScreen::moveWords));
-        right.getChildren().add(noteLine("The push and the pull add to the move.", COMES_TO_INFO, 560));
+        right.getChildren().add(noteLine("The push, the drift and the pull add to the move.", COMES_TO_INFO, 560));
         GridPane halves = equalColumns(2, 24);
         halves.add(left, 0, 0);
         halves.add(right, 1, 0);
@@ -2161,20 +2177,23 @@ final class TradeScreen {
 
     /** The forces card's (i) (the spec's F1). */
     static final String FORCES_INFO = "One reading: what the next month does to the rate, on the accounts as they stand "
-            + "today. Four forces: the trade balance, the real rate, the vault's defence against a fall, and the pull back "
-            + "to parity. The city's inflation is not one of them - it reaches the rate through the parity it raises and "
-            + "the trade a dear currency loses. Stronger is drawn to the left, weaker to the right.";
+            + "today. Five forces: the trade balance, the real rate, the vault's defence against a fall, the anchored "
+            + "drift - your target, weighted by how far people trust the bank, against the world's inflation - and the "
+            + "pull back to parity. The year's inflation is not one of them - it reaches the rate through the parity it "
+            + "raises, the trade a dear currency loses and the inflation people come to expect. Stronger is drawn to the "
+            + "left, weaker to the right.";
 
     /** WHICH COMES TO's (i) (F3's two notes). */
-    static final String COMES_TO_INFO = "The push is what the month is doing to the currency; the pull is the basket "
+    static final String COMES_TO_INFO = "The push is what the month is doing to the currency; the drift is the slide "
+            + "the inflation people expect hands it, against the world's; the pull is the basket "
             + "dragging it back to what the same goods cost abroad. They pull against each other when the signs differ, "
             + "and the rate moves by whatever is left over. A city whose central bank sells dollars into a fall feels less "
             + "of it - while the vault lasts - and none of a push to rise is ever met; the pull is the force that never lets go.";
 
-    /** The vault's defence in words: what it would sell, or nothing - or not counted since the load, when the month's deficit decides it (B1). */
+    /** The vault's defence in words: what it would sell, or nothing - or not counted yet (a city just founded, or loaded from a save before 0.7.46), when the month's deficit decides it (B1). */
     String vaultWords(ForeignAccounts fx) {
         if (!fx.isMonthCounted() && fx.previewRawPressure() > 0 && fx.absorption() > 0) {
-            return "the vault's defence: not counted yet since the load";
+            return "the vault's defence: not counted yet";
         }
         double absorbed = fx.previewAbsorption();
         return absorbed > 0
@@ -2218,6 +2237,7 @@ final class TradeScreen {
         forceLine(column, "Openness of the economy", String.format("%.0f%%", fx.getOpenness() * 100));
         column.getChildren().add(statementHead("Which comes to"));
         column.getChildren().add(statementLine("This month's push", signedPct3(fx.previewPush()), Palette.TEXT_HEAD));
+        column.getChildren().add(statementLine("The anchored drift", signedPct3(fx.previewDrift()), Palette.TEXT_HEAD));
         column.getChildren().add(statementLine("Pull back to parity", signedPct3(fx.previewPull()), Palette.TEXT_HEAD));
         column.getChildren().add(statementTotal("Net movement", signedPct3(fx.previewMove()), Palette.TEXT_HEAD));
         column.getChildren().add(statementNote("Up is weaker: a rate that rises is more of ours for one of theirs."));

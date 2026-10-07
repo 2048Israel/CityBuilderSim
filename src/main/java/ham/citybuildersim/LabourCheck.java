@@ -144,6 +144,25 @@ public class LabourCheck {
         assertTrue("...so an unskilled glut is pinned, by construction",
                 slack.isPinned(WageBand.NONE));
 
+        /*
+         * ...AND PINNED AT THE FLOOR IN TODAY'S MONEY (B8, 0.7.47). Wages are
+         * held at cashMinimumWage(), the floor lifted by the cost of living;
+         * isPinned() read the founding figure, so once living cost more a band
+         * held at the indexed floor with people to spare read as one that could
+         * still get cheaper, and nobody left. A glut with living 10% dearer.
+         */
+        LabourMarket dearer = new LabourMarket();
+        dearer.setCostOfLiving(1.1);
+        for (int m = 0; m < 200; m++) dearer.advanceMonth(posts, many);
+        double diploma = dearer.getWage(JobType.DIPLOMA), cashFloor = dearer.cashMinimumWage();
+        System.out.printf("   living x1.1: Diploma paid %.4f, the floor in today's money %.4f, in founding money %.4f%n",
+                diploma, cashFloor, dearer.getMinimumWage());
+        assertTrue("fixture: the Diploma glut is held at the indexed floor, over the founding one and its tolerance",
+                Math.abs(diploma - cashFloor) <= 1e-9 * cashFloor
+                        && diploma > dearer.getMinimumWage() * (1 + LabourMarket.PINNED_TOLERANCE));
+        assertTrue("a band held at the indexed floor with people spare is pinned at a cost of living of 1.1",
+                dearer.isPinned(WageBand.DIPLOMA));
+
         /* ============ 4. IT IS LAGGED, WHICH IS THE POINT ============
 
            "just supply vs demand but lagged". An undamped market with a delayed
@@ -215,8 +234,8 @@ public class LabourCheck {
         PopulationManager people = city.getPopulationManager();
         double[] own = people.workforceByBand();
         double[] band = people.postsByBand();
-        int[] jobs = people.getJobs();
-        int[] vacancy = people.getJobVacancy();
+        long[] jobs = people.getJobs();
+        long[] vacancy = people.getJobVacancy();
 
         System.out.printf("   population %,d  workforce %,d  posts %,d%n",
                 people.getPopulation(), people.getWorkforce(), people.getTotalJobs());
@@ -550,7 +569,7 @@ public class LabourCheck {
             }
         });
         LabourMarket m2 = short_.getLabourMarket();
-        int doctorPosts = short_.getPopulationManager().getJobs()[JobType.UNIV_DOCTOR.ordinal()];
+        long doctorPosts = short_.getPopulationManager().getJobs()[JobType.UNIV_DOCTOR.ordinal()];
         double doctorsHeld = short_.getPopulationManager().getLicensedHeads()[JobType.UNIV_DOCTOR.ordinal()];
         System.out.printf("   doctor posts %d, licensed %.1f, licence tightness %.2f, doctor premium %.2f, band premium %.2f%n",
                 doctorPosts, doctorsHeld, m2.getLicenceTightness(JobType.UNIV_DOCTOR),
@@ -740,6 +759,9 @@ public class LabourCheck {
      * index stood, and cannot sit outside the lowest and highest it stood
      * there unless the rest of its weight is far away. Wages a third above an
      * index that has been rising for years is exactly that: outside the band.
+     * (Derived for the chase alone; since 0.7.42 half of each step is what
+     * people expect and the chase a forty-eighth - LagWatch's recurrence -
+     * and the window is still 2 / DRIFT_PER_MONTH.)
      * ------------------------------------------------------------------ */
 
     /** How fast the fixture's currency is walked weaker: half a percent a month. */
@@ -754,16 +776,26 @@ public class LabourCheck {
         double worstTarget, worstStep;
         int outsideWindow, windowMonths;
 
-        /** One month, played; the index the month was handed is the one it read at its top. */
+        /** One month, played; the index and the expectation the month was handed are the ones it read at its top. */
         void month(Game g, Runnable play) {
             LabourMarket wages = g.getLabourMarket();
             double handed = g.getPriceIndex().getIndex();
+            double expectedMonthly = g.getExpectations().monthlyExpected();
+            boolean based = g.getPriceIndex().isBased();
             double wasCost = wages.getCostOfLiving();
             play.run();
             double target = 1 + (handed - 1) * LabourMarket.COST_OF_LIVING_PASS_THROUGH;
             worstTarget = Math.max(worstTarget, Math.abs(wages.getLivingTarget() - target));
-            worstStep = Math.max(worstStep, Math.abs(wages.getCostOfLiving()
-                    - (wasCost + (wages.getLivingTarget() - wasCost) * LabourMarket.DRIFT_PER_MONTH)));
+            // REWRITTEN FOR 0.7.42 (the anchor, spec-inflation.md 2.2): once
+            // the basket is based the step is the expected month to the
+            // EXPECTED_SHARE times the chase to the rest, a DRIFT_PER_MONTH's
+            // share of it; it was the chase alone, DRIFT_PER_MONTH of the gap.
+            double step = based
+                    ? wasCost * Math.pow(1 + expectedMonthly, LabourMarket.EXPECTED_SHARE)
+                            * Math.pow(wages.getLivingTarget() / wasCost,
+                                    (1 - LabourMarket.EXPECTED_SHARE) * LabourMarket.DRIFT_PER_MONTH)
+                    : wasCost + (wages.getLivingTarget() - wasCost) * LabourMarket.DRIFT_PER_MONTH;
+            worstStep = Math.max(worstStep, Math.abs(wages.getCostOfLiving() - step));
             index.add(g.getPriceIndex().getIndex());
             int window = (int) Math.round(2 / LabourMarket.DRIFT_PER_MONTH);
             if (index.size() > window) {
@@ -812,9 +844,31 @@ public class LabourCheck {
             LongPlaytest.build(city, "Water Treatment Plant", 1);
             LongPlaytest.build(city, "Industrial Bakery", 2);
             LongPlaytest.build(city, "Commercial Bank", 1);
-            LongPlaytest.build(city, "Paved Road", 10);
-            // Long enough for the basket to be based on a city that shops.
-            city.simulateMonths(PriceIndex.SETTLING_MONTHS + 12);
+            /*
+             * ...AND ITS ROADS STAND FROM THE START (0.7.43), as the depots
+             * do. Groceries are sold as baskets wanted at a price since
+             * 0.7.43, and this town's shops, on roads still on site, ran at a
+             * third of their reach: they sold the third the town ate, went
+             * broke at their floor, emptied the shelf at month 72, and the
+             * index ran a shortage boom to 29% a year and a bust to -12% -
+             * not the crawl's steady inflation the premise is. On standing
+             * roads the shops run at nine tenths and the crawl is the index.
+             */
+            city.buildStack(t(city, "Paved Road"), 10, true);
+            /*
+             * Long enough for the basket to be based on a city that shops -
+             * AND FOR THE TOWN TO SETTLE ITS PEOPLE (0.7.47), the lag's window
+             * twice over. Since a band held at the indexed floor reads as
+             * pinned (LabourMarket.isPinned(), B8) this town's Diploma glut
+             * leaves as Migration says it should, and still leaving while the
+             * crawl ran it shrank by a tenth from month 86 to 122: the index
+             * stood still for three years under a weakening currency, people
+             * came to expect next to nothing, and when it climbed again the
+             * wage index sat under the window for twenty months - not the
+             * crawl's steady inflation the premise is. Settled first, it is.
+             */
+            city.simulateMonths(PriceIndex.SETTLING_MONTHS + 12
+                    + 2 * (int) Math.round(2 / LabourMarket.DRIFT_PER_MONTH));
         });
         assertTrue("fixture: the basket is based, so there is an index to chase",
                 city.getPriceIndex().isBased());
@@ -829,8 +883,13 @@ public class LabourCheck {
         LabourMarket wages = city.getLabourMarket();
         double index = city.getPriceIndex().getIndex();
         double monthly = Math.pow(index / indexFrom, 1.0 / INFLATION_MONTHS) - 1;
-        double settles = LabourMarket.DRIFT_PER_MONTH * (1 + monthly)
-                / (LabourMarket.DRIFT_PER_MONTH + monthly);
+        // Where the lag settles under a steady month of `monthly` with people
+        // expecting `expected` a month (0.7.42): wages grow with the index
+        // when (1 + expected)^share x (target / wages)^((1 - share) x drift)
+        // is 1 + monthly.
+        double expected = city.getExpectations().monthlyExpected();
+        double settles = Math.pow(Math.pow(1 + expected, LabourMarket.EXPECTED_SHARE) / (1 + monthly),
+                1 / ((1 - LabourMarket.EXPECTED_SHARE) * LabourMarket.DRIFT_PER_MONTH));
         System.out.printf("   %d months: index %.4f -> %.4f (%.2f%% a year); wage index %.4f,"
                         + " target %.4f, wages/index %.3f (a steady %.3f%% a month settles the lag at %.3f)%n",
                 INFLATION_MONTHS, indexFrom, index, (Math.pow(1 + monthly, 12) - 1) * 100,
@@ -841,7 +900,7 @@ public class LabourCheck {
                 index / indexFrom > Math.pow(1 + CRAWL, INFLATION_MONTHS / 2.0));
         close("every month wages chased the index the city published",
                 lived.worstTarget, 0, 1e-12);
-        close("...and moved DRIFT_PER_MONTH of the way to it - one indexation, not two",
+        close("...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two",
                 lived.worstStep, 0, 1e-12);
         assertTrue("so the wage index sits inside the lag's window, every month",
                 lived.windowMonths > 0 && lived.outsideWindow == 0);
@@ -866,7 +925,7 @@ public class LabourCheck {
         }
         close("...and two years on, wages still chase the index the city published",
                 afterReform.worstTarget, 0, 1e-12);
-        close("...a DRIFT_PER_MONTH at a time", afterReform.worstStep, 0, 1e-12);
+        close("...the expected month and the chase at a time", afterReform.worstStep, 0, 1e-12);
         assertTrue("...inside the lag's window", afterReform.outsideWindow == 0);
 
         /* ---- and a save: the ratio comes back, and keeps its lag ---- */
@@ -895,7 +954,7 @@ public class LabourCheck {
                 back.getLabourMarket().getCostOfLiving() / back.getPriceIndex().getIndex());
         close("and a reloaded city's wages chase the index it publishes",
                 reloaded.worstTarget, 0, 1e-12);
-        close("...a DRIFT_PER_MONTH at a time", reloaded.worstStep, 0, 1e-12);
+        close("...the expected month and the chase at a time", reloaded.worstStep, 0, 1e-12);
         assertTrue("...inside the lag's window", reloaded.outsideWindow == 0);
     }
 
@@ -942,7 +1001,7 @@ public class LabourCheck {
         PopulationManager people = g.getPopulationManager();
         EconomyManager econ = g.getEconomyManager();
         BuildingManager b = g.getBuildingManager();
-        int[] posts = people.getJobs();
+        long[] posts = people.getJobs();
         double[] fill = people.getJobFillRate();
         double lo = 1, hi = 0;
         for (int i = 0; i < posts.length; i++) {
@@ -971,7 +1030,7 @@ public class LabourCheck {
         double[] wage = people.getWagesPerType();
         boolean each = true;
         for (Sector s : econ.getSectors().all()) {
-            int[] own = s.postsOfferedPerTier();
+            long[] own = s.postsOfferedPerTier();
             double bill = 0;
             for (int i = 0; i < own.length && i < wage.length; i++) bill += own[i] * wage[i] * fill[i];
             if (Math.abs(s.getPayroll() - bill) > 1e-9 * Math.max(1, bill)) each = false;
@@ -1031,9 +1090,9 @@ public class LabourCheck {
         econ = town.getEconomyManager();
         b = town.getBuildingManager();
         ham.citybuildersim.sectors.Construction crews = econ.getSectors().construction();
-        int[] standingPosts = crews.postsPerTier(), kept = crews.postsOfferedPerTier();
+        long[] standingPosts = crews.postsPerTier(), kept = crews.postsOfferedPerTier();
         double share = crews.getPostsOfferedShare();
-        int standing = crews.getPostsStanding(), offered = crews.getPostsOffered();
+        long standing = crews.getPostsStanding(), offered = crews.getPostsOffered();
         System.out.printf("   the builders: %,d posts, %,d offered - a share of %.3f, the work needing %.3f%n",
                 standing, offered, share, crews.getCrewsNeeded());
         assertTrue("fixture: the builders have less work than crews, and lay some off", share < 1 && offered < standing);
@@ -1048,10 +1107,10 @@ public class LabourCheck {
             if (kept[i] != BuildingManager.postsOffered(standingPosts[i], share)) rounded = false;
         }
         assertTrue("...each job type's posts at that share, rounded once", rounded);
-        int counted = 0, everyPost = 0;
-        for (int n : people.getJobs()) counted += n;
+        long counted = 0, everyPost = 0;
+        for (long n : people.getJobs()) counted += n;
         b.setOfferedShare(null);
-        for (int n : b.getTotalJobs()) everyPost += n;
+        for (long n : b.getTotalJobs()) everyPost += n;
         b.setOfferedShare(key -> key.equals(crews.key()) ? crews.getPostsOfferedShare() : 1);
         close("the posts not offered are not in the city's count", counted, everyPost - (standing - offered), .5);
         double townEmployers = everyOtherEmployer(town);
@@ -1101,7 +1160,7 @@ public class LabourCheck {
         return total > 0 ? mix[band.ordinal()] / total * 100 : 0;
     }
 
-    static double staffed(int[] jobs, int[] vacancy, WageBand band) {
+    static double staffed(long[] jobs, long[] vacancy, WageBand band) {
         double filled = 0;
         for (JobType job : JobType.values()) {
             if (WageBand.of(job) != band) continue;

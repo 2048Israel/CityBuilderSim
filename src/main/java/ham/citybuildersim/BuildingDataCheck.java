@@ -99,6 +99,13 @@ public class BuildingDataCheck {
                 System.out.println("  FAIL " + who + ": safety " + actual.getSafety()
                         + " != " + expected.getSafety());
             }
+            // What a water works draws (0.7.59): a desalination plant read as
+            // FRESH is a legal building that the fresh water limit would hold.
+            if (actual.getSource() != expected.getSource()) {
+                fails++;
+                System.out.println("  FAIL " + who + ": source " + actual.getSource()
+                        + " != " + expected.getSource());
+            }
 
             int before = fails;
 
@@ -184,6 +191,59 @@ public class BuildingDataCheck {
         assertTrue("safety declares police or prison, nothing else does", safetySane);
         // Jerus: "two of each".
         assertTrue("two police buildings and two prisons", police == 2 && prisons == 2);
+
+        /* ---------- the sea is drawn by water works, and one of them (0.7.59) ----------
+
+           A building that says "source": "SEA" and is not a water works means
+           somebody meant something and it does nothing; a water works that
+           lost its line reads as fresh and is held to the lakes. Both ways
+           round, as care is, and the count Jerus agreed: one desalination
+           plant, beside the one water plant. */
+        System.out.println("\n--- water sources ---");
+        boolean seaSane = true;
+        int sea = 0, fresh = 0;
+        for (BuildingsTemplate t : data) {
+            if (t.getSource() == BuildingsTemplate.Source.SEA && t.getCategory() != BuildingType.WATER) {
+                seaSane = false;
+                System.out.println("  " + t.getName() + ": category " + t.getCategory() + " draws the sea");
+            }
+            if (t.isSeaWater()) sea++;
+            if (t.isFreshWater()) fresh++;
+        }
+        assertTrue("only a water works draws the sea", seaSane);
+        assertTrue("one water plant on fresh water and one on the sea (" + fresh + ", " + sea + ")",
+                fresh == 1 && sea == 1);
+        BuildingsTemplate desal = null;
+        for (BuildingsTemplate t : data) if (t.getId() == 73) desal = t;
+        // ...in all 74 until 0.7.62; the count is fuel's below.
+        assertTrue("id 73 is the Desalination Plant",
+                desal != null && "Desalination Plant".equals(desal.getName()) && desal.isSeaWater());
+
+        /* ---------- fuel (0.7.62, batch K; spec-land 2.7) ----------
+
+           The Oil Well on an oil site and the refinery the wells feed, at the
+           spec's figures: a hundred barrels a day of crude, and a 2,000-barrel
+           plant's 8,300 t into a thousand litres a tonne, three months of it
+           in its tanks. Owned by the two new sectors, so the investors build
+           them, and each the template its sector plans from. */
+        System.out.println("\n--- fuel ---");
+        BuildingsTemplate well = null, refinery = null;
+        for (BuildingsTemplate t : data) {
+            if (t.getId() == 74) well = t;
+            if (t.getId() == 75) refinery = t;
+        }
+        assertTrue("id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else",
+                well != null && "Oil Well".equals(well.getName()) && well.getCategory() == BuildingType.MINING
+                        && Sectors.OIL.equals(well.getSector()) && well.makes(Good.CRUDE) == 415
+                        && well.goodsMade().size() == 1 && well.goodsUsed().isEmpty());
+        assertTrue("id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, 8,300 t of crude into a thousand litres a tonne",
+                refinery != null && "Oil Refinery".equals(refinery.getName())
+                        && refinery.getCategory() == BuildingType.HEAVY_INDUSTRY && Sectors.REFINING.equals(refinery.getSector())
+                        && refinery.uses(Good.CRUDE) == 8300
+                        && refinery.makes(Good.FUEL) == refinery.uses(Good.CRUDE) * ham.citybuildersim.sectors.Refining.LITRES_PER_TONNE);
+        assertTrue("...holding three months of its fuel in its tanks",
+                refinery != null && refinery.getStock() >= 3 * refinery.makes(Good.FUEL));
+        assertTrue("...and 76 buildings in all", data.size() == 76);
 
         /* ---------- and every profession has exactly one school ----------
 

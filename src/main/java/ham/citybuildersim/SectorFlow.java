@@ -109,7 +109,7 @@ public final class SectorFlow {
      * @param rate      getOperatingRate(); NaN with nothing standing (no plant has a rate)
      * @param let       the landlords' homes let over the homes they own; NaN for everyone else
      */
-    public record Plant(int standing, int onSite, int posts, double workers, double[] ratios, double[] cascade,
+    public record Plant(int standing, int onSite, long posts, double workers, double[] ratios, double[] cascade,
                         double rate, double let) {
         public boolean none() { return standing <= 0; }
         /** The throttle that cuts most: the lowest ratio, the first of equals; -1 with nothing standing. */

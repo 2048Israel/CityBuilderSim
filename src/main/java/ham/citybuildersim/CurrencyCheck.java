@@ -129,6 +129,18 @@ public class CurrencyCheck {
         return rate + (parity - rate) * ForeignAccounts.REVERSION;
     }
 
+    /**
+     * ...and the push of a real gap on a currency away from parity (0.7.42):
+     * the gap plus what investors expect back, EXPECTED_REVERSION of the log
+     * distance from parity, at RATE_PULL and DRIFT_SPEED - ForeignAccounts,
+     * INVESTORS EXPECT A CURRENCY TO COME BACK. At parity it is the gap's
+     * push alone, the one these sections asserted before.
+     */
+    static double pushed(double rate, double parity, double gap) {
+        double expectedBack = ForeignAccounts.EXPECTED_REVERSION * Math.log(rate / parity);
+        return rate * (1 - (gap + expectedBack) * ForeignAccounts.RATE_PULL * ForeignAccounts.DRIFT_SPEED);
+    }
+
     public static void main(String[] args) throws Exception {
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
@@ -171,21 +183,27 @@ public class CurrencyCheck {
             }
             double r0 = fx.getRate();
             fx.repriceCurrency();
-            double moved = r0 * (1 - gap * ForeignAccounts.RATE_PULL * ForeignAccounts.DRIFT_SPEED);
+            // REWRITTEN FOR 0.7.42: the fixture's currency sits a fifth under
+            // its parity on purpose (the pull is a figure to be seen), and
+            // investors now expect such a currency back toward parity - so
+            // the push is the gap's and the expected reversion's, and "the
+            // pull alone" is the pull and the expected reversion. The gap's
+            // own price is asserted at parity in MonetaryCheck.
+            double moved = pushed(r0, fx.getParity(), gap);
             double expected = pulled(moved, fx.getParity());
-            double pullOnly = pulled(r0, fx.getParity());
+            double pullOnly = pulled(pushed(r0, fx.getParity(), 0), fx.getParity());
             out.printf("   %s: real gap %+.2f points, the rate %.6f -> %.6f (the pull alone %.6f;"
                     + " the old drift would have made it %.6f)%n", names[i], gap * 100, r0, fx.getRate(),
                     pullOnly, pulled(r0 * (1 + (cityInflation - worldInflation) / 12), fx.getParity()));
             if (i == 0) {
                 assertTrue("paying over the world in real terms strengthens the rate", fx.getRate() < pullOnly);
-                close("...by exactly -(real gap x RATE_PULL) x DRIFT_SPEED, and the parity pull",
+                close("...by exactly -((real gap + the expected reversion) x RATE_PULL) x DRIFT_SPEED, and the parity pull",
                         fx.getRate(), expected, 1e-12);
             } else if (i == 1) {
                 assertTrue("paying under it weakens the rate", fx.getRate() > pullOnly);
                 close("...by exactly the mirror", fx.getRate(), expected, 1e-12);
             } else {
-                close("at the world's real rate the rate moves by the parity pull alone",
+                close("at the world's real rate the rate moves by the parity pull and the expected reversion alone",
                         fx.getRate(), pullOnly, 1e-12);
                 assertTrue("...so the inflation differential no longer moves the rate directly",
                         Math.abs(fx.getRate() - pullOnly) < 1e-12
@@ -214,13 +232,14 @@ public class CurrencyCheck {
             fx.setRealRateDifferential((dial - cityInflation) - worldReal);
             quiet_ &= fx.pressure() == 0 && fx.monthDeficitUsd() == 0;
             fx.repriceCurrency();
-            expected = pulled(expected, fx.getParity());
+            // ...the expected reversion beside the pull since 0.7.42 (see pushed()).
+            expected = pulled(pushed(expected, fx.getParity(), 0), fx.getParity());
             oldRule = pulled(oldRule * (1 + (cityInflation - worldInflation) / 12), fx.getParity());
         }
         out.printf("   ten months of 40%% inflation: the rate %.6f; the old drift would have made it %.6f"
                 + " (%+.1f%%)%n", fx.getRate(), oldRule, (oldRule / fx.getRate() - 1) * 100);
         assertTrue("fixture: ten months with no push and no deficit", quiet_);
-        close("with the real gap at nothing and no outflow, the rate moves by the parity pull alone",
+        close("with the real gap at nothing and no outflow, the rate moves by the parity pull and the expected reversion alone",
                 fx.getRate(), expected, 1e-12);
         assertTrue("...where the inflation drift would have carried it a third weaker",
                 oldRule / fx.getRate() > 1.25);
@@ -413,7 +432,8 @@ public class CurrencyCheck {
 
         /*
          * THE REAL RATE DIFFERENTIAL, every month the fixture plays: the dial
-         * less the city's inflation - the reading the month opened on, which
+         * less the city's EXPECTED inflation since 0.7.42 (the year's until
+         * then) - the reading the month opened on, which
          * is the one the reprice sees, the index being struck after it - less
          * the world's base rate less the world's realised inflation.
          */
@@ -423,7 +443,10 @@ public class CurrencyCheck {
         Before was = null;
         final int most = 240;
         for (; played < most; played++) {
-            double cityInflation = city.getPriceIndex().inflation();
+            // EX ANTE SINCE 0.7.42: the city's side is the dial less the
+            // inflation it EXPECTS, as the month opened (Expectations; the
+            // anchor is taken after the reprice) - it was the year's inflation.
+            double cityInflation = city.getExpectations().getExpectedInflation();
             vaultBefore = fx.getReservesUsd();
             rateBefore = fx.getRate();
             was = new Before(cb);

@@ -159,7 +159,7 @@ public abstract class Sector {
 
     /** Payroll per tier at full staffing: wage x posts. */
     protected final double[] wages = new double[11];
-    protected final int[] jobs = new int[11];
+    protected final long[] jobs = new long[11];
     protected final double[] fill = new double[11];
 
     /** Share of its posts that are filled. 1 with no posts, so an empty sector idles rather than dies. */
@@ -177,11 +177,11 @@ public abstract class Sector {
      * @param wagePerType what one post of each tier costs a month
      * @param posts       this sector's posts per tier - its buildings' jobs
      */
-    public void updateWages(double[] wagePerType, int[] posts) {
+    public void updateWages(double[] wagePerType, long[] posts) {
         if (wagePerType == null || posts == null) return;
         int n = Math.min(Math.min(wagePerType.length, posts.length), wages.length);
         double filled = 0;
-        int total = 0;
+        long total = 0;
         for (int i = 0; i < n; i++) {
             jobs[i] = posts[i];
             wages[i] = wagePerType[i] * posts[i];
@@ -192,8 +192,8 @@ public abstract class Sector {
     }
 
     /** Posts per tier, off its own buildings. */
-    public int[] postsPerTier() {
-        return buildings == null ? new int[11] : buildings.getJobArrayBySector(key);
+    public long[] postsPerTier() {
+        return buildings == null ? new long[11] : buildings.getJobArrayBySector(key);
     }
 
     /* =======================================================================
@@ -514,9 +514,9 @@ public abstract class Sector {
      * them (0.7.4, for the sector list): the total the "Staffed" share on the
      * operations page is a share of.
      */
-    public int getPostsOffered() {
-        int total = 0;
-        for (int posts : jobs) total += posts;
+    public long getPostsOffered() {
+        long total = 0;
+        for (long posts : jobs) total += posts;
         return total;
     }
 
@@ -526,7 +526,7 @@ public abstract class Sector {
      * .Construction, THE CREWS THE WORK NEEDS). The posts the payroll is
      * struck on.
      */
-    public int[] postsOfferedPerTier() { return jobs.clone(); }
+    public long[] postsOfferedPerTier() { return jobs.clone(); }
 
     /**
      * The posts filled - its workers (0.7.4, for the sector list): the posts
@@ -836,7 +836,10 @@ public abstract class Sector {
                 .setCash(cash)
                 .setLand(landValue)
                 .setBuildings(buildingsValue)
-                .setBondsPayable(bondsPayable);
+                .setBondsPayable(bondsPayable)
+                // ...and its trade credit (0.7.44): owed by its buyers, owed to its suppliers.
+                .setTradeReceivables(getTradeReceivable())
+                .setTradePayables(getTradePayable());
         sheet.setInventoryValue(getInventoryValue());
         return sheet;
     }
@@ -927,9 +930,95 @@ public abstract class Sector {
      * walked the list. The railway walks it twice a month over twelve sectors;
      * these two do not touch the maps. Cleared with everything else in bank(),
      * so they are the month the statement is about right up to the strike.
+     *
+     * ...AND IN A CITY JUST LOADED, THE MONTH THE SAVE WAS TAKEN IN (A1,
+     * 0.7.46): the rows are not saved, so each adds what the save carried
+     * until the first strike clears it - see THE MONTH'S TRADE ACROSS A SAVE.
+     * A city that was never loaded carries nothing and reads its row alone.
      */
-    public double unitsExported(Good g) { Output o = outputs.get(g); return o == null ? 0 : o.exported; }
-    public double unitsImported(Good g) { Input i = inputs.get(g);   return i == null ? 0 : i.imported; }
+    public double unitsExported(Good g) {
+        Output o = outputs.get(g);
+        double row = o == null ? 0 : o.exported;
+        Double carried = carriedExports.get(g);
+        return carried == null ? row : row + carried;
+    }
+
+    public double unitsImported(Good g) {
+        Input i = inputs.get(g);
+        double row = i == null ? 0 : i.imported;
+        Double carried = carriedImports.get(g);
+        return carried == null ? row : row + carried;
+    }
+
+    /* ===================================================================
+       THE MONTH'S TRADE ACROSS A SAVE (A1, 2026-10-05)
+
+       What crossed the boundary in the month a save was taken, in units by
+       good, carried into the loaded city until its first strike. The railway
+       bills a month's trade at the top of the next one (Rail.haul(), from
+       Game.chargeFreight()), before strikeSectors() banks the month and
+       clears the rows; the rows were never saved, so the first haul after
+       any load read nothing, billed almost nothing, carried nothing the
+       month after and repriced on it (M1, M6 in the triage).
+
+       THE UNITS, NOT THE RAILWAY'S STREAMS: the railway bills each shipper
+       by its own units, so per-stream tonnes could not reproduce the bills.
+       And CARRIED BESIDE THE ROWS, NOT INTO THEM: the rows are what every
+       screen and SectorFlow reads as the month in progress, and a loaded
+       city has not traded yet - only the two getters above add these.
+       =================================================================== */
+
+    /** Units shipped in the month a save was taken, by good: read by unitsExported() until the first strike after the load. */
+    private final Map<Good, Double> carriedExports = new EnumMap<>(Good.class);
+
+    /** ...and units landed, read by unitsImported(). */
+    private final Map<Good, Double> carriedImports = new EnumMap<>(Good.class);
+
+    /** A save's units by good name into a carried map; a good this build does not know, or nothing, is left out. */
+    private static void carry(Map<String, Double> saved, Map<Good, Double> into) {
+        into.clear();
+        if (saved == null) return;
+        for (Map.Entry<String, Double> e : saved.entrySet()) {
+            Good g = Good.byName(e.getKey());
+            if (g != null && e.getValue() != null && e.getValue() > 0) into.put(g, e.getValue());
+        }
+    }
+
+    /** True from the load of a save that carried the month's trade in money alone until deriveCarriedTrade() has read it. */
+    private boolean tradeToDerive;
+
+    /**
+     * ...AND FROM A SAVE BEFORE THE UNITS (0.7.63): the units out of the
+     * money. A save from before 0.7.46 carries the month's trade only as the
+     * ledger's money, each good's split home and abroad (Ledger.sold,
+     * Ledger.bought), so its first haul read nothing: city2400's railway
+     * hauled 2,515 t the month after its load, against 153,161 the month it
+     * was saved in and 171,575 the month after. What crossed the border
+     * crossed at the boundary price (GoodsMarket.exportPrice() and
+     * importPrice() - every trade settles there), and by the end of the load
+     * that price is back: the markets' exchange rate and the band the month
+     * quoted. So the units are the money over the price, to the rounding of
+     * one division: read against the units every later save carries - Jerus's
+     * city as 0.7.49 saved it, and all three research cities a month on -
+     * the two agree to two ulps, every good. Game's load path calls it last;
+     * nothing reads the carried maps before Rail.haul() at the top of the
+     * first month.
+     */
+    public void deriveCarriedTrade() {
+        if (!tradeToDerive) return;
+        tradeToDerive = false;
+        if (markets == null) return;
+        for (Map.Entry<Good, Split> e : pending.sold.entrySet()) {
+            GoodsMarket m = markets.get(e.getKey());
+            double price = m == null ? Double.NaN : m.exportPrice();
+            if (e.getValue().abroad > 0 && price > 0) carriedExports.put(e.getKey(), e.getValue().abroad / price);
+        }
+        for (Map.Entry<Good, Split> e : pending.bought.entrySet()) {
+            GoodsMarket m = markets.get(e.getKey());
+            double price = m == null ? Double.NaN : m.importPrice();
+            if (e.getValue().abroad > 0 && price > 0) carriedImports.put(e.getKey(), e.getValue().abroad / price);
+        }
+    }
 
     /* ===================================================================
        THE LEDGER
@@ -1112,6 +1201,9 @@ public abstract class Sector {
         if (purchasesLeft != Double.POSITIVE_INFINITY && hasPantry(t.good())) {
             purchasesLeft = Math.max(0, purchasesLeft - t.value());
         }
+        // ...and against the supplier that filled it, for its credit (0.7.44; see SupplierCredit).
+        SupplierCredit credit = supplierCredit();
+        if (credit != null && hasPantry(t.good())) credit.note(t.isImport() ? Trade.WORLD : t.seller(), t.good(), t.value());
         if (t.isImport()) pending.imports += t.value();
         else pending.purchasesBySupplier.merge(t.seller(), t.value(), Double::sum);
         pending.unitsBought.merge(t.good(), t.units(), Double::sum);
@@ -1168,6 +1260,13 @@ public abstract class Sector {
        till, so a sector whose wages, interest, principal and tax outrun its
        cash and credit still defaults, on those.
 
+       AND ITS SUPPLIERS' CREDIT, SINCE 0.7.44 (SupplierCredit): the grocers'
+       suppliers let them have the month's stock on credit, up to a month of
+       the sales they expect, repaid at the strike after out of that sale.
+       It is added on top of the cash and the lender's credit and funds the
+       orders it covers and nothing else (openPurchases(), purchaseShare(Good)):
+       credit the shop can get, so the rule above still reads true.
+
        NOTHING ELSE IS NEW. A smaller purchase is simply less on the shelf,
        and every consequence is the model's existing rule's: a retailer's
        shorter shelf sells less when it runs short (serve(), sellOwnPriced()),
@@ -1176,9 +1275,9 @@ public abstract class Sector {
        the-firms-sell-bonds.md, section 4).
        ===================================================================== */
 
-    /** What the clearing lets it spend, what is left of it, and the share of each order it funds. Month-scoped: opened and closed inside the clearing, so never saved. */
+    /** What the clearing lets it spend, what is left of it, and the share of each order it funds - and of each order its suppliers' credit covers (0.7.44). Month-scoped: opened and closed inside the clearing, so never saved. */
     private double purchasesLeft = Double.POSITIVE_INFINITY;
-    private double purchaseShare = 1;
+    private double purchaseShare = 1, coveredShare = 1;
     /** The clearing's reading, for the screens and the playtest. */
     private double rPurchaseBudget = Double.POSITIVE_INFINITY, rOrderValue, rForgone;
     private final Map<Good, Double> rForgoneUnits = new EnumMap<>(Good.class);
@@ -1191,6 +1290,18 @@ public abstract class Sector {
      * nobody is asking.
      */
     public void openPurchases(double budget, double orderValue) {
+        openPurchases(budget, orderValue, 0);
+    }
+
+    /**
+     * ...and with what the orders its suppliers' credit covers would come to
+     * (0.7.44; SupplierCredit), when it has one. The credit buys those and
+     * nothing else: every order is funded the share of it that the till and
+     * the lender cover, as before, and the covered orders the credit's room
+     * on top - so the fleet is still bought only with the cash and the
+     * lender's credit, and all of it together is never more than the budget.
+     */
+    public void openPurchases(double budget, double orderValue, double coveredValue) {
         rPurchaseBudget = budget;
         rOrderValue = Math.max(0, orderValue);
         rForgone = 0;
@@ -1198,16 +1309,90 @@ public abstract class Sector {
         rForgoneValue.clear();
         purchasesLeft = Double.isNaN(budget) ? Double.POSITIVE_INFINITY : Math.max(0, budget);
         purchaseShare = rOrderValue > purchasesLeft ? purchasesLeft / rOrderValue : 1;
+        coveredShare = purchaseShare;
+        SupplierCredit credit = supplierCredit();
+        double room = credit == null ? 0 : Math.min(credit.openLimit(), purchasesLeft);
+        if (room > 0 && rOrderValue > purchasesLeft - room) {
+            purchaseShare = (purchasesLeft - room) / rOrderValue;
+            coveredShare = coveredValue > 0 ? Math.min(1, purchaseShare + room / coveredValue) : purchaseShare;
+        }
     }
 
-    /** ...and closes it: a purchase outside the clearing is not read against it. */
+    /** ...and closes it: a purchase outside the clearing is not read against it. What it bought on its suppliers' credit is struck here (SupplierCredit.close()). */
     public void closePurchases() {
         purchasesLeft = Double.POSITIVE_INFINITY;
-        purchaseShare = 1;
+        purchaseShare = coveredShare = 1;
+        SupplierCredit credit = supplierCredit();
+        if (credit != null) credit.close();
+    }
+
+    /* =====================================================================
+       ITS SUPPLIERS' CREDIT (0.7.44)
+
+       A buyer whose suppliers wait a month for their money for its stock -
+       the grocers, today (Retail.supplierCredit()) - keeps the ledger of it
+       (SupplierCredit); every other sector has none, and is a supplier on
+       somebody's. What it owes is a current liability on its balance sheet,
+       what it is owed by its customers a current asset, and the strike's net
+       a line of its cash flow. The money moves at the strike, both sides at
+       once (EconomyManager.settleSupplierCredit()).
+       ===================================================================== */
+
+    /** The ledger of what this sector owes its suppliers for stock they let it have on credit, or null for a sector whose suppliers are paid at the strike. */
+    public SupplierCredit supplierCredit() { return null; }
+
+    /** What it owes its suppliers now: the next strike repays it. */
+    public double getTradePayable() {
+        SupplierCredit credit = supplierCredit();
+        return credit == null ? 0 : credit.owedTotal();
+    }
+
+    /** What the buyers it supplied owe it now, for stock it let them have on credit: the next strike collects it. Nothing in a bare fixture. */
+    public double getTradeReceivable() {
+        if (game == null || game.getSectors() == null) return 0;
+        double owed = 0;
+        for (Sector s : game.getSectors().all()) {
+            SupplierCredit credit = s.supplierCredit();
+            if (credit != null) owed += credit.owedTo(key);
+        }
+        return owed;
+    }
+
+    /** What its suppliers' credit added to its till at the last strike: the stock it took on credit (what it repaid there is getTradeCreditRepaid()). */
+    public double getTradeCreditTaken() {
+        SupplierCredit credit = supplierCredit();
+        return credit == null ? 0 : credit.takenTotal();
+    }
+
+    /** ...what it repaid there. */
+    public double getTradeCreditRepaid() {
+        SupplierCredit credit = supplierCredit();
+        return credit == null ? 0 : credit.repaidTotal();
+    }
+
+    /**
+     * What trade credit moved its till by at the last strike, net, in: the
+     * credit it took less what it repaid, as a buyer; what it was repaid less
+     * what it let its buyers have, as a supplier. The cash-flow statement's
+     * line (SectorBooks.SectorMonth's tradeCredit).
+     */
+    public double getTradeCreditCash() {
+        double moved = getTradeCreditTaken() - getTradeCreditRepaid();
+        if (game == null || game.getSectors() == null) return moved;
+        for (Sector s : game.getSectors().all()) {
+            SupplierCredit credit = s.supplierCredit();
+            if (credit != null) moved += credit.repaidTo(key) - credit.owedTo(key);
+        }
+        return moved;
     }
 
     /** The share of every order for stock the budget funds this clearing: 1 when they all fit. */
     public double purchaseShare() { return purchaseShare; }
+    /** ...of an order for this good: more, for one its suppliers' credit covers (0.7.44). */
+    public double purchaseShare(Good g) {
+        SupplierCredit credit = supplierCredit();
+        return credit != null && credit.covers(g) ? coveredShare : purchaseShare;
+    }
     /** What is left of what it can pay for, in money. Infinite outside the clearing. */
     public double purchasesLeft() { return purchasesLeft; }
 
@@ -1319,29 +1504,16 @@ public abstract class Sector {
         pending.otherInputs.merge(what == null ? "Stock" : what, cost, Double::sum);
     }
 
-    /**
-     * ...and one bought from the WORLD: an import with no good behind it.
-     *
-     * THE RAILWAY'S FUEL, and it is here rather than on the goods market
-     * because there is no oil in this game yet. Jerus: "for now, its just a
-     * cost item, so make the basic structure for oil cost even tho its not
-     * currently in place, so currently there is no oil good." The structure is
-     * this method and Rail.fuelBill(); the day OIL exists, the same number
-     * becomes an ordinary uses() good bought on an ordinary market and this
-     * call goes away.
-     *
-     * IT IS A REAL IMPORT, not a notional cost. It lands on pending.imports, so
-     * the money audit debits it against the rest of the world (MoneyAudit reads
-     * the statement's imports line directly), the national accounts count it in
-     * raw-material imports, and the trade balance moves. A city that builds a
-     * railway starts buying fuel from abroad, and the balance of payments says
-     * so - which is the whole reason to put it through the front door.
+    /*
+     * ...AND ONE BOUGHT FROM THE WORLD WITH NO GOOD BEHIND IT was the
+     * railway's fuel, through a method of its own (bookImportedService),
+     * from the day the railway ran
+     * until oil was a good. Jerus: "for now, its just a cost item, so make the
+     * basic structure for oil cost even tho its not currently in place." Its
+     * comment said the day OIL existed the same number would become a good
+     * bought on an ordinary market and the call would go away; it went in
+     * 0.7.62 (batch K), when the railway began drawing FUEL (Rail.haul()).
      */
-    protected final void bookImportedService(String what, double amount) {
-        if (!(amount > 0) || !Double.isFinite(amount)) return;
-        pending.imports += amount;
-        pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
-    }
 
     /* ===================================================================
        THE STATEMENT
@@ -1475,6 +1647,7 @@ public abstract class Sector {
      * Statement.capitalTaxCredit.
      */
     public void bank(double salesTaxRemitted, double capitalTaxCredit) {
+        beforeBank();
         Statement s = statement;
         s.capitalTaxCredit = capitalTaxCredit;
         // ...added only when there is one: a zero added is not always nothing
@@ -1497,11 +1670,20 @@ public abstract class Sector {
         for (Input in : inputs.values()) {
             in.bid = 0; in.boughtLocal = 0; in.imported = 0;
         }
+        carriedExports.clear();
+        carriedImports.clear();
         afterBank();
     }
 
     /** A sector with something to clear when its month is banked says so here. */
     protected void afterBank() { }
+
+    /**
+     * ...and one with something to keep of the month's rows before they are
+     * cleared (A5, 0.7.46): called first in bank(), while every row is still
+     * the month being struck. The mirror of afterBank().
+     */
+    protected void beforeBank() { }
 
     /**
      * The struck month, put back on load, so the first month back reads the
@@ -2166,12 +2348,27 @@ public abstract class Sector {
         s.propertyTax = propertyTaxExpense;
         s.maintenance = maintenanceExpense;
         s.taxRate = taxRate;
+        // ...and the ratios its month was run at (0.7.63; SectorState.energyRatio).
+        s.energyRatio = ratioToSave(energyRatio);
+        s.waterRatio = ratioToSave(waterRatio);
+        s.roadRatio = ratioToSave(roadRatio);
+        s.healthRatio = ratioToSave(healthRatio);
         for (Map.Entry<Good, Double> e : stock.entrySet())  s.stock.put(e.getKey().name(), e.getValue());
         for (Map.Entry<Good, Double> e : pantry.entrySet()) s.pantry.put(e.getKey().name(), e.getValue());
         for (Map.Entry<Good, Double> e : pantryUsedLastMonth.entrySet()) s.pantryUsed.put(e.getKey().name(), e.getValue());
         s.ledger = SectorState.LedgerState.of(pending);
         s.statement = SectorState.StatementState.of(statement);
         s.vansKnown = vansKnown;
+        // The month's trade in units (A1): through the getters, so a city
+        // loaded and saved again before its first press carries it again -
+        // written even when empty, which a save from before it is not (0.7.63).
+        s.exported = new LinkedHashMap<>();
+        s.imported = new LinkedHashMap<>();
+        for (Good g : Good.values()) {
+            double shipped = unitsExported(g), landed = unitsImported(g);
+            if (shipped > 0) s.exported.put(g.name(), shipped);
+            if (landed > 0) s.imported.put(g.name(), landed);
+        }
         s.extras = new LinkedHashMap<>();
         saveExtras(s.extras);
         return s;
@@ -2222,6 +2419,12 @@ public abstract class Sector {
          * override remembering to call super, and two of them do not.
          */
         vansKnown = s.vansKnown;
+        // ...and the month's trade, carried to the first strike (A1); a save
+        // from before it has no map, which is the zero it always read.
+        carry(s.exported, carriedExports);
+        carry(s.imported, carriedImports);
+        // ...and a save from before the units carries neither map: derived once the prices are back.
+        tradeToDerive = s.exported == null && s.imported == null;
         restoreExtras(s.extras == null ? new LinkedHashMap<>() : s.extras);
     }
 
@@ -2232,7 +2435,17 @@ public abstract class Sector {
         propertyTaxExpense = Math.max(0, s.propertyTax);
         maintenanceExpense = Math.max(0, s.maintenance);
         taxRate = Math.max(0, s.taxRate);
+        // ...and the ratios the month was run at, over the services' next-month
+        // figures the rebuild set (0.7.63; SectorState.energyRatio). An older save
+        // has none and keeps the rebuild's.
+        if (s.energyRatio != null) energyRatio = s.energyRatio;
+        if (s.waterRatio != null)  waterRatio = s.waterRatio;
+        if (s.roadRatio != null)   roadRatio = s.roadRatio;
+        if (s.healthRatio != null) healthRatio = s.healthRatio;
     }
+
+    /** A ratio for the save: itself, or null when it is not a number - Gson writes no NaN, and the load then derives it. */
+    private static Double ratioToSave(double r) { return Double.isFinite(r) ? r : null; }
 
     /** A sector with state of its own - a price it walks, an order book - writes it here by name. */
     protected void saveExtras(Map<String, Double> extras) { }
@@ -2249,6 +2462,8 @@ public abstract class Sector {
         pending = new Ledger();
         outputs.clear();
         inputs.clear();
+        carriedExports.clear();
+        carriedImports.clear();
         restoreStatement(new Statement());
         interestExpense = propertyTaxExpense = maintenanceExpense = 0;
         landValue = buildingsValue = bondsPayable = 0;
@@ -2257,6 +2472,7 @@ public abstract class Sector {
         java.util.Arrays.fill(jobs, 0);
         energyRatio = waterRatio = roadRatio = healthRatio = 1;
         vansKnown = false;
+        tradeToDerive = false;
         resetExtras();
     }
 

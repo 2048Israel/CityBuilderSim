@@ -98,6 +98,11 @@ public class TradeCostCheck {
         // The world sells them and will not buy them back, for the reason the
         // vans block in Good.java gives. See LuxuryRetail.
         { Good.LUXURIES,                9.0, Double.NaN    },
+        // Fuel and the crude it is refined from (0.7.62, batch K; spec-land 2.7): crude
+        // US$550 a tonne, about US$75 a barrel; fuel a journey's $2.00 over its 1.2 litres
+        // (Motoring.CAR_FUEL_PER_JOURNEY / LITRES_PER_JOURNEY), wholesale .0007 abroad.
+        { Good.CRUDE,                    .60,        .50   },
+        { Good.FUEL,               .002 / 1.2,       .0007 },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */
@@ -436,7 +441,7 @@ public class TradeCostCheck {
 
         /* ================== the fare (2026-09-16) ================== */
 
-        System.out.println("\n--- and a fare is a price, not a charge ---");
+        System.out.println("\n--- and a fare is a price to car owners, and a charge to everyone else ---");
 
         net.setBuiltCapacity(20000);
         net.setModes(0, 1_000_000);
@@ -447,23 +452,32 @@ public class TradeCostCheck {
                         * InfrastructureManager.TRANSIT_MAX_SHARE) < 1e-9,
                 String.format("%.0f riders", free));
 
+        /*
+         * A CITY WITH NO CARS, AND JERUS'S CAPTIVE RULE (0.7.49): a commuter
+         * with no car of their own rides whatever the fare, if a line reaches
+         * them and there is a seat. Until then the fare walked these riders
+         * down to nobody at the ceiling.
+         */
         net.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
         double normal = net.getTransitRiders();
-        report("...and at the default fare almost all of them still ride",
-                normal > free * .9 && normal < free,
+        report("...and at the default fare every car-less commuter in reach still rides",
+                normal == free,
                 String.format("%.0f riders, %.0f%% of a free system",
                         normal, normal / free * 100));
 
         net.setFare(TaxPolicy.MAX_TRANSIT_FARE);
-        report("...and at the ceiling fare nobody does",
-                net.getTransitRiders() == 0,
+        report("...and at the ceiling fare they still do",
+                net.getTransitRiders() == free,
                 String.format("%.0f riders", net.getTransitRiders()));
 
         /*
          * AND THE TWO LINES MOVE AGAINST EACH OTHER, which is the whole
          * decision: a fare high enough to turn a profit is a fare that puts
          * people back in cars on the road the transit was built to empty.
+         * Since 0.7.49 only owners go back to their cars: half the commuters
+         * have one, and fuel at the founding price.
          */
+        net.setCommute(.5, Motoring.CAR_FUEL_PER_JOURNEY);
         net.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
         double cheapRoad = net.getEffectiveLoad();
         double cheapTake = net.getTransitRiders()
@@ -483,8 +497,11 @@ public class TradeCostCheck {
          * dial on TaxPolicy is a fraction and survives a reform untouched;
          * this one is dollars a journey. Twenty-third of the family, and the
          * ridership is written against the CAP rather than against a figure in
-         * money so that a reform moves both and changes nobody's mind about
-         * taking the bus.
+         * money: both are founding money, the dial read at the currency's unit
+         * (InfrastructureManager.fareUnit, B6, 0.7.47 - until then a reform
+         * moved the dial and not the cap), so a reform changes nobody's mind
+         * about taking the bus. The owners' fuel is money a reform divides too
+         * (0.7.49).
          */
         TaxPolicy policy = new TaxPolicy();
         policy.setTransitFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
@@ -519,7 +536,7 @@ public class TradeCostCheck {
         if (fails == 0) {
             System.out.println("The wedge is freight and the world's margin, in that proportion; "
                     + "one road load is three, and it adds back to one; three roads that "
-                    + "were the same road are three modes; and a fare is a price.");
+                    + "were the same road are three modes; and a fare is a price to the car owners.");
         } else {
             System.out.println(fails + " check(s) failed.");
         }

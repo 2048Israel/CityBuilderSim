@@ -12,8 +12,10 @@ import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.Manufacturing;
 import ham.citybuildersim.sectors.Materials;
 import ham.citybuildersim.sectors.Mining;
+import ham.citybuildersim.sectors.Oil;
 import ham.citybuildersim.sectors.Rail;
 import ham.citybuildersim.sectors.RealEstate;
+import ham.citybuildersim.sectors.Refining;
 import ham.citybuildersim.sectors.Retail;
 
 import java.util.ArrayList;
@@ -61,7 +63,7 @@ public final class Sectors {
             MANUFACTURING = "Manufacturing", AGRICULTURE = "Agriculture",
             FOOD_PROCESSING = "Food Processing", RAIL = "Rail",
             AUTOMOTIVE = "Automotive", LUXURY_RETAIL = "Luxury Retail",
-            RESTAURANTS = "Restaurants";
+            RESTAURANTS = "Restaurants", OIL = "Oil", REFINING = "Refining";
 
     /*
      * ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than
@@ -76,7 +78,9 @@ public final class Sectors {
     public static final String[] KEYS = {
         RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERIALS,
         BUSINESS_SERVICES, MANUFACTURING, AGRICULTURE, FOOD_PROCESSING, RAIL, AUTOMOTIVE,
-        LUXURY_RETAIL, RESTAURANTS
+        LUXURY_RETAIL, RESTAURANTS,
+        // ...and fuel (0.7.62, batch K; spec-land 2.7): the wells, then the refinery.
+        OIL, REFINING
     };
 
     private final List<Sector> all = new ArrayList<>();
@@ -97,6 +101,8 @@ public final class Sectors {
     private final Automotive automotive;
     private final LuxuryRetail luxuryRetail;
     private final Restaurants restaurants;
+    private final Oil oil;
+    private final Refining refining;
 
     public Sectors(BuildingManager buildings, Markets markets) {
         retail = add(new Retail(), buildings, markets);
@@ -114,6 +120,8 @@ public final class Sectors {
         automotive = add(new Automotive(), buildings, markets);
         luxuryRetail = add(new LuxuryRetail(), buildings, markets);
         restaurants = add(new Restaurants(), buildings, markets);
+        oil = add(new Oil(), buildings, markets);
+        refining = add(new Refining(), buildings, markets);
 
         if (all.size() != KEYS.length) throw new IllegalStateException("Sectors.KEYS is out of step");
         for (int i = 0; i < KEYS.length; i++) {
@@ -213,6 +221,16 @@ public final class Sectors {
     /** ...and the kitchens, which sell the city its own food cooked. See Restaurants. */
     public Restaurants restaurants() { return restaurants; }
 
+    /**
+     * Typed, as Mining is, because the ground is its limit: the wells ask the
+     * land for the oil they lift, and the refinery's crude comes from them
+     * first (0.7.62). See sectors.Oil.
+     */
+    public Oil oil() { return oil; }
+
+    /** ...and the refinery, whose tanks the drivers and the railway draw their fuel from before the world (0.7.62). See sectors.Refining. */
+    public Refining refining() { return refining; }
+
     /** The city, handed to every sector once it exists. */
     public void attachGame(Game game) {
         for (Sector s : all) s.attachGame(game);
@@ -256,10 +274,12 @@ public final class Sectors {
     /**
      * The month across the edge by good (0.7.35): every good that crossed
      * it, the imports with no good behind them by the sector that bought
-     * them (the railway's fuel - Sector.bookImportedService()), and the
-     * households' cars, counted among the cars bought.
+     * them, and the households' cars and - since 0.7.62, when fuel became a
+     * good - their fuel, counted among the cars and the fuel bought, with
+     * HOUSEHOLDS among the buyers.
      */
-    public record TradeByGood(Map<Good, GoodTrade> goods, Map<String, Double> services, double householdCars) {
+    public record TradeByGood(Map<Good, GoodTrade> goods, Map<String, Double> services, double householdCars,
+                              double householdFuel) {
         /** Everything sold abroad: the balance of payments' exports, by its own construction. */
         public double sold() {
             double total = 0;
@@ -287,11 +307,14 @@ public final class Sectors {
      * the markets' own tally (GoodsMarket.getExported()), which the Trade
      * spec found D$24M short of the exports in the 2,400-month city (its
      * B13). Pure: it reads the struck statements, which a load restores, and
-     * writes nothing.
+     * writes nothing. The households' fuel was an import with no good under
+     * its own name from 0.7.49; it is FUEL's since 0.7.62, the households
+     * among its buyers, as their cars are among the cars'.
      *
      * @param householdCars what the households paid the world for cars this month
+     * @param householdFuel ...and for fuel (Game.getHouseholdFuelImports())
      */
-    public TradeByGood tradeByGood(double householdCars) {
+    public TradeByGood tradeByGood(double householdCars, double householdFuel) {
         Map<Good, double[]> sums = new EnumMap<>(Good.class);
         Map<Good, Map<String, Double>> sellers = new EnumMap<>(Good.class), buyers = new EnumMap<>(Good.class);
         Map<String, Double> services = new LinkedHashMap<>();
@@ -315,6 +338,10 @@ public final class Sectors {
             double rest = st.imports - goodsBought;
             if (Math.abs(rest) > 1e-9 * Math.max(1, Math.abs(st.imports))) services.put(s.key(), rest);
         }
+        if (householdFuel > 0) {
+            sums.computeIfAbsent(Good.FUEL, k -> new double[2])[1] += householdFuel;
+            buyers.computeIfAbsent(Good.FUEL, k -> new LinkedHashMap<>()).merge(HOUSEHOLDS, householdFuel, Double::sum);
+        }
         if (householdCars > 0) {
             sums.computeIfAbsent(Good.CARS, k -> new double[2])[1] += householdCars;
             buyers.computeIfAbsent(Good.CARS, k -> new LinkedHashMap<>()).merge(HOUSEHOLDS, householdCars, Double::sum);
@@ -327,7 +354,7 @@ public final class Sectors {
                     Collections.unmodifiableMap(buyers.getOrDefault(g, new LinkedHashMap<>()))));
         }
         return new TradeByGood(Collections.unmodifiableMap(goods), Collections.unmodifiableMap(services),
-                Math.max(0, householdCars));
+                Math.max(0, householdCars), Math.max(0, householdFuel));
     }
 
     public List<SectorState> toState() {

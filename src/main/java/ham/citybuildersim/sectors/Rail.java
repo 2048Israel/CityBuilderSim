@@ -7,6 +7,7 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Sectors;
 import ham.citybuildersim.Traffic;
@@ -71,8 +72,9 @@ import java.util.Map;
  * WHAT IT CHARGES
  * =======================================================================
  *
- * Retail's shelf rule in shape - a floor that pays for the business and a
- * scarcity term that lifts it (Retail.repriceShelf()) - but the floor is a
+ * Retail's shelf rule in shape, as it was until 0.7.43 - a floor that pays
+ * for the business and a scarcity term that lifts it (the shelf aims at the
+ * price that clears since, Retail.repriceShelf()) - but the floor is a
  * REGULATED NETWORK'S and not a shop's, and that difference was measured
  * rather than guessed. See TARGET_RETURN for the run that made the case.
  *
@@ -211,7 +213,7 @@ public final class Rail extends Sector {
     /** How far a network that cannot keep up can push the quote above cost-plus. */
     public static final double MAX_SCARCITY_MULTIPLE = 1.6;
 
-    /** How fast the quote walks to where it should be. A quarter, as on the shelf. */
+    /** How fast the quote walks to where it should be. A quarter, as on the shelf until 0.7.43 (a sixth, in logs, since). */
     public static final double REPRICE_SPEED = .25;
 
     /**
@@ -220,8 +222,8 @@ public final class Rail extends Sector {
      * THE OIL COST, BEFORE THERE IS ANY OIL. Jerus: "for now, its just a cost
      * item, so make the basic structure for oil cost even tho its not
      * currently in place, so currently there is no oil good." So it is a real
-     * cost and a real import - bookImportedService() puts it on the trade
-     * balance and the money audit debits it against the rest of the world -
+     * cost and a real import - it was booked to the trade balance with no good
+     * behind it, and the money audit debited it against the rest of the world -
      * priced per tonne hauled, in world money, at the exchange rate.
      *
      * IN WORLD MONEY ON PURPOSE, and this is the whole reason it is not the
@@ -233,8 +235,22 @@ public final class Rail extends Sector {
      * fuel is of a railway's operating cost once the wages are counted. The
      * day OIL is a good this constant becomes uses(Good.OIL) and a bid on an
      * ordinary market, and nothing else here changes.
+     *
+     * ...AND THAT DAY CAME (0.7.62, batch K): fuel is a good, and the railway
+     * draws it - FUEL_LITRES_PER_TONNE a tonne hauled, off the refiners'
+     * shelf and the rest from the world, at what the draw came to - as a
+     * buyer on the FUEL market (Markets.draw()). This is what a tonne's fuel
+     * costs at the import price, and what the litres are derived from.
      */
     public static final double WORLD_FUEL_PER_TONNE = .03;
+
+    /**
+     * Litres of fuel a tonne hauled burns (0.7.62): WORLD_FUEL_PER_TONNE over
+     * a litre's import price (Good.FUEL), eighteen - so a city with no
+     * refinery pays the railway's fuel bill it always paid, at the world's
+     * price level.
+     */
+    public static final double FUEL_LITRES_PER_TONNE = WORLD_FUEL_PER_TONNE / Good.FUEL.worldImportPrice();
 
     /** The share of the lorry rate it is charging, today. */
     private double quote = OPENING_QUOTE;
@@ -248,6 +264,9 @@ public final class Rail extends Sector {
 
     /* the month just billed, for the screens */
     private double rTonnes, rHauled, rTruckBill, rHaulage, rFuel;
+
+    /** The part of the month's fuel the world sold it (0.7.62). */
+    private double rFuelImported;
     private double rCapacity, rTightness, rFx = 1, rAllowed;
 
     /**
@@ -370,11 +389,13 @@ public final class Rail extends Sector {
         for (Traffic stream : Traffic.values()) moved += tonnes[stream.ordinal()] * carried[stream.ordinal()];
 
         bookOtherRevenue(haulage);
-        double fuel = moved * WORLD_FUEL_PER_TONNE * fx;
-        bookImportedService("Fuel", fuel);
+        // ...its fuel, drawn as a buyer (0.7.62): the refiners' shelf first, the world for the rest.
+        Markets.Draw took = markets.draw(Good.FUEL, this, key(), moved * FUEL_LITRES_PER_TONNE, sectors);
+        double fuel = took.cost();
 
         rHaulage = haulage;
         rFuel = fuel;
+        rFuelImported = took.importCost();
         rHauled = moved;
         rPaidAbroad = abroad;
         abroadKnown = allowedKnown = true;
@@ -429,7 +450,7 @@ public final class Rail extends Sector {
         /* ---- 4. what it charges for it ---- */
 
         rFx = fx;
-        rAllowed = monthlyCost(moved, fx) + TARGET_RETURN * rateBase();
+        rAllowed = monthlyCost(fuel) + TARGET_RETURN * rateBase();
 
         if (capacity > 0) {
             double atLorryRate = 0;
@@ -467,12 +488,12 @@ public final class Rail extends Sector {
     /**
      * What a month of railway costs to RUN. Wages, power, water, the repairs,
      * the taxman and the fuel - everything except the money, which TARGET_RETURN
-     * is there to pay for.
+     * is there to pay for. The fuel is what the month's draw came to (0.7.62).
      */
-    private double monthlyCost(double tonnesHauled, double fx) {
+    private double monthlyCost(double fuelBill) {
         return getPayroll() + getElectricityCost() + getWaterCost()
                 + getMaintenanceExpense() + getPropertyTaxExpense()
-                + Math.max(0, tonnesHauled) * WORLD_FUEL_PER_TONNE * Math.max(0, fx);
+                + Math.max(0, fuelBill);
     }
 
     /**
@@ -542,6 +563,9 @@ public final class Rail extends Sector {
     public double getTruckBill()        { return rTruckBill; }
     public double getHaulageBilled()    { return rHaulage; }
     public double getFuelBill()         { return rFuel; }
+
+    /** ...and the part of it bought from the world (0.7.62): all of it with no refinery in the city. */
+    public double getFuelImported()     { return rFuelImported; }
 
     /**
      * What a month has to bring in: everything it costs to run, plus the return
@@ -627,7 +651,9 @@ public final class Rail extends Sector {
         double spare = Math.max(0, rTonnes - rCapacity);
         double picked = Math.min(t.getRailCapacity(), spare);
         double revenue = picked * lorryRatePerTonne() * quote;
-        double fuel = picked * WORLD_FUEL_PER_TONNE * (markets == null ? 1 : markets.getExchangeRate());
+        // ...its fuel at what a litre costs to bring in today (0.7.62): the refiners' price or the world's.
+        double litre = markets == null ? Good.FUEL.worldImportPrice() : markets.get(Good.FUEL).landedPrice();
+        double fuel = picked * FUEL_LITRES_PER_TONNE * (Double.isFinite(litre) ? Math.max(0, litre) : 0);
         return revenue - fuel - plans.runningCostOf(t) - plans.standingCostOf(this, t);
     }
 
@@ -804,6 +830,7 @@ public final class Rail extends Sector {
         extras.put("truckBill", rTruckBill);
         extras.put("haulage", rHaulage);
         extras.put("fuel", rFuel);
+        extras.put("fuelImported", rFuelImported);
         // The screens' two (0.7.29), only when they are figures (see allowedKnown): an
         // older save has neither, and loads with them unknown, so no format bump.
         if (allowedKnown) extras.put("allowed", rAllowed);
@@ -825,6 +852,8 @@ public final class Rail extends Sector {
         rTruckBill = extras.getOrDefault("truckBill", 0.0);
         rHaulage = extras.getOrDefault("haulage", 0.0);
         rFuel = extras.getOrDefault("fuel", 0.0);
+        // A save from before 0.7.62 imported every litre.
+        rFuelImported = extras.getOrDefault("fuelImported", rFuel);
         rAllowed = extras.getOrDefault("allowed", 0.0);
         allowedKnown = extras.containsKey("allowed");
         // Nothing billed at home: nothing was carried, so the whole lorry bill went abroad.
@@ -837,7 +866,7 @@ public final class Rail extends Sector {
         quote = OPENING_QUOTE;
         fleetKnown = false;
         java.util.Arrays.fill(carried, 0);
-        rTonnes = rHauled = rCapacity = rTightness = rTruckBill = rHaulage = rFuel = 0;
+        rTonnes = rHauled = rCapacity = rTightness = rTruckBill = rHaulage = rFuel = rFuelImported = 0;
         rAllowed = rPaidAbroad = 0;
         allowedKnown = abroadKnown = true;
     }
@@ -855,6 +884,7 @@ public final class Rail extends Sector {
         rTruckBill *= scale;
         rHaulage *= scale;
         rFuel *= scale;
+        rFuelImported *= scale;
         rAllowed *= scale;
         rPaidAbroad *= scale;
     }

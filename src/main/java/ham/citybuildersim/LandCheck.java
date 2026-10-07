@@ -17,7 +17,29 @@ package ham.citybuildersim;
  * plots bought at once ending exactly as N bought one by one (16); and,
  * since 0.7.26, the three figures the redrawn office takes from the model:
  * the going rate, which it used to work out itself, the GROUND row's
- * verdict and the receipt in the screens' money (17).
+ * verdict and the receipt in the screens' money (17); and, since 0.7.55,
+ * the ground priced by how crowded the city is rather than how big, at the
+ * world's price level and not the city's (18); and, since 0.7.57, the land
+ * on the world (spec-land.md, batch J1b): offers priced from batch I's ground
+ * and holding the world's fields (5 to 5f) - forty, ten a side, each the next
+ * band of its lane, until 0.7.66; since 0.7.67 (batch M3, spec-grid.md) six
+ * places a side, each a rectangle of whole blocks against the city or none
+ * while its side has no room, listed once there is, the city's level setting
+ * the blocks and the books its plots counted - the world's totals kept to the tonne, the ground worked
+ * out in the order it was bought, ground set by hand, forest's regrowth and
+ * the best offer for each need (19), a saved city's land field for field
+ * (20), and an older save's land converted - the three research cities' (21);
+ * and the playtest's player keeping its ground ahead, as the build advice
+ * keeps slack (22, batch J1d). From 0.7.58 to 0.7.63 (batch J1c) a field was
+ * shared site by site among the ground its sites lie under; since 0.7.64
+ * (batch L) a field goes whole again to the one piece of ground holding its
+ * centre, an offer priced by its fields' tonnes, a new city's iron a
+ * significant investment the funding page sizes a bond to (5e, 19); and the
+ * playtest's player buys its iron a whole field at a time, the cheapest
+ * standing, with cash or that bond (23); and, since 0.7.68 (batch M4), the
+ * units the player reads land in - square metres under a hundredth of a
+ * square kilometre, square kilometres from it, ground prices a square
+ * metre (24).
  */
 public class LandCheck {
 
@@ -35,6 +57,13 @@ public class LandCheck {
         System.out.printf("%-52s %s%n", label, ok ? "OK" : "FAIL");
     }
 
+    /** ...and to a part in `relative` of the expected figure (0.7.55): prices a ten-thousandth of a unit, where check()'s 1e-6 is no test. */
+    static void near(String label, double actual, double expected, double relative) {
+        boolean ok = Math.abs(actual - expected) <= relative * Math.abs(expected);
+        if (!ok) fails++;
+        System.out.printf("%-52s %14.8g  expected %14.8g  %s%n", label, actual, expected, ok ? "OK" : "FAIL");
+    }
+
     static void quietly(Runnable work) {
         java.io.PrintStream out = System.out;
         System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
@@ -44,42 +73,66 @@ public class LandCheck {
     public static void main(String[] args) throws Exception {
 
         /* ==================== 1. what the city starts with ==================== */
+        /*
+         * THE CENTRE'S DRAWN DRY PLOTS (0.7.67, batch M3). Until 0.7.66 a new
+         * city owned exactly STARTING_SQ_FT, its centre sized to hold it. On
+         * the block grid the centre is whole blocks of 120 m round the site
+         * until their dry plots reach it (CityLand.found()), and the books
+         * follow the map: the city owns the dry plots drawn - 315 on the
+         * default world for STARTING_SQ_FT's 309.7, 1.7% more.
+         */
         System.out.println("--- opening position ---");
 
         LandManager lm = new LandManager();
-
-        check("owned", lm.getOwnedSqFt(), LandManager.STARTING_SQ_FT);
+        CityLand opening = lm.getCityLand();
+        double founded = LandManager.sqFt(opening.totalKm2(CityLand.DRY));
+        long dryPlots = 0;
+        for (LandGrid.Fill f : opening.centreRects()) {
+            byte[] t = new byte[World.TILE * World.TILE];
+            for (long y = f.y0(); y < f.y1(); y++) for (long x = f.x0(); x < f.x1(); x++) {
+                World.of(opening.seed()).tileTerrain(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE), t);
+                byte c = t[(int) (Math.floorMod(y, World.TILE) * World.TILE + Math.floorMod(x, World.TILE))];
+                if (c != World.SALT && c != World.FRESH) dryPlots++;
+            }
+        }
+        System.out.printf("   founded on %d blocks of %.0f m: %d dry plots, %,.0f sq ft (STARTING_SQ_FT %,.0f)%n",
+                opening.centreRects().size(), (1L << opening.level()) * World.PLOT_M, dryPlots, founded, LandManager.STARTING_SQ_FT);
+        check("owned: the centre's drawn dry plots", lm.getOwnedSqFt(), LandManager.sqFt(dryPlots * World.KM2_PER_PLOT));
+        assertTrue("...whole blocks holding at least STARTING_SQ_FT, and less than a block more",
+                founded >= LandManager.STARTING_SQ_FT && founded - LandManager.STARTING_SQ_FT
+                        < LandManager.sqFt((1L << (2 * opening.level())) * World.KM2_PER_PLOT));
         check("allocated", lm.getAllocatedSqFt(), 0);
-        check("available", lm.getAvailableSqFt(), LandManager.STARTING_SQ_FT);
-        check("thirty blocks", lm.getAvailableBlocks(), 30);
+        check("available", lm.getAvailableSqFt(), founded);
+        check("thirty blocks and a little", lm.getAvailableBlocks(), founded / LandManager.BLOCK_SQ_FT);
         check("nothing built on -> 0% used", lm.getUtilisation(), 0);
         check("no blocks bought yet", lm.getBlocksPurchased(), 0);
 
         /* ==================== 2. allocating ==================== */
         System.out.println("\n--- building on it ---");
 
+        double rest = founded - 600000;
         assertTrue("room for a 600,000 sq ft plant", lm.canAllocate(600000));
         assertTrue("allocation succeeds", lm.allocate(600000));
         check("allocated", lm.getAllocatedSqFt(), 600000);
-        check("available", lm.getAvailableSqFt(), 2400000);
-        check("20% used", lm.getUtilisation(), .20);
+        check("available", lm.getAvailableSqFt(), rest);
+        check("a fifth of it used, near enough", lm.getUtilisation(), 600000 / founded);
 
         // Exactly the remainder is allowed; a square foot more is not.
-        assertTrue("exactly what is left fits", lm.canAllocate(2400000));
-        assertTrue("one sq ft more does not", !lm.canAllocate(2400001));
+        assertTrue("exactly what is left fits", lm.canAllocate(rest));
+        assertTrue("one sq ft more does not", !lm.canAllocate(rest + 1));
 
-        assertTrue("an oversized allocation is refused", !lm.allocate(2400001));
+        assertTrue("an oversized allocation is refused", !lm.allocate(rest + 1));
         check("...and took nothing when it refused", lm.getAllocatedSqFt(), 600000);
 
         // Refusal leaving the ledger untouched is the whole point: the caller
         // reads the boolean and must not build, and if the land had been taken
         // anyway the city would lose a plot to a building that never went up.
-        check("available unchanged after a refusal", lm.getAvailableSqFt(), 2400000);
+        check("available unchanged after a refusal", lm.getAvailableSqFt(), rest);
 
         /* ==================== 3. filling up ==================== */
         System.out.println("\n--- full ---");
 
-        assertTrue("the last of it fits", lm.allocate(2400000));
+        assertTrue("the last of it fits", lm.allocate(rest));
         check("nothing left", lm.getAvailableSqFt(), 0);
         check("100% used", lm.getUtilisation(), 1);
         assertTrue("even one sq ft is refused now", !lm.canAllocate(1));
@@ -95,51 +148,96 @@ public class LandCheck {
         check("freed", lm.getAvailableSqFt(), 900000);
         lm.release(1e9);
         check("over-releasing floors at zero", lm.getAllocatedSqFt(), 0);
-        check("...and cannot invent land", lm.getOwnedSqFt(), LandManager.STARTING_SQ_FT);
+        check("...and cannot invent land", lm.getOwnedSqFt(), founded);
 
         /* ==================== 5. the listing ==================== */
-        System.out.println("\n--- nine plots on offer ---");
+        /*
+         * SIX OFFERS A SIDE (0.7.67, batch M3; Jerus, 2026-10-07). Until 0.7.57
+         * "nine plots are listed": a shelf of parcels drawn from a generator;
+         * from 0.7.57 to 0.7.66 forty, the next band of each of ten lanes a
+         * side. On the block grid each side has six places, and each place
+         * one offer standing - a rectangle of whole blocks against the city's
+         * edge (GridOffers) - or none while the side has no room for it. A new
+         * city of 120 m blocks lists 19, each 1 x 2 blocks (spec-grid 1.5).
+         */
+        System.out.println("\n--- six offers a side ---");
 
         LandManager buy = new LandManager();
         buy.updateMarket(0);
+        CityLand ground = buy.getCityLand();
+        LandGrid grid = ground.grid();
 
         java.util.List<LandParcel> listing = buy.getListing();
-        check("nine plots are listed", listing.size(), LandMarket.LISTING_SIZE);
-        check("the ground still costs $0.70/sq ft", buy.getAcquisitionCostPerSqFt(), .0007);
-        check("...which is US$0.70 in the money it is asked in", buy.getGroundUsdPerSqFt(), .0007);
-
-        // The point of a listing rather than a price: they have to differ, or
-        // there is no decision in it.
-        double smallest = Double.MAX_VALUE, largest = 0;
-        int withIron = 0;
-        for (LandParcel parcel : listing) {
-            smallest = Math.min(smallest, parcel.getSizeSqFt());
-            largest = Math.max(largest, parcel.getSizeSqFt());
-            if (parcel.hasIron()) withIron++;
-            assertTrue("every plot has a size and a price",
-                    parcel.getSizeSqFt() > 0 && parcel.getPriceUsd() > 0);
-        }
-        assertTrue("the plots are different sizes", largest > smallest * 2);
-        System.out.printf("   sizes from %,.0f to %,.0f sq ft, %d with iron%n",
-                smallest, largest, withIron);
-
-        // Deterministic in the id, which is what lets a save restore the window
-        // without storing it and stops a reload being a reroll.
-        LandManager twin = new LandManager();
-        twin.updateMarket(0);
-        boolean identical = true;
-        for (int i = 0; i < listing.size(); i++) {
-            LandParcel a = listing.get(i);
-            LandParcel b = twin.getListing().get(i);
-            if (a.getId() != b.getId() || a.getSizeSqFt() != b.getSizeSqFt()
-                    || a.getIronTonnes() != b.getIronTonnes()) {
-                identical = false;
+        int waiting = 0;
+        for (int side = 0; side < CityLand.SIDES; side++) waiting += buy.getMarket().emptyOn(side);
+        System.out.printf("   %d offers listed, %d places waiting for room (North %d, East %d, South %d, West %d)%n", listing.size(), waiting,
+                buy.getMarket().emptyOn(0), buy.getMarket().emptyOn(1), buy.getMarket().emptyOn(2), buy.getMarket().emptyOn(3));
+        check("a new city lists every place it has room for: nineteen of twenty-four (spec-grid 1.5)", listing.size(), 19);
+        check("...the other places waiting", waiting, LandMarket.OFFERS - listing.size());
+        boolean placeEach = true, against = true, whole = true, theirArea = true, apart = true;
+        for (int side = 0; side < CityLand.SIDES; side++) {
+            for (int place = 0; place < LandMarket.OFFERS_A_SIDE; place++) {
+                LandParcel p = buy.getMarket().offerIn(side, place);
+                if (p != null) placeEach &= p.getSide() == side && p.getPlace() == place;
             }
         }
-        assertTrue("the same city always sees the same plots", identical);
+        long b2 = 1L << LandGrid.MIN_LEVEL;
+        for (LandParcel p : listing) {
+            against &= touchesOwned(grid, p) && grid.owned(p.getX0(), p.getY0(), p.getX1(), p.getY1()) == 0;
+            whole &= p.getLevel() == LandGrid.MIN_LEVEL && p.blocksAcross() == 1 && p.blocksDeep() == GridOffers.DEPTH_OVER_WIDTH
+                    && p.getX0() % b2 == 0 && p.getY0() % b2 == 0 && p.getX1() % b2 == 0 && p.getY1() % b2 == 0;
+            theirArea &= p.getKm2() == (p.getX1() - p.getX0()) * (p.getY1() - p.getY0()) * World.KM2_PER_PLOT;
+            for (LandParcel q : listing) if (q != p) apart &= !(p.getX0() < q.getX1() && q.getX0() < p.getX1() && p.getY0() < q.getY1() && q.getY0() < p.getY1());
+        }
+        assertTrue("...one in each place, place by place", placeEach);
+        assertTrue("a new city's offers lie against its centre, on ground it does not own", against);
+        assertTrue("...each 1 x 2 blocks of 120 m, whole blocks of the grid", whole);
+        assertTrue("...each its rectangle's area, 0.0288 km2, every plot of it unowned", theirArea);
+        assertTrue("...and no two of them share a plot", apart);
+        near("the ground costs batch I's price at the founding: the base, the founding's US prices, no crowding",
+                buy.getGroundUsdPerSqFt(), LandMarket.openingUsdPerSqFt() * 1 * LandMarket.crowdingPremium(0), 0);
+        check("...which is what it costs here at the founding rate", buy.getAcquisitionCostPerSqFt(),
+                buy.getGroundUsdPerSqFt() * ForeignAccounts.OPENING_RATE);
+        boolean priced = true;
+        for (LandParcel p : listing) {
+            double[] km2 = new double[CityLand.AREAS], amounts = new double[CityLand.KINDS];
+            for (int a = 0; a < CityLand.AREAS; a++) km2[a] = p.getKm2(a);
+            for (Resource r : Resource.values()) amounts[r.ordinal()] = p.getAmount(r);
+            priced &= p.getPriceUsd() == LandMarket.price(km2, amounts, buy.getGroundUsdPerSqFt(), 1);
+        }
+        assertTrue("...and every offer is priced at it: dry ground, water cheaper, ore at its share", priced);
+
+        // The point of a listing rather than a price: they have to differ, or
+        // there is no decision in it. A new city's are one size (spec-grid
+        // 1.5: 0.0288 km2 each), so they differ in what that ground holds -
+        // its dry ground, its water - and so in price.
+        double smallest = Double.MAX_VALUE, largest = 0, cheapestUsd = Double.MAX_VALUE, dearestUsd = 0;
+        int withIron = 0;
+        boolean sized = true;
+        for (LandParcel parcel : listing) {
+            smallest = Math.min(smallest, parcel.getDryKm2());
+            largest = Math.max(largest, parcel.getDryKm2());
+            cheapestUsd = Math.min(cheapestUsd, parcel.getPriceUsd());
+            dearestUsd = Math.max(dearestUsd, parcel.getPriceUsd());
+            if (parcel.hasIron()) withIron++;
+            sized &= parcel.getKm2() > 0 && parcel.getPriceUsd() > 0;
+        }
+        assertTrue("every offer has an area and a price", sized);
+        assertTrue("the offers differ: in their dry ground and so in price (0.7.67; a new city's are one size)",
+                largest > smallest * 2 && dearestUsd > cheapestUsd);
+        System.out.printf("   offers of %.4f to %.4f km2 dry, US$%,.0fk to US$%,.0fk, round a centre of %.4f km2 (%.4f dry), %d with iron%n",
+                smallest, largest, cheapestUsd, dearestUsd, ground.centreKm2(CityLand.TOTAL), ground.centreKm2(CityLand.DRY), withIron);
+
+        // The same world and the same city give the same offers, field for
+        // field: what lets a reload never be a reroll.
+        LandManager twin = new LandManager();
+        twin.updateMarket(0);
+        boolean identical = twin.getListing().size() == listing.size();
+        for (int i = 0; identical && i < listing.size(); i++) identical = listing.get(i).same(twin.getListing().get(i));
+        assertTrue("the same city always sees the same offers, field for field", identical);
 
         /* ==================== 5b. buying one ==================== */
-        System.out.println("\n--- buying a plot ---");
+        System.out.println("\n--- buying an offer ---");
 
         LandParcel wanted = buy.getListing().get(3);
         double before = buy.getOwnedSqFt();
@@ -148,28 +246,77 @@ public class LandCheck {
         double paid = buy.buyParcel(wanted.getId(), 1e9, 0);
         check("paid exactly what was listed", paid,
                 wanted.localPrice(ForeignAccounts.OPENING_RATE));
-        check("owned grew by the plot's size",
+        check("owned grew by the offer's dry ground",
                 buy.getOwnedSqFt(), before + wanted.getSizeSqFt());
         check("recorded as a purchase this month", buy.getLandPurchasesThisMonth(), paid);
-        check("the window refilled", buy.getListing().size(), LandMarket.LISTING_SIZE);
-        assertTrue("...and that plot is gone from it",
+        assertTrue("every place with room stands again, as many as before or more", buy.getListing().size() >= listing.size());
+        assertTrue("...and that offer is gone from them",
                 buy.getMarket().find(wanted.getId()) == null);
+        LandParcel next = buy.getMarket().offerIn(wanted.getSide(), wanted.getPlace());
+        boolean claimed = true;
+        for (long y = wanted.getY0(); y < wanted.getY1(); y++) {
+            for (long x = wanted.getX0(); x < wanted.getX1(); x++) claimed &= ground.holdingOf(x, y) == ground.purchases().size();
+        }
+        assertTrue("its rectangle's plots are the city's, the new holding's (the grid's next)", claimed
+                && ground.purchases().size() == 1 && ground.grid().ownedPlots() == ground.centreRects().size() * b2 * b2
+                        + (wanted.getX1() - wanted.getX0()) * (wanted.getY1() - wanted.getY0()));
+        assertTrue("its place lists its next: against the city, on ground it does not own, under a new id", next != null
+                && touchesOwned(ground.grid(), next) && ground.grid().owned(next.getX0(), next.getY0(), next.getX1(), next.getY1()) == 0
+                && next.getId() > wanted.getId());
 
         // What is listed stays listed: everything the player was weighing up is
-        // still there at the same price after somebody buys something else.
-        boolean pricesHeld = true;
+        // still there, field for field, after somebody buys something else.
+        boolean held = true;
         for (LandParcel parcel : listing) {
             if (parcel.getId() == wanted.getId()) continue;
-            LandParcel still = buy.getMarket().find(parcel.getId());
-            if (still == null || still.getPriceUsd() != parcel.getPriceUsd()) pricesHeld = false;
+            held &= parcel.same(buy.getMarket().find(parcel.getId()));
         }
-        assertTrue("the other offers did not move", pricesHeld);
+        assertTrue("the other offers did not move, field for field", held);
 
-        assertTrue("buying an unlisted plot does nothing",
+        assertTrue("buying an unlisted offer does nothing",
                 buy.buyParcel(999999, 1e9, 0) == 0);
 
-        /* ==================== 5c. a bigger city pays more ==================== */
-        System.out.println("\n--- and a bigger city pays more ---");
+        // AN EMPTY PLACE LISTS ONCE THERE IS ROOM (0.7.67): a new city's five
+        // waiting places, the sides bought in turn - the cheapest of each -
+        // each lists at the first update its side has room for it, and no
+        // update leaves a place empty that has room.
+        LandManager even = new LandManager();
+        even.updateMarket(0);
+        java.util.Set<Integer> waited = new java.util.HashSet<>();
+        for (int i = 0; i < LandMarket.OFFERS; i++) {
+            if (even.getMarket().offerIn(i / LandMarket.OFFERS_A_SIDE, i % LandMarket.OFFERS_A_SIDE) == null) waited.add(i);
+        }
+        boolean neverWithRoom = even.getMarket().emptyWithRoom() == 0;
+        int allBy = -1;
+        for (int k = 0; k < 24 && allBy < 0; k++) {
+            int side = k % CityLand.SIDES;
+            LandParcel pick = null;
+            for (LandParcel p : even.getMarket().offersOn(side)) if (pick == null || p.getPriceUsd() < pick.getPriceUsd()) pick = p;
+            if (pick == null) continue;
+            even.buyParcel(pick.getId(), 1e12, 0);
+            neverWithRoom &= even.getMarket().emptyWithRoom() == 0;
+            if (even.getListing().size() == LandMarket.OFFERS) allBy = k + 1;
+        }
+        System.out.printf("   %d places waited at the founding; all %d stand after purchase %d, the sides bought in turn%n",
+                waited.size(), LandMarket.OFFERS, allBy);
+        assertTrue("fixture: a new city has places waiting for room", !waited.isEmpty());
+        assertTrue("an empty place lists once there is room: no update leaves one empty with room for it", neverWithRoom);
+        assertTrue("...and, the sides bought in turn, every place comes to stand (GridCheck 4 holds the design's 4th to 12th)",
+                allBy > 0);
+
+        /* ============ 5c. a more crowded city pays more ============ */
+        /*
+         * CROWDED, NOT BIG (0.7.55). Until then this was "a bigger city pays
+         * more ... but only slightly": forty blocks and eight thousand people
+         * on, under four times a new city's price. The premium reads the
+         * city's crowding now (LandMarket, THE CROWDING PREMIUM; section 18),
+         * and that city is 12,302 people a square kilometre, past anything
+         * played, so it pays near the curve's ceiling: "only slightly" was a
+         * premise of the size premium, and went with it. What stands: more
+         * people on the ground makes it dearer, and nothing makes it dearer
+         * without limit.
+         */
+        System.out.println("\n--- and a more crowded city pays more ---");
 
         double smallCityRate = new LandManager() {{ updateMarket(0); }}
                 .getAcquisitionCostPerSqFt();
@@ -178,15 +325,12 @@ public class LandCheck {
         bigCity.setOwnedSqFt(LandManager.STARTING_SQ_FT + 40 * LandManager.BLOCK_SQ_FT);
         bigCity.updateMarket(8000);
 
-        assertTrue("more land and more people means dearer land",
+        assertTrue("more people on the land means dearer land",
                 bigCity.getAcquisitionCostPerSqFt() > smallCityRate);
-        System.out.printf("   $%.4f/sq ft for a new city, $%.4f for a big one%n",
-                smallCityRate, bigCity.getAcquisitionCostPerSqFt());
-
-        // "Slightly", per the design. A city forty blocks and eight thousand
-        // people on should not be paying five times the going rate.
-        assertTrue("...but only slightly",
-                bigCity.getAcquisitionCostPerSqFt() < smallCityRate * 4);
+        System.out.printf("   $%.4f/sq ft for a new city, $%.4f for a crowded one (%,.0f people a km2)%n",
+                smallCityRate, bigCity.getAcquisitionCostPerSqFt(), bigCity.getCrowding());
+        assertTrue("...but never past the ceiling, however crowded",
+                bigCity.getAcquisitionCostPerSqFt() <= smallCityRate * LandMarket.CROWDING_CEILING);
 
         /* ==================== 5d. supply and demand inside the city ========= */
         System.out.println("\n--- what businesses pay ---");
@@ -265,32 +409,61 @@ public class LandCheck {
                 curve.scarcityMultiplier(1_000_000, 1_200_000), 1.90);
 
         /* ==================== 5e. iron in the ground ==================== */
-        System.out.println("\n--- ore ---");
+        /*
+         * THE WORLD'S FIELDS (0.7.57). Until then "some plot on offer has iron
+         * under it": the office drew ore at random onto a fifth of its
+         * parcels. An offer holds the world's fields now, every one whose
+         * centre lies on its ground, whole - so a new city's first offers, a
+         * few hundred metres out, seldom hold any, and the city finds its ore
+         * by growing toward it: the founding site has an iron field within
+         * World.SITE_IRON_KM, and buying toward it reaches it. (From 0.7.58 to
+         * 0.7.63, batch J1c, an offer held each site whose own centre lay in
+         * its band, with its share of its field; whole again since 0.7.64,
+         * batch L - Jerus: "whole iron fields as one offer". On the block grid
+         * since 0.7.67: the fields whose centre plots are on an offer's free
+         * plots, and the city grown toward a field by the offer nearest it.)
+         */
+        System.out.println("\n--- ore: the world's fields ---");
 
         LandManager ore = new LandManager();
         ore.updateMarket(0);
-
-        LandParcel deposit = ore.getMarket().richestDeposit();
-        assertTrue("some plot on offer has iron under it", deposit != null);
+        CityLand oreLand = ore.getCityLand();
+        double[] inCentre = recountOn(oreLand, Resource.IRON, (x, y) -> oreLand.holdingOf(x, y) == CityLand.CENTRE);
+        check("a new city holds the iron fields the world centred on its centre's plots, whole, and no more",
+                ore.getIronDeposits(), inCentre[0]);
+        check("...and their tonnes", ore.getIronReserveTonnes(), inCentre[1]);
+        Deposit field = nearestUnowned(oreLand, Resource.IRON);
+        assertTrue("fixture: an iron field lies near the founding site", field != null);
+        LandParcel deposit = ore.getMarket().richest(Resource.IRON);
+        for (int i = 0; i < 400 && deposit == null && field != null; i++) {
+            LandParcel push = MiningCheck.nearestOffer(ore.getMarket(), field.x(), field.y());
+            ore.buyParcel(push.getId(), 1e12, 0);
+            deposit = ore.getMarket().richest(Resource.IRON);
+        }
+        assertTrue("buying toward it, the offer nearest it each time, an offer comes to hold iron", deposit != null);
 
         if (deposit != null) {
-            // A deposit costs more than bare ground of the same size, which is
-            // the whole reason it is a decision rather than free money.
-            double bareGround = deposit.getSizeSqFt() * ore.getGroundUsdPerSqFt();
-            assertTrue("a deposit costs more than the ground it sits on",
-                    deposit.getPriceUsd() > bareGround);
-            System.out.printf("   %,.0fk tonnes: US$%,.0f against US$%,.0f for bare ground%n",
-                    deposit.getIronTonnes() / 1000, deposit.getPriceUsd(), bareGround);
+            double[] counted = offerFields(oreLand, deposit, Resource.IRON);
+            check("its iron sites are the world's fields centred on its free plots, recounted, whole",
+                    deposit.getDeposits(), counted[0]);
+            check("...and its tonnes theirs, whole, to the tonne", deposit.getIronTonnes(), counted[1]);
+            double groundPart = ore.getGroundUsdPerSqFt() * LandManager.SQ_FT_PER_KM2
+                    * (deposit.getDryKm2() + LandMarket.FRESH_PRICE_SHARE * deposit.getKm2(CityLand.FRESH)
+                    + LandMarket.SEA_PRICE_SHARE * deposit.getKm2(CityLand.SEA));
+            double orePart = counted[1] * Good.IRON.worldExportPrice() * Resource.IRON.inGroundShare();
+            assertTrue("a deposit costs more than the ground it sits on", deposit.getPriceUsd() > groundPart);
+            assertTrue("...by its fields' tonnes at the in-ground price, 1/350 of the world's iron, to the US$5k it is rounded to",
+                    Math.abs(deposit.getPriceUsd() - groundPart - orePart) <= 2.5);
+            System.out.printf("   %s: %d sites, %,.0fk tonnes: US$%,.0fk against US$%,.0fk for its ground%n",
+                    deposit.where(), deposit.getDeposits(), deposit.getIronTonnes() / 1000, deposit.getPriceUsd(), groundPart);
 
-            check("no deposits to start with", ore.getIronDeposits(), 0);
-            ore.buyParcel(deposit.getId(), 1e9, 0);
+            int sitesBefore = ore.getIronDeposits();
+            double tonnesBefore = ore.getIronReserveTonnes();
+            ore.buyParcel(deposit.getId(), 1e12, 0);
 
-            // Against the PARCEL'S site count, not a hardcoded 1. A tract can
-            // carry several now, and an assertion that says otherwise would
-            // start failing the day the roll happens to hand this one two.
-            int sites = deposit.getDeposits();
+            int sites = sitesBefore + deposit.getDeposits();
             check("buying it gives the city its sites", ore.getIronDeposits(), sites);
-            check("...and its tonnage", ore.getIronReserveTonnes(), deposit.getIronTonnes());
+            check("...and its tonnage", ore.getIronReserveTonnes(), tonnesBefore + deposit.getIronTonnes());
 
             assertTrue("the sites support that many mines", ore.hasUnminedDeposit(sites - 1));
             assertTrue("...and not one more", !ore.hasUnminedDeposit(sites));
@@ -298,185 +471,113 @@ public class LandCheck {
             double lifted = ore.extractIron(50000);
             check("mining takes ore out of the ground", lifted, 50000);
             check("...and the reserve falls",
-                    ore.getIronReserveTonnes(), deposit.getIronTonnes() - 50000);
+                    ore.getIronReserveTonnes(), tonnesBefore + deposit.getIronTonnes() - 50000);
 
             // Finite means finite. A mine on an empty deposit lifts nothing and
             // still costs its payroll, which is the point of depletion.
-            ore.extractIron(1e12);
+            ore.extractIron(1e18);
             check("a deposit can be worked out", ore.getIronReserveTonnes(), 0);
             check("...and then yields nothing", ore.extractIron(1000), 0);
             assertTrue("...and supports no more mines", !ore.hasUnminedDeposit(0));
         }
 
-        /* ============ 5f. parcels are blocks, and they grow ============ */
+        /* ============ 5f. the level rule ============ */
         /*
          * Jerus, after the hand-played run: buying ~200 parcels one click at a
          * time to reach 581 blocks was the single biggest time sink in playing
-         * the game. Two rules fix that, and this section is what holds them.
+         * the game. Until 0.7.57 nothing smaller than a block and a floor that
+         * rose a block for every forty bought answered it; from 0.7.57 to
+         * 0.7.66 the size rule, a multiple of a block or of 1% of the city
+         * drawn from the offer's id. On the block grid since 0.7.67 (spec-grid
+         * star 2) the city's level does: its blocks are the largest of which
+         * FACE_BLOCKS fit across a square of its area, an offer w x 2w of them
+         * (or one level finer where its side has no room at its own), so an
+         * offer is about 2 to 3% of the city at any size. Its ground is its
+         * rectangle's free plots, counted plot by plot: the books to the plot.
          */
-        System.out.println("\n--- no more slivers ---");
+        System.out.println("\n--- the level rule ---");
 
         LandManager young = new LandManager();
         young.updateMarket(0);
+        check("a new city's blocks are MIN_LEVEL's, 120 m", young.getMarket().getLevel(), LandGrid.MIN_LEVEL);
+        check("...four plots a side", young.getMarket().getBlockPlots(), 1L << LandGrid.MIN_LEVEL);
 
-        double floorSqFt = LandManager.BLOCK_SQ_FT;
-        boolean allWholeBlocks = true;
-        double tiniest = Double.MAX_VALUE;
-        for (LandParcel parcel : young.getListing()) {
-            tiniest = Math.min(tiniest, parcel.getSizeSqFt());
-            if (parcel.getSizeSqFt() < floorSqFt) allWholeBlocks = false;
-        }
-        assertTrue("nothing on offer is smaller than a block", allWholeBlocks);
-        check("a new city is offered blocks of one", young.getMarket().getMinBlocks(), 1);
-        System.out.printf("   smallest plot on a new city's window: %,.0f sq ft (%.1f blocks)%n",
-                tiniest, tiniest / LandManager.BLOCK_SQ_FT);
+        System.out.println("\n--- and the level grows with the city ---");
 
-        System.out.println("\n--- and the floor rises with the city ---");
-
-        // 160 blocks in is where the design says the smallest on offer is five.
         LandManager grown = new LandManager();
-        grown.setOwnedSqFt(LandManager.STARTING_SQ_FT + 160 * LandManager.BLOCK_SQ_FT);
+        grown.updateMarket(0);
+        grown.setOwnedSqFt(LandManager.STARTING_SQ_FT + 1_000 * LandManager.BLOCK_SQ_FT);
         grown.updateMarket(20000);
-
-        double grownFloor = grown.getMarket().getMinBlocks();
-        System.out.printf("   a city 160 blocks in is offered nothing under %.0f blocks%n",
-                grownFloor);
-        assertTrue("a big city is not offered scraps", grownFloor >= 5);
-
-        boolean allAboveFloor = true;
-        double grownSmallest = Double.MAX_VALUE;
-        for (LandParcel parcel : grown.getListing()) {
-            grownSmallest = Math.min(grownSmallest, parcel.getSizeSqFt());
-            if (parcel.getSizeSqFt() < grownFloor * LandManager.BLOCK_SQ_FT) {
-                allAboveFloor = false;
-            }
+        CityLand grownLand = grown.getCityLand();
+        int level = grownLand.level();
+        check("a city of 9.6 km2 has the level FACE_BLOCKS blocks across it make", level,
+                LandGrid.levelFor(grownLand.grid().ownedPlots()));
+        assertTrue("...past a new city's", level > LandGrid.MIN_LEVEL);
+        boolean levels = true, aspect = true, alignedBlocks = true, freeGround = true, booked = true;
+        for (LandParcel p : grown.getListing()) {
+            long bl = 1L << p.getLevel();
+            levels &= p.getLevel() == level || p.getLevel() == Math.max(LandGrid.MIN_LEVEL, level - 1);
+            aspect &= p.blocksDeep() <= 2 * p.blocksAcross() && p.blocksAcross() <= 2 * p.blocksDeep();
+            alignedBlocks &= p.getX0() % bl == 0 && p.getY0() % bl == 0 && p.getX1() % bl == 0 && p.getY1() % bl == 0;
+            freeGround &= grownLand.grid().unowned(p.getX0(), p.getY0(), p.getX1(), p.getY1()) > 0;
+            double[] counted = freePlotsCounted(grownLand, p);
+            for (int a = 0; a < CityLand.AREAS; a++) booked &= p.getKm2(a) == counted[a];
         }
-        assertTrue("...and every plot it IS offered respects that floor", allAboveFloor);
-        assertTrue("its smallest plot dwarfs a new city's", grownSmallest > tiniest * 3);
+        System.out.printf("   a city of %.2f km2 (%.2f dry), level %d (%.0f m blocks): %d offers, %d places waiting%n",
+                grownLand.totalKm2(CityLand.TOTAL), LandManager.km2(grown.getOwnedSqFt()), level, (1L << level) * World.PLOT_M,
+                grown.getListing().size(), LandMarket.OFFERS - grown.getListing().size());
+        assertTrue("...every offer of blocks of its level, or one finer where its side has no room", levels);
+        assertTrue("...whole blocks of the grid, never past 2:1", alignedBlocks && aspect);
+        assertTrue("...each holding ground the city does not own yet", freeGround);
+        assertTrue("...its books the plots of its rectangle the city does not own, counted plot by plot", booked);
 
-        // The floor is capped, because a listing whose cheapest entry is
-        // unaffordable is a worse failure than being offered scraps.
-        LandManager enormous = new LandManager();
-        enormous.setOwnedSqFt(LandManager.STARTING_SQ_FT + 5000 * LandManager.BLOCK_SQ_FT);
-        enormous.updateMarket(500000);
-        assertTrue("the floor stops climbing eventually",
-                enormous.getMarket().getMinBlocks() <= 15);
-        System.out.printf("   a 5,000-block city: floor stops at %.0f blocks%n",
-                enormous.getMarket().getMinBlocks());
+        // EXACT AT EVERY SIZE (the orchestrator's decision, 2026-10-07): a rectangle of PARALLEL_TILES tiles or more is
+        // counted over the machine's cores, from tiles' kept counts where the city owns none of a tile - and gives
+        // what one core counting every plot gives, to the plot.
+        long side = (long) Math.ceil(Math.sqrt(CityLand.PARALLEL_TILES)) * World.TILE;
+        long bx0 = grownLand.grid().minX() - side / 2, by0 = grownLand.grid().minY() - side / 2;
+        LandParcel big = new LandParcel(0, 0, 0, 5, bx0 + 3, by0 + 5, bx0 + side + 3, by0 + side + 5, null, null, null, 0, 0);
+        long tBig = System.nanoTime();
+        double[] fast = grownLand.groundOf(big.getX0(), big.getY0(), big.getX1(), big.getY1());
+        double fastMs = (System.nanoTime() - tBig) / 1e6;
+        tBig = System.nanoTime();
+        double[] slow = freePlotsCounted(grownLand, big);
+        double slowMs = (System.nanoTime() - tBig) / 1e6;
+        boolean exactBig = true;
+        for (int a = 0; a < CityLand.AREAS; a++) exactBig &= fast[a] == slow[a];
+        System.out.printf("   a rectangle of %,d tiles round the city, not on tile lines: %.2f km2 free, %.2f dry; counted over the cores in %.0f ms,"
+                + " plot by plot on one in %.0f ms%n", (side / World.TILE) * (side / World.TILE), fast[CityLand.TOTAL], fast[CityLand.DRY], fastMs, slowMs);
+        assertTrue("a rectangle of PARALLEL_TILES tiles or more is counted over the cores to the plot, as one core counts it",
+                exactBig && fast[CityLand.TOTAL] > 0 && fast[CityLand.TOTAL] < side * side * World.KM2_PER_PLOT);
 
-        System.out.println("\n--- a tract can hold a mining district ---");
-
-        // Sample a lot of parcels: multiple deposits are meant to be possible,
-        // not usual, so one window is not enough to see the behaviour.
-        LandMarket sampler = new LandMarket();
-        int multi = 0, single = 0, mostSites = 0;
-        boolean roomForEvery = true;
-        for (int round = 0; round < 400; round++) {
-            sampler.update(LandManager.STARTING_SQ_FT + 400_000_000, 0, 50000);
-            for (LandParcel parcel : sampler.getListing()) {
-                if (!parcel.hasIron()) continue;
-                if (parcel.getDeposits() > 1) multi++; else single++;
-                mostSites = Math.max(mostSites, parcel.getDeposits());
-
-                // A mine is 400,000 sq ft. Selling more sites than the plot can
-                // physically hold mines would be selling a number, not a mine.
-                if (parcel.getSizeSqFt() < parcel.getDeposits() * 400_000.0) {
-                    roomForEvery = false;
-                }
-            }
-            for (LandParcel parcel : sampler.getListing()) {
-                sampler.take(parcel.getId());
-            }
-        }
-        System.out.printf("   of %d ore parcels seen, %d carried more than one site "
-                + "(most: %d)%n", multi + single, multi, mostSites);
-        assertTrue("some parcels carry more than one deposit", multi > 0);
-        assertTrue("...but most still carry one", single > multi);
-        assertTrue("every site has room for a mine", roomForEvery);
-
-        System.out.println("\n--- the listing survives a save, old format included ---");
-
-        LandManager saver = new LandManager();
-        saver.setOwnedSqFt(LandManager.STARTING_SQ_FT + 90 * LandManager.BLOCK_SQ_FT);
-        saver.updateMarket(12000);
-        java.util.List<LandParcel> written = saver.getListing();
+        System.out.println("\n--- the offers survive a save, field for field ---");
 
         LandMarket reloaded = new LandMarket();
-        assertTrue("a listing restores", reloaded.restoreListingState(saver.getMarket().getListingState()));
-
-        boolean survived = written.size() == reloaded.getListing().size();
-        for (int i = 0; survived && i < written.size(); i++) {
-            LandParcel a = written.get(i), b = reloaded.getListing().get(i);
-            survived = a.getId() == b.getId()
-                    && a.getSizeSqFt() == b.getSizeSqFt()
-                    && a.getPriceUsd() == b.getPriceUsd()
-                    && a.getIronTonnes() == b.getIronTonnes()
-                    && a.getDeposits() == b.getDeposits();
+        reloaded.attach(grown.getCityLand());
+        reloaded.restoreOffers(grown.getMarket().getOffersState(), grown.getMarket().getNextOfferId());
+        boolean survived = reloaded.getListing().size() == grown.getListing().size();
+        for (int i = 0; survived && i < grown.getListing().size(); i++) {
+            survived = grown.getListing().get(i).same(reloaded.getListing().get(i));
         }
-        assertTrue("...every field of every parcel, deposits included", survived);
-
-        /*
-         * A save written before deposits were counted. Four fields per parcel and
-         * nextId in the first slot.
-         *
-         * TEN parcels of FOUR fields is forty values, which divides by five as
-         * well - so a reader that decides the width by arithmetic reads this back
-         * as eight parcels of shifted nonsense. That is why the current format
-         * carries a marker, and it is why this case is tested at exactly ten.
-         *
-         * The shelf now holds nine, so the tenth is trimmed off the back after
-         * the parse - which is why the size assertion reads LISTING_SIZE and
-         * the ids are checked at BOTH ends. A width-five misread gives eight
-         * parcels with ids taken out of the middle of the array, so the pair
-         * still catches exactly the failure this case exists for.
-         */
-        double[] legacy = new double[1 + 10 * 4];
-        legacy[0] = 77;
-        for (int i = 0; i < 10; i++) {
-            legacy[1 + i * 4]     = 100 + i;                     // id
-            legacy[1 + i * 4 + 1] = 250_000 + i * 1000;          // sq ft
-            legacy[1 + i * 4 + 2] = 400 + i;                     // price
-            legacy[1 + i * 4 + 3] = (i == 3) ? 2_000_000 : 0;    // tonnes
+        assertTrue("...every field of every offer", survived);
+        check("...and the next id", reloaded.getNextOfferId(), grown.getMarket().getNextOfferId());
+        double[][] torn = grown.getMarket().getOffersState();
+        int tornAt = 7 % torn.length;
+        LandParcel tornOffer = grown.getListing().get(tornAt);
+        torn[tornAt] = java.util.Arrays.copyOf(torn[tornAt], 5);
+        LandMarket mended = new LandMarket();
+        mended.attach(grown.getCityLand());
+        mended.restoreOffers(torn, grown.getMarket().getNextOfferId());
+        check("a record of the wrong width is dropped", mended.getListing().size(), grown.getListing().size() - 1);
+        mended.update(grown.getOwnedSqFt(), grown.getAllocatedSqFt(), 20000);
+        LandParcel relisted = mended.offerIn(tornOffer.getSide(), tornOffer.getPlace());
+        boolean clear = relisted != null && touchesOwned(grown.getCityLand().grid(), relisted);
+        for (LandParcel q : mended.getListing()) {
+            if (relisted != null && q != relisted) clear &= !(q.getX0() < relisted.getX1() && relisted.getX0() < q.getX1()
+                    && q.getY0() < relisted.getY1() && relisted.getY0() < q.getY1());
         }
-
-        LandMarket old = new LandMarket();
-        assertTrue("a pre-deposit save still loads", old.restoreListingState(legacy));
-        check("...read four fields wide, then trimmed to the shelf",
-                old.getListing().size(), LandMarket.LISTING_SIZE);
-        check("...their ids intact", old.getListing().get(0).getId(), 100);
-        check("...to the last one kept",
-                old.getListing().get(old.getListing().size() - 1).getId(),
-                100 + LandMarket.LISTING_SIZE - 1);
-        check("...their sizes not read as prices",
-                old.getListing().get(0).getSizeSqFt(), 250_000);
-        check("...and its one ore parcel counts as a single site",
-                old.getListing().get(3).getDeposits(), 1);
-        check("...while bare ground counts as none",
-                old.getListing().get(0).getDeposits(), 0);
-
-        /*
-         * ...AND ITS PRICES WERE LOCAL MONEY (0.7.6). Read as dollars at the
-         * rate of the day it is loaded - here 2.00, so a $400 plot is a
-         * US$200 one and still costs $400 on the day; a dollar listing, the
-         * one saved above, is left exactly as it was.
-         */
-        check("an older listing's prices wait as written for the loading rate",
-                old.getListing().get(0).getPriceUsd(), 400);
-        check("...and settle as dollars at it, every parcel of them",
-                old.settleLocalPrices(2.0), LandMarket.LISTING_SIZE);
-        check("...so a $400 plot is a US$200 one at 2.00",
-                old.getListing().get(0).getPriceUsd(), 200);
-        check("...and costs what the save said on the day it is loaded",
-                old.getListing().get(4).localPrice(2.0), 404);
-        check("...and settles once: a second call converts nothing",
-                old.settleLocalPrices(2.0), 0);
-        check("a dollar listing is not converted at all",
-                reloaded.settleLocalPrices(2.0), 0);
-        check("...its prices exactly as written",
-                reloaded.getListing().get(0).getPriceUsd(), written.get(0).getPriceUsd());
-
-        assertTrue("a length that is neither shape is refused",
-                !new LandMarket().restoreListingState(new double[]{ 5, 1, 2 }));
+        assertTrue("...and its place lists its next, against the city and apart from the others", clear);
+        check("...under the next id", relisted == null ? -1 : relisted.getId(), grown.getMarket().getNextOfferId());
 
         /* ==================== 6. not affording it ==================== */
         System.out.println("\n--- an empty treasury ---");
@@ -488,7 +589,8 @@ public class LandCheck {
         double offerLocal = offer.localPrice(ForeignAccounts.OPENING_RATE);
         check("cannot afford it -> pays nothing",
                 broke.buyParcel(offer.getId(), offerLocal - 1, 0), 0);
-        check("...and gets nothing", broke.getOwnedSqFt(), LandManager.STARTING_SQ_FT);
+        check("...and gets nothing: the ground it was founded on still", broke.getOwnedSqFt(),
+                LandManager.sqFt(broke.getCityLand().totalKm2(CityLand.DRY)));
         check("...and is not recorded", broke.getLandPurchasesThisMonth(), 0);
         assertTrue("...and it is still on offer",
                 broke.getMarket().find(offer.getId()) != null);
@@ -643,9 +745,113 @@ public class LandCheck {
         whenShort();
         severalAtOnce();
         theOfficesFigures();
+        crowdedNotBig();
+        onTheWorld();
+        savedAndLoaded();
+        converted();
+        groundKeptAhead();
+        ironAWholeFieldAtATime();
+        inThePlayersUnits();
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ==================================================================
+       18. CROWDED, NOT BIG, AND THE DOLLAR'S OWN INFLATION (0.7.55)
+
+       Jerus: "Yes for land price do that, but tie it to inflation as well,
+       usd inflation not domestic inflation." The premium on the ground is
+       the city's crowding - its people per square kilometre of the land it
+       owns - so a city a million times bigger and as crowded is quoted
+       exactly what the small one is; and the dollar price is the base at
+       the world's price level, which the city's own price level does not
+       reach. A town of 6,000 people on 330 blocks (1,957 a square kilometre,
+       city600's crowding) against the same a million times over: six billion
+       people. Since 0.7.67 the copy's land is the town's records with its
+       books a million times over (timesOver()), as ScaleCheck's copies are:
+       its ground is counted plot by plot, and three million square
+       kilometres drawn and counted is minutes, not a harness's seconds.
+       ================================================================== */
+    static void crowdedNotBig() {
+        System.out.println("\n--- the premium is crowding, not size ---");
+
+        LandManager town = new LandManager();
+        town.setOwnedSqFt(LandManager.STARTING_SQ_FT + 300 * LandManager.BLOCK_SQ_FT);
+        town.allocate(town.getOwnedSqFt() * .9);
+        town.updateMarket(6_000);
+        long k = 1_000_000;
+        LandManager metropolis = timesOver(town, k);
+        metropolis.allocate(town.getAllocatedSqFt() * k);
+        metropolis.updateMarket(6_000L * k);
+        System.out.printf("   %,d people on %.2f km2 against %,d on %,.0f km2: %,.1f and %,.1f a km2%n",
+                6_000, LandManager.km2(town.getOwnedSqFt()), 6_000L * k, LandManager.km2(metropolis.getOwnedSqFt()),
+                town.getCrowding(), metropolis.getCrowding());
+        assertTrue("fixture: the town is crowded enough to pay a premium",
+                town.getCrowdingPremium() > 2);
+        near("two cities equally crowded have the same premium", metropolis.getCrowdingPremium(),
+                town.getCrowdingPremium(), 1e-12);
+        near("...the world asks them the same dollars a sq ft", metropolis.getGroundUsdPerSqFt(),
+                town.getGroundUsdPerSqFt(), 1e-12);
+        near("...and their businesses pay the same", metropolis.getPricePerSqFt(), town.getPricePerSqFt(), 1e-12);
+
+        LandManager crowded = new LandManager();
+        crowded.setOwnedSqFt(town.getOwnedSqFt());
+        crowded.allocate(town.getAllocatedSqFt());
+        crowded.updateMarket(12_000);
+        assertTrue("twice the people on the same ground pays more", crowded.getCrowdingPremium() > town.getCrowdingPremium());
+        LandManager spread = new LandManager();
+        spread.setOwnedSqFt(town.getOwnedSqFt() * 2);
+        spread.allocate(town.getAllocatedSqFt());
+        spread.updateMarket(6_000);
+        assertTrue("...and the same people on twice the ground pays less", spread.getCrowdingPremium() < town.getCrowdingPremium());
+        near("the premium is the curve's at the city's crowding", town.getCrowdingPremium(),
+                LandMarket.crowdingPremium(6_000 / LandManager.km2(town.getOwnedSqFt())), 1e-15);
+        near("...half way to the ceiling at CROWDING_MIDPOINT", LandMarket.crowdingPremium(LandMarket.CROWDING_MIDPOINT),
+                (1 + LandMarket.CROWDING_CEILING) / 2, 1e-15);
+        check("...and nothing on an empty city", LandMarket.crowdingPremium(0), 1);
+        near("...and the ceiling at the limit", LandMarket.crowdingPremium(Double.POSITIVE_INFINITY),
+                LandMarket.CROWDING_CEILING, 1e-15);
+
+        System.out.println("\n--- the dollar price follows the world's prices, not the city's ---");
+
+        double[] usPrices = { 1.0 };
+        LandManager office = new LandManager(() -> ForeignAccounts.OPENING_RATE, () -> usPrices[0]);
+        office.setOwnedSqFt(town.getOwnedSqFt());
+        office.allocate(town.getAllocatedSqFt());
+        office.updateMarket(6_000);
+        double usd = office.getGroundUsdPerSqFt(), anchor = office.getMarket().getMarketPricePerSqFt();
+        near("the parts: the base x the world's level x the premium", usd,
+                LandMarket.openingUsdPerSqFt() * office.getUsPriceLevel() * office.getCrowdingPremium(), 1e-15);
+
+        usPrices[0] = 1.25;
+        office.updateMarket(6_000);
+        near("US prices up 25%: the dollar price up 25%", office.getGroundUsdPerSqFt(), usd * 1.25, 1e-12);
+        near("...what the treasury pays with it, at the same rate", office.getAcquisitionCostPerSqFt(),
+                usd * 1.25 * ForeignAccounts.OPENING_RATE, 1e-12);
+        near("...and the businesses' anchor not at all", office.getMarket().getMarketPricePerSqFt(), anchor, 1e-12);
+
+        // The city's own inflation: the money constants struck at three times
+        // the price level (seedConstants() takes the unit over the expected
+        // level, Game.restrikeMoneyConstants()).
+        office.seedConstants(1 / 3.0);
+        office.updateMarket(6_000);
+        near("the city's prices tripled: the dollar price is where the world put it",
+                office.getGroundUsdPerSqFt(), usd * 1.25, 1e-12);
+        near("...while the businesses' anchor follows the city's own prices",
+                office.getMarket().getMarketPricePerSqFt(), anchor * 3, 1e-12);
+
+        // Saved with the prices, so the office can name them after a load.
+        LandMarket back = new LandMarket();
+        back.restorePriceState(office.getMarket().getPriceState());
+        near("the parts survive a save: the crowding", back.getCrowding(), office.getCrowding(), 0);
+        near("...the premium", back.getCrowdingPremium(), office.getCrowdingPremium(), 0);
+        near("...and the world's level", back.getUsPriceLevel(), 1.25, 0);
+        LandMarket older = new LandMarket();
+        double[] four = java.util.Arrays.copyOf(office.getMarket().getPriceState(), 4);
+        older.restorePriceState(four);
+        near("a save from before reads its price as the premium, at US prices of 1",
+                older.getCrowdingPremium() * older.getUsPriceLevel(), office.getGroundUsdPerSqFt() / LandMarket.openingUsdPerSqFt(), 1e-12);
     }
 
     /* ==================================================================
@@ -658,6 +864,32 @@ public class LandCheck {
        rate at all. Against a twin at the founding rate, so "does not move"
        is measured against something.
        ================================================================== */
+    /**
+     * A land office holding a city's land k times over, by its records (0.7.67):
+     * the town's blocks, holdings and offers, each holding's five areas and
+     * its forest's timber times k, and the figure times k - a copy K times
+     * over as ScaleCheck's scaler writes one, which no harness can draw.
+     */
+    static LandManager timesOver(LandManager town, long k) {
+        CityLand t = town.getCityLand();
+        double[] centre = t.centreState();
+        int timber = CityLand.AREAS + CityLand.KINDS + Resource.FOREST.ordinal();
+        for (int a = 0; a < CityLand.AREAS; a++) centre[a] *= k;
+        centre[timber] *= k;
+        double[][] holdings = t.holdingsState();
+        int at = LandParcel.PURCHASE_FIELDS - 2 * CityLand.KINDS - CityLand.AREAS - 2;
+        for (double[] row : holdings) {
+            for (int a = 0; a < CityLand.AREAS; a++) row[at + a] *= k;
+            row[at + timber] *= k;
+        }
+        LandManager copy = new LandManager();
+        copy.install(CityLand.restore(t.seed(), centre, t.centreRectsState(), holdings, t.partFieldsState(), null),
+                town.getDepletionState(), town.getWorldTotalsState(), town.getWorldSeaTheta());
+        copy.getMarket().restoreOffers(town.getMarket().getOffersState(), town.getMarket().getNextOfferId());
+        copy.restoreOwnedSqFt(town.getOwnedSqFt() * k);
+        return copy;
+    }
+
     static void inDollars() {
         System.out.println("\n--- land is priced in dollars; what it costs here is the day's rate ---");
 
@@ -862,21 +1094,29 @@ public class LandCheck {
                 saved.getLandManager().getGroundUsdPerSqFt());
 
         /*
-         * AN OLDER SAVE, written by hand from this one: no toggle key, the
-         * listing in the old marker with LOCAL prices that are not this
-         * listing's dollars at any rate (so the reading cannot pass by
-         * accident), and the office's prices three slots long.
+         * AN OLDER SAVE, written by hand from this one: format 30, no toggle
+         * key, the parcels in the old marker with LOCAL prices that are not
+         * this listing's dollars at any rate, and the office's prices three
+         * slots long. Its quote reads as dollars at the loading rate (0.7.6);
+         * since 0.7.57 its parcels are not read at all - the conversion lists
+         * offers in their place, priced at that quote (forty until 0.7.66;
+         * every place with room of twenty-four since).
          */
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 java.nio.file.Files.readString(files.saveFile(4))).getAsJsonObject();
         assertTrue("fixture: the save carried the toggle", json.has("landPaidFromVault"));
         json.remove("landPaidFromVault");
-        com.google.gson.JsonArray listing = json.getAsJsonArray("landListing");
-        listing.set(0, new com.google.gson.JsonPrimitive(-5.0));
-        int parcels = (listing.size() - 2) / 5;
+        for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landCentreRects", "landHoldings",
+                "landPartFields", "landConverted", "landLanes", "landPurchases", "landOffers", "nextOfferId", "depletion" }) json.remove(key);
+        json.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+        com.google.gson.JsonArray listing = new com.google.gson.JsonArray();
+        listing.add(-5.0);
+        listing.add(10.0);
+        int parcels = 9;
         for (int i = 0; i < parcels; i++) {
-            listing.set(2 + i * 5 + 2, new com.google.gson.JsonPrimitive(1_000.0 + i * 10));
+            for (double v : new double[] { i + 1, 250_000 + i * 1000, 1_000.0 + i * 10, 0, 0 }) listing.add(v);
         }
+        json.add("landListing", listing);
         com.google.gson.JsonArray prices = json.getAsJsonArray("landMarketPrices");
         double localQuote = prices.get(0).getAsDouble();
         while (prices.size() > 3) prices.remove(prices.size() - 1);
@@ -888,15 +1128,21 @@ public class LandCheck {
         double loadRate = old.getForeignAccounts().getRate();
         check("fixture: at the rate it was saved at", loadRate, 1.6);
         assertTrue("an older save converts", !old.isLandPaidFromVault());
-        boolean read = old.getLandListing().size() == parcels;
-        for (int i = 0; read && i < parcels; i++) {
-            read = Math.abs(old.getLandListing().get(i).getPriceUsd() - (1_000.0 + i * 10) / loadRate) < 1e-9;
-        }
-        assertTrue("an older listing's local prices read as dollars at the loading rate", read);
-        check("...so the first costs what the save said, on the day it is loaded",
-                old.getLandListing().get(0).localPrice(loadRate), 1_000);
-        check("...and the office's local quote reads the same way",
+        check("the office's local quote reads as dollars at the loading rate",
                 old.getLandManager().getGroundUsdPerSqFt(), localQuote / loadRate);
+        int waiting = 0;
+        for (int side = 0; side < CityLand.SIDES; side++) waiting += old.getLandManager().getMarket().emptyOn(side);
+        check("its nine parcels are not read: every place listed or waiting for room in their place",
+                old.getLandListing().size() + waiting, LandMarket.OFFERS);
+        boolean atTheQuote = true;
+        for (LandParcel p : old.getLandListing()) {
+            double[] km2 = new double[CityLand.AREAS], amounts = new double[CityLand.KINDS];
+            for (int a = 0; a < CityLand.AREAS; a++) km2[a] = p.getKm2(a);
+            for (Resource r : Resource.values()) amounts[r.ordinal()] = p.getAmount(r);
+            atTheQuote &= p.getPriceUsd() == LandMarket.price(km2, amounts, old.getLandManager().getGroundUsdPerSqFt(),
+                    old.getLandManager().getUsPriceLevel());
+        }
+        assertTrue("...each priced at that quote", atTheQuote);
     }
 
     /* ==================================================================
@@ -927,6 +1173,69 @@ public class LandCheck {
             if (!(read > 0) || Math.abs(read - exact) > exact * 5e-3) allRead = false;
         }
         assertTrue("every plot on offer reads within half a percent of its area, and none as nothing", allRead);
+    }
+
+    /* ==================================================================
+       24. THE UNITS THE PLAYER READS (0.7.68, batch M4)
+
+       The project's spec-grid.md 2.5 and star 10: every area the player
+       reads is in square metres under a hundredth of a square kilometre and
+       in square kilometres from it, three figures, grouped from a thousand,
+       through LandManager.areaWords(); a part of an area in its whole's
+       unit (partFigure()); a ground price a square metre (perM2()). The
+       model keeps square feet and prices a square foot, so each is the same
+       figure converted exactly, and the unit is picked after the rounding.
+       ================================================================== */
+    static void inThePlayersUnits() {
+        System.out.println("\n--- the units the player reads ---");
+        String m2 = " m\u00b2", km2 = " km\u00b2";
+        double line = LandManager.M2_WORDS_BELOW / LandManager.SQ_M_PER_KM2;
+
+        String block = LandManager.areaWords(LandManager.BLOCK_SQ_FT);
+        System.out.println("   one of spec-land's blocks: " + block);
+        assertTrue("an area under a hundredth of a km2 reads in m2", block.endsWith(m2));
+        assertTrue("...within half a percent of it, to three figures",
+                readsAs(block, LandManager.BLOCK_SQ_FT * LandManager.SQ_M_PER_SQ_FT));
+        assertTrue("the line itself reads in km2",
+                LandManager.areaWords(LandManager.sqFt(line)).equals("0.01" + km2));
+        assertTrue("...and so does an area that rounds up to it, never \"10,000 m2\"",
+                LandManager.areaWords(LandManager.sqFt(line * (1 - 1e-4))).equals("0.01" + km2));
+        assertTrue("one that rounds under it reads in m2",
+                LandManager.areaWords(LandManager.sqFt(line * (1 - 1e-3))).endsWith(m2));
+        assertTrue("no ground reads 0 m2", LandManager.areaWords(0).equals("0" + m2));
+        String huge = LandManager.areaWords(LandManager.sqFt(1_760_034.2));
+        System.out.println("   ten billion people's dry ground (spec-grid 2.5): " + huge);
+        assertTrue("km2 are grouped from a thousand", huge.equals(String.format("%,d", 1_760_000L) + km2));
+
+        LandManager office = new LandManager();
+        office.updateMarket(0);
+        boolean allRead = true;
+        for (LandParcel parcel : office.getListing()) {
+            String words = LandManager.areaWords(parcel.getSizeSqFt());
+            if (!readsAs(words, parcel.getSizeSqFt() * LandManager.SQ_M_PER_SQ_FT)) allRead = false;
+        }
+        assertTrue("every offer standing reads within half a percent of its area, in its unit", allRead);
+
+        double whole = LandManager.sqFt(line / 2), part = whole * .9;
+        assertTrue("a part reads bare, in its whole's m2",
+                readsAs(LandManager.partFigure(part, whole) + m2, part * LandManager.SQ_M_PER_SQ_FT));
+        whole = LandManager.sqFt(line * 10);
+        assertTrue("...and in its whole's km2, however small",
+                readsAs(LandManager.partFigure(whole / 100, whole) + km2, whole / 100 * LandManager.SQ_M_PER_SQ_FT));
+
+        near("a price a square metre is a square foot's over SQ_M_PER_SQ_FT",
+                LandManager.perM2(LandMarket.openingUsdPerSqFt()) * LandManager.SQ_M_PER_SQ_FT,
+                LandMarket.openingUsdPerSqFt(), 1e-12);
+        assertTrue("...so a square metre costs more than a square foot",
+                LandManager.perM2(LandMarket.openingUsdPerSqFt()) > LandMarket.openingUsdPerSqFt());
+    }
+
+    /** Whether words like "7,430 m2" or "0.0301 km2" read `squareMetres` to half a percent, never as nothing. */
+    static boolean readsAs(String words, double squareMetres) {
+        int at = words.lastIndexOf(' ');
+        double figure = Double.parseDouble(words.substring(0, at).replace(",", ""));
+        double read = words.endsWith("km\u00b2") ? figure * LandManager.SQ_M_PER_KM2 : figure;
+        return read > 0 && Math.abs(read - squareMetres) <= squareMetres * 5e-3;
     }
 
     /* ==================================================================
@@ -1197,32 +1506,30 @@ public class LandCheck {
         System.out.println("\n--- the going rate is the listing's median, a square foot ---");
 
         LandMarket market = new LandMarket();
-        market.update(LandManager.STARTING_SQ_FT, 0, 0);
-        double marker = market.getListingState()[0];
-        // Nine plots of different sizes, priced so the median a square foot
+        // Nine offers of different sizes, priced so the median a square foot
         // (US$5) is neither the mean (US$14) nor the median of the prices.
         double[] perSqFt = { .007, .001, .090, .003, .005, .002, .008, .004, .006 };
         double[] sizes   = { 200_000, 9_000_000, 400_000, 1_000_000, 300_000, 7_000_000, 500_000,
                              2_000_000, 600_000 };
-        market.restoreListingState(handMade(marker, perSqFt, sizes, 9));
-        assertTrue("fixture: the nine hand-made plots are listed", market.getListing().size() == 9);
-        check("the going rate is the median of the plots' dollars a square foot",
+        market.putOffers(handMade(perSqFt, sizes, 9));
+        assertTrue("fixture: the nine hand-made offers are listed", market.getListing().size() == 9);
+        check("the going rate is the median of the offers' dollars a square foot",
                 market.goingUsdPerSqFt(), .005);
         double mean = 0;
         for (double r : perSqFt) mean += r / perSqFt.length;
-        assertTrue("...not their mean, which the one dear plot drags", Math.abs(market.goingUsdPerSqFt() - mean) > 1e-3);
+        assertTrue("...not their mean, which the one dear offer drags", Math.abs(market.goingUsdPerSqFt() - mean) > 1e-3);
         double[] prices = new double[9];
         for (int i = 0; i < 9; i++) prices[i] = perSqFt[i] * sizes[i];
         java.util.Arrays.sort(prices);
         double plotAtMedianPrice = 0;
         for (LandParcel p : market.getListing()) if (p.getPriceUsd() == prices[4]) plotAtMedianPrice = p.getUsdPerSqFt();
-        assertTrue("...nor the dollars a square foot of the plot at the median price",
+        assertTrue("...nor the dollars a square foot of the offer at the median price",
                 Math.abs(market.goingUsdPerSqFt() - plotAtMedianPrice) > 1e-6);
 
-        market.restoreListingState(handMade(marker, new double[] { .001, .002, .003, .004, .005, .006, .007, .090 },
+        market.putOffers(handMade(new double[] { .001, .002, .003, .004, .005, .006, .007, .090 },
                 new double[] { 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6, 1e6 }, 8));
         check("with an even count, the upper of the two middle prices", market.goingUsdPerSqFt(), .005);
-        market.restoreListingState(handMade(marker, new double[0], new double[0], 0));
+        market.putOffers(handMade(new double[0], new double[0], 0));
         check("with nothing listed, none", market.goingUsdPerSqFt(), 0);
 
         System.out.println("\n--- the ground's verdict is NEEDS YOU's GROUND row, on free ground alone ---");
@@ -1267,16 +1574,813 @@ public class LandCheck {
         assertTrue("...and no thousands with a k stuck on", !receipt.matches(".*[0-9]k[ ,.].*"));
     }
 
-    /** A dollar listing of `n` plots by hand: each its size and its dollars a square foot, ids from 1, no ore. */
-    static double[] handMade(double marker, double[] perSqFt, double[] sizes, int n) {
-        double[] state = new double[2 + n * 5];
-        state[0] = marker;
-        state[1] = n + 1;
+    /** A listing of `n` offers by hand: dry ground of each size at its dollars a square foot, ids from 1, each in its own place on no ground of the grid, no ore. */
+    static java.util.List<LandParcel> handMade(double[] perSqFt, double[] sizes, int n) {
+        java.util.List<LandParcel> list = new java.util.ArrayList<>();
         for (int i = 0; i < n; i++) {
-            state[2 + i * 5] = i + 1;
-            state[3 + i * 5] = sizes[i];
-            state[4 + i * 5] = perSqFt[i] * sizes[i];
+            double km2 = LandManager.km2(sizes[i]);
+            list.add(new LandParcel(i + 1, i / LandMarket.OFFERS_A_SIDE, i % LandMarket.OFFERS_A_SIDE, 0, 0, 0, 0, 0,
+                    new double[] { km2, km2, 0, 0, 0 }, new int[CityLand.KINDS], new double[CityLand.KINDS],
+                    perSqFt[i] * sizes[i], 0));
         }
-        return state;
+        return list;
     }
+
+    /* ------------------------- the grid's own tests (0.7.67) ------------------------- */
+
+    /** Whether an offer's rectangle holds or borders ground the city owns (GridCheck.touches()). */
+    static boolean touchesOwned(LandGrid g, LandParcel p) {
+        return GridCheck.touches(g, p.rect());
+    }
+
+    /** Every field of a resource whose centre plot passes `on`, within the nine cells round a city's site and its owned box's: its sites and amount, whole - read off the world's cells. */
+    static double[] recountOn(CityLand land, Resource kind, java.util.function.BiPredicate<Long, Long> on) {
+        World world = World.of(land.seed());
+        LandGrid g = land.grid();
+        double far = World.CELL;
+        double x0 = Math.min(land.siteX() - far, g.minX()), y0 = Math.min(land.siteY() - far, g.minY());
+        double x1 = Math.max(land.siteX() + far, g.maxX()), y1 = Math.max(land.siteY() + far, g.maxY());
+        double sites = 0, amount = 0;
+        for (int cell : CityLand.cellsUnder(x0, y0, x1, y1)) {
+            for (Deposit d : world.fieldsInCell(cell, kind)) {
+                if (on.test(d.x(), d.y())) {
+                    sites += d.sites();
+                    amount += d.amount();
+                }
+            }
+        }
+        return new double[] { sites, amount };
+    }
+
+    /** An offer's fields of one resource, recounted from the world: every field whose centre plot is one of its rectangle's free plots, whole (spec-land star 12 on the grid). */
+    static double[] offerFields(CityLand land, LandParcel offer, Resource kind) {
+        return recountOn(land, kind, (x, y) -> offer.contains(x, y) && !land.ownsPlot(x, y));
+    }
+
+    /** An offer's five areas counted again, plot by plot from the world's tiles: the plots of its rectangle the city does not own (0.7.67, the books to the plot). */
+    static double[] freePlotsCounted(CityLand land, LandParcel p) {
+        long[] cls = new long[5];
+        byte[] t = new byte[World.TILE * World.TILE];
+        World world = World.of(land.seed());
+        for (long ty = Math.floorDiv(p.getY0(), World.TILE); ty <= Math.floorDiv(p.getY1() - 1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(p.getX0(), World.TILE); tx <= Math.floorDiv(p.getX1() - 1, World.TILE); tx++) {
+                world.tileTerrain(tx, ty, t);
+                for (int i = 0; i < t.length; i++) {
+                    long x = tx * World.TILE + i % World.TILE, y = ty * World.TILE + i / World.TILE;
+                    if (p.contains(x, y) && !land.ownsPlot(x, y)) cls[t[i]]++;
+                }
+            }
+        }
+        return GridConversion.km2Of(cls);
+    }
+
+    /* ==================================================================
+       19. THE LAND ON THE WORLD (0.7.57)
+
+       The project's spec-land.md, batch J1b. The world's totals are kept to
+       the tonne: what no city owns, what remains in the city's ground and
+       what it has taken out add up to the world's, through a purchase and
+       through extraction. The ground is worked out in the order it was
+       bought, the centre first. A restated city keeps its iron and what it
+       has taken out. Forest grows back. And the best offer for each need.
+       ================================================================== */
+    static void onTheWorld() {
+        System.out.println("\n--- the world's totals are kept to the tonne ---");
+
+        LandManager land = new LandManager();
+        land.updateMarket(0);
+        CityLand city = land.getCityLand();
+        double[] stored = land.getWorldTotalsState();
+        double[] again = new World(city.seed()).computeTotals();
+        assertTrue("the city stores the world's totals, recomputed to the tonne", java.util.Arrays.equals(stored, again));
+        near("...and its sea's level", land.getWorldSeaTheta(), World.of(city.seed()).seaTheta(), 0);
+
+        // A purchase with iron in it, and one more resource it holds, if any.
+        Deposit field = nearestUnowned(city, Resource.IRON);
+        LandParcel rich = land.getMarket().richest(Resource.IRON);
+        for (int i = 0; i < 400 && rich == null && field != null; i++) {
+            land.buyParcel(MiningCheck.nearestOffer(land.getMarket(), field.x(), field.y()).getId(), 1e12, 0);
+            rich = land.getMarket().richest(Resource.IRON);
+        }
+        assertTrue("fixture: an offer with iron in it", rich != null);
+        double[] w = new double[CityLand.KINDS], u = new double[CityLand.KINDS], o = new double[CityLand.KINDS];
+        boolean adds = true;
+        for (Resource r : Resource.values()) {
+            w[r.ordinal()] = land.getWorldTotal(r);
+            u[r.ordinal()] = land.getUnowned(r);
+            o[r.ordinal()] = land.getRemaining(r);
+            adds &= land.getUnowned(r) + land.getRemaining(r) + land.getExtracted(r) == land.getWorldTotal(r);
+        }
+        assertTrue("unowned, remaining and extracted add up to the world's, every resource", adds);
+        if (rich != null) {
+            land.buyParcel(rich.getId(), 1e12, 0);
+            boolean moved = true, still = true;
+            for (Resource r : Resource.values()) {
+                moved &= land.getUnowned(r) == u[r.ordinal()] - rich.getAmount(r)
+                        && land.getRemaining(r) == o[r.ordinal()] + rich.getAmount(r);
+                still &= land.getUnowned(r) + land.getRemaining(r) + land.getExtracted(r) == w[r.ordinal()];
+            }
+            assertTrue("a purchase moves exactly what it listed from the world's unowned to the city's ground", moved);
+            assertTrue("...and the three still add up to the world's, to the tonne", still);
+        }
+        double lifted = land.extractIron(1_234_567.5);
+        boolean taken = land.getExtracted(Resource.IRON) == lifted && lifted == 1_234_567.5;
+        double sum = land.getUnowned(Resource.IRON) + land.getRemaining(Resource.IRON) + land.getExtracted(Resource.IRON);
+        assertTrue("extraction moves what was lifted from the ground to the extracted", taken);
+        near("...and the three still add up to the world's (to a part in 1e15)", sum,
+                land.getWorldTotal(Resource.IRON), 1e-15);
+
+        System.out.println("\n--- a field goes whole to the one piece of ground holding its centre ---");
+
+        /*
+         * Since 0.7.64 (batch L), as at 0.7.57: every site and every tonne of
+         * a field belongs to the piece of ground holding the field's centre,
+         * wherever its sites lie. From 0.7.58 to 0.7.63 (batch J1c) each site
+         * went to the piece holding the site's own centre, with its share of
+         * the field. Conservation needs every field held once whoever lists
+         * what when. On the block grid (0.7.67) the pieces are the holdings and
+         * the offers standing, which never share a plot: so the plane near the
+         * site is cut into them and the rest, and every field's centre plot is
+         * in exactly one - the fields whose sites lie under more than one are
+         * the fixture, those the two rules part on.
+         */
+        LandManager tiled = new LandManager();
+        tiled.updateMarket(0);
+        for (int i = 0; i < 24; i++) tiled.buyParcel(tiled.getMarket().cheapest().getId(), 1e12, 0);
+        CityLand t = tiled.getCityLand();
+        World world = World.of(t.seed());
+        int fieldsCut = 0, sitesAcross = 0, sitesAll = 0;
+        boolean onePiece = true, sitesWhole = true, offersHold = true;
+        double far = 220;
+        long[] offerSites = new long[CityLand.KINDS];
+        for (LandParcel p : tiled.getListing()) for (Resource r : Resource.values()) offerSites[r.ordinal()] += p.getSites(r);
+        long[] counted = new long[CityLand.KINDS];
+        for (int cell : CityLand.cellsUnder(t.siteX() - far, t.siteY() - far, t.siteX() + far, t.siteY() + far)) {
+            for (Resource r : Resource.values()) {
+                if (!r.inFields()) continue;
+                for (Deposit d : world.fieldsInCell(cell, r)) {
+                    if (LegacyLand.radius(d.x() - t.siteX(), d.y() - t.siteY()) > far) continue;
+                    double each = 0;
+                    for (int k = 0; k < d.sites(); k++) each += d.siteAmount(k);
+                    sitesWhole &= each == d.amount();
+                    int pieces = t.ownsPlot(d.x(), d.y()) ? 1 : 0;
+                    for (LandParcel p : tiled.getListing()) {
+                        if (p.contains(d.x(), d.y()) && !t.ownsPlot(d.x(), d.y())) {
+                            pieces++;
+                            counted[r.ordinal()] += d.sites();
+                        }
+                    }
+                    // Where its sites lie: under how many pieces (the old rule's test, site by site).
+                    java.util.Set<Integer> under = new java.util.HashSet<>();
+                    for (int k = 0; k < d.sites(); k++) {
+                        long[] at = GridConversion.sitePlot(d, k);
+                        int h = t.holdingOf(at[0], at[1]);
+                        if (h < 0) for (LandParcel p : tiled.getListing()) if (p.contains(at[0], at[1])) h = -1000 - p.getId();
+                        under.add(h);
+                    }
+                    fieldsCut++;
+                    sitesAll += d.sites();
+                    if (under.size() > 1) sitesAcross++;
+                    onePiece &= pieces <= 1;
+                }
+            }
+        }
+        for (Resource r : Resource.values()) offersHold &= !r.inFields() || offerSites[r.ordinal()] >= counted[r.ordinal()];
+        System.out.printf("   %d fields centred within %.0f plots of the site (%d sites), the sites of %d of them under more than one piece%n",
+                fieldsCut, far, sitesAll, sitesAcross);
+        assertTrue("fixture: fields near the site, some with their sites under more than one piece", fieldsCut > 10 && sitesAcross > 0);
+        assertTrue("a field's sites' shares of its amount sum to it exactly", sitesWhole);
+        assertTrue("every field is held by one piece of ground at most - a holding or an offer standing - whole, wherever its sites lie",
+                onePiece && offersHold);
+
+        // The founding field: the iron field nearest the site, which the
+        // site's fourth test (an iron field within World.SITE_IRON_KM) found.
+        LandManager fresh = new LandManager();
+        fresh.updateMarket(0);
+        CityLand t0 = fresh.getCityLand();
+        Deposit founding = null;
+        double nearest = Double.MAX_VALUE;
+        double km = World.SITE_IRON_KM * 1000 / World.PLOT_M;
+        for (int cell : CityLand.cellsUnder(t0.siteX() - km, t0.siteY() - km, t0.siteX() + km, t0.siteY() + km)) {
+            for (Deposit d : world.fieldsInCell(cell, Resource.IRON)) {
+                double dx = d.x() - t0.siteX(), dy = d.y() - t0.siteY(), l2 = Math.sqrt(dx * dx + dy * dy);
+                if (l2 > km || l2 >= nearest) continue;
+                nearest = l2;
+                founding = d;
+            }
+        }
+        assertTrue("fixture: the founding site's iron field", founding != null);
+        int offersOnIt = 0;
+        for (LandParcel p : fresh.getListing()) {
+            if (founding != null && p.contains(founding.x(), founding.y())) offersOnIt++;
+        }
+        if (founding != null) {
+            LandParcel first = MiningCheck.nearestOffer(fresh.getMarket(), founding.x(), founding.y());
+            System.out.printf("   the founding field: %d sites, %,.0f Mt, its centre %.0f plots out; the offer nearest it, %s, runs [%d, %d) x [%d, %d)%n",
+                    founding.sites(), founding.amount() / 1e6, LegacyLand.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
+                    first.where(), first.getX0(), first.getX1(), first.getY0(), first.getY1());
+            assertTrue("no offer of a new city's carries any of the founding field: it goes whole with the ground its centre is on",
+                    offersOnIt == 0);
+        }
+
+        System.out.println("\n--- a new city's iron is a significant investment, and the funding page sizes to it ---");
+
+        /*
+         * Whole fields (0.7.64): the default world puts no iron field in a new
+         * city's first ring, and its founding field - 35 sites, 449 Mt - comes
+         * whole in the one offer holding its centre, at its ground and 449 Mt
+         * at the in-ground price: about US$180M against a founding treasury of
+         * D$100M at 1.00. (At 0.7.58-0.7.63 the cheapest offer with iron was a
+         * single shared site in the first ring, 12.8 Mt for about US$5.3M, out
+         * of the founding treasury.) Pushing out the lane that holds its
+         * centre lists it; the land office's funding page then sizes its bond
+         * to the gap (Game.landCashGap()), and the bond's cash buys it.
+         */
+        Game founded = new Game(GameFiles.scratch("landcheck-whole-iron"));
+        quietly(() -> { founded.newGame(); founded.toggleNextMonth(); });
+        boolean noneFirst = true;
+        for (LandParcel p : founded.getLandListing()) noneFirst &= !p.hasIron();
+        assertTrue("a new default city is offered no iron in its first ring", noneFirst);
+        LandManager fm = founded.getLandManager();
+        CityLand fl = founded.getCityLand();
+        LandParcel whole = null;
+        if (founding != null) {
+            for (int i = 0; i < 400 && whole == null; i++) {
+                LandParcel next = MiningCheck.nearestOffer(fm.getMarket(), founding.x(), founding.y());
+                if (next == null) break;
+                if (next.contains(founding.x(), founding.y()) && !fl.ownsPlot(founding.x(), founding.y())) whole = next;
+                else fm.buyParcel(next.getId(), 1e12, 0);
+            }
+        }
+        assertTrue("buying toward its centre, the offer nearest it each time, lists the founding field", whole != null);
+        if (whole != null) {
+            double[] onIt = offerFields(fl, whole, Resource.IRON);
+            assertTrue("...whole, in one offer: every one of its sites and tonnes",
+                    whole.getDeposits() >= founding.sites() && whole.getIronTonnes() >= founding.amount());
+            check("...with every other iron field centred on its free plots, recounted", whole.getDeposits(), onIt[0]);
+            check("...and their tonnes, to the tonne", whole.getIronTonnes(), onIt[1]);
+            java.util.List<Integer> ids = java.util.List.of(whole.getId());
+            double rate = founded.getForeignAccounts().getRate();
+            System.out.printf("   %s: %d site(s), %,.1f Mt, for US$%,.1fM; the treasury holds %s%,.1fM at %.2f to the dollar%n",
+                    whole.where(), whole.getDeposits(), whole.getIronTonnes() / 1e6, whole.getPriceUsd() / 1000,
+                    founded.getCurrency().qualifiedSymbol(), founded.getCash() / 1000, rate);
+            assertTrue("...past a new city's founding treasury", !founded.canAffordParcel(whole) && founded.landNeedsFunding(ids));
+            // The map's hover says whose a field is, whole, wherever the site under the pointer lies.
+            int outside = 0;
+            for (int k = 0; k < founding.sites(); k++) {
+                double[] at = founding.siteAt(k);
+                long px = Math.round(founding.x() + at[0]), py = Math.round(founding.y() + at[1]);
+                LandMap.Pick under = LandMap.pick(fl, fm.getMarket(), px, py);
+                if (under.owner() != LandMap.OFFER || under.offer().getId() != whole.getId()) outside++;
+            }
+            assertTrue("fixture: some of its sites lie outside the offer's rectangle", outside > 0);
+            assertTrue("the map's hover gives the field to the offer holding its centre, whole: \""
+                    + LandMap.fieldOwnerWords(fl, fm.getMarket(), founding) + "\"",
+                    LandMap.fieldOwnerWords(fl, fm.getMarket(), founding).equals("all of it with " + whole.where() + ", on offer"));
+            check("the funding page's gap is the offer's price here less the cash", founded.landCashGap(ids),
+                    whole.localPrice(rate) - founded.getCash());
+            DebtQuote bond = founded.quoteLongBondForCash(founded.landCashGap(ids), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            assertTrue("...its bond's cash covers the gap", bond.cashReceived() >= founded.landCashGap(ids));
+            int sitesBefore = fm.getIronDeposits();
+            double tonnesBefore = fm.getIronReserveTonnes();
+            quietly(() -> founded.handleLongBondForCash(founded.landCashGap(ids), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+            assertTrue("...and once it is issued the cash covers the offer", !founded.landNeedsFunding(ids));
+            boolean[] bought = new boolean[1];
+            int wholeId = whole.getId();
+            quietly(() -> bought[0] = founded.buyLandParcel(wholeId));
+            assertTrue("...which the Buy then buys", bought[0]);
+            check("the city gains the whole field's sites", fm.getIronDeposits(), sitesBefore + whole.getDeposits());
+            check("...and its tonnes", fm.getIronReserveTonnes(), tonnesBefore + whole.getIronTonnes());
+            assertTrue("...and the hover gives the field to the city, whole",
+                    LandMap.fieldOwnerWords(fl, fm.getMarket(), founding).equals("the city's, whole"));
+        }
+
+        System.out.println("\n--- the ground is worked out in the order it was bought ---");
+
+        LandManager order = new LandManager();
+        order.updateMarket(0);
+        order.restoreIron(2, 3_000_000);           // the centre: two sites, 3 Mt
+        CityLand ordered = order.getCityLand();
+        field = nearestUnowned(ordered, Resource.IRON);
+        LandParcel first = order.getMarket().richest(Resource.IRON);
+        for (int i = 0; i < 400 && first == null && field != null; i++) {
+            order.buyParcel(MiningCheck.nearestOffer(order.getMarket(), field.x(), field.y()).getId(), 1e12, 0);
+            first = order.getMarket().richest(Resource.IRON);
+        }
+        assertTrue("fixture: an offer with iron, after the centre's", first != null);
+        if (first != null) {
+            order.buyParcel(first.getId(), 1e12, 0);
+            double[] held = ordered.amountsInOrder(Resource.IRON);
+            int last = held.length - 1;
+            order.extractIron(1_000_000);
+            double[] left = order.remainingByHolding(Resource.IRON);
+            check("a million tonnes out comes out of the centre first", left[0], 2_000_000);
+            check("...leaving the purchase whole", left[last], held[last]);
+            order.extractIron(2_500_000);
+            left = order.remainingByHolding(Resource.IRON);
+            check("past the centre's 3 Mt, the centre is worked out", left[0], 0);
+            check("...and the rest comes out of the next bought", left[last], held[last] - 500_000);
+            double all = 0;
+            for (double d : left) all += d;
+            check("...the holdings' remainders add to what remains", all, order.getIronReserveTonnes());
+        }
+
+        System.out.println("\n--- ground set by hand: the land drawn again, the iron kept ---");
+
+        /*
+         * Since 0.7.67 (spec-grid 2.6: restate() draws as a format-30 save is
+         * drawn) the centre is blocks of the figure's level round the site,
+         * the last split down to the plot, so its dry ground is the figure to
+         * within a plot and never less (a part in a billion until 0.7.66, when
+         * a centre's half-side was sized to hold it exactly); the figure is the
+         * one set.
+         */
+        LandManager hand = new LandManager();
+        hand.updateMarket(0);
+        hand.restoreIron(5, 40_000_000);
+        hand.extractIron(1_000_000);
+        double want = LandManager.STARTING_SQ_FT + 400 * LandManager.BLOCK_SQ_FT;
+        hand.setOwnedSqFt(want);
+        CityLand drawn = hand.getCityLand();
+        double plotSqFt = LandManager.sqFt(World.KM2_PER_PLOT);
+        check("the city owns exactly the figure", hand.getOwnedSqFt(), want);
+        assertTrue("...and its land's dry ground is that figure to within a plot, and never less",
+                hand.getLandDrySqFt() >= want - 1e-6 && hand.getLandDrySqFt() < want + plotSqFt && LandConversion.sameGround(want, hand.getLandDrySqFt()));
+        check("...all of it in the centre, nothing bought", drawn.purchases().size(), 0);
+        check("its iron sites are kept", hand.getIronDeposits(), 5);
+        check("...and what remains of its tonnes", hand.getIronReserveTonnes(), 39_000_000);
+        check("...and what it had taken out", hand.getExtracted(Resource.IRON), 1_000_000);
+        boolean edge = !hand.getListing().isEmpty();
+        for (LandParcel p : hand.getListing()) edge &= touchesOwned(drawn.grid(), p);
+        assertTrue("offers stand round the new centre, each against it", edge);
+
+        System.out.println("\n--- forest grows back: a twentieth left in sixty years ---");
+
+        // World 2, whose founding coast is wooded: 32.9 of the first 37.4 km2
+        // of dry ground round its site (measured; the default world's site
+        // stands among lakes, with none).
+        LandManager wood = new LandManager(() -> ForeignAccounts.OPENING_RATE, () -> 1.0, () -> 2L, () -> 0);
+        wood.setOwnedSqFt(LandManager.STARTING_SQ_FT + 4_000 * LandManager.BLOCK_SQ_FT);
+        wood.updateMarket(0);
+        double timber = wood.getRemaining(Resource.FOREST);
+        assertTrue("fixture: the city's ground has forest on it", timber > 0);
+        double cut = wood.extract(Resource.FOREST, timber / 2);
+        wood.clearMonth();
+        check("clearing a month's flows grows nothing back (a load does that)", wood.getExtracted(Resource.FOREST), cut);
+        for (int m = 0; m < 240; m++) wood.endMonth();
+        near("each month's end takes FOREST_REGROWTH off what was cut: after twenty years",
+                wood.getExtracted(Resource.FOREST), cut * Math.pow(1 - LandManager.FOREST_REGROWTH, 240), 1e-12);
+        for (int m = 240; m < 720; m++) wood.endMonth();
+        assertTrue("...and after sixty, 95% has grown back", wood.getExtracted(Resource.FOREST) <= cut * .05);
+
+        System.out.println("\n--- the best offer for each need ---");
+
+        Game g = dollarCity("landcheck-best");
+        LandMarket market = g.getLandManager().getMarket();
+        LandParcel best = g.bestOffer(Game.LandNeed.room());
+        boolean bestRoom = best != null && !best.isMostlySea() && g.canAffordParcel(best);
+        for (LandParcel p : market.getListing()) {
+            if (p.isMostlySea() || !g.canAffordParcel(p)) continue;
+            bestRoom &= p.getDryKm2PerUsd() <= best.getDryKm2PerUsd();
+        }
+        assertTrue("room: the most dry ground a dollar the city can afford, never mostly sea", bestRoom);
+        double need = 0;
+        for (LandParcel p : market.getListing()) need = Math.max(need, p.getSizeSqFt() / 2);
+        LandParcel covers = g.bestOffer(Game.LandNeed.shortfall(need));
+        boolean cheapestCovering = covers != null;
+        for (LandParcel p : market.getListing()) {
+            if (p.getSizeSqFt() >= need) cheapestCovering &= covers.getSizeSqFt() >= need && p.getPriceUsd() >= covers.getPriceUsd();
+        }
+        assertTrue("a shortfall: the cheapest offer whose dry ground covers it", cheapestCovering);
+        // A deposit (0.7.64, batch L2; the most sites a dollar until then): the cheapest offer holding it, what
+        // the test player buys - on a city whose founding field's lane was pushed out until an offer holds iron.
+        Game listed = ironListed("landcheck-best-deposit");
+        LandMarket ironMarket = listed.getLandManager().getMarket();
+        LandParcel deposit = listed.bestOffer(Game.LandNeed.deposit(Resource.IRON));
+        boolean cheapestHolding = deposit != null && deposit.getSites(Resource.IRON) > 0 && deposit == ironMarket.cheapestWith(Resource.IRON);
+        for (LandParcel p : ironMarket.getListing()) {
+            if (p.getSites(Resource.IRON) > 0 && p.getAmount(Resource.IRON) > 0) cheapestHolding &= p.getPriceUsd() >= deposit.getPriceUsd();
+        }
+        assertTrue("a deposit: the cheapest offer holding it (LandMarket.cheapestWith()), what the test player buys", cheapestHolding);
+        assertTrue("...for oil the same, or none when no offer holds any",
+                g.bestOffer(Game.LandNeed.deposit(Resource.OIL)) == market.cheapestWith(Resource.OIL));
+        assertTrue("a coast: the cheapest offer with sea in it",
+                g.bestOffer(Game.LandNeed.coast()) == market.cheapestWithSea());
+    }
+
+    /* ==================================================================
+       20. A CITY SAVED AND LOADED IS THE SAME LAND (0.7.57)
+
+       Two cities founded alike buy the same offer; one is saved and loaded.
+       Its land comes back field for field - the centre and its blocks, the
+       purchase, the offers, what was taken out, the world's totals - the
+       other offers as they were listed, and its next month plays to the same
+       people, cash and offers as the one that was not. (Since 0.7.67 the
+       grid is replayed from the rectangles, node for node.)
+       ================================================================== */
+    static void savedAndLoaded() throws Exception {
+        System.out.println("\n--- a city saved and loaded is the same land ---");
+
+        GameFiles files = GameFiles.scratch("landcheck-world-save");
+        Game live = new Game(files);
+        quietly(() -> { live.newGame(); live.toggleNextMonth(); });
+        LandParcel bought = live.getLandManager().getMarket().bestValue();
+        java.util.List<LandParcel> others = live.getLandListing();
+        assertTrue("fixture: the city buys an offer", live.buyLandParcel(bought.getId()));
+        quietly(() -> live.saveGame(4, "land on the world"));
+        Game[] back = new Game[1];
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
+        Game loaded = back[0];
+        assertTrue("fixture: it loads", loaded.getLoadFailure() == null);
+        CityLand a = live.getCityLand(), b = loaded.getCityLand();
+        assertTrue("the centre, its blocks and the purchase come back field for field, the grid node for node", a.same(b));
+        boolean offers = live.getLandListing().size() == loaded.getLandListing().size();
+        for (int i = 0; offers && i < live.getLandListing().size(); i++) {
+            offers = live.getLandListing().get(i).same(loaded.getLandListing().get(i));
+        }
+        assertTrue("...the offers", offers);
+        boolean stood = true;
+        for (LandParcel p : others) {
+            if (p.getId() == bought.getId()) continue;
+            stood &= p.same(loaded.getLandManager().getMarket().find(p.getId()));
+        }
+        assertTrue("...the others exactly as listed before the purchase", stood);
+        check("...the next offer's id", loaded.getLandManager().getMarket().getNextOfferId(),
+                live.getLandManager().getMarket().getNextOfferId());
+        assertTrue("...what was taken out of the ground",
+                java.util.Arrays.equals(live.getLandManager().getDepletionState(), loaded.getLandManager().getDepletionState()));
+        assertTrue("...the world's totals and its sea's level",
+                java.util.Arrays.equals(live.getLandManager().getWorldTotalsState(), loaded.getLandManager().getWorldTotalsState())
+                        && live.getLandManager().getWorldSeaTheta() == loaded.getLandManager().getWorldSeaTheta());
+        check("...the square feet owned", loaded.getLandManager().getOwnedSqFt(), live.getLandManager().getOwnedSqFt());
+        check("...and the office's block level", loaded.getLandManager().getMarket().getLevel(),
+                live.getLandManager().getMarket().getLevel());
+
+        quietly(live::toggleNextMonth);
+        quietly(loaded::toggleNextMonth);
+        check("its next month plays to the same population", loaded.getPopulationManager().getPopulation(),
+                live.getPopulationManager().getPopulation());
+        check("...the same cash", loaded.getCash(), live.getCash());
+        assertTrue("...and the same land and offers",
+                live.getCityLand().same(loaded.getCityLand())
+                        && java.util.Arrays.deepEquals(live.getLandManager().getMarket().getOffersState(),
+                                loaded.getLandManager().getMarket().getOffersState()));
+    }
+
+    /* ==================================================================
+       21. AN OLDER SAVE'S LAND IS CONVERTED (0.7.57)
+
+       spec-land 2.9: a save of format 30 carries one figure of ground, a
+       pool of iron and nine parcels. The three research cities' land, as
+       their saves carry it - city600 at month 612, city2400 at 2412, Jerus's
+       at 1851: each one's square feet, iron sites and tonnes, its mines and
+       the world seed its 0.7.56 save derives (fixJ1a's notes) - written into
+       a format-30 save by hand, and loaded: since 0.7.67 a centre of blocks
+       round J1b's site holding its dry ground to within a plot and never
+       less, the city's figure its dry plots (a part in a billion, and the
+       save's figure, until 0.7.66); at least as many iron sites as mines, its
+       tonnes exact, twenty-four places listed. And a city with more mines
+       than sites, which are raised to them.
+       ================================================================== */
+
+    /** One research city's land as its save carries it: its name, its world's seed, its square feet, iron sites and tonnes, and its Iron Mines. */
+    record Research(String name, long seed, double landOwned, int ironSites, double ironTonnes, int mines) { }
+
+    /** The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. */
+    static final Research[] RESEARCH = {
+        new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450.60153519, 1),
+        new Research("city2400 m2412", -8480926900264452605L, 358_285_000, 64, 218643630.67146584, 0),
+        new Research("Jerus m1851", -2365104814562977942L, 964_751_000, 155, 508088779.4794291, 21),
+        new Research("more mines than sites", Founding.DEFAULT_WORLD_SEED, 30_000_000, 1, 2_000_000, 3),
+    };
+
+    static void converted() throws Exception {
+        System.out.println("\n--- an older save's land is put on the world, once ---");
+
+        for (Research r : RESEARCH) {
+            GameFiles files = GameFiles.scratch("landcheck-convert-" + r.seed());
+            Game city = new Game(files);
+            quietly(() -> {
+                city.newGame();
+                BuildingsTemplate mine = city.getBuildingManager().getTemplateByName("Iron Mine");
+                if (r.mines() > 0) city.getBuildingManager().addStack(mine, r.mines(), true);
+                city.saveGame(4, "older land");
+            });
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                    java.nio.file.Files.readString(files.saveFile(4))).getAsJsonObject();
+            for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landCentreRects", "landHoldings",
+                    "landPartFields", "landConverted", "landLanes", "landPurchases", "landOffers", "nextOfferId", "depletion" }) json.remove(key);
+            json.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+            json.addProperty("worldSeed", r.seed());
+            json.addProperty("landOwned", r.landOwned());
+            json.addProperty("ironDeposits", r.ironSites());
+            json.addProperty("ironReserveTonnes", r.ironTonnes());
+            com.google.gson.JsonArray parcels = new com.google.gson.JsonArray();
+            parcels.add(-105.0);
+            parcels.add(10.0);
+            for (int i = 0; i < 9; i++) for (double v : new double[] { i + 1, 250_000, 175, 0, 0 }) parcels.add(v);
+            json.add("landListing", parcels);
+            java.nio.file.Files.writeString(files.saveFile(4), json.toString());
+
+            Game[] back = new Game[1];
+            long t0 = System.nanoTime();
+            quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(4); });
+            double ms = (System.nanoTime() - t0) / 1e6;
+            Game old = back[0];
+            assertTrue("fixture (" + r.name() + "): the format-30 save loads", old.getLoadFailure() == null);
+            LandManager land = old.getLandManager();
+            CityLand put = old.getCityLand();
+            double share = put.centreKm2(CityLand.DRY) / put.centreKm2(CityLand.TOTAL);
+            System.out.printf("   %s: %.2f km2 dry in a centre of %.2f km2 (%.0f%% dry) at (%d, %d), %d sites on %d mines,"
+                            + " %,.0f t; loaded in %,.0f ms%n", r.name(), put.centreKm2(CityLand.DRY), put.centreKm2(CityLand.TOTAL),
+                    share * 100, put.siteX(), put.siteY(), land.getIronDeposits(), old.minesCommitted(),
+                    land.getIronReserveTonnes(), ms);
+            check("its world is its save's seed", old.getWorldSeed(), r.seed());
+            double plotSqFt = LandManager.sqFt(World.KM2_PER_PLOT);
+            assertTrue("...its dry ground the save's square feet to within a plot, and never less",
+                    land.getLandDrySqFt() >= r.landOwned() - 1e-6 && land.getLandDrySqFt() < r.landOwned() + plotSqFt);
+            check("...owned: its dry plots, the books following the map", land.getOwnedSqFt(), land.getLandDrySqFt());
+            assertTrue("...at least as many iron sites as mines standing and on order",
+                    land.getIronDeposits() >= old.minesCommitted());
+            check("...its sites the save's, or its mines where they are more", land.getIronDeposits(),
+                    Math.max(r.ironSites(), r.mines()));
+            check("...its tonnes the save's, exactly", land.getIronReserveTonnes(), r.ironTonnes());
+            check("...nothing taken out yet", land.getExtracted(Resource.IRON), 0);
+            int waiting = 0;
+            for (int side = 0; side < CityLand.SIDES; side++) waiting += land.getMarket().emptyOn(side);
+            check("...the nine parcels gone and every place listed or waiting for room in their place",
+                    land.getListing().size() + waiting, LandMarket.OFFERS);
+            assertTrue("...all of them against its ground, nothing bought", put.purchases().isEmpty() && !land.getListing().isEmpty()
+                    && land.getListing().stream().allMatch(p -> touchesOwned(put.grid(), p)));
+            double lx = put.legacyX() - put.siteX(), ly = put.legacyY() - put.siteY();
+            boolean legacy = put.legacySites() == 0
+                    || Math.sqrt(lx * lx + ly * ly) >= LandConversion.LEGACY_FIELD_KM * 1000 / World.PLOT_M - 1;
+            assertTrue("...and a legacy iron field, if the map needs one, a kilometre or more from the site", legacy);
+            if (share >= LandConversion.CENTRE_DRY_MIN) {
+                assertTrue("...its centre at least 80% dry (the fifth test)", share >= LandConversion.CENTRE_DRY_MIN);
+            } else {
+                System.out.printf("   (no site in %d cells passed the fifth test: the driest found, %.0f%%)%n",
+                        LandConversion.SITE_CELLS, share * 100);
+            }
+            quietly(() -> old.saveGame(5, "converted"));
+            Game[] again = new Game[1];
+            quietly(() -> { again[0] = new Game(files); again[0].loadGameSave(5); });
+            assertTrue("...converted once: saved again, it loads as it is", again[0].getCityLand().same(put)
+                    && java.util.Arrays.deepEquals(again[0].getLandManager().getMarket().getOffersState(),
+                            land.getMarket().getOffersState()));
+        }
+    }
+
+    /** The iron field nearest a city's site, in the nine cells round it, whose centre the city does not own; null when none. */
+    static Deposit nearestUnowned(CityLand land, Resource kind) {
+        World world = World.of(land.seed());
+        long cx = land.siteX() / World.CELL, cy = land.siteY() / World.CELL;
+        Deposit nearest = null;
+        double best = Double.MAX_VALUE;
+        for (long y = cy - 1; y <= cy + 1; y++) {
+            for (long x = cx - 1; x <= cx + 1; x++) {
+                if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
+                for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), kind)) {
+                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    if (land.ownsPlot(d.x(), d.y()) || r >= best) continue;
+                    best = r;
+                    nearest = d;
+                }
+            }
+        }
+        return nearest;
+    }
+
+    /** The width of the bands the plane is tiled with: 7 plots, which no offer is. */
+    static final double DEAL = 7;
+
+    /* ==================================================================
+       22. THE TEST PLAYER KEEPS ITS GROUND AHEAD (0.7.58, batch J1d)
+
+       LongPlaytest.keepGroundAhead(), at each of the playtest's looks: the
+       best value for room until no more of the dry ground is built on than
+       the ground in use grown BuildAdvice.HORIZON months by the businesses'
+       growthFactor(), with BuildAdvice.SLACK past it, spending at most
+       GROUND_AHEAD_CASH_SHARE of the cash. The fixtures build a new city's
+       ground to 99% and give it its founding treasury, then a tenth too
+       little for the best offer, and leave a third city as it was founded.
+       Since 0.7.67 (M3b) the room-to-grow move is priced from the same line
+       (LongPlaytest.roomToGrow()): the 99% city past it, kept to it, and a
+       fourth city built half-way between .85 and the line.
+       ================================================================== */
+    static void groundKeptAhead() {
+        System.out.println("\n--- the test player keeps its ground ahead (0.7.58) ---");
+
+        Game g = dollarCity("landcheck-ahead");
+        LandManager land = g.getLandManager();
+        double line = LongPlaytest.groundAheadUtilisation(g);
+        check("the line is the ground in use HORIZON months out, SLACK past it", line,
+                1 / (g.getBusinessInvestment().growthFactor(BuildAdvice.HORIZON) * (1 + BuildAdvice.SLACK)));
+        assertTrue("...never more built on than 1 / (1 + SLACK)", line <= 1 / (1 + BuildAdvice.SLACK) + 1e-12);
+        land.allocate(land.getAvailableSqFt() - .01 * land.getOwnedSqFt());
+        assertTrue("fixture: 99% of the ground is built on, past the line",
+                land.getAllocatedSqFt() / land.getOwnedSqFt() > line);
+        // The room-to-grow move, priced from the same line (0.7.67, M3b).
+        double used = land.getAllocatedSqFt() / land.getOwnedSqFt();
+        near("past the line, room to grow is weighed at the output from the line to a city built full (0.7.67)",
+                LongPlaytest.roomToGrow(g), Math.max(1, g.getEconomyManager().getMonthGdp()) * (used - line) / (1 - line), 1e-12);
+        double cash = g.getCash(), owned = land.getOwnedSqFt();
+        int bought = LongPlaytest.groundAheadBought, purchases = g.getCityLand().purchases().size();
+        quietly(() -> LongPlaytest.keepGroundAhead(g));
+        int made = g.getCityLand().purchases().size() - purchases;
+        System.out.printf("   %d offer(s), %.4f km2 dry, D$%,.0fk of D$%,.0fk; built on %.4f against the line %.4f%n",
+                made, LandManager.km2(land.getOwnedSqFt() - owned), cash - g.getCash(), cash,
+                land.getAllocatedSqFt() / land.getOwnedSqFt(), line);
+        assertTrue("it bought ground, each purchase counted", made > 0 && LongPlaytest.groundAheadBought - bought == made);
+        assertTrue("...until no more is built on than the line",
+                land.getAllocatedSqFt() / land.getOwnedSqFt() <= line);
+        assertTrue("...for no more than the cash share",
+                cash - g.getCash() <= LongPlaytest.GROUND_AHEAD_CASH_SHARE * cash * (1 + 1e-12));
+        assertTrue("...and kept to the line, room to grow is weighed at nothing (0.7.67)", LongPlaytest.roomToGrow(g) == 0);
+
+        /*
+         * BETWEEN .85 AND THE LINE (0.7.67, M3b): the old price, gdp x (u - .85)
+         * / .15, weighed a city kept at the line as 45 to 67% of its output
+         * lost for want of ground, and outranked its power and roads (ensemble
+         * seed 14, months 477-490). The fixture builds a new city's ground
+         * to half-way between the two.
+         */
+        Game between = dollarCity("landcheck-room-between");
+        LandManager bl = between.getLandManager();
+        double betweenLine = LongPlaytest.groundAheadUtilisation(between);
+        bl.allocate((.85 + betweenLine) / 2 * bl.getOwnedSqFt() - bl.getAllocatedSqFt());
+        double betweenUsed = bl.getAllocatedSqFt() / bl.getOwnedSqFt();
+        assertTrue("fixture: built on past .85, within the ground-ahead line", betweenUsed > .85 && betweenUsed <= betweenLine);
+        assertTrue("...where room to grow is weighed at nothing: the projection's ground holds",
+                LongPlaytest.roomToGrow(between) == 0);
+
+        Game poor = dollarCity("landcheck-ahead-poor");
+        LandManager pl = poor.getLandManager();
+        pl.allocate(pl.getAvailableSqFt() - .01 * pl.getOwnedSqFt());
+        LandParcel best = poor.bestOffer(Game.LandNeed.room());
+        double price = best.localPrice(poor.getForeignAccounts().getRate());
+        poor.setCashForTest(price / LongPlaytest.GROUND_AHEAD_CASH_SHARE * .9);
+        double poorCash = poor.getCash(), poorOwned = pl.getOwnedSqFt();
+        int poorShort = LongPlaytest.groundAheadShort;
+        assertTrue("fixture: the best value is past the cash share, inside the cash",
+                price > LongPlaytest.GROUND_AHEAD_CASH_SHARE * poorCash && poor.canAffordParcel(best));
+        quietly(() -> LongPlaytest.keepGroundAhead(poor));
+        assertTrue("a look the cash share cannot cover buys nothing", pl.getOwnedSqFt() == poorOwned && poor.getCash() == poorCash);
+        assertTrue("...and is counted stopped short", LongPlaytest.groundAheadShort == poorShort + 1);
+
+        Game founded = dollarCity("landcheck-ahead-founded");
+        LandManager fl = founded.getLandManager();
+        double foundedOwned = fl.getOwnedSqFt();
+        assertTrue("fixture: a city as founded is under the line",
+                fl.getAllocatedSqFt() / fl.getOwnedSqFt() <= LongPlaytest.groundAheadUtilisation(founded));
+        quietly(() -> LongPlaytest.keepGroundAhead(founded));
+        assertTrue("...and buys nothing", fl.getOwnedSqFt() == foundedOwned);
+    }
+
+    /* ==================================================================
+       23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L)
+
+       LongPlaytest.ironWhenNeeded(), at each of the playtest's looks: when an
+       Iron Mine would pay (wouldPay()) and every iron site the city owns has
+       a mine on it or ordered, the cheapest offer holding iron
+       (LandMarket.cheapestWith()) - out of the cash when it covers it, else
+       on the land office's funding page's bond (BUILD_BOND_YEARS, sized to
+       Game.landCashGap()) when the player's own test for borrowing passes
+       (canService()); neither, nothing, and the look counted. Jerus: "Yes
+       whole iron fields as one offer, yes that means significant
+       investment." The fixtures push out the lane holding the default
+       world's founding field until it is listed (35 sites, 449 Mt, about
+       US$180M at 1.6 to the dollar), then hand the treasury the price and
+       more, the price less a few thousand, and nothing; a fourth city is
+       left as founded, with no iron listed.
+
+       Since 0.7.67 (M3b) the rule buys only a field that pays itself back:
+       the mines it would carry (LongPlaytest.fieldEarnings(): staffable,
+       each paying on the mining sector's screen) earn a month at least the
+       level payment repaying its price over BUILD_BOND_YEARS
+       (fieldPayment()). A new city of a month can staff none of them, so on
+       these fixtures the founding field does not pay back and is not bought,
+       whatever the cash; the land office's Buy and the funding page's bond,
+       which the rule pays with once a field does, are held through
+       LongPlaytest.buyWhole() on the same fixtures.
+       ================================================================== */
+    static void ironAWholeFieldAtATime() {
+        System.out.println("\n--- the test player buys its iron a whole field at a time (0.7.64) ---");
+
+        Game rich = ironListed("landcheck-iron-cash");
+        LandManager rl = rich.getLandManager();
+        LandParcel cheapest = rl.getMarket().cheapestWith(Resource.IRON);
+        boolean isCheapest = cheapest != null && cheapest.hasIron();
+        for (LandParcel p : rl.getListing()) {
+            if (p.hasIron()) isCheapest &= p.getPriceUsd() >= cheapest.getPriceUsd();
+        }
+        assertTrue("the cheapest whole field: the offer holding iron at the least price, whatever its size", isCheapest);
+        assertTrue("fixture: an Iron Mine would pay, and the city owns no unworked iron site",
+                LongPlaytest.wouldPay(rich, "Iron Mine", Sectors.MINING) && rl.getIronDeposits() <= rich.minesCommitted());
+        double rate = rich.getForeignAccounts().getRate();
+        rich.setCashForTest(cheapest.localPrice(rate) * 1.25);
+        double cash = rich.getCash(), owed = rich.getDebtManager().getAllPrincipal();
+        int sites = rl.getIronDeposits(), bought = LongPlaytest.ironFieldsBought;
+
+        /* --- the payback (0.7.67, M3b) --- */
+        BuildingsTemplate mine = rich.getBuildingManager().getTemplateByName("Iron Mine");
+        double[] earns = LongPlaytest.fieldEarnings(rich, cheapest.getDeposits());
+        double payment = LongPlaytest.fieldPayment(rich, cheapest);
+        int months = Game.BUILD_BOND_YEARS * 12;
+        double monthly = rich.getDebtManager().quoteRate(cheapest.localPrice(rate), months) / 12, repaid = 0;
+        for (int k = 1; k <= months; k++) repaid += payment / Math.pow(1 + monthly, k);
+        near("a field's payment repays its price here over BUILD_BOND_YEARS at the market's rate", repaid,
+                cheapest.localPrice(rate), 1e-9);
+        int staffable = rich.getSectors().byKey(Sectors.MINING).staffableCount(mine, cheapest.getDeposits());
+        assertTrue("its mines no more than its sites and than the mining sector could staff",
+                earns[0] <= Math.min(cheapest.getDeposits(), staffable));
+        assertTrue("fixture: a new city of a month staffs none of the field's mines, so it does not pay back",
+                staffable == 0 && earns[0] == 0 && earns[1] < payment);
+        int noPay = LongPlaytest.ironDoesNotPay;
+        quietly(() -> LongPlaytest.ironWhenNeeded(rich));
+        System.out.printf("   %s: %d site(s), %,.1f Mt, US$%,.1fM, D$%,.1fM here, D$%,.1fM of cash; %.0f mine(s) earning D$%,.0fk a"
+                        + " month against a payment of D$%,.0fk%n", cheapest.where(), cheapest.getDeposits(),
+                cheapest.getIronTonnes() / 1e6, cheapest.getPriceUsd() / 1000, cheapest.localPrice(rate) / 1000, cash / 1000,
+                earns[0], earns[1], payment);
+        assertTrue("with the cash to cover it, a field that does not pay back is not bought, nor anything borrowed",
+                rl.getMarket().find(cheapest.getId()) != null && rl.getIronDeposits() == sites && rich.getCash() == cash
+                        && rich.getDebtManager().getAllPrincipal() == owed && LongPlaytest.ironFieldsBought == bought);
+        assertTrue("...and the look is counted, to ask again at the next", LongPlaytest.ironDoesNotPay == noPay + 1);
+
+        /* --- the payment, once a field pays back: the land office's Buy and the funding page (0.7.64) --- */
+        String[] paid = new String[1];
+        quietly(() -> paid[0] = LongPlaytest.buyWhole(rich, cheapest, "an iron field"));
+        assertTrue("with the cash to cover it, it buys that offer, whole, out of the cash",
+                "cash".equals(paid[0]) && rl.getMarket().find(cheapest.getId()) == null
+                        && rl.getIronDeposits() == sites + cheapest.getDeposits());
+        near("...the cash down by its price here", cash - rich.getCash(), cheapest.localPrice(rate), 1e-9);
+        assertTrue("...and nothing borrowed", rich.getDebtManager().getAllPrincipal() == owed);
+        int again = rl.getIronDeposits();
+        quietly(() -> LongPlaytest.ironWhenNeeded(rich));
+        assertTrue("with a site unworked it buys no more", rl.getIronDeposits() == again && LongPlaytest.ironFieldsBought == bought);
+
+        Game shortBy = ironListed("landcheck-iron-bond");
+        LandManager sl = shortBy.getLandManager();
+        LandParcel field = sl.getMarket().cheapestWith(Resource.IRON);
+        double here = field.localPrice(shortBy.getForeignAccounts().getRate());
+        shortBy.setCashForTest(here - 5);
+        java.util.List<Integer> ids = java.util.List.of(field.getId());
+        assertTrue("fixture: a few thousand short, which the player's test for borrowing carries",
+                shortBy.landNeedsFunding(ids) && LongPlaytest.canService(shortBy, shortBy.landCashGap(ids)));
+        double owedBefore = shortBy.getDebtManager().getAllPrincipal();
+        String[] onBond = new String[1];
+        quietly(() -> onBond[0] = LongPlaytest.buyWhole(shortBy, field, "an iron field"));
+        assertTrue("short, it borrows the funding page's bond for the gap and buys the offer, whole",
+                "bond".equals(onBond[0]) && sl.getMarket().find(field.getId()) == null && sl.getIronDeposits() == field.getDeposits()
+                        && shortBy.getDebtManager().getAllPrincipal() > owedBefore);
+        assertTrue("...the bond's cash covering it: the treasury not overdrawn", shortBy.getCash() >= 0);
+
+        Game poor = ironListed("landcheck-iron-wait");
+        LandManager pl = poor.getLandManager();
+        LandParcel dear = pl.getMarket().cheapestWith(Resource.IRON);
+        java.util.List<Integer> dearIds = java.util.List.of(dear.getId());
+        assertTrue("fixture: a founding treasury, far short, which the player's test for borrowing refuses",
+                poor.landNeedsFunding(dearIds) && !LongPlaytest.canService(poor, poor.landCashGap(dearIds)));
+        double poorCash = poor.getCash(), poorOwed = poor.getDebtManager().getAllPrincipal();
+        String[] neither = { "" };
+        quietly(() -> neither[0] = LongPlaytest.buyWhole(poor, dear, "an iron field"));
+        assertTrue("neither, it buys nothing and borrows nothing",
+                neither[0] == null && pl.getMarket().find(dear.getId()) != null && pl.getIronDeposits() == 0
+                        && poor.getCash() == poorCash && poor.getDebtManager().getAllPrincipal() == poorOwed);
+
+        Game founded = dollarCity("landcheck-iron-none");
+        int none = LongPlaytest.ironNoneListed;
+        boolean listed = founded.getLandManager().getMarket().cheapestWith(Resource.IRON) != null;
+        quietly(() -> LongPlaytest.ironWhenNeeded(founded));
+        assertTrue("with no iron listed - a new city's first ring - it buys nothing, and counts the look",
+                !listed && founded.getLandManager().getIronDeposits() == 0 && LongPlaytest.ironNoneListed == none + 1);
+    }
+
+    /** A new city at 1.6 to the dollar grown, by hand, toward the founding field - the offer nearest it each time - until an offer holds iron. */
+    static Game ironListed(String label) {
+        Game g = dollarCity(label);
+        CityLand land = g.getCityLand();
+        LandManager lm = g.getLandManager();
+        Deposit field = nearestUnowned(land, Resource.IRON);
+        for (int i = 0; i < 400 && lm.getMarket().cheapestWith(Resource.IRON) == null; i++) {
+            lm.buyParcel(MiningCheck.nearestOffer(lm.getMarket(), field.x(), field.y()).getId(), 1e12, 0);
+        }
+        return g;
+    }
+
+    /** Every field of a resource centred within `out` plots of a city's site (L-infinity) whose centre, seen from the site, passes `in`: its sites and its amount, whole - read off the world's cells, with none of CityLand's short cuts. */
+    static double[] recount(CityLand land, Resource kind, double out, java.util.function.BiPredicate<Double, Double> in) {
+        World world = World.of(land.seed());
+        double sites = 0, amount = 0;
+        for (int cell : CityLand.cellsUnder(land.siteX() - out, land.siteY() - out, land.siteX() + out, land.siteY() + out)) {
+            for (Deposit d : world.fieldsInCell(cell, kind)) {
+                if (in.test((double) (d.x() - land.siteX()), (double) (d.y() - land.siteY()))) {
+                    sites += d.sites();
+                    amount += d.amount();
+                }
+            }
+        }
+        return new double[] { sites, amount };
+    }
+
 }

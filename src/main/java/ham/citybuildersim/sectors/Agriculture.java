@@ -6,6 +6,7 @@ import ham.citybuildersim.EconomyManager;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.LandManager;
 import ham.citybuildersim.Sector;
 
 import java.util.List;
@@ -341,8 +342,8 @@ public final class Agriculture extends Sector {
         }
 
         lines.add(Line.head("What it costs in ground"));
-        double acres = getLandSqFt() / 43560;
-        lines.add(Line.of("Under cultivation", String.format("%,.0f acres", acres)));
+        // In the player's units since 0.7.68, as every area (LandManager.areaWords()); it read acres.
+        lines.add(Line.of("Under cultivation", LandManager.areaWords(getLandSqFt())));
         lines.add(Line.of("What that ground is worth",
                 f.amount(getLandValue(game.getEconomyManager()))));
         double ground = groundShare(), pay = payrollShare();

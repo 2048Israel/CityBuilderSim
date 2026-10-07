@@ -274,8 +274,9 @@ final class GovernmentScreen {
                                 : rated,
                         needLevel(all, CityNeeds.Kind.BORROWING) >= 2 ? Palette.BAD : Palette.TEXT_HEAD,
                         "Finances: the debt, and what it costs"),
-                new Kpi("TAX TAKE", annual > 0 ? String.format("%.1f%%", revenue * 12 / annual * 100) : "—",
-                        annual > 0 ? ofAnnualGdp(na) : "no output to compare yet", Palette.TEXT_HEAD,
+                new Kpi("TAX TAKE", annual > 0 ? String.format("%.1f%%", yearOf(revenue, REVENUE_KEYS) / annual * 100) : "—",
+                        annual > 0 ? ofAnnualGdp(na) + (trailing(REVENUE_KEYS) ? ", the last twelve months" : "")
+                                : "no output to compare yet", Palette.TEXT_HEAD,
                         "Revenue: who pays it, line by line"));
     }
 
@@ -365,9 +366,63 @@ final class GovernmentScreen {
     /** Money signed, as a movement: "+$1.2M", "−$3.5M", "$0". */
     static String s(double thousands) { return signedTight(thousands, false); }
 
-    /** A share of a year's output, as every "of GDP" on this tab writes it, or a dash with no year to compare. */
-    static String ofGdp(double monthly, double annual) {
-        return annual > 0 ? minus(String.format("%.2f%%", monthly * 12 / annual * 100)) : "—";
+    /**
+     * Every "of GDP" on this tab reads the trailing year of its line where
+     * History records it (B7, 0.7.47): the last TRAILING_MONTHS months, once
+     * the line has that many. Until then, and for a line History does not
+     * record, the month × 12 - which read a month that bought a lot of
+     * buildings as a year of them, and still does for those lines.
+     */
+    static final int TRAILING_MONTHS = 12;
+
+    /** The History series each budget line is, where it records one - the line's own figure each month (a series of something else, like the care's and the schools' net cost against their gross lines, is not one). */
+    static final java.util.Map<String, List<String>> LINE_KEYS = java.util.Map.ofEntries(
+            java.util.Map.entry("Business tax", List.of("taxBusiness", "taxIndustrial")),
+            java.util.Map.entry("Sales tax", List.of("taxSales")),
+            java.util.Map.entry("Wage tax", List.of("taxWage")),
+            java.util.Map.entry("Property tax", List.of("taxProperty")),
+            java.util.Map.entry("Pension contributions", List.of("contributions")),
+            java.util.Map.entry("EI premiums", List.of("eiPremiums")),
+            java.util.Map.entry("Health premiums", List.of("healthPremiums")),
+            java.util.Map.entry("Student loan interest", List.of("studentLoanInterest")),
+            java.util.Map.entry("Central bank remittance", List.of("remittance")),
+            java.util.Map.entry("Pensions", List.of("pensionBill")),
+            java.util.Map.entry("EI", List.of("eiPaid")),
+            java.util.Map.entry("Student grants", List.of("studentGrants")),
+            java.util.Map.entry("Police and prisons", List.of("safetyBill")),
+            java.util.Map.entry("Food assistance", List.of("foodAssistance")));
+
+    /** What was taken in: History's revenue. */
+    static final List<String> REVENUE_KEYS = List.of("revenue");
+    /** ...the balance: History's surplus, negative for a deficit. */
+    static final List<String> SURPLUS_KEYS = List.of("surplus");
+
+    /** Whether History has TRAILING_MONTHS months of every one of these series (and there is one). */
+    boolean trailing(List<String> keys) {
+        if (keys == null || keys.isEmpty()) return false;
+        HistorySave h = ui.game.getHistorySave();
+        for (String k : keys) if (h.monthsRecorded(k) < TRAILING_MONTHS) return false;
+        return true;
+    }
+
+    /** A line's year: the sum of its series' last TRAILING_MONTHS months where trailing(), the month × 12 where not. */
+    double yearOf(double monthly, List<String> keys) {
+        if (!trailing(keys)) return monthly * 12;
+        HistorySave h = ui.game.getHistorySave();
+        double year = 0;
+        for (String k : keys) year += h.recentTotal(k, TRAILING_MONTHS);
+        return year;
+    }
+
+    /** ...what was paid out, which History records as what came in less the balance (NationalAccounts.getBalance() is the one less the other): their trailing years' difference, or the month × 12. */
+    double spendingYear(double monthly) {
+        return trailing(REVENUE_KEYS) && trailing(SURPLUS_KEYS)
+                ? yearOf(0, REVENUE_KEYS) - yearOf(0, SURPLUS_KEYS) : monthly * 12;
+    }
+
+    /** A line's share of a year's output, as every "of GDP" on this tab writes it - its trailing year where History records it - or a dash with no year to compare. */
+    String ofGdpYear(List<String> keys, double monthly, double annual) {
+        return annual > 0 ? minus(String.format("%.2f%%", yearOf(monthly, keys) / annual * 100)) : "—";
     }
 
     /** A formatted figure's hyphen as a minus (B15). */
@@ -509,6 +564,7 @@ final class GovernmentScreen {
             case "School fees", "Student loan interest", "Student grants", "Education"
                                                     -> new String[] {"Promises", "Schools"};
             case "Subsidies"                        -> new String[] {"Promises", "Subsidies"};
+            case "Food assistance"                  -> new String[] {"Promises", "Food"};
             case "Central bank remittance", "Interest to the central bank"
                                                     -> new String[] {"Money", "The policy rate"};
             default -> null;
@@ -530,6 +586,7 @@ final class GovernmentScreen {
             case "Debt interest"              -> new Door("Finances", () -> openFinances("The position", "Debt service"));
             case "Police and prisons"         -> new Door("Services", () -> ui.servicesScreen.open("Safety", ServicesScreen.OVERVIEW));
             case "Utility income"             -> new Door("Services", () -> ui.servicesScreen.open("Utilities", ServicesScreen.OVERVIEW));
+            case "Transit fares", "Transit"   -> new Door("Infrastructure", () -> ui.infrastructureScreen.open("Transit"));
             default -> null;
         };
     }
@@ -554,6 +611,8 @@ final class GovernmentScreen {
             case "Central bank remittance", "Interest to the central bank" -> Icons.BANK;
             case "Mortgage insurance premiums", "Mortgage insurance claims" -> Icons.HOMES;
             case "Subsidies"                         -> Icons.POLICY;
+            case "Food assistance"                   -> Icons.FOOD;
+            case "Transit fares", "Transit"          -> Icons.BUS;
             default                                  -> Icons.COIN;
         };
     }
@@ -609,11 +668,6 @@ final class GovernmentScreen {
         List<Slice> outSlices = topSlices(outNames, outAmounts, Palette.CATEGORIES);
 
         List<Node> inFoot = new ArrayList<>(netted(inNames, inAmounts));
-        double fares = em.getTransitFares();
-        if (Math.abs(fares) >= .5) {
-            inFoot.add(door("outside the total: transit fares " + s(fares), Palette.TEXT_MUTED,
-                    () -> showOnOverview(BRIDGE)));
-        }
         List<Node> outFoot = new ArrayList<>(netted(outNames, outAmounts));
         double repairs = ui.game.getCityMaintenancePaid();
         if (Math.abs(repairs) >= .5) {
@@ -719,8 +773,13 @@ final class GovernmentScreen {
             block.getChildren().add(line);
         }
         if (annual > 0) {
-            block.getChildren().add(words(String.format("%.1f%% %s", Math.abs(balance) * 12 / annual * 100,
-                    ofAnnualGdp(na)), Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            // The last twelve months' balance where History has them (B7): a busy month is not a year.
+            double year = yearOf(balance, SURPLUS_KEYS);
+            block.getChildren().add(words(trailing(SURPLUS_KEYS)
+                            ? String.format("a year's %s, %.1f%% %s", year >= 0 ? "surplus" : "deficit",
+                                    Math.abs(year) / annual * 100, ofAnnualGdp(na))
+                            : String.format("%.1f%% %s", Math.abs(balance) * 12 / annual * 100, ofAnnualGdp(na)),
+                    Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         }
         block.getChildren().add(words("tap a slice or a line for who pays", Palette.SIZE_LABEL, Palette.TEXT_SPENT));
         block.setMinWidth(254);
@@ -781,13 +840,13 @@ final class GovernmentScreen {
 
     /** The bridge card's (i): P2, rewritten, and P3. */
     static final String BRIDGE_INFO = "EARNED is the header's figure: taxes and fees less the running programmes "
-            + "- interest, pensions, EI, the grants, care, schools and the police - plus the utilities' net, at "
-            + "today's tax rates. The budget adds land, buildings and the smaller lines, and leaves out the transit "
-            + "fares; the cash adds borrowing and your own moves.\n\n"
+            + "- interest, pensions, EI, the grants, care, schools, the police and transit - plus the utilities' net, at "
+            + "today's tax rates. The budget adds land, buildings and the smaller lines; the cash adds borrowing "
+            + "and your own moves.\n\n"
             + "So the middle tile is the budget's surplus or deficit, and the last is what the balance actually "
             + "did between two presses of the arrow. The steps between them are the money that moved without being "
             + "a budget line: paper raised and repaid, reserves, capital put into the bank, bonds bought back, the "
-            + "students' loans, and the two the budget leaves out (the city's own repairs and the transit fares). "
+            + "students' loans, and the one the budget leaves out (the city's own repairs). "
             + "“Not accounted for” is what is left after them - timing between the books and the money, "
             + "such as a coupon booked the month it is charged and paid the month after, and anything not yet "
             + "journalled - printed rather than folded in, because a bridge that hides its own gap is not a bridge.";
@@ -856,11 +915,8 @@ final class GovernmentScreen {
     List<BridgeStep> earnedSteps() {
         List<BridgeStep> out = new ArrayList<>();
         for (TreasuryJournal.Entry e : ui.game.getEarnedToBudget()) {
-            boolean fares = Game.EARNED_FARES.equals(e.label());
-            Door d = fares ? new Door("Infrastructure", () -> ui.infrastructureScreen.open("Transit"))
-                           : doorOf(e.label());
-            BridgeStep step = BridgeStep.of(e.label(), e.amount(), fares ? Icons.ROADS : iconOf(e.label()));
-            if (fares) step = step.tip("In EARNED, through the tax take, and in the cash; not one of the budget's lines.");
+            Door d = doorOf(e.label());
+            BridgeStep step = BridgeStep.of(e.label(), e.amount(), iconOf(e.label()));
             if (d != null) step = step.go(d.go());
             out.add(step);
         }
@@ -911,7 +967,7 @@ final class GovernmentScreen {
         return Icons.COIN;
     }
 
-    /** ...and where it is decided (the spec's section 4): reserves on Trade, the fund on Finances, the bank's shares on Bank, the central bank on Policy, repairs and salvage on Build's construction page, fares on Infrastructure. */
+    /** ...and where it is decided (the spec's section 4): reserves on Trade, the fund on Finances, the bank's shares on Bank, the central bank on Policy, repairs and salvage on Build's construction page, fares on Infrastructure (no journal line names transit since 0.7.49, when the fares became a budget line, so that branch and journalIcon()'s are reached by nothing). */
     Runnable journalDoor(String label) {
         if (label.startsWith("Bought land")) return () -> ui.landScreen.showLandMenu();
         if (label.contains("reserves")) return () -> ui.tradeScreen.showForeignMenu();
@@ -1020,9 +1076,11 @@ final class GovernmentScreen {
     /* ------------------------------ against the economy ------------------------------ */
 
     /** P8: why a month against a year. */
-    static final String ECONOMY_INFO = "A month of revenue against a year of output is the only honest way to "
-            + "compare a budget with anything - another city, another year, or a rule of thumb. The monthly figures "
-            + "are annualised to get there, so a month that bought a lot of buildings reads as a year of them.";
+    static final String ECONOMY_INFO = "A year of revenue against a year of output is the only honest way to "
+            + "compare a budget with anything - another city, another year, or a rule of thumb. What came in, what "
+            + "went out and the balance are their last twelve months once City History has them; until then, and "
+            + "for the staff's wages, the month is annualised, so a month that bought a lot of buildings reads as a year of them. "
+            + "The staff are the care and schools staff; the police's and transit's wages are their own lines under Spending.";
 
     /** P7: no month of output yet. */
     static final String NO_YEAR = "There is no output recorded yet, so nothing here can be put in "
@@ -1034,7 +1092,9 @@ final class GovernmentScreen {
      * a year's GDP - a month and a year in their tooltips - and the year and
      * a head under them. "The city's own staff" was care and schools only,
      * and said so now (B12, D18: police, the utilities and transit staff
-     * wait for a payroll of every city post, with the model batch).
+     * wait for a payroll of every city post, with the model batch). Since
+     * 0.7.49 (B9) transit's wages are paid, on Spending's "Transit" line, and
+     * the (i) says where the police's and transit's are.
      */
     VBox economyCard(NationalAccounts na) {
         double annual = annualGdp(na);
@@ -1046,20 +1106,26 @@ final class GovernmentScreen {
         }
         double revenue = na.getTotalRevenue(), spending = na.getTotalExpenses(), balance = na.getBalance();
         double staff = ui.game.getHealthcare().getPayroll() + ui.game.getEducation().getPayroll();
-        double[] monthly = {revenue, spending, Math.abs(balance), staff};
-        String[] names = {"Taken in", "Paid out", balance >= 0 ? "Surplus" : "Deficit", "Care and schools staff"};
+        // Each bar's year (B7): the last twelve months where History records the line, the month × 12 where not.
+        double balanceYear = yearOf(balance, SURPLUS_KEYS);
+        double[] monthly = {revenue, spending, balance, staff};
+        double[] yearly = {yearOf(revenue, REVENUE_KEYS), spendingYear(spending), Math.abs(balanceYear), staff * 12};
+        boolean[] measured = {trailing(REVENUE_KEYS), trailing(REVENUE_KEYS) && trailing(SURPLUS_KEYS), trailing(SURPLUS_KEYS), false};
+        String[] names = {"Taken in", "Paid out", balanceYear >= 0 ? "Surplus" : "Deficit", "Care and schools staff"};
         String[] colours = {Palette.MONEY, Palette.MONEY_DARK, Palette.MONEY_LIGHT, Palette.PEOPLE};
         double top = 0;
-        for (double v : monthly) top = Math.max(top, v * 12 / annual * 100);
+        for (double v : yearly) top = Math.max(top, v / annual * 100);
         List<ScaleRow> rows = new ArrayList<>();
-        for (int i = 0; i < monthly.length; i++) {
-            double pc = monthly[i] * 12 / annual * 100;
+        for (int i = 0; i < yearly.length; i++) {
+            double pc = yearly[i] / annual * 100;
+            String month = i == 2 ? s(monthly[i]) : m(monthly[i]);
             rows.add(ScaleRow.of(names[i], String.format("%.2f%%", pc),
-                    List.of(Run.of(0, pc, colours[i]).tip(names[i] + "\n" + m(monthly[i]) + " a month · "
-                            + m(monthly[i] * 12) + " a year"))));
+                    List.of(Run.of(0, pc, colours[i]).tip(names[i] + "\n" + (measured[i]
+                            ? m(yearly[i]) + " over the last twelve months · " + month + " this month"
+                            : month + " a month · " + m(yearly[i]) + " a year")))));
         }
         card.getChildren().add(scaleRows(rows, Math.max(top, 1e-9), List.of(), 150, 64, 10));
-        int heads = ui.game.getPopulationManager().getPopulation();
+        long heads = ui.game.getPopulationManager().getPopulation();
         String line = (gdpEstimated(na) ? "GDP, annualised " : "annual GDP ") + m(annual)
                 + (heads > 0 ? " · " + moneyFull(annual / heads) + " a head" : "");
         card.getChildren().add(gdpEstimated(na)
@@ -1090,7 +1156,7 @@ final class GovernmentScreen {
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
                 "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
-                "Transfer from the fund");
+                "Transfer from the fund", "Transit fares");
     }
 
     List<Double> revenueAmounts(NationalAccounts na) {
@@ -1118,8 +1184,11 @@ final class GovernmentScreen {
                 // ...and the premiums the landlords paid on the mortgages the
                 // city insures (0.7.11), on the end for the same reason.
                 na.getMortgagePremiums(),
-                // ...and 3% a year of the city's fund, a twelfth a month (0.7.14).
-                na.getFundTransfer());
+                // ...and the city's fund's withdrawal, a share of its worth a month (0.7.14; the dial 0.7.48).
+                na.getFundTransfer(),
+                // ...and the transit fares (0.7.49, B9): under the total since, where
+                // they were named outside it.
+                na.getTransitFares());
     }
 
     /*
@@ -1137,7 +1206,8 @@ final class GovernmentScreen {
     static List<String> spendingNames() {
         return List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
                 "Police and prisons", "Buildings", "Land bought", "Debt interest",
-                "Interest to the central bank", "Subsidies", "Mortgage insurance claims");
+                "Interest to the central bank", "Subsidies", "Mortgage insurance claims", "Food assistance",
+                "Transit");
     }
 
     List<Double> spendingAmounts(NationalAccounts na) {
@@ -1161,7 +1231,13 @@ final class GovernmentScreen {
                 na.getSubsidies(),
                 // ...and what the mortgage insurance paid the bank (0.7.11), on
                 // the end.
-                na.getMortgageClaims());
+                na.getMortgageClaims(),
+                // ...and the food vouchers (0.7.45; the UI spec's B2): in getTotalExpenses() since
+                // 0.7.43 and on no line here, so the list and the ring stopped adding up to the
+                // total under them once the dial was on - 0.7.31's B2 again.
+                na.getFoodAssistance(),
+                // ...and transit's wages and upkeep, paid by the treasury since 0.7.49 (B9).
+                na.getTransitSpending());
     }
 
     /** The column heads' widths: a month, of the budget, of GDP. */
@@ -1187,11 +1263,13 @@ final class GovernmentScreen {
                   double total, NationalAccounts na, java.util.function.Function<String, java.util.function.Supplier<Node>> opens,
                   java.util.function.Function<String, String> word, String totalWords, Node outside) {
         double annual = annualGdp(na);
+        // The list's year (B7): what came in, or what went out, over the last twelve months once History has them.
+        double totalYear = "Spending".equals(pageName) ? spendingYear(total) : yearOf(total, REVENUE_KEYS);
 
         javafx.scene.layout.FlowPane lead = new javafx.scene.layout.FlowPane(8, 0);
         lead.setRowValignment(javafx.geometry.VPos.BASELINE);
         lead.getChildren().addAll(figure(m(total), 22, Palette.TEXT_HEAD),
-                words(verb + (annual > 0 ? String.format(" · %.1f%% %s", total * 12 / annual * 100, ofAnnualGdp(na)) : "")
+                words(verb + (annual > 0 ? String.format(" · %.1f%% %s", totalYear / annual * 100, ofAnnualGdp(na)) : "")
                         + " · " + CityCalendar.format(ui.game.getMonth()), Palette.SIZE_BODY + 1, Palette.TEXT_LABEL));
         page.getChildren().add(lead);
 
@@ -1214,10 +1292,12 @@ final class GovernmentScreen {
             String name = names.get(i);
             double amount = amounts.get(i);
             Door d = doorOf(name);
+            List<String> keys = LINE_KEYS.getOrDefault(name, List.of());
             rows.add(new RankRow(lineKey(pageName, name), iconOf(name), name, amount,
                     colours.getOrDefault(name, Palette.RAMP_REST),
-                    List.of(m(amount), minus(String.format("%.1f%%", total != 0 ? amount / total * 100 : 0)), ofGdp(amount, annual)),
-                    name + "\n" + m(amount) + " a month · " + m(amount * 12) + " a year",
+                    List.of(m(amount), minus(String.format("%.1f%%", total != 0 ? amount / total * 100 : 0)), ofGdpYear(keys, amount, annual)),
+                    name + "\n" + m(amount) + " a month · " + m(yearOf(amount, keys))
+                            + (trailing(keys) ? " over the last twelve months" : " a year"),
                     opens.apply(name), word.apply(name), d == null ? null : d.words(), d == null ? null : d.go()));
         }
 
@@ -1426,8 +1506,9 @@ final class GovernmentScreen {
     }
 
     /** P20: the fund's transfer. */
-    static final String FUND_INFO = String.format("A twelfth of %.0f%% of everything the city's fund holds, "
-            + "from its cash only - Norway's fiscal rule. The Finances tab has the fund.", TreasuryFund.TRANSFER_RATE * 100);
+    static final String FUND_INFO = String.format("The withdrawal dial's share of everything the city's fund holds, a "
+            + "month - by default a twelfth of %.0f%% a year, Norway's fiscal rule - from its cash, and over the default "
+            + "from what it sells. The Finances tab has the fund and its dial.", TreasuryFund.TRANSFER_RATE * 100);
 
     /** THE TRANSFER FROM THE CITY'S FUND (0.7.14), opened from its line: due, paid and short this month, and the fund it is struck on. Every figure a getter. */
     VBox fundTransferDetail() {
@@ -1435,8 +1516,11 @@ final class GovernmentScreen {
         return column(noteLine("due, paid and short this month", FUND_INFO, STATEMENT - 22),
                 statementLine("Due on what the fund was worth", moneyFull(fund.getTransferDue())),
                 statementLine("Paid from its cash", moneyFull(fund.getTransferPaid())),
-                statementLine("Not paid, for want of cash", moneyFull(fund.getTransferShort()),
-                        fund.getTransferShort() > 0 ? Palette.WARN : null),
+                // Over the default withdrawal (0.7.48): the short is what the step sells for, and last month's sale paid late.
+                fund.getToRaise() > 0 ? statementLine("Sold for, to pay next month", moneyFull(fund.getToRaise()))
+                        : statementLine("Not paid, for want of cash", moneyFull(fund.getTransferShort()),
+                                fund.getTransferShort() > 0 ? Palette.WARN : null),
+                fund.getTransferPaidLate() > 0 ? statementLine("Paid from last month's sale", moneyFull(fund.getTransferPaidLate())) : null,
                 statementLine("What the fund is worth now", moneyFull(ui.game.fundValue())));
     }
 
@@ -1616,6 +1700,28 @@ final class GovernmentScreen {
         return box;
     }
 
+    /**
+     * Food assistance, by who it was paid to (0.7.45): each kind of
+     * household's vouchers at the last sale (HouseholdBalance.foodAssistanceByRow()),
+     * which add to the treasury's line - not the households' own books, which
+     * carry it a month later.
+     */
+    VBox foodAssistanceDetail(double total, String colour) {
+        HouseholdAccounts hh = ui.game.getHouseholds();
+        HouseholdBalance bal = ui.game.getHouseholdBalance();
+        double[] byRow = bal.foodAssistanceByRow();
+        List<Payer> who = new ArrayList<>();
+        for (int row = 0; row < Household.ROWS; row++) {
+            if (byRow[row] > 0) who.add(new Payer(hh.getRowLabel(row), byRow[row], null));
+        }
+        who.sort((a, b) -> Double.compare(b.amount(), a.amount()));
+        return payers("to whom, by kind of household", String.format("Vouchers toward the groceries of %s households whose"
+                + " baskets take more than half of what they have after their bills, paid on the baskets they got at the"
+                + " last sale - %s baskets' worth at the price charged. The households' own books carry it a month later,"
+                + " as People's month shows.",
+                people(bal.getHouseholdsAssisted()), people(bal.getFedByAssistance())), who, total, colour);
+    }
+
     /** Pensions, and who they go to. */
     VBox pensionDetail(double total, String colour) {
         EconomyManager em = ui.game.getEconomyManager();
@@ -1662,10 +1768,6 @@ final class GovernmentScreen {
         List<String> names = revenueNames();
         List<Double> amounts = revenueAmounts(na);
         double total = na.getTotalRevenue();
-        double fares = em.getTransitFares();
-        Node outside = Math.abs(fares) < .5 ? null
-                : door("Outside the budget's total: transit fares " + s(fares) + ", taken into the cash",
-                        Palette.TEXT_MUTED, () -> showOnOverview(BRIDGE));
         listPage(page, "Revenue", "taken in", names, amounts, total, na,
                 name -> {
                     double amount = amounts.get(names.indexOf(name));
@@ -1683,7 +1785,7 @@ final class GovernmentScreen {
                         default                      -> null;
                     };
                 },
-                name -> "who", "Taken in altogether", outside);
+                name -> "who", "Taken in altogether", null);
     }
 
     void spendingPage(VBox page, EconomyManager em, NationalAccounts na, List<CityNeeds.Need> all) {
@@ -1705,6 +1807,7 @@ final class GovernmentScreen {
                         case "Debt interest" -> () -> debtServiceDetail(amount, c);
                         case "Land bought"   -> amount > 0 ? () -> landSpendDetail(amount, c) : null;
                         case "Mortgage insurance claims" -> this::mortgageInsuranceDetail;
+                        case "Food assistance" -> amount > 0 ? () -> foodAssistanceDetail(amount, c) : null;
                         default              -> null;
                     };
                 },
@@ -1988,7 +2091,7 @@ final class GovernmentScreen {
         HBox.setHgrow(left, Priority.ALWAYS);
 
         double annual = annualGdp(na);
-        int heads = ui.game.getPopulationManager().getPopulation();
+        long heads = ui.game.getPopulationManager().getPopulation();
         double[] growth = YearBook.realGrowth(h);
         double grew = growth.length == 0 ? Double.NaN : growth[growth.length - 1];
         VBox right = new VBox(6,
@@ -2051,7 +2154,8 @@ final class GovernmentScreen {
 
     /** P35, rewritten (B5): what G is, as the model counts it. */
     static final String GOVERNMENT_INFO = "Services with no market price, valued at cost: the utilities' staff, "
-            + "care, and police and prisons. Land trading is not output.";
+            + "care, the schools, police and prisons, and the buses' and trains' staff and upkeep. The fees and fares "
+            + "are transfers, not a second lot of output. Land trading is not output.";
 
     VBox governmentCard(NationalAccounts na) {
         return partCard("GOVERNMENT", Palette.GDP_LAYERS[2], m(na.getGovernment()), GOVERNMENT_INFO,
@@ -2099,7 +2203,7 @@ final class GovernmentScreen {
     /** The growth strip: five readings, no verdict tone (B4: MoM and YoY were coloured on thresholds of the screen's own). */
     HBox growthStrip(NationalAccounts na) {
         double annual = annualGdp(na);
-        int heads = ui.game.getPopulationManager().getPopulation();
+        long heads = ui.game.getPopulationManager().getPopulation();
         int recorded = na.getMonthsRecorded();
         VBox year = limitCell(gdpEstimated(na) ? "GDP, ANNUALISED" : "ANNUAL GDP", m(annual),
                 gdpEstimated(na) ? recorded + " months scaled up" : "the last twelve months", Palette.TEXT_HEAD);

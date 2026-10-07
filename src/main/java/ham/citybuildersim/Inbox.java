@@ -156,8 +156,8 @@ public class Inbox {
         // building and count finishing in one month are two sales.
         for (ConstructionControl.Completed c : game.getControlThisMonth().completed) {
             ConstructionControl.Demolition d = c.site();
-            lines.add(String.format("%,d %s gone: %,.0f units of material to the builders for %s, %,.0f sq ft back to the city.",
-                    d.buildings, d.building, c.unitsSold(), money(c.paid()), d.landSqFt));
+            lines.add(String.format("%,d %s gone: %,.0f units of material to the builders for %s, %s back to the city.",
+                    d.buildings, d.building, c.unitsSold(), money(c.paid()), LandManager.areaWords(d.landSqFt)));
         }
         return lines;
     }
@@ -312,7 +312,7 @@ public class Inbox {
         lines.add("there is no land left to build on.");
         lines.add("");
         lines.add(String.format("Waiting:            %s", String.join(", ", blocked)));
-        lines.add(String.format("Land free:          %,.0f sq ft", free));
+        lines.add("Land free:          " + LandManager.areaWords(free));
         lines.add(String.format("Land in use:        %.0f%%", used));
         lines.add("");
         lines.add("They will keep asking every month and keep being refused.");

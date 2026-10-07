@@ -87,9 +87,9 @@ public final class Manufacturing extends Sector {
 
     /** Every post the sector holds, staffed or not - the sector in one number. */
     public double getPosts() {
-        int[] posts = postsPerTier();
+        long[] posts = postsPerTier();
         double total = 0;
-        for (int n : posts) total += n;
+        for (long n : posts) total += n;
         return total;
     }
 

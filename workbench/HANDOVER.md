@@ -1,74 +1,64 @@
-# CityBuilderSim — handover for a fresh session (2026-10-04, at 0.7.41)
+# CityBuilderSim — handover for a fresh session (2026-10-05, at 0.7.45)
 
-Read this, then `claude/todo.md` section 0 ("WORKING LEANER" first) and the top block of `claude/changelog.md` in the project. The game on Jerus's PC is 0.7.41, deployed and verified as tag 1004a (0.7.40, the fixes from playing 0.7.39, and 0.7.41, "served" on every gauge, see `claude/fixes-from-playing-0-7-39.md`). Nothing is in flight.
+Read this, then `claude/todo.md` section 0 and the top block of `claude/changelog.md` in the project. The game on Jerus's PC is **0.7.45**, deployed as tag 1005a: the new price model (0.7.42–0.7.44) and its screens (0.7.45); see `claude/inflation-that-answers-to-money.md`. Nothing is in flight. Nothing from 0.7.34 to 0.7.45 has been seen on screen yet.
 
 ## 1. Restore the workbench (the cloud workspace starts empty)
 
 Ask for these folders: `C:\Users\Jerus\Documents\NetBeansProjects\CityBuilderSim`, `C:\Users\Jerus\AppData\Roaming\CityBuilderSim` and `C:\Users\Jerus\.m2\repository\org\openjfx`. Then stage:
 
 1. **`CityBuilderSim\workbench\workbench.zip`**, and `unzip` it into `/home/claude/`. It holds:
-   - `cbs/`: the tree at 0.7.41, the same as the PC. **If Jerus has changed code since, re-stage the changed files from the PC**, because the PC is the source of truth. Compare the src mtimes with `device_list_dir`. Then `cp -a cbs cbs-base` before any edit.
-   - `bin/`: `build.sh`, `build-ui.sh`, `checks.sh`, `buildmenu-check.sh`, `endings-check.sh` and `jedit.py`.
-   - `scratch-ui1/orch-gate/pt0/t-*.csv`: **the reference playtest traces.** Every gate compares the default playtest's eight traces to these, byte for byte.
-   - `cities/city600` and `cities/city2400`: the research cities. Copy them before loading.
-   - `probe/`: a loader to copy from.
-   - `runs/`: every brief and every set of notes. The newest templates are:
-     - `brief-ui21-0740.md` (implementer, main tree);
-     - `brief-ui22-0741.md` (implementer, worktree);
-     - `brief-ui21-docs.md` (one docs pass over a merge);
-     - `brief-records-0741.md` (records on Sonnet).
-2. **The JavaFX 21 Windows jars** (`javafx-base`, `-controls`, `-fxml` and `-graphics`, each `…\21\…-21-win.jar`). Put them in `/home/claude/fx/`. Their staged copies at `/mnt/user-data/uploads/openjfx/<name>/21/` serve `buildmenu-check.sh`.
-3. **gson:** `/opt/apache-maven-3.9.11/lib/gson-2.13.1.jar`, already in the image.
+   - `cbs/`: the tree at 0.7.45, the same as the PC. Re-stage any file Jerus changed since; compare the src mtimes with `device_list_dir`. Then `cp -a cbs cbs-base` before any edit.
+   - `bin/`: the build and check scripts (see §2 on `rm`).
+   - `scratch-ui1/orch-gate/pt0744/`: **the current reference traces** (0.7.44 and 0.7.45 match them; `pt0` is 0.7.41's).
+   - `runs/ensemble/`: **the 16-seed × 5-policy harness**. Run it with `bash runs/ensemble/run.sh <tree> <label>`, about 21 minutes. Its scores are under `out/<label>/score.md`; the CSVs aren't in the zip.
+   - `runs/`: every brief, spec and set of notes. The newest are `spec-inflation.md`, `spec-ui-0745.md`, `diag-0743.md` and `ui23`–`ui26-notes.md`.
+   - `cities/` and `probe/`, as before.
+2. **The JavaFX 21 Windows jars** go into `/home/claude/fx/`; their staged copies sit at `/mnt/user-data/uploads/openjfx/<name>/21/`.
+3. **gson:** `/opt/apache-maven-3.9.11/lib/gson-2.13.1.jar`.
 
-## 2. The gate (every batch, on the tree it changed)
+## 2. The gate, and two hard lessons from 2026-10-04/05
 
-- `bin/build.sh <tree>` and `bin/build-ui.sh <tree>` silent.
-- `JDK_JAVA_OPTIONS=-Djava.io.tmpdir=<scratch>/tmp bin/checks.sh <tree> -q`: **70/71, HealthCheck the known red**.
-- `BMC_TMP=<scratch>/tmp bin/buildmenu-check.sh <tree>`: PASS 73 of 73.
-- `tools.Stale`: 0 firm.
-- `LongPlaytest` with `-Dplaytest.trace=<scratch>/pt/t`, then `cmp` each of the eight `t-*.csv` with `pt0/`: all identical.
-- `bin/endings-check.sh` (hardwired to `/home/claude/cbs` against `cbs-base`).
-- `tools.Maps` last.
+**The gate:**
+- both builds silent;
+- the suite 73/74, HealthCheck the known red;
+- BuildMenuCheck PASS 73 of 73;
+- Stale 0 firm;
+- the playtest byte-identical to `pt0744` (or re-baselined, with each change explained, only for a model change Jerus approved);
+- endings clean;
+- Maps last.
 
-## 3. The batch shape, and what worked on 2026-10-04
+**The two lessons:**
+- **`rm` and `/dev`.** An agent deleted `/dev/null` with a stray `rm -r /dev/null`. It was recreated with `mknod -m 666 /dev/null c 1 3`; check `ls -la /dev/null` shows `crw-rw-rw-` before running the suite. Briefs now forbid `rm` outright. `bin/build.sh` and `build-ui.sh` contain `rm -rf build/...`, so agents run copies without it.
+- **Never end the orchestrator's turn while work is pending.** A session restart killed an agent, and the orchestrator then sent a progress message and stopped, so nothing ran for six hours. After any interruption, launch the next agent in the same turn; send mid-run updates with SendUserMessage and keep working.
 
-- **The order:** triage by the orchestrator (grep and the maps, naming the exact methods) → implementers on Opus → one fresh-context Opus docs pass → the orchestrator merges, gates and deploys → records on **Sonnet**.
-- **Two implementers in parallel worked well.** One ran on `cbs`, the other in a worktree (`cp -a cbs-base cbs-b`). Each brief said which methods the other owns. The merge was `git merge-file -p ours base theirs`, with only GameVersion and a harness conflicting. One docs pass covered both versions.
-- **The Sonnet records trial was clean.** Its figures checked against the notes, no ★ was missed, and it even closed two stale markers, so records and write-ups stay on Sonnet.
-- **Notes are capped** at 150 lines for implementers and 120 for docs passes. Questions with a design choice go to Jerus up front through AskUserQuestion; he answers fast.
-
-**Rules for every agent:**
-- no command that could raise a permission prompt;
-- never `rm -r` or `rm -rf`, and never `rm` anything under `/dev`;
-- keep each file's line endings (edit byte-safely);
-- never move a harness premise or loosen a tolerance;
-- no invented numbers on screens (every figure a model getter);
-- verdict colours only for verdicts;
-- gameplay or trace-moving changes only with Jerus's word.
+## 3. The batch shape (Jerus's)
+- **Orchestrator:** briefs, gate, deploy. **It writes no code** (Jerus, 2026-10-04: "remember you dont code, only the agents you spawn").
+- **Agents:** a research or design spec for big work → an Opus implementer → a fresh Opus docs pass → the orchestrator gates and deploys → records on Sonnet. The Sonnet records trial is now confirmed twice.
+- **Parallel work:** a worktree (`cbs-b`) plus `git merge-file`, or a read-only spec running beside an implementer. Run at most one JVM per agent, because the machine has 2 cores.
+- **Notes are capped:** 120–150 lines.
+- **Rules for every agent:** no permission prompts; no `rm`; keep line endings; never move a harness premise or loosen a tolerance (premises change only where Jerus's approved design makes them wrong, each listed); no invented numbers; verdict colours only for verdicts.
 
 ## 4. Deploy to the PC
+1. Diff the tree against what the PC has. Deploy the sources and only the documents whose content changed; ignore the map date lines and put those files back to the PC's copies.
+2. Run `device_commit_files` at most 50 at a time.
+3. Stage the sources back and `cmp` each one.
+4. Refresh `workbench\workbench.zip` at the end.
 
-1. Copy the changed files to `/mnt/user-data/outputs/deploy-<tag>/<path>`.
-2. **Deploy only the documents whose content changed:** Maps rewrites every map's date line. Diff each against the base with the "generated … by" line ignored, deploy those that differ, and put the base copies back for the date-only ones so the tree matches the PC (1004a sent 49 files instead of 274).
-3. Run `device_commit_files` to `C:\Users\Jerus\Documents\NetBeansProjects\CityBuilderSim\<path>`, at most 50 per call.
-4. `device_stage_files` the files back and `cmp` each one: all must be identical. Delete old staged copies first if any are there.
-5. Refresh `workbench\workbench.zip` at the end of the session.
-
-## 5. Saves and the PC check
-
-- **Saves** live in `C:\Users\Jerus\AppData\Roaming\CityBuilderSim\saves\`. **Slots 1–9 are Jerus's; never write them. Slot 10 is the test slot.** Before running the game, stage and keep a copy of `autosave*.json`, `slot-10*.json` and `settings.json` (with their `.bak`s). Quitting autosaves, so commit those back afterwards.
-- **Jerus checks the screens himself** with a checklist (the todo's CHECK items) and sends back what looks wrong.
-- **If screen control is needed:**
-  1. Request "Apache NetBeans IDE 18" and "File Explorer".
-  2. In NetBeans, use **Run → Run Project (CityBuilderSim)**.
-  3. While the game runs, resolve and request `java.exe`.
-  4. The taskbar's Java icon is at about (1000, 847).
-  5. The game window is 1,389 × 868. Positions: Continue (249, 269); the rail's Menu (35, 845); Quit (249, 580), confirm (744, 462).
+## 5. Saves
+Slots 1–9 are Jerus's; never write them. Slot 10 is the test slot. Jerus checks the screens himself from the todo's CHECK lists.
 
 ## 6. Open, in order
+1. **Jerus's PC check:** 0.7.42–0.7.45 first (the todo's CHECK 0.7.42 TO 0.7.45), then the older lists.
+2. **His answers to CONFIRM (0.7.42 to 0.7.45):**
+   - S1's window;
+   - H1 against ★1;
+   - high rates pushing rent through the landlords' interest;
+   - the shelf cap and A2's hot spells;
+   - grocers at their floor losing money;
+   - B16;
+   - credibility's speeds.
 
-1. Jerus's PC check of 0.7.40/0.7.41 (the checklist was sent 2026-10-04), then 0.7.34–0.7.39.
-2. His answers to CONFIRM: 0.7.40/0.7.41's ★ first (the road red at 111% served, care over 100% on the rings, a run funded only up to a refusal), then 0.7.39's D2 and D7.
-3. The model questions awaiting his word (one batch).
-4. The manual: still version 11 at 0.7.23; it now runs to 0.7.41, plus the five false sections in the todo.
-5. **Housekeeping:** `claude/index.md` still needs its line for `fixes-from-playing-0-7-39.md` (under The interface, after the fund's line).
+   Then the older CONFIRM lists.
+3. **The model questions awaiting his word.**
+4. **The manual:** version 11 at 0.7.23; the docs pass lists every false section.
+5. **Housekeeping:** `claude/index.md` needs lines for `fixes-from-playing-0-7-39.md`, `why-easy-money-does-not-inflate.md` and `inflation-that-answers-to-money.md`.

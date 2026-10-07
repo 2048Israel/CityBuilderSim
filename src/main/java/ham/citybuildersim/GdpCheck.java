@@ -1,6 +1,6 @@
 package ham.citybuildersim;
 
-/** Verifies the national accounts: the identity, growth rates, and the government's books. */
+/** Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them). */
 public class GdpCheck {
 
     static int fails = 0;
@@ -15,6 +15,12 @@ public class GdpCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-50s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    /** Where a good stands in NationalAccounts.HELD. */
+    static int heldAt(Good g) {
+        for (int i = 0; i < NationalAccounts.HELD.length; i++) if (NationalAccounts.HELD[i] == g) return i;
+        throw new IllegalStateException(g + " is not in NationalAccounts.HELD");
     }
 
     public static void main(String[] args) {
@@ -172,6 +178,63 @@ public class GdpCheck {
         boutique.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0);
         check("...and running it down runs the term the other way",
                 boutique.getInventoryLuxuries(), -8_640);
+
+        /*
+         * AND EVERY OTHER GOOD A SECTOR HOLDS (0.7.58, batch J1c): the fifth
+         * term. Seed 15 of the ensemble's import shock read GDP of -16,056 in
+         * month 637 - raw imports of 127,175 against GDP of about 120,000 -
+         * and the month's import was a new railway's fleet: twenty sets of
+         * rolling stock, 90,460, paid to the world with nothing saying the
+         * railway still had them. The fixJ1b notes blamed the mills stocking
+         * ore; there is no ore stock (iron is not stockable). The numbers
+         * below are that month's: twenty sets at 4,523.
+         */
+        System.out.println("\n--- a fleet bought abroad is stock held, not negative output ---");
+
+        int rs = heldAt(Good.ROLLING_STOCK);
+        double setPrice = 90_460.0 / 20;
+        double[] heldPrice = new double[NationalAccounts.HELD.length];
+        heldPrice[rs] = setPrice;
+        NationalAccounts fleet = new NationalAccounts();
+        fleet.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new double[NationalAccounts.HELD.length], heldPrice);
+        double[] twenty = new double[NationalAccounts.HELD.length];
+        twenty[rs] = 20;
+        fleet.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90_460, 0, twenty, heldPrice);
+        check("a railway taking delivery of its fleet books it as stock held", fleet.getInventoryHeld(), 90_460);
+        check("...so a month of stocking up on imported inputs is not negative output", fleet.getGdp(), 0);
+        assertTrue("...not negative at all", fleet.getGdp() >= 0);
+        check("...and the identity holds", fleet.getGdp(),
+                fleet.getConsumption() + fleet.getInvestment() + fleet.getGovernment() + fleet.getNetExports());
+
+        /*
+         * THE PRODUCTION SIDE AGREES. Production is what was made less what
+         * was used up: inputs bought, less what of them went into stock. The
+         * delivery month made nothing and used nothing - 90,460 bought,
+         * 90,460 of it held - so its value added is zero, the figure above.
+         *
+         * The next month the railway hauls a mill's steel out: the mill ships
+         * 2,940 and pays the railway 300 for the haulage, and the railway's
+         * fleet wears a 240th of itself (sectors.Rail.SET_LIFE_MONTHS). The
+         * mill adds 2,940 - 300; the railway adds its 300 less the wear it
+         * used; the expenditure side is the export and the fall in stock held.
+         */
+        double[] worn = twenty.clone();
+        double wear = 20 / ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS;
+        worn[rs] = 20 - wear;
+        fleet.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2_940, worn, heldPrice);
+        double haulage = 300;
+        double production = (2_940 - haulage) + (haulage - wear * setPrice);
+        check("a month of hauling: the fleet's wear is its use", fleet.getInventoryHeld(), -wear * setPrice);
+        check("...and GDP by expenditure is what the mill and the railway added", fleet.getGdp(), production);
+
+        // ...and a save from before the term sets the baseline rather than
+        // booking every fleet in the city as one month's output.
+        NationalAccounts older = new NationalAccounts();
+        older.restoreHeld(null);
+        older.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, twenty, heldPrice);
+        check("an older save's first month books no change in the goods held", older.getInventoryHeld(), 0);
+        older.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, worn, heldPrice);
+        check("...and the month after measures against it", older.getInventoryHeld(), -wear * setPrice);
 
         System.out.println("\n--- a price move is not production ---");
 
@@ -396,6 +459,142 @@ public class GdpCheck {
         check("and a reloaded city reports the same interest",
                 back.getEconomyManager().getNationalAccounts().getInterestExpense(),
                 played.getInterestExpense());
+
+        /*
+         * G COUNTS THE SCHOOLS AND TRANSIT (0.7.49, B9). Government
+         * consumption is the city's services with no market price, valued at
+         * what they cost: the utilities' staff, care and the police counted
+         * from the start, the schools never, and transit's bill was paid by
+         * nobody. A town with a school and a Bus Network, played until both
+         * cost something; G is the five costs, each its service's own figure,
+         * as the month before struck them: the accounts are struck at the top
+         * of the month, before 6d strikes the month's own.
+         */
+        GameFiles servedFiles = GameFiles.scratch("gdpcheck-g");
+        Game served = new Game(servedFiles);
+        System.setOut(quiet);
+        try {
+            served.newGame();
+            served.setCashForTest(Founding.WEALTHY_CASH);
+            served.getLandManager().setOwnedSqFt(served.getLandManager().getOwnedSqFt() + 100_000_000L);
+            for (BuildingsTemplate t : served.getBuildingManager().getTemplates()) {
+                if (t.getName().equals("Low-Rise Apartments")) served.buildStack(t, 40, true);
+                if (t.getName().equals("Small Grocery Store"))  served.buildStack(t, 6, true);
+                if (t.getName().equals("Coal Power Plant"))     served.buildStack(t, 1, true);
+                if (t.getName().equals("Water Treatment Plant"))served.buildStack(t, 1, true);
+                if (t.getName().equals("Paved Road"))           served.buildStack(t, 12, true);
+                if (t.getName().equals("Elementary School"))    served.buildStack(t, 1, true);
+                if (t.getName().equals("Bus Network"))          served.buildStack(t, 1, true);
+            }
+            served.simulateMonths(6);
+        } finally { System.setOut(out); }
+        double schools = served.getEducation().getGrossCost(), transitBill = served.getEconomyManager().getTransitBill();
+        double others = served.getServicesManager().getUtilitiesHandler().getUtilityPayroll()
+                + served.getHealthcare().getGrossCost() + served.getCrime().getGrossCost();
+        System.out.printf("   the schools cost %,.2f and transit %,.2f a month%n", schools, transitBill);
+        assertTrue("fixture: the town's school and its buses both cost something", schools > 0 && transitBill > 0);
+        System.setOut(quiet);
+        try { served.simulateMonths(1); } finally { System.setOut(out); }
+        check("G counts the schools' and transit's cost",
+                served.getEconomyManager().getNationalAccounts().getGovernment(),
+                others + schools + transitBill);
+        /*
+         * EVERY GOOD A SECTOR HOLDS IS IN A TERM (0.7.58). The rule the
+         * luxury note in NationalAccounts states - any good a sector can hold
+         * and does not consume within the month belongs in the inventory
+         * block the day the good is written - held as a check rather than a
+         * memory: every good a sector of this city keeps a warehouse of (a
+         * stockable good it makes) or a pantry of is the shelf's, materials,
+         * luxuries, one of HELD, or the one named and left out (NOT_HELD).
+         */
+        System.out.println("\n--- every good a sector holds is in the accounts ---");
+        java.util.Set<Good> counted = java.util.EnumSet.of(Good.MATERIALS, Good.LUXURIES, NationalAccounts.NOT_HELD);
+        counted.addAll(java.util.Arrays.asList(ham.citybuildersim.sectors.Retail.SHELF));
+        counted.addAll(java.util.Arrays.asList(NationalAccounts.HELD));
+        StringBuilder missed = new StringBuilder();
+        int declared = 0;
+        for (Sector s : served.getSectors().all()) {
+            for (Good gd : Good.values()) {
+                boolean holds = (gd.stockable() && s.isMaker(gd)) || s.hasPantry(gd);
+                if (!holds) continue;
+                declared++;
+                if (!counted.contains(gd)) missed.append(' ').append(s.key()).append(':').append(gd);
+            }
+        }
+        System.out.printf("   %d warehouses and pantries declared across the sectors%s%n", declared,
+                missed.length() == 0 ? ", every one counted" : "; not counted:" + missed);
+        assertTrue("every good a sector holds is in an inventory term, or named as left out", missed.length() == 0);
+
+        /*
+         * ...AND IN A CITY: a railway that buys its fleet abroad. RailCheck's
+         * trading town - nine hundred houses and thirty foundries, its railway
+         * held so what stands is what the fixture laid - played three years;
+         * two spurs laid on their ground, and the month the trains it bought
+         * land: the fleet's import is more than the town makes in a month, so
+         * with nothing against it the month would read negative. The fleet is
+         * in the held term, matched against its import to within its first
+         * month's wear and the move in the price a set lands at (the railway
+         * carrying its own freight takes the haulage out of that price), and
+         * the month is not negative.
+         */
+        System.out.println("\n--- a city whose railway buys its fleet abroad ---");
+        GameFiles railFiles = GameFiles.scratch("gdpcheck-rail");
+        Game railTown = new Game(railFiles);
+        System.setOut(quiet);
+        try {
+            railTown.newGame();
+            railTown.setCashForTest(Founding.WEALTHY_CASH);
+            railTown.getBusinessInvestment().holdSector(Sectors.RAIL);
+            railTown.getLandManager().setOwnedSqFt(400_000_000L);
+            BuildingManager b = railTown.getBuildingManager();
+            railTown.buildStack(b.getTemplateByName("House"), 900, true);
+            railTown.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
+            railTown.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
+            railTown.buildStack(b.getTemplateByName("Paved Road"), 60, true);
+            railTown.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            railTown.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            railTown.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
+            railTown.buildStack(b.getTemplateByName("Steel Foundry"), 30, true);
+            railTown.simulateMonths(36);
+            RailCheck.lay(railTown, "Rail Spur", 2);
+            railTown.simulateMonths(1);
+        } finally { System.setOut(out); }
+        ham.citybuildersim.sectors.Rail rail = railTown.getSectors().rail();
+        GoodsMarket sets = railTown.getMarkets().get(Good.ROLLING_STOCK);
+        double bought = rail.fleet(), landedThen = EconomyManager.heldPrice(sets);
+        System.setOut(quiet);
+        try { railTown.simulateMonths(1); } finally { System.setOut(out); }
+        NationalAccounts town = railTown.getEconomyManager().getNationalAccounts();
+        Sector.Split paid = rail.statement().bought.get(Good.ROLLING_STOCK);
+        double imported = paid == null ? 0 : paid.abroad;
+        double landedNow = EconomyManager.heldPrice(sets);
+        // The units the month's accounts read - the fleet less the month's
+        // wear, before the month's clearing bought the wear back - against
+        // none the month before, when the track stood with no trains.
+        double held = town.getLastHeldUnits()[rs] * landedNow;
+        double slack = (bought / ham.citybuildersim.sectors.Rail.SET_LIFE_MONTHS) * landedNow + bought * Math.abs(landedNow - landedThen);
+        System.out.printf("   %.1f sets bought abroad for %,.2f; held %,.2f at %,.2f a set; GDP %,.2f (held stock %,.2f, NX %,.2f)%n",
+                bought, imported, held, landedNow, town.getGdp(), town.getInventoryHeld(), town.getNetExports());
+        assertTrue("fixture: the railway bought its fleet abroad", bought > 0 && imported > 0);
+        double without = town.getGdp() - town.getInventoryHeld();
+        System.out.printf("   without the held term the month would read %,.2f%n", without);
+        assertTrue("fixture: more than the town makes in a month, so with nothing against it the month reads negative", without < 0);
+        assertTrue("the fleet's import is matched by the stock it went into, to within its wear and the price's move",
+                Math.abs(held - imported) <= slack + 1e-6 * imported);
+        assertTrue("...so the month it lands is not negative output", town.getGdp() >= 0);
+        check("...and the identity holds in it", town.getGdp(),
+                town.getConsumption() + town.getInvestment() + town.getGovernment() + town.getNetExports());
+        try (var walk = java.nio.file.Files.walk(railFiles.getDirectory())) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        } catch (java.io.IOException ignored) { }
+
+        try (var walk = java.nio.file.Files.walk(servedFiles.getDirectory())) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        } catch (java.io.IOException ignored) { }
 
         try (var walk = java.nio.file.Files.walk(files.getDirectory())) {
             walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {

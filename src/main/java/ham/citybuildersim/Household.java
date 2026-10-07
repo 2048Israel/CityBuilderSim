@@ -160,6 +160,14 @@ public abstract class Household {
      */
     double investmentIncome;
 
+    /**
+     * ...and the same, smoothed over HouseholdBalance.MEANS_INCOME_MONTHS
+     * (0.7.45): what the food assistance means test reads, so a coupon month
+     * does not take a household out of assistance and the next month put it
+     * back. A position, saved; struck once a month where the voucher is.
+     */
+    double meansIncome;
+
     /** Months this cell cannot borrow, after a discharge. A countdown, so a stock. */
     int lockout;
 
@@ -321,13 +329,15 @@ public abstract class Household {
      * LuxuryCounter.dine(), which runs in the second half of the month, and read
      * by HouseholdBalance.advanceMonth() in the FIRST half of the next one -
      * where it is added to what the household ate before that is compared
-     * against subsistence. So it crosses a month boundary, which means it has
+     * against the baskets it needs (against subsistence, in money, until
+     * 0.7.43). So it crosses a month boundary, which means it has
      * to survive a save, and it is cleared after the read rather than in
      * clearWorking().
      *
      * A MONTH LATE, AND HONEST FOR THE SAME REASON THE DIVIDEND IS: the line
-     * it joins is already last month's - `ate` is `planned * delivered`, and
-     * planned is the plan the shops sold against. Both halves of what a
+     * it joins is already last month's - `ate` is the baskets the household
+     * was handed at last month's sale (`planned * delivered`, the plan the
+     * shops sold against, until 0.7.43). Both halves of what a
      * household ate therefore come from the same month, which is the property
      * that actually matters.
      *
@@ -383,6 +393,55 @@ public abstract class Household {
     /** What one of these households could fund next month: the plan's own figure, kept for the care test. */
     double spendable;
 
+    /* =====================================================================
+       GROCERIES AT A PRICE (0.7.43; the project's spec-inflation.md 2.6)
+
+       The grocer used to read `want` - subsistence and most of what was left
+       over, in money, divided by the shelf price - so the city "wanted"
+       fourteen to seventeen times the baskets it could eat, and no price
+       could clear it. A household now asks for what it eats: `need` baskets,
+       one a head (baskets()), all of them up to the satiation price and a
+       little fewer above it, and never more than `foodMoney` buys
+       (HouseholdBalance.groceryDemandOf()). `want` and `planned` stay as the
+       discretionary plan the counter, the table and isGoingShort() read;
+       they no longer reach the grocer.
+
+       The first three are struck by plan() (the voucher just before it, by
+       HouseholdBalance.foodAssistanceFor()); the last four are POSITIONS,
+       like mealsEaten: written at the sale, at the bottom of the month, and
+       read at the next month's top by the hunger measure and the shop split,
+       so they cross a save (HouseholdBalance.toCellSaveArray()).
+       ===================================================================== */
+
+    /** Baskets one of these households needs a month: baskets(), struck by plan(). */
+    double need;
+
+    /** The money one of these households could put to food at the till: the plan's spendable and its food assistance voucher. Struck by plan(). */
+    double foodMoney;
+
+    /** The food assistance voucher one of these households holds this month, in money: HouseholdBalance.foodAssistanceFor(), set before plan(). Nothing when the dial is at 0. */
+    double voucher;
+
+    /** Baskets one of these households got at the last sale - a position, read at the next month's top. */
+    double groceriesGot;
+
+    /** ...the baskets it asked for at the price the shelf charged, which it would have had at full shelves - the money half of the hunger. */
+    double groceriesAsked;
+
+    /** ...the baskets it needed at that sale: `need`, or nothing for a cell too empty to be struck - what the hunger is measured against. */
+    double groceriesNeed;
+
+    /** ...and what the treasury paid toward them, per household: the voucher, up to the baskets got at the price. */
+    double assistance;
+
+    public double need()           { return need; }
+    public double foodMoney()      { return foodMoney; }
+    public double voucher()        { return voucher; }
+    public double groceriesGot()   { return groceriesGot; }
+    public double groceriesAsked() { return groceriesAsked; }
+    public double groceriesNeed()  { return groceriesNeed; }
+    public double assistance()     { return assistance; }
+
     /** The care bill this household skipped at the last strike, per household - what it ate instead. */
     double careSkipped;
 
@@ -435,7 +494,10 @@ public abstract class Household {
     /* --------------------- last month's working, per household ---------------------
      * FLOWS: recomputed every strike. The four the next month reads against
      * (want, planned, interest, subsistence) are saved, for the reasons
-     * HouseholdBalance.toSaveArray() gives; the rest are for the screen.
+     * HouseholdBalance.toSaveArray() gives, and since 0.7.46 afterFixed, a
+     * cell slot, because the food assistance's means test reads it between
+     * presses (A4: a reload struck it again from the moment of loading); the
+     * rest are for the screen.
      */
 
     /** Take-home this month: wages or pension, after tax and contributions. */
@@ -1085,6 +1147,13 @@ public abstract class Household {
                 + abroad * Math.max(0, localPerUsd) + paper * Math.max(0, paperRatio)
                 + planningRoom();
         planned = Math.min(want, spendable);
+        /*
+         * ...AND WHAT IT TAKES TO THE GROCER (0.7.43): the baskets it eats and
+         * the money it could put to them - everything the plan can fund, and
+         * the treasury's voucher on top. See GROCERIES AT A PRICE.
+         */
+        need = baskets();
+        foodMoney = spendable + voucher;
         return planned;
     }
 
@@ -1262,6 +1331,7 @@ public abstract class Household {
         sentAbroad = 0; broughtHome = 0; foreignInterest = 0;
         studentBorrowed = 0; studentRepaid = 0; studentInterest = 0; evicted = 0;
         accountFee = 0; loanFee = 0;
+        need = 0; foodMoney = 0; voucher = 0;
     }
 
     /** The cell is empty: no position either. */
@@ -1269,6 +1339,8 @@ public abstract class Household {
         savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
         paper = 0; bonds = 0; bondFace.clear();
         cars = 0; mealsEaten = 0; carePaid = 1;
+        groceriesGot = 0; groceriesAsked = 0; groceriesNeed = 0; assistance = 0;
+        meansIncome = 0;
         java.util.Arrays.fill(shares, 0);
         clearWorking();
     }
@@ -1302,7 +1374,7 @@ public abstract class Household {
          * than the twenty-five constants of the other family, and this is its
          * first sighting.
          */
-        investmentIncome *= scale;
+        investmentIncome *= scale;  meansIncome *= scale;
         disposable *= scale;  afterFixed *= scale;  interest *= scale;
         drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;
         accountFee *= scale;  loanFee *= scale;
@@ -1313,6 +1385,8 @@ public abstract class Household {
         // ...and the plan's spendable and the care bill skipped are money
         // too; the share who paid (carePaid) is a share and stays.
         spendable *= scale;  careSkipped *= scale;
+        // ...and the grocer's money (0.7.43); the baskets are baskets.
+        foodMoney *= scale;  voucher *= scale;  assistance *= scale;
         /*
          * `mealsEaten` IS NOT HERE, and for `cars`' reason one paragraph down:
          * it is a COUNT OF DINNERS. A reform divides every amount of money in

@@ -485,7 +485,7 @@ public class ConstructionControlCheck {
                 g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().construction())));
         close("...no material, and the tax in it", q.price().total, q.price().sticker / (1 - rB), 1e-12);
         double places0 = bm.getBuiltEducationPlaces()[t.getTeaches().ordinal()];
-        int posts0 = 0;
+        long posts0 = 0;
         for (JobType job : JobType.values()) posts0 += bm.getTotalJobsAtEveryPost(job);
         double footprint0 = bm.getTotalLandFootprint(), allocated0 = g.getLandManager().getAllocatedSqFt();
         double cash0 = g.getCash();
@@ -508,7 +508,7 @@ public class ConstructionControlCheck {
                 bm.getQuantity(t.getId()) == standing - 2);
         close("...its school places gone with them", bm.getBuiltEducationPlaces()[t.getTeaches().ordinal()],
                 places0 - 2 * t.getCapacity(), 0);
-        int posts1 = 0, staff = 0;
+        long posts1 = 0; int staff = 0;
         for (JobType job : JobType.values()) { posts1 += bm.getTotalJobsAtEveryPost(job); staff += 2 * t.getJobs(job); }
         assertTrue("...and their posts", posts1 == posts0 - staff);
         if (done == null) close("the ground is held until the demolition is done", bm.getTotalLandFootprint(), footprint0, 0);
@@ -589,7 +589,7 @@ public class ConstructionControlCheck {
                 fmt(owner.statement().operatingIncome));
         double till0 = owner.getCash(), cash0 = g.getCash();
         double debt0 = g.getEconomyManager().getBusinessDebtManager().getPrincipal(RE);
-        int homes0 = bm.getTotalHomes(), houses0 = bm.getQuantity(t.getId());
+        long homes0 = bm.getTotalHomes(); int houses0 = bm.getQuantity(t.getId());
         double households0 = g.getFamilies().totalHouseholds(), people0 = g.getCohorts().total();
         out.printf("      %d homes stand, %.1f needed, %.1f households%n", homes0, g.getFamilies().homesNeeded(),
                 households0);

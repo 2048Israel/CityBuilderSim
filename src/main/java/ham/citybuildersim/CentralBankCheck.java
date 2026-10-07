@@ -40,7 +40,9 @@ import java.util.List;
  *      cash first, and the remittance carries the interest back less what
  *      reserves cost - and a buyback pays the bank that held the bond.
  *   6. The ceiling binds, and the arrears rule pays the promises, refuses the
- *      rest, books what it refused, and pays it down first when cash returns.
+ *      rest, books what it refused, and pays it down first when cash returns -
+ *      and since 0.7.55 a sector paid arrears shows them on its cash-flow
+ *      statement, which still reconciles.
  *   7. The autopilot: the rule moves the dial, the player's hand stops it, and
  *      the toggle survives a save - as does a dial at 0%.
  *   8. A reform scales the money figures and not the ratios.
@@ -117,12 +119,36 @@ import java.util.List;
  *      one ledger carries what was netted once; every month closes the
  *      audit; a save and load keeps the paper, the book and the ledger.
  *
+ * And since 0.7.52, how strict the rule holds the target - Jerus: "beside the
+ * target inflation, how strict, very strict then it trys to have it below the
+ * target, very loose and the target is a suggestion" (DebtManager, HOW
+ * STRICT):
+ *
+ *  21. At Standard the rule is the 0.7.51 line to the bit, on a grid of
+ *      targets and inflations, the odd values and a hundred thousand drawn
+ *      ones, and a new city's rule, advice, neutral rate and holdingRate()
+ *      are the old ones; a strict step on its aim - never under
+ *      MIN_INFLATION_TARGET - sets the neutral real rate plus the aim, a
+ *      loose one holds the neutral rate inside its band and answers only
+ *      the excess past it, every step's weight is over one, and over the
+ *      target the rate rises with each step; the words say what it aims at.
+ *      Then a probe city - the playtest's founding and rhythm (its seed 11's
+ *      shape since 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
+ *      months from one save at each end and at Standard: the Policy tab's
+ *      preview (PolicyPreview.ruleAt()) at the step in force is the rule's
+ *      own; very strict holds prices lower than Standard and Standard lower
+ *      than very loose; neither end's rate reaches the dial's stop or leaves
+ *      its last year more than a full miss off the target; and the very
+ *      loose city trusts the bank less. The dial is a decision, survives a
+ *      save, and a save without it, or with a name this build does not
+ *      know, reads Standard.
+ *
  * The numbers are labels, not the running order. The run prints 2, 3 and 4
  * first, on bare objects; then it builds a city, where 1 is held on every
  * month the harness plays and its closing assertions - every kind of flow
  * seen, every month closed - print after 5, which supplies the treasury's
  * kinds; then 6, 7, 9 and 8, because 8's reform scales the advances and
- * arrears 9's fixture leaves behind; then 10; and 11 to 20 last, in order.
+ * arrears 9's fixture leaves behind; then 10; and 11 to 21 last, in order.
  *
  * @author Jerus
  */
@@ -536,6 +562,10 @@ public class CentralBankCheck {
         double grantArrears = city.getArrearsByLine().getOrDefault(TreasuryLine.STUDENT_GRANTS, 0.0);
         assertTrue("fixture: the treasury owes arrears", arrearsOwed > 0);
         double advancesOwed = cb.getAdvancesToTreasury();
+        String builders = city.getSectors().construction().key(), shops = city.getSectors().retail().key();
+        double owedBuilders = city.getArrearsOwedTo(builders), owedShops = city.getArrearsOwedTo(shops);
+        assertTrue("fixture: the builders are owed their repairs and the shops their subsidy",
+                owedBuilders > 0 && owedShops >= 500);
         city.setCashForTest(advancesOwed * 1.2 + arrearsOwed + 200_000);
         play(city);
         close("the central bank was repaid in full", cb.getAdvancesToTreasury(), 0, 1e-6);
@@ -550,6 +580,27 @@ public class CentralBankCheck {
         assertTrue("...in that order", repaidAt >= 0 && arrearsAt > repaidAt);
         assertTrue(String.format("...and the audit closed on all %d months", monthsPlayed),
                 monthsBroken == 0);
+
+        // 0.7.55: until now the cash reached the till and no line of its
+        // statement, and unexplained() held it (fixH2's finding).
+        out.println("\n--- ...and a sector paid arrears shows them on its statement (0.7.55) ---");
+        SectorBooks.SectorMonth builtBooks = city.getSectorBooks().get(builders);
+        SectorBooks.SectorMonth shopBooks = city.getSectorBooks().get(shops);
+        close("the builders' cash-flow statement carries the arrears paid them",
+                builtBooks.arrearsPaid(), owedBuilders, 1e-6);
+        close("...and the shops' theirs", shopBooks.arrearsPaid(), owedShops, 1e-6);
+        double onStatements = 0, worstGap = 0;
+        boolean allClose = true;
+        for (Sector s : city.getSectors().all()) {
+            SectorBooks.SectorMonth m = city.getSectorBooks().get(s);
+            onStatements += m.arrearsPaid();
+            worstGap = Math.max(worstGap, Math.abs(m.unexplained()));
+            if (!(Math.abs(m.unexplained()) <= MoneyAudit.tolerance(1e-6, m.unexplainedScale()))) allClose = false;
+        }
+        close("...every dollar paid down to a till is on a statement", onStatements,
+                city.getArrearsPaidThisMonth(), 1e-6);
+        out.printf("   the largest gap on any sector's statement: %.3g%n", worstGap);
+        assertTrue("...and every sector's statement reconciles to its cash", allClose);
 
         /* ================= 7. the autopilot ================= */
         out.println("\n--- 7. the rule moves the dial, and the player's hand stops it ---");
@@ -689,6 +740,7 @@ public class CentralBankCheck {
         theSplitFloor();
         theRolloverAtIssue();
         theSurplusPaysEveryone();
+        howStrict();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);
@@ -1431,5 +1483,288 @@ public class CentralBankCheck {
 
         assertTrue(String.format("every month of the surplus's branches closed the audit, and M0"
                 + " moved by exactly the money made (%d months in all)", monthsPlayed), monthsBroken == 0);
+    }
+
+    /* =====================================================================
+       21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager,
+       HOW STRICT): Standard is the old rule to the bit, each step's shape
+       is its constants', and in a probe city the ends hold prices lower and
+       higher than Standard without a spiral.
+       ===================================================================== */
+
+    /** The rule as it was until 0.7.51, written out: the neutral rate, the target's distance from the default, and TAYLOR_WEIGHT on the gap. */
+    static double oldRule(double inflation, double target) {
+        return DebtManager.NEUTRAL_RATE + (target - DebtManager.DEFAULT_INFLATION_TARGET)
+                + DebtManager.TAYLOR_WEIGHT * (inflation - target);
+    }
+
+    /** Equal to the bit (a NaN as any NaN). */
+    static boolean bits(double a, double b) { return Double.doubleToLongBits(a) == Double.doubleToLongBits(b); }
+
+    /** The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. */
+    static final int STRICT_BRANCH = 600;
+
+    /** How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. */
+    static final int STRICT_HORIZON = 240;
+
+    static void howStrict() throws Exception {
+        out.println("\n--- 21. how strict: Standard is the old rule to the bit, the ends hold prices lower and higher, and neither spirals ---");
+        DebtManager.Strictness standard = DebtManager.Strictness.STANDARD;
+        DebtManager.Strictness strictest = DebtManager.Strictness.VERY_STRICT;
+        DebtManager.Strictness loosest = DebtManager.Strictness.VERY_LOOSE;
+
+        /* ---- Standard is the 0.7.51 line, to the bit ---- */
+        int points = 0, differ = 0;
+        double[] odd = { Double.NaN, 0.0, -0.0, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.MIN_VALUE, -Double.MIN_VALUE };
+        for (int t = 0; t <= Math.round(DebtManager.MAX_INFLATION_TARGET / .005); t++) {
+            double target = t * .005;
+            for (int k = -400; k <= 2000; k++) {
+                double inflation = k * .0005;
+                points++;
+                if (!bits(DebtManager.ruleRate(inflation, target, standard), oldRule(inflation, target))) differ++;
+            }
+            for (double inflation : odd) {
+                points++;
+                if (!bits(DebtManager.ruleRate(inflation, target, standard), oldRule(inflation, target))) differ++;
+            }
+            points++;
+            if (!bits(DebtManager.ruleRate(target, target, standard), oldRule(target, target))) differ++;
+        }
+        java.util.Random draw = new java.util.Random(52);
+        for (int i = 0; i < 100_000; i++) {
+            double target = draw.nextDouble() * DebtManager.MAX_INFLATION_TARGET, inflation = draw.nextDouble() * 3 - 1;
+            points++;
+            if (!bits(DebtManager.ruleRate(inflation, target, standard), oldRule(inflation, target))) differ++;
+        }
+        assertTrue(String.format("at Standard the rule is the 0.7.51 line to the bit (%,d points, %d differ)", points, differ),
+                differ == 0);
+        DebtManager fresh = new DebtManager();
+        boolean asItWas = fresh.getStrictness() == standard;
+        for (double target : new double[] { DebtManager.MIN_INFLATION_TARGET, DebtManager.DEFAULT_INFLATION_TARGET, .05,
+                DebtManager.MAX_INFLATION_TARGET }) {
+            fresh.setInflationTarget(target);
+            asItWas &= bits(fresh.neutralRate(), oldRule(target, target));
+            for (int k = -400; k <= 2000; k++) {
+                double inflation = k * .0005, old = oldRule(inflation, target);
+                double clamped = Math.max(DebtManager.MIN_POLICY_RATE, Math.min(DebtManager.MAX_POLICY_RATE, old));
+                asItWas &= bits(fresh.ruleRate(inflation), old) && bits(fresh.advisedPolicyRate(inflation), clamped)
+                        && bits(fresh.holdingRate(inflation), clamped);
+            }
+        }
+        assertTrue("...and a new city's is Standard: its rule, advice, neutral rate and holdingRate() are the old", asItWas);
+
+        /* ---- each step's shape, from its constants ---- */
+        double target = DebtManager.DEFAULT_INFLATION_TARGET;
+        double neutral = DebtManager.NEUTRAL_RATE + (target - DebtManager.DEFAULT_INFLATION_TARGET);
+        close("very strict aims STRICTEST_AIM under the target", strictest.aim(target), target - DebtManager.STRICTEST_AIM, 0);
+        close("...never under MIN_INFLATION_TARGET: at half that target it aims at the bottom",
+                strictest.aim(DebtManager.STRICTEST_AIM / 2), DebtManager.MIN_INFLATION_TARGET, 0);
+        boolean onAim = true, inBand = true, past = true, principle = true, rises = true;
+        for (DebtManager.Strictness s : DebtManager.Strictness.values()) {
+            principle &= s.weight > 1;
+            double aim = s.aim(target), band = s.band();
+            if (s.slack < 0) {
+                onAim &= Math.abs(DebtManager.ruleRate(aim, target, s)
+                        - (DebtManager.NEUTRAL_RATE + (aim - DebtManager.DEFAULT_INFLATION_TARGET))) <= 1e-15;
+            }
+            if (band > 0) {
+                for (double inside : new double[] { -band, -band / 2, 0, band / 2, band }) {
+                    inBand &= DebtManager.ruleRate(target + inside, target, s) == neutral;
+                }
+                past &= Math.abs(DebtManager.ruleRate(target + band + .01, target, s) - neutral - s.weight * .01) <= 1e-15
+                        && Math.abs(DebtManager.ruleRate(target - band - .01, target, s) - neutral + s.weight * .01) <= 1e-15;
+            }
+            if (s.ordinal() > 0) {
+                DebtManager.Strictness looser = DebtManager.Strictness.values()[s.ordinal() - 1];
+                rises &= DebtManager.ruleRate(target + .03, target, s) > DebtManager.ruleRate(target + .03, target, looser);
+            }
+        }
+        assertTrue("a strict step on its aim sets the neutral real rate plus the aim", onAim);
+        assertTrue("a loose step holds the neutral rate anywhere inside its band", inBand);
+        assertTrue("...and past it answers only the excess, at its weight, either way", past);
+        assertTrue("every step's weight is over one: past its band, inflation makes money dearer", principle);
+        assertTrue("three points over the target, each step sets more than the one looser", rises);
+        assertTrue("the words: Standard aims at the target",
+                DebtManager.aimWords(target, standard).equals("aims at 2.0%"));
+        assertTrue("...very strict under it, at its aim: " + DebtManager.aimWords(target, strictest),
+                DebtManager.aimWords(target, strictest).equals(String.format("aims under 2.0%%, at %.1f%%",
+                        (target - DebtManager.STRICTEST_AIM) * 100)));
+        assertTrue("...very loose acts only past its band: " + DebtManager.aimWords(target, loosest),
+                DebtManager.aimWords(target, loosest).startsWith(String.format("acts only past %.1f%%",
+                        (target + DebtManager.LOOSEST_BAND) * 100)));
+
+        /* ---- the probe city ---- */
+        GameFiles files = GameFiles.scratch("howstrict");
+        Game city = probeCity(files);
+        out.printf("   the probe city at m%d: %,d people, inflation %.2f%%, the dial %.2f%%, trust %.3f%n", city.getMonth(),
+                city.getPopulationManager().getPopulation(), city.getPriceIndex().inflation() * 100,
+                city.getDebtManager().getPolicyRate() * 100, city.getExpectations().getCredibility());
+        assertTrue("fixture: the city is at its branch, on the rule, at Standard and the default target",
+                city.getMonth() == STRICT_BRANCH && city.getDebtManager().isAutopilot()
+                        && city.getDebtManager().getStrictness() == standard && city.getDebtManager().getInflationTarget() == target);
+        quietly(() -> city.saveGame(9, "the branch"));
+        DebtManager.Strictness[] ends = { strictest, standard, loosest };
+        double[] inflation = new double[3], topRate = new double[3], lastYear = new double[3], trust = new double[3];
+        Game[] twins = new Game[3];
+        boolean previewIsTheRule = true;
+        for (int e = 0; e < ends.length; e++) {
+            final int i = e;
+            quietly(() -> {
+                twins[i] = new Game(files);
+                twins[i].loadGameSave(9);
+                twins[i].getDebtManager().setStrictness(ends[i]);
+            });
+            Game g = twins[i];
+            double start = g.getPriceIndex().getIndex(), yearAgo = start;
+            for (int m = 1; m <= STRICT_HORIZON; m++) {
+                if (m == STRICT_HORIZON - 11) yearAgo = g.getPriceIndex().getIndex();
+                strictMonth(g);
+                topRate[i] = Math.max(topRate[i], g.getDebtManager().getPolicyRate());
+                trust[i] += g.getExpectations().getCredibility() / STRICT_HORIZON;
+            }
+            inflation[i] = Math.pow(g.getPriceIndex().getIndex() / start, 12.0 / STRICT_HORIZON) - 1;
+            lastYear[i] = g.getPriceIndex().getIndex() / yearAgo - 1;
+            PolicyPreview.RuleAt preview = PolicyPreview.ruleAt(g, ends[i]);
+            DebtManager rule = g.getDebtManager();
+            previewIsTheRule &= preview.aims().equals(rule.aimWords()) && bits(preview.onTarget(), rule.ruleRate(target))
+                    && bits(preview.advised(), rule.advisedPolicyRate(g.getPriceIndex().inflation()));
+            out.printf("   %-11s %s: inflation %.3f%% a year over the %d months, the last year %.2f%%, the dial at most %.2f%%,"
+                    + " trust %.3f on average; %,d people at the end%n", ends[i].words, DebtManager.aimWords(target, ends[i]),
+                    inflation[i] * 100, STRICT_HORIZON, lastYear[i] * 100, topRate[i] * 100, trust[i],
+                    g.getPopulationManager().getPopulation());
+        }
+        assertTrue("the Policy tab's preview at the step in force is the rule's own, to the bit", previewIsTheRule);
+        assertTrue("very strict holds prices lower than Standard over the horizon", inflation[0] < inflation[1]);
+        assertTrue("...and Standard lower than very loose", inflation[1] < inflation[2]);
+        double fullMiss = Expectations.TOLERANCE + Expectations.MISS_SCALE;
+        for (int i : new int[] { 0, 2 }) {
+            assertTrue(ends[i].words + ": the dial never reaches its stop", topRate[i] < DebtManager.MAX_POLICY_RATE);
+            assertTrue("...and its last year is within a full miss of the target, no spiral",
+                    Math.abs(lastYear[i] - target) <= fullMiss);
+        }
+        assertTrue("very loose costs trust, through the lean measured against holding the target", trust[2] < trust[1]);
+
+        /* ---- the dial is a decision, and the save carries it ---- */
+        Game strict = twins[0];
+        boolean logged = false;
+        for (DecisionLog.Entry d : strict.getDecisions().entries()) {
+            logged |= d.label().equals("Central bank strictness to " + strictest.words);
+        }
+        assertTrue("setting it is a decision on the central bank's record", logged);
+        final Game[] back = new Game[1];
+        quietly(() -> {
+            strict.saveGame(9, "very strict");
+            back[0] = new Game(files);
+            back[0].loadGameSave(9);
+        });
+        assertTrue("it survives a save", back[0].getDebtManager().getStrictness() == strictest);
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
+                Files.readString(files.saveFile(9))).getAsJsonObject();
+        assertTrue("fixture: the save carries it by name", json.has("policyStrictness")
+                && json.get("policyStrictness").getAsString().equals(strictest.name()));
+        json.remove("policyStrictness");
+        Files.writeString(files.saveFile(9), json.toString());
+        quietly(() -> {
+            back[0] = new Game(files);
+            back[0].loadGameSave(9);
+        });
+        assertTrue("a save without it reads Standard", back[0].getLoadFailure() == null
+                && back[0].getDebtManager().getStrictness() == standard);
+        assertTrue("...as does a name this build does not know", DebtManager.Strictness.named("SEVERE") == standard
+                && DebtManager.Strictness.named(null) == standard);
+        LongPlaytest.cleanUp(files.getDirectory().getParent());
+    }
+
+    /**
+     * The probe city: the playtest's founding (LongPlaytest.founding()) in
+     * its seed 11's shape - 43 houses, then five months before the next 20
+     * - and its rhythm (LongPlaytest.main's skips, schools and advice) to
+     * STRICT_BRANCH, on the rule at the default target and Standard.
+     *
+     * A SEED WHOSE CITY IS CALM: from its month 600 the twins keep the same
+     * people and only the rule differs, so what the dial does to prices is
+     * not lost in a different city. Of the six seeds probed for 0.7.52 (the
+     * same branch and horizon), four held this order at both ends; seed 1's
+     * loose end ran 0.06 points under Standard, and seed 0's city -
+     * shrinking, with over a fifth of its workers out of work - ran both
+     * ends the other way. Seed 5's city was the calm one then. Since the
+     * playtest's player keeps its ground ahead (0.7.58, batch J1d) the
+     * cities are others: seed 5's twins end 795 people apart (6,694 to
+     * 7,489) and its loose end ran under Standard, and the calmest of the
+     * six is seed 2's - 10,635 to 10,636 people, 6.7% out of work - which
+     * holds the order (runs/fixJ1d-notes.md). Since the player prices its
+     * room to grow from that line and orders no more transit than its
+     * riders fill (0.7.67, batch M3b) the cities are others again: seed
+     * 2's is 29.0% out of work at month 600 and its loose end runs 0.02
+     * points under Standard, as do four more of the six. The calmest of
+     * the six, seed 3's (its twins 5,052 people each), holds the order but
+     * keeps inflation inside the target's tolerance under every step (2.13
+     * to 2.38% a year), so its very loose twin leans on nothing and trusts
+     * the bank exactly as Standard's does (0.948931 both): it cannot show
+     * what the lean costs. Of the sixteen shapes the inflation ensemble
+     * plays, the calmest that shows every premise is seed 11's - its twins
+     * 8,577 to 8,578 people, 18.5% out of work (seed 10's as calm, 20.7%
+     * out of work) - and it holds every assertion: 2.987% < 3.321% <
+     * 4.137%, the very loose twin's trust 0.624 against 0.933
+     * (runs/fixM3b-notes.md).
+     */
+    static Game probeCity(GameFiles files) {
+        Game g = new Game(files, LongPlaytest.founding());
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        try {
+            quietly(() -> {
+                g.run();
+                g.getDebtManager().setInflationTarget(DebtManager.DEFAULT_INFLATION_TARGET);
+                g.getDebtManager().setAutopilot(true);
+                g.setRolloverMode(LongPlaytest.ROLLOVER);
+                g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
+                g.setFundDial(LongPlaytest.FUND_DIAL);
+                LongPlaytest.villageBuild(g, "House", 43);
+                LongPlaytest.villageBuild(g, "Convenience Store", 3);
+                LongPlaytest.villageBuild(g, "Mixed Farm", 2);
+                LongPlaytest.run(g, 5);
+                LongPlaytest.villageBuild(g, "House", 20);
+                LongPlaytest.run(g, 4);
+                LongPlaytest.villageBuild(g, "Convenience Store", 2);
+                LongPlaytest.villageBuild(g, "Construction Depot", 1);
+                LongPlaytest.run(g, 5);
+                LongPlaytest.advise(g);
+                LongPlaytest.run(g, 6);
+                LongPlaytest.ensureSchools(g);
+                int stop = 0;
+                while (g.getMonth() < STRICT_BRANCH) {
+                    stop++;
+                    int skip = switch (stop % 6) { case 0 -> 100; case 1 -> 12; case 2 -> 24; case 3 -> 60; case 4 -> 6; default -> 120; };
+                    playTo(g, skip);
+                    if (g.getMonth() >= STRICT_BRANCH) break;
+                    LongPlaytest.ensureSchools(g);
+                    for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
+                        if (LongPlaytest.advise(g) == null) break;
+                        playTo(g, 1);
+                    }
+                    playTo(g, 2);
+                }
+            });
+        } finally {
+            LongPlaytest.out = was;
+        }
+        return g;
+    }
+
+    /** Up to `months` of the playtest's months, never past STRICT_BRANCH. */
+    static void playTo(Game g, int months) {
+        for (int i = 0; i < months && g.getMonth() < STRICT_BRANCH; i++) LongPlaytest.run(g, 1);
+    }
+
+    /** One of a twin's months: the playtest's month, with nothing built. */
+    static void strictMonth(Game g) {
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        try {
+            quietly(() -> LongPlaytest.run(g, 1));
+        } finally {
+            LongPlaytest.out = was;
+        }
     }
 }

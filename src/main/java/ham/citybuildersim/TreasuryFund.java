@@ -51,9 +51,12 @@ import java.util.List;
  *   this model (the bank pays deposit interest to households and sectors,
  *   never to the city), and the fund's is the government's too.
  *
- * WHAT IT IS WORTH is each holding at the mark every other holder uses: a
+ * WHAT IT IS WORTH is each holding at the mark every other holder uses -
+ * but for a share whose last trade is over a year old (0.7.48, C4): a
  * share at the exchange's price (Exchange.price(), the last trade or fair
- * value before one - what the households' shares are valued at), a bond at
+ * value before one - what the households' shares are valued at) while that
+ * trade is no older than Exchange.STALE_MARK_MONTHS, and the register's fair
+ * value after (Exchange.cityMark()), a bond at
  * the market's valuation (BondMarket.modelPrice(), what every participant
  * bids around), the preferred at par, the price it is redeemed at, and the
  * warrants at Black-Scholes (callValue()) - plus its cash. Game.fundValue()
@@ -74,19 +77,26 @@ import java.util.List;
  *   THE MIX: EQUITY_WEIGHT in shares, the rest in bonds (nbim.no: 70/30),
  *   shares across companies by market value, bonds across bonds by market
  *   value, never more than OWNERSHIP_LIMIT of a company (the GPFG mandate,
- *   14 May 2018). Each month it bids for the gap at fair value and takes
- *   only what is offered; what does not fit waits as cash. Outside the band
+ *   14 May 2018). Each month it bids for the gap - a share at the desk's
+ *   ask, fair value plus RULE_PREMIUM (0.7.48, C3), a bond at its value -
+ *   and takes only what is offered; what does not fit waits as cash. Outside the band
  *   (REBALANCE_OVER, REBALANCE_UNDER) it sells the overweight side at fair
  *   value, the desk's own rule for an excess.
  *
- *   MONEY OUT: TRANSFER_RATE of its whole value a year, a twelfth a month,
- *   to the budget as a revenue line - Norway's fiscal rule - from its cash
- *   only; what the cash cannot cover is not paid that month. Its dividends
+ *   MONEY OUT: the withdrawal dial's share of its whole value a month, to
+ *   the budget as a revenue line - by default TRANSFER_RATE a year, a
+ *   twelfth a month, Norway's fiscal rule - and at or under the default from
+ *   its cash only; what the cash cannot cover is not paid that month. Over the default the dial
+ *   spends the fund: what its cash cannot cover is sold from its market book
+ *   and paid at the next month's top, and the rule buys nothing meanwhile
+ *   (0.7.48, C1 - Jerus: "the city fund, you should be able to click how
+ *   much to withdraw automatically, even 0 or 10% a month"). Its dividends
  *   and coupons stay in it.
  *
  * THE HAND (the order ticket on a security's page among the Finances tab's
  * fund pages, ui/FundScreen since 0.7.39): buy and sell on the book at fair
- * value - the rule's own price - or at a price the player names (0.7.39),
+ * value - the price the rule asks at, and a bond's bid; since 0.7.48 it bids
+ * a share RULE_PREMIUM over it - or at a price the player names (0.7.39),
  * good for a month (HandOrder); pay in and draw out, transfers between the
  * treasury and the fund, journalled, never revenue or spending. An order
  * waiting for the step can be cancelled, and a buy's money is the hand's
@@ -119,14 +129,26 @@ public final class TreasuryFund {
     /** ...or falls this far under EQUITY_WEIGHT: four points, the same mandate's "more than four percentage points lower than the weight in the strategic benchmark index". */
     public static final double REBALANCE_UNDER = .04;
 
+    /** The rule bids at the desk's ask: the cheapest price anybody stands ready to sell at; at fair value it met nobody (C3). */
+    public static final double RULE_PREMIUM = Exchange.SPREAD / 2;
+
     /** The most of any one company's shares the rule holds: 10%, the GPFG mandate's "may not be invested in more than 10 per cent of the voting shares in an individual company" (14 May 2018). The bank's shares bought on the market count; the rescue book does not. */
     public static final double OWNERSHIP_LIMIT = .10;
 
-    /** What the fund pays the budget a year, of its whole value: 3%, Norway's fiscal rule - transfers follow the fund's expected real return, 3% since 2017 (regjeringen.no). */
+    /** Norway's fiscal rule, a year of the fund's whole value: 3% - transfers follow the fund's expected real return, 3% since 2017 (regjeringen.no). What it pays the budget at the default withdrawal, and the withdrawal dial's step a twelfth of it, since 0.7.48 (C1). */
     public static final double TRANSFER_RATE = .03;
 
     /** A year, in months: the transfer's twelfth and the surplus's year. */
     public static final int YEAR_MONTHS = 12;
+
+    /** The withdrawal dial's step, a share of the fund's whole value a month: a twelfth of TRANSFER_RATE, so Norway's rule is one step (Jerus, 2026-10-05: "even 0 or 10% a month"). */
+    public static final double WITHDRAWAL_STEP = TRANSFER_RATE / YEAR_MONTHS;
+
+    /** A new city's and an older save's withdrawal: Norway's rule, the transfer paid since 0.7.14 to the bit. */
+    public static final int DEFAULT_WITHDRAWAL_STEPS = 1;
+
+    /** The most it withdraws: 10% of its value a month. */
+    public static final int MAX_WITHDRAWAL_STEPS = 40;
 
     /** The months of the bank share's price history its volatility is read over, for the warrants' value: a year of the monthly prices the history keeps (HistorySave's share prices). */
     public static final int VOLATILITY_MONTHS = 12;
@@ -146,6 +168,8 @@ public final class TreasuryFund {
 
     private double cash;
     private double dial;
+    /** The withdrawal dial, in whole steps of WITHDRAWAL_STEP (0.7.48, C1). */
+    private int withdrawalSteps = DEFAULT_WITHDRAWAL_STEPS;
     private RescueMode rescue = RescueMode.BUTTON;
 
     /* ============================== the preferred offer ============================== */
@@ -203,7 +227,7 @@ public final class TreasuryFund {
      * shares (company, Equity's index) or a bond (bondId), to buy with this
      * much money or to sell this many shares or this much face. Posted at
      * the step beside the rule's, at fair value - or at `limit` when the
-     * player named a price (0.7.39; 0 is fair value, the rule's own) - and
+     * player named a price (0.7.39; 0 is fair value, what the rule asks) - and
      * good for the month like every order (Exchange, BondMarket). Once
      * posted it carries what it asked for at what price, and what of it has
      * filled, until the step after withdraws it (getPosted()).
@@ -245,7 +269,7 @@ public final class TreasuryFund {
         public double amount()    { return amount; }
         /** The month it was placed in. */
         public int month()        { return month; }
-        /** The price it posts at, a unit: 0 for fair value (a bond's: its value), the rule's own price. */
+        /** The price it posts at, a unit: 0 for fair value (a bond's: its value) - what the rule asks at; it bids a share RULE_PREMIUM over (0.7.48). */
         public double limit()     { return limit; }
         /** The month it was posted at the step, or -1 while it waits. */
         public int postedMonth()  { return postedMonth; }
@@ -306,6 +330,10 @@ public final class TreasuryFund {
     // saved with it (State.month), since a reloaded city cannot rebuild a flow.
     private double transferDue, transferPaid;
     private double monthDividends, monthCoupons, monthPrincipal, monthBought, monthSold;
+    // Over the default withdrawal (C1): what the month's cash could not cover,
+    // sold from the market book at the step and paid at the next month's top -
+    // carried, so not cleared with the month - and what that payment was.
+    private double toRaise, transferPaidLate;
 
     /* ============================== the money ============================== */
 
@@ -408,15 +436,63 @@ public final class TreasuryFund {
 
     /* ============================== money out: the transfer ============================== */
 
-    /** A month's transfer on a fund of this value: a twelfth of TRANSFER_RATE of it. */
+    /** A month's transfer on a fund of this value at Norway's rule, the default withdrawal: a twelfth of TRANSFER_RATE of it. */
     public static double transferOn(double value) {
         return value > 0 ? TRANSFER_RATE / YEAR_MONTHS * value : 0;
     }
 
+    /* ----- the withdrawal dial (0.7.48, C1) ----- */
+
+    /** The withdrawal, a share of the fund's whole value a month: whole steps of WITHDRAWAL_STEP, 0 to MAX_WITHDRAWAL_STEPS of them; at the default the very double transferOn() multiplies by. */
+    public double getWithdrawal()          { return withdrawalSteps * WITHDRAWAL_STEP; }
+
+    /** ...in its steps. */
+    public int getWithdrawalSteps()        { return withdrawalSteps; }
+
+    /** ...set by the player (Finances > The city's fund > Rules & cash): rounded to whole steps and held at 0-MAX_WITHDRAWAL_STEPS (stepsFor()); a share that is not a number leaves Norway's rule. */
+    public void setWithdrawal(double share)  { withdrawalSteps = stepsFor(share); }
+
+    /** The whole steps a share a month comes to, as the dial takes it: rounded, and held at 0-MAX_WITHDRAWAL_STEPS; a share that is not a number, the default. */
+    public static int stepsFor(double share) {
+        return Double.isFinite(share)
+                ? (int) Math.max(0, Math.min(MAX_WITHDRAWAL_STEPS, Math.round(share / WITHDRAWAL_STEP)))
+                : DEFAULT_WITHDRAWAL_STEPS;
+    }
+
+    /** A month's withdrawal on a fund of this value at the dial in force: transferOn() at the default, to the bit. */
+    public double withdrawalOn(double value) {
+        return value > 0 ? getWithdrawal() * value : 0;
+    }
+
+    /** ...and at a share of the caller's, as the dial would take it (stepsFor()): withdrawalOn() at the dial in force, to the bit - the preview's (PolicyPreview.fundWithdrawalAt()). */
+    public static double withdrawalAt(double share, double value) {
+        return value > 0 ? stepsFor(share) * WITHDRAWAL_STEP * value : 0;
+    }
+
+    /** True while the dial is over Norway's rule: what its cash cannot cover is sold from the market book to pay, and the rule buys nothing (a fund drawn past its expected return is being spent). */
+    public boolean sellsToPay()            { return withdrawalSteps > DEFAULT_WITHDRAWAL_STEPS; }
+
+    /** What the month's cash could not cover over the default, which the step sells the market book for and the next month's top pays: 0 at or under the default. */
+    public double getToRaise()             { return toRaise; }
+
+    /** What this month's top paid of last month's toRaise, from what it sold: 0 at or under the default. */
+    public double getTransferPaidLate()    { return transferPaidLate; }
+
     /**
-     * Pays the month's transfer on a fund worth `value`, from its cash only -
-     * "the rule never sells to pay it" - and returns what was paid; what the
-     * cash could not cover is simply not paid, and counted (getTransferShort()).
+     * Pays the month's transfer on a fund worth `value` and returns what was
+     * paid. At or under the default withdrawal from its cash only - "the
+     * rule never sells to pay it" - and what the cash could not cover is
+     * simply not paid, and counted (getTransferShort()).
+     *
+     * OVER THE DEFAULT (0.7.48, C1) the dial spends the fund: last month's
+     * toRaise is paid first, from its cash - what the step sold came in as
+     * cash - and comes off the shorts it was counted in and into the paid
+     * totals; then the month's due at the dial; and what the cash could not
+     * cover is this month's toRaise, which the step sells the market book for
+     * (Exchange's and BondMarket's postFund()). What toRaise cannot pay next
+     * month is dropped: it was counted short already, so nothing owed piles
+     * up. At or under the default toRaise is always 0 and the first branch
+     * never runs, so the arithmetic is 0.7.47's to the bit.
      */
     double payTransfer(double value, int year) {
         if (year != transferYear) {
@@ -424,14 +500,27 @@ public final class TreasuryFund {
             transfersThisYear = 0;
             transferShortThisYear = 0;
         }
-        transferDue = transferOn(value);
+        double late = 0;
+        if (toRaise > 0) {
+            late = Math.max(0, Math.min(toRaise, cash));
+            cash -= late;
+            transfersShort -= late;
+            // ...a year's short that began with this month has none of it: the short was the year before's.
+            transferShortThisYear = Math.max(0, transferShortThisYear - late);
+            transfersThisYear += late;
+            transfersPaid += late;
+            toRaise = 0;
+        }
+        transferPaidLate = late;
+        transferDue = withdrawalOn(value);
         transferPaid = Math.max(0, Math.min(transferDue, cash));
         cash -= transferPaid;
         transfersThisYear += transferPaid;
         transferShortThisYear += transferDue - transferPaid;
         transfersPaid += transferPaid;
         transfersShort += transferDue - transferPaid;
-        return transferPaid;
+        if (sellsToPay()) toRaise = transferDue - transferPaid;
+        return late > 0 ? transferPaid + late : transferPaid;
     }
 
     /** This month's transfer as due, and as paid. */
@@ -504,7 +593,7 @@ public final class TreasuryFund {
 
     /** Clears the month's working. The top of the month. */
     void startMonth() {
-        transferDue = transferPaid = 0;
+        transferDue = transferPaid = transferPaidLate = 0;
         monthDividends = monthCoupons = monthPrincipal = monthBought = monthSold = 0;
     }
 
@@ -801,6 +890,8 @@ public final class TreasuryFund {
     /** Everything the fund carries from one month to the next, by name. */
     public static final class State {
         double cash, dial;
+        /** The withdrawal dial's steps (0.7.48, C1): null in an older save, which reads Norway's rule. */
+        Integer withdrawalSteps;
         String rescue;
         boolean offerPending;
         int offerMonth, declinedMonth, acceptedMonth, offersMade, offersAccepted, offersDeclined;
@@ -814,7 +905,7 @@ public final class TreasuryFund {
         int lastPayInMonth, transferYear;
         double lastPayInYearSurplus, lastPayInFromSurplus, lastPayInFromCash, transfersThisYear, transferShortThisYear;
         double[] life;
-        /** The month just closed: its transfer due and paid, and what came in and went out. */
+        /** The month just closed: its transfer due and paid, and what came in and went out; slots 7 and 8 (0.7.48) what it sells for to pay next month, and what this month paid late. */
         double[] month;
     }
 
@@ -822,6 +913,7 @@ public final class TreasuryFund {
         State s = new State();
         s.cash = cash;
         s.dial = dial;
+        s.withdrawalSteps = withdrawalSteps;
         s.rescue = rescue.name();
         s.offerPending = offerPending;
         s.offerMonth = offerMonth;
@@ -847,7 +939,7 @@ public final class TreasuryFund {
                 preferredBought, preferredDividends, preferredRedeemed, warrantsBoughtBack, warrantSharesTaken,
                 sharesBought, sharesSold, bondsBought, bondsSold, rescueSold };
         s.month = new double[] { transferDue, transferPaid, monthDividends, monthCoupons, monthPrincipal,
-                monthBought, monthSold };
+                monthBought, monthSold, toRaise, transferPaidLate };
         return s;
     }
 
@@ -862,6 +954,8 @@ public final class TreasuryFund {
         if (s == null) { ledgerToSeed = true; return; }
         cash = Double.isFinite(s.cash) ? s.cash : 0;
         setDial(s.dial);
+        withdrawalSteps = s.withdrawalSteps == null ? DEFAULT_WITHDRAWAL_STEPS
+                : Math.max(0, Math.min(MAX_WITHDRAWAL_STEPS, s.withdrawalSteps));
         RescueMode mode = RescueMode.BUTTON;
         if (s.rescue != null) for (RescueMode m : RescueMode.values()) if (m.name().equals(s.rescue)) mode = m;
         rescue = mode;
@@ -901,12 +995,19 @@ public final class TreasuryFund {
             transferDue = m[0]; transferPaid = m[1]; monthDividends = m[2]; monthCoupons = m[3];
             monthPrincipal = m[4]; monthBought = m[5]; monthSold = m[6];
         }
+        // ...what it sells for to pay next month, and what this month paid late (0.7.48): 0 in an older save.
+        if (m != null && m.length >= 9) {
+            toRaise = Double.isFinite(m[7]) ? Math.max(0, m[7]) : 0;
+            transferPaidLate = Double.isFinite(m[8]) ? m[8] : 0;
+        }
     }
 
-    /** A fund that has not begun: nothing held, the dial at 0, the rescue on the button. Game.newGame() then sets the rescue automatic. */
+    /** A fund that has not begun: nothing held, the dial at 0, the withdrawal at Norway's rule, the rescue on the button. Game.newGame() then sets the rescue automatic. */
     public void reset() {
         cash = 0;
         dial = 0;
+        withdrawalSteps = DEFAULT_WITHDRAWAL_STEPS;
+        toRaise = 0;
         rescue = RescueMode.BUTTON;
         offerPending = false;
         offerMonth = declinedMonth = acceptedMonth = -1;
@@ -929,7 +1030,7 @@ public final class TreasuryFund {
         startMonth();
     }
 
-    /** Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM); share counts and the dial do not move. */
+    /** Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM); share counts and the two dials do not move. */
     public void redenominate(double scale) {
         cash *= scale;
         rescueCost *= scale;
@@ -956,7 +1057,7 @@ public final class TreasuryFund {
         dividendsMarket *= scale; dividendsRescue *= scale; coupons *= scale; principal *= scale; bondFaceLost *= scale;
         preferredBought *= scale; preferredDividends *= scale; preferredRedeemed *= scale; warrantsBoughtBack *= scale;
         sharesBought *= scale; sharesSold *= scale; bondsBought *= scale; bondsSold *= scale; rescueSold *= scale;
-        transferDue *= scale; transferPaid *= scale;
+        transferDue *= scale; transferPaid *= scale; toRaise *= scale; transferPaidLate *= scale;
         monthDividends *= scale; monthCoupons *= scale; monthPrincipal *= scale; monthBought *= scale; monthSold *= scale;
     }
 }

@@ -918,7 +918,7 @@ public class FamilyModel {
      * The door census house() was last handed. Kept only so the crowding floor
      * can tell a studio from a family door - see doorsThatCannotHelp().
      */
-    private int[] lastHomesBySize;
+    private long[] lastHomesBySize;
 
     /* =====================================================================
        PUTTING HOUSEHOLDS BEHIND DOORS THAT FIT
@@ -1125,7 +1125,7 @@ public class FamilyModel {
      * @param homesBySize count of finished homes, indexed by unit size
      * @return households with nowhere at all, which squeeze() then crowds
      */
-    public double house(int[] homesBySize) {
+    public double house(long[] homesBySize) {
         rentWeight = 0;
         studioRentWeight = 0;
         familyRentWeight = 0;
@@ -1152,7 +1152,7 @@ public class FamilyModel {
      * @return households with nowhere at all, then the part of them that
      *         were the matrix's, then the seekers' (as doors count them)
      */
-    private double[] match(int[] homesBySize, double[] free, boolean record) {
+    private double[] match(long[] homesBySize, double[] free, boolean record) {
         for (int s = 1; s < homesBySize.length; s++) free[s] = homesBySize[s];
         int widest = homesBySize.length - 1;
 
@@ -1279,7 +1279,7 @@ public class FamilyModel {
      *
      * @param homesAvailable front doors the city has
      */
-    public void squeeze(int homesAvailable) {
+    public void squeeze(long homesAvailable) {
         doubledUp = 0;
         if (homesAvailable <= 0) return;
         double excess = totalHouseholds() - homesAvailable;
@@ -1566,7 +1566,7 @@ public class FamilyModel {
      * Touches nothing. Null before the model has any households, or with no
      * census to match against.
      */
-    public Room roomLeft(int[] homesBySize) {
+    public Room roomLeft(long[] homesBySize) {
         double households = totalHouseholds();
         if (homesBySize == null || homesBySize.length < 2 || households <= 0) return null;
 

@@ -210,6 +210,7 @@ public class BuildingCatalog {
         readSafety(o, template, name);
         readRequiresLicence(o, template, name);
         readSector(o, template, name);
+        readSource(o, template, name);
 
         return template;
     }
@@ -306,6 +307,20 @@ public class BuildingCatalog {
         } catch (Exception e) {
             System.out.println(FILE_NAME + ": \"" + name + "\" has unknown safety type \""
                     + safety + "\"; treated as NONE.");
+        }
+    }
+
+    /** What a water works draws, FRESH or SEA (0.7.59). Absent reads as FRESH; a typo is reported and read as FRESH, as with care. */
+    private void readSource(JsonObject o, BuildingsTemplate template, String name) {
+
+        String source = string(o, "source");
+        if (source.isEmpty()) return;
+
+        try {
+            template.setSource(BuildingsTemplate.Source.valueOf(source));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown source \""
+                    + source + "\"; treated as FRESH.");
         }
     }
 

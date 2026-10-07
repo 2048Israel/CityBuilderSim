@@ -728,7 +728,7 @@ public class Migration {
      * students too, as the floor already counted them - where it was the
      * family matrix alone.
      */
-    public double crowdingFactor(int homes, FamilyModel families) {
+    public double crowdingFactor(long homes, FamilyModel families) {
         return crowdingFactor(homes, families, null);
     }
 
@@ -736,7 +736,7 @@ public class Migration {
      * The same, read against the room the placement has left (the Game's
      * path), or against last month's placement when that is null.
      */
-    public double crowdingFactor(int homes, FamilyModel families, FamilyModel.Room room) {
+    public double crowdingFactor(long homes, FamilyModel families, FamilyModel.Room room) {
         double comfortable = families.householdsSeekingDoors();
         if (comfortable <= 0) return 1;               // nobody here yet
 
@@ -783,9 +783,9 @@ public class Migration {
      * by it, like the other pushes and pulls - a month that forgot to set it
      * reads last month's placement rather than last month's doors.
      */
-    private int[] doors;
+    private long[] doors;
 
-    public void setDoors(int[] homesBySize) {
+    public void setDoors(long[] homesBySize) {
         this.doors = homesBySize == null ? null : homesBySize.clone();
     }
 
@@ -798,8 +798,8 @@ public class Migration {
      * @param homes            front doors, which is a different number
      * @param families         the household mix, for the crowding floor
      */
-    public double monthlyNet(int population, int totalJobs, int householdCapacity,
-                             int homes, FamilyModel families, double adultShare) {
+    public double monthlyNet(long population, long totalJobs, long householdCapacity,
+                             long homes, FamilyModel families, double adultShare) {
         return monthlyNet(population, totalJobs, householdCapacity, homes,
                 families, adultShare, 0);
     }
@@ -811,8 +811,8 @@ public class Migration {
      *                       them; 0 in a city that has built none, which is
      *                       exactly how every city behaved before this existed
      */
-    public double monthlyNet(int population, int totalJobs, int householdCapacity,
-                             int homes, FamilyModel families, double adultShare,
+    public double monthlyNet(long population, long totalJobs, long householdCapacity,
+                             long homes, FamilyModel families, double adultShare,
                              double seniorCoverage) {
 
         lastResidentsPerJob = residentsPerJob(adultShare);
@@ -920,8 +920,8 @@ public class Migration {
      * @param market the wages, for the premium that draws people
      * @param people the workforce, for the surplus that pushes them out
      */
-    public double monthlyNet(int population, int totalJobs, int householdCapacity,
-                             int homes, FamilyModel families, double adultShare,
+    public double monthlyNet(long population, long totalJobs, long householdCapacity,
+                             long homes, FamilyModel families, double adultShare,
                              double seniorCoverage,
                              LabourMarket market, PopulationManager people) {
 

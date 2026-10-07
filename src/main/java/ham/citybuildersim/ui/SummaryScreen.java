@@ -568,6 +568,13 @@ final class SummaryScreen {
                 ui.policyScreen.dropProposal();
                 ui.policyScreen.showPolicyMenu();
             };
+            // PRICES (0.7.45): the policy rate is the lever on trust.
+            case MONEY:      return () -> {
+                ui.policyScreen.policyArea = PolicyScreen.MONEY;
+                ui.policyScreen.policyPage = PolicyScreen.POLICY_MONEY_PAGES[0];
+                ui.policyScreen.dropProposal();
+                ui.policyScreen.showPolicyMenu();
+            };
             default:         return () -> {
                 ui.policyScreen.policyArea = "Taxes";
                 ui.policyScreen.policyPage = PolicyScreen.POLICY_HOME;
@@ -769,7 +776,7 @@ final class SummaryScreen {
         LandManager land = ui.game.getLandManager();
         PopulationCohorts pyramid = ui.game.getCohorts();
 
-        int population = people.getPopulation();
+        long population = people.getPopulation();
         // Annualised from the months there are until a year has been recorded
         // (0.7.20): getYearGdp() summed however many months there were and
         // called it a year, so GDP per head and debt to GDP ran 12/n too high.
@@ -794,6 +801,9 @@ final class SummaryScreen {
                                     economy.getBusinessDebtManager().getTotalPrincipal())),
                             statLine("Interest",
                                     formatter.format(ui.game.getInterestRate() * 100) + "%"),
+                            // ...and the anchor (0.7.45): what people expect, and how far they believe the bank.
+                            statLine("Expected inflation", rate1(ui.game.getExpectedInflation())),
+                            statLine("Trust in the bank", trust(ui.game.getCredibility())),
                             statLine("Rating", ui.game.getCreditRating()));
                     if (annualGdp != 0) {
                         b.getChildren().add(statLine("Debt/GDP",
@@ -1007,12 +1017,12 @@ final class SummaryScreen {
            what it is paying to get them - which is the only view in which an
            unfilled post has a reason rather than just a number.
            ============================================================= */
-        int workforce = people.getWorkforce();
-        int totalJobs = people.getTotalJobs();
-        int[] vacancies = people.getJobVacancy();
-        int open = 0;
-        for (int v : vacancies) open += v;
-        final int totalVacancies = open;
+        long workforce = people.getWorkforce();
+        long totalJobs = people.getTotalJobs();
+        long[] vacancies = people.getJobVacancy();
+        long open = 0;
+        for (long v : vacancies) open += v;
+        final long totalVacancies = open;
         double fill = totalJobs > 0 ? (double) (totalJobs - totalVacancies) / totalJobs : 1;
 
         body.getChildren().add(panelSection("labour", "LABOUR",
@@ -1256,18 +1266,24 @@ final class SummaryScreen {
          * (CityNeeds.ground()), which the land office's GROUND FREE and
          * Build's LAND FREE read too, so the three and NEEDS YOU agree; the
          * share used is a line inside, in no colour. The price is the city's
-         * money (Money.unitPrice()); it printed a bare "$".
+         * money (Money.unitPrice()); it printed a bare "$". The ground free
+         * in square kilometres since 0.7.64, as NEEDS YOU's row reads it,
+         * and under a hundredth of one in square metres since 0.7.68, the
+         * price a square metre - "137 m² · D$20,882/m²", its colour saying it
+         * is the free ground: with "free" and the wider dot it ran past the
+         * panel's width at a few hundred square feet free and a four-figure
+         * price.
          */
         CityNeeds.Need ground = CityNeeds.ground(ui.game, WORDS);
-        String perSqFt = marked(ui.game.getCurrency().qualifiedSymbol(), unitPrice(land.getPricePerSqFt()));
+        String perM2 = marked(ui.game.getCurrency().qualifiedSymbol(), groundPrice(land.getPricePerSqFt()));
         body.getChildren().add(panelSection("land", "LAND",
-                shortNumber(land.getAvailableSqFt()) + " free  ·  " + perSqFt + "/sq ft",
+                LandManager.areaWords(land.getAvailableSqFt()) + " · " + perM2 + "/m²",
                 ground.level() >= 2 ? PANEL_BAD : ground.level() == 1 ? PANEL_WARN : null,
                 () -> panelBody(
-                        statLine("Owned", LandManager.km2Words(land.getOwnedSqFt())),
-                        statLine("Free", LandManager.km2Words(land.getAvailableSqFt())),
+                        statLine("Owned", LandManager.areaWords(land.getOwnedSqFt())),
+                        statLine("Free", LandManager.areaWords(land.getAvailableSqFt())),
                         statLine("Used", String.format("%.0f%%", land.getUtilisation() * 100)),
-                        statLine("Price/sq ft", perSqFt))));
+                        statLine("Price/m²", perM2))));
 
         /* ================= SECTOR CASH ================= */
         double sectorCash = ui.game.getSectors().totalCash();
@@ -1331,7 +1347,7 @@ final class SummaryScreen {
         LandManager land = ui.game.getLandManager();
         PopulationCohorts pyramid = ui.game.getCohorts();
 
-        int population = people.getPopulation();
+        long population = people.getPopulation();
         double annualGdp = economy.getYearGdp();
         double debt = ui.game.getDebtManager().getAllPrincipal();
 

@@ -1,6 +1,6 @@
 # Migration.java - 1,312 lines · 56 methods · 16 constants · model
 
-`ham/citybuildersim/Migration.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Migration.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > Why people move to this city, and the much narrower question of why they leave.
 > 
@@ -120,7 +120,7 @@
 | 447 | `private double lastJobDraw` |  |
 | 448 | `private double lastHomeDraw` |  |
 | 449 | `private double lastWorkDepartures` |  |
-| 786 | `private int[] doors` | The door census this month's migration is asked against (0.7.17): the homes standing, by size. |
+| 786 | `private long[] doors` | The door census this month's migration is asked against (0.7.17): the homes standing, by size. |
 | 904 | `private double bankruptcyPush` | Households the balance sheet discharged this month, whose people are leaving because they are broke. |
 | 912 | `private double lastBankruptcyPush` |  |
 | 1047 | `private final boolean[] closed` | Bands a harness has closed to arrivals, by ordinal; see holdArrivals(). |
@@ -221,14 +221,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 731 | 3 | `public double crowdingFactor(int homes, FamilyModel families)` | How crowded the city is, as a multiplier on arrivals: 1 is room to spare, 0 is physically full. |
-| 739 | 40 | `public double crowdingFactor(int homes, FamilyModel families, FamilyModel.Room room)` | The same, read against the room the placement has left (the Game's path), or against last month's placement when that is null. |
-| 788 | 3 | `public void setDoors(int[] homesBySize)` |  |
-| 801 | 5 | `public double monthlyNet(int population, int totalJobs, int householdCapacity, int homes, FamilyModel families, double adultShare)` | The month's net migration: positive is people arriving. |
-| 814 | 80 | `public double monthlyNet(int population, int totalJobs, int householdCapacity, int homes, FamilyModel families, double adultSha...` | The same, with the draw good senior care adds. |
+| 731 | 3 | `public double crowdingFactor(long homes, FamilyModel families)` | How crowded the city is, as a multiplier on arrivals: 1 is room to spare, 0 is physically full. |
+| 739 | 40 | `public double crowdingFactor(long homes, FamilyModel families, FamilyModel.Room room)` | The same, read against the room the placement has left (the Game's path), or against last month's placement when that is null. |
+| 788 | 3 | `public void setDoors(long[] homesBySize)` |  |
+| 801 | 5 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The month's net migration: positive is people arriving. |
+| 814 | 80 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The same, with the draw good senior care adds. |
 | 906 | 3 | `public void setBankruptcyDepartures(double people)` |  |
 | 910 | 1 | `public double getLastBankruptcyDepartures()` |  |
-| 923 | 110 | `public double monthlyNet(int population, int totalJobs, int householdCapacity, int homes, FamilyModel families, double adultSha...` | The same month, with a labour market behind it. |
+| 923 | 110 | `public double monthlyNet(long population, long totalJobs, long householdCapacity, long homes, FamilyModel families, double adul...` | The same month, with a labour market behind it. |
 | 1041 | 4 | `public static double opportunity(double open, double queue)` | A band's chance of work at its own level, as a multiplier on its pull. |
 | 1058 | 3 | `public void holdArrivals(WageBand band)` | Harnesses only: nobody of this band arrives for the rest of the run, whatever it is paid - the way BusinessInvestment.holdSector() holds a sector out of the investment loop. |
 | 1069 | 3 | `public boolean admits(WageBand band)` | Whether any migrant can come for this band at all (0.7.18): it has an arrival ceiling above zero and no harness has closed it. |

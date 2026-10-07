@@ -1,6 +1,6 @@
-# Good.java - 863 lines · 18 methods · 0 constants · model
+# Good.java - 907 lines · 18 methods · 0 constants · model
 
-`ham/citybuildersim/Good.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Good.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > A thing that can be made, bought, held, imported and exported.
 > 
@@ -64,15 +64,15 @@
 > one ulp, which in this codebase is never nothing: DenominationCheck spent
 > ... (46 more lines in the source)
 
-**Uses:** [Traffic](Traffic.md) (3)
+**Uses:** [Traffic](Traffic.md) (3), [Motoring](Motoring.md) (2)
 
-**Used by (71):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CityBasket](CityBasket.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConsumptionCheck](ConsumptionCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [Formats](Formats.md), [Founding](Founding.md), [Game](Game.md), [GoodsMarket](GoodsMarket.md), [HealthCheck](HealthCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [NewGameCheck](NewGameCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [SummaryScreen](SummaryScreen.md), [Trade](Trade.md), [TradeCostCheck](TradeCostCheck.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md)
+**Used by (82):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CityBasket](CityBasket.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConsumptionCheck](ConsumptionCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [Formats](Formats.md), [Founding](Founding.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GoodsMarket](GoodsMarket.md), [HealthCheck](HealthCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [NationalAccounts](NationalAccounts.md), [NewGameCheck](NewGameCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Refining](Refining.md), [Resource](Resource.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [SummaryScreen](SummaryScreen.md), [SupplierCredit](SupplierCredit.md), [SupplierCreditCheck](SupplierCreditCheck.md), [Trade](Trade.md), [TradeCostCheck](TradeCostCheck.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 767 | WHAT IT TAKES TO CARRY ONE (2026-09-16) |
+| 804 | WHAT IT TAKES TO CARRY ONE (2026-09-16) |
 
 ## Enum constants
 
@@ -95,63 +95,65 @@
 | 261 | `Good.IRON` | Iron ore, and the scrap that stands in for it. |
 | 288 | `Good.STEEL` | Smelted by the mills. |
 | 308 | `Good.MATERIALS` | One unit of building material - a House is ten of them. |
-| 315 | `Good.GROCERIES` | What the shops sell: food, on a shelf, to a household. |
-| 323 | `Good.HOUSING` | A home for a month. |
-| 330 | `Good.BUILDING_WORK` | A point of construction work. |
-| 377 | `Good.SUPPORT_WORK` |  |
-| 379 | `Good.BACK_OFFICE_WORK` |  |
-| 381 | `Good.ENGINEERING_WORK` |  |
-| 481 | `Good.FABRICATED_STEEL` |  |
-| 483 | `Good.MACHINERY` |  |
-| 583 | `Good.CARS` |  |
-| 585 | `Good.VANS` |  |
-| 587 | `Good.ROLLING_STOCK` |  |
-| 623 | `Good.LUXURIES` |  |
-| 639 | `Good.LUXURY_TRADE` | ...and what a shop sells one for, which is not what it paid. |
-| 667 | `Good.MEALS` |  |
-| 672 | `Good.Pricing.BAND` | Clears in GoodsMarket between the export floor and the import ceiling. |
-| 674 | `Good.Pricing.SELLER` | The selling sector strikes it; the market only records the sale. |
+| 317 | `Good.GROCERIES` | What the shops sell: food, on a shelf, to a household. |
+| 325 | `Good.HOUSING` | A home for a month. |
+| 332 | `Good.BUILDING_WORK` | A point of construction work. |
+| 379 | `Good.SUPPORT_WORK` |  |
+| 381 | `Good.BACK_OFFICE_WORK` |  |
+| 383 | `Good.ENGINEERING_WORK` |  |
+| 483 | `Good.FABRICATED_STEEL` |  |
+| 485 | `Good.MACHINERY` |  |
+| 585 | `Good.CARS` |  |
+| 587 | `Good.VANS` |  |
+| 589 | `Good.ROLLING_STOCK` |  |
+| 625 | `Good.LUXURIES` |  |
+| 641 | `Good.LUXURY_TRADE` | ...and what a shop sells one for, which is not what it paid. |
+| 669 | `Good.MEALS` |  |
+| 701 | `Good.CRUDE` |  |
+| 703 | `Good.FUEL` |  |
+| 709 | `Good.Pricing.BAND` | Clears in GoodsMarket between the export floor and the import ceiling. |
+| 711 | `Good.Pricing.SELLER` | The selling sector strikes it; the market only records the sale. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 677 | `private final String label` |  |
-| 678 | `private final String unit` |  |
-| 679 | `private final double worldImportPrice` |  |
-| 680 | `private final double worldExportPrice` |  |
-| 681 | `private final double baseFreight` |  |
-| 682 | `private final boolean stockable` |  |
-| 683 | `private final Pricing pricing` |  |
-| 684 | `private final boolean taxExempt` |  |
+| 714 | `private final String label` |  |
+| 715 | `private final String unit` |  |
+| 716 | `private final double worldImportPrice` |  |
+| 717 | `private final double worldExportPrice` |  |
+| 718 | `private final double baseFreight` |  |
+| 719 | `private final boolean stockable` |  |
+| 720 | `private final Pricing pricing` |  |
+| 721 | `private final boolean taxExempt` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 111 | 753 | **type** `public enum Good` | A thing that can be made, bought, held, imported and exported. |
-| 670 | 6 | **type** `public enum Pricing` | How a good's price is struck. |
-| 686 | 11 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
-| 698 | 1 | `public String label()` |  |
-| 699 | 1 | `public String unit()` |  |
-| 709 | 1 | `public double worldImportPrice()` | What the world charges for one DELIVERED HERE, in ITS money. |
-| 712 | 1 | `public double worldExportPrice()` | What the world pays for one DELIVERED THERE, in ITS money. |
-| 723 | 1 | `public double baseFreight()` | What it costs to move one unit between the city and the world, in the world's money - three quarters of the wedge on every good that has both ends, and zero for the things nobody ships. |
-| 732 | 1 | `public double worldBuyPrice()` | The world's own ask, before anything is moved - the import price less the freight in it. |
-| 743 | 1 | `public double worldSellPrice()` | The world's own bid, before anything is moved - the export price with the freight added back. |
-| 745 | 1 | `public boolean importable()` |  |
-| 746 | 1 | `public boolean exportable()` |  |
-| 747 | 1 | `public boolean stockable()` |  |
-| 748 | 1 | `public Pricing pricing()` |  |
-| 751 | 1 | `public boolean taxExempt()` | True for a supply the sales tax never touches. |
-| 762 | 1 | `public int planningMonths()` | How many months of the city's take a maker averages before it plans a plant against it. |
-| 765 | 1 | `public boolean traded()` | Clears in the band on scarcity, as opposed to being priced by its seller. |
+| 111 | 797 | **type** `public enum Good` | A thing that can be made, bought, held, imported and exported. |
+| 707 | 6 | **type** `public enum Pricing` | How a good's price is struck. |
+| 723 | 11 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
+| 735 | 1 | `public String label()` |  |
+| 736 | 1 | `public String unit()` |  |
+| 746 | 1 | `public double worldImportPrice()` | What the world charges for one DELIVERED HERE, in ITS money. |
+| 749 | 1 | `public double worldExportPrice()` | What the world pays for one DELIVERED THERE, in ITS money. |
+| 760 | 1 | `public double baseFreight()` | What it costs to move one unit between the city and the world, in the world's money - three quarters of the wedge on every good that has both ends, and zero for the things nobody ships. |
+| 769 | 1 | `public double worldBuyPrice()` | The world's own ask, before anything is moved - the import price less the freight in it. |
+| 780 | 1 | `public double worldSellPrice()` | The world's own bid, before anything is moved - the export price with the freight added back. |
+| 782 | 1 | `public boolean importable()` |  |
+| 783 | 1 | `public boolean exportable()` |  |
+| 784 | 1 | `public boolean stockable()` |  |
+| 785 | 1 | `public Pricing pricing()` |  |
+| 788 | 1 | `public boolean taxExempt()` | True for a supply the sales tax never touches. |
+| 799 | 1 | `public int planningMonths()` | How many months of the city's take a maker averages before it plans a plant against it. |
+| 802 | 1 | `public boolean traded()` | Clears in the band on scarcity, as opposed to being priced by its seller. |
 
-### WHAT IT TAKES TO CARRY ONE (2026-09-16) (lines 767-863)
+### WHAT IT TAKES TO CARRY ONE (2026-09-16) (lines 804-907)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 793 | 25 | `public double tonnesPerUnit()` | One unit, in tonnes. |
-| 835 | 21 | `public Traffic traffic()` | Which stream of traffic a tonne of this joins, or null for the things that never take up road at all. |
-| 858 | 5 | `public static Good byName(String name)` | The good with this saved name, or null - a save from a build without it loses that line, not the load. |
+| 830 | 29 | `public double tonnesPerUnit()` | One unit, in tonnes. |
+| 876 | 24 | `public Traffic traffic()` | Which stream of traffic a tonne of this joins, or null for the things that never take up road at all. |
+| 902 | 5 | `public static Good byName(String name)` | The good with this saved name, or null - a save from a build without it loses that line, not the load. |
 

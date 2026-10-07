@@ -1,6 +1,6 @@
-# GameVersion.java - 3,039 lines · 4 methods · 4 constants · model
+# GameVersion.java - 4,022 lines · 4 methods · 4 constants · model
 
-`ham/citybuildersim/GameVersion.java` - generated 2026-10-04 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameVersion.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > What build this is, and what shape its saves are.
 > 
@@ -44,18 +44,18 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 2503 | `GameVersion.VERSION` | `"0.7.41"` | Bump on release. |
-| 3007 | `GameVersion.SAVE_FORMAT` | `30` | The save shape. |
-| 3010 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
-| 3012 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 3454 | `GameVersion.VERSION` | `"0.7.64"` | Bump on release. |
+| 3990 | `GameVersion.SAVE_FORMAT` | `31` | The save shape. |
+| 3993 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
+| 3995 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 3000 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 3014 | 1 | `private GameVersion()` |  |
-| 3017 | 3 | `public static String title()` | For the window title. |
-| 3027 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 3036 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
+| 40 | 3983 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 3997 | 1 | `private GameVersion()` |  |
+| 4000 | 3 | `public static String title()` | For the window title. |
+| 4010 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 4019 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
 

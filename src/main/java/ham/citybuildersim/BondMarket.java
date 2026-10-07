@@ -1364,6 +1364,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
      * theirs, it asks each bond's value for its excess instead. Never at
      * issue: the bookbuild's bidders do not include it (Bidders). Its shares'
      * value is the step's (fundSharesValue, Exchange.cityMarketValue()).
+     * Over the default withdrawal (0.7.48, C1) each bond also asks its value
+     * for its part of what the withdrawal must raise (TreasuryFund.getToRaise()),
+     * the bonds' share of the market book pro rata, whichever sale is larger;
+     * and while the dial is over the default the rule buys none.
      */
     private void postFund(int month, double[] value) {
         if (fund == null) return;
@@ -1378,12 +1382,17 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         if (total > 0) {
             double target = (1 - TreasuryFund.EQUITY_WEIGHT) * total;
             double excess = TreasuryFund.bondsOver(fundSharesValue, held, cash);
-            if (excess > 0) {
+            double toRaise = fund.getToRaise();
+            if (excess > 0 || toRaise > 0) {
                 for (int i = 0; i < bonds.size(); i++) {
                     CorporateBond b = bonds.get(i);
-                    if (b.city > dust && held > 0) submit(b, FUND, OrderBook.Side.SELL, value[i], b.city * excess / held, month);
+                    if (!(b.city > dust && held > 0)) continue;
+                    double q = excess > 0 ? b.city * excess / held : 0;
+                    // ...and its part of what the withdrawal must raise (C1): the market book pro rata.
+                    if (toRaise > 0) q = Math.max(q, Math.min(b.city, b.city * toRaise * held / (fundSharesValue + held) / held));
+                    submit(b, FUND, OrderBook.Side.SELL, value[i], q, month);
                 }
-            } else if (cash > 0 && weights > 0) {
+            } else if (cash > 0 && weights > 0 && !fund.sellsToPay()) {
                 for (int i = 0; i < bonds.size(); i++) {
                     CorporateBond b = bonds.get(i);
                     if (b.remainingMonths(month) <= 0 || !(b.face > 0) || !(value[i] > 0)) continue;

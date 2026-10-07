@@ -12,11 +12,17 @@ import java.nio.file.Path;
  *
  *   1. Does the price index measure what households BUY, on a basket fixed at a
  *      base period? A CPI that re-weights as spending shifts shows no inflation
- *      for a family that switched to cheaper food while eating worse.
+ *      for a family that switched to cheaper food while eating worse. Since
+ *      0.7.43: five components on the trailing year's spending, luxury capped,
+ *      struck again every REBASE_MONTHS and chained, so neither the level nor
+ *      the year's rate jumps at a link - and since 0.7.45 each component's own
+ *      level runs through it too.
  *
  *   2. Do prices RATION? A shop that can meet a fifth of demand and charges
  *      cost-plus is not a shop, it is a queue - and a model with no demand-pull
- *      channel gives a policy rate nothing to cool.
+ *      channel gives a policy rate nothing to cool. Since 0.7.43 the shelf aims
+ *      at the price that clears, between its floor and CLEARING_CAP over it,
+ *      and moves CLEAR_SPEED of the way there a month.
  *
  *   3. Is the world a real place? Its own inflation is the one price shock the
  *      player cannot cause and cannot stop.
@@ -137,25 +143,191 @@ public class MonetaryCheck {
         assertTrue("a rate is not quoted before there is a year of readings",
                 !young.hasRate() && young.inflation() == 0);
 
+        /* ---------------- five components, the year's weights, chained (0.7.43) ----------------
+         *
+         * spec-inflation.md 2.9: groceries, rent, meals, luxury and the
+         * services' fees, each weighted by what the households spent on it
+         * over the trailing year - luxury capped at LUXURY_WEIGHT_CAP, its
+         * excess spread pro rata over the rest - and the fees a sub-index of
+         * their own, each line by its share of what was paid.
+         */
+        out.println("\n--- five components, the year's weights, chained ---");
+        double[] prices5 = { .30, .12, .9, 2.0, 0 };
+        double[] spends5 = { 50, 30, 10, 40, 0 };
+        double[] fees5 = { 2.0, 1.0, .5, .1 };
+        double[] feeSpends5 = { 5, 3, 2, 0 };
+        PriceIndex five = new PriceIndex();
+        int fm = 0;
+        for (int m = 0; m < PriceIndex.SETTLING_MONTHS; m++) five.takeMonth(prices5, spends5, fees5, feeSpends5, ++fm);
+        assertTrue("fixture: the five-component basket is based", five.isBased());
+        int weighted = 0;
+        double weightSum = 0;
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            if (five.getWeight(k) > 0) weighted++;
+            weightSum += five.getWeight(k);
+        }
+        close("every component the households spent on is in the basket", weighted, PriceIndex.COMPONENTS, 0);
+        close("...the weights summing to one", weightSum, 1, 1e-12);
+        close("luxury is no more than LUXURY_WEIGHT_CAP of it",
+                five.getWeight(PriceIndex.LUXURY), PriceIndex.LUXURY_WEIGHT_CAP, 1e-12);
+        close("...its excess spread pro rata: groceries to rent as spent",
+                five.getWeight(PriceIndex.GROCERIES) / five.getWeight(PriceIndex.RENT), 50.0 / 30, 1e-12);
+        close("...and the services weighed as their fees were paid",
+                five.getWeight(PriceIndex.SERVICES) / five.getWeight(PriceIndex.GROCERIES), 10.0 / 50, 1e-12);
+        close("a fee line's share of the services is its share of the fees paid",
+                five.getFeeShare(PriceIndex.HEALTH_FEE), .5, 1e-12);
+        close("...and a line nobody paid has none", five.getFeeShare(PriceIndex.ACCOUNT_FEE), 0, 0);
+
+        five.takeMonth(prices5, spends5, new double[] { 2.2, 1.0, .5, .1 }, feeSpends5, ++fm);
+        close("a tenth on the doctor moves the index by a tenth of its share of the services' weight",
+                five.getIndex() - 1, .1 * .5 * five.getWeight(PriceIndex.SERVICES), 1e-12);
+        double beforeShut = five.getIndex();
+        five.takeMonth(new double[] { .30, .12, 0, 2.0, 0 }, new double[] { 50, 30, 0, 40, 0 },
+                new double[] { 2.2, 1.0, .5, .1 }, feeSpends5, ++fm);
+        close("a month with no meal sold holds meals at their last price", five.getIndex(), beforeShut, 1e-12);
+
+        /*
+         * THE CHAIN. Every REBASE_MONTHS the basket is struck again on the
+         * trailing year and linked at the level the old one reached that
+         * month: the level does not jump, and with every price rising alike
+         * the year's rate runs straight through the link.
+         */
+        PriceIndex chain = new PriceIndex();
+        int cm = 0, linkDue = -1;
+        double rise = .004, grown = 1, worstRateGap = 0, beforeLink = 0;
+        double steadyRate = Math.pow(1 + rise, 12) - 1;
+        double[] spendsLater = { 20, 30, 40, 5, 0 };
+        double[] componentBefore = new double[PriceIndex.COMPONENTS];
+        while (linkDue < 0 || cm < linkDue) {
+            boolean lateYear = linkDue > 0 && cm >= linkDue - PriceIndex.WEIGHT_MONTHS;
+            double[] p = new double[PriceIndex.COMPONENTS], f = new double[PriceIndex.FEE_LINES];
+            for (int k = 0; k < PriceIndex.COMPONENTS; k++) p[k] = prices5[k] * grown;
+            for (int j = 0; j < PriceIndex.FEE_LINES; j++) f[j] = fees5[j] * grown;
+            beforeLink = chain.getIndex();
+            for (int k = 0; k < PriceIndex.COMPONENTS; k++) componentBefore[k] = chain.getComponentLevel(k);
+            chain.takeMonth(p, lateYear ? spendsLater : spends5, f, feeSpends5, ++cm);
+            if (chain.isBased() && linkDue < 0) linkDue = cm + PriceIndex.REBASE_MONTHS;
+            if (chain.hasRate()) worstRateGap = Math.max(worstRateGap, Math.abs(chain.inflation() - steadyRate));
+            grown *= 1 + rise;
+        }
+        close("the basket is linked again REBASE_MONTHS after it was based", chain.getLinkedMonth(), linkDue, 0);
+        close("...at the level the old basket reached: the index does not jump",
+                chain.getIndex() / beforeLink, 1 + rise, 1e-12);
+        close("...and the link is that level", chain.getLink(), chain.getIndex(), 1e-12);
+        close("with every price rising alike, the year's rate runs through the link unbroken",
+                worstRateGap, 0, 1e-12);
+        close("the new basket weighs what was spent in the year before it",
+                chain.getWeight(PriceIndex.MEALS), 40.0 / (20 + 30 + 40 + 5 + 10), 1e-12);
+        /*
+         * EACH COMPONENT'S OWN LEVEL IS CHAINED TOO (0.7.45; the UI spec's
+         * D12): City History draws it, and the relative it is read from
+         * restarts at 1 at every link.
+         */
+        double worstComponentStep = 0;
+        boolean relativesRestart = true;
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            worstComponentStep = Math.max(worstComponentStep,
+                    Math.abs(chain.getComponentLevel(k) / componentBefore[k] - (1 + rise)));
+            relativesRestart &= Math.abs(chain.getRelative(k) - 1) < 1e-12;
+        }
+        assertTrue("fixture: at the link every component's relative restarts at 1", relativesRestart);
+        close("...while each component's chained level runs straight through it, a month's rise and no jump",
+                worstComponentStep, 0, 1e-12);
+        double linked = chain.getLink();
+        double[] mealsDearer = new double[PriceIndex.COMPONENTS], feesHeld = new double[PriceIndex.FEE_LINES];
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) mealsDearer[k] = prices5[k] * grown / (1 + rise);
+        for (int j = 0; j < PriceIndex.FEE_LINES; j++) feesHeld[j] = fees5[j] * grown / (1 + rise);
+        mealsDearer[PriceIndex.MEALS] *= 1.1;
+        PriceIndex chainBack = new PriceIndex();
+        chainBack.restore(chain.toSaveArray());
+        chain.takeMonth(mealsDearer, spendsLater, feesHeld, feeSpends5, ++cm);
+        close("...and a tenth on meals moves the index by the new weight of meals, on the link",
+                chain.getIndex(), linked * (1 + .1 * chain.getWeight(PriceIndex.MEALS)), 1e-12);
+        chainBack.takeMonth(mealsDearer, spendsLater, feesHeld, feeSpends5, cm);
+        close("a chained basket reloads and prices the next month the same", chainBack.getIndex(), chain.getIndex(), 1e-12);
+        close("...with the same year's rate", chainBack.inflation(), chain.inflation(), 1e-12);
+        double worstReloaded = 0;
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            worstReloaded = Math.max(worstReloaded, Math.abs(chainBack.getComponentLevel(k) - chain.getComponentLevel(k)));
+        }
+        close("...and the same chained level for every component (0.7.45)", worstReloaded, 0, 1e-12);
+        PriceIndex from744 = new PriceIndex();
+        double[] whole = chain.toSaveArray();
+        from744.restore(java.util.Arrays.copyOf(whole, whole.length - PriceIndex.COMPONENTS));
+        double worstSeeded = 0;
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            worstSeeded = Math.max(worstSeeded,
+                    Math.abs(from744.getComponentLevel(k) - from744.getLink() * from744.getRelative(k)));
+        }
+        assertTrue("a save from 0.7.43 or 0.7.44, the chain without the levels, still reads as a chain",
+                !from744.isLinkPending() && from744.getLink() == chain.getLink() && from744.getIndex() == chain.getIndex());
+        close("...its components running on from the level of the link", worstSeeded, 0, 1e-12);
+
+        /*
+         * A SAVE FROM BEFORE 0.7.43 carried the two-component basket and
+         * nothing behind it. Its first month strikes the level on that basket
+         * and links the five-component one there, weighed on that month's
+         * spending: the level runs on.
+         */
+        PriceIndex pre743 = new PriceIndex();
+        pre743.restore(java.util.Arrays.copyOf(px.toSaveArray(), PriceIndex.SLOTS_BEFORE_CHAIN));
+        assertTrue("an older save waits to link its basket", pre743.isLinkPending());
+        double[] oldPrices = { .15, .12, .9, 2.0, 0 };
+        double[] oldSpends = { 60, 40, 10, 5, 0 };
+        pre743.takeMonth(oldPrices, oldSpends, fees5, feeSpends5, ++mo);
+        close("...and its first month opens at the level its own basket strikes",
+                pre743.getIndex(), .6 * .15 / .30 + .4 * .12 / .12, 1e-12);
+        assertTrue("...linked, that month", !pre743.isLinkPending() && pre743.getLinkedMonth() == mo);
+        close("...weighed on that month's spending", pre743.getWeight(PriceIndex.MEALS), 10.0 / (60 + 40 + 10 + 5 + 10), 1e-12);
+        close("...its groceries' own level seeded from the old basket's, the shelf over its base (0.7.45)",
+                pre743.getComponentLevel(PriceIndex.GROCERIES), .15 / .30, 1e-12);
+        close("...and its rent's likewise", pre743.getComponentLevel(PriceIndex.RENT), .12 / .12, 1e-12);
+        close("...and a component the old basket did not price at the level of the link",
+                pre743.getComponentLevel(PriceIndex.MEALS), pre743.getLink(), 1e-12);
+        double opened = pre743.getIndex();
+        pre743.takeMonth(oldPrices, oldSpends, fees5, feeSpends5, ++mo);
+        close("...and the next month, nothing dearer, it stays there", pre743.getIndex(), opened, 1e-12);
+
         /* ================= 2. prices ration ================= */
         out.println("\n--- and a shortage is priced ---");
 
+        /*
+         * REWRITTEN FOR 0.7.43 (spec-inflation.md 2.7, a premise the design
+         * changes): the shelf's target is the price that clears, between its
+         * floor and CLEARING_CAP over it, and the shelf moves CLEAR_SPEED of
+         * the way there a month in logs - "a total shortage charges the
+         * ceiling" reads "a total shortage aims at CLEARING_CAP over the
+         * floor and gets there at CLEAR_SPEED", where it was MAX_SCARCITY
+         * over cost-plus at once. The fixture causes the clearing price: a
+         * stock that cost .10 a basket, so the floor is the opening price the
+         * shelf opens at, .30, and the sale's clearing price handed in.
+         */
         ham.citybuildersim.sectors.Retail full = new ham.citybuildersim.sectors.Retail();
-        full.repriceShelf(100, .20, 0, .20, 100, 100);
-        close("shelves that meet demand charge cost-plus",
+        double floor = Math.max(ham.citybuildersim.sectors.Retail.OPENING_SELL_PRICE,
+                .10 * ham.citybuildersim.sectors.Retail.RETAIL_MARKUP);
+        full.repriceShelf(.10, floor / 2);
+        close("shelves that clear under the floor charge the floor",
                 full.getScarcityMultiple(), 1.0, 1e-9);
+        close("...and stay there", full.getStoreSellPrice(), floor, 1e-12);
 
         ham.citybuildersim.sectors.Retail shortage = new ham.citybuildersim.sectors.Retail();
-        shortage.repriceShelf(100, .20, 0, .20, 100, 0);
-        out.printf("   nothing delivered: a %.2fx mark-up%n", shortage.getScarcityMultiple());
-        close("a total shortage charges the ceiling",
-                shortage.getScarcityMultiple(), ham.citybuildersim.sectors.Retail.MAX_SCARCITY_MULTIPLE, 1e-9);
+        shortage.repriceShelf(.10, floor * 100);
+        out.printf("   a clearing price a hundred times the floor: a %.2fx target%n", shortage.getScarcityMultiple());
+        close("a total shortage aims at the cap over the floor",
+                shortage.getScarcityMultiple(), ham.citybuildersim.sectors.Retail.CLEARING_CAP, 1e-9);
+        close("...and moves a sixth of the way there in its first month, in logs",
+                shortage.getStoreSellPrice(),
+                floor * Math.pow(ham.citybuildersim.sectors.Retail.CLEARING_CAP,
+                        ham.citybuildersim.sectors.Retail.CLEAR_SPEED), 1e-12);
+        for (int m = 0; m < 240; m++) shortage.repriceShelf(.10, floor * 100);
+        close("...and reaches it, at the clear speed",
+                shortage.getStoreSellPrice(), floor * ham.citybuildersim.sectors.Retail.CLEARING_CAP, 1e-9);
 
         ham.citybuildersim.sectors.Retail half = new ham.citybuildersim.sectors.Retail();
-        half.repriceShelf(100, .20, 0, .20, 100, 50);
+        half.repriceShelf(.10, floor * 1.25);
         assertTrue("...and half a shortage is between the two",
                 half.getScarcityMultiple() > 1
-                        && half.getScarcityMultiple() < ham.citybuildersim.sectors.Retail.MAX_SCARCITY_MULTIPLE);
+                        && half.getScarcityMultiple() < ham.citybuildersim.sectors.Retail.CLEARING_CAP);
 
         /* ================= 3. the world is a real place ================= */
         out.println("\n--- and the world has its own inflation ---");
@@ -228,6 +400,15 @@ public class MonetaryCheck {
          * inflation aimed five points higher is met with exactly TAYLOR_WEIGHT
          * times five points less rate, and the slope - the Taylor principle
          * above - does not move.
+         *
+         * REWRITTEN FOR 0.7.42 (the anchor, spec-inflation.md 2.4): on target
+         * the rule sets the neutral REAL rate plus the target - NEUTRAL_RATE
+         * at the default 2% target, a point more for every point of target
+         * above it - so the same inflation aimed five points higher is met
+         * with (TAYLOR_WEIGHT - 1) times five points less rate, where it was
+         * TAYLOR_WEIGHT times five; and "on target, neutral" reads "on target,
+         * the neutral real rate plus the target". At the default target the
+         * rule is the one it always was, to the bit.
          */
         out.println("\n--- the target is a dial ---");
         DebtManager aims = new DebtManager();
@@ -241,14 +422,14 @@ public class MonetaryCheck {
         double aimedAtFive = aims.ruleRate(.05);
         out.printf("   at 5%% inflation the rule sets %.2f%% aiming at 0%% and %.2f%% aiming at 5%%%n",
                 aimedAtZero * 100, aimedAtFive * 100);
-        close("the same inflation aimed at 0% and at 5% differs by TAYLOR_WEIGHT x 5 points",
-                aimedAtZero - aimedAtFive, DebtManager.TAYLOR_WEIGHT * .05, 1e-12);
-        close("...and on its target the rule advises neutral, whatever the target is",
-                aimedAtFive, DebtManager.NEUTRAL_RATE, 1e-12);
+        close("the same inflation aimed at 0% and at 5% differs by (TAYLOR_WEIGHT - 1) x 5 points",
+                aimedAtZero - aimedAtFive, (DebtManager.TAYLOR_WEIGHT - 1) * .05, 1e-12);
+        close("...and on its target the rule advises the neutral real rate plus the target, whatever the target is",
+                aimedAtFive, DebtManager.NEUTRAL_RATE + (.05 - DebtManager.DEFAULT_INFLATION_TARGET), 1e-12);
         close("...the dial's rule being the rule at that target", aims.ruleRate(.05),
                 aims.ruleRate(.05, .05), 0);
         close("...and the advice it clamps to the dial reads it too", aims.advisedPolicyRate(.05),
-                DebtManager.NEUTRAL_RATE, 1e-12);
+                DebtManager.NEUTRAL_RATE + (.05 - DebtManager.DEFAULT_INFLATION_TARGET), 1e-12);
         aims.setInflationTarget(.035);
         assertTrue("...and the reason names the target it aims at, half point and all",
                 aims.adviceReason(.05).contains("3.5% target"));
@@ -259,7 +440,8 @@ public class MonetaryCheck {
         close("...which is Jerus's 20%", DebtManager.MAX_INFLATION_TARGET, .20, 0);
         aims.setInflationTarget(.15);
         close("a target of 15%, past the old stop at 10%, is kept", aims.getInflationTarget(), .15, 0);
-        close("...and the rule aims at it: on it, neutral", aims.ruleRate(.15), DebtManager.NEUTRAL_RATE, 1e-12);
+        close("...and the rule aims at it: on it, the neutral real rate plus the target", aims.ruleRate(.15),
+                DebtManager.NEUTRAL_RATE + (.15 - DebtManager.DEFAULT_INFLATION_TARGET), 1e-12);
         aims.setInflationTarget(.25);
         close("...and 25% is held at MAX_INFLATION_TARGET", aims.getInflationTarget(),
                 DebtManager.MAX_INFLATION_TARGET, 0);
@@ -280,6 +462,12 @@ public class MonetaryCheck {
         cheap.setRealRateDifferential(-.04);
         ForeignAccounts dear = new ForeignAccounts();
         dear.setRealRateDifferential(.04);
+        // AT PARITY (0.7.42): investors expect a currency away from parity to
+        // come back (ForeignAccounts, INVESTORS EXPECT A CURRENCY TO COME
+        // BACK), so the gap alone is the price of the channel only where the
+        // rate sits at parity - which a fresh currency does.
+        assertTrue("fixture: both currencies sit at parity, so nothing is expected back",
+                cheap.getRate() == cheap.getParity() && dear.getRate() == dear.getParity());
 
         out.printf("   four real points under the world pulls %+.2f, four points over %+.2f%n",
                 cheap.ratePressure(), dear.ratePressure());
@@ -450,6 +638,12 @@ public class MonetaryCheck {
        A city whose shelf is priced by scarcity would answer; this one's is
        priced by its floor. The assertion is on the transmission, whichever
        channel carries it; the columns say which one did.
+
+       SINCE 0.7.43 THE BASKET IS FIVE PARTS and the shelf clears at a price
+       over its floor when the shops cannot hand over what is asked. Measured
+       on this founding at 0.7.43 (runs/ui24-notes.md, section 6): the shelf is on its floor at the base month, groceries weigh .23
+       of the index, meals (.19) and luxury (.15) follow the currency, and
+       the spread across the rows is 8.61 points (4.61 at 0.7.42).
 
        One founding - the playtest's own, borrowed the way the ensemble
        probes borrow it - run to month 24 and then once for each held rate

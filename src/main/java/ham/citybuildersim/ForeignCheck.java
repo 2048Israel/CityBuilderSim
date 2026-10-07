@@ -109,6 +109,9 @@ public class ForeignCheck {
         // The Trade tab's goods against the balance of payments (0.7.35).
         double worstSold = 0, worstBought = 0;
         int monthsSold = 0, monthsBought = 0;
+        // ...and the households' imported fuel: FUEL's since 0.7.62, an import with no good from 0.7.49.
+        double worstFuel = 0;
+        int monthsFuel = 0;
 
         System.setOut(quiet);
         try {
@@ -171,8 +174,9 @@ public class ForeignCheck {
                  * month good by good off every sector's statement (Game
                  * .getTradeByGood()) and prints SOLD ABROAD and BOUGHT ABROAD
                  * off the balance of payments: the two must be the same money,
-                 * the imports with no good (the railway's fuel) and the
-                 * households' cars included. The markets' own tally does not
+                 * the fuel (FUEL's since 0.7.62; the railway's an import with
+                 * no good before) and the households' cars included. The
+                 * markets' own tally does not
                  * foot (the Trade spec's B13), which is why the books are read.
                  */
                 Sectors.TradeByGood goods = city.getTradeByGood();
@@ -181,6 +185,14 @@ public class ForeignCheck {
                 worstSold = Math.max(worstSold, Math.abs(goods.sold() - f.getExports()) / Math.max(1, f.getExports()));
                 worstBought = Math.max(worstBought,
                         Math.abs(goods.bought() - f.tradeImports()) / Math.max(1, f.tradeImports()));
+                // ...the households' fuel the world sold them: FUEL's since
+                // 0.7.62, the households among its buyers (an import with no
+                // good from 0.7.49 until fuel was a good).
+                double fuel = city.getHouseholdFuelImports();
+                if (fuel > 0) monthsFuel++;
+                Sectors.GoodTrade fuelTrade = goods.goods().get(Good.FUEL);
+                double fuelBooked = fuelTrade == null ? 0 : fuelTrade.buyers().getOrDefault(Sectors.HOUSEHOLDS, 0.0);
+                worstFuel = Math.max(worstFuel, Math.abs(fuelBooked - fuel) / Math.max(1, fuel));
             }
         } finally {
             System.setOut(out);
@@ -258,6 +270,8 @@ public class ForeignCheck {
                 worstSold, 0, 1e-9);
         close("...and what they bought, with the fuel and the households' cars, its imports",
                 worstBought, 0, 1e-9);
+        assertTrue("fixture: the city's drivers bought fuel abroad, month after month", monthsFuel > 12);
+        close("the households' imported fuel is FUEL's, the households among its buyers", worstFuel, 0, 1e-9);
 
         /*
          * WAGES ARE NOT IMPORTS, which is the whole reason for the split.
@@ -374,7 +388,7 @@ public class ForeignCheck {
          * state, and two runs would diverge.
          */
         Path twin = Files.createTempDirectory("foreigncheck-twin");
-        int popA, popB;
+        long popA, popB;
         double cashA, cashB;
         System.setOut(quiet);
         try {
@@ -1557,7 +1571,7 @@ public class ForeignCheck {
     static double lastCash;
 
     /** One deterministic city, played the same way twice. */
-    static int run(Path dir) throws Exception {
+    static long run(Path dir) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
@@ -1587,7 +1601,7 @@ public class ForeignCheck {
 
         final double trade = 6_000, gdp = 40_000;
         ForeignAccounts fx = new ForeignAccounts();
-        assertTrue("a city founded or loaded has no month counted yet", !fx.isMonthCounted());
+        assertTrue("a city just founded has no month counted yet", !fx.isMonthCounted());
         for (int m = 0; m < ForeignAccounts.SETTLING_MONTHS + 12; m++) fx.takeMonth(month(trade / 3, trade * 2 / 3), gdp);
         assertTrue("...and once a month is taken, it has", fx.isMonthCounted());
         fx.setParity(1.2, 1.0, 0, 0);
@@ -1606,15 +1620,52 @@ public class ForeignCheck {
         fx.repriceCurrency();
         out.printf("   push %+.5f%%, pull %+.5f%%: the rate %.6f -> %.6f%n", push * 100, pull * 100, before, fx.getRate());
         close("...and the month's reprice moves the rate by exactly that", fx.getRate() / before - 1, move, 1e-12);
+
+        /*
+         * ...AND IN ITS THREE, WITH THE ANCHORED DRIFT HANDED (0.7.45; the UI
+         * spec's B6): the month applies the drift between the push and the
+         * pull, and the preview left it out, so the tab's move was short by a
+         * twelfth of it and its parts did not add to the reprice.
+         */
+        fx.setExpectedDrift(.03);
+        double push2 = fx.previewPush(), drift2 = fx.previewDrift(), pull2 = fx.previewPull(), move2 = fx.previewMove();
+        assertTrue("fixture: an anchored drift handed to the currency, so the month drifts it too", Math.abs(drift2) > 1e-6);
+        close("the push, the drift and the pull the tab draws add to the move it draws", push2 + drift2 + pull2, move2, 1e-15);
+        double before2 = fx.getRate();
+        fx.repriceCurrency();
+        out.printf("   push %+.5f%%, drift %+.5f%%, pull %+.5f%%: the rate %.6f -> %.6f%n",
+                push2 * 100, drift2 * 100, pull2 * 100, before2, fx.getRate());
+        close("...and the month's reprice moves the rate by exactly that, the drift in it", fx.getRate() / before2 - 1, move2, 1e-12);
         fx.pinRate(fx.getRate());
         close("a pinned rate's previewed move is nothing", Math.abs(fx.previewPush()) + Math.abs(fx.previewPull()), 0, 0);
+        close("...the drift with it", fx.previewDrift(), 0, 0);
 
-        /* ...and a loaded city has no month counted, whatever it traded. */
+        /*
+         * ...AND A LOADED CITY READS THE MONTH IT WAS SAVED IN (0.7.46, A2;
+         * the Trade spec's D4). The save carries the month's flows now, so
+         * the month is counted after the load. Until 0.7.46 the two labels
+         * here read "a city loaded from it has no month counted yet" and
+         * "its month's exports read nothing until one is": the premise moved
+         * with the fix, and it still holds for a save from before the flows.
+         */
         ForeignAccounts loaded = new ForeignAccounts();
         loaded.restore(fx.toSaveArray());
         assertTrue("fixture: the city sold abroad the month it was saved", fx.getExports() > 0);
-        assertTrue("a city loaded from it has no month counted yet", !loaded.isMonthCounted());
-        close("...and its month's exports read nothing until one is", loaded.getExports(), 0, 0);
+        assertTrue("fixture: ...and the treasury bought dollars in it", fx.getBoughtThisMonth() > 0);
+        boolean sameMonth = Double.compare(loaded.getExports(), fx.getExports()) == 0
+                && Double.compare(loaded.tradeImports(), fx.tradeImports()) == 0
+                && Double.compare(loaded.getForeignInterest(), fx.getForeignInterest()) == 0
+                && Double.compare(loaded.getFinancialIn(), fx.getFinancialIn()) == 0
+                && Double.compare(loaded.getFinancialOut(), fx.getFinancialOut()) == 0
+                && Double.compare(loaded.valuationChange(), fx.valuationChange()) == 0
+                && Double.compare(loaded.getBoughtThisMonth(), fx.getBoughtThisMonth()) == 0
+                && Double.compare(loaded.getSoldThisMonth(), fx.getSoldThisMonth()) == 0;
+        assertTrue("a freshly loaded city reads the month's balance of payments the live one read", sameMonth);
+        assertTrue("the month is counted after a load of a save that carried it", loaded.isMonthCounted());
+        ForeignAccounts older = new ForeignAccounts();
+        older.restore(java.util.Arrays.copyOf(fx.toSaveArray(), 37));
+        assertTrue("a city loaded from a save before the month's flows has no month counted yet", !older.isMonthCounted());
+        close("...and its month's exports read nothing until one is", older.getExports(), 0, 0);
 
         /* THE ONE PARITY RULE, either side, at its own constants. */
         double w = ForeignAccounts.PARITY_WATCH, f = ForeignAccounts.PARITY_FAR;

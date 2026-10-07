@@ -1,6 +1,6 @@
 # TimeSkipReport.java - 538 lines · 63 methods · 0 constants · model
 
-`ham/citybuildersim/TimeSkipReport.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimeSkipReport.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > What happened while you were not watching.
 > 
@@ -55,9 +55,9 @@
 |---:|---|---|
 | 46 | `int month` |  |
 | 47 | `double cash` |  |
-| 48 | `int population` |  |
-| 49 | `int housing` |  |
-| 50 | `int jobs` |  |
+| 48 | `long population` |  |
+| 49 | `long housing` |  |
+| 50 | `long jobs` |  |
 | 51 | `double monthlyGdp` |  |
 | 52 | `double annualGdp` |  |
 | 53 | `double cityDebt` |  |
@@ -85,7 +85,7 @@
 | 101 | `private double advancesOwedAtEnd` |  |
 | 103 | `private double worstEnergyRatio` |  |
 | 104 | `private double worstRoadRatio` |  |
-| 105 | `private int peakPopulation` |  |
+| 105 | `private long peakPopulation` |  |
 | 278 | `private int outbreaks` |  |
 | 279 | `private int monthsInOutbreak` |  |
 | 280 | `private boolean wasOutbreak` |  |
@@ -112,7 +112,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 140 | 37 | `public void snapshot(boolean atStart, int month, double cash, int population, int housing, int jobs, double monthlyGdp, double ...` | Records the state at one instant. |
+| 140 | 37 | `public void snapshot(boolean atStart, int month, double cash, long population, long housing, long jobs, double monthlyGdp, doub...` | Records the state at one instant. |
 | 186 | 6 | `public void sampleMonth(double energyRatio, double waterRatio, double landAvailableSqFt, boolean householdsShort, boolean anyth...` | One month of the skip, as it goes past. |
 | 194 | 6 | `public void sampleMonth(double energyRatio, double waterRatio, double roadRatio, double landAvailableSqFt, boolean householdsSh...` |  |
 | 215 | 29 | `public void sampleMonth(double energyRatio, double waterRatio, double roadRatio, double landAvailableSqFt, boolean householdsSh...` | The same, plus the month's health. |
@@ -151,8 +151,8 @@
 | 309 | 1 | `public double getLandBlocksBought()` |  |
 | 311 | 1 | `public double getStartCash()` |  |
 | 312 | 1 | `public double getEndCash()` |  |
-| 313 | 1 | `public int getStartPopulation()` |  |
-| 314 | 1 | `public int getEndPopulation()` |  |
+| 313 | 1 | `public long getStartPopulation()` |  |
+| 314 | 1 | `public long getEndPopulation()` |  |
 | 315 | 1 | `public double getEndLandUtilisation()` |  |
 | 316 | 1 | `public double getEndSavingRate()` |  |
 | 317 | 1 | `public double getEndRentBurden()` |  |
@@ -189,7 +189,7 @@
 | 438 | 1 | `public int getMonthsHouseholdsShort()` |  |
 | 439 | 1 | `public int getMonthsNothingBuilt()` |  |
 | 440 | 1 | `public double getWorstEnergyRatio()` |  |
-| 441 | 1 | `public int getPeakPopulation()` |  |
+| 441 | 1 | `public long getPeakPopulation()` |  |
 | 444 | 3 | `public boolean shrankFromPeak()` | True when the city ended smaller than its high-water mark. |
 | 449 | 3 | `public double getIdleShare()` | Share of the skip spent with nothing on any building site. |
 | 461 | 77 | `public List<String> getHeadlines()` | The things worth putting in front of the player, in plain sentences. |

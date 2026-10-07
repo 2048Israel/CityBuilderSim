@@ -49,6 +49,10 @@ import java.util.Locale;
  *   7. A DIAL AT ZERO previews something (the spec's B9): the old screen
  *      scaled today's figure by the ratio of two rates and read nothing from
  *      a contribution, a pension, a premium or a benefit at zero.
+ *   8. THE FUND'S WITHDRAWAL (0.7.48, C2): at the dial in force the
+ *      preview's due is next month's, struck when it comes; and a year on,
+ *      earning nothing, the fund is its value times (1 - the rate) to the
+ *      twelfth, which is what twelve of the model's own withdrawals leave.
  *
  * Every fixture causes its condition.
  */
@@ -80,6 +84,13 @@ public class PolicyPreviewCheck {
      * water and roads; a commercial bank (its profit tax), clinics (their
      * fees) and schools; put up finished out of a Wealthy treasury and played
      * five years - long enough for pensioners, claimants and students.
+     *
+     * 580 HOMES SINCE 0.7.55, where it was 500. The ground is priced by how
+     * crowded the city is now (LandMarket, THE CROWDING PREMIUM): 4,300 people
+     * on its 18.9 square kilometres pay the base, where the size premium had
+     * charged about 17 times it, and its businesses hired the pool empty -
+     * none on EI in month 62, the month section 6 reads. With 580 homes the
+     * pool holds claimants in the months sections 6 and 7 read (222 and 115).
      */
     static Game city(Path root) {
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
@@ -100,7 +111,7 @@ public class PolicyPreviewCheck {
 
     /** The fixture's orders. */
     static final String[][] ORDERS = {
-            { "House", "500" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
+            { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction Depot", "6" },
             { "Coal Power Plant", "2" }, { "Water Treatment Plant", "2" }, { "Industrial Bakery", "3" },
             { "Steel Foundry", "2" }, { "Fabrication Shop", "2" }, { "Commercial Bank", "1" },
             { "Elementary School", "3" }, { "Walk-in Clinic", "3" }, { "Paved Road", "20" } };
@@ -120,6 +131,7 @@ public class PolicyPreviewCheck {
         afterALoad(root, g);
         appliedIsTheModel(g);
         aDialAtZero(g);
+        theWithdrawal(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -405,6 +417,8 @@ public class PolicyPreviewCheck {
         assertTrue("the city's share of tuition moved alone moves it by the tuition the city would waive",
                 near(PolicyPreview.change(g, live, live.copy(), share, Math.min(1, share + .1)),
                         -(PolicyPreview.tuitionWaived(g, live, Math.min(1, share + .1)) - PolicyPreview.tuitionWaived(g, live, share))));
+        // (The food vouchers' line, 0.7.45's B19, is GroceryCheck's: this
+        // Wealthy city has nobody a voucher would go to, so it cannot cause it.)
     }
 
     /* ============================ 4. THE OTHER READS ============================ */
@@ -420,6 +434,10 @@ public class PolicyPreviewCheck {
         double target = Math.min(policy + .05 + CentralBank.WINDOW_PENALTY, bank.depositShare() * (policy + .05));
         assertTrue("...a step of the way from what it pays toward what its funding asks, never past it",
                 high >= Math.min(bank.depositRate(), target) - 1e-12 && high <= Math.max(bank.depositRate(), target) + 1e-12);
+        double expected = g.getExpectations().getExpectedInflation();
+        assertTrue("at the dial in force the preview's real rate subtracts what savers expect, as the month does",
+                PolicyPreview.realDepositRateAt(g, policy) == here - expected
+                && Math.abs((PolicyPreview.realDepositRateAt(g, policy) - g.realDepositRate()) - (here - bank.depositRate())) <= 1e-12);
 
         CentralBank cb = g.getCentralBank();
         assertTrue("fixture: the central bank has a trailing revenue to cap the advances on", cb.trailingRevenue() > 0);
@@ -445,6 +463,37 @@ public class PolicyPreviewCheck {
                 Math.abs(PolicyPreview.wageMoveAt(g, floor * 1.1) - 1.1) <= 1e-12
                 && near(PolicyPreview.cityPayrollAt(g, floor * 1.1),
                         (g.getEducation().getPayroll() + g.getHealthcare().getPayroll()) * PolicyPreview.wageMoveAt(g, floor * 1.1)));
+    }
+
+    /* ============================ 8. THE FUND'S WITHDRAWAL (0.7.48) ============================ */
+
+    static void theWithdrawal(Game g) {
+        out.println("\n--- 8. the fund's withdrawal: next month's due, and a year on earning nothing ---");
+        double payIn = 100_000;
+        g.setCashForTest(g.getCash() + payIn);
+        quietly(() -> g.fundPayIn(payIn));
+        quietly(() -> g.setFundWithdrawal(3 * TreasuryFund.WITHDRAWAL_STEP));
+        TreasuryFund fund = g.getFund();
+        assertTrue("fixture: a fund of cash alone, three steps a month, its year-end dial at nothing",
+                fund.getCash() > 0 && g.fundSharesValue() == 0 && g.fundBondsValue() == 0 && g.fundPreferredValue() == 0
+                && g.fundWarrantsValue() == 0 && fund.getWithdrawalSteps() == 3 && fund.getDial() == 0);
+        PolicyPreview.Withdrawal w = PolicyPreview.fundWithdrawalAt(g, g.getFundWithdrawal());
+        boolean asTheModel = w.due() == g.fundTransferDue();
+        quietly(g::toggleNextMonth);
+        assertTrue("at the withdrawal in force the preview's due is next month's", asTheModel
+                && fund.getTransferDue() == w.due() && fund.getTransferPaid() == w.fromCash() && w.toSell() == 0 && w.unpaid() == 0);
+        boolean yearOn = true;
+        for (int steps : new int[] { 0, TreasuryFund.DEFAULT_WITHDRAWAL_STEPS, 3, TreasuryFund.MAX_WITHDRAWAL_STEPS }) {
+            double rate = steps * TreasuryFund.WITHDRAWAL_STEP, value = g.fundValue();
+            PolicyPreview.Withdrawal at = PolicyPreview.fundWithdrawalAt(g, rate);
+            TreasuryFund bare = new TreasuryFund();
+            bare.receive(value);
+            bare.setWithdrawal(rate);
+            for (int m = 0; m < TreasuryFund.YEAR_MONTHS; m++) bare.payTransfer(bare.getCash(), 2000);
+            yearOn &= at.yearOn() == value * Math.pow(1 - rate, TreasuryFund.YEAR_MONTHS)
+                    && Math.abs(at.yearOn() - bare.getCash()) <= 1e-12 * value;
+        }
+        assertTrue("a year on, earning nothing, is the value x (1 - rate)^12 - what twelve of its withdrawals leave", yearOn);
     }
 
     /* ============================ 5. AFTER A LOAD ============================ */

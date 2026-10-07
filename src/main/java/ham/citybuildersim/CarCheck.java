@@ -11,7 +11,7 @@ package ham.citybuildersim;
  * yesterday" is carried by a number that can be non-zero, and it needs holding
  * down in its own file.
  *
- * SIX CLAIMS.
+ * EIGHT CLAIMS.
  *
  *   1. A CITY WITH NO CARS IS THE CITY IT WAS, to the bit - the load, the
  *      ratio, the riders, and the pair of blends that serve a sector. Nothing
@@ -25,7 +25,10 @@ package ham.citybuildersim;
  *   3. THE LOOP CLOSES. Jerus: "people drive until the road is full, then take
  *      the tram." A motorised city with a clear road puts nobody on transit; as
  *      the remembered commute worsens they come back, monotonically, and never
- *      past the ceiling any city's transit share has.
+ *      past the ceiling any city's transit share has. Since 0.7.49 owners also
+ *      choose the bus on cost, so the city is every commuter with a car of
+ *      their own, driving at no fuel, at the default fare, and the jam's
+ *      three quarters are walked down by that fare's curve.
  *
  *   4. A CAR IS PAID FOR. What the households' savings lose is exactly what the
  *      sellers and the world were paid, in the same month - the money identity
@@ -40,6 +43,16 @@ package ham.citybuildersim;
  *   6. IT SURVIVES A SAVE, both ways: a city reloads with the fleet, the
  *      ownership rate and the remembered commute it was saved with, and a save
  *      from before cars existed reloads owning none.
+ *
+ *   7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47): what the car plants
+ *      made of their nameplate, and what they ordered, bought and imported of
+ *      their parts at the month's rate - the full-rate order is the note's.
+ *
+ *   8. THE BUYER WEIGHS THE FARE (0.7.49): a household without a car buys one
+ *      only when its full monthly cost - the payment over its life at the
+ *      household rate, and a month of fuel - beats a month's pass; where the
+ *      fare deters nobody the ceiling on ownership is 1, and that town owns
+ *      more cars ten years on.
  *
  * See claude/the-fifth-link.md, HouseholdBalance's cars section and
  * InfrastructureManager's.
@@ -189,9 +202,19 @@ public class CarCheck {
 
         System.out.println("\n--- people drive until the road is full, then take the tram ---");
 
+        /*
+         * EVERY COMMUTER WITH A CAR OF THEIR OWN AND AT THE DEFAULT FARE
+         * (0.7.49). Owners choose the bus on cost now (InfrastructureManager,
+         * WHO RIDES, BY WHAT THEY PAY), so "everybody owns a car" is every
+         * commuter (setCommute(0, ...)), and free transit would draw them on
+         * cost - so the fare is the default, at no fuel, and the jam is the
+         * one reason left to ride. Its share is walked down by the default
+         * fare's curve, ninety-five percent.
+         */
         InfrastructureManager loop = network();
         loop.setModes(0, 20_000);
-        loop.setFare(0);
+        loop.setCommute(0, 0);
+        loop.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
         loop.setCarOwnership(1);
         for (int i = 0; i < 60; i++) loop.noteCongestion(1);
         report("a city where everybody owns a car and the road is clear rides nothing",
@@ -204,7 +227,8 @@ public class CarCheck {
             double ratio = 1 - step * (1 - InfrastructureManager.MIN_THROUGHPUT) / 10.0;
             InfrastructureManager at = network();
             at.setModes(0, 20_000);
-            at.setFare(0);
+            at.setCommute(0, 0);
+            at.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
             at.setCarOwnership(1);
             for (int i = 0; i < 60; i++) at.noteCongestion(ratio);
             double now = at.getTransitRiders();
@@ -217,7 +241,8 @@ public class CarCheck {
 
         InfrastructureManager grid = network();
         grid.setModes(0, 20_000);
-        grid.setFare(0);
+        grid.setCommute(0, 0);
+        grid.setFare(TaxPolicy.DEFAULT_TRANSIT_FARE);
         grid.setCarOwnership(1);
         for (int i = 0; i < 60; i++) grid.noteCongestion(InfrastructureManager.MIN_THROUGHPUT);
         /*
@@ -226,9 +251,10 @@ public class CarCheck {
          * the way to go, and a harness that demanded the last ulp would be
          * asserting on the exponential rather than on the rule.
          */
-        report("at a standstill, three quarters of the car owners are on the tram",
-                Math.abs(grid.willingToRide() - InfrastructureManager.CAR_OWNER_RIDES_AT_GRIDLOCK) < 1e-6,
-                String.format("%.1f%% willing", grid.willingToRide() * 100));
+        report("at a standstill, three quarters of the car owners are on the tram, at the default fare's 95%",
+                Math.abs(grid.ownersRidingAt(TaxPolicy.DEFAULT_TRANSIT_FARE) - InfrastructureManager.CAR_OWNER_RIDES_AT_GRIDLOCK
+                        * InfrastructureManager.ridershipAt(TaxPolicy.DEFAULT_TRANSIT_FARE)) < 1e-6,
+                String.format("%.1f%% riding", grid.ownersRidingAt(TaxPolicy.DEFAULT_TRANSIT_FARE) * 100));
 
         /*
          * AND THE MEMORY IS WHAT STOPS IT OSCILLATING. One clear month inside a
@@ -720,6 +746,190 @@ public class CarCheck {
                 took, String.valueOf(HouseholdBalance.CELL_SLOTS_BEFORE_CARS) + " slots a cell");
         report("...and the city it loads owns none",
                 same(older.totalCars(), 0) && same(older.carsPerHousehold(), 0), "");
+
+        /* ================================================================
+           7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47)
+           ================================================================ */
+
+        System.out.println("\n--- and the car plants' page reads the month ---");
+
+        GameFiles worksFiles = GameFiles.scratch("carcheck-works");
+        Game works = new Game(worksFiles);
+        quietly(() -> {
+            works.newGame();
+            works.setCashForTest(Founding.WEALTHY_CASH);
+            works.getLandManager().setOwnedSqFt(400_000_000L);
+            BuildingManager b = works.getBuildingManager();
+            works.buildStack(b.getTemplateByName("House"), 900, true);
+            works.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
+            works.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
+            works.buildStack(b.getTemplateByName("Paved Road"), 60, true);
+            works.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            works.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            works.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
+            works.buildStack(b.getTemplateByName("Fabrication Shop"), 1, true);
+            works.buildStack(b.getTemplateByName("Vehicle Works"), 1, true);
+            for (int i = 0; i < 10; i++) works.toggleNextMonth();
+        });
+        ham.citybuildersim.sectors.Automotive plants = works.getSectors().automotive();
+        Formats f = Formats.INSTANCE;
+        double carCap = plants.getCapacity(Good.CARS);
+        Sector.Output carRow = plants.output(Good.CARS);
+        double made = carRow.produced + carRow.exportBound;
+        double steelFull = plants.getInputAtCapacity(Good.FABRICATED_STEEL);
+        Sector.Input steel = plants.input(Good.FABRICATED_STEEL);
+        report("fixture: a town with a fabrication shop makes cars under its nameplate, ordering under the full rate",
+                made > 0 && made < carCap && steel.bid > 0 && steel.bid < steelFull,
+                String.format("made %.1f of %.0f, steel ordered %.1f of %.0f", made, carCap, steel.bid, steelFull));
+
+        java.util.List<Sector.Line> page = plants.ownLines(works);
+        boolean reads = false, parts = true, note = false;
+        int partLines = 0;
+        for (Sector.Line l : page) {
+            if (l.label().equals(Good.CARS.label()))
+                reads = l.value().equals(String.format("made %s of its %s a month · %s sold here · %s shipped",
+                        f.count(made), f.count(carCap), f.count(carRow.soldLocal), f.count(carRow.exported)));
+            for (Good g : new Good[] { Good.FABRICATED_STEEL, Good.MACHINERY }) {
+                if (!l.label().equals(g.label())) continue;
+                Sector.Input in = plants.input(g);
+                partLines++;
+                parts &= l.value().equals(String.format("%s ordered at this month's rate · %s bought here · %s imported",
+                                f.count(in.bid), f.count(in.boughtLocal), f.count(in.imported)))
+                        && (l.tone() == Sector.Line.Tone.WARN) == (in.boughtLocal + in.imported < in.bid * .9);
+            }
+            if (l.kind() == Sector.Line.Kind.NOTE) note = l.label().contains(f.count(steelFull) + " tonnes of fabricated steel");
+        }
+        report("Automotive's lines read the month: made, ordered, bought",
+                reads && parts && partLines == 2 && note,
+                String.format("cars %b, parts %b (%d lines), the full-rate order in the note %b", reads, parts, partLines, note));
+
+        /* ================================================================
+           8. THE BUYER WEIGHS THE FARE (0.7.49)
+           ================================================================ */
+
+        System.out.println("\n--- and the buyer weighs the fare ---");
+
+        /*
+         * Jerus: "acquiring car costs 500 a month and transit is 250 then they
+         * take transit". A household without a car weighs a month's pass
+         * against a car's full monthly cost - its payment over its life at
+         * the household rate, and a month of fuel - and the share who would
+         * rather ride scales how far good transit lowers the ceiling on
+         * ownership. Two towns the same but for the fare, with lines that
+         * could carry every commuter: at the default fare a pass is under
+         * half a car's cost, so the ceiling is the one transit always set;
+         * at the ceiling fare it is over twice it, so transit deters nobody -
+         * and ten years on that town owns more cars a household.
+         */
+        Game[] towns = new Game[2];
+        for (int k = 0; k < 2; k++) {
+            final Game fareTown = new Game(GameFiles.scratch("carcheck-fare" + k));
+            final boolean dear = k == 1;
+            quietly(() -> {
+                fareTown.newGame();
+                fareTown.setCashForTest(Founding.WEALTHY_CASH);
+                fareTown.getLandManager().setOwnedSqFt(400_000_000L);
+                BuildingManager b = fareTown.getBuildingManager();
+                fareTown.buildStack(b.getTemplateByName("House"), 900, true);
+                fareTown.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
+                fareTown.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
+                fareTown.buildStack(b.getTemplateByName("Paved Road"), 60, true);
+                fareTown.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+                fareTown.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+                fareTown.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
+                fareTown.buildStack(b.getTemplateByName("Bus Network"), 6, true);
+                TaxPolicy fares = fareTown.getEconomyManager().getTaxPolicy();
+                fares.setTransitFare(dear ? fares.maxTransitFare() : TaxPolicy.DEFAULT_TRANSIT_FARE);
+                // Two months: the buyers of the first read a network that had not yet been told its lines.
+                fareTown.toggleNextMonth();
+                fareTown.toggleNextMonth();
+            });
+            towns[k] = fareTown;
+        }
+        Motoring cheapBuyers = towns[0].getMotoring(), dearBuyers = towns[1].getMotoring();
+        double cheapCover = towns[0].getInfrastructureManager().getTransitCover();
+        double dearCover = towns[1].getInfrastructureManager().getTransitCover();
+        report("fixture: both towns' lines could carry every commuter",
+                same(cheapCover, 1) && same(dearCover, 1),
+                String.format("cover %.0f%% and %.0f%%", cheapCover * 100, dearCover * 100));
+        report("a household without a car buys one only when its full cost beats the fare",
+                same(cheapBuyers.getPrefersTransit(), 1) && same(dearBuyers.getPrefersTransit(), 0)
+                        && same(cheapBuyers.getOwnershipCeiling(), 1 - HouseholdBalance.TRANSIT_DETERRENT * cheapCover)
+                        && same(dearBuyers.getOwnershipCeiling(), 1),
+                String.format("ceilings %.2f at the default fare, %.2f at the ceiling fare",
+                        cheapBuyers.getOwnershipCeiling(), dearBuyers.getOwnershipCeiling()));
+        quietly(() -> {
+            for (int i = 2; i < 120; i++) { towns[0].toggleNextMonth(); towns[1].toggleNextMonth(); }
+        });
+        double cheapOwn = towns[0].getHouseholdBalance().carsPerHousehold();
+        double dearOwn = towns[1].getHouseholdBalance().carsPerHousehold();
+        report("...and ten years on the town where the fare deters nobody owns more cars a household",
+                dearOwn > cheapOwn && cheapOwn > 0,
+                String.format("%.3f against %.3f", dearOwn, cheapOwn));
+
+        Game priced = towns[0];
+        double carPrice = priced.getMarkets().get(Good.CARS).getLocalPrice();
+        double rate = priced.getBank().householdRate(priced.getDebtManager().getPolicyRate());
+        double perMonth = rate / 12, discounted = 0;
+        for (int m = 1; m <= HouseholdBalance.CAR_LIFE_MONTHS; m++) discounted += Math.pow(1 + perMonth, -m);
+        double byHand = carPrice / discounted;
+        report("the car's monthly cost is its payment over its life at the household rate",
+                carPrice > 0 && rate > 0 && Math.abs(Motoring.carPayment(carPrice, rate) - byHand) <= 1e-9 * byHand
+                        && Motoring.carPayment(carPrice, 0) == carPrice / HouseholdBalance.CAR_LIFE_MONTHS,
+                String.format("$%,.2f a month for a $%,.0f car at %.2f%%",
+                        Motoring.carPayment(carPrice, rate) * 1000, carPrice * 1000, rate * 100));
+
+        /* ================================================================
+           THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL
+           (0.7.67, batch M3b). LongPlaytest.addRoadThrottle() sizes a
+           transit order to the road's gap - a share of output, 25 lines at a
+           full outage - capped at the lines the riders the city could still
+           put on transit would fill (room over a line's seats). The cap was
+           in lines against the share, 25 times too loose: ensemble seed 14
+           ordered 16 Bus Networks in two moves for a city of 8,000, and their
+           wages ran to half and then all of its revenue. The fixture is a
+           town of 900 houses on four gravel roads two years on, the road's
+           gap asking for more lines than its riders would fill.
+           ================================================================ */
+        System.out.println("\n--- and the playtest's player orders no more lines than its riders would fill (0.7.67) ---");
+        final Game jam = new Game(GameFiles.scratch("carcheck-jam"));
+        quietly(() -> {
+            jam.newGame();
+            jam.setCashForTest(Founding.WEALTHY_CASH);
+            jam.getLandManager().setOwnedSqFt(400_000_000L);
+            BuildingManager b = jam.getBuildingManager();
+            jam.buildStack(b.getTemplateByName("House"), 900, true);
+            jam.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
+            jam.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
+            jam.buildStack(b.getTemplateByName("Gravel Road"), 4, true);
+            jam.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            jam.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+            jam.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
+            for (int i = 0; i < 24; i++) jam.toggleNextMonth();
+        });
+        InfrastructureManager jamRoads = jam.getInfrastructureManager();
+        BuildingsTemplate bus = jam.getBuildingManager().getTemplateByName("Bus Network");
+        double jamRiders = Math.max(0, Math.min(jamRoads.getLoad(Traffic.COMMUTERS) * InfrastructureManager.TRANSIT_MAX_SHARE,
+                jamRoads.getCapacity() * InfrastructureManager.TRANSIT_NEEDS_ROAD) - jamRoads.getUsableTransit());
+        int fill = (int) Math.ceil(jamRiders / bus.getTransitCapacity());
+        double gap = 1 - jam.getRoadRatio();
+        report("fixture: the road's gap asks for more lines than the riders would fill",
+                fill >= 1 && Math.ceil(gap * 25) > fill,
+                String.format("roads at %.1f%%: %.0f line(s) on addThrottle's scale, %,.0f riders for %d", jam.getRoadRatio() * 100,
+                        Math.ceil(gap * 25), jamRiders, fill));
+        java.util.List<LongPlaytest.Move> moves = new java.util.ArrayList<>();
+        LongPlaytest.addRoadThrottle(moves, jam, Math.max(1, jam.getEconomyManager().getMonthGdp()) * gap);
+        LongPlaytest.Move buses = null;
+        for (LongPlaytest.Move m : moves) if (m.label().equals("buses")) buses = m;
+        BuildingManager jb = jam.getBuildingManager();
+        int busesBefore = jb.getQuantity(bus.getId()) + (jb.getStack(bus) == null ? 0 : jb.getStack(bus).getUnderConstruction());
+        final LongPlaytest.Move busMove = buses;
+        boolean[] acted = new boolean[1];
+        if (busMove != null) quietly(() -> acted[0] = busMove.act().getAsBoolean());
+        int ordered = jb.getQuantity(bus.getId()) + (jb.getStack(bus) == null ? 0 : jb.getStack(bus).getUnderConstruction()) - busesBefore;
+        report("the bus move orders no more Bus Networks than the riders would fill",
+                busMove != null && acted[0] && ordered >= 1 && ordered <= fill,
+                String.format("%d ordered, %d at most", ordered, fill));
 
         System.out.println();
         if (fails == 0) {

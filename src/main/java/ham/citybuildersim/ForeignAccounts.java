@@ -464,7 +464,10 @@ public class ForeignAccounts {
      *
      *     (policy - the city's inflation) - (world base - the world's inflation)
      *
-     * - the same two inflations setParity() receives. A city inflating at 40%
+     * - the same two inflations setParity() receives until 0.7.42, and since
+     * then the city's side ex ante, at the inflation it EXPECTS
+     * (Game.realRateDifferential(); INVESTORS EXPECT A CURRENCY TO COME BACK,
+     * below, for what bounds it). A city inflating at 40%
      * with its dial at 25% pays -15 real and is pushed down by the outflow
      * that implies; the same city at 45% is supported. A spiral needs an
      * actual outflow to continue, and a credible real rate stops it.
@@ -509,11 +512,78 @@ public class ForeignAccounts {
     /** The city's real rate less the world's, as the month was handed it. */
     public double getRealRateDifferential() { return realRateDifferential; }
 
-    /** Negative when the city pays over the odds in real terms: a real rate advantage is support. */
+    /*
+     * ============ INVESTORS EXPECT A CURRENCY TO COME BACK (0.7.42) ============
+     *
+     * Uncovered interest parity with an expected reversion: money comes to be
+     * lent here for the real rate it earns, LESS what it expects to lose as a
+     * currency that sits strong against parity comes back (or plus what it
+     * expects to gain as a weak one recovers). EXPECTED_REVERSION is how fast
+     * investors expect that: the pressure is
+     *
+     *     -RATE_PULL x (real rate differential + EXPECTED_REVERSION x ln(rate / parity))
+     *
+     * and it is zero where the two cancel, at rate / parity = e^(-gap /
+     * EXPECTED_REVERSION) - uipLevel(). A sustained real gap now moves the
+     * currency to a LEVEL (a three-point gap holds it 22% from parity, either
+     * way) instead of a drift for as long as the gap lasts.
+     *
+     * Why: with the anchor's expected inflation in the real rate, a held 0%
+     * rate under a 2% expectation is a two-point negative gap for good, and
+     * without the reversion that compounded into a currency falling every
+     * month (spec-inflation.md, sections 2.5 and 5; star 16). It also bounds
+     * the leak of new money abroad (HouseholdBalance.investAbroad(), star 11).
+     */
+
+    /** How fast investors expect a currency away from parity to come back, a fraction of the log gap a year: the reversion that sets the UIP level at e^(-gap / this). */
+    public static final double EXPECTED_REVERSION = .15;
+
+    /** Negative when the city pays over the odds in real terms: a real rate advantage is support - less what a strong currency is expected to give back (INVESTORS EXPECT A CURRENCY TO COME BACK). */
     public double ratePressure() {
-        double raw = -realRateDifferential * RATE_PULL;
+        double expectedReturn = rate > 0 && parity > 0 ? EXPECTED_REVERSION * Math.log(rate / parity) : 0;
+        double raw = -(realRateDifferential + expectedReturn) * RATE_PULL;
         return Math.max(-MAX_RATE_PRESSURE, Math.min(MAX_RATE_PRESSURE, raw));
     }
+
+    /** Where the rate's own pressure is zero against parity: rate / parity = e^(-real gap / EXPECTED_REVERSION). The level a sustained real gap holds the currency at, other pressures aside. */
+    public double uipLevel() {
+        return Math.exp(-realRateDifferential / EXPECTED_REVERSION);
+    }
+
+    /*
+     * ================ THE ANCHORED DRIFT (0.7.42) ================
+     *
+     * Every month, after the push, the rate moves by the CREDIBLE part of the
+     * city's expected inflation against the world's realised inflation:
+     *
+     *     d = (1 + credibility x target) / (1 + world inflation) - 1,  a year
+     *
+     * set by Game before the reprice (setExpectedDrift()), zero before the
+     * basket is based, and nothing while the currency is pinned. It is the
+     * relative-PPP drift deleted in 0.7.2 (THE DRIFT THAT WAS DELETED, below),
+     * back in the one form with no loop in it: credibility times the TARGET
+     * has no inflation in it, so a city inflating cannot drift itself further
+     * by rule. The rest of expected inflation reaches the currency only
+     * through the real rate, which UIP bounds to a level.
+     *
+     * Why it is needed at all: the money constants now drift at the expected
+     * price level, and a currency that did not drift with them left the
+     * exporters' costs rising against a fixed rate - measured in the
+     * prototype, a 2% city ended at 0.43-0.46 of parity and its population
+     * halved (0.7.41: 0.62). With the drift: 0.78-0.85, and growth came back.
+     * At FULL expected inflation the drift compounded with the real rate and
+     * a held 0% ran at 41-66% a year (spec-inflation.md, section 2.5; star 16).
+     * Derived every month, so not saved: Game re-sets it on a load.
+     */
+    private double expectedDrift;
+
+    /** @param drift the anchored drift, a fraction a year - see THE ANCHORED DRIFT; not a number reads as none */
+    public void setExpectedDrift(double drift) {
+        this.expectedDrift = Double.isFinite(drift) ? drift : 0;
+    }
+
+    /** The anchored drift the month was handed, a fraction a year. */
+    public double getExpectedDrift() { return expectedDrift; }
 
     /**
      * The pressure that actually reaches the rate this month.
@@ -748,6 +818,9 @@ public class ForeignAccounts {
 
         double push = effectivePressure();
         rate *= (1 + push * DRIFT_SPEED);
+        // ...and the anchored drift, the credible part of expected inflation
+        // against the world's (0.7.42; THE ANCHORED DRIFT).
+        rate *= Math.pow(1 + expectedDrift, 1.0 / 12);
 
         /*
          * ================ THE DRIFT THAT WAS DELETED (0.7.2) ================
@@ -782,6 +855,10 @@ public class ForeignAccounts {
          * monthly drift comes from the capital account now: ratePressure() on
          * the REAL rate, so a spiral needs an actual outflow to continue and a
          * credible real rate stops it (THE REAL RATE, NOT THE NOMINAL).
+         *
+         * ...UNTIL 0.7.42, when the drift came back in the one form that has
+         * no inflation in it - credibility times the target, against the
+         * world (THE ANCHORED DRIFT, above, applied just before this note).
          */
 
         // ...and the long-run pull. Applied every month, pressure or none, so a
@@ -1453,24 +1530,26 @@ public class ForeignAccounts {
      */
 
     /**
-     * Whether a month has been taken since the city was founded or loaded.
+     * Whether the month's flows are the month's: false only after a founding
+     * or a load of an older save.
      *
-     * THE MONTH'S FLOWS ARE NOT SAVED: exports, imports, the income and the
-     * capital across the edge and the valuation change are struck by
-     * takeMonth() and live until the next one, and the treasury's purchases
-     * and sales are booked as they are made and cleared by startMonth() -
-     * so a city loaded between two months reads all of them as nothing
-     * while its businesses' saved books say it sold hundreds of millions
-     * abroad. The Trade tab reads this and says "not counted yet since the
-     * load" until the month turns, rather than printing those zeros as the
-     * month's figures (0.7.30's rule for a word the month has not said yet).
-     * Saving the flows themselves is the spec's D4, put to Jerus; this is
-     * what the tab reads until he decides. Not saved, on purpose: false on
-     * every load is the point.
+     * The month's flows - exports, imports, the income and the capital
+     * across the edge and the valuation change, struck by takeMonth() and
+     * live until the next one, and the treasury's purchases and sales,
+     * booked as they are made and cleared by startMonth() - were not saved
+     * until 0.7.46, so a city loaded between two months read all of them as
+     * nothing while its businesses' saved books said it sold hundreds of
+     * millions abroad. The Trade tab reads this and says "not counted yet
+     * since the load" until the month turns, rather than printing those
+     * zeros as the month's figures (0.7.30's rule for a word the month has
+     * not said yet). Since 0.7.46 the save carries the flows (slots 37-44,
+     * the Trade spec's D4; A2 in the model fixes) and a load of it counts
+     * the month; a founding, or a save from before them, still has none.
+     * Not saved itself: the slots' presence is the flag.
      */
     private boolean monthCounted;
 
-    /** True once a month has been taken since the city was founded or loaded: the month's flows are then the month's, not nothing. */
+    /** True once the month's flows are the month's - a month taken since the founding, or a load of a save that carried them - and not nothing. */
     public boolean isMonthCounted() { return monthCounted; }
 
     /** Exports less imports since founding: the record on trade alone, without the income or the capital. */
@@ -1528,26 +1607,38 @@ public class ForeignAccounts {
     }
 
     /**
-     * The next reprice, in its two parts, as fractions of today's rate:
-     * the month's push - previewPressure() at DRIFT_SPEED - and the pull
-     * back to parity, struck on the rate the push leaves, as
-     * repriceCurrency() applies it; so push and pull add to previewMove(),
-     * the rate's next move, exactly (the guards aside, which no city
-     * reaches). A pinned rate does not move. Positive is weaker.
+     * The next reprice, in its three parts, as fractions of today's rate:
+     * the month's push - previewPressure() at DRIFT_SPEED - the anchored
+     * drift on the rate the push leaves, and the pull back to parity, struck
+     * on the rate the push and the drift leave, as repriceCurrency() applies
+     * them; so the three add to previewMove(), the rate's next move, exactly
+     * (the guards aside, which no city reaches). A pinned rate does not move.
+     * Positive is weaker. The drift is at the expected drift handed this
+     * month (setExpectedDrift()); the next month hands its own.
+     *
+     * THE DRIFT WAS LEFT OUT until 0.7.45 (the UI spec's B6): the preview
+     * was two parts while the month applied three since 0.7.42, so the Trade
+     * tab's "next month" was short by a twelfth of the drift.
      */
     public double previewPush() {
         return pinned ? 0 : previewPressure() * DRIFT_SPEED;
     }
 
-    /** ...the pull back to parity, on the rate the push leaves. */
-    public double previewPull() {
+    /** ...the anchored drift, on the rate the push leaves (0.7.45). */
+    public double previewDrift() {
         if (pinned || !(rate > 0)) return 0;
-        double pushed = rate * (1 + previewPush());
-        return (parity - pushed) * REVERSION / rate;
+        return (1 + previewPush()) * (Math.pow(1 + expectedDrift, 1.0 / 12) - 1);
     }
 
-    /** ...and the two together: the next month's move, a fraction of today's rate. */
-    public double previewMove() { return previewPush() + previewPull(); }
+    /** ...the pull back to parity, on the rate the push and the drift leave. */
+    public double previewPull() {
+        if (pinned || !(rate > 0)) return 0;
+        double drifted = rate * (1 + previewPush()) * Math.pow(1 + expectedDrift, 1.0 / 12);
+        return (parity - drifted) * REVERSION / rate;
+    }
+
+    /** ...and the three together: the next month's move, a fraction of today's rate. */
+    public double previewMove() { return previewPush() + previewDrift() + previewPull(); }
 
     /* ------------------------------- carrying ------------------------------- */
 
@@ -1674,7 +1765,20 @@ public class ForeignAccounts {
                 // ...and the vault's part at its local price, slot 35, and
                 // all of it, slot 36: the Government tab splits the budget's
                 // land line with them.
-                landVaultLocal, landLocal };
+                landVaultLocal, landLocal,
+                /*
+                 * ...AND THE MONTH'S FLOWS THEMSELVES, slots 37-44 (0.7.46;
+                 * the Trade spec's D4, A2 in the model fixes): what takeMonth()
+                 * struck and what the treasury bought and sold of the dollars,
+                 * so a freshly loaded Trade tab reads the month the live city
+                 * read rather than "not counted yet". Nothing in the next
+                 * month reads them before takeMonth() strikes them again, and
+                 * startMonth() clears the two purchases, so the month played
+                 * after a load is the one played without it. An older save
+                 * has none of the eight and counts no month until one turns.
+                 */
+                exports, imports, foreignInterest, financialIn, financialOut, lastValuation,
+                boughtThisMonth, soldThisMonth };
     }
 
     public void restore(double[] saved) {
@@ -1750,6 +1854,18 @@ public class ForeignAccounts {
         if (saved.length > 36) {
             landVaultLocal = Math.max(0, saved[35]);
             landLocal = Math.max(0, saved[36]);
+        }
+        // The month's flows (0.7.46, A2): a save that carried them counts the month.
+        if (saved.length > 44) {
+            exports = saved[37];
+            imports = saved[38];
+            foreignInterest = saved[39];
+            financialIn = saved[40];
+            financialOut = saved[41];
+            lastValuation = saved[42];
+            boughtThisMonth = saved[43];
+            soldThisMonth = saved[44];
+            monthCounted = true;
         }
     }
 

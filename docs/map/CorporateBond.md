@@ -1,6 +1,6 @@
 # CorporateBond.java - 232 lines · 28 methods · 2 constants · model
 
-`ham/citybuildersim/CorporateBond.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CorporateBond.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > A corporate bond: a sector's debt to investors, issued at par through
 > bookbuilding, paying a fixed coupon every month and its whole face at the
@@ -66,7 +66,7 @@
 
 **Uses:** [Mortgage](Mortgage.md) (1)
 
-**Used by (12):** [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [FinancesScreen](FinancesScreen.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (13):** [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

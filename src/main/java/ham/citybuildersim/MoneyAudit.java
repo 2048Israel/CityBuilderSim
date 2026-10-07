@@ -194,6 +194,11 @@ public final class MoneyAudit {
             this.moneyOut = foreign.length > 11 ? foreign[11] : 0;
         }
 
+        /** What crossed the edge this month, both ways: the size the residual is read against (MoneyAudit.tolerance(), 0.7.54). */
+        public double moved() {
+            return Math.abs(inflows) + Math.abs(outflows);
+        }
+
         /** Residual as a share of what moved, so a $3 leak in a $3B city reads as 0. */
         public double relative() {
             double moved = Math.max(1, Math.abs(inflows) + Math.abs(outflows));
@@ -363,7 +368,7 @@ public final class MoneyAudit {
          * THE CITY'S FUND (0.7.14), its cash: the government's, inside the
          * city, and a pool of its own so the treasury's pool still reads the
          * treasury. Money between the two - the dial's pay-in, the hand's pay
-         * in and draw out, the 3% transfer - is a pool paying a pool and
+         * in and draw out, the withdrawal to the budget - is a pool paying a pool and
          * cancels, as the resolution the treasury pays the bank does, and as a
          * dividend, a coupon or a principal a company or the bank pays the
          * fund does. What crosses the edge is what it trades with the
@@ -371,6 +376,92 @@ public final class MoneyAudit {
          */
         pools[i++] = g.getFund().getCash();
         return pools;
+    }
+
+    /* =======================================================================
+       HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54)
+
+       Money is a double in thousands. A harness's "cent" is 0.01 of a unit,
+       $10, and a double holds that only below 2^46 units, 7.0e13; a 10
+       billion city's treasury is 2.6e13, its lifetime exports 2.3e14, and
+       there a double's own step is 0.03 of a unit (the project's
+       spec-scale.md, section 3). An absolute cent then fails on the
+       rounding of the sum itself. The audit was always relative (Result.
+       relative()), and its worst at every size measured was 1.1e-12 of what
+       moved.
+
+       So a comparison of money allows a cent, or a part in RELATIVE_TOLERANCE
+       of the figures it is made of, whichever is more - the study's star 6,
+       as TreasuryCheck.nearOf() already did with a part in a billion. Below
+       CENT / RELATIVE_TOLERANCE, ten billion units, that is the cent exactly.
+       A comparison held tighter than a cent passes its own floor
+       (tolerance(floor, scale)), and keeps it exactly below the same ten
+       billion units, where a part in a trillion is still under a cent: the
+       relative part takes over only where the cent's own rule would. Every
+       harness city but ScaleCheck's copies is far under that size
+       (TreasuryCheck's bus town is 2.5 million units), and nothing at
+       today's sizes is let through that was not before.
+
+       ...AND A FLOOR NEVER UNDER THE FIGURES' OWN STEP (0.7.63 at 8 steps,
+       0.7.64 at 64; batch L).
+       Below ten billion units a floor of its own stood alone, and a floor of
+       1e-6 is a few of a double's steps or fewer from 2^30 units (1.07e9,
+       where the step is 2.4e-7, the floor four of them) to ten billion (the
+       step 1.9e-6, the floor half of one): batch K's ScaleCheck copy at month
+       430 failed a Retail cash-flow statement that missed by 1.3e-6 on
+       figures of 4.7e9 - 1.4 steps, rounding and nothing else. So a floor
+       is at least ULP_STEPS of a double's steps at the size (Math.ulp()).
+       What the floors under a cent read in the suite, measured (batch L's
+       scratch, tol/): at most 2.5e6 units (TreasuryCheck's bus town),
+       1.5e5 (MortgageCheck), 1.1e5 (BankCheck), 9.0e3 (CentralBankCheck)
+       and 1.2e3 (HistoryCheck's .005) - where ULP_STEPS steps are 3.0e-8
+       and under, so every one of them is held to its floor exactly, as
+       before; ULP_STEPS steps pass 1e-6 only from 2^27 units (1.3e8), which
+       only ScaleCheck's copies reach. A cent never moves: ULP_STEPS steps
+       pass a cent only from 2^40 units (1.1e12), where the relative part is
+       already 1.1 units. The build Jerus was given as 0.7.63 held the floor
+       at 8 steps (the most a cash-flow statement missed by at months 410 and
+       430, 6 steps); batch L's copies at 410 to 570 measured the bank's
+       equity at 57.7 steps and a statement at 10.75, both past 8, so 0.7.64
+       holds it at 64.
+       ======================================================================= */
+
+    /** A harness's cent: 0.01 of a unit of a thousand dollars, the least a money comparison has allowed. */
+    public static final double CENT = .01;
+
+    /** ...and the share of the figures compared that their own rounding is allowed past it: a part in a trillion. */
+    public static final double RELATIVE_TOLERANCE = 1e-12;
+
+    /**
+     * ...and the least a floor allows, in a double's steps at the size of the
+     * figures compared (0.7.64; 8 in 0.7.63): the most an identity held to a floor under a
+     * cent was measured to miss by, in steps of the figures it is made of -
+     * the bank's equity movement in ScaleCheck's copies, 57.7 steps, and a
+     * sector's cash-flow statement 10.75 steps on 9.9e9 units, where the
+     * relative part does not reach (batch L's scratch, scale/: the copies of
+     * the playtest's city at months 410 to 570) - to the next power of two.
+     * An identity is a signed sum of its figures, and each of them carries
+     * its own rounding in: a floor under this fails on rounding alone.
+     */
+    public static final double ULP_STEPS = 64;
+
+    /** How far two money figures of about this size may miss and still agree: CENT, or RELATIVE_TOLERANCE of the size, whichever is more. */
+    public static double tolerance(double scale) {
+        return tolerance(CENT, scale);
+    }
+
+    /**
+     * ...for a comparison held to a floor of its own: the floor while
+     * RELATIVE_TOLERANCE of the size is under a cent, and past that the
+     * larger of the two - and since 0.7.63 the floor never under ULP_STEPS of
+     * a double's steps at the size (a size that is not a number keeps the
+     * floor alone, as it always did).
+     */
+    public static double tolerance(double floor, double scale) {
+        double size = Math.abs(scale);
+        double least = Double.isFinite(size) ? Math.max(floor, ULP_STEPS * Math.ulp(size)) : floor;
+        double relative = RELATIVE_TOLERANCE * size;
+        return Double.isFinite(relative) && relative > CENT ? Math.max(least, relative) : least;
     }
 
     /**
@@ -585,6 +676,20 @@ public final class MoneyAudit {
         // so the balance of payments reads what a rolled coupon is.
         in += credit.apply("+ sectors ForeignInterest", g.getOutwardInvestment().getInterestThisMonth(), Scope.INCOME);
         /*
+         * WHAT THE GROCERS' SUPPLIERS ABROAD WAITED FOR (0.7.44; SupplierCredit).
+         * The statement's imports line is the whole bill, debited as trade
+         * above; the strike paid the world all of it but what the world let
+         * the shops have on credit, which stayed in their till - a financial
+         * inflow, a claim the world holds on the city - and repaid what the
+         * strike before left owed, a financial outflow. The local suppliers'
+         * share moves pool to pool and is not declared.
+         */
+        for (Sector s : sectors.all()) {
+            SupplierCredit trade = s.supplierCredit();
+            if (trade == null) continue;
+            in += credit.apply("+ " + s.key() + " SupplierCreditAbroad", trade.owedTo(Trade.WORLD), Scope.FINANCIAL);
+        }
+        /*
          * THE HOUSEHOLDS' PAPER ABROAD, since 2026-09-11. The households are
          * outside the pools, so every one of their foreign flows is a pair
          * that cancels here and reads on the balance of payments: what came
@@ -615,6 +720,10 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ households CarImportsFunded",
                 g.getHouseholdCarImports(), Scope.DOMESTIC);
+        // ...and their fuel (0.7.49): paid out of the households' savings, outside the audited system, to the world.
+        // The IMPORTED part only since 0.7.62: what the refiners' shelf sold them is Refining's SalesToHouseholds above,
+        // like the domestic half of a car.
+        in += credit.apply("+ households FuelFunded", g.getHouseholdFuelImports(), Scope.DOMESTIC);
         in += credit.apply("+ households ForeignInterest", g.getHouseholdBalance().getForeignInterest(), Scope.INCOME);
         /*
          * THE OWNERS' MONEY, COMING IN. Shares sold to the city's households
@@ -779,6 +888,13 @@ public final class MoneyAudit {
         out += debit.apply("- care Payroll", care.getPayroll(), Scope.DOMESTIC);
         out += debit.apply("- schools Payroll", schools.getPayroll(), Scope.DOMESTIC);
         out += debit.apply("- safety Payroll", g.getCrime().getPayroll(), Scope.DOMESTIC);
+        /*
+         * ...and transit's wages and upkeep (0.7.49, B9), which the treasury
+         * pays at the month's end: wages leave the audited system, like the
+         * schools' and the police's. Unpaid until then - the crews' wages
+         * reached the households and left no pool.
+         */
+        out += debit.apply("- transit Bill", e.getTransitBill(), Scope.DOMESTIC);
         // Imports: every sector's purchases from the world, as its statement booked them.
         for (Sector s : sectors.all()) {
             out += debit.apply("- " + s.key() + " Imports", s.statement().imports, Scope.TRADE);
@@ -888,11 +1004,19 @@ public final class MoneyAudit {
                 g.getBank().getCarryLent(), Scope.FINANCIAL);
         out += debit.apply("- sectors InvestedAbroad", g.getOutwardInvestment().getInvestedAbroadThisMonth(), Scope.FINANCIAL);
         out += debit.apply("- sectors ForeignInterestReinvested", g.getOutwardInvestment().getInterestThisMonth(), Scope.FINANCIAL);
+        // ...and the world's supplier credit repaid (0.7.44). See the credit's note.
+        for (Sector s : sectors.all()) {
+            SupplierCredit trade = s.supplierCredit();
+            if (trade == null) continue;
+            out += debit.apply("- " + s.key() + " SupplierCreditRepaidAbroad", trade.repaidTo(Trade.WORLD), Scope.FINANCIAL);
+        }
         // The households' three, the other way round. See the credits.
         out += debit.apply("- households InvestedAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.FINANCIAL);
         // ...and the cars they bought from the world. See the credit's note.
         out += debit.apply("- households CarImports",
                 g.getHouseholdCarImports(), Scope.TRADE);
+        // ...and the fuel they burned getting to work (0.7.49) that the world sold them (0.7.62). See the credit's note.
+        out += debit.apply("- households FuelImports", g.getHouseholdFuelImports(), Scope.TRADE);
         out += debit.apply("- households BroughtHomeSaved", g.getHouseholdBalance().getBroughtHome(), Scope.DOMESTIC);
         /*
          * THE COUPON IS BANKED AT HOME NOW, AND STILL NEEDS ITS OTHER LEG
@@ -962,6 +1086,10 @@ public final class MoneyAudit {
         // ...EI to the out of work, grants and loans to the students.
         out += debit.apply("- e EiBenefits", e.getEiBenefits(), Scope.DOMESTIC);
         out += debit.apply("- e StudentGrants", e.getStudentGrants(), Scope.DOMESTIC);
+        // ...and the food vouchers (0.7.43): the treasury paid them after the
+        // month's sale, into the households' savings at the till - out of the
+        // pools like EI. See HouseholdBalance.allocateGroceries().
+        out += debit.apply("- treasury FoodAssistance", e.getFoodAssistance(), Scope.DOMESTIC);
         out += debit.apply("- treasury StudentLoansLent", g.getStudentLoansLent(), Scope.DOMESTIC);
         out += debit.apply("- care Upkeep", care.getUpkeep(), Scope.DOMESTIC);
         out += debit.apply("- schools Upkeep", schools.getUpkeep(), Scope.DOMESTIC);

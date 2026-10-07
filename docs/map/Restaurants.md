@@ -1,6 +1,6 @@
-# Restaurants.java - 465 lines · 19 methods · 5 constants · sectors
+# Restaurants.java - 517 lines · 23 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > The kitchens. THE FIFTEENTH SECTOR (2026-09-18, Jerus's call).
 > 
@@ -35,7 +35,8 @@
 > A city at the wall can feed some of its people through a kitchen instead,
 > and the hunger measure sees it, because a meal is a meal wherever it was
 > cooked. See HouseholdBalance.advanceMonth(), where meals eaten are added to
-> what a household ate before it is compared against subsistence.
+> what a household ate before it is compared against the baskets it needs
+> (against subsistence, in money, until 0.7.43).
 > 
 > TWO: SOMEWHERE FOR THE MONEY TO GO. A meal out costs a multiple of what the
 > same food costs at home, and the multiple is the sector's whole revenue.
@@ -52,82 +53,94 @@
 > groceries are in person-months, and reading one as the other is how a Diner
 > would look ninety times the business it is.
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (11), [Markets](Markets.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Retail](Retail.md) (2), [Trade](Trade.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (11), [Retail](Retail.md) (3), [Markets](Markets.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Trade](Trade.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (5):** [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [LuxuryCounter](LuxuryCounter.md), [RestaurantsCheck](RestaurantsCheck.md), [Sectors](Sectors.md)
+**Used by (7):** [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [LuxuryCounter](LuxuryCounter.md), [RestaurantsCheck](RestaurantsCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 69 | WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING |
-| 89 | THE MARGIN, AND WHY ITS FLOOR IS SO MUCH HIGHER THAN A BOUTIQUE'S |
-| 174 | THE SALE |
-| 318 | PLANNING - the queue at a door that is not there |
-| 418 | THE SCREEN |
+| 70 | WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING |
+| 90 | THE MARGIN, AND WHY ITS FLOOR IS SO MUCH HIGHER THAN A BOUTIQUE'S |
+| 187 | THE SALE |
+| 345 | PLANNING - the queue at a door that is not there |
+| 445 | THE SCREEN |
+| 492 | SAVE, RESET (0.7.43) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 84 | `Restaurants.MEALS_A_PERSON_MONTH` | `90` | Meals one person eats in a month: three a day, thirty days. |
-| 87 | `Restaurants.PERSON_MONTHS_PER_MEAL` | `1 / MEALS_A_PERSON_MONTH` | ...and the same fact the other way up, which is what the arithmetic wants. |
-| 118 | `Restaurants.MARGIN_FLOOR` | `3.0` | What a kitchen with empty tables charges over what the food cost it. |
-| 121 | `Restaurants.MARGIN_CEILING` | `8.0` | ...and what a kitchen with a queue at the door charges. |
-| 156 | `Restaurants.KITCHEN_COVER_MONTHS` | `1` | Months of food a kitchen keeps. |
+| 85 | `Restaurants.MEALS_A_PERSON_MONTH` | `90` | Meals one person eats in a month: three a day, thirty days. |
+| 88 | `Restaurants.PERSON_MONTHS_PER_MEAL` | `1 / MEALS_A_PERSON_MONTH` | ...and the same fact the other way up, which is what the arithmetic wants. |
+| 119 | `Restaurants.MARGIN_FLOOR` | `3.0` | What a kitchen with empty tables charges over what the food cost it. |
+| 122 | `Restaurants.MARGIN_CEILING` | `8.0` | ...and what a kitchen with a queue at the door charges. |
+| 131 | `Restaurants.MARGIN_SPEED` | `1.0 / 6` | The share of the way, in logs, a kitchen's charged margin moves toward the one its queue strikes in a month: a sixth (0.7.43; spec-inflation.md 2.7). |
+| 169 | `Restaurants.KITCHEN_COVER_MONTHS` | `1` | Months of food a kitchen keeps. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 124 | `private double sellPrice` | What one meal sells for this month. |
-| 127 | `private double rMargin` | The month's reading, for the screen and the harness. |
-| 136 | `private final Map<Good, Double> basket` | Kilograms of each good in one person-month, handed in by Game. |
+| 134 | `private double sellPrice` | What one meal sells for this month. |
+| 137 | `private double rMargin` | The month's reading, for the screen and the harness: the margin CHARGED, and the one the queue struck (the target). |
+| 140 | `private double chargedMargin` | The margin the kitchens charge, carried month to month (0.7.43); NaN until the first strike, and on a save from before, which opens at the target. |
+| 149 | `private final Map<Good, Double> basket` | Kilograms of each good in one person-month, handed in by Game. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 399 | **type** `public class Restaurants extends Sector` | The kitchens. |
+| 68 | 450 | **type** `public class Restaurants extends Sector` | The kitchens. |
 
-### WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING (lines 69-88)
+### WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING (lines 70-89)
 
-### THE MARGIN, AND WHY ITS FLOOR IS SO MUCH HIGHER THAN A BOUTIQUE'S (lines 89-173)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 138 | 16 | `public Restaurants()` |  |
-| 159 | 9 | `public void setBasket(Map<Good, Double> kgPerHead)` | What one person-month costs in kilograms, by good. |
-| 170 | 3 | `public double kgPerMeal(Good g)` | Kilograms of one good in one MEAL. |
-
-### THE SALE (lines 174-317)
+### THE MARGIN, AND WHY ITS FLOOR IS SO MUCH HIGHER THAN A BOUTIQUE'S (lines 90-186)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 179 | 4 | `public int seats()` | Meals the kitchens can serve a month, off their buildings. |
-| 190 | 10 | `public double mealsInTheLarder()` | Meals the larder can actually put out: the ingredient that runs out first, exactly as Retail.basketsOnShelf() asks the same question of a shop's shelf. |
-| 202 | 9 | `public double foodCostOfAMeal(Markets markets)` | What the food in one meal cost the kitchen, at the market's prices today. |
-| 212 | 1 | `public double getMargin()` |  |
-| 213 | 1 | `public double getWanted()` |  |
-| 214 | 1 | `public double getServed()` |  |
-| 215 | 1 | `public double getSeats()` |  |
-| 216 | 1 | `public double getFoodCost()` |  |
-| 217 | 1 | `public double getSellPrice()` |  |
-| 232 | 21 | `public double strikeMargin(Markets markets, double wanted)` | Strikes the margin against the queue and returns what a meal costs this month. |
-| 263 | 23 | `public double serve(Markets markets, double meals)` | ...and serves what the tables and the larder can actually get through. |
-| 297 | 20 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
+| 151 | 16 | `public Restaurants()` |  |
+| 172 | 9 | `public void setBasket(Map<Good, Double> kgPerHead)` | What one person-month costs in kilograms, by good. |
+| 183 | 3 | `public double kgPerMeal(Good g)` | Kilograms of one good in one MEAL. |
 
-### PLANNING - the queue at a door that is not there (lines 318-417)
+### THE SALE (lines 187-344)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 332 | 61 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
-| 406 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
+| 192 | 4 | `public long seats()` | Meals the kitchens can serve a month, off their buildings. |
+| 203 | 10 | `public double mealsInTheLarder()` | Meals the larder can actually put out: the ingredient that runs out first, exactly as Retail.basketsOnShelf() asks the same question of a shop's shelf. |
+| 215 | 9 | `public double foodCostOfAMeal(Markets markets)` | What the food in one meal cost the kitchen, at the market's prices today. |
+| 226 | 1 | `public double getMargin()` | The margin charged this month: a sixth of the way from last month's to the target, in logs. |
+| 228 | 1 | `public double getTargetMargin()` | The margin the queue struck this month, which the charged one chases. |
+| 229 | 1 | `public double getWanted()` |  |
+| 230 | 1 | `public double getServed()` |  |
+| 231 | 1 | `public double getSeats()` |  |
+| 232 | 1 | `public double getFoodCost()` |  |
+| 233 | 1 | `public double getSellPrice()` |  |
+| 249 | 31 | `public double strikeMargin(Markets markets, double wanted)` | Strikes the margin against the queue and returns what a meal costs this month - since 0.7.43 the queue strikes the TARGET, and the margin charged moves MARGIN_SPEED of the way to it. |
+| 290 | 23 | `public double serve(Markets markets, double meals)` | ...and serves what the tables and the larder can actually get through. |
+| 324 | 20 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### THE SCREEN (lines 418-465)
+### PLANNING - the queue at a door that is not there (lines 345-444)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 423 | 1 | `public boolean hasPlantBlock()` |  |
-| 426 | 39 | `public List<Line> ownLines(Game game)` |  |
+| 359 | 61 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
+| 433 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
+
+### THE SCREEN (lines 445-491)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 450 | 1 | `public boolean hasPlantBlock()` |  |
+| 453 | 39 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET (0.7.43) (lines 492-517)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 498 | 4 | `protected void saveExtras(Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
+| 505 | 6 | `protected void restoreExtras(Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its target. |
+| 513 | 4 | `protected void resetExtras()` |  |
 

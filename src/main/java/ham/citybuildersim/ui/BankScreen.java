@@ -4147,25 +4147,36 @@ final class BankScreen {
                 keyRow(swatch(Palette.TEXT_MUTED, "the policy rate", false), swatch(Palette.PEOPLE, "what savers got", false),
                         swatch(Palette.MONEY, "prime", false))));
 
-        int capitalMonths = h.monthsRecorded("bankCapitalRatio");
-        int underTarget = h.monthsUnder("bankCapitalRatio", "bankCapitalTarget");
-        int underMinimum = h.monthsUnder("bankCapitalRatio", Bank.CAPITAL_RATIO);
+        // While the leverage ratio binds, the card draws that measure (0.7.46, A7), once History has two months of it.
+        boolean leverageDrawn = bank.leverageBinds() && h.monthsRecorded("bankLeverageRatio") >= 2;
+        String ratioKey = leverageDrawn ? "bankLeverageRatio" : "bankCapitalRatio";
+        String targetKey = leverageDrawn ? "bankLeverageTarget" : "bankCapitalTarget";
+        int capitalMonths = h.monthsRecorded(ratioKey);
+        int underTarget = h.monthsUnder(ratioKey, targetKey);
+        int underMinimum = h.monthsUnder(ratioKey, leverageDrawn ? Bank.LEVERAGE_RATIO_MIN : Bank.CAPITAL_RATIO);
         List<Node> capitalChips = new ArrayList<>(List.of(
                 chip("under its target " + underTarget + " of " + capitalMonths + " months",
                         underTarget > 0 ? Palette.WARN : Palette.TEXT_MUTED),
                 chip("under the minimum " + underMinimum + " of " + capitalMonths + " months",
                         underMinimum > 0 ? Palette.BAD : Palette.TEXT_MUTED)));
         if (bank.leverageBinds()) {
-            capitalChips.add(0, chip(String.format("the leverage ratio binds now: %s of %s (not yet recorded over time)",
+            capitalChips.add(0, chip(String.format("the leverage ratio binds now: %s of %s",
                     share1(bank.leverageRatio()), share1(bank.leverageTarget())), Palette.TEXT_HEAD));
         }
-        VBox capital = smallCard("RISK-WEIGHTED CAPITAL", "Its capital against its risk-weighted book, and the target it "
+        VBox capital = leverageDrawn
+                ? smallCard("THE LEVERAGE RATIO", "Its capital against everything on its sheet, and the target it holds "
+                        + "on that measure - the one that binds now, so the months under its target and under the "
+                        + "minimum count it. Recorded to a ceiling of 1,000%, from 0.7.46 on.",
+                "percent", rates, h, bands, List.of(
+                        percentLine(h, ratioKey, "Leverage ratio", Palette.MONEY),
+                        percentLine(h, targetKey, "Its target", Palette.TEXT_MUTED)), capitalChips)
+                : smallCard("RISK-WEIGHTED CAPITAL", "Its capital against its risk-weighted book, and the target it "
                         + "chose. Recorded to a ceiling of 1,000%: a young bank's capital against a tiny book is enormous, "
                         + "and nothing lent at all is drawn at the ceiling. The months under its target and under the "
                         + "minimum count this measure; while the leverage ratio binds, the other measure decides.",
                 "percent", rates, h, bands, List.of(
-                        percentLine(h, "bankCapitalRatio", "Capital ratio", Palette.MONEY),
-                        percentLine(h, "bankCapitalTarget", "Its target", Palette.TEXT_MUTED)), capitalChips);
+                        percentLine(h, ratioKey, "Capital ratio", Palette.MONEY),
+                        percentLine(h, targetKey, "Its target", Palette.TEXT_MUTED)), capitalChips);
 
         int losing = h.monthsUnder("bankProfit", 0.0);
         VBox roe = smallCard("RETURN ON EQUITY", String.format("Each month's profit at a yearly rate, on the equity it opened "

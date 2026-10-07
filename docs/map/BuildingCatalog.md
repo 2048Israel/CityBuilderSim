@@ -1,6 +1,6 @@
-# BuildingCatalog.java - 365 lines · 12 methods · 1 constants · model
+# BuildingCatalog.java - 380 lines · 13 methods · 1 constants · model
 
-`ham/citybuildersim/BuildingCatalog.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingCatalog.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Reads the building definitions out of buildings.json.
 > 
@@ -28,9 +28,9 @@
 > definitions. A typo in a data file should cost you the data file, not the
 > game.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (15), [Good](Good.md) (4), [BuildingType](BuildingType.md) (2), [JobType](JobType.md) (2), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (17), [Good](Good.md) (4), [BuildingType](BuildingType.md) (2), [JobType](JobType.md) (2), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1)
 
-**Used by (2):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md)
+**Used by (3):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [MapCheck](MapCheck.md)
 
 ## Constants
 
@@ -48,17 +48,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 319 | **type** `public class BuildingCatalog` | Reads the building definitions out of buildings.json. |
+| 47 | 334 | **type** `public class BuildingCatalog` | Reads the building definitions out of buildings.json. |
 | 54 | 3 | `public String getSource()` |  |
 | 62 | 44 | `public List<BuildingsTemplate> load()` | the caller should use its own defaults. |
 | 108 | 42 | `private List<BuildingsTemplate> parse(Reader reader)` |  |
-| 151 | 65 | `private BuildingsTemplate readBuilding(JsonObject o, Set<Integer> seenIds)` |  |
-| 230 | 31 | `private void readSector(JsonObject o, BuildingsTemplate template, String name)` | Who owns it and what it makes - see BuildingsTemplate's note. |
-| 271 | 12 | `private void readCare(JsonObject o, BuildingsTemplate template, String name)` | The care type, if there is one. |
-| 285 | 12 | `private void readTeaches(JsonObject o, BuildingsTemplate template, String name)` | What a school teaches. |
-| 299 | 12 | `private void readSafety(JsonObject o, BuildingsTemplate template, String name)` | What a safety building does - POLICE or PRISON. |
-| 318 | 12 | `private void readRequiresLicence(JsonObject o, BuildingsTemplate template, String name)` | The licence a building's practice is built on. |
-| 331 | 17 | `private void readJobs(JsonObject o, BuildingsTemplate template, String name)` |  |
-| 350 | 7 | `private double number(JsonObject o, String key)` | Missing or unreadable fields read as 0, so entries only list what they use. |
-| 358 | 7 | `private String string(JsonObject o, String key)` |  |
+| 151 | 66 | `private BuildingsTemplate readBuilding(JsonObject o, Set<Integer> seenIds)` |  |
+| 231 | 31 | `private void readSector(JsonObject o, BuildingsTemplate template, String name)` | Who owns it and what it makes - see BuildingsTemplate's note. |
+| 272 | 12 | `private void readCare(JsonObject o, BuildingsTemplate template, String name)` | The care type, if there is one. |
+| 286 | 12 | `private void readTeaches(JsonObject o, BuildingsTemplate template, String name)` | What a school teaches. |
+| 300 | 12 | `private void readSafety(JsonObject o, BuildingsTemplate template, String name)` | What a safety building does - POLICE or PRISON. |
+| 314 | 12 | `private void readSource(JsonObject o, BuildingsTemplate template, String name)` | What a water works draws, FRESH or SEA (0.7.59). |
+| 333 | 12 | `private void readRequiresLicence(JsonObject o, BuildingsTemplate template, String name)` | The licence a building's practice is built on. |
+| 346 | 17 | `private void readJobs(JsonObject o, BuildingsTemplate template, String name)` |  |
+| 365 | 7 | `private double number(JsonObject o, String key)` | Missing or unreadable fields read as 0, so entries only list what they use. |
+| 373 | 7 | `private String string(JsonObject o, String key)` |  |
 

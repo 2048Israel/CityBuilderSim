@@ -22,16 +22,24 @@ import java.util.Map;
  * player clicks, through the Build button's own path. Pure, so the harness
  * (BuildAdviceCheck) can hold it without the toolkit.
  *
- * THE RULE (the brief's section 4), in one paragraph: take NEEDS YOU's needs
- * in its order (CityNeeds.biting()) and keep those a city-built building
- * answers; for each, of the buildings that serve its measure (for the roads,
- * any road or line), the one with the lowest all-in price per unit of staffed
- * capacity - preferring one that can close the gap at all, and then one whose
- * whole count fits the land free; the count that closes the need's gap to
- * the line NEEDS YOU lists it at, after what is on site at its staffed
- * capacity, capped at what the cash left after the suggestions before it
- * affords; at most three, one per need. Every judgement in it is named
- * where it is made below, and in the project's design note for 0.7.24.
+ * THE RULE (0.7.51; the brief's section 4 at 0.7.24), in one paragraph:
+ * take NEEDS YOU's needs in its order (CityNeeds.biting()) - a school above
+ * the ladder listed only for the students the city would both get and hire
+ * (CityNeeds.wanted(), listsSchool()) - and keep those a city-built building
+ * answers and what is on site does not already keep ahead; for each, of the
+ * buildings that serve its measure (for the roads, any road or line), the
+ * one with the lowest price per unit of staffed capacity with its ground
+ * at what the city would pay to replace it (landValue(), the land office's
+ * price) - preferring one that can keep the need ahead at all, and then one
+ * whose whole count fits the ground the suggestions before it leave; the
+ * count that keeps the need ahead at the demand it opens to, projected
+ * the way the businesses project theirs (above the ladder, the students it
+ * would get and hire by then, its feeder's graduates counted) and SLACK
+ * past it - off NEEDS YOU's list there, and a served gauge at 100% of it -
+ * after what is on site at its staffed capacity; on credit when its quote
+ * is more than the cash the ones before leave, never cut to the cash; at
+ * most three, one per need. Every judgement in it is named where it is made
+ * below, and in the project's design notes for 0.7.24 and 0.7.51.
  */
 public final class BuildAdvice {
 
@@ -241,8 +249,8 @@ public final class BuildAdvice {
      * The NEEDS YOU row that judges a measure - the worst of them, as the
      * panel would list them first, for death care whose two rows are the
      * dead and the plots - or null for a measure no row watches (transit, a
-     * basic stage that is not the bottleneck, a school below a class's worth
-     * of would-be students).
+     * basic stage that is not the bottleneck, a school above the ladder
+     * NEEDS YOU does not list - CityNeeds.listsSchool()).
      */
     public static CityNeeds.Need needFor(List<CityNeeds.Need> all, Measure m) {
         CityNeeds.Need found = null;
@@ -316,8 +324,20 @@ public final class BuildAdvice {
         if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE)) return 0;
         double[] fill = game.getPopulationManager().getJobFillRate();
         switch (m.kind()) {
-            case POWER: case WATER:
+            case POWER:
                 return t.getProduction1() * staffing(t, fill);
+            case WATER: {
+                /*
+                 * THE WATER UNIT (0.7.59, batch J2): a fresh plant adds no
+                 * more than the fresh water left under the city's limit
+                 * (UtilitiesHandler.getFreshHeadroom()), so a capped city is
+                 * offered desalination; a desalination plant adds its own
+                 * where the city owns sea, and nothing where it cannot stand.
+                 */
+                double treats = t.getProduction1() * staffing(t, fill);
+                if (t.isSeaWater()) return game.hasCoastFor(t, 1) ? treats : 0;
+                return Math.min(treats, game.getServicesManager().getUtilitiesHandler().getFreshHeadroom());
+            }
             case ROADS: {
                 Map<BuildingsTemplate, Integer> base = onSite(game, m);
                 return roadsOver(game, base) - roadsOver(game, plus(base, t, 1));
@@ -351,8 +371,11 @@ public final class BuildAdvice {
        coverage (Crime.crimesAt()). With nothing added it is the figure the
        city stands at. The figure is the NEEDS YOU row's own where there is
        one: load, utilisation, coverage, the unburied, the months of plots,
-       a basic stage's coverage, who would come over the seats, crime against
-       Canada's, the caught not held.
+       a basic stage's coverage, who would come and be hired over the seats
+       (0.7.51), crime against Canada's, the caught not held. Against the
+       demand an order is sized to (0.7.51, an Ahead), the demand side is
+       today's times the projection and the slack; the supply side is as
+       it stands.
        ===================================================================== */
 
     /** Every unit on site of the buildings that serve a measure, for anybody's order. */
@@ -390,8 +413,14 @@ public final class BuildAdvice {
 
     /** The measure's figure with these buildings standing as well. */
     public static double figure(Game game, Measure m, Map<BuildingsTemplate, Integer> added) {
+        return figure(game, m, added, NOW);
+    }
+
+    /** ...against the demand `p` says (0.7.51): today's times p.scale() - projected and padded - on the demand side only. */
+    public static double figure(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
         double[] fill = game.getPopulationManager().getJobFillRate();
         BuildingManager bm = game.getBuildingManager();
+        double k = p.scale();
         switch (m.kind()) {
             case POWER:
             case WATER: {
@@ -399,19 +428,23 @@ public final class BuildAdvice {
                 // pooled fill, Σ fill x jobs / Σ jobs over both utilities' posts.
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
                 boolean power = m.kind() == Kind.POWER;
-                int[] je = bm.getJobArrayPerCategory(BuildingType.ELECTRICITY);
-                int[] jw = bm.getJobArrayPerCategory(BuildingType.WATER);
+                long[] je = bm.getJobArrayPerCategory(BuildingType.ELECTRICITY);
+                long[] jw = bm.getJobArrayPerCategory(BuildingType.WATER);
                 double jobs = 0;
                 for (int i = 0; i < je.length; i++) jobs += je[i] + jw[i];
                 double filled = u.getAverageUtilityFill() * jobs;
                 double base = power ? u.getBaseProduction() : u.getBaseWaterProduction();
-                double demand = power ? u.getConsumption() : u.getWaterConsumption();
+                // ...and water's two parts, the fresh held to the city's limit (0.7.59).
+                double fresh = u.getFreshNameplate(), desal = u.getDesalNameplate();
+                double demand = k * (power ? u.getConsumption() : u.getWaterConsumption());
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
                     BuildingsTemplate t = e.getKey();
                     int n = e.getValue();
                     if (t.getCategory() == (power ? BuildingType.ELECTRICITY : BuildingType.WATER)) {
                         base += n * t.getProduction1();
                     }
+                    if (t.isFreshWater()) fresh += n * t.getProduction1();
+                    if (t.isSeaWater()) desal += n * t.getProduction1();
                     demand += n * (power ? t.getElectricityConsumption() : t.getWaterConsumption());
                     if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER) {
                         for (JobType job : JobType.values()) {
@@ -424,40 +457,46 @@ public final class BuildAdvice {
                 }
                 double average = jobs > 0 ? filled / jobs : 1;
                 double supply = average == 0 ? (power ? 10000 : 8000) : base * average;
+                // Past the fresh water limit the fresh plants treat the cap (UtilitiesHandler,
+                // THE FRESH WATER LIMIT); short of it, the line above to the bit.
+                if (!power && fresh * average > u.getFreshCap()) {
+                    supply = UtilitiesHandler.waterOutput(fresh, desal, average, u.getFreshCap());
+                }
                 return supply > 0 ? demand / supply : Double.POSITIVE_INFINITY;
             }
             case ROADS:
-                return roads(game, added).getUtilisation();
+                return roads(game, added, k).getUtilisation();
             case TRANSIT:
-                return roads(game, added).getTransitCover();
+                return roads(game, added, k).getTransitCover();
             case CARE: {
                 double cap = bm.getStaffedCareCapacity(m.care(), fill);
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-                    if (e.getKey().getCare() == m.care()) cap += e.getValue() * e.getKey().getCapacity() * staffing(e.getKey(), fill);
+                    if (e.getKey().getCare() == m.care()) cap += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
                 }
-                return Health.coverageOf(cap, m.care().populationServed(game.getCohorts()));
+                return Health.coverageOf(cap, k * m.care().populationServed(game.getCohorts()));
             }
             case DEATH:
-                return unburiedNext(game, added);
+                return unburiedNext(game, added, k);
             case PLOTS: {
                 Healthcare h = game.getHealthcare();
                 double plots = bm.getCareCapacity(CareType.BURIAL);
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
                     if (e.getKey().getCare() == CareType.BURIAL) plots += e.getValue() * (double) e.getKey().getCapacity();
                 }
-                return h.monthsOfPlotsLeft(plots);
+                return h.monthsOfPlotsLeft(plots) / k;
             }
             case SCHOOL:
-                return school(game, m.school(), added);
+                return school(game, m.school(), added, p);
             case POLICE: {
+                // Crime a head at the coverage the officers give the people there will be.
                 Crime crime = game.getCrime();
                 double pop = crime.getPopulation();
                 if (!(pop > 0)) return 0;
-                double c = Crime.coverageOf(officers(game, added), pop);
+                double c = Crime.coverageOf(officers(game, added), k * pop);
                 return crime.crimesAt(c) * 12 * 100_000.0 / pop / Crime.CANADA_CRIMES_PER_100K;
             }
             case CELLS: {
-                double caught = game.getCrime().getCaught();
+                double caught = k * game.getCrime().getCaught();
                 return Math.max(0, caught - cells(game, added) / Crime.SENTENCE_MONTHS);
             }
             default:
@@ -478,13 +517,19 @@ public final class BuildAdvice {
      * burials.
      */
     public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Integer> added) {
+        return supplyDemand(game, m, added, NOW);
+    }
+
+    /** ...against the demand `p` says (0.7.51), as figure() reads it: the supply side unchanged. */
+    public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
         double[] fill = game.getPopulationManager().getJobFillRate();
         BuildingManager bm = game.getBuildingManager();
+        double k = p.scale();
         switch (m.kind()) {
             case POWER: case WATER: {
-                double load = figure(game, m, added);
+                double load = figure(game, m, added, p);
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
-                double demand = m.kind() == Kind.POWER ? u.getConsumption() : u.getWaterConsumption();
+                double demand = k * (m.kind() == Kind.POWER ? u.getConsumption() : u.getWaterConsumption());
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
                     demand += e.getValue() * (m.kind() == Kind.POWER
                             ? e.getKey().getElectricityConsumption() : e.getKey().getWaterConsumption());
@@ -492,24 +537,24 @@ public final class BuildAdvice {
                 return new double[] {load > 0 ? demand / load : 0, demand};
             }
             case ROADS: {
-                InfrastructureManager r = roads(game, added);
+                InfrastructureManager r = roads(game, added, k);
                 return new double[] {r.getCapacity(), r.getEffectiveLoad()};
             }
             case TRANSIT: {
-                InfrastructureManager r = roads(game, added);
+                InfrastructureManager r = roads(game, added, k);
                 return new double[] {r.getUsableTransit(), r.getLoad(Traffic.COMMUTERS)};
             }
             case CARE: {
                 double cap = bm.getStaffedCareCapacity(m.care(), fill);
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-                    if (e.getKey().getCare() == m.care()) cap += e.getValue() * e.getKey().getCapacity() * staffing(e.getKey(), fill);
+                    if (e.getKey().getCare() == m.care()) cap += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
                 }
-                return new double[] {cap, m.care().populationServed(game.getCohorts())};
+                return new double[] {cap, k * m.care().populationServed(game.getCohorts())};
             }
             case DEATH: {
                 Healthcare h = game.getHealthcare();
-                double toHandle = h.getDeaths() + h.getUnburied();
-                double waiting = figure(game, m, added);
+                double toHandle = k * h.getDeaths() + h.getUnburied();
+                double waiting = figure(game, m, added, p);
                 return new double[] {toHandle - waiting, toHandle};
             }
             case PLOTS: {
@@ -518,34 +563,42 @@ public final class BuildAdvice {
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
                     if (e.getKey().getCare() == CareType.BURIAL) plots += e.getValue() * (double) e.getKey().getCapacity();
                 }
-                return new double[] {Healthcare.plotsRemaining(plots, h.getPlotsUsed()), h.getBurials() * CityNeeds.PLOTS_YELLOW};
+                return new double[] {Healthcare.plotsRemaining(plots, h.getPlotsUsed()), k * h.getBurials() * CityNeeds.PLOTS_YELLOW};
             }
             case SCHOOL: {
                 double[] places = bm.getStaffedEducationPlaces(fill);
                 double seats = places[m.school().ordinal()];
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-                    if (e.getKey().getTeaches() == m.school()) seats += e.getValue() * e.getKey().getCapacity() * staffing(e.getKey(), fill);
+                    if (e.getKey().getTeaches() == m.school()) seats += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
                 }
-                double need;
-                if (m.school().isBasic()) {
-                    PopulationCohorts p = game.getCohorts();
-                    double children = p.get(AgeBand.CHILD);
-                    need = m.school() == EducationType.ELEMENTARY ? children * Education.ELEMENTARY_SHARE
-                            : m.school() == EducationType.MIDDLE ? children * (1 - Education.ELEMENTARY_SHARE)
-                            : p.get(AgeBand.TEEN);
-                } else {
-                    need = CityNeeds.wouldCome(game, m.school());
-                }
-                return new double[] {seats, need};
+                return new double[] {seats, schoolNeed(game, m.school(), p)};
             }
             case POLICE:
                 return new double[] {officers(game, added),
-                        game.getCrime().getPopulation() * Crime.FULL_OFFICERS_PER_100K / 100_000.0};
+                        k * game.getCrime().getPopulation() * Crime.FULL_OFFICERS_PER_100K / 100_000.0};
             case CELLS:
-                return new double[] {cells(game, added), game.getCrime().getCaught() * Crime.SENTENCE_MONTHS};
+                return new double[] {cells(game, added), k * game.getCrime().getCaught() * Crime.SENTENCE_MONTHS};
             default:
                 return new double[] {0, 0};
         }
+    }
+
+    /**
+     * The people a school serves at `p`'s demand (0.7.51): a basic stage's
+     * children or teens times p.scale(); above the ladder the students the
+     * city would get and hire by then (CityNeeds.wanted(), its posts grown
+     * by p.k()) with p's slack on top. At NOW it is today's: what NEEDS YOU
+     * and the ring read.
+     */
+    static double schoolNeed(Game game, EducationType type, Ahead p) {
+        if (type.isBasic()) {
+            PopulationCohorts c = game.getCohorts();
+            double children = c.get(AgeBand.CHILD);
+            double need = type == EducationType.ELEMENTARY ? children * Education.ELEMENTARY_SHARE
+                    : type == EducationType.MIDDLE ? children * (1 - Education.ELEMENTARY_SHARE) : c.get(AgeBand.TEEN);
+            return p.scale() * need;
+        }
+        return CityNeeds.wanted(game, type, p.months(), p.k()) * (1 + p.slack());
     }
 
     /** The figure as a share of what is needed, 0 to 1 - supply over demand, held to it - for a ring and the order bar's stacked bar. */
@@ -582,8 +635,10 @@ public final class BuildAdvice {
     /**
      * ...and CityNeeds' one verdict on it (0.7.41): the lines of the NEEDS
      * YOU row that watches the measure. Transit has no line, and a school
-     * above the ladder fewer than a class would come to has no row
-     * (CityNeeds.SEATS_FLOOR): no verdict. Null for a measure not served.
+     * above the ladder NEEDS YOU would not list has no row - fewer than a
+     * class it would get and hire, or with no seats yet fewer than a first
+     * school needs (CityNeeds.listsSchool(), 0.7.51): no verdict. Null for a
+     * measure not served.
      */
     public static CityNeeds.Served verdict(Game game, Measure m, Map<BuildingsTemplate, Integer> added) {
         if (!isServed(m)) return null;
@@ -595,7 +650,8 @@ public final class BuildAdvice {
             case CARE:    return CityNeeds.verdict(CityNeeds.Kind.CARE, m.care(), share);
             case SCHOOL:
                 if (m.school().isBasic()) return CityNeeds.verdict(CityNeeds.Kind.BASIC_SCHOOLS, CareType.NONE, share);
-                if (CityNeeds.wouldCome(game, m.school()) < CityNeeds.SEATS_FLOOR) return CityNeeds.unjudged(share);
+                double[] sd = supplyDemand(game, m, added);
+                if (!CityNeeds.listsSchool(game, m.school(), sd[1], sd[0])) return CityNeeds.unjudged(share);
                 return CityNeeds.verdict(CityNeeds.Kind.HIGHER_SCHOOL, CareType.NONE, share);
             default:      return CityNeeds.unjudged(share);
         }
@@ -621,20 +677,27 @@ public final class BuildAdvice {
 
     /** The road network with these buildings standing: InfrastructureManager.with(), the model's own curve. */
     static InfrastructureManager roads(Game game, Map<BuildingsTemplate, Integer> added) {
-        double capacity = 0, highway = 0, transit = 0, load = 0;
+        return roads(game, added, 1);
+    }
+
+    /** ...with the city's own traffic times k (0.7.51): the load and every stream grown alike, then the buildings' own as before. */
+    static InfrastructureManager roads(Game game, Map<BuildingsTemplate, Integer> added, double k) {
+        InfrastructureManager now = game.getInfrastructureManager();
+        double capacity = 0, highway = 0, transit = 0, load = (k - 1) * now.getLoad();
         double[] streams = new double[Traffic.values().length];
+        for (Traffic s : Traffic.values()) streams[s.ordinal()] = (k - 1) * now.getLoad(s);
         for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue();
             if (t.getCategory() == BuildingType.INFRASTRUCTURE) {
                 capacity += n * (double) t.getCapacity();
-                highway += n * t.getCapacity() * t.getFreightGrade();
+                highway += n * (long) t.getCapacity() * t.getFreightGrade();
                 transit += n * t.getTransitCapacity();
             }
             load += n * t.getRoadLoad();
             for (Traffic s : Traffic.values()) streams[s.ordinal()] += n * t.loadOf(s);
         }
-        return game.getInfrastructureManager().with(capacity, highway, transit, load, streams);
+        return now.with(capacity, highway, transit, load, streams);
     }
 
     /**
@@ -652,6 +715,11 @@ public final class BuildAdvice {
 
     /** The dead next month at today's deaths: those waiting and those dying, less what the free plots and the ovens take (Healthcare.settleDeaths()'s arithmetic). */
     static double unburiedNext(Game game, Map<BuildingsTemplate, Integer> added) {
+        return unburiedNext(game, added, 1);
+    }
+
+    /** ...with k times today's deaths (0.7.51): the unburied are a stock, and stay as they are. */
+    static double unburiedNext(Game game, Map<BuildingsTemplate, Integer> added, double k) {
         Healthcare h = game.getHealthcare();
         BuildingManager bm = game.getBuildingManager();
         double[] fill = game.getPopulationManager().getJobFillRate();
@@ -660,37 +728,40 @@ public final class BuildAdvice {
         for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
             BuildingsTemplate t = e.getKey();
             if (t.getCare() == CareType.BURIAL) plots += e.getValue() * (double) t.getCapacity();
-            if (t.getCare() == CareType.CREMATION) ovens += e.getValue() * t.getCapacity() * staffing(t, fill);
+            if (t.getCare() == CareType.CREMATION) ovens += e.getValue() * (long) t.getCapacity() * staffing(t, fill);
         }
         double free = Healthcare.plotsRemaining(plots, h.getPlotsUsed());
-        double waiting = Math.max(0, h.getDeaths() + h.getUnburied() - free - Math.max(0, ovens));
-        return Math.min(waiting, h.getDeaths() * Healthcare.MAX_BACKLOG_MONTHS);
+        double deaths = k * h.getDeaths();
+        double waiting = Math.max(0, deaths + h.getUnburied() - free - Math.max(0, ovens));
+        return Math.min(waiting, deaths * Healthcare.MAX_BACKLOG_MONTHS);
     }
 
-    /** A school's figure: a basic stage's coverage (Education's own cover, places over the children it serves), or who would come over the seats above the ladder. */
+    /** A school's figure: a basic stage's coverage (Education's own cover, places over the children it serves), or above the ladder who would come and be hired over the seats (0.7.51; who would come until then). */
     static double school(Game game, EducationType type, Map<BuildingsTemplate, Integer> added) {
+        return school(game, type, added, NOW);
+    }
+
+    /** ...against the people `p` says it serves (schoolNeed()). */
+    static double school(Game game, EducationType type, Map<BuildingsTemplate, Integer> added, Ahead p) {
         double[] fill = game.getPopulationManager().getJobFillRate();
         double[] places = game.getBuildingManager().getStaffedEducationPlaces(fill);
         double seats = places[type.ordinal()];
         for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-            if (e.getKey().getTeaches() == type) seats += e.getValue() * e.getKey().getCapacity() * staffing(e.getKey(), fill);
+            if (e.getKey().getTeaches() == type) seats += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
         }
+        double need = schoolNeed(game, type, p);
         if (type.isBasic()) {
-            PopulationCohorts p = game.getCohorts();
-            double children = p.get(AgeBand.CHILD), teens = p.get(AgeBand.TEEN);
-            double need = type == EducationType.ELEMENTARY ? children * Education.ELEMENTARY_SHARE
-                    : type == EducationType.MIDDLE ? children * (1 - Education.ELEMENTARY_SHARE) : teens;
             if (need <= 0) return seats > 0 ? 1 : 0;
             return Math.max(0, Math.min(1, seats / need));
         }
-        return CityNeeds.wouldCome(game, type) / Math.max(seats, 1);
+        return need / Math.max(seats, 1);
     }
 
     static double officers(Game game, Map<BuildingsTemplate, Integer> added) {
         double[] fill = game.getPopulationManager().getJobFillRate();
         double n = game.getBuildingManager().getStaffedSafetyCapacity(SafetyType.POLICE, fill);
         for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-            if (e.getKey().getSafety() == SafetyType.POLICE) n += e.getValue() * e.getKey().getCapacity() * staffing(e.getKey(), fill);
+            if (e.getKey().getSafety() == SafetyType.POLICE) n += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
         }
         return n;
     }
@@ -699,7 +770,7 @@ public final class BuildAdvice {
         double[] fill = game.getPopulationManager().getJobFillRate();
         double n = game.getBuildingManager().getStaffedSafetyCapacity(SafetyType.PRISON, fill);
         for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-            if (e.getKey().getSafety() == SafetyType.PRISON) n += e.getValue() * e.getKey().getCapacity() * staffing(e.getKey(), fill);
+            if (e.getKey().getSafety() == SafetyType.PRISON) n += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
         }
         return n;
     }
@@ -765,10 +836,10 @@ public final class BuildAdvice {
     /**
      * ...and of the overview's suggestions (0.7.38): each one's own quote,
      * its price(), which is Game.quoteBuild() as its card shows it and its
-     * Build charges it, added in their order - WHAT WOULD HELP MOST's "all
-     * three ≈ $X" and the look of its "Build all three", which the screen
-     * added up itself until now. Two of one building stay two orders, as
-     * the screen places them one after another. Reads; changes nothing.
+     * Build charges it, added in their order. WHAT WOULD HELP MOST's "all
+     * three ≈ $X" read it until 0.7.51; it reads the run's invoice now
+     * (Game.buildRunInvoice() of run()), what placing them in turn charges.
+     * Reads; changes nothing.
      */
     public static double quoteTotal(List<Suggestion> advice) {
         double total = 0;
@@ -778,6 +849,30 @@ public final class BuildAdvice {
 
     /* =====================================================================
        THE SUGGESTIONS
+
+       AHEAD OF THE NEED, ON ITS OWN GROUND (0.7.51). Jerus, of "Build all
+       three": "the building ideas is flawed, it doesnt take into account
+       land price, and it doesnt build any slack ... make it so that alot of
+       its ideas also take into account the same as businesses do, aka a
+       projection". The count was the least that took a row off NEEDS YOU
+       today, and no more: forty clinics left general care at 81%, and back
+       on the list the month they opened. The price a unit never saw the
+       ground, so a wind farm's 1.74M sq ft for 8,100 kW beat a coal plant's
+       2M for 280,000. Now an order is sized the way the businesses size a
+       plant (BusinessInvestment.planMaker()): to the demand when it opens
+       plus HORIZON months, grown by their growthFactor(), with SLACK on
+       top, and a served gauge has to reach 100% of that (ahead()). Each
+       building is priced with its ground at what the land office charges
+       (landValue()), against the ground the cards before it leave, so the
+       cards and "Build all three" agree on where the run stops. A school
+       above the ladder is wanted only for the students the city would get
+       and hire (CityNeeds.wanted(), its feeder's graduates by then and the
+       posts their degree fills), where it was everyone who would come: a
+       founded city of 118 was told to build a $417M university for 33. And
+       the cash no longer cuts a count: it was cut to what the cash the
+       cards before left could pay, while a card after it borrowed anyway.
+       A card is the count that keeps its need ahead, on credit when that
+       cash is short of its quote, by how much (credit).
        ===================================================================== */
 
     /** At most this many suggestions, one per need. */
@@ -786,65 +881,156 @@ public final class BuildAdvice {
     /** The most of one building a search will count to. */
     static final int MOST = 1 << 22;
 
+    /** The slack an order is sized with past its projection: the businesses' own headroom (BusinessInvestment.TARGET_HEADROOM). */
+    public static final double SLACK = BusinessInvestment.TARGET_HEADROOM;
+
+    /** Months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); the opening's wait is held to their BusinessInvestment.MAX_ORDER_MONTHS. */
+    public static final double HORIZON = BusinessInvestment.PLANNING_HORIZON;
+
     /**
-     * One suggested order.
+     * The demand an order is sized against (0.7.51): today's, `months`
+     * ahead grown by k (BusinessInvestment.growthFactor()), and padded by
+     * `slack`.
+     */
+    public record Ahead(double months, double k, double slack) {
+        /** What today's demand is multiplied by. */
+        public double scale() { return k * (1 + slack); }
+    }
+
+    /** Today's demand, no slack: what NEEDS YOU reads. */
+    public static final Ahead NOW = new Ahead(0, 1, 0);
+
+    /**
+     * The demand an order that opens after `lead` months is sized to: the
+     * wait, held to the businesses' MAX_ORDER_MONTHS (a stalled one, NaN,
+     * counts as none), plus HORIZON - the businesses' growthFactor() over
+     * those months - and SLACK past it.
+     */
+    public static Ahead opening(Game game, double lead) {
+        double wait = Double.isNaN(lead) ? 0 : Math.max(0, Math.min(lead, BusinessInvestment.MAX_ORDER_MONTHS));
+        double months = wait + HORIZON;
+        return new Ahead(months, game.getBusinessInvestment().growthFactor(months), SLACK);
+    }
+
+    /**
+     * Whether these buildings keep the measure ahead at `p`'s demand: off
+     * NEEDS YOU's list there (clear()), and a served measure - not transit,
+     * which has no line - at 100% of it or more. With SLACK in p that is
+     * green, not just off the list.
+     */
+    public static boolean ahead(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
+        if (!clear(m, figure(game, m, added, p))) return false;
+        if (!isServed(m) || m.kind() == Kind.TRANSIT) return true;
+        double[] sd = supplyDemand(game, m, added, p);
+        return CityNeeds.servedShare(sd[0], sd[1]) >= 1;
+    }
+
+    /**
+     * What `sqFt` of ground is worth to the city with `landLeft` free: the
+     * free part at the cheaper of what a business pays the city for it and
+     * the land office's price, the rest at the land office's
+     * (LandManager.getOfficePricePerSqFt()) - what the city would pay to
+     * replace a square foot it builds on.
+     */
+    public static double landValue(Game game, double sqFt, double landLeft) {
+        LandManager land = game.getLandManager();
+        double office = land.getOfficePricePerSqFt();
+        double free = Math.min(sqFt, Math.max(0, landLeft));
+        return free * Math.min(land.getPricePerSqFt(), office) + Math.max(0, sqFt - Math.max(0, landLeft)) * office;
+    }
+
+    /** Why the next building in the ranking lost to the one suggested: dearer a unit with its land, it cannot keep the need ahead, or its count needs more land than is left. */
+    public enum Lost { DEARER, CANNOT_CLOSE, NO_ROOM }
+
+    /**
+     * One suggested order (0.7.51: one count, the one that keeps the need
+     * ahead - the cash no longer caps it).
      *
-     * @param count      what to order: the full count, or what the cash affords
-     * @param fullCount  what closes the need's gap after what is on site
-     * @param price      the quote for count - Game.quoteBuild(), what Build charges
-     * @param fullPrice  the quote for fullCount
-     * @param before     the need's figure now (NEEDS YOU's)
-     * @param whenOnSite the figure once what is on site opens
-     * @param after      ...and with this order too
-     * @param closes     false when no count of this building takes the need
-     *                   off the list (crime with every officer it can use,
-     *                   transit past the share of commuters who will ride):
-     *                   then count is where it stops helping
-     * @param capped     the count is what the cash left affords, less than full
-     * @param needsCredit the cash left affords none: the full count, on credit
-     * @param landShort  square feet the order is short of the land free, or 0
-     * @param onSite     units on site that already serve the measure
+     * @param count       what to order: the least that keeps the need ahead
+     *                    at its projection, after what is on site
+     * @param price       its quote - Game.quoteBuild(), what Build charges;
+     *                    the city pays nothing for its own ground
+     * @param before      the need's figure now (NEEDS YOU's)
+     * @param whenOnSite  the figure once what is on site opens
+     * @param after       ...and with this order too, at today's demand
+     * @param afterAtOpening ...at the demand it opens to, projected
+     *                    (ahead's months and k) without the slack
+     * @param closes      false when no count of this building keeps the need
+     *                    ahead (crime with every officer it can use, transit
+     *                    past the share of commuters who will ride): then
+     *                    count is where it stops helping
+     * @param needsCredit its quote is more than the cash the suggestions
+     *                    before it leave
+     * @param onSite      units on site that already serve the measure
+     * @param unit        what one serves at today's staffing
+     * @param pricePerUnit its quote for one and its ground (landValue(), on
+     *                    the land the ones before leave), over unit
+     * @param ahead       the demand it is sized to (opening(lead))
+     * @param lead        the city order's own wait, Game.quoteBuild()'s months
+     *                    for the count at today's demand with the slack
+     * @param landSqFt    the ground the count stands on
+     * @param landValue   ...at landValue(), on the land the ones before leave
+     * @param landShort   square feet past the land the ones before leave, or 0
+     * @param runnerUp    the next building in the ranking, or null for none
+     * @param runnerUpPer ...its price a unit with its land, NaN for none
+     * @param runnerUpLost ...and why it lost, null for none
+     * @param credit      the part of its quote the cash the ones before leave
+     *                    does not cover: 0 unless needsCredit
      */
     public record Suggestion(CityNeeds.Need need, Measure measure, BuildingsTemplate template,
-                             int count, int fullCount, double price, double fullPrice,
-                             double before, double whenOnSite, double after,
-                             boolean closes, boolean capped, boolean needsCredit,
-                             double landShort, int onSite, double unit, double pricePerUnit) { }
+                             int count, double price, double before, double whenOnSite, double after,
+                             double afterAtOpening, boolean closes, boolean needsCredit, int onSite,
+                             double unit, double pricePerUnit, Ahead ahead, double lead,
+                             double landSqFt, double landValue, double landShort,
+                             BuildingsTemplate runnerUp, double runnerUpPer, Lost runnerUpLost, double credit) { }
 
     /** The rule, on this city now. */
     public static List<Suggestion> suggest(Game game) {
         return suggest(game, CityNeeds.measure(game, CityNeeds.PLAIN));
     }
 
-    /** The rule, on NEEDS YOU as already measured (the screen measures it once a redraw). */
+    /**
+     * The rule, on NEEDS YOU as already measured (the screen measures it
+     * once a redraw): each card on the cash and the ground the ones before
+     * it leave.
+     */
     public static List<Suggestion> suggest(Game game, List<CityNeeds.Need> all) {
         List<Suggestion> out = new ArrayList<>();
         double cashLeft = game.getCash();
+        double landLeft = game.getLandManager().getAvailableSqFt();
         for (CityNeeds.Need need : CityNeeds.biting(all)) {
             if (out.size() >= MAX_SUGGESTIONS) break;
             if (!need.cityBuilds()) continue;
             Measure m = measureOf(need);
             if (m == null) continue;
-            Suggestion s = suggestFor(game, need, m, cashLeft);
+            Suggestion s = suggestFor(game, need, m, cashLeft, landLeft);
             if (s == null) continue;
             out.add(s);
             cashLeft = Math.max(0, cashLeft - s.price());
+            landLeft = Math.max(0, landLeft - s.landSqFt());
         }
         return out;
     }
 
-    /** One need's suggestion, or null when what is on site already takes it off the list or no building can help. */
-    static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft) {
+    /** The suggestions as one run, as "Build all three" places it: each card's building and count in their order, two of one building added together. */
+    public static LinkedHashMap<BuildingsTemplate, Integer> run(List<Suggestion> advice) {
+        LinkedHashMap<BuildingsTemplate, Integer> run = new LinkedHashMap<>();
+        for (Suggestion s : advice) run.merge(s.template(), s.count(), Integer::sum);
+        return run;
+    }
+
+    /** One building weighed for a need: its count at its projection, and where it ranks. */
+    private record Weighed(BuildingsTemplate t, int tier, double per, double unit, int count,
+                           boolean closes, boolean fits, Ahead ahead, double lead) { }
+
+    /** One need's suggestion, or null when what is on site already keeps it ahead or no building can help. */
+    static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft) {
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
         double whenOnSite = figure(game, m, site);
-        // JUDGEMENT: what is on site already closes it - nothing to add.
-        if (clear(m, whenOnSite)) return null;
+        // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
+        if (ahead(game, m, site, opening(game, 0))) return null;
 
-        BuildingsTemplate best = null;
-        double bestPer = Double.MAX_VALUE, bestUnit = 0;
-        int bestCount = 0, bestTier = Integer.MAX_VALUE;
-        boolean bestCloses = false;
-        double landFree = game.getLandManager().getAvailableSqFt();
+        List<Weighed> weighed = new ArrayList<>();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             boolean candidate = m.kind() == Kind.ROADS
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
@@ -853,61 +1039,80 @@ public final class BuildAdvice {
             // A building the city cannot staff at all, or one that does not
             // move the figure, serves nothing.
             if (!(unit > 0)) continue;
-            double per = game.quoteBuild(t, 1).total / unit;
-            int[] found = count(game, m, site, t);
+            // Counted twice: at today's demand with the slack, for the order's
+            // own wait; then at the demand it opens to after that wait.
+            int[] today = count(game, m, site, t, new Ahead(0, 1, SLACK));
+            if (today[0] <= 0) continue;
+            double lead = game.quoteBuild(t, today[0]).months;
+            Ahead p = opening(game, lead);
+            int[] found = count(game, m, site, t, p);
             if (found[0] <= 0) continue;
             boolean closes = found[1] == 1;
-            boolean fits = t.getLandSqFt() * (double) found[0] <= landFree;
-            /*
-             * JUDGEMENTS, in this order: one that can close the gap beats one
-             * that cannot, at any price; of those, one whose whole count fits
-             * the ground the city has free beats one the order would be
-             * refused for (Game.buildStack()'s NO_LAND); then the lowest price
-             * per unit. Land can be bought from the refusal's own page; a
-             * building that cannot close a gap never will.
-             */
-            int tier = (closes ? 0 : 2) + (fits ? 0 : 1);
-            boolean better = best == null || tier < bestTier || (tier == bestTier && per < bestPer);
-            if (better) {
-                best = t; bestPer = per; bestUnit = unit; bestCount = found[0]; bestCloses = closes; bestTier = tier;
-            }
+            boolean fits = t.getLandSqFt() * (double) found[0] <= landLeft;
+            double per = (game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)) / unit;
+            weighed.add(new Weighed(t, (closes ? 0 : 2) + (fits ? 0 : 1), per, unit, found[0], closes, fits, p, lead));
         }
-        if (best == null) return null;
+        if (weighed.isEmpty()) return null;
+        /*
+         * JUDGEMENTS, in this order: one that can keep the need ahead beats
+         * one that cannot, at any price; of those, one whose whole count
+         * fits the ground the cards before leave beats one the order would be
+         * refused for (Game.buildStack()'s NO_LAND); then the lowest price a
+         * unit with its ground. Land can be bought from the refusal's own
+         * page; a building that cannot close a gap never will. A tie keeps
+         * the catalogue's order (the sort is stable).
+         */
+        weighed.sort(java.util.Comparator.comparingInt(Weighed::tier).thenComparingDouble(Weighed::per));
+        Weighed best = weighed.get(0);
+        Weighed next = weighed.size() > 1 ? weighed.get(1) : null;
+        Lost lost = next == null ? null
+                : next.closes() != best.closes() ? Lost.CANNOT_CLOSE
+                : next.fits() != best.fits() ? Lost.NO_ROOM : Lost.DEARER;
 
-        int full = bestCount;
-        double fullPrice = game.quoteBuild(best, full).total;
-        int n = full;
-        boolean capped = false, credit = false;
-        if (fullPrice > cashLeft) {
-            int affords = affordable(game, best, full, cashLeft);
-            if (affords >= 1) { n = affords; capped = true; }
-            else credit = true;
-        }
-        Game.BuildQuote q = game.quoteBuild(best, n);
-        double after = figure(game, m, plus(site, best, n));
-        return new Suggestion(need, m, best, n, full, q.total, fullPrice,
-                need.value(), whenOnSite, after, bestCloses, capped, credit,
-                Math.max(0, q.landNeeded - q.landFree), units(site), bestUnit, bestPer);
+        int n = best.count();
+        Game.BuildQuote q = game.quoteBuild(best.t(), n);
+        boolean credit = q.total > cashLeft;
+        double after = figure(game, m, plus(site, best.t(), n));
+        double atOpening = figure(game, m, plus(site, best.t(), n), new Ahead(best.ahead().months(), best.ahead().k(), 0));
+        double sq = best.t().getLandSqFt() * (double) n;
+        return new Suggestion(need, m, best.t(), n, q.total, need.value(), whenOnSite, after, atOpening,
+                best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
+                sq, landValue(game, sq, landLeft), Math.max(0, sq - Math.max(0, landLeft)),
+                next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
+                credit ? q.total - Math.max(0, cashLeft) : 0);
     }
 
     /**
-     * The count of t that closes the need, after what is on site: the least
-     * n whose figure is off the list. {n, 1} when one exists; when none does
-     * - the figure stops improving first - {n, 0}, n the least count that
-     * reaches the best figure this building can make.
+     * The count before 0.7.51, kept for the harness's comparison: the least
+     * n whose figure today is off the list (count() at no projection and no
+     * slack, judged by clear() alone).
      */
     static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t) {
-        double before = figure(game, m, site);
+        return count(game, m, site, t, null);
+    }
+
+    /**
+     * The count of t that keeps the need ahead at p's demand, after what is
+     * on site (p null: the old rule, off the list today). {n, 1} when one
+     * exists; when none does - the figure stops improving first - {n, 0}, n
+     * the least count that reaches the best figure this building can make.
+     */
+    static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t, Ahead p) {
+        Ahead at = p == null ? NOW : p;
+        java.util.function.Predicate<Map<BuildingsTemplate, Integer>> done = p == null
+                ? a -> clear(m, figure(game, m, a)) : a -> ahead(game, m, a, at);
+        double before = figure(game, m, site, at);
         boolean worseHigher = higherWorse(m);
         double best = before;
         int tried = 0, n = 1;
         while (n <= MOST) {
-            double f = figure(game, m, plus(site, t, n));
-            if (clear(m, f)) {
-                int lo = tried, hi = n;           // lo fails (or is 0), hi clears
+            Map<BuildingsTemplate, Integer> a = plus(site, t, n);
+            double f = figure(game, m, a, at);
+            if (done.test(a)) {
+                int lo = tried, hi = n;           // lo fails (or is 0), hi is done
                 while (hi - lo > 1) {
                     int mid = lo + (hi - lo) / 2;
-                    if (clear(m, figure(game, m, plus(site, t, mid)))) hi = mid; else lo = mid;
+                    if (done.test(plus(site, t, mid))) hi = mid; else lo = mid;
                 }
                 return new int[] {hi, 1};
             }
@@ -923,7 +1128,7 @@ public final class BuildAdvice {
         int lo = 0, hi = tried;
         while (hi - lo > 1) {
             int mid = lo + (hi - lo) / 2;
-            double f = figure(game, m, plus(site, t, mid));
+            double f = figure(game, m, plus(site, t, mid), at);
             boolean there = worseHigher ? f <= target + 1e-12 : f >= target - 1e-12;
             if (there) hi = mid; else lo = mid;
         }
@@ -937,16 +1142,5 @@ public final class BuildAdvice {
             case SCHOOL: return !m.school().isBasic();
             default: return false;
         }
-    }
-
-    /** The most of t up to `full` whose quote the cash covers; 0 for none. */
-    static int affordable(Game game, BuildingsTemplate t, int full, double cash) {
-        if (!(cash > 0) || game.quoteBuild(t, 1).total > cash) return 0;
-        int lo = 1, hi = full;                    // lo affordable, hi not
-        while (hi - lo > 1) {
-            int mid = lo + (hi - lo) / 2;
-            if (game.quoteBuild(t, mid).total <= cash) lo = mid; else hi = mid;
-        }
-        return lo;
     }
 }

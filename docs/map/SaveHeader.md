@@ -1,6 +1,6 @@
 # SaveHeader.java - 71 lines · 12 methods · 0 constants · model
 
-`ham/citybuildersim/SaveHeader.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveHeader.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > Just enough of a save to label it on the slot list.
 > 
@@ -21,14 +21,14 @@
 
 **Uses:** [GameVersion](GameVersion.md) (2), [Founding](Founding.md) (1)
 
-**Used by (6):** [Game](Game.md), [GameFiles](GameFiles.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
+**Used by (7):** [Game](Game.md), [GameFiles](GameFiles.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 24 | `private int month` | Field names must match DataSave exactly - see above. |
-| 25 | `private int population` |  |
+| 25 | `private long population` |  |
 | 26 | `private double cash` |  |
 | 28 | `private String slotName` |  |
 | 29 | `private String gameVersion` |  |
@@ -42,7 +42,7 @@
 |---:|---:|---|---|
 | 21 | 51 | **type** `public class SaveHeader` | Just enough of a save to label it on the slot list. |
 | 36 | 1 | `public int getMonth()` |  |
-| 37 | 1 | `public int getPopulation()` |  |
+| 37 | 1 | `public long getPopulation()` |  |
 | 38 | 1 | `public double getCash()` |  |
 | 39 | 1 | `public String getSlotName()` |  |
 | 40 | 1 | `public String getGameVersion()` |  |

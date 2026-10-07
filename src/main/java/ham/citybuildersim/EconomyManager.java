@@ -64,9 +64,9 @@ public class EconomyManager {
        =================================================================== */
 
     private double cash;
-    private int totalJobs;
-    private int population;
-    private int households;
+    private long totalJobs;
+    private long population;
+    private long households;
     private double totalWage;
     private final double[] fillRate = new double[11];
 
@@ -77,18 +77,18 @@ public class EconomyManager {
     private double[] staffedWagePerType = new double[JobType.values().length];
 
     /** The bank's posts, so its tellers can be charged to the bank and not to the shops. */
-    private int[] bankJobs;
+    private long[] bankJobs;
 
-    public void setTotalJobs(int jobs)        { totalJobs = jobs; }
-    public void setPopulation(int pop)        { population = pop; }
-    public void setHouseholds(int houseCap)   { households = houseCap; }
+    public void setTotalJobs(long jobs)       { totalJobs = jobs; }
+    public void setPopulation(long pop)       { population = pop; }
+    public void setHouseholds(long houseCap)  { households = houseCap; }
     public void setCash(int money)            { cash = money; }
     public void setTotalWage(double wage)     { totalWage = wage; }
     public void setWageDetail(double[] staffedPerType) {
         if (staffedPerType != null) this.staffedWagePerType = staffedPerType.clone();
     }
     public double[] getStaffedWagePerType()   { return staffedWagePerType.clone(); }
-    public int getPopulation()                { return population; }
+    public long getPopulation()               { return population; }
 
     public void updateJobFillRate(double[] fill) {
         if (fill == null) return;
@@ -102,7 +102,7 @@ public class EconomyManager {
      * @param wagePerType what one post of each tier costs a month
      * @param bankPosts   the bank's posts, which belong to no sector
      */
-    public void updateWages(double[] wagePerType, int[] bankPosts) {
+    public void updateWages(double[] wagePerType, long[] bankPosts) {
         if (wagePerType == null) return;
         System.arraycopy(wagePerType, 0, wageRates, 0, Math.min(wagePerType.length, wageRates.length));
         this.bankJobs = bankPosts;
@@ -295,8 +295,8 @@ public class EconomyManager {
         re.setMarginalHousingCost(marginalHousingCost);
         repriceHousingCosts();
 
-        int[] bySize = buildingManager.homesBySize();
-        int studioDoors = 0, familyDoors = 0;
+        long[] bySize = buildingManager.homesBySize();
+        long studioDoors = 0, familyDoors = 0;
         for (int size = 1; size < bySize.length; size++) {
             if (size <= FamilyModel.STUDIO_MAX_SIZE) studioDoors += bySize[size];
             else                                     familyDoors += bySize[size];
@@ -447,12 +447,16 @@ public class EconomyManager {
     /**
      * Tells the credit manager what each sector is worth right now - its
      * own sheet plus what it holds abroad, which a lender that ignored
-     * would call a rich sector broke.
+     * would call a rich sector broke. And since 0.7.44 net of what it owes
+     * its suppliers, with what its buyers owe it: the lender reads each side
+     * of the grocers' trade credit as if it were not there, so cash a
+     * supplier is still owed is not lent against twice (SupplierCredit).
      */
     public void refreshCreditAssets() {
         for (Sector s : sectors.all()) {
+            BalanceSheet sheet = s.getBalanceSheet();
             businessDebtManager.setAssets(s.key(),
-                    s.getBalanceSheet().getTotalAssets() + getForeignAssets(s.key())
+                    sheet.getTotalAssets() - sheet.getTradePayables() + getForeignAssets(s.key())
                             + getBondAssets(s.key()));
             businessDebtManager.setCash(s.key(), s.getCash());
         }
@@ -865,7 +869,8 @@ public class EconomyManager {
     /**
      * Strikes every sector's statement, settles the VAT from the same
      * figures, and banks the month. Once, at the top of the month, after
-     * the bills are set. See Sector.strike() and bank().
+     * the bills are set. See Sector.strike() and bank(). Then the grocers'
+     * suppliers' credit, both sides (0.7.44; settleSupplierCredit()).
      */
     public void strikeSectors() {
         for (Sector s : sectors.all()) {
@@ -873,6 +878,37 @@ public class EconomyManager {
             s.strike();
         }
         settleSalesTax();
+        settleSupplierCredit();
+    }
+
+    /**
+     * THE SUPPLIERS' CREDIT, SETTLED AT THE STRIKE (0.7.44; SupplierCredit).
+     * The month just banked charged each buyer the whole of its stock bill
+     * and paid each supplier the whole of its sale. For a buyer whose
+     * suppliers waited, this hands back to its till what it bought on their
+     * credit at the clearing the strike banked, and takes from it what it
+     * owed from the clearing before - the stock that has since been sold -
+     * and does the opposite to each local supplier, by its share: so the
+     * cash a supplier is not yet paid stays in the buyer's till, and both
+     * pools move at once, inside the money audit's window. The world's share
+     * has no pool here; MoneyAudit declares it, a financial flow in when it
+     * is taken and out when it is repaid ("SupplierCredit").
+     */
+    void settleSupplierCredit() {
+        for (Sector s : sectors.all()) {
+            SupplierCredit credit = s.supplierCredit();
+            if (credit == null) continue;
+            credit.strike();
+            double moved = 0;
+            for (String supplier : credit.suppliers()) {
+                double net = credit.owedTo(supplier) - credit.repaidTo(supplier);
+                if (net == 0) continue;
+                moved += net;
+                Sector seller = sectors.byKey(supplier);
+                if (seller != null) seller.addCash(-net);
+            }
+            if (moved != 0) s.addCash(moved);
+        }
     }
 
     /**
@@ -1106,7 +1142,10 @@ public class EconomyManager {
      */
     double monthObligations(Sector s, double matured) {
         Sector.Statement st = s.statement();
-        double costs = Math.max(0, st.inputs - st.paidEarlier) + Math.max(0, st.payroll)
+        // ...the stock its suppliers are waiting for is not paid this month,
+        // and what it owed them from the month before is (0.7.44; SupplierCredit).
+        double stock = st.inputs - st.paidEarlier - s.getTradeCreditTaken() + s.getTradeCreditRepaid();
+        double costs = Math.max(0, stock) + Math.max(0, st.payroll)
                 + Math.max(0, st.electricity) + Math.max(0, st.water) + Math.max(0, st.maintenance)
                 + Math.max(0, st.interest) + Math.max(0, st.propertyTax) + Math.max(0, st.salesTax)
                 + Math.max(0, st.profitTax);
@@ -1145,7 +1184,9 @@ public class EconomyManager {
      *
      * THE TILL THE NEXT STRIKE WILL FIND, before anything bought now: its
      * cash, plus what the month has booked in and less what it has booked
-     * out so far, since the ledger banks both at the strike.
+     * out so far, since the ledger banks both at the strike - and less what
+     * it owes its suppliers, plus what its buyers owe it, which the strike
+     * settles too (0.7.44).
      *
      * LESS WHAT IT CANNOT AVOID, which the strike and the settle take before
      * any purchase's bill is read: this month's payroll, power and water, at
@@ -1164,6 +1205,10 @@ public class EconomyManager {
      * abroad, the other sectors' bonds it holds (at face, as its lender reads
      * them), and the working-capital line
      * (BusinessDebtManager.workingCapitalLine()).
+     *
+     * AND, FOR A BUYER WITH A SUPPLIER CREDIT (the grocers, 0.7.44), WHAT ITS
+     * SUPPLIERS WILL WAIT FOR, on top of all that once it is floored at
+     * nothing: the stock it buys is paid for by its own sale (SupplierCredit).
      *
      * AN ESTIMATE, AND NOTHING NEW IN IT: every figure is one a statement, a
      * lender or a market already computes. Infinite - nobody is limited -
@@ -1186,14 +1231,32 @@ public class EconomyManager {
         double salesTax = Math.max(0, salesTaxSoFar(s, p));
         double preTax = p.revenue() - costs - salesTax;
         double profitTax = Math.max(0, preTax * taxPolicy.effectiveProfitRate(s));
-        double till = s.getCash() + preTax - profitTax;
+        // ...less what it owes its suppliers and plus what its buyers owe it,
+        // which the next strike settles (0.7.44; SupplierCredit).
+        double till = s.getCash() + preTax - profitTax - s.getTradePayable() + s.getTradeReceivable();
         double due = businessDebtManager.principalDueNextMonth(k)
                 + (bondMarket == null ? 0 : bondMarket.maturingFace(k, month + 1));
         double atSettle = till - due - Math.max(0, dividend);
         double raised = Math.max(0, getForeignAssets(k)) + Math.max(0, getBondAssets(k))
                 + businessDebtManager.workingCapitalLine(k, atSettle, due);
         double budget = atSettle + raised;
-        return Double.isFinite(budget) ? Math.max(0, budget) : Double.POSITIVE_INFINITY;
+        if (!Double.isFinite(budget)) return Double.POSITIVE_INFINITY;
+        /*
+         * ...AND WHAT ITS SUPPLIERS WILL WAIT FOR (0.7.44), a buyer with a
+         * supplier credit's - opened here for the clearing, beside the till it
+         * will have at the settle - on top of what its till and its lender
+         * cover, and not netted against the bills those could not: it buys
+         * stock and nothing else, and the sale of that stock repays it. See
+         * SupplierCredit, THE CREDIT IS THE STOCK'S.
+         */
+        SupplierCredit credit = s.supplierCredit();
+        return credit == null ? Math.max(0, budget)
+                : Math.max(0, budget) + credit.open(supplierCreditLimit(s), atSettle);
+    }
+
+    /** What a buyer's suppliers will wait for this clearing: the grocers' (Retail.supplierCreditLimit()); nothing for anybody else. */
+    private static double supplierCreditLimit(Sector s) {
+        return s instanceof ham.citybuildersim.sectors.Retail r ? r.supplierCreditLimit() : 0;
     }
 
     /** What one sector holds abroad, in the city's money at the rate it was last valued at. */
@@ -1470,6 +1533,12 @@ public class EconomyManager {
     public void setFundTransfer(double transfer) { this.fundTransfer = Math.max(0, transfer); }
     public double getFundTransfer()              { return fundTransfer; }
 
+    /** FOOD ASSISTANCE (0.7.43), set by Game where the treasury pays it, after the month's sale - for the central bank's lines' reason: Game moves the cash there. See NationalAccounts.setFoodAssistance(). */
+    private double foodAssistance;
+
+    public void setFoodAssistance(double paid) { this.foodAssistance = Math.max(0, paid); }
+    public double getFoodAssistance()          { return foodAssistance; }
+
     /** Sets the month's student-loan interest, the treasury's. See Game.getStudentLoanInterest(). */
     public void setStudentLoanInterest(double interest) { this.studentLoanInterest = Math.max(0, interest); }
 
@@ -1530,7 +1599,9 @@ public class EconomyManager {
        a patient pays something and never enough; a school charges a fee that
        is a rounding error against its wage bill. A tram is different because
        the person on it chose to be, so a fare is a price rather than a charge,
-       and a city that sets it high enough is running a business.
+       and a city that sets it high enough is running a business. (To a car
+       owner, since 0.7.49: a commuter with no car of their own has no choice,
+       and to them it is a charge - see below.)
 
        AND THE PRICE HAS A COST, which is what stops it being free money: a
        fare high enough to turn a profit is a fare people will not pay, and
@@ -1538,6 +1609,17 @@ public class EconomyManager {
        was built to relieve. The revenue line and the congestion line move
        against each other, and that is the whole decision. See
        InfrastructureManager.ridershipAt() and TaxPolicy.getTransitFare().
+       Since 0.7.49 only the owners have a car to go back to: the commuters
+       with no car of their own ride at any fare, so a dearer fare takes more
+       of their money instead (InfrastructureManager, WHO RIDES, BY WHAT THEY
+       PAY).
+
+       PAID SINCE 0.7.49 (B9). The bill below was struck every month and read
+       by the national accounts alone: nobody paid it, so the crews' wages
+       reached the households from nowhere, and the fares reached the cash
+       outside the budget. The treasury pays it now as a promise
+       (TreasuryLine.TRANSIT), getExpenses() carries it, and the budget
+       carries both the bill and the fares (NationalAccounts' transit pair).
        ======================================================================= */
 
     private double transitBill, transitFares;
@@ -1576,7 +1658,9 @@ public class EconomyManager {
     /** What the city pays out this month. */
     public double getExpenses() {
         return interest + getPensionsPaid() + eiBenefits + studentGrants + healthcareBill + educationBill
-                + safetyBill;
+                + safetyBill
+                // ...and transit's wages and upkeep (0.7.49, B9), paid by the treasury since.
+                + transitBill;
     }
 
     /** The interest alone, which is the only part of getExpenses() that is CARRIED. */
@@ -1636,7 +1720,12 @@ public class EconomyManager {
                 + sectors.luxuryRetail().statement().salesToHouseholds
                 // ...and a dinner, which is consumption bought over a counter
                 // like the other two. See the note above.
-                + sectors.restaurants().statement().salesToHouseholds;
+                + sectors.restaurants().statement().salesToHouseholds
+                // ...and the drivers' fuel off the refiners' shelf (0.7.62), over
+                // the pump's counter: without it a refinery's crude imports would
+                // land in net exports with the fuel they became bought by nobody.
+                // The world's part of their fuel is in neither C nor the imports.
+                + sectors.refining().statement().salesToHouseholds;
         double rentPaid = sectors.realEstate().statement().salesToHouseholds;
 
         /*
@@ -1692,6 +1781,21 @@ public class EconomyManager {
         double luxuryPrice = ham.citybuildersim.sectors.LuxuryRetail.landedCost(
                 markets.get(Good.LUXURIES));
 
+        /*
+         * ...AND EVERY OTHER GOOD A SECTOR HOLDS (0.7.58): the farms' crops,
+         * every sector's vans and the railway's rolling stock, each good's
+         * units summed over every sector's stock and pantry, at what one
+         * costs to bring in today - see NationalAccounts, EVERY OTHER GOOD A
+         * SECTOR HOLDS IS THE FIFTH TERM, for the month it read as -16,056.
+         */
+        double[] heldUnits = new double[NationalAccounts.HELD.length];
+        double[] heldPrices = new double[NationalAccounts.HELD.length];
+        for (int i = 0; i < NationalAccounts.HELD.length; i++) {
+            Good g = NationalAccounts.HELD[i];
+            for (Sector s : sectors.all()) heldUnits[i] += s.getStock(g) + s.getPantry(g);
+            heldPrices[i] = heldPrice(markets.get(g));
+        }
+
         double exports = 0, rawImports = 0;
         for (Sector s : sectors.all()) {
             exports += s.statement().exports;
@@ -1707,7 +1811,8 @@ public class EconomyManager {
                 luxuryUnits, luxuryPrice,
                 governmentServices,
                 foodImports, materialImports,
-                rawImports, exports);
+                rawImports, exports,
+                heldUnits, heldPrices);
 
         nationalAccounts.updateGovernment(
                 getBusinessTax(), getIndustrialTax(), salesTax, totalWageTax,
@@ -1723,9 +1828,25 @@ public class EconomyManager {
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
+        nationalAccounts.setFoodAssistance(foodAssistance);
         setMortgageInsuranceLines();
 
         GDP = nationalAccounts.getGdp();
+    }
+
+    /**
+     * What one unit of a held good is counted at (0.7.58): what one costs to
+     * bring in this month (GoodsMarket.landedPrice()) - the local price while
+     * somebody in the city has it on offer, the import price while nobody
+     * does - and the import price, then the local price, when that reads no
+     * price at all: a good with no market yet is counted at nothing.
+     */
+    static double heldPrice(GoodsMarket m) {
+        if (m == null) return 0;
+        double p = m.landedPrice();
+        if (!(p > 0) || !Double.isFinite(p)) p = m.importPrice();
+        if (!(p > 0) || !Double.isFinite(p)) p = m.getLocalPrice();
+        return p > 0 && Double.isFinite(p) ? p : 0;
     }
 
     /**
@@ -1750,6 +1871,7 @@ public class EconomyManager {
         nationalAccounts.setTransitLines(transitBill, transitFares);
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
+        nationalAccounts.setFoodAssistance(foodAssistance);
         setMortgageInsuranceLines();
     }
 
@@ -1795,10 +1917,20 @@ public class EconomyManager {
         nationalAccounts.restore(a[0], hasFoodValue ? a[13] : 0,
                 a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10],
                 hasUnits ? a[12] : 0, hasLuxury ? a[14] : 0, hasUnits);
+        /*
+         * SLOTS 15 ON ARE THE OTHER GOODS HELD (0.7.58), one each in
+         * NationalAccounts.HELD's order. A file without them - every file
+         * older than the term - leaves the baseline unknown, and the first
+         * month books no change in them rather than every fleet in the city.
+         */
+        int heldAt = 15, held = Math.min(NationalAccounts.HELD.length, a.length - heldAt);
+        // ...the three a 0.7.58-0.7.61 file carries, without FUEL's (0.7.62): see restoreHeld().
+        nationalAccounts.restoreHeld(held >= NationalAccounts.HELD_BEFORE_FUEL
+                ? java.util.Arrays.copyOfRange(a, heldAt, heldAt + held) : null);
     }
 
     public double[] getNationalAccountsState() {
-        return new double[] {
+        double[] base = new double[] {
             nationalAccounts.getGdp(),
             nationalAccounts.getLastFoodVolume(),
             nationalAccounts.getConsumptionGoods(),
@@ -1815,6 +1947,11 @@ public class EconomyManager {
             nationalAccounts.getLastFoodVolume(),    // slot 13 - see restoreNationalAccounts()
             nationalAccounts.getLastLuxuryUnits()     // slot 14 - and the same note
         };
+        // ...and slots 15 on, the other goods held (0.7.58), in HELD's order.
+        double[] held = nationalAccounts.getLastHeldUnits();
+        double[] out = java.util.Arrays.copyOf(base, base.length + held.length);
+        System.arraycopy(held, 0, out, base.length, held.length);
+        return out;
     }
 
     double[] governmentMonthToSave()          { return nationalAccounts.governmentToSave(); }
@@ -1846,12 +1983,12 @@ public class EconomyManager {
     public double getIronLocalPrice() { return markets.get(Good.IRON).getLocalPrice(); }
 
     /** Every warehouse and shelf of food in the city, in KILOGRAMS across the thirteen. */
-    public int getFoodUnitsHeld() {
+    public long getFoodUnitsHeld() {
         double kg = 0;
         for (Sector s : sectors.all()) {
             for (Good fg : ham.citybuildersim.sectors.Retail.SHELF) kg += s.getStock(fg) + s.getPantry(fg);
         }
-        return (int) Math.floor(kg);
+        return (long) Math.floor(kg);
     }
 
     /* ===================================================================
@@ -1983,6 +2120,13 @@ public class EconomyManager {
         totalHealthPremiums *= scale;  studentLoanInterest *= scale;
         centralBankRemittance *= scale;  centralBankInterest *= scale;
         fundTransfer *= scale;
+        foodAssistance *= scale;
+        // ...and the month's transit wages and fares (B6, 0.7.47): the next
+        // month bills the households last month's fares (Game.startOfMonthUpdate,
+        // households.setTransitFares()), and in the old unit a reform by a
+        // thousand billed every working row a thousand times its ride.
+        transitBill *= scale;
+        transitFares *= scale;
         exchangeRate *= scale;
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;

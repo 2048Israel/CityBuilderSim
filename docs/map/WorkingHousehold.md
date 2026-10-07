@@ -1,6 +1,6 @@
 # WorkingHousehold.java - 50 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/WorkingHousehold.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorkingHousehold.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
 
 > A household with an earner in it, at one pay tier.
 > 
@@ -17,7 +17,7 @@
 
 **Uses:** [PayTier](PayTier.md) (3), [Household](Household.md) (1), [FamilyStructure](FamilyStructure.md) (1)
 
-**Used by (4):** [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [PeopleScreen](PeopleScreen.md)
+**Used by (5):** [DenominationCheck](DenominationCheck.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [PeopleScreen](PeopleScreen.md)
 
 ## Fields (state)
 

@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
 import java.util.function.IntConsumer;
 import java.util.function.ToDoubleFunction;
 
@@ -17,13 +18,27 @@ public class ServicesManager {
     // utilities labor - kept split so the utilities report can attribute
     // payroll to electricity or water rather than showing one lump
     private final double[] utilityWages = new double[11];
-    private final int[] electricityJobs = new int[11];
-    private final int[] waterJobs = new int[11];
+    private final long[] electricityJobs = new long[11];
+    private final long[] waterJobs = new long[11];
 
     public ServicesManager(BuildingManager buildingManager) {
         this.buildingManager = buildingManager;
         utilitiesHandler = new UtilitiesHandler();
         infrastructureManager = new InfrastructureManager();
+    }
+
+    /**
+     * Where the fresh water limit comes from (0.7.59, batch J2): the city's
+     * land and rights, read each time the services update - Game hands in
+     * Game.getFreshCap() - so every path that updates them (the month, the
+     * load, the engine) reads today's land. Null, as a bare fixture leaves
+     * it, is no limit: the handler's infinite cap. See UtilitiesHandler,
+     * THE FRESH WATER LIMIT.
+     */
+    private DoubleSupplier freshCapSource;
+
+    public void setFreshCapSource(DoubleSupplier source) {
+        this.freshCapSource = source;
     }
 
     // ===============================
@@ -59,6 +74,18 @@ public class ServicesManager {
                 BuildingType.WATER,
                 utilitiesHandler::setWaterProduction,
                 BuildingsTemplate::getProduction1);
+
+        // ...kept apart by what each draws (0.7.59): the fresh plants, held
+        // to the city's fresh water, and the desalination plants, which the
+        // limit does not reach. Beside the total above, which stays the sum
+        // it always was - an uncapped city's water is the old formula to the bit.
+        utilitiesHandler.setWaterSources(
+                buildingManager.getTotalByCategoryDouble(BuildingType.WATER,
+                        t -> t.isSeaWater() ? 0 : t.getProduction1()),
+                buildingManager.getTotalByCategoryDouble(BuildingType.WATER,
+                        t -> t.isSeaWater() ? t.getProduction1() : 0));
+        utilitiesHandler.setFreshCap(freshCapSource == null
+                ? Double.POSITIVE_INFINITY : freshCapSource.getAsDouble());
 
         // every building standing draws water, whatever its category - the
         // mirror of the electricity draw above
@@ -265,7 +292,7 @@ public class ServicesManager {
     }
 
     /** The people's water draw. Buildings are picked up from the templates. */
-    public void setPopulation(int population) {
+    public void setPopulation(long population) {
         utilitiesHandler.setPopulation(population);
     }
     
@@ -321,7 +348,7 @@ public class ServicesManager {
         System.arraycopy(source, 0, target, 0, Math.min(source.length, target.length));
     }
 
-    private void copyArray(int[] source, int[] target) {
+    private void copyArray(long[] source, long[] target) {
         System.arraycopy(source, 0, target, 0, Math.min(source.length, target.length));
     }
 

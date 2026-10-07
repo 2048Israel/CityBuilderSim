@@ -22,7 +22,7 @@ public class SaveHeader {
 
     /* Field names must match DataSave exactly - see above. */
     private int month;
-    private int population;
+    private long population;
     private double cash;
 
     private String slotName;
@@ -34,7 +34,7 @@ public class SaveHeader {
     private String cityName;
 
     public int getMonth()          { return month; }
-    public int getPopulation()     { return population; }
+    public long getPopulation()    { return population; }
     public double getCash()        { return cash; }
     public String getSlotName()    { return slotName; }
     public String getGameVersion() { return gameVersion; }

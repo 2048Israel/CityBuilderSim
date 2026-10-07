@@ -479,7 +479,7 @@ public class CreditCheck {
         ih.setEnergyRatio(1);
         ih.setWaterRatio(1);
         ih.updateJobFillRate(new double[11]);
-        ih.updateWages(new double[11], new int[11]);
+        ih.updateWages(new double[11], new long[11]);
         ih.setInterestExpense(interest);
         // Struck, then banked - see BooksCheck for why they are two calls now.
         ih.strike();
@@ -1039,7 +1039,7 @@ public class CreditCheck {
 
         int loansBefore = ledger.getLoanCount(sector), interimCountBefore = ledger.getInterimCount(sector);
         double principalBefore = ledger.getPrincipal(sector), interimBefore = ledger.getInterimPrincipal(sector);
-        int shopsBefore = banned.getBuildingManager().getTotalStoreCoverage();
+        long shopsBefore = banned.getBuildingManager().getTotalStoreCoverage();
         int company = Equity.indexOf(sector);
         double raisedBefore = banned.getEquity().getLifetimeRaisedHome(company)
                 + banned.getEquity().getLifetimeRaisedAbroad(company);
@@ -1784,7 +1784,8 @@ public class CreditCheck {
         assertTrue("...and still past the line after it, nobody lent them the rest: the whole sector went to the backstop (round 5)",
                 BusinessDebtManager.INTERIM_PAST_LINE.equals(credit.getInterimRefusal(X)) && credit.wasRestructuredThisMonth(X)
                         && credit.getInterimLentThisMonth(X) == 0);
-        assertTrue("...and the month's money audit closes", r1 != null && Math.abs(r1.residual) < .01);
+        assertTrue("...and the month's money audit closes",
+                r1 != null && Math.abs(r1.residual) < MoneyAudit.tolerance(r1.moved()));
 
         // Under water: an overdraft past everything it owns - twice its plant
         // since round 4. Once its assets were a thousand under nothing at the
@@ -1814,7 +1815,8 @@ public class CreditCheck {
                 credit.wasRestructuredThisMonth(UW) && credit.getPrincipal(UW) < 1e-6);
         assertTrue("...forgives the overdraft and bans it",
                 g.getEconomyManager().getOverdraftForgivenThisMonth(UW) > 0 && credit.isBorrowingBlocked(UW));
-        assertTrue("...and that month's audit closes too", r2 != null && Math.abs(r2.residual) < .01);
+        assertTrue("...and that month's audit closes too",
+                r2 != null && Math.abs(r2.residual) < MoneyAudit.tolerance(r2.moved()));
 
         /*
          * THE PROJECT LOAN'S FEE (0.7.12, round 5; Jerus: "gross a project

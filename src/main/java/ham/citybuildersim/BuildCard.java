@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * One build card's figures, for every one of the 73 buildings (0.7.25): what
+ * One build card's figures, for every one of the 76 buildings (0.7.25): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for
@@ -205,15 +205,16 @@ public final class BuildCard {
        THE MARKET'S GROUPS
 
        On a market page the cards sit under their owning sector, so Industry
-       has seven groups and Shops two, and the bars and tags compare within a
+       has nine groups and Shops two, and the bars and tags compare within a
        group: a steel mill against a steel mill, not against a bakery. The
-       names are the design note's.
+       names are the design note's, and since 0.7.62 the wells' and the
+       refinery's ("Oil", "Refining") after the mines'.
        ===================================================================== */
 
     /** The market groups, in the order a page lays them out. */
     static final String[] GROUP_ORDER = {
             "Homes", "Groceries", "The bank's branches",
-            "Food mills", "Food processing", "Steel", "Fabrication & machinery", "Iron",
+            "Food mills", "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil", "Refining",
             "Building materials", "Builders",
             "Offices", "Farms", "Rail", "Vehicles", "Luxury shops", "Restaurants" };
 
@@ -239,6 +240,8 @@ public final class BuildCard {
                     case Sectors.HEAVY_INDUSTRY:  return "Steel";
                     case Sectors.MANUFACTURING:   return "Fabrication & machinery";
                     case Sectors.MINING:          return "Iron";
+                    case Sectors.OIL:             return "Oil";
+                    case Sectors.REFINING:        return "Refining";
                     case Sectors.MATERIALS:       return "Building materials";
                     case Sectors.CONSTRUCTION:    return "Builders";
                     default:                      return t.getSector();
@@ -463,9 +466,11 @@ public final class BuildCard {
                 verb = makerVerb(t); words = (good == null ? "" : goodWords(good)) + " a month";
                 figure = good == null ? 0 : t.makes(good);
                 va = valueAdded(game, t); unit = va;
-                if (t.getCategory() == BuildingType.MINING) {
+                Resource site = Game.siteOf(t);
+                if (site != null) {
+                    // ...the sites of its own resource (0.7.62): an Oil Well's oil, a mine's iron.
                     LandManager ground = game.getLandManager();
-                    detail = new double[] { ground.getIronDeposits(), game.minesCommitted(), ground.getIronReserveTonnes() };
+                    detail = new double[] { ground.getSites(site), game.committedOn(site), ground.getRemaining(site) };
                 }
         }
 
@@ -666,8 +671,14 @@ public final class BuildCard {
     /** The first gate a building fails for investors now. */
     public enum GateKind { DEPOSIT, LICENCE, STAFFING, LAND, LOSS }
 
+    /** The resource a deposit refusal names (0.7.62): "iron" for an Iron Mine (and for none), "oil" for an Oil Well. */
+    public static String depositWord(Resource r) {
+        return r == null || r == Resource.IRON ? "iron" : r.label().toLowerCase(java.util.Locale.ROOT);
+    }
+
     /**
-     * One gate: DEPOSIT {deposits the city owns, mines committed}; LICENCE
+     * One gate: DEPOSIT {deposits the city owns, mines committed} with the
+     * resource's word in `why` (depositWord()); LICENCE
      * {licences one needs, spare licences} with the licence; STAFFING with
      * the staffing test's own why; LAND {sq ft one needs, sq ft free}; LOSS
      * {what the estimate says it would lose a month}.
@@ -716,7 +727,9 @@ public final class BuildCard {
     static Gate gate(Game game, BuildingsTemplate t, Sector owner, double estimate) {
         LandManager ground = game.getLandManager();
         if (!game.hasDepositFor(t, 1)) {
-            return new Gate(GateKind.DEPOSIT, ground.getIronDeposits(), game.minesCommitted(), null, null);
+            // ...on its own resource's sites (0.7.62), named in `why`: "iron" or "oil".
+            Resource site = Game.siteOf(t);
+            return new Gate(GateKind.DEPOSIT, ground.getSites(site), game.committedOn(site), null, depositWord(site));
         }
         if (!game.hasLicencesFor(t, 1)) {
             JobType licence = t.getRequiresLicence();
@@ -880,19 +893,22 @@ public final class BuildCard {
        THE VERDICT ON AN ORDER
 
        What the quote line says under the stepper, in buildStack()'s order:
-       no deposit, nobody licensed, short of land, short of cash (the bill
+       no deposit, no coast (0.7.59), nobody licensed, short of land, short of cash (the bill
        and credit offers), or the wait at today's queue - so the two hard
        refusals are warned before the click, not discovered after it.
        ===================================================================== */
 
-    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS }
+    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST }
 
-    /** The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait. */
-    public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure) { }
+    /** The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). */
+    public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site) {
+        public Verdict(VerdictKind kind, Game.BuildQuote quote, double figure) { this(kind, quote, figure, null); }
+    }
 
     public static Verdict verdict(Game game, BuildingsTemplate t, int n) {
         Game.BuildQuote q = game.quoteBuild(t, n);
-        if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0);
+        if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
+        if (!game.hasCoastFor(t, n)) return new Verdict(VerdictKind.NO_COAST, q, 0);
         if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(t, n));
         if (q.landNeeded > q.landFree) return new Verdict(VerdictKind.NO_LAND, q, q.landNeeded - q.landFree);
         if (q.total > game.getCash()) return new Verdict(VerdictKind.BILL, q, q.total - game.getCash());

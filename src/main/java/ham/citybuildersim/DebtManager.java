@@ -17,7 +17,7 @@ import java.util.Locale;
  */
 public class DebtManager {
 
-    /** Where the player's change to the policy rate, the rule or the inflation target is written (DecisionLog, 0.7.23); null for one no city holds. Never saved: the city wires it. */
+    /** Where the player's change to the policy rate, the rule, the inflation target or how strictly the rule holds it is written (DecisionLog, 0.7.23); null for one no city holds. Never saved: the city wires it. */
     private transient DecisionLog decisions;
 
     /** Wires this to its city's decision log (Game.buildWorld()). */
@@ -137,7 +137,7 @@ public class DebtManager {
         }
     }
 
-    /** Where the rate sits when nobody is leaning on it either way. */
+    /** Where the rate sits when nobody is leaning on it either way, at the default 2% target: a one-point real rate (ruleRate() adds the target's distance from the default since 0.7.42 - its aim's, at a strict setting, since 0.7.52). */
     public static final double NEUTRAL_RATE = .03;
 
     /** Where the inflation target opens, and what a save from before the dial reads: two per cent, the constant it was until 0.7.4. */
@@ -151,7 +151,8 @@ public class DebtManager {
 
     /*
      * THE TARGET IS A DIAL (0.7.4). What the city is trying to hold inflation
-     * at, which the rule below aims at and the strip's colour reads. It was
+     * at, which the rule below aims at (or under, at a strict setting since
+     * 0.7.52 - HOW STRICT) and the strip's colour reads. It was
      * the constant INFLATION_TARGET, 2%. Jerus: "i want to have the dial not
      * target 0 inflation, set it so that you can choose what is your
      * inflation target." The player's, in half points from 0 to
@@ -162,7 +163,7 @@ public class DebtManager {
      */
     private double inflationTarget = DEFAULT_INFLATION_TARGET;
 
-    /** What the rule aims inflation at, a fraction a year. */
+    /** What the city holds inflation to, a fraction a year: the rule aims at it, or under it at a strict setting (Strictness.aim(), 0.7.52). */
     public double getInflationTarget() { return inflationTarget; }
 
     /** Sets the target, held between MIN_INFLATION_TARGET and MAX_INFLATION_TARGET; not a number leaves it where it was. */
@@ -183,7 +184,9 @@ public class DebtManager {
     }
 
     /**
-     * How hard the advised rate reacts to inflation missing its target.
+     * How hard the advised rate reacts to inflation missing its target, at
+     * Standard - since 0.7.52 the dial beside the target sets another,
+     * never as little as one (HOW STRICT, below).
      *
      * The Taylor principle: a coefficient greater than one, so a point of extra
      * inflation is met with MORE than a point of extra rate and the REAL rate
@@ -191,6 +194,121 @@ public class DebtManager {
      * money cheaper than it was and feeds the thing it was meant to stop.
      */
     public static final double TAYLOR_WEIGHT = 1.5;
+
+    /* -----------------------------------------------------------------------
+       HOW STRICT (0.7.52)
+
+       Jerus, 2026-10-06, rather than chasing the inflation ensemble's two
+       failing criteria: "just a very simple fix, aka beside the target
+       inflation, how strict, very strict then it trys to have it below the
+       target, very loose and the target is a suggestion". A dial of five
+       steps beside the target, and two numbers of the rule at each:
+
+       - the SLACK, where the rule starts to act, against the target. Under
+         nothing it is a strict bank's AIM under the target - the target
+         treated as a ceiling, and the rule struck exactly as it would be at
+         a target of the aim. Over nothing it is a loose bank's BAND either
+         side of the target: inside it the rule holds the neutral rate, and
+         past it it answers only the excess, so the rate never jumps at the
+         band's edge;
+       - the WEIGHT it answers the gap with: TAYLOR_WEIGHT at Standard, more
+         at Strict, less at Loose - never as little as one, so past its band
+         a point of inflation still makes money dearer and nothing spirals.
+
+       STANDARD IS THE RULE AS IT WAS, TO THE BIT: no slack and TAYLOR_WEIGHT,
+       and ruleRate() reduces to the 0.7.42 line operation for operation.
+       Trust is still judged against the target, not the aim (Expectations),
+       and the lean that forgives a miss is measured against what holding the
+       target takes - the Standard rule's advice, holdingRate() - so a loose
+       bank that does less than that loses trust as far as it falls short,
+       through the rule that was already there; a strict one can lean no more
+       than all the way. Saved by name (DataSave.policyStrictness); an older
+       save reads STANDARD. CentralBankCheck 21 holds it.
+       ----------------------------------------------------------------------- */
+
+    /** How far under the target the very strict bank aims, a fraction a year: Expectations.TOLERANCE, the furthest under it inflation can sit and still count as on target - so hitting the aim costs no trust. Never under MIN_INFLATION_TARGET (Strictness.aim()). */
+    public static final double STRICTEST_AIM = Expectations.TOLERANCE;
+
+    /** The band either side of the target the very loose bank lets be, a fraction a year: twice Expectations.TOLERANCE, so its outer point is a miss trust counts and the bank does not answer. */
+    public static final double LOOSEST_BAND = 2 * Expectations.TOLERANCE;
+
+    /** The very strict bank's weight on the gap from its aim: TAYLOR_WEIGHT's margin over one, doubled. */
+    public static final double STRICTEST_WEIGHT = 2.0;
+
+    /** The very loose bank's weight on the gap past its band: TAYLOR_WEIGHT's margin over one, halved - still over one (the Taylor principle). */
+    public static final double LOOSEST_WEIGHT = 1.25;
+
+    /** The five steps of the dial, loosest first; Strict and Loose sit halfway between Standard and their ends, in both numbers. */
+    public enum Strictness {
+        VERY_LOOSE("Very loose", LOOSEST_BAND, LOOSEST_WEIGHT),
+        LOOSE("Loose", LOOSEST_BAND / 2, (TAYLOR_WEIGHT + LOOSEST_WEIGHT) / 2),
+        STANDARD("Standard", 0, TAYLOR_WEIGHT),
+        STRICT("Strict", -STRICTEST_AIM / 2, (TAYLOR_WEIGHT + STRICTEST_WEIGHT) / 2),
+        VERY_STRICT("Very strict", -STRICTEST_AIM, STRICTEST_WEIGHT);
+
+        /** Its name on the dial. */
+        public final String words;
+        /** Where the rule starts to act, against the target, a fraction a year: under nothing a strict bank's aim under it, over nothing a loose bank's band either side of it. */
+        public final double slack;
+        /** The rule's weight on the gap it answers. */
+        public final double weight;
+
+        Strictness(String words, double slack, double weight) {
+            this.words = words;
+            this.slack = slack;
+            this.weight = weight;
+        }
+
+        /** What it aims inflation at under a target: the target, or under it by the slack - never under MIN_INFLATION_TARGET, because no central bank aims at falling prices. */
+        public double aim(double target) {
+            return slack < 0 ? Math.max(Math.min(target, MIN_INFLATION_TARGET), target + slack) : target;
+        }
+
+        /** How far either side of its aim it lets inflation be before it acts: nothing, or the slack. */
+        public double band() { return Math.max(slack, 0); }
+
+        /** The step at a place on the dial, 0 the loosest, held inside the ends. */
+        public static Strictness at(int step) {
+            Strictness[] all = values();
+            return all[Math.max(0, Math.min(all.length - 1, step))];
+        }
+
+        /** By its saved name: STANDARD for null or a name this build does not know. */
+        public static Strictness named(String name) {
+            for (Strictness s : values()) if (s.name().equals(name)) return s;
+            return STANDARD;
+        }
+    }
+
+    /** How strict the rule is: STANDARD until the player moves it. */
+    private Strictness strictness = Strictness.STANDARD;
+
+    public Strictness getStrictness() { return strictness; }
+
+    /** Sets how strict the rule is, applied at once like the target; null leaves it where it was. */
+    public void setStrictness(Strictness s) {
+        if (s == null) return;
+        if (s != strictness) decided(DecisionLog.CENTRAL_BANK, "Central bank strictness to " + s.words);
+        strictness = s;
+    }
+
+    /** What a bank this strict aims at under a target, in words: "aims at 2.0%", "aims under 2.0%, at 1.0%", "acts only past 3.0% (or under 1.0%)". */
+    public static String aimWords(double target, Strictness s) {
+        if (s.band() > 0) {
+            return "acts only past " + pct1(target + s.band()) + " (or under " + pct1(target - s.band()) + ")";
+        }
+        if (s.aim(target) < target) return "aims under " + pct1(target) + ", at " + pct1(s.aim(target));
+        return "aims at " + pct1(target);
+    }
+
+    /** ...at the city's target and strictness. */
+    public String aimWords() { return aimWords(inflationTarget, strictness); }
+
+    /** A rate to one place, with a true minus: "2.0%", "−1.0%". */
+    private static String pct1(double rate) {
+        double pct = rate * 100;
+        return (pct < -.05 ? "\u2212" : "") + String.format("%.1f%%", Math.abs(pct) < .05 ? 0 : Math.abs(pct));
+    }
 
     /**
      * What a rule would set, given this month's inflation, held inside the
@@ -210,7 +328,12 @@ public class DebtManager {
      * it.
      */
     public double advisedPolicyRate(double inflation) {
-        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, ruleRate(inflation)));
+        return advisedPolicyRate(inflation, strictness);
+    }
+
+    /** ...at a strictness of the caller's, at the city's target (0.7.52): the Policy tab's preview of the dial (PolicyPreview.ruleAt()) and holdingRate(). */
+    public double advisedPolicyRate(double inflation, Strictness s) {
+        return Math.max(MIN_POLICY_RATE, Math.min(MAX_POLICY_RATE, ruleRate(inflation, inflationTarget, s)));
     }
 
     /**
@@ -223,12 +346,18 @@ public class DebtManager {
      * tell which of the two was the limit. The screens print both when they
      * differ. The cap was Jerus's until the money supply gave the rate a
      * channel to work through, and lifted to 100% with it in 0.7.2 - so, at
-     * the default 2% target, the two now differ at the floor, when inflation
-     * runs under zero, and at the top only past 66.7% inflation. Both
-     * thresholds move with the target since 0.7.4, point for point.
+     * the default 2% target and Standard, the two now differ at the floor,
+     * when inflation runs under zero, and at the top only past 66.7%
+     * inflation. Both thresholds move with the target since 0.7.4, point for
+     * point, and with the strictness since 0.7.52.
      */
     public double ruleRate(double inflation) {
         return ruleRate(inflation, inflationTarget);
+    }
+
+    /** ...and what the Standard rule would set at it, held inside the dial's bounds: what holding the target takes, whatever the strictness - the advice Expectations measures the lean against (0.7.52, HOW STRICT). At Standard it is advisedPolicyRate(). */
+    public double holdingRate(double inflation) {
+        return advisedPolicyRate(inflation, Strictness.STANDARD);
     }
 
     /**
@@ -236,19 +365,52 @@ public class DebtManager {
      * dial's (0.7.4): the monetary page's sentence, "at 0% it would set
      * 10.5%", struck from the rule rather than restated by the screen. Moves
      * nothing.
+     *
+     * THE INTERCEPT MOVES WITH THE TARGET (0.7.42, the anchor). On target the
+     * rule sets the neutral REAL rate plus the target: NEUTRAL_RATE is the
+     * neutral nominal rate at DEFAULT_INFLATION_TARGET, a one-point real rate,
+     * so a 5% target is met on target at 6% and a 0% target at 1%. Until
+     * 0.7.42 the rule read NEUTRAL_RATE + TAYLOR_WEIGHT x (inflation - target)
+     * at every target, which at a 20% target sat at the 0% floor until
+     * inflation passed 18% - a target the rule could not aim at
+     * (inflation-research.md, point 4). At the default 2% target the two are
+     * the same to the bit: the target's own term is zero.
+     *
+     * At the city's strictness since 0.7.52 (HOW STRICT, above).
      */
     public double ruleRate(double inflation, double target) {
-        return NEUTRAL_RATE + TAYLOR_WEIGHT * (inflation - target);
+        return ruleRate(inflation, target, strictness);
     }
+
+    /**
+     * ...and at a strictness of the caller's (0.7.52): struck at the aim,
+     * as the rule is struck at a target, on the gap past the band, at the
+     * strictness's weight. At Strictness.STANDARD - no slack, TAYLOR_WEIGHT -
+     * it is the 0.7.42 line to the bit: the aim is the target plus nothing,
+     * the gap is the gap less nothing, and the sum is taken in the same
+     * order. A gap that is not a number stays not a number. Pure.
+     */
+    public static double ruleRate(double inflation, double target, Strictness s) {
+        double aim = s.aim(target);
+        double gap = inflation - aim;
+        double band = s.band();
+        double answered = Math.abs(gap) <= band ? 0 : gap - Math.copySign(band, gap);
+        return NEUTRAL_RATE + (aim - DEFAULT_INFLATION_TARGET) + s.weight * answered;
+    }
+
+    /** The neutral nominal rate at the city's target: the neutral real rate plus the target - what the Standard rule sets on target, at any strictness (0.7.45, for the screens; Expectations' lean is measured from it). Pure. */
+    public double neutralRate() { return ruleRate(inflationTarget, inflationTarget, Strictness.STANDARD); }
 
     /**
      * ...and why, in words, for the screen. Past either stop it names both
      * figures, the rule's and the dial's, because they are then not the same
-     * number and only one of them is the limit.
+     * number and only one of them is the limit. Off Standard (0.7.52) it
+     * says first what the strictness aims at (strictReason()).
      */
     public String adviceReason(double inflation) {
         double advised = advisedPolicyRate(inflation);
         String target = targetWords(inflationTarget);
+        if (strictness != Strictness.STANDARD) return strictReason(inflation, advised, target);
         if (Math.abs(inflation - inflationTarget) < .002) {
             return String.format("Inflation is %.1f%%, on its %s target. Hold at %.2f%%.",
                     inflation * 100, target, advised * 100);
@@ -269,6 +431,26 @@ public class DebtManager {
                 inflation * 100, target, says,
                 inflation > inflationTarget ? "meeting" : "giving back",
                 TAYLOR_WEIGHT);
+    }
+
+    /** adviceReason() off Standard (0.7.52): what this strictness aims at, and what the rule says against it. */
+    private String strictReason(double inflation, double advised, String target) {
+        double aim = strictness.aim(inflationTarget), band = strictness.band();
+        String bank = String.format("Inflation is %.1f%% against a %s target, and a %s bank %s", inflation * 100, target,
+                strictness.words.toLowerCase(Locale.ROOT), aimWords());
+        if (Math.abs(inflation - aim) <= Math.max(band, .002)) {
+            return String.format("%s: %s, so it holds %.2f%%.", bank,
+                    band > 0 ? "this is inside the band it lets be" : "this is on its aim", advised * 100);
+        }
+        double rule = ruleRate(inflation);
+        String says = rule > MAX_POLICY_RATE
+                ? String.format("the rule would set %.1f%%; the dial stops at %.0f%%", rule * 100, MAX_POLICY_RATE * 100)
+                : rule < MIN_POLICY_RATE
+                ? String.format("the rule would set %.1f%%; the dial stops at %.0f%%", rule * 100, MIN_POLICY_RATE * 100)
+                : String.format("the rule says %.2f%%", advised * 100);
+        return String.format("%s, so %s - %s a point of inflation %s by %s points of rate.", bank, says,
+                inflation > aim ? "meeting" : "giving back", band > 0 ? "past the band" : "off its aim",
+                java.math.BigDecimal.valueOf(strictness.weight).stripTrailingZeros().toPlainString());
     }
     private double currentRate = baseRate;
     private double GDP;

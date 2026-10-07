@@ -219,7 +219,7 @@ public class RobustnessCheck {
                 older.getPopulationManager().getWorkforce() > 0);
         assertEquals("...to half the population, which is the documented fallback",
                 older.getPopulationManager().getWorkforce(),
-                (int) (older.getPopulationManager().getPopulation() * .5));
+                (long) (older.getPopulationManager().getPopulation() * .5));
 
         // A statement rebuilt rather than restored is allowed to differ from
         // the one the old save was taken with - that is the bug those saves
@@ -343,7 +343,8 @@ public class RobustnessCheck {
         // Not started here - GameLog replaces System.out process-wide, and a
         // test that redirects the streams it is printing its own results to is
         // a test that cannot report a failure. What CAN be checked is the file
-        // layout it will use and that its helpers never throw.
+        // layout it will use and that its helpers never throw - and since
+        // 0.7.50 the file past its cap, on a sink of the check's own (below).
         assertEquals("the log lives beside the saves",
                 logFiles.getDirectory().resolve(GameLog.LOG_FILE).getParent(),
                 logFiles.getDirectory());
@@ -358,6 +359,54 @@ public class RobustnessCheck {
         GameLog.note("if these three lines are the last thing in a log, "
                 + "RobustnessCheck wrote them");
         System.out.printf("%-58s %s%n", "logging helpers survive a null cause", "OK");
+
+        /*
+         * PAST THE CAP (0.7.50). Jerus's game froze after its log had reached
+         * the cap, throwing on every frame, and the file showed none of it. A
+         * sink over memory behind a 100-byte cap: ordinary output stops there,
+         * and a failure still goes in - once for its first lines - until
+         * GameLog.FAILURE_BYTES more have gone in.
+         */
+        java.nio.charset.Charset utf8 = java.nio.charset.StandardCharsets.UTF_8;
+        java.io.ByteArrayOutputStream file = new java.io.ByteArrayOutputStream();
+        GameLog.Sink sink = new GameLog.Sink(file, GameLog.FAILURE_BYTES);
+        java.io.PrintStream tee = new java.io.PrintStream(new GameLog.TeeStream(
+                java.io.OutputStream.nullOutputStream(), sink, 100), true, utf8);
+        tee.print("x".repeat(150));
+        int atCap = file.size();
+        tee.println("ordinary output past the cap");
+        String said = file.toString(utf8);
+        assertTrue("fixture: 150 bytes behind a 100-byte cap reach it", sink.capped() && atCap > 150);
+        assertTrue("past the cap, ordinary output is not written", file.size() == atCap);
+        assertTrue("...and the file says where it stopped, once", said.contains("log size limit reached")
+                && said.indexOf("log size limit reached") == said.lastIndexOf("log size limit reached"));
+
+        String context = "Uncaught exception on thread \"JavaFX Application Thread\"";
+        RuntimeException[] frames = new RuntimeException[10_000];
+        for (int k = 0; k < frames.length; k++) frames[k] = new IndexOutOfBoundsException("Index -1 out of bounds for length 2");
+        int beforeFailures = file.size(), wentIn = 0;
+        for (RuntimeException e : frames) {
+            if (sink.failure(GameLog.firstLines(context, e), GameLog.entry("00:03:02", context, e))) wentIn++;
+        }
+        assertEquals("a failure thrown on each of 10,000 frames goes in once", wentIn, 1);
+        assertEquals("...whole, as failure() prints it", file.size() - beforeFailures,
+                GameLog.entry("00:03:02", context, frames[0]).getBytes(utf8).length);
+        RuntimeException other = new IllegalStateException("a different failure");
+        assertTrue("a different failure past the cap goes in as well",
+                sink.failure(GameLog.firstLines(context, other), GameLog.entry("00:03:03", context, other)));
+
+        int distinct = 0;
+        while (distinct < 100_000 && sink.failure(GameLog.firstLines(context, new IllegalStateException("number " + distinct)),
+                GameLog.entry("00:03:04", context, new IllegalStateException("number " + distinct)))) distinct++;
+        String all = file.toString(utf8);
+        int usedUp = all.indexOf("are used up");
+        assertTrue("fixture: distinct failures fill the room: " + distinct + " of them", distinct > 10 && usedUp > 0);
+        assertTrue("...and no more than GameLog.FAILURE_BYTES of failures go in past the cap",
+                all.substring(atCap, all.lastIndexOf('\n', usedUp)).getBytes(utf8).length <= GameLog.FAILURE_BYTES);
+        int closed = file.size();
+        sink.failure(GameLog.firstLines(context, new IllegalStateException("after")), "after");
+        tee.println("nor ordinary output");
+        assertTrue("...after which the file takes nothing more", file.size() == closed);
 
         cleanUp(root);
         cleanUp(logRoot);

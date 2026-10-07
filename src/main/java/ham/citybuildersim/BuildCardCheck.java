@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The build card (0.7.25): BuildCard's figures for all 73 buildings held to
+ * The build card (0.7.25): BuildCard's figures for all 76 buildings held to
  * the model's own reads - the quote, the land, the staffing tests, the
  * markets, the investors' words and their gates - in a played city.
  *
@@ -228,12 +228,14 @@ public class BuildCardCheck {
                 marketTwice == 0 && market.size() + city.size() == catalogue);
         assertTrue("...and every card and group has a name", named);
         assertTrue("every card has a unit above zero, or reads \"adds nothing\"", units);
-        // The market's groups are the design note's: Industry seven, Shops two.
+        // The market's groups are the design note's: Industry seven, Shops two - Industry nine since 0.7.62, the
+        // wells' and the refinery's after the mines'.
         List<String> industry = new ArrayList<>(), shops = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
-        assertTrue("Industry is seven groups by owning sector: " + industry, industry.equals(List.of("Food mills",
-                "Food processing", "Steel", "Fabrication & machinery", "Iron", "Building materials", "Builders")));
+        assertTrue("Industry is nine groups by owning sector: " + industry, industry.equals(List.of("Food mills",
+                "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil", "Refining", "Building materials",
+                "Builders")));
         assertTrue("Shops is the groceries and the bank's branches: " + shops,
                 shops.equals(List.of("Groceries", "The bank's branches")));
     }
@@ -636,9 +638,9 @@ public class BuildCardCheck {
             { "Built 1 House on an insured mortgage - 73 households need a door a child is allowed in", BuildCard.WordKind.BUILDING },
             { "Sold 3 Fabrication Shop - six months of losses (plot back to the city for $1,200)", BuildCard.WordKind.SELLING },
             { "Sold 1 Diner to the city by compulsory purchase, for $40,000", BuildCard.WordKind.SELLING },
-            { "Holding: no land - needs 480,000 sq ft, 324,000 free", BuildCard.WordKind.LAND },
+            { "Holding: no land - needs 0.0446 km², 0.0301 km² free", BuildCard.WordKind.LAND },
             { "Holding: the city is short of homes - ground is worth more to live on", BuildCard.WordKind.LAND },
-            { "Could not build Machine Works - needs 600,000 sq ft, 324,000 free", BuildCard.WordKind.LAND },
+            { "Could not build Machine Works - needs 0.0557 km², 0.0301 km² free", BuildCard.WordKind.LAND },
             { "Holding: the city could staff 78% of a Machine Works; it wants 80%", BuildCard.WordKind.STAFF },
             { "Holding: no one could staff an Engineering Office's engineering posts", BuildCard.WordKind.STAFF },
             { "Holding: the city could staff 38% of a Commercial Bank; it wants 80%", BuildCard.WordKind.STAFF },
@@ -648,6 +650,9 @@ public class BuildCardCheck {
             { "Holding: no deposit to dig", BuildCard.WordKind.ORE },
             { "Holding: no spare local ore to smelt", BuildCard.WordKind.ORE },
             { "Holding: the ore is worked out", BuildCard.WordKind.ORE },
+            // ...and the wells' (0.7.62).
+            { "Holding: no oil deposit to drill", BuildCard.WordKind.ORE },
+            { "Holding: every oil deposit is worked out", BuildCard.WordKind.ORE },
             { "Holding: nothing here fabricates steel, and the world will not sell a beam at any price", BuildCard.WordKind.SUPPLY },
             { "Holding: the city fabricates 900 tonnes a month; the smallest plant would want more than the 300 one plant may take", BuildCard.WordKind.SUPPLY },
             { "Holding: borrowing ban, 12 more months - Steel Foundry would need credit", BuildCard.WordKind.CREDIT },
@@ -666,6 +671,7 @@ public class BuildCardCheck {
             { "Holding: haulage at 31% of the lorry rate does not pay for track", BuildCard.WordKind.MONEY },
             { "Holding: rent does not cover a new Studio Apartments", BuildCard.WordKind.MONEY },
             { "Holding: a Meat Works would not clear its own costs at the price", BuildCard.WordKind.MONEY },
+            { "Holding: fuel at today's price would not clear a refinery's cost", BuildCard.WordKind.MONEY },
             { "Holding: the ground under a Mixed Farm costs $12,000 and a bad year would leave $3,000 a month on it", BuildCard.WordKind.MONEY },
             { "Holding: the wage bill is above what the world pays for the work", BuildCard.WordKind.MONEY },
             { "Holding: another branch's customers would pay $1.2k a month in fees against the $3.4k a branch costs", BuildCard.WordKind.MONEY },
@@ -679,6 +685,9 @@ public class BuildCardCheck {
             { "Holding: 2,388 customers at 1 branch - a branch serves 16,000, so there are none for another", BuildCard.WordKind.ENOUGH },
             { "Holding: nothing crosses the city boundary to carry", BuildCard.WordKind.ENOUGH },
             { "Holding: 900 tonnes a month go by lorry; the smallest line wants 40,000 to be worth laying", BuildCard.WordKind.ENOUGH },
+            // ...and the refinery's two (0.7.62).
+            { "Holding: the city's fuel is covered already, and its wells have no crude to spare", BuildCard.WordKind.ENOUGH },
+            { "Holding: 1,234,567 L of fuel and 4,321 t of crude to spare: none for another refinery", BuildCard.WordKind.ENOUGH },
             { "", BuildCard.WordKind.NONE },
             { "Holding: nobody to build it", BuildCard.WordKind.OTHER } };
 
@@ -890,7 +899,7 @@ public class BuildCardCheck {
         }
         assertTrue("a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%", networks);
         assertTrue("...the road's, on STRAINED and FREE_FLOW", roads);
-        assertTrue("...a school's seats, on who would come over them - and a crowd off the list but over its seats is amber", crowds);
+        assertTrue("...a school's seats, on who would come and be hired over them - and a crowd off the list but over its seats is amber", crowds);
         assertTrue("...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it", covers);
         assertTrue("...and every word is the verdict's: enough only green and at 100% or more, short under 100%, tight from it", words);
 

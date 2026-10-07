@@ -1,6 +1,6 @@
-# RailCheck.java - 581 lines · 8 methods · 0 constants · harnesses
+# RailCheck.java - 627 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RailCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > The railway: what it charges, who pays it, and what it does to the band.
 > 
@@ -32,7 +32,9 @@
 > 
 > See claude/transport-and-the-freight-band.md and sectors.Rail.
 
-**Uses:** [Traffic](Traffic.md) (15), [Good](Good.md) (14), [Rail](Rail.md) (12), [Markets](Markets.md) (8), [Game](Game.md) (6), [Sectors](Sectors.md) (6), [Sector](Sector.md) (5), [GoodsMarket](GoodsMarket.md) (4), [BuildingManager](BuildingManager.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SectorState](SectorState.md) (2), [Founding](Founding.md) (1), [Statement](Statement.md) (1)
+**Uses:** [Good](Good.md) (16), [Traffic](Traffic.md) (15), [Rail](Rail.md) (13), [Markets](Markets.md) (8), [Sectors](Sectors.md) (7), [Game](Game.md) (6), [Sector](Sector.md) (6), [GoodsMarket](GoodsMarket.md) (4), [BuildingManager](BuildingManager.md) (3), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SectorState](SectorState.md) (2), [Founding](Founding.md) (1), [Statement](Statement.md) (1)
+
+**Used by (1):** [GdpCheck](GdpCheck.md)
 
 ## Sections
 
@@ -42,7 +44,8 @@
 | 108 | · 2. THE TWO HALVES ADD UP |
 | 174 | · 3. THE LAND, THE ROAD AND THE CATALOGUE |
 | 244 | · 4. THE SECTOR, IN A CITY |
-| 473 | · 5. AND IT SURVIVES A RELOAD |
+| 478 | · 5. AND IT SURVIVES A RELOAD |
+| 544 | · 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46) |
 
 ## Fields (state)
 
@@ -54,13 +57,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 546 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
+| 36 | 592 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
 | 40 | 7 | `static void quietly(Runnable r)` |  |
 | 48 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 53 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 59 | 3 | `static boolean same(double a, double b)` | Bitwise, not near. |
 | 63 | 3 | `static boolean near(double a, double b, double tol)` |  |
-| 67 | 478 | `public static void main(String[] args)` |  |
-| 555 | 4 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
-| 565 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
+| 67 | 513 | `public static void main(String[] args)` |  |
+| 590 | 15 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
+| 611 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
 

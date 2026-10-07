@@ -154,8 +154,8 @@ public class InvestCheck {
         hb.addStack(template(housed, "Bakery"), 30, true);
         hb.addStack(template(housed, "Construction Depot"), 10, true);
         month(housed);
-        int jobs = housed.getPopulationManager().getTotalJobs();
-        int beds = housed.getHouseholdCapacity();
+        long jobs = housed.getPopulationManager().getTotalJobs();
+        long beds = housed.getHouseholdCapacity();
         System.out.printf("   %,d jobs could carry %,.0f people; %,d beds%n", jobs, jobs * 2.25, beds);
         assertTrue("fixture: the jobs now outrun the beds", jobs * 2.25 > beds * 1.05);
 
@@ -183,8 +183,29 @@ public class InvestCheck {
                 d.template != null && d.template.getCategory() == BuildingType.RESIDENTIAL);
         System.out.println("   " + d.reason + " -> " + (d.template == null ? "none" : d.template.getName()));
 
+        /*
+         * ...AND THE HOLD'S WORD GROUPS ITS THOUSANDS (B4, 0.7.47): a city of
+         * its own with the same jobs and beds for far more people, so the
+         * landlords hold over more than a thousand posts. Until 0.7.47 it read
+         * "(1785 now, 0 coming)" beside "homes for 1,234".
+         */
+        Game held = city(root, "held");
+        BuildingManager heldBuildings = held.getBuildingManager();
+        heldBuildings.addStack(template(held, "House"), 1_000, true);
+        heldBuildings.addStack(template(held, "Bakery"), 30, true);
+        heldBuildings.addStack(template(held, "Construction Depot"), 10, true);
+        month(held);
+        BusinessInvestment plansHeld = new BusinessInvestment(heldBuildings, held.getEconomyManager());
+        plansHeld.setLandAvailable(1e12, 0);
+        long heldJobs = held.getPopulationManager().getTotalJobs() + heldBuildings.getPostsWithheld();
+        BusinessInvestment.Decision hold = held.getSectors().realEstate().plan(plansHeld, held);
+        System.out.println("   " + hold.reason);
+        assertTrue("fixture: the landlords hold with a thousand posts or more", !hold.build && heldJobs >= 1_000
+                && hold.reason.startsWith("housing ahead of jobs"));
+        assertTrue("the hold's word groups its thousands", hold.reason.contains(String.format("(%,d now, ", heldJobs)));
+
         /* ==================== 4. retail ==================== */
-        System.out.println("\n--- retail: customers against coverage ---");
+        System.out.println("\n--- retail: baskets wanted against what the shops hand over ---");
 
         ham.citybuildersim.sectors.Retail shops = housed.getSectors().retail();
         BusinessInvestment plansHoused = new BusinessInvestment(hb, housed.getEconomyManager());
@@ -209,10 +230,38 @@ public class InvestCheck {
         assertTrue("fixture: the city could staff a convenience store",
                 shops.staffing(template(housed, "Convenience Store")).passes());
 
-        // Two convenience stores cover 960 people. Told there are 1,500...
+        /*
+         * BASKETS AGAINST WHAT THE SHOPS CAN HAND OVER (0.7.43; spec-inflation
+         * .md 4.3, a premise the design changes). The planner forecast PEOPLE
+         * against coverage until 0.7.43 and was told the people
+         * (setPopulation()); it forecasts the households' baskets wanted at
+         * the shelf's floor against coverage times the operating rate now. So
+         * the fixture causes both: the shops staffed and their throttles open,
+         * so two stores hand over their 960, and fifteen hundred households
+         * who want a basket each and could pay for a hundred - one cell, held
+         * by hand, as RestaurantsCheck's bench holds its couple. This city is
+         * never played again, so nothing but the planners reads them.
+         */
+        double[] shopPosts = new double[11];
+        java.util.Arrays.fill(shopPosts, 1.0);
+        shops.updateJobFillRate(shopPosts);
+        shops.updateWages(housed.getEconomyManager().getWageRates(), shops.postsPerTier());
+        shops.setEnergyRatio(1);
+        shops.setWaterRatio(1);
+        shops.setRoadRatio(1);
+        shops.setHealthRatio(1);
+        Household queue = housed.getHouseholdBalance().cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
+        queue.households = 1500;
+        queue.need = 1;
+        queue.foodMoney = 100 * shops.getFloorPrice();
+        System.out.printf("   the shops hand over %.0f a store at a rate of %.3f; %.0f baskets wanted at the floor%n",
+                template(housed, "Convenience Store").getCoverage() * shops.getOperatingRate(),
+                shops.getOperatingRate(), housed.getHouseholdBalance().groceriesWanted(shops.getFloorPrice()));
+
+        // Two convenience stores hand over 960 baskets. Fifteen hundred wanted...
         shops.setPopulation(1500);
         d = shops.plan(plansHoused, housed);
-        assertTrue("customers ahead of coverage -> build", d.build);
+        assertTrue("baskets wanted ahead of what the shops hand over -> build", d.build);
         assertTrue("...picked a commercial building",
                 d.template != null && d.template.getCategory() == BuildingType.COMMERCIAL);
         System.out.println("   " + d.reason + " -> " + (d.template == null ? "none" : d.template.getName()));
@@ -220,7 +269,7 @@ public class InvestCheck {
         // ...and with thirty more stores, nobody is short of a shop.
         hb.addStack(template(housed, "Convenience Store"), 30, true);
         d = shops.plan(plansHoused, housed);
-        assertTrue("coverage ahead of demand -> hold", !d.build);
+        assertTrue("what the shops hand over ahead of what is wanted -> hold", !d.build);
         hb.retire(template(housed, "Convenience Store"), 30);
 
         /* ==================== 5. industry ==================== */
@@ -284,6 +333,29 @@ public class InvestCheck {
         assertTrue("...picked an industrial building",
                 d.template != null && d.template.getCategory() == BuildingType.INDUSTRIAL);
         System.out.println("   " + d.reason + " -> " + (d.template == null ? "none" : d.template.getName()));
+
+        /*
+         * THE FORECAST IS THE DEMAND GROWN BY growthFactor() (0.7.51): one
+         * line, which the city's build advice reads too (BuildAdvice.opening()).
+         * A planner whose city has grown by a twentieth of its homes a month
+         * for half a year, with room for more, forecasts the demand times
+         * growthFactor() over its plant's wait and PLANNING_HORIZON - the
+         * figure its reason prints.
+         */
+        BusinessInvestment grows = new BusinessInvestment(mb, milling.getEconomyManager());
+        grows.setLandAvailable(1e12, 0);
+        double homes = grows.reachablePopulation();
+        for (int i = 0; i < 6; i++) grows.recordMonth((int) Math.round(homes * (.5 + .05 * i)));
+        BusinessInvestment.Decision ahead = mills.plan(grows, milling);
+        double wait = ahead.template == null ? 0
+                : grows.leadTime(ahead.template, 1, milling.getBuildingOutputAtEveryPost());
+        double factor = grows.growthFactor(wait + BusinessInvestment.PLANNING_HORIZON);
+        String forecast = String.format("%,.0f ", grows.forecast(mills, food) * factor);
+        System.out.printf("   homes for %,.0f, a trend of %,.1f a month: growthFactor(%.1f + %.0f) = %.4f%n", homes,
+                grows.getPopulationGrowth(), wait, BusinessInvestment.PLANNING_HORIZON, factor);
+        assertTrue("fixture: a rising city with room to grow builds, its factor over 1", ahead.build && factor > 1);
+        assertTrue("...its forecast is the demand times growthFactor(the wait + PLANNING_HORIZON): " + ahead.reason,
+                ahead.reason.startsWith(forecast));
 
         /* ==================== 6. THE BRAKE ==================== */
         System.out.println("\n--- a project must service its own debt ---");
@@ -451,7 +523,7 @@ public class InvestCheck {
         System.out.println("\n--- construction: revenue follows the work ---");
 
         ham.citybuildersim.sectors.Construction chh = new ham.citybuildersim.sectors.Construction();
-        chh.updateWages(new double[11], new int[11]);   // no payroll, isolate revenue
+        chh.updateWages(new double[11], new long[11]);   // no payroll, isolate revenue
 
         // A $3,600 job worth 1,200 points, delivered 300 points a month. The
         // revenue lands in the month's ledger and is struck from there. What
@@ -513,7 +585,7 @@ public class InvestCheck {
 
         ham.citybuildersim.sectors.Construction busy = new ham.citybuildersim.sectors.Construction();
         double[] w = new double[11]; w[0] = .800;
-        int[] j = new int[11];       j[0] = 100;
+        long[] j = new long[11];       j[0] = 100;
         double[] filled = new double[11];
         java.util.Arrays.fill(filled, 1.0);
 

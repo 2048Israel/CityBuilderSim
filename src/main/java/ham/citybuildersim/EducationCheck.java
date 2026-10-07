@@ -167,9 +167,9 @@ public class EducationCheck {
         }
 
         PopulationManager bp = bare.getPopulationManager();
-        int doctorPosts = bp.getJobs()[JobType.UNIV_DOCTOR.ordinal()];
+        long doctorPosts = bp.getJobs()[JobType.UNIV_DOCTOR.ordinal()];
         double licensed = bp.getLicensed(JobType.UNIV_DOCTOR);
-        int unfilled = bp.getJobVacancy()[JobType.UNIV_DOCTOR.ordinal()];
+        long unfilled = bp.getJobVacancy()[JobType.UNIV_DOCTOR.ordinal()];
         double graduates = bp.workforceByBand()[WageBand.UNIVERSITY.ordinal()];
 
         System.out.printf("   %,d doctor posts, %,.0f licensed, %,d unfilled,"
@@ -202,7 +202,7 @@ public class EducationCheck {
 
         PopulationManager tp = taught.getPopulationManager();
         double taughtLicensed = tp.getLicensed(JobType.UNIV_DOCTOR);
-        int taughtUnfilled = tp.getJobVacancy()[JobType.UNIV_DOCTOR.ordinal()];
+        long taughtUnfilled = tp.getJobVacancy()[JobType.UNIV_DOCTOR.ordinal()];
 
         System.out.printf("   %,.0f licensed, %,d unfilled%n", taughtLicensed, taughtUnfilled);
 
@@ -297,6 +297,28 @@ public class EducationCheck {
                     held <= bands[band.ordinal()] + 1);
         }
 
+        /* ============ 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) ============
+
+           Section 5's movement nets to nothing by design, and History recorded
+           its sum - so the Graduates series read zero in every city, however
+           many it taught. It records the gains now, the sum everGraduated
+           accrues: the people who gained a qualification this month, at every
+           level. One more month of the taught city, after section 6 has read it.
+           ================================================================= */
+        System.out.println("\n--- the month's graduates, gross ---");
+        double[] everAtTop = ed.getEverGraduated().clone();
+        quietly(() -> taught.simulateMonths(1));
+        double[] everAfter = ed.getEverGraduated();
+        double accrued = 0;
+        for (int b = 0; b < everAfter.length; b++) accrued += everAfter[b] - everAtTop[b];
+        double[] recorded = taught.getHistorySave().aligned("graduates");
+        System.out.printf("   gained %.4f, everGraduated gained %.4f, History recorded %.2f%n",
+                ed.gainedThisMonth(), accrued, recorded[recorded.length - 1]);
+        assertTrue("fixture: somebody gained a qualification this month", accrued > 1);
+        assertTrue("the month's graduates are what everGraduated gained",
+                Math.abs(ed.gainedThisMonth() - accrued) <= 1e-9 * accrued
+                        && Math.abs(recorded[recorded.length - 1] - accrued) <= .005 + 1e-9 * accrued);
+
         /* ============ 7. THE PIPELINE IS ITS NARROWEST STAGE ============ */
         System.out.println("\n--- the basic ladder is only as wide as its bottleneck ---");
 
@@ -359,6 +381,16 @@ public class EducationCheck {
         readBack.restore(pe.getState());
         assertTrue("not saved: a city read back from its state has no month's diplomas yet",
                 Double.isNaN(readBack.getNewDiplomas()));
+        /*
+         * ...SO THE BUILD ADVICE READS THEM OFF SAVED STATE (0.7.51):
+         * schoolLeavers() is advanceMonth()'s arithmetic (diplomas()) on the
+         * teens, the ladder's coverage and the wages the city ended the
+         * month on - the month's own figure, to the bit, without the month.
+         */
+        double offState = pe.schoolLeavers(pinched.getCohorts(), pinched.getLabourMarket());
+        System.out.printf("   schoolLeavers() %s, getNewDiplomas() %s%n", offState, leavers);
+        assertTrue("the leavers off saved state, schoolLeavers(), are the month's diplomas, getNewDiplomas(), to the bit",
+                Double.doubleToLongBits(offState) == Double.doubleToLongBits(leavers));
 
         /* ============ 8. THE SUBSIDY IS A REAL DIAL ============
 
@@ -830,14 +862,17 @@ public class EducationCheck {
         double wage = menu.getUnskilledWage();
         assertTrue("fixture: somebody is studying, and the wage is a wage", students > 10 && wage > 0);
 
-        double index = menu.getPriceIndex().getIndex();
+        // REWRITTEN FOR 0.7.42 (the anchor, spec-inflation.md 2.3): a FIXED
+        // grant is real against the EXPECTED price level, like every money
+        // constant, where it was real against the price index.
+        double index = menu.getExpectations().getExpectedLevel();
         assertTrue("a new city grants a fixed real amount, the grant that follows prices (0.7.19)",
                 dials.getGrantBasis() == TaxPolicy.GrantBasis.FIXED
                         && dials.getGrantAmount() == TaxPolicy.DEFAULT_FIXED_GRANT
                         && dials.getStudentGrantShare() == 0);
-        assertTrue("...and the bill is the students, the amount and the price index, bit for bit",
+        assertTrue("...and the bill is the students, the amount and the expected price level, bit for bit",
                 menu.studentGrantBill() == students * TaxPolicy.DEFAULT_FIXED_GRANT * index);
-        assertTrue("fixture: prices here have moved off founding, so the index is a factor and not a one",
+        assertTrue("fixture: prices here are expected off founding, so the level is a factor and not a one",
                 Math.abs(index - 1) > 1e-6);
         // ...and at founding prices it is the old default's bill at the
         // founding wage: a young city whose basket is not based yet (the
@@ -869,12 +904,13 @@ public class EducationCheck {
         // prices are.
         dials.setGrant(TaxPolicy.GrantBasis.FIXED, .4);
         double fixedStudents = menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
-        double fixedIndex = menu.getPriceIndex().getIndex();
+        // ...at the expected level the month opens on (0.7.42; the price index from 0.7.19).
+        double fixedIndex = menu.getExpectations().getExpectedLevel();
         quietly(() -> menu.simulateMonths(1));
-        assertTrue("a fixed grant pays the amount at the price index per student",
+        assertTrue("a fixed grant pays the amount at the expected price level per student",
                 mm.getStudentGrants() == fixedStudents * .4 * fixedIndex
                         && Math.abs(menu.grantPerStudentUnder(TaxPolicy.GrantBasis.FIXED, .4)
-                                - .4 * menu.getPriceIndex().getIndex()) < 1e-12);
+                                - .4 * menu.getExpectations().getExpectedLevel()) < 1e-12);
         StudentHousehold paidStudents = menu.getHouseholdBalance().students();
         assertTrue("...and it reaches the students as their income",
                 paidStudents.households() > 0
@@ -944,9 +980,20 @@ public class EducationCheck {
                 Math.abs(bodyAtTwo - 2 * bodyAtOne) < 1e-9);
         // ...and the month strikes its bill from exactly that figure, before
         // the education step moves the body on.
+        // REWRITTEN FOR 0.7.42 (the anchor): the tuition table is a money
+        // constant, struck at the expected price level at the TOP of every
+        // month (Game.restrikeMoneyConstants()), so the press re-strikes it
+        // from the level the figure above was read at to the level the last
+        // month ended on before it strikes the bill - the figure times the
+        // level's step, to the rounding of the two strikes. It was the figure.
+        double levelBefore = menu.getExpectations().getExpectedLevel();
+        double struckBefore = menu.getExpectations().getStruckLevel();
         quietly(() -> menu.simulateMonths(1));
-        assertTrue("...so the bill the month struck was half of the scaled tuition",
-                mm.getStudentGrants() == .5 * bodyAtTwo);
+        assertTrue("fixture: the expected level stood a step past the table's, so the press re-struck it",
+                levelBefore > struckBefore);
+        double restruck = .5 * bodyAtTwo * levelBefore / struckBefore;
+        assertTrue("...so the bill the month struck was half of the scaled tuition, re-struck at the month's level",
+                Math.abs(mm.getStudentGrants() - restruck) <= 1e-12 * restruck);
         dials.setTuitionScale(TaxPolicy.DEFAULT_TUITION_SCALE);
         dials.setStudentGrantShare(TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE);
         assertTrue("the wage share puts the old founding basis back",
@@ -1095,7 +1142,8 @@ public class EducationCheck {
                         && journalLine(lender, "Lent to students, net of repayments")
                            == lender.getStudentLoansRepaid() - lender.getStudentLoansLent());
         assertTrue("...and the month passed the audit with the interest in it",
-                lender.getLastMoneyAudit() != null && Math.abs(lender.getLastMoneyAudit().residual) < .01);
+                lender.getLastMoneyAudit() != null && Math.abs(lender.getLastMoneyAudit().residual)
+                        < MoneyAudit.tolerance(lender.getLastMoneyAudit().moved()));
         assertTrue("...and the ledger was told the city's rate", lb.getStudentLoanRate() == .05);
 
         /* ============ 15. THE PRICE OF A PLACE ============

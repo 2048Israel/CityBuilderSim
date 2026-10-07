@@ -2,7 +2,8 @@ package ham.citybuildersim;
 
 /**
  * The households' car market: the second-hand pass, then the showroom, with
- * the road told what is parked on it.
+ * the road told what is parked on it - and since 0.7.49 the drivers' fuel and
+ * a buyer who weighs a car's full cost against the fare.
  *
  * ==================== THE HOUSEHOLDS BUY CARS (2026-09-16) ====================
  *
@@ -61,6 +62,127 @@ public final class Motoring {
 
     /** The second-hand market's month: offered, traded, what it cost and what a lender found. */
     private double usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice;
+
+    /* ==================== THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) ====================
+     *
+     * A CAR COST NOTHING TO RUN until now: no fuel, upkeep or insurance
+     * anywhere in the household model. A commute by car burns fuel, the
+     * only running cost modelled - a car's wear is CAR_LIFE_MONTHS, which runs
+     * by the calendar and not the mile, and its insurance is sunk. The fuel
+     * is real money: struck at advanceDemographics() 6d as the drivers' month
+     * (InfrastructureManager.getDrivers()) times a month of journeys at a
+     * journey's price, paid by the rows that drive out of the fee waterfall
+     * (HouseholdAccounts.setCommute()) and imported, like the railway's.
+     *
+     * AND THE HOUSEHOLD WITHOUT A CAR WEIGHS A MONTH'S PASS AGAINST A CAR'S
+     * FULL MONTHLY COST - its payment over its life at the household rate,
+     * and its fuel. Jerus: "acquiring car costs 500 a month and transit is
+     * 250 then they take transit". The share who would rather ride
+     * (InfrastructureManager.transitChosen()) scales how far good transit
+     * lowers the ceiling on ownership (HouseholdBalance.TRANSIT_DETERRENT):
+     * above half a car's cost the fare deters fewer buyers, at twice it
+     * nobody. New and used cars alike, since the ceiling feeds both passes.
+     */
+
+    /**
+     * What a journey to work by car burns, in world money: $2.00, fifteen
+     * kilometres at eight litres a hundred and about $1.65 a litre. Priced at
+     * the exchange rate like the railway's fuel, and the only running cost.
+     * A car's wear is its CAR_LIFE_MONTHS, which runs by the calendar, not the
+     * mile, and its insurance is sunk.
+     */
+    public static final double CAR_FUEL_PER_JOURNEY = .002;
+
+    /**
+     * ...and the litres in it (0.7.62): fifteen kilometres at eight litres a
+     * hundred, the same journey. CAR_FUEL_PER_JOURNEY over this is FUEL's
+     * import price, so a city with no refinery pays what it always paid a
+     * journey, at the world's price level.
+     */
+    public static final double LITRES_PER_JOURNEY = 1.2;
+
+    /** The month's fuel: the drivers' journeys at a journey's price, today's money. Struck at 6d. */
+    private double fuelBill;
+
+    /* ==================== THE FUEL IS DRAWN (0.7.62, batch K) ====================
+     *
+     * The drivers' litres - a month of journeys at LITRES_PER_JOURNEY - are
+     * taken at 6d off the refiners' shelf at the market's price, and the rest
+     * imported (Markets.draw(), as the households' cars are), so the bill is
+     * what was actually charged: the shelf's part a sale on Refining's
+     * statement, already in the audit as its SalesToHouseholds, and the
+     * world's part the households' only import of fuel (fuelImports, the
+     * audit's FuelFunded and FuelImports). With no refinery all of it is
+     * imported at the world's price level, as every good is.
+     */
+    private double fuelImports, fuelLitres;
+
+    /** The households' share who would rather ride than buy: 1 until a month is struck, and 1 at the default fare in the research cities. For the screens. */
+    private double prefersTransit = 1;
+
+    /** ...and the ceiling on ownership the month's buyers met, cars per household (1 until a month is struck). */
+    private double ownershipCeiling = 1;
+
+    /** Sets the month's fuel bill with every litre of it imported: what the fuel was before a refinery could sell any, and a save from before 0.7.62. */
+    public void setFuelBill(double v) {
+        fuelBill = Double.isFinite(v) ? Math.max(0, v) : 0;
+        fuelImports = fuelBill;
+        fuelLitres = 0;
+    }
+    public double getFuelBill()       { return fuelBill; }
+
+    /** ...the part of it bought from the world (0.7.62): all of it with no refinery. */
+    public double getFuelImports()    { return fuelImports; }
+
+    /** ...and the litres the drivers burned (0.7.62); 0 for a month struck by setFuelBill(). */
+    public double getFuelLitres()     { return fuelLitres; }
+
+    /** The month's fuel as 6d struck it, put back by a load (0.7.62): the bill, its imported part and the litres. */
+    public void restoreFuel(double bill, double imports, double litres) {
+        fuelBill = Double.isFinite(bill) ? Math.max(0, bill) : 0;
+        fuelImports = Double.isFinite(imports) ? Math.max(0, Math.min(fuelBill, imports)) : fuelBill;
+        fuelLitres = Double.isFinite(litres) ? Math.max(0, litres) : 0;
+    }
+
+    /**
+     * What a journey's fuel costs today, in today's money (0.7.62): its
+     * litres at what a litre costs to bring in (GoodsMarket.landedPrice()) -
+     * the refiners' price while the city has fuel on offer, the import price
+     * while it has none. What the owners weigh a ride against
+     * (InfrastructureManager.setCommute()); CAR_FUEL_PER_JOURNEY at the
+     * world's price level with no refinery.
+     */
+    public static double journeyFuel(Markets markets) {
+        double litre = markets == null ? Double.NaN : markets.get(Good.FUEL).landedPrice();
+        return Double.isFinite(litre) && litre > 0 ? litre * LITRES_PER_JOURNEY : 0;
+    }
+
+    /**
+     * The drivers' month of fuel, drawn (6d, 0.7.62): `journeys` at
+     * LITRES_PER_JOURNEY off the refiners' shelf and the rest from the world,
+     * at what the draw came to. See THE FUEL IS DRAWN.
+     */
+    void drawFuel(Game game, double journeys) {
+        double litres = Double.isFinite(journeys) ? Math.max(0, journeys) * LITRES_PER_JOURNEY : 0;
+        Markets.Draw took = game.getMarkets().draw(Good.FUEL, null, Trade.HOUSEHOLDS, litres, game.getSectors());
+        fuelLitres = took.units();
+        fuelBill = took.cost();
+        fuelImports = took.importCost();
+    }
+    public double getPrefersTransit() { return prefersTransit; }
+    public double getOwnershipCeiling() { return ownershipCeiling; }
+
+    /**
+     * A car's monthly payment over its life (CAR_LIFE_MONTHS) at an annual
+     * rate: the annuity P i / (1 - (1 + i)^-n), i the rate over twelve; the
+     * price over the months at no rate.
+     */
+    public static double carPayment(double price, double annualRate) {
+        if (!(price > 0)) return 0;
+        double i = Math.max(0, annualRate) / 12, n = HouseholdBalance.CAR_LIFE_MONTHS;
+        if (i < 1e-12) return price / n;
+        return price * i / (1 - Math.pow(1 + i, -n));
+    }
 
     /** Cars the households bought this month. */
     public double getHouseholdCarsBought() { return householdCarsBought; }
@@ -127,9 +249,20 @@ public final class Motoring {
          * fleet decay to that ceiling as cars wear out. See
          * HouseholdBalance.TRANSIT_DETERRENT. Transit's effect on the decision
          * to DRIVE, with a car already bought, is a different mechanism and
-         * lives on the network - see InfrastructureManager.willingToRide().
+         * lives on the network - see InfrastructureManager, WHO RIDES, BY WHAT
+         * THEY PAY.
+         *
+         * ...SCALED BY WHO WOULD RATHER RIDE (0.7.49): a car's full monthly
+         * cost - the showroom's price over its life at the household rate,
+         * and a month of fuel - against a month's pass. See THE FUEL, AND THE
+         * BUYER WEIGHS THE FARE.
          */
-        double ceiling = 1 - HouseholdBalance.TRANSIT_DETERRENT * roads.getTransitCover();
+        double fullCost = carPayment(asking, bank.householdRate(game.getDebtManager().getPolicyRate()))
+                + TaxPolicy.JOURNEYS_A_MONTH * roads.getFuelPerJourney();
+        double pass = game.getEconomyManager().getTaxPolicy().monthlyFare();
+        prefersTransit = InfrastructureManager.transitChosen(fullCost, pass);
+        double ceiling = 1 - HouseholdBalance.TRANSIT_DETERRENT * roads.getTransitCover() * prefersTransit;
+        ownershipCeiling = ceiling;
 
         /*
          * THE SECOND-HAND MARKET FIRST, and the order is the whole point.

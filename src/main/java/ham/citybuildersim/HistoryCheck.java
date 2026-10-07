@@ -29,6 +29,11 @@ import java.util.Map;
  *
  * The third is the interesting one, because it is the only bug here that
  * produces a graph that looks completely fine.
+ *
+ * And since 0.7.55, a fourth (section 6): past HistorySave.MONTHLY_KEPT months
+ * the oldest years fold a year to an entry, each series by its rule, and
+ * every reader has to read a folded year as a year - a fold that summed a
+ * level, or a chart that drew a year's flow as one month's, looks fine too.
  */
 public class HistoryCheck {
 
@@ -186,9 +191,12 @@ public class HistoryCheck {
             sectors++;
             double lastIncome = income.get(income.size() - 1).doubleValue();
             double lastStaff = staff.get(staff.size() - 1).doubleValue();
-            // Kept to the cent of a thousand, as every money series is.
+            // Kept to the cent of a thousand, as every money series is: the
+            // money read to the half cent, or past ten billion units a part
+            // in a trillion of it (MoneyAudit.tolerance(), 0.7.54).
             assertTrue("  ...its last month's net income is SectorBooks' for that month",
-                    Math.abs(lastIncome - books.get(s).netIncome()) <= .005 + 1e-9);
+                    Math.abs(lastIncome - books.get(s).netIncome())
+                            <= MoneyAudit.tolerance(.005 + 1e-9, books.get(s).netIncome()));
             assertTrue("  ...and its last month's workers are the sector's posts filled",
                     Math.abs(lastStaff - s.getWorkers()) <= .005 + 1e-9);
             if (lastIncome != 0) anyEarned = true;
@@ -281,7 +289,8 @@ public class HistoryCheck {
         assertTrue("...its bankDepositRate is what savers were paid",
                 Math.abs(h.aligned("bankDepositRate")[last] - lender.depositRate()) <= 5e-5 + 1e-12);
         assertTrue("...and its bankFees is the month's fee income, to the cent",
-                Math.abs(h.aligned("bankFees")[last] - lender.feeIncome()) <= .005 + 1e-9);
+                Math.abs(h.aligned("bankFees")[last] - lender.feeIncome())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.feeIncome()));
         double[] dials = h.aligned("policyRate"), primes = h.aligned("bankPrime");
         boolean primeOverDial = true, anyFee = false;
         for (int i = 0; i < h.months(); i++) {
@@ -316,11 +325,14 @@ public class HistoryCheck {
         assertTrue("...its bankCapitalTarget is the target the bank chose",
                 Math.abs(h.aligned("bankCapitalTarget")[last] - lender.capitalTarget()) <= 5e-5 + 1e-12);
         assertTrue("...its bankAllowance is what it has set aside, to the cent",
-                Math.abs(h.aligned("bankAllowance")[last] - lender.getAllowance()) <= .005 + 1e-9);
+                Math.abs(h.aligned("bankAllowance")[last] - lender.getAllowance())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.getAllowance()));
         assertTrue("...its bankProvisions is the month's provision, to the cent",
-                Math.abs(h.aligned("bankProvisions")[last] - lender.provisions()) <= .005 + 1e-9);
+                Math.abs(h.aligned("bankProvisions")[last] - lender.provisions())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.provisions()));
         assertTrue("...its bankDividends is what it paid its owners, to the cent",
-                Math.abs(h.aligned("bankDividends")[last] - lender.getDividendsPaid()) <= .005 + 1e-9);
+                Math.abs(h.aligned("bankDividends")[last] - lender.getDividendsPaid())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.getDividendsPaid()));
         assertTrue("...and its bankReturnOnEquity is the month's return, a year, clamped at ten",
                 Math.abs(h.aligned("bankReturnOnEquity")[last]
                         - Math.max(-10, Math.min(10, lender.returnOnEquity()))) <= 5e-5 + 1e-12);
@@ -332,6 +344,89 @@ public class HistoryCheck {
         }
         assertTrue("fixture: the founding bank has lived through no bad year", lender.getWorstLossRate() <= Bank.CONSERVATION_BUFFER);
         assertTrue("...so it targets the minimum and the conservation buffer in every month", young);
+        /*
+         * ...AND THE OTHER MEASURE (A7, 0.7.46): the leverage ratio - which
+         * can bind where the clamped capital ratio reads ten - and the target
+         * the bank holds on it, every month, at the getters' own figures.
+         */
+        assertTrue("fixture: the bank has something on its sheet, so its leverage ratio is a figure",
+                lender.exposure() > 0 && lender.leverageRatio() < 10);
+        // ...and the outbreak the year book names an epidemic on (A8, 0.7.46), as Health reads it.
+        assertTrue("the outbreak series is Health's outbreak, 0 between them, every month",
+                h.monthsRecorded("outbreak") == h.months()
+                        && Math.abs(h.aligned("outbreak")[last] - city.getHealth().getOutbreakSeverity()) <= 5e-5 + 1e-12);
+        assertTrue("the leverage ratio and its target are recorded every month as the bank reads them",
+                h.monthsRecorded("bankLeverageRatio") == h.months() && h.monthsRecorded("bankLeverageTarget") == h.months()
+                        && Math.abs(h.aligned("bankLeverageRatio")[last] - Math.min(10, lender.leverageRatio())) <= 5e-5 + 1e-12
+                        && Math.abs(h.aligned("bankLeverageTarget")[last] - lender.leverageTarget()) <= 5e-5 + 1e-12);
+
+        /* ============ 2f. the month's graduates (A6, 0.7.46) ============
+
+           The series recorded the movement between education bands, whose
+           +1s and -1s net to nothing, so it read zero in every city. It is
+           the month's gains now (Education.gainedThisMonth()), which can never
+           be negative. CAUSED: a funded town of EducationCheck's with every
+           basic stage built, whose high schools hand out diplomas within a
+           few months.
+           ================================================================= */
+        System.out.println("\n--- the month's graduates are the people who gained a qualification ---");
+        Game[] schooledBox = new Game[1];
+        quietly(() -> {
+            schooledBox[0] = EducationCheck.city(null);
+            EducationCheck.build(schooledBox[0], "Elementary School", 2);
+            EducationCheck.build(schooledBox[0], "Middle School", 2);
+            EducationCheck.build(schooledBox[0], "High School", 2);
+            schooledBox[0].simulateMonths(12);
+        });
+        Game schooled = schooledBox[0];
+        double[] graduated = schooled.getHistorySave().aligned("graduates");
+        boolean neverNegative = true;
+        for (double v : graduated) if (v < 0) neverNegative = false;
+        assertTrue("fixture: the town's high schools handed out diplomas this month",
+                schooled.getEducation().getNewDiplomas() > 0);
+        assertTrue("the graduates series is never negative", neverNegative);
+        assertTrue("...and its last month is what the schools gained, to the history's rounding",
+                Math.abs(graduated[graduated.length - 1] - schooled.getEducation().gainedThisMonth()) <= .005 + 1e-9
+                        && graduated[graduated.length - 1] > 0);
+
+        /* ============ 2g. a consolidated company's price (C5, 0.7.48) ============
+
+           A company's price is recorded per founding share, continuous through
+           every split, and a consolidated company's is far under a
+           ten-thousandth - which four decimal places recorded as 0, a share
+           price of nothing, and its volatility (the warrants' value) read off
+           those noughts. CAUSED, in the schooled town above (its history is
+           read by nothing after): one share sold to the world at about a
+           millionth of the founding price - a figure of ten digits - and the
+           step's consolidation run on it; then the month recorded.
+           ================================================================= */
+        System.out.println("\n--- a consolidated company's price is recorded, not rounded to nothing ---");
+        Exchange cx = schooled.getExchange();
+        Equity cr = schooled.getEquity();
+        int consolidated = -1;
+        Household seller = null;
+        for (int c = 0; c < Equity.COMPANIES.length && consolidated < 0; c++) {
+            if (!(cr.getShares(c) > 0) || !(cx.fair(c) > Exchange.MIN_FAIR)) continue;
+            for (Household cell : schooled.getHouseholdBalance().cells()) {
+                if (cell.households() > 0 && cell.shares[c] * cell.households() >= 1) { seller = cell; consolidated = c; break; }
+            }
+        }
+        assertTrue("fixture: a listed company a household holds a share of", consolidated >= 0);
+        double tiny = 1.234567891e-6 * cr.foundingPrice();
+        cx.bookOf(consolidated).withdrawAll();
+        cx.tradeForCheck(consolidated, Exchange.CELL + seller.key(), OrderBook.Side.SELL, tiny, 1);
+        cx.tradeForCheck(consolidated, Exchange.WORLD, OrderBook.Side.BUY, tiny, 1);
+        cx.splitForCheck();
+        double perFounding = cx.pricePerFoundingShare(consolidated);
+        assertTrue("fixture: it consolidated, and four places would record its price as nothing",
+                cx.getSplit(consolidated) < 1 && perFounding > 0 && Math.round(perFounding * 10000.0) == 0);
+        schooled.getHistorySave().recordMonth(schooled);
+        double[] pricesKept = schooled.getHistorySave().aligned(HistorySave.priceKey(Equity.COMPANIES[consolidated]));
+        double kept = pricesKept[pricesKept.length - 1];
+        System.out.printf("  %s: %.9g a founding share, recorded as %.9g%n", Equity.COMPANIES[consolidated], perFounding, kept);
+        assertTrue("a consolidated company's price is recorded, not rounded to nothing",
+                kept > 0 && Math.abs(kept - perFounding) <= .5e-5 * perFounding
+                        && kept == HistorySave.roundSig(perFounding));
 
         /* ============ 3. A SHORT SERIES LINES UP WITH THE END ============
 
@@ -410,6 +505,35 @@ public class HistoryCheck {
             if (Double.isNaN(aligned[i])) tailIsReal = false;
         }
         assertTrue("...and the LAST four months carry the data", tailIsReal);
+
+        /* ============ 3a. a year of a flow (B7, 0.7.47) ============
+
+           Government's every "of GDP" reads a line's last twelve recorded
+           months once History has twelve of it (GovernmentScreen's
+           TRAILING_MONTHS, which the model build cannot see), where it read
+           the month x 12 and a busy month read as a year. So the twelve months
+           recentTotal() adds must be the twelve the accounts struck, in
+           order - and a series History began four months ago sums only its
+           four, which is why the tab waits for twelve.
+           ================================================================= */
+        System.out.println("\n--- twelve recorded months of a flow are its trailing year ---");
+        int year = 12;
+        double[] sick = grown.aligned("sickRate");
+        double four = 0;
+        for (int i = lived - recorded; i < lived; i++) four += sick[i];
+        assertTrue("a series recorded for four months sums its four, and has four, not a year",
+                grown.monthsRecorded("sickRate") == 4 && grown.recentTotal("sickRate", year) == four);
+        double[] struck = new double[year];
+        for (int m = 0; m < year; m++) {
+            quietly(() -> older.simulateMonths(1));
+            double v = older.getEconomyManager().getNationalAccounts().getTotalRevenue();
+            struck[m] = Math.round(v * 100.0) / 100.0;   // HistorySave's round2, which is private
+        }
+        double struckYear = 0;
+        for (double v : struck) struckYear += v;
+        HistorySave yearOn = older.getHistorySave();
+        assertTrue("fixture: a year of revenue, recorded", struckYear > 0 && yearOn.monthsRecorded("revenue") >= year);
+        assertTrue("twelve recorded months of a flow are its trailing year", yearOn.recentTotal("revenue", year) == struckYear);
 
         /* ============ 3b. a 0.7.6 history still loads (0.7.7) ============
 
@@ -501,9 +625,200 @@ public class HistoryCheck {
                     en.getValue().size() <= 1);
         }
 
+        folds(root);
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ============ 6. past five hundred years, a year to a point (0.7.55) ============
+     *
+     * Jerus: "at the 500y mark, past data starts converting to yearly
+     * figures, but always keep 500 recent years in monthly". A history grown
+     * by hand from month 1 (HistorySave.appendMonth(), the fold
+     * recordMonth() ends with) to MONTHLY_KEPT + 41 months - three whole
+     * years past the months kept and five months into a fourth - every
+     * series given a value its rule can be checked against: a flow a whole
+     * number, so its sums are exact; a level a whole number; a rate a
+     * quarter. And one company listed in month 7 (sharePrice:Late), a series
+     * that begins inside a year that will fold.
+     */
+    static void folds(Path root) throws Exception {
+        System.out.println("\n--- past five hundred years, a year to a point ---");
+
+        int kept = HistorySave.MONTHLY_KEPT, total = kept + 3 * 12 + 5;
+        java.util.Map<String, java.util.List<Double>> given = new java.util.LinkedHashMap<>();
+        HistorySave[] h = { new HistorySave() };
+        int firstFold = -1;
+        boolean keptEnough = true, neverTooMany = true;
+        for (int m = 1; m <= total; m++) {
+            if (m == 7) h[0] = withSeries(h[0], "sharePrice", "Late");
+            final int month = m;
+            h[0].appendMonth(m, name -> {
+                double v = value(name, month);
+                given.computeIfAbsent(name, k -> new java.util.ArrayList<>()).add(v);
+                return v;
+            });
+            int monthly = h[0].months() - h[0].yearlyPoints();
+            if (firstFold < 0 && h[0].yearlyPoints() > 0) firstFold = m;
+            if (m >= kept && monthly < kept) keptEnough = false;
+            if (monthly > kept + 11) neverTooMany = false;
+        }
+        HistorySave grown = h[0];
+        int years = (total - kept) / 12;
+        System.out.printf("  %,d months grown: %d folded years and %,d months on the axis%n", total,
+                grown.yearlyPoints(), grown.months() - grown.yearlyPoints());
+
+        // The fold: when, and how many.
+        close("the first year folds the month its last month leaves the newest MONTHLY_KEPT", firstFold, 12 + kept);
+        assertTrue("...so the months kept never fall under MONTHLY_KEPT", keptEnough);
+        assertTrue("...nor stand more than eleven over it - a year folds as soon as it can", neverTooMany);
+        close("every year wholly older than the months kept is folded, and no other", grown.yearlyPoints(), years);
+        close("...and the months it lived are every month grown", grown.monthsLived(), total);
+        boolean axisOk = true;
+        for (int y = 0; y < years; y++) {
+            axisOk &= grown.getMonth().get(y) == 12 * (y + 1) && grown.monthsIn(y) == 12;
+        }
+        for (int i = years; i < grown.months(); i++) axisOk &= grown.getMonth().get(i) == 12 * years + 1 + (i - years);
+        assertTrue("a folded year sits at its last month, holding twelve; every month after is a month", axisOk);
+
+        // Each series, exactly by its rule.
+        int checked = 0, wrong = 0, late = 0;
+        String firstWrong = null;
+        for (Map.Entry<String, List<? extends Number>> e : grown.seriesByName().entrySet()) {
+            String name = e.getKey();
+            List<Double> in = given.get(name);
+            if (in == null) continue;
+            double[] expect = expected(name, in, total - in.size() + 1, years);
+            List<? extends Number> got = e.getValue();
+            boolean same = got.size() == expect.length;
+            for (int i = 0; same && i < expect.length; i++) same = got.get(i).doubleValue() == expect[i];
+            checked++;
+            if (!same) { wrong++; if (firstWrong == null) firstWrong = name; }
+            if (in.size() < total) late++;
+        }
+        System.out.printf("  %d series checked, %d of them begun late; %d differ%s%n", checked, late, wrong,
+                firstWrong == null ? "" : " (first: " + firstWrong + ")");
+        assertTrue("every series folds exactly by its rule - a flow's months added, a level's last, a rate's averaged",
+                checked > 100 && wrong == 0);
+        assertTrue("...a series begun inside a folded year folds the months it has", late == 1
+                && grown.raw(HistorySave.priceKey("Late"))[0] == expected(HistorySave.priceKey("Late"),
+                        given.get(HistorySave.priceKey("Late")), 7, years)[0]);
+
+        // Totals of flows are kept, to the unit.
+        int flows = 0, lost = 0;
+        for (String name : grown.seriesByName().keySet()) {
+            if (YearBook.kindOf(name) != YearBook.Kind.FLOW || !given.containsKey(name)) continue;
+            double sum = 0;
+            for (double v : given.get(name)) sum += v;
+            flows++;
+            if (grown.total(name) != sum) lost++;
+        }
+        assertTrue(String.format("every flow's total over the run is the months' sum, exactly (%d flows)", flows),
+                flows > 40 && lost == 0);
+        double[] deathsRun = grown.runningTotal("deaths");
+        double allDeaths = 0;
+        for (double v : given.get("deaths")) allDeaths += v;
+        close("...and a running total ends on it", deathsRun[deathsRun.length - 1], allDeaths);
+
+        // The chart and the book read both parts.
+        double[] gdp = grown.aligned("gdp"), gdpRaw = grown.raw("gdp");
+        close("a folded year's flow reads a month at a time on the chart: its sum over its months",
+                gdp[1], gdpRaw[1] / 12);
+        close("...a level reads its year's end", grown.aligned("population")[1], given.get("population").get(23));
+        close("...a rate its year's average", grown.aligned("interestRate")[1], expected("interestRate",
+                given.get("interestRate"), 1, years)[1]);
+        close("a pointer by a folded year's point, at its year's end, reads that year",
+                ChartModel.nearest(grown.getMonth(), 22), 1);
+        double[] reach = ChartModel.reach(gdp, grown.getMonth(), 1, 12 * years + 24);
+        assertTrue("...and a window across the fold reaches both parts",
+                reach[0] <= Math.min(gdp[0], gdp[years]) && reach[1] >= Math.max(gdp[0], gdp[years + 23]));
+        close("twelve months back from a folded year is the year before it", grown.back(2, 12), 1);
+        close("...and from the first month after the fold, the last folded year", grown.back(years, 12), years - 1);
+        double[] rolling = YearBook.realGdpYear(grown);
+        boolean runsOn = true;
+        for (int i = 0; i < rolling.length; i++) runsOn &= !Double.isNaN(rolling[i]);
+        assertTrue("the rolling year of real output runs on across the fold, never blank", runsOn);
+        double[] real = YearBook.realGdp(grown);
+        close("...the first month after it the last folded year's eleven months at their average, and its own",
+                rolling[years], real[years - 1] * 11 + real[years]);
+        YearBook.Table book = YearBook.yearBook(grown, Currency.fromCityName("Arden")).table();
+        List<String> header = book.header(), second = book.rows().get(1);
+        int gdpCol = header.indexOf("gdp"), nCol = header.indexOf("n");
+        close("the year book's row for a folded year holds its twelve months", Double.parseDouble(second.get(nCol)), 12);
+        assertTrue("...and its gdp is the year's sum", second.get(gdpCol).equals(bookCell(gdpRaw[1])));
+        close("...and the book has a row a year: the folded ones and the months after", book.rows().size(),
+                (total + 11) / 12);
+
+        // A save gives it all back, and folds on the same way.
+        GameFiles files = new GameFiles(root.resolve("fold"), root.resolve("fold-no-legacy"));
+        assertTrue("the folded history saves", grown.saveHistory(files, 10).ok);
+        HistorySave back = new HistorySave();
+        back.restoreFrom(new com.google.gson.Gson().fromJson(Files.readString(files.historyFile(10)), HistorySave.class));
+        assertTrue("...and loads: the axis, its folded years and every series, as they were",
+                back.getMonth().equals(grown.getMonth()) && back.yearlyPoints() == grown.yearlyPoints()
+                        && back.seriesByName().equals(grown.seriesByName()));
+        for (int m = total + 1; m <= total + 12; m++) {
+            final int month = m;
+            grown.appendMonth(m, name -> value(name, month));
+            back.appendMonth(m, name -> value(name, month));
+        }
+        assertTrue("...and a year on, both have folded the next year alike",
+                back.yearlyPoints() == years + 1 && back.getMonth().equals(grown.getMonth())
+                        && back.seriesByName().equals(grown.seriesByName()));
+
+        HistorySave older = new com.google.gson.Gson().fromJson("{\"month\":[1,2,3],\"gdp\":[1.0,2.0,3.0]}", HistorySave.class);
+        assertTrue("a history from before 0.7.55 has no folded years: every entry a month",
+                older.yearlyPoints() == 0 && older.monthsIn(0) == 1 && older.monthsLived() == 3);
+    }
+
+    /** The value grown for a series in a month: a flow and a level whole numbers, a rate a quarter. */
+    static double value(String name, int month) {
+        int code = Math.floorMod(name.hashCode(), 97);
+        YearBook.Kind kind = YearBook.kindOf(name);
+        if (kind == YearBook.Kind.FLOW) return 1 + Math.floorMod(month * 7 + code, 13);
+        if (kind == YearBook.Kind.RATE) return (1 + Math.floorMod(month + code, 9)) * .25;
+        return 1000 + month + code;
+    }
+
+    /**
+     * What a series must hold after the fold, worked out here and not by the
+     * fold: its months from `from`, the first `years` calendar years folded
+     * by its rule - a flow added oldest first, a rate's months added and
+     * divided, a level's last - and the rest as given.
+     */
+    static double[] expected(String name, List<Double> in, int from, int years) {
+        List<Double> out = new java.util.ArrayList<>();
+        YearBook.Kind kind = YearBook.kindOf(name);
+        int i = 0;
+        for (int y = 1; y <= years; y++) {
+            double sum = 0, last = Double.NaN;
+            int n = 0;
+            for (; i < in.size() && from + i <= 12 * y; i++) { sum += in.get(i); last = in.get(i); n++; }
+            if (n == 0) continue;
+            out.add(kind == YearBook.Kind.FLOW ? sum : kind == YearBook.Kind.RATE ? sum / n : last);
+        }
+        for (; i < in.size(); i++) out.add(in.get(i));
+        double[] a = new double[out.size()];
+        for (int k = 0; k < a.length; k++) a[k] = out.get(k);
+        return a;
+    }
+
+    /** The year book's cell for a figure, as the book prints it: its own compact(), through a one-row history. */
+    static String bookCell(double v) {
+        HistorySave one = new com.google.gson.Gson().fromJson("{\"month\":[12],\"gdp\":[" + v + "]}", HistorySave.class);
+        YearBook.Table t = YearBook.yearBook(one, Currency.fromCityName("Arden")).table();
+        return t.rows().get(0).get(t.header().indexOf("gdp"));
+    }
+
+    /** A history with one more company's series, empty, so it begins with the next month appended. */
+    static HistorySave withSeries(HistorySave h, String map, String key) {
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(gson.toJson(h)).getAsJsonObject();
+        if (!json.has(map)) json.add(map, new com.google.gson.JsonObject());
+        json.getAsJsonObject(map).add(key, new com.google.gson.JsonArray());
+        return gson.fromJson(json, HistorySave.class);
     }
 
     /** Removes one "name": [ ... ] entry from the history JSON. */

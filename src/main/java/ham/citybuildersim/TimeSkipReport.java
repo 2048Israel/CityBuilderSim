@@ -45,9 +45,9 @@ public class TimeSkipReport {
 
         int month;
         double cash;
-        int population;
-        int housing;
-        int jobs;
+        long population;
+        long housing;
+        long jobs;
         double monthlyGdp;
         double annualGdp;
         double cityDebt;
@@ -102,7 +102,7 @@ public class TimeSkipReport {
 
     private double worstEnergyRatio = 1;
     private double worstRoadRatio = 1;
-    private int peakPopulation;
+    private long peakPopulation;
 
     public void beginSkip(int requested) {
         this.requested = requested;
@@ -138,7 +138,7 @@ public class TimeSkipReport {
      * verified at all.
      */
     public void snapshot(boolean atStart, int month, double cash,
-                         int population, int housing, int jobs,
+                         long population, long housing, long jobs,
                          double monthlyGdp, double annualGdp,
                          double cityDebt, double businessDebt,
                          double landOwnedBlocks, double landUtilisation,
@@ -185,7 +185,7 @@ public class TimeSkipReport {
      */
     public void sampleMonth(double energyRatio, double waterRatio,
                             double landAvailableSqFt, boolean householdsShort,
-                            boolean anythingUnderConstruction, int population) {
+                            boolean anythingUnderConstruction, long population) {
         sampleMonth(energyRatio, waterRatio, 1, landAvailableSqFt, householdsShort,
                 anythingUnderConstruction, population);
     }
@@ -193,7 +193,7 @@ public class TimeSkipReport {
     /** @param roadRatio what congestion let the city actually get done that month. */
     public void sampleMonth(double energyRatio, double waterRatio, double roadRatio,
                             double landAvailableSqFt, boolean householdsShort,
-                            boolean anythingUnderConstruction, int population) {
+                            boolean anythingUnderConstruction, long population) {
         sampleMonth(energyRatio, waterRatio, roadRatio, landAvailableSqFt,
                 householdsShort, anythingUnderConstruction, population, 1, false, 0);
     }
@@ -214,7 +214,7 @@ public class TimeSkipReport {
      */
     public void sampleMonth(double energyRatio, double waterRatio, double roadRatio,
                             double landAvailableSqFt, boolean householdsShort,
-                            boolean anythingUnderConstruction, int population,
+                            boolean anythingUnderConstruction, long population,
                             double workRatio, boolean outbreak, double unburied) {
 
         completed++;
@@ -310,8 +310,8 @@ public class TimeSkipReport {
 
     public double getStartCash()        { return (before != null) ? before.cash : 0; }
     public double getEndCash()          { return (after != null) ? after.cash : 0; }
-    public int getStartPopulation()     { return (before != null) ? before.population : 0; }
-    public int getEndPopulation()       { return (after != null) ? after.population : 0; }
+    public long getStartPopulation()     { return (before != null) ? before.population : 0; }
+    public long getEndPopulation()       { return (after != null) ? after.population : 0; }
     public double getEndLandUtilisation(){ return (after != null) ? after.landUtilisation : 0; }
     public double getEndSavingRate()    { return (after != null) ? after.householdSavingRate : 0; }
     public double getEndRentBurden()    { return (after != null) ? after.householdRentBurden : 0; }
@@ -438,7 +438,7 @@ public class TimeSkipReport {
     public int getMonthsHouseholdsShort()  { return monthsHouseholdsShort; }
     public int getMonthsNothingBuilt()     { return monthsNothingBuilt; }
     public double getWorstEnergyRatio()    { return worstEnergyRatio; }
-    public int getPeakPopulation()         { return peakPopulation; }
+    public long getPeakPopulation()         { return peakPopulation; }
 
     /** True when the city ended smaller than its high-water mark. */
     public boolean shrankFromPeak() {

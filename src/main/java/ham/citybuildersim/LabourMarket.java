@@ -17,11 +17,11 @@ package ham.citybuildersim;
  *
  * THE MODEL
  *
- *     base   = minimumWage x ratio[type]
+ *     base   = minimumWage x ratio[type] x costOfLiving
  *     tight  = posts / qualified workers
  *     target = base x clamp(tight ^ ELASTICITY, MIN_MULTIPLE, MAX_MULTIPLE)
  *     wage  += (target - wage) x ADJUST_RATE
- *     wage   = max(wage, minimumWage)
+ *     wage   = max(wage, cashMinimumWage())     // the floor in today's money, which isPinned() reads too (0.7.47)
  *
  * Four things in there are load-bearing and none of them is the exponent.
  *
@@ -286,7 +286,9 @@ public class LabourMarket {
      * economies get partial pass-through and a long lag.
      *
      * ALL of the price move now, reached over about two years - see
-     * COST_OF_LIVING_PASS_THROUGH and DRIFT_PER_MONTH below. It was a third,
+     * COST_OF_LIVING_PASS_THROUGH and DRIFT_PER_MONTH below, and since 0.7.42
+     * half of it from what people expect once the basket is based (HALF WHAT
+     * PEOPLE EXPECT, HALF THE CHASE, further down). It was a third,
      * reached over about a year and deliberately not full, so that a
      * devaluation cost something rather than being a unit change; the two
      * dials say why that compounded, and why it is the lag rather than a
@@ -340,6 +342,11 @@ public class LabourMarket {
      * before they recover, and short enough that a SUSTAINED inflation is
      * chased, which is what turns a shock into a spiral. That is the whole
      * mechanism: wages chasing last year's prices into this year's prices.
+     *
+     * The whole speed until the basket is based; after that the chase takes
+     * (1 - EXPECTED_SHARE) of it - a forty-eighth - and the rest of a wage's
+     * indexing is what people expect (0.7.42, HALF WHAT PEOPLE EXPECT, HALF
+     * THE CHASE). The lag in steady inflation is still two years.
      */
     public static final double DRIFT_PER_MONTH = 1.0 / 24;
 
@@ -359,6 +366,48 @@ public class LabourMarket {
         if (priceIndex <= 0) return;
         livingTarget = 1 + (priceIndex - 1) * COST_OF_LIVING_PASS_THROUGH;
         costOfLiving += (livingTarget - costOfLiving) * DRIFT_PER_MONTH;
+    }
+
+    /* ----------------- HALF WHAT PEOPLE EXPECT, HALF THE CHASE (0.7.42) -----------------
+
+       Once the basket is based a wage is indexed two ways at once, half each:
+       to what people EXPECT prices to do this month (Expectations), and to
+       the chase above, a forty-eighth of the gap a month instead of a
+       twenty-fourth. The recurrence, with omega = EXPECTED_SHARE:
+
+           C <- C x (1 + expected a month)^omega x (target / C)^((1 - omega) / 24)
+
+       NEVER BOTH IN FULL. In steady inflation, expected equal to actual, the
+       wage grows omega x inflation from the first factor and (1 - omega) x
+       inflation from the second (the gap it holds is two years of inflation,
+       as before) - inflation in all, so wages lag the index by the same two
+       years and pass it through one for one. A one-off level step with
+       expectations unmoved passes a forty-eighth a month, not a twenty-fourth,
+       and still all of it in the end. A wage overshoots the index only when
+       people expect more than happens - in a disinflation, where it is the
+       cost of disinflating. Measured in the prototype under the autopilot:
+       no overshoot, 2.13% a year (spec-inflation.md, section 2.2).
+
+       The tightness curve is untouched: it is the level Phillips curve, which
+       becomes persistent inflation only once expectations come loose (star 1).
+       ---------------------------------------------------------------------- */
+
+    /** The share of a wage's monthly indexing taken from expected inflation; the rest chases the index at the old speed's share. One half: never both in full. */
+    public static final double EXPECTED_SHARE = .5;
+
+    /**
+     * The cost of living, once the basket is based: half from what people
+     * expect, half the chase (see HALF WHAT PEOPLE EXPECT, HALF THE CHASE).
+     * Game calls the one-argument form before the basket is based.
+     *
+     * @param priceIndex      what a household's basket costs now against founding
+     * @param expectedMonthly expected inflation as a month's growth (Expectations.monthlyExpected())
+     */
+    public void updateCostOfLiving(double priceIndex, double expectedMonthly) {
+        if (priceIndex <= 0 || !(costOfLiving > 0)) return;
+        livingTarget = 1 + (priceIndex - 1) * COST_OF_LIVING_PASS_THROUGH;
+        costOfLiving *= Math.pow(1 + expectedMonthly, EXPECTED_SHARE)
+                * Math.pow(livingTarget / costOfLiving, (1 - EXPECTED_SHARE) * DRIFT_PER_MONTH);
     }
 
     /** What wages have been lifted by, chasing the cost of living. */
@@ -422,7 +471,7 @@ public class LabourMarket {
      * @param licensedHeads licence holders per job type, likewise
      */
     public void advanceMonth(double[] bandPosts, double[] bandSupply,
-                             int[] jobPosts, double[] licensedHeads) {
+                             long[] jobPosts, double[] licensedHeads) {
 
         double[] multiple = new double[WageBand.values().length];
 
@@ -488,11 +537,17 @@ public class LabourMarket {
      *
      * The signal Migration turns into departures. See the class comment: a
      * binding floor converts a price adjustment into a quantity one.
+     *
+     * AGAINST THE FLOOR IN TODAY'S MONEY (B8, 0.7.47), the one advanceMonth()
+     * holds every wage at: cashMinimumWage(). Until then it read the founding
+     * figure, so in a city whose cost of living had risen a band held at the
+     * indexed floor - city600's Diploma at 3.6934 against a cash floor of
+     * 3.6882, with 803 people spare - read as one that could still get cheaper.
      */
     public boolean isPinned(WageBand band) {
         for (JobType job : JobType.values()) {
             if (WageBand.of(job) != band) continue;
-            double floor = Math.max(baseWage(job) * MIN_MULTIPLE, minimumWage);
+            double floor = Math.max(baseWage(job) * MIN_MULTIPLE, cashMinimumWage());
             // One job in the band is enough to read it: they all share a
             // multiplier, so they reach their floors together.
             return wage[job.ordinal()] <= floor * (1 + PINNED_TOLERANCE);

@@ -199,15 +199,53 @@ public final class SectorBooks {
             /** What it spent this month on other sectors' bonds, less what it sold and what their principal paid it back: a cash-flow line out. */
             double bondsBought,
             /** The coupons it was paid on the bonds it holds: a cash-flow line in, reaching its till at the market's step without passing through its statement - the deposit interest's shape. */
-            double bondCoupons) {
+            double bondCoupons,
+
+            /* ------------------------ and its trade credit (0.7.44) ------------------------ */
+            /**
+             * What the buyers it supplied owe it for stock it let them have on
+             * credit - a current asset, which the next strike collects - and
+             * what it owes its suppliers the same way, a current liability
+             * (SupplierCredit). At the end of the record: an older save reads
+             * zero here, as nobody was owed.
+             */
+            double tradeReceivables,
+            double tradePayables,
+            /**
+             * What trade credit moved its till by at the strike, net, in: the
+             * credit it took less what it repaid, as a buyer; what it was
+             * repaid less what it let its buyers have, as a supplier
+             * (Sector.getTradeCreditCash()). A cash-flow line: the statement
+             * charged the whole bill and booked the whole sale, and the cash
+             * did not move by all of either.
+             */
+            double tradeCredit,
+
+            /* ------------------------ and the city's arrears (0.7.55) ------------------------ */
+            /**
+             * What the treasury paid it this month of what it owed it - a
+             * subsidy, a repair bill, an escalation or overtime it refused
+             * while the central bank's ceiling bound (Game.payDownArrears()).
+             * A cash-flow line in, the subsidy's shape: the refused part never
+             * reached its statement (the builders recognise what was paid), so
+             * the payment arrives as cash and nothing else. Until 0.7.55 it
+             * reached the till and no line, and unexplained() held it. At the
+             * end of the record: an older save reads zero here.
+             */
+            double arrearsPaid) {
 
         /** What the sheet says the owners have. */
         public double equity() {
-            return totalAssets() - bondsPayable;
+            return totalAssets() - totalLiabilities();
+        }
+
+        /** What it owes: its loans and bonds, and since 0.7.44 its suppliers. */
+        public double totalLiabilities() {
+            return bondsPayable + tradePayables;
         }
 
         public double totalAssets() {
-            return cash + inventory + land + buildings + foreignAssets + bondAssets;
+            return cash + inventory + land + buildings + foreignAssets + bondAssets + tradeReceivables;
         }
 
         /** Everything above operating income: goods bought, payroll, utilities, repairs. */
@@ -232,7 +270,21 @@ public final class SectorBooks {
                     - spentOnBuildings - stolen
                     // ...and its bonds (0.7.12): what they handed it, what it
                     // repaid, what it spent on others', and their coupons.
-                    + bondsIssued - bondsRepaid - bondsBought + bondCoupons);
+                    + bondsIssued - bondsRepaid - bondsBought + bondCoupons
+                    // ...and its trade credit, net (0.7.44).
+                    + tradeCredit
+                    // ...and what the city owed it and paid (0.7.55).
+                    + arrearsPaid);
+        }
+
+        /** The size of the figures unexplained() is made of, every one of them as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). */
+        public double unexplainedScale() {
+            double[] terms = { cash, openingCash, netIncome, paidEarlier, borrowed, repaid, fromTheCity, forgiven,
+                    depositInterest, investedAbroad, equityRaised, dividendsPaid, sharesBoughtBack, spentOnBuildings,
+                    stolen, bondsIssued, bondsRepaid, bondsBought, bondCoupons, tradeCredit, arrearsPaid };
+            double size = 0;
+            for (double t : terms) size += Math.abs(t);
+            return size;
         }
 
         public double margin() {
@@ -249,7 +301,9 @@ public final class SectorBooks {
                     0, 0, 0,
                     0, 0, 0,
                     0, 0, 0, 0,
-                    0, 0, 0, 0, 0);
+                    0, 0, 0, 0, 0,
+                    0, 0, 0,
+                    0);
         }
 
         public boolean isEmpty() {
@@ -371,7 +425,11 @@ public final class SectorBooks {
                 game.getBondMarket().getProceeds(key),
                 game.getBondMarket().getRepaid(key),
                 game.getBondMarket().getBoughtNet(key),
-                game.getBondMarket().getCouponsTo(key));
+                game.getBondMarket().getCouponsTo(key),
+                sheet.getTradeReceivables(),
+                sheet.getTradePayables(),
+                sector.getTradeCreditCash(),
+                game.getArrearsPaidTo(key));
     }
 
     /* ===================================================================
@@ -445,6 +503,8 @@ public final class SectorBooks {
                 m.equityRaised() * s, m.dividendsPaid() * s, m.sharesBoughtBack() * s,
                 m.maintenance() * s, m.stolen() * s, m.salvage() * s, m.paidEarlier() * s,
                 m.bondAssets() * s, m.bondsIssued() * s, m.bondsRepaid() * s, m.bondsBought() * s,
-                m.bondCoupons() * s);
+                m.bondCoupons() * s,
+                m.tradeReceivables() * s, m.tradePayables() * s, m.tradeCredit() * s,
+                m.arrearsPaid() * s);
     }
 }

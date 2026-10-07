@@ -364,7 +364,9 @@ public class RailCheck {
          * of putting them through the front door rather than calling them
          * notional costs.
          */
-        double fuelBill = rail.otherInputParts().getOrDefault("Fuel", 0.0);
+        // The fuel a good since 0.7.62 (batch K): FUEL bought abroad, where it was an import with no good
+        // behind it (the statement's other input "Fuel") - this town has no refinery, so all of it.
+        double fuelBill = rail.statement().bought.getOrDefault(Good.FUEL, new Sector.Split()).abroad;
         double trainBill = rail.statement().bought
                 .getOrDefault(Good.ROLLING_STOCK, new Sector.Split()).abroad;
         report("the railway's fuel and its locomotives are both imports",
@@ -383,10 +385,13 @@ public class RailCheck {
          */
         Sectors.TradeByGood goods = game.getTradeByGood();
         Sectors.GoodTrade wagons = goods.goods().get(Good.ROLLING_STOCK);
+        // ...the fuel among FUEL's buyers since 0.7.62, where it was the railway's line of imports with no good.
+        Sectors.GoodTrade fuelGood = goods.goods().get(Good.FUEL);
         report("...and the Trade tab's goods name the fuel as the railway's, the trains as rolling stock",
-                near(goods.services().getOrDefault(Sectors.RAIL, 0.0), fuelBill, 1e-9)
+                fuelGood != null && near(fuelGood.buyers().getOrDefault(Sectors.RAIL, 0.0), fuelBill, 1e-9)
+                        && !goods.services().containsKey(Sectors.RAIL)
                         && wagons != null && near(wagons.buyers().getOrDefault(Sectors.RAIL, 0.0), trainBill, 1e-9),
-                String.format("fuel %,.0fk, rolling stock %,.0fk", goods.services().getOrDefault(Sectors.RAIL, 0.0),
+                String.format("fuel %,.0fk, rolling stock %,.0fk", fuelGood == null ? 0 : fuelGood.bought(),
                         wagons == null ? 0 : wagons.bought()));
         report("...with every other good bought, the city's imports",
                 near(goods.bought(), game.getForeignAccounts().tradeImports(), 1e-9),
@@ -536,6 +541,36 @@ public class RailCheck {
                      game.getMarkets().get(Good.STEEL).getFreightFactor()),
                 String.format("%.6f", reloaded.getMarkets().get(Good.STEEL).getFreightFactor()));
 
+        /* ================================================================
+           6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46)
+           ================================================================ */
+
+        System.out.println("\n--- the month's trade across a save ---");
+
+        /*
+         * THE RAILWAY BILLS LAST MONTH'S TRADE AT THE TOP OF THIS ONE, from
+         * every sector's units shipped and landed, and the strike clears them
+         * after it. Those rows were never saved, so the first haul after any
+         * load read nothing, billed almost nothing and repriced on it - the
+         * band and the quote then carried the gap into the month after. The
+         * save carries the units now (Sector, THE MONTH'S TRADE ACROSS A
+         * SAVE), so the city saved above and its reload press the same month
+         * and the railway must bill both alike, to the bit. The fixture is
+         * this harness's own trading city, played until its railway hauls.
+         */
+        assertTrue("fixture: the railway hauled in the month the city was saved",
+                rail.getHauledTonnes() > 0 && rail.getHaulageBilled() > 0);
+        quietly(() -> { game.toggleNextMonth(); reloaded.toggleNextMonth(); });
+        Rail onward = reloaded.getSectors().rail();
+        report("a reloaded railway bills the month the live one bills",
+                rail.getTradeTonnes() > 0 && same(onward.getTradeTonnes(), rail.getTradeTonnes())
+                        && same(onward.getHaulageBilled(), rail.getHaulageBilled())
+                        && same(onward.getQuote(), rail.getQuote())
+                        && same(onward.getTightness(), rail.getTightness()),
+                String.format("%,.0f t, %,.2fk billed, quote %.6f, tightness %.6f against %,.0f t, %,.2fk, %.6f, %.6f",
+                        onward.getTradeTonnes(), onward.getHaulageBilled(), onward.getQuote(), onward.getTightness(),
+                        rail.getTradeTonnes(), rail.getHaulageBilled(), rail.getQuote(), rail.getTightness()));
+
         if (fails > 0) {
             System.out.printf("%n%d check(s) failed%n", fails);
             System.exit(1);
@@ -555,6 +590,17 @@ public class RailCheck {
     static void lay(Game game, String name, int count) {
         BuildingsTemplate t = game.getBuildingManager().getTemplateByName(name);
         game.getBuildingManager().addStack(t, count, true);
+        /*
+         * ...ON ITS GROUND (0.7.58). The track was handed over standing on
+         * nothing: 700,000 sq ft a spur that the live city never allocated
+         * and its reload - whose allocation is its buildings' footprint
+         * (Game's load path) - did. The two cities then priced their free
+         * ground differently, so "a reloaded railway bills the month the live
+         * one bills" compared two different cities; at 0.7.57 the bills
+         * matched by chance, at 0.7.58 they missed by five tonnes. A spur
+         * laid takes its ground, as building one does.
+         */
+        game.getLandManager().allocate(t.getLandSqFt() * count);
     }
 
     /**

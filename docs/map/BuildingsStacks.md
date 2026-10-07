@@ -1,6 +1,6 @@
 # BuildingsStacks.java - 466 lines · 42 methods · 0 constants · model
 
-`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingsStacks.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
 
 > One building type in the city: how many stand, how many are on site, and
 > the progress, material and contract its sites carry.
@@ -64,7 +64,7 @@
 | 354 | 3 | `public int getLastFinished()` | How many finished in the most recent advanceConstruction() call. |
 | 359 | 3 | `public double getLastApplied()` | Points the most recent advanceConstruction() call put into buildings. |
 | 369 | 7 | `public double clearBankedProgress()` | Drops progress past what the stack owes - all of it with nothing on site - and returns how many points that was. |
-| 378 | 3 | `public int getTotalJobs(JobType type)` | getters |
+| 378 | 3 | `public long getTotalJobs(JobType type)` | getters |
 | 382 | 3 | `public int getQuantity()` |  |
 | 387 | 3 | `public void removeQuantity(int amount)` | Scraps finished buildings. |
 | 391 | 3 | `public int getUnderConstruction()` |  |
