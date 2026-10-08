@@ -321,10 +321,14 @@ public final class BuildCard {
         return game.getMarkets().get(g).getLocalPrice();
     }
 
-    /** What one makes less what it uses a month, at today's prices. */
+    /**
+     * What one makes less what it uses a month, at today's prices - what it
+     * makes being a crude unit's slate since 0.7.76 (sectors.Refining.madeBy()),
+     * its template naming only the crude.
+     */
     public static double valueAdded(Game game, BuildingsTemplate t) {
         double v = 0;
-        for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+        for (Map.Entry<Good, Double> e : ham.citybuildersim.sectors.Refining.madeBy(t).entrySet()) {
             double p = priceOf(game, e.getKey());
             if (Double.isFinite(p)) v += e.getValue() * p;
         }
@@ -365,6 +369,37 @@ public final class BuildCard {
     /* =====================================================================
        ONE CARD
        ===================================================================== */
+
+    /** What a road card's first bar is per (0.7.70): a trip it takes off the road, over its life, its ground in it - BuildAdvice.lifetime() over BuildAdvice.unit(); the bar's (i) says the rest. */
+    public static final String ROAD_PER = "trip over " + BuildAdvice.LIFE_MONTHS / 12 + " years, with its land";
+
+    /**
+     * PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70; ConstructionControl, F):
+     * the gravel roads the city could pave and those being paved, the quote
+     * for one (Game.quotePave()), the trips one paving takes off the road
+     * (BuildAdvice.pavingUnit()) and the ground it frees, its cost over its
+     * life a trip (BuildAdvice.pavingLifetime() over the unit) beside a new
+     * Paved Road's (the road card's own bar 1), and whether it beats it -
+     * when the card and the advice recommend it (BuildAdvice.pavingBeatsPaved()).
+     * Null for any other building, or with no Paved Road in the catalogue.
+     */
+    public record Paving(int paveable, int paving, Game.BuildQuote one, double unit, double frees,
+                         double perTrip, double pavedPerTrip, boolean beatsPaved) { }
+
+    public static Paving paving(Game game, BuildingsTemplate t) {
+        if (!ConstructionControl.paves(t)) return null;
+        BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        Game.BuildQuote one = game.quotePave(1);
+        if (to == null || one == null) return null;
+        BuildAdvice.Measure roads = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, roads);
+        double free = game.getLandManager().getAvailableSqFt();
+        double unit = BuildAdvice.pavingUnit(game, site), paved = BuildAdvice.unit(game, roads, to);
+        double per = unit > 0 ? BuildAdvice.pavingLifetime(game, free, site) / unit : Double.POSITIVE_INFINITY;
+        double pavedPer = paved > 0 ? BuildAdvice.lifetime(game, to, free, site) / paved : Double.POSITIVE_INFINITY;
+        return new Paving(game.paveable(), game.pavingNow(), one, unit, BuildAdvice.pavingFrees(game), per, pavedPer,
+                BuildAdvice.pavingBeatsPaved(game, free, site));
+    }
 
     /** What one costs to keep a month, which is not what it costs to buy: its upkeep and its posts at today's wages (PopulationManager.getWagesPerType()). */
     public static double runningCost(Game game, BuildingsTemplate t) {
@@ -408,6 +443,21 @@ public final class BuildCard {
             double served = served(game, on, t);
             double[] fill = game.getPopulationManager().getJobFillRate();
             boolean posts = BuildAdvice.hasPosts(t);
+            if (on.kind() == BuildAdvice.Kind.ROADS) {
+                // A ROAD, OVER ITS LIFE (0.7.70): the advice's own figure - its
+                // cost over its life with its ground (BuildAdvice.lifetime()) a
+                // trip it takes off the road (BuildAdvice.unit(), its freight
+                // grade in it) - and its ground a trip, where a road's price a
+                // trip carried tagged the gravel road the cheapest in every city.
+                double off = BuildAdvice.unit(game, on, t);
+                double bar1 = off > 0 ? BuildAdvice.lifetime(game, t, free, BuildAdvice.onSite(game, on)) / off
+                        : Double.POSITIVE_INFINITY;
+                double bar2 = off > 0 ? land / off : Double.POSITIVE_INFINITY;
+                return new Figures(t, kind, on.label(), does[0], served, does[1], served,
+                        BuildAdvice.built(game, on, t), Double.NaN, null, price, sticker,
+                        bar1, bar2, Bar2.LAND, ROAD_PER, perWords(on),
+                        Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+            }
             // The cost per unit served at today's staffing, and the posts the
             // city likely cannot fill per 10,000 of it (0.7.24, Jerus's pick):
             // infinite for one nobody could staff, none for one with no posts.
@@ -465,6 +515,12 @@ public final class BuildCard {
                 good = firstGood(t);
                 verb = makerVerb(t); words = (good == null ? "" : goodWords(good)) + " a month";
                 figure = good == null ? 0 : t.makes(good);
+                // ...a crude unit (0.7.76) by the crude it refines: what it makes is the slate of it.
+                if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) {
+                    good = Good.CRUDE;
+                    verb = "refines "; words = goodWords(good) + " a month";
+                    figure = t.uses(good);
+                }
                 va = valueAdded(game, t); unit = va;
                 Resource site = Game.siteOf(t);
                 if (site != null) {
@@ -742,6 +798,110 @@ public final class BuildCard {
         if (t.getLandSqFt() > free) return new Gate(GateKind.LAND, t.getLandSqFt(), free, null, null);
         if (estimate <= 0) return new Gate(GateKind.LOSS, -estimate, 0, null, null);
         return null;
+    }
+
+    /* =====================================================================
+       EVERY GATE (0.7.75, the sector statements' R4)
+
+       gate() stops at the first gate a building fails, which is the build
+       card's answer and the Investors summary's - and it can hide a second
+       refusal behind the first (the project's spec-sector-statements.md,
+       F11): the design study's Fabrication Shop stopped at land, and its
+       estimate was a loss, so the ground the player was sent to buy would
+       not have built it either. The investor report asks every gate, each
+       passed, failed or not one this building has (no ore to find, no
+       licence, no posts, no ground), in gate()'s order - so its first
+       failure is gate()'s, which BuildCardCheck's and SectorStatementCheck's
+       readers can hold it to - and then what one would earn, cost, take to
+       pay back, and how it would be paid for (D8). Pure, as gate() is.
+       ===================================================================== */
+
+    /** A gate's answer for one building: it passes, it fails, or it is not a gate this building has. */
+    public enum Mark { PASS, FAIL, NONE }
+
+    /** One gate's answer: its kind (LOSS is "it pays"), the mark, and gate()'s figures when it fails. */
+    public record GateMark(GateKind kind, Mark mark, Gate failure) { }
+
+    /**
+     * One building at every gate (R4).
+     *
+     * @param gates    ore, licence, staff, land and pays, in gate()'s order
+     * @param estimate the investors' estimate of what one would make its owner a month
+     * @param cost     what one would cost to build, its ground with it (BusinessInvestment.getCostOf())
+     * @param payback  the months its estimate would take to earn its cost; NaN when it would not pay
+     * @param owners   of the cost, what its register would ask its owners for (Game.financingOf())
+     * @param own      ...what its till and its money abroad would put in
+     * @param borrowed ...and what it would borrow
+     */
+    public record Appraisal(BuildingsTemplate template, Sector owner, List<GateMark> gates, double estimate,
+                            double cost, double payback, double owners, double own, double borrowed) {
+
+        /** The first gate it fails - gate()'s answer - or null when it passes them all. */
+        public Gate first() {
+            for (GateMark g : gates) if (g.mark() == Mark.FAIL) return g.failure();
+            return null;
+        }
+
+        /** Every gate it fails, in order. */
+        public List<GateMark> failures() {
+            List<GateMark> out = new ArrayList<>();
+            for (GateMark g : gates) if (g.mark() == Mark.FAIL) out.add(g);
+            return out;
+        }
+
+        /** Its mark at one gate. */
+        public Mark at(GateKind kind) {
+            for (GateMark g : gates) if (g.kind() == kind) return g.mark();
+            return Mark.NONE;
+        }
+    }
+
+    /** Every gate investors would ask this building at now, and what one would earn, cost and be paid for with. */
+    public static Appraisal appraise(Game game, BuildingsTemplate t) {
+        Sector owner = ownerOf(game, t);
+        double estimate = game.getBusinessInvestment().estimatedMonthlyProfit(owner.key(), t);
+        LandManager ground = game.getLandManager();
+        List<GateMark> gates = new ArrayList<>();
+        // The ore: a mine's own resource's sites.
+        Resource site = Game.siteOf(t);
+        gates.add(site == null ? new GateMark(GateKind.DEPOSIT, Mark.NONE, null)
+                : game.hasDepositFor(t, 1) ? new GateMark(GateKind.DEPOSIT, Mark.PASS, null)
+                : new GateMark(GateKind.DEPOSIT, Mark.FAIL,
+                        new Gate(GateKind.DEPOSIT, ground.getSites(site), game.committedOn(site), null, depositWord(site))));
+        // The licence its posts need.
+        JobType licence = t.getRequiresLicence();
+        gates.add(licence == null ? new GateMark(GateKind.LICENCE, Mark.NONE, null)
+                : game.hasLicencesFor(t, 1) ? new GateMark(GateKind.LICENCE, Mark.PASS, null)
+                : new GateMark(GateKind.LICENCE, Mark.FAIL, new Gate(GateKind.LICENCE, game.licencesNeededFor(t, 1),
+                        game.getPopulationManager().spareLicences(licence), licence, null)));
+        // Its owner's staffing test, for a building with posts.
+        double posts = 0;
+        for (JobType job : JobType.values()) posts += t.getJobs(job);
+        Sector.Staffing staffing = owner.staffing(t);
+        gates.add(!(posts > 0) ? new GateMark(GateKind.STAFFING, Mark.NONE, null)
+                : staffing.passes() ? new GateMark(GateKind.STAFFING, Mark.PASS, null)
+                : new GateMark(GateKind.STAFFING, Mark.FAIL,
+                        new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()))));
+        // The ground.
+        double free = ground.getAvailableSqFt();
+        gates.add(!(t.getLandSqFt() > 0) ? new GateMark(GateKind.LAND, Mark.NONE, null)
+                : t.getLandSqFt() <= free ? new GateMark(GateKind.LAND, Mark.PASS, null)
+                : new GateMark(GateKind.LAND, Mark.FAIL, new Gate(GateKind.LAND, t.getLandSqFt(), free, null, null)));
+        // ...and whether it pays.
+        gates.add(estimate > 0 ? new GateMark(GateKind.LOSS, Mark.PASS, null)
+                : new GateMark(GateKind.LOSS, Mark.FAIL, new Gate(GateKind.LOSS, -estimate, 0, null, null)));
+        double[] f = game.financingOf(owner.key(), t);
+        return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3]);
+    }
+
+    /** Every market building one sector owns, appraised at every gate, in the catalogue's order: the investor report's (R4). */
+    public static List<Appraisal> appraiseAll(Game game, Sector sector) {
+        List<Appraisal> out = new ArrayList<>();
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (kindOf(t) == Kind.CITY || ownerOf(game, t) != sector) continue;
+            out.add(appraise(game, t));
+        }
+        return out;
     }
 
     /* =====================================================================

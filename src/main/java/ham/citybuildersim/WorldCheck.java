@@ -39,7 +39,14 @@ import java.util.List;
  *   6. a tile's terrain is the point function's on at least 99.5% of its
  *      plots, at no more than 0.5 ms a tile (measured 0.07); a region at a
  *      stride of one is the point function, and a far region's sea is the
- *      point function's at its pixels within three points.
+ *      point function's at its pixels within three points;
+ *   7. (0.7.79, batch O3; spec-oil 2.2, 2.7) the sea has a depth: the shelf's
+ *      level is the same built twice and under the sea's, a plot is deeper
+ *      than nothing exactly where it is sea, and on an independent sample
+ *      SHELF_SHARE of the sea is within SHELF_BREAK_M, within half a point;
+ *      an oil field's grade is the same every time it is drawn, each grade
+ *      is GRADE_SHARES of the fields within two points, and the grades of a
+ *      cell's oil add up to its total exactly - nothing stored, no tonne moved.
  */
 public class WorldCheck {
 
@@ -67,6 +74,15 @@ public class WorldCheck {
 
     /** Cells, neither all sea nor all land, whose fields are drawn to see where ore and oil lie: 300 (about 100,000 iron fields). */
     static final int COASTAL_CELLS = 300;
+
+    /** The square of cells round the site whose oil fields are graded (section 7): 30 a side, 900 cells - some 20,000 fields, a grade's share then within a third of a point (one standard error). */
+    static final int GRADE_CELLS = 30;
+
+    /** How far the shelf's share of an independent sample of the sea may sit from SHELF_SHARE (spec-oil 4: half a point). */
+    static final double SHELF_WITHIN = .005;
+
+    /** How far each grade's share of the fields may sit from GRADE_SHARES (spec-oil 4: two points). */
+    static final double GRADE_WITHIN = .02;
 
     public static void main(String[] args) {
         for (long seed : SEEDS) world(seed);
@@ -323,6 +339,68 @@ public class WorldCheck {
             farSea &= Math.abs(regionSea - pointSea) <= .03 * n * n;
         }
         check("...and a far region's sea is the point function's within 3 points", farSea);
+
+        /* ---------------------------------------------------------------- 7 */
+        System.out.println("--- 7. the sea's depth and the crude's grade (0.7.79) ---");
+        double shelf = w.shelfTheta();
+        long hs = World.mix(seed ^ 0x5E1FL);
+        int seaPoints = 0, onShelf = 0, salt = 0, deep = 0, agreeSalt = 0;
+        for (int i = 0; i < SAMPLE; i++) {
+            hs = World.mix(hs);
+            long x = (long) (World.unit(hs) * World.SIDE);
+            hs = World.mix(hs);
+            long y = (long) (World.unit(hs) * World.SIDE);
+            double depth = w.depthAt(x, y);
+            boolean isSalt = w.terrainAt(x, y) == World.SALT;
+            if (isSalt) salt++;
+            if (depth > 0) deep++;
+            if (isSalt == depth > 0) agreeSalt++;
+            if (depth > 0) {
+                seaPoints++;
+                if (depth <= World.SHELF_BREAK_M) onShelf++;
+            }
+        }
+        double shelfShare = (double) onShelf / seaPoints;
+        System.out.printf("   the shelf's level %.5f under the sea's %.5f; %,d points: %,d in the sea, %.3f%% of them within %.0f m%n",
+                shelf, theta, SAMPLE, seaPoints, 100 * shelfShare, World.SHELF_BREAK_M);
+        check("built twice: the shelf's level to the last bit, under the sea's",
+                Double.doubleToLongBits(again.shelfTheta()) == Double.doubleToLongBits(shelf) && shelf < theta);
+        check("a plot is deeper than nothing exactly where it is sea", agreeSalt == SAMPLE && salt == deep && deep > 0);
+        check("SHELF_SHARE of the sea is within SHELF_BREAK_M, within half a point", Math.abs(shelfShare - World.SHELF_SHARE) <= SHELF_WITHIN);
+        int[] grades = new int[Deposit.Grade.values().length];
+        int graded = 0;
+        boolean pure = true, sums = true;
+        long fcx = w.foundingX() / World.CELL, fcy = w.foundingY() / World.CELL;
+        for (long cy = fcy - GRADE_CELLS / 2; cy < fcy + GRADE_CELLS / 2; cy++) {
+            for (long cx = fcx - GRADE_CELLS / 2; cx < fcx + GRADE_CELLS / 2; cx++) {
+                if (cx < 0 || cy < 0 || cx >= World.CELLS || cy >= World.CELLS) continue;
+                int cell = (int) (cy * World.CELLS + cx);
+                List<Deposit> fields = w.fieldsInCell(cell, Resource.OIL), twice = again.fieldsInCell(cell, Resource.OIL);
+                double[] byGrade = new double[grades.length];
+                for (int k = 0; k < fields.size(); k++) {
+                    Deposit d = fields.get(k);
+                    Deposit.Grade g = d.grade();
+                    grades[g.ordinal()]++;
+                    graded++;
+                    byGrade[g.ordinal()] += d.amount();
+                    pure &= twice.get(k).grade() == g && new Deposit(d.kind(), d.cell(), d.index(), d.x(), d.y(), d.sites(), d.amount()).grade() == g;
+                }
+                double total = 0;
+                for (double v : byGrade) total += v;
+                sums &= total == w.cellTotal(cell, Resource.OIL);
+            }
+        }
+        boolean shares = graded > 0;
+        StringBuilder words = new StringBuilder();
+        for (Deposit.Grade g : Deposit.Grade.values()) {
+            double s = (double) grades[g.ordinal()] / graded;
+            shares &= Math.abs(s - Deposit.GRADE_SHARES[g.ordinal()]) <= GRADE_WITHIN;
+            words.append(String.format(" %s %.2f%%", g.name().toLowerCase(), 100 * s));
+        }
+        System.out.printf("   %,d oil fields in the %d x %d cells round the site:%s%n", graded, GRADE_CELLS, GRADE_CELLS, words);
+        check("an oil field's grade is the same every time it is drawn", pure);
+        check("...each grade GRADE_SHARES of the fields, within two points", shares);
+        check("...and a cell's oil by grade adds up to its total exactly", sums);
     }
 
     /** Test 1's dry ground: land, and not a lake. */

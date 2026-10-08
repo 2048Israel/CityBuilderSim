@@ -15,7 +15,7 @@ requirement.
 ## Open these before reading source
 
 The tree is over 250,000 lines; `Game.java` alone is over 15,000, and the
-interface is twenty-six files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
+interface is twenty-seven files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
 |---|---|
@@ -123,7 +123,8 @@ These are Jerus's, and they do not move.
                                    holds both (the project's spec-fund-0739.md)
         ConstructionControl.java   the player's hand on the construction queue (0.7.22): the city's order of
                                    its own sites, rushes on overtime, cancels and the shells they leave,
-                                   demolitions and buy-outs - the state, saved under one key, and each rule's
+                                   demolitions and buy-outs, and since 0.7.70 its gravel roads paved - the
+                                   state, saved under one key, and each rule's
                                    arithmetic with its source; BuildingManager applies the crews and Game's
                                    THE PLAYER'S HAND ON THE QUEUE moves the money
         DecisionLog.java           what the player decided, and when (0.7.23): every change of a policy and
@@ -142,8 +143,16 @@ These are Jerus's, and they do not move.
         BuildAdvice.java           the Build tab's categories and measures, each measure's figure before and
                                    after an order by the model's own arithmetic, and the rule behind the
                                    overview's WHAT WOULD HELP MOST (0.7.24; since 0.7.51 priced with its
-                                   ground and sized to the businesses' projection); advice, not a model
-                                   change - BuildAdviceCheck holds it
+                                   ground and sized to the businesses' projection, since 0.7.70 a road
+                                   over its life, since 0.7.71 a care building the size that fits the
+                                   need); advice, not a model change - BuildAdviceCheck, RoadCheck and
+                                   ChildcareCheck hold it
+        AutoBuilder.java           automatic building (0.7.73): the player's switch and two dials (a
+                                   spare margin, a debt limit), and the month's pass that orders the
+                                   build advice's own cards for the city's works within the builders,
+                                   the budget and the limit - since 0.7.77 buying the bare ground they
+                                   lack as Build's land shortcut would - borrowing on the funding page's
+                                   bond; its log, its inbox notices - AutoBuildCheck holds it
         BuildCard.java             one build card's figures for all 76 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
@@ -152,6 +161,11 @@ These are Jerus's, and they do not move.
                                    the production rows and its money off the statement, the plant's six
                                    throttles and the rate they multiply to; what the Sectors screen's
                                    Operations page draws; pure - SectorFlowCheck holds it
+        SectorStatements.java      one business's month as formal statements (0.7.74): profit or loss through
+                                   gross and operating profit, the classified sheet, the cash flow in three
+                                   sections, the changes in equity - and the bank's - each a list of rows, its
+                                   format by Sector.statementFormat(); every bottom line the model's own; pure -
+                                   ui/StatementView draws it, SectorStatementCheck holds it
         PolicyPreview.java         what a staged set of the Policy tab's dials would do (0.7.36): the tax take
                                    under another policy line by line, and THE BUDGET before and after, each
                                    line its owner's read of a detached TaxPolicy.copy() - since 0.7.48
@@ -168,10 +182,15 @@ These are Jerus's, and they do not move.
                                    books, the world's share in the money audit; SupplierCreditCheck holds it
         World.java, Resource.java, Deposit.java, CityLand.java, LandConversion.java
                                    the world a city stands on (0.7.56: one seed's coast, lakes, river and
-                                   fields of seven resources) and the city's land on it (0.7.57: a centre
-                                   and forty lanes, one offer standing in each; an older save converted
-                                   once) - LandManager and LandMarket sell it, WorldCheck and LandCheck
-                                   hold it (the project's spec-land.md)
+                                   fields of seven resources) and the city's land on it (0.7.57; since
+                                   0.7.67 whole blocks of a grid, six offers a side; an older save
+                                   converted once) - LandManager and LandMarket sell it, WorldCheck and
+                                   LandCheck hold it (the project's spec-land.md and spec-grid.md)
+        LandGrid.java, GridOffers.java, LegacyLand.java, GridConversion.java
+                                   the block grid (0.7.65 to 0.7.67): the ground owned as a quadtree of
+                                   blocks lined up with the world, the six places a side and their
+                                   rectangles, spec-land's lanes kept read-only, and a saved city's ground
+                                   put on the grid once at load - GridCheck and ConversionCheck hold them
         CityMap.java, TilePainter.java, TileRaster.java, BuildingVisual.java
                                    the city map (0.7.60): the buildings by type in 7.68 km districts,
                                    each drawn once on its own land and the roads laid plot for plot
@@ -193,7 +212,7 @@ These are Jerus's, and they do not move.
                                    (the city map on a canvas, 0.7.61: small in the land office, over the
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
                                    MapTiles, which MapCheck holds). The model never imports it.
-        *Check.java                eighty-one harnesses, each a main() with static helpers
+        *Check.java                eighty-five harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them

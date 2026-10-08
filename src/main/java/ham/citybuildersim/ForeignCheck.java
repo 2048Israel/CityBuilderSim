@@ -109,7 +109,7 @@ public class ForeignCheck {
         // The Trade tab's goods against the balance of payments (0.7.35).
         double worstSold = 0, worstBought = 0;
         int monthsSold = 0, monthsBought = 0;
-        // ...and the households' imported fuel: FUEL's since 0.7.62, an import with no good from 0.7.49.
+        // ...and the households' imported fuel: PETROL's since 0.7.76, FUEL's from 0.7.62, an import with no good from 0.7.49.
         double worstFuel = 0;
         int monthsFuel = 0;
 
@@ -187,10 +187,10 @@ public class ForeignCheck {
                         Math.abs(goods.bought() - f.tradeImports()) / Math.max(1, f.tradeImports()));
                 // ...the households' fuel the world sold them: FUEL's since
                 // 0.7.62, the households among its buyers (an import with no
-                // good from 0.7.49 until fuel was a good).
+                // good from 0.7.49 until fuel was a good) - PETROL's since 0.7.76.
                 double fuel = city.getHouseholdFuelImports();
                 if (fuel > 0) monthsFuel++;
-                Sectors.GoodTrade fuelTrade = goods.goods().get(Good.FUEL);
+                Sectors.GoodTrade fuelTrade = goods.goods().get(Good.PETROL);
                 double fuelBooked = fuelTrade == null ? 0 : fuelTrade.buyers().getOrDefault(Sectors.HOUSEHOLDS, 0.0);
                 worstFuel = Math.max(worstFuel, Math.abs(fuelBooked - fuel) / Math.max(1, fuel));
             }
@@ -271,7 +271,7 @@ public class ForeignCheck {
         close("...and what they bought, with the fuel and the households' cars, its imports",
                 worstBought, 0, 1e-9);
         assertTrue("fixture: the city's drivers bought fuel abroad, month after month", monthsFuel > 12);
-        close("the households' imported fuel is FUEL's, the households among its buyers", worstFuel, 0, 1e-9);
+        close("the households' imported fuel is PETROL's (FUEL's until 0.7.76), the households among its buyers", worstFuel, 0, 1e-9);
 
         /*
          * WAGES ARE NOT IMPORTS, which is the whole reason for the split.

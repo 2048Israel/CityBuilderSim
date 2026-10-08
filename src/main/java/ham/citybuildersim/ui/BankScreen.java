@@ -220,18 +220,22 @@ final class BankScreen {
         if (bankArea == null) {
             overviewPage(page, fresh);
         } else {
+            boolean formal = ui.sectorScreen.statementView;
             switch (bankPage) {
-                case "Balance sheet"    -> sheetPage(page);
+                case "Balance sheet"    -> { if (formal) sheetStatementView(page); else sheetPage(page); }
                 case "Lending"          -> lendingPage(page);
                 case "Funding"          -> fundingPage(page);
                 case "Capital & owners" -> capitalPage(page);
                 case "History"          -> historyPage(page);
-                default                 -> profitPage(page);
+                default                 -> { if (formal) profitStatementView(page); else profitPage(page); }
             }
         }
 
-        VBox frame = new VBox(Palette.GAP, head(),
-                chipStrip(CHIPS, CHIP_ICONS, bankArea == null ? OVERVIEW : bankPage, Palette.SIZE_LABEL, this::pick));
+        // The pages, and on Profit and Balance sheet the Summary | Statement switch the sector pages share (0.7.74, D9).
+        boolean switched = bankArea != null && ("Profit".equals(bankPage) || "Balance sheet".equals(bankPage));
+        VBox frame = new VBox(Palette.GAP, head(), StatementView.stripWithSwitch(
+                chipStrip(CHIPS, CHIP_ICONS, bankArea == null ? OVERVIEW : bankPage, Palette.SIZE_LABEL, this::pick),
+                switched ? ui.sectorScreen.statementView : null, this::pickView));
         if (bankArea != null) frame.getChildren().add(statusStrip(fresh));
         frameOver(frame, page);
 
@@ -246,6 +250,130 @@ final class BankScreen {
                 scrollTo(n);
             });
         }
+    }
+
+    /** The switch picked (0.7.74): this page in the other view, at its top - one choice with the sector pages' (D1). */
+    void pickView(boolean statement) {
+        ui.sectorScreen.statementView = statement;
+        ui.innerScrollAt.remove("showBankMenu:body");
+        showBankMenu();
+    }
+
+    /* ---------------------- its statements, formal (0.7.74) ----------------------
+
+       The Statement view of Profit and Balance sheet (the project's
+       spec-sector-statements.md, 4.5, D9): the bank's income statement in a
+       bank's order - interest income by who paid it, less interest expense,
+       NET INTEREST INCOME; fees, the desk and its gains, TOTAL OPERATING
+       INCOME; provisions; staff and branches; PROFIT BEFORE TAX; the tax a
+       month in arrears; PROFIT; what its owners took; KEPT IN THE BANK - and
+       its sheet most liquid first, its loans gross less the allowance, its
+       equity in its parts and the deposits it holds as a memorandum.
+       SectorStatements builds both from the bank's own lines, and
+       SectorStatementCheck holds every total to them. */
+
+    /** The bank's income statement, formal, its ratios beside it. */
+    void profitStatementView(VBox page) {
+        Bank bank = ui.game.getBank();
+        ham.citybuildersim.SectorStatements.Table t = ham.citybuildersim.SectorStatements.bankIncome(bank);
+        SectorScreen sectors = ui.sectorScreen;
+        boolean millions = ham.citybuildersim.SectorStatements.inMillions(t);
+        StatementView.Columns c = sectors.columns("of income");
+        VBox table = StatementView.table(t, "bank:income", "this month", "last month", c,
+                bank.thisMonth(Bank.Line.REVENUE), bank.lastMonth(Bank.Line.REVENUE), openLines, null,
+                id -> ham.citybuildersim.SectorStatements.B_PROVISIONS.equals(id) ? PROVISIONS_INFO
+                        : ham.citybuildersim.SectorStatements.B_TAX.equals(id) ? String.format("Tax is paid a month in "
+                        + "arrears, on last month's %s of profit: the city's take is struck before the bank knows what "
+                        + "it made.", m(bank.getProfitLastMonth())) : null, ui::redraw);
+        VBox card = StatementView.card(StatementView.titleBlock("The bank", t.title(), "For the month of "
+                        + CityCalendar.format(ui.game.getMonth()), millions),
+                StatementView.toolbar(c, () -> { sectors.showChange = !sectors.showChange; ui.redraw(); },
+                        () -> { sectors.showShare = !sectors.showShare; ui.redraw(); }, null, null), table);
+        page.getChildren().add(StatementView.beside(card, bankRatios(bank, false)));
+    }
+
+    /** The bank's balance sheet, formal, against a year ago, its ratios beside it. */
+    void sheetStatementView(VBox page) {
+        Bank bank = ui.game.getBank();
+        ham.citybuildersim.SectorStatements.Table t = ham.citybuildersim.SectorStatements.bankSheet(bank);
+        SectorScreen sectors = ui.sectorScreen;
+        boolean millions = ham.citybuildersim.SectorStatements.inMillions(t);
+        StatementView.Columns c = sectors.columns("of assets");
+        VBox table = StatementView.table(t, "bank:sheet", "this month", "a year ago", c,
+                bank.sheet(Bank.Sheet.ASSETS), bank.yearAgo(Bank.Sheet.ASSETS), openLines, null,
+                id -> id.startsWith("bs.") && id.length() > 3 && sheetLineOf(id) != null ? sheetSaid(bank, sheetLineOf(id))
+                        : null, ui::redraw);
+        VBox card = StatementView.card(StatementView.titleBlock("The bank", t.title(), "As "
+                        + CityCalendar.format(ui.game.getMonth()) + " closed", millions),
+                StatementView.toolbar(c, () -> { sectors.showChange = !sectors.showChange; ui.redraw(); },
+                        () -> { sectors.showShare = !sectors.showShare; ui.redraw(); }, null, null), table);
+        page.getChildren().add(StatementView.beside(card, bankRatios(bank, true)));
+        if (!bank.knowsYearAgo()) {
+            page.getChildren().add(SectorScreen.caption("A year ago is kept from the first month played in this build, so it reads — "
+                    + "until the city has lived a year of them.", Palette.TEXT_MUTED));
+        }
+    }
+
+    /** The sheet line a statement row is, by its id ("bs.RESERVES"), or null for a subtotal. */
+    static Bank.Sheet sheetLineOf(String id) {
+        for (Bank.Sheet s : Bank.Sheet.values()) if (id.equals(ham.citybuildersim.SectorStatements.sheetId(s))) return s;
+        return null;
+    }
+
+    /**
+     * Its ratios (spec 4.5), on the income statement: net interest margin,
+     * cost to income, the fees' share, provisions over what it has lent,
+     * return on equity and its payout; on the sheet: its capital over its
+     * weighted book, equity over assets, loans over the deposits it holds,
+     * the liquid share, the allowance over its loans and the window's share.
+     */
+    VBox bankRatios(Bank bank, boolean sheet) {
+        double income = bank.thisMonth(Bank.Line.REVENUE);
+        double loans = ham.citybuildersim.SectorStatements.bankGrossLoans(bank);
+        double assets = bank.sheet(Bank.Sheet.ASSETS);
+        List<Node> rows = new ArrayList<>();
+        if (!sheet) {
+            double nim = bank.netInterestMargin();
+            rows.add(SectorScreen.ratioRow("Net interest margin", ratePerYear(nim), nim < 0 ? Palette.BAD : Palette.TEXT_LABEL,
+                    "What it charges less what it pays for its money, on everything it has lent, a year at this month's."));
+            double costs = income > 0 ? bank.thisMonth(Bank.Line.COSTS) / income : Double.NaN;
+            rows.add(SectorScreen.ratioRow("Cost to income", Double.isFinite(costs) ? share1(costs) : "—",
+                    !Double.isFinite(costs) || costs > 1 ? Palette.BAD : Palette.TEXT_LABEL,
+                    "Its staff and branches over its total operating income."));
+            double fees = income > 0 ? bank.thisMonth(Bank.Line.FEES) / income : Double.NaN;
+            rows.add(SectorScreen.ratioRow("Fees, of its income", Double.isFinite(fees) ? share1(fees) : "—", Palette.TEXT_LABEL, null));
+            rows.add(SectorScreen.ratioRow("Provisions, of its loans", loans > 0
+                    ? ratePerYear(bank.thisMonth(Bank.Line.PROVISIONS) * 12 / loans) : "—", Palette.TEXT_LABEL,
+                    PROVISIONS_INFO + " A year at this month's, over its loans and advances."));
+            double roe = bank.returnOnEquity();
+            rows.add(SectorScreen.ratioRow("Return on equity", ratePerYear(roe),
+                    roe < 0 ? Palette.BAD : roe < Bank.requiredReturn() ? Palette.WARN : Palette.GOOD,
+                    "This month's profit over the equity it opened with, a year; its owners want "
+                    + ratePerYear(Bank.requiredReturn()) + "."));
+            double net = bank.thisMonth(Bank.Line.NET);
+            rows.add(SectorScreen.ratioRow("Payout", net > 0 ? share1((bank.thisMonth(Bank.Line.DIVIDENDS)
+                    + bank.thisMonth(Bank.Line.BUYBACKS)) / net) : "—", Palette.TEXT_LABEL,
+                    "What its owners took this month - paid on last month's profit - over this month's."));
+        } else {
+            double capital = bank.capitalRatio();
+            rows.add(SectorScreen.ratioRow("Capital, of its weighted book", capital >= Double.MAX_VALUE ? "nothing lent"
+                    : share1(capital), capital < bank.capitalTarget() ? Palette.WARN : Palette.GOOD,
+                    String.format("Its equity over its risk-weighted book; it aims for %s.", share1(bank.capitalTarget()))));
+            rows.add(SectorScreen.ratioRow("Equity, of its assets", assets > 0 ? share1(bank.sheet(Bank.Sheet.EQUITY) / assets) : "—",
+                    Palette.TEXT_LABEL, null));
+            double deposits = bank.sheet(Bank.Sheet.HOUSEHOLD_DEPOSITS) + bank.sheet(Bank.Sheet.SECTOR_DEPOSITS);
+            rows.add(SectorScreen.ratioRow("Loans, of the deposits it holds", deposits > 0 ? share1(loans / deposits) : "—",
+                    Palette.TEXT_LABEL, "Its loans and advances over the families' and the businesses' deposits."));
+            rows.add(SectorScreen.ratioRow("Liquid, of its assets", assets > 0 ? share1((bank.sheet(Bank.Sheet.RESERVES)
+                    + bank.sheet(Bank.Sheet.CITY_PAPER)) / assets) : "—", Palette.TEXT_LABEL,
+                    "Its reserves at the central bank and the city's paper, over everything it owns."));
+            rows.add(SectorScreen.ratioRow("Allowance, of its loans", loans > 0 ? share1(-bank.sheet(Bank.Sheet.ALLOWANCE) / loans) : "—",
+                    Palette.TEXT_LABEL, null));
+            double liabilities = bank.sheet(Bank.Sheet.LIABILITIES);
+            rows.add(SectorScreen.ratioRow("Overnight, of what it owes", liabilities > 0 ? share1(bank.sheet(Bank.Sheet.WINDOW) / liabilities) : "—",
+                    Palette.TEXT_LABEL, "What it borrowed at the central bank's window over its liabilities."));
+        }
+        return SectorScreen.ratioColumn("READ AS RATIOS", rows.toArray(new Node[0]));
     }
 
     /** A chip picked: the Overview, or a page at its top. */

@@ -1,6 +1,6 @@
-# CarCheck.java - 891 lines · 6 methods · 0 constants · harnesses
+# CarCheck.java - 943 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CarCheck.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > The cars: who buys one, what it costs them, and what it does to the road.
 > 
@@ -58,7 +58,7 @@
 > See claude/the-fifth-link.md, HouseholdBalance's cars section and
 > InfrastructureManager's.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [InfrastructureManager](InfrastructureManager.md) (23), [Good](Good.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [Game](Game.md) (11), [TaxPolicy](TaxPolicy.md) (8), [Sector](Sector.md) (7), [GameFiles](GameFiles.md) (5), [Traffic](Traffic.md) (4), [Motoring](Motoring.md) (4), [Founding](Founding.md) (3), [BuildingManager](BuildingManager.md) (3), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [InfrastructureManager](InfrastructureManager.md) (26), [Game](Game.md) (13), [Good](Good.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [TaxPolicy](TaxPolicy.md) (8), [Sector](Sector.md) (7), [GameFiles](GameFiles.md) (6), [Traffic](Traffic.md) (5), [BuildingManager](BuildingManager.md) (5), [LongPlaytest](LongPlaytest.md) (5), [Founding](Founding.md) (4), [Motoring](Motoring.md) (4), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 ## Sections
 
@@ -73,6 +73,7 @@
 | 537 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
 | 750 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
 | 806 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
+| 882 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
 
 ## Fields (state)
 
@@ -84,11 +85,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 832 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 60 | 884 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 64 | 7 | `static void quietly(Runnable r)` |  |
 | 72 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 77 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 83 | 3 | `static boolean same(double a, double b)` | Bitwise. |
 | 87 | 8 | `static InfrastructureManager network()` |  |
-| 96 | 795 | `public static void main(String[] args)` |  |
+| 96 | 847 | `public static void main(String[] args)` |  |
 

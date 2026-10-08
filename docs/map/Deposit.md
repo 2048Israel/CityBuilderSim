@@ -29,7 +29,7 @@
 
 **Uses:** [World](World.md) (6), [Resource](Resource.md) (3)
 
-**Used by (10):** [CityLand](CityLand.md), [CityMap](CityMap.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [World](World.md), [WorldCheck](WorldCheck.md)
+**Used by (13):** [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [GridConversion](GridConversion.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LegacyLand](LegacyLand.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [World](World.md), [WorldCheck](WorldCheck.md)
 
 ## Sections
 

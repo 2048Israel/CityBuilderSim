@@ -36,8 +36,9 @@ import java.util.Map;
  * differ by an ulp. A world built twice, or on Jerus's PC, is the same world.
  *
  * BUILT ON FIRST USE. new World(seed) and World.of(seed) cost nothing; the
- * first question asked of a world runs the sea pass (the sea's level from
- * four samples a cell, the land and forest in every cell), the founding
+ * first question asked of a world runs the sea pass (the sea's level, and
+ * since 0.7.79 its shelf's, from four samples a cell, the land and forest in
+ * every cell), the founding
  * site's search and the river - about half a second - and nothing is stored
  * that the seed cannot give back. World.of() keeps the last few worlds asked
  * for, so the screens and the land office share one.
@@ -176,6 +177,23 @@ public final class World {
     /** How far above the sea's level, in the elevation field, land is beach: 0.0015. */
     public static final double BEACH_BAND = 0.0015;
 
+    /* ----- the sea's depth (0.7.79, batch O3; runs/spec-oil.md 2.7) -----
+     * The generated world had a sea and no depth; a platform stands only on
+     * shallow sea (O10), so the sea gets one, from the same elevation field:
+     * the shallowest SHELF_SHARE of the sea's samples are the continental
+     * shelf, its edge SHELF_BREAK_M deep, and depthAt() runs linearly in the
+     * elevation from the sea's level to that edge and on below it. Found in
+     * the sea pass from its own sorted samples (shelfTheta()), so a world
+     * from any save has one and nothing is stored; the prototype
+     * (scratch-oil's ShelfProto) measured the shelf's level 0.528-0.557 over
+     * three seeds. GEBCO's bathymetry can replace it (spec-earth). */
+
+    /** The continental shelf's share of the sea: 8.86% (est., the shelf's share of the ocean's area, Harris et al. 2014 - spec-oil 2.7 and 6, to confirm). */
+    public static final double SHELF_SHARE = 0.0886;
+
+    /** The depth of the shelf's edge, in metres: 140 (est., the mean shelf break - spec-oil 2.7 and 6, to confirm); depthAt() is this at shelfTheta(). */
+    public static final double SHELF_BREAK_M = 140;
+
     /* =====================================================================
        THE FOUNDING SITE (spec-land 2.1)
 
@@ -198,7 +216,7 @@ public final class World {
     /** Rings in a cell's spiral: 70, out to 1,173 plots (35 km), past the cell's own half-width of 1,024. */
     public static final int SITE_RINGS = 70;
 
-    /** Test 1: the site and eight points this far round it are dry ground, in plots: 20 (600 m), room for a new city's 0.28 km2 square (half-side 264 m). */
+    /** Test 1: the site and eight points this far round it are dry ground, in plots: 20 (600 m), room for a new city's centre - since 0.7.67 rings of 120 m blocks round the site's own, on the default world 21 of them, 0.30 km2, within 360 m of it each way (a 0.28 km2 square, half-side 264 m, until 0.7.66). */
     public static final int SITE_DRY_PLOTS = 20;
 
     /** Test 2: of SITE_LAND_SAMPLES points within 5 km, at least this share are land: 60%. */
@@ -346,6 +364,8 @@ public final class World {
     private volatile boolean built;
 
     private double seaTheta;
+    /** The shelf's edge in the elevation field (0.7.79): see shelfTheta(). */
+    private double shelfTheta;
     /** Each cell's land and forest, in quarters (of its SEA_SAMPLES). */
     private byte[] landQuarters, forestQuarters;
     private long fx, fy;
@@ -476,6 +496,9 @@ public final class World {
         double[] sorted = e.clone();
         Arrays.sort(sorted);
         seaTheta = sorted[(int) (SEA_SHARE * sorted.length)];
+        // ...and the shelf's edge, from the same samples: the shallowest SHELF_SHARE of the sea's lie at it and above (0.7.79).
+        int seaN = (int) (SEA_SHARE * sorted.length);
+        shelfTheta = sorted[(int) (seaN - SHELF_SHARE * seaN)];
         landQuarters = new byte[n];
         forestQuarters = new byte[n];
         for (int c = 0; c < n; c++) {
@@ -494,6 +517,24 @@ public final class World {
 
     /** The sea's level: the elevation SEA_SHARE of the world's samples lie under. */
     public double seaTheta() { build(); return seaTheta; }
+
+    /** The continental shelf's edge in the elevation field (0.7.79): the level the shallowest SHELF_SHARE of the sea's samples lie at and above, so under seaTheta(). */
+    public double shelfTheta() { build(); return shelfTheta; }
+
+    /**
+     * The sea's depth at a plot's centre, in metres below its level (0.7.79,
+     * batch O3; spec-oil 2.7): 0 where the plot is not sea (land, beach, a
+     * lake or the river - on the world terrainAt() is SALT exactly where it
+     * is over 0), SHELF_BREAK_M at shelfTheta(), and linear in the
+     * elevation from the sea's level to the shelf's edge and on at the same
+     * slope below it. Off the world, what the elevation there says. Pure; an
+     * elevation's cost, about half a microsecond.
+     */
+    public double depthAt(long x, long y) {
+        build();
+        double e = elevation(x + 0.5, y + 0.5);
+        return e < seaTheta ? SHELF_BREAK_M * (seaTheta - e) / (seaTheta - shelfTheta) : 0;
+    }
 
     /** A cell's land, as a share of its samples: 0, 0.25, 0.5, 0.75 or 1. */
     public double cellLandShare(int cell) { build(); return landQuarters[cell] / (double) SEA_SAMPLES; }

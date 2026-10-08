@@ -39,7 +39,7 @@ public enum CareType {
     /** Everything that is not a healthcare building. */
     NONE("None"),
 
-    /** Daycare and nurseries: babies and children. */
+    /** Childcare centres (the daycares until 0.7.71): babies and children. */
     CHILDCARE("Childcare"),
 
     /** Clinics and hospitals: the whole city, and the sick rate comes from here. */

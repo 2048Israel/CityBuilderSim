@@ -1,4 +1,4 @@
-# CentralBankCheck.java - 1,756 lines · 25 methods · 5 constants · harnesses
+# CentralBankCheck.java - 1,770 lines · 25 methods · 5 constants · harnesses
 
 `ham/citybuildersim/CentralBankCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
@@ -112,7 +112,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 155 | 1602 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 155 | 1616 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
 | 161 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 166 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 176 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -163,14 +163,14 @@
 |---:|---:|---|---|
 | 1371 | 116 | `static void theSurplusPaysEveryone() throws Exception` |  |
 
-### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1488-1756)
+### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1488-1770)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1496 | 4 | `static double oldRule(double inflation, double target)` | The rule as it was until 0.7.51, written out: the neutral rate, the target's distance from the default, and TAYLOR_WEIGHT on the gap. |
 | 1502 | 1 | `static boolean bits(double a, double b)` | Equal to the bit (a NaN as any NaN). |
 | 1510 | 167 | `static void howStrict() throws Exception` |  |
-| 1697 | 43 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 2's shape - 42 houses, then three months before the next 20 - and its rhythm (LongPlaytest.main's skips, schools and advice) to STRICT_BRAN... |
-| 1742 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
-| 1747 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
+| 1711 | 43 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 11's shape - 43 houses, then five months before the next 20 - and its rhythm (LongPlaytest.main's skips, schools and advice) to STRICT_BRAN... |
+| 1756 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
+| 1761 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
 

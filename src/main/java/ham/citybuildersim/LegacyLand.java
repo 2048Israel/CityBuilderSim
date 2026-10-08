@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The city's land as spec-land drew it, read-only: a square centre round the founding site and forty lanes of wedges pushed out band by band - the geometry CityLand sells along, and the ground a format-31 save holds.
+ * The city's land as spec-land drew it, read-only: a square centre round the founding site and forty lanes of wedges pushed out band by band - the geometry CityLand sold along from 0.7.57 to 0.7.66, and the ground a format-31 save holds.
  *
  * WHY THIS EXISTS (0.7.66, batch M2; the project's spec-grid.md 2.6 and 3).
  * The land moved onto a grid of square blocks (LandGrid, GridOffers): since
@@ -17,11 +17,12 @@ import java.util.Map;
  * centre's half-side, forty frontiers and each purchase's band - and to put
  * that ground on the grid (GridConversion) something must still say which
  * plots it owned. So the lane geometry moved here, whole and unchanged, and
- * CityLand delegates to it (radius(), sideLane(), point(), bandKm2(),
- * outerRadius(), owns(), inCentre(), inBand()): nothing it computes moved by
- * a bit (ConversionCheck 1). Since 0.7.67 (batch M3) CityLand is the grid's
- * and sells along no lanes; this is the lanes' only reader, and J1b's
- * centre profile is kept here for its site search (LandConversion.site()).
+ * until 0.7.67 CityLand delegated to it (radius(), sideLane(), point(),
+ * bandKm2(), outerRadius(), owns(), inCentre(), inBand()): nothing it
+ * computed moved by a bit (ConversionCheck 1). Since 0.7.67 (batch M3)
+ * CityLand is the grid's and sells along no lanes; this is the lanes' only
+ * reader, and J1b's centre profile is kept here for its site search
+ * (LandConversion.site()).
  *
  * THE GEOMETRY (spec-land star 1). Every point is seen from the founding
  * site's plot centre: its side is N, E, S or W by the larger of |x| and |y|
@@ -45,7 +46,7 @@ public final class LegacyLand {
     /** Sides of the city, seen from the founding site: north, east, south and west, in that order - the larger of |x| and |y| says which (spec-land star 1). */
     public static final int SIDES = 4;
 
-    /** Lanes on a side: ten wedges fanning out from the site, each with one offer standing (spec-land star 1). */
+    /** Lanes on a side: ten wedges fanning out from the site, each with one offer standing until 0.7.66 (spec-land star 1). */
     public static final int LANES = 10;
 
     /** The sides' names, in their order. */
@@ -171,8 +172,8 @@ public final class LegacyLand {
      * A save's land as it holds it, on the world of `seed`: its centre's
      * record (CENTRE_FIELDS wide), its forty frontiers and its purchases' records
      * (PURCHASE_FIELDS wide; a record of another width is passed over, as
-     * CityLand.restore() passes it). Null when the centre's record is missing
-     * or the wrong width.
+     * CityLand.restore() passed it until 0.7.66). Null when the centre's
+     * record is missing or the wrong width.
      */
     public static LegacyLand restore(long seed, double[] centre, double[] lanes, double[][] purchases) {
         if (centre == null || centre.length != CENTRE_FIELDS) return null;
@@ -276,7 +277,7 @@ public final class LegacyLand {
         return Math.max(centreHalf, r);
     }
 
-    /** Whether the ground owns the point (dx, dy) from the site: CityLand.owns()'s test. */
+    /** Whether the ground owns the point (dx, dy) from the site: CityLand.owns()'s test until 0.7.66. */
     public boolean owns(double dx, double dy) { return owns(centreHalf, frontier, dx, dy); }
 
     /** Whether the ground owns a plot, at its centre. */

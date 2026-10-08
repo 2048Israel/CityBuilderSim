@@ -239,18 +239,30 @@ public final class Rail extends Sector {
      * ...AND THAT DAY CAME (0.7.62, batch K): fuel is a good, and the railway
      * draws it - FUEL_LITRES_PER_TONNE a tonne hauled, off the refiners'
      * shelf and the rest from the world, at what the draw came to - as a
-     * buyer on the FUEL market (Markets.draw()). This is what a tonne's fuel
-     * costs at the import price, and what the litres are derived from.
+     * buyer on the FUEL market (Markets.draw()). This was what a tonne's fuel
+     * cost at the import price, and what the litres were derived from. The
+     * fuel is DIESEL since 0.7.76 (batch O1): a locomotive burns diesel, and
+     * a refinery makes it apart from the drivers' petrol.
+     *
+     * ...AND SINCE 0.7.78 (batch O2) IT IS HISTORY: diesel is priced on the
+     * research's wholesale ladder, .0006883 a litre where FUEL's pump price
+     * was .0016667, so a tonne's diesel now costs 18 L at the ladder's price,
+     * .0124, not this. Nothing reads it; FUEL_LITRES_PER_TONNE keeps the
+     * litres it gave.
      */
     public static final double WORLD_FUEL_PER_TONNE = .03;
 
     /**
-     * Litres of fuel a tonne hauled burns (0.7.62): WORLD_FUEL_PER_TONNE over
-     * a litre's import price (Good.FUEL), eighteen - so a city with no
-     * refinery pays the railway's fuel bill it always paid, at the world's
-     * price level.
+     * Litres of fuel a tonne hauled burns: eighteen. From 0.7.62 to 0.7.77 it
+     * was WORLD_FUEL_PER_TONNE over a litre's import price (Good.FUEL's, then
+     * Good.DIESEL's at FUEL's band), .03 over .0016667, so a city with no
+     * refinery paid the railway's fuel bill it always had, and the quotient
+     * came to 17.999999999999996. Since 0.7.78 (batch O2, spec-oil 2.5) diesel
+     * is on the wholesale ladder and the quotient would be 43.6 litres: the
+     * litre a locomotive burns does not change with its price, so the
+     * eighteen is pinned as a literal and the bill falls 59% with the price.
      */
-    public static final double FUEL_LITRES_PER_TONNE = WORLD_FUEL_PER_TONNE / Good.FUEL.worldImportPrice();
+    public static final double FUEL_LITRES_PER_TONNE = 18;
 
     /** The share of the lorry rate it is charging, today. */
     private double quote = OPENING_QUOTE;
@@ -389,8 +401,8 @@ public final class Rail extends Sector {
         for (Traffic stream : Traffic.values()) moved += tonnes[stream.ordinal()] * carried[stream.ordinal()];
 
         bookOtherRevenue(haulage);
-        // ...its fuel, drawn as a buyer (0.7.62): the refiners' shelf first, the world for the rest.
-        Markets.Draw took = markets.draw(Good.FUEL, this, key(), moved * FUEL_LITRES_PER_TONNE, sectors);
+        // ...its fuel, drawn as a buyer (0.7.62): the refiners' shelf first, the world for the rest - diesel (0.7.76).
+        Markets.Draw took = markets.draw(Good.DIESEL, this, key(), moved * FUEL_LITRES_PER_TONNE, sectors);
         double fuel = took.cost();
 
         rHaulage = haulage;
@@ -651,8 +663,8 @@ public final class Rail extends Sector {
         double spare = Math.max(0, rTonnes - rCapacity);
         double picked = Math.min(t.getRailCapacity(), spare);
         double revenue = picked * lorryRatePerTonne() * quote;
-        // ...its fuel at what a litre costs to bring in today (0.7.62): the refiners' price or the world's.
-        double litre = markets == null ? Good.FUEL.worldImportPrice() : markets.get(Good.FUEL).landedPrice();
+        // ...its fuel at what a litre costs to bring in today (0.7.62): the refiners' price or the world's - diesel's (0.7.76).
+        double litre = markets == null ? Good.DIESEL.worldImportPrice() : markets.get(Good.DIESEL).landedPrice();
         double fuel = picked * FUEL_LITRES_PER_TONNE * (Double.isFinite(litre) ? Math.max(0, litre) : 0);
         return revenue - fuel - plans.runningCostOf(t) - plans.standingCostOf(this, t);
     }
@@ -763,8 +775,12 @@ public final class Rail extends Sector {
         return parts;
     }
 
+    /** Its formal statements' format (0.7.74, spec-sector-statements 4.6): a carrier, read by its revenue a worker. */
     @Override
-    public String inputLabel() { return "Fuel"; }
+    public ham.citybuildersim.SectorStatements.Format statementFormat() { return ham.citybuildersim.SectorStatements.Format.CARRIERS; }
+
+    @Override
+    public String inputLabel() { return "Diesel"; }
 
     /* ------------------------------------------------------------ the screen */
 
@@ -793,7 +809,7 @@ public final class Rail extends Sector {
                 quote < .5 ? Line.Tone.GOOD : quote > .85 ? Line.Tone.WARN : Line.Tone.NONE));
         lines.add(Line.of("A lorry charges", f.amount(lorryRatePerTonne()) + " a tonne"));
         lines.add(Line.of("Haulage billed", f.amount(rHaulage)));
-        lines.add(Line.of("Fuel", f.amount(rFuel), Line.Tone.MUTED));
+        lines.add(Line.of("Diesel", f.amount(rFuel), Line.Tone.MUTED));
 
         if (rCapacity <= 0) {
             lines.add(Line.note("There is no railway. Everything the city trades goes by "

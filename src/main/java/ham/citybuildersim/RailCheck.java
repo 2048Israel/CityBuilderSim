@@ -365,8 +365,8 @@ public class RailCheck {
          * notional costs.
          */
         // The fuel a good since 0.7.62 (batch K): FUEL bought abroad, where it was an import with no good
-        // behind it (the statement's other input "Fuel") - this town has no refinery, so all of it.
-        double fuelBill = rail.statement().bought.getOrDefault(Good.FUEL, new Sector.Split()).abroad;
+        // behind it (the statement's other input "Fuel") - this town has no refinery, so all of it. DIESEL since 0.7.76.
+        double fuelBill = rail.statement().bought.getOrDefault(Good.DIESEL, new Sector.Split()).abroad;
         double trainBill = rail.statement().bought
                 .getOrDefault(Good.ROLLING_STOCK, new Sector.Split()).abroad;
         report("the railway's fuel and its locomotives are both imports",
@@ -385,8 +385,8 @@ public class RailCheck {
          */
         Sectors.TradeByGood goods = game.getTradeByGood();
         Sectors.GoodTrade wagons = goods.goods().get(Good.ROLLING_STOCK);
-        // ...the fuel among FUEL's buyers since 0.7.62, where it was the railway's line of imports with no good.
-        Sectors.GoodTrade fuelGood = goods.goods().get(Good.FUEL);
+        // ...the fuel among FUEL's buyers since 0.7.62, where it was the railway's line of imports with no good - DIESEL's since 0.7.76.
+        Sectors.GoodTrade fuelGood = goods.goods().get(Good.DIESEL);
         report("...and the Trade tab's goods name the fuel as the railway's, the trains as rolling stock",
                 fuelGood != null && near(fuelGood.buyers().getOrDefault(Sectors.RAIL, 0.0), fuelBill, 1e-9)
                         && !goods.services().containsKey(Sectors.RAIL)
@@ -486,7 +486,17 @@ public class RailCheck {
         double allowedWas = rail.getAllowedRevenue(), abroadWas = rail.getPaidAbroad();
         quietly(() -> game.saveGame(10));
         Game reloaded = new Game(files);
-        quietly(() -> { reloaded.run(); reloaded.loadGame(10); });
+        /*
+         * ...BY THE GAME'S OWN LOAD (0.7.78), where it was run() and then
+         * loadGame(): run() founds the city's bank (Game.foundingBank()) and
+         * the load ADDS the saved buildings to what stands, so the reload had
+         * two Commercial Banks to the live city's one - section 6's "a
+         * reloaded railway bills the month the live one bills" compared two
+         * cities, the 0.7.58 shape again. At 0.7.77 the bills matched by
+         * chance; at 0.7.78, with diesel on the ladder, they missed by five
+         * tonnes. loadGameSave() rebuilds the world first, as the game does.
+         */
+        quietly(() -> reloaded.loadGameSave(10));
         Rail back = reloaded.getSectors().rail();
         report("the quote came back",
                 same(back.getQuote(), quoteWas),

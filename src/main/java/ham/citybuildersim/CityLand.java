@@ -356,6 +356,14 @@ public final class CityLand {
         return out;
     }
 
+    /** ...and each holding's sites of it, in the same order (0.7.79). */
+    public long[] sitesInOrder(Resource r) {
+        long[] out = new long[1 + purchases.size()];
+        out[0] = centreSites[r.ordinal()];
+        for (int i = 0; i < purchases.size(); i++) out[i + 1] = purchases.get(i).offer().getSites(r);
+        return out;
+    }
+
     /** A side's name: North, East, South or West. */
     public static String sideName(int side) { return SIDE_NAMES[side]; }
 
@@ -452,6 +460,57 @@ public final class CityLand {
                 amounts[p.kind().ordinal()] += d.siteAmount(k);
             }
         }
+    }
+
+    /** A field the city holds, and how much of it: every site and all its amount of a whole field, the sites a holding has of a part field. */
+    public record Held(Deposit field, int sites, double amount) { }
+
+    /**
+     * The fields of a resource the city holds, holding by holding in
+     * acquisition order - the centre first, then each purchase (0.7.79, batch
+     * O3): each whole field in the holding whose ground holds its centre plot
+     * (in the world's order, its cell row by row and then its index), then
+     * the sites a holding has of each part field (siteHolding()). What the
+     * ground is worked out in and what its sites lie on (LandManager's oil
+     * by grade, and its dry and sea sites). A holding's books are as it was
+     * listed, so the fields here can fall short of them - a fixture's ground
+     * by fiat (setCentre()) - and the reader reconciles them.
+     */
+    public List<List<Held>> heldFields(Resource r) {
+        int n = 1 + purchases.size();
+        List<List<Held>> out = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) out.add(new ArrayList<>());
+        if (!r.inFields() || grid.ownedPlots() == 0) return out;
+        World world = World.of(seed);
+        // The cells under the holdings' rectangles, each once, in the world's order.
+        java.util.TreeSet<Integer> cells = new java.util.TreeSet<>();
+        for (LandGrid.Fill f : centreRects) for (int c : cellsUnder(f.x0(), f.y0(), f.x1() - 1, f.y1() - 1)) cells.add(c);
+        for (Purchase p : purchases) {
+            LandParcel o = p.offer();
+            for (int c : cellsUnder(o.getX0(), o.getY0(), o.getX1() - 1, o.getY1() - 1)) cells.add(c);
+        }
+        for (int cell : cells) {
+            for (Deposit d : world.fieldsInCell(cell, r)) {
+                if (isPart(d)) continue;
+                int h = grid.owner(d.x(), d.y());
+                if (h >= 0 && h < n) out.get(h).add(new Held(d, d.sites(), d.amount()));
+            }
+        }
+        for (GridConversion.PartField p : parts) {
+            if (p.kind() != r) continue;
+            Deposit d = fieldOf(world, p);
+            if (d == null) continue;
+            int[] sites = new int[n];
+            double[] amounts = new double[n];
+            for (int k = 0; k < d.sites(); k++) {
+                int h = siteHolding(d, k);
+                if (h < 0 || h >= n) continue;
+                sites[h]++;
+                amounts[h] += d.siteAmount(k);
+            }
+            for (int h = 0; h < n; h++) if (sites[h] > 0) out.get(h).add(new Held(d, sites[h], amounts[h]));
+        }
+        return out;
     }
 
     /** The world's field a part field record names, or null. */

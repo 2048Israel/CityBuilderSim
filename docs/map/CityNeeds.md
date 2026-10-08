@@ -1,4 +1,4 @@
-# CityNeeds.java - 983 lines · 46 methods · 20 constants · model
+# CityNeeds.java - 984 lines · 46 methods · 20 constants · model
 
 `ham/citybuildersim/CityNeeds.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
@@ -54,8 +54,8 @@
 | 498 | · · the ground |
 | 504 | · · the money |
 | 539 | · · the promises |
-| 680 | THE PIECES |
-| 854 | · the student body the city would get and hire (0.7.51) |
+| 681 | THE PIECES |
+| 855 | · the student body the city would get and hire (0.7.51) |
 
 ## Enum constants
 
@@ -120,13 +120,13 @@
 | 273 | `CityNeeds.SERVED` | `"served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough"` | The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. |
 | 569 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
 | 572 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
-| 857 | `CityNeeds.FIRST_SCHOOL_SHARE` | `.5` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FA... |
+| 858 | `CityNeeds.FIRST_SCHOOL_SHARE` | `.5` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FA... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 945 | **type** `public final class CityNeeds` | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, the header's "Needs you" chip counts, and the Build tab's overview and ... |
+| 39 | 946 | **type** `public final class CityNeeds` | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, the header's "Needs you" chip counts, and the Build tab's overview and ... |
 | 41 | 1 | `private CityNeeds()` |  |
 | 44 | 6 | **type** `public enum Kind` | What a need is about - the measure the Build tab's advice and rings read. |
 | 52 | 6 | **type** `public enum Go` | Where a need's fix is: the screen its row opens. |
@@ -161,46 +161,46 @@
 | 346 | 4 | `public static Served verdict(Kind kind, CareType care, double share)` | The one verdict on a served share of one of NEEDS YOU's served kinds (0.7.41); null for a kind that is not a supply against a demand. |
 | 360 | 5 | `public static String freshLimitLine(UtilitiesHandler utilities)` | THE FRESH WATER LIMIT'S LINE (0.7.59, batch J2): what the Services page says under the water when the city's lakes and river hold its plants back - "fresh water limit: 62% of the plants' nameplate idle · buy lake or r... |
 
-### THE LIST (lines 366-679)
+### THE LIST (lines 366-680)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 375 | 192 | `public static List<Need> measure(Game game, Words w)` | Everything with a lever, measured against its own line, in the order it is read - the fine ones too, because "next to watch" on a healthy city is the nearest of them. |
 | 588 | 25 | `public static Need prices(Game game)` | PRICES (0.7.45; the UI spec's D2): whether the city still believes the central bank. |
-| 627 | 8 | `public static Need ground(Game game, Words w)` | The GROUND row on its own (0.7.26), as measure() lists it: what the land office's GROUND FREE, Build's LAND FREE and the left panel's land colour themselves by, so the three and NEEDS YOU agree - none of them reads th... |
-| 642 | 6 | `public static List<Need> biting(List<Need> all)` | NEEDS YOU: what is near a line or past one, red above yellow - and inside a tier the order they were measured in, which is the order a city is built. |
-| 650 | 3 | `public static List<Need> needsYou(Game game)` | NEEDS YOU for this city, in the panel's order. |
-| 659 | 4 | `public static Need worst(List<Need> all, Go go)` | The worst need of those a screen answers: the highest level, and of equals the first in NEEDS YOU's order - the row the panel would list first. |
-| 671 | 8 | `public static Need worstUnlisted(List<Need> all, Go go)` | ...and of the served rows NEEDS YOU does NOT list, the one that is still not enough (0.7.41): general care at 90% is past its line, so not listed, and short of 100% - the worst verdict, of equals the first in order. |
+| 628 | 8 | `public static Need ground(Game game, Words w)` | The GROUND row on its own (0.7.26), as measure() lists it: what the land office's GROUND FREE, Build's LAND FREE and the left panel's land colour themselves by, so the three and NEEDS YOU agree - none of them reads th... |
+| 643 | 6 | `public static List<Need> biting(List<Need> all)` | NEEDS YOU: what is near a line or past one, red above yellow - and inside a tier the order they were measured in, which is the order a city is built. |
+| 651 | 3 | `public static List<Need> needsYou(Game game)` | NEEDS YOU for this city, in the panel's order. |
+| 660 | 4 | `public static Need worst(List<Need> all, Go go)` | The worst need of those a screen answers: the highest level, and of equals the first in NEEDS YOU's order - the row the panel would list first. |
+| 672 | 8 | `public static Need worstUnlisted(List<Need> all, Go go)` | ...and of the served rows NEEDS YOU does NOT list, the one that is still not enough (0.7.41): general care at 90% is past its line, so not listed, and short of 100% - the worst verdict, of equals the first in order. |
 
-### THE PIECES (lines 680-853)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 685 | 5 | `public static double careCover(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | How much of the people who need a kind of care the staffed beds could take: the panel's coverage, Game.careCoverage()'s. |
-| 692 | 3 | `public static double careServed(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | ...the same places over the same people, unclamped: what the care rows read as served (0.7.41), and Build's care rings. |
-| 697 | 3 | `static double careHave(Game game, CareType care, double[] staffing)` | The staffed places of a kind of care: what its row carries as its supply (0.7.41). |
-| 702 | 5 | `public static double taxRaised(Game game)` | What the city raised in tax last month: profit, sales, wages and property (the Policy tab's TAX A MONTH). |
-| 709 | 9 | `public static int pinnedBands(Game game)` | Wage bands pinned to the minimum wage with people spare in them. |
-| 725 | 4 | `public static int level(double value, double yellow, double red, boolean higherWorse)` | A figure's level against two lines, as a row is struck - over() when higher is worse, under() when lower is (0.7.28): for a screen that colours a figure no row lists (the Services screen's OFF SICK) by the same rule, ... |
-| 731 | 7 | `static void over(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, CareT...` | Higher is worse. |
-| 740 | 7 | `static void under(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, Care...` | Lower is worse. |
-| 749 | 5 | `static void flag(List<Need> out, String label, String reading, boolean bad, boolean severe, Kind kind, Go go, double value)` | A thing that is simply true or not. |
-| 763 | 16 | `static void onTheWay(Game game, Words w, List<Need> out, int at, java.util.function.Predicate<BuildingsTemplate> serves)` | ...AND WHAT IS ALREADY ON THE WAY (0.7.20). |
-| 781 | 4 | `static void onTheWay(Game game, Words w, List<Need> out, java.util.function.Predicate<BuildingsTemplate> serves)` | The same, for the need just measured. |
-| 797 | 19 | `static void network(List<Need> out, String label, Kind kind, double demand, double supply, double ratio)` | One network: how much of its capacity is spoken for, and whether it is still meeting demand. |
-| 837 | 16 | `static void seatsWanted(Game game, Words w, List<Need> out)` | SEATS AGAINST WHO WOULD COME, for the schools above the basic ladder: what the schools hold, and the student body this city would sustain - so a bigger second number means another building fills. |
-
-### the student body the city would get and hire (0.7.51) (lines 854-983)
+### THE PIECES (lines 681-854)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 860 | 4 | `public static boolean listsSchool(Game game, EducationType type, double want, double seats)` | Whether a school above the ladder is a row: a class's worth wanted (SEATS_FLOOR), and with no seats of its kind yet, FIRST_SCHOOL_SHARE of the smallest school's. |
-| 866 | 7 | `public static double smallestSchool(Game game, EducationType type)` | The seats of the smallest building that teaches this; 0 when none does. |
-| 880 | 3 | `public static double wanted(Game game, EducationType type, double months, double k)` | The student body the city would get and hire, `months` from now with its posts grown by k: the smaller of who would come by then (wouldComeAt()) and the posts their degree would fill (hires()). |
-| 885 | 6 | `public static double wouldComeAt(Game game, EducationType type, double months)` | Who would come `months` from now: wouldCome()'s arithmetic with the feeder's graduates by then added to the band (feederOver()); at 0 it is wouldCome(). |
-| 899 | 11 | `public static double feederOver(Game game, EducationType type, double months)` | The feeder's graduates over the next `months`: for a college or a university the high schools' diplomas a month at the ladder's saved coverage (Education.schoolLeavers(), advanceMonth()'s flow) times the months; for a... |
-| 919 | 27 | `public static double hires(Game game, EducationType type, double k)` | The posts this school's graduates would take, as a student body: the posts of the band it qualifies for (a professional school: its licence's posts), standing and on site, grown by k, less the people already qualified... |
-| 948 | 7 | `public static double wouldCome(Game game, EducationType type)` | The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. |
-| 964 | 19 | `static void fallsDue(Game game, Words w, List<Need> out)` | FALLS DUE (0.7.24). |
+| 686 | 5 | `public static double careCover(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | How much of the people who need a kind of care the staffed beds could take: the panel's coverage, Game.careCoverage()'s. |
+| 693 | 3 | `public static double careServed(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | ...the same places over the same people, unclamped: what the care rows read as served (0.7.41), and Build's care rings. |
+| 698 | 3 | `static double careHave(Game game, CareType care, double[] staffing)` | The staffed places of a kind of care: what its row carries as its supply (0.7.41). |
+| 703 | 5 | `public static double taxRaised(Game game)` | What the city raised in tax last month: profit, sales, wages and property (the Policy tab's TAX A MONTH). |
+| 710 | 9 | `public static int pinnedBands(Game game)` | Wage bands pinned to the minimum wage with people spare in them. |
+| 726 | 4 | `public static int level(double value, double yellow, double red, boolean higherWorse)` | A figure's level against two lines, as a row is struck - over() when higher is worse, under() when lower is (0.7.28): for a screen that colours a figure no row lists (the Services screen's OFF SICK) by the same rule, ... |
+| 732 | 7 | `static void over(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, CareT...` | Higher is worse. |
+| 741 | 7 | `static void under(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, Care...` | Lower is worse. |
+| 750 | 5 | `static void flag(List<Need> out, String label, String reading, boolean bad, boolean severe, Kind kind, Go go, double value)` | A thing that is simply true or not. |
+| 764 | 16 | `static void onTheWay(Game game, Words w, List<Need> out, int at, java.util.function.Predicate<BuildingsTemplate> serves)` | ...AND WHAT IS ALREADY ON THE WAY (0.7.20). |
+| 782 | 4 | `static void onTheWay(Game game, Words w, List<Need> out, java.util.function.Predicate<BuildingsTemplate> serves)` | The same, for the need just measured. |
+| 798 | 19 | `static void network(List<Need> out, String label, Kind kind, double demand, double supply, double ratio)` | One network: how much of its capacity is spoken for, and whether it is still meeting demand. |
+| 838 | 16 | `static void seatsWanted(Game game, Words w, List<Need> out)` | SEATS AGAINST WHO WOULD COME, for the schools above the basic ladder: what the schools hold, and the student body this city would sustain - so a bigger second number means another building fills. |
+
+### the student body the city would get and hire (0.7.51) (lines 855-984)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 861 | 4 | `public static boolean listsSchool(Game game, EducationType type, double want, double seats)` | Whether a school above the ladder is a row: a class's worth wanted (SEATS_FLOOR), and with no seats of its kind yet, FIRST_SCHOOL_SHARE of the smallest school's. |
+| 867 | 7 | `public static double smallestSchool(Game game, EducationType type)` | The seats of the smallest building that teaches this; 0 when none does. |
+| 881 | 3 | `public static double wanted(Game game, EducationType type, double months, double k)` | The student body the city would get and hire, `months` from now with its posts grown by k: the smaller of who would come by then (wouldComeAt()) and the posts their degree would fill (hires()). |
+| 886 | 6 | `public static double wouldComeAt(Game game, EducationType type, double months)` | Who would come `months` from now: wouldCome()'s arithmetic with the feeder's graduates by then added to the band (feederOver()); at 0 it is wouldCome(). |
+| 900 | 11 | `public static double feederOver(Game game, EducationType type, double months)` | The feeder's graduates over the next `months`: for a college or a university the high schools' diplomas a month at the ladder's saved coverage (Education.schoolLeavers(), advanceMonth()'s flow) times the months; for a... |
+| 920 | 27 | `public static double hires(Game game, EducationType type, double k)` | The posts this school's graduates would take, as a student body: the posts of the band it qualifies for (a professional school: its licence's posts), standing and on site, grown by k, less the people already qualified... |
+| 949 | 7 | `public static double wouldCome(Game game, EducationType type)` | The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. |
+| 965 | 19 | `static void fallsDue(Game game, Words w, List<Need> out)` | FALLS DUE (0.7.24). |
 

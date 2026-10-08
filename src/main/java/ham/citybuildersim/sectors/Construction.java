@@ -725,6 +725,10 @@ public final class Construction extends Sector {
        THE SCREEN
        =================================================================== */
 
+    /** Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. */
+    @Override
+    public ham.citybuildersim.SectorStatements.Format statementFormat() { return ham.citybuildersim.SectorStatements.Format.BUILDERS; }
+
     @Override
     public String inputLabel() { return "Materials bought"; }
 

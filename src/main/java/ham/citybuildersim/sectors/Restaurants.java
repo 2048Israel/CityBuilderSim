@@ -446,6 +446,10 @@ public class Restaurants extends Sector {
        THE SCREEN
        =================================================================== */
 
+    /** Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. */
+    @Override
+    public ham.citybuildersim.SectorStatements.Format statementFormat() { return ham.citybuildersim.SectorStatements.Format.MERCHANTS; }
+
     @Override
     public boolean hasPlantBlock() { return false; }
 

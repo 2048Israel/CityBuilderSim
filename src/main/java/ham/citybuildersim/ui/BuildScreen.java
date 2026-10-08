@@ -378,6 +378,12 @@ final class BuildScreen {
         // ...and the way to the construction page (0.7.22): what is on site, and the hand on it.
         Label sites = stepChip("Construction ›", () -> ui.constructionScreen.show(), true);
         HBox head = new HBox(Palette.GAP_LOOSE, titled, gap, keyLine(), sites, receiptCorner(menuTitle, categories));
+        // ...and, while it is on, automatic building's chip (0.7.73): the way to its cards on the Overview.
+        if (ui.game.getAutoBuilder().isOn() && !BuildAdvice.OVERVIEW.equals(menuTitle)) {
+            Label auto = stepChip(AUTO_CHIP, this::showOverview, true);
+            auto.setStyle(auto.getStyle() + " -fx-text-fill: " + Palette.GOOD + ";");
+            head.getChildren().add(head.getChildren().indexOf(sites), auto);
+        }
         head.setAlignment(Pos.CENTER_LEFT);
         head.setMaxWidth(Double.MAX_VALUE);
         head.setStyle("-fx-padding: 0 18 4 18;");
@@ -521,7 +527,9 @@ final class BuildScreen {
      *
      * LAND FREE says the ground free in km2 (sq ft until 0.7.61; under a
      * hundredth of one in m2 since 0.7.68, LandManager.areaWords()) and gains
-     * "Buy the best land · 3.4 km² · US$12.1M ›", and the refusal pages each
+     * "Buy the best: North 3 · 3.4 km² · US$12.1M ›" (the offer's place
+     * since 0.7.69, as the land office's rows and the refusal pages name it;
+     * "Buy the best land · ..." until then), and the refusal pages each
      * gain a Buy for what they are short of - each Game.bestOffer() of its
      * need: for room, the most dry ground a dollar among the offers the city
      * can afford that are not mostly sea; on the no-land page the cheapest
@@ -562,9 +570,9 @@ final class BuildScreen {
         return cell;
     }
 
-    /** The shortcut's words: "Buy the best land · 3.4 km² · US$12.1M ›" - the offer's size and its listed price. */
+    /** The shortcut's words: "Buy the best: North 3 · 0.0288 km² · US$12.1M ›" - the offer's place (0.7.69, spec-grid 2.5), its size and its listed price. */
     static String bestLandWords(LandParcel p) {
-        return "Buy the best land · " + LandMap.area(p.getKm2()) + " · " + usd(p.getPriceUsd()) + " ›";
+        return "Buy the best: " + p.where() + " · " + LandMap.area(p.getKm2()) + " · " + usd(p.getPriceUsd()) + " ›";
     }
 
     /** ...and its tooltip: which offer, why it is the best, and what a short city's click opens. */
@@ -691,6 +699,11 @@ final class BuildScreen {
                 + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : Palette.EDGE) + ";");
         Order order = orderControls(template, key, c.name(), c.types(), dress);
         face.getChildren().addAll(order.steps(), order.build(), order.quoted());
+        // ...and on the Gravel Road's, paving them (0.7.70; ConstructionControl, F).
+        if (m != null && m.kind() == BuildAdvice.Kind.ROADS && ConstructionControl.paves(template) && f.owned() > 0) {
+            VBox pave = pavingBlock(template, c.name(), c.types());
+            if (pave != null) face.getChildren().add(pave);
+        }
 
         VBox cover = statCover(template, f);
         cover.setVisible(pinnedStats.contains(key));
@@ -706,6 +719,133 @@ final class BuildScreen {
         pageCards.add(new PageCard(template, order.reprice()));
         order.reprice().run();
         return card;
+    }
+
+    /* ----- PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70) ----- */
+
+    /** How many gravel roads the card's paving is set to: apart from orderQty, so Enter and the order bar never place it. */
+    int paveQty;
+
+    /**
+     * PAVE THEM (0.7.70; ConstructionControl, F). Jerus: "make it an option
+     * to upgrade from gravel to paved ... and that the build menu allows and
+     * recommends this if better". Under the Gravel Road card's Build: what
+     * paving one does and costs (pavingWords()), the tag "paving beats a new
+     * Paved Road" when it does over its life a trip - the advice's own test,
+     * BuildAdvice.pavingBeatsPaved(), which BuildCard.paving() reads - and
+     * the two figures either way; its
+     * own stepper, up to the gravel roads there are to pave, and its button
+     * (pavePress()), which pays out of the treasury and puts the paving on
+     * the Paved Road site (Game.paveRoads()). Null with nothing to say.
+     */
+    VBox pavingBlock(BuildingsTemplate gravel, String page, EnumSet<BuildingType> types) {
+        BuildCard.Paving p0 = BuildCard.paving(ui.game, gravel);
+        if (p0 == null) return null;
+        paveQty = Math.max(0, Math.min(paveQty, p0.paveable()));
+        Label head = new Label(PAVE_HEAD);
+        head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-font-weight: bold; -fx-padding: 6 0 0 0;");
+        String[] said = pavingWords(p0, paveQty);
+        Label what = new Label(said[0]);
+        what.setWrapText(true);
+        what.setStyle(wordsAt(9.5, Palette.TEXT_LABEL));
+        Label against = new Label(said[1]);
+        against.setWrapText(true);
+        against.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
+        Tooltip.install(against, new Tooltip(PAVE_INFO));
+        VBox block = new VBox(4, head);
+        if (p0.beatsPaved()) block.getChildren().add(tag(PAVE_TAG, Palette.GOOD));
+        block.getChildren().addAll(what, against);
+
+        Label count = new Label("0");
+        count.setMinWidth(30);
+        count.setAlignment(Pos.CENTER);
+        Label of = new Label(said[3]);
+        of.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
+        Label quoted = new Label(" ");
+        quoted.setWrapText(true);
+        quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        Pieces.ActionButton pave = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, pavePress(p0, 0), null);
+        Runnable reprice = () -> {
+            BuildCard.Paving p = BuildCard.paving(ui.game, gravel);
+            paveQty = Math.max(0, Math.min(paveQty, p.paveable()));
+            count.setText(String.valueOf(paveQty));
+            count.setStyle(Palette.figure(Palette.SIZE_BODY, paveQty > 0 ? Palette.BUILDING : Palette.TEXT_HEAD));
+            String[] words = pavingWords(p, paveQty);
+            pave.show(pavePress(p, paveQty));
+            quoted.setText(words[2]);
+            quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        };
+        Button less = stepper("−", 26, () -> { paveQty = Math.max(0, paveQty - 1); reprice.run(); });
+        Button more = stepper("+", 26, () -> { paveQty++; reprice.run(); });
+        Button ten = stepper("+10", 36, () -> { paveQty += 10; reprice.run(); });
+        Button all = stepper("all", 30, () -> { paveQty = Integer.MAX_VALUE; reprice.run(); });
+        HBox steps = new HBox(4, less, count, more, ten, all, of);
+        steps.setAlignment(Pos.CENTER_LEFT);
+        pave.onPress(() -> {
+            if (paveQty <= 0) { paveQty = 1; reprice.run(); return; }
+            if (ui.game.paveRoads(paveQty)) {
+                paveQty = 0;
+                handleAllBuildingMenus(page, types);
+            } else {
+                quoted.setText("Not paved: " + ui.game.getLastHandRefusal() + ".");
+                quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BAD));
+            }
+        });
+        reprice.run();
+        block.getChildren().addAll(steps, pave, quoted);
+        return block;
+    }
+
+    /** The paving's heading on the Gravel Road card. */
+    static final String PAVE_HEAD = "PAVE TO A PAVED ROAD";
+
+    /** ...its tag, when paving beats a new Paved Road over its life a trip. */
+    static final String PAVE_TAG = "paving beats a new Paved Road";
+
+    /** ...and the (i) on its two figures: what it costs and why it may win. */
+    static final String PAVE_INFO = "Paving lays a Paved Road on a gravel road's ground: a Paved Road's price, less the"
+            + " gravel road's material, which goes into its bed, plus taking up the old surface - so a gravel road and its"
+            + " paving cost more than a Paved Road built outright. The road carries its traffic until its paving opens, and"
+            + " the ground a Paved Road does not need comes back free. Each figure is over the road's life, a trip it takes"
+            + " off the road, its land in it, as the road cards' first bar.";
+
+    /**
+     * The paving's words (0.7.70), worked out without drawing them (a probe
+     * reads them): {what one does and costs, its figure over its life
+     * against a new Paved Road's, the quote's line for n, "of N to pave"}.
+     */
+    String[] pavingWords(BuildCard.Paving p, int n) {
+        String does = "Each adds " + formatter.format(Math.round(p.unit())) + " trips off the road and frees "
+                + LandManager.areaWords(p.frees()) + " · " + money(p.one().total) + " a road.";
+        String against = "Over its life " + money(p.perTrip()) + " a trip, against " + money(p.pavedPerTrip())
+                + " for a new Paved Road.";
+        String quoted;
+        if (n <= 0) {
+            quoted = p.paving() > 0 ? formatter.format(p.paving()) + " being paved." : " ";
+        } else {
+            Game.BuildQuote q = ui.game.quotePave(n);
+            quoted = money(q.total) + " with " + money(q.salesTax) + " sales tax  ·  " + atTodaysQueue(q.months)
+                    + (p.paving() > 0 ? "  ·  " + formatter.format(p.paving()) + " being paved" : "");
+        }
+        String of = "of " + formatter.format(p.paveable()) + " to pave";
+        return new String[] { does, against, quoted, of };
+    }
+
+    /**
+     * The paving's button (0.7.70): "Pave" and "choose how many" with none
+     * chosen; "Pave 3 · $85.1k" ready; held with nothing to pave, or short of
+     * the cash - paving is paid out of the treasury (Game.paveRoads()). A
+     * pure read.
+     */
+    Pieces.Press pavePress(BuildCard.Paving p, int n) {
+        if (p.paveable() <= 0) return new Pieces.Press(Pieces.Look.HELD, "None to pave",
+                p.paving() > 0 ? "every gravel road is being paved" : "no gravel road standing");
+        if (n <= 0) return new Pieces.Press(Pieces.Look.CHOOSE, "Pave", "choose how many");
+        Game.BuildQuote q = ui.game.quotePave(n);
+        String words = "Pave " + formatter.format(n) + " · " + money(q.total);
+        if (q.total > ui.game.getCash()) return new Pieces.Press(Pieces.Look.HELD, words,
+                "short " + money(q.total - ui.game.getCash()) + ": paving is paid from the treasury");
+        return new Pieces.Press(Pieces.Look.GO, words, null);
     }
 
     /** A run of words in a TextFlow, at a size and in a colour - so a line wraps where it must and never ends in "...". */
@@ -772,11 +912,20 @@ final class BuildScreen {
         return tags;
     }
 
+    /** A road card's first tag (0.7.70): the cheapest a trip off the road over its life, its ground in it - BuildCard.ROAD_PER, shortened. */
+    static final String ROAD_TAG = "cheapest per trip over its life";
+
+    /** ...and what its land bar is per: a trip it takes off the road (BuildAdvice.unit()). */
+    static final String ROAD_OFF = "trip off the road";
+
     /** The tags' words, for the bars the card is the best of: "cheapest per resident", "adds the most per $". */
     static List<String> tagWords(BuildCard.Figures f, BuildCard.Group group) {
         String one, two;
         switch (f.kind()) {
-            case CITY:   one = "cheapest per " + f.perTag(); two = "fewest unfilled posts per " + f.perTag(); break;
+            // A road's (0.7.70): its cost over its life with its ground, and its ground, a trip it takes off the road.
+            case CITY:   one = f.bar2Kind() == BuildCard.Bar2.LAND ? ROAD_TAG : "cheapest per " + f.perTag();
+                         two = f.bar2Kind() == BuildCard.Bar2.LAND ? "least land per " + f.perTag()
+                                 : "fewest unfilled posts per " + f.perTag(); break;
             case MAKER:  one = "adds the most per $"; two = "adds the most per m²"; break;
             case OFFICE: one = "exports the most per $"; two = "easiest to staff"; break;
             default:     one = "cheapest per " + f.perTag(); two = "least land per " + f.perTag();
@@ -838,10 +987,15 @@ final class BuildScreen {
                         : "worth " + money(f.valueAdded()) + " a month at " + unitPrice(d[0]) + " a seat-month";
             case MAKER: {
                 List<String> parts = new ArrayList<>();
-                java.util.Map<Good, Double> others = new java.util.LinkedHashMap<>(t.goodsMade());
-                others.remove(f.good());
-                if (!others.isEmpty()) parts.add("and " + goodsList(others));
-                if (!t.goodsUsed().isEmpty()) parts.add("from " + goodsList(t.goodsUsed()));
+                if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) {
+                    // A crude unit (0.7.76): the hero names its crude, and this what the crude becomes.
+                    parts.add(crudeUnitWords(ham.citybuildersim.sectors.Refining.madeBy(t)));
+                } else {
+                    java.util.Map<Good, Double> others = new java.util.LinkedHashMap<>(t.goodsMade());
+                    others.remove(f.good());
+                    if (!others.isEmpty()) parts.add("and " + goodsList(others));
+                    if (!t.goodsUsed().isEmpty()) parts.add("from " + goodsList(t.goodsUsed()));
+                }
                 parts.add(f.addsNothing() ? "adds nothing at today's prices: its inputs cost more than it makes"
                         : "adds " + money(f.valueAdded()) + " a month at today's prices");
                 if (d.length == 3) {
@@ -853,6 +1007,27 @@ final class BuildScreen {
             default:
                 return "";
         }
+    }
+
+    /**
+     * What a crude unit's crude becomes, for its card's line (0.7.76): the
+     * petrol and diesel the city burns, and the rest it ships, in litres -
+     * "into 580,170 L of petrol and 1,402,078 L of diesel, and 7.7M L of four
+     * products it ships". Off Refining.madeBy(), the model's slate.
+     */
+    static String crudeUnitWords(java.util.Map<Good, Double> made) {
+        double petrol = made.getOrDefault(Good.PETROL, 0.0), diesel = made.getOrDefault(Good.DIESEL, 0.0), rest = 0;
+        int others = 0;
+        for (java.util.Map.Entry<Good, Double> e : made.entrySet()) {
+            if (e.getKey() == Good.PETROL || e.getKey() == Good.DIESEL || !(e.getValue() > 0)) continue;
+            rest += e.getValue();
+            others++;
+        }
+        String words = "into " + formatter.format(Math.round(petrol)) + " L of petrol and "
+                + formatter.format(Math.round(diesel)) + " L of diesel";
+        if (others > 0) words += ", and " + shortNumber(rest) + " L of " + (others == 1 ? "one product" : others + " products")
+                + " it ships";
+        return words;
     }
 
     /** Goods and their counts: "1,320 t of iron ore", "5,000 kg of dairy and eggs and 1,400 kg of meat". */
@@ -897,7 +1072,8 @@ final class BuildScreen {
         VBox money = barRow(words[0], words[1], group.share1(f), Palette.MONEY, wide, null, track);
         // ...and what its money is struck at (0.7.45; the UI spec's 2.10), behind an (i) after its words.
         if (!money.getChildren().isEmpty() && money.getChildren().get(0) instanceof HBox head) {
-            head.getChildren().add(1, infoButton(moneyBarInfo(), false));
+            boolean road = f.kind() == BuildCard.Kind.CITY && f.bar2Kind() == BuildCard.Bar2.LAND;
+            head.getChildren().add(1, infoButton(road ? roadBarInfo() : moneyBarInfo(), false));
         }
         out.add(money);
         // None for a city building with no posts: its needs line says so.
@@ -921,7 +1097,9 @@ final class BuildScreen {
         switch (f.bar2Kind()) {
             case LAND:
                 return new String[] {label1, value1,
-                        f.inMonths() ? "land per $1k it adds a month" : "land per " + f.per(), landWords(f.bar2())};
+                        f.inMonths() ? "land per $1k it adds a month"
+                                : f.kind() == BuildCard.Kind.CITY ? "land per " + ROAD_OFF : "land per " + f.per(),
+                        landWords(f.bar2())};
             case UNSTAFFABLE:
                 return new String[] {label1, value1, "posts the city couldn't staff, of 100",
                         Double.isFinite(f.bar2()) ? String.format("%.0f", f.bar2()) : "—"};
@@ -1498,6 +1676,8 @@ final class BuildScreen {
          charges, Show and the button (Show and Order until 0.7.34: a pill
          now, and Build's action button saying the order); over them what the
          run charges and "Build all three", read off the run the model places;
+         AUTOMATIC BUILDING (0.7.73) - its two dials and what it has done,
+         and the switch: see that section below;
          THE MARKET BUILDS THESE - the nine the investors build, quieter, with
          what stands and what is on site.
 
@@ -1529,6 +1709,8 @@ final class BuildScreen {
                 cityJob(all),
                 sectionHead("WHAT WOULD HELP MOST", adviceTotal(advice)),
                 adviceRow(advice),
+                sectionHead("AUTOMATIC BUILDING", AUTO_INFO, hint(autoHint(ui.game.getAutoBuilder()))),
+                autoRow(),
                 sectionHead("THE MARKET BUILDS THESE", hint("investors decide; you can add")),
                 marketRow());
         ui.rootMenu.getChildren().add(page);
@@ -1780,7 +1962,9 @@ final class BuildScreen {
      * $85.5M where the run charged $98.4M (the founded playtest city at
      * month 24, 0.7.49).
      */
-    javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> advice) {
+    javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> cards) {
+        // ...of the build orders (0.7.70): a paving is not one, and has its card's own button.
+        List<BuildAdvice.Suggestion> advice = BuildAdvice.builds(cards);
         if (advice.isEmpty()) return null;
         double sum = ui.game.buildRunInvoice(BuildAdvice.run(advice));
         String all = advice.size() == 3 ? "all three" : advice.size() == 2 ? "both" : "it";
@@ -1814,8 +1998,9 @@ final class BuildScreen {
      * with the card it stops at and why; on credit when the run's invoice is
      * more than the cash (Game.buildFundingGap()), with by how much.
      */
-    Pieces.Press allPress(List<BuildAdvice.Suggestion> advice) {
+    Pieces.Press allPress(List<BuildAdvice.Suggestion> cards) {
         Game g = ui.game;
+        List<BuildAdvice.Suggestion> advice = BuildAdvice.builds(cards);
         java.util.LinkedHashMap<BuildingsTemplate, Integer> run = BuildAdvice.run(advice);
         String all = advice.size() == 3 ? "Build all three" : "Build both";
         int ahead = g.buildRunAhead(run);
@@ -1824,7 +2009,8 @@ final class BuildScreen {
             int i = 0;
             for (BuildingsTemplate t : run.keySet()) if (i++ == ahead) { at = t; break; }
             int card = 0;
-            while (card < advice.size() - 1 && advice.get(card).template() != at) card++;
+            // ...its place among the cards on the page, a paving's included (0.7.70).
+            while (card < cards.size() - 1 && (cards.get(card).paving() || cards.get(card).template() != at)) card++;
             String ordinal = card == 0 ? "first" : card == 1 ? "second" : "third";
             BuildingsTemplate stopAt = at;
             String why = switch (g.buildRunStop(run)) {
@@ -1843,7 +2029,7 @@ final class BuildScreen {
 
     /** The suggestions as one run (0.7.40, placeRun(); BuildAdvice.run() since 0.7.51): funded whole when it is more than the cash, each placed in turn by its own button's path; the first refusal stops the run, as Enter's does. */
     void orderAll(List<BuildAdvice.Suggestion> advice) {
-        placeRun(BuildAdvice.run(advice), new RunFrom(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class), false));
+        placeRun(BuildAdvice.run(BuildAdvice.builds(advice)), new RunFrom(BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class), false));
     }
 
     /** Up to three cards, or a line saying there is nothing to suggest. */
@@ -1943,7 +2129,7 @@ final class BuildScreen {
 
         Label count = new Label(formatter.format(s.count()) + " × ");
         count.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.BUILDING));
-        Label name = new Label(s.template().getName());
+        Label name = new Label(suggestionName(s));
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         HBox what = new HBox(0, count, name);
         what.setAlignment(Pos.BASELINE_LEFT);
@@ -1974,15 +2160,22 @@ final class BuildScreen {
         HBox.setHgrow(spread, Priority.ALWAYS);
         // A door to the category (0.7.34: a pill), and the order itself as the card's button under it.
         HBox show = doorPill("Show", Icons.BUILD, Palette.BUILDING, () -> {
-            orderQty.put(s.template().getName(), s.count());
+            // A paving's count on the Gravel Road card's own stepper (0.7.70), not as a build order.
+            if (s.paving()) paveQty = s.count();
+            else orderQty.put(s.template().getName(), s.count());
             BuildAdvice.Category c = BuildAdvice.category(s.measure().category());
             measurePicked.put(c.name(), showOn(s));
             handleAllBuildingMenus(c.name(), c.types());
         });
         Tooltip.install(show, new Tooltip("Open " + s.measure().category() + " with " + formatter.format(s.count()) + " dialled up"));
         Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, suggestionPress(s),
-                () -> placeOrder(s.template(), s.count(), BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class)));
-        Tooltip orderTip = new Tooltip(s.needsCredit()
+                () -> {
+                    if (!s.paving()) placeOrder(s.template(), s.count(), BuildAdvice.OVERVIEW, EnumSet.noneOf(BuildingType.class));
+                    else if (ui.game.paveRoads(s.count())) showOverview();
+                });
+        Tooltip orderTip = new Tooltip(s.paving()
+                ? "Paves " + formatter.format(s.count()) + " " + ConstructionControl.PAVE_FROM + "s, as the Gravel Road card's Pave would"
+                : s.needsCredit()
                 ? "short " + money(s.price() - ui.game.getCash()) + " — you will be offered a bill"
                 : "Orders " + formatter.format(s.count()) + " × " + s.template().getName() + " as its Build button would");
         Tooltip.install(order, orderTip);
@@ -2008,9 +2201,11 @@ final class BuildScreen {
 
     CardWords cardWords(BuildAdvice.Suggestion s) {
         String name = s.template().getName();
-        String does = doesWhat(s) + (s.closes() ? "." : " - as far as " + name + "s go.");
-        if (s.needsCredit()) does += " More than the treasury holds after the ones before, by " + money(s.credit())
-                + ": Build offers a loan.";
+        String does = doesWhat(s) + (s.closes() ? "." : s.paving() ? " - as far as the gravel roads go."
+                : " - as far as " + name + "s go.");
+        if (s.needsCredit()) does += s.paving()
+                ? " More than the treasury holds after the ones before, by " + money(s.credit()) + ": paving is paid from it."
+                : " More than the treasury holds after the ones before, by " + money(s.credit()) + ": Build offers a loan.";
 
         BuildAdvice.Ahead a = s.ahead();
         String growth = a.k() > 1 ? "people +" + pct1(a.k() - 1) + " on the trend"
@@ -2020,19 +2215,33 @@ final class BuildScreen {
                 + " mo out: " + growth + ", " + pct(BuildAdvice.SLACK) + " to spare.";
 
         String per = BuildCard.perWords(s.measure());
-        String land = "Land " + LandManager.areaWords(s.landSqFt()) + " ≈ " + money(s.landValue())
+        // A road's figure is over its life since 0.7.70 (BuildAdvice.lifetime()), and a paving frees its ground.
+        // A living care building's since 0.7.71 is its whole order over the people the need has no place for
+        // (BuildAdvice.perPlaceNeeded()), so the size that fits the need is the cheapest.
+        boolean road = s.measure().kind() == BuildAdvice.Kind.ROADS;
+        boolean care = s.measure().kind() == BuildAdvice.Kind.CARE;
+        String priced = s.paving() ? " over its life, the ground it frees taken off"
+                : road ? " over its life, with its land" : care ? " without a place, the whole order with its land"
+                : " with its land";
+        // ...the card's line says the short of it, the tooltip the whole (four lines at most, 0.7.71's words probe).
+        String pricedShort = care ? " without a place" : priced;
+        String land = s.paving()
+                ? "Frees " + LandManager.areaWords(-s.landSqFt()) + " ≈ " + money(-s.landValue()) + "."
+                : "Land " + LandManager.areaWords(s.landSqFt()) + " ≈ " + money(s.landValue())
                 + (s.landShort() > 0 ? " · " + LandManager.areaWords(s.landShort()) + " more than is free: buy it first" : "") + ".";
-        // HOW MANY, AND WHY (0.7.51): a big count of a small building - 133 home daycares - is the
-        // cheapest per unit with its ground, at what one of them serves.
+        // HOW MANY, AND WHY (0.7.51): a big count of a small building - 133 home daycares, until 0.7.71
+        // resized them - is the cheapest per unit with its ground, at what one of them serves.
         // ...OF THOSE IN ITS RANK. The rule ranks a building that keeps the need ahead over one that
         // cannot, and one that fits the land left over one that does not, before the price
         // (BuildAdvice.suggestFor()), so the card is the cheapest of those, and its own two say which:
         // city600's 11 gravel roads, $8,200 a trip, were "the cheapest" beside 2 bus networks at $3,431
         // that cannot keep the road ahead (the docs pass, 0.7.51; the runner-up alone cannot tell).
-        String which = s.closes() ? (s.landShort() > 0 ? " that keeps it ahead" : " that keeps it ahead and fits the land left")
+        String which = s.paving() ? (s.closes() ? ", that keeps it ahead" : "")
+                : s.closes() ? (s.landShort() > 0 ? " that keeps it ahead" : " that keeps it ahead and fits the land left")
                 : s.landShort() > 0 ? "" : " that fits the land left";
+        if (care && !which.isEmpty()) which = "," + which;
         if (s.count() > 1) {
-            land += " " + formatter.format(s.count()) + " of them: the cheapest per " + per + " with its land" + which
+            land += " " + formatter.format(s.count()) + " of them: the cheapest per " + per + pricedShort + which
                     + ", at " + shortNumber(s.unit()) + " " + BuildCard.perPlural(s.measure()) + " each.";
         }
         String next = s.runnerUp() == null ? ""
@@ -2041,9 +2250,14 @@ final class BuildScreen {
                     case CANNOT_CLOSE -> "; " + s.runnerUp().getName() + " cannot keep it ahead";
                     case NO_ROOM      -> "; " + s.runnerUp().getName() + " needs more land than is left";
                 };
-        String tip = "Cheapest per " + per + " with its land" + which + ": " + money(s.pricePerUnit()) + next
+        String tip = "Cheapest per " + per + priced + which + ": " + money(s.pricePerUnit()) + next
                 + ". Land at the land office's " + groundPrice(ui.game.getLandManager().getOfficePricePerSqFt()) + "/m².";
         return new CardWords(does, sized, land, tip);
+    }
+
+    /** A suggestion's building as its card names it (0.7.70): its own name, or the gravel roads a paving paves. */
+    static String suggestionName(BuildAdvice.Suggestion s) {
+        return s.paving() ? ConstructionControl.PAVE_FROM + ", paved" : s.template().getName();
     }
 
     /** A share as a percentage to one place: .0135 reads "1.4%" (the card's growth line puts its own "+"). */
@@ -2057,6 +2271,11 @@ final class BuildScreen {
      * first, and on credit only when it afforded none).
      */
     Pieces.Press suggestionPress(BuildAdvice.Suggestion s) {
+        // A paving's (0.7.70): the Gravel Road card's own Pave.
+        if (s.paving()) {
+            BuildCard.Paving p = BuildCard.paving(ui.game, ui.game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM));
+            if (p != null) return pavePress(p, s.count());
+        }
         BuildCard.Verdict v = BuildCard.verdict(ui.game, s.template(), s.count());
         Pieces.Press p = orderPress(v, s.count());
         if (s.needsCredit() && p.look() == Pieces.Look.GO) {
@@ -2064,6 +2283,188 @@ final class BuildScreen {
                     + money(v.quote().total), null);
         }
         return p;
+    }
+
+    /* -----------------------------------------------------------------------
+       AUTOMATIC BUILDING (0.7.73)
+
+       Jerus: "an automatic build and acquire debt button for basically
+       automatic building, with a required slack button that you add, aka
+       maintain say 15% surplus service of everything ... right in the build
+       menu, and on/off, so that one can focus on other things." Under WHAT
+       WOULD HELP MOST, because it builds what that row advises: three cards
+       in its columns - the spare margin and the debt limit, each a Ladder
+       set at once as every dial is, and what it has done with the switch
+       under it. The model is AutoBuilder; every figure is its or the
+       Finances tab's. The words are worked out apart from the nodes
+       (autoMarginWords(), autoLimitWords(), autoStatusWords(), autoPress()),
+       so a probe measures them at the 1,389 window.
+       ----------------------------------------------------------------------- */
+
+    /** Build's heading chip on every page but the Overview while it is on: the way back to its cards. */
+    static final String AUTO_CHIP = "Automatic building on ›";
+
+    /** The section's (i). */
+    static final String AUTO_INFO = "Turned on, it orders every month what this page advises for the city's works - "
+            + "power, water, roads and transit, care, schools, police, cells - kept ahead of demand with the spare margin "
+            + "on top. It pays from the cash over a month's tax, then borrows on Build's 20-year bond while debt payments "
+            + "stay under the limit. It buys the land its orders need and orders no more than the builders open in a year "
+            + "or the budget can run. The inbox says what it bought and why.";
+
+    /** The heading's quiet words: on or off. */
+    static String autoHint(AutoBuilder ab) {
+        return ab.isOn() ? "on: it builds the city's works every month" : "off: you build them";
+    }
+
+    /** The two dials and what it has done, a card each. */
+    javafx.scene.layout.GridPane autoRow() {
+        AutoBuilder ab = ui.game.getAutoBuilder();
+        javafx.scene.layout.GridPane grid = equalColumns(3, 10);
+        grid.add(autoMarginCard(ab), 0, 0);
+        grid.add(autoLimitCard(ab), 1, 0);
+        grid.add(autoStatusCard(ab), 2, 0);
+        return grid;
+    }
+
+    /** A dial's width in its card at the 1,389 window: a third of the page less the card's padding. */
+    static final double AUTO_DIAL = (1389 - Palette.RAIL - 36 - 20) / 3.0 - 24;
+
+    /** The spare margin's card's two lines: its title and what it means. */
+    static String[] autoMarginWords(double slack) {
+        return new String[] { "Spare margin",
+                "Every service it keeps is built ahead of " + pct(slack) + " more than the city asks of it today, and "
+                        + "off Needs you. A network keeps the quarter in hand Needs you asks of it as well." };
+    }
+
+    /** The debt limit's card's two lines, and the mark under its slider: where the city stands now. */
+    static String[] autoLimitWords(AutoBuilder ab, Game g) {
+        double now = ab.serviceShare(g);
+        String stands = Double.isFinite(now) ? "Now " + pct1(now) + "." : "No revenue this month to set it against.";
+        return new String[] { "Debt limit",
+                "Debt payments at most " + pct(ab.getDebtLimit()) + " of revenue, land sales and the builders' tax left "
+                        + "out. It borrows only past the cash over a month's tax. " + stands,
+                Double.isFinite(now) ? "now " + pct1(now) : null };
+    }
+
+    /**
+     * The third card's words: on or off, what it has done all told, its
+     * latest orders (each with why, for its tooltip), and what holds it back
+     * - {state, line, totals, held, held tooltip, then order and why in pairs}.
+     */
+    static List<String> autoStatusWords(AutoBuilder ab, int month) {
+        List<String> w = new ArrayList<>();
+        w.add(ab.isOn() ? "On" : "Off");
+        w.add(ab.isOn() ? "Every month it orders what this page advises for the city's works."
+                : "Turn it on and every month it orders what this page advises for the city's works, within the two dials.");
+        w.add(ab.getOrders() == 0 ? "Nothing ordered yet."
+                : formatter.format(ab.getOrders()) + (ab.getOrders() == 1 ? " order, " : " orders, ")
+                + formatter.format(ab.getBuildings()) + (ab.getBuildings() == 1 ? " building, " : " buildings, ")
+                + money(ab.getSpent())
+                + (ab.getLandOffers() > 0 ? " and " + money(ab.getLandSpent()) + " for land" : "")
+                + (ab.getBorrowed() > 0 ? ", " + money(ab.getBorrowed()) + " of it borrowed" : "") + " so far.");
+        List<String> held = ab.held();
+        if (ab.isOn() && !held.isEmpty()) {
+            List<String> names = new ArrayList<>();
+            for (String h : held) names.add(h.substring(0, Math.max(0, h.indexOf(':'))));
+            w.add("Held back: " + String.join(", ", names) + ". The inbox says why.");
+            w.add(String.join("\n", held));
+        } else {
+            w.add(null);
+            w.add(null);
+        }
+        for (AutoBuilder.Entry e : ab.latest(3)) {
+            int ago = Math.max(0, month - e.month());
+            String when = ago == 0 ? "This month" : ago == 1 ? "Last month" : ago + " months ago";
+            w.add(when + ": " + formatter.format(e.count()) + " × " + e.building() + ", " + money(e.cost())
+                    + (e.landCost() > 0 ? " + " + money(e.landCost()) + " of land" : "")
+                    + (e.borrowed() > 0 ? " (" + money(e.borrowed()) + " borrowed)" : ""));
+            w.add(e.why());
+        }
+        return w;
+    }
+
+    /** The switch, as its button says it. */
+    static Pieces.Press autoPress(boolean on) {
+        return on ? new Pieces.Press(Pieces.Look.HELD, "Turn automatic building off", "you build the city's works again")
+                : new Pieces.Press(Pieces.Look.GO, "Turn automatic building on", "every month, within the two dials");
+    }
+
+    /** A card in the row: its title, a dial and its words. */
+    VBox autoCard(String title, javafx.scene.Node dial, String words) {
+        Label head = new Label(title);
+        head.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
+        Label line = new Label(words);
+        line.setWrapText(true);
+        line.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
+        VBox card = new VBox(4, head, dial, line);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+        return card;
+    }
+
+    VBox autoMarginCard(AutoBuilder ab) {
+        String[] w = autoMarginWords(ab.getSlack());
+        VBox dial = Ladder.of(0, AutoBuilder.SLACK_MOST * 100, AutoBuilder.STEP * 100, v -> String.format("%.0f%%", v))
+                .current(ab.getSlack() * 100)
+                .appliesAtOnce(v -> { ab.setSlack(v / 100, ui.game.getDecisions()); showOverview(); })
+                .wide(AUTO_DIAL).build();
+        return autoCard(w[0], dial, w[1]);
+    }
+
+    VBox autoLimitCard(AutoBuilder ab) {
+        String[] w = autoLimitWords(ab, ui.game);
+        double now = ab.serviceShare(ui.game);
+        Ladder ladder = Ladder.of(0, AutoBuilder.DEBT_LIMIT_MOST * 100, AutoBuilder.STEP * 100, v -> String.format("%.0f%%", v))
+                .current(ab.getDebtLimit() * 100)
+                .appliesAtOnce(v -> { ab.setDebtLimit(v / 100, ui.game.getDecisions()); showOverview(); })
+                .wide(AUTO_DIAL);
+        if (w[2] != null && now * 100 <= AutoBuilder.DEBT_LIMIT_MOST * 100) {
+            ladder.marks(new double[] { now * 100 }, new String[] { w[2] });
+        }
+        return autoCard(w[0], ladder.build(), w[1]);
+    }
+
+    VBox autoStatusCard(AutoBuilder ab) {
+        List<String> w = autoStatusWords(ab, ui.game.getMonth());
+        Label state = new Label(w.get(0));
+        state.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, ab.isOn() ? Palette.GOOD : Palette.TEXT_MUTED));
+        Label line = new Label(w.get(1));
+        line.setWrapText(true);
+        line.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
+        Label totals = new Label(w.get(2));
+        totals.setWrapText(true);
+        totals.setStyle(wordsAt(10.5, Palette.TEXT_LABEL));
+        VBox card = new VBox(4, state, line, totals);
+        if (w.get(3) != null) {
+            Label held = new Label(w.get(3));
+            held.setWrapText(true);
+            held.setStyle(wordsAt(10.5, Palette.WARN));
+            Tooltip tip = new Tooltip(w.get(4));
+            tip.setShowDelay(Duration.millis(300));
+            Tooltip.install(held, tip);
+            card.getChildren().add(held);
+        }
+        for (int i = 5; i + 1 < w.size(); i += 2) {
+            Label order = new Label(w.get(i));
+            order.setWrapText(true);
+            order.setStyle(wordsAt(10, Palette.TEXT_BODY));
+            Tooltip tip = new Tooltip(w.get(i + 1));
+            tip.setShowDelay(Duration.millis(300));
+            Tooltip.install(order, tip);
+            card.getChildren().add(order);
+        }
+        Region push = new Region();
+        VBox.setVgrow(push, Priority.ALWAYS);
+        Pieces.ActionButton toggle = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, autoPress(ab.isOn()),
+                () -> { ab.setOn(!ab.isOn(), ui.game.getDecisions()); showOverview(); });
+        card.getChildren().addAll(push, toggle);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setMaxHeight(Double.MAX_VALUE);
+        card.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: "
+                + (ab.isOn() ? Palette.GOOD : Palette.EDGE) + ";");
+        return card;
     }
 
     /* ----------------------------- the market builds these ----------------------------- */
@@ -2502,6 +2903,15 @@ final class BuildScreen {
                 ui.game.getExpectations().getStruckLevel());
     }
 
+    /** A road card's money bar's (i) (0.7.70): what its cost over its life is made of - BuildAdvice.lifetime(), the advice's own figure. */
+    String roadBarInfo() {
+        return String.format("What a road costs over %d years, a trip it takes off the road past its strained line (a"
+                + " paved road's or a highway's grade for lorries in it): its price, its land at the land office's"
+                + " price, and its repairs (1%% of its price a year) and power at today's prices, discounted at %.1f%%"
+                + " a year, the city's %d-year rate less the inflation it expects. The advice ranks the roads by it.",
+                BuildAdvice.LIFE_MONTHS / 12, BuildAdvice.lifeRate(ui.game) * 100, Game.BUILD_BOND_YEARS);
+    }
+
     /**
      * One of the card's two bars: what it measures, its figure, and the bar
      * scaled across its group - with no track when `track` is false (0.7.25):
@@ -2776,7 +3186,7 @@ final class BuildScreen {
             default: {
                 java.util.Set<String> made = new java.util.LinkedHashSet<>(), used = new java.util.LinkedHashSet<>();
                 for (BuildCard.Figures f : group.cards()) {
-                    for (Good g : f.template().goodsMade().keySet()) made.add(g.label().toLowerCase());
+                    for (Good g : ham.citybuildersim.sectors.Refining.madeBy(f.template()).keySet()) made.add(g.label().toLowerCase());
                     for (Good g : f.template().goodsUsed().keySet()) used.add(g.label().toLowerCase());
                 }
                 used.removeAll(made);
@@ -2887,8 +3297,10 @@ final class BuildScreen {
                     formatter.format(t.getCapacity())));
             return out;
         }
-        if (t.isOwnedBySector() && !t.goodsMade().isEmpty()) {
-            for (java.util.Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+        // ...what it makes: a crude unit's slate since 0.7.76 (Refining.madeBy()).
+        java.util.Map<Good, Double> makesNow = ham.citybuildersim.sectors.Refining.madeBy(t);
+        if (t.isOwnedBySector() && !makesNow.isEmpty()) {
+            for (java.util.Map.Entry<Good, Double> e : makesNow.entrySet()) {
                 Good g = e.getKey();
                 if (g == Good.GROCERIES) {
                     // capacity is shelf stock; coverage is what it sells in a month.
@@ -2974,18 +3386,32 @@ final class BuildScreen {
                  * prices would conclude the gravel road simply wins, which is
                  * the opposite of true in a city that has run out of room.
                  *
-                 * These two numbers ARE the choice: ground, or labour. Every
-                 * other figure on the card follows from which of the two the
-                 * city has less of.
+                 * These two numbers were the choice, ground or labour, until
+                 * 0.7.70: the card now weighs both in money over the road's
+                 * life (BuildAdvice.lifetime(), its first bar), and the
+                 * sentence says so.
                  */
                 if (t.getCapacity() > 0) {
+                    // ...weighed since 0.7.70 by money over its life, its ground in it: the card's first bar
+                    // (BuildAdvice.lifetime()), where "the whole choice" was ground against points.
                     out.add(String.format("Per 1,000 trips carried that is %s of"
-                            + " ground and %s construction points - the whole choice"
-                            + " between the roads is which of those two you have less"
-                            + " of.",
+                            + " ground and %s construction points. The card's first bar"
+                            + " weighs the roads by what each costs over %d years with its"
+                            + " ground, a trip it takes off the road.",
                             LandManager.areaWords(t.getLandSqFt() * 1000.0 / t.getCapacity()),
                             formatter.format(Math.round(
-                                    t.getConstructionPoints() * 1000.0 / t.getCapacity()))));
+                                    t.getConstructionPoints() * 1000.0 / t.getCapacity())),
+                            BuildAdvice.LIFE_MONTHS / 12));
+                }
+                // PAVING (0.7.70; ConstructionControl, F): said on both roads it joins.
+                if (ConstructionControl.paves(t)) {
+                    out.add("It can be paved to a Paved Road where it stands, under its card: a Paved"
+                            + " Road's price less its own material, which goes into the new bed, and the"
+                            + " taking-up of its surface. It carries its traffic until the paving opens, and"
+                            + " the ground a Paved Road does not need comes back free.");
+                } else if (ConstructionControl.PAVE_TO.equals(t.getName())) {
+                    out.add("A Gravel Road can be paved to one where it stands; a Paved Road is not raised"
+                            + " to an Elevated Highway.");
                 }
                 break;
             }

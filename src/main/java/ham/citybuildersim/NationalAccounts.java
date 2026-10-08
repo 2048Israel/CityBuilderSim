@@ -184,11 +184,21 @@ public class NationalAccounts {
      * units (slots 15 on, EconomyManager.getNationalAccountsState()): a new
      * one goes on the end. FUEL since 0.7.62 (batch K): the refiners' tanks
      * are made output not yet sold, as a mill's shed is.
+     *
+     * ...AND SINCE 0.7.76 (batch O1) THE NINE PRODUCTS IT BECAME, in FUEL's
+     * place: its slot is PETROL's and DIESEL's, and the other seven follow
+     * (spec-oil 3). A save from before them is converted on its load
+     * (FuelSplit) - FUEL's units split between the two, the seven at a known
+     * zero - so this array's shape is the only one a load reads.
      */
-    public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.FUEL };
+    public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL,
+            Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;
+
+    /** ...and how many a save from 0.7.62 to 0.7.75 carries: the three and FUEL, which FuelSplit makes PETROL and DIESEL. */
+    public static final int HELD_WITH_FUEL = 4;
 
     /** ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. */
     public static final Good NOT_HELD = Good.CARS;
@@ -312,7 +322,9 @@ public class NationalAccounts {
     public void restoreHeld(double[] lastHeld) {
         java.util.Arrays.fill(lastHeldUnits, 0);
         // A save from before FUEL was held (0.7.58 to 0.7.61) carries the three
-        // before it and held no fuel: its baseline is known, fuel's is zero.
+        // before it and held no fuel: its baseline is known, fuel's is zero -
+        // and every product's since 0.7.76, FuelSplit having split a later
+        // save's FUEL into petrol and diesel before this reads it.
         heldBaselineKnown = lastHeld != null && lastHeld.length >= HELD_BEFORE_FUEL;
         if (heldBaselineKnown) System.arraycopy(lastHeld, 0, lastHeldUnits, 0, Math.min(HELD.length, lastHeld.length));
     }

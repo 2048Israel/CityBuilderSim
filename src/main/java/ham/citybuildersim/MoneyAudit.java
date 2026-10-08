@@ -723,7 +723,8 @@ public final class MoneyAudit {
         // ...and their fuel (0.7.49): paid out of the households' savings, outside the audited system, to the world.
         // The IMPORTED part only since 0.7.62: what the refiners' shelf sold them is Refining's SalesToHouseholds above,
         // like the domestic half of a car.
-        in += credit.apply("+ households FuelFunded", g.getHouseholdFuelImports(), Scope.DOMESTIC);
+        // (PetrolFunded since 0.7.76, batch O1: what they burn is petrol; FuelFunded until then.)
+        in += credit.apply("+ households PetrolFunded", g.getHouseholdFuelImports(), Scope.DOMESTIC);
         in += credit.apply("+ households ForeignInterest", g.getHouseholdBalance().getForeignInterest(), Scope.INCOME);
         /*
          * THE OWNERS' MONEY, COMING IN. Shares sold to the city's households
@@ -1016,7 +1017,8 @@ public final class MoneyAudit {
         out += debit.apply("- households CarImports",
                 g.getHouseholdCarImports(), Scope.TRADE);
         // ...and the fuel they burned getting to work (0.7.49) that the world sold them (0.7.62). See the credit's note.
-        out += debit.apply("- households FuelImports", g.getHouseholdFuelImports(), Scope.TRADE);
+        // (PetrolImports since 0.7.76; FuelImports until then.)
+        out += debit.apply("- households PetrolImports", g.getHouseholdFuelImports(), Scope.TRADE);
         out += debit.apply("- households BroughtHomeSaved", g.getHouseholdBalance().getBroughtHome(), Scope.DOMESTIC);
         /*
          * THE COUPON IS BANKED AT HOME NOW, AND STILL NEEDS ITS OTHER LEG

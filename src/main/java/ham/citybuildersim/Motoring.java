@@ -89,15 +89,23 @@ public final class Motoring {
      * kilometres at eight litres a hundred and about $1.65 a litre. Priced at
      * the exchange rate like the railway's fuel, and the only running cost.
      * A car's wear is its CAR_LIFE_MONTHS, which runs by the calendar, not the
-     * mile, and its insurance is sunk.
+     * mile, and its insurance is sunk. A pump price: since 0.7.62 the journey
+     * is its litres at petrol's market (journeyFuel()), and since 0.7.78 that
+     * is the wholesale ladder's - see LITRES_PER_JOURNEY.
      */
     public static final double CAR_FUEL_PER_JOURNEY = .002;
 
     /**
      * ...and the litres in it (0.7.62): fifteen kilometres at eight litres a
-     * hundred, the same journey. CAR_FUEL_PER_JOURNEY over this is FUEL's
-     * import price, so a city with no refinery pays what it always paid a
-     * journey, at the world's price level.
+     * hundred, the same journey. CAR_FUEL_PER_JOURNEY over this was FUEL's
+     * import price, so a city with no refinery paid what it always paid a
+     * journey, at the world's price level - PETROL's at 0.7.76 and 0.7.77
+     * (batch O1). Since 0.7.78 (batch O2) petrol is on the research's
+     * wholesale ladder, .0006118 a litre, and a journey's 1.2 L come to
+     * .00073 in world money where CAR_FUEL_PER_JOURNEY's pump price was .002:
+     * 63% less. CAR_FUEL_PER_JOURNEY stays what it was for a save from before
+     * 0.7.49, which struck its commute at it (Game's load), and for the
+     * harnesses' fixtures that hand a network a journey's fuel.
      */
     public static final double LITRES_PER_JOURNEY = 1.2;
 
@@ -108,11 +116,12 @@ public final class Motoring {
      *
      * The drivers' litres - a month of journeys at LITRES_PER_JOURNEY - are
      * taken at 6d off the refiners' shelf at the market's price, and the rest
-     * imported (Markets.draw(), as the households' cars are), so the bill is
+     * imported (Markets.draw(), as the households' cars are) - PETROL since
+     * 0.7.76 (batch O1), where it was FUEL - so the bill is
      * what was actually charged: the shelf's part a sale on Refining's
      * statement, already in the audit as its SalesToHouseholds, and the
      * world's part the households' only import of fuel (fuelImports, the
-     * audit's FuelFunded and FuelImports). With no refinery all of it is
+     * audit's PetrolFunded and PetrolImports). With no refinery all of it is
      * imported at the world's price level, as every good is.
      */
     private double fuelImports, fuelLitres;
@@ -153,7 +162,7 @@ public final class Motoring {
      * world's price level with no refinery.
      */
     public static double journeyFuel(Markets markets) {
-        double litre = markets == null ? Double.NaN : markets.get(Good.FUEL).landedPrice();
+        double litre = markets == null ? Double.NaN : markets.get(Good.PETROL).landedPrice();
         return Double.isFinite(litre) && litre > 0 ? litre * LITRES_PER_JOURNEY : 0;
     }
 
@@ -164,7 +173,7 @@ public final class Motoring {
      */
     void drawFuel(Game game, double journeys) {
         double litres = Double.isFinite(journeys) ? Math.max(0, journeys) * LITRES_PER_JOURNEY : 0;
-        Markets.Draw took = game.getMarkets().draw(Good.FUEL, null, Trade.HOUSEHOLDS, litres, game.getSectors());
+        Markets.Draw took = game.getMarkets().draw(Good.PETROL, null, Trade.HOUSEHOLDS, litres, game.getSectors());
         fuelLitres = took.units();
         fuelBill = took.cost();
         fuelImports = took.importCost();

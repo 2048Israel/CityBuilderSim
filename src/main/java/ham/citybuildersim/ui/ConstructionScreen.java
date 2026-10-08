@@ -428,6 +428,11 @@ final class ConstructionScreen {
             if (demolition == null) {
                 if (control.isCancelling(key)) {
                     hand.getChildren().add(action("Keep", Palette.TEXT_BODY, () -> { g.cancelSite(key, false); draw(); }));
+                } else if (g.isPavingSite(key)) {
+                    // A Paved Road site that paves gravel roads is not stopped (0.7.70; ConstructionControl, F).
+                    Label paving = caption(String.format(PAVING_WORDS, g.pavingNow()));
+                    tip(paving, PAVING_TIP);
+                    hand.getChildren().add(paving);
                 } else {
                     hand.getChildren().add(action("Cancel", Palette.BAD, () -> confirmCancel(key)));
                 }
@@ -889,6 +894,13 @@ final class ConstructionScreen {
     /* =====================================================================
        THE CONFIRMATIONS, with the money in them (UserInterface.confirm()).
        ===================================================================== */
+
+    /** The Paved Road site's words while it paves gravel roads (0.7.70), where Cancel would be: how many, and that it runs on. */
+    static final String PAVING_WORDS = "%,d paving · no stop";
+
+    /** ...and why. */
+    static final String PAVING_TIP = "Some of these Paved Roads pave gravel roads, which carry their traffic until each"
+            + " opens. A road dug a half at a time is not left as a shell, so the site runs until they are done.";
 
     private void confirmCancel(String key) {
         Game g = ui.game;

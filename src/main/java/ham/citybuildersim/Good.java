@@ -689,19 +689,98 @@ public enum Good {
        limits it through the same hook (Sector.groundLimit() reads only a
        flow good) and a well needs no tank the spec never sized.
 
-       FUEL, IN LITRES. The import price is a journey's fuel over a journey's
-       litres - Motoring.CAR_FUEL_PER_JOURNEY over LITRES_PER_JOURNEY, $2.00
-       over 1.2 L (fifteen kilometres at eight litres a hundred) - so a city
-       with no refinery pays exactly the fuel it paid before, now at the
-       world's price level as every good is. The export .0007 is wholesale
-       at US$75 crude; freight .0003625, the same rule. Stockable: a refinery
-       holds three months in its tanks, and the drivers and the railway draw
-       on that shelf (Markets.draw()) before the world.
+       FUEL, IN LITRES, until 0.7.76 - see the note below the crude, which
+       replaces it.
        ======================================================================= */
     CRUDE("Crude oil", "tonne", .60, .50, .0375, false, Pricing.BAND, false),
 
-    FUEL("Fuel", "litre", Motoring.CAR_FUEL_PER_JOURNEY / Motoring.LITRES_PER_JOURNEY, .0007, .0003625,
-            true, Pricing.BAND, false);
+    /* =======================================================================
+       FUEL IS GONE, AND THIS IS THE NOTE THAT REPLACES IT (0.7.76, batch O1;
+       runs/spec-oil.md 2.1 and 3).
+
+       FUEL("Fuel", "litre", Motoring.CAR_FUEL_PER_JOURNEY / Motoring.LITRES_PER_JOURNEY,
+       .0007, .0003625, ...) - one litre was a litre of whatever a car or a
+       locomotive burned, and a refinery made a thousand of them from a tonne
+       of crude (0.7.62, batch K): 86% of a barrel's 1,165 litres as transport
+       fuels, the rest left out. Its import price was a journey's fuel over a
+       journey's litres, $2.00 over 1.2 L, so a city with no refinery paid what
+       it had always paid a journey.
+
+       A barrel is not one thing, and the refinery that makes "fuel" out of
+       all of it makes nothing a real one does. So the litre is split by what
+       a crude unit actually cuts a barrel into (sectors.Refining, THE SLATE):
+       the drivers burn PETROL and the railway DIESEL, and the rest - gas,
+       naphtha, kerosene, the gas oil and the residue - leaves as the products
+       below until something here buys them. Seven of the nine come out of a
+       crude unit; LUBRICANTS, BITUMEN and COKE out of conversion units that
+       come later (spec-oil 5, O4).
+
+       A SAVE WRITTEN BEFORE 0.7.76 STILL HAS "FUEL" in its markets, its
+       sectors' maps and its national accounts. FuelSplit converts it, once,
+       on the load, before anything is restored: each FUEL figure into PETROL
+       and DIESEL by the share of the month's litres the drivers and the
+       railway burned, the pair summing to the figure, no money moving.
+
+       THE PRICES. All nine are the research's wholesale ladder (spec-oil
+       2.1: a product's world price is a ratio to crude's world middle, .55
+       a tonne over 1,165 L, .00047210 a litre - LPG .46, naphtha 1.0,
+       petrol 1.20, jet 1.28, diesel 1.35, lubricants 1.89, fuel oil .98;
+       bitumen 1.08 and coke .155 a tonne of crude's .55), imported at the
+       world's x1.08 and exported at x0.92, freight .06 of the world's price
+       - three quarters of the half-wedge, this file's rule - each to the
+       spec's four figures.
+
+       PETROL AND DIESEL AT WHOLESALE (0.7.78, batch O2; spec-oil 6 A, Jerus
+       2026-10-08: "yes wholesale"). From 0.7.76 to 0.7.77 the two kept
+       FUEL's band - the import a journey's fuel over its litres, $2.00 over
+       1.2 L, .0016667; the export .0007; the freight .0003625 - a pump price,
+       taxes and the forecourt's margin in it, standing where every other
+       good stands at the refinery gate. On the ladder petrol comes in at
+       .0006118 and diesel at .0006883: with no refinery the drivers' fuel
+       is 63% cheaper and the railway's 59%, and a refinery's petrol and
+       diesel are worth what a real one's are, so one on imported crude pays
+       only in a big city (spec-oil 1, item 4). The railway keeps its 18
+       litres a tonne (Rail.FUEL_LITRES_PER_TONNE), so its bill falls with
+       the price, not its litres. A fuel duty paid to the treasury, on top,
+       is a later batch's (spec-oil 6 A's third way).
+
+       THE LITRES A TONNE (spec-oil 2.1, [P35]; naphtha and lubricants est.
+       from the JODI conversion factors) are what a litre weighs - see
+       tonnesPerUnit() - where FUEL's litre weighed a kilogram.
+
+       ALL NINE ARE STOCKABLE, BAND-PRICED AND TAXED: a refinery holds each in
+       its share of its tanks (Refining.getStockCapacity()). Petrol and diesel
+       are a tanker at a filling station's or a depot's back door, the GOODS
+       stream; the other seven go by the BULK stream, in tank wagons and
+       hoppers, as crude does.
+       ======================================================================= */
+
+    /** Liquefied petroleum gas - propane and butane, the lightest cut - by the litre, 1,850 to the tonne. */
+    LPG("Petroleum gas", "litre", .0002345, .0001998, .00001303, true, Pricing.BAND, false, 1850),
+
+    /** Naphtha, the petrochemical feed and the reformer's: 1,351 litres a tonne (est., JODI). */
+    NAPHTHA("Naphtha", "litre", .0005099, .0004343, .00002833, true, Pricing.BAND, false, 1351),
+
+    /** What the drivers burn (Motoring.drawFuel()): the ladder's 1.20 of crude since 0.7.78 (FUEL's band before), 1,320 litres a tonne. */
+    PETROL("Petrol", "litre", .0006118, .0005212, .00003399, true, Pricing.BAND, false, 1320),
+
+    /** Kerosene for aircraft, 1,260 litres a tonne. */
+    JET("Jet fuel", "litre", .0006526, .0005559, .00003626, true, Pricing.BAND, false, 1260),
+
+    /** What the railway burns (Rail.haul()): the ladder's 1.35 of crude since 0.7.78 (FUEL's band before), 1,180 litres a tonne. */
+    DIESEL("Diesel", "litre", .0006883, .0005864, .00003824, true, Pricing.BAND, false, 1180),
+
+    /** Base oils, the dearest litre in the barrel: 1,127 litres a tonne (est., JODI). */
+    LUBRICANTS("Lubricants", "litre", .0009637, .0008209, .00005354, true, Pricing.BAND, false, 1127),
+
+    /** Heavy fuel oil - the gas oil and the residue nothing here upgrades - 1,010 litres a tonne. */
+    FUEL_OIL("Fuel oil", "litre", .0004997, .0004256, .00002776, true, Pricing.BAND, false, 1010),
+
+    /** Road binder, by the tonne: an asphalt unit's, from heavy crude's residue. */
+    BITUMEN("Bitumen", "tonne", .6415, .5465, .03564, true, Pricing.BAND, false),
+
+    /** Petroleum coke, by the tonne: a coker's solid residue. */
+    COKE("Petroleum coke", "tonne", .09207, .07843, .005115, true, Pricing.BAND, false);
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -720,8 +799,16 @@ public enum Good {
     private final Pricing pricing;
     private final boolean taxExempt;
 
+    /** Litres to the tonne for a good counted in litres (0.7.76), NaN for every other. See tonnesPerUnit(). */
+    private final double litresPerTonne;
+
     Good(String label, String unit, double worldImportPrice, double worldExportPrice,
          double baseFreight, boolean stockable, Pricing pricing, boolean taxExempt) {
+        this(label, unit, worldImportPrice, worldExportPrice, baseFreight, stockable, pricing, taxExempt, Double.NaN);
+    }
+
+    Good(String label, String unit, double worldImportPrice, double worldExportPrice,
+         double baseFreight, boolean stockable, Pricing pricing, boolean taxExempt, double litresPerTonne) {
         this.label = label;
         this.unit = unit;
         this.worldImportPrice = worldImportPrice;
@@ -730,7 +817,11 @@ public enum Good {
         this.stockable = stockable;
         this.pricing = pricing;
         this.taxExempt = taxExempt;
+        this.litresPerTonne = litresPerTonne;
     }
+
+    /** Litres to the tonne (0.7.76): what a litre of this weighs, inverted; NaN for a good not counted in litres. */
+    public double litresPerTonne() { return litresPerTonne; }
 
     public String label() { return label; }
     public String unit()  { return unit; }
@@ -842,10 +933,10 @@ public enum Good {
             // A case of watches is light and dear, which is what makes it a
             // thing the world ships and not a thing the railway argues about.
             case "piece":     return .02;
-            // A litre of fuel is a kilogram: the refinery's own yield, a
-            // thousand litres from a tonne of crude (sectors.Refining), so a
-            // tonne goes in and a tonne comes out.
-            case "litre":     return .001;
+            // A litre weighs its own good's tonne over its litres (0.7.76,
+            // spec-oil 2.1): petrol 1,320 to the tonne, fuel oil 1,010. FUEL's
+            // litre was a kilogram, the refinery's thousand litres a tonne.
+            case "litre":     return 1 / litresPerTonne;
             // A meal is served where it stands. What it is made of travelled
             // as the thirteen foods and was counted then; counting it twice
             // would put a restaurant's dinners on the road as freight.
@@ -879,9 +970,11 @@ public enum Good {
             case MATERIALS: case FABRICATED_STEEL: case MACHINERY:
             // A locomotive on a low-loader is not a crate of bread.
             case ROLLING_STOCK:
-            // ...and crude, in tank wagons, as ore goes in hoppers. Fuel is a
-            // tanker at a filling station's back door: GOODS, the default.
+            // ...and crude, in tank wagons, as ore goes in hoppers. Petrol and
+            // diesel are a tanker at a filling station's back door: GOODS, the
+            // default. The refinery's other seven go as crude does (0.7.76).
             case CRUDE:
+            case LPG: case NAPHTHA: case JET: case LUBRICANTS: case FUEL_OIL: case BITUMEN: case COKE:
                 return Traffic.BULK;
             case GROCERIES: case HOUSING: case BUILDING_WORK:
             case SUPPORT_WORK: case BACK_OFFICE_WORK: case ENGINEERING_WORK:

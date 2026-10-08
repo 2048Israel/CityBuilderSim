@@ -30,7 +30,11 @@ import java.util.Map;
  * buildings that serve its measure (for the roads, any road or line), the
  * one with the lowest price per unit of staffed capacity with its ground
  * at what the city would pay to replace it (landValue(), the land office's
- * price) - preferring one that can keep the need ahead at all, and then one
+ * price; a road's over its life since 0.7.70, lifetime(), and the city's
+ * gravel roads paved beside the roads; a living care building's its order
+ * over the places the need lacks since 0.7.71, perPlaceNeeded(), so the
+ * size that fits the need wins) - preferring one that can keep the
+ * need ahead at all, and then one
  * whose whole count fits the ground the suggestions before it leave; the
  * count that keeps the need ahead at the demand it opens to, projected
  * the way the businesses project theirs (above the ladder, the students it
@@ -387,13 +391,20 @@ public final class BuildAdvice {
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
             if (counts && site.getUnderConstruction() > 0) out.merge(t, site.getUnderConstruction(), Integer::sum);
         }
+        // ...and the gravel roads being paved (0.7.70; ConstructionControl,
+        // F): each goes as its Paved Road on site opens, so the road once
+        // what is on site opens is without them.
+        int paving = game.pavingNow();
+        BuildingsTemplate gravel = paving > 0 && m.kind() == Kind.ROADS
+                ? game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM) : null;
+        if (gravel != null) out.merge(gravel, -paving, Integer::sum);
         return out;
     }
 
-    /** Units on site, all told. */
+    /** Units on site, all told: the buildings going up (a gravel road a paving takes away is not one). */
     public static int units(Map<BuildingsTemplate, Integer> added) {
         int n = 0;
-        for (int v : added.values()) n += v;
+        for (int v : added.values()) if (v > 0) n += v;
         return n;
     }
 
@@ -672,7 +683,13 @@ public final class BuildAdvice {
 
     /** What a suggestion would leave its measure serving, and the verdict on it (0.7.41): what is on site and the order, standing - the served side of its after(); null for a measure not served. */
     public static CityNeeds.Served verdictAfter(Game game, Suggestion s) {
-        return verdict(game, s.measure(), plus(onSite(game, s.measure()), s.template(), s.count()));
+        return verdict(game, s.measure(), plus(onSite(game, s.measure()), added(game, s)));
+    }
+
+    /** What a suggestion changes on the city: its count of its building - and for a paving (0.7.70), as many gravel roads gone. */
+    public static Map<BuildingsTemplate, Integer> added(Game game, Suggestion s) {
+        return s.paving() ? times(new LinkedHashMap<>(), pavingStep(game), s.count())
+                : plus(new LinkedHashMap<>(), s.template(), s.count());
     }
 
     /** The road network with these buildings standing: InfrastructureManager.with(), the model's own curve. */
@@ -907,9 +924,14 @@ public final class BuildAdvice {
      * those months - and SLACK past it.
      */
     public static Ahead opening(Game game, double lead) {
+        return opening(game, lead, SLACK);
+    }
+
+    /** ...with another slack past it (0.7.73): automatic building's, the player's slider (AutoBuilder). */
+    public static Ahead opening(Game game, double lead, double slack) {
         double wait = Double.isNaN(lead) ? 0 : Math.max(0, Math.min(lead, BusinessInvestment.MAX_ORDER_MONTHS));
         double months = wait + HORIZON;
-        return new Ahead(months, game.getBusinessInvestment().growthFactor(months), SLACK);
+        return new Ahead(months, game.getBusinessInvestment().growthFactor(months), slack);
     }
 
     /**
@@ -976,13 +998,19 @@ public final class BuildAdvice {
      * @param runnerUpLost ...and why it lost, null for none
      * @param credit      the part of its quote the cash the ones before leave
      *                    does not cover: 0 unless needsCredit
+     * @param paving      (0.7.70) count gravel roads paved, not new buildings:
+     *                    template is the Paved Road they become, price
+     *                    Game.quotePave(), landSqFt the ground it frees as a
+     *                    negative and landValue that ground's worth taken
+     *                    off (ConstructionControl, F)
      */
     public record Suggestion(CityNeeds.Need need, Measure measure, BuildingsTemplate template,
                              int count, double price, double before, double whenOnSite, double after,
                              double afterAtOpening, boolean closes, boolean needsCredit, int onSite,
                              double unit, double pricePerUnit, Ahead ahead, double lead,
                              double landSqFt, double landValue, double landShort,
-                             BuildingsTemplate runnerUp, double runnerUpPer, Lost runnerUpLost, double credit) { }
+                             BuildingsTemplate runnerUp, double runnerUpPer, Lost runnerUpLost, double credit,
+                             boolean paving) { }
 
     /** The rule, on this city now. */
     public static List<Suggestion> suggest(Game game) {
@@ -1012,53 +1040,91 @@ public final class BuildAdvice {
         return out;
     }
 
-    /** The suggestions as one run, as "Build all three" places it: each card's building and count in their order, two of one building added together. */
+    /** The suggestions as one run, as "Build all three" places it: each card's building and count in their order, two of one building added together - and no paving (0.7.70), which is not a build order and has its card's own button. */
     public static LinkedHashMap<BuildingsTemplate, Integer> run(List<Suggestion> advice) {
         LinkedHashMap<BuildingsTemplate, Integer> run = new LinkedHashMap<>();
-        for (Suggestion s : advice) run.merge(s.template(), s.count(), Integer::sum);
+        for (Suggestion s : advice) if (!s.paving()) run.merge(s.template(), s.count(), Integer::sum);
         return run;
     }
 
-    /** One building weighed for a need: its count at its projection, and where it ranks. */
+    /** The suggestions "Build all three" places (0.7.70): every one but a paving. */
+    public static List<Suggestion> builds(List<Suggestion> advice) {
+        List<Suggestion> out = new ArrayList<>();
+        for (Suggestion s : advice) if (!s.paving()) out.add(s);
+        return out;
+    }
+
+    /** One building weighed for a need: its count at its projection, and where it ranks - or, paving, gravel roads paved (0.7.70). */
     private record Weighed(BuildingsTemplate t, int tier, double per, double unit, int count,
-                           boolean closes, boolean fits, Ahead ahead, double lead) { }
+                           boolean closes, boolean fits, Ahead ahead, double lead, boolean paving) { }
 
     /** One need's suggestion, or null when what is on site already keeps it ahead or no building can help. */
     static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft) {
+        return suggestFor(game, need, m, cashLeft, landLeft, SLACK);
+    }
+
+    /**
+     * ...sized with `slack` past its projection in place of SLACK (0.7.73):
+     * automatic building's spare margin, the player's slider (AutoBuilder) -
+     * the same ranking, the same projection, the same count at another
+     * slack. `need` may be null for a measure NEEDS YOU has no row for (a
+     * basic stage that is not the bottleneck): its figure before is then the
+     * measure's own as it stands.
+     */
+    public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
+                                        double slack) {
+        return suggestFor(game, need, m, cashLeft, landLeft, slack, java.util.Collections.emptySet());
+    }
+
+    /** ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one its budget cannot run - the next in the ranking is the card. */
+    public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
+                                        double slack, java.util.Set<BuildingsTemplate> skip) {
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
         double whenOnSite = figure(game, m, site);
         // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
-        if (ahead(game, m, site, opening(game, 0))) return null;
+        if (ahead(game, m, site, opening(game, 0, slack))) return null;
+        double before = need != null ? need.value() : figure(game, m, new LinkedHashMap<>());
 
         List<Weighed> weighed = new ArrayList<>();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             boolean candidate = m.kind() == Kind.ROADS
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
-            if (!candidate) continue;
+            if (!candidate || skip.contains(t)) continue;
             double unit = unit(game, m, t);
             // A building the city cannot staff at all, or one that does not
             // move the figure, serves nothing.
             if (!(unit > 0)) continue;
             // Counted twice: at today's demand with the slack, for the order's
             // own wait; then at the demand it opens to after that wait.
-            int[] today = count(game, m, site, t, new Ahead(0, 1, SLACK));
+            int[] today = count(game, m, site, t, new Ahead(0, 1, slack));
             if (today[0] <= 0) continue;
             double lead = game.quoteBuild(t, today[0]).months;
-            Ahead p = opening(game, lead);
+            Ahead p = opening(game, lead, slack);
             int[] found = count(game, m, site, t, p);
             if (found[0] <= 0) continue;
             boolean closes = found[1] == 1;
             boolean fits = t.getLandSqFt() * (double) found[0] <= landLeft;
-            double per = (game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)) / unit;
-            weighed.add(new Weighed(t, (closes ? 0 : 2) + (fits ? 0 : 1), per, unit, found[0], closes, fits, p, lead));
+            // The road's own figure since 0.7.70: its cost over its life, not
+            // its price - see A ROAD OVER ITS LIFE. A living care building's
+            // since 0.7.71: its order over the places the need lacks, so the
+            // size that fits the need wins - see THE SIZE THAT FITS THE NEED.
+            double per = m.kind() == Kind.CARE ? perPlaceNeeded(game, m, site, t, found[0], p, landLeft)
+                    : (m.kind() == Kind.ROADS ? lifetime(game, t, landLeft, site)
+                    : game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)) / unit;
+            weighed.add(new Weighed(t, (closes ? 0 : 2) + (fits ? 0 : 1), per, unit, found[0], closes, fits, p, lead,
+                    false));
         }
+        // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
+        Weighed paving = m.kind() == Kind.ROADS ? weighPaving(game, m, site, landLeft, slack) : null;
+        if (paving != null) weighed.add(paving);
         if (weighed.isEmpty()) return null;
         /*
          * JUDGEMENTS, in this order: one that can keep the need ahead beats
          * one that cannot, at any price; of those, one whose whole count
          * fits the ground the cards before leave beats one the order would be
          * refused for (Game.buildStack()'s NO_LAND); then the lowest price a
-         * unit with its ground. Land can be bought from the refusal's own
+         * unit with its ground (a living care building's, a place the need
+         * lacks: 0.7.71). Land can be bought from the refusal's own
          * page; a building that cannot close a gap never will. A tie keeps
          * the catalogue's order (the sort is stable).
          */
@@ -1070,16 +1136,30 @@ public final class BuildAdvice {
                 : next.fits() != best.fits() ? Lost.NO_ROOM : Lost.DEARER;
 
         int n = best.count();
+        if (best.paving()) {
+            // A paving (0.7.70): its quote, its gravel roads gone, and the
+            // ground it frees taken off the land the ones after it see.
+            Game.BuildQuote q = game.quotePave(n);
+            boolean credit = q.total > cashLeft;
+            Map<BuildingsTemplate, Integer> done = times(site, pavingStep(game), n);
+            double freed = pavingFrees(game) * (double) n;
+            return new Suggestion(need, m, best.t(), n, q.total, before, whenOnSite, figure(game, m, done),
+                    figure(game, m, done, new Ahead(best.ahead().months(), best.ahead().k(), 0)),
+                    best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
+                    -freed, -landValue(game, freed, landLeft), 0,
+                    next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
+                    credit ? q.total - Math.max(0, cashLeft) : 0, true);
+        }
         Game.BuildQuote q = game.quoteBuild(best.t(), n);
         boolean credit = q.total > cashLeft;
         double after = figure(game, m, plus(site, best.t(), n));
         double atOpening = figure(game, m, plus(site, best.t(), n), new Ahead(best.ahead().months(), best.ahead().k(), 0));
         double sq = best.t().getLandSqFt() * (double) n;
-        return new Suggestion(need, m, best.t(), n, q.total, need.value(), whenOnSite, after, atOpening,
+        return new Suggestion(need, m, best.t(), n, q.total, before, whenOnSite, after, atOpening,
                 best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
                 sq, landValue(game, sq, landLeft), Math.max(0, sq - Math.max(0, landLeft)),
                 next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
-                credit ? q.total - Math.max(0, cashLeft) : 0);
+                credit ? q.total - Math.max(0, cashLeft) : 0, false);
     }
 
     /**
@@ -1098,6 +1178,18 @@ public final class BuildAdvice {
      * the least count that reaches the best figure this building can make.
      */
     static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t, Ahead p) {
+        return count(game, m, site, plus(new LinkedHashMap<>(), t, 1), p, MOST);
+    }
+
+    /**
+     * ...of a step that may be more than one building (0.7.70): a paving
+     * is a Paved Road more and a Gravel Road less (pavingStep()); and at most
+     * `most` of it, the gravel roads there are to pave. The search the count
+     * always made, n doubling to MOST: to the bit the same for one building.
+     */
+    static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Integer> step,
+                       Ahead p, int most) {
+        if (most < 1) return new int[] {0, 0};
         Ahead at = p == null ? NOW : p;
         java.util.function.Predicate<Map<BuildingsTemplate, Integer>> done = p == null
                 ? a -> clear(m, figure(game, m, a)) : a -> ahead(game, m, a, at);
@@ -1105,14 +1197,14 @@ public final class BuildAdvice {
         boolean worseHigher = higherWorse(m);
         double best = before;
         int tried = 0, n = 1;
-        while (n <= MOST) {
-            Map<BuildingsTemplate, Integer> a = plus(site, t, n);
+        while (true) {
+            Map<BuildingsTemplate, Integer> a = times(site, step, n);
             double f = figure(game, m, a, at);
             if (done.test(a)) {
                 int lo = tried, hi = n;           // lo fails (or is 0), hi is done
                 while (hi - lo > 1) {
                     int mid = lo + (hi - lo) / 2;
-                    if (done.test(plus(site, t, mid))) hi = mid; else lo = mid;
+                    if (done.test(times(site, step, mid))) hi = mid; else lo = mid;
                 }
                 return new int[] {hi, 1};
             }
@@ -1120,7 +1212,8 @@ public final class BuildAdvice {
             if (!improved) break;
             best = f;
             tried = n;
-            n *= 2;
+            if (n >= most) break;
+            n = (int) Math.min(2L * n, most);
         }
         if (tried == 0) return new int[] {0, 0};
         // The least count that reaches the best this building made.
@@ -1128,11 +1221,237 @@ public final class BuildAdvice {
         int lo = 0, hi = tried;
         while (hi - lo > 1) {
             int mid = lo + (hi - lo) / 2;
-            double f = figure(game, m, plus(site, t, mid), at);
+            double f = figure(game, m, times(site, step, mid), at);
             boolean there = worseHigher ? f <= target + 1e-12 : f >= target - 1e-12;
             if (there) hi = mid; else lo = mid;
         }
         return new int[] {hi, 0};
+    }
+
+    /** A copy of base with n times every quantity of step added. */
+    static Map<BuildingsTemplate, Integer> times(Map<BuildingsTemplate, Integer> base, Map<BuildingsTemplate, Integer> step, int n) {
+        Map<BuildingsTemplate, Integer> out = new LinkedHashMap<>(base);
+        if (n != 0) for (Map.Entry<BuildingsTemplate, Integer> e : step.entrySet()) out.merge(e.getKey(), n * e.getValue(), Integer::sum);
+        return out;
+    }
+
+    /* =====================================================================
+       THE SIZE THAT FITS THE NEED (0.7.71)
+
+       Jerus: "one city had 5k daycares and 2k residential buildings". The
+       advice ranked a care building by its price a place with its ground,
+       and a Home Daycare's was the lowest, so it ordered them by the
+       hundred (629 in his city of 24,000). The three childcare buildings
+       are centres of 80, 220 and 360 places since 0.7.71, a place cheaper
+       the bigger (BuildingManager, childcare resized), and ranked a place
+       the largest would win everywhere: a 360-place centre for a town short
+       of thirty children. So a living care building - childcare, general or
+       senior - is ranked by what its order costs over the places the need
+       lacks at the demand it is sized to (perPlaceNeeded()): the order's own
+       quote - Game.quoteBuild() for the count, which takes the yard's
+       material once, where a quote for one takes it for every building -
+       and its ground, over that demand less what is on site. Where the
+       order is many buildings that is its price a place, as before, and the
+       cheapest a place wins - a big city builds big centres; where one
+       building is more than the need, the places past it are paid for, so
+       the smallest that closes the gap wins.
+       ===================================================================== */
+
+    /**
+     * A living care building's figure (0.7.71): an order of `count` of it -
+     * its quote, Game.quoteBuild(), and its ground at landValue() on the land
+     * left - over the places the need lacks at p: supplyDemand()'s demand
+     * less what is on site, staffed. Its price a place where the count is
+     * many; more where one building is more than the gap. With nothing
+     * lacking (or no count), its price a place: its quote for one and its
+     * ground over unit().
+     */
+    public static double perPlaceNeeded(Game game, Measure m, Map<BuildingsTemplate, Integer> site,
+                                        BuildingsTemplate t, int count, Ahead p, double landLeft) {
+        double[] sd = supplyDemand(game, m, site, p);
+        double lacks = sd[1] - sd[0];
+        if (!(lacks > 0) || count < 1) {
+            return (game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)) / unit(game, m, t);
+        }
+        return (game.quoteBuild(t, count).total + landValue(game, t.getLandSqFt() * (double) count, landLeft)) / lacks;
+    }
+
+    /* =====================================================================
+       A ROAD OVER ITS LIFE (0.7.70)
+
+       Jerus: "the game still recommends gravel roads, even when i think paved
+       roads are better". The road's candidates - the three roads and the
+       three lines - were ranked from 0.7.51 by their price for one with its
+       ground, over the trips one takes off the road: the capital only. A
+       road is also repaired every year it stands (one percent of what it
+       cost, the rule every city building is charged by), it draws power,
+       and a line pays its crews and takes fares. So since 0.7.70 each is
+       priced over its life (lifetime()): its quote and its ground at
+       landValue(), and a month of running it (running()) for LIFE_MONTHS,
+       discounted at the real rate the city's money costs at that term
+       (lifeFactor()). One figure ranks the advice's roads, draws the road
+       cards' first bar (BuildCard) and orders the test player's roads
+       (LongPlaytest.addRoadThrottle()). The trips a road takes off are the
+       model's own (unit()), its freight grade in them.
+
+       AND A GRAVEL ROAD THE CITY HAS CAN BE PAVED (ConstructionControl, F):
+       a candidate beside the six (weighPaving()), priced the same way for
+       the trips its paving adds, the ground it frees taken off at the price
+       the next road would pay for it (landValue() on the land left) - so it
+       wins when land is dear, and a paving the gravel roads standing cannot
+       close loses to a road that can, as any candidate does.
+
+       WHAT THE NUMBERS SAID (runs/fixN1-notes.md, 0): the advice was not
+       what recommended gravel - it has priced the ground since 0.7.51, and in
+       Jerus's city it picks paved roads - but the road cards tagged gravel
+       "cheapest per trip" on the price alone in every city, and the test
+       player built only gravel, ranking the roads by trips a founding
+       dollar. Over its life a gravel road costs less to keep - its repairs
+       are a share of its smaller price - so the life moves the line toward
+       gravel, not away: a paved road wins where a gravel road's ground is
+       worth about 1.4 to 1.7 times its price.
+       ===================================================================== */
+
+    /** Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". */
+    public static final int LIFE_MONTHS = Game.BUILD_BOND_YEARS * 12;
+
+    /**
+     * What one costs the city a month, standing (0.7.70): its repairs - one
+     * percent a year of what one costs to put up today, its work and its
+     * material, with the builders' tax: the rule the month charges every
+     * city building by (EconomyManager.maintenanceBillFor(),
+     * RealEstate.MAINTENANCE_PER_YEAR) - its power and water at the
+     * utility's prices (BusinessInvestment.runningCostOf()'s reading), its
+     * posts at today's wages and its upkeep (BuildCard.runningCost()), less a
+     * month of fares from the riders it adds on the network with what is on
+     * site (TaxPolicy.monthlyFare(), LongPlaytest.linesThatPay()'s reading):
+     * a line's, and a road's only where the lines wait for road under them.
+     */
+    public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Integer> site) {
+        BuildingManager bm = game.getBuildingManager();
+        EconomyManager econ = game.getEconomyManager();
+        double materials = Math.max(0, bm.getConstructionMaterialPrice());
+        double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
+                * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
+        double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
+                + t.getWaterConsumption() * econ.getPricePerWaterUnit();
+        double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();
+        double fares = riders * econ.getTaxPolicy().monthlyFare();
+        return repairs + utilities + BuildCard.runningCost(game, t) - fares;
+    }
+
+    /**
+     * Months of a month's running cost a life is worth today (0.7.70): the
+     * level annuity's factor over LIFE_MONTHS at the real rate - the debt
+     * market's rate for that term at the city's debt now
+     * (DebtManager.quoteRate()), less the inflation the city expects
+     * (BusinessInvestment.realTestRate(), the businesses' own hurdle) - since
+     * the running cost is at today's prices and rises with them. LIFE_MONTHS
+     * at a rate of nothing.
+     */
+    public static double lifeFactor(Game game) {
+        double i = lifeRate(game) / 12;
+        return i > 0 ? (1 - Math.pow(1 + i, -LIFE_MONTHS)) / i : LIFE_MONTHS;
+    }
+
+    /** ...the real rate it is struck at, a year: the debt market's for LIFE_MONTHS less expected inflation (BusinessInvestment.realTestRate()). */
+    public static double lifeRate(Game game) {
+        return game.getBusinessInvestment().realTestRate(game.getDebtManager().quoteRate(0, LIFE_MONTHS));
+    }
+
+    /** A road's or a line's cost over its life (0.7.70): its quote for one, its ground at landValue() on the land left, and lifeFactor() months of running(). */
+    public static double lifetime(Game game, BuildingsTemplate t, double landLeft, Map<BuildingsTemplate, Integer> site) {
+        return game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)
+                + running(game, t, site) * lifeFactor(game);
+    }
+
+    /** One paving (0.7.70): a Paved Road more and a Gravel Road less; empty with either missing from the catalogue. */
+    static Map<BuildingsTemplate, Integer> pavingStep(Game game) {
+        Map<BuildingsTemplate, Integer> step = new LinkedHashMap<>();
+        BuildingsTemplate from = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM);
+        BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        if (from == null || to == null) return step;
+        step.put(to, 1);
+        step.put(from, -1);
+        return step;
+    }
+
+    /** The ground one paving frees (0.7.70): a gravel road's less a paved road's; 0 with either missing. */
+    public static double pavingFrees(Game game) {
+        BuildingsTemplate from = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM);
+        BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        return from == null || to == null ? 0 : Math.max(0, from.getLandSqFt() - to.getLandSqFt());
+    }
+
+    /** The trips one paving takes off the road (0.7.70): over the line with what is on site, less with one more gravel road paved. */
+    public static double pavingUnit(Game game, Map<BuildingsTemplate, Integer> site) {
+        Map<BuildingsTemplate, Integer> step = pavingStep(game);
+        if (step.isEmpty()) return 0;
+        return roadsOver(game, site) - roadsOver(game, times(site, step, 1));
+    }
+
+    /**
+     * A paving's cost over its life (0.7.70), as lifetime() prices a road:
+     * its quote for one (Game.quotePave()), less the ground it frees at
+     * landValue() on the land left - what the next road would pay for it -
+     * and lifeFactor() months of what a paved road costs to run over a
+     * gravel road (running()). NaN with nothing to pave.
+     */
+    public static double pavingLifetime(Game game, double landLeft, Map<BuildingsTemplate, Integer> site) {
+        Game.BuildQuote q = game.quotePave(1);
+        if (q == null) return Double.NaN;
+        BuildingsTemplate from = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM);
+        BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        return q.total - landValue(game, pavingFrees(game), landLeft)
+                + (running(game, to, site) - running(game, from, site)) * lifeFactor(game);
+    }
+
+    /**
+     * Whether paving beats a new Paved Road (0.7.70), each over its life a
+     * trip it takes off: pavingLifetime() over pavingUnit() under a Paved
+     * Road's lifetime() over unit() - Jerus's "recommends this if better".
+     * False with nothing to pave.
+     */
+    public static boolean pavingBeatsPaved(Game game, double landLeft, Map<BuildingsTemplate, Integer> site) {
+        BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        double unit = pavingUnit(game, site), paved = to == null ? 0 : unit(game, Measure.of(Kind.ROADS), to);
+        if (game.paveable() < 1 || !(unit > 0) || !(paved > 0)) return false;
+        return pavingLifetime(game, landLeft, site) / unit < lifetime(game, to, landLeft, site) / paved;
+    }
+
+    /**
+     * The city's gravel roads, paved, weighed for the road (0.7.70) as a
+     * building is in suggestFor(): the count that keeps the road ahead at
+     * its projection, of the gravel roads the city could pave (Game.paveable());
+     * its wait, a Paved Road's; its price a unit, pavingLifetime() over the
+     * trips one paving takes off; no ground to fit. Weighed only when it
+     * beats a new Paved Road a trip over its life (pavingBeatsPaved(), star
+     * N1-5): it needs no ground, so it would rank over any road the land left
+     * cannot hold, however dear, and it is offered as the cheaper way to the
+     * paved road, not as the way round a land purchase. Null otherwise, with
+     * none to pave, or a paving that takes nothing off.
+     */
+    static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site, double landLeft) {
+        return weighPaving(game, m, site, landLeft, SLACK);
+    }
+
+    /** ...at another slack past its projection (0.7.73, AutoBuilder). */
+    static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site, double landLeft, double slack) {
+        int most = game.paveable();
+        Map<BuildingsTemplate, Integer> step = pavingStep(game);
+        if (most < 1 || step.isEmpty()) return null;
+        double unit = pavingUnit(game, site);
+        if (!(unit > 0) || !pavingBeatsPaved(game, landLeft, site)) return null;
+        int[] today = count(game, m, site, step, new Ahead(0, 1, slack), most);
+        if (today[0] <= 0) return null;
+        double lead = game.quotePave(today[0]).months;
+        Ahead p = opening(game, lead, slack);
+        int[] found = count(game, m, site, step, p, most);
+        if (found[0] <= 0) return null;
+        boolean closes = found[1] == 1;
+        double per = pavingLifetime(game, landLeft, site) / unit;
+        BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        return new Weighed(to, closes ? 0 : 2, per, unit, found[0], closes, true, p, lead, true);
     }
 
     /** Which way is worse for a measure's figure. */

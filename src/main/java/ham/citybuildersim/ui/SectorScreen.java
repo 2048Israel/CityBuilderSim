@@ -861,17 +861,32 @@ final class SectorScreen {
         if (now.isEmpty()) {
             page.getChildren().add(alertLine(Icons.ALERT, Palette.WARN, "Nothing recorded yet", NOTHING_YET_SECTOR, null));
         } else {
+            // Summary or Statement (0.7.74, D1): Operations has no statement.
             switch (sectorPage) {
-                case "Income"        -> incomePage(page, sector, now, then, animate);
-                case "Balance sheet" -> balancePage(page, sector, now, then);
-                case "Cash & debt"   -> cashAndDebtPage(page, sector, now, then);
-                case "Investors"     -> investorPage(page, sector, now, si, animate);
-                default              -> operationsPage(page, sector, animate);
+                case "Income" -> {
+                    if (statementView) incomeStatementView(page, sector, now, then);
+                    else incomePage(page, sector, now, then, animate);
+                }
+                case "Balance sheet" -> {
+                    if (statementView) balanceStatementView(page, sector, now, then);
+                    else balancePage(page, sector, now, then);
+                }
+                case "Cash & debt" -> {
+                    if (statementView) cashStatementView(page, sector, now, then);
+                    else cashAndDebtPage(page, sector, now, then);
+                }
+                case "Investors" -> {
+                    if (statementView) investorStatementView(page, sector, now, then, si);
+                    else investorPage(page, sector, now, si, animate);
+                }
+                default -> operationsPage(page, sector, animate);
             }
         }
 
-        javafx.scene.layout.FlowPane strip =
-                chipStrip(SECTOR_PAGES, PAGE_ICONS, sectorPage, Palette.SIZE_LABEL, this::open);
+        // The pages, and at the strip's right end the switch (0.7.74, board SectorFrame).
+        HBox strip = StatementView.stripWithSwitch(
+                chipStrip(SECTOR_PAGES, PAGE_ICONS, sectorPage, Palette.SIZE_LABEL, this::open),
+                SECTOR_HOME.equals(sectorPage) ? null : statementView, this::pickView);
 
         VBox frame = new VBox(Palette.GAP, sectorHead(sector), sectorVitals(sector, now, then, plant, animate),
                 investorsLine(si, animate, 22), strip);
@@ -1145,16 +1160,6 @@ final class SectorScreen {
         c.setMaxWidth(340);
         c.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 8;");
         return c;
-    }
-
-    /** A statement column beside its ratios: the statement at its old width, the ratios to its right. */
-    static HBox statementAndRatios(VBox statement, VBox ratios) {
-        statement.setMinWidth(STATEMENT);
-        statement.setMaxWidth(STATEMENT);
-        HBox row = new HBox(24, statement);
-        if (ratios != null) row.getChildren().add(ratios);
-        row.setAlignment(Pos.TOP_LEFT);
-        return row;
     }
 
     /** One part of a bar's key: its swatch, its name and its figure. */
@@ -1541,54 +1546,64 @@ final class SectorScreen {
     }
 
     /* =====================================================================
-       INCOME (0.7.30): A WATERFALL OVER THE STATEMENT
+       INCOME (0.7.30; 0.7.74): A WATERFALL, IN SHORT, AND THE STATEMENT
 
-       The question: where does a dollar of revenue go? Revenue, down through
-       what it bought, its wages, its power, water and repairs to operating
-       income; its property tax, interest and sales tax to profit before tax;
-       its business tax to what it kept - each a bar, a refund stepping up.
-       A click on a bar opens its statement line. The statement is under it,
-       whole, opening as it always has, and the ratios are chips beside it in
-       their old thresholds. Paying a tax is not a verdict (B10): the taxes
-       and the interest are plain figures now, not amber, and revenue is not
+       The question: where does a dollar of revenue go? The Summary: revenue,
+       less the sales tax it remitted and what it bought, to its gross profit;
+       less its wages, its running costs and its property tax, to its
+       operating profit - the statement's own subtotals (D14); its interest
+       to profit before tax, and its business tax to what it kept, each a bar,
+       a refund stepping up. A click on a bar opens its note in the Statement
+       view. Under it IN SHORT and the ratios, and OF EVERY DOLLAR IT TOOK in
+       cents. The Statement (STATEMENT VIEWS, below): the statement of profit
+       or loss, every note opening in place. Paying a tax is not a verdict
+       (B10): the taxes and the interest are plain figures, and revenue is not
        green.
        ===================================================================== */
 
-    /** Operating income's (i): the old page's sentence under it. */
-    static final String OPERATING_INFO = "What the business made from trading, before it pays for the ground it "
-            + "stands on or the money it borrowed.";
+    /** The operating line's (i): what it is, and the model's own operating income, which is before the ground and the sales tax (D4, D5). */
+    static final String OPERATING_INFO = "What the business made from trading, after its sales tax and the ground it "
+            + "stands on, before the money it borrowed.";
 
     /** The sales tax refund's (i). */
     static final String REFUND_INFO = "The sales tax line is a REFUND this month: the credit on what this sector "
             + "bought came to more than the tax on what it sold. That is what zero-rating an export means, and the "
             + "city pays it.";
 
+    /** The waterfall's (i). */
+    static final String FALL_INFO = "Revenue at the left, less the sales tax it remitted and what it bought, to its "
+            + "gross profit; less its wages, its running costs and the ground it stands on, to its operating profit - "
+            + "the statement's own subtotals; then its interest to profit before tax, and the business tax to what it "
+            + "kept. A refund steps up. A click on a bar opens its note in the Statement view.";
+
     void incomePage(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then, boolean animate) {
 
-        boolean known = !then.isEmpty();
-        java.util.Set<String> open = linesOpen(sector);
-        String inputs = inputLabel(sector);
+        SectorStatements.Table t = incomeTable(sector, now, then);
 
-        // The waterfall.
-        Waterfall fall = waterfall(incomeSteps(now, inputs, open), SectorScreen::m, 0, 190);
+        // The waterfall, its subtotals the statement's (D14).
+        Waterfall fall = waterfall(incomeSteps(sector, t, now), SectorScreen::m, 0, 190);
         if (animate) fall.animate(500);
         page.getChildren().add(card(head("WHERE A DOLLAR OF REVENUE WENT, " + CityCalendar.format(now.month()).toUpperCase(),
-                "Revenue at the left, down through what it bought, its wages and its running costs to what it made "
-                + "trading; then the ground, the interest and the sales tax to its profit; then the business tax to "
-                + "what it kept. A refund steps up. Revenue, what it bought, its wages and the sales tax open their "
-                + "lines of the statement under this.", null), fall));
+                FALL_INFO, null), fall));
 
-        // The statement.
-        incomeStatement(page, sector, now, then, known, open, inputs);
+        // In short and the ratios; and every dollar it took, in cents.
+        page.getChildren().add(StatementView.beside(incomeShort(sector, t), incomeRatios(sector, t, now)));
+        page.getChildren().add(everyDollar(now));
     }
 
-    /** The waterfall's steps: revenue, each cost down to what it kept, the three totals the model strikes; a bar with a statement line that opens opens it. */
-    List<Step> incomeSteps(SectorBooks.SectorMonth now, String inputs, java.util.Set<String> open) {
+    /** The waterfall's steps: revenue, each cost down to what it kept, the statement's subtotals between them (D14); a bar with a note opens it in the Statement view. */
+    List<Step> incomeSteps(Sector sector, SectorStatements.Table t, SectorBooks.SectorMonth now) {
+        SectorStatements.Format f = sector.statementFormat();
         List<Step> steps = new ArrayList<>();
-        steps.add(Step.of("Revenue", now.revenue(), Palette.REVENUE_RAMP[2]).go(n -> openLine(open, "Revenue")));
+        steps.add(Step.of("Revenue", now.revenue(), Palette.REVENUE_RAMP[2]).go(n -> openNote(sector, INCOME, 1)));
+        if (now.salesTaxPaid() != 0) steps.add(Step.of(now.salesTaxPaid() < 0 ? "Sales tax refund" : "Sales tax",
+                -now.salesTaxPaid(), now.salesTaxPaid() < 0 ? Palette.REVENUE_RAMP[2] : Palette.SPENDING_RAMP[2])
+                .go(n -> openNote(sector, INCOME, 2)));
         if (now.inputs() != 0) steps.add(Step.of("Bought in", -now.inputs(), Palette.SPENDING_RAMP[2])
-                .tip(inputs + "\n" + m(now.inputs())).go(n -> openLine(open, inputs)));
-        if (now.payroll() != 0) steps.add(Step.of("Wages", -now.payroll(), Palette.SPENDING_RAMP[2]).go(n -> openLine(open, "Wages")));
+                .tip(inputLabel(sector) + "\n" + m(now.inputs())).go(n -> openNote(sector, INCOME, 3)));
+        if (f.gross != null) steps.add(fallTotal(StatementView.sentence(f.gross), t.now(SectorStatements.GROSS)));
+        if (now.payroll() != 0) steps.add(Step.of("Wages", -now.payroll(), Palette.SPENDING_RAMP[2])
+                .go(n -> openNote(sector, INCOME, 4)));
         double running = now.electricity() + now.water() + now.maintenance();
         if (running != 0) {
             steps.add(Step.of("Power, water, repairs", -running, Palette.SPENDING_RAMP[2]).parts(List.of(
@@ -1596,119 +1611,186 @@ final class SectorScreen {
                     new Slice("Water", now.water(), Palette.SPENDING_RAMP[2]),
                     new Slice("Repairs", now.maintenance(), Palette.SPENDING_RAMP[3]))));
         }
-        steps.add(Step.total("Operating income", now.operatingIncome(),
-                now.operatingIncome() < 0 ? Palette.BAD : Palette.BUSINESS));
         if (now.propertyTax() != 0) steps.add(Step.of("Property tax", -now.propertyTax(), Palette.SPENDING_RAMP[2]));
-        if (now.interest() != 0) steps.add(Step.of("Interest", -now.interest(), Palette.SPENDING_RAMP[2]));
-        if (now.salesTaxPaid() != 0) steps.add(Step.of(now.salesTaxPaid() < 0 ? "Sales tax refund" : "Sales tax",
-                -now.salesTaxPaid(), now.salesTaxPaid() < 0 ? Palette.REVENUE_RAMP[2] : Palette.SPENDING_RAMP[2])
-                .go(n -> openLine(open, "Sales tax remitted")));
-        steps.add(Step.total("Profit before tax", now.preTaxIncome(),
-                now.preTaxIncome() < 0 ? Palette.BAD : Palette.BUSINESS));
+        steps.add(fallTotal(StatementView.sentence(f.operating), t.now(SectorStatements.OPERATING)));
+        if (now.interest() != 0) steps.add(Step.of("Interest", -now.interest(), Palette.SPENDING_RAMP[2])
+                .go(n -> openNote(sector, INCOME, SectorStatements.FINANCE_NOTE)));
+        steps.add(fallTotal("Profit before tax", now.preTaxIncome()));
         if (now.tax() != 0) steps.add(Step.of("Business tax", -now.tax(), Palette.SPENDING_RAMP[2]));
-        steps.add(Step.total("What it kept", now.netIncome(), now.netIncome() < 0 ? Palette.BAD : Palette.BUSINESS));
+        steps.add(fallTotal("What it kept", now.netIncome()));
         return steps;
     }
 
-    /** The income statement, whole, opening as it always has, and its ratios beside it. */
-    void incomeStatement(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then,
-                         boolean known, java.util.Set<String> open, String inputs) {
-        VBox column = new VBox(0);
-        column.getChildren().add(statementHead("Income statement"));
-        column.getChildren().add(bookHead(CityCalendar.format(now.month())));
-
-        column.getChildren().add(bookLine("Revenue",
-                now.revenue(), then.revenue(), known, null,
-                revenueDetail(sector), "what", open));
-
-        if (now.inputs() != 0 || then.inputs() != 0) {
-            column.getChildren().add(bookLine(inputs,
-                    -now.inputs(), -then.inputs(), known, null,
-                    inputsDetail(sector), "what", open));
-        }
-        if (now.payroll() != 0 || then.payroll() != 0) {
-            column.getChildren().add(bookLine("Wages",
-                    -now.payroll(), -then.payroll(), known, null,
-                    wagesDetail(sector), "who", open));
-        }
-        if (now.electricity() != 0 || then.electricity() != 0) {
-            column.getChildren().add(bookLine("Electricity",
-                    -now.electricity(), -then.electricity(), known, null));
-        }
-        if (now.water() != 0 || then.water() != 0) {
-            column.getChildren().add(bookLine("Water",
-                    -now.water(), -then.water(), known, null));
-        }
-        if (now.maintenance() != 0 || then.maintenance() != 0) {
-            column.getChildren().add(bookLine("Repairs",
-                    -now.maintenance(), -then.maintenance(), known, null));
-        }
-
-        column.getChildren().add(withInfo(bookTotal("Operating income",
-                now.operatingIncome(), then.operatingIncome(), known,
-                now.operatingIncome() < 0 ? Palette.BAD : null), OPERATING_INFO));
-
-        column.getChildren().add(bookLine("Property tax",
-                -now.propertyTax(), -then.propertyTax(), known, null));
-        column.getChildren().add(bookLine("Interest on debt",
-                -now.interest(), -then.interest(), known, null));
-        if (now.salesTaxPaid() != 0 || then.salesTaxPaid() != 0) {
-            VBox tax = bookLine("Sales tax remitted",
-                    -now.salesTaxPaid(), -then.salesTaxPaid(), known, null,
-                    salesTaxDetail(sector), "how", open);
-            column.getChildren().add(now.salesTaxPaid() < 0 ? withInfo(tax, REFUND_INFO) : tax);
-        }
-
-        column.getChildren().add(bookTotal("Profit before tax",
-                now.preTaxIncome(), then.preTaxIncome(), known,
-                now.preTaxIncome() < 0 ? Palette.BAD : null));
-
-        column.getChildren().add(bookLine("Business tax",
-                -now.tax(), -then.tax(), known, null));
-        column.getChildren().add(bookTotal("What it kept",
-                now.netIncome(), then.netIncome(), known,
-                now.netIncome() < 0 ? Palette.BAD : null));
-
-        // The ratios, as chips in their old thresholds.
-        VBox ratios = ratioColumn("READ AS RATIOS",
-                ratioRow("Net margin", marginWords(now.margin()),
-                        now.margin() < 0 ? Palette.BAD : now.margin() < .05 ? Palette.WARN : Palette.GOOD,
-                        "What it kept of every dollar it took, after tax. Under 5% is thin."),
-                now.revenue() > 0 ? ratioRow("Wages take", String.format("%.0f%% of revenue", now.payroll() / now.revenue() * 100),
-                        Palette.TEXT_LABEL, null) : null,
-                now.revenue() > 0 ? ratioRow("Interest takes", String.format("%.1f%% of revenue",
-                                unsigned0(now.interest() / now.revenue() * 100, 1)),
-                        now.interest() / now.revenue() > .15 ? Palette.WARN : Palette.TEXT_LABEL, null) : null,
-                now.operatingIncome() > 0 && now.interest() > 0
-                        ? ratioRow("Interest cover", String.format("%.1fx", now.operatingIncome() / now.interest()),
-                                now.operatingIncome() / now.interest() < 1.5 ? Palette.BAD
-                                        : now.operatingIncome() / now.interest() < 3 ? Palette.WARN : Palette.GOOD,
-                                "How many times over its trading profit covers its interest bill. Under one and the "
-                                + "business is borrowing to pay its lenders.") : null);
-        page.getChildren().add(statementAndRatios(column, ratios));
+    /** A waterfall's total: the business's violet, red under nothing. */
+    static Step fallTotal(String name, double amount) {
+        return Step.total(name, amount, amount < 0 ? Palette.BAD : Palette.BUSINESS);
     }
 
-    /** A waterfall's bar opening its statement line: the line put in the open set, and the page drawn again. */
-    void openLine(java.util.Set<String> open, String label) {
-        open.add(label);
-        ui.redraw();
+    /** IN SHORT on Income: revenue, the middle line, operating profit, profit before tax and the profit - the statement's own lines (D14). */
+    static VBox incomeShort(Sector sector, SectorStatements.Table t) {
+        SectorStatements.Format f = sector.statementFormat();
+        String[] ids = { SectorStatements.REVENUE, f.gross != null ? SectorStatements.GROSS : SectorStatements.NET_REVENUE,
+                SectorStatements.OPERATING, SectorStatements.PRE_TAX, SectorStatements.PROFIT };
+        String[] labels = { f.revenue, f.gross != null ? StatementView.sentence(f.gross) : "Revenue after sales tax",
+                StatementView.sentence(f.operating), "Profit before tax", "Profit for the month" };
+        return StatementView.inShort(labels, nows(t, ids), thens(t, ids), t.thenKnown(),
+                "Five lines of the statement of profit or loss, this month against last, in millions: the Statement "
+                + "view has every line and its notes.");
+    }
+
+    /** A table's figures this month, by id. */
+    static double[] nows(SectorStatements.Table t, String[] ids) {
+        double[] v = new double[ids.length];
+        for (int i = 0; i < ids.length; i++) v[i] = t.now(ids[i]);
+        return v;
+    }
+
+    /** ...and last month. */
+    static double[] thens(SectorStatements.Table t, String[] ids) {
+        double[] v = new double[ids.length];
+        for (int i = 0; i < ids.length; i++) v[i] = t.then(ids[i]);
+        return v;
+    }
+
+    /** A share as a ratio chip writes it: a tenth of a per cent, a dash where it means nothing. */
+    static String pctWords(double share) {
+        return Double.isFinite(share) ? String.format("%.1f%%", unsigned0(share * 100, 1)) : "—";
+    }
+
+    /** Times over, a dash where it means nothing. */
+    static String timesWords(double x) {
+        return Double.isFinite(x) ? String.format("%.1fx", unsigned0(x, 1)) : "—";
+    }
+
+    /**
+     * The Income page's ratios, both views: gross, operating and net margin,
+     * interest cover on the statement's operating profit (D10, F6), the
+     * effective tax rate, the wages' take and earnings a share - and its
+     * format's own: a merchant's stock turns, a landlord's rent against its
+     * mortgage payments, a builder's months of work booked, a carrier's
+     * revenue a worker.
+     */
+    VBox incomeRatios(Sector sector, SectorStatements.Table t, SectorBooks.SectorMonth now) {
+        SectorStatements.Format f = sector.statementFormat();
+        double rev = now.revenue();
+        List<Node> rows = new ArrayList<>();
+        if (f.gross != null) {
+            double g = SectorStatements.of(t.now(SectorStatements.GROSS), rev);
+            rows.add(ratioRow("Gross margin", pctWords(g), g < 0 ? Palette.BAD : Palette.TEXT_LABEL,
+                    "What it kept of every dollar after the sales tax and what it bought."));
+        }
+        double op = SectorStatements.of(t.now(SectorStatements.OPERATING), rev);
+        rows.add(ratioRow("Operating margin", pctWords(op), op < 0 ? Palette.BAD : Palette.TEXT_LABEL,
+                "What it kept of every dollar from trading, before the money it borrowed and its business tax."));
+        rows.add(ratioRow("Net margin", marginWords(now.margin()),
+                now.margin() < 0 ? Palette.BAD : now.margin() < .05 ? Palette.WARN : Palette.GOOD,
+                "What it kept of every dollar it took, after tax. Under 5% is thin."));
+        double cover = SectorStatements.interestCover(t);
+        if (Double.isFinite(cover)) {
+            rows.add(ratioRow("Interest cover", timesWords(cover),
+                    cover < 1.5 ? Palette.BAD : cover < 3 ? Palette.WARN : Palette.GOOD,
+                    "How many times over its operating profit - after its sales tax and the ground, D10 - covers its "
+                    + "finance costs. Under one and it is borrowing to pay its lenders."));
+        }
+        double tax = SectorStatements.effectiveTax(t);
+        if (Double.isFinite(tax)) rows.add(ratioRow("Tax rate it paid", pctWords(tax), Palette.TEXT_LABEL,
+                "Its business tax over its profit before tax. A loss pays none, and earns no refund."));
+        if (rev > 0) rows.add(ratioRow("Wages take", pctWords(now.payroll() / rev), Palette.TEXT_LABEL, null));
+        SectorBooks.Shares share = ui.game.getSectorBooks().shares(sector.key());
+        if (share != null && share.shares() > 0) {
+            double eps = now.netIncome() / share.shares();
+            rows.add(ratioRow("Earnings a share", tightMoney(toDollars(eps), false) + " a month",
+                    eps < 0 ? Palette.BAD : Palette.TEXT_LABEL, "What it kept this month over its shares."));
+        }
+        // ...and its format's own (spec 4.6).
+        switch (f) {
+            case MERCHANTS -> {
+                double turns = now.inventory() > 0 ? now.inputs() * 12 / now.inventory() : Double.NaN;
+                if (Double.isFinite(turns)) rows.add(ratioRow("Stock turns a year", timesWords(turns), Palette.TEXT_LABEL,
+                        String.format("A year of what it buys at this month's rate over the stock on its shelves: %.0f days"
+                                + " of stock.", 360 / turns)));
+            }
+            case LANDLORDS -> {
+                double payment = ui.game.getEconomyManager().getBusinessDebtManager().getMortgagePayment(sector.key());
+                if (payment > 0) rows.add(ratioRow("Rent covers its mortgages", timesWords(t.now(SectorStatements.OPERATING) / payment),
+                        t.now(SectorStatements.OPERATING) < payment ? Palette.BAD : Palette.TEXT_LABEL,
+                        "Its net operating income over its mortgages' monthly payments today, principal and interest: "
+                        + "the lender's debt service cover."));
+            }
+            case BUILDERS -> {
+                if (sector instanceof ham.citybuildersim.sectors.Construction builders && rev > 0) {
+                    rows.add(ratioRow("Months of work booked", String.format("%.1f", builders.getUnearnedRevenue() / rev),
+                            Palette.TEXT_LABEL, "What its order book holds and has not yet earned, over this month's "
+                            + "revenue: the work ahead of it, in months at this pace."));
+                }
+            }
+            case CARRIERS -> {
+                if (sector.getWorkers() > 0 && rev > 0) rows.add(ratioRow("Revenue a worker",
+                        tightMoney(toDollars(rev / sector.getWorkers()), false) + " a month", Palette.TEXT_LABEL,
+                        "This month's revenue over the workers it has today."));
+            }
+            default -> { }
+        }
+        return ratioColumn("READ AS RATIOS", rows.toArray(new Node[0]));
+    }
+
+    /**
+     * OF EVERY DOLLAR IT TOOK (the Income summary): each cost as cents of a
+     * dollar of its revenue, and what it kept, on one bar - a refund is not
+     * a cost and is left out, so the cents can come to more than a dollar.
+     */
+    VBox everyDollar(SectorBooks.SectorMonth now) {
+        HBox title = head("OF EVERY DOLLAR IT TOOK", "Each line of the month as cents of a dollar of its revenue, on "
+                + "one bar: what the sales tax, its suppliers, its workers, its power, water and repairs, the ground, its "
+                + "lenders and the business tax took, and what it kept. A month it lost money, the costs come to more "
+                + "than the dollar.", null);
+        double rev = now.revenue();
+        if (!(rev > 0)) return card(title, caption("It took nothing this month.", Palette.TEXT_MUTED));
+        String[] names = { "sales tax", "bought in", "wages", "power, water, repairs", "property tax", "interest",
+                "business tax", "kept" };
+        double[] parts = { now.salesTaxPaid(), now.inputs(), now.payroll(), now.electricity() + now.water() + now.maintenance(),
+                now.propertyTax(), now.interest(), now.tax(), now.netIncome() };
+        String[] colours = { Palette.SPENDING_RAMP[4], Palette.SPENDING_RAMP[3], Palette.SPENDING_RAMP[2],
+                Palette.SPENDING_RAMP[1], Palette.SPENDING_RAMP[0], Palette.RAMP_REST, Palette.TEXT_SPENT, Palette.BUSINESS };
+        List<Segment> bar = new ArrayList<>();
+        List<HBox> keyParts = new ArrayList<>();
+        double sum = 0;
+        for (int i = 0; i < parts.length; i++) {
+            if (!(parts[i] > 0)) continue;
+            double cents = parts[i] / rev * 100;
+            sum += parts[i];
+            bar.add(new Segment(parts[i], colours[i], false, null, null, String.format("%s  %.1f¢", names[i], cents), null));
+            keyParts.add(keyPart(colours[i], names[i], String.format("%.1f¢", cents)));
+        }
+        VBox c = card(title, segmentBar(bar, Math.max(sum, rev), List.of(), 0, 14), key(keyParts));
+        if (now.netIncome() < 0) c.getChildren().add(caption(String.format("It lost %.1f¢ of every dollar it took.",
+                -now.netIncome() / rev * 100), Palette.BAD));
+        return c;
+    }
+
+    /** A summary's door into the Statement view with one note open: the waterfall's bars. */
+    void openNote(Sector sector, String table, int note) {
+        linesOpen(sector).add(StatementView.noteKey(table, note));
+        pickView(true);
     }
 
     /* =====================================================================
-       THE BALANCE SHEET (0.7.30): TWO BARS AND ITS OWNERS
+       THE BALANCE SHEET (0.7.30; 0.7.74): TWO BARS, IN SHORT, ITS EQUITY'S
+       MONTH AND ITS OWNERS
 
        What it owns against who has a claim on it, on one scale: its cash,
        stock, land, buildings, what it holds abroad and other businesses'
        bonds, against its loans and bonds and its owners' equity. The sheet
        had listed four of its six kinds of asset and totalled all six (B1) -
        Construction's $40B held abroad was in "Everything it owns" and on no
-       line. Both are lines now. Its owners are one card, the same card the
-       Bank's Owners page draws (D11).
+       line. Under the bars IN SHORT and the ratios, the month of its equity
+       as a bridge, and a door to its owners, whose card - the one the Bank's
+       Owners page draws - is on Investors since 0.7.75 (D7). The Statement
+       view draws the classified sheet, its equity in share capital and what
+       it kept (R3), and the statement of changes in equity in those columns.
        ===================================================================== */
 
     void balancePage(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
-
-        boolean known = !then.isEmpty();
 
         // The sheet, on one scale.
         String[] ownsColours = { Palette.BUSINESS_LIGHT, Palette.BUSINESS, Palette.BUSINESS_DARK,
@@ -1753,82 +1835,100 @@ final class SectorScreen {
                     + "would stop the trading.", m(now.totalAssets()), m(now.totalLiabilities())), null));
         }
 
-        // The statement, with the two kinds of asset it left out (B1).
-        VBox column = new VBox(0);
-        column.getChildren().add(statementHead("What it owns"));
-        column.getChildren().add(bookHead("as at " + CityCalendar.format(now.month())));
+        // In short and the ratios; its equity's month; its owners.
+        SectorStatements.Table t = sheetTable(sector, now, then);
+        String[] ids = { SectorStatements.TOTAL_ASSETS, SectorStatements.TOTAL_LIABILITIES, SectorStatements.TOTAL_EQUITY,
+                SectorStatements.CASH };
+        double[] n = nows(t, ids), p = thens(t, ids);
+        page.getChildren().add(StatementView.beside(StatementView.inShort(
+                new String[] { "What it owns", "What it owes", "Owners' equity", "Cash", "Loans and bonds" },
+                new double[] { n[0], n[1], n[2], n[3], now.bondsPayable() },
+                new double[] { p[0], p[1], p[2], p[3], then.bondsPayable() }, t.thenKnown(),
+                "Five lines of the statement of financial position, as this month closed against last, in millions: "
+                + "the Statement view has the sheet classified, and how its equity moved."),
+                balanceRatios(sector, t, now, then)));
+        Node bridge = equityBridge(now, then);
+        if (bridge != null) page.getChildren().add(bridge);
 
-        column.getChildren().add(bookLine("Cash", now.cash(), then.cash(), known,
-                now.cash() < 0 ? Palette.BAD : null));
-        if (now.inventory() != 0 || then.inventory() != 0) {
-            column.getChildren().add(withInfo(bookLine("Stock on the shelf",
-                    now.inventory(), then.inventory(), known, null),
-                    "Stock is held at what it would fetch today, so a price collapse shrinks this business's "
-                    + "balance sheet without anything being sold."));
+        // Its owners' card is on Investors (0.7.75, D7): a door to it.
+        if (ui.game.getEquity().getShares(Equity.indexOf(sector.key())) > 0) {
+            page.getChildren().add(controlDoor(Icons.EXCHANGE, OWNERS_DOOR, () -> open("Investors")));
         }
-        if (now.tradeReceivables() != 0 || then.tradeReceivables() != 0) {
-            column.getChildren().add(withInfo(bookLine("Owed by the shops it supplies",
-                    now.tradeReceivables(), then.tradeReceivables(), known, null),
-                    "What the shops owe it for stock it let them have on credit this month; they pay it at the next "
-                    + "month's books, out of the sale it stocks."));
-        }
-        column.getChildren().add(bookTotal("Current assets",
-                now.cash() + now.inventory() + now.tradeReceivables(),
-                then.cash() + then.inventory() + then.tradeReceivables(), known, null));
+    }
 
-        column.getChildren().add(bookLine("Land", now.land(), then.land(), known, null));
-        column.getChildren().add(withInfo(bookLine("Buildings, at cost",
-                now.buildings(), then.buildings(), known, null),
-                "Buildings are at what they cost to put up — cash plus materials at the price of the day. "
-                + "Nothing here depreciates."));
-        if (now.foreignAssets() != 0 || then.foreignAssets() != 0) {
-            column.getChildren().add(withInfo(bookLine("Held abroad",
-                    now.foreignAssets(), then.foreignAssets(), known, null),
-                    "What it has sent abroad for the world's rate, in the city's money at the rate it was last "
-                    + "valued at. It comes home before the business borrows a cent."));
-        }
-        if (now.bondAssets() != 0 || then.bondAssets() != 0) {
-            column.getChildren().add(bookLine("Other businesses' bonds",
-                    now.bondAssets(), then.bondAssets(), known, null));
-        }
-        column.getChildren().add(bookTotal("Everything it owns",
-                now.totalAssets(), then.totalAssets(), known, null));
+    /** The Balance sheet's door to its owners' card (D7). */
+    static final String OWNERS_DOOR = "its owners, its share's price and what it pays: Investors";
 
-        column.getChildren().add(statementHead("What it owes, and what is left"));
-        column.getChildren().add(bookLine("Loans and bonds outstanding",
-                now.bondsPayable(), then.bondsPayable(), known, null));
-        if (now.tradePayables() != 0 || then.tradePayables() != 0) {
-            column.getChildren().add(withInfo(bookLine("Owed to its suppliers",
-                    now.tradePayables(), then.tradePayables(), known, null),
-                    "The month's stock its suppliers let it have on credit. It is paid at the next month's books, "
-                    + "out of the takings of the sale that stock goes to."));
-        }
-        column.getChildren().add(withInfo(bookLine("Owners' equity",
-                now.equity(), then.equity(), known,
-                now.equity() < 0 ? Palette.BAD : null),
-                "Owners' equity is what is left when the lenders are paid off: what the founders started with, "
-                + "what its shareholders have subscribed since, and every month's result — less what was paid out "
-                + "to them and what was bought back. Who holds it, and what the market makes of it, is the owners "
-                + "card below."));
-        column.getChildren().add(bookTotal("Owed and owned",
-                now.totalLiabilities() + now.equity(),
-                then.totalLiabilities() + then.equity(), known, null));
-
-        double assets = now.totalAssets();
+    /**
+     * The Balance sheet's ratios, both views: current and quick (what falls
+     * due within a year needs R2, so they read a dash the month after a
+     * load), debt to equity and to assets, the owners' share, return on
+     * equity a year on its average, and book a share - and a merchant's days
+     * of stock, a landlord's loan to value.
+     */
+    VBox balanceRatios(Sector sector, SectorStatements.Table t, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        double assets = now.totalAssets(), equity = now.equity();
+        List<Node> rows = new ArrayList<>();
+        double current = SectorStatements.currentRatio(t), quick = SectorStatements.quickRatio(t);
+        String soon = "What falls due within a year is counted at the next month's books after a load.";
+        rows.add(ratioRow("Current ratio", Double.isFinite(current) ? String.format("%.2f", current) : "—",
+                Double.isFinite(current) && current < 1 ? Palette.WARN : Palette.TEXT_LABEL,
+                "Its current assets - cash, stock, what its buyers owe it - over what falls due within a year. "
+                + (Double.isFinite(current) ? "Under one, a year's bills outrun what it could turn to cash." : soon)));
+        rows.add(ratioRow("Quick ratio", Double.isFinite(quick) ? String.format("%.2f", quick) : "—", Palette.TEXT_LABEL,
+                "The same without its stock: what it could pay at once."));
+        double debtToEquity = equity > 0 ? now.bondsPayable() / equity : Double.NaN;
+        rows.add(ratioRow("Debt to equity", Double.isFinite(debtToEquity) ? String.format("%.2f", debtToEquity) : "—",
+                equity <= 0 ? Palette.BAD : Palette.TEXT_LABEL, "Its loans and bonds over its owners' equity."));
         double debtToAssets = assets > 0 ? now.bondsPayable() / assets : 0;
-        VBox ratios = ratioColumn("READ AS RATIOS",
-                ratioRow("Debt to assets", String.format("%.0f%%", debtToAssets * 100),
-                        debtToAssets > .7 ? Palette.BAD : debtToAssets > .5 ? Palette.WARN : Palette.GOOD, null),
-                ratioRow("Return on assets", String.format("%.2f%% a month",
-                                unsigned0(assets > 0 ? now.netIncome() / assets * 100 : 0, 2)),
-                        now.netIncome() < 0 ? Palette.BAD : Palette.TEXT_LABEL, null),
-                now.inventory() > 0 && assets > 0
-                        ? ratioRow("Stock, of its assets", String.format("%.0f%%", now.inventory() / assets * 100),
-                                Palette.TEXT_LABEL, null) : null);
-        page.getChildren().add(statementAndRatios(column, ratios));
+        rows.add(ratioRow("Debt to assets", String.format("%.0f%%", debtToAssets * 100),
+                debtToAssets > .7 ? Palette.BAD : debtToAssets > .5 ? Palette.WARN : Palette.GOOD, null));
+        rows.add(ratioRow("Owners' share", assets > 0 ? pctWords(equity / assets) : "—", Palette.TEXT_LABEL,
+                "Its owners' equity over everything it owns."));
+        double roe = SectorStatements.returnOnEquity(now, then);
+        rows.add(ratioRow("Return on equity", Double.isFinite(roe) ? pctWords(roe) + " a year" : "—",
+                Double.isFinite(roe) && roe < 0 ? Palette.BAD : Palette.TEXT_LABEL,
+                "Twelve months at this month's profit, over its owners' equity averaged across the two months."));
+        SectorBooks.Shares share = ui.game.getSectorBooks().shares(sector.key());
+        if (share != null && share.shares() > 0) {
+            rows.add(ratioRow("Book a share", tightMoney(toDollars(equity / share.shares()), false),
+                    equity < 0 ? Palette.BAD : Palette.TEXT_LABEL, "Its owners' equity over its shares."));
+        }
+        SectorStatements.Format f = sector.statementFormat();
+        if (f == SectorStatements.Format.MERCHANTS && now.inputs() > 0 && now.inventory() > 0) {
+            rows.add(ratioRow("Days of stock", String.format("%.0f", now.inventory() / (now.inputs() / 30)), Palette.TEXT_LABEL,
+                    "The stock on its shelves, in days of what it bought this month."));
+        }
+        if (f == SectorStatements.Format.LANDLORDS && now.land() + now.buildings() > 0) {
+            rows.add(ratioRow("Loan to value", pctWords(now.bondsPayable() / (now.land() + now.buildings())), Palette.TEXT_LABEL,
+                    "What it owes over its land and buildings: the mortgage lender's measure."));
+        }
+        return ratioColumn("READ AS RATIOS", rows.toArray(new Node[0]));
+    }
 
-        VBox owners = ownersCard(Equity.indexOf(sector.key()), now.equity(), now.netIncome(), true);
-        if (owners != null) page.getChildren().add(owners);
+    /** ITS EQUITY THIS MONTH (the Balance summary): the statement of changes in equity as a bridge, or null without last month's sheet. */
+    Node equityBridge(SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        SectorStatements.Table eq = SectorStatements.equity(now, then);
+        if (eq == null) return null;
+        List<Step> steps = new ArrayList<>();
+        steps.add(fallTotal("At the start", eq.now(SectorStatements.EQ_START)));
+        // ...its owners' three lines (the founders' shares move nothing in all), and the prices and the rest (R6).
+        double[] moves = { eq.now(SectorStatements.EQ_PROFIT), eq.now(SectorStatements.EQ_OUTSIDE),
+                eq.now(SectorStatements.EQ_ISSUED) + eq.now(SectorStatements.EQ_PAID) + eq.now(SectorStatements.EQ_BOUGHT),
+                SectorStatements.revaluedTotal(eq) + eq.now(SectorStatements.EQ_REVALUED) };
+        String[] names = { "Its profit", "Outside its trading", "Its owners", "Revalued, and the rest" };
+        for (int i = 0; i < moves.length; i++) {
+            if (Math.abs(toDollars(moves[i])) < .5) continue;
+            steps.add(Step.of(names[i], moves[i], moves[i] >= 0 ? Palette.REVENUE_RAMP[2] : Palette.SPENDING_RAMP[2]));
+        }
+        steps.add(fallTotal("At the end", eq.now(SectorStatements.EQ_END)));
+        Waterfall fall = waterfall(steps, SectorScreen::m, 0, 150);
+        return card(head("ITS EQUITY THIS MONTH", "Its owners' equity at the start of the month and at its end, and what "
+                + "moved it: its profit; what reached it outside its trading (the subsidy, the interest on its till and "
+                + "its bonds, what its lenders forgave or wrote off, a theft); what its owners put in, were paid and had "
+                + "bought back; and what the model revalued - the stock at today's price, the land and the buildings "
+                + "at today's prices, what it holds abroad - with anything else no line names. The Statement view sets "
+                + "it out as the statement of changes in equity, its share capital in a column of its own.", null), fall);
     }
 
     /** One bar of the sheet: its name, the bar on the sheet's scale, its total, and its key under it. */
@@ -1851,9 +1951,10 @@ final class SectorScreen {
 
     /**
      * Who owns a company, what a share is worth, and what it pays - as a card
-     * (0.7.30, D11), on a sector's Balance sheet (`wide`: the figures beside
-     * the share price's chart) and on the Bank's Owners page (narrow, in its
-     * statement column, through ownersBlock()).
+     * (0.7.30, D11), on a sector's Investors page since 0.7.75 (D7; its
+     * Balance sheet until then, which keeps a door to it - `wide`: the
+     * figures beside the share price's chart) and on the Bank's Owners page
+     * (narrow, in its statement column, through ownersBlock()).
      *
      * Since 2026-09-10 (evening) every sector and the bank is a company with
      * shareholders - the city's households first, the world for what they
@@ -2078,27 +2179,31 @@ final class SectorScreen {
     }
 
     /* =====================================================================
-       CASH AND CREDIT (0.7.30): A BRIDGE, AND WHAT ITS BORROWING COSTS
+       CASH AND CREDIT (0.7.30; 0.7.74): A BRIDGE IN THREE STEPS, AND WHAT
+       ITS BORROWING COSTS
 
-       The question: why did its cash move, and what does its borrowing cost?
+       The question: why did its cash move, and can it carry what it owes?
        The month's cash as a bridge - the cash it started with and ended with
-       written at the ends, every flow a step between them - over the
-       reconciliation, which now carries the two flows it left out (B2): what
-       was stolen from its till, and what it spent buying back its own shares.
-       Beside it: its rate in parts, its leverage on a scale to the default
-       point, and what it owes by kind. Every credit line stays, in a grid.
+       written at the ends - in the cash flow statement's three steps (it was
+       up to twenty, one a flow): from trading, investing and financing, each
+       with its biggest items behind its tooltip, and NOT ACCOUNTED FOR when
+       there is any. Then its free cash flow, what its owners took of it and
+       the cash it has in days of trading; whether it can carry what it owes;
+       its rate in parts, its leverage on a scale to the default point, what
+       it owes by kind and when it falls due. Every credit line stays, in a
+       grid. The Statement view draws the statement of cash flows, line by
+       line, and its debt by when it falls due.
        ===================================================================== */
 
     void cashAndDebtPage(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
 
-        boolean known = !then.isEmpty();
         BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
         String key = sector.key();
+        SectorStatements.Table cash = SectorStatements.cashFlow(now, then);
+        SectorStatements.Table inc = incomeTable(sector, now, then);
 
-        // The bridge: every flow this month, a step.
-        List<Step> steps = cashSteps(now);
-        double premisesNow = now.spentOnBuildings() - now.salvage();
-        double gap = now.unexplained();
+        // The bridge: the three sections, a step each.
+        List<Step> steps = cashSteps(cash);
         Node bridge;
         if (steps.isEmpty()) {
             bridge = caption("Nothing moved its cash this month.", Palette.TEXT_MUTED);
@@ -2110,48 +2215,11 @@ final class SectorScreen {
             row.setAlignment(Pos.CENTER_LEFT);
             bridge = row;
         }
-        cashPage(page, sector, now, then, known, credit, key, bridge, premisesNow, gap);
-    }
-
-    /** The bridge's steps: every flow of the month that moved a dollar, in the reconciliation's order - the two it missed (B2) last but the residual. */
-    static List<Step> cashSteps(SectorBooks.SectorMonth now) {
-        double premisesNow = now.spentOnBuildings() - now.salvage();
-        double[][] flows = {
-                { now.netIncome() }, { now.paidEarlier() }, { now.borrowed() }, { -now.repaid() },
-                { now.bondsIssued() }, { -now.bondsRepaid() }, { -now.bondsBought() }, { now.bondCoupons() },
-                { -premisesNow }, { -now.salvage() }, { now.fromTheCity() }, { now.arrearsPaid() }, { now.depositInterest() },
-                { now.forgiven() }, { -now.investedAbroad() }, { now.equityRaised() }, { -now.dividendsPaid() },
-                { -now.sharesBoughtBack() }, { -now.stolen() }, { now.tradeCredit() } };
-        String[] flowNames = { "Kept from trading", "Stock paid for earlier", "Borrowed", "Loans repaid",
-                "Raised on bonds", "Bonds repaid", now.bondsBought() >= 0 ? "Bought others' bonds" : "Others' bonds sold",
-                "Coupons", premisesNow >= 0 ? "Its premises" : "Buildings sold back",
-                now.salvage() > 0 ? "Scrapped plant bought" : "Scrapped plant sold", "Subsidy", "Arrears paid", "Bank interest",
-                "Forgiven", now.investedAbroad() >= 0 ? "Sent abroad" : "Brought home", "From shareholders",
-                "To shareholders", "Bought back its shares", "Stolen", tradeCreditName(now) };
-        List<Step> steps = new ArrayList<>();
-        for (int i = 0; i < flows.length; i++) {
-            double v = flows[i][0];
-            if (Math.abs(toDollars(v)) < .5) continue;
-            steps.add(Step.of(flowNames[i], v, v >= 0 ? Palette.REVENUE_RAMP[2] : Palette.SPENDING_RAMP[2]));
-        }
-        double gap = now.unexplained();
-        if (Math.abs(toDollars(gap)) > 1) steps.add(Step.of("Not accounted for", gap, Palette.WARN));
-        return steps;
-    }
-
-    /** The trade credit's line (0.7.44): a buyer's suppliers waiting, or a supplier's buyers. */
-    static String tradeCreditName(SectorBooks.SectorMonth m) {
-        return m.tradePayables() > 0 || m.tradeReceivables() == 0 ? "Its suppliers' credit" : "Its buyers' credit";
-    }
-
-    /** The rest of Cash & debt: the bridge's card, the can't-borrow line, the reconciliation and its pictures, and the credit grid. */
-    void cashPage(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then, boolean known,
-                  BusinessDebtManager credit, String key, Node bridge, double premisesNow, double gap) {
         page.getChildren().add(card(head("WHERE THE CASH WENT, " + CityCalendar.format(now.month()).toUpperCase(),
-                "The cash it started the month with and ended it with, at the ends; between them every way this "
-                + "model moves a business's cash, each a step - in, blue; out, sand - on a scale of the steps, so a "
-                + "small one beside a large balance is still seen. The statement under it is the same month, line by "
-                + "line.", null), bridge));
+                "The cash it started the month with and ended it with, at the ends; between them the statement of cash "
+                + "flows' three sections - what its trading brought in, what it invested, what its lenders and owners "
+                + "put in or took out - each a step, in blue or sand; hover one for its biggest items. The Statement "
+                + "view has every line.", null), bridge));
         if (credit.isBorrowingBlocked(key)) {
             page.getChildren().add(alertLine(Icons.BANK, Palette.BAD,
                     "It cannot borrow for another " + credit.getBlockedMonths(key) + " months", String.format(
@@ -2161,145 +2229,124 @@ final class SectorScreen {
                     + "after the month that broke it.", credit.getBlockedMonths(key)), null));
         }
 
-        // The reconciliation.
-        VBox column = new VBox(0);
-        column.getChildren().add(statementHead("Where the cash went"));
-        column.getChildren().add(bookHead(CityCalendar.format(now.month())));
+        // Its free cash flow, what its owners took of it, and its cash in days.
+        double free = cash.now(SectorStatements.FREE_CASH);
+        double owners = now.dividendsPaid() + now.sharesBoughtBack();
+        double days = SectorStatements.daysOfCash(now);
+        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(28, 8);
+        strip.getChildren().addAll(
+                miniFigure("FREE CASH FLOW", m(free), "from trading, less its premises", free < 0 ? Palette.BAD : Palette.TEXT_HEAD,
+                        "What its trading brought in, less what it spent on its own premises and scrapped plant: the cash "
+                        + "it could pay its owners or its lenders without borrowing."),
+                miniFigure("PAID TO ITS OWNERS", m(owners), free > 0 && owners > 0
+                        ? String.format("%.0f%% of its free cash flow", owners / free * 100) : "dividends and buybacks",
+                        Palette.TEXT_HEAD, null),
+                miniFigure("CASH ON HAND", Double.isFinite(days) ? String.format("%,.0f days", days) : "—",
+                        "of what trading costs it", now.cash() < 0 ? Palette.BAD : Palette.TEXT_HEAD,
+                        "Its cash over a day of the month's costs - what it bought, its wages, power, water, repairs, "
+                        + "the ground, its interest and its taxes."));
+        page.getChildren().add(card(strip));
 
-        column.getChildren().add(bookLine("Cash at the start",
-                now.openingCash(), then.openingCash(), known, null));
-        column.getChildren().add(bookLine("Kept from trading",
-                now.netIncome(), then.netIncome(), known,
-                now.netIncome() < 0 ? Palette.BAD : null));
-        // ...plus the stock it built with this month and paid for when it
-        // bought it (0.7.8): a cost in what it kept, and no cash this month.
-        if (now.paidEarlier() != 0 || then.paidEarlier() != 0) {
-            column.getChildren().add(bookLine("Stock used, paid for when bought",
-                    now.paidEarlier(), then.paidEarlier(), known, null));
-        }
-        column.getChildren().add(bookLine("Borrowed",
-                now.borrowed(), then.borrowed(), known, null));
-        column.getChildren().add(bookLine("Loans repaid",
-                -now.repaid(), -then.repaid(), known, null));
-        // ...and its bonds (0.7.12): what they raised after their costs, the
-        // face it repaid, what it spent on other sectors' and their coupons.
-        if (now.bondsIssued() != 0 || then.bondsIssued() != 0) {
-            column.getChildren().add(bookLine("Raised on bonds, after their costs",
-                    now.bondsIssued(), then.bondsIssued(), known, null));
-        }
-        if (now.bondsRepaid() != 0 || then.bondsRepaid() != 0) {
-            column.getChildren().add(bookLine("Bonds repaid",
-                    -now.bondsRepaid(), -then.bondsRepaid(), known, null));
-        }
-        if (now.bondsBought() != 0 || then.bondsBought() != 0) {
-            column.getChildren().add(bookLine(
-                    now.bondsBought() >= 0 ? "Spent on other businesses' bonds" : "Other businesses' bonds sold or repaid",
-                    -now.bondsBought(), -then.bondsBought(), known, null));
-        }
-        if (now.bondCoupons() != 0 || then.bondCoupons() != 0) {
-            column.getChildren().add(bookLine("Coupons on the bonds it holds",
-                    now.bondCoupons(), then.bondCoupons(), known, null));
-        }
-        // ...less the part that was scrapped plant's material (0.7.8), which
-        // is its own line: the builders' purchase, or the seller's sale.
-        double premisesThen = then.spentOnBuildings() - then.salvage();
-        if (premisesNow != 0 || premisesThen != 0) {
-            column.getChildren().add(bookLine(
-                    premisesNow >= 0 ? "Spent on its own premises"
-                                     : "Sold buildings back",
-                    -premisesNow, -premisesThen, known, null));
-        }
-        if (now.salvage() != 0 || then.salvage() != 0) {
-            boolean bought = (now.salvage() != 0 ? now.salvage() : then.salvage()) > 0;
-            column.getChildren().add(bookLine(
-                    bought ? "Material bought from scrapped plant"
-                           : "Scrapped plant's material, sold to the builders",
-                    -now.salvage(), -then.salvage(), known, null));
-        }
-        // Sales tax is NOT a line here any more - it is on the income statement
-        // above, so it is already inside "What it kept". See SectorBooks.
-        if (now.fromTheCity() != 0 || then.fromTheCity() != 0) {
-            column.getChildren().add(bookLine("Subsidy from the city",
-                    now.fromTheCity(), then.fromTheCity(), known, null));
-        }
-        // What the city owed it and paid this month (0.7.55): cash for a
-        // subsidy or a bill the treasury refused while its ceiling bound.
-        if (now.arrearsPaid() != 0 || then.arrearsPaid() != 0) {
-            column.getChildren().add(bookLine("Arrears paid by the city",
-                    now.arrearsPaid(), then.arrearsPaid(), known, null));
-        }
-        if (now.depositInterest() != 0 || then.depositInterest() != 0) {
-            column.getChildren().add(bookLine("Interest on its bank balance",
-                    now.depositInterest(), then.depositInterest(), known, null));
-        }
-        // The four lines the reconciliation had and the screen did not,
-        // until 2026-09-10 (evening): what its creditors forgave, what it
-        // moved abroad or brought home, what its owners put in, and what it
-        // paid them. Without them "Not accounted for" stayed at zero while
-        // the lines on the screen did not add up to the cash at the end.
-        if (now.forgiven() != 0 || then.forgiven() != 0) {
-            column.getChildren().add(bookLine("Forgiven by its creditors",
-                    now.forgiven(), then.forgiven(), known, null));
-        }
-        if (now.investedAbroad() != 0 || then.investedAbroad() != 0) {
-            column.getChildren().add(bookLine(
-                    now.investedAbroad() >= 0 ? "Sent abroad for the world's rate" : "Brought home from abroad",
-                    -now.investedAbroad(), -then.investedAbroad(), known, null));
-        }
-        if (now.equityRaised() != 0 || then.equityRaised() != 0) {
-            column.getChildren().add(bookLine("Raised from its shareholders",
-                    now.equityRaised(), then.equityRaised(), known, null));
-        }
-        if (now.dividendsPaid() != 0 || then.dividendsPaid() != 0) {
-            column.getChildren().add(bookLine("Paid to its shareholders",
-                    -now.dividendsPaid(), -then.dividendsPaid(), known, null));
-        }
-        // ...and the two it still left out until 0.7.30 (B2): both are in
-        // unexplained(), so "Not accounted for" stayed hidden while the lines
-        // did not add up to the cash at the end.
-        if (now.sharesBoughtBack() != 0 || then.sharesBoughtBack() != 0) {
-            column.getChildren().add(bookLine("Bought back its own shares",
-                    -now.sharesBoughtBack(), -then.sharesBoughtBack(), known, null));
-        }
-        if (now.stolen() != 0 || then.stolen() != 0) {
-            column.getChildren().add(bookLine("Stolen from its till",
-                    -now.stolen(), -then.stolen(), known, null));
-        }
-        // ...and its trade credit, net (0.7.44): the statement charged the
-        // whole stock bill and booked the whole sale; the cash moved by less.
-        if (now.tradeCredit() != 0 || then.tradeCredit() != 0) {
-            boolean buyer = now.tradePayables() > 0 || then.tradePayables() > 0
-                    || (now.tradeReceivables() == 0 && then.tradeReceivables() == 0);
-            column.getChildren().add(withInfo(bookLine(
-                    buyer ? "Stock on its suppliers' credit, less what it repaid"
-                          : "Repaid by the shops, less what it let them have on credit",
-                    now.tradeCredit(), then.tradeCredit(), known, null),
-                    buyer ? "Its suppliers let it have the month's stock and wait a month for the money: what it bought "
-                            + "that way stays in its till, and what it owed from the month before is paid out of the "
-                            + "takings of the sale that stock went to."
-                          : "The shops pay for what it sold them on credit a month later, out of the sale it stocked: "
-                            + "what they owe it is on its balance sheet, and the cash arrives at the next month's books."));
-        }
-
-        if (Math.abs(toDollars(gap)) > 1) {
-            column.getChildren().add(withInfo(bookLine("Not accounted for",
-                    gap, then.unexplained(), known, Palette.WARN),
-                    "The lines above are every way this model moves a sector's cash. A residual means something "
-                    + "else touched it — worth knowing about rather than worth hiding. SectorBooksCheck audits this "
-                    + "identity on every sector every month, so a line appearing here is news."));
-        }
-
-        VBox end = bookTotal("Cash at the end",
-                now.cash(), then.cash(), known,
-                now.cash() < 0 ? Palette.BAD : null);
-        column.getChildren().add(now.cash() < 0 ? withInfo(end, "A negative balance is not an error. A maturing "
-                + "loan takes cash under before the replacement is written, which is what a business with no spare "
-                + "cash actually does.") : end);
-
-        page.getChildren().add(statementAndRatios(column, creditPictures(sector, now)));
+        // Can it carry what it owes; and what its borrowing costs, and when it falls due.
+        VBox pictures = creditPictures(sector, now);
+        pictures.getChildren().addAll(whenDue(sector));
+        page.getChildren().add(StatementView.beside(carryCard(sector, inc, cash, now), pictures));
 
         page.getChildren().add(sectionHead("WHAT IT BORROWS ON", null, hint("every line of its credit")));
         page.getChildren().add(factGrid(creditLines(sector, now), 2, SectorScreen::toneColour));
+    }
+
+    /** The bridge's steps: the cash flow statement's three sections, each with its three biggest items as its tooltip, and NOT ACCOUNTED FOR when there is any. */
+    static List<Step> cashSteps(SectorStatements.Table cash) {
+        String[][] sections = {
+                { "From trading", SectorStatements.OPERATING_HEAD, SectorStatements.FROM_OPERATING },
+                { "Investing", SectorStatements.INVESTING_HEAD, SectorStatements.FROM_INVESTING },
+                { "Financing", SectorStatements.FINANCING_HEAD, SectorStatements.FROM_FINANCING } };
+        List<Step> steps = new ArrayList<>();
+        for (String[] s : sections) {
+            double v = cash.now(s[2]);
+            if (Math.abs(toDollars(v)) < .5) continue;
+            steps.add(Step.of(s[0], v, v >= 0 ? Palette.REVENUE_RAMP[2] : Palette.SPENDING_RAMP[2])
+                    .tip(biggest(cash, s[1], s[2])));
+        }
+        SectorStatements.Row gap = cash.row(SectorStatements.UNEXPLAINED);
+        if (gap != null && Math.abs(gap.now()) >= SectorStatements.NOTICE) {
+            steps.add(Step.of("Not accounted for", gap.now(), Palette.WARN));
+        }
+        return steps;
+    }
+
+    /** A section's three biggest lines this month, in words: "Profit for the month +$1.2M\nIts suppliers' credit, net −$310k". */
+    static String biggest(SectorStatements.Table t, String head, String total) {
+        List<SectorStatements.Row> lines = new ArrayList<>();
+        boolean in = false;
+        for (SectorStatements.Row r : t.rows()) {
+            if (r.id().equals(head)) { in = true; continue; }
+            if (r.id().equals(total)) break;
+            if (in && r.kind() == SectorStatements.Kind.LINE && Math.abs(toDollars(r.now())) >= .5) lines.add(r);
+        }
+        lines.sort((a, b) -> Double.compare(Math.abs(b.now()), Math.abs(a.now())));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.min(3, lines.size()); i++) {
+            if (sb.length() > 0) sb.append('\n');
+            sb.append(lines.get(i).label()).append("  ").append(lines.get(i).now() >= 0 ? "+" : "−")
+                    .append(m(Math.abs(lines.get(i).now())));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * CAN IT CARRY WHAT IT OWES (the Cash & debt summary): interest cover on
+     * the statement's operating profit (D10), its debt over a year of what
+     * its trading brings in, and whether it can borrow at all.
+     */
+    VBox carryCard(Sector sector, SectorStatements.Table inc, SectorStatements.Table cash, SectorBooks.SectorMonth now) {
+        BusinessDebtManager credit = ui.game.getEconomyManager().getBusinessDebtManager();
+        double cover = SectorStatements.interestCover(inc);
+        double years = SectorStatements.debtYears(cash, now);
+        boolean blocked = credit.isBorrowingBlocked(sector.key());
+        return ratioColumn("CAN IT CARRY WHAT IT OWES",
+                ratioRow("Interest cover", timesWords(cover), !Double.isFinite(cover) ? Palette.TEXT_LABEL
+                                : cover < 1.5 ? Palette.BAD : cover < 3 ? Palette.WARN : Palette.GOOD,
+                        "How many times over its operating profit covers its finance costs; a dash when it pays none."),
+                ratioRow("Its debt, in years of trading cash", Double.isFinite(years) ? String.format("%.1f", years)
+                                : now.bondsPayable() > 0 ? "never" : "—",
+                        !Double.isFinite(years) && now.bondsPayable() > 0 ? Palette.WARN : Palette.TEXT_LABEL,
+                        "What it owes over twelve months of what its trading brought in this month: how long it would take "
+                        + "to repay at this pace, borrowing nothing more. \"Never\" when its trading brought nothing in."),
+                ratioRow("Can it borrow", blocked ? "no — " + credit.getBlockedMonths(sector.key()) + " months" : "yes",
+                        blocked ? Palette.BAD : Palette.GOOD,
+                        blocked ? "It went under, and no lender will write it a loan until the ban runs out."
+                                : "No ban: at its own rate, within the bank's limits."));
+    }
+
+    /** WHEN IT FALLS DUE (R2), under what it owes by kind: within a year, in one to five, after five - the city debt's ladder colours; or not counted yet. */
+    List<Node> whenDue(Sector sector) {
+        SectorBooks.Debt d = ui.game.getSectorBooks().debt(sector.key());
+        List<Node> out = new ArrayList<>();
+        String info = "What its loans, bonds and mortgages ask at the settles ahead, by when: a loan whole in its last "
+                + "month, a mortgage's principal as its payments run it down, a bond at its maturity. A mortgage term "
+                + "that ends is counted renewed, as its lender renews it while it lends.";
+        if (d == null || d.owed() == null) {
+            out.add(head("WHEN IT FALLS DUE", info, null));
+            out.add(caption("Not counted yet: a month has to run after a load.", Palette.TEXT_MUTED));
+            return out;
+        }
+        double owed = d.owedTotal(), year = d.withinYearTotal(), five = d.withinFiveTotal();
+        if (!(owed > 0)) return out;
+        double[] parts = { year, five - year, owed - five };
+        String[] names = { "within a year", "in one to five", "after five years" };
+        List<Segment> bar = new ArrayList<>();
+        List<HBox> keyParts = new ArrayList<>();
+        for (int i = 0; i < parts.length; i++) {
+            if (!(parts[i] > 0)) continue;
+            bar.add(new Segment(parts[i], Palette.LADDER[i], false, null, null, names[i] + "  " + m(parts[i]), null));
+            keyParts.add(keyPart(Palette.LADDER[i], names[i], m(parts[i])));
+        }
+        out.add(head("WHEN IT FALLS DUE", info, figure(m(year), Palette.SIZE_BODY + 3, Palette.TEXT_HEAD)));
+        out.add(segmentBar(bar, 0, List.of(), 0, 10));
+        out.add(key(keyParts));
+        return out;
     }
 
     /** A figure at a bridge's end: its name over it. */
@@ -2554,6 +2601,763 @@ final class SectorScreen {
     }
 
     /* =====================================================================
+       STATEMENT VIEWS (0.7.74): A SUMMARY AND A STATEMENT
+
+       Jerus, 2026-10-07: "both a summarized and a detailed actual statement
+       ... only focusing on the income statement, balance sheet, cash and
+       debt, and investor". One switch at the right of the page strip,
+       Summary | Statement, on every page but Operations (D1: one choice for
+       every business, and for the Bank tab's Profit and Balance sheet, kept
+       while the game runs and never saved). The Statement view draws
+       SectorStatements' tables through StatementView - each in its
+       business's format (Sector.statementFormat()), every note opening in
+       place, the ratios beside - and on Investors the investor report. The
+       project's spec-sector-statements.md is the design; this is its batch 1.
+       ===================================================================== */
+
+    /** Whether the pages draw the formal statement rather than the summary (D1): kept while the game runs, never saved; the Bank tab's two statements read it too. */
+    boolean statementView = false;
+
+    /** The Statement view's change and common-size columns, each on or off from its toolbar, on every statement at once. */
+    boolean showChange = true, showShare = true;
+
+    /** Each statement's key in a business's open set: an open note on one is "income:note:5" in linesOpen(). */
+    static final String INCOME = "income", SHEET = "sheet", EQUITY = "equity", CASH = "cash";
+
+    /** Note 6, and the equity statement's outside line: what the outside lines are (F1). */
+    static final String OUTSIDE_INFO = "Money that reached its books outside its trading: the city's subsidy and the "
+            + "arrears it paid, the bank's interest on its till, the coupons on the bonds it holds, the interest its money "
+            + "abroad earned, an overdraft forgiven, loans and bonds its lenders wrote off, and a theft - and what its "
+            + "borrowing cost it up front: the bank's fee, a mortgage's insurance premium and a bond's issuing costs, each "
+            + "taken out of what it was handed while it owes the whole. Each moved its equity and reached no statement "
+            + "until this one, so none of it is taxed or in what its dividend is struck on.";
+
+    /** Share capital's line and note, when a save from before 0.7.75 was loaded (R3). */
+    static final String DERIVED_INFO = "Derived when the city was loaded: its save was made before share capital was "
+            + "kept, so this is what its shareholders have subscribed since its founding, at home and abroad, less what "
+            + "its buybacks have paid since the load. Its founders' book and its buybacks before the load are not known; "
+            + "they sit in what it kept.";
+
+    /** Share capital's line and note (R3). */
+    static final String CAPITAL_INFO = "What its owners put in: the book its founders' shares were issued against, and "
+            + "every share it has sold since, at home and abroad - less all it paid to buy its own shares back, as the "
+            + "bank keeps its paid-in.";
+
+    /** Note 7: the stock. */
+    static final String STOCK_WORDS = "Stock is held at what it would fetch today, so a price collapse shrinks this "
+            + "business's balance sheet without anything being sold, and a rise lifts it.";
+
+    /** Note 9: what it holds abroad. */
+    static final String ABROAD_WORDS = "What it has sent abroad for the world's rate, in the city's money at the rate it "
+            + "was last valued at, with the interest it earned there rolled in. It comes home before the business "
+            + "borrows a cent.";
+
+    /** What falls due within a year (R2), behind its line's and its card's (i). */
+    static final String DUE_WORDS = "What its loans, bonds and mortgages ask at the twelve settles ahead: a loan whole in "
+            + "its last month, a mortgage's principal as its payments run it down, a bond at its maturity. A mortgage "
+            + "term that ends is counted renewed, as its lender renews it while it lends.";
+
+    /** The month after a load, R2's line. */
+    static final String NOT_SPLIT_WORDS = "When it falls due is counted at the next month's books: a load keeps the debt, "
+            + "not its split.";
+
+    /** The switch picked: this page in the other view, at its top. */
+    void pickView(boolean statement) {
+        statementView = statement;
+        ui.innerScrollAt.remove("showSectorMenu:body");
+        showSectorMenu();
+    }
+
+    /** One business's income statement this month, its finance note from R1. */
+    SectorStatements.Table incomeTable(Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        return SectorStatements.income(sector.statementFormat(), now, then, ui.game.getSectorBooks().debt(sector.key()));
+    }
+
+    /** ...and its sheet, its debt by when it falls due from R2. */
+    SectorStatements.Table sheetTable(Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        SectorBooks books = ui.game.getSectorBooks();
+        return SectorStatements.sheet(now, then, books.debt(sector.key()), books.debtBefore(sector.key()));
+    }
+
+    /** A statement's columns as the toolbar left them; `shareWord` null for one with no common size. */
+    StatementView.Columns columns(String shareWord) {
+        return new StatementView.Columns(true, showChange, showShare, shareWord);
+    }
+
+    /** A statement's toolbar: its two columns, and its notes opened and closed together (none without notes). */
+    HBox toolbar(SectorStatements.Table t, String table, StatementView.Columns c, java.util.Set<String> open,
+                 java.util.function.IntFunction<Node> notes) {
+        return StatementView.toolbar(c, () -> { showChange = !showChange; ui.redraw(); },
+                c.shareWord() == null ? null : () -> { showShare = !showShare; ui.redraw(); },
+                notes == null ? null : () -> { StatementView.openAll(t, table, open, notes); ui.redraw(); },
+                notes == null ? null : () -> { StatementView.closeAll(table, open); ui.redraw(); });
+    }
+
+    /** "For the month of January 2200". */
+    static String period(SectorBooks.SectorMonth now) { return "For the month of " + CityCalendar.format(now.month()); }
+
+    /** "As January 2200 closed". */
+    static String asAt(SectorBooks.SectorMonth now) { return "As " + CityCalendar.format(now.month()) + " closed"; }
+
+    /* ------------------------------ Income ------------------------------ */
+
+    /** The statement of profit or loss, its notes, and its ratios beside it. */
+    void incomeStatementView(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        SectorStatements.Table t = incomeTable(sector, now, then);
+        java.util.Set<String> open = linesOpen(sector);
+        boolean millions = SectorStatements.inMillions(t);
+        java.util.function.IntFunction<Node> notes = n -> switch (n) {
+            case 1 -> revenueDetail(sector);
+            case 2 -> salesTaxDetail(sector);
+            case 3 -> inputsDetail(sector);
+            case 4 -> wagesDetail(sector);
+            case SectorStatements.FINANCE_NOTE -> t.note(n).isEmpty()
+                    ? StatementView.noteSentence("By instrument it is counted at the next month's books: a load keeps the "
+                            + "line, not its parts.")
+                    : StatementView.noteRows(t.note(n), millions, "Each kind's interest as the month's bill was struck: the "
+                            + "bank's loans and its interim financing at their rates, the bonds at their coupons, the "
+                            + "mortgages at theirs.");
+            case SectorStatements.OUTSIDE_NOTE -> StatementView.noteSentence(OUTSIDE_INFO);
+            default -> null;
+        };
+        StatementView.Columns c = columns("of revenue");
+        VBox table = StatementView.table(t, INCOME, "this month", "last month", c, now.revenue(), then.revenue(), open,
+                notes, id -> incomeInfo(id, now), ui::redraw);
+        VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title() + " · "
+                        + sector.statementFormat().word.toLowerCase(), period(now), millions),
+                toolbar(t, INCOME, c, open, notes), table);
+        page.getChildren().add(StatementView.beside(card, incomeRatios(sector, t, now)));
+    }
+
+    /** An income statement row's (i), by id. */
+    static String incomeInfo(String id, SectorBooks.SectorMonth now) {
+        return switch (id) {
+            case SectorStatements.OPERATING -> OPERATING_INFO + " The model's own operating income, before the property "
+                    + "tax and the sales tax, is " + m(now.operatingIncome()) + ".";
+            case SectorStatements.SALES_TAX -> now.salesTaxPaid() < 0 ? REFUND_INFO : "The sales tax it charged on what "
+                    + "it sold here, less the credit for what its suppliers had already remitted: under its revenue, "
+                    + "because revenue is booked net of it.";
+            case SectorStatements.PROPERTY_TAX -> "The tax on the ground it stands on and its buildings: a cost of "
+                    + "operating, above its operating profit.";
+            case SectorStatements.PRE_TAX -> "The model's own profit before tax, to the cent.";
+            case SectorStatements.PROFIT -> "What it kept from trading: the business tax, the dividend and the rule that "
+                    + "sells buildings after six losing months are all struck on this.";
+            case SectorStatements.RESULT -> "Its profit and what reached it outside its trading: what its equity grew by "
+                    + "before its owners and the revaluation.";
+            default -> null;
+        };
+    }
+
+    /* --------------------------- Balance sheet --------------------------- */
+
+    /** The classified sheet with its ratios, then the statement of changes in equity. */
+    void balanceStatementView(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        SectorStatements.Table t = sheetTable(sector, now, then);
+        java.util.Set<String> open = linesOpen(sector);
+        boolean millions = SectorStatements.inMillions(t);
+        java.util.function.IntFunction<Node> notes = n -> switch (n) {
+            case SectorStatements.STOCK_NOTE -> StatementView.noteSentence(STOCK_WORDS);
+            case SectorStatements.BUILDINGS_NOTE -> StatementView.noteSentence(String.format("Its %,d buildings standing, "
+                    + "at what they cost to put up: cash, and materials at the price of the day - so a move in the "
+                    + "materials price moves the whole estate, which the equity statement counts as a revaluation. "
+                    + "Nothing here depreciates.", sector.buildingsStanding()));
+            case SectorStatements.ABROAD_NOTE -> StatementView.noteSentence(ABROAD_WORDS);
+            case SectorStatements.CAPITAL_NOTE -> StatementView.noteRows(
+                    SectorStatements.capitalNote(ui.game.getEquity(), sector.key()), millions,
+                    now.paidInDerived() ? DERIVED_INFO : CAPITAL_INFO + " As it stands now.");
+            default -> null;
+        };
+        StatementView.Columns c = columns("of assets");
+        VBox table = StatementView.table(t, SHEET, "this month", "last month", c, now.totalAssets(), then.totalAssets(),
+                open, notes, id -> sheetInfo(id, now), ui::redraw);
+        VBox card = StatementView.card(StatementView.titleBlock(sector.label(), t.title(), asAt(now), millions),
+                toolbar(t, SHEET, c, open, notes), table);
+        page.getChildren().add(StatementView.beside(card, balanceRatios(sector, t, now, then)));
+
+        SectorStatements.Table eq = SectorStatements.equity(now, then);
+        if (eq == null) {
+            page.getChildren().add(caption("How its equity moved needs last month's sheet: a month on, it is here.",
+                    Palette.TEXT_MUTED));
+            return;
+        }
+        VBox moved = StatementView.columnsTable(eq, EQUITY, EQUITY_HEADS, open,
+                n -> n == SectorStatements.OUTSIDE_NOTE ? StatementView.noteSentence(OUTSIDE_INFO) : null,
+                id -> equityInfo(id, now), ui::redraw);
+        page.getChildren().add(StatementView.card(StatementView.titleBlock(sector.label(), eq.title()
+                + (now.paidInDerived() ? " · share capital derived" : ""), period(now), SectorStatements.inMillions(eq)),
+                null, moved));
+    }
+
+    /** The equity statement's columns (R3). */
+    static final String[] EQUITY_HEADS = { "share capital", "kept, revalued", "total" };
+
+    /** The equity statement's remainder's (i). */
+    static final String REVALUED_INFO = "Whatever else moved its equity, worked out as what is left: a building bought "
+            + "for more or less than the sheet carries it at, a bond bought off its face, stock bought at one price and "
+            + "on the sheet at another.";
+
+    /** An equity statement row's (i), by id: R6's four parts, the founders' shares and the rest. */
+    static String equityInfo(String id, SectorBooks.SectorMonth now) {
+        return switch (id) {
+            case SectorStatements.EQ_START, SectorStatements.EQ_END -> now.paidInDerived() ? DERIVED_INFO : null;
+            case SectorStatements.EQ_FOUNDED -> "Its first shares, issued to the city's households against the book it "
+                    + "already had: what it had kept becomes share capital, and no cash moves.";
+            case SectorStatements.EQ_BOUGHT -> "All of what it paid for its own shares, off its share capital - as the "
+                    + "bank takes a buyback off its paid-in.";
+            case SectorStatements.EQ_STOCK -> "The stock it began the month with, at this month's prices less last "
+                    + "month's: stock is held at what it would fetch today.";
+            case SectorStatements.EQ_LAND -> "The ground it held at last month's sheet, at this month's price a square "
+                    + "foot less last month's.";
+            case SectorStatements.EQ_BUILDINGS -> "The construction materials in the buildings it had at last month's "
+                    + "sheet, at this month's price a unit less last month's: its buildings are carried at what they "
+                    + "would cost today, so the materials price moves the whole estate.";
+            case SectorStatements.EQ_ABROAD -> "What it holds abroad, less what it sent there and the interest rolled "
+                    + "in: the rate it is valued at in the city's money.";
+            case SectorStatements.EQ_REVALUED -> REVALUED_INFO;
+            case SectorStatements.EQ_CAPITAL_REST -> "Its share capital moved by something none of the lines above "
+                    + "names. SectorStatementCheck holds this at nothing, so a figure here is news.";
+            default -> null;
+        };
+    }
+
+    /** A sheet row's (i), by id. */
+    static String sheetInfo(String id, SectorBooks.SectorMonth now) {
+        return switch (id) {
+            case SectorStatements.CASH -> now.cash() < 0 ? "A negative balance is not an error. A maturing loan takes "
+                    + "cash under before the replacement is written, which is what a business with no spare cash "
+                    + "actually does." : null;
+            case SectorStatements.RECEIVABLES -> "What the shops owe it for stock it let them have on credit this month; "
+                    + "they pay it at the next month's books, out of the sale it stocks.";
+            case SectorStatements.SUPPLIERS -> "The month's stock its suppliers let it have on credit. It is paid at the "
+                    + "next month's books, out of the takings of the sale that stock goes to.";
+            case SectorStatements.DEBT_SOON -> DUE_WORDS;
+            case SectorStatements.DEBT_WHOLE -> NOT_SPLIT_WORDS;
+            case SectorStatements.SHARE_CAPITAL -> now.paidInDerived() ? DERIVED_INFO : CAPITAL_INFO;
+            case SectorStatements.RETAINED -> "The rest of its equity: every month's result it kept after paying its "
+                    + "shareholders, and what the model revalued - its stock, land and buildings at today's prices, what "
+                    + "it holds abroad at today's rate.";
+            default -> null;
+        };
+    }
+
+    /* ---------------------------- Cash & debt ---------------------------- */
+
+    /** The statement of cash flows, then what it owes by kind and by when it falls due. */
+    void cashStatementView(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        SectorStatements.Table t = SectorStatements.cashFlow(now, then);
+        java.util.Set<String> open = linesOpen(sector);
+        boolean millions = SectorStatements.inMillions(t);
+        StatementView.Columns c = columns(null);
+        VBox table = StatementView.table(t, CASH, "this month", "last month", c, 0, 0, open, null,
+                id -> cashInfo(id, now), ui::redraw);
+        page.getChildren().add(StatementView.card(StatementView.titleBlock(sector.label(), t.title(), period(now), millions),
+                toolbar(t, CASH, c, open, null), table));
+        page.getChildren().add(scheduleCard(sector, millions));
+        page.getChildren().add(debtCard(sector, millions));
+    }
+
+    /** The debt schedule's columns (R7): the kind (DEBT_KIND), five figures (DEBT_FIGURE), the rate and when the last of it falls due. */
+    static final double SCHEDULE_RATE = 70, SCHEDULE_RUNS = 80;
+
+    /** The schedule's (i). */
+    static final String SCHEDULE_INFO = "What it owed of each kind at last month's sheet, what it borrowed, repaid and had "
+            + "written off since, and what it owes at this month's; the rate it pays, weighted by what it owes, and the "
+            + "month the last of it falls due. Counted from sheet to sheet: the sheet reads what it owes at the month's "
+            + "settle, before the loans for the buildings it orders that month, which are next month's here as on the "
+            + "sheet - so its borrowing differs from the cash flow's, the calendar month's, by those.";
+
+    /**
+     * ITS DEBT THIS MONTH, BY KIND (the Cash & debt statement; R7): the
+     * roll-forward from last month's sheet to this month's - at the start,
+     * borrowed, repaid, written off, at the end - with each kind's rate and
+     * when the last of it falls due, its suppliers on a memo row, and what it
+     * borrowed after the sheet was read. Not counted until two months have
+     * run after a load: one for each sheet.
+     */
+    VBox scheduleCard(Sector sector, boolean millions) {
+        SectorBooks books = ui.game.getSectorBooks();
+        SectorBooks.Debt now = books.debt(sector.key()), before = books.debtBefore(sector.key());
+        SectorStatements.Schedule s = SectorStatements.schedule(now, before);
+        VBox c = new VBox(4, head("ITS DEBT THIS MONTH, BY KIND", SCHEDULE_INFO, null));
+        if (s == null) {
+            c.getChildren().add(caption("Not counted yet: after a load, two months have to run - one for each sheet.",
+                    Palette.TEXT_MUTED));
+        } else {
+            String head = Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL);
+            c.getChildren().add(scheduleRow(new String[] { StatementView.units(millions), "at the start", "borrowed",
+                    "repaid", "written off", "at the end", "rate", "runs to" }, head, head));
+            double[] total = new double[5];
+            int n = SectorBooks.Debt.KINDS.length;
+            for (int k = 0; k < n; k++) {
+                double[] v = { s.start()[k], s.borrowed()[k], -s.repaid()[k], -s.writtenOff()[k], s.end()[k] };
+                boolean any = false;
+                for (double x : v) any |= Math.abs(x) >= SectorStatements.NOTICE;
+                if (!any) continue;
+                for (int i = 0; i < 5; i++) total[i] += v[i];
+                c.getChildren().add(scheduleRow(SectorBooks.Debt.KINDS[k], v, s.rate()[k], s.runsTo()[k], millions, false));
+            }
+            SectorBooks.SectorMonth m = books.get(sector), p = books.previous(sector);
+            if (m.tradePayables() != 0 || p.tradePayables() != 0) {
+                c.getChildren().add(scheduleRow("Its suppliers", new double[] { p.tradePayables(), Double.NaN, Double.NaN,
+                        Double.NaN, m.tradePayables() }, Double.NaN, 0, millions, false));
+            }
+            c.getChildren().add(scheduleRow("Loans and bonds", total, Double.NaN, 0, millions, true));
+            double rest = 0;
+            for (double x : s.rest()) rest += Math.abs(x);
+            if (rest >= SectorStatements.NOTICE) {
+                c.getChildren().add(caption("NOT ACCOUNTED FOR: " + m(SectorStatements.Schedule.total(s.rest()))
+                        + " moved what it owes and no line names it. SectorStatementCheck holds this at nothing, so this "
+                        + "is news.", Palette.BAD));
+            }
+            double after = SectorStatements.Schedule.total(s.after());
+            if (after >= SectorStatements.NOTICE) {
+                c.getChildren().add(caption("It borrowed " + m(after) + " more this month after its sheet was read, for the "
+                        + "buildings it ordered: next month's here, as on the sheet.", Palette.TEXT_MUTED));
+            }
+        }
+        c.setMaxWidth(DEBT_KIND + 5 * DEBT_FIGURE + SCHEDULE_RATE + SCHEDULE_RUNS + 7 * Palette.GAP + 32);
+        c.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+        return c;
+    }
+
+    /** One kind's row of the schedule: its five figures, its rate and when the last of it falls due. */
+    private static HBox scheduleRow(String kind, double[] v, double rate, double runsTo, boolean millions, boolean total) {
+        String[] words = new String[8];
+        words[0] = kind;
+        for (int i = 0; i < 5; i++) words[i + 1] = Double.isNaN(v[i]) ? "" : StatementView.figure(v[i], millions);
+        words[6] = Double.isFinite(rate) && rate > 0 ? String.format("%.2f%%", rate * 100) : "";
+        words[7] = runsTo > 0 ? CityCalendar.formatShort((int) runsTo) : "";
+        return scheduleRow(words, Palette.words(Palette.SIZE_BODY, total ? Palette.TEXT_HEAD : Palette.TEXT_LABEL),
+                total ? Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD) : Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_BODY));
+    }
+
+    private static HBox scheduleRow(String[] words, String labelStyle, String figureStyle) {
+        HBox row = new HBox(Palette.GAP);
+        double[] widths = { DEBT_KIND, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, DEBT_FIGURE, SCHEDULE_RATE,
+                SCHEDULE_RUNS };
+        for (int i = 0; i < words.length; i++) {
+            Label f = new Label(words[i]);
+            f.setMinWidth(widths[i]);
+            f.setPrefWidth(widths[i]);
+            f.setAlignment(i == 0 ? Pos.CENTER_LEFT : Pos.CENTER_RIGHT);
+            f.setStyle(i == 0 ? labelStyle : figureStyle);
+            row.getChildren().add(f);
+        }
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** A cash flow row's (i), by id. */
+    static String cashInfo(String id, SectorBooks.SectorMonth now) {
+        return switch (id) {
+            case SectorStatements.PAID_EARLIER -> "Stock it built or sold with this month and paid for when it bought it: "
+                    + "a cost in its profit, and no cash this month.";
+            case SectorStatements.TRADE_CREDIT -> "The statement charged the whole stock bill and booked the whole sale; "
+                    + "the cash moved by less, because a supplier waits a month for what it let a buyer have on credit.";
+            case SectorStatements.CASH_DEPOSIT_INTEREST, SectorStatements.CASH_COUPONS -> "Interest received, among its "
+                    + "operating flows as IAS 7 allows: it reached its till at the bottom of the month, after its "
+                    + "statement was struck.";
+            case SectorStatements.UNEXPLAINED -> "The lines above are every way this model moves a sector's cash. A "
+                    + "residual means something else touched it - worth knowing about rather than worth hiding. "
+                    + "SectorBooksCheck audits this identity on every sector every month, so a line appearing here is news.";
+            case SectorStatements.CASH_END -> now.cash() < 0 ? "A negative balance is not an error. A maturing loan takes "
+                    + "cash under before the replacement is written." : null;
+            case SectorStatements.FREE_CASH -> "What its trading brought in, less what it spent on its own premises and "
+                    + "scrapped plant: what it could pay its owners or its lenders without borrowing.";
+            default -> null;
+        };
+    }
+
+    /** The debt card's columns: the kind, then owed, within a year, in one to five, after five, and the month's interest. */
+    static final double DEBT_KIND = 130, DEBT_FIGURE = 100;
+
+    /**
+     * ITS DEBT, BY KIND AND BY WHEN IT FALLS DUE (the Cash & debt
+     * statement): each kind it owes on (R2) with when it falls due and the
+     * month's interest on it (R1), its suppliers on a line at no interest,
+     * and the city debt's ladder under it. The month after a load: not
+     * counted yet.
+     */
+    VBox debtCard(Sector sector, boolean millions) {
+        SectorBooks.Debt d = ui.game.getSectorBooks().debt(sector.key());
+        SectorBooks.SectorMonth now = ui.game.getSectorBooks().get(sector);
+        VBox c = new VBox(4, head("ITS DEBT, BY KIND AND BY WHEN IT FALLS DUE", DUE_WORDS, null));
+        if (d == null || d.owed() == null) {
+            c.getChildren().add(caption("Not counted yet: a month has to run after a load. It owes "
+                    + m(now.bondsPayable()) + " in all.", Palette.TEXT_MUTED));
+        } else {
+            String head = Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL);
+            c.getChildren().add(debtRow(new String[] { StatementView.units(millions), "owed", "within a year",
+                    "in one to five", "after five", "interest" }, head, head));
+            double[] total = new double[5];
+            for (int k = 0; k < SectorBooks.Debt.KINDS.length; k++) {
+                double[] v = { d.owed()[k], d.withinYear()[k], d.withinFive()[k] - d.withinYear()[k],
+                        d.owed()[k] - d.withinFive()[k], d.interest() == null ? Double.NaN : d.interest()[k] };
+                if (v[0] == 0 && !(v[4] > 0)) continue;
+                for (int i = 0; i < 5; i++) total[i] += v[i];
+                c.getChildren().add(debtRow(SectorBooks.Debt.KINDS[k], v, millions, false));
+            }
+            if (now.tradePayables() != 0) {
+                c.getChildren().add(debtRow("Its suppliers", new double[] { now.tradePayables(), now.tradePayables(), 0, 0, 0 },
+                        millions, false));
+                total[0] += now.tradePayables();
+                total[1] += now.tradePayables();
+            }
+            c.getChildren().add(debtRow("All it owes", total, millions, true));
+            c.getChildren().addAll(whenDue(sector));
+        }
+        c.setMaxWidth(StatementView.TABLE + 32);
+        c.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+        return c;
+    }
+
+    private static HBox debtRow(String kind, double[] v, boolean millions, boolean total) {
+        String[] words = new String[6];
+        words[0] = kind;
+        for (int i = 0; i < 5; i++) words[i + 1] = StatementView.figure(v[i], millions);
+        return debtRow(words, Palette.words(Palette.SIZE_BODY, total ? Palette.TEXT_HEAD : Palette.TEXT_LABEL),
+                total ? Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD) : Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_BODY));
+    }
+
+    private static HBox debtRow(String[] words, String labelStyle, String figureStyle) {
+        HBox row = new HBox(Palette.GAP);
+        Label k = new Label(words[0]);
+        k.setMinWidth(DEBT_KIND);
+        k.setPrefWidth(DEBT_KIND);
+        k.setStyle(labelStyle);
+        row.getChildren().add(k);
+        for (int i = 1; i < words.length; i++) {
+            Label f = new Label(words[i]);
+            f.setMinWidth(DEBT_FIGURE);
+            f.setPrefWidth(DEBT_FIGURE);
+            f.setAlignment(Pos.CENTER_RIGHT);
+            f.setStyle(figureStyle);
+            row.getChildren().add(f);
+        }
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /* ------------------------------ Investors ------------------------------ */
+
+    /**
+     * The investor report (spec 4.4): a share this month against last, who
+     * holds it and what it has raised and paid, how it is financed against
+     * the equity share it aims for, and since 0.7.75 every building at every
+     * gate (R4, D8) - where the summary's list stops at the first.
+     */
+    void investorStatementView(VBox page, Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then,
+                               BuildCard.SectorInvestors si) {
+        page.getChildren().add(shareReport(sector, now, then));
+        int company = Equity.indexOf(sector.key());
+        VBox holds = whoHoldsIt(company);
+        page.getChildren().add(StatementView.beside(holds, howFinanced(company, now)));
+        page.getChildren().add(sectionHead("EVERY BUILDING AT EVERY GATE", EVERY_GATE_INFO, hint("a row opens it on Build")));
+        page.getChildren().add(everyGate(sector));
+    }
+
+    /** EVERY BUILDING AT EVERY GATE's (i). */
+    static final String EVERY_GATE_INFO = "Each building it can put up at every gate investors ask - ore, a licence, "
+            + "staff, land, and whether it pays - ticked, crossed, or a dash where it is not one this building has; "
+            + "what one would make its owner a month on the investors' estimate, what it would cost to build with its "
+            + "ground, the months that would take to pay back, and how it would pay: what its register would ask its "
+            + "owners for, what its till and its money abroad would put in, and what it would borrow. Under each, what "
+            + "that means. The summary stops at the first gate, which can hide a second.";
+
+    /** The grid's columns: the building, a gate's mark, a figure, the payback, how it would pay. */
+    static final double GATE_NAME = 200, GATE_MARK = 44, GATE_FIGURE = 96, GATE_PAYBACK = 84, GATE_PAYS = 210;
+
+    /** The gates' heads, in BuildCard.GateKind's order. */
+    static final String[] GATE_HEADS = { "ore", "licence", "staff", "land", "pays" };
+
+    /** Every building it owns at every gate (R4): one row each, and what it means under it. */
+    VBox everyGate(Sector sector) {
+        List<BuildCard.Appraisal> all = BuildCard.appraiseAll(ui.game, sector);
+        if (all.isEmpty()) return new VBox(caption("No building of its own on the Build menu.", Palette.TEXT_MUTED));
+        GridPane grid = new GridPane();
+        grid.setHgap(12);
+        grid.setVgap(0);
+        double[] widths = { GATE_NAME, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_MARK, GATE_FIGURE, GATE_FIGURE,
+                GATE_PAYBACK, GATE_PAYS };
+        for (double w : widths) {
+            javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
+            cc.setPrefWidth(w);
+            cc.setMinWidth(w);
+            grid.getColumnConstraints().add(cc);
+        }
+        String[] heads = { "building", GATE_HEADS[0], GATE_HEADS[1], GATE_HEADS[2], GATE_HEADS[3], GATE_HEADS[4],
+                "a month", "to build", "pays back", "how it would pay" };
+        for (int i = 0; i < heads.length; i++) {
+            Label h = new Label(heads[i]);
+            h.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+            grid.add(h, i, 0);
+            GridPane.setHalignment(h, i == 0 || i == heads.length - 1 ? javafx.geometry.HPos.LEFT
+                    : i <= 5 ? javafx.geometry.HPos.CENTER : javafx.geometry.HPos.RIGHT);
+        }
+        int row = 1;
+        for (BuildCard.Appraisal a : all) {
+            final BuildingsTemplate template = a.template();
+            BuildAdvice.Category cat = BuildAdvice.categoryOf(template.getCategory());
+            Label name = new Label(template.getName());
+            name.setWrapText(true);
+            name.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+            HBox who = new HBox(8, icon(cat == null ? Icons.SECTOR : Icons.ofCategory(cat.name()), Palette.BUSINESS, 16), name);
+            who.setAlignment(Pos.CENTER_LEFT);
+            List<Node> cells = new ArrayList<>();
+            cells.add(who);
+            for (BuildCard.GateMark g : a.gates()) cells.add(gateMark(g));
+            cells.add(figure(m(a.estimate()), Palette.SIZE_BODY, a.estimate() <= 0 ? Palette.BAD : Palette.TEXT_HEAD));
+            cells.add(figure(m(a.cost()), Palette.SIZE_BODY, Palette.TEXT_HEAD));
+            cells.add(figure(paybackWords(a.payback()), Palette.SIZE_BODY, Double.isFinite(a.payback()) ? Palette.TEXT_HEAD
+                    : Palette.TEXT_SPENT));
+            cells.add(caption(paysWords(a), Palette.TEXT_BODY));
+            for (int i = 0; i < cells.size(); i++) {
+                javafx.scene.layout.StackPane cell = new javafx.scene.layout.StackPane(cells.get(i));
+                javafx.scene.layout.StackPane.setAlignment(cells.get(i), i == 0 || i == cells.size() - 1 ? Pos.CENTER_LEFT
+                        : i <= 5 ? Pos.CENTER : Pos.CENTER_RIGHT);
+                cell.setMinHeight(34);
+                cell.setStyle("-fx-padding: 4 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"
+                        + " -fx-cursor: hand;");
+                cell.setOnMouseClicked(e -> {
+                    BuildAdvice.Category c = BuildAdvice.categoryOf(template.getCategory());
+                    if (c != null) ui.buildScreen.openCategory(c.name());
+                });
+                grid.add(cell, i, row);
+            }
+            Label so = caption(soWords(a), a.failures().isEmpty() ? Palette.TEXT_MUTED : Palette.TEXT_LABEL);
+            so.setWrapText(true);
+            so.setStyle(so.getStyle() + " -fx-padding: 0 0 6 24;");
+            grid.add(so, 0, row + 1, widths.length, 1);
+            row += 2;
+        }
+        VBox box = new VBox(grid);
+        box.setStyle("-fx-padding: 8 14 8 14; -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 8;");
+        return box;
+    }
+
+    /** One gate's mark: a tick, a cross with why behind a tooltip, or a dash where it is not one this building has. */
+    Node gateMark(BuildCard.GateMark g) {
+        if (g.mark() == BuildCard.Mark.NONE) return caption("–", Palette.TEXT_SPENT);
+        if (g.mark() == BuildCard.Mark.PASS) return icon(Icons.TICK, Palette.GOOD, 13);
+        Node cross = icon(Icons.CLOSE, Palette.WARN, 13);
+        javafx.scene.layout.StackPane box = new javafx.scene.layout.StackPane(cross);
+        javafx.scene.control.Tooltip.install(box, new javafx.scene.control.Tooltip(ui.buildScreen.gateWords(g.failure())));
+        return box;
+    }
+
+    /** The months its estimate would take to earn what one costs, in months under two years and years past them; "never" when it would not pay. */
+    static String paybackWords(double months) {
+        if (!Double.isFinite(months) || months < 0) return "never";
+        if (months < 24) return String.format("%.0f months", Math.max(1, months));
+        double years = months / 12;
+        return years >= 100 ? "a century+" : String.format(years < 10 ? "%.1f years" : "%.0f years", years);
+    }
+
+    /** How one would be paid for, as shares of its cost: "40% shares · 12% its own · 48% borrowed", the parts that are not nothing. */
+    static String paysWords(BuildCard.Appraisal a) {
+        if (!(a.cost() > 0)) return "—";
+        List<String> parts = new ArrayList<>();
+        double[] v = { a.owners(), a.own(), a.borrowed() };
+        String[] w = { "shares", "its own", "borrowed" };
+        for (int i = 0; i < v.length; i++) {
+            double share = v[i] / a.cost();
+            if (share >= .005) parts.add(String.format("%.0f%% %s", share * 100, w[i]));
+        }
+        return parts.isEmpty() ? "—" : String.join(" · ", parts);
+    }
+
+    /** A failed gate in two or three words, for the "so" line's second refusal. */
+    static String gateShort(BuildCard.GateKind k) {
+        return switch (k) {
+            case DEPOSIT -> "no deposit";
+            case LICENCE -> "too few licensed";
+            case STAFFING -> "too few to staff it";
+            case LAND -> "no ground";
+            default -> "it would not pay";
+        };
+    }
+
+    /**
+     * What a building's gates mean (R4's "so"): it passes every one; ground is
+     * all that stops it, which the player can buy; it would not pay, which no
+     * gate opening would change; or its first refusal, and the others behind
+     * it - ground the player bought would not build one that would also lose
+     * money (F11).
+     */
+    String soWords(BuildCard.Appraisal a) {
+        List<BuildCard.GateMark> fails = a.failures();
+        if (fails.isEmpty()) return "So: it passes every gate. It builds this when its demand asks for more.";
+        BuildCard.GateMark first = fails.get(0);
+        String words = ui.buildScreen.gateWords(first.failure());
+        if (fails.size() == 1) {
+            return switch (first.kind()) {
+                case LAND -> "So: ground is all that stops it - " + words + ". The Land office sells it.";
+                case LOSS -> "So: it " + words + " at today's prices, so it would not build however the other gates stood.";
+                default -> "So: " + words + ".";
+            };
+        }
+        List<String> rest = new ArrayList<>();
+        for (int i = 1; i < fails.size(); i++) rest.add(gateShort(fails.get(i).kind()));
+        boolean landToo = a.at(BuildCard.GateKind.LAND) == BuildCard.Mark.FAIL;
+        boolean loses = a.at(BuildCard.GateKind.LOSS) == BuildCard.Mark.FAIL;
+        return "So: " + words + "; past that, " + String.join(", ", rest)
+                + (landToo && loses ? " - ground alone would not build it" : "") + ".";
+    }
+
+    /** A share's figures, this month or last, as the report's rows: {shares, EPS, DPS, payout, book, price, fair, P/E, P/B, yield, market value}; NaN where it means nothing. */
+    static double[] shareFigures(SectorBooks.Shares s, SectorBooks.SectorMonth m) {
+        if (s == null || m.isEmpty() || !(s.shares() > 0)) return null;
+        double eps = m.netIncome() / s.shares(), dps = s.dividend() / s.shares(), book = m.equity() / s.shares();
+        return new double[] { s.shares(), eps, dps, m.netIncome() > 0 ? m.dividendsPaid() / m.netIncome() : Double.NaN,
+                book, s.price(), s.fair(), eps > 0 ? s.price() / (eps * 12) : Double.NaN,
+                book > 0 ? s.price() / book : Double.NaN, s.price() > 0 ? s.dividendYear() / s.price() : Double.NaN,
+                s.outstanding() * s.price() };
+    }
+
+    /** The report's rows: {label, kind} - "n" a count, "$" money a share, "%" a share, "x" times, "M" money. */
+    static final String[][] SHARE_ROWS = { { "Shares", "n" }, { "Earnings a share, the month", "$" },
+            { "Dividend a share, the month", "$" }, { "Payout, of the month's profit", "%" }, { "Book a share", "$" },
+            { "Last trade, or fair value", "$" }, { "Fair value, the register's", "$" }, { "Price to earnings, a year", "x" },
+            { "Price to book", "x" }, { "Yield, on a year's dividend", "%" }, { "Market value", "M" } };
+
+    /** A SHARE: the report's first block, this month against last; not counted the month after a load. */
+    VBox shareReport(Sector sector, SectorBooks.SectorMonth now, SectorBooks.SectorMonth then) {
+        SectorBooks books = ui.game.getSectorBooks();
+        double[] a = shareFigures(books.shares(sector.key()), now), b = shareFigures(books.sharesBefore(sector.key()), then);
+        VBox c = new VBox(4, StatementView.titleBlock(sector.label(), "Investor report", period(now)));
+        if (a == null) {
+            c.getChildren().add(caption(Equity.indexOf(sector.key()) < 0 ? "It is not listed." : "Not counted yet: a month "
+                    + "has to run after a load.", Palette.TEXT_MUTED));
+        } else {
+            String head = Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL);
+            c.getChildren().add(shareRow("A SHARE", "this month", "last month", Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL), head));
+            for (int i = 0; i < SHARE_ROWS.length; i++) {
+                c.getChildren().add(shareRow(SHARE_ROWS[i][0], shareWords(a[i], SHARE_ROWS[i][1]),
+                        b == null ? "—" : shareWords(b[i], SHARE_ROWS[i][1]),
+                        Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL), Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_BODY)));
+            }
+            double roe = SectorStatements.returnOnEquity(now, then);
+            c.getChildren().add(shareRow("Return on equity, a year", Double.isFinite(roe) ? pctWords(roe) : "—", "",
+                    Palette.words(Palette.SIZE_BODY, Palette.TEXT_LABEL), Palette.figureRegular(Palette.SIZE_BODY, Palette.TEXT_BODY)));
+        }
+        c.setMaxWidth(StatementView.TABLE + 32);
+        c.setStyle("-fx-padding: 14 16 14 16; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+        return c;
+    }
+
+    /** One of the report's figures in words, by its kind. */
+    static String shareWords(double v, String kind) {
+        if (!Double.isFinite(v)) return "—";
+        return switch (kind) {
+            case "n" -> String.format("%,.0f", v);
+            case "$" -> tightMoney(toDollars(v), false);
+            case "%" -> pctWords(v);
+            case "x" -> timesWords(v);
+            default -> m(v);
+        };
+    }
+
+    /** The report's columns. */
+    static final double SHARE_LABEL = 220, SHARE_FIGURE = 120;
+
+    private static HBox shareRow(String label, String now, String then, String labelStyle, String figureStyle) {
+        Label l = new Label(label);
+        l.setMinWidth(SHARE_LABEL);
+        l.setPrefWidth(SHARE_LABEL);
+        l.setStyle(labelStyle);
+        Label a = new Label(now), b = new Label(then);
+        for (Label f : new Label[] { a, b }) {
+            f.setMinWidth(SHARE_FIGURE);
+            f.setPrefWidth(SHARE_FIGURE);
+            f.setAlignment(Pos.CENTER_RIGHT);
+            f.setStyle(figureStyle);
+        }
+        HBox row = new HBox(Palette.GAP, l, a, b);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** WHO HOLDS IT: the households, the world and the bank's desk, and what it has raised from them and paid them since founding. */
+    VBox whoHoldsIt(int company) {
+        Equity register = ui.game.getEquity();
+        if (company < 0 || !(register.getShares(company) > 0)) return null;
+        double abroad = register.foreignShare(company), desk = register.deskShare(company);
+        double home = Math.max(0, 1 - abroad - desk);
+        List<Segment> held = new ArrayList<>();
+        List<HBox> heldKey = new ArrayList<>();
+        held.add(new Segment(home, Palette.PEOPLE, false, null, null, "the city's households  " + BuildScreen.pct(home), null));
+        heldKey.add(keyPart(Palette.PEOPLE, "the city's households", BuildScreen.pct(home)));
+        held.add(new Segment(abroad, Palette.ORE, false, null, null, "held abroad  " + BuildScreen.pct(abroad), null));
+        heldKey.add(keyPart(Palette.ORE, "held abroad", BuildScreen.pct(abroad)));
+        if (desk > 0) {
+            held.add(new Segment(desk, Palette.MONEY, false, null, null, "on the bank's desk  " + BuildScreen.pct(desk), null));
+            heldKey.add(keyPart(Palette.MONEY, "on the bank's desk", BuildScreen.pct(desk)));
+        }
+        javafx.scene.layout.FlowPane since = new javafx.scene.layout.FlowPane(18, 8);
+        since.getChildren().addAll(
+                miniFigure("RAISED AT HOME", m(register.getLifetimeRaisedHome(company)), "since founding", Palette.TEXT_HEAD, null),
+                miniFigure("RAISED ABROAD", m(register.getLifetimeRaisedAbroad(company)), "since founding", Palette.TEXT_HEAD, null),
+                miniFigure("PAID AT HOME", m(register.getLifetimeDividendsHome(company)), "since founding", Palette.TEXT_HEAD, null),
+                miniFigure("PAID ABROAD", m(register.getLifetimeDividendsAbroad(company)), "since founding", Palette.TEXT_HEAD, null));
+        VBox c = card(head("WHO HOLDS IT", ownersPolicy(company), null), segmentBar(held, 1, List.of(), 0, 14), key(heldKey), since);
+        c.setMaxWidth(StatementView.TABLE / 2 + 80);
+        return c;
+    }
+
+    /** HOW IT IS FINANCED: what it owes and its owners' equity, each a share of what it owns, against the equity share it aims for. */
+    VBox howFinanced(int company, SectorBooks.SectorMonth now) {
+        double assets = now.totalAssets();
+        if (!(assets > 0)) return null;
+        double owed = Math.max(0, now.totalLiabilities()) / assets, owners = Math.max(0, now.equity()) / assets;
+        double target = company < 0 ? Double.NaN : ui.game.getEquity().getTargetEquityShare(company);
+        List<Segment> parts = List.of(
+                new Segment(owners, Palette.BUSINESS, false, null, null, "its owners  " + BuildScreen.pct(owners), null),
+                new Segment(owed, Palette.MONEY, false, null, null, "its lenders and suppliers  " + BuildScreen.pct(owed), null));
+        List<Tick> ticks = Double.isFinite(target) ? List.of(new Tick(target, Palette.TEXT_HEAD, 2, "aims for "
+                + BuildScreen.pct(target), "The equity share its register aims for, which moves with how profitable it is.")) : List.of();
+        VBox c = ratioColumn("HOW IT IS FINANCED", segmentBar(parts, Math.max(1, owners + owed), ticks, 0, 12),
+                key(List.of(keyPart(Palette.BUSINESS, "its owners", BuildScreen.pct(owners)),
+                        keyPart(Palette.MONEY, "its lenders and suppliers", BuildScreen.pct(owed)))));
+        c.setPrefWidth(320);
+        c.setMaxWidth(360);
+        return c;
+    }
+
+    /**
+     * FOR ITS SHAREHOLDERS (the Investors summary): the last trade and fair
+     * value, earnings and the dividend a share, the yield, price to earnings
+     * and to book, and who holds it - the reads Equity and Exchange already
+     * keep, as the month closed.
+     */
+    VBox forShareholders(Sector sector, SectorBooks.SectorMonth now) {
+        SectorBooks.Shares s = ui.game.getSectorBooks().shares(sector.key());
+        double[] f = shareFigures(s, now);
+        int company = Equity.indexOf(sector.key());
+        if (f == null || company < 0) return null;
+        Equity register = ui.game.getEquity();
+        double abroad = register.foreignShare(company), desk = register.deskShare(company);
+        javafx.scene.layout.FlowPane strip = new javafx.scene.layout.FlowPane(18, 8);
+        strip.getChildren().addAll(
+                miniFigure(s.traded() ? "LAST TRADE" : "NOT TRADED: FAIR VALUE", shareWords(f[5], "$"), null, Palette.TEXT_HEAD, null),
+                miniFigure("FAIR VALUE", shareWords(f[6], "$"), "the register's", Palette.TEXT_HEAD, null),
+                miniFigure("EARNINGS A SHARE", shareWords(f[1], "$"), "the month", f[1] < 0 ? Palette.BAD : Palette.TEXT_HEAD, null),
+                miniFigure("DIVIDEND A SHARE", shareWords(f[2], "$"), "the month", Palette.TEXT_HEAD, null),
+                miniFigure("YIELD", shareWords(f[9], "%"), "on a year's dividend", Palette.TEXT_HEAD, null),
+                miniFigure("P/E", shareWords(f[7], "x"), "on a year at this month's", Palette.TEXT_HEAD, null),
+                miniFigure("P/B", shareWords(f[8], "x"), "on its book", Palette.TEXT_HEAD, null),
+                miniFigure("HELD", BuildScreen.pct(Math.max(0, 1 - abroad - desk)) + " here",
+                        BuildScreen.pct(abroad) + " abroad" + (desk > 0 ? ", " + BuildScreen.pct(desk) + " on the desk" : ""),
+                        Palette.TEXT_HEAD, null));
+        return card(head("FOR ITS SHAREHOLDERS", "A share as the month closed: the last trade on the book (fair value until "
+                + "it trades) and the register's fair value, what it earned and paid a share this month, the yield on a "
+                + "year's dividend, price to a year's earnings at this month's and to its book, and who holds it. The "
+                + "Statement view has the investor report, against last month.", null), strip);
+    }
+
+    /* =====================================================================
        THE INVESTORS (0.7.30): WHY ISN'T IT BUILDING, AND WHAT WOULD LET IT?
 
        WHAT THE BUSINESS IS THINKING, which is the one thing about these sectors
@@ -2591,6 +3395,11 @@ final class SectorScreen {
             page.getChildren().add(alertLine(Icons.LAND, Palette.WARN, "It is waiting on ground", WAITING_INFO,
                     doorPill("Land office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu())));
         }
+        // ...and for its shareholders (0.7.74, spec 4.4) - and its owners' card, moved here from the Balance sheet (0.7.75, D7).
+        VBox holders = forShareholders(sector, now);
+        if (holders != null) page.getChildren().add(holders);
+        VBox owners = ownersCard(Equity.indexOf(key), now.equity(), now.netIncome(), true);
+        if (owners != null) page.getChildren().add(owners);
 
         /* --------------------------- its buildings --------------------------- */
         page.getChildren().add(sectionHead("ITS BUILDINGS", "Each building it can put up, with the first gate "

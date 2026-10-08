@@ -567,6 +567,15 @@ public class BusinessDebtManager {
         double monthlyCoupon(String sector);
         /** Writes a sector's bonds down to this share of their face, every holder pro rata. @return the face written off */
         double writeDown(String sector, double scale);
+        /** The face of a sector's bonds that falls due within `months` settles of `month`'s (0.7.74, the sector statements' R2): nothing from a book that cannot say. */
+        default double faceDueWithin(String sector, int month, int months) { return 0; }
+        /** The month a sector's last bond falls due (0.7.75, R2's "runs to"): 0 from a book that cannot say. */
+        default int lastMaturity(String sector) { return 0; }
+        /** The coupon its bonds pay a year, weighted by face (0.7.75, R2's rate): 0 from a book that cannot say. */
+        default double couponRate(String sector) { return 0; }
+        /** The face a sector has sold, and repaid at maturity, since the counters started (0.7.75, R7): in memory; nothing from a book that does not count. */
+        default double faceIssuedSoFar(String sector) { return 0; }
+        default double faceRepaidSoFar(String sector) { return 0; }
     }
 
     /** ...and where the desks ask whether a bond would be cheaper than the bank (BondMarket, WHO ISSUES, AND WHEN). */
@@ -1080,6 +1089,134 @@ public class BusinessDebtManager {
         return total > 0 ? loansOwed / total : 1;
     }
 
+    /* ===================================================================
+       WHAT IT OWES, BY KIND AND BY WHEN (0.7.74, the sector statements'
+       R1 and R2)
+
+       The Sectors screen's formal statements split the finance costs by
+       instrument and the debt by kind and by when it falls due. Reads only:
+       nothing here is asked by a decision. The kinds are the four parts
+       getTermLoanPrincipal() names, each counted once - plain bank loans,
+       bonds, mortgages, interim financing - so together they are
+       getPrincipal() and getMonthlyInterest().
+       =================================================================== */
+
+    /** The four kinds of debt, in the order the statements print them. */
+    public static final String[] DEBT_KINDS = { "Bank loans", "Bonds", "Mortgages", "Interim financing" };
+
+    /** A loan's kind, DEBT_KINDS' index: a mortgage, interim financing, or a plain bank loan. */
+    private static int kindOf(BusinessDebt loan) {
+        return loan instanceof Mortgage ? 2 : loan instanceof InterimLoan ? 3 : 0;
+    }
+
+    /** This month's interest by kind (R1): each loan's getMonthlyInterestExpense() by what it is, and the bonds' coupons - getMonthlyInterest() in four parts. */
+    public double[] interestByKind(String sector) {
+        double[] out = new double[DEBT_KINDS.length];
+        for (BusinessDebt loan : loans) {
+            if (loan.getSector().equals(sector)) out[kindOf(loan)] += loan.getMonthlyInterestExpense();
+        }
+        out[1] = bondBook == null ? 0 : Math.max(0, bondBook.monthlyCoupon(sector));
+        return out;
+    }
+
+    /** The two horizons R2 reads, in settles: a year and five. */
+    public static final int[] DUE_HORIZONS = { 12, 60 };
+
+    /** debtByKind()'s rows: what is owed, what falls due within a year and within five, the rate it pays a year weighted by what is owed, and the month the last of it falls due (0 with none) - the last two since 0.7.75. */
+    public static final int OWED = 0, WITHIN_YEAR = 1, WITHIN_FIVE = 2, RATE = 3, RUNS_TO = 4;
+
+    /**
+     * What a sector owes by kind (R2), and what of each the settles ahead
+     * would ask within a year and within five, as the model pays it: a loan
+     * whole in its last month (processMonth()'s maturity, principalDueNextMonth()'s
+     * rule); a mortgage's principal as its level payments run it down
+     * (Mortgage.balanceAfter()), whole in the month its amortization ends -
+     * a term that ends is counted renewed, as the lender renews it while it
+     * lends; a bond's face at its maturity (BondBook.faceDueWithin()).
+     * {owed, within a year, within five}, each in DEBT_KINDS' order - and
+     * since 0.7.75 the rate each kind pays a year, weighted by what is owed
+     * on it (a mortgage at its renewed rate, the bonds at their coupons),
+     * and the month the last of it falls due: a loan at its term, a
+     * mortgage at the end of its amortization, a bond at its maturity. The
+     * rows are OWED to RUNS_TO.
+     *
+     * @param month the month of the settle the sheet was last read after: a bond due then is already repaid
+     */
+    public double[][] debtByKind(String sector, int month) {
+        int n = DEBT_KINDS.length;
+        double[] owed = new double[n], year = new double[n], five = new double[n], rate = new double[n], last = new double[n];
+        for (BusinessDebt loan : loans) {
+            if (!loan.getSector().equals(sector)) continue;
+            int k = kindOf(loan);
+            double principal = loan.getOutstandingPrincipal();
+            owed[k] += principal;
+            if (principal > 0) rate[k] += principal * loan.getAnnualRate();
+            if (loan instanceof Mortgage m) {
+                double balance = Math.max(0, principal);
+                int left = m.getAmortizationLeft();
+                year[k] += left <= DUE_HORIZONS[0] ? balance
+                        : balance - Mortgage.balanceAfter(balance, m.getAnnualRate(), left, DUE_HORIZONS[0]);
+                five[k] += left <= DUE_HORIZONS[1] ? balance
+                        : balance - Mortgage.balanceAfter(balance, m.getAnnualRate(), left, DUE_HORIZONS[1]);
+                if (principal > 0) last[k] = Math.max(last[k], month + left);
+            } else {
+                if (loan.getRemainingMonths() <= DUE_HORIZONS[0]) year[k] += principal;
+                if (loan.getRemainingMonths() <= DUE_HORIZONS[1]) five[k] += principal;
+                if (principal > 0) last[k] = Math.max(last[k], month + loan.getRemainingMonths());
+            }
+        }
+        for (int k = 0; k < n; k++) rate[k] = owed[k] > 0 ? rate[k] / owed[k] : 0;
+        owed[1] = getBondPrincipal(sector);
+        rate[1] = 0;
+        if (bondBook != null) {
+            year[1] = bondBook.faceDueWithin(sector, month, DUE_HORIZONS[0]);
+            five[1] = bondBook.faceDueWithin(sector, month, DUE_HORIZONS[1]);
+            rate[1] = owed[1] > 0 ? bondBook.couponRate(sector) : 0;
+            last[1] = owed[1] > 0 ? bondBook.lastMaturity(sector) : 0;
+        }
+        return new double[][] { owed, year, five, rate, last };
+    }
+
+    /* ===================================================================
+       WHAT MOVED IT, BY KIND (0.7.75, the sector statements' R7)
+
+       The debt schedule's roll-forward: at the start, borrowed, repaid,
+       written off, at the end. Counted where each moves - a loan written
+       (write(), writeInterim(), issueMortgage()), a mortgage's payment and a
+       loan's maturity (processMonth()), a default's write-down
+       (writeDownSector(), writeDownInterim(), and the bonds' through
+       recordBondWriteOff()), a bond sold and repaid (BondBook's
+       faceIssuedSoFar(), faceRepaidSoFar()) - as running totals in memory,
+       from nothing at a founding or a load, scaled by a reform. The
+       statements read them where R2 is read and take the difference a month
+       apart, so the roll-forward's window is the sheet's: from last month's
+       sheet to this month's. Nothing else reads them.
+       =================================================================== */
+
+    /** debtMovedByKind()'s rows: borrowed (the principal written, a bond's face), repaid, written off. */
+    public static final int BORROWED = 0, REPAID = 1, WRITTEN_OFF = 2;
+
+    private final Map<String, double[]> moved = new LinkedHashMap<>();
+
+    /** A move of `amount` in one kind's principal: BORROWED, REPAID or WRITTEN_OFF. */
+    private void moved(String sector, int flow, int kind, double amount) {
+        if (!(amount != 0) || !Double.isFinite(amount)) return;
+        moved.computeIfAbsent(sector, k -> new double[3 * DEBT_KINDS.length])[flow * DEBT_KINDS.length + kind] += amount;
+    }
+
+    /** One sector's principal moved so far, {borrowed, repaid, written off}, each in DEBT_KINDS' order: running totals, read twice and differenced (R7). */
+    public double[][] debtMovedByKind(String sector) {
+        int n = DEBT_KINDS.length;
+        double[] all = moved.getOrDefault(sector, new double[3 * n]);
+        double[][] out = new double[3][n];
+        for (int f = 0; f < 3; f++) System.arraycopy(all, f * n, out[f], 0, n);
+        if (bondBook != null) {
+            out[BORROWED][1] += bondBook.faceIssuedSoFar(sector);
+            out[REPAID][1] += bondBook.faceRepaidSoFar(sector);
+        }
+        return out;
+    }
+
     public double getTotalPrincipal() {
         double total = 0;
         for (BusinessDebt loan : loans) {
@@ -1191,12 +1328,14 @@ public class BusinessDebtManager {
                 if (paid > 0) {
                     maturedPrincipal.merge(sector, paid, Double::sum);
                     mortgageRepaidBySector.merge(sector, paid, Double::sum);
+                    moved(sector, REPAID, 2, paid);
                 }
                 if (m.isPaidOff()) {
                     double left = m.close();
                     if (left > 0) {
                         maturedPrincipal.merge(sector, left, Double::sum);
                         mortgageRepaidBySector.merge(sector, left, Double::sum);
+                        moved(sector, REPAID, 2, left);
                     }
                     iterator.remove();
                 } else if (m.isTermEnded()) {
@@ -1214,6 +1353,7 @@ public class BusinessDebtManager {
                         double due = m.close();
                         maturedPrincipal.merge(sector, due, Double::sum);
                         mortgageRepaidBySector.merge(sector, due, Double::sum);
+                        moved(sector, REPAID, 2, due);
                         fallenDueThisMonth++;
                         fallenDueLifetime++;
                         iterator.remove();
@@ -1229,6 +1369,7 @@ public class BusinessDebtManager {
                 // An interim loan repaid at its term (round 5): counted, then
                 // paid or rolled like any loan that falls due.
                 if (loan instanceof InterimLoan) interimMaturedThisMonth.merge(sector, loan.getOutstandingPrincipal(), Double::sum);
+                moved(sector, REPAID, kindOf(loan), loan.getOutstandingPrincipal());
                 iterator.remove();
             }
         }
@@ -1944,6 +2085,7 @@ public class BusinessDebtManager {
         loans.add(m);
         lentThisMonth += principal;
         lentBySector.merge(sector, principal, Double::sum);
+        moved(sector, BORROWED, 2, principal);
         double fee = feeOn(principal);
         feesThisMonth += fee;
         feesBySector.merge(sector, fee, Double::sum);
@@ -2148,7 +2290,10 @@ public class BusinessDebtManager {
     /** One sector's interim loans alone, to this share of what they were. */
     private void writeDownInterim(String sector, double scale) {
         for (BusinessDebt loan : loans) {
-            if (loan instanceof InterimLoan && loan.getSector().equals(sector)) loan.writeDown(scale);
+            if (!(loan instanceof InterimLoan) || !loan.getSector().equals(sector)) continue;
+            double before = loan.getOutstandingPrincipal();
+            loan.writeDown(scale);
+            moved(sector, WRITTEN_OFF, kindOf(loan), before - loan.getOutstandingPrincipal());
         }
     }
 
@@ -2160,6 +2305,7 @@ public class BusinessDebtManager {
             if (!interimToo && loan instanceof InterimLoan) continue;
             double before = loan.getOutstandingPrincipal();
             loan.writeDown(scale);
+            moved(sector, WRITTEN_OFF, kindOf(loan), before - loan.getOutstandingPrincipal());
             if (loan instanceof Mortgage m && m.isInsured()) insured += before - loan.getOutstandingPrincipal();
         }
         if (insured > 0) {
@@ -2509,6 +2655,7 @@ public class BusinessDebtManager {
         loans.add(loan);
         lentThisMonth += faceValue;
         lentBySector.merge(sector, faceValue, Double::sum);
+        moved(sector, BORROWED, 0, faceValue);
         double fee = feeOn(faceValue);
         feesThisMonth += fee;
         feesBySector.merge(sector, fee, Double::sum);
@@ -3055,6 +3202,7 @@ public class BusinessDebtManager {
         loans.add(loan);
         lentThisMonth += faceValue;
         lentBySector.merge(sector, faceValue, Double::sum);
+        moved(sector, BORROWED, 3, faceValue);
         double fee = feeOn(faceValue);
         feesThisMonth += fee;
         feesBySector.merge(sector, fee, Double::sum);
@@ -3209,6 +3357,7 @@ public class BusinessDebtManager {
         if (!(face > 0)) return;
         bondWrittenOffThisMonth.merge(sector, face, Double::sum);
         bondWrittenOffTotal.merge(sector, face, Double::sum);
+        moved(sector, WRITTEN_OFF, 1, face);
     }
 
     /** What this month's defaults took off one sector's bonds, every holder together (0.7.12). */
@@ -3344,6 +3493,8 @@ public class BusinessDebtManager {
         bondProceeds.clear();
         shortfallPlans.clear();
         concentrationCharges.clear();
+        // ...and the statements' running totals (0.7.75, R7): from nothing.
+        moved.clear();
     }
 
     //printers
@@ -3417,6 +3568,8 @@ public class BusinessDebtManager {
         bondWrittenOffThisMonth.replaceAll((k, v) -> v * scale);
         bondWrittenOffTotal.replaceAll((k, v) -> v * scale);
         bondProceeds.replaceAll((k, v) -> v * scale);
+        // ...and the statements' running totals (0.7.75, R7), which are money.
+        for (double[] m : moved.values()) for (int i = 0; i < m.length; i++) m[i] *= scale;
     }
 
 }

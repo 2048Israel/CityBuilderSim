@@ -788,6 +788,10 @@ public final class Retail extends Sector {
        THE SCREEN
        =================================================================== */
 
+    /** Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin on the stock it sells. */
+    @Override
+    public ham.citybuildersim.SectorStatements.Format statementFormat() { return ham.citybuildersim.SectorStatements.Format.MERCHANTS; }
+
     @Override
     public String inputLabel() { return "Stock bought"; }
 

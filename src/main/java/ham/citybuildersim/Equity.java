@@ -243,6 +243,25 @@ public class Equity {
         /** The city's fund's part of this month's dividend (0.7.14), and over its life. */
         double dividendCity, lifetimeDividendsCity;
         double boughtBackThisMonth, lifetimeBoughtBack;
+        /**
+         * ITS PAID-IN CAPITAL, IN MONEY (0.7.75, the sector statements' R3;
+         * the project's spec-sector-statements.md, D11): the book its
+         * founders' shares were issued against, and what its buybacks paid
+         * over its life. With lifetimeRaisedHome and lifetimeRaisedAbroad
+         * they are its share capital (getPaidIn()): what its owners put in,
+         * less all of what it paid to take shares back - the rule the bank
+         * keeps its own paid-in by (Bank.paidInThisMonth()). lifetimeBoughtBack
+         * counts shares, which a split moves; these are money, which only a
+         * reform moves. Saved since 0.7.75 (SAVE_FORMAT 33). A save from
+         * before derives them at the load (restore()): what it raised since
+         * founding, its founders' book and its buybacks before the load not
+         * known - and says so (paidInDerived). Nothing in the model reads
+         * them; the statements do.
+         */
+        double foundersBook, boughtBackPaid;
+        boolean paidInDerived;
+        /** The founders' shares issued this month, at the book they were issued against: share capital out of the book, no cash moving. */
+        double foundedThisMonth;
         Regime regime = Regime.NEW;
         double targetShare = NEW_EQUITY_SHARE;
 
@@ -257,6 +276,7 @@ public class Equity {
             offered = 0; raisedHome = 0; raisedAbroad = 0;
             dividendHome = 0; dividendDesk = 0; dividendAbroad = 0; dividendCity = 0;
             boughtBackThisMonth = 0;
+            foundedThisMonth = 0;
         }
 
         double trailingIncome() {
@@ -460,6 +480,7 @@ public class Equity {
             double founders = bookEquity / foundingPrice;
             households.grantFounders(company, founders);
             l.shares += founders;
+            founded(l, bookEquity);
         }
 
         double price = marketPrice > 0 && l.shares > 0 ? marketPrice : priceOf(l, bookEquity, worldRate);
@@ -565,7 +586,14 @@ public class Equity {
         households.grantFounders(company, founders);
         l.shares += founders;
         l.lastPrice = foundingPrice;
+        founded(l, bookEquity);
         return true;
+    }
+
+    /** The founders' shares, issued against this book: its share capital from now on (0.7.75, R3). */
+    private static void founded(Listing l, double book) {
+        l.foundersBook += book;
+        l.foundedThisMonth += book;
     }
 
     /** What one share is worth on the books today. */
@@ -843,14 +871,18 @@ public class Equity {
     /**
      * A company buys back and cancels shares it bought on the book - the
      * seller's holding already moved by the exchange - out of issue, and on
-     * its record of buybacks.
+     * its record of buybacks: the shares, and since 0.7.75 what it paid for
+     * them, off its paid-in capital (R3).
+     *
+     * @param paid what the company paid for them (Exchange's settle)
      */
-    void retire(int company, double n) {
+    void retire(int company, double n, double paid) {
         if (!(n > 0)) return;
         Listing l = listings[company];
         l.shares = Math.max(0, l.shares - n);
         l.boughtBackThisMonth += n;
         l.lifetimeBoughtBack += n;
+        if (paid > 0) l.boughtBackPaid += paid;
     }
 
     /**
@@ -873,6 +905,28 @@ public class Equity {
 
     public double getBoughtBackThisMonth(int company) { return listings[company].boughtBackThisMonth; }
     public double getLifetimeBoughtBack(int company)  { return listings[company].lifetimeBoughtBack; }
+
+    /* ---- its paid-in capital (0.7.75, the sector statements' R3) ---- */
+
+    /**
+     * A sector's share capital, in money: its founders' book, what it raised
+     * at home and abroad, less what its buybacks paid. NaN for the bank,
+     * whose own books keep its paid-in (Bank.paidInCapital()) - its desk's
+     * issues and buybacks move that, not this register's money.
+     */
+    public double getPaidIn(int company) {
+        if (company == BANK) return Double.NaN;
+        Listing l = listings[company];
+        return l.foundersBook + l.lifetimeRaisedHome + l.lifetimeRaisedAbroad - l.boughtBackPaid;
+    }
+    /** The book its founders' shares were issued against; nothing on a derived figure (isPaidInDerived()). */
+    public double getFoundersBook(int company)     { return listings[company].foundersBook; }
+    /** What its buybacks paid over its life - since the load, on a derived figure. */
+    public double getBoughtBackPaid(int company)   { return listings[company].boughtBackPaid; }
+    /** The founders' shares issued this month, at their book. */
+    public double getFoundedThisMonth(int company) { return listings[company].foundedThisMonth; }
+    /** True when its paid-in was derived at the load of a save from before 0.7.75 kept it. */
+    public boolean isPaidInDerived(int company)    { return listings[company].paidInDerived; }
 
     /**
      * What a share is worth on the register's own reckoning: book or
@@ -971,8 +1025,14 @@ public class Equity {
     /** ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. */
     public static final int SLOTS_BEFORE_CITY = SLOTS_BEFORE_PAID + RECORD_MONTHS + 1;
 
-    /** The city's shares, its rescue book and what it has been paid, appended (0.7.14). */
-    public static final int SLOTS = SLOTS_BEFORE_CITY + 3;
+    /** ...and before its paid-in capital (0.7.75): the city's shares, its rescue book and what it has been paid, appended (0.7.14). */
+    public static final int SLOTS_BEFORE_PAID_IN = SLOTS_BEFORE_CITY + 3;
+
+    /** Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). */
+    public static final int SLOTS = SLOTS_BEFORE_PAID_IN + 3;
+
+    /** The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). */
+    public static final int PAID_IN_FORMAT = 33;
 
     public String[] keys() { return COMPANIES.clone(); }
 
@@ -999,6 +1059,9 @@ public class Equity {
             out[i++] = l.cityShares;
             out[i++] = l.cityRescue;
             out[i++] = l.lifetimeDividendsCity;
+            out[i++] = l.foundersBook;
+            out[i++] = l.boughtBackPaid;
+            out[i++] = l.paidInDerived ? 1 : 0;
         }
         return out;
     }
@@ -1008,8 +1071,8 @@ public class Equity {
         if (keys == null || saved == null || keys.length == 0) return false;
         int slots = saved.length / keys.length;
         if (saved.length != keys.length * slots
-                || (slots != SLOTS && slots != SLOTS_BEFORE_CITY && slots != SLOTS_BEFORE_PAID
-                    && slots != SLOTS_BEFORE_DESK)) return false;
+                || (slots != SLOTS && slots != SLOTS_BEFORE_PAID_IN && slots != SLOTS_BEFORE_CITY
+                    && slots != SLOTS_BEFORE_PAID && slots != SLOTS_BEFORE_DESK)) return false;
         int i = 0;
         for (String key : keys) {
             int c = indexOf(key);
@@ -1040,7 +1103,7 @@ public class Equity {
                 for (int k = 0; k < RECORD_MONTHS; k++) l.paid[k] = saved[i++];
                 l.paidMonths = (int) Math.round(saved[i++]);
                 // ...and the city's (0.7.14): a save from before it holds none.
-                if (slots >= SLOTS) {
+                if (slots >= SLOTS_BEFORE_PAID_IN) {
                     l.cityShares = saved[i++];
                     l.cityRescue = saved[i++];
                     l.lifetimeDividendsCity = saved[i++];
@@ -1057,6 +1120,26 @@ public class Equity {
                 l.paidMonths = l.months;
             }
             l.paidThisMonth = 0;
+            l.foundedThisMonth = 0;
+            /*
+             * ITS PAID-IN CAPITAL (0.7.75, R3), or derived: a save from before
+             * kept what it raised since founding, at home and abroad, and its
+             * buybacks only as a count of shares - not the founders' book nor
+             * what the buybacks paid. So it opens on what it raised, and says
+             * it is derived: true of a company that had shares, raised or
+             * bought back; a company that never listed has nothing to derive,
+             * and keeps its paid-in from nothing.
+             */
+            if (slots >= SLOTS) {
+                l.foundersBook   = saved[i++];
+                l.boughtBackPaid = saved[i++];
+                l.paidInDerived  = saved[i++] != 0;
+            } else {
+                l.foundersBook = 0;
+                l.boughtBackPaid = 0;
+                l.paidInDerived = l.shares > 0 || l.lifetimeRaisedHome + l.lifetimeRaisedAbroad > 0
+                        || l.lifetimeBoughtBack > 0;
+            }
             l.regime = regimeOf(l);
         }
         return true;
@@ -1081,6 +1164,7 @@ public class Equity {
             l.offered *= scale;  l.raisedHome *= scale;  l.raisedAbroad *= scale;
             l.dividendHome *= scale;  l.dividendDesk *= scale;  l.dividendAbroad *= scale;
             l.dividendCity *= scale;  l.lifetimeDividendsCity *= scale;
+            l.foundersBook *= scale;  l.boughtBackPaid *= scale;  l.foundedThisMonth *= scale;
         }
     }
 }

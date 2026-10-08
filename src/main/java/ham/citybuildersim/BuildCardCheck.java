@@ -246,7 +246,7 @@ public class BuildCardCheck {
         out.println("\n--- 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets ---");
         double[] fill = g.getPopulationManager().getJobFillRate();
         double[] wages = g.getPopulationManager().getWagesPerType();
-        int cards = 0, makers = 0, offices = 0, cityCards = 0, landBars = 0;
+        int cards = 0, makers = 0, offices = 0, cityCards = 0, landBars = 0, roadCards = 0;
         boolean hero = true, bar1 = true, bar2 = true, va = true, run = true, sticker = true, head = true;
         for (BuildCard.Group gr : allGroups(g)) {
             for (BuildCard.Figures f : gr.cards()) {
@@ -269,7 +269,9 @@ public class BuildCardCheck {
                     case BRANCH:    expectFigure = Bank.CUSTOMERS_PER_BRANCH; break;
                     case RAIL:      expectFigure = t.getRailCapacity(); break;
                     case POINTS:    expectFigure = t.makes(Good.BUILDING_WORK); break;
-                    case MAKER: case OFFICE: expectFigure = t.makes(f.good()); break;
+                    // ...a crude unit's the crude it refines (0.7.76): its products are the slate of it.
+                    case MAKER: case OFFICE: expectFigure = ham.citybuildersim.sectors.Refining.isCrudeUnit(t)
+                            ? t.uses(Good.CRUDE) : t.makes(f.good()); break;
                     default: {
                         BuildAdvice.Measure m = measureOf(gr);
                         expectFigure = m.kind() == BuildAdvice.Kind.ROADS ? t.getCapacity() : BuildAdvice.unit(g, m, t);
@@ -280,7 +282,8 @@ public class BuildCardCheck {
                 // Value added, by the markets' own prices - an office's work at what the world pays a seat.
                 if (f.inMonths()) {
                     double v = 0;
-                    for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+                    // What it makes: the template's, a crude unit's slate (0.7.76, Refining.madeBy()).
+                    for (Map.Entry<Good, Double> e : ham.citybuildersim.sectors.Refining.madeBy(t).entrySet()) {
                         Good good = e.getKey();
                         if (!good.traded()) continue;
                         v += e.getValue() * (f.kind() == BuildCard.Kind.OFFICE
@@ -294,10 +297,17 @@ public class BuildCardCheck {
                     if (f.kind() == BuildCard.Kind.OFFICE) offices++; else makers++;
                 }
 
-                // Bar 1: the quote at one over the unit, to the bit.
-                double expect1 = f.kind() == BuildCard.Kind.CITY
+                // Bar 1: the quote at one over the unit, to the bit - and a road's (0.7.70), its life
+                // (BuildAdvice.lifetime()) over the trips it takes off the road (BuildAdvice.unit()).
+                BuildAdvice.Measure ring = f.kind() == BuildCard.Kind.CITY ? measureOf(gr) : null;
+                boolean road = ring != null && ring.kind() == BuildAdvice.Kind.ROADS;
+                double off = road ? BuildAdvice.unit(g, ring, t) : Double.NaN;
+                double expect1 = road
+                        ? (off > 0 ? BuildAdvice.lifetime(g, t, f.landFree(), BuildAdvice.onSite(g, ring)) / off : Double.POSITIVE_INFINITY)
+                        : f.kind() == BuildCard.Kind.CITY
                         ? (f.unit() > 0 ? q.total / f.unit() : Double.POSITIVE_INFINITY)
                         : f.unit() > 0 ? q.total / f.unit() * scale : Double.NaN;
+                if (road) roadCards++;
                 if (Double.doubleToLongBits(f.bar1()) != Double.doubleToLongBits(expect1)) {
                     bar1 = false;
                     out.println("      bar 1: " + t.getName() + " " + f.bar1() + " against " + expect1);
@@ -308,7 +318,8 @@ public class BuildCardCheck {
                 switch (f.bar2Kind()) {
                     case LAND:
                         landBars++;
-                        expect2 = f.unit() > 0 ? t.getLandSqFt() / f.unit() * scale : Double.NaN;
+                        expect2 = road ? (off > 0 ? t.getLandSqFt() / off : Double.POSITIVE_INFINITY)
+                                : f.unit() > 0 ? t.getLandSqFt() / f.unit() * scale : Double.NaN;
                         break;
                     case UNSTAFFABLE:
                         expect2 = f.unit() > 0 ? (1 - BuildCard.ownerOf(g, t).staffing(t).share) * 100 : Double.NaN;
@@ -326,7 +337,8 @@ public class BuildCardCheck {
                     bar2 = false;
                     out.println("      bar 2: " + t.getName() + " " + f.bar2() + " against " + expect2);
                 }
-                boolean kindOk = f.kind() == BuildCard.Kind.CITY
+                boolean kindOk = road ? f.bar2Kind() == BuildCard.Bar2.LAND
+                        : f.kind() == BuildCard.Kind.CITY
                         ? f.bar2Kind() == (BuildAdvice.hasPosts(t) ? BuildCard.Bar2.UNFILLED : BuildCard.Bar2.NONE)
                         : f.bar2Kind() == (f.kind() == BuildCard.Kind.OFFICE ? BuildCard.Bar2.UNSTAFFABLE : BuildCard.Bar2.LAND);
                 if (!kindOk) { bar2 = false; out.println("      bar 2 kind: " + t.getName()); }
@@ -343,13 +355,14 @@ public class BuildCardCheck {
                 cards, makers, offices, landBars, cityCards);
         assertTrue("every card's price and sticker are Game.quoteBuild(t, 1)'s", sticker);
         assertTrue("...its head the count standing, what is on site and its wait, and the land free the city's own", head);
-        assertTrue("the hero's figure is the template's own (capacity, coverage, rail, points, its first good)"
+        assertTrue("the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude)"
                 + " or a city building's served at today's staffing", hero);
         assertTrue("value added is what one makes less what it uses at the markets' prices, an office's at"
                 + " the price of a seat (" + makers + " makers, " + offices + " offices)", va && makers > 0 && offices == 3);
-        assertTrue("bar 1 is the quote at one over the unit, to the bit, on every card", bar1);
-        assertTrue("bar 2 is land per unit on the market's cards, unstaffable posts of 100 on an office's,"
-                + " and unfilled posts per 10,000 served on the city's", bar2 && landBars > 0);
+        assertTrue("bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life"
+                + " over the trips it takes off the road (0.7.70; " + roadCards + " road cards)", bar1 && roadCards > 0);
+        assertTrue("bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100"
+                + " on an office's, and unfilled posts per 10,000 served on the other city cards'", bar2 && landBars > 0);
         assertTrue("the running cost is the upkeep and the posts at today's wages", run);
     }
 

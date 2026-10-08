@@ -859,9 +859,19 @@ public class BusinessInvestment {
      * mills to buy it IS the export price.
      */
     public double estimatedMakerProfit(Sector sector, BuildingsTemplate t) {
+        return estimatedMakerProfit(sector, t, t.goodsMade());
+    }
+
+    /**
+     * ...with what the building makes given apart from its template (0.7.76):
+     * a crude unit's slate (sectors.Refining.madeBy()), whose template says
+     * only the crude it takes. The same arithmetic, good by good in the map's
+     * order - for every other building the template's own map, to the bit.
+     */
+    public double estimatedMakerProfit(Sector sector, BuildingsTemplate t, java.util.Map<Good, Double> made) {
         Markets markets = economyManager.getMarkets();
         double gross = 0;
-        for (java.util.Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+        for (java.util.Map.Entry<Good, Double> e : made.entrySet()) {
             Good g = e.getKey();
             if (!g.traded()) continue;
             GoodsMarket m = markets.get(g);

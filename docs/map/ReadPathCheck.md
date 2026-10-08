@@ -1,4 +1,4 @@
-# ReadPathCheck.java - 1,609 lines · 9 methods · 0 constants · harnesses
+# ReadPathCheck.java - 1,610 lines · 9 methods · 0 constants · harnesses
 
 `ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
@@ -42,13 +42,13 @@
 
 | line | section |
 |---:|---|
-| 1210 | · a city with money moving in every sector |
-| 1291 | · the FIRST read, which is the hard one |
-| 1368 | · read it, and read it again |
-| 1397 | · and the specific one item 7 was about |
-| 1465 | · the tax the city takes is the tax it shows |
-| 1482 | · a rate change reaches the treasury at once |
-| 1515 | · the build advice's reads, after a load (0.7.51) |
+| 1211 | · a city with money moving in every sector |
+| 1292 | · the FIRST read, which is the hard one |
+| 1369 | · read it, and read it again |
+| 1398 | · and the specific one item 7 was about |
+| 1466 | · the tax the city takes is the tax it shows |
+| 1483 | · a rate change reaches the treasury at once |
+| 1516 | · the build advice's reads, after a load (0.7.51) |
 
 ## Fields (state)
 
@@ -62,14 +62,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 1565 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 45 | 1566 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 56 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 68 | 162 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
 | 232 | 5 | `static int restingOrders(BondMarket bm)` | What rests on every bond's book. |
-| 246 | 955 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 1202 | 322 | `public static void main(String[] args) throws Exception` |  |
-| 1526 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
-| 1571 | 30 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
-| 1602 | 7 | `static void cleanUp(Path root)` |  |
+| 246 | 956 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
+| 1203 | 322 | `public static void main(String[] args) throws Exception` |  |
+| 1527 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
+| 1572 | 30 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
+| 1603 | 7 | `static void cleanUp(Path root)` |  |
 

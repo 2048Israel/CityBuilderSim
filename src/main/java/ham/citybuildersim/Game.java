@@ -69,6 +69,20 @@ public class Game {
     public DecisionLog getDecisions() { return decisions; }
 
     /**
+     * Automatic building (0.7.73; AutoBuilder): the player's switch and two
+     * sliders, the orders it placed and what held it back. Built fresh by
+     * buildWorld(), off, at its defaults; its pass is the first thing
+     * nextMonth() does; saved under one key.
+     */
+    private AutoBuilder autoBuilder = new AutoBuilder();
+
+    /** Automatic building (0.7.73): its settings, its log and its last pass. */
+    public AutoBuilder getAutoBuilder() { return autoBuilder; }
+
+    /** A harness's look at the city either side of automatic building's pass (AutoBuildCheck): false before, true after. Null in play. */
+    java.util.function.Consumer<Boolean> autoBuildProbeForTest;
+
+    /**
      * Where saves live and how they are written. One instance for the whole
      * game: the path used to be spelled out separately in DataSave, HistorySave
      * and twice more down in the load methods, which is four places to get it
@@ -219,6 +233,8 @@ public class Game {
         // new city has to be identical to a freshly started one by
         // construction, and a cleared list is one more thing to remember.
         inbox = new Inbox();
+        // ...and automatic building, off at its defaults (0.7.73).
+        autoBuilder = new AutoBuilder();
         sectorBooks = new SectorBooks();
         /*
          * ...AND THE HEALTH SERVICE AND THE SICK RATE (2026-09-19). Neither was
@@ -566,7 +582,7 @@ public class Game {
                     + " over from the old save folder into " + gameFiles.getDirectory());
         }
 
-        // Forty offers have to be standing before the player's first turn,
+        // The offers have to be standing before the player's first turn,
         // not after their first month - on a new city. A load puts its own
         // land and offers back (readTheSave()), so it founds none here: the
         // default world would be built for nothing (0.7.57).
@@ -927,7 +943,7 @@ public class Game {
      */
     public World getWorld() { return World.of(founding.getWorldSeed()); }
 
-    /** The city's land on the world (0.7.57): its centre, its forty lanes and every purchase along them (CityLand). */
+    /** The city's land on the world (0.7.57): its centre and every purchase since, whole blocks of a grid since 0.7.67 (CityLand). */
     public CityLand getCityLand() { return landManager.getCityLand(); }
 
     /* =====================================================================
@@ -1672,8 +1688,9 @@ public class Game {
     /* -------------------------------------------------------------------
        THE BEST OFFER FOR WHAT THE CITY NEEDS (0.7.57, spec-land star 14)
 
-       What the Build tab's shortcut (LAND FREE's "Buy the best land") and its
-       refusal pages buy (0.7.61, batch J4): in general the most dry ground a
+       What the Build tab's shortcut (LAND FREE's "Buy the best: North 3 ·
+       ..." since 0.7.69, "Buy the best land" before) and its refusal
+       pages buy (0.7.61, batch J4): in general the most dry ground a
        dollar among the offers the city can afford that are not mostly sea,
        the nearer on a tie - or, affording none, among them all, so the
        funding page can be sized to it; for a shortfall, the cheapest offer
@@ -4470,9 +4487,45 @@ public class Game {
 
     /** True for an order bought on an insured mortgage: a residential building the landlords order. Every template the landlords own is residential, and nothing else is. */
     private boolean buysOnMortgage(BusinessInvestment.Decision decision) {
-        return decision != null && decision.template != null
-                && decision.template.getCategory() == BuildingType.RESIDENTIAL
-                && getSectors().realEstate().key().equals(decision.sector);
+        return decision != null && buysOnMortgage(decision.sector, decision.template);
+    }
+
+    /** Whether this sector buys this building on an insured mortgage: a landlord's home (0.7.11) - the rule consider() and financingOf() share. */
+    public boolean buysOnMortgage(String sector, BuildingsTemplate t) {
+        return t != null && t.getCategory() == BuildingType.RESIDENTIAL
+                && getSectors().realEstate().key().equals(sector);
+    }
+
+    /**
+     * HOW ONE OF THESE WOULD BE PAID FOR (0.7.75, the sector statements' R4):
+     * consider()'s split of an order of one, read and never acted on - what
+     * it would cost (BusinessInvestment.getCostOf()); what the register would
+     * ask its owners for (Equity.raiseFor() - and a landlord's down payment
+     * its till and its money abroad cannot put down - nothing at a quote under
+     * what its shares are worth), no more than the cost; what its till and
+     * its money abroad would put in; and the rest, borrowed: a loan or a
+     * bond, a landlord's mortgage. {cost, its owners, its own, borrowed}, the
+     * last three adding to the first. What the owners are asked is not what
+     * they take: the households and the world decide that at the offering.
+     */
+    public double[] financingOf(String sector, BuildingsTemplate t) {
+        double cost = businessInvestment.getCostOf(t, 1);
+        double till = economyManager.getSectorCash(sector), abroad = economyManager.getForeignAssets(sector);
+        double ask = 0;
+        int company = Equity.indexOf(sector);
+        if (company >= 0) {
+            SectorBooks.SectorMonth books = sectorBooks.get(sector);
+            ask = equity.raiseFor(company, books.totalAssets(), books.equity(), cost);
+            if (buysOnMortgage(sector, t)) {
+                double down = Mortgage.ownFundsFor(cost);
+                double lacking = Math.min(down, down - till - abroad);
+                if (lacking > ask) ask = lacking;
+            }
+            if (ask > 0 && !exchange.quoteSupportsIssue(company)) ask = 0;
+        }
+        double owners = Math.max(0, Math.min(ask, cost));
+        double own = Math.max(0, Math.min(cost - owners, till + abroad));
+        return new double[] { cost, owners, own, Math.max(0, cost - owners - own) };
     }
 
     /**
@@ -5973,10 +6026,12 @@ public class Game {
         return true;
     }
 
-    /** How many of this kind stand that no demolition has been ordered for. */
+    /** How many of this kind stand that no demolition has been ordered for - nor, a gravel road, its paving (0.7.70). */
     public int demolishable(BuildingsTemplate t) {
         if (t == null) return 0;
-        return Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId()));
+        int paving = ConstructionControl.paves(t) ? buildingManager.getControl().paving() : 0;
+        return Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId())
+                - paving);
     }
 
     /** The demolition order every path shares: paid as a building order is, and the site put up, its buildings to close as the month starts (closeDemolished()). */
@@ -6082,10 +6137,99 @@ public class Game {
         return true;
     }
 
+    /* ----- F. PAVE: A GRAVEL ROAD UPGRADED TO A PAVED ROAD (0.7.70; ConstructionControl, F) ----- */
+
+    /** The road the city can pave and the road it becomes, as this city's catalogue has them; null for one it has not. */
+    private BuildingsTemplate paveFrom() { return buildingManager.getTemplateByName(ConstructionControl.PAVE_FROM); }
+    private BuildingsTemplate paveTo()   { return buildingManager.getTemplateByName(ConstructionControl.PAVE_TO); }
+
+    /** Gravel roads the city could pave now: standing, not ordered demolished, and not already being paved. */
+    public int paveable() {
+        BuildingsTemplate from = paveFrom();
+        if (from == null || paveTo() == null) return 0;
+        ConstructionControl control = buildingManager.getControl();
+        return Math.max(0, buildingManager.getQuantity(from.getId()) - control.closingOf(from.getId()) - control.paving());
+    }
+
+    /** Gravel roads being paved now: their Paved Roads on site, the gravel roads still standing and carrying traffic. */
+    public int pavingNow() { return buildingManager.getControl().paving(); }
+
+    /** Whether a site is the Paved Road site with paving on it, which is not stopped (ConstructionControl, F). */
+    public boolean isPavingSite(String key) {
+        BuildingsTemplate to = paveTo();
+        return to != null && pavingNow() > 0 && ConstructionControl.keyOf(to).equals(key);
+    }
+
+    /**
+     * F. Paving n gravel roads, priced (star N1-1): n Paved Roads' work at the
+     * builders' rate today and their material less the gravel roads' - the
+     * gravel goes into the new road's bed, so the order buys 257 units a
+     * road where a new Paved Road buys 450, the yard's share free and the
+     * rest at the market as any order's - plus the take-up of the old
+     * surface, priced as its demolition is (DEMOLITION_SHARE of the gravel
+     * road's work at the builders' rate for it, demolitionPrice()), with the
+     * builders' tax on all of it (THE BUILDERS' PRICE). No ground: each
+     * stands on its gravel road's. The wait is n Paved Roads' at today's
+     * queue (quoteCityMonths()). Reads; null with n under one or either road
+     * missing from the catalogue.
+     */
+    public BuildQuote quotePave(int n) {
+        BuildingsTemplate from = paveFrom(), to = paveTo();
+        if (from == null || to == null || n < 1) return null;
+        double needed = Math.max(0, to.getConstructionMaterials() - from.getConstructionMaterials()) * (double) n;
+        double yard = buildingManager.getConstructionMaterials();
+        Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
+        double sticker = (buildingManager.nonMaterialCost(to)
+                + ConstructionControl.DEMOLITION_SHARE * buildingManager.nonMaterialCost(from)) * n;
+        return new BuildQuote(n, sticker, needed, yard, boughtIn,
+                getMarkets().get(Good.MATERIALS).getLocalPrice(), buildingManager.getConstructionMaterialPrice(),
+                0, landManager.getAvailableSqFt(), quoteCityMonths(to, n), buildersSalesRate(), plantSalesRate());
+    }
+
+    /**
+     * F. Paves n of the city's gravel roads (0.7.70): pays the quote, as a
+     * build order is paid, and puts n Paved Roads on their site as the
+     * city's order, behind those already there - the gravel roads' material
+     * on site for their bed, the yard's share of the rest delivered now and
+     * the rest drawn as the crews build - standing on the gravel roads'
+     * ground. Each gravel road carries its traffic until its own Paved Road
+     * opens, and is retired then, its spare ground freed
+     * (BuildingManager.retirePaved(), settleConstructionControl()). Out of
+     * the treasury's cash: short of the quote, nothing is placed.
+     */
+    public boolean paveRoads(int n) {
+        lastHandRefusal = null;
+        BuildingsTemplate from = paveFrom(), to = paveTo();
+        if (from == null || to == null) { lastHandRefusal = "no road to pave"; return false; }
+        if (n < 1 || paveable() < n) { lastHandRefusal = "not that many gravel roads standing to pave"; return false; }
+        if (buildingManager.getControl().isCancelling(ConstructionControl.keyOf(to))) {
+            lastHandRefusal = "the Paved Road site stops at the month's end"; return false;
+        }
+        BuildQuote q = quotePave(n);
+        if (q.total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
+        BuildingsStacks site = buildingManager.getStack(to);
+        int ahead = site == null ? 0 : site.getUnderConstruction();
+        buildingManager.addStack(to, n, false);
+        // The gravel roads' own material, on site already: the new roads' bed.
+        buildingManager.deliverToSites(to, from.getConstructionMaterials() * (double) n);
+        double fromYard = deliverYardToSites(to, q.materialsNeeded);
+        buildingManager.bookContract(to, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        cityCapitalSpending += q.total;
+        getSectors().construction().bill(q.total, to.getConstructionPoints() * (double) n);
+        buildingManager.getControl().addPaving(n, ahead, month);
+        decisions.record(DecisionLog.CONSTRUCTION, "Paved " + n + " " + from.getName()
+                + (n == 1 ? "" : "s") + " for " + DecisionLog.money(q.total));
+        GameLog.note(String.format("The city ordered %d %s paved, for $%,.0fk.", n, from.getName(), q.total));
+        return true;
+    }
+
     /** C. A cancel of one of the city's own sites, at the month's end - or taken back before it. */
     public boolean cancelSite(String key, boolean cancel) {
         if (cancel && !buildingManager.isCitySite(key)) return false;
         if (cancel && buildingManager.getControl().demolitionOf(key) != null) return false;
+        // ...nor the Paved Road site while it paves (0.7.70; ConstructionControl, F).
+        if (cancel && isPavingSite(key)) return false;
         boolean was = buildingManager.getControl().isCancelling(key);
         buildingManager.getControl().setCancelling(key, cancel);
         if (was != buildingManager.getControl().isCancelling(key)) {
@@ -6240,6 +6384,15 @@ public class Game {
             landManager.release(d.landSqFt);
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %s freed.",
                     d.buildings, d.building, bought, paid, LandManager.areaWords(d.landSqFt)));
+        }
+
+        // F. The pavings that opened (0.7.70): their gravel roads were retired
+        // in the advance as their Paved Roads opened, and the ground between
+        // the two comes back to the city's free ground.
+        for (ConstructionControl.Paved p : controlThisMonth.paved) {
+            landManager.release(p.landFreedSqFt());
+            GameLog.note(String.format("Paved %d %s: %s freed.", p.roads(), ConstructionControl.PAVE_FROM,
+                    LandManager.areaWords(Math.max(0, p.landFreedSqFt()))));
         }
     }
 
@@ -8071,6 +8224,16 @@ public class Game {
     
     
     private void nextMonth() {
+        /*
+         * AUTOMATIC BUILDING FIRST (0.7.73; AutoBuilder), when the player has it
+         * on: between the presses, where the player's own Build lands, on the
+         * city the last press left and at the prices it was quoted - before the
+         * month strikes its constants, rolls what falls due or turns the
+         * calendar. Off, it does nothing at all.
+         */
+        if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(false);
+        autoBuilder.pass(this);
+        if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(true);
         /*
          * THE MONTH'S MONEY CONSTANTS, struck before anything in it is priced
          * (0.7.42, THE ANCHOR): at the expected price level the last month
@@ -11257,6 +11420,8 @@ public class Game {
         // ...and the player's decisions (0.7.23; DecisionLog), which nothing
         // else in the save could give back.
         dataSave.setDecisionLog(decisions.toState());
+        // ...and automatic building (0.7.73): its settings, its log, what held it back.
+        dataSave.setAutoBuild(autoBuilder.toState());
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed
@@ -13545,7 +13710,8 @@ public class Game {
      * within a plot, its iron as it had it. Either way its figure becomes the
      * converted ground's dry plots, and its old listing goes: twenty-four
      * offers are listed afresh once the buildings are back (landConverted,
-     * readTheSave()), priced on the converted city's crowding.
+     * readTheSave()), at the prices the save last struck: a load strikes
+     * none, and the next month strikes them on the converted ground.
      *
      * Returns whether the land was converted.
      */
@@ -13662,6 +13828,15 @@ public class Game {
             loadFailure = null;
 
             /*
+             * FUEL INTO PETROL AND DIESEL (0.7.76, batch O1; spec-oil 3): a
+             * save of format 33 or older carries a good this build no longer
+             * has, in its markets, its sectors' maps and its goods held. It is
+             * split here, once, on names, before anything below restores a
+             * market or a sector - no money moves. See FuelSplit.
+             */
+            FuelSplit.convert(loaded);
+
+            /*
              * The reset that used to be commented out here is gone for good.
              * loadGameSave() now calls buildWorld() before reaching this, so
              * there is nothing left to clear - the managers are new objects.
@@ -13769,7 +13944,7 @@ public class Game {
              * cost the player saw is what it costs today. A dollar quote is
              * left alone. See LandMarket.settleLocalPrices(). (An older
              * listing was read the same way until 0.7.57; the conversion
-             * lists forty offers in its place now.)
+             * lists the offers afresh in its place now.)
              */
             landManager.getMarket().settleLocalPrices(foreign.getRate());
             // The central bank's books, under their own key. A save from
@@ -13983,6 +14158,8 @@ public class Game {
             inbox.restoreFrom(loaded.getNotices());
             sectorBooks.restoreFrom(loaded.getSectorBooks(),
                     loaded.getSectorBooksBefore());
+            // ...whose share capital a save from before 0.7.75 did not keep: derived from the register's (R3).
+            if (loaded.getSaveFormat() < Equity.PAID_IN_FORMAT) sectorBooks.derivePaidIn(equity);
             restoreTreasuryMonth(loaded.getTreasuryMonth());
             // The journal and the raised counter go with it: nothing in the
             // rebuild re-strikes them, so they are put back here and stay.
@@ -14166,6 +14343,9 @@ public class Game {
             // The player's decisions (0.7.23): a format-28 save has none, and
             // loads with an empty log.
             decisions.restore(loaded.getDecisionLog());
+            // Automatic building (0.7.73): a save from before it has none, and
+            // loads with it off at its defaults.
+            autoBuilder.restore(loaded.getAutoBuild());
 
             /*
              * Land, after the buildings, because the allocation is derived from

@@ -1236,7 +1236,7 @@ final class InfrastructureScreen {
                         money(truck), ""),
                 bar, key);
         if (rail.getFuelBill() > 0) {
-            box.getChildren().add(words(money(rail.getFuelBill()) + " of the railway's own bill is fuel"
+            box.getChildren().add(words(money(rail.getFuelBill()) + " of the railway's own bill is diesel"
                     + abroadWords(rail.getFuelBill(), rail.getFuelImported(), " bought abroad"),
                     Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         }
@@ -1316,7 +1316,7 @@ final class InfrastructureScreen {
                 bulletBar(billed, allowed, Palette.BUSINESS, 0,
                         "billed " + money(billed) + " · the rule allows "
                         + (Double.isFinite(allowed) ? money(allowed) : "— (" + UNKNOWN_YET + ")")),
-                words("fuel " + money(rail.getFuelBill()) + " a month"
+                words("diesel " + money(rail.getFuelBill()) + " a month"
                         + abroadWords(rail.getFuelBill(), rail.getFuelImported(), ", bought abroad"), Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 netLine,
                 words("track " + money(rail.getBuildingsValue()) + " and land " + money(rail.getLandValue()) + " on its books",
@@ -1371,7 +1371,7 @@ final class InfrastructureScreen {
                 statementLine("What those tonnes would have cost by lorry", money(rail.getTruckBill()), Palette.TEXT_MUTED),
                 statementLine("...of which paid abroad, by lorry", moneyOr(rail.getPaidAbroad()), Palette.TEXT_MUTED),
                 statementLine("...and kept by the shippers", moneyOr(rail.getKept()), Palette.TEXT_MUTED),
-                statementLine("Fuel", signedTight(rail.getFuelBill(), true)),
+                statementLine("Diesel", signedTight(rail.getFuelBill(), true)),
                 statementTotal("Net income", signedTight(Math.abs(rail.statement().netIncome), rail.statement().netIncome < 0),
                         rail.statement().netIncome >= 0 ? Palette.TEXT_HEAD : Palette.BAD),
                 statementLine("Track and land on its books",

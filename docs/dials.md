@@ -2,9 +2,9 @@
 
 Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**1,978 constants in 272 files.**
+**2,022 constants in 278 files.**
 
-## model (1027 constants)
+## model (1058 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -285,52 +285,49 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `CityLand.SIDES` | `4` | Sides of the city, seen from the founding site: north, east, south and west, in that order - the larger of \|x\| and \|y\| says which (spec-land star 1). |
-| 64 | `CityLand.LANES` | `10` | Lanes on a side: ten wedges fanning out from the site, each with one offer standing (spec-land star 1). |
-| 67 | `CityLand.SIDE_NAMES` | `{ "North", "East", "South", "West" }` | The sides' names, in their order. |
-| 70 | `CityLand.LANE_SHARE` | `1.0 / LANES` | A lane's share of its side's r squared: a tenth - a side within radius r holds r^2 plots, so a band of a lane from r1 to r2 holds this x (r2^2 - r1^2). |
-| 73 | `CityLand.TOTAL` | `0` | Where a record keeps its whole area, in square kilometres. |
-| 76 | `CityLand.DRY` | `1` | ...its dry ground: what buildings stand on, and what the city's square feet count. |
-| 79 | `CityLand.FRESH` | `2` | ...its fresh water: lakes and the founding river. |
-| 82 | `CityLand.SEA` | `3` | ...its sea. |
-| 85 | `CityLand.FOREST` | `4` | ...and its forest, which is dry ground too. |
-| 88 | `CityLand.AREAS` | `5` | How many areas a record keeps: total, dry, fresh, sea and forest. |
-| 91 | `CityLand.KINDS` | `Resource.values().length` | How many resources a record keeps the sites and amounts of: Resource's seven, in its order. |
-| 94 | `CityLand.BAND_SAMPLES` | `64` | Samples across an offer's band each way: 64, so 4,096 area-uniform points of its terrain measure its areas (spec-land 2.2). |
-| 103 | `CityLand.PROFILE_SPAN` | `1024` | Samples across a centre's profile from the site to twice the radius its dry ground would need if all of it were dry: 1,024 - the stride is one plot (every plot counted, a tile at a time) up to abou... |
-| 493 | `CityLand.PROFILES_KEPT` | `8` | How many profiles are kept: 8, the city's and a few a conversion tried. |
-| 495 | `CityLand.PROFILES` | `new LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEldestEntry(M...` |  |
-| 561 | `CityLand.CELLS_KEPT` | `256` | How many cells' fields are kept: 256 - the nine round a site for every resource, and the cells a large centre or a long lane reaches. |
-| 563 | `CityLand.CELLS` | `new LinkedHashMap<>(64, 0.75f, true) { @ Override protected boolean removeEldestEntry(M...` |  |
-| 598 | `CityLand.BANDS_KEPT` | `4096` | How many bands' contents are kept: 4,096 - a band is the same ground whichever city on the same site asks, so the harnesses' cities share them. |
-| 600 | `CityLand.BANDS` | `new LinkedHashMap<>(256, 0.75f, true) { @ Override protected boolean removeEldestEntry(...` |  |
-| 692 | `CityLand.CENTRE_FIELDS` | `1 + AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 25. |
+| 61 | `CityLand.SIDES` | `LegacyLand.SIDES` | Sides of the city, seen from the founding site: north, east, south and west, in that order - LegacyLand.SIDES (spec-land star 1). |
+| 64 | `CityLand.SIDE_NAMES` | `LegacyLand.SIDE_NAMES` | The sides' names, in their order: LegacyLand's. |
+| 67 | `CityLand.TOTAL` | `0` | Where a record keeps its whole area, in square kilometres. |
+| 70 | `CityLand.DRY` | `1` | ...its dry ground: what buildings stand on, and what the city's square feet count. |
+| 73 | `CityLand.FRESH` | `2` | ...its fresh water: lakes and the founding river. |
+| 76 | `CityLand.SEA` | `3` | ...its sea. |
+| 79 | `CityLand.FOREST` | `4` | ...and its forest, which is dry ground too. |
+| 82 | `CityLand.AREAS` | `5` | How many areas a record keeps: total, dry, fresh, sea and forest. |
+| 85 | `CityLand.KINDS` | `Resource.values().length` | How many resources a record keeps the sites and amounts of: Resource's seven, in its order. |
+| 88 | `CityLand.CENTRE` | `0` | The centre's holding on the grid: 0; the k-th purchase is holding k. |
+| 477 | `CityLand.CELLS_KEPT` | `256` | How many cells' fields are kept: 256 - the nine round a site for every resource, and the cells a large holding reaches. |
+| 479 | `CityLand.CELLS` | `new LinkedHashMap<>(64, 0.75f, true) { @ Override protected boolean removeEldestEntry(M...` |  |
+| 515 | `CityLand.TILE_COUNTS_KEPT` | `65_536` | Tiles' counts kept, by world and tile: 65,536 (a few megabytes) - the whole tiles an offer's count reads, which the next city on the same world's ground, or the same city drawn again, reads again. |
+| 518 | `CityLand.PARALLEL_TILES` | `2_048` | A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). |
+| 522 | `CityLand.TILE_COUNTS` | `new LinkedHashMap<>(1024, 0.75f, true) { @ Override protected boolean removeEldestEntry...` |  |
+| 631 | `CityLand.CENTRE_FIELDS` | `AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 24 (spec-grid 3, M3; 25 with a half-side before, format 31). |
+| 634 | `CityLand.RECT_FIELDS` | `4` | How wide a centre rectangle's record is: x0, y0, x1, y1 - its plots, half-open. |
 
 ### CityMap.java ([map](map/CityMap.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `CityMap.DISTRICT` | `World.DISTRICT` | Plots on a district's side: World.DISTRICT, 256 (7.68 km). |
-| 91 | `CityMap.TILES_A_SIDE` | `DISTRICT / World.TILE` | Tiles on a district's side: 8. |
-| 94 | `CityMap.TILES` | `TILES_A_SIDE * TILES_A_SIDE` | Tiles in a district: 64. |
-| 97 | `CityMap.HALF_SQ_FT_PER_PLOT` | `Math.round(2 * BuildingVisual.SQ_FT_PER_PLOT)` | Half square feet in a plot: 9,687.5 sq ft twice, so a district's room and use are whole numbers and a month's change is exact however it is added up. |
-| 100 | `CityMap.MIN_ROOM` | `1` | A district with less room than this many whole plots is passed by the cursors: one, the least a building is drawn on (0.7.64; half a plot of ground before). |
-| 103 | `CityMap.SITED` | `{ Resource.IRON, Resource.OIL }` | The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5). |
-| 106 | `CityMap.SITE_LISTS_KEPT` | `64` | How many districts' lists of sites are kept: 64. |
-| 109 | `CityMap.COARSE_ABOVE` | `1024` | Above this many districts under the land's box, a canonical build looks at the ground coarsely first and measures only districts with land in or beside them: 1,024 (a box 246 km across). |
-| 112 | `CityMap.COARSE_STRIDE` | `32` | The coarse look's stride, in plots: 32, a sample a tile. |
-| 115 | `CityMap.MAGIC` | `0x434D4150` | The sidecar's magic: "CMAP". |
-| 118 | `CityMap.FORMAT` | `2` | The sidecar's format: 2 since 0.7.64, when a district's room became its free plots counted plot by plot and its buildings' whole plots; a format-1 sidecar is not read, and the map is drawn again once. |
-| 121 | `CityMap.STAMP_AT` | `4 + 4 + 8 + 4` | Where the stamp sits in the sidecar's raw bytes: after the magic, the format, the seed and the month. |
-| 421 | `CityMap.NONE` | `0, SOME = 1, ALL = 2` |  |
-| 1062 | `CityMap.DISTRICT_ORDER` | `Comparator.comparingDouble((District d) -> d.order).thenComparingInt(d -> d.dy).thenCom...` | Nearest the founding site first, then north to south, west to east. |
-| 1270 | `CityMap.CORE_BOOST` | `6` | How much more of what follows people a tile at the founding site takes, before its district's share is shared out: 6 times more (J3b's star) - its middle a town's size... |
-| 1273 | `CityMap.CORE_RADIUS` | `80` | ...falling off over this many plots: 80 (2.4 km, J3b's star). |
-| 1276 | `CityMap.ROAD_PIECE` | `TilePainter.STEP_PAVED + TilePainter.STEP_SPAN` | A district's road is dealt to its tiles this many plots at a time: 8, the longest step a road grows (TilePainter.STEP_PAVED + STEP_SPAN) - so a tile's road is at least a run, and an Elevated Highwa... |
-| 1279 | `CityMap.TILE_COUNTS_KEPT` | `64` | How many districts' deals are kept: 64 - about 1.3 MB, a screen's and its neighbours' many times over. |
-| 1664 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned dry plots. |
-| 1667 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
-| 1670 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned dry plots. |
+| 97 | `CityMap.DISTRICT` | `World.DISTRICT` | Plots on a district's side: World.DISTRICT, 256 (7.68 km). |
+| 100 | `CityMap.TILES_A_SIDE` | `DISTRICT / World.TILE` | Tiles on a district's side: 8. |
+| 103 | `CityMap.TILES` | `TILES_A_SIDE * TILES_A_SIDE` | Tiles in a district: 64. |
+| 106 | `CityMap.HALF_SQ_FT_PER_PLOT` | `Math.round(2 * BuildingVisual.SQ_FT_PER_PLOT)` | Half square feet in a plot: 9,687.5 sq ft twice, so a district's room and use are whole numbers and a month's change is exact however it is added up. |
+| 109 | `CityMap.MIN_ROOM` | `1` | A district with less room than this many whole plots is passed by the cursors: one, the least a building is drawn on (0.7.64; half a plot of ground before). |
+| 112 | `CityMap.SITED` | `{ Resource.IRON, Resource.OIL }` | The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5). |
+| 115 | `CityMap.SITE_LISTS_KEPT` | `64` | How many districts' lists of sites are kept: 64. |
+| 118 | `CityMap.COARSE_ABOVE` | `1024` | Above this many districts under the land's box, a canonical build looks at the ground coarsely first and measures only districts with land in or beside them: 1,024 (a box 246 km across). |
+| 121 | `CityMap.COARSE_STRIDE` | `32` | The coarse look's stride, in plots: 32, a sample a tile. |
+| 124 | `CityMap.MAGIC` | `0x434D4150` | The sidecar's magic: "CMAP". |
+| 127 | `CityMap.FORMAT` | `3` | The sidecar's format: 3 since 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted ... |
+| 130 | `CityMap.STAMP_AT` | `4 + 4 + 8 + 4` | Where the stamp sits in the sidecar's raw bytes: after the magic, the format, the seed and the month. |
+| 432 | `CityMap.NONE` | `0, SOME = 1, ALL = 2` |  |
+| 1021 | `CityMap.DISTRICT_ORDER` | `Comparator.comparingDouble((District d) -> d.order).thenComparingInt(d -> d.dy).thenCom...` | Nearest the founding site first, then north to south, west to east. |
+| 1229 | `CityMap.CORE_BOOST` | `6` | How much more of what follows people a tile at the founding site takes, before its district's share is shared out: 6 times more (J3b's star) - its middle a town's size... |
+| 1232 | `CityMap.CORE_RADIUS` | `80` | ...falling off over this many plots: 80 (2.4 km, J3b's star). |
+| 1235 | `CityMap.ROAD_PIECE` | `TilePainter.STEP_PAVED + TilePainter.STEP_SPAN` | A district's road is dealt to its tiles this many plots at a time: 8, the longest step a road grows (TilePainter.STEP_PAVED + STEP_SPAN) - so a tile's road is at least a run, and an Elevated Highwa... |
+| 1238 | `CityMap.TILE_COUNTS_KEPT` | `64` | How many districts' deals are kept: 64 - about 1.3 MB, a screen's and its neighbours' many times over. |
+| 1622 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned dry plots. |
+| 1625 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
+| 1628 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned dry plots. |
 
 ### CityNeeds.java ([map](map/CityNeeds.md))
 
@@ -355,7 +352,7 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 273 | `CityNeeds.SERVED` | `"served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough"` | The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. |
 | 569 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
 | 572 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
-| 857 | `CityNeeds.FIRST_SCHOOL_SHARE` | `.5` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, ... |
+| 858 | `CityNeeds.FIRST_SCHOOL_SHARE` | `.5` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, ... |
 
 ### ConstructionControl.java ([map](map/ConstructionControl.md))
 
@@ -748,10 +745,10 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 3454 | `GameVersion.VERSION` | `"0.7.64"` | Bump on release. |
-| 3990 | `GameVersion.SAVE_FORMAT` | `31` | The save shape. |
-| 3993 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
-| 3995 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 3641 | `GameVersion.VERSION` | `"0.7.69"` | Bump on release. |
+| 4197 | `GameVersion.SAVE_FORMAT` | `32` | The save shape. |
+| 4200 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
+| 4202 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ### GoodsMarket.java ([map](map/GoodsMarket.md))
 
@@ -760,6 +757,26 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 52 | `GoodsMarket.STOCK_RELEASE_MONTHS` | `6` | How many months it would take to release the whole stockpile into the market. |
 | 55 | `GoodsMarket.NO_CEILING_MULTIPLE` | `2` | Where the price sits in a band with no ceiling: up to this multiple of the floor. |
 | 90 | `GoodsMarket.TREND_MONTHS` | `36` | The longest window any good plans over - see Good.planningMonths() for how many of these months a good actually reads. |
+
+### GridConversion.java ([map](map/GridConversion.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 65 | `GridConversion.CONVERTED` | `0` | The holding the converted ground is on the grid: 0, the centre's (purchases made after it are 1, 2, ...). |
+| 68 | `GridConversion.SHARED_FROM` | `"0.7.58"` | The first build that held a field site by site, each site with the ground holding its own centre: 0.7.58 (batch J1c). |
+| 71 | `GridConversion.SHARED_TO` | `"0.7.63"` | ...and the last: 0.7.63. |
+| 74 | `GridConversion.WHOLE_PLOT` | `1e-9` | A billionth of a plot: a figure of ground within it of a whole number of plots is that number - square kilometres are stored as plots x World.KM2_PER_PLOT, which rounds. |
+
+### GridOffers.java ([map](map/GridOffers.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 55 | `GridOffers.SIDES` | `CityLand.SIDES` | Sides of the city: North, East, South and West, in CityLand's order. |
+| 58 | `GridOffers.PLACES` | `6` | Places on a side, each with one offer standing: six, left to right facing out (Jerus, 2026-10-07). |
+| 61 | `GridOffers.DEPTH_OVER_WIDTH` | `2` | An offer's rows deep over its blocks across: two, the long side outward - the largest six a side allow at 2:1 (spec-grid star 5). |
+| 64 | `GridOffers.CLIP_TRIES` | `4096` | How many times a listing may clip against the standing offers: 4,096, far past the 24 there are, so a loop that never settles stops. |
+| 67 | `GridOffers.OUT` | `{ { 0, - 1 }, { 1, 0 }, { 0, 1 }, { - 1, 0 } }` | Each side's outward step, {dx, dy}: North up, East right, South down, West left (y runs south). |
+| 70 | `GridOffers.ACROSS` | `{ { 1, 0 }, { 0, 1 }, { - 1, 0 }, { 0, - 1 } }` | Each side's step across, left to right facing out. |
 
 ### Health.java ([map](map/Health.md))
 
@@ -946,64 +963,95 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 41 | `LandConversion.CENTRE_DRY_MIN` | `0.8` | The least share of a converted city's centre that is dry ground: 80% (spec-land 2.9), so a played city is not put on a peninsula two-thirds sea. |
-| 44 | `LandConversion.CENTRE_SEA_KM` | `2` | ...with the sea within its half-side and this many kilometres: 2, a city on a coast. |
-| 47 | `LandConversion.LAST_FORMAT_BEFORE` | `30` | The last save format whose land is converted rather than read: 30, the format before the land was on the world (GameVersion.SAVE_FORMAT 31). |
-| 50 | `LandConversion.SAME_GROUND` | `1e-9` | How near a save's square feet must be to its land's dry ground to be the same ground: a part in a billion of it (spec-land 2.9) - a centre's dry ground is stored in square kilometres, and back in s... |
-| 53 | `LandConversion.SITE_CELLS` | `64` | How many coastal cells' sites are tried, nearest the world's middle first: 64. |
-| 56 | `LandConversion.LEGACY_FIELD_KM` | `1` | A legacy iron field stands at least this far from the site: 1 km (spec-land 2.4). |
-| 59 | `LandConversion.LEGACY_DRAWS` | `64` | Draws for the legacy field's dry plot: 64. |
-| 62 | `LandConversion.LEGACY_STREAM` | `0x1E6AC7L` | The stream the legacy field's plot is drawn from. |
+| 56 | `LandConversion.CENTRE_DRY_MIN` | `0.8` | The least share of a converted city's centre that is dry ground: 80% (spec-land 2.9), so a played city is not put on a peninsula two-thirds sea. |
+| 59 | `LandConversion.CENTRE_SEA_KM` | `2` | ...with the sea within its half-side and this many kilometres: 2, a city on a coast. |
+| 62 | `LandConversion.LAST_FORMAT_BEFORE` | `30` | The last save format whose land is one figure, converted from it: 30, the format before the land was on the world. |
+| 65 | `LandConversion.LAST_LANES_FORMAT` | `31` | The last save format whose land is lanes, snapped to blocks at load: 31 (0.7.57 to 0.7.66; GameVersion.SAVE_FORMAT 32 holds blocks). |
+| 68 | `LandConversion.SAME_GROUND_PLOTS` | `1` | How near a save's square feet must be to its land's dry ground to be the same ground: within one plot of it (0.7.67; a part in a billion before, when a centre held its figure exactly) - a figure se... |
+| 71 | `LandConversion.SITE_CELLS` | `64` | How many coastal cells' sites are tried, nearest the world's middle first: 64. |
+| 74 | `LandConversion.LEGACY_FIELD_KM` | `1` | A legacy iron field stands at least this far from the site: 1 km (spec-land 2.4). |
+| 77 | `LandConversion.LEGACY_DRAWS` | `64` | Draws for the legacy field's dry plot: 64. |
+| 80 | `LandConversion.LEGACY_STREAM` | `0x1E6AC7L` | The stream the legacy field's plot is drawn from. |
+
+### LandGrid.java ([map](map/LandGrid.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 44 | `LandGrid.TOP` | `20` | The root's level: 2^20 plots (1,048,576) a side, the least power of two the world's World.SIDE (753,664 plots) fits in. |
+| 47 | `LandGrid.MIN_LEVEL` | `2` | The finest block an offer or a new city's centre is drawn in: level 2, four plots (120 m) a side - 0.0144 km2, the smallest block holding one of spec-land's 100,000 sq ft blocks, Jerus's "one block... |
+| 50 | `LandGrid.MAX_LEVEL` | `15` | The coarsest: level 15, 2^15 plots (983 km) a side - the largest block the world, 23 x 2^15 plots a side, divides into whole (spec-grid star 1). |
+| 53 | `LandGrid.FACE_BLOCKS` | `6` | Blocks of the city's level that fit across a square of its area: six, so each of a side's six places is one or two blocks wide (spec-grid star 2). |
+| 56 | `LandGrid.EMPTY` | `0` | A node's state: none of its plots owned... |
+| 59 | `LandGrid.FULL` | `1` | ...all of them, by one holding... |
+| 62 | `LandGrid.MIXED` | `2` | ...some of them: it has four children... |
+| 65 | `LandGrid.OWNED` | `3` | ...or all of them, by more than one holding: its children kept, so a plot's owner is still found, and cover() says ALL without descending. |
+| 68 | `LandGrid.NONE` | `0` | What cover() says of a block: none of its plots owned... |
+| 71 | `LandGrid.SOME` | `1` | ...some of them... |
+| 74 | `LandGrid.ALL` | `2` | ...or all of them. |
+| 77 | `LandGrid.ROOT` | `1L<<TOP` | The plots a side of the root: 2^TOP. |
 
 ### LandManager.java ([map](map/LandManager.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 60 | `LandManager.BLOCK_SQ_FT` | `100000` | One city block, in square feet. |
-| 63 | `LandManager.SQ_M_PER_SQ_FT` | `0.09290304` | One square foot in square metres, exactly: the international foot is 0.3048 m (the international yard and pound agreement of 1959), and 0.3048 squared is 0.09290304. |
-| 66 | `LandManager.SQ_M_PER_KM2` | `1_000_000` | Square metres in a square kilometre. |
-| 77 | `LandManager.SQ_FT_PER_KM2` | `SQ_M_PER_KM2 / SQ_M_PER_SQ_FT` | Square feet in a square kilometre: a million square metres over a square foot's, 10,763,910.4 (0.7.57). |
-| 106 | `LandManager.STARTING_SQ_FT` | `3000000` | Land the city starts with - thirty blocks, about 69 acres. |
-| 138 | `LandManager.COST_GROWTH_PER_BLOCK` | `.02` | Read by nothing: the next tract's price is LandMarket's (THE CROWDING PREMIUM). |
-| 150 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
-| 214 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
-| 774 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 68 | `LandManager.BLOCK_SQ_FT` | `100000` | One city block, in square feet. |
+| 71 | `LandManager.SQ_M_PER_SQ_FT` | `0.09290304` | One square foot in square metres, exactly: the international foot is 0.3048 m (the international yard and pound agreement of 1959), and 0.3048 squared is 0.09290304. |
+| 74 | `LandManager.SQ_M_PER_KM2` | `1_000_000` | Square metres in a square kilometre. |
+| 85 | `LandManager.SQ_FT_PER_KM2` | `SQ_M_PER_KM2 / SQ_M_PER_SQ_FT` | Square feet in a square kilometre: a million square metres over a square foot's, 10,763,910.4 (0.7.57). |
+| 104 | `LandManager.M2_WORDS_BELOW` | `10_000` | Areas under this many square metres read in square metres (0.7.68): a hundredth of a square kilometre, so a building's plot reads "743 m\u00b2" (a House's 8,000 square feet) and not "0.000743 km\u0... |
+| 166 | `LandManager.STARTING_SQ_FT` | `3000000` | Land the city starts with - thirty blocks, about 69 acres; since 0.7.67 the figure a new city's centre of whole blocks is drawn to hold, and it owns the dry plots drawn, a little more (CityLand.fou... |
+| 207 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
+| 271 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
+| 840 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 29 | `LandMap.OUTSIDE` | `0, CENTRE = 1, BOUGHT = 2, OFFER = 3` | Whose a plot is: nobody's, the centre's, a purchase's, or an offer's. |
-| 300 | `LandMap.CLASS_ONE` | `{ "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School", "Health", "Safety...` | One building of each class, as the hover card names a type it has no name for. |
+| 36 | `LandMap.OUTSIDE` | `0, CENTRE = 1, BOUGHT = 2, OFFER = 3` | Whose a plot is: nobody's, the centre's, a purchase's, or an offer's. |
+| 85 | `LandMap.NORTH_EDGE` | `0, EAST_EDGE = 1, SOUTH_EDGE = 2, WEST_EDGE = 3` | The four edges a run of the outline lies on, by the side of the city's ground it bounds: its north edge, east, south and west. |
+| 430 | `LandMap.CLASS_ONE` | `{ "Home", "Shop", "Offices", "Industry", "Farm", "Utility", "School", "Health", "Safety...` | One building of each class, as the hover card names a type it has no name for. |
 
 ### LandMarket.java ([map](map/LandMarket.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 86 | `LandMarket.OFFERS_A_SIDE` | `CityLand.LANES` | Offers standing on each side of the city: ten, one a lane (spec-land star 1). |
-| 89 | `LandMarket.OFFERS` | `CityLand.SIDES * OFFERS_A_SIDE` | Offers standing in all: OFFERS_A_SIDE on each of the four sides, forty. |
-| 103 | `LandMarket.BASE_PRICE_PER_SQ_FT` | `.0007` | Ground price per square foot before any premium, in thousands of US dollars. |
-| 231 | `LandMarket.CROWDING_MIDPOINT` | `4_000` | People per square kilometre of the city's land at which the crowding premium is half way to its ceiling (0.7.55): about 60x the base. |
-| 239 | `LandMarket.CROWDING_STEEPNESS` | `5.3` | How sharply the premium climbs through the midpoint: the curve's power (0.7.55). |
-| 247 | `LandMarket.CROWDING_CEILING` | `120` | The most crowding can multiply the ground's price by, however crowded the city (0.7.55). |
-| 254 | `LandMarket.FRESH_PRICE_SHARE` | `0.45` | What a square kilometre of fresh water sells for, against dry ground: 45% (the map mockup's figure, spec-land star 6). |
-| 257 | `LandMarket.SEA_PRICE_SHARE` | `0.08` | ...and of sea: 8% (the mockup's), the reach a desalination plant needs and nothing else does. |
-| 308 | `LandMarket.SCARCITY_FLOOR` | `.65` | Multiplier on acquisition cost when land is abundant. |
-| 311 | `LandMarket.SCARCITY_CEILING` | `1.90` | Multiplier when there is effectively nothing left. |
-| 323 | `LandMarket.SCARCITY_MIDPOINT` | `4.0` | Pressure at which the curve is half way up. |
-| 340 | `LandMarket.UNIT_FLOOR_KM2` | `LandManager.BLOCK_SQ_FT * LandManager.SQ_M_PER_SQ_FT / LandManager.SQ_M_PER_KM2` | The smallest unit an offer is a multiple of: one block (spec-land star 2), in square kilometres. |
-| 343 | `LandMarket.UNIT_SHARE` | `0.01` | ...and the city's share it grows to: 1% of its whole area. |
-| 346 | `LandMarket.PLOT_ODDS` | `0.55` | The share of offers that are a plot, 1 to 2.5 units: 55%. |
-| 349 | `LandMarket.ROOM_ODDS` | `0.85` | ...and room to work, 2.5 to 5 units: the next 30% (to 85%); the rest, 15%, are a tract of 5 to 18. |
-| 605 | `LandMarket.OFFER_STREAM` | `705_398_211_733L` | The stream offers' sizes are drawn from, against the world's other streams: the parcels' old seed. |
+| 94 | `LandMarket.OFFERS_A_SIDE` | `GridOffers.PLACES` | Offers standing on each side of the city: six, one a place (GridOffers.PLACES; Jerus, 2026-10-07, "six offers a side"). |
+| 97 | `LandMarket.OFFERS` | `CityLand.SIDES * OFFERS_A_SIDE` | Offers standing in all: OFFERS_A_SIDE on each of the four sides, twenty-four. |
+| 111 | `LandMarket.BASE_PRICE_PER_SQ_FT` | `.0007` | Ground price per square foot before any premium, in thousands of US dollars. |
+| 239 | `LandMarket.CROWDING_MIDPOINT` | `4_000` | People per square kilometre of the city's land at which the crowding premium is half way to its ceiling (0.7.55): about 60x the base. |
+| 247 | `LandMarket.CROWDING_STEEPNESS` | `5.3` | How sharply the premium climbs through the midpoint: the curve's power (0.7.55). |
+| 255 | `LandMarket.CROWDING_CEILING` | `120` | The most crowding can multiply the ground's price by, however crowded the city (0.7.55). |
+| 262 | `LandMarket.FRESH_PRICE_SHARE` | `0.45` | What a square kilometre of fresh water sells for, against dry ground: 45% (the map mockup's figure, spec-land star 6). |
+| 265 | `LandMarket.SEA_PRICE_SHARE` | `0.08` | ...and of sea: 8% (the mockup's), the reach a desalination plant needs and nothing else does. |
+| 316 | `LandMarket.SCARCITY_FLOOR` | `.65` | Multiplier on acquisition cost when land is abundant. |
+| 319 | `LandMarket.SCARCITY_CEILING` | `1.90` | Multiplier when there is effectively nothing left. |
+| 331 | `LandMarket.SCARCITY_MIDPOINT` | `4.0` | Pressure at which the curve is half way up. |
 
 ### LandParcel.java ([map](map/LandParcel.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 58 | `LandParcel.MOSTLY_SEA` | `0.70` | The share of an offer's area that, when sea, tags it "mostly sea": 70% - listed, because sea is cheap, but never the best value (spec-land 2.2). |
-| 215 | `LandParcel.OFFER_FIELDS` | `5 + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide an offer's record is: id, side, lane, r1, r2, its five areas, its sites, its amounts, its price and the month it was listed - 26. |
-| 218 | `LandParcel.PURCHASE_FIELDS` | `7 + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide a purchase's record is: side, lane, r1, r2, the month, the price, what was paid here, the five areas, the sites, the amounts, and the offer's id and month listed - 28. |
+| 66 | `LandParcel.MOSTLY_SEA` | `0.70` | The share of an offer's area that, when sea, tags it "mostly sea": 70% - listed, because sea is cheap, but never the best value (spec-land 2.2). |
+| 248 | `LandParcel.RECT_FIELDS` | `7` | Where a record keeps the rectangle: side, place, level, x0, y0, x1, y1 - seven. |
+| 251 | `LandParcel.OFFER_FIELDS` | `1 + RECT_FIELDS + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide an offer's record is: its id, its rectangle (side, place, level, x0, y0, x1, y1), its five areas, its sites, its amounts, its price and the month it was listed - 29. |
+| 254 | `LandParcel.PURCHASE_FIELDS` | `RECT_FIELDS + 3 + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide a holding's record is: its rectangle, the month bought, the price, what was paid here, the five areas, the sites, the amounts, and the offer's id and month listed - 31 (spec-grid 3, M3). |
+
+### LegacyLand.java ([map](map/LegacyLand.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 47 | `LegacyLand.SIDES` | `4` | Sides of the city, seen from the founding site: north, east, south and west, in that order - the larger of \|x\| and \|y\| says which (spec-land star 1). |
+| 50 | `LegacyLand.LANES` | `10` | Lanes on a side: ten wedges fanning out from the site, each with one offer standing until 0.7.66 (spec-land star 1). |
+| 53 | `LegacyLand.SIDE_NAMES` | `{ "North", "East", "South", "West" }` | The sides' names, in their order. |
+| 56 | `LegacyLand.LANE_SHARE` | `1.0 / LANES` | A lane's share of its side's r squared: a tenth - a side within radius r holds r^2 plots, so a band of a lane from r1 to r2 holds this x (r2^2 - r1^2). |
+| 59 | `LegacyLand.AREAS` | `5` | Where a record keeps its whole area, in square kilometres: CityLand.TOTAL, DRY, FRESH, SEA and FOREST, in that order. |
+| 62 | `LegacyLand.KINDS` | `Resource.values().length` | How many resources a record keeps the sites and amounts of: Resource's seven, in its order. |
+| 65 | `LegacyLand.CENTRE_FIELDS` | `1 + AREAS + 2 * KINDS + 3 + 2` | How wide a format-31 centre's record is: its half-side, its five areas, its sites, its amounts, the legacy field's plot and sites, and the site's plot - 25 (CityLand.CENTRE_FIELDS until 0.7.66; 24,... |
+| 68 | `LegacyLand.PURCHASE_FIELDS` | `7 + AREAS + 2 * KINDS + 2` | How wide a format-31 purchase's record is: side, lane, r1, r2, the month, the price, what was paid here, the five areas, the sites, the amounts, and the offer's id and month listed - 28 (LandParcel... |
+| 332 | `LegacyLand.PROFILE_SPAN` | `1024` | Samples across a centre's profile from the site to twice the radius its dry ground would need if all of it were dry: 1,024 - the stride is one plot (every plot counted, a tile at a time) up to abou... |
+| 500 | `LegacyLand.PROFILES_KEPT` | `8` | How many profiles are kept: 8, the city's and a few a conversion tried. |
+| 502 | `LegacyLand.PROFILES` | `new LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEldestEntry(M...` |  |
 
 ### LongTermBond.java ([map](map/LongTermBond.md))
 
@@ -1028,8 +1076,11 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 60 | `MapFrame.NEAR_TILES_MOST` | `1024` | L2 draws painted tiles while the view holds no more than this many (star): 1,024 - a city the size of Jerus's (about 350 tiles fitted into the land office's small map) is drawn from its painted str... |
 | 63 | `MapFrame.NODE_PX` | `128` | A far node image's side, in pixels: 128 (star) - shown between 128 and 256 px, so about 96 of them at most fill a 1,345 x 806 view. |
 | 66 | `MapFrame.FIT_MARGIN` | `0.94` | A fitted view leaves this much of itself round what it fits: 0.94 of the view (J3b's renders), a margin of 3% each side. |
-| 69 | `MapFrame.OPENING_MARGIN` | `0.35` | The land office opens on the city's own ground with this share of its half-size round it each way (star): 0.35 - the near part of every lane's offer is in view, where fitting every offer whole woul... |
+| 69 | `MapFrame.OPENING_MARGIN` | `0.35` | The land office opens on the city's own ground with this share of its half-size round it each way (star): 0.35 - the near part of every offer is in view, where fitting every offer whole would shrin... |
 | 72 | `MapFrame.L0` | `0, L1 = 1, L2 = 2, FAR = 3` | The levels. |
+| 75 | `MapFrame.BLOCK_LINES_FROM` | `6` | The city's block lines are drawn from here: a block at least 6 px across on screen (spec-grid 2.4), so the lines never crowd the ground they mark. |
+| 78 | `MapFrame.PLACE_LABEL_FROM` | `11` | An offer's place is written on it from here: its box at least 11 px each way on screen (0.7.69, star) - a digit of Plex Mono at 11 px is 6.6 px wide and 7.7 px of capital, so it stands clear of the... |
+| 86 | `MapFrame.CLIP_PX` | `4` | How far past the view's edges the overlay is clipped, in px: 4 - a clipped box's 2 px edge, and a line's square cap, stay off the screen. |
 
 ### MapTiles.java ([map](map/MapTiles.md))
 
@@ -1419,7 +1470,7 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 193 | `World.SITE_CELL_LAND_MAX` | `3` | The most: 3, 75% - a coast, not open sea or an interior. |
 | 196 | `World.SITE_STEP` | `17` | The spiral's step: 17 plots (510 m) between rings, and the ring's points about that far apart (six a ring per ring). |
 | 199 | `World.SITE_RINGS` | `70` | Rings in a cell's spiral: 70, out to 1,173 plots (35 km), past the cell's own half-width of 1,024. |
-| 202 | `World.SITE_DRY_PLOTS` | `20` | Test 1: the site and eight points this far round it are dry ground, in plots: 20 (600 m), room for a new city's 0.28 km2 square (half-side 264 m). |
+| 202 | `World.SITE_DRY_PLOTS` | `20` | Test 1: the site and eight points this far round it are dry ground, in plots: 20 (600 m), room for a new city's centre - since 0.7.67 rings of 120 m blocks round the site's own, on the default worl... |
 | 205 | `World.SITE_LAND_SHARE` | `0.6` | Test 2: of SITE_LAND_SAMPLES points within 5 km, at least this share are land: 60%. |
 | 208 | `World.SITE_LAND_SAMPLES` | `48` | ...over 48 points, at 1.5, 3 and 5 km in turn round the compass. |
 | 211 | `World.SITE_LAND_RADII` | `{ 50, 100, 167 }` | ...at these radii, in plots: 50, 100 and 167 (1.5, 3 and 5 km). |
@@ -1509,9 +1560,9 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 127 | `Agriculture.BAKED_KG_PER_TONNE` | `525` | Kilograms of bread and bakery goods a tonne of crops becomes. |
-| 130 | `Agriculture.BAKED_KG_A_HEAD` | `5.0` | What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. |
-| 300 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
+| 128 | `Agriculture.BAKED_KG_PER_TONNE` | `525` | Kilograms of bread and bakery goods a tonne of crops becomes. |
+| 131 | `Agriculture.BAKED_KG_A_HEAD` | `5.0` | What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. |
+| 301 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
 
 ### Automotive.java ([map](map/Automotive.md))
 
@@ -1610,7 +1661,7 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 175 | `Retail.SHELF` | `{ Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT, Good.MEAT, Goo...` |  |
 | 918 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
 
-## interface (675 constants)
+## interface (678 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -1648,10 +1699,10 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 187 | `BuildScreen.BUILD_HOME` | `BuildAdvice.OVERVIEW` | Where Build opens (BUILD_HOME), and which category the player was last looking at (buildCategory). |
 | 322 | `BuildScreen.CITY_DOT` | `Palette.MONEY` | The colour of "only the city builds these": the money blue - the city's own account. |
 | 325 | `BuildScreen.INVESTOR_DOT` | `Palette.BUSINESS` | The colour of "investors build these too": the business violet. |
-| 539 | `BuildScreen.LAND_FREE_CELL` | `236` | LAND FREE's width with its shortcut under it: the cell's own 190 and room for the shortcut's words on one line. |
-| 1508 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
-| 2141 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
-| 3296 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
+| 542 | `BuildScreen.LAND_FREE_CELL` | `236` | LAND FREE's width with its shortcut under it: the cell's own 190 and room for the shortcut's words on one line. |
+| 1511 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
+| 2144 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
+| 3298 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
 
 ### ConstructionScreen.java ([map](map/ConstructionScreen.md))
 
@@ -1825,15 +1876,15 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1603 | `HistoryScreen.LAYER_NAMES` | `{ "consumption", "investment", "government", "net exports" }` | What each part is called on the key and in the crosshair, in YearBook.GDP_PARTS' order. |
 | 1670 | `HistoryScreen.BIG_CHART` | `380` | How tall the big chart's plot is on the page; the lanes and the overview are under it. |
 | 1673 | `HistoryScreen.CONTROLS` | `130` | Room kept at the right of the preset row for "clear all" and "log". |
-| 2249 | `HistoryScreen.MOVE_MILLIS` | `600` | How long a figure takes to slide to a month's new reading, in milliseconds - the range bar's dot; the figure counts on over SectorScreen's own time. |
-| 2428 | `HistoryScreen.AXES_INFO` | `"Lines measured in the same thing are drawn against each other on a real axis; " + "two...` | PICK WHAT TO DRAW's (i): how the lines share axes. |
-| 2629 | `HistoryScreen.HARD_TIMES_SHOWN` | `5` | At most this many hard times are listed in view; the rest are counted, and in the details. |
-| 2632 | `HistoryScreen.DECISIONS_SHOWN` | `8` | At most this many decisions are listed in view. |
-| 2635 | `HistoryScreen.KINDS` | `{ "recession", "depression", "slump", "epidemic", "financial", "currency", "inflation",...` | The kinds of episode, in the order the details list them. |
-| 2638 | `HistoryScreen.KIND_NAMES` | `{ "Recessions", "Depressions", "Slumps", "Epidemics", "Financial crises", "Currency cri...` | ...and what the details call each, in that order. |
-| 2948 | `HistoryScreen.AT_END` | `1e-6` | How near an end of its band a price must be to be AT it - a rounding hair of the band (the market strikes an end exactly). |
-| 2951 | `HistoryScreen.BAND_ROOM` | `1.25` | The scale a good's row is drawn on: the band from 0 to 1, and room past its ceiling for the month's trade. |
-| 2954 | `HistoryScreen.GOODS_INFO` | `"What a unit costs here this month, against what the world pays for one and " + "what i...` | The section's (i). |
+| 2251 | `HistoryScreen.MOVE_MILLIS` | `600` | How long a figure takes to slide to a month's new reading, in milliseconds - the range bar's dot; the figure counts on over SectorScreen's own time. |
+| 2430 | `HistoryScreen.AXES_INFO` | `"Lines measured in the same thing are drawn against each other on a real axis; " + "two...` | PICK WHAT TO DRAW's (i): how the lines share axes. |
+| 2632 | `HistoryScreen.HARD_TIMES_SHOWN` | `5` | At most this many hard times are listed in view; the rest are counted, and in the details. |
+| 2635 | `HistoryScreen.DECISIONS_SHOWN` | `8` | At most this many decisions are listed in view. |
+| 2638 | `HistoryScreen.KINDS` | `{ "recession", "depression", "slump", "epidemic", "financial", "currency", "inflation",...` | The kinds of episode, in the order the details list them. |
+| 2641 | `HistoryScreen.KIND_NAMES` | `{ "Recessions", "Depressions", "Slumps", "Epidemics", "Financial crises", "Currency cri...` | ...and what the details call each, in that order. |
+| 2951 | `HistoryScreen.AT_END` | `1e-6` | How near an end of its band a price must be to be AT it - a rounding hair of the band (the market strikes an end exactly). |
+| 2954 | `HistoryScreen.BAND_ROOM` | `1.25` | The scale a good's row is drawn on: the band from 0 to 1, and room past its ceiling for the month's trade. |
+| 2957 | `HistoryScreen.GOODS_INFO` | `"What a unit costs here this month, against what the world pays for one and " + "what i...` | The section's (i). |
 
 ### Icons.java ([map](map/Icons.md))
 
@@ -1897,7 +1948,7 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 359 | `Icons.SAFE` | `"M5 3h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z" + " M7.5 ...` | A safe on two feet, its dial and its handle: the city's fund. |
 | 363 | `Icons.EXCHANGE` | `"M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4"` | Two arrows passing, one each way (Lucide's arrow-left-right): money changed from one currency to the other - the Trade tab's exchange (0.7.35). |
 | 480 | `Icons.DICE` | `"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z" + " M8 8h...` | A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). |
-| 484 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's "Buy the best land" (0.7.61). |
+| 484 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.... |
 | 487 | `Icons.EXPAND` | `"M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"` | Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). |
 | 490 | `Icons.SETTINGS` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2.34 0 0 1 ...` | A gear. |
 
@@ -1944,25 +1995,26 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 295 | `LandScreen.WHO_PAYS` | `"Investors build only on ground the city owns, and pay the city for each " + "plot they...` | The page's (i): who pays for the ground, and who does not. |
-| 304 | `LandScreen.PAY_TIPS` | `{ "Pay by converting cash", "Pay from the vault" }` | The toggle's tooltips: its 0.7.6 names, which the chips shortened. |
-| 483 | `LandScreen.BEST_HEAD` | `"THE BEST OFFERS · cheapest dry ground first, from every side"` | The section's head over THE GROUND: the best N, from every side. |
-| 598 | `LandScreen.ROW_DEPOSITS` | `2` | Deposits a row shows by name before "+N": 2... |
-| 601 | `LandScreen.ROW_DEPOSIT_CHARS` | `20` | ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. |
-| 660 | `LandScreen.WHOLE_FIELDS` | `" in the ground: every field of it centred in this offer, whole, paid for in its price."` | What a row's tooltip says after each resource's sites and tonnes (0.7.64, batch L): an offer holds every field centred in its band whole, all its sites and tonnes, wherever its sites lie (CityLand)... |
-| 765 | `LandScreen.ON_TOP_INFO` | `"The ground is charged on top of the build, so a cheap building on" + " expensive land ...` | The second card's (i), the 0.7.6 note word for word, and what the bars are. |
-| 789 | `LandScreen.ORE_INFO` | `"A mine stands on one deposit, and every mine draws on the city's tonnes" + " together....` | The Ore card's (i). |
-| 806 | `LandScreen.WAITING_INFO` | `"As of last month — the sectors decide once a month, so ground bought" + " now shows up...` | The Waiting card's (i), the 0.7.6 note word for word. |
-| 819 | `LandScreen.DETAILS_INFO` | `"What the world asks for a square foot of ground, as each month recorded" + " it - in U...` | The chart's (i). |
-| 1091 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
-| 1094 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
-| 1097 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
-| 1100 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), ten of them and THE CITY's head inside HERO_H. |
-| 1103 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: lane, size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
-| 1106 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
-| 1109 | `LandScreen.ROW_HEADS` | `{ "lane", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
-| 1324 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | A worth card's style, its edge's colour last. |
-| 1543 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the land.On the...` | The dollar offers' (i), the 0.7.13 note word for word. |
+| 280 | `LandScreen.WHO_PAYS` | `"Investors build only on ground the city owns, and pay the city for each " + "plot they...` | The page's (i): who pays for the ground, and who does not. |
+| 289 | `LandScreen.PAY_TIPS` | `{ "Pay by converting cash", "Pay from the vault" }` | The toggle's tooltips: its 0.7.6 names, which the chips shortened. |
+| 469 | `LandScreen.BEST_HEAD` | `"THE BEST OFFERS · cheapest dry ground first, from every side"` | The section's head over THE GROUND: the best N, from every side. |
+| 608 | `LandScreen.EMPTY_PLACE` | `"no room on this edge yet: it lists when the city grows here"` | A place waiting for room, as its row says it (spec-grid 2.5): one muted line where its offer would stand. |
+| 611 | `LandScreen.ROW_DEPOSITS` | `2` | Deposits a row shows by name before "+N": 2... |
+| 614 | `LandScreen.ROW_DEPOSIT_CHARS` | `20` | ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. |
+| 699 | `LandScreen.WHOLE_FIELDS` | `" in the ground: every field of it centred in this offer, whole, paid for in its price."` | What a row's tooltip says after each resource's sites and tonnes (0.7.64, batch L): an offer holds every field centred on its ground whole, all its sites and tonnes, wherever its sites lie (CityLan... |
+| 804 | `LandScreen.ON_TOP_INFO` | `"The ground is charged on top of the build, so a cheap building on" + " expensive land ...` | The second card's (i), the 0.7.6 note word for word, and what the bars are. |
+| 828 | `LandScreen.ORE_INFO` | `"A mine stands on one deposit, and every mine draws on the city's tonnes" + " together....` | The Ore card's (i). |
+| 845 | `LandScreen.WAITING_INFO` | `"As of last month — the sectors decide once a month, so ground bought" + " now shows up...` | The Waiting card's (i), the 0.7.6 note word for word. |
+| 858 | `LandScreen.DETAILS_INFO` | `"What the world asks for a square metre of ground, as each month recorded" + " it - in ...` | The chart's (i). |
+| 1130 | `LandScreen.MAP_W` | `MapView.SMALL_W, HERO_H = MapView.SMALL_H` | The map's width and the hero row's height (spec-land 2.8). |
+| 1133 | `LandScreen.HERO_GAP` | `16` | The gap between the map and THE CITY... |
+| 1136 | `LandScreen.CITY_PANEL` | `657` | ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). |
+| 1139 | `LandScreen.ROW_H` | `28` | A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. |
+| 1142 | `LandScreen.ROW_COLUMNS` | `{ 24, 74, 64, 158, 82, 78, 76, 58 }` | The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. |
+| 1145 | `LandScreen.ROW_GAP` | `4` | The gap between a row's columns. |
+| 1148 | `LandScreen.ROW_HEADS` | `{ "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" }` | The rows' column names. |
+| 1383 | `LandScreen.WORTH_CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + " -fx-backg...` | A worth card's style, its edge's colour last. |
+| 1602 | `LandScreen.ABROAD_INFO` | `"Issued abroad; the dollars are in reserve, and the " + "vault pays for the land.On the...` | The dollar offers' (i), the 0.7.13 note word for word. |
 
 ### Levers.java ([map](map/Levers.md))
 
@@ -1974,22 +2026,24 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 74 | `MapView.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
-| 77 | `MapView.FRAME_MS` | `8` | The most a frame spends painting tiles, in ms (spec-land 2.6): about 40 tiles at the design's 0.19 ms each. |
-| 80 | `MapView.CLICK_SLOP` | `5` | A press that moves less than this many pixels is a click, not a drag: 5 (the mockup's). |
-| 83 | `MapView.FIELDS_MOST` | `4000` | The most deposits marked in the far views: 4,000 - far more than a city's land and offers hold (Jerus's: a few dozen fields)... |
-| 86 | `MapView.FIELD_CELLS_MOST` | `64` | ...and none once its land and offers span more than this many world cells (star): 64, a box about 490 km across - a city of billions spans a continent, where a dot a field would be the world's iron... |
-| 89 | `MapView.PANE_TOP` | `14, PANE_SIDE = 22, PANE_BOTTOM = 12` | The expanded pane's padding, as City History's full screen lays it (top, right, bottom, left)... |
-| 92 | `MapView.PANE_HEAD` | `36` | ...and its head line's height with the gap under it. |
-| 95 | `MapView.DRAFTS_MOST` | `3` | Drafts a city may fail to keep before its map is drawn on the FX thread instead: 3. |
-| 101 | `MapView.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "city-map"); t.setDae...` | The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground. |
-| 211 | `MapView.DRAWING` | `"Drawing the city's map…"` | The note while the map is drawn away from the screen. |
-| 214 | `MapView.EXPAND_TIP` | `"The map over the whole window: drag to pan, scroll to zoom, Esc to come back."` | The Expand button's tooltip. |
-| 217 | `MapView.HINT` | `"drag to pan · scroll to zoom · 0 fits · Esc closes"` | The expanded map's hint, at the right of its head. |
-| 542 | `MapView.OFFER_EDGE` | `"#f6a6c9"` | The offers' pink: the mockup's band edge (rgba(246, 166, 201)). |
-| 656 | `MapView.SCALE_BAR_PX` | `120` | The scale bar's longest, in pixels: 120 (the mockup's). |
-| 806 | `MapView.CARD_FIELDS` | `3` | The most fields a hover card lists: 3. |
-| 939 | `MapView.LEGEND_ROWS` | `11` | Rows a column of the legend holds. |
+| 89 | `MapView.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
+| 92 | `MapView.FRAME_MS` | `8` | The most a frame spends painting tiles, in ms (spec-land 2.6): about 40 tiles at the design's 0.19 ms each. |
+| 95 | `MapView.CLICK_SLOP` | `5` | A press that moves less than this many pixels is a click, not a drag: 5 (the mockup's). |
+| 98 | `MapView.FIELDS_MOST` | `4000` | The most deposits marked in the far views: 4,000 - far more than a city's land and offers hold (Jerus's: a few dozen fields)... |
+| 101 | `MapView.FIELD_CELLS_MOST` | `64` | ...and none once its land and offers span more than this many world cells (star): 64, a box about 490 km across - a city of billions spans a continent, where a dot a field would be the world's iron... |
+| 104 | `MapView.PANE_TOP` | `14, PANE_SIDE = 22, PANE_BOTTOM = 12` | The expanded pane's padding, as City History's full screen lays it (top, right, bottom, left)... |
+| 107 | `MapView.PANE_HEAD` | `36` | ...and its head line's height with the gap under it. |
+| 110 | `MapView.DRAFTS_MOST` | `3` | Drafts a city may fail to keep before its map is drawn on the FX thread instead: 3. |
+| 116 | `MapView.WORKER` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "city-map"); t.setDae...` | The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground. |
+| 226 | `MapView.DRAWING` | `"Drawing the city's map…"` | The note while the map is drawn away from the screen. |
+| 229 | `MapView.EXPAND_TIP` | `"The map over the whole window: drag to pan, scroll to zoom, Esc to come back."` | The Expand button's tooltip. |
+| 232 | `MapView.HINT` | `"drag to pan · scroll to zoom · 0 fits · Esc closes"` | The expanded map's hint, at the right of its head. |
+| 561 | `MapView.OFFER_EDGE` | `"#f6a6c9"` | The offers' pink: the mockup's band edge (rgba(246, 166, 201)). |
+| 564 | `MapView.BLOCK_LINE_ALPHA` | `0.08` | The block lines' white, its alpha: 0.08 (0.7.69, star) - faint, so the ground under them reads first; at 0.08 a line shows on the dimmed world and on the city's own ground alike (the M5 renders). |
+| 567 | `MapView.EDGE_ALPHA` | `0.55` | The city's edge's white, its alpha: 0.55, as since 0.7.61. |
+| 767 | `MapView.SCALE_BAR_PX` | `120` | The scale bar's longest, in pixels: 120 (the mockup's). |
+| 917 | `MapView.CARD_FIELDS` | `3` | The most fields a hover card lists: 3. |
+| 1050 | `MapView.LEGEND_ROWS` | `11` | Rows a column of the legend holds. |
 
 ### Money.java ([map](map/Money.md))
 
@@ -2417,7 +2471,7 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5776 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
 | 5779 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
 
-## harnesses (192 constants)
+## harnesses (202 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -2431,7 +2485,7 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 27 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "CalendarCheck", "BooksCheck", "Wa...` | In the order they are cheapest to fail. |
+| 27 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "C...` | In the order they are cheapest to fail. |
 
 ### BondCheck.java ([map](map/BondCheck.md))
 
@@ -2474,6 +2528,13 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 38 | `ConsumptionCheck.LADDER` | `{ 1, 2, 5, 10, 20, 27, 50, 90, 200, 500, 2_000 }` |  |
+
+### ConversionCheck.java ([map](map/ConversionCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 75 | `ConversionCheck.FIXTURE` | `"conversion-saves.json"` | The fixture: the five saves' land, copied key for key (src/main/resources). |
+| 78 | `ConversionCheck.WHOLE_CITY_PURCHASES` | `133` | Purchases the whole-field city of section 4 is bought to: 133, as many as Jerus's live city had made. |
 
 ### CreditCheck.java ([map](map/CreditCheck.md))
 
@@ -2526,6 +2587,18 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 314 | `FundLedgerCheck.ISSUER` | `"Mining"` | The issuer of section 3's one bond: a sector's name, which BondMarket.writeDown() finds an issuer's bonds by. |
 
+### GridCheck.java ([map](map/GridCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 58 | `GridCheck.FIXTURES` | `200` | Fixtures of fills checked against a raster: 200 (spec-grid 3, M1). |
+| 61 | `GridCheck.WINDOW` | `128` | Plots across a fixture's window: 128, 2^7, so its fills merge up to level 7 and unaligned windows straddle every block line under it. |
+| 64 | `GridCheck.CITY_PURCHASES` | `600` | Purchases the city of section 5 is bought to, evenly: 600 (spec-grid 3, M1) - past the 344 that bring the default world's city to Jerus's old city's size. |
+| 67 | `GridCheck.ALL_LISTED_BY` | `12` | The purchase by which a new city's every place stands, bought evenly: the 12th, the latest spec-grid 2.2 measured on three worlds and two ways of buying (4 to 12). |
+| 70 | `GridCheck.OWNER_NS` | `100` | The most owner() may take a plot, in nanoseconds: 100 (spec-grid 3, M1; measured 18 to 49 on two shared cores). |
+| 73 | `GridCheck.TIMING_RUNS` | `7` | Runs owner()'s timing takes the median of: seven, as the spec's benchmarks did. |
+| 76 | `GridCheck.TIMED_PLOTS` | `2_000_000` | Random plots owner() is timed on in each run: 2,000,000, as the spec's benchmark. |
+
 ### HistoryCheck.java ([map](map/HistoryCheck.md))
 
 | line | constant | value | says |
@@ -2565,8 +2638,8 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1795 | `LandCheck.RESEARCH` | `{ new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450.60153519, ...` | The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. |
-| 1896 | `LandCheck.DEAL` | `7` | The width of the bands the plane is tiled with: 7 plots, which no offer is. |
+| 2053 | `LandCheck.RESEARCH` | `{ new Research("city600 m612", 906013741141069877L, 32_635_000, 10, 36200450.60153519, ...` | The three research saves' land (the autosaves at months 612, 2412 and 1851), and a city whose mines outnumber its sites. |
+| 2158 | `LandCheck.DEAL` | `7` | Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. |
 
 ### LongPlaytest.java ([map](map/LongPlaytest.md))
 
@@ -2616,30 +2689,30 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 736 | `LongPlaytest.shellDefaults` | `new java.util.TreeMap<>()` |  |
 | 737 | `LongPlaytest.shellSpell` | `new java.util.HashMap<>()` |  |
 | 1027 | `LongPlaytest.OLD_DIAL_STOP` | `.25` | The dial's stop before 0.7.2, for counting the months the uncapped dial spends past it. |
-| 1741 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasional"))` | True when this run is played by somebody paying attention. |
-| 1748 | `LongPlaytest.SCHOOLS` | `Boolean.getBoolean("playtest.schools")` | -Dplaytest.schools=true: the city builds schools, which the advisor never does. |
-| 1774 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(System.getPr...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
-| 1802 | `LongPlaytest.FOUNDING` | `Founding.Preset.valueOf(System.getProperty("playtest.founding", "standard").trim().toUp...` | The founding preset under -Dplaytest.founding, standard when unset. |
-| 1869 | `LongPlaytest.TRACE` | `System.getProperty("playtest.trace")` | The trace's prefix under -Dplaytest.trace, or null. |
-| 1872 | `LongPlaytest.paperSeen` | `java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())` | The paper already written to the borrow file, by identity. |
-| 2204 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
-| 2212 | `LongPlaytest.ROLLOVER` | `Rollover.Mode.valueOf(System.getProperty("playtest.rollover", "SAME_STRUCTURE").trim()....` | -Dplaytest.rollover=MANUAL\|SAME_STRUCTURE\|TWELVE_MONTH_BILL (0.7.13): the treasury's rollover for the run (Rollover). |
-| 2239 | `LongPlaytest.RESCUE_AUTO` | `! "BUTTON".equalsIgnoreCase(System.getProperty("playtest.rescue", "AUTO").trim())` | The rescue setting under -Dplaytest.rescue, AUTO when unset. |
-| 2242 | `LongPlaytest.PREFERRED_ACCEPT` | `! "DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT").trim())` | The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. |
-| 2245 | `LongPlaytest.FUND_DIAL` | `fundDial(System.getProperty("playtest.fund", "0"))` | The fund's dial under -Dplaytest.fund, 0 when unset. |
-| 2275 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
-| 2294 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
-| 2310 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(System.getPrope...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
-| 2325 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueOf(System.g...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
-| 2341 | `LongPlaytest.INFLATION_TARGET` | `System.getProperty("playtest.inflationTarget") = = null ? null : Double.valueOf(System....` | The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. |
-| 2416 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
-| 2984 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
-| 3016 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
-| 3023 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
-| 3406 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
-| 3438 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
-| 3984 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
-| 3992 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
+| 1743 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasional"))` | True when this run is played by somebody paying attention. |
+| 1750 | `LongPlaytest.SCHOOLS` | `Boolean.getBoolean("playtest.schools")` | -Dplaytest.schools=true: the city builds schools, which the advisor never does. |
+| 1776 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(System.getPr...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
+| 1804 | `LongPlaytest.FOUNDING` | `Founding.Preset.valueOf(System.getProperty("playtest.founding", "standard").trim().toUp...` | The founding preset under -Dplaytest.founding, standard when unset. |
+| 1871 | `LongPlaytest.TRACE` | `System.getProperty("playtest.trace")` | The trace's prefix under -Dplaytest.trace, or null. |
+| 1874 | `LongPlaytest.paperSeen` | `java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())` | The paper already written to the borrow file, by identity. |
+| 2206 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
+| 2214 | `LongPlaytest.ROLLOVER` | `Rollover.Mode.valueOf(System.getProperty("playtest.rollover", "SAME_STRUCTURE").trim()....` | -Dplaytest.rollover=MANUAL\|SAME_STRUCTURE\|TWELVE_MONTH_BILL (0.7.13): the treasury's rollover for the run (Rollover). |
+| 2241 | `LongPlaytest.RESCUE_AUTO` | `! "BUTTON".equalsIgnoreCase(System.getProperty("playtest.rescue", "AUTO").trim())` | The rescue setting under -Dplaytest.rescue, AUTO when unset. |
+| 2244 | `LongPlaytest.PREFERRED_ACCEPT` | `! "DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT").trim())` | The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. |
+| 2247 | `LongPlaytest.FUND_DIAL` | `fundDial(System.getProperty("playtest.fund", "0"))` | The fund's dial under -Dplaytest.fund, 0 when unset. |
+| 2277 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
+| 2296 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
+| 2312 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(System.getPrope...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
+| 2327 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueOf(System.g...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
+| 2343 | `LongPlaytest.INFLATION_TARGET` | `System.getProperty("playtest.inflationTarget") = = null ? null : Double.valueOf(System....` | The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. |
+| 2418 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
+| 3065 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
+| 3097 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
+| 3104 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
+| 3530 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
+| 3562 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
+| 4108 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
+| 4116 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
 
 ### ManufacturingCheck.java ([map](map/ManufacturingCheck.md))
 
@@ -2653,28 +2726,29 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 95 | `MapCheck.MONTHS` | `120` | Months the city of section 1 is played: 120 (the design's). |
-| 98 | `MapCheck.IRON_AT` | `MONTHS / 3` | The month the played city is handed a whole iron field and orders a mine on it, if it has none (0.7.64): a third of the way. |
-| 105 | `MapCheck.JERUS_COUNTS` | `{ 1913, 200, 1212, 0, 65, 4, 1701, 4, 0, 2, 5, 48, 11, 81, 21, 6079, 0, 170, 114, 1, 2,...` | Jerus's city at month 1,851 (his autosave, 509,455 people on 89.63 km2 of dry ground): every building type's count, by id - 14,214 buildings, the design's own fixture for the map's sizes. |
-| 110 | `MapCheck.JERUS_PEOPLE` | `509_455` | ...his people. |
-| 113 | `MapCheck.JERUS_KM2` | `89.63` | ...and his dry ground, in km2. |
-| 116 | `MapCheck.JERUS_FILL` | `0.92` | His buildings' footprint over his dry ground: 91.8% (the design's measure), so the design's square city holds this share of a district - his density. |
-| 119 | `MapCheck.TIMES` | `{ 1, 9_814, 10_000, 19_629 }` | The copies measured: his city x 1, x 9,814 (5 billion people), x 10,000 (the design's) and x 19,629 (10 billion). |
-| 122 | `MapCheck.DENSE` | `2` | The copy whose screen is all city, at his density, that section 3 paints: x 10,000. |
-| 125 | `MapCheck.SCREEN_ACROSS` | `18, SCREEN_DOWN = 11, SCREEN_TILES = SCREEN_ACROSS * SCREEN_DOWN` | The screen: 18 x 11 tiles, 198 - a 1,389 x 868 view at L0's least 3.2 px a plot is 13.6 x 8.5 tiles, the design's "about 200 with a margin". |
-| 128 | `MapCheck.SCREEN_MS` | `80` | The design's bound on that screen's paint and raster, in ms (derived: 38 at its measured 0.19 ms a tile). |
-| 131 | `MapCheck.SCREEN_RATIO` | `1.5` | The most any copy's screen may take against the 5B copy's, the first whose screen is all city (the design's; against the city x 1's until 0.7.64 - section 5's note). |
-| 134 | `MapCheck.RECONCILE_MS` | `5` | The design's bound on a month's change at 10B, in ms (measured 0.76). |
-| 137 | `MapCheck.PX` | `4` | Pixels a plot the screen is rastered at: 4, L0's image (spec-land 2.6). |
-| 140 | `MapCheck.WARM_ROUNDS` | `3, TIMED_ROUNDS = 5` | Rounds of the screen run over every copy before any is timed, and rounds timed, each copy in turn: the least of each copy's timed rounds is its time. |
-| 143 | `MapCheck.DRY_PLACE` | `0.97` | How dry the place the copies stand on must be, at a sample a tile over 3 x 3 districts: 97% - every screen tile can be built on, the painter's worst case. |
-| 146 | `MapCheck.DRAWN_EVERY` | `30` | The months of section 1's city at which every tile is painted and what is drawn counted against the model: every 30th, four of its 120 (0.7.64). |
-| 157 | `MapCheck.SHRUNK_MOST` | `0.10` | The most of the dense screen's buildings drawn smaller than their own land, because no free box of their tile held it: a tenth (star, 0.7.64). |
-| 181 | `MapCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
-| 843 | `MapCheck.NEW_CITY_MONTHS` | `{ 0, 1, 12 }` | The months a new default city is drawn at: as founded, a month on and a year on (Jerus: "a brand new city shows that it has a few houses and a shop when it doesnt"). |
-| 1113 | `MapCheck.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
-| 1116 | `MapCheck.SCREEN_POINTS` | `{ { 0, 0 }, { 300, 200 }, { 1344, 805 }, { 17.25, 640.5 }, { 1000, 3 } }` | Points across the screen the transforms are tried at. |
-| 1400 | `MapCheck.DRAFT_MONTHS` | `24` | Months the draft's town is played before its map is drawn: 24. |
+| 103 | `MapCheck.MONTHS` | `120` | Months the city of section 1 is played: 120 (the design's). |
+| 106 | `MapCheck.IRON_AT` | `MONTHS / 3` | The month the played city is handed a whole iron field and orders a mine on it, if it has none (0.7.64): a third of the way. |
+| 113 | `MapCheck.JERUS_COUNTS` | `{ 1913, 200, 1212, 0, 65, 4, 1701, 4, 0, 2, 5, 48, 11, 81, 21, 6079, 0, 170, 114, 1, 2,...` | Jerus's city at month 1,851 (his autosave, 509,455 people on 89.63 km2 of dry ground): every building type's count, by id - 14,214 buildings, the design's own fixture for the map's sizes. |
+| 118 | `MapCheck.JERUS_PEOPLE` | `509_455` | ...his people. |
+| 121 | `MapCheck.JERUS_KM2` | `89.63` | ...and his dry ground, in km2. |
+| 124 | `MapCheck.JERUS_FILL` | `0.92` | His buildings' footprint over his dry ground: 91.8% (the design's measure), so the design's square city holds this share of a district - his density. |
+| 127 | `MapCheck.TIMES` | `{ 1, 9_814, 10_000, 19_629 }` | The copies measured: his city x 1, x 9,814 (5 billion people), x 10,000 (the design's) and x 19,629 (10 billion). |
+| 130 | `MapCheck.DENSE` | `2` | The copy whose screen is all city, at his density, that section 3 paints: x 10,000. |
+| 133 | `MapCheck.SCREEN_ACROSS` | `18, SCREEN_DOWN = 11, SCREEN_TILES = SCREEN_ACROSS * SCREEN_DOWN` | The screen: 18 x 11 tiles, 198 - a 1,389 x 868 view at L0's least 3.2 px a plot is 13.6 x 8.5 tiles, the design's "about 200 with a margin". |
+| 136 | `MapCheck.SCREEN_MS` | `80` | The design's bound on that screen's paint and raster, in ms (derived: 38 at its measured 0.19 ms a tile). |
+| 139 | `MapCheck.SCREEN_RATIO` | `1.5` | The most any copy's screen may take against the 5B copy's, the first whose screen is all city (the design's; against the city x 1's until 0.7.64 - section 5's note). |
+| 142 | `MapCheck.RECONCILE_MS` | `5` | The design's bound on a month's change at 10B, in ms (measured 0.76). |
+| 145 | `MapCheck.PX` | `4` | Pixels a plot the screen is rastered at: 4, L0's image (spec-land 2.6). |
+| 148 | `MapCheck.WARM_ROUNDS` | `3, TIMED_ROUNDS = 5` | Rounds of the screen run over every copy before any is timed, and rounds timed, each copy in turn: the least of each copy's timed rounds is its time. |
+| 151 | `MapCheck.DRY_PLACE` | `0.97` | How dry the place the copies stand on must be, at a sample a tile over 3 x 3 districts: 97% - every screen tile can be built on, the painter's worst case. |
+| 154 | `MapCheck.DRAWN_EVERY` | `30` | The months of section 1's city at which every tile is painted and what is drawn counted against the model: every 30th, four of its 120 (0.7.64). |
+| 165 | `MapCheck.SHRUNK_MOST` | `0.10` | The most of the dense screen's buildings drawn smaller than their own land, because no free box of their tile held it: a tenth (star, 0.7.64). |
+| 189 | `MapCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
+| 851 | `MapCheck.NEW_CITY_MONTHS` | `{ 0, 1, 12 }` | The months a new default city is drawn at: as founded, a month on and a year on (Jerus: "a brand new city shows that it has a few houses and a shop when it doesnt"). |
+| 1121 | `MapCheck.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
+| 1124 | `MapCheck.SCREEN_POINTS` | `{ { 0, 0 }, { 300, 200 }, { 1344, 805 }, { 17.25, 640.5 }, { 1000, 3 } }` | Points across the screen the transforms are tried at. |
+| 1568 | `MapCheck.BIG_OFFER_LEVEL` | `9` | The level of the offer the overlay's clip is tried on, zoomed in as far as the view goes: 9, blocks of 15.36 km - an offer of 2 x 4 of them is over three views across even at the expanded size, whi... |
+| 1675 | `MapCheck.DRAFT_MONTHS` | `24` | Months the draft's town is played before its map is drawn: 24. |
 
 ### MonetaryCheck.java ([map](map/MonetaryCheck.md))
 
@@ -2697,8 +2771,8 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1095 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1096 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 1100 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1101 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
 
 ### OilCheck.java ([map](map/OilCheck.md))
 
@@ -2747,19 +2821,19 @@ Generated 2026-10-07 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 86 | `ScaleCheck.TARGET_PEOPLE` | `5e9` | Jerus's smaller plan, in people: what the copy is scaled to reach. |
-| 89 | `ScaleCheck.MONTHS_AT_SIZE` | `3` | Months the copy plays before it is saved. |
-| 92 | `ScaleCheck.FIXTURE_MONTHS` | `120` | The founded city's age, in months, when it is saved and copied. |
-| 95 | `ScaleCheck.FREE_PEOPLE` | `{ 5e9, 1e10 }` | Jerus's two plans, in people: the copies whose sectors are free (section 6). |
-| 142 | `ScaleCheck.FREE_FIXTURE_MONTHS` | `550` | The month the playtest's city is copied at for section 6. |
-| 145 | `ScaleCheck.FREE_MONTHS` | `6` | Months each free copy plays, every one timed. |
-| 148 | `ScaleCheck.RELATIVE_RESIDUAL` | `1e-10` | The most the audit's residual may be of what moved, at any size: five orders of magnitude inside MoneyCheck's 1e-4. |
-| 158 | `ScaleCheck.MONTH_MEDIAN_MS` | `1500` | The longest a free copy's median month may take, in milliseconds. |
-| 587 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
-| 883 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|Ratio\|targ...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 t... |
-| 901 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMonth", "las...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
-| 905 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged", "...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
-| 920 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefo...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
+| 92 | `ScaleCheck.TARGET_PEOPLE` | `5e9` | Jerus's smaller plan, in people: what the copy is scaled to reach. |
+| 95 | `ScaleCheck.MONTHS_AT_SIZE` | `3` | Months the copy plays before it is saved. |
+| 98 | `ScaleCheck.FIXTURE_MONTHS` | `120` | The founded city's age, in months, when it is saved and copied. |
+| 101 | `ScaleCheck.FREE_PEOPLE` | `{ 5e9, 1e10 }` | Jerus's two plans, in people: the copies whose sectors are free (section 6). |
+| 175 | `ScaleCheck.FREE_FIXTURE_MONTHS` | `545` | The month the playtest's city is copied at for section 6. |
+| 178 | `ScaleCheck.FREE_MONTHS` | `6` | Months each free copy plays, every one timed. |
+| 181 | `ScaleCheck.RELATIVE_RESIDUAL` | `1e-10` | The most the audit's residual may be of what moved, at any size: five orders of magnitude inside MoneyCheck's 1e-4. |
+| 191 | `ScaleCheck.MONTH_MEDIAN_MS` | `1500` | The longest a free copy's median month may take, in milliseconds. |
+| 625 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
+| 921 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|Ratio\|targ...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 t... |
+| 939 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMonth", "las...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
+| 943 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged", "...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
+| 958 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefo...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
 
 ### SectorBooksCheck.java ([map](map/SectorBooksCheck.md))
 

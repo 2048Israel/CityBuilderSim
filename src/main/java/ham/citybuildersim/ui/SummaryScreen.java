@@ -1266,8 +1266,9 @@ final class SummaryScreen {
          * (CityNeeds.ground()), which the land office's GROUND FREE and
          * Build's LAND FREE read too, so the three and NEEDS YOU agree; the
          * share used is a line inside, in no colour. The price is the city's
-         * money (Money.unitPrice()); it printed a bare "$". The ground free
-         * in square kilometres since 0.7.64, as NEEDS YOU's row reads it,
+         * money (Money.unitPrice(); a square metre since 0.7.68,
+         * groundPrice()); it printed a bare "$". The ground free in square
+         * kilometres since 0.7.64, as NEEDS YOU's row reads it,
          * and under a hundredth of one in square metres since 0.7.68, the
          * price a square metre - "137 m² · D$20,882/m²", its colour saying it
          * is the free ground: with "free" and the wider dot it ran past the

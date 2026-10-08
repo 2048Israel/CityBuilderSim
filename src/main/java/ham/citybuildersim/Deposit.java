@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * One field of a resource in the world's ground: which resource, the world cell it was drawn in and its place in that cell's list, its centre as a plot, its sites and what it holds - and where each of its sites lies.
+ * One field of a resource in the world's ground: which resource, the world cell it was drawn in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0.7.79) an oil field's grade.
  *
  * WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). A
  * field is the unit the land office sells and the map draws: it belongs
@@ -131,5 +131,44 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
     /** ...and the most any field of a resource reaches: World.MAX_SITES of its sites. */
     public static double mostReach(Resource r) {
         return (PLACES_REACH[World.MAX_SITES - 1] + 0.5) * siteWidth(r);
+    }
+
+    /* =====================================================================
+       THE CRUDE'S GRADE (0.7.79, batch O3; runs/spec-oil.md 2.2)
+
+       An oil field is light, medium or heavy crude, and the grade decides
+       what a barrel of it cuts into (Refining.CUTS): light is Brent's column
+       [R1], more naphtha and diesel; heavy is Maya's [R2], over a third of it
+       residue that only cutting with diesel, a coker or an asphalt unit
+       turns into money; medium is the research's blend, what the world's
+       imports are. A pure function of the field's cell, index and kind,
+       drawn like its turn() - so nothing is stored, no tonne moves, and the
+       world's totals (unowned + remaining + extracted = W) hold exactly as
+       they did. Read for oil; the draw is the same for any field.
+       ===================================================================== */
+
+    /** A crude's grade: LIGHT (Brent's cuts), MEDIUM (the research's blend) or HEAVY (Maya's), in that order. */
+    public enum Grade { LIGHT, MEDIUM, HEAVY }
+
+    /** The share of fields of each grade, in Grade's order: a third each (est., spec-oil 2.2 and 6 - to confirm; the research gives a grade a field, not the world's mix). */
+    public static final double[] GRADE_SHARES = { 1.0 / 3, 1.0 / 3, 1.0 / 3 };
+
+    /** What makes a field's grade a draw of its own, apart from its turn()'s. */
+    static final long GRADE_SALT = 0x6A7DE5L;
+
+    /**
+     * Its crude's grade (0.7.79): a uniform draw from World.mix() of its
+     * cell, index, kind and GRADE_SALT, against GRADE_SHARES in Grade's
+     * order - the same field always the same grade, on any machine.
+     */
+    public Grade grade() {
+        double u = World.unit(World.mix(((long) cell << 24) ^ ((long) index << 4) ^ kind.ordinal() ^ GRADE_SALT));
+        Grade[] all = Grade.values();
+        double upTo = 0;
+        for (int g = 0; g < all.length - 1; g++) {
+            upTo += GRADE_SHARES[g];
+            if (u < upTo) return all[g];
+        }
+        return all[all.length - 1];
     }
 }

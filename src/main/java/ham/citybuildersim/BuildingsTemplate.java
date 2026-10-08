@@ -76,8 +76,10 @@ public class BuildingsTemplate {
      * What a healthcare building is for; NONE for everything else.
      *
      * Deliberately not derived from the name. "Nursing Home" and "Home Daycare"
-     * both contain "Home", and a rule that reads the label is a rule that breaks
-     * the first time somebody renames a building or translates the game.
+     * both contained "Home" (and "Small Childcare Centre" and "Community Health
+     * Centre" share "Centre" since 0.7.71 renamed the daycares), and a rule that
+     * reads the label is a rule that breaks the first time somebody renames a
+     * building or translates the game - as 0.7.71 did.
      */
     private CareType care = CareType.NONE;
 

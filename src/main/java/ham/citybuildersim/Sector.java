@@ -820,6 +820,26 @@ public abstract class Sector {
         return total;
     }
 
+    /**
+     * Its stock and its pantry by good: the units, and the price each is
+     * valued at today - the two getInventoryValue() multiplies (0.7.75, the
+     * sector statements' R6, where the books price last month's stock at
+     * this month's prices). A read.
+     */
+    public Map<Good, double[]> stockAtPrices() {
+        Map<Good, double[]> out = new EnumMap<>(Good.class);
+        for (Map.Entry<Good, Double> e : stock.entrySet()) {
+            out.computeIfAbsent(e.getKey(), g -> new double[] { 0, priceOf(g) })[0] += e.getValue();
+        }
+        for (Map.Entry<Good, Double> e : pantry.entrySet()) {
+            out.computeIfAbsent(e.getKey(), g -> new double[] { 0, priceOf(g) })[0] += e.getValue();
+        }
+        return out;
+    }
+
+    /** The price a good of its stock is valued at today (priceOf()): for last month's stock at this month's prices (R6). */
+    public double stockPrice(Good g) { return priceOf(g); }
+
     /** Today's price of a good, for valuing stock: the market's, or nothing for a seller-priced good. */
     protected double priceOf(Good g) {
         if (markets == null) return 0;
@@ -2145,6 +2165,14 @@ public abstract class Sector {
         public static Line of(String label, String value) { return new Line(Kind.LINE, label, value, Tone.NONE); }
         public static Line of(String label, String value, Tone tone) { return new Line(Kind.LINE, label, value, tone); }
     }
+
+    /**
+     * What kind of business its formal statements read as (0.7.74; the
+     * project's spec-sector-statements.md, 4.6): the words of its revenue,
+     * its cost of sales and its middle line - the bottom three are the
+     * model's in every format. A maker unless the sector says otherwise.
+     */
+    public SectorStatements.Format statementFormat() { return SectorStatements.Format.MAKERS; }
 
     /** What the sector's direct-cost line is called on its income statement. */
     public String inputLabel() {

@@ -375,8 +375,12 @@ public final class Icons {
         if (good == null) return TRADE;
         switch (good) {
             case IRON:                        return ORE;
-            // ...the oil and what it is refined into (0.7.62), a drop of each.
-            case CRUDE: case FUEL:            return DROP;
+            // ...the oil and what it is refined into (0.7.62), a drop of each -
+            // the liquids since 0.7.76; bitumen is the road it binds and coke a lump.
+            case CRUDE: case LPG: case NAPHTHA: case PETROL: case JET: case DIESEL:
+            case LUBRICANTS: case FUEL_OIL:   return DROP;
+            case BITUMEN:                     return ROADS;
+            case COKE:                        return ORE;
             case STEEL: case FABRICATED_STEEL: case MACHINERY: return INDUSTRY;
             case CARS: case VANS:             return VEHICLES;
             case ROLLING_STOCK:               return RAIL;
@@ -480,7 +484,7 @@ public final class Icons {
     public static final String DICE = "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"
             + " M8 8h.01 M16 8h.01 M12 12h.01 M8 16h.01 M16 16h.01";
 
-    /** A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's "Buy the best land" (0.7.61). */
+    /** A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.7.69). */
     public static final String MAP = "M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15";
 
     /** Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). */

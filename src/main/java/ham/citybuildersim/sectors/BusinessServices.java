@@ -267,4 +267,8 @@ public final class BusinessServices extends Sector {
         }
         return lines;
     }
+
+    /** Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. */
+    @Override
+    public ham.citybuildersim.SectorStatements.Format statementFormat() { return ham.citybuildersim.SectorStatements.Format.CARRIERS; }
 }

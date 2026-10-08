@@ -781,7 +781,8 @@ final class TradeScreen {
      * spec's D6: a good with nothing either way is not a row), then what was
      * bought abroad with no good behind it, by the sector that bought it
      * (pure). The railway's fuel and the households' were such rows until
-     * fuel was a good (0.7.62); they are FUEL's buyers now.
+     * fuel was a good (0.7.62); they are FUEL's buyers now - the households
+     * PETROL's and the railway DIESEL's since 0.7.76.
      */
     List<GoodRow> goodRows(Sectors.TradeByGood t) {
         List<Sectors.GoodTrade> goods = new ArrayList<>(t.goods().values());
@@ -843,7 +844,7 @@ final class TradeScreen {
             out.add(new GoodRow(Icons.POPULATION, "The households", t.householdCars() + householdFuel, 0, Double.NaN,
                     "The households\nbought abroad " + (t.householdCars() > 0 ? dFull(t.householdCars()) + " of cars" : "")
                             + (t.householdCars() > 0 && householdFuel > 0 ? " and " : "")
-                            + (householdFuel > 0 ? dFull(householdFuel) + " of fuel" : ""), null, null));
+                            + (householdFuel > 0 ? dFull(householdFuel) + " of petrol" : ""), null, null));
         }
         out.sort((a, b) -> Double.compare(Math.max(b.sold(), b.bought()), Math.max(a.sold(), a.bought())));
         return out;
@@ -909,7 +910,7 @@ final class TradeScreen {
     /** WHAT WE TRADE's (i). */
     static final String TRADE_INFO = "Every good the city's businesses sold abroad and bought abroad this month, from "
             + "their own books - each line of revenue and of cost split home and abroad as it was traded - so it adds to "
-            + "SOLD ABROAD and BOUGHT ABROAD to the dollar. Fuel is a good: the railway and the households' drivers buy it "
+            + "SOLD ABROAD and BOUGHT ABROAD to the dollar. The households' drivers buy petrol and the railway diesel, "
             + "off the city's refineries first and from the world for the rest. Every world price is quoted in the world's money and converted at the rate, so a weaker "
             + "currency raises what imports cost at home and what exports earn at home, both at once.";
 
@@ -1750,7 +1751,7 @@ final class TradeScreen {
                 Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         if (!fx.isMonthCounted()) c.getChildren().add(noteLine("From the businesses' saved books: the balance of payments "
                 + "counts again a month on.", NOT_SAVED_INFO + " The households' own imports - their cars, and since 0.7.49 "
-                + "their fuel - are counted from the next month.", 1100));
+                + "their petrol - are counted from the next month.", 1100));
         List<GoodRow> rows = byBusiness ? businessRows(t) : goodRows(t);
         if (rows.isEmpty()) {
             c.getChildren().add(line("Nothing crossed the city's edge this month.", NOTHING_CROSSED));

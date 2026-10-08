@@ -30,13 +30,15 @@ package ham.citybuildersim;
  * the best offer for each need (19), a saved city's land field for field
  * (20), and an older save's land converted - the three research cities' (21);
  * and the playtest's player keeping its ground ahead, as the build advice
- * keeps slack (22, batch J1d). From 0.7.58 to 0.7.63 (batch J1c) a field was
+ * keeps slack (22, batch J1d; since 0.7.67, batch M3b, its room to grow
+ * weighed from the same line). From 0.7.58 to 0.7.63 (batch J1c) a field was
  * shared site by site among the ground its sites lie under; since 0.7.64
  * (batch L) a field goes whole again to the one piece of ground holding its
  * centre, an offer priced by its fields' tonnes, a new city's iron a
  * significant investment the funding page sizes a bond to (5e, 19); and the
  * playtest's player buys its iron a whole field at a time, the cheapest
- * standing, with cash or that bond (23); and, since 0.7.68 (batch M4), the
+ * standing, with cash or that bond - since 0.7.67 (batch M3b) only once the
+ * mines it would carry pay it back (23); and, since 0.7.68 (batch M4), the
  * units the player reads land in - square metres under a hundredth of a
  * square kilometre, square kilometres from it, ground prices a square
  * metre (24).
@@ -854,16 +856,6 @@ public class LandCheck {
                 older.getCrowdingPremium() * older.getUsPriceLevel(), office.getGroundUsdPerSqFt() / LandMarket.openingUsdPerSqFt(), 1e-12);
     }
 
-    /* ==================================================================
-       12. LAND IS PRICED IN DOLLARS (0.7.6)
-
-       Jerus: "when you buy land, make it so that it costs USD not domestic
-       currency". A land office reading a rate that moves under it: the
-       listing's dollar prices stay put, what they cost here is exactly
-       usd x rate on the day, and what businesses pay does not read the
-       rate at all. Against a twin at the founding rate, so "does not move"
-       is measured against something.
-       ================================================================== */
     /**
      * A land office holding a city's land k times over, by its records (0.7.67):
      * the town's blocks, holdings and offers, each holding's five areas and
@@ -890,6 +882,16 @@ public class LandCheck {
         return copy;
     }
 
+    /* ==================================================================
+       12. LAND IS PRICED IN DOLLARS (0.7.6)
+
+       Jerus: "when you buy land, make it so that it costs USD not domestic
+       currency". A land office reading a rate that moves under it: the
+       listing's dollar prices stay put, what they cost here is exactly
+       usd x rate on the day, and what businesses pay does not read the
+       rate at all. Against a twin at the founding rate, so "does not move"
+       is measured against something.
+       ================================================================== */
     static void inDollars() {
         System.out.println("\n--- land is priced in dollars; what it costs here is the day's rate ---");
 
@@ -1792,8 +1794,9 @@ public class LandCheck {
          * at the in-ground price: about US$180M against a founding treasury of
          * D$100M at 1.00. (At 0.7.58-0.7.63 the cheapest offer with iron was a
          * single shared site in the first ring, 12.8 Mt for about US$5.3M, out
-         * of the founding treasury.) Pushing out the lane that holds its
-         * centre lists it; the land office's funding page then sizes its bond
+         * of the founding treasury.) Buying toward its centre, the offer
+         * nearest it each time (its lane pushed out until 0.7.66), lists it;
+         * the land office's funding page then sizes its bond
          * to the gap (Game.landCashGap()), and the bond's cash buys it.
          */
         Game founded = new Game(GameFiles.scratch("landcheck-whole-iron"));
@@ -1953,7 +1956,7 @@ public class LandCheck {
         }
         assertTrue("a shortfall: the cheapest offer whose dry ground covers it", cheapestCovering);
         // A deposit (0.7.64, batch L2; the most sites a dollar until then): the cheapest offer holding it, what
-        // the test player buys - on a city whose founding field's lane was pushed out until an offer holds iron.
+        // the test player buys - on a city grown toward its founding field, the offer nearest it each time, until an offer holds iron.
         Game listed = ironListed("landcheck-best-deposit");
         LandMarket ironMarket = listed.getLandManager().getMarket();
         LandParcel deposit = listed.bestOffer(Game.LandNeed.deposit(Resource.IRON));
@@ -2151,7 +2154,7 @@ public class LandCheck {
         return nearest;
     }
 
-    /** The width of the bands the plane is tiled with: 7 plots, which no offer is. */
+    /** Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. */
     static final double DEAL = 7;
 
     /* ==================================================================
@@ -2248,8 +2251,9 @@ public class LandCheck {
        Game.landCashGap()) when the player's own test for borrowing passes
        (canService()); neither, nothing, and the look counted. Jerus: "Yes
        whole iron fields as one offer, yes that means significant
-       investment." The fixtures push out the lane holding the default
-       world's founding field until it is listed (35 sites, 449 Mt, about
+       investment." The fixtures grow a new city toward the default world's
+       founding field, the offer nearest it each time (its lane pushed out
+       until 0.7.66), until it is listed (35 sites, 449 Mt, about
        US$180M at 1.6 to the dollar), then hand the treasury the price and
        more, the price less a few thousand, and nothing; a fourth city is
        left as founded, with no iron listed.
@@ -2368,7 +2372,7 @@ public class LandCheck {
         return g;
     }
 
-    /** Every field of a resource centred within `out` plots of a city's site (L-infinity) whose centre, seen from the site, passes `in`: its sites and its amount, whole - read off the world's cells, with none of CityLand's short cuts. */
+    /** Every field of a resource centred within `out` plots of a city's site (L-infinity) whose centre, seen from the site, passes `in`: its sites and its amount, whole - read off the world's cells, with none of CityLand's short cuts. Called by nothing since 0.7.67: recountOn() is the grid's. */
     static double[] recount(CityLand land, Resource kind, double out, java.util.function.BiPredicate<Double, Double> in) {
         World world = World.of(land.seed());
         double sites = 0, amount = 0;

@@ -55,10 +55,12 @@ import java.util.Set;
  *      city-built need for gets no suggestion.
  *   7. LAND COUNTED (0.7.51): a building's price a unit is its quote for one
  *      and its ground at landValue(), over what it serves, to the bit, on
- *      the land the cards before leave; with no ground free, the land
- *      office's prices at nothing pick the road that is cheapest to build,
- *      and at ten times the price past which the road that needs the least
- *      ground a trip is the cheapest with it, that road.
+ *      the land the cards before leave - a road's with its running over its
+ *      life since 0.7.70 (BuildAdvice.lifetime(); RoadCheck holds the rest);
+ *      with no ground free, the land office's prices at nothing pick the
+ *      road that is cheapest to build and keep, and at ten times the price
+ *      past which the road that needs the least ground a trip is the
+ *      cheapest with it, that road.
  *   8. SLACK BUILT: a served card is at 100% of its demand projected and
  *      SLACK past it, and its count is never fewer than the old rule's.
  *   9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE: a college or university row
@@ -120,7 +122,8 @@ public class BuildAdviceCheck {
      * (so doctors are short: the schools take more than the city has), two
      * police stations and home care - every sector held, so nothing is built
      * but by this fixture's hand - played three years; then on site a gravel
-     * road and three home daycares of the city's own, and with onSiteClinic
+     * road and three small childcare centres of the city's own (three Home
+     * Daycares until 0.7.71 resized them), and with onSiteClinic
      * a clinic too, so the advice has something on site to count. Measured
      * (the calibration probe): general care at 28% (red; amber with the
      * clinic on site), crime red at 2.7x Canada's, the roads near 400% of
@@ -154,7 +157,7 @@ public class BuildAdviceCheck {
             g.simulateMonths(36);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.buildStack(template(g, "Gravel Road"), 1, false);
-            g.buildStack(template(g, "Home Daycare"), 3, false);
+            g.buildStack(template(g, "Small Childcare Centre"), 3, false);
             if (onSiteClinic) g.buildStack(template(g, "Walk-in Clinic"), 1, false);
         });
         return g;
@@ -741,13 +744,17 @@ public class BuildAdviceCheck {
      * listing at nothing, as it stands, and at ten times its prices (each
      * parcel's dollar price in LandMarket's listing state, scaled): every
      * card's price a unit is its quote for one and its ground
-     * (BuildAdvice.landValue()) over what it serves, and its ground is
-     * valued on what the cards before it leave. Then with no ground free, so
-     * every road's ground is bought at the office: with the office's prices
-     * at nothing the road cheapest to build a trip wins, as it did before
-     * 0.7.51 - gravel; at ten times the price a square foot past which the
-     * road that needs the least ground a trip is the cheapest with its
-     * ground, that one - the elevated highway. (The spec's ten times the
+     * (BuildAdvice.landValue()) over what it serves - a road's, since
+     * 0.7.70, with its running over its life (BuildAdvice.lifetime()); a
+     * living care building's, since 0.7.71, its order's quote and ground over
+     * the places the need lacks (BuildAdvice.perPlaceNeeded()) - and
+     * its ground is valued on what the cards before it leave. Then with no
+     * ground free, so every road's ground is bought at the office: with the
+     * office's prices at nothing the road cheapest to build and keep a trip
+     * wins, as it did before 0.7.51 - gravel; at ten times the price a
+     * square foot past which the road that needs the least ground a trip is
+     * the cheapest with its ground over its life, that one - the elevated
+     * highway. (The spec's ten times the
      * listing is city2400's; the short city's ground is two hundred times
      * cheaper and its free ground is valued at the lower of the office's
      * price and what a business pays.)
@@ -764,14 +771,21 @@ public class BuildAdviceCheck {
         boolean perBits = true, leftBits = true;
         int cards = 0;
         for (int f = 0; f < factors.length; f++) {
-            // The offers' records, each one's dollar price scaled (0.7.57: the forty offers; the parcels' listing until then).
+            // The offers' records, each one's dollar price scaled (since 0.7.57 the offers, forty until 0.7.66; the parcels' listing until then).
             market.restoreOffers(scaledOffers(base, factors[f]), nextId);
             double landLeft = g.getLandManager().getAvailableSqFt();
             StringBuilder said = new StringBuilder();
             for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) {
                 cards++;
                 BuildingsTemplate t = s.template();
-                double per = (g.quoteBuild(t, 1).total + BuildAdvice.landValue(g, t.getLandSqFt(), landLeft)) / s.unit();
+                // ...a road's over its life since 0.7.70: BuildAdvice.lifetime() on the road as on site (RoadCheck 1);
+                // a living care building's since 0.7.71, its order over the places lacking at the demand it is sized to.
+                double per = s.measure().kind() == BuildAdvice.Kind.CARE
+                        ? BuildAdvice.perPlaceNeeded(g, s.measure(), BuildAdvice.onSite(g, s.measure()), t, s.count(),
+                                s.ahead(), landLeft)
+                        : (s.measure().kind() == BuildAdvice.Kind.ROADS
+                        ? BuildAdvice.lifetime(g, t, landLeft, BuildAdvice.onSite(g, s.measure()))
+                        : g.quoteBuild(t, 1).total + BuildAdvice.landValue(g, t.getLandSqFt(), landLeft)) / s.unit();
                 perBits &= bitsEqual(s.pricePerUnit(), per);
                 leftBits &= bitsEqual(s.landValue(), BuildAdvice.landValue(g, s.landSqFt(), landLeft))
                         && bitsEqual(s.landShort(), Math.max(0, s.landSqFt() - landLeft));
@@ -786,8 +800,9 @@ public class BuildAdviceCheck {
         }
         market.restoreOffers(base, nextId);
         assertTrue("fixture: cards at nothing, as the listing stands and at ten times", cards > 0);
-        assertTrue("every card's price a unit is its quote for one and its ground at landValue(), over what it serves, to the bit",
-                perBits);
+        assertTrue("every card's price a unit is its quote for one and its ground at landValue(), over what it serves - a"
+                + " road's with its running over its life (0.7.70), a living care building's its order's over the places"
+                + " the need lacks (0.7.71) - to the bit", perBits);
         assertTrue("...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit",
                 leftBits);
 
@@ -796,12 +811,14 @@ public class BuildAdviceCheck {
         double owned = land.getOwnedSqFt();
         land.setOwnedSqFt(land.getAllocatedSqFt());
         // Since 0.7.57 the ground set by hand draws the land again and lists
-        // forty offers from it; the prices below are the listing above's.
+        // its offers afresh from it; the prices below are the listing above's.
         market.restoreOffers(base, nextId);
         BuildAdvice.Measure m = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
         BuildingsTemplate highway = template(g, "Elevated Highway");
-        double hq = g.quoteBuild(highway, 1).total / BuildAdvice.unit(g, m, highway);
+        // A road's price over its life since 0.7.70 (BuildAdvice.lifetime()): its quote and its running for its life.
+        double life = BuildAdvice.lifeFactor(g);
+        double hq = (g.quoteBuild(highway, 1).total + BuildAdvice.running(g, highway, site) * life) / BuildAdvice.unit(g, m, highway);
         double ha = highway.getLandSqFt() / BuildAdvice.unit(g, m, highway);
         double breakEven = 0;
         boolean thriftiest = true;
@@ -812,7 +829,7 @@ public class BuildAdviceCheck {
             int[] today = BuildAdvice.count(g, m, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
             if (today[0] <= 0) continue;
             if (BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months))[1] != 1) continue;
-            double q = g.quoteBuild(t, 1).total / u, ga = t.getLandSqFt() / u;
+            double q = (g.quoteBuild(t, 1).total + BuildAdvice.running(g, t, site) * life) / u, ga = t.getLandSqFt() / u;
             thriftiest &= ga > ha;
             if (ga > ha) breakEven = Math.max(breakEven, (hq - q) / (ga - ha));
         }

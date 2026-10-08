@@ -441,6 +441,8 @@ public class EconomyManager {
         businessDebtManager.updateRates();
         for (Sector s : sectors.all()) {
             s.setInterestExpense(businessDebtManager.getMonthlyInterest(s.key()));
+            // ...and the same bill by instrument, for the statements (0.7.74, R1): read, never acted on.
+            interestByKind.put(s.key(), businessDebtManager.interestByKind(s.key()));
         }
     }
 
@@ -468,8 +470,58 @@ public class EconomyManager {
             s.setBalanceSheetInputs(landValueOf(s),
                     buildingManager.getBuildingsValueBySector(s.key()),
                     businessDebtManager.getPrincipal(s.key()));
+            // ...and the same debt by kind and by when it falls due, for the statements (0.7.74, R2).
+            debtByKind.put(s.key(), businessDebtManager.debtByKind(s.key(), creditMonth));
+            // ...what had moved it so far, and what its land and buildings were priced at (0.7.75, R7 and R6).
+            debtMovedAtSheet.put(s.key(), businessDebtManager.debtMovedByKind(s.key()));
+            valuedAt.put(s.key(), new double[] { buildingManager.getLandSqFtBySector(s.key()), landPricePerSqFt,
+                    buildingManager.getBuildingMaterialsBySector(s.key()), buildingManager.getConstructionMaterialPrice() });
         }
     }
+
+    /* ------------------- the statements' splits (0.7.74, R1 and R2) -------------------
+
+       What the Sectors screen's formal statements split the interest line
+       and the debt line into, read where the lines themselves are set: the
+       interest bill by instrument where updateBusinessCredit() hands each
+       sector its bill, and the debt by kind and when it falls due where
+       pushBalanceSheetInputs() sets the sheet's - so each adds up to the
+       figure it splits, frozen as the month's books will read it (the
+       nameOtherRevenue lesson: a live read describes the next month).
+       SectorBooks copies them as it takes the month. Nothing reads them back
+       and they are not saved. */
+
+    private final Map<String, double[]> interestByKind = new LinkedHashMap<>();
+    private final Map<String, double[][]> debtByKind = new LinkedHashMap<>();
+
+    /** The month of the last credit settle, which the bonds' maturities are read against (settleBusinessCredit()). */
+    private int creditMonth;
+
+    /** One sector's interest bill this month by kind (BusinessDebtManager.DEBT_KINDS), or null before one was handed. */
+    public double[] getInterestByKind(String key) { return interestByKind.get(key); }
+
+    /** One sector's debt by kind as its sheet was last pushed - {owed, within a year, within five} and since 0.7.75 its rate and when the last of it falls due (BusinessDebtManager.OWED to RUNS_TO) - or null before one was. */
+    public double[][] getDebtByKind(String key) { return debtByKind.get(key); }
+
+    /*
+     * ...AND, SINCE 0.7.75, WHAT HAD MOVED IT AND WHAT THE SHEET WAS PRICED AT
+     * (the sector statements' R7 and R6), read at the same push: the running
+     * totals of its principal borrowed, repaid and written off by kind
+     * (BusinessDebtManager.debtMovedByKind()), which the books difference a
+     * month apart for the debt schedule's roll-forward - from sheet to sheet;
+     * and its land's square feet and price a square foot, and the materials
+     * in its buildings and their price - the two products the sheet's land
+     * and the materials part of its buildings are - for the equity
+     * statement's revaluation. Read, never acted on; not saved.
+     */
+    private final Map<String, double[][]> debtMovedAtSheet = new LinkedHashMap<>();
+    private final Map<String, double[]> valuedAt = new LinkedHashMap<>();
+
+    /** What had moved one sector's debt so far when its sheet was last pushed (R7): {borrowed, repaid, written off} by kind, or null before one was. */
+    public double[][] getDebtMovedAtSheet(String key) { return debtMovedAtSheet.get(key); }
+
+    /** ...and its land and buildings as the sheet priced them (R6): {land, sq ft; its price a sq ft; the materials in its buildings, units; their price a unit}, or null. */
+    public double[] getValuedAt(String key) { return valuedAt.get(key); }
 
     /* ------------------------------ property tax ------------------------------ */
 
@@ -1102,6 +1154,7 @@ public class EconomyManager {
      * struck here for them.
      */
     public void settleBusinessCredit(int month) {
+        creditMonth = month;
         businessDebtManager.processMonth();
         // ...and since 0.7.12 every bond that falls due is paid from its
         // issuer's till to its holders first, so what the till could not pay
@@ -1725,6 +1778,7 @@ public class EconomyManager {
                 // the pump's counter: without it a refinery's crude imports would
                 // land in net exports with the fuel they became bought by nobody.
                 // The world's part of their fuel is in neither C nor the imports.
+                // Their petrol since 0.7.76: the only product a household buys.
                 + sectors.refining().statement().salesToHouseholds;
         double rentPaid = sectors.realEstate().statement().salesToHouseholds;
 
@@ -1924,7 +1978,8 @@ public class EconomyManager {
          * month books no change in them rather than every fleet in the city.
          */
         int heldAt = 15, held = Math.min(NationalAccounts.HELD.length, a.length - heldAt);
-        // ...the three a 0.7.58-0.7.61 file carries, without FUEL's (0.7.62): see restoreHeld().
+        // ...the three a 0.7.58-0.7.61 file carries, without FUEL's (0.7.62): see restoreHeld(); a
+        // 0.7.62-0.7.75 file's FUEL is PETROL's and DIESEL's by now (FuelSplit, 0.7.76).
         nationalAccounts.restoreHeld(held >= NationalAccounts.HELD_BEFORE_FUEL
                 ? java.util.Arrays.copyOfRange(a, heldAt, heldAt + held) : null);
     }
@@ -2100,6 +2155,9 @@ public class EconomyManager {
     public void redenominate(double scale) {
         cash *= scale;
         landPricePerSqFt *= scale;
+        // ...and the statements' reads at the last push (0.7.75): money moves, square feet and units do not.
+        for (double[][] m : debtMovedAtSheet.values()) for (double[] row : m) for (int i = 0; i < row.length; i++) row[i] *= scale;
+        for (double[] v : valuedAt.values()) { v[1] *= scale; v[3] *= scale; }
         totalPropertyTax *= scale;
         totalBankTax *= scale;
         totalWageTax *= scale;

@@ -70,8 +70,8 @@ did not work.
 
 ## The checks
 
-`AllChecks` runs the lot, one JVM each — **eighty-one harnesses plus the
-4,000-odd-month playtest**, which it reports as eighty-two, in about nine minutes.
+`AllChecks` runs the lot, one JVM each — **eighty-five harnesses plus the
+4,000-odd-month playtest**, which it reports as eighty-six, in about nine minutes.
 `docs/harnesses.md` lists what each one asserts. In
 NetBeans, right-click `AllChecks.java` → **Run File**. From a command line, with
 the project's classpath assembled:
@@ -180,7 +180,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     about 270 files
+src/main/java/ham/citybuildersim/     about 280 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java

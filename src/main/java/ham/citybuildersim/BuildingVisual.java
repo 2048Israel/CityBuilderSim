@@ -21,14 +21,22 @@ import java.util.List;
  * a road capacity and no transit, its kind by its freight grade (none gravel,
  * some paved, all a highway); flats are the homes with more than one dwelling
  * (the apartment types, the mockup's star 9 by type, not by people); a mine
- * or well stands on the sites of the resource whose good it makes. Two types
- * are named by their permanent ids, home daycare (15) and home care (22),
- * drawn as homes because they are homes (spec-land star 10).
+ * or well stands on the sites of the resource whose good it makes. One type
+ * is named by its permanent id, home care (22), drawn as a home because it
+ * is run from homes (spec-land star 10); id 15 was the home daycare until
+ * 0.7.71 made it the Small Childcare Centre, a centre, drawn as care.
  *
  * WHAT A TILE DRAWS (0.7.64, batch L2; J3b's visual counts gone): one
  * building for every model building, of its type, on the type's own land
  * (FOOTPRINTS below) - a Low-Rise Apartments block one block of 2 x 3 plots,
  * not a street of houses; a kind the city has none of is not drawn.
+ *
+ * RAIL AS TRACK (0.7.72, batch N3). Jerus: "rail you add must connect to
+ * the rail network, and rail terminals prefer to sit near mines." The
+ * railway's lines - the Rail Spur and the Freight Line, a RAIL type that
+ * is not a terminal - are drawn as track, their own land in plots laid
+ * along a line (track()), as a road's are; a Rail Terminal (by its
+ * permanent id, RAIL_TERMINALS) is a building, a yard beside its track.
  */
 public final class BuildingVisual {
 
@@ -91,8 +99,11 @@ public final class BuildingVisual {
     /** An elevated highway: a freight grade of one. */
     public static final int HIGHWAY = 3;
 
-    /** The permanent ids of the two care types drawn in the homes' colour, because they are run from homes (spec-land star 10): Home Daycare (15) and Home Care Service (22) - each still drawn, one for one, on its own land (0.7.64). */
-    static final int[] DRAWN_AS_HOMES = { 15, 22 };
+    /** The permanent ids of the care types drawn in the homes' colour, because they are run from homes (spec-land star 10): Home Care Service (22) - still drawn, one for one, on its own land (0.7.64). Home Daycare (15) was the other until 0.7.71 made id 15 an 80-place centre. */
+    static final int[] DRAWN_AS_HOMES = { 22 };
+
+    /** The permanent ids of the rail types drawn as a yard beside the track, not as track (0.7.72): the Rail Terminal (64). Every other RAIL type - the Rail Spur (62), the Freight Line (63) - is a line, laid plot by plot. */
+    static final int[] RAIL_TERMINALS = { 64 };
 
     /** Square feet in a plot: 30 m squared in square feet, 9,687.5 - what a template's land is turned into plots by. */
     public static final double SQ_FT_PER_PLOT = World.KM2_PER_PLOT * LandManager.SQ_FT_PER_KM2;
@@ -116,12 +127,15 @@ public final class BuildingVisual {
      * @param sqFt      its land in whole square feet: the ground used a district and the pyramid sum, exactly
      * @param people    the people a home of it holds (its capacity; 0 for anything but a home)
      * @param jobs      the jobs it holds
+     * @param track     a railway line, drawn as track plot by plot (0.7.72): a RAIL type not in RAIL_TERMINALS
+     * @param terminal  a rail yard, drawn as a building beside its track (0.7.72): RAIL_TERMINALS
      */
     public record Type(int id, BuildingType category, int cls, boolean flats, int road, Resource site,
-                       boolean outer, double plots, boolean transit, long sqFt, int people, int jobs) {
+                       boolean outer, double plots, boolean transit, long sqFt, int people, int jobs,
+                       boolean track, boolean terminal) {
 
-        /** Whether it is drawn as a building: not a road. */
-        public boolean drawn() { return road == NOT_A_ROAD; }
+        /** Whether it is drawn as a building: not a road, nor a railway line (0.7.72). */
+        public boolean drawn() { return road == NOT_A_ROAD && !track; }
 
         /** Its fill. */
         public int fill() { return flats ? FLATS_FILL : FILL[cls]; }
@@ -152,8 +166,11 @@ public final class BuildingVisual {
         boolean outer = c == BuildingType.AGRICULTURE || c == BuildingType.ELECTRICITY || c == BuildingType.WATER
                 || c == BuildingType.MINING || c == BuildingType.RAIL || c == BuildingType.AUTOMOTIVE;
         int people = c == BuildingType.RESIDENTIAL ? Math.max(0, t.getCapacity()) : 0;
+        boolean terminal = false;
+        for (int r : RAIL_TERMINALS) if (r == id) terminal = true;
+        boolean track = c == BuildingType.RAIL && !terminal;
         return new Type(id, c, cls, flats, road, site, outer, plots, t.isTransit(), Math.round(Math.max(0, t.getLandSqFt())),
-                people, Math.max(0, t.getTotalJobs()));
+                people, Math.max(0, t.getTotalJobs()), track, terminal);
     }
 
     /** A category's class (the mockup's ten). */
@@ -215,10 +232,10 @@ public final class BuildingVisual {
         return new int[] { across, down };
     }
 
-    /** The whole plots a type is drawn on: its footprint's, or a road's own plots rounded (a Gravel Road 46, a Paved Road 26, an Elevated Highway 7) - what a district's room and a tile's are kept in. */
+    /** The whole plots a type is drawn on: its footprint's, or a road's or a railway line's own plots rounded (a Gravel Road 46, a Paved Road 26, an Elevated Highway 7; a Rail Spur 72, a Freight Line 248) - what a district's room and a tile's are kept in. */
     public static int cells(Type t) {
         if (t == null) return 0;
-        if (t.road() != NOT_A_ROAD) return (int) Math.max(1, Math.round(t.plots()));
+        if (t.road() != NOT_A_ROAD || t.track()) return (int) Math.max(1, Math.round(t.plots()));
         int[] f = footprint(t);
         return f[0] * f[1];
     }

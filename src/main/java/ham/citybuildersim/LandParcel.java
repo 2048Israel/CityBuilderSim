@@ -9,10 +9,11 @@ package ham.citybuildersim;
  * rose 2% per block. That is a slider, not a market: there was never a decision
  * to make beyond "yes" or "later".
  *
- * A listing is a decision. Twenty-four offers stand at once, six on each side
- * of the city, different sizes and differently priced, some wet, some with ore
- * under them. Buying the cheapest ground and buying the one with the ore are
- * different moves, and the player has to weigh them against a treasury.
+ * A listing is a decision. Up to twenty-four offers stand at once, six on
+ * each side of the city, holding different ground at different prices, some
+ * wet, some with ore under them. Buying the cheapest ground and buying the
+ * one with the ore are different moves, and the player has to weigh them
+ * against a treasury.
  *
  * A PLACE SINCE 0.7.57 (batch J1b; the project's spec-land.md 2.2). Until then
  * an offer was a size, a price and some iron drawn by a generator seeded with

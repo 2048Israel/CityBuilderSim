@@ -225,7 +225,13 @@ public class BuildingDataCheck {
            spec's figures: a hundred barrels a day of crude, and a 2,000-barrel
            plant's 8,300 t into a thousand litres a tonne, three months of it
            in its tanks. Owned by the two new sectors, so the investors build
-           them, and each the template its sector plans from. */
+           them, and each the template its sector plans from.
+
+           ...AND SINCE 0.7.76 (batch O1; spec-oil 2.3) THE REFINERY IS A CRUDE
+           UNIT: its template takes its crude and makes nothing of its own -
+           its products are the sector's slate of that crude - and its tanks
+           hold more than the months of its run a maker keeps of a good
+           (Sector.STOCK_MONTHS), shared as the run is. */
         System.out.println("\n--- fuel ---");
         BuildingsTemplate well = null, refinery = null;
         for (BuildingsTemplate t : data) {
@@ -236,13 +242,16 @@ public class BuildingDataCheck {
                 well != null && "Oil Well".equals(well.getName()) && well.getCategory() == BuildingType.MINING
                         && Sectors.OIL.equals(well.getSector()) && well.makes(Good.CRUDE) == 415
                         && well.goodsMade().size() == 1 && well.goodsUsed().isEmpty());
-        assertTrue("id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, 8,300 t of crude into a thousand litres a tonne",
+        assertTrue("id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making"
+                        + " nothing of its own (0.7.76: its products are the slate of its crude)",
                 refinery != null && "Oil Refinery".equals(refinery.getName())
                         && refinery.getCategory() == BuildingType.HEAVY_INDUSTRY && Sectors.REFINING.equals(refinery.getSector())
-                        && refinery.uses(Good.CRUDE) == 8300
-                        && refinery.makes(Good.FUEL) == refinery.uses(Good.CRUDE) * ham.citybuildersim.sectors.Refining.LITRES_PER_TONNE);
-        assertTrue("...holding three months of its fuel in its tanks",
-                refinery != null && refinery.getStock() >= 3 * refinery.makes(Good.FUEL));
+                        && refinery.uses(Good.CRUDE) == 8300 && refinery.goodsMade().isEmpty()
+                        && ham.citybuildersim.sectors.Refining.isCrudeUnit(refinery));
+        double run = 0;
+        if (refinery != null) for (double v : ham.citybuildersim.sectors.Refining.madeBy(refinery).values()) run += v;
+        assertTrue("...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks",
+                refinery != null && run > 0 && refinery.getStock() >= Sector.STOCK_MONTHS * run);
         assertTrue("...and 76 buildings in all", data.size() == 76);
 
         /* ---------- and every profession has exactly one school ----------

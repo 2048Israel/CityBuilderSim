@@ -138,7 +138,7 @@ public final class GridOffers {
         return t >= laneT0(j) && (t < laneT0(j + 1) || (j == PLACES - 1 && t <= 1));
     }
 
-    /** The side and place a point (dx, dy) from the site's plot centre lies in, as side x PLACES + place: its side by sideOf(), its place by its lane coordinate, as the frontier reads a block's (0.7.67, what the map's pick names; the site itself, North's middle). */
+    /** The side and place a point (dx, dy) from the site's plot centre lies in, as side x PLACES + place: its side by sideOf(), its place by its lane coordinate, as the frontier reads a block's (0.7.67, what the map's pick names; the site itself South 4, its lane coordinate 0 on the line between the middle two places). */
     public static int sidePlace(double dx, double dy) {
         int s = sideOf(dx, dy);
         double r = dx * OUT[s][0] + dy * OUT[s][1], across = dx * ACROSS[s][0] + dy * ACROSS[s][1];

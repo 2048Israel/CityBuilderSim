@@ -1,4 +1,4 @@
-# GameVersion.java - 4,022 lines · 4 methods · 4 constants · model
+# GameVersion.java - 4,229 lines · 4 methods · 4 constants · model
 
 `ham/citybuildersim/GameVersion.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
@@ -38,24 +38,24 @@
 > earlier wording of this very comment was a second match, and survived only
 > because it happened to carry no equals sign.
 
-**Used by (9):** [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Game](Game.md), [GameLog](GameLog.md), [RobustnessCheck](RobustnessCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md)
+**Used by (10):** [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConversionCheck](ConversionCheck.md), [Game](Game.md), [GameLog](GameLog.md), [RobustnessCheck](RobustnessCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 3454 | `GameVersion.VERSION` | `"0.7.64"` | Bump on release. |
-| 3990 | `GameVersion.SAVE_FORMAT` | `31` | The save shape. |
-| 3993 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
-| 3995 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
+| 3641 | `GameVersion.VERSION` | `"0.7.69"` | Bump on release. |
+| 4197 | `GameVersion.SAVE_FORMAT` | `32` | The save shape. |
+| 4200 | `GameVersion.FIRST_SECTOR_FORMAT` | `21` | The first format a sector can be read out of. |
+| 4202 | `GameVersion.NAME` | `"CityBuilderSim"` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 3983 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 3997 | 1 | `private GameVersion()` |  |
-| 4000 | 3 | `public static String title()` | For the window title. |
-| 4010 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 4019 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
+| 40 | 4190 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 4204 | 1 | `private GameVersion()` |  |
+| 4207 | 3 | `public static String title()` | For the window title. |
+| 4217 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 4226 | 3 | `public static boolean isFromBeforeSectors(int saveFormat)` | True when a save predates the sector template and so carries nothing this build can read a sector out of. |
 

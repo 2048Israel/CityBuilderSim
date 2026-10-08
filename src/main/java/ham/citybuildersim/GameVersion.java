@@ -3609,8 +3609,359 @@ public final class GameVersion {
      *   - Harnesses: LandCheck 24 (new: the units); BuildCardCheck's word
      *     fixtures in the shape the model now files them. The playtest
      *     re-baselined (pt0768), every figure byte for byte pt0767b's.
+     *
+     * 0.7.69 (2026-10-07) - THE LAND OFFICE AND THE MAP ON THE BLOCK GRID.
+     * Batch M5 of the project's spec-grid.md (2.4, 2.5): what the player
+     * sees of the six places a side. Nothing the model decides moves; the
+     * playtest is byte for byte pt0768's.
+     *   - THE LAND OFFICE'S ROWS: the place, 1 to 6 ("#", where it said
+     *     "lane"); the size's tooltip gives the offer's blocks and its ground
+     *     ("1 x 2 blocks of 120 m · 0.0288 km2 · 0.0273 dry, 0.0015 fresh",
+     *     each part in the whole's unit), and the row's tooltip opens with
+     *     it; a place waiting for room shows one muted line, "no room on this
+     *     edge yet: it lists when the city grows here"; a side listing fewer
+     *     than six names its count on its chip ("North · 4"), whose tooltip
+     *     no longer says "ten offers". The (i) gives the blocks' side in km
+     *     from a kilometre ("245.76 km", where it read "245,760 m").
+     *   - BUILD'S SHORTCUT names the offer it buys: "Buy the best: North 3 ·
+     *     0.0288 km2 · US$215k ›" (it read "Buy the best land · ...").
+     *   - THE MAP'S OVERLAY (ui/MapView; the arithmetic in MapFrame and
+     *     LandMap, which MapCheck holds): every line on whole pixels; the
+     *     city's edge as one shape of whole straight runs, crisp and
+     *     stepped, a pixel inside its ground; the city's block lines, faint,
+     *     where a block is 6 px or more; each offer hatched and edged on its
+     *     free ground only - a coarse rectangle takes in the city's finer
+     *     steps beside it, which were hatched as on offer - and numbered by
+     *     its place on its freest square; an offer larger than the view now
+     *     drawn over it (a corners' test dropped it); the outline and the
+     *     cut-outs found once a purchase or a listing, not every frame.
+     *   - Harnesses: MapCheck 7 (the overlay, new assertions). No new
+     *     harness (81).
+     *
+     * 0.7.70 (2026-10-08) - THE ROAD BY ITS LIFE, AND A GRAVEL ROAD PAVED.
+     * Batch N1 of Jerus's list after the grid: "the game still recommends
+     * gravel roads, even when i think paved roads are better, also ... make
+     * it an option to upgrade from gravel to paved, but not from paved to
+     * highway, and that the build menu allows and recommends this if better,
+     * total cost is higher than just building paved" (runs/fixN1-notes.md).
+     *   - WHAT RECOMMENDED GRAVEL: not the advice, which has priced a road's
+     *     ground since 0.7.51 and picks paved roads in Jerus's city, but
+     *     Build's road cards - a road's price a trip, its ground left out, so
+     *     "cheapest per trip" went to the gravel road in every city - and the
+     *     test player, which ranked the roads by their founding cash cost a
+     *     trip: every road it built in the 0.7.69 run was gravel (123 orders;
+     *     a paved road and a highway were tried once each, when the cash
+     *     would not pay for gravel either).
+     *   - A ROAD OVER ITS LIFE (BuildAdvice.lifetime()): its quote, its ground
+     *     at the land office's price, and a month of running it - repairs at
+     *     the 1% a year every city building is charged, power and water at
+     *     the utility's prices, a line's crews less its riders' fares - for
+     *     LIFE_MONTHS (the funding page's 20-year bond) at the city's real
+     *     rate for that term, over the trips it takes off the road (its
+     *     freight grade in them). The advice ranks the road's candidates by
+     *     it, the road cards draw it as their first bar and their ground a
+     *     trip as their second, and the test player picks its road by it.
+     *     Gravel still wins where ground is cheap: a paved road beats it
+     *     where a gravel road's ground is worth about 1.4 to 1.7 times its
+     *     price.
+     *   - PAVING (ConstructionControl, F; Game.paveRoads(), quotePave()): a
+     *     Gravel Road paved to a Paved Road, one or many - a Paved Road's work
+     *     and material less the gravel road's material, which goes into its
+     *     bed, plus the take-up of the old surface at the demolition rule, so
+     *     a gravel road and its paving cost more than a Paved Road; queued on
+     *     the Paved Road site as the city's order, standing on the gravel
+     *     road's ground, which carries its traffic until its Paved Road opens
+     *     and then retires, the 200,000 sq ft between the two freed. A Paved
+     *     Road is not raised to a highway. The site is not stopped while it
+     *     paves. Saved with the hand on the queue; an older save has none.
+     *   - RECOMMENDED WHEN IT BEATS A NEW PAVED ROAD over its life a trip
+     *     (BuildAdvice.pavingBeatsPaved()): the advice offers it as a card of
+     *     its own (not in "Build all three"), the Gravel Road card tags it,
+     *     and the test player paves where it is the least of the roads.
+     *   - Harnesses: RoadCheck (new, 82); BuildAdviceCheck 7 and BuildCardCheck
+     *     2 price a road over its life. The playtest re-baselined (pt0770).
+     *
+     * 0.7.71 (2026-10-08) - CHILDCARE RESIZED.
+     * Batch N2 of Jerus's list after the grid: "one city had 5k daycares and
+     * 2k residential buildings, hilarious, the numbers children and housing
+     * wise make sense ... i think we need to resize those, daycares are
+     * childcares and childcares are even bigger" (runs/fixN2-notes.md).
+     *   - WHO BUILT THE DAYCARES: the build advice and Build's cards. A Home
+     *     Daycare (8 places, $147k) was the cheapest a place to put up, so the
+     *     advice ordered them by the hundred and the cards tagged it cheapest
+     *     per child: Jerus's live city holds 629 of them (5,032 places) beside
+     *     1,521 home buildings. The test player builds no childcare.
+     *   - THREE CENTRES ON THE SAME IDS (BuildingManager, childcare resized):
+     *     15 Small Childcare Centre, 80 places (was Home Daycare, 8); 16
+     *     Childcare Centre, 220 (was Neighbourhood Daycare, 60); 17 Large
+     *     Childcare Centre, 360 (was Childcare Centre, 220) - the sizes
+     *     Quebec's cap on a childcare installation, the old centre's, and
+     *     China's guide for a kindergarten; each figure on the model's own
+     *     scale curve through its two old centres, so a place costs less to
+     *     build, keep, stand on and staff the bigger the centre, at one adult
+     *     to 4.0 / 4.15 / 4.3 children.
+     *   - A CITY'S BUILDINGS KEEP THEIR TYPE (Jerus: "keep them as they
+     *     are"): a save holds them by id, so a Home Daycare loads as a Small
+     *     Childcare Centre with its places, posts and ground. No format bump.
+     *   - THE SIZE THAT FITS THE NEED (BuildAdvice.perPlaceNeeded()): a
+     *     living care building is ranked by its whole order - quote and
+     *     ground - over the places the need lacks, so a town short of a few
+     *     children gets one small centre and a city short of thousands the
+     *     large ones; the card says "per child without a place, the whole
+     *     order with its land".
+     *   - The map draws id 15 as care, not as a home (BuildingVisual).
+     *   - The test player's childcare rule, the advice's card, behind
+     *     -Dplaytest.childcare (off: the default playtest is byte-identical).
+     *   - Harnesses: ChildcareCheck (new, 83); BuildAdviceCheck 7 prices a care
+     *     card by its order; HealthCheck and BuildAdviceCheck name the new
+     *     centres; MapCheck's dense fixture (Jerus's city at m1,851) holds
+     *     his 86,032 childcare places as 239 Large Childcare Centres, on the
+     *     ground his buildings need at his density.
+     *
+     * 0.7.72 (2026-10-08) - THE MAP'S ROADS AND RAIL.
+     * Batch N3 of Jerus's list after the grid, "to make the map generation
+     * prettier" (runs/fixN3-notes.md). Drawing only: the model is untouched
+     * and the playtest byte-identical to 0.7.71's.
+     *   - ONE NETWORK (CityMap's THE NETWORK, TilePainter): each district's
+     *     road tiles, grown from its core and its mines, joined by main
+     *     streets from hub to hub through crossings both tiles read alike;
+     *     inside a tile the grid's streets JUNCTION_APART (8 plots, eight
+     *     houses) apart, lanes off them in T's, then the fill - all of it
+     *     before the small buildings, and the large ones keep the network
+     *     the room its roads need (keepsNetwork()). Jerus's city x 1: 19,995
+     *     road plots in one piece, 135 + junctions, none nearer than 8.
+     *   - HIGHWAYS one straight run a district from its hub, turning only
+     *     at the sea, the city's edge or a mine, crossing once at the hub.
+     *   - EVERY BUILDING NEAR A ROAD: within REACH (4 plots) first; on Jerus's
+     *     city 99.3%, the rest where their tile had no room near its roads.
+     *   - RAIL drawn as track (the Rail Spur and Freight Line, plot by
+     *     plot) on its tile's edge away from the main, one line a district,
+     *     grey dashed white (TileRaster, the legend, the hover); a Rail
+     *     Terminal is a yard beside it on the track's tile nearest a mine.
+     *   - PACKING (from N2): the dense screen drew 16.7% of its buildings
+     *     smaller than their land; a tile is now dealt to 90% of its room
+     *     while another has some (TILE_FULL_MOST), and draws 7.2%.
+     *   - The map's sidecar FORMAT 4: older maps are drawn again.
+     *   - MapCheck: borders and ports restated as crossings; its section 8
+     *     holds the network, the floor, the highways, the reach, the track
+     *     and the yards. No new harness (83).
+     *
+     * 0.7.73 (2026-10-08) - AUTOMATIC BUILDING.
+     * Batch N4 of Jerus's list after the grid: "an automatic build and
+     * acquire debt button for basically automatic building, with a required
+     * slack button that you add, aka maintain say 15% surplus service of
+     * everything ... right in the build menu, and on/off, so that one can
+     * focus on other things" (runs/fixN4-notes.md). His decisions: services
+     * and infrastructure only; a debt limit, 15%, on debt payments as a
+     * share of revenue, borrowing on the funding page's bonds only when the
+     * cash runs out; a spare margin, 15%, for every service; off by default.
+     *   - AutoBuilder, the first thing Game.nextMonth() does while it is on:
+     *     for every service the five city categories open on (and the burial
+     *     plots), the build advice's own card at the player's margin
+     *     (BuildAdvice.suggestFor(..., slack)) - the same ranking and count
+     *     the Build overview shows - cut to what the builders open within a
+     *     year, the ground the city owns (it buys none), what the budget can
+     *     run (a staffed building; past one it cannot, the next in the
+     *     ranking) and the money: the cash over a month's tax, then the
+     *     funding page's 20-year bond while debt payments stay under the
+     *     limit - against a year's revenue, land sales and the builders' tax
+     *     left out. A first school, police station or prison waits for half
+     *     its worth of need. Placed through Build's own path; its log says
+     *     what and why; what held a service back is the inbox's notice.
+     *   - Build's Overview: AUTOMATIC BUILDING - the spare margin and the
+     *     debt limit as dials, what it has done, and the switch; a chip on
+     *     every other Build page while it is on.
+     *   - Saved under one key (DataSave.autoBuild); an older save loads with
+     *     it off. No format bump.
+     *   - The test player's -Dplaytest.autobuild leaves it the city's works
+     *     (off: the playtest is byte-identical to 0.7.72's).
+     *   - Harnesses: AutoBuildCheck (new, 84).
+     *
+     * 0.7.74 (2026-10-08) - THE SECTOR STATEMENTS, A SUMMARY AND A STATEMENT.
+     * Batch S1 of the sector statements, presentation only (the project's
+     * spec-sector-statements.md, its section 10 batch 1; runs/fixS1-notes.md).
+     * Jerus: "both a summarized and a detailed actual statement ... the
+     * income statement, balance sheet, cash and debt, and investor ... a
+     * banks income statement is different, cause interest income". The model
+     * is untouched and the playtest byte-identical to 0.7.73's.
+     *   - SectorStatements (new, model, pure): each business's month as a
+     *     statement of profit or loss classified through gross and operating
+     *     profit (sales tax under revenue, property tax an operating cost:
+     *     D4, D5) with the flows that reach no statement as "outside the
+     *     trading result" (F1, D6); a classified sheet; the cash flow in
+     *     three sections, unexplained() its residual; the statement of
+     *     changes in equity, its remainder named - and the bank's own income
+     *     statement and sheet. Every bottom line the model's own.
+     *   - Sector.statementFormat(): makers, merchants, landlords, builders,
+     *     carriers - the words and the middle line.
+     *   - R1 and R2, read where the lines are set and frozen with the
+     *     month's books (EconomyManager, BusinessDebtManager.interestByKind()
+     *     and debtByKind(), BondBook.faceDueWithin()): the interest by
+     *     instrument, and the debt by kind and by when it falls due. Kept by
+     *     SectorBooks for this month and last with each company's share, in
+     *     memory, NOT saved: not counted the month after a load.
+     *   - The Sectors pages and the Bank's Profit and Balance sheet: one
+     *     Summary | Statement switch at the strip's right (D1, D9). Summary:
+     *     the pictures, their subtotals the statement's (D14), IN SHORT and
+     *     the ratios; OF EVERY DOLLAR IT TOOK; the equity's month as a
+     *     bridge; the cash in three steps, its free cash flow, whether it
+     *     can carry what it owes and when its debt falls due; FOR ITS
+     *     SHAREHOLDERS. Statement: the formal statements (ui/StatementView:
+     *     in $ thousands, millions past seven digits; negatives in
+     *     parentheses; notes opening in place) and the investor report.
+     *   - Harnesses: SectorStatementCheck (new, 85).
+     *
+     * 0.7.75 (2026-10-08) - THE SECTOR STATEMENTS, THE SECOND BATCH.
+     * Batch S2 (the project's spec-sector-statements.md, section 10 batch 2;
+     * runs/fixS2-notes.md): what batch 1 could not show from fields that
+     * existed. Nothing in the model reads any of it; the playtest is
+     * byte-identical to 0.7.74's.
+     *   - R3, SHARE CAPITAL (D11): the register keeps each company's paid-in
+     *     in money - its founders' book, what it raised, less all its
+     *     buybacks paid (Equity.getPaidIn()) - and the books carry it with
+     *     the founders' shares issued in the month. The sheet's equity is
+     *     share capital and what it kept; the statement of changes in
+     *     equity has the two as columns, share capital closing on its own
+     *     lines. SAVE_FORMAT 33; an older save's is derived at the load and
+     *     said so.
+     *   - R4, EVERY GATE (D8, F11): BuildCard.appraise() asks every building
+     *     every gate - ore, licence, staff, land, pays - with what one would
+     *     earn, cost and take to pay back, and how it would be paid for
+     *     (Game.financingOf(), consider()'s split read). The investor report
+     *     shows it, with what each means; the summary keeps the first gate.
+     *   - F2 AND R5: the bank's fees, the mortgages' premiums and the bonds'
+     *     issuing costs, and the bonds their holders wrote off, saved with
+     *     the month and named outside the trading result.
+     *   - R6: what the prices did to the stock, the land and the buildings it
+     *     began the month with, and what it holds abroad revalued - named in
+     *     the equity statement before "and the rest".
+     *   - R7: what moved its debt, by kind, counted where each moves
+     *     (BusinessDebtManager.debtMovedByKind()) - the Cash & debt
+     *     statement's schedule from last month's sheet to this month's, with
+     *     each kind's rate and when the last of it falls due.
+     *   - The owners card is on Investors (D7); the Balance sheet keeps a door.
+     *   - Harnesses: SectorStatementCheck, sections 6b, 8 and 9 (85).
+     *
+     * 0.7.76 (2026-10-08) - OIL: THE GOODS, AND FUEL SPLIT INTO THE REFINERY'S
+     * PRODUCTS. Batch O1 (runs/spec-oil.md 5's first row, 2.1, 2.3 and 3;
+     * runs/fixO1-notes.md).
+     *   - THE GOODS: FUEL is retired with a note (Good), and nine are
+     *     appended - petroleum gas, naphtha, petrol, jet fuel, diesel,
+     *     lubricants, fuel oil (litres, each with its litres a tonne,
+     *     Good.litresPerTonne(), which is now what a litre weighs), bitumen
+     *     and petroleum coke (tonnes) - at the research's wholesale ladder,
+     *     petrol and diesel keeping FUEL's band until O2.
+     *   - THE SLATE: an Oil Refinery is a crude unit. Its template makes
+     *     nothing (id 75 loses FUEL); its crude is cut by a medium crude's
+     *     cuts and each cut becomes its product, the residue cut three to
+     *     one with the diesel into fuel oil (Refining.slate()): a tonne makes
+     *     70 L of petrol and 169 L of diesel, where it made 1,000 L of FUEL.
+     *     Refining's capacity, pipeline and tank room are the slate's; the
+     *     tanks are shared as the run is.
+     *   - THE BUYERS: the drivers draw PETROL (Motoring), the railway DIESEL
+     *     (Rail, its statement's "Diesel"); the trade by good, the audit's
+     *     PetrolFunded and PetrolImports and the goods held (HELD, twelve)
+     *     follow. Everything else the refinery makes is exported.
+     *   - THE GATE IN PETROL AND DIESEL: a refinery is built for a whole
+     *     plant's worth of the city's own petrol and diesel (1.98M L a
+     *     month) or of its wells' spare crude, and its estimate is struck
+     *     over its slate (BusinessInvestment.estimatedMakerProfit() with
+     *     what it makes, Refining.madeBy()).
+     *   - SAVE_FORMAT 34; an older save's FUEL is split on its load
+     *     (FuelSplit), no money moving.
+     *   - Harnesses: OilCheck (the slate; the split), and the FUEL premises
+     *     of BuildingDataCheck, BuildCardCheck, ForeignCheck, RailCheck,
+     *     TradeCostCheck, MoneyCheck and SectorStatementCheck (85).
+     *
+     * 0.7.77 (2026-10-08) - GRAVEL ROADS BRIDGE RIVERS, AND AUTOMATIC BUILDING
+     * BUYS ITS GROUND. Batch N5 of Jerus's list after the grid, two of his
+     * answers of 2026-10-08 (runs/fixN5-notes.md). The playtest is
+     * byte-identical to 0.7.76's (automatic building is off by default; the
+     * map is drawing only).
+     *   - THE MAP: Jerus, "gravel road bridge rivers sure". A street crosses
+     *     fresh water gravel as paved, up to TilePainter.STREET_BRIDGE (6
+     *     plots, the mockup's paved bridge): every district's main streets
+     *     may bridge a river (CityMap; only one with paved road before), and
+     *     a main street's or the grid's bridge is gravel where the tile has
+     *     no paved left. Drawn as every bridge is, the road in its own colour
+     *     over the deck. The sea is still bridged by nothing. His city at
+     *     month 416 draws its roads in 2 pieces where it drew 4 (the streets
+     *     north of the river join the rest; a corner patch stays apart), the
+     *     playtest's at month 1,000 in 1 (4), at 4,000 in 7 (8: sea).
+     *   - AUTOMATIC BUILDING BUYS ITS GROUND: Jerus, asked whether it should
+     *     buy the land its orders need: "no you do need to buy land", read as
+     *     it must. An order short of ground, once the builders and the budget
+     *     have cut it, buys what Build's land shortcut would buy for the
+     *     shortfall - the cheapest bare offer that covers it, else the best
+     *     value of bare ground offer by offer, never a field for its ore -
+     *     paid with the order from the cash over a month's tax and then the
+     *     funding page's bond within the debt limit, fewer where all of it is
+     *     not; held for the ground only where no bare offer is to be had
+     *     (AutoBuilder.groundFor()). Its log and totals carry the ground
+     *     (saved, under the same key; an older save has none), and the inbox
+     *     notes each purchase and why ("autobuild-land").
+     *   - Harnesses: MapCheck (gravel bridges; a river parts gravel streets
+     *     no more than paved), AutoBuildCheck (the ground it buys; a town
+     *     buying its ground saved and loaded) (85).
+     *
+     * 0.7.78 (2026-10-08) - OIL: PETROL AND DIESEL AT WHOLESALE. Batch O2
+     * (runs/spec-oil.md 5's second row, 2.1, 2.5 and 6 A; Jerus 2026-10-08,
+     * "yes wholesale"; runs/fixO2-notes.md).
+     *   - THE PRICES: petrol and diesel leave FUEL's band - a journey's $2.00
+     *     over its 1.2 L in, .0007 out, a pump price - for the research's
+     *     wholesale ladder, 1.20 and 1.35 of crude's world middle a litre:
+     *     petrol .0006118 in, .0005212 out, freight .00003399; diesel
+     *     .0006883, .0005864, .00003824 (Good). With no refinery the drivers'
+     *     fuel costs 63% less and the railway's 59% (about half where a
+     *     railway carries the goods stream, whose freight had left the band).
+     *   - THE RAILWAY'S LITRES: Rail.FUEL_LITRES_PER_TONNE is the literal 18,
+     *     where it was WORLD_FUEL_PER_TONNE over the import price: the litres
+     *     stay, the bill falls.
+     *   - WHAT IT DOES: the owners weigh a journey's fuel at wholesale against
+     *     a ride, so at the default fare none take the bus on cost alone,
+     *     where up to two fifths did at the pump price; the transit share of
+     *     commuters falls only where the owners had seats the car-less did
+     *     not fill. And no refinery pays on wholesale prices at the playtest's
+     *     size: none is built (0.7.76 and 0.7.77 built and shed eleven).
+     *   - Harnesses: OilCheck (1 all nine on the ladder; 6 a product nobody
+     *     buys idles where shipping it does not pay; 7 the bill on the
+     *     ladder), CarCheck (a journey's fuel at wholesale, fewer owners on
+     *     the bus), TradeCostCheck's prices, RailCheck (its reload by the
+     *     game's own load) (85).
+     *
+     * 0.7.79 (2026-10-08) - OIL: CRUDE GRADES AND THE SEA'S DEPTH. Batch O3
+     * (runs/spec-oil.md 5's third row, 2.2 and 2.7; runs/fixO3-notes.md).
+     *   - THE GRADES: every oil field is light, medium or heavy crude, a third
+     *     of fields each (Deposit.grade(), drawn from the field's cell and
+     *     index, so nothing is stored and no tonne moves). Each grade cuts by
+     *     its own column (Refining.CUTS): light Brent's, heavy Maya's, medium
+     *     the blend imports are. A tonne of light makes 97 L of petrol and
+     *     252 L of diesel; of heavy, 59 L of petrol and no diesel, 101 L of
+     *     residue burned for want of diesel to cut it.
+     *   - THE MONTH'S MIX: the wells' lift is graded field by field in the
+     *     order the ground was bought (LandManager's oil runs: oil a fixture
+     *     holds by fiat is medium), and a refinery's crude is its local part
+     *     at the lift's grades and its imports at medium; next month's slate
+     *     is struck on that mix (Refining, saved as crudeMix.*; a save without
+     *     it reads medium). The tanks' shares and the planner stay on medium
+     *     crude until the spread planner (O5).
+     *   - THE SEA'S DEPTH: the world's sea has a depth (World.depthAt()), the
+     *     shallowest 8.86% of it the shelf down to 140 m and deeper below at
+     *     the same slope; a city's sites of a resource are dry or the sea's by
+     *     where each field's centre lies (LandManager.getSites(r, dry)), what
+     *     land wells (O7) and platforms (O10) will stand on.
+     *   - O2'S TWO GATES: CentralBankCheck 21's very loose step is asserted on
+     *     the side of the target its city runs (under it, where Standard
+     *     eases, very loose holds prices lower); the land office opens no
+     *     farther out than its smallest offer drawn 12 px across
+     *     (LandMap.open(), MapFrame.OPENING_OFFER_PX), so every offer it
+     *     shows whole is numbered.
+     *   - The playtest is byte-identical to 0.7.78's: it builds no refinery.
+     *   - Harnesses: OilCheck 12 (crude by grade), WorldCheck 7 (the depth,
+     *     the grades), CentralBankCheck 21, MapCheck 7 (the opening zoom),
+     *     SaveFileCheck and ReadPathCheck (the mix) (85).
      */
-    public static final String VERSION = "0.7.68";
+    public static final String VERSION = "0.7.79";
 
     /**
      * The save shape.
@@ -4161,9 +4512,44 @@ public final class GameVersion {
      *     level finer than its offers, its fields deciding, its books its
      *     drawn plots and its figure their dry ground, its sites, tonnes and
      *     E as saved, its purchases kept as history, no money moving, and
-     *     twenty-four places listed afresh.
+     *     twenty-four places listed afresh. A format-30 save is put on the
+     *     blocks as well (LandConversion.convert()): a centre of blocks round
+     *     J1b's site holding its dry ground to within a plot, where format
+     *     31's conversion drew a centre holding it exactly.
+     *
+     * 33 - SHARE CAPITAL (0.7.75, the sector statements' R3): every company's
+     *     register entry three numbers longer (Equity.SLOTS) - the book its
+     *     founders' shares were issued against, what its buybacks paid, and
+     *     whether the two were derived - and the books' months a dozen fields
+     *     longer (SectorMonth's paidIn to stockCounted). Here because a
+     *     format-32 build handed this save would load it WRONGLY: its
+     *     register refuses an array of a width it does not know whole
+     *     (Equity.restore()), so that build would come back with no
+     *     shareholders at all - no shares, no record, no dividend ring.
+     *
+     *     THE OTHER DIRECTION IS DERIVED: a format-32 save's paid-in is what
+     *     each company raised since founding, at home and abroad - its
+     *     founders' book and what its buybacks paid were not kept - marked
+     *     derived (Equity.isPaidInDerived()), and its books' two months put on
+     *     it (SectorBooks.derivePaidIn()); the screens say so.
+     *
+     * 34 - FUEL SPLIT (0.7.76, batch O1; spec-oil 3): no FUEL anywhere - its
+     *     market, its sectors' stock and books and its slot in the goods held
+     *     are PETROL's and DIESEL's, and the goods held are twelve
+     *     (NationalAccounts.HELD). Here because a format-33 build handed this
+     *     save would load it WRONGLY: it knows no PETROL or DIESEL, so it
+     *     would drop the refiners' tanks, the month's fuel sales and both
+     *     markets' strike, and read the goods held at the wrong width.
+     *
+     *     THE OTHER DIRECTION IS CONVERTED, ONCE (FuelSplit, before anything
+     *     is restored): each FUEL figure into PETROL and DIESEL by the share
+     *     of the month's litres the drivers burned against the railway's,
+     *     each pair summing to the figure to the bit, the railway's own
+     *     purchases all diesel, the market's price kept for both; the other
+     *     seven products start at a known zero. No money moves: at 0.7.76
+     *     petrol and diesel carry FUEL's band.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 32;
+    public static final int SAVE_FORMAT = 34;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

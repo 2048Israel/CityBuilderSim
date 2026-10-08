@@ -140,14 +140,15 @@ public class MoneyCheck {
          * ...AND SINCE 0.7.49 THE TREASURY PAYS THE BUSES' BILL, and the
          * drivers buy their fuel abroad: the crews' wages were paid by
          * nobody, and a car cost nothing to run. The month's audit names
-         * both legs and still closes.
+         * both legs and still closes - the drivers' fuel PetrolFunded and
+         * PetrolImports since 0.7.76, what they burn being petrol.
          */
         MoneyAudit.Result busMonth = g.getLastMoneyAudit();
         assertTrue("the bus town's audit closes with the bill paid and the fuel abroad",
                 busMonth.relative() < 1e-4 && g.getEconomyManager().getTransitBill() > 0 && g.getHouseholdFuel() > 0
                         && busMonth.detail.contains("- transit Bill")
-                        && busMonth.detail.contains("+ households FuelFunded")
-                        && busMonth.detail.contains("- households FuelImports"));
+                        && busMonth.detail.contains("+ households PetrolFunded")
+                        && busMonth.detail.contains("- households PetrolImports"));
 
         /* ==================================================================
            AND LAND PAID FOR OUT OF THE VAULT (0.7.6).

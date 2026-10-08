@@ -22,11 +22,13 @@ import static ham.citybuildersim.ui.Pieces.*;
  * The land office: whether the city has room to grow, and which ground to
  * buy - since 0.7.61 round the city's map (batch J4; the project's
  * spec-land.md 2.8): a head with how the city pays; the HERO ROW, the map
- * (MapView, 600 x 400: the city's land and its forty offers hatched over the
- * world, Expand to lay it over the whole window) and beside it THE CITY - its
- * size in km2, its share of the world's iron, the four sides as chips and the
- * chosen side's ten offers as rows, each its lane, its size, its ground and
- * water as a bar, its deposits, its price, its price a dry km2 and Buy;
+ * (MapView, 600 x 400: the city's land and its offers hatched and numbered
+ * over the world, Expand to lay it over the whole window) and beside it THE
+ * CITY - its size in km2, its share of the world's iron, the four sides as
+ * chips (a side listing fewer than six with its count) and the chosen side's
+ * six places as rows, each its place (#), its size (its blocks on hover),
+ * its ground and water as a bar, its deposits, its price, its price a dry
+ * km2 and Buy - or, waiting for room, one muted line (0.7.69);
  * then THE GROUND - the ground free now and the best N as one bar, "Buy the
  * best N" over it; what the ground is worth to the city in four cards - the
  * margin, the ground on top of the build, the ore and oil, who is waiting;
@@ -50,7 +52,9 @@ import static ham.citybuildersim.ui.Pieces.*;
  * pays in, its button stays live and, short, opens the funding page sized to
  * the gap (showLandFunding()), and a control buys the best N at once
  * (nextPlots()); since 0.7.61 its size is in square kilometres, and since
- * 0.7.64 the ground free and the bar's figures too.
+ * 0.7.64 the ground free and the bar's figures too - under a hundredth of a
+ * square kilometre in square metres since 0.7.68, ground prices a square
+ * metre (LandManager.areaWords(), perM2()).
  *
  * WHY THE REDRAW (0.7.26). Jerus, on the screens not yet redone: "the others
  * are still full of text and the design could be more intuitive and fun". The
@@ -89,7 +93,7 @@ final class LandScreen {
                            under it, and the way back to Build;
          THE HERO ROW    - the map at the left, 600 x 400 (MapView), and at
                            the right THE CITY, the sides as chips and the
-                           chosen side's ten offers as rows (THE CITY AND ITS
+                           chosen side's six places as rows (THE CITY AND ITS
                            SIDES);
          THE BEST N      - the Buy-the-best-N control, then THE GROUND: four
                            cells (the ground free, who is waiting, what the
@@ -159,13 +163,13 @@ final class LandScreen {
     /** The map, the small view's and Expand's (MapView); made the first time the office is drawn, as the toolkit is up by then. */
     private MapView map;
 
-    /** The side whose ten offers the rows show (0 north, 1 east, 2 south, 3 west), -1 until the office's best decides it; and the offer picked on it, its lane, or -1. */
-    int side = -1, lane = -1;
+    /** The side whose six places the rows show (0 north, 1 east, 2 south, 3 west), -1 until the office's best decides it; and the offer picked on it, its place (0 to 5), or -1. */
+    int side = -1, place = -1;
 
     /** A new city or a load: nothing on its shelf is new to the player, and nothing has just been bought. */
     void forget() {
         side = -1;
-        lane = -1;
+        place = -1;
         if (map != null) map.forget();
         freeBeforeBuying = Double.NaN;
         depositsBeforeBuying = -1;
@@ -387,8 +391,8 @@ final class LandScreen {
     /**
      * The bar's segments: the ground free, solid pink; then the best N, each
      * a ghost in the light pink, numbered in the shelf's order, with a sand
-     * stripe where it holds ore, its side and lane, size and price on hover,
-     * and a click that picks it - its side's rows, its band lit on the map.
+     * stripe where it holds ore, its side and place, size and price on hover,
+     * and a click that picks it - its side's rows, it lit on the map.
      */
     List<Segment> groundSegments(Next next, java.util.function.IntFunction<Runnable> go) {
         double free = ui.game.getLandManager().getAvailableSqFt();
@@ -477,12 +481,19 @@ final class LandScreen {
                         + "left as you face out; a place with no room waits. Pick a side by its chip or on the map to see "
                         + "its offers; the map hatches them all, and a row lights its own. "
                         + "BEST VALUE is the cheapest dry ground a km², any ore and water in an offer paid for "
-                        + "inside its price; \"Buy the best N\" buys the N cheapest so, from every side. Blocks are %,.0f m "
+                        + "inside its price; \"Buy the best N\" buys the N cheapest so, from every side. Blocks are %s "
                         + "a side now, the largest of which six fit across the city. "
                         + "An offer keeps the ground and the US$ price it was listed at; buying one lists the next in its "
                         + "place, the nearest free ground there.",
                 LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS, LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS_A_SIDE,
-                market.getBlockPlots() * World.PLOT_M);
+                blockSide(Math.max(LandGrid.MIN_LEVEL, market.getLevel())));
+    }
+
+    /** A block's side in words (0.7.69): metres under a kilometre - "120 m", "960 m" - and kilometres from it - "1.92 km", "245.76 km" - exact, as a block is 2^level plots of World.PLOT_M. */
+    static String blockSide(int level) {
+        double m = (1L << level) * World.PLOT_M;
+        return m < 1000 ? String.format("%,.0f m", m)
+                : BigDecimal.valueOf(m).divide(BigDecimal.valueOf(1000)).stripTrailingZeros().toPlainString() + " km";
     }
 
     /* ----------------------------- THE CITY AND ITS SIDES (0.7.61) -----------------------------
@@ -490,9 +501,11 @@ final class LandScreen {
      * Jerus's plan for the office: "click a side to see its 10 offers (km2,
      * water share, deposits with amounts, price)", the map always in view,
      * the city's total size in km2 shown. THE CITY's two lines, the four
-     * sides as chips - each with its cheapest dry ground a km2, and BEST
-     * VALUE on the side holding the office's best - and the chosen side's ten
-     * offers as rows, lane 1 to 10 from the left facing out.
+     * sides as chips - each with its cheapest dry ground a km2, BEST VALUE on
+     * the side holding the office's best, and since 0.7.69 its count when it
+     * lists fewer than six ("North · 4") - and the chosen side's six places
+     * as rows, 1 to 6 from the left facing out (spec-grid 2.5), a place
+     * waiting for room one muted line.
      * ------------------------------------------------------------------------------------------ */
 
     /** A size in km2 as THE CITY writes it: a decimal from 1 km2 up, grouped - "107.8", "1,760,034.2" - three figures under it, "0.312". */
@@ -541,11 +554,16 @@ final class LandScreen {
         if (side >= 0 && side < CityLand.SIDES) return;
         LandParcel best = officeBest();
         side = best == null ? 0 : best.getSide();
-        lane = -1;
+        place = -1;
     }
 
-    /** One side's chip: its name, its cheapest dry ground a km2 in the toggle's money, and whether it holds the office's best. */
-    record SideChip(int side, String name, String best, boolean bestValue) { }
+    /**
+     * One side's chip: the side, its name and the chip's words - the name,
+     * and since 0.7.69 " · N" when it lists fewer than six (spec-grid 2.5,
+     * "North · 4") - how many it lists, its cheapest dry ground a km2 in the
+     * toggle's money, whether it holds the office's best, and its tooltip.
+     */
+    record SideChip(int side, String name, String label, int listed, String best, boolean bestValue, String tip) { }
 
     List<SideChip> sideChips() {
         LandMarket market = ui.game.getLandManager().getMarket();
@@ -553,11 +571,18 @@ final class LandScreen {
         List<SideChip> out = new ArrayList<>();
         for (int s = 0; s < CityLand.SIDES; s++) {
             LandParcel cheapest = null;
-            for (LandParcel p : market.offersOn(s)) {
+            List<LandParcel> on = market.offersOn(s);
+            for (LandParcel p : on) {
                 if (p.getDryKm2() > 0 && (cheapest == null || p.getUsdPerSqFt() < cheapest.getUsdPerSqFt())) cheapest = p;
             }
-            out.add(new SideChip(s, CityLand.sideName(s), cheapest == null ? "no dry ground" : perDryKm2(cheapest) + " a km²",
-                    office != null && office.getSide() == s));
+            String name = CityLand.sideName(s), best = cheapest == null ? "no dry ground" : perDryKm2(cheapest) + " a km²";
+            boolean bestValue = office != null && office.getSide() == s;
+            int listed = on.size();
+            String label = listed < LandMarket.OFFERS_A_SIDE ? name + " · " + listed : name;
+            String tip = String.format("%s lists %d of its %d places%s. Its cheapest dry ground: %s%s", name, listed,
+                    LandMarket.OFFERS_A_SIDE, listed < LandMarket.OFFERS_A_SIDE ? "; the rest wait for room on its edge" : "",
+                    best, bestValue ? ", and the office's BEST VALUE." : ".");
+            out.add(new SideChip(s, name, label, listed, best, bestValue, tip));
         }
         return out;
     }
@@ -566,16 +591,21 @@ final class LandScreen {
     record DepositWords(String colour, String words, String tip) { }
 
     /**
-     * One offer as its row: its lane (1 to 10), its size in km2, its dry,
-     * fresh and sea shares for the bar, its deposits (the first ROW_DEPOSITS,
-     * and "+N" for the rest), its price in the toggle's money and colour (red
-     * only when no way pays without debt), its price a dry km2, its tag
-     * (BEST VALUE, NEW, MOST ORE or MOSTLY SEA, the first that holds), Buy or
-     * Fund, and the row's tooltip.
+     * One place as its row: its offer, its place (1 to 6), its size in km2
+     * and the size's tooltip - its blocks and its ground (0.7.69, spec-grid
+     * 2.5) - its dry, fresh and sea shares for the bar, its deposits (the
+     * first ROW_DEPOSITS, and "+N" for the rest), its price in the toggle's
+     * money and colour (red only when no way pays without debt), its price a
+     * dry km2, its tag (BEST VALUE, NEW, MOST ORE or MOSTLY SEA, the first
+     * that holds), Buy or Fund, and the row's tooltip. A place waiting for
+     * room has no offer, and its row only its place and EMPTY_PLACE.
      */
-    record Row(LandParcel parcel, String lane, String km2, double dry, double fresh, double sea, List<DepositWords> deposits,
-               String more, String price, String priceTone, String perKm2, TagWords tag, String button, String buttonTip,
-               boolean funding, String tip) { }
+    record Row(LandParcel parcel, String place, String km2, String sizeTip, double dry, double fresh, double sea,
+               List<DepositWords> deposits, String more, String price, String priceTone, String perKm2, TagWords tag,
+               String button, String buttonTip, boolean funding, String tip) { }
+
+    /** A place waiting for room, as its row says it (spec-grid 2.5): one muted line where its offer would stand. */
+    static final String EMPTY_PLACE = "no room on this edge yet: it lists when the city grows here";
 
     /** Deposits a row shows by name before "+N": 2... */
     static final int ROW_DEPOSITS = 2;
@@ -583,13 +613,41 @@ final class LandScreen {
     /** ...while their words run to no more than this many characters together, else one: 20 - "8 · 136 Mt" and "1 · 179 kt" and "+1" measured 152.8 px in the column's 158 at 9 px Plex Mono. */
     static final int ROW_DEPOSIT_CHARS = 20;
 
-    /** A side's ten offers, lane by lane. */
+    /** A side's six places, 1 to 6: its offers, and a place waiting for room as its one muted line. */
     List<Row> sideRows(int side) {
         LandMarket market = ui.game.getLandManager().getMarket();
         LandParcel office = officeBest(), richest = market.richest(Resource.IRON);
         List<Row> out = new ArrayList<>();
-        for (LandParcel p : market.offersOn(side)) out.add(row(p, office, richest));
+        for (int at = 0; at < LandMarket.OFFERS_A_SIDE; at++) {
+            LandParcel p = market.offerIn(side, at);
+            out.add(p != null ? row(p, office, richest) : emptyRow(side, at));
+        }
         return out;
+    }
+
+    /** A place waiting for room: its number, EMPTY_PLACE, and a tooltip naming it. */
+    Row emptyRow(int side, int at) {
+        String where = CityLand.sideName(side) + " " + (at + 1);
+        return new Row(null, String.valueOf(at + 1), "", "", 0, 0, 0, List.of(), "", "", Palette.TEXT_MUTED, "", null, "", "",
+                false, where + " waits: the free ground along this edge is all in the side's other offers. It lists after "
+                        + "the next purchase or month that leaves room for one here.");
+    }
+
+    /**
+     * An offer's size, its blocks and its ground (0.7.69, spec-grid 2.5):
+     * "1 × 2 blocks of 120 m · 0.0288 km² · 0.0273 dry, 0.0015 fresh" - its
+     * blocks across and out, each part in its whole's unit
+     * (LandManager.partFigure()), fresh and sea when it has them.
+     */
+    static String sizeWords(LandParcel p) {
+        double whole = LandManager.sqFt(p.getKm2());
+        long across = p.blocksAcross(), deep = p.blocksDeep();
+        StringBuilder w = new StringBuilder(across + " × " + deep + (across * deep == 1 ? " block of " : " blocks of ")
+                + blockSide(p.getLevel()) + " · " + LandMap.area(p.getKm2()) + " · "
+                + LandManager.partFigure(LandManager.sqFt(p.getDryKm2()), whole) + " dry");
+        if (p.getKm2(CityLand.FRESH) > 0) w.append(", ").append(LandManager.partFigure(LandManager.sqFt(p.getKm2(CityLand.FRESH)), whole)).append(" fresh");
+        if (p.getKm2(CityLand.SEA) > 0) w.append(", ").append(LandManager.partFigure(LandManager.sqFt(p.getKm2(CityLand.SEA)), whole)).append(" sea");
+        return w.toString();
     }
 
     Row row(LandParcel p, LandParcel office, LandParcel richest) {
@@ -614,14 +672,11 @@ final class LandScreen {
         boolean funding = g.landNeedsFunding(List.of(p.getId()));
         String listedUsd = usd(p.getPriceUsd());
         String todayHere = marked(here(), money(p.localPrice(rate)));
-        StringBuilder tip = new StringBuilder(String.format("%s: %s, %s dry, listed in month %,d at %s: %s at today's rate.",
-                p.where(), LandMap.area(km2), LandManager.partFigure(LandManager.sqFt(p.getDryKm2()), LandManager.sqFt(km2)),
-                p.getListedMonth(), listedUsd, todayHere));
-        if (p.getKm2(CityLand.FRESH) + p.getKm2(CityLand.SEA) > 0) {
-            tip.append(String.format("%nWater: %s fresh, %s sea.", LandMap.area(p.getKm2(CityLand.FRESH)), LandMap.area(p.getKm2(CityLand.SEA))));
-        }
+        String size = sizeWords(p);
+        StringBuilder tip = new StringBuilder(String.format("%s: %s%nListed in month %,d at %s: %s at today's rate.",
+                p.where(), size, p.getListedMonth(), listedUsd, todayHere));
         for (DepositWords d : deposits) tip.append("\n").append(d.tip()).append(WHOLE_FIELDS);
-        return new Row(p, String.valueOf(p.getPlace() + 1), LandMap.area(km2),
+        return new Row(p, String.valueOf(p.getPlace() + 1), LandMap.area(km2), size,
                 km2 > 0 ? p.getKm2(CityLand.DRY) / km2 : 0, km2 > 0 ? p.getKm2(CityLand.FRESH) / km2 : 0,
                 km2 > 0 ? p.getKm2(CityLand.SEA) / km2 : 0,
                 deposits.subList(0, shown), more,
@@ -636,7 +691,7 @@ final class LandScreen {
 
     /**
      * What a row's tooltip says after each resource's sites and tonnes
-     * (0.7.64, batch L): an offer holds every field centred in its band
+     * (0.7.64, batch L): an offer holds every field centred on its ground
      * whole, all its sites and tonnes, wherever its sites lie (CityLand) -
      * Jerus: "whole iron fields as one offer". Until 0.7.64 the line ended
      * "in the ground, paid for in its price", a share of each field.
@@ -1057,18 +1112,18 @@ final class LandScreen {
     /* ----------------------------- THE HERO ROW (0.7.61) -----------------------------
      *
      * The map at the left, 600 x 400 (MapView: a click on it picks a side, or
-     * an offer's band, and Expand lays it over the window), and at the right,
-     * in what the content area leaves at 1,389 x 868 (CITY_PANEL, 657 px),
-     * THE CITY's two lines, the sides as chips and the chosen side's ten
-     * offers as ROW_H rows: hovering one lights its band on the map, a click
-     * picks it, Buy buys it - or, short, Fund opens the funding page sized to
-     * it, as a card's Buy did.
+     * an offer, and Expand lays it over the window), and at the right, in
+     * what the content area leaves at 1,389 x 868 (CITY_PANEL, 657 px), THE
+     * CITY's two lines, the sides as chips and the chosen side's six places
+     * as ROW_H rows (ten lanes until 0.7.67): hovering one lights its offer
+     * on the map, a click picks it, Buy buys it - or, short, Fund opens the
+     * funding page sized to it, as a card's Buy did.
      *
      * WHAT A ROW STOPPED SAYING: the 0.7.26 card's value bar against the
-     * going rate and its words ("44% under the going rate"). Ten rows of
-     * 28 px have no room for them; the price a dry km2 in its own column is
-     * the same comparison read down a side, and BEST VALUE marks the best of
-     * all forty.
+     * going rate and its words ("44% under the going rate"). Rows of 28 px
+     * have no room for them; the price a dry km2 in its own column is the
+     * same comparison read down a side, and BEST VALUE marks the best of all
+     * twenty-four.
      * ---------------------------------------------------------------------------------- */
 
     /** The map's width and the hero row's height (spec-land 2.8). */
@@ -1080,21 +1135,21 @@ final class LandScreen {
     /** ...and THE CITY's width: what the content area's 1,273 px leave at 1,389 x 868 (spec-land 2.8's 657). */
     static final double CITY_PANEL = 657;
 
-    /** A row's height: 28 px (spec-land 2.8), ten of them and THE CITY's head inside HERO_H. */
+    /** A row's height: 28 px (spec-land 2.8), six of them, their heads and THE CITY's inside HERO_H. */
     static final double ROW_H = 28;
 
-    /** The rows' columns, in pixels: lane, size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. */
+    /** The rows' columns, in pixels: the place (#), size, ground and water, deposits, price, a dry km2, tag, button - with the gaps, CITY_PANEL. */
     static final double[] ROW_COLUMNS = { 24, 74, 64, 158, 82, 78, 76, 58 };
 
     /** The gap between a row's columns. */
     static final double ROW_GAP = 4;
 
     /** The rows' column names. */
-    static final String[] ROW_HEADS = { "lane", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" };
+    static final String[] ROW_HEADS = { "#", "size", "dry · fresh · sea", "deposits", "price", "a dry km²", "", "" };
 
     HBox hero() {
         if (map == null) map = new MapView(ui, this::picked, this::showLandMenu);
-        map.refresh(side, lane);
+        map.refresh(side, place);
         VBox city = cityPanel();
         city.setPrefWidth(CITY_PANEL);
         city.setMinWidth(0);
@@ -1105,10 +1160,10 @@ final class LandScreen {
         return row;
     }
 
-    /** The map picked a side, and an offer's lane on it (-1 for none): its rows, the offer's lit. */
-    void picked(int side, int lane) {
+    /** The map picked a side, and an offer's place on it (-1 for none): its rows, the offer's lit. */
+    void picked(int side, int place) {
         this.side = side;
-        this.lane = lane;
+        this.place = place;
         showLandMenu();
     }
 
@@ -1129,14 +1184,18 @@ final class LandScreen {
         return panel;
     }
 
-    /** The four sides as Pieces' chips, each its cheapest dry ground a km2 after its name and BEST VALUE on the best's side. */
+    /** The four sides as Pieces' chips, each its cheapest dry ground a km2 after its name - and its count when it lists fewer than six - and BEST VALUE on the best's side. */
     javafx.scene.layout.FlowPane sideChipsNode() {
         List<SideChip> chips = sideChips();
-        String[] names = new String[chips.size()];
-        for (int i = 0; i < names.length; i++) names[i] = chips.get(i).name();
-        javafx.scene.layout.FlowPane strip = chipStrip(names, CityLand.sideName(side), Palette.SIZE_LABEL, name -> {
-            for (SideChip c : chips) if (c.name().equals(name)) side = c.side();
-            lane = -1;
+        String[] labels = new String[chips.size()];
+        String current = null;
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = chips.get(i).label();
+            if (chips.get(i).side() == side) current = labels[i];
+        }
+        javafx.scene.layout.FlowPane strip = chipStrip(labels, current, Palette.SIZE_LABEL, label -> {
+            for (SideChip c : chips) if (c.label().equals(label)) side = c.side();
+            place = -1;
             showLandMenu();
         });
         strip.setAlignment(Pos.CENTER_LEFT);
@@ -1152,15 +1211,14 @@ final class LandScreen {
             b.setGraphic(graphic);
             b.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
             b.setGraphicTextGap(7);
-            Tooltip tip = new Tooltip(c.name() + "'s ten offers. Its cheapest dry ground: " + c.best()
-                    + (c.bestValue() ? ", and the office's BEST VALUE." : "."));
+            Tooltip tip = new Tooltip(c.tip());
             tip.setShowDelay(Duration.millis(250));
             b.setTooltip(tip);
         }
         return strip;
     }
 
-    /** The rows: the column names, then the side's offers, lane by lane; `turned`, their local prices pop. */
+    /** The rows: the column names, then the side's six places, 1 to 6; `turned`, their local prices pop. */
     VBox rowsNode(List<Row> rows, boolean turned) {
         HBox heads = new HBox(ROW_GAP);
         for (int c = 0; c < ROW_HEADS.length; c++) {
@@ -1180,10 +1238,11 @@ final class LandScreen {
         return cell;
     }
 
-    /** One offer's row: hover lights its band, a click picks it, its button buys it or opens the funding page. */
+    /** One offer's row: hover lights it on the map, a click picks it, its button buys it or opens the funding page; a place waiting for room, its muted line. */
     HBox rowNode(Row r, boolean turned) {
         LandParcel p = r.parcel();
-        boolean picked = p.getPlace() == lane && p.getSide() == side;
+        if (p == null) return emptyRowNode(r);
+        boolean picked = p.getPlace() == place && p.getSide() == side;
         HBox bar = new HBox(0);
         double[] shares = { r.dry(), r.fresh(), r.sea() };
         int[] ground = { TileRaster.GROUND[World.GRASS], TileRaster.GROUND[World.FRESH], TileRaster.GROUND[World.SALT] };
@@ -1235,9 +1294,11 @@ final class LandScreen {
         buy.setTooltip(buyTip);
         Label price = gridCell(r.price(), r.priceTone(), Palette.SIZE_BODY, true);
         if (turned) UserInterface.popPip(price);
+        Label sizeCell = gridCell(r.km2(), Palette.TEXT_HEAD, Palette.SIZE_BODY, true);
+        HistoryScreen.tip(sizeCell, r.sizeTip());
         HBox row = new HBox(ROW_GAP,
-                column(gridCell(r.lane(), Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), 0),
-                column(gridCell(r.km2(), Palette.TEXT_HEAD, Palette.SIZE_BODY, true), 1),
+                column(gridCell(r.place(), Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), 0),
+                column(sizeCell, 1),
                 column(new HBox(bar), 2),
                 column(deposits, 3),
                 column(price, 4),
@@ -1262,12 +1323,26 @@ final class LandScreen {
             map.light(-1, -1);
         });
         row.setOnMouseClicked(e -> {
-            lane = p.getPlace();
+            place = p.getPlace();
             showLandMenu();
         });
         Tooltip tip = new Tooltip(r.tip());
         tip.setShowDelay(Duration.millis(400));
         Tooltip.install(row, tip);
+        return row;
+    }
+
+    /** A place waiting for room (spec-grid 2.5): its number, then EMPTY_PLACE across the rest of the row, muted. */
+    HBox emptyRowNode(Row r) {
+        Label words = new Label(EMPTY_PLACE);
+        words.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
+        HBox row = new HBox(ROW_GAP, column(gridCell(r.place(), Palette.TEXT_MUTED, Palette.SIZE_LABEL, true), 0), words);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setMinHeight(ROW_H);
+        row.setPrefHeight(ROW_H);
+        row.setMaxHeight(ROW_H);
+        row.setStyle("-fx-padding: 0 6 0 6;");
+        HistoryScreen.tip(row, r.tip());
         return row;
     }
 

@@ -1749,6 +1749,22 @@ public class LongPlaytest {
     /** -Dplaytest.schools=true: the city builds schools, which the advisor never does. See the founding. */
     static final boolean SCHOOLS = Boolean.getBoolean("playtest.schools");
 
+    /** -Dplaytest.childcare=true (0.7.71, batch N2): the city builds childcare by the build advice's own card, which the advisor never does. See childcareWhenNeeded(). */
+    static final boolean CHILDCARE = Boolean.getBoolean("playtest.childcare");
+
+    /**
+     * -Dplaytest.autobuild=true (0.7.73, batch N4): the player turns automatic
+     * building on at the founding (AutoBuilder, at its defaults) and leaves it
+     * the city's works - the advisor's power, water, road and transit,
+     * healthcare, burial, police and cells moves are not offered, and the
+     * schools and childcare flags are its - while it does the rest as it
+     * always has: the ground, iron, homes, shops, the builders, food and jobs.
+     * A flag, as the schools are, and off: the default run is unchanged. Not
+     * final: AutoBuildCheck plays its decades by this player with it set, and
+     * puts it back.
+     */
+    static boolean AUTOBUILD = Boolean.getBoolean("playtest.autobuild");
+
     /** Whether any education dial or the schools flag was set, so the summary says what they did. */
     static boolean educationSet = false;
 
@@ -2414,6 +2430,78 @@ public class LongPlaytest {
         ensure(g, "University", people < 10_000 ? 0 : (int) (1 + people / 40_000));
     }
 
+    /**
+     * Under the childcare flag (0.7.71, batch N2): when NEEDS YOU lists
+     * childcare, the build advice's own card for it - the size that fits the
+     * need (BuildAdvice.perPlaceNeeded()) and the count that keeps it ahead
+     * at its projection, as "Build all three" would place it - through
+     * build(), which buys the ground and borrows as for any order. Nothing
+     * while what is on site keeps it ahead (suggestFor() says nothing).
+     *
+     * A FLAG, AS THE SCHOOLS ARE, AND OFF BY DEFAULT. The advisor ranks
+     * constraints by the output each costs, and childcare costs none: what
+     * it moves is births and the young's deaths (Healthcare.CHILDCARE_SWING,
+     * CHILDCARE_BIRTH_BONUS). So the default player has never built any,
+     * and its city ran on the founding's 201 places to the end (coverage
+     * 3.3% at m1,000, 0.3% at m4,000). With this flag on, measured
+     * (runs/fixN2-notes.md): at 0.7.70's sizes the city held 262 Home
+     * Daycares at m1,000 and 3,134 childcare buildings against 2,123 homes at
+     * m4,000 (1.48 a home building, Jerus's "5k daycares and 2k residential
+     * buildings"); at 0.7.71's, 35 and 247 (0.10), 235 of them Large - and
+     * the city 309,000 at m4,000 where the default's is 477,000, a choice
+     * about the default player that is Jerus's, so the default stays.
+     */
+    static void childcareWhenNeeded(Game g) {
+        if (CHILDCARE) orderChildcare(g);
+    }
+
+    /** The rule itself, flag or none (ChildcareCheck plays it): the advice's childcare card when NEEDS YOU lists childcare, placed; that suggestion, or null when nothing was ordered. */
+    static BuildAdvice.Suggestion orderChildcare(Game g) {
+        BuildAdvice.Measure m = BuildAdvice.Measure.care(CareType.CHILDCARE);
+        java.util.List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
+        CityNeeds.Need need = BuildAdvice.needFor(all, m);
+        if (need == null || !CityNeeds.biting(all).contains(need)) return null;
+        BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, need, m, g.getCash(),
+                g.getLandManager().getAvailableSqFt());
+        if (s == null || !build(g, s.template().getName(), s.count())) return null;
+        childcareOrders++;
+        childcareBuilt.merge(s.template().getName(), s.count(), Integer::sum);
+        return s;
+    }
+
+    /**
+     * Under the autobuild flag (0.7.73, N4): the ground automatic building
+     * said it was held back for, bought as the inbox's notice asks ("Buy land
+     * at the land office") - each such order's ground less what is free, by
+     * the build shortcut's rule that build() buys with (Game.bestOffer(
+     * LandNeed.shortfall())). Until 0.7.77 automatic building bought no land
+     * itself and a player read the notice and bought it; since then it buys
+     * its orders' own bare ground (AutoBuilder, THE GROUND ITS ORDERS NEED),
+     * and holds one for ground only where no bare offer is to be had - which
+     * the player, reading the notice, still buys by the shortcut's rule.
+     */
+    static void groundForAutoBuild(Game g) {
+        double wanted = 0;
+        for (AutoBuilder.Step st : g.getAutoBuilder().steps()) {
+            if (st.outcome() != AutoBuilder.Outcome.HELD || st.cut() != AutoBuilder.Cut.GROUND) continue;
+            BuildingsTemplate t = template(g, st.building());
+            if (t != null) wanted += t.getLandSqFt() * (double) st.wanted();
+        }
+        int guard = 0;
+        while (wanted > g.getLandManager().getAvailableSqFt() && guard++ < 60) {
+            LandParcel covers = g.bestOffer(Game.LandNeed.shortfall(wanted - g.getLandManager().getAvailableSqFt()));
+            if (covers == null || !g.buyLandParcel(covers.getId())) break;
+            autoBuildGroundBought++;
+        }
+    }
+
+    /** Offers bought for automatic building's ground (the autobuild flag). */
+    static int autoBuildGroundBought = 0;
+
+    /** What the childcare flag has ordered: orders, and buildings by name. */
+    static int childcareOrders = 0;
+    static final java.util.Map<String, Integer> childcareBuilt = new java.util.TreeMap<>();
+
     /** What the flag has ordered of each school, so one under construction is not ordered twice. */
     static final java.util.Map<String, Integer> schoolsOrdered = new java.util.HashMap<>();
 
@@ -2566,20 +2654,23 @@ public class LongPlaytest {
          * (Game.bestOffer(LandNeed.room())) until it does not, spending no
          * more than GROUND_AHEAD_CASH_SHARE of the cash. A rule, as the war
          * chest is, not a scored move; the room-to-grow move below is still
-         * scored when the ground is past .85.
+         * scored when the ground is past the same line (roomToGrow(); past .85
+         * until 0.7.67, batch M3b).
          *
          * WHY: that move buys one offer a move, three moves a look, and a look
          * comes six to a hundred and twenty months apart. On the world's land
-         * (0.7.57) an offer is a multiple of 1% of the city, where 0.7.55's
-         * parcels had a floor of a block more for every forty owned, and the
-         * cheapest a square foot is the oldest, listed when the city was
-         * smaller: in months 300-1,000 a look's offers added 8.7% to the
+         * (0.7.57 to 0.7.66) an offer was a multiple of 1% of the city, where
+         * 0.7.55's parcels had a floor of a block more for every forty owned,
+         * and the cheapest a square foot is the oldest, listed when the city
+         * was smaller: in months 300-1,000 a look's offers added 8.7% to the
          * city's ground where 0.7.55's added 17.1%, and from month 1,000 to
          * 3,000 the city was half 0.7.55's size (19,846 and 59,965 people on
          * average against 41,222 and 126,562). Keeping its ground ahead, it is
          * 43,217 and 119,800 (runs/fixJ1d-notes.md).
          */
         keepGroundAhead(g);
+        // ...and the ground automatic building was held back for (0.7.73, -Dplaytest.autobuild).
+        if (AUTOBUILD) groundForAutoBuild(g);
 
         // Iron, a whole field at a time (0.7.64, batch L): a rule, as the
         // ground kept ahead is - see ironWhenNeeded().
@@ -2598,124 +2689,127 @@ public class LongPlaytest {
             }
         }
 
-        /* --- the four throttles, each priced at the output it is costing --- */
-        /*
-         * POWER, AND BOTH OF IT, for exactly the reason the roads below are
-         * offered three ways. This rule only ever built Coal Power Plants,
-         * which was fine while a coal plant was the only generator in the game
-         * and stopped being fine on 2026-09-09 when the Wind Farm arrived.
-         *
-         * The two are costed so each wins a band of LAND prices - wind is about
-         * a quarter cheaper per unit of energy delivered and sits on thirty
-         * times the ground, so it wins on cheap land and loses on dear. A rule
-         * that names one of them decides that question in advance and the band
-         * may as well not exist; offering both lets the price of land pick, and
-         * that is the whole point of having two.
-         *
-         * It also matters more than the roads did: a Wind Farm is $31.8M and
-         * 1,800 construction points against a coal plant's $1.43B and 120,000,
-         * so it is the only power a young city can actually reach.
-         */
-        double powerGain = gdp * (1 - g.getEnergyRatio());
-        addThrottle(moves, g, "Wind Farm", "wind farm", powerGain);
-        addThrottle(moves, g, "Coal Power Plant", "power plant", powerGain);
-        addWater(moves, g, gdp * (1 - g.getWaterRatio()));
+        // ...unless automatic building has the city's works (0.7.73, -Dplaytest.autobuild).
+        if (!AUTOBUILD) {
+            /* --- the four throttles, each priced at the output it is costing --- */
+            /*
+             * POWER, AND BOTH OF IT, for exactly the reason the roads below are
+             * offered three ways. This rule only ever built Coal Power Plants,
+             * which was fine while a coal plant was the only generator in the game
+             * and stopped being fine on 2026-09-09 when the Wind Farm arrived.
+             *
+             * The two are costed so each wins a band of LAND prices - wind is about
+             * a quarter cheaper per unit of energy delivered and sits on thirty
+             * times the ground, so it wins on cheap land and loses on dear. A rule
+             * that names one of them decides that question in advance and the band
+             * may as well not exist; offering both lets the price of land pick, and
+             * that is the whole point of having two.
+             *
+             * It also matters more than the roads did: a Wind Farm is $31.8M and
+             * 1,800 construction points against a coal plant's $1.43B and 120,000,
+             * so it is the only power a young city can actually reach.
+             */
+            double powerGain = gdp * (1 - g.getEnergyRatio());
+            addThrottle(moves, g, "Wind Farm", "wind farm", powerGain);
+            addThrottle(moves, g, "Coal Power Plant", "power plant", powerGain);
+            addWater(moves, g, gdp * (1 - g.getWaterRatio()));
 
-        /*
-         * ROADS, AND ALL THREE OF THEM. The old rule only ever built Paved
-         * Roads and stopped at forty; three_roads.md costed a Gravel Road, a
-         * Paved Road and an Elevated Highway so that each is the cheapest per
-         * trip across a band of land prices, and the advisor never used two of
-         * them. Offered as three moves now, so the price of land picks.
-         */
-        /*
-         * ...AND THE THREE THAT ARE NOT ROADS AT ALL (2026-09-16).
-         *
-         * A Bus Network, a Light Rail Line and a Metro Line have been in the
-         * catalogue since transit was built and this advisor had never once
-         * bought one - so four thousand months of playtest measured a city
-         * whose only answer to congestion was tarmac. That did not matter while
-         * a commuter cost the road one trip and nothing could change it. Cars
-         * changed it, and the eight seeds said so in one number: population
-         * 191,000 -> 132,000, with the advisor doubling its road building and
-         * still finishing at 66% throughput on land that was 90% used.
-         *
-         * A city that cannot build its way out with roads and will not build a
-         * bus is not a pessimistic measurement, it is the wrong one. A player
-         * would build the bus.
-         *
-         * WHAT DECIDES BETWEEN THEM IS THE CATALOGUE, not an ordering written
-         * here, which is the same promise the three roads above are supposed to
-         * keep. Every candidate is costed in TRIPS TAKEN OFF THE ROAD PER
-         * DOLLAR and they are offered best-first:
-         *
-         *     Gravel Road      900 trips / $2,326k   = 0.387
-         *     Bus Network    2,500 riders / $12,000k = 0.208 x the car factor
-         *
-         * ...so a bus loses outright in a city where nobody drives, and wins
-         * once about half the households own a car, because a rider taken off
-         * the street is worth whatever a driver was costing it. Nobody chose
-         * that crossover; it falls out of two prices that were set months
-         * apart for other reasons, and it is exactly where it should be.
-         *
-         * AND A BUS RELIEVES NOTHING IN A CITY THAT IS ALREADY FULL OF BUSES.
-         * The room below is the real one - the transit share ceiling, and the
-         * road that has to exist underneath it - so the advisor stops buying
-         * them when they stop working rather than when a cap says to.
-         */
-        double roadGain = gdp * (1 - g.getRoadRatio());
-        addRoadThrottle(moves, g, roadGain);
+            /*
+             * ROADS, AND ALL THREE OF THEM. The old rule only ever built Paved
+             * Roads and stopped at forty; three_roads.md costed a Gravel Road, a
+             * Paved Road and an Elevated Highway so that each is the cheapest per
+             * trip across a band of land prices, and the advisor never used two of
+             * them. Offered as three moves now, so the price of land picks.
+             */
+            /*
+             * ...AND THE THREE THAT ARE NOT ROADS AT ALL (2026-09-16).
+             *
+             * A Bus Network, a Light Rail Line and a Metro Line have been in the
+             * catalogue since transit was built and this advisor had never once
+             * bought one - so four thousand months of playtest measured a city
+             * whose only answer to congestion was tarmac. That did not matter while
+             * a commuter cost the road one trip and nothing could change it. Cars
+             * changed it, and the eight seeds said so in one number: population
+             * 191,000 -> 132,000, with the advisor doubling its road building and
+             * still finishing at 66% throughput on land that was 90% used.
+             *
+             * A city that cannot build its way out with roads and will not build a
+             * bus is not a pessimistic measurement, it is the wrong one. A player
+             * would build the bus.
+             *
+             * WHAT DECIDES BETWEEN THEM IS THE CATALOGUE, not an ordering written
+             * here, which is the same promise the three roads above are supposed to
+             * keep. Every candidate is costed in TRIPS TAKEN OFF THE ROAD PER
+             * DOLLAR and they are offered best-first:
+             *
+             *     Gravel Road      900 trips / $2,326k   = 0.387
+             *     Bus Network    2,500 riders / $12,000k = 0.208 x the car factor
+             *
+             * ...so a bus loses outright in a city where nobody drives, and wins
+             * once about half the households own a car, because a rider taken off
+             * the street is worth whatever a driver was costing it. Nobody chose
+             * that crossover; it falls out of two prices that were set months
+             * apart for other reasons, and it is exactly where it should be.
+             *
+             * AND A BUS RELIEVES NOTHING IN A CITY THAT IS ALREADY FULL OF BUSES.
+             * The room below is the real one - the transit share ceiling, and the
+             * road that has to exist underneath it - so the advisor stops buying
+             * them when they stop working rather than when a cap says to.
+             */
+            double roadGain = gdp * (1 - g.getRoadRatio());
+            addRoadThrottle(moves, g, roadGain);
 
-        /* --- and the two health terms, which are throttles wearing a hat --- */
-        double treatable = Math.max(0, health.getBaselineRate() - Health.WELL_SERVED_RATE);
-        addThrottle(moves, g, "Walk-in Clinic", "clinics", gdp * treatable);
-        addThrottle(moves, g, "Community Health Centre", "health centre", gdp * treatable);
-        addThrottle(moves, g, "General Hospital", "hospital", gdp * treatable);
+            /* --- and the two health terms, which are throttles wearing a hat --- */
+            double treatable = Math.max(0, health.getBaselineRate() - Health.WELL_SERVED_RATE);
+            addThrottle(moves, g, "Walk-in Clinic", "clinics", gdp * treatable);
+            addThrottle(moves, g, "Community Health Centre", "health centre", gdp * treatable);
+            addThrottle(moves, g, "General Hospital", "hospital", gdp * treatable);
 
-        if (g.getHealthcare().getUnburied() > 0) {
-            double buryGain = gdp * health.getUnburiedRate();
-            addThrottle(moves, g, "Municipal Cemetery", "cemetery", buryGain);
-            addThrottle(moves, g, "Crematorium", "crematorium", buryGain);
-        }
-
-        /*
-         * --- crime, and the police and the cells for it (2026-09-11) ---
-         *
-         * What crime costs a month: what is stolen, the work the injured do not
-         * do, and the output of the people who do not come - the size the
-         * crime pull takes off the city. A police station is bought when what
-         * it would take off that is more than the station costs to run, which
-         * is the rule a player would use; and the cells when the police are
-         * catching people with nowhere to put them, sized to what they catch.
-         */
-        Crime crime = g.getCrime();
-        if (crime.getCrimes() > 0 && crime.getPopulation() > 0) {
-            double crimeCost = crime.getStolen() + gdp * crime.getInjuredShare()
-                    + gdp * (1 - Migration.crimePull(crime.getRateVsCanada()));
-            for (String police : new String[] {"Police Station", "Police Headquarters"}) {
-                BuildingsTemplate t = template(g, police);
-                if (t == null || crime.getCoverage() >= 1) continue;
-                double after = Crime.coverageOf(crime.getOfficers() + t.getCapacity(),
-                        crime.getPopulation());
-                double saved = crimeCost * (1 - crime.crimesAt(after) / crime.getCrimes());
-                if (saved > runningCost(g, t)) {
-                    // As many as full coverage needs and no more: past it, a
-                    // station takes nothing off. Ordered by the gap in
-                    // officers, not by the share of output crime is costing -
-                    // which ordered six stations for a city of sixteen
-                    // thousand that needed one.
-                    double short_ = crime.getPopulation() * Crime.FULL_OFFICERS_PER_100K / 100_000.0
-                            - crime.getOfficers();
-                    int needed = (int) Math.max(1, Math.ceil(short_ / t.getCapacity()));
-                    addThrottle(moves, g, police, "police", saved, (needed - .5) / 25.0);
-                }
+            if (g.getHealthcare().getUnburied() > 0) {
+                double buryGain = gdp * health.getUnburiedRate();
+                addThrottle(moves, g, "Municipal Cemetery", "cemetery", buryGain);
+                addThrottle(moves, g, "Crematorium", "crematorium", buryGain);
             }
-            // A quarter of a jail's worth of people with nowhere to go, before a
-            // $360M building: a town that catches one a month sends them to the county.
-            double cellsWanted = crime.getNotHeld() * Crime.SENTENCE_MONTHS;
-            if (cellsWanted >= 75) {
-                String prison = cellsWanted >= 300 ? "Penitentiary" : "Jail";
-                addThrottle(moves, g, prison, "prison", crimeCost);
+
+            /*
+             * --- crime, and the police and the cells for it (2026-09-11) ---
+             *
+             * What crime costs a month: what is stolen, the work the injured do not
+             * do, and the output of the people who do not come - the size the
+             * crime pull takes off the city. A police station is bought when what
+             * it would take off that is more than the station costs to run, which
+             * is the rule a player would use; and the cells when the police are
+             * catching people with nowhere to put them, sized to what they catch.
+             */
+            Crime crime = g.getCrime();
+            if (crime.getCrimes() > 0 && crime.getPopulation() > 0) {
+                double crimeCost = crime.getStolen() + gdp * crime.getInjuredShare()
+                        + gdp * (1 - Migration.crimePull(crime.getRateVsCanada()));
+                for (String police : new String[] {"Police Station", "Police Headquarters"}) {
+                    BuildingsTemplate t = template(g, police);
+                    if (t == null || crime.getCoverage() >= 1) continue;
+                    double after = Crime.coverageOf(crime.getOfficers() + t.getCapacity(),
+                            crime.getPopulation());
+                    double saved = crimeCost * (1 - crime.crimesAt(after) / crime.getCrimes());
+                    if (saved > runningCost(g, t)) {
+                        // As many as full coverage needs and no more: past it, a
+                        // station takes nothing off. Ordered by the gap in
+                        // officers, not by the share of output crime is costing -
+                        // which ordered six stations for a city of sixteen
+                        // thousand that needed one.
+                        double short_ = crime.getPopulation() * Crime.FULL_OFFICERS_PER_100K / 100_000.0
+                                - crime.getOfficers();
+                        int needed = (int) Math.max(1, Math.ceil(short_ / t.getCapacity()));
+                        addThrottle(moves, g, police, "police", saved, (needed - .5) / 25.0);
+                    }
+                }
+                // A quarter of a jail's worth of people with nowhere to go, before a
+                // $360M building: a town that catches one a month sends them to the county.
+                double cellsWanted = crime.getNotHeld() * Crime.SENTENCE_MONTHS;
+                if (cellsWanted >= 75) {
+                    String prison = cellsWanted >= 300 ? "Penitentiary" : "Jail";
+                    addThrottle(moves, g, prison, "prison", crimeCost);
+                }
             }
         }
 
@@ -2899,7 +2993,7 @@ public class LongPlaytest {
     /*
      * IRON, A WHOLE FIELD AT A TIME (0.7.64, batch L). Jerus, 2026-10-07:
      * "Yes whole iron fields as one offer, yes that means significant
-     * investment." An offer holds every field centred in its band whole
+     * investment." An offer holds every field centred on its ground whole
      * (CityLand), so the default world's founding field is 35 sites and
      * 449 Mt in one offer of about US$180M, and its nearest one-site fields
      * about US$5.1M of ore each with their ground. The player's rule, a
@@ -3066,7 +3160,7 @@ public class LongPlaytest {
     /** Offers with oil the test player bought over the run (0.7.62). */
     static int oilBought;
 
-    /** The fuel the world sold the city last month (0.7.62): its drivers' (Game.getHouseholdFuelImports()) and its railway's (Rail.getFuelImported()). */
+    /** The fuel the world sold the city last month (0.7.62): its drivers' (Game.getHouseholdFuelImports()) and its railway's (Rail.getFuelImported()) - their petrol and its diesel since 0.7.76. */
     static double fuelBoughtAbroad(Game g) {
         return g.getHouseholdFuelImports() + g.getSectors().rail().getFuelImported();
     }
@@ -3075,9 +3169,20 @@ public class LongPlaytest {
     static double fuelBillRun, fuelAbroadRun;
     static int firstWellMonth, firstRefineryMonth, mostRefineries;
 
+    /** ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). */
+    static final java.util.Map<Good, Double> refinedRun = new java.util.EnumMap<>(Good.class);
+    static double refinedWrittenOff;
+
     static void countFuel(Game g) {
         fuelBillRun += g.getHouseholdFuel() + g.getSectors().rail().getFuelBill();
         fuelAbroadRun += fuelBoughtAbroad(g);
+        Sector refiners = g.getSectors().refining();
+        for (Good p : refiners.goodsMade()) {
+            Sector.Output o = refiners.outputRow(p);
+            if (o == null) continue;
+            refinedRun.merge(p, o.produced + o.exportBound, Double::sum);
+            refinedWrittenOff += o.writtenOff;
+        }
         int wells = qty(g, "Oil Well"), refineries = qty(g, "Oil Refinery");
         if (firstWellMonth == 0 && wells > 0) firstWellMonth = g.getMonth();
         if (firstRefineryMonth == 0 && refineries > 0) firstRefineryMonth = g.getMonth();
@@ -3318,6 +3423,58 @@ public class LongPlaytest {
             order.add(new double[] { trips / t.getCashCost(), gap });
             names.add(candidate);
         }
+        /*
+         * ...AND WHICH ROAD IS THE BUILD ADVICE'S (0.7.70, N1). Jerus: "the
+         * game still recommends gravel roads, even when i think paved roads
+         * are better". This player ranked the three roads by their capacity
+         * over the template's founding cash cost - gravel first in every
+         * city, at any price of ground: 124 of the 126 road orders of the
+         * 0.7.69 run were gravel. A sensible player asks the advice which
+         * road: the one that costs least over its life a trip it takes off
+         * the road, its ground and its repairs in it
+         * (BuildAdvice.lifetime()), and paving the gravel roads it has when
+         * that beats a new Paved Road (BuildAdvice.pavingBeatsPaved()). So
+         * the roads keep their place among the moves - the best road's trips
+         * a founding dollar, as before, against the lines' - and are offered
+         * in the advice's order inside it. Whether a road or a line eases
+         * the road stays this player's own rule (star N1-6): the lines' place,
+         * their caps and linesThatPay() are untouched.
+         */
+        BuildAdvice.Measure roadM = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, roadM);
+        double free = g.getLandManager().getAvailableSqFt();
+        double roadsKey = Double.NEGATIVE_INFINITY;
+        java.util.List<double[]> roadOrder = new java.util.ArrayList<>();
+        java.util.List<String[]> roadNames = new java.util.ArrayList<>();
+        for (int i = order.size() - 1; i >= 0; i--) {
+            BuildingsTemplate t = template(g, names.get(i)[0]);
+            if (t.getTransitCapacity() > 0) continue;
+            roadsKey = Math.max(roadsKey, order.get(i)[0]);
+            double unit = BuildAdvice.unit(g, roadM, t);
+            roadOrder.add(0, new double[] { unit > 0 ? BuildAdvice.lifetime(g, t, free, site) / unit
+                    : Double.POSITIVE_INFINITY, order.get(i)[1], 0 });
+            roadNames.add(0, names.get(i));
+            order.remove(i);
+            names.remove(i);
+        }
+        if (g.paveable() > 0 && BuildAdvice.pavingBeatsPaved(g, free, site)) {
+            double unit = BuildAdvice.pavingUnit(g, site);
+            roadOrder.add(new double[] { BuildAdvice.pavingLifetime(g, free, site) / unit, roadGap, 1 });
+            roadNames.add(new String[] { ConstructionControl.PAVE_FROM, "paved gravel" });
+        }
+        // The roads by the advice's figure, least first; a tie keeps the catalogue's order.
+        for (int i = 1; i < roadOrder.size(); i++) {
+            for (int k = i; k > 0 && roadOrder.get(k)[0] < roadOrder.get(k - 1)[0]; k--) {
+                java.util.Collections.swap(roadOrder, k, k - 1);
+                java.util.Collections.swap(roadNames, k, k - 1);
+            }
+        }
+        // ...each at the best road's key, ahead of the lines as the roads were listed, so a tie with a line keeps the roads first.
+        for (int i = 0; i < roadOrder.size(); i++) {
+            double[] road = roadOrder.get(i);
+            order.add(i, new double[] { roadsKey, road[1], road[2] });
+            names.add(i, roadNames.get(i));
+        }
         // Best trips per dollar first. A plain insertion sort: six candidates.
         for (int i = 1; i < order.size(); i++) {
             for (int k = i; k > 0 && order.get(k)[0] > order.get(k - 1)[0]; k--) {
@@ -3326,9 +3483,45 @@ public class LongPlaytest {
             }
         }
         for (int i = 0; i < order.size(); i++) {
-            addThrottle(moves, g, names.get(i)[0], names.get(i)[1], lost, order.get(i)[1]);
+            if (order.get(i).length > 2 && order.get(i)[2] == 1) addPaving(moves, g, lost, order.get(i)[1]);
+            else addThrottle(moves, g, names.get(i)[0], names.get(i)[1], lost, order.get(i)[1]);
         }
     }
+
+    /**
+     * Paving gravel roads as a way of easing the road (0.7.70, N1), as
+     * addThrottle() offers a building: as many as addThrottle() would order of
+     * a road at this gap, and no more than the gravel roads there are to pave.
+     */
+    static void addPaving(java.util.List<Move> moves, Game g, double lost, double gap) {
+        if (lost <= 0) return;
+        int quantity = (int) Math.max(1, Math.min(Math.min(25, Math.ceil(gap * 25)), g.paveable()));
+        moves.add(new Move("paved gravel", lost * (1 - moves.size() * 1e-6), () -> pave(g, quantity)));
+    }
+
+    /**
+     * Paves n gravel roads (0.7.70, N1): out of the cash, or, short of it,
+     * with the long bond build() borrows on, sized to what the cash is short
+     * of, when the city can service it (canService()).
+     */
+    static boolean pave(Game g, int n) {
+        Game.BuildQuote q = g.quotePave(n);
+        if (q == null) return false;
+        if (q.total > g.getCash()) {
+            double needed = Math.max(q.total - g.getCash(), 5000);
+            if (canService(g, needed)) {
+                g.handleLongBondLogic(needed, 20, 100);
+                notePaper(g, n + " x paving");
+            }
+        }
+        boolean paved = g.paveRoads(n);
+        refusal(ConstructionControl.PAVE_FROM + (paved ? ": PAVED" : ": not paved"));
+        if (paved) { pavings++; roadsPaved += n; }
+        return paved;
+    }
+
+    /** Over the run (0.7.70): the pavings ordered and the gravel roads in them. */
+    static int pavings, roadsPaved;
 
     /**
      * Adds one building as a way of relieving a constraint worth `lost` a month.
@@ -3419,6 +3612,20 @@ public class LongPlaytest {
     static int qty(Game g, String name) {
         BuildingsTemplate t = template(g, name);
         return t == null ? 0 : g.getBuildingManager().getQuantity(t.getId());
+    }
+
+    /** ...of a building by its permanent id (0.7.71: the childcare ids, renamed). */
+    static int qtyOf(Game g, int id) {
+        return g.getBuildingManager().getQuantity(id);
+    }
+
+    /** The city's home buildings standing, every RESIDENTIAL type (0.7.71: what childcare is counted against). */
+    static int homeBuildings(Game g) {
+        int n = 0;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (t.getCategory() == BuildingType.RESIDENTIAL) n += g.getBuildingManager().getQuantity(t.getId());
+        }
+        return n;
     }
 
     /** The founding village's builds: build(), and on an Insane founding the funding page's bond for a stage the treasury is short of (0.7.14). Every other founding, build() to the byte. */
@@ -4358,6 +4565,8 @@ public class LongPlaytest {
                     || loanRate != null || SCHOOLS;
             // An Insane city borrows first (0.7.14): see borrowForTheVillage().
             if (FOUNDING == Founding.Preset.INSANE) borrowForTheVillage(g);
+            // ...and automatic building on from the founding (0.7.73, -Dplaytest.autobuild).
+            if (AUTOBUILD) g.getAutoBuilder().setOn(true, g.getDecisions());
             villageBuild(g, "House", 40 + seed % 4);
             villageBuild(g, "Convenience Store", 3);
             /*
@@ -4381,6 +4590,7 @@ public class LongPlaytest {
             advise(g);
             run(g, 6);
             ensureSchools(g);
+            childcareWhenNeeded(g);
 
             log.add(era(g, "founded, played by hand"));
 
@@ -4409,6 +4619,7 @@ public class LongPlaytest {
                 skip = Math.min(skip, longestSkip());
                 run(g, Math.min(skip, TARGET_MONTHS - g.getMonth()));
                 ensureSchools(g);
+                childcareWhenNeeded(g);
 
                 // Look at the city, fix the worst thing, then a few hands-on
                 // months watching what that did - the way anyone plays.
@@ -5574,6 +5785,24 @@ public class LongPlaytest {
         out.printf("  ...room to grow past the ground-ahead line (0.7.67, M3b): %,d offer(s) bought by the move; %,d Bus"
                 + " Network(s), %,d Light Rail Line(s), %,d Metro Line(s) standing at the end%n", roomMovesBought,
                 qty(g, "Bus Network"), qty(g, "Light Rail Line"), qty(g, "Metro Line"));
+        out.printf("  ...the road by its life (0.7.70, N1): %,d Gravel Road(s), %,d Paved Road(s), %,d Elevated Highway(s)"
+                + " standing at the end; %,d paving(s) of %,d gravel road(s) ordered, %,d being paved%n",
+                qty(g, "Gravel Road"), qty(g, "Paved Road"), qty(g, "Elevated Highway"), pavings, roadsPaved,
+                g.pavingNow());
+        if (AUTOBUILD) {
+            AutoBuilder ab = g.getAutoBuilder();
+            out.printf("  ...automatic building (0.7.73, N4, -Dplaytest.autobuild): %,d order(s), %,d building(s), $%,.0fk"
+                    + " spent, $%,.0fk borrowed on %,d bond(s); %,d offer(s) of ground bought for it; held back at the last"
+                    + " pass: %s%n", ab.getOrders(), ab.getBuildings(), ab.getSpent(), ab.getBorrowed(), ab.getBonds(),
+                    autoBuildGroundBought,
+                    ab.held().isEmpty() ? "nothing" : String.join(" | ", ab.held()));
+        }
+        if (CHILDCARE) {
+            out.printf("  ...childcare by the advice's card (0.7.71, N2, -Dplaytest.childcare): %,d order(s) %s; %,d Small"
+                    + " Childcare Centre(s), %,d Childcare Centre(s), %,d Large Childcare Centre(s) standing at the end"
+                    + " against %,d home building(s)%n", childcareOrders, childcareBuilt,
+                    qtyOf(g, 15), qtyOf(g, 16), qtyOf(g, 17), homeBuildings(g));
+        }
         out.printf("  ...iron a whole field at a time (0.7.64): %,d offer(s) bought, %,d on the funding page's bond; first"
                 + " needed %s, the first bought %s; looks that needed iron and could not pay %,d, found none listed %,d,"
                 + " and whose cheapest field would not pay itself back (0.7.67) %,d; %,d iron site(s) and %d mine(s) at the"
@@ -5604,6 +5833,14 @@ public class LongPlaytest {
                 qty(g, "Oil Well"), g.getLandManager().getOilSites(), g.getLandManager().getOilReserveTonnes(),
                 qty(g, "Oil Refinery"), mostRefineries, fuelBillRun,
                 fuelBillRun > 0 ? fuelAbroadRun / fuelBillRun * 100 : 0);
+        StringBuilder refined = new StringBuilder();
+        for (java.util.Map.Entry<Good, Double> e : refinedRun.entrySet()) {
+            if (!(e.getValue() > 0)) continue;
+            refined.append(refined.length() == 0 ? "" : ", ").append(e.getKey().label().toLowerCase())
+                    .append(String.format(" %,.0f", e.getValue()));
+        }
+        out.printf("  ...the refinery's products (0.7.76): made over the run %s; written off for want of tank room %,.0f%n",
+                refined.length() == 0 ? "none" : refined.toString(), refinedWrittenOff);
         out.printf("  ...the vault at its lowest US$%,.0fk (m%d); half the founders' dollars gone %s; all but a"
                 + " hundredth gone %s%n", vaultLow == Double.MAX_VALUE ? 0 : vaultLow, vaultLowMonth,
                 halfGoneMonth > 0 ? "by month " + halfGoneMonth : "never",

@@ -1220,6 +1220,9 @@ public class SaveFileCheck {
         // The treasury's rollover (0.7.13), set after the city has played to
         // the one setting no city founds with, so the round trip can fail.
         full.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
+        // ...and a refinery's crude mix no city founds with (0.7.79): a quarter light, half medium, a quarter heavy.
+        double[] crudeMix = { .25, .5, .25 };
+        full.getSectors().refining().setCrudeMixForTest(crudeMix);
 
         assertTrue("saved a city with one of everything in it",
                 full.saveGame(1, "everything").ok);
@@ -1263,6 +1266,8 @@ public class SaveFileCheck {
         same("...and the world it was founded into", back.getFounding().getMeanInflation(),
                 full.getFounding().getMeanInflation());
         assertEquals("...and the ground it stands on (0.7.56)", back.getWorldSeed(), full.getWorldSeed());
+        assertTrue("the refinery's crude mix, light, medium and heavy (0.7.79)",
+                java.util.Arrays.equals(back.getSectors().refining().getCrudeMix(), crudeMix));
 
         /*
          * WHAT A LOAN COSTS, STRUCK AT THE CLOSE (0.7.7). The bank prices

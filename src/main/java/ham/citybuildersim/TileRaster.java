@@ -34,6 +34,13 @@ import java.util.Arrays;
  * the mockup's middle and far views: each 4 or 8 plots square in its
  * dominant kind's colour at an opacity by how much of it is built, the roads
  * over them - what the whole city looks like at the land office's zoom.
+ *
+ * TRACK (0.7.72, batch N3). The railway's lines are drawn plot by plot as
+ * track (TilePainter.RAIL): from 4 px a plot a line of a paved road's
+ * width, cased in RAIL_LINE and dashed white plot by plot, joined to the
+ * track beside it, on a deck over fresh water; a road crossing it drawn over
+ * it; below 4 px and in the blocks, its plots in RAIL_LINE. The mockup drew
+ * no railway, so the colours are a map's convention (star N3-9).
  */
 public final class TileRaster {
 
@@ -44,6 +51,12 @@ public final class TileRaster {
 
     /** Each road kind's colour (gravel, paved, highway): the mockup's MAP. */
     public static final int[] ROAD = { 0, 0xffcdb07c, 0xffa4aab0, 0xff3b4048 };
+
+    /** The railway's line, and its casing from 4 px a plot (0.7.72): openstreetmap-carto's rail grey, #707070 (the mockup drew no railway; star N3-9)... */
+    public static final int RAIL_LINE = 0xff707070;
+
+    /** ...and its dashes, white on every other plot along it: carto's rail dash. */
+    public static final int RAIL_DASH = 0xffffffff;
 
     /** A bridge's deck, edging a road over fresh water from 4 px a plot: the mockup's. */
     public static final int DECK = 0xff5d4c3c;
@@ -113,7 +126,7 @@ public final class TileRaster {
         int tile = TilePainter.TILE, w = tile * px;
         boolean lines = px >= LINES_FROM;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            int c = lines && p.use[i] == TilePainter.ROAD ? groundColour(in, p, i) : plotColour(in, p, i);
+            int c = lines && (p.use[i] == TilePainter.ROAD || p.use[i] == TilePainter.RAIL) ? groundColour(in, p, i) : plotColour(in, p, i);
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             for (int y = 0; y < px; y++) {
                 int o = (y0 + y) * w + x0;
@@ -244,8 +257,15 @@ public final class TileRaster {
             }
         }
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (p.use[i] != TilePainter.ROAD || (!gravel && p.road[i] == BuildingVisual.GRAVEL)) continue;
-            int c = ROAD[p.road[i]];
+            int kind = roadKind(p, i);
+            if (p.use[i] == TilePainter.RAIL && (kind == 0 || (!gravel && kind == BuildingVisual.GRAVEL))) {
+                // Track (0.7.72), and where a hidden gravel road crosses it.
+                int x0 = (i % tile) * px, y0 = (i / tile) * px;
+                fillRect(img, w, x0, y0, x0 + px, y0 + px, in.owned[i] ? RAIL_LINE : blend(RAIL_LINE, VOID, UNOWNED_DIM));
+                continue;
+            }
+            if (kind == 0 || (!gravel && kind == BuildingVisual.GRAVEL)) continue;
+            int c = ROAD[kind];
             if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             fillRect(img, w, x0, y0, x0 + px, y0 + px, c);
@@ -264,16 +284,22 @@ public final class TileRaster {
 
     /** Whether plot i is a highway's. */
     private static boolean isHighway(TilePainter.Painted p, int i) {
-        return p.use[i] == TilePainter.ROAD && p.road[i] == BuildingVisual.HIGHWAY;
+        return roadKind(p, i) == BuildingVisual.HIGHWAY;
+    }
+
+    /** The kind of road on plot i, GRAVEL to HIGHWAY - a road's plot, or where a road crosses the track (0.7.72) - or 0. */
+    static int roadKind(TilePainter.Painted p, int i) {
+        byte u = p.use[i];
+        return u == TilePainter.ROAD || u == TilePainter.RAIL ? p.road[i] : 0;
     }
 
     /** The side of plot i a road lies on, north, east, south, west, or -1 for none. */
     static int faceOf(TilePainter.Painted p, int i) {
         int tile = TilePainter.TILE, x = i % tile, y = i / tile;
-        if (y > 0 && p.use[i - tile] == TilePainter.ROAD) return 0;
-        if (x < tile - 1 && p.use[i + 1] == TilePainter.ROAD) return 1;
-        if (y < tile - 1 && p.use[i + tile] == TilePainter.ROAD) return 2;
-        if (x > 0 && p.use[i - 1] == TilePainter.ROAD) return 3;
+        if (y > 0 && roadKind(p, i - tile) != 0) return 0;
+        if (x < tile - 1 && roadKind(p, i + 1) != 0) return 1;
+        if (y < tile - 1 && roadKind(p, i + tile) != 0) return 2;
+        if (x > 0 && roadKind(p, i - 1) != 0) return 3;
         return -1;
     }
 
@@ -292,17 +318,19 @@ public final class TileRaster {
     /** The roads as lines (from LINES_FROM px a plot): the decks of bridges, then each kind's casing and fill, gravel, paved, highway. */
     private static void roads(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
         int tile = TilePainter.TILE, w = tile * px;
-        // Bridge decks: a pixel wider than the road either side, along it.
+        // Bridge decks: a pixel wider than the road (or the track) either side, along it.
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (p.use[i] != TilePainter.ROAD || !p.bridge[i]) continue;
-            int[] cs = crossSection(p.road[i], px);
+            if ((p.use[i] != TilePainter.ROAD && p.use[i] != TilePainter.RAIL) || !p.bridge[i]) continue;
+            byte u = p.use[i];
+            int[] cs = crossSection(u == TilePainter.RAIL ? BuildingVisual.PAVED : p.road[i], px);
             int width = Math.min(px, cs[0] + 2), o = (px - width) / 2;
-            boolean ns = (i >= tile && p.use[i - tile] == TilePainter.ROAD) || (i + tile < TilePainter.PLOTS && p.use[i + tile] == TilePainter.ROAD);
+            boolean ns = (i >= tile && p.use[i - tile] == u) || (i + tile < TilePainter.PLOTS && p.use[i + tile] == u);
             int x0 = (i % tile) * px, y0 = (i / tile) * px;
             int deck = in.owned[i] ? DECK : blend(DECK, VOID, UNOWNED_DIM);
             if (ns) fillRect(img, w, x0 + o, y0, x0 + o + width, y0 + px, deck);
             else fillRect(img, w, x0, y0 + o, x0 + px, y0 + o + width, deck);
         }
+        track(in, p, px, img);
         for (int kind = BuildingVisual.GRAVEL; kind <= BuildingVisual.HIGHWAY; kind++) {
             int[] cs = crossSection(kind, px);
             int width = cs[0], cas = cs[1], o = (px - width) / 2;
@@ -310,8 +338,9 @@ public final class TileRaster {
             for (int pass = cas > 0 ? 0 : 1; pass < 2; pass++) {
                 int in0 = pass == 0 ? 0 : cas;
                 for (int i = 0; i < TilePainter.PLOTS; i++) {
-                    if (p.use[i] != TilePainter.ROAD || p.road[i] < kind) continue;
-                    int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px, own = p.road[i];
+                    int own = roadKind(p, i);
+                    if (own < kind) continue;
+                    int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
                     int c = pass == 0 ? casing : colour;
                     if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
                     int a = o + in0, z = o + width - in0;
@@ -329,10 +358,9 @@ public final class TileRaster {
         if (px < 6) return;
         int dash = (int) Math.round(0.55 * px), mid = px / 2;
         for (int i = 0; i < TilePainter.PLOTS; i++) {
-            if (p.use[i] != TilePainter.ROAD || p.road[i] != BuildingVisual.HIGHWAY) continue;
+            if (!isHighway(p, i)) continue;
             int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
-            boolean ns = (y > 0 && p.use[i - tile] == TilePainter.ROAD && p.road[i - tile] == BuildingVisual.HIGHWAY)
-                    || (y < tile - 1 && p.use[i + tile] == TilePainter.ROAD && p.road[i + tile] == BuildingVisual.HIGHWAY);
+            boolean ns = (y > 0 && isHighway(p, i - tile)) || (y < tile - 1 && isHighway(p, i + tile));
             int c = in.owned[i] ? CENTRE_LINE : blend(CENTRE_LINE, VOID, UNOWNED_DIM);
             if (ns) fillRect(img, w, x0 + mid, y0, x0 + mid + 1, y0 + dash, c);
             else fillRect(img, w, x0, y0 + mid, x0 + dash, y0 + mid + 1, c);
@@ -343,9 +371,40 @@ public final class TileRaster {
     private static boolean arm(TilePainter.Painted p, int i, boolean edge, int step, int kind, int own) {
         int other;
         if (edge) other = own;
-        else if (p.use[i + step] == TilePainter.ROAD) other = p.road[i + step];
+        else if (roadKind(p, i + step) != 0) other = roadKind(p, i + step);
         else return false;
         return Math.min(own, other) == kind;
+    }
+
+    /**
+     * The track (0.7.72): each plot's middle and its arms to the track beside
+     * it - past the tile's edge too, where the line runs on - at a paved
+     * road's cross-section, cased in RAIL_LINE and filled RAIL_DASH on every
+     * other plot along it (the rest RAIL_LINE), under the roads that cross it.
+     */
+    private static void track(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE, w = tile * px;
+        int[] cs = crossSection(BuildingVisual.PAVED, px);
+        int width = cs[0], cas = cs[1], o = (px - width) / 2;
+        for (int pass = cas > 0 ? 0 : 1; pass < 2; pass++) {
+            int in0 = pass == 0 ? 0 : cas;
+            for (int i = 0; i < TilePainter.PLOTS; i++) {
+                if (p.use[i] != TilePainter.RAIL) continue;
+                int x = i % tile, y = i / tile, x0 = x * px, y0 = y * px;
+                int c = pass == 0 || ((x + y) & 1) == 1 ? RAIL_LINE : RAIL_DASH;
+                if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
+                int a = o + in0, z = o + width - in0;
+                boolean n = y == 0 ? y + 1 < tile && p.use[i + tile] == TilePainter.RAIL : p.use[i - tile] == TilePainter.RAIL;
+                boolean s = y == tile - 1 ? y > 0 && p.use[i - tile] == TilePainter.RAIL : p.use[i + tile] == TilePainter.RAIL;
+                boolean wv = x == 0 ? x + 1 < tile && p.use[i + 1] == TilePainter.RAIL : p.use[i - 1] == TilePainter.RAIL;
+                boolean e = x == tile - 1 ? x > 0 && p.use[i - 1] == TilePainter.RAIL : p.use[i + 1] == TilePainter.RAIL;
+                fillRect(img, w, x0 + a, y0 + a, x0 + z, y0 + z, c);
+                if (n) fillRect(img, w, x0 + a, y0, x0 + z, y0 + a, c);
+                if (s) fillRect(img, w, x0 + a, y0 + z, x0 + z, y0 + px, c);
+                if (wv) fillRect(img, w, x0, y0 + a, x0 + a, y0 + z, c);
+                if (e) fillRect(img, w, x0 + z, y0 + a, x0 + px, y0 + z, c);
+            }
+        }
     }
 
     private static void fillRect(int[] img, int w, int x0, int y0, int x1, int y1, int c) {
@@ -380,10 +439,11 @@ public final class TileRaster {
     /** A road plot's colour below LINES_FROM px a plot, where it fills its plot, by kind: gravel's and the highway's own, a paved road's casing - its own grey is the grass's brightness, and a pixel of it vanishes among the homes. */
     public static final int[] ROAD_SMALL = { 0, 0xffcdb07c, 0xff6a7077, 0xff3b4048 };
 
-    /** A plot's colour before its building: its ground, its site's tint or grey, its road's colour, and dimmed when unowned. */
+    /** A plot's colour before its building: its ground, its site's tint or grey, its road's colour - or (0.7.72) its track's, where no road crosses it - and dimmed when unowned. */
     static int plotColour(TilePainter.Input in, TilePainter.Painted p, int i) {
-        if (p.use[i] != TilePainter.ROAD) return groundColour(in, p, i);
-        int c = ROAD_SMALL[p.road[i]];
+        int kind = roadKind(p, i);
+        if (kind == 0 && p.use[i] != TilePainter.RAIL) return groundColour(in, p, i);
+        int c = kind == 0 ? RAIL_LINE : ROAD_SMALL[kind];
         if (!in.owned[i]) c = blend(c, VOID, UNOWNED_DIM);
         return c;
     }

@@ -357,6 +357,37 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         return t;
     }
 
+    /** The face of one issuer's bonds maturing within `months` settles of `month`'s (0.7.74, the sector statements' R2): a read, as maturingFace() is. */
+    @Override public double faceDueWithin(String sector, int month, int months) {
+        double t = 0;
+        for (CorporateBond b : bonds) if (b.issuer.equals(sector) && b.remainingMonths(month) <= months) t += b.face;
+        return t;
+    }
+
+    /** The month one issuer's last bond falls due (0.7.75, R2's "runs to"); 0 with none. */
+    @Override public int lastMaturity(String sector) {
+        int last = 0;
+        for (CorporateBond b : bonds) if (b.issuer.equals(sector) && b.face > 0) last = Math.max(last, b.maturityMonth());
+        return last;
+    }
+
+    /** ...and the coupon its bonds pay, weighted by face (R2's rate): averageCoupon(). */
+    @Override public double couponRate(String sector) { return averageCoupon(sector); }
+
+    /*
+     * THE FACE SOLD AND REPAID SO FAR, BY ISSUER (0.7.75, the sector
+     * statements' R7): counted where a bond is issued and where it is
+     * repaid at maturity, in memory, from nothing at a founding or a load.
+     * The statements read two of these a month apart and take the
+     * difference, so where they start does not matter; nothing else reads
+     * them. A default's write-off is BusinessDebtManager's to count.
+     */
+    private final Map<String, Double> issuedSoFar = new LinkedHashMap<>();
+    private final Map<String, Double> repaidSoFar = new LinkedHashMap<>();
+
+    @Override public double faceIssuedSoFar(String sector) { return issuedSoFar.getOrDefault(sector, 0.0); }
+    @Override public double faceRepaidSoFar(String sector) { return repaidSoFar.getOrDefault(sector, 0.0); }
+
     /**
      * A DEFAULT, ON THE BONDHOLDERS (0.7.12): every bond of the sector
      * written down to this share of its face, every holder by the same share
@@ -883,6 +914,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         lifeIssues++;
         issuedBySector.merge(b.issuer, b.face, Double::sum);
         proceedsBySector.merge(b.issuer, b.face - costs, Double::sum);
+        issuedSoFar.merge(b.issuer, b.face, Double::sum);
         lastIssue = b.issuer;
         lastIssueFace = b.face;
         lastIssueCoupon = coupon;
@@ -986,6 +1018,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             if (!b.isMatured(month)) continue;
             if (economy != null) economy.setSectorCash(b.issuer, economy.getSectorCash(b.issuer) - b.face);
             repaidBySector.merge(b.issuer, b.face, Double::sum);
+            repaidSoFar.merge(b.issuer, b.face, Double::sum);
             if (b.households > 0) {
                 // Each cell its own face (round 2).
                 if (households != null) households.creditBondPrincipal(b.id);
@@ -1971,6 +2004,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     public void reset() {
         bonds.clear();
         books.clear();
+        issuedSoFar.clear();
+        repaidSoFar.clear();
         nextId = 1;
         startMonth();
         lifeIssued = lifeCosts = lifeCouponsHouseholds = lifeCouponsBank = lifeCouponsCompanies = lifeCouponsAbroad = 0;
@@ -2019,6 +2054,6 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         dueCells.replaceAll((k, v) -> v * scale);
         dueByIssuer.replaceAll((k, v) -> v * scale);
         for (Map<String, Double> m : List.of(issuedBySector, proceedsBySector, repaidBySector, boughtBySector,
-                couponsBySector, bankLossBySector)) m.replaceAll((k, v) -> v * scale);
+                couponsBySector, bankLossBySector, issuedSoFar, repaidSoFar)) m.replaceAll((k, v) -> v * scale);
     }
 }

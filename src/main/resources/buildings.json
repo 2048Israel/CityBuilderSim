@@ -36,8 +36,10 @@
   "A mine also needs a DEPOSIT: buy a land parcel with iron under it, and one",
   "deposit supports one mine. An Oil Well needs an oil site the same way, one a",
   "well: a MINING building stands on the sites of the resource whose good it makes.",
-  "CRUDE is tonnes of crude oil, lifted by the wells and refined; FUEL is litres,",
-  "made by the refinery and drawn by the city's drivers and its railway.",
+  "CRUDE is tonnes of crude oil, lifted by the wells and refined. A refinery 'uses'",
+  "CRUDE and 'makes' nothing of its own: its products - petrol, diesel and the rest,",
+  "in litres - are the cuts of the crude it runs (sectors.Refining, THE SLATE), its",
+  "'stock' the tanks they share; the drivers draw the petrol, the railway the diesel.",
   "production1 / production2 survive only for the utilities: watts for ELECTRICITY,",
   "water units for WATER.",
   "A WATER building draws fresh water unless it says \"source\": \"SEA\". Fresh water is",
@@ -457,44 +459,26 @@
   },
   {
    "id": 15,
-   "name": "Home Daycare",
+   "name": "Small Childcare Centre",
    "category": "HEALTHCARE",
    "care": "CHILDCARE",
-   "capacity": 8,
-   "cashCost": 93,
-   "constructionPoints": 40,
-   "constructionMaterials": 3,
-   "upkeep": 3,
-   "electricity": 2,
-   "water": 1,
+   "capacity": 80,
+   "cashCost": 1308,
+   "constructionPoints": 800,
+   "constructionMaterials": 49,
+   "upkeep": 28,
+   "electricity": 16,
+   "water": 5,
    "jobs": {
-    "NO_DIPLOMA": 2
+    "NO_DIPLOMA": 13,
+    "DIPLOMA": 6,
+    "COLLEGE_HEALTH": 1
    },
-   "land": 6000,
-   "roadLoad": 3
+   "land": 31400,
+   "roadLoad": 18
   },
   {
    "id": 16,
-   "name": "Neighbourhood Daycare",
-   "category": "HEALTHCARE",
-   "care": "CHILDCARE",
-   "capacity": 60,
-   "cashCost": 1004,
-   "constructionPoints": 600,
-   "constructionMaterials": 38,
-   "upkeep": 22,
-   "electricity": 12,
-   "water": 4,
-   "jobs": {
-    "NO_DIPLOMA": 10,
-    "DIPLOMA": 5,
-    "COLLEGE_HEALTH": 1
-   },
-   "land": 25000,
-   "roadLoad": 14
-  },
-  {
-   "id": 17,
    "name": "Childcare Centre",
    "category": "HEALTHCARE",
    "care": "CHILDCARE",
@@ -512,6 +496,26 @@
    },
    "land": 70000,
    "roadLoad": 40
+  },
+  {
+   "id": 17,
+   "name": "Large Childcare Centre",
+   "category": "HEALTHCARE",
+   "care": "CHILDCARE",
+   "capacity": 360,
+   "cashCost": 5117,
+   "constructionPoints": 3600,
+   "constructionMaterials": 190,
+   "upkeep": 109,
+   "electricity": 63,
+   "water": 18,
+   "jobs": {
+    "NO_DIPLOMA": 54,
+    "DIPLOMA": 25,
+    "COLLEGE_HEALTH": 5
+   },
+   "land": 103400,
+   "roadLoad": 60
   },
   {
    "id": 18,
@@ -1759,9 +1763,6 @@
    },
    "land": 870000,
    "roadLoad": 659,
-   "makes": {
-    "FUEL": 8300000
-   },
    "uses": {
     "CRUDE": 8300
    },

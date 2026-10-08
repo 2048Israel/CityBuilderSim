@@ -52,7 +52,9 @@ package ham.citybuildersim;
  *      only when its full monthly cost - the payment over its life at the
  *      household rate, and a month of fuel - beats a month's pass; where the
  *      fare deters nobody the ceiling on ownership is 1, and that town owns
- *      more cars ten years on.
+ *      more cars ten years on. Since 0.7.78 (batch O2) the month of fuel is
+ *      petrol at wholesale, the research's ladder, so at the default fare
+ *      fewer owners take the bus on cost alone: cars gain on transit.
  *
  * See claude/the-fifth-link.md, HouseholdBalance's cars section and
  * InfrastructureManager's.
@@ -878,6 +880,35 @@ public class CarCheck {
                         && Motoring.carPayment(carPrice, 0) == carPrice / HouseholdBalance.CAR_LIFE_MONTHS,
                 String.format("$%,.2f a month for a $%,.0f car at %.2f%%",
                         Motoring.carPayment(carPrice, rate) * 1000, carPrice * 1000, rate * 100));
+
+        /*
+         * ...AND ITS MONTH OF FUEL IS PETROL AT WHOLESALE (0.7.78, batch O2;
+         * runs/spec-oil.md 2.1 and 6 A, Jerus: "yes wholesale"). A town with no
+         * refinery buys a journey's 1.2 litres at petrol's import price - the
+         * research's ladder, 1.20 of crude's world middle a litre, x1.08 -
+         * where until 0.7.77 it paid a journey's $2.00 at the pump. The owners
+         * weigh the same journey's fuel against a ride (WHO RIDES, BY WHAT
+         * THEY PAY), so at the default fare fewer of them take the bus on cost
+         * alone than the pump price sent there.
+         */
+        InfrastructureManager pricedRoads = priced.getInfrastructureManager();
+        GoodsMarket petrol = priced.getMarkets().get(Good.PETROL);
+        double journey = pricedRoads.getFuelPerJourney();
+        report("a journey's fuel is its litres of petrol at the import price, in a town with no refinery: the wholesale ladder",
+                priced.getSectors().refining().buildingsStanding() == 0 && journey > 0
+                        && Math.abs(journey - Motoring.LITRES_PER_JOURNEY * petrol.importPrice()) <= 1e-12 * journey
+                        && petrol.importPrice() == Good.PETROL.worldImportPrice() * petrol.getExchangeRate(),
+                String.format("$%,.4f a journey: %.1f L at $%,.4f a litre", journey * 1000, Motoring.LITRES_PER_JOURNEY,
+                        petrol.importPrice() * 1000));
+        double dial = priced.getEconomyManager().getTaxPolicy().getTransitFare();
+        double ride = dial * pricedRoads.getFareLevel();
+        double atPump = Motoring.CAR_FUEL_PER_JOURNEY * petrol.getExchangeRate();
+        double onCost = pricedRoads.ownersChoosingAt(dial), onCostAtPump = InfrastructureManager.transitChosen(atPump, ride);
+        report("...so at the default fare fewer owners take the bus on cost alone than the pump price's journey sent there",
+                dial == TaxPolicy.DEFAULT_TRANSIT_FARE && same(onCost, InfrastructureManager.transitChosen(journey, ride))
+                        && onCost < onCostAtPump,
+                String.format("%.1f%% of owners against %.1f%% at the pump's $%,.2f (a ride $%,.2f)", onCost * 100,
+                        onCostAtPump * 100, atPump * 1000, ride * 1000));
 
         /* ================================================================
            THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL

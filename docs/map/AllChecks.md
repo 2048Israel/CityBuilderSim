@@ -22,7 +22,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 27 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "CalendarCheck", "BooksC...` | In the order they are cheapest to fail. |
+| 27 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "Conversion...` | In the order they are cheapest to fail. |
 
 ## Methods, in file order
 

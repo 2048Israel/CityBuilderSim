@@ -30,7 +30,8 @@ import java.util.Random;
  *      its area, from MIN_LEVEL to MAX_LEVEL; a block's side is
  *      LegacyLand.sideLane()'s; every lane coordinate lies in one place;
  *   4. a new default city, its centre in blocks of 120 m as the prototype
- *      drew it, lists its first offers one block across and
+ *      drew it - and as the model founds it, block for block (CityLand.
+ *      found(), 0.7.67) - lists its first offers one block across and
  *      DEPTH_OVER_WIDTH deep, four or five a side (spec-grid 1.5), and all
  *      24 stand by the 12th purchase bought evenly;
  *   5. over CITY_PURCHASES purchases bought evenly, after every one: no two

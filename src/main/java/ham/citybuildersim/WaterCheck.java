@@ -339,7 +339,7 @@ public class WaterCheck {
         near("...rights add to it unit for unit", g.getFreshCap() - before, 5_000);
         g.setFreshRights(0);
 
-        // The coast: the founding site is 1.35 km or more from the sea and a new centre 0.28 km a half-side.
+        // The coast: the founding site is 1.35 km or more from the sea and a new centre's blocks within 0.36 km of it (0.28 km a half-side until 0.7.66).
         assertTrue("fixture: a new city owns no sea", land.getSeaKm2() == 0);
         check("a water plant needs no coast", g.hasCoastFor(plant, 1) ? 1 : 0, 1);
         assertTrue("A DESALINATION PLANT WITH NO SEA IS REFUSED NO_COAST, before land and money",

@@ -467,37 +467,60 @@ public class BuildingManager {
            wish. Healthcare pays its own.
            ===================================================================== */
 
-        BuildingsTemplate homeDaycare = new BuildingsTemplate("Home Daycare", BuildingType.HEALTHCARE)
-                .setCapacity(8)
-                .setCashCost(93)
-                .setConstructionPoints(40)
-                .setConstructionMaterials(3)
-                .setUpkeep(3)
-                .setElectricityConsumption(2)
-                .setWaterConsumption(1)
-                .setLandSqFt(6000)
-                .setRoadLoad(3)
-                .setJobs(JobType.NO_DIPLOMA, 2)
-                .setCare(CareType.CHILDCARE)
-                .setId(15);
-        templates.add(homeDaycare);
+        /* ----- childcare, resized (0.7.71, batch N2) -----
 
-        BuildingsTemplate neighbourhoodDaycare = new BuildingsTemplate("Neighbourhood Daycare", BuildingType.HEALTHCARE)
-                .setCapacity(60)
-                .setCashCost(1004)
-                .setConstructionPoints(600)
-                .setConstructionMaterials(38)
-                .setUpkeep(22)
-                .setElectricityConsumption(12)
-                .setWaterConsumption(4)
-                .setLandSqFt(25000)
-                .setRoadLoad(14)
-                .setJobs(JobType.NO_DIPLOMA, 10)
-                .setJobs(JobType.DIPLOMA, 5)
+           Jerus: "one city had 5k daycares and 2k residential buildings,
+           hilarious, the numbers children and housing wise make sense ... i
+           think we need to resize those, daycares are childcares and
+           childcares are even bigger." A Home Daycare (8 places, $147k all
+           in, 18.4 a place) was the cheapest a place to put up, so the build
+           advice ordered them by the hundred: 629 in his city of 24,000
+           (runs/fixN2-notes.md). Since 0.7.71 the three ids are three
+           centres, the same ids, so a city's buildings keep their type and
+           take the new size (Jerus: "keep them as they are"):
+
+             id 15  Small Childcare Centre    80 places  (was Home Daycare, 8)
+             id 16  Childcare Centre         220 places  (was Neighbourhood Daycare, 60)
+             id 17  Large Childcare Centre   360 places  (was Childcare Centre, 220)
+
+           THE SIZES. 80: the most a Quebec childcare installation may take
+           (Educational Childcare Act, CQLR c. S-4.1.1), and one room of each
+           age at Ontario's largest groups - 10 infants, 15 toddlers, 24
+           preschoolers, 30 school-age, 79 (O. Reg. 137/15, Schedule 1). 220:
+           this file's own Childcare Centre, figure for figure. 360: the size
+           China's Kindergarten Work Regulations hold a kindergarten to
+           ("generally not more than 360 children", Ministry of Education,
+           2016, art. 11).
+
+           THE FIGURES are the model's own scale curve: each one - the price
+           all in, upkeep, power, water, land, road load and each job type -
+           on the power law through this file's two centres before 0.7.71 (60
+           places and 220), at each size; points ten a place, as both were;
+           the price split 40% material as every building (MATERIALS_WORLD_PRICE).
+           So a place costs less, needs less upkeep, ground and staff, the
+           bigger the centre: 27.4 / 24.9 / 23.7 thousand a place all in,
+           392 / 318 / 287 sq ft, one adult to 4.0 / 4.15 / 4.3 children -
+           the model's ratios, which Ontario's for under-sixes bracket (three
+           to ten infants, one to eight preschoolers). A Home Daycare was a
+           home (its 8 to 60 cost more a place, not less); a centre is not.
+           ----- */
+
+        BuildingsTemplate smallChildcare = new BuildingsTemplate("Small Childcare Centre", BuildingType.HEALTHCARE)
+                .setCapacity(80)
+                .setCashCost(1308)
+                .setConstructionPoints(800)
+                .setConstructionMaterials(49)
+                .setUpkeep(28)
+                .setElectricityConsumption(16)
+                .setWaterConsumption(5)
+                .setLandSqFt(31400)
+                .setRoadLoad(18)
+                .setJobs(JobType.NO_DIPLOMA, 13)
+                .setJobs(JobType.DIPLOMA, 6)
                 .setJobs(JobType.COLLEGE_HEALTH, 1)
                 .setCare(CareType.CHILDCARE)
-                .setId(16);
-        templates.add(neighbourhoodDaycare);
+                .setId(15);
+        templates.add(smallChildcare);
 
         BuildingsTemplate childcareCentre = new BuildingsTemplate("Childcare Centre", BuildingType.HEALTHCARE)
                 .setCapacity(220)
@@ -513,8 +536,25 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 16)
                 .setJobs(JobType.COLLEGE_HEALTH, 3)
                 .setCare(CareType.CHILDCARE)
-                .setId(17);
+                .setId(16);
         templates.add(childcareCentre);
+
+        BuildingsTemplate largeChildcare = new BuildingsTemplate("Large Childcare Centre", BuildingType.HEALTHCARE)
+                .setCapacity(360)
+                .setCashCost(5117)
+                .setConstructionPoints(3600)
+                .setConstructionMaterials(190)
+                .setUpkeep(109)
+                .setElectricityConsumption(63)
+                .setWaterConsumption(18)
+                .setLandSqFt(103400)
+                .setRoadLoad(60)
+                .setJobs(JobType.NO_DIPLOMA, 54)
+                .setJobs(JobType.DIPLOMA, 25)
+                .setJobs(JobType.COLLEGE_HEALTH, 5)
+                .setCare(CareType.CHILDCARE)
+                .setId(17);
+        templates.add(largeChildcare);
 
         BuildingsTemplate walkInClinic = new BuildingsTemplate("Walk-in Clinic", BuildingType.HEALTHCARE)
                 .setCapacity(2500)
@@ -1903,11 +1943,15 @@ public class BuildingManager {
            Its road load is the Iron Mine's a tonne (420 for 2,500 t: 70 for 415).
 
            An Oil Refinery is a modular plant of 2,000 barrels a day: 8,300 t of
-           crude a month (2,000 x 30.44 / 7.33) into 8,300,000 L of fuel, a
-           thousand litres a tonne - 86% of a barrel's 1,165 L as transport fuels
-           - on twenty acres, with three months of it in its tanks (25M L). Its
-           road load is the Steel Mini-Mill's a tonne moved, in and out (500 for
-           12,600 t: 659 for 16,600).
+           crude a month (2,000 x 30.44 / 7.33), on twenty acres, with 25M L of
+           tanks. Its road load is the Steel Mini-Mill's a tonne moved, in and
+           out (500 for 12,600 t: 659 for 16,600).
+
+           SINCE 0.7.76 (batch O1) IT MAKES NOTHING OF ITS OWN: it was 8,300,000 L
+           of FUEL, a thousand litres a tonne. It is a crude unit, and what its
+           crude becomes - petrol, diesel and the rest of the barrel - is the
+           sector's slate of it (sectors.Refining, THE SLATE); its tanks are
+           shared among the products as its run is.
            ------------------------------------------------------------------------- */
         BuildingsTemplate oilWell = new BuildingsTemplate("Oil Well", BuildingType.MINING)
                 .setCashCost(2000)
@@ -1930,8 +1974,7 @@ public class BuildingManager {
                 .setConstructionPoints(30000)
                 .setConstructionMaterials(1000)
                 .setSector("Refining")
-                .makes(Good.FUEL, 8300000)      // litres of fuel a month
-                .uses(Good.CRUDE, 8300)         // tonnes of crude that takes
+                .uses(Good.CRUDE, 8300)         // tonnes of crude a month; its products are the slate of it
                 .setElectricityConsumption(1000)
                 .setWaterConsumption(250)
                 .setLandSqFt(870000)
@@ -3505,6 +3548,8 @@ public class BuildingManager {
                     finished.add(new Completion(
                             stack.getBuilding().getName(), stack.getLastFinished()));
                 }
+                // ...and the gravel roads whose paving opened with them (0.7.70).
+                retirePaved(stack);
                 // ...and the run the panel reads its "done of total" off.
                 ConstructionControl.Run run = control.runOf(stack.getBuilding().getId());
                 if (run != null) {
@@ -3775,6 +3820,8 @@ public class BuildingManager {
             BuildingsStacks s = stackOfKey(key);
             if (s == null || !s.isCitysOwn()) continue;
             BuildingsTemplate t = s.getBuilding();
+            // A Paved Road site that paves is not stopped (0.7.70; Game.cancelSite() refuses it).
+            if (control.paving() > 0 && ConstructionControl.PAVE_TO.equals(t.getName())) continue;
             double pointsLeft = Math.max(0, s.getUnderConstruction() * (double) t.getConstructionPoints()
                     - s.getConstructionProgress());
             double[] stopped = s.stopForShell();
@@ -3784,6 +3831,28 @@ public class BuildingManager {
                     stopped[3], stopped[4], pointsLeft, shell));
         }
         control.clearCancelling();
+    }
+
+    /**
+     * F. THE PAVING (0.7.70): of the Paved Roads that opened off the front
+     * of their site this month, those past each paving's place are its own
+     * (ConstructionControl.pavedOf()), and that many gravel roads retire as
+     * they open - the road carried its traffic until then. The event carries
+     * the ground the land ledger frees, which Game releases
+     * (settleConstructionControl()): the retired gravel roads' ground less
+     * the opened Paved Roads', which took none while they were on site
+     * (getTotalLandFootprint()). See ConstructionControl, F.
+     */
+    private void retirePaved(BuildingsStacks stack) {
+        if (stack.getLastFinished() <= 0 || control.paving() <= 0
+                || !ConstructionControl.PAVE_TO.equals(stack.getBuilding().getName())) return;
+        int paved = control.pavedOf(stack.getLastFinished());
+        if (paved <= 0) return;
+        BuildingsTemplate gravel = getTemplateByName(ConstructionControl.PAVE_FROM);
+        int retired = retire(gravel, paved);
+        double freed = (gravel == null ? 0 : gravel.getLandSqFt() * (double) retired)
+                - stack.getBuilding().getLandSqFt() * (double) paved;
+        controlEvents.paved.add(new ConstructionControl.Paved(retired, freed));
     }
 
     /** A shell put back on site (Game.restartShell()): its buildings, the work in them and what they still owe, onto its stack. */
@@ -4586,6 +4655,22 @@ public class BuildingManager {
         return total;
     }
 
+    /**
+     * The construction materials in a sector's buildings, finished and on
+     * site, in units (0.7.75, the sector statements' R6): what
+     * getBuildingsValueBySector() prices at today's materials, so a move in
+     * that price moves the sector's buildings by this many times it.
+     */
+    public double getBuildingMaterialsBySector(String sector) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector)) continue;
+            total += (stack.getQuantity() + stack.getUnderConstruction()) * (double) t.getConstructionMaterials();
+        }
+        return total;
+    }
+
     /** People a sector's buildings hold, sites included. See getCapacityInPortfolio. */
     public long getCapacityInPortfolioBySector(String sector) {
         long total = 0;
@@ -5159,6 +5244,13 @@ public class BuildingManager {
             // ...once its buildings have closed: until the month starts they
             // stand on their stack and hold it there.
             if (!site.closing) total += site.landSqFt;
+        }
+        // ...less the Paved Roads on site that are pavings (0.7.70;
+        // ConstructionControl, F): each stands on its gravel road's ground,
+        // which the gravel road holds until it opens.
+        if (control.paving() > 0) {
+            BuildingsTemplate paved = getTemplateByName(ConstructionControl.PAVE_TO);
+            if (paved != null) total -= paved.getLandSqFt() * (double) control.paving();
         }
         return total;
     }

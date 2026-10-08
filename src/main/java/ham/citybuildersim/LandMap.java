@@ -19,8 +19,11 @@ import java.util.List;
  * A plot's holding is the grid's owner (CityLand.holdingOf()); an offer is a
  * rectangle, so pick() is the owner and then 24 rectangle tests; the city's
  * edge is the horizontal and vertical runs where owned ground meets unowned,
- * read from the grid's leaves (outline()). Until 0.7.66 the land was a
- * centre and forty lanes of wedges, and these were radii and bands.
+ * read from the grid's leaves (outline()). Since 0.7.69 (batch M5) it also
+ * says which of an offer's rectangle is the city's own ground (ownedIn()),
+ * so the map hatches only what is on offer, and where on the offer its
+ * number stands (labelBlock()). Until 0.7.66 the land was a centre and
+ * forty lanes of wedges, and these were radii and bands.
  *
  * COORDINATES: the world's plots. A plot x covers x to x + 1, so a rectangle
  * [x0, x1) is drawn from x0 to x1 and the outlines lie on plot edges.
@@ -78,43 +81,151 @@ public final class LandMap {
         return new double[] { x0, y0, x1, y1 };
     }
 
+    /** The four edges a run of the outline lies on, by the side of the city's ground it bounds: its north edge, east, south and west. */
+    static final int NORTH_EDGE = 0, EAST_EDGE = 1, SOUTH_EDGE = 2, WEST_EDGE = 3;
+
     /**
-     * The city's edge (spec-grid 2.4): every run along a plot edge with
-     * owned ground on one side and none on the other, from the grid's leaves
-     * - each FULL leaf's four edges, the unowned stretches beyond them -
-     * as {x0s, y0s, x1s, y1s}, each run horizontal or vertical, in plots.
+     * The city's edge (spec-grid 2.4): every run along plot edges with owned
+     * ground on one side and none on the other, from the grid's leaves - each
+     * FULL leaf's four edges, the unowned stretches beyond them - joined
+     * where they meet end to end on one line, so a run is the whole straight
+     * stretch of edge it lies on (0.7.69, batch M5: one per leaf's side
+     * until then). As {x0s, y0s, x1s, y1s}, each run horizontal or vertical,
+     * in plots, and running with the city's ground on its right: east along
+     * a north edge, south down an east one, west along a south one, north up
+     * a west one (clockwise, y south) - MapFrame.runOnScreen() draws it on
+     * the pixels just inside that ground, crisp.
      */
     public static double[][] outline(CityLand land) {
         LandGrid g = land.grid();
-        List<double[]> runs = new ArrayList<>();
+        List<long[]> raw = new ArrayList<>();
         g.leaves((level, x, y, h) -> {
             long b = 1L << level;
-            edge(g, runs, x, y - 1, b, true, y);            // north: the row above
-            edge(g, runs, x, y + b, b, true, y + b);        // south: the row below
-            edge(g, runs, x - 1, y, b, false, x);           // west: the column left
-            edge(g, runs, x + b, y, b, false, x + b);       // east: the column right
+            edge(g, raw, NORTH_EDGE, x, y - 1, b, true, y);     // the row above
+            edge(g, raw, SOUTH_EDGE, x, y + b, b, true, y + b); // the row below
+            edge(g, raw, WEST_EDGE, x - 1, y, b, false, x);     // the column left
+            edge(g, raw, EAST_EDGE, x + b, y, b, false, x + b); // the column right
         });
+        // {edge, line, from, to}: by edge, then line, then where it starts, so stretches that meet are neighbours.
+        raw.sort((a, b) -> a[0] != b[0] ? Long.compare(a[0], b[0]) : a[1] != b[1] ? Long.compare(a[1], b[1]) : Long.compare(a[2], b[2]));
+        List<long[]> runs = new ArrayList<>();
+        for (long[] r : raw) {
+            long[] last = runs.isEmpty() ? null : runs.get(runs.size() - 1);
+            if (last != null && last[0] == r[0] && last[1] == r[1] && last[3] == r[2]) last[3] = r[3];
+            else runs.add(r.clone());
+        }
         double[][] out = new double[4][runs.size()];
-        for (int i = 0; i < runs.size(); i++) for (int k = 0; k < 4; k++) out[k][i] = runs.get(i)[k];
+        for (int i = 0; i < runs.size(); i++) {
+            long[] r = runs.get(i);
+            long line = r[1], from = r[2], to = r[3];
+            double[] run;
+            switch ((int) r[0]) {
+                case NORTH_EDGE: run = new double[] { from, line, to, line }; break;   // east
+                case EAST_EDGE:  run = new double[] { line, from, line, to }; break;   // south
+                case SOUTH_EDGE: run = new double[] { to, line, from, line }; break;   // west
+                default:         run = new double[] { line, to, line, from }; break;   // north
+            }
+            for (int k = 0; k < 4; k++) out[k][i] = run[k];
+        }
         return out;
     }
 
-    /** The unowned stretches of a strip one plot thick and `n` long beside a leaf (a row at (x, y) along x, or a column along y), as runs on the line `at`. */
-    private static void edge(LandGrid g, List<double[]> runs, long x, long y, long n, boolean row, long at) {
+    /** The unowned stretches of a strip one plot thick and `n` long beside a leaf (a row at (x, y) along x, or a column along y), as {edge, the line `at`, from, to}. */
+    private static void edge(LandGrid g, List<long[]> runs, int side, long x, long y, long n, boolean row, long at) {
         long un = row ? g.unowned(x, y, x + n, y + 1) : g.unowned(x, y, x + 1, y + n);
         if (un == 0) return;
         if (un == n) {
-            runs.add(row ? new double[] { x, at, x + n, at } : new double[] { at, y, at, y + n });
+            runs.add(row ? new long[] { side, at, x, x + n } : new long[] { side, at, y, y + n });
             return;
         }
         long half = n / 2;
         if (row) {
-            edge(g, runs, x, y, half, true, at);
-            edge(g, runs, x + half, y, n - half, true, at);
+            edge(g, runs, side, x, y, half, true, at);
+            edge(g, runs, side, x + half, y, n - half, true, at);
         } else {
-            edge(g, runs, x, y, half, false, at);
-            edge(g, runs, x, y + half, n - half, false, at);
+            edge(g, runs, side, x, y, half, false, at);
+            edge(g, runs, side, x, y + half, n - half, false, at);
         }
+    }
+
+    /**
+     * The city's own ground inside an offer's rectangle (0.7.69, batch M5):
+     * a coarse offer takes in the finer steps beside it (spec-grid 2.1), so
+     * its rectangle may cover ground the city owns, which is not on offer.
+     * The grid's leaves there, clipped to the rectangle, as {x0, y0, x1, y1}
+     * each in plots - they never overlap; none for most offers. The map
+     * hatches the rectangle less these: exactly the offer's free plots.
+     */
+    public static List<double[]> ownedIn(CityLand land, LandParcel o) {
+        List<double[]> out = new ArrayList<>();
+        LandGrid g = land.grid();
+        long ox0 = o.getX0(), oy0 = o.getY0(), ox1 = o.getX1(), oy1 = o.getY1();
+        if (g.owned(ox0, oy0, ox1, oy1) == 0) return out;
+        g.leaves((level, x, y, h) -> {
+            long b = 1L << level;
+            long x0 = Math.max(x, ox0), y0 = Math.max(y, oy0), x1 = Math.min(x + b, ox1), y1 = Math.min(y + b, oy1);
+            if (x0 < x1 && y0 < y1) out.add(new double[] { x0, y0, x1, y1 });
+        });
+        return out;
+    }
+
+    /** What the map writes on an offer: its place, 1 to 6 from the left as you face out, as its row in the land office reads it. */
+    public static String placeLabel(LandParcel o) {
+        return String.valueOf(o.getPlace() + 1);
+    }
+
+    /**
+     * Where the map writes it (0.7.69): the offer's whole rectangle when it
+     * is all free; else - a coarse rectangle takes in the finer steps of the
+     * city's own ground beside it - the block of it with the most free
+     * ground, the farthest from the site on a tie, and while that holds some
+     * of the city's ground the freest of its quarters, and so down, as long
+     * as a quarter is still `leastPlots` across (what holds a number at the
+     * view's scale). So the number stands on what is on offer. As {x0, y0,
+     * x1, y1} in plots.
+     */
+    public static double[] labelBlock(CityLand land, LandParcel o, double leastPlots) {
+        LandGrid g = land.grid();
+        if (g.owned(o.getX0(), o.getY0(), o.getX1(), o.getY1()) == 0) return new double[] { o.getX0(), o.getY0(), o.getX1(), o.getY1() };
+        long b = 1L << o.getLevel();
+        long bestFree = -1, bestReach = -1, bx = o.getX0(), by = o.getY0();
+        for (long y = o.getY0(); y + b <= o.getY1(); y += b) {
+            for (long x = o.getX0(); x + b <= o.getX1(); x += b) {
+                long free = g.unowned(x, y, x + b, y + b), reach = reach(land, x, y, b);
+                if (free > bestFree || (free == bestFree && reach > bestReach)) {
+                    bestFree = free;
+                    bestReach = reach;
+                    bx = x;
+                    by = y;
+                }
+            }
+        }
+        if (bestFree < 0) return new double[] { o.getX0(), o.getY0(), o.getX1(), o.getY1() };
+        long side = b;
+        while (side > 1 && side / 2 >= leastPlots && g.owned(bx, by, bx + side, by + side) > 0) {
+            long h = side / 2, qx = bx, qy = by;
+            bestFree = -1;
+            bestReach = -1;
+            for (int q = 0; q < 4; q++) {
+                long x = bx + (q & 1) * h, y = by + (q >> 1) * h;
+                long free = g.unowned(x, y, x + h, y + h), reach = reach(land, x, y, h);
+                if (free > bestFree || (free == bestFree && reach > bestReach)) {
+                    bestFree = free;
+                    bestReach = reach;
+                    qx = x;
+                    qy = y;
+                }
+            }
+            bx = qx;
+            by = qy;
+            side = h;
+        }
+        return new double[] { bx, by, bx + side, by + side };
+    }
+
+    /** How far a square of plots lies from the site: twice the L-infinity reach of its middle from the site plot's middle, in plots (a whole number). */
+    private static long reach(CityLand land, long x, long y, long side) {
+        return Math.max(Math.abs(2 * x + side - 2 * land.siteX() - 1), Math.abs(2 * y + side - 2 * land.siteY() - 1));
     }
 
     /** The farthest the city's own ground reaches from the site (L-infinity), in plots: its owned box's farthest edge. */
@@ -144,6 +255,47 @@ public final class LandMap {
         double x1 = g.ownedPlots() == 0 ? land.siteX() + 1 : g.maxX(), y1 = g.ownedPlots() == 0 ? land.siteY() + 1 : g.maxY();
         double mx = MapFrame.OPENING_MARGIN * (x1 - x0) / 2 + 1, my = MapFrame.OPENING_MARGIN * (y1 - y0) / 2 + 1;
         return new double[] { x0 - mx, y0 - my, x1 + mx, y1 + my };
+    }
+
+    /**
+     * Opens a view on the city as the land office does (0.7.79, star O3-2):
+     * openingBox() fitted (MapFrame.fit()), then drawn closer if the smallest
+     * offer standing would be drawn under MapFrame.OPENING_OFFER_PX across -
+     * to that size, about the same centre, so every offer the view shows
+     * whole holds its number. ui/MapView opens both its maps here, and
+     * MapCheck its mirror.
+     *
+     * A CITY TALLER THAN ITS SMALLEST OFFERS ALLOW then opens on its middle:
+     * a town whose offers are still one block of 120 m across while its own
+     * ground is more than 125 plots tall or 188 wide does not fit the 600 x
+     * 400 map at 3 px a plot, FIT_MARGIN of it (the playtest's town of month
+     * 420, 80 x 192 plots, fits at 1.96 - runs/fixO3-notes.md). The real
+     * cities measured open at their fit.
+     *
+     * WHY. The number's size was set on MapCheck's town of ten years, which
+     * opened at 2.98 px a plot (0.7.69); from 0.7.78 the same town grew to
+     * open at 2.74, where its offers one block of 120 m across were 10.96 px
+     * and one was drawn 10 px - whole and unnumbered. Any town opening under
+     * 2.75 px a plot with offers that small did the same (runs/fixO2-notes.md).
+     */
+    public static void open(MapFrame f, CityLand land, LandMarket market) {
+        double[] box = openingBox(land);
+        f.fit(box[0], box[1], box[2], box[3]);
+        long side = smallestOfferSide(market);
+        if (side <= 0) return;
+        double wanted = MapFrame.OPENING_OFFER_PX / side;
+        if (wanted > f.scale()) f.set(f.centreX(), f.centreY(), wanted);
+    }
+
+    /** The shorter side of the smallest offer standing, in plots: the least of every listed offer's width and height (0.7.79); 0 with none listed. */
+    public static long smallestOfferSide(LandMarket market) {
+        long least = 0;
+        if (market == null) return 0;
+        for (LandParcel p : market.getListing()) {
+            long side = Math.min(p.getX1() - p.getX0(), p.getY1() - p.getY0());
+            if (side > 0 && (least == 0 || side < least)) least = side;
+        }
+        return least;
     }
 
     /* ----------------------------- the fields ----------------------------- */
@@ -323,7 +475,8 @@ public final class LandMap {
      * What a painted plot holds, in the hover card's words, or null for bare
      * ground: a building by its type's name (nameOf, by type id; its class
      * when null) - since 0.7.64 every drawn building is one of the model's -
-     * or a road's kind, "a bridge" over water.
+     * or a road's kind, "a bridge" over water; since 0.7.72 the railway's
+     * track, and a road where it crosses the track.
      */
     public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot,
                                    java.util.function.IntFunction<String> nameOf) {
@@ -336,10 +489,12 @@ public final class LandMap {
             String name = nameOf == null ? null : nameOf.apply(t.id());
             return name != null ? name : CLASS_ONE[t.cls()];
         }
-        if (p.use[plot] == TilePainter.ROAD) {
+        if (p.use[plot] == TilePainter.ROAD || (p.use[plot] == TilePainter.RAIL && p.road[plot] != 0)) {
             String kind = p.road[plot] == BuildingVisual.HIGHWAY ? "Highway" : p.road[plot] >= BuildingVisual.PAVED ? "Paved road" : "Gravel road";
+            if (p.use[plot] == TilePainter.RAIL) kind += " crossing the railway";
             return p.bridge[plot] ? kind + ", a bridge" : kind;
         }
+        if (p.use[plot] == TilePainter.RAIL) return p.bridge[plot] ? "Railway, a bridge" : "Railway";
         return null;
     }
 }

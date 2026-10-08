@@ -123,6 +123,32 @@ public class Inbox {
                 "A demolition is done",
                 demolished);
 
+        // Automatic building (0.7.73): a service below its spare margin that
+        // this month's pass could not order for - the builders, the ground,
+        // the budget or the player's debt limit, or nothing it could build -
+        // a paragraph each, in its own words.
+        List<String> autoBuild = new ArrayList<>();
+        for (String held : game.getAutoBuilder().held()) {
+            if (!autoBuild.isEmpty()) autoBuild.add("");
+            autoBuild.addAll(wrapped(held, BODY_COLUMNS));
+        }
+        take(game, month, "autobuild",
+                game.getAutoBuilder().isOn() && !autoBuild.isEmpty(),
+                "Automatic building is held back",
+                autoBuild);
+
+        // ...and the ground it bought for its orders this month (0.7.77): which
+        // offers, for what, and why those - a paragraph a purchase.
+        List<String> autoLand = new ArrayList<>();
+        for (String line : game.getAutoBuilder().bought()) {
+            if (!autoLand.isEmpty()) autoLand.add("");
+            autoLand.addAll(wrapped(line, BODY_COLUMNS));
+        }
+        take(game, month, "autobuild-land",
+                game.getAutoBuilder().isOn() && !autoLand.isEmpty(),
+                "Automatic building bought land",
+                autoLand);
+
         cull(month);
     }
 
@@ -184,6 +210,25 @@ public class Inbox {
         } else if (live != null) {
             live.markResolved(month);
         }
+    }
+
+    /** A body line's most characters (0.7.73): the measure the bodies written by hand keep, inside the list's width in its mono face. */
+    static final int BODY_COLUMNS = 62;
+
+    /** A sentence broken at spaces into lines of at most `columns` characters (a longer word on a line of its own). */
+    static List<String> wrapped(String text, int columns) {
+        List<String> lines = new ArrayList<>();
+        StringBuilder line = new StringBuilder();
+        for (String word : text.split(" ")) {
+            if (line.length() > 0 && line.length() + 1 + word.length() > columns) {
+                lines.add(line.toString());
+                line.setLength(0);
+            }
+            if (line.length() > 0) line.append(' ');
+            line.append(word);
+        }
+        if (line.length() > 0) lines.add(line.toString());
+        return lines;
     }
 
     /** Drop what has been settled longer than anybody needs to remember. */

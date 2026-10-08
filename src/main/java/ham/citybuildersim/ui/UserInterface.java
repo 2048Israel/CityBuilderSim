@@ -5695,6 +5695,8 @@ public class UserInterface extends Application {
             case "healthcare": return "Go and build healthcare →";
             case "overtime":   return "Go to the construction page →";
             case "demolished": return "See the construction page →";
+            case "autobuild":  return "See automatic building →";
+            case "autobuild-land": return "See the land office →";
             default:           return "Deal with this →";
         }
     }
@@ -5741,6 +5743,14 @@ public class UserInterface extends Application {
             case "overtime":
             case "demolished":
                 constructionScreen.show();
+                break;
+            // Automatic building held back (0.7.73): its cards are on Build's Overview.
+            case "autobuild":
+                buildScreen.showOverview();
+                break;
+            // ...and the ground it bought for its orders (0.7.77): the land office, where the city's ground is.
+            case "autobuild-land":
+                landScreen.showLandMenu();
                 break;
             default:
                 refreshInbox();

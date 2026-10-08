@@ -812,6 +812,10 @@ public final class RealEstate extends Sector {
        THE SCREEN
        =================================================================== */
 
+    /** Its formal statements' format (0.7.74, spec-sector-statements 4.6): a landlord, whose middle line is its net operating income, before its mortgages. */
+    @Override
+    public ham.citybuildersim.SectorStatements.Format statementFormat() { return ham.citybuildersim.SectorStatements.Format.LANDLORDS; }
+
     @Override
     public String inputLabel() { return "Repairs"; }
 

@@ -7,8 +7,8 @@ import java.util.List;
  * The ground a city owns, as a region quadtree over the world's plots: which holding owns each plot, and how much of any block or rectangle of plots is owned.
  *
  * WHY THIS EXISTS (0.7.65, batch M1; the project's spec-grid.md 2.1 and 2.3).
- * The land is moving from spec-land's forty lanes of wedges to a grid of
- * square blocks lined up with the world: a level-k block is 2^k plots a side,
+ * The land moved (0.7.67) from spec-land's forty lanes of wedges to a grid
+ * of square blocks lined up with the world: a level-k block is 2^k plots a side,
  * block (bx, by) covering plots [bx 2^k, (bx + 1) 2^k) each way, so blocks
  * nest in one another and in the world's tiles (level 5), districts (8) and
  * cells (11). Every piece of ground the city owns - the centre's blocks, each

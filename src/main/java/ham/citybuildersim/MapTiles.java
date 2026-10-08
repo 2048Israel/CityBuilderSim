@@ -93,8 +93,9 @@ public final class MapTiles {
     /**
      * A stamp of everything a tile is painted from but its ground, which is
      * the world's and never changes: what is owned, the buildings and road
-     * plots dealt to it, its neighbours' roads and its sites with their
-     * states and mines. Two tiles with one stamp paint the same pixels.
+     * plots dealt to it, its neighbours' roads, the plan's runs through it
+     * (0.7.72) and its sites with their states and mines. Two tiles with one
+     * stamp paint the same pixels.
      */
     public static long stamp(TilePainter.Input in) {
         long h = World.mix(in.seed ^ World.mix(in.tx * 0x9E3779B97F4A7C15L ^ in.ty));
@@ -102,6 +103,11 @@ public final class MapTiles {
         for (int c : in.counts) h = World.mix(h ^ c);
         for (int b : in.roadBudget) h = World.mix(h ^ b);
         for (boolean b : in.neighbourRoads) h = World.mix(h ^ (b ? 1 : 2));
+        // The plan's runs through it: its main streets, highways and track (0.7.72).
+        h = World.mix(h ^ in.plans);
+        for (int k = 0; k < in.plans; k++) {
+            h = World.mix(h ^ ((long) in.planX0[k] << 40 ^ (long) in.planY0[k] << 30 ^ (long) in.planX1[k] << 20 ^ (long) in.planY1[k] << 10 ^ in.planKind[k]));
+        }
         h = World.mix(h ^ in.sites);
         for (int s = 0; s < in.sites; s++) {
             h = World.mix(h ^ ((long) in.siteX0[s] << 40 ^ (long) in.siteY0[s] << 30 ^ (long) in.siteX1[s] << 20 ^ (long) in.siteY1[s] << 10));
@@ -210,7 +216,7 @@ public final class MapTiles {
     /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh. */
     public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p) {
         long input = 2L * TilePainter.PLOTS + 4L * (in.counts.length + in.model.length) + 16 + 4
-                + 36L * in.siteX0.length;
+                + 36L * in.siteX0.length + 17L * in.planX0.length;
         long picture = 4L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 28L * p.bx.length;
         return input + picture;
     }

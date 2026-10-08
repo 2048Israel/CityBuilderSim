@@ -232,7 +232,49 @@ public final class SectorBooks {
              * reached the till and no line, and unexplained() held it. At the
              * end of the record: an older save reads zero here.
              */
-            double arrearsPaid) {
+            double arrearsPaid,
+
+            /* ------------------------ and its share capital (0.7.75, R3) ------------------------ */
+            /**
+             * Its share capital as the month closed (Equity.getPaidIn()): its
+             * founders' book, what it raised at home and abroad, less what its
+             * buybacks paid - the sheet's share capital, the rest of its
+             * equity retained and revalued. At the end of the record: a save
+             * from before 0.7.75 reads nothing here, and its load derives it
+             * (derivePaidIn()).
+             */
+            double paidIn,
+            /** The founders' shares issued against its book this month: share capital out of what it had kept, no cash moving. */
+            double founded,
+            /** True when paidIn was derived at the load of a save from before it was kept: what it raised since founding, its founders' book and earlier buybacks not known. */
+            boolean paidInDerived,
+
+            /* -------------- and what its borrowing cost it up front (0.7.75, F2 and R5) -------------- */
+            /** The fees the bank kept out of what it lent it this month (0.7.7): what it owes is the whole principal and its cash the rest, so its equity falls by them - on no statement until 0.7.75's outside lines. */
+            double loanFees,
+            /** ...and its mortgages' insurance premiums, paid to the treasury out of the principal (0.7.11). */
+            double premiums,
+            /** ...and its bonds' issuing costs (R5): the face it sold less what the bonds handed it, the bank's underwriting. */
+            double bondCosts,
+            /** The face its bondholders wrote off in this month's defaults (BusinessDebtManager.getBondWrittenOffThisMonth()): what it owes falls and no cash moves, so its equity rises. */
+            double bondsWrittenOff,
+
+            /* ------------------------ and what the sheet priced (0.7.75, R6) ------------------------ */
+            /** Its land, in square feet, and the price a square foot the sheet valued it at: the sheet's land is their product. */
+            double landSqFt,
+            double landPrice,
+            /** The construction materials in its buildings, finished and on site, in units, and the price a unit the sheet valued them at: the materials part of its buildings. */
+            double buildingMaterials,
+            double materialsPrice,
+            /**
+             * Last month's stock at this month's prices, less at last month's:
+             * what the prices did to the stock it began the month with. Counted
+             * when last month's stock was in memory (stockCounted) - not the
+             * month after a load, nor in a save from before 0.7.75, which reads
+             * false there.
+             */
+            double stockRevalued,
+            boolean stockCounted) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -303,11 +345,106 @@ public final class SectorBooks {
                     0, 0, 0, 0,
                     0, 0, 0, 0, 0,
                     0, 0, 0,
-                    0);
+                    0,
+                    0, 0, false,
+                    0, 0, 0, 0,
+                    0, 0, 0, 0, 0, false);
+        }
+
+        /** Its equity less its share capital: what it kept and what the model revalued (R3). */
+        public double retained() {
+            return equity() - paidIn;
+        }
+
+        /** The same month with its share capital put: a save from before 0.7.75, derived at the load (derivePaidIn()). */
+        SectorMonth withPaidIn(double capital, boolean derived) {
+            return new SectorMonth(sector, month, revenue, inputs, payroll, electricity, water, operatingIncome,
+                    interest, propertyTax, preTaxIncome, tax, netIncome, cash, inventory, land, buildings, bondsPayable,
+                    openingCash, borrowed, repaid, fromTheCity, forgiven, depositInterest, spentOnBuildings, salesTaxPaid,
+                    rate, leverage, writtenOff, blocked, foreignAssets, investedAbroad, foreignInterest, equityRaised,
+                    dividendsPaid, sharesBoughtBack, maintenance, stolen, salvage, paidEarlier, bondAssets, bondsIssued,
+                    bondsRepaid, bondsBought, bondCoupons, tradeReceivables, tradePayables, tradeCredit, arrearsPaid,
+                    capital, founded, derived, loanFees, premiums, bondCosts, bondsWrittenOff,
+                    landSqFt, landPrice, buildingMaterials, materialsPrice, stockRevalued, stockCounted);
         }
 
         public boolean isEmpty() {
             return month == 0;
+        }
+    }
+
+    /**
+     * R1 AND R2 (0.7.74, the sector statements): one business's interest by
+     * instrument as its statement was struck, and what it owes by kind with
+     * what of it falls due within a year and within five, as its sheet was
+     * read - each in KINDS' order. The interest is EconomyManager's split of
+     * the bill it handed the sector at the top of the month, so it adds to
+     * `interest`; the debt its split of the principal the sheet was last
+     * pushed with, so it adds to `bondsPayable`. Either is null when it was
+     * not read. Kept for this month and last in memory and NOT SAVED: after
+     * a load both months read as not counted until a month has run - the
+     * rule the flows' units keep (B14) - which is what the spec asks of R1,
+     * R2 and R7 alike.
+     *
+     * ...AND SINCE 0.7.75 (R2's rate and "runs to", R7): the rate each kind
+     * pays a year, weighted by what is owed on it, and the month the last of
+     * it falls due (BusinessDebtManager.debtByKind()'s RATE and RUNS_TO); and
+     * what had moved its principal so far, {borrowed, repaid, written off}
+     * by kind, as the sheet was read (`moved`) and as the month closed
+     * (`movedAtClose`) - running totals in memory, which the debt schedule
+     * differences a month apart (SectorStatements.schedule()): from sheet to
+     * sheet, and, for the harness, from close to close.
+     */
+    public record Debt(double[] interest, double[] owed, double[] withinYear, double[] withinFive, double[] rate,
+                       double[] runsTo, double[][] moved, double[][] movedAtClose) {
+
+        /** The four kinds, as the statements name them: BusinessDebtManager.DEBT_KINDS. */
+        public static final String[] KINDS = BusinessDebtManager.DEBT_KINDS;
+
+        public double interestTotal()   { return sum(interest); }
+        public double owedTotal()       { return sum(owed); }
+        public double withinYearTotal() { return sum(withinYear); }
+        public double withinFiveTotal() { return sum(withinFive); }
+
+        private static double sum(double[] a) {
+            if (a == null) return Double.NaN;
+            double s = 0;
+            for (double v : a) s += v;
+            return s;
+        }
+
+        Debt scaled(double s) {
+            return new Debt(times(interest, s), times(owed, s), times(withinYear, s), times(withinFive, s), rate, runsTo,
+                    times(moved, s), times(movedAtClose, s));
+        }
+
+        private static double[][] times(double[][] a, double s) {
+            if (a == null) return null;
+            double[][] out = new double[a.length][];
+            for (int i = 0; i < a.length; i++) out[i] = times(a[i], s);
+            return out;
+        }
+
+        private static double[] times(double[] a, double s) {
+            if (a == null) return null;
+            double[] out = a.clone();
+            for (int i = 0; i < out.length; i++) out[i] *= s;
+            return out;
+        }
+    }
+
+    /**
+     * One company's share as its month closed (0.7.74, the investor report):
+     * its shares, those outside the bank's desk, the last trade or fair
+     * value with whether it has traded, the register's fair value, the
+     * month's dividend and a year's of it a share - Equity's and Exchange's
+     * reads. In memory for this month and last, NOT SAVED, as Debt.
+     */
+    public record Shares(double shares, double outstanding, double price, double fair, boolean traded,
+                         double dividend, double dividendYear) {
+
+        Shares scaled(double s) {
+            return new Shares(shares, outstanding, price * s, fair * s, traded, dividend * s, dividendYear * s);
         }
     }
 
@@ -320,6 +457,22 @@ public final class SectorBooks {
 
     /** Closing cash from the month just recorded, which is next month's opening. */
     private final Map<String, Double> lastCash = new LinkedHashMap<>();
+
+    /** R1 and R2 for this month and last, and each company's share (0.7.74): in memory only - see Debt and Shares. */
+    private final Map<String, Debt> debtNow = new LinkedHashMap<>(), debtBefore = new LinkedHashMap<>();
+    private final Map<String, Shares> sharesNow = new LinkedHashMap<>(), sharesBefore = new LinkedHashMap<>();
+
+    /** Each business's stock by good as the month closed, {units, price} (0.7.75, R6): next month's revaluation is last month's units at its prices. In memory only. */
+    private final Map<String, Map<Good, double[]>> stockAtClose = new LinkedHashMap<>();
+
+    /** This month's R1 and R2 for one business, or null while not counted (a load, a founding). */
+    public Debt debt(String key)         { return debtNow.get(key); }
+    /** ...and last month's. */
+    public Debt debtBefore(String key)   { return debtBefore.get(key); }
+    /** One company's share as this month closed, or null while not counted. */
+    public Shares shares(String key)       { return sharesNow.get(key); }
+    /** ...and as last month closed. */
+    public Shares sharesBefore(String key) { return sharesBefore.get(key); }
 
     public SectorMonth get(Sector sector)      { return get(sector.key()); }
     public SectorMonth previous(Sector sector) { return previous(sector.key()); }
@@ -357,12 +510,55 @@ public final class SectorBooks {
         before.clear();
         before.putAll(now);
         now.clear();
+        debtBefore.clear();
+        debtBefore.putAll(debtNow);
+        debtNow.clear();
+        sharesBefore.clear();
+        sharesBefore.putAll(sharesNow);
+        sharesNow.clear();
 
         for (Sector sector : game.getSectors().all()) {
             SectorMonth month = read(game, sector);
             now.put(sector.key(), month);
             lastCash.put(sector.key(), month.cash());
+            Debt debt = readDebt(game, sector.key());
+            if (debt != null) debtNow.put(sector.key(), debt);
+            Shares share = readShares(game, sector.key());
+            if (share != null) sharesNow.put(sector.key(), share);
         }
+    }
+
+    /** R1 and R2 as the month's books read them (0.7.74): EconomyManager's splits, copied - null when it kept neither. */
+    private static Debt readDebt(Game game, String key) {
+        EconomyManager economy = game.getEconomyManager();
+        double[] interest = economy.getInterestByKind(key);
+        double[][] owed = economy.getDebtByKind(key);
+        if (interest == null && owed == null) return null;
+        double[][] moved = economy.getDebtMovedAtSheet(key);
+        return new Debt(interest == null ? null : interest.clone(),
+                owed == null ? null : owed[BusinessDebtManager.OWED].clone(),
+                owed == null ? null : owed[BusinessDebtManager.WITHIN_YEAR].clone(),
+                owed == null ? null : owed[BusinessDebtManager.WITHIN_FIVE].clone(),
+                owed == null ? null : owed[BusinessDebtManager.RATE].clone(),
+                owed == null ? null : owed[BusinessDebtManager.RUNS_TO].clone(),
+                owed == null || moved == null ? null : copy(moved),
+                owed == null || moved == null ? null : economy.getBusinessDebtManager().debtMovedByKind(key));
+    }
+
+    private static double[][] copy(double[][] a) {
+        double[][] out = new double[a.length][];
+        for (int i = 0; i < a.length; i++) out[i] = a[i].clone();
+        return out;
+    }
+
+    /** A company's share as the month closes (0.7.74): null for one that is not listed or has no shares. */
+    private static Shares readShares(Game game, String key) {
+        Equity register = game.getEquity();
+        Exchange market = game.getExchange();
+        int c = Equity.indexOf(key);
+        if (register == null || market == null || c < 0 || !(register.getShares(c) > 0)) return null;
+        return new Shares(register.getShares(c), register.getOutstanding(c), market.price(c), market.fair(c),
+                market.hasTraded(c), register.getDividendThisMonth(c), register.dividendPerShareAnnual(c));
     }
 
     /**
@@ -384,6 +580,24 @@ public final class SectorBooks {
         BalanceSheet sheet = sector.getBalanceSheet();
 
         double opening = lastCash.getOrDefault(key, 0.0);
+
+        // Its share capital (0.7.75, R3): the register's, a sector's own.
+        Equity register = game.getEquity();
+        int company = Equity.indexOf(key);
+        boolean listed = register != null && company >= 0 && company != Equity.BANK;
+        // ...the sheet's prices and quantities, as it was pushed (R6)...
+        double[] valued = economy.getValuedAt(key);
+        if (valued == null) valued = new double[4];
+        // ...and last month's stock at this month's prices.
+        Map<Good, double[]> stock = sector.stockAtPrices();
+        Map<Good, double[]> stockBefore = stockAtClose.get(key);
+        double stockRevalued = 0;
+        if (stockBefore != null) {
+            for (Map.Entry<Good, double[]> e : stockBefore.entrySet()) {
+                stockRevalued += e.getValue()[0] * (sector.stockPrice(e.getKey()) - e.getValue()[1]);
+            }
+        }
+        stockAtClose.put(key, stock);
 
         return new SectorMonth(key, game.getMonth(),
                 st.revenue, st.inputs, st.payroll, st.electricity, st.water,
@@ -429,7 +643,41 @@ public final class SectorBooks {
                 sheet.getTradeReceivables(),
                 sheet.getTradePayables(),
                 sector.getTradeCreditCash(),
-                game.getArrearsPaidTo(key));
+                game.getArrearsPaidTo(key),
+                listed ? register.getPaidIn(company) : 0,
+                listed ? register.getFoundedThisMonth(company) : 0,
+                listed && register.isPaidInDerived(company),
+                credit.getFeesThisMonth(key),
+                credit.getPremiumsThisMonth(key),
+                game.getBondMarket().getIssued(key) - game.getBondMarket().getProceeds(key),
+                credit.getBondWrittenOffThisMonth(key),
+                valued[0], valued[1], valued[2], valued[3],
+                stockRevalued, stockBefore != null);
+    }
+
+    /**
+     * A SAVE FROM BEFORE 0.7.75 KEPT NO SHARE CAPITAL (R3): its two months
+     * read nothing there. Put on the register's derived figure (Equity's
+     * restore()) - this month's as it stands, last month's the same less
+     * what this month's shares, buybacks and founders moved it by, so the
+     * equity statement's share capital closes - and marked derived, which
+     * the statements say. Called by the load path after restoreFrom() for
+     * such a save only.
+     */
+    public void derivePaidIn(Equity register) {
+        if (register == null) return;
+        for (Map.Entry<String, SectorMonth> e : now.entrySet()) {
+            int c = Equity.indexOf(e.getKey());
+            if (c < 0 || c == Equity.BANK) continue;
+            SectorMonth m = e.getValue();
+            double capital = register.getPaidIn(c);
+            boolean derived = register.isPaidInDerived(c);
+            e.setValue(m.withPaidIn(capital, derived));
+            SectorMonth b = before.get(e.getKey());
+            if (b != null) {
+                before.put(e.getKey(), b.withPaidIn(capital - m.equityRaised() + m.sharesBoughtBack() - m.founded(), derived));
+            }
+        }
     }
 
     /* ===================================================================
@@ -457,6 +705,13 @@ public final class SectorBooks {
         now.clear();
         before.clear();
         lastCash.clear();
+        // ...and R1, R2 and the shares are not saved (0.7.74): not counted until a month runs.
+        debtNow.clear();
+        debtBefore.clear();
+        sharesNow.clear();
+        sharesBefore.clear();
+        // ...nor last month's stock by good (0.7.75, R6): the month after a load does not count its revaluation.
+        stockAtClose.clear();
         if (saved != null) {
             for (SectorMonth m : saved) {
                 if (m == null || m.sector() == null) continue;
@@ -487,6 +742,11 @@ public final class SectorBooks {
         for (Map.Entry<String, SectorMonth> e : now.entrySet()) e.setValue(scaled(e.getValue(), scale));
         for (Map.Entry<String, SectorMonth> e : before.entrySet()) e.setValue(scaled(e.getValue(), scale));
         for (Map.Entry<String, Double> e : lastCash.entrySet()) e.setValue(e.getValue() * scale);
+        for (Map.Entry<String, Debt> e : debtNow.entrySet()) e.setValue(e.getValue().scaled(scale));
+        for (Map.Entry<String, Debt> e : debtBefore.entrySet()) e.setValue(e.getValue().scaled(scale));
+        for (Map.Entry<String, Shares> e : sharesNow.entrySet()) e.setValue(e.getValue().scaled(scale));
+        for (Map.Entry<String, Shares> e : sharesBefore.entrySet()) e.setValue(e.getValue().scaled(scale));
+        for (Map<Good, double[]> m : stockAtClose.values()) for (double[] v : m.values()) v[1] *= scale;
     }
 
     private static SectorMonth scaled(SectorMonth m, double s) {
@@ -505,6 +765,10 @@ public final class SectorBooks {
                 m.bondAssets() * s, m.bondsIssued() * s, m.bondsRepaid() * s, m.bondsBought() * s,
                 m.bondCoupons() * s,
                 m.tradeReceivables() * s, m.tradePayables() * s, m.tradeCredit() * s,
-                m.arrearsPaid() * s);
+                m.arrearsPaid() * s,
+                m.paidIn() * s, m.founded() * s, m.paidInDerived(),
+                m.loanFees() * s, m.premiums() * s, m.bondCosts() * s, m.bondsWrittenOff() * s,
+                m.landSqFt(), m.landPrice() * s, m.buildingMaterials(), m.materialsPrice() * s,
+                m.stockRevalued() * s, m.stockCounted());
     }
 }

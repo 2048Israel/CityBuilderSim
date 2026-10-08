@@ -1016,6 +1016,13 @@ public class ReadPathCheck {
             BuildCard.groupOf(g, sec);
             BuildCard.categoryOf(g, sec);
             BuildCard.noteOf(g, sec);
+            // ...and the investor report's every gate, with how each would be paid for (0.7.75, R4), and the
+            // statements' debt by kind, what moved it, its stock at today's prices (R2, R6, R7)
+            BuildCard.appraiseAll(g, sec);
+            e.getBusinessDebtManager().debtMovedByKind(sec.key());
+            e.getBusinessDebtManager().debtByKind(sec.key(), g.getMonth());
+            sec.stockAtPrices();
+            g.getEquity().getPaidIn(Equity.indexOf(sec.key()));
             e.getBusinessDebtManager().getTermLoanPrincipal(sec.key());
             e.getAssessedValue(sec);
             e.getMaintenanceCharge(sec.key());
@@ -1145,7 +1152,19 @@ public class ReadPathCheck {
         g.hasDepositFor(g.getBuildingManager().getTemplateByName("Oil Well"), 1);
         g.getSectors().oil().getPotentialOutput(); g.getSectors().oil().ownLines(g);
         BuildingsTemplate refineryT = g.getBuildingManager().getTemplateByName("Oil Refinery");
-        g.getSectors().refining().spareCrude(refineryT); g.getSectors().refining().getCrudeDemand();
+        g.getSectors().refining().spareCrude(); g.getSectors().refining().getCrudeDemand();
+        // ...and the slate's reads (0.7.76): the products, their room, what a crude unit makes.
+        for (Good p : g.getSectors().refining().goodsMade()) {
+            g.getSectors().refining().getCapacity(p); g.getSectors().refining().getPipeline(p);
+            g.getSectors().refining().getStockCapacity(p);
+        }
+        ham.citybuildersim.sectors.Refining.madeBy(refineryT); ham.citybuildersim.sectors.Refining.slate(8300);
+        // ...and crude by grade (0.7.79): the mix and its slate, the oil as it is worked out, the lift's grades, dry and sea sites, the depth.
+        g.getSectors().refining().getCrudeMix(); g.getSectors().refining().slateOf(8300);
+        ham.citybuildersim.sectors.Refining.slate(8300, g.getSectors().refining().getCrudeMix());
+        lm.oilRuns(); lm.getOilLiftedByGrade();
+        for (Resource r : Resource.values()) { lm.getSites(r, true); lm.getSites(r, false); }
+        g.getWorld().shelfTheta(); g.getWorld().depthAt(g.getCityLand().siteX(), g.getCityLand().siteY());
         g.getSectors().refining().estimatedMonthlyProfit(refineryT, g.getBusinessInvestment());
         g.getMotoring().getFuelBill(); g.getMotoring().getFuelImports(); g.getMotoring().getFuelLitres();
         Motoring.journeyFuel(g.getMarkets());
@@ -1592,9 +1611,9 @@ public class ReadPathCheck {
         assertTrue("every one of them the same after a load, to the bit", same == played.size() && again.size() == played.size());
         assertTrue("...the high schools' leavers a number, not NaN", Double.isFinite(again.get("schoolLeavers")));
         // ...and the land on the world (0.7.57), which the office's price is read from.
-        assertTrue("the land on the world is the same after a load: its centre, lanes and purchases",
+        assertTrue("the land on the world is the same after a load: its centre, its blocks and purchases",
                 loaded.getCityLand().same(g.getCityLand()));
-        assertTrue("...its forty offers, field for field", java.util.Arrays.deepEquals(
+        assertTrue("...its offers, field for field", java.util.Arrays.deepEquals(
                 loaded.getLandManager().getMarket().getOffersState(), g.getLandManager().getMarket().getOffersState()));
         assertTrue("...and what was taken out of its ground", java.util.Arrays.equals(
                 loaded.getLandManager().getDepletionState(), g.getLandManager().getDepletionState()));

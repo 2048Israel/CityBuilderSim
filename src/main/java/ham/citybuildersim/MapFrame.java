@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * The map view's arithmetic without the toolkit: where the view looks and how close, how a drag and a notch of the wheel move it, which level of detail it draws and which tiles or far nodes that takes, and how long its scale bar is - what ui/MapView draws by and MapCheck holds.
+ * The map view's arithmetic without the toolkit: where the view looks and how close, how a drag and a notch of the wheel move it, which level of detail it draws and which tiles or far nodes that takes, the land's overlay on whole pixels, and how long its scale bar is - what ui/MapView draws by and MapCheck holds.
  *
  * WHY THIS EXISTS (0.7.61, batch J4; the project's spec-land.md 2.6). The
  * map is drawn on a JavaFX Canvas, and JavaFX cannot draw headless in the
@@ -65,11 +65,28 @@ public final class MapFrame {
     /** A fitted view leaves this much of itself round what it fits: 0.94 of the view (J3b's renders), a margin of 3% each side. */
     public static final double FIT_MARGIN = 0.94;
 
-    /** The land office opens on the city's own ground with this share of its half-size round it each way (star): 0.35 - the near part of every lane's offer is in view, where fitting every offer whole would shrink Jerus's city to a third of the map (his reach 486 plots out against his centre's 173). */
+    /** The land office opens on the city's own ground with this share of its half-size round it each way (star): 0.35 - the near part of every offer is in view, where fitting every offer whole would shrink the city (on the lanes, 0.7.61: Jerus's city to a third of the map, his reach 486 plots out against his centre's 173). */
     public static final double OPENING_MARGIN = 0.35;
 
     /** The levels. */
     public static final int L0 = 0, L1 = 1, L2 = 2, FAR = 3;
+
+    /** The city's block lines are drawn from here: a block at least 6 px across on screen (spec-grid 2.4), so the lines never crowd the ground they mark. */
+    public static final double BLOCK_LINES_FROM = 6;
+
+    /** An offer's place is written on it from here: its box at least 11 px each way on screen (0.7.69, star) - a digit of Plex Mono at 11 px is 6.6 px wide and 7.7 px of capital, so it stands clear of the box's edge, its halo just meeting it; MapCheck's town of ten years opened at 2.98 px a plot then, where an offer one block of 120 m across is 11 to 12 px (at 2.74 from 0.7.78, 10 to 11 px: OPENING_OFFER_PX). */
+    public static final double PLACE_LABEL_FROM = 11;
+
+    /** The land office opens close enough that its smallest offer is this many px across (0.7.79, star O3-2; LandMap.open()): PLACE_LABEL_FROM and a pixel for the grid's phase, since a box PLACE_LABEL_FROM px across on screen can be drawn a pixel short on whole pixels - so every offer the opening view shows whole holds its number. */
+    public static final double OPENING_OFFER_PX = PLACE_LABEL_FROM + 1;
+
+    /** Whether a box on screen (onScreen()) holds an offer's place number: PLACE_LABEL_FROM px each way or more. */
+    public static boolean labelFits(double[] box) {
+        return box != null && box[2] - box[0] >= PLACE_LABEL_FROM && box[3] - box[1] >= PLACE_LABEL_FROM;
+    }
+
+    /** How far past the view's edges the overlay is clipped, in px: 4 - a clipped box's 2 px edge, and a line's square cap, stay off the screen. */
+    public static final double CLIP_PX = 4;
 
     private double width, height, cx, cy, scale;
 
@@ -150,6 +167,79 @@ public final class MapFrame {
     /** The plot coordinate under a screen point. */
     public double plotX(double sx) { return cx + (sx - width / 2) / scale; }
     public double plotY(double sy) { return cy + (sy - height / 2) / scale; }
+
+    /* ----------------------------- the overlay on whole pixels (0.7.69, batch M5) -----------------------------
+     *
+     * The land's overlay - the offers' rectangles, the city's edge, the block
+     * grid - lies on plot edges, which the transform puts between pixels at
+     * any scale. Drawn there, a line a pixel wide smears over two at half
+     * strength. So every plot edge is put on a pixel line first (the nearest
+     * pixel boundary: pixelX(), pixelY()), the same for every shape that
+     * shares the edge, and a line a pixel wide is drawn through the middle of
+     * the pixels on one side of it - crisp, as spec-grid 2.4's "crisp stepped
+     * outline" asks.
+     * ------------------------------------------------------------------------------------------------------------ */
+
+    /** The pixel line a plot edge lies on, across: the screen column boundary nearest it, a half rounded up (never to even, so edges a plot apart are as many pixels apart wherever they fall), and two shapes sharing the edge share the line. */
+    public double pixelX(double x) { return Math.floor(screenX(x) + 0.5); }
+
+    /** ...and down. */
+    public double pixelY(double y) { return Math.floor(screenY(y) + 0.5); }
+
+    /**
+     * A box of plots [x0, x1) x [y0, y1) on the screen: its edges on their
+     * pixel lines, clipped to the view and CLIP_PX round it, as {x0, y0, x1,
+     * y1} in pixels - at least a pixel each way - or null when no pixel of it
+     * is in view. A box larger than the view covers all of it.
+     */
+    public double[] onScreen(double x0, double y0, double x1, double y1) {
+        double sx0 = pixelX(x0), sy0 = pixelY(y0), sx1 = Math.max(sx0 + 1, pixelX(x1)), sy1 = Math.max(sy0 + 1, pixelY(y1));
+        if (sx1 <= 0 || sy1 <= 0 || sx0 >= width || sy0 >= height) return null;
+        return new double[] { Math.max(sx0, -CLIP_PX), Math.max(sy0, -CLIP_PX), Math.min(sx1, width + CLIP_PX),
+                Math.min(sy1, height + CLIP_PX) };
+    }
+
+    /**
+     * A run along plot edges on the screen, crisp: from (x0, y0) to (x1, y1),
+     * horizontal or vertical, with what it bounds on its right as it runs (a
+     * run east has it to the south, as LandMap.outline() gives them) - the
+     * pixels a pixel deep inside that ground along the run's pixel line, as a
+     * box {x, y, w, h} in whole pixels, clipped to the view and CLIP_PX round
+     * it; null when it covers no pixel there (out of view, or under a pixel
+     * long). Filled as one shape, the runs of an outline meet at its corners
+     * with no pixel drawn twice.
+     */
+    public double[] runOnScreen(double x0, double y0, double x1, double y1) {
+        boolean flat = y0 == y1;
+        double line = flat ? pixelY(y0) : pixelX(x0);
+        double a = flat ? pixelX(Math.min(x0, x1)) : pixelY(Math.min(y0, y1));
+        double b = flat ? pixelX(Math.max(x0, x1)) : pixelY(Math.max(y0, y1));
+        // The side it bounds: south of a run east, north of one west, east of one north, west of one south.
+        double at = flat ? (x1 > x0 ? line : line - 1) : (y1 > y0 ? line - 1 : line);
+        double side = flat ? height : width, along = flat ? width : height;
+        a = Math.max(a, -CLIP_PX);
+        b = Math.min(b, along + CLIP_PX);
+        if (b <= a || at < -CLIP_PX || at >= side + CLIP_PX) return null;
+        return flat ? new double[] { a, at, b - a, 1 } : new double[] { at, a, 1, b - a };
+    }
+
+    /**
+     * The block grid's lines in view (spec-grid 2.4): every multiple of
+     * 2^level plots across (columns) or down, as its pixel line - a line a
+     * pixel wide is the column or row of pixels after it, crisp; none when a
+     * block is under BLOCK_LINES_FROM pixels on screen, and none off the
+     * world.
+     */
+    public double[] blockLines(int level, boolean columns) {
+        long b = 1L << level;
+        if (b * scale < BLOCK_LINES_FROM) return new double[0];
+        double lo = columns ? plotX(0) : plotY(0), hi = columns ? plotX(width) : plotY(height);
+        long k0 = Math.max(0, (long) Math.ceil(lo / b)), k1 = Math.min(World.SIDE / b, (long) Math.floor(hi / b));
+        if (k1 < k0) return new double[0];
+        double[] out = new double[(int) (k1 - k0 + 1)];
+        for (int i = 0; i < out.length; i++) out[i] = columns ? pixelX((k0 + i) * b) : pixelY((k0 + i) * b);
+        return out;
+    }
 
     /** The level a scale draws at, before the count of tiles is asked: L0, L1 or L2. */
     public static int levelOf(double scale) {

@@ -2,6 +2,7 @@ package ham.citybuildersim.ui;
 
 import ham.citybuildersim.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
@@ -27,14 +29,17 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.FillRule;
+import javafx.scene.text.TextAlignment;
 import static ham.citybuildersim.ui.Pieces.*;
 
 /**
- * The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground - with the city's edge, its forty offers hatched and its deposits over it, a scale bar, and what is under the pointer.
+ * The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's map by levels of detail - painted tiles a few at a time each frame, the far nodes from the world's ground - with the city's block lines, its edge, its offers hatched and numbered by place, and its deposits over it, a scale bar, and what is under the pointer.
  *
  * WHY THIS EXISTS (0.7.61, batch J4; the project's spec-land.md 2.6 and
- * 2.8). Jerus: click a side to see its ten offers, the map always in view
- * in the land office, an Expand that fills the window and pans and zooms.
+ * 2.8). Jerus: click a side to see its ten offers (six since 0.7.67), the
+ * map always in view in the land office, an Expand that fills the window
+ * and pans and zooms.
  * The model's map (CityMap, J3 and J3b) counts the city's buildings by
  * district and paints any tile from them; this draws it. What it draws by -
  * the transform, the level of detail, the tiles a screen asks for, what a
@@ -46,7 +51,7 @@ import static ham.citybuildersim.ui.Pieces.*;
  * opens on the city's ground with MapFrame.OPENING_MARGIN round it and stays
  * there (star: the page scrolls under the wheel, so the small map neither
  * pans nor zooms; a click selects a side or an offer, a hover names what is
- * under the pointer and lights an offer's band). Expand moves the canvas
+ * under the pointer and lights an offer). Expand moves the canvas
  * into UserInterface's pane over the whole window (City History's, 0.7.23):
  * drag pans, the wheel zooms by MapFrame.ZOOM_STEP a notch at the pointer,
  * + and - zoom, 0 fits, Esc closes (the arrows stay the clock's speed, as
@@ -67,6 +72,16 @@ import static ham.citybuildersim.ui.Pieces.*;
  * kept back on the FX thread (Game.adoptMap()); the far nodes' ground is
  * read from the world (MapTiles.nodeTerrain(), World is safe) on WORKER and
  * coloured on the FX thread. Nothing on WORKER touches a node of the scene.
+ *
+ * THE OVERLAY ON THE BLOCK GRID (0.7.69, batch M5; the project's
+ * spec-grid.md 2.4): the offers are rectangles of whole blocks, hatched on
+ * their free ground and numbered by place as the office's rows are; the
+ * city's edge is runs along block lines, drawn crisp and stepped on the
+ * pixels just inside it; and the city's block grid is drawn faint where a
+ * block is big enough to see. Where each falls on the screen's pixels is
+ * MapFrame's arithmetic (onScreen(), runOnScreen(), blockLines()), so
+ * MapCheck holds it; the edge and each offer's cut-outs are found once a
+ * purchase or a listing, not every frame.
  */
 final class MapView {
 
@@ -94,8 +109,8 @@ final class MapView {
     /** Drafts a city may fail to keep before its map is drawn on the FX thread instead: 3. */
     static final int DRAFTS_MOST = 3;
 
-    /** Who hears a click: a side, and an offer's lane on it or -1. */
-    interface Picker { void picked(int side, int lane); }
+    /** Who hears a click: a side, and an offer's place on it or -1. */
+    interface Picker { void picked(int side, int place); }
 
     /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground. Low priority; it dies with the window. */
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor(r -> {
@@ -155,9 +170,9 @@ final class MapView {
 
     /* ----------------------------- what the player is doing ----------------------------- */
 
-    private int side = -1, lane = -1;          // the side the office shows, and the offer picked
-    private int litSide = -1, litLane = -1;    // a row hovered in the office
-    private int overSide = -1, overLane = -1;  // the band under the pointer
+    private int side = -1, place = -1;           // the side the office shows, and the offer picked
+    private int litSide = -1, litPlace = -1;     // a row hovered in the office
+    private int overSide = -1, overPlace = -1;   // the offer under the pointer
     private double pressX, pressY, lastX, lastY, moved;
     private boolean pressed;
     private double[] hoverAt;
@@ -226,7 +241,7 @@ final class MapView {
     void forget() {
         if (expanded) collapse(false);
         reset();
-        side = lane = litSide = litLane = overSide = overLane = -1;
+        side = place = litSide = litPlace = overSide = overPlace = -1;
         fittedFor = Long.MIN_VALUE;
         draftsFailed = 0;
     }
@@ -240,20 +255,24 @@ final class MapView {
         nodesAsked.clear();
         fields = List.of();
         fieldsFor = Long.MIN_VALUE;
+        edge = new double[4][0];
+        ownedIn.clear();
+        labelAt.clear();
+        shapesFor = labelsFor = Long.MIN_VALUE;
     }
 
     /** The office drawn again: the side it shows and the offer picked, and whatever moved since - a month, a purchase. */
-    void refresh(int side, int lane) {
+    void refresh(int side, int place) {
         this.side = side;
-        this.lane = lane;
+        this.place = place;
         requestDraw();
     }
 
-    /** An offer's band lit from its row in the office (-1 for none). */
-    void light(int side, int lane) {
-        if (side == litSide && lane == litLane) return;
+    /** An offer lit from its row in the office (-1 for none). */
+    void light(int side, int place) {
+        if (side == litSide && place == litPlace) return;
         litSide = side;
-        litLane = lane;
+        litPlace = place;
         requestDraw();
     }
 
@@ -329,11 +348,12 @@ final class MapView {
         }
         showIf(note, tiles == null && !expanded);
         // Fitted again when the land moves: a purchase, or the land drawn again.
-        long landKey = land.purchases().size() * 0x9E3779B97F4A7C15L ^ land.stamp();
+        // ...and when the listing's smallest offer changes, which the opening zoom is drawn close enough to number (0.7.79).
+        LandMarket market = g.getLandManager().getMarket();
+        long landKey = land.purchases().size() * 0x9E3779B97F4A7C15L ^ land.stamp() ^ LandMap.smallestOfferSide(market) * 0xC2B2AE3D27D4EB4FL;
         if (landKey != fittedFor) {
             fittedFor = landKey;
-            double[] box = LandMap.openingBox(land);
-            small.fit(box[0], box[1], box[2], box[3]);
+            LandMap.open(small, land, market);
             dirty = true;
         }
         if (tiles != null) {
@@ -541,64 +561,159 @@ final class MapView {
     /** The offers' pink: the mockup's band edge (rgba(246, 166, 201)). */
     static final String OFFER_EDGE = "#f6a6c9";
 
+    /** The block lines' white, its alpha: 0.08 (0.7.69, star) - faint, so the ground under them reads first; at 0.08 a line shows on the dimmed world and on the city's own ground alike (the M5 renders). */
+    static final double BLOCK_LINE_ALPHA = 0.08;
+
+    /** The city's edge's white, its alpha: 0.55, as since 0.7.61. */
+    static final double EDGE_ALPHA = 0.55;
+
     /**
-     * Over the ground: the forty offers hatched and edged in pink - the
-     * office's side bright, the others faint, the one under the pointer or
-     * a hovered row lit, the picked one edged solid - the city's edge in
-     * white, the centre's square dashed, the deposits at L1 and L2 (spec-land
-     * 2.6; at L0 the tiles draw the sites, and past L2 a dot a field would
-     * bury the city), and the scale bar.
+     * Over the ground (spec-grid 2.4, since 0.7.69): the city's block lines,
+     * faint, where a block is at least MapFrame.BLOCK_LINES_FROM px; the
+     * offers as hatched rectangles - each its free ground only, the city's
+     * own ground in its rectangle left clear (LandMap.ownedIn()), its edge
+     * too - edged in pink, the office's side bright, the others faint, the
+     * one under the pointer or a hovered row lit, the picked one edged
+     * solid; the city's edge in white, crisp and stepped, on the pixels just
+     * inside it (MapFrame.runOnScreen()); the centre's box dashed, the
+     * deposits at L1 and L2 (spec-land 2.6; at L0 the tiles draw the sites,
+     * and past L2 a dot a field would bury the city); each offer numbered by
+     * its place on its free ground (LandMap.labelBlock()), or its whole box
+     * where only that holds a number (MapFrame.labelFits()), over the dots;
+     * and the scale bar.
+     * Every line lies on whole pixels (MapFrame.onScreen()).
      */
     private void overlays(GraphicsContext gc, MapFrame f) {
         Game g = ui.game;
         CityLand land = g.getCityLand();
         LandMarket market = g.getLandManager().getMarket();
-        double[] xs = new double[4], ys = new double[4];
-        gc.setLineDashes((double[]) null);
+        shapes(land, market);
+        blockLines(gc, f, market.getLevel());
+        List<LandParcel> listing = market.getListing();
         double ax = Math.floorMod((long) Math.floor(f.screenX(0)), 8), ay = Math.floorMod((long) Math.floor(f.screenY(0)), 8);
         ImagePattern pattern = new ImagePattern(hatch.getImage(), ax, ay, 8, 8, false);
-        for (LandParcel p : market.getListing()) {
-            double[] q = LandMap.rect(p);
-            boolean seen = false;
-            for (int i = 0; i < 4; i++) {
-                xs[i] = f.screenX(q[2 * i]);
-                ys[i] = f.screenY(q[2 * i + 1]);
-                seen |= xs[i] > -f.width() && xs[i] < 2 * f.width() && ys[i] > -f.height() && ys[i] < 2 * f.height();
-            }
-            if (!seen) continue;
+        gc.setFillRule(FillRule.EVEN_ODD);
+        for (int i = 0; i < listing.size(); i++) {
+            LandParcel p = listing.get(i);
+            double[] box = f.onScreen(p.getX0(), p.getY0(), p.getX1(), p.getY1());
+            if (box == null) continue;
             boolean mine = p.getSide() == side;
-            boolean lit = (p.getSide() == overSide && p.getPlace() == overLane) || (p.getSide() == litSide && p.getPlace() == litLane);
-            boolean picked = p.getSide() == side && p.getPlace() == lane;
+            boolean lit = (p.getSide() == overSide && p.getPlace() == overPlace) || (p.getSide() == litSide && p.getPlace() == litPlace);
+            boolean picked = p.getSide() == side && p.getPlace() == place;
+            // Its free ground: the box, less the city's own ground in it, filled even-odd.
+            gc.beginPath();
+            gc.rect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
+            for (double[] o : ownedIn.getOrDefault(p.getId(), List.of())) {
+                double[] hole = f.onScreen(o[0], o[1], o[2], o[3]);
+                if (hole != null) gc.rect(hole[0], hole[1], hole[2] - hole[0], hole[3] - hole[1]);
+            }
             gc.setFill(Color.rgb(12, 18, 26, 0.24));
-            gc.fillPolygon(xs, ys, 4);
+            gc.fill();
             gc.setFill(pattern);
-            gc.fillPolygon(xs, ys, 4);
+            gc.fill();
             if (lit || picked) {
                 gc.setFill(Color.web(Palette.BUILDING, lit ? 0.34 : 0.22));
-                gc.fillPolygon(xs, ys, 4);
+                gc.fill();
+            }
+            // Its edge on the box's own outer pixels, a pixel wide (two when picked), where they lie on its free ground.
+            double w = picked ? 2 : 1;
+            boolean cut = ownedIn.containsKey(p.getId());
+            if (cut) {
+                gc.save();
+                gc.clip();
             }
             gc.setStroke(Color.web(OFFER_EDGE, mine || lit ? 0.95 : 0.4));
-            gc.setLineWidth(picked ? 2 : 1.25);
+            gc.setLineWidth(w);
             if (picked) gc.setLineDashes((double[]) null);
             else gc.setLineDashes(5, 4);
-            gc.strokePolygon(xs, ys, 4);
+            gc.strokeRect(box[0] + w / 2, box[1] + w / 2, box[2] - box[0] - w, box[3] - box[1] - w);
+            if (cut) gc.restore();
         }
         gc.setLineDashes((double[]) null);
-        // The city's edge: the runs along block lines where its ground meets the world's (0.7.67, LandMap.outline()).
-        double[][] edge = LandMap.outline(land);
-        gc.setStroke(Color.rgb(255, 255, 255, 0.55));
-        gc.setLineWidth(1);
+        gc.setFillRule(FillRule.NON_ZERO);
+        // The city's edge: its runs as one shape, so no pixel is drawn twice where they meet (0.7.69; LandMap.outline()).
+        gc.beginPath();
         for (int i = 0; i < edge[0].length; i++) {
-            gc.strokeLine(f.screenX(edge[0][i]), f.screenY(edge[1][i]), f.screenX(edge[2][i]), f.screenY(edge[3][i]));
+            double[] r = f.runOnScreen(edge[0][i], edge[1][i], edge[2][i], edge[3][i]);
+            if (r != null) gc.rect(r[0], r[1], r[2], r[3]);
         }
+        gc.setFill(Color.rgb(255, 255, 255, EDGE_ALPHA));
+        gc.fill();
         double[] c = LandMap.centre(land);
-        gc.setStroke(Color.rgb(255, 255, 255, 0.3));
-        gc.setLineDashes(3, 4);
-        gc.strokeRect(f.screenX(c[0]), f.screenY(c[1]), (c[2] - c[0]) * f.scale(), (c[3] - c[1]) * f.scale());
-        gc.setLineDashes((double[]) null);
+        double[] cb = f.onScreen(c[0], c[1], c[2], c[3]);
+        if (cb != null) {
+            gc.setStroke(Color.rgb(255, 255, 255, 0.3));
+            gc.setLineWidth(1);
+            gc.setLineDashes(3, 4);
+            gc.strokeRect(cb[0] + 0.5, cb[1] + 0.5, cb[2] - cb[0] - 1, cb[3] - cb[1] - 1);
+            gc.setLineDashes((double[]) null);
+        }
         int level = f.level();
         if (level == MapFrame.L1 || level == MapFrame.L2) deposits(gc, f, land, market);
+        placeLabels(gc, f, land, listing);
         scaleBar(gc, f);
+    }
+
+    /** The city's edge and each offer's own ground cut out of its rectangle (by offer id), for the land and listing below: found once each time either moves, not every frame... */
+    private double[][] edge = new double[4][0];
+    private final Map<Integer, List<double[]>> ownedIn = new HashMap<>();
+    private long shapesFor = Long.MIN_VALUE;
+
+    /** ...and the square each offer's number stands on, for those and the view's scale. */
+    private final Map<Integer, double[]> labelAt = new HashMap<>();
+    private long labelsFor = Long.MIN_VALUE;
+    private double labelsAtScale = Double.NaN;
+
+    private void shapes(CityLand land, LandMarket market) {
+        long key = land.stamp() * 31L + land.purchases().size() * 1_000_003L + market.getNextOfferId();
+        if (key == shapesFor) return;
+        shapesFor = key;
+        edge = LandMap.outline(land);
+        ownedIn.clear();
+        for (LandParcel p : market.getListing()) {
+            List<double[]> own = LandMap.ownedIn(land, p);
+            if (!own.isEmpty()) ownedIn.put(p.getId(), own);
+        }
+    }
+
+    /** The city's block lines in view, one shape: a pixel wide, faint, none where a block is under MapFrame.BLOCK_LINES_FROM px. */
+    private void blockLines(GraphicsContext gc, MapFrame f, int level) {
+        if (level < LandGrid.MIN_LEVEL) return;
+        double[] xs = f.blockLines(level, true), ys = f.blockLines(level, false);
+        if (xs.length == 0 && ys.length == 0) return;
+        gc.beginPath();
+        for (double x : xs) gc.rect(x, 0, 1, f.height());
+        for (double y : ys) gc.rect(0, y, f.width(), 1);
+        gc.setFill(Color.rgb(255, 255, 255, BLOCK_LINE_ALPHA));
+        gc.fill();
+    }
+
+    /** Each offer's place, 1 to 6, at the middle of its free ground on screen - its whole box, or its freest square where it takes in the city's own (LandMap.labelBlock()) - or of its whole box where that square is too small to hold it and the box is not (MapFrame.labelFits()): white on a dark halo, the office's side's bright. */
+    private void placeLabels(GraphicsContext gc, MapFrame f, CityLand land, List<LandParcel> listing) {
+        if (labelsFor != shapesFor || labelsAtScale != f.scale()) {
+            labelsFor = shapesFor;
+            labelsAtScale = f.scale();
+            labelAt.clear();
+            for (LandParcel p : listing) labelAt.put(p.getId(), LandMap.labelBlock(land, p, MapFrame.PLACE_LABEL_FROM / f.scale()));
+        }
+        gc.setFont(Palette.Fonts.monoFont(Palette.SIZE_BODY));
+        gc.setTextAlign(TextAlignment.CENTER);
+        gc.setTextBaseline(VPos.CENTER);
+        gc.setLineWidth(3);
+        for (LandParcel p : listing) {
+            double[] at = labelAt.get(p.getId());
+            double[] b = at == null ? null : f.onScreen(at[0], at[1], at[2], at[3]);
+            if (!MapFrame.labelFits(b)) b = f.onScreen(p.getX0(), p.getY0(), p.getX1(), p.getY1());
+            if (!MapFrame.labelFits(b)) continue;
+            String words = LandMap.placeLabel(p);
+            double x = Math.rint((b[0] + b[2]) / 2), y = Math.rint((b[1] + b[3]) / 2);
+            gc.setStroke(Color.rgb(11, 17, 24, 0.85));
+            gc.strokeText(words, x, y);
+            gc.setFill(Color.rgb(255, 255, 255, p.getSide() == side ? 0.95 : 0.6));
+            gc.fillText(words, x, y);
+        }
+        gc.setTextAlign(TextAlignment.LEFT);
+        gc.setTextBaseline(VPos.BASELINE);
     }
 
     /** The fields in and about the city's land and offers, each a dot in its resource's colour, sized by its sites - the far views' deposits (spec-land 2.6). */
@@ -687,7 +802,7 @@ final class MapView {
             showIf(readout, false);
             if (card != null) card.setVisible(false);
             if (overSide >= 0) {
-                overSide = overLane = -1;
+                overSide = overPlace = -1;
                 requestDraw();
             }
         });
@@ -735,20 +850,20 @@ final class MapView {
         });
     }
 
-    /** A click: an offer's band picks it, anywhere else picks the side it lies on. */
+    /** A click: an offer's free ground picks it, anywhere else picks the side it lies on. */
     private void click(double sx, double sy) {
         MapFrame f = frame();
         Game g = ui.game;
         LandMap.Pick p = LandMap.pick(g.getCityLand(), g.getLandManager().getMarket(),
                 (long) Math.floor(f.plotX(sx)), (long) Math.floor(f.plotY(sy)));
         side = p.side();
-        lane = p.owner() == LandMap.OFFER ? p.place() : -1;
+        place = p.owner() == LandMap.OFFER ? p.place() : -1;
         if (expanded) picked();
-        picker.picked(side, lane);
+        picker.picked(side, place);
         requestDraw();
     }
 
-    /** What the pointer is over: the band it lights, and the words - one line on the small map, a card on the expanded one. */
+    /** What the pointer is over: the offer it lights, and the words - one line on the small map, a card on the expanded one. */
     private void hover(double sx, double sy) {
         MapFrame f = frame();
         Game g = ui.game;
@@ -756,10 +871,10 @@ final class MapView {
         LandMarket market = g.getLandManager().getMarket();
         long x = (long) Math.floor(f.plotX(sx)), y = (long) Math.floor(f.plotY(sy));
         LandMap.Pick p = LandMap.pick(land, market, x, y);
-        int os = p.owner() == LandMap.OFFER ? p.side() : -1, ol = p.owner() == LandMap.OFFER ? p.place() : -1;
-        if (os != overSide || ol != overLane) {
+        int os = p.owner() == LandMap.OFFER ? p.side() : -1, op = p.owner() == LandMap.OFFER ? p.place() : -1;
+        if (os != overSide || op != overPlace) {
             overSide = os;
-            overLane = ol;
+            overPlace = op;
             dirty = true;
         }
         String what = null;
@@ -882,7 +997,7 @@ final class MapView {
     /** The picked side and offer on the expanded map's head. */
     private void picked() {
         if (bigLine == null) return;
-        LandParcel o = side >= 0 && lane >= 0 ? ui.game.getLandManager().getMarket().offerIn(side, lane) : null;
+        LandParcel o = side >= 0 && place >= 0 ? ui.game.getLandManager().getMarket().offerIn(side, place) : null;
         bigLine.setText(o != null ? "picked: " + o.where() + " · " + LandMap.area(o.getKm2()) + " · "
                 + LandMap.usd(o.getPriceUsd()) + " — Esc to buy it in the office"
                 : side >= 0 ? "showing the " + CityLand.sideName(side).toLowerCase(java.util.Locale.ROOT) + " side's offers" : "");
@@ -911,12 +1026,11 @@ final class MapView {
     /** The expanded map on the city, as the small map opens. */
     private void fitBig() {
         if (big == null) return;
-        double[] box = LandMap.openingBox(ui.game.getCityLand());
-        big.fit(box[0], box[1], box[2], box[3]);
+        LandMap.open(big, ui.game.getCityLand(), ui.game.getLandManager().getMarket());
         requestDraw();
     }
 
-    /** The legend's entries: the ten classes and flats, the three roads, the land, the six resources in fields. */
+    /** The legend's entries: the ten classes and flats, the three roads and (0.7.72) the railway, the land, the six resources in fields. */
     static List<String[]> legendEntries() {
         List<String[]> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {
@@ -926,14 +1040,15 @@ final class MapView {
         out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.GRAVEL]), "Gravel road" });
         out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.PAVED]), "Paved road" });
         out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.HIGHWAY]), "Highway" });
+        out.add(new String[] { css(TileRaster.RAIL_LINE), "Railway" });
         out.add(new String[] { "#ffffff", "The city's edge" });
         out.add(new String[] { OFFER_EDGE, "On offer" });
         for (Resource r : Resource.values()) if (r.inFields()) out.add(new String[] { css(0xff000000 | r.colour()), r.label() });
         return out;
     }
 
-    /** Rows a column of the legend holds. */
-    static final int LEGEND_ROWS = 11;
+    /** Rows a column of the legend holds: 12, its 23 entries in two columns (11 until 0.7.72 added the railway to its 22). */
+    static final int LEGEND_ROWS = 12;
 
     private static GridPane legend() {
         GridPane grid = new GridPane();

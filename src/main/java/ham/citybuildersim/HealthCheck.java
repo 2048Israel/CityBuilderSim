@@ -67,21 +67,24 @@ public class HealthCheck {
         bm.initializeTemplates();
 
         BuildingsTemplate hospital = bm.getTemplateByName("General Hospital");
-        BuildingsTemplate daycare  = bm.getTemplateByName("Home Daycare");
+        // The childcare ids renamed in 0.7.71 (Home Daycare was id 15): the smallest centre.
+        BuildingsTemplate daycare  = bm.getTemplateByName("Small Childcare Centre");
         BuildingsTemplate nursing  = bm.getTemplateByName("Nursing Home");
+        BuildingsTemplate clinic   = bm.getTemplateByName("Community Health Centre");
         BuildingsTemplate house    = bm.getTemplateByName("House");
 
         assertTrue("a hospital is general care", hospital.getCare() == CareType.GENERAL);
-        assertTrue("a daycare is childcare",     daycare.getCare() == CareType.CHILDCARE);
+        assertTrue("a childcare centre is childcare", daycare.getCare() == CareType.CHILDCARE);
         assertTrue("a nursing home is senior care", nursing.getCare() == CareType.SENIOR);
         assertTrue("a house treats nobody",      house.getCare() == CareType.NONE);
 
         /*
          * The whole reason the field exists rather than a string match: two
-         * buildings that share a word in their names and nothing else.
+         * buildings that share a word in their names and nothing else - "Home
+         * Daycare" and "Nursing Home" until 0.7.71 renamed the daycares.
          */
-        assertTrue("\"Home Daycare\" and \"Nursing Home\" are not the same care",
-                daycare.getCare() != nursing.getCare());
+        assertTrue("\"Small Childcare Centre\" and \"Community Health Centre\" are not the same care",
+                daycare.getCare() != clinic.getCare());
 
         // An aggregate assertion cannot see a missing category, so count the
         // buildings of each type rather than checking that some exist.
@@ -162,7 +165,7 @@ public class HealthCheck {
         check("two hospitals, on top of it",
                 bm.getCareCapacity(CareType.GENERAL),
                 foundedGeneral + 2 * hospital.getCapacity(), 1e-9);
-        check("...and the daycares are not counted with them",
+        check("...and the childcare centres are not counted with them",
                 bm.getCareCapacity(CareType.CHILDCARE),
                 foundedChild + 3 * daycare.getCapacity(), 1e-9);
 
@@ -805,7 +808,8 @@ public class HealthCheck {
             BuildingManager pb = paid.getBuildingManager();
             pb.addStack(pb.getTemplateByName("Walk-in Clinic"), 2, true);
             pb.addStack(pb.getTemplateByName("Memorial Cemetery"), 1, true);
-            pb.addStack(pb.getTemplateByName("Neighbourhood Daycare"), 2, true);
+            // Two of the smallest childcare (0.7.71: 80 places each, where two Neighbourhood Daycares were 60).
+            pb.addStack(pb.getTemplateByName("Small Childcare Centre"), 2, true);
             paid.simulateMonths(59);
         } finally { System.setOut(out); }
 

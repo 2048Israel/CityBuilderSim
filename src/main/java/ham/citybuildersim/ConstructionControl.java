@@ -4,7 +4,8 @@ package ham.citybuildersim;
  * The player's hand on the construction queue (0.7.22): the order the
  * city's own sites are served in, the sites it has put on overtime, the
  * orders it has stopped and the shells they left, the buildings it is
- * pulling down, and what it paid to buy a business's buildings to do so.
+ * pulling down, what it paid to buy a business's buildings to do so, and
+ * since 0.7.70 the gravel roads it is paving (F).
  *
  * WHY. Until 0.7.22 an order, once placed, was out of the player's hands:
  * the builders' crews were shared by the rule (BuildingManager, EVERY
@@ -25,7 +26,8 @@ package ham.citybuildersim;
  * false in a city nobody has touched, and the advance then takes the path
  * it always took, to the bit. (Each stack's run - the page's "done of
  * total" and "paid" - is kept in every city, on every order, and saved with
- * the rest; it is bookkeeping and moves nothing.)
+ * the rest; it is bookkeeping and moves nothing. A paving, F, rides on the
+ * Paved Road stack's own advance in every city, engaged or not.)
  *
  * A SITE is what the model keeps on site: one stack per building type
  * ("B" + its template id) - however many orders are on it - and, since
@@ -271,6 +273,74 @@ public final class ConstructionControl {
        what it owed.
        ===================================================================== */
 
+    /* =====================================================================
+       F. PAVE: A GRAVEL ROAD UPGRADED TO A PAVED ROAD (0.7.70)
+
+       Jerus: "make it an option to upgrade from gravel to paved, but not from
+       paved to highway, and that the build menu allows and recommends this
+       if better, total cost is higher than just building paved."
+
+       THE ORDER IS A PAVED ROAD'S, ON THE GRAVEL ROAD'S OWN GROUND. Paving n
+       of the city's standing Gravel Roads puts n Paved Roads on the Paved
+       Road site, as an order of the city's (Game.paveRoads()): the same
+       crews, the same material drawn as they build, the same contract and
+       escalation, the same wait - but they take no ground of their own,
+       because each stands where its gravel road stands. Only a Gravel Road
+       can be paved, and only to a Paved Road: a Paved Road is not raised to
+       an Elevated Highway (Jerus), and nothing else has a cheaper form.
+
+       THE PRICE (Game.quotePave()), star N1-1: a Paved Road's quote, less the
+       gravel road's material, which goes into the new road's bed - the
+       order draws the paved road's material less the gravel road's (450 - 193
+       units), so the salvage is that material at the day's price, the 0.7.8
+       rule's value of a building's material (Game, THE PLANT'S MATERIAL, TO
+       THE BUILDERS) - plus the works premium: taking up the old surface,
+       priced as a demolition of it is (DEMOLITION_SHARE of the gravel road's
+       work at the builders' rate, D above). So a gravel road and its paving
+       cost more than a paved road built outright, by the gravel road's own
+       work (all of its price but its material) and the take-up: the sum
+       Jerus asked for, from the model's own two rules and no new figure.
+
+       THE ROAD STAYS OPEN, star N1-2: the gravel road carries its traffic
+       until its paving finishes, and is then retired as the paved road
+       opens - in the same month's advance, so the network goes from 900 to
+       1,200 trips in one step. The model has no half-open road, and a
+       closed one would make paving a loss of capacity for months in exactly
+       the congested city that wants it; real practice keeps a rural road
+       open by working it a half at a time.
+
+       THE TIME, star N1-3: a Paved Road's points, 4,000 a road, queued on its
+       site like any order. The take-up's 70 points (DEMOLITION_SHARE of the
+       gravel's 1,400) are paid for but not added: they are 1.75% of the
+       paved road's work, whose earthworks the gravel bed already has done.
+
+       THE GROUND, star N1-4: freed. A paved road needs 250,000 sq ft where a
+       gravel road took 450,000, and the 200,000 between come back to the
+       city's free ground when the paving finishes, as a demolition's ground
+       does - which is what makes paving the answer when land is dear.
+
+       WHICH GRAVEL ROAD, AND WHEN. The units on a site finish in the order
+       they were placed (BuildingsStacks.advanceConstruction() finishes them
+       off the front of one pool), so each paving is kept as a batch with the
+       Paved Roads on site ahead of it: of the f that finish in a month, those
+       past a batch's place are its own (pavedOf()), and that many gravel
+       roads retire. A Paved Road site with paving on it is not stopped
+       (Game.cancelSite()): a road dug a half at a time is not left as a
+       shell, and the paving cannot be told apart from the new roads in the
+       site's one pool of work.
+       ===================================================================== */
+
+    /** The road that can be paved (0.7.70): a Gravel Road, and nothing else. */
+    public static final String PAVE_FROM = "Gravel Road";
+
+    /** ...and what it is paved to: a Paved Road. A Paved Road is not raised to an Elevated Highway (Jerus). */
+    public static final String PAVE_TO = "Paved Road";
+
+    /** Whether a building is one the city can pave: a Gravel Road. */
+    public static boolean paves(BuildingsTemplate t) {
+        return t != null && PAVE_FROM.equals(t.getName());
+    }
+
     /* ---------------------------------------------------------------------
        THE STATE, as the save carries it
        --------------------------------------------------------------------- */
@@ -363,6 +433,21 @@ public final class ConstructionControl {
         public Run() { }
     }
 
+    /**
+     * F. A paving on the Paved Road site (0.7.70): how many gravel roads it
+     * paves, and how many Paved Roads on the site are ahead of it - placed
+     * before it and not yet open. The gravel roads stand, and carry their
+     * traffic, until their own Paved Roads open.
+     */
+    public static final class Paving {
+        public int roads;
+        /** Paved Roads on the site ahead of this paving, which open first. */
+        public int ahead;
+        /** The month it was ordered. */
+        public int month;
+        public Paving() { }
+    }
+
     /** Everything above, under one key in the save. */
     public static final class State {
         public boolean prioritySet;
@@ -374,6 +459,8 @@ public final class ConstructionControl {
         public int nextDemolition = 1;
         public java.util.List<Expropriation> expropriations = new java.util.ArrayList<>();
         public java.util.List<Run> runs = new java.util.ArrayList<>();
+        /** F. The pavings on the Paved Road site (0.7.70); none in an older save. */
+        public java.util.List<Paving> paving = new java.util.ArrayList<>();
     }
 
     private State state = new State();
@@ -391,6 +478,7 @@ public final class ConstructionControl {
         if (state.demolitions == null) state.demolitions = new java.util.ArrayList<>();
         if (state.expropriations == null) state.expropriations = new java.util.ArrayList<>();
         if (state.runs == null) state.runs = new java.util.ArrayList<>();
+        if (state.paving == null) state.paving = new java.util.ArrayList<>();
         if (state.nextDemolition < 1) state.nextDemolition = 1;
     }
 
@@ -590,6 +678,47 @@ public final class ConstructionControl {
 
     void recordExpropriation(Expropriation e) { state.expropriations.add(e); }
 
+    /* ----- F. the pavings ----- */
+
+    public java.util.List<Paving> pavings() { return java.util.Collections.unmodifiableList(state.paving); }
+
+    /** Gravel roads being paved: on the Paved Road site, standing until their paving opens. */
+    public int paving() {
+        int n = 0;
+        for (Paving p : state.paving) n += p.roads;
+        return n;
+    }
+
+    /** A paving of n roads, behind the `ahead` Paved Roads already on the site. */
+    Paving addPaving(int roads, int ahead, int month) {
+        Paving p = new Paving();
+        p.roads = Math.max(0, roads);
+        p.ahead = Math.max(0, ahead);
+        p.month = month;
+        state.paving.add(p);
+        return p;
+    }
+
+    /**
+     * Of `finished` Paved Roads opening this month off the front of the site,
+     * the ones that are pavings', each paving moved up the site by them: the
+     * gravel roads to retire. A paving all of whose roads have opened is gone.
+     */
+    int pavedOf(int finished) {
+        if (finished <= 0 || state.paving.isEmpty()) return 0;
+        int paved = 0;
+        java.util.Iterator<Paving> it = state.paving.iterator();
+        while (it.hasNext()) {
+            Paving p = it.next();
+            int own = Math.max(0, Math.min(p.roads, finished - p.ahead));
+            p.roads -= own;
+            p.ahead = Math.max(0, p.ahead - finished);
+            paved += own;
+            if (p.roads <= 0) it.remove();
+        }
+        return paved;
+    }
+
     /* ----- each stack's run ----- */
 
     /** A stack's run, null if none is on record. */
@@ -654,12 +783,16 @@ public final class ConstructionControl {
         void sold(double units, double money) { unitsSold = units; paid = money; }
     }
 
+    /** F. Gravel roads whose paving opened this month (0.7.70): retired as their Paved Roads opened, the ground between the two to free. */
+    public record Paved(int roads, double landFreedSqFt) { }
+
     /** The month's events, as the advance left them. */
     public static final class Events {
         public final java.util.List<Overtime> overtime = new java.util.ArrayList<>();
         public final java.util.List<Refund> refunds = new java.util.ArrayList<>();
         public final java.util.List<Completed> completed = new java.util.ArrayList<>();
+        public final java.util.List<Paved> paved = new java.util.ArrayList<>();
         public double overtimePoints;
-        public boolean isEmpty() { return overtime.isEmpty() && refunds.isEmpty() && completed.isEmpty(); }
+        public boolean isEmpty() { return overtime.isEmpty() && refunds.isEmpty() && completed.isEmpty() && paved.isEmpty(); }
     }
 }

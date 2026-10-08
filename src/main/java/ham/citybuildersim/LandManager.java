@@ -150,7 +150,10 @@ public class LandManager {
     public static double perM2(double perSqFt) { return perSqFt / SQ_M_PER_SQ_FT; }
 
     /**
-     * Land the city starts with - thirty blocks, about 69 acres.
+     * Land the city starts with - thirty blocks, about 69 acres; since 0.7.67
+     * the figure a new city's centre of whole blocks is drawn to hold, and it
+     * owns the dry plots drawn, a little more (CityLand.found(): 3,051,569
+     * sq ft on the default world).
      *
      * Sized off the two buildings the player cannot avoid: a coal plant is
      * twenty blocks and a water plant eight, so putting up both leaves two.
@@ -335,6 +338,9 @@ public class LandManager {
 
     /** The crude the wells lifted this month, in tonnes (0.7.62). */
     private double oilLiftedThisMonth;
+
+    /** ...by grade, in Deposit.Grade's order (0.7.79): what extractOil()'s walk of the fields found it was. */
+    private final double[] liftedByGrade = new double[Deposit.Grade.values().length];
 
     /* Monthly flows, for the government accounts. Cleared each month. */
     private double landSalesThisMonth;
@@ -539,11 +545,162 @@ public class LandManager {
     public double getOilReserveTonnes()   { return getRemaining(Resource.OIL); }
     public double getOilLiftedThisMonth() { return oilLiftedThisMonth; }
 
-    /** Lifts crude out of the ground (0.7.62): what was there, as extractIron() does for ore. */
+    /**
+     * Lifts crude out of the ground (0.7.62): what was there, as extractIron()
+     * does for ore - and since 0.7.79 (batch O3) of which grades: the walk of
+     * the city's oil from E to E + lifted (oilRuns()) adds each grade's part
+     * to liftedByGrade. Nothing moves but E, so the world's totals hold.
+     */
     public double extractOil(double tonnes) {
+        double from = extracted[Resource.OIL.ordinal()];
         double lifted = extract(Resource.OIL, tonnes);
         oilLiftedThisMonth += lifted;
+        if (lifted > 0) gradeTheLift(from, lifted);
         return lifted;
+    }
+
+    /** The crude the wells lifted this month by grade, tonnes, in Deposit.Grade's order (0.7.79): the refinery's local crude is of this mix (Refining's crude mix). */
+    public double[] getOilLiftedByGrade() { return liftedByGrade.clone(); }
+
+    /* ----- the oil by grade, as it is worked out (0.7.79, batch O3; spec-oil 2.2) -----
+     * The city's oil is one pool, O - E, worked out in acquisition order; a
+     * grade belongs to a field, so the order is laid out field by field
+     * (CityLand.heldFields()): each holding's fields, the centre's first, as
+     * runs of one grade, each holding's runs ending where its listed amount
+     * does. What a holding listed that its fields do not explain - a
+     * fixture's oil by fiat (restoreSites()) - is MEDIUM, the research's
+     * blend, what the world's crude is; fields past what it listed are cut
+     * off. Laid out again only when the ground or what it lists changes. */
+
+    /** Where each run of one grade ends, tonnes from the first of the city's oil, and its grade's ordinal. */
+    private double[] oilRunEnds = new double[0];
+    private byte[] oilRunGrades = new byte[0];
+    /** What the runs were laid out for: the land, its stamp and what each holding listed. */
+    private CityLand oilRunsLand;
+    private long oilRunsKey;
+
+    /** A key for what the ground holds of a resource: the land's stamp and every holding's listed amount, bit for bit. */
+    private static long groundKey(CityLand l, double[] listed) {
+        long k = l.stamp();
+        for (double a : listed) k = World.mix(k ^ Double.doubleToLongBits(a));
+        return k;
+    }
+
+    private void layOilRuns() {
+        CityLand l = land();
+        double[] listed = l.amountsInOrder(Resource.OIL);
+        long key = groundKey(l, listed);
+        if (l == oilRunsLand && key == oilRunsKey) return;
+        java.util.List<java.util.List<CityLand.Held>> held = l.heldFields(Resource.OIL);
+        double[] ends = new double[16];
+        byte[] grades = new byte[16];
+        int n = 0;
+        double upTo = 0;
+        for (int h = 0; h < listed.length; h++) {
+            double holdingEnds = upTo + listed[h], left = listed[h];
+            java.util.List<CityLand.Held> fields = h < held.size() ? held.get(h) : java.util.List.of();
+            int at = 0;
+            while (left > 0) {
+                byte grade;
+                double take;
+                if (at < fields.size()) {
+                    CityLand.Held f = fields.get(at++);
+                    take = Math.min(left, f.amount());
+                    grade = (byte) f.field().grade().ordinal();
+                } else {
+                    take = left;
+                    grade = (byte) Deposit.Grade.MEDIUM.ordinal();
+                }
+                if (!(take > 0)) continue;
+                left -= take;
+                double end = left > 0 ? upTo + (listed[h] - left) : holdingEnds;
+                if (n > 0 && grades[n - 1] == grade) {
+                    ends[n - 1] = end;
+                } else {
+                    if (n == ends.length) {
+                        ends = java.util.Arrays.copyOf(ends, 2 * n);
+                        grades = java.util.Arrays.copyOf(grades, 2 * n);
+                    }
+                    ends[n] = end;
+                    grades[n++] = grade;
+                }
+            }
+            upTo = holdingEnds;
+        }
+        oilRunEnds = java.util.Arrays.copyOf(ends, n);
+        oilRunGrades = java.util.Arrays.copyOf(grades, n);
+        oilRunsLand = l;
+        oilRunsKey = key;
+    }
+
+    /** The runs of the city's oil, each {end, grade's ordinal} in tonnes from its first, in the order it is worked out (0.7.79). */
+    public double[][] oilRuns() {
+        layOilRuns();
+        double[][] out = new double[oilRunEnds.length][];
+        for (int i = 0; i < out.length; i++) out[i] = new double[] { oilRunEnds[i], oilRunGrades[i] };
+        return out;
+    }
+
+    /** Adds the grades of the oil from `from` to `from + amount` tonnes into the month's liftedByGrade; past the last run (a rounding), MEDIUM. */
+    private void gradeTheLift(double from, double amount) {
+        layOilRuns();
+        double to = from + amount, start = 0, counted = 0;
+        int i = java.util.Arrays.binarySearch(oilRunEnds, from);
+        i = i >= 0 ? i + 1 : -i - 1;
+        if (i > 0) start = oilRunEnds[i - 1];
+        for (; i < oilRunEnds.length && start < to; i++) {
+            double part = Math.min(oilRunEnds[i], to) - Math.max(start, from);
+            if (part > 0) {
+                liftedByGrade[oilRunGrades[i]] += part;
+                counted += part;
+            }
+            start = oilRunEnds[i];
+        }
+        if (amount - counted > 0) liftedByGrade[Deposit.Grade.MEDIUM.ordinal()] += amount - counted;
+    }
+
+    /**
+     * The sites of a resource the city owns on dry ground or in the sea
+     * (0.7.79, batch O3; spec-oil 2.6): a field's sites are the sea's when its
+     * centre plot is sea (World.depthAt() over 0), else dry - a lake or the
+     * river counts as dry, where a rig on land drills. A holding's sea sites
+     * are at most the sites it listed; the rest of them are dry, so the two
+     * always add up to getSites(r). Land wells will take only dry sites (O7).
+     */
+    public int getSites(Resource r, boolean dry) {
+        CityLand l = land();
+        long all = l.totalSites(r);
+        long sea = Math.min(all, seaSites(l, r));
+        return (int) Math.min(Integer.MAX_VALUE, dry ? all - sea : sea);
+    }
+
+    /** The sea sites by resource, kept with the ground they were counted on. */
+    private final java.util.Map<Resource, long[]> seaSitesKept = new java.util.EnumMap<>(Resource.class);
+    private CityLand seaSitesLand;
+
+    private long seaSites(CityLand l, Resource r) {
+        long[] listed = l.sitesInOrder(r);
+        double[] asKey = new double[listed.length];
+        for (int i = 0; i < listed.length; i++) asKey[i] = listed[i];
+        long key = groundKey(l, asKey);
+        if (seaSitesLand != l) {
+            seaSitesKept.clear();
+            seaSitesLand = l;
+        }
+        long[] kept = seaSitesKept.get(r);
+        if (kept != null && kept[0] == key) return kept[1];
+        World world = World.of(l.seed());
+        java.util.List<java.util.List<CityLand.Held>> held = l.heldFields(r);
+        long sea = 0;
+        for (int h = 0; h < listed.length && h < held.size(); h++) {
+            long inSea = 0;
+            for (CityLand.Held f : held.get(h)) {
+                if (world.depthAt(f.field().x(), f.field().y()) > 0) inSea += f.sites();
+            }
+            sea += Math.min(listed[h], inSea);
+        }
+        seaSitesKept.put(r, new long[] { key, sea });
+        return sea;
     }
 
     public boolean hasUnminedDeposit(int minesStanding) {
@@ -790,6 +947,7 @@ public class LandManager {
         sqFtBoughtBackThisMonth = 0;
         ironMinedThisMonth = 0;
         oilLiftedThisMonth = 0;
+        java.util.Arrays.fill(liftedByGrade, 0);
     }
 
     public void reset() {

@@ -102,7 +102,19 @@ public class TradeCostCheck {
         // US$550 a tonne, about US$75 a barrel; fuel a journey's $2.00 over its 1.2 litres
         // (Motoring.CAR_FUEL_PER_JOURNEY / LITRES_PER_JOURNEY), wholesale .0007 abroad.
         { Good.CRUDE,                    .60,        .50   },
-        { Good.FUEL,               .002 / 1.2,       .0007 },
+        // FUEL's row went with it (0.7.76, batch O1; spec-oil 2.1): the nine the refinery
+        // makes in its place, all at the research's ladder (crude's world middle a litre
+        // times each ratio, x1.08 in and x0.92 out) - petrol and diesel since 0.7.78 (batch
+        // O2), at FUEL's band (.002 / 1.2 in, .0007 out) before.
+        { Good.LPG,                 .0002345,   .0001998   },
+        { Good.NAPHTHA,             .0005099,   .0004343   },
+        { Good.PETROL,              .0006118,   .0005212   },
+        { Good.JET,                 .0006526,   .0005559   },
+        { Good.DIESEL,              .0006883,   .0005864   },
+        { Good.LUBRICANTS,          .0009637,   .0008209   },
+        { Good.FUEL_OIL,            .0004997,   .0004256   },
+        { Good.BITUMEN,                .6415,      .5465   },
+        { Good.COKE,                  .09207,     .07843   },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */

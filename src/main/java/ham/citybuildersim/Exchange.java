@@ -1498,7 +1498,7 @@ public class Exchange {
                 if (h == buying) buyingBudget -= cash;
             } else if (companyBuys) {
                 companies.payBuyback(c, cash);
-                register.retire(c, q);
+                register.retire(c, q, cash);
                 buybackBudget[c] = Math.max(0, buybackBudget[c] - cash);
             } else if (fundBuys) {
                 register.moveCity(c, q);

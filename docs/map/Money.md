@@ -1,6 +1,6 @@
-# Money.java - 374 lines · 29 methods · 1 constants · interface
+# Money.java - 384 lines · 30 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/Money.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Money.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
 
 > Every figure the interface prints as money, in one place.
 > 
@@ -11,7 +11,7 @@
 > reference to the window. The model counts in THOUSANDS; toDollars() is the
 > one conversion and everything else calls it.
 
-**Uses:** [Currency](Currency.md) (2), [Formats](Formats.md) (1)
+**Uses:** [Currency](Currency.md) (2), [LandManager](LandManager.md) (1), [Formats](Formats.md) (1)
 
 **Used by (9):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
@@ -32,7 +32,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 355 | **type** `public final class Money` | Every figure the interface prints as money, in one place. |
+| 20 | 365 | **type** `public final class Money` | Every figure the interface prints as money, in one place. |
 
 ### THE ONE PLACE MODEL MONEY BECOMES A STRING. (lines 22-54)
 
@@ -40,7 +40,7 @@
 |---:|---:|---|---|
 | 50 | 4 | `static { ... }` |  |
 
-### NO NEGATIVE ZERO (0.7.20). (lines 55-374)
+### NO NEGATIVE ZERO (0.7.20). (lines 55-384)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -66,11 +66,12 @@
 | 266 | 3 | `public static String usd(double thousands)` | Foreign money, abbreviated. |
 | 271 | 3 | `public static String usdFull(double thousands)` | ...and with every digit. |
 | 283 | 8 | `public static String unitPrice(double thousands)` | A price small enough that the cents matter - a unit on the shelf, an hourly rate, anything a lopped currency has just made tiny. |
-| 307 | 3 | `public static String fxRate(double rate)` | An exchange rate - local dollars per US dollar, a ratio and not money, so it never goes through toDollars(). |
-| 312 | 6 | `public static String shortNumber(double value)` | 12.4k rather than 12,400 - the panel is narrow and these are two to a row. |
-| 328 | 7 | `public static String power(double kW)` | Power, from the model's kilowatts (0.7.28): "900 kW", "38.9 MW", "199 MW", "1.18 GW" - three figures at most, the unit scaled to fit. |
-| 337 | 6 | `private static String scaled(double v)` | A figure of one to three digits before its unit: 8.1, 38.9, 199, 1.18 - its three significant figures, under 10 to two places only when they say something. |
-| 353 | 5 | `public static String coverMonths(double months)` | Months of import cover in words a player can act on (Trade's since 0.7.35, every screen's since 0.7.38): "over 10 years" past ten years (a city with D$100M in the vault and D$36k a month of imports has 2,777 months, w... |
-| 367 | 3 | `public static String rate1(double rate)` | A yearly rate to one place, with a true minus: "2.2%", "−0.5%". |
-| 372 | 1 | `public static String trust(double credibility)` | How far the city believes the bank, a whole per cent (Expectations.getCredibility()): "82%" - floored, so a trust under CityNeeds.TRUST_RED never reads as half. |
+| 298 | 3 | `public static String groundPrice(double thousandsPerSqFt)` | A ground price as the player reads it since 0.7.68: a square metre (LandManager.perM2()) of what the model keeps a square foot in thousands, as unitPrice() writes it - "$20,882", "$7.53". |
+| 317 | 3 | `public static String fxRate(double rate)` | An exchange rate - local dollars per US dollar, a ratio and not money, so it never goes through toDollars(). |
+| 322 | 6 | `public static String shortNumber(double value)` | 12.4k rather than 12,400 - the panel is narrow and these are two to a row. |
+| 338 | 7 | `public static String power(double kW)` | Power, from the model's kilowatts (0.7.28): "900 kW", "38.9 MW", "199 MW", "1.18 GW" - three figures at most, the unit scaled to fit. |
+| 347 | 6 | `private static String scaled(double v)` | A figure of one to three digits before its unit: 8.1, 38.9, 199, 1.18 - its three significant figures, under 10 to two places only when they say something. |
+| 363 | 5 | `public static String coverMonths(double months)` | Months of import cover in words a player can act on (Trade's since 0.7.35, every screen's since 0.7.38): "over 10 years" past ten years (a city with D$100M in the vault and D$36k a month of imports has 2,777 months, w... |
+| 377 | 3 | `public static String rate1(double rate)` | A yearly rate to one place, with a true minus: "2.2%", "−0.5%". |
+| 382 | 1 | `public static String trust(double credibility)` | How far the city believes the bank, a whole per cent (Expectations.getCredibility()): "82%" - floored, so a trust under CityNeeds.TRUST_RED never reads as half. |
 

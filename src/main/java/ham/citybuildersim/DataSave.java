@@ -116,6 +116,14 @@ public class DataSave {
      */
     private java.util.List<DecisionLog.Entry> decisionLog;
 
+    /**
+     * Automatic building (0.7.73; AutoBuilder): the switch, the spare margin
+     * and the debt limit, its log of orders and what held it back at its last
+     * pass. Absent on an older save, which loads with it off at its defaults
+     * - what that city had. No format bump: nothing loads wrongly without it.
+     */
+    private AutoBuilder.State autoBuild;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -729,6 +737,10 @@ public class DataSave {
     public void setDecisionLog(java.util.List<DecisionLog.Entry> log) { this.decisionLog = log; }
     /** Null on a save from before 0.7.23 (format 28 and older). */
     public java.util.List<DecisionLog.Entry> getDecisionLog() { return decisionLog; }
+
+    public void setAutoBuild(AutoBuilder.State state) { this.autoBuild = state; }
+    /** Null on a save from before 0.7.73. */
+    public AutoBuilder.State getAutoBuild() { return autoBuild; }
 
     /** False for a save written before the format changed. */
     public boolean hasConstructionById() {

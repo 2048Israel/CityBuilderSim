@@ -309,7 +309,8 @@ public final class Sectors {
      * B13). Pure: it reads the struck statements, which a load restores, and
      * writes nothing. The households' fuel was an import with no good under
      * its own name from 0.7.49; it is FUEL's since 0.7.62, the households
-     * among its buyers, as their cars are among the cars'.
+     * among its buyers, as their cars are among the cars' - PETROL's since
+     * 0.7.76 (batch O1).
      *
      * @param householdCars what the households paid the world for cars this month
      * @param householdFuel ...and for fuel (Game.getHouseholdFuelImports())
@@ -339,8 +340,8 @@ public final class Sectors {
             if (Math.abs(rest) > 1e-9 * Math.max(1, Math.abs(st.imports))) services.put(s.key(), rest);
         }
         if (householdFuel > 0) {
-            sums.computeIfAbsent(Good.FUEL, k -> new double[2])[1] += householdFuel;
-            buyers.computeIfAbsent(Good.FUEL, k -> new LinkedHashMap<>()).merge(HOUSEHOLDS, householdFuel, Double::sum);
+            sums.computeIfAbsent(Good.PETROL, k -> new double[2])[1] += householdFuel;
+            buyers.computeIfAbsent(Good.PETROL, k -> new LinkedHashMap<>()).merge(HOUSEHOLDS, householdFuel, Double::sum);
         }
         if (householdCars > 0) {
             sums.computeIfAbsent(Good.CARS, k -> new double[2])[1] += householdCars;

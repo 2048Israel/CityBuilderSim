@@ -136,8 +136,12 @@ import java.util.List;
  *      shape since 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
  *      months from one save at each end and at Standard: the Policy tab's
  *      preview (PolicyPreview.ruleAt()) at the step in force is the rule's
- *      own; very strict holds prices lower than Standard and Standard lower
- *      than very loose; neither end's rate reaches the dial's stop or leaves
+ *      own; very strict holds prices lower than Standard, and very loose
+ *      lies on the side of Standard its band puts it (0.7.79): over the
+ *      target, where Standard's money is dearer, very loose's prices run
+ *      higher; under it, where Standard eases and very loose holds the
+ *      neutral rate, they run lower - the side read off the Standard twin,
+ *      its dial's average against very loose's the fixture; neither end's rate reaches the dial's stop or leaves
  *      its last year more than a full miss off the target; and the very
  *      loose city trusts the bank less. The dial is a decision, survives a
  *      save, and a save without it, or with a name this build does not
@@ -1605,6 +1609,7 @@ public class CentralBankCheck {
         quietly(() -> city.saveGame(9, "the branch"));
         DebtManager.Strictness[] ends = { strictest, standard, loosest };
         double[] inflation = new double[3], topRate = new double[3], lastYear = new double[3], trust = new double[3];
+        double[] meanRate = new double[3];
         Game[] twins = new Game[3];
         boolean previewIsTheRule = true;
         for (int e = 0; e < ends.length; e++) {
@@ -1620,6 +1625,7 @@ public class CentralBankCheck {
                 if (m == STRICT_HORIZON - 11) yearAgo = g.getPriceIndex().getIndex();
                 strictMonth(g);
                 topRate[i] = Math.max(topRate[i], g.getDebtManager().getPolicyRate());
+                meanRate[i] += g.getDebtManager().getPolicyRate() / STRICT_HORIZON;
                 trust[i] += g.getExpectations().getCredibility() / STRICT_HORIZON;
             }
             inflation[i] = Math.pow(g.getPriceIndex().getIndex() / start, 12.0 / STRICT_HORIZON) - 1;
@@ -1628,14 +1634,33 @@ public class CentralBankCheck {
             DebtManager rule = g.getDebtManager();
             previewIsTheRule &= preview.aims().equals(rule.aimWords()) && bits(preview.onTarget(), rule.ruleRate(target))
                     && bits(preview.advised(), rule.advisedPolicyRate(g.getPriceIndex().inflation()));
-            out.printf("   %-11s %s: inflation %.3f%% a year over the %d months, the last year %.2f%%, the dial at most %.2f%%,"
-                    + " trust %.3f on average; %,d people at the end%n", ends[i].words, DebtManager.aimWords(target, ends[i]),
-                    inflation[i] * 100, STRICT_HORIZON, lastYear[i] * 100, topRate[i] * 100, trust[i],
+            out.printf("   %-11s %s: inflation %.3f%% a year over the %d months, the last year %.2f%%, the dial at most %.2f%%"
+                    + " and %.3f%% on average, trust %.3f on average; %,d people at the end%n", ends[i].words, DebtManager.aimWords(target, ends[i]),
+                    inflation[i] * 100, STRICT_HORIZON, lastYear[i] * 100, topRate[i] * 100, meanRate[i] * 100, trust[i],
                     g.getPopulationManager().getPopulation());
         }
         assertTrue("the Policy tab's preview at the step in force is the rule's own, to the bit", previewIsTheRule);
         assertTrue("very strict holds prices lower than Standard over the horizon", inflation[0] < inflation[1]);
-        assertTrue("...and Standard lower than very loose", inflation[1] < inflation[2]);
+        /*
+         * ...AND VERY LOOSE ON THE SIDE OF STANDARD ITS BAND PUTS IT (0.7.79, star O3-1: the premise made
+         * correct). Very loose holds the neutral rate anywhere inside its band, LOOSEST_BAND either side
+         * of the target, where Standard answers every point of the gap: over the target Standard's money
+         * is the dearer and holds prices lower than very loose's; under it Standard eases while very
+         * loose holds, and very loose holds them lower. Until 0.7.77 the probe city ran over its target
+         * (3.32% a year at Standard) and the label asserted that side alone, "Standard lower than very
+         * loose"; from 0.7.78 (wholesale fuel) it runs under (1.59%), and no branch month from 612 to 660
+         * runs over (runs/fixO2-notes.md). So the side is read off the Standard twin, the fixture asserts
+         * the twins' dials went the way that side says, and the order is asserted for that side.
+         */
+        boolean over = inflation[1] > target;
+        assertTrue(String.format("fixture: the Standard twin runs %s its target (%.3f%% a year against %.1f%%), and its dial averages %s"
+                + " very loose's (%.3f%% against %.3f%%): %s", over ? "over" : "under", inflation[1] * 100, target * 100,
+                over ? "over" : "under", meanRate[1] * 100, meanRate[2] * 100,
+                over ? "the dearer money" : "it eases where very loose holds the neutral rate"),
+                over ? meanRate[1] > meanRate[2] : meanRate[1] < meanRate[2]);
+        assertTrue(over ? "...and over its target Standard holds prices lower than very loose"
+                        : "...and under its target very loose holds prices lower than Standard, which eases there while very loose holds",
+                over ? inflation[1] < inflation[2] : inflation[2] < inflation[1]);
         double fullMiss = Expectations.TOLERANCE + Expectations.MISS_SCALE;
         for (int i : new int[] { 0, 2 }) {
             assertTrue(ends[i].words + ": the dial never reaches its stop", topRate[i] < DebtManager.MAX_POLICY_RATE);

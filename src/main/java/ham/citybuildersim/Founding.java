@@ -77,7 +77,7 @@ public final class Founding {
     /** Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the five term loans (LongTermBond.MATURITIES). */
     public static final int INSANE_LAND_YEARS = 20;
 
-    /** What an Insane city owes for its founding ground, in thousands of US dollars: every starting square foot at the land market's opening dollar price. */
+    /** What an Insane city owes for its founding ground, in thousands of US dollars: every starting square foot at the land market's opening dollar price - STARTING_SQ_FT, the figure its centre is drawn to hold, though since 0.7.67 it owns the dry plots drawn, a little more. */
     public static double landBondUsd() {
         return LandManager.STARTING_SQ_FT * LandMarket.openingUsdPerSqFt();
     }

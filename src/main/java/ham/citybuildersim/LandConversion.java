@@ -36,8 +36,9 @@ package ham.citybuildersim;
  * Either way the city's square feet become the converted ground's dry plots
  * (the books follow the map), and twenty-four offers are listed afresh round
  * it, once - the one exception to "never rerolled" - after the load has put
- * back the prices, the buildings and the allocation (Game), so they are priced
- * on the converted city's crowding.
+ * back the prices, the buildings and the allocation (Game): at the prices the
+ * save last struck, as a load strikes none; the next month strikes them on
+ * the converted ground.
  *
  * Restating (restate()) draws a city's land again round the same site, the
  * centre holding the whole of a new figure as an older save's is drawn: what

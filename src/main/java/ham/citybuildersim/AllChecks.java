@@ -27,14 +27,14 @@ public class AllChecks {
     static final String[] HARNESSES = {
         "BuildingDataCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "CalendarCheck", "BooksCheck", "WaterCheck",
         "PolicyCheck", "LandCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck",
-        "ConstructionControlCheck", "BuildAdviceCheck", "BuildCardCheck", "SectorFlowCheck", "PolicyPreviewCheck",
+        "ConstructionControlCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "SectorFlowCheck", "PolicyPreviewCheck",
         "RestructureCheck", "ConservationCheck", "MoneyCheck", "GdpCheck", "HistoryCheck",
         "BankCheck", "ForeignCheck", "CurrencyCheck", "ForeignDebtCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "MonetaryCheck", "ExpectationsCheck", "GroceryCheck", "SupplierCreditCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
         "DenominationCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck",
         "SaveSlotCheck", "ScaleCheck", "MapCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "BuildMenuCheck",
-        "ConsumptionCheck", "SectorBooksCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "YearBookCheck", "ChartCheck", "StaleCheck", "LongPlaytest"
+        "ConsumptionCheck", "SectorBooksCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "YearBookCheck", "ChartCheck", "StaleCheck", "LongPlaytest"
     };
 
     public static void main(String[] args) throws Exception {
