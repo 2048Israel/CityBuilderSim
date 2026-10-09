@@ -154,6 +154,18 @@ public class BuildMenuCheck {
            reads the answer it tests checks nothing. Until 0.7.21 the
            expectation was the sticker plus the material at the import price,
            and every building failed it from 0.7.19 on (73 checks).
+
+           ...AND A PAVED ROAD'S BITUMEN (0.7.83, batch O6; Game, BITUMEN FOR
+           THE PAVING): the builders buy its surface's binder with the order -
+           Game.bitumenFor(t) tonnes, split between the refiners and the world
+           as the market would sell it - and bill it the same way, the
+           refiners' part net of the credit at their rate rR:
+
+               G = (N + imports + plant x (1 - rM) + bitumen's world + refiners' x (1 - rR)) / (1 - rB)
+
+           Nothing for every building but a Paved Road and an Elevated
+           Highway, so the rest are the formula above to the bit. Until 0.7.83
+           the two roads were the formula above, and failed it from then on.
            ----------------------------------------------------------------- */
         System.out.println("\n=== THE PRICE COLUMN ===");
         double stock = bm.getConstructionMaterials();
@@ -165,6 +177,8 @@ public class BuildMenuCheck {
                 tax.effectiveSalesRate(game.getSectors().construction())));
         double rM = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX,
                 tax.effectiveSalesRate(game.getSectors().materials())));
+        double rR = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX,
+                tax.effectiveSalesRate(game.getSectors().refining())));
         System.out.printf("  the builders' sales rate %.2f%%, the plant's %.2f%%%n%n", rB * 100, rM * 100);
 
         int twoPrices = 0;
@@ -174,7 +188,9 @@ public class BuildMenuCheck {
             double work = bm.nonMaterialCost(t);
             double beyond = Math.max(t.getConstructionMaterials() - stock, 0);
             Markets.Draw bought = game.getMarkets().quote(Good.MATERIALS, beyond, game.getSectors());
-            double expected = (work + bought.importCost() + bought.localCost() * (1 - rM)) / (1 - rB);
+            Markets.Draw binder = game.getMarkets().quote(Good.BITUMEN, game.bitumenFor(t), game.getSectors());
+            double expected = (work + bought.importCost() + bought.localCost() * (1 - rM)
+                    + binder.importCost() + binder.localCost() * (1 - rR)) / (1 - rB);
 
             check(Math.abs(allIn - expected) < 1e-9,
                     t.getName() + ": quoted " + allIn + ", arithmetic says " + expected);

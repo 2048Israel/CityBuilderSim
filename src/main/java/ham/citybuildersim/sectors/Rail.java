@@ -277,6 +277,18 @@ public final class Rail extends Sector {
     /* the month just billed, for the screens */
     private double rTonnes, rHauled, rTruckBill, rHaulage, rFuel;
 
+    /**
+     * Every tonne of freight that crossed the boundary in the month (0.7.86):
+     * rTonnes is what the railway was offered, the berths that go before it
+     * having taken theirs (ham.citybuildersim.Ports) - the figure its
+     * tightness, its plan and its retirement read - and this is all of it,
+     * the screens' "crossed". The same figure with no terminal.
+     */
+    private double rCrossed;
+
+    /** ...and what a lorry would have charged for the tonnes the railway was offered (0.7.86): the lorry bill less the berths' first share of it; the whole bill with no terminal. */
+    private double rOfferedBill;
+
     /** The part of the month's fuel the world sold it (0.7.62). */
     private double rFuelImported;
     private double rCapacity, rTightness, rFx = 1, rAllowed;
@@ -362,7 +374,17 @@ public final class Rail extends Sector {
      * shipper credited in the band for freight nobody carried. The overrun
      * shows up where it should: as tightness, in next month's quote.
      */
-    public void haul(Sectors sectors) {
+    public void haul(Sectors sectors) { haul(sectors, null); }
+
+    /**
+     * ...WITH THE CITY'S PORTS (0.7.86, batch O9; ham.citybuildersim.Ports):
+     * the berths' shares in force bill the railway's part of each good and
+     * send the ships' part abroad in step 1, take their kinds' tonnes before
+     * the railway's capacity is dealt in step 3 (or after it, for a kind
+     * whose sea freight is not under the quote), and narrow the band in step
+     * 5 by Ports.factor(). Null, or no berth, is the railway alone, to the bit.
+     */
+    public void haul(Sectors sectors, ham.citybuildersim.Ports ports) {
         if (sectors == null || markets == null || buildings == null) return;
 
         final int n = Traffic.values().length;
@@ -372,6 +394,11 @@ public final class Rail extends Sector {
 
         /* ---- 1. what crossed the boundary, and what a lorry charges for it ---- */
 
+        // ...and each good's tonnes and lorry bill, every owner's together, for the berths (0.7.86).
+        double[] goodTonnes = new double[Good.values().length], goodLorry = new double[Good.values().length];
+        double[] railTonnes = new double[n];
+        boolean atSea = ports != null && ports.anyAtSea();
+        if (ports != null) ports.beginMonth();
         double haulage = 0, abroad = 0;
         for (Sector s : sectors.all()) {
             if (s == this) continue;
@@ -379,15 +406,25 @@ public final class Rail extends Sector {
             for (Good g : Good.values()) {
                 Traffic stream = g.traffic();
                 if (stream == null || !stream.isFreight()) continue;
-                double units = s.unitsExported(g) + s.unitsImported(g);
+                double out = s.unitsExported(g), in = s.unitsImported(g);
+                double units = out + in;
                 if (units <= 0) continue;
                 int i = stream.ordinal();
-                tonnes[i] += units * g.tonnesPerUnit();
+                double weighs = units * g.tonnesPerUnit();
+                tonnes[i] += weighs;
                 double lorry = units * g.baseFreight() * fx;
                 truck[i] += lorry;
-                bill += lorry * carried[i] * quote;
-                // ...and what still went by lorry, paid abroad (0.7.29): read, never billed.
-                abroad += lorry * (1 - carried[i]);
+                // The railway's part and the ships' (0.7.86): carried[i] and nothing with no berth.
+                double rail = ports == null ? carried[i] : ports.railShareOf(g, carried[i]);
+                double ship = ports == null ? 0 : ports.seaShareOf(g, carried[i]);
+                bill += lorry * rail * quote;
+                // ...and what still went by lorry, paid abroad (0.7.29): read, never billed - and by sea (0.7.86).
+                abroad += lorry * (1 - rail - ship);
+                if (ship > 0) abroad += lorry * ship * ham.citybuildersim.Ports.seaFreightShareOf(g);
+                goodTonnes[g.ordinal()] += weighs;
+                goodLorry[g.ordinal()] += lorry;
+                railTonnes[i] += weighs * rail;
+                if (ports != null) ports.tally(g, in * g.tonnesPerUnit(), out * g.tonnesPerUnit(), ship);
             }
             if (bill > 0) {
                 s.billForService(key(), "Haulage", bill);
@@ -398,7 +435,12 @@ public final class Rail extends Sector {
         /* ---- 2. the invoice, and the fuel it took to earn it ---- */
 
         double moved = 0;
-        for (Traffic stream : Traffic.values()) moved += tonnes[stream.ordinal()] * carried[stream.ordinal()];
+        if (!atSea) {
+            for (Traffic stream : Traffic.values()) moved += tonnes[stream.ordinal()] * carried[stream.ordinal()];
+        } else {
+            // ...each good's own railed share, with the berths taking theirs (0.7.86).
+            for (Traffic stream : Traffic.values()) moved += railTonnes[stream.ordinal()];
+        }
 
         bookOtherRevenue(haulage);
         // ...its fuel, drawn as a buyer (0.7.62): the refiners' shelf first, the world for the rest - diesel (0.7.76).
@@ -438,24 +480,48 @@ public final class Rail extends Sector {
         }
         usePantry(Good.ROLLING_STOCK, fleet() / SET_LIFE_MONTHS);
 
+        /*
+         * ...AFTER THE BERTHS THAT GO FIRST (0.7.86, batch O9). A kind whose
+         * sea freight is under the quote takes its berths' share of its goods
+         * before the track is dealt, so the railway is offered what the ships
+         * leave; nothing, with no berth, and the dealing below is 0.7.85's.
+         */
+        double[] seaFirst = new double[n], seaFirstLorry = new double[n];
+        if (ports != null) {
+            double[][] first = ports.planFirst(goodTonnes, goodLorry, quote,
+                    ham.citybuildersim.Ports.berths(buildings),
+                    ham.citybuildersim.Ports.freeCrudeRoom(sectors.refining()));
+            seaFirst = first[0];
+            seaFirstLorry = first[1];
+        }
+
         double capacity = Math.min(trackTonnes(), fleet() * TONNES_PER_SET);
         double left = capacity;
         double[] next = new double[n];
         for (Traffic stream : new Traffic[] { Traffic.BULK, Traffic.GOODS }) {
             int i = stream.ordinal();
-            double want = tonnes[i];
+            double want = tonnes[i] - seaFirst[i];
             if (want <= 0) continue;
             double take = Math.min(left, want);
             next[i] = take / want;
             left -= take;
         }
+        // ...and the kinds that go after it take what it leaves; then all of it is in force (0.7.86).
+        if (ports != null) {
+            ports.planAfter(goodTonnes, next);
+            ports.commit(goodTonnes, tonnes, next);
+        }
 
-        double offered = tonnes[Traffic.BULK.ordinal()] + tonnes[Traffic.GOODS.ordinal()];
+        double offered = (tonnes[Traffic.BULK.ordinal()] - seaFirst[Traffic.BULK.ordinal()])
+                + (tonnes[Traffic.GOODS.ordinal()] - seaFirst[Traffic.GOODS.ordinal()]);
         double tightness = offered > 0
                 ? Math.max(0, Math.min(1, (offered - capacity) / offered)) : 0;
 
         rTonnes = offered;
+        rCrossed = tonnes[Traffic.BULK.ordinal()] + tonnes[Traffic.GOODS.ordinal()];
         rTruckBill = truck[Traffic.BULK.ordinal()] + truck[Traffic.GOODS.ordinal()];
+        rOfferedBill = (truck[Traffic.BULK.ordinal()] - seaFirstLorry[Traffic.BULK.ordinal()])
+                + (truck[Traffic.GOODS.ordinal()] - seaFirstLorry[Traffic.GOODS.ordinal()]);
         rCapacity = capacity;
         rTightness = tightness;
 
@@ -466,7 +532,10 @@ public final class Rail extends Sector {
 
         if (capacity > 0) {
             double atLorryRate = 0;
-            for (Traffic stream : Traffic.values()) atLorryRate += truck[stream.ordinal()] * next[stream.ordinal()];
+            // ...on what the berths that go first leave of each stream's lorry bill (0.7.86; all of it with none).
+            for (Traffic stream : Traffic.values()) {
+                atLorryRate += (truck[stream.ordinal()] - seaFirstLorry[stream.ordinal()]) * next[stream.ordinal()];
+            }
             double needed = atLorryRate > 0 ? rAllowed / atLorryRate : quote;
             double scarcity = 1 + tightness * (MAX_SCARCITY_MULTIPLE - 1);
             double target = Math.max(RAIL_FLOOR, Math.min(1, needed * scarcity));
@@ -483,16 +552,23 @@ public final class Rail extends Sector {
          * sleeper quotes the same prices it quoted before any of this existed,
          * by construction rather than by luck. See GoodsMarket's header.
          */
+        /*
+         * ...AND THE SHIPS' PART WITH IT (0.7.86, batch O9): a good's berths'
+         * share leaves the band at its sea freight, Ports.factor(); with no
+         * berth that is 1 - share, to the bit.
+         */
         for (Good g : Good.values()) {
             GoodsMarket m = markets.get(g);
             if (m == null) continue;
             Traffic stream = g.traffic();
             double share = stream == null || !stream.isFreight() ? 0 : next[stream.ordinal()];
-            m.setFreightFactor(1 - share);
+            double rail = ports == null ? share : ports.railShareOf(g, share);
+            double ship = ports == null ? 0 : ports.seaShareOf(g, share);
+            m.setFreightFactor(ham.citybuildersim.Ports.factor(rail, ship, ham.citybuildersim.Ports.seaFreightShareOf(g)));
             // ...and the other half of the same figure: what the railway will
             // bill for the part it takes. The band and this come to the whole
             // freight bill; neither is it alone. See GoodsMarket.railCharge.
-            m.setRailCharge(share * quote);
+            m.setRailCharge(rail * quote);
         }
         System.arraycopy(next, 0, carried, 0, n);
     }
@@ -569,7 +645,11 @@ public final class Rail extends Sector {
 
     public double getQuote()            { return quote; }
     public double getCapacityTonnes()   { return rCapacity; }
-    public double getTradeTonnes()      { return rTonnes; }
+    /** Every tonne that crossed the boundary in the month, by sea as well (0.7.86). */
+    public double getTradeTonnes()      { return rCrossed; }
+
+    /** ...and what of it the railway was offered: all of it, less what the berths that go before it took (0.7.86). */
+    public double getOfferedTonnes()    { return rTonnes; }
     public double getHauledTonnes()     { return rHauled; }
     public double getTightness()        { return rTightness; }
     public double getTruckBill()        { return rTruckBill; }
@@ -593,7 +673,8 @@ public final class Rail extends Sector {
      * month's cross-border tonnes would have cost entirely by lorry, and it is
      * exactly three things: what the railway billed for the part it carried,
      * at home (getHaulageBilled()); what the lorries were paid for the part
-     * it did not, abroad (this); and what the city's shippers kept - the
+     * it did not, abroad (this, and since 0.7.86 what a port's ships were
+     * paid for the part they took, at their sea freight); and what the city's shippers kept - the
      * railway's quote under the lorry rate, on what it carried (getKept()).
      * The Freight page printed truck bill less billed as "paid abroad", which
      * with the railway carrying everything was the saving and not a payment.
@@ -623,20 +704,25 @@ public final class Rail extends Sector {
      * Deliberately the same two lines as the tail of haul(), and called from
      * Game.rebuildSimulationState() where the rest of the month is restored.
      */
-    public void reapplyBand() {
+    public void reapplyBand() { reapplyBand(null); }
+
+    /** ...with the city's ports' shares in force (0.7.86): step 5's lines, as haul() leaves them. */
+    public void reapplyBand(ham.citybuildersim.Ports ports) {
         if (markets == null) return;
         for (Good g : Good.values()) {
             GoodsMarket m = markets.get(g);
             if (m == null) continue;
             Traffic stream = g.traffic();
             double share = stream == null || !stream.isFreight() ? 0 : carried[stream.ordinal()];
-            m.setFreightFactor(1 - share);
-            m.setRailCharge(share * quote);
+            double rail = ports == null ? share : ports.railShareOf(g, share);
+            double ship = ports == null ? 0 : ports.seaShareOf(g, share);
+            m.setFreightFactor(ham.citybuildersim.Ports.factor(rail, ship, ham.citybuildersim.Ports.seaFreightShareOf(g)));
+            m.setRailCharge(rail * quote);
         }
     }
 
-    /** What a tonne of the city's own freight costs by lorry, this month. Zero before anything moves. */
-    public double lorryRatePerTonne() { return rTonnes > 0 ? rTruckBill / rTonnes : 0; }
+    /** What a tonne of the city's own freight costs by lorry, this month - of the freight the railway was offered, the berths that go before it having taken theirs (0.7.86). Zero before anything moves. */
+    public double lorryRatePerTonne() { return rTonnes > 0 ? rOfferedBill / rTonnes : 0; }
 
     /* =====================================================================
        PLANNING - the freight nobody is carrying
@@ -800,7 +886,10 @@ public final class Rail extends Sector {
                 f.count(fleet()), f.count(setsNeeded())),
                 fleet() + 1e-9 < setsNeeded() ? Line.Tone.WARN : Line.Tone.NONE));
         lines.add(Line.of("Could carry", f.count(rCapacity) + " tonnes a month"));
-        lines.add(Line.of("The city traded", f.count(rTonnes) + " tonnes"));
+        lines.add(Line.of("The city traded", f.count(rCrossed) + " tonnes"));
+        // ...and what its ports' ships took off it (0.7.86).
+        double bySea = game == null ? 0 : game.getPorts().seaTonnes();
+        if (bySea > 0) lines.add(Line.of("Went by sea", f.count(bySea) + " tonnes"));
         lines.add(Line.of("Carried", f.count(rHauled) + " tonnes",
                 rTightness > .5 ? Line.Tone.WARN : Line.Tone.GOOD));
 
@@ -840,10 +929,12 @@ public final class Rail extends Sector {
             extras.put("carried." + stream.name(), carried[stream.ordinal()]);
         }
         extras.put("tonnes", rTonnes);
+        extras.put("crossed", rCrossed);
         extras.put("hauled", rHauled);
         extras.put("capacity", rCapacity);
         extras.put("tightness", rTightness);
         extras.put("truckBill", rTruckBill);
+        extras.put("offeredBill", rOfferedBill);
         extras.put("haulage", rHaulage);
         extras.put("fuel", rFuel);
         extras.put("fuelImported", rFuelImported);
@@ -862,10 +953,14 @@ public final class Rail extends Sector {
             carried[stream.ordinal()] = extras.getOrDefault("carried." + stream.name(), 0.0);
         }
         rTonnes = extras.getOrDefault("tonnes", 0.0);
+        // A save from before 0.7.86 had no ports: all it crossed was offered the railway.
+        rCrossed = extras.getOrDefault("crossed", rTonnes);
         rHauled = extras.getOrDefault("hauled", 0.0);
         rCapacity = extras.getOrDefault("capacity", 0.0);
         rTightness = extras.getOrDefault("tightness", 0.0);
         rTruckBill = extras.getOrDefault("truckBill", 0.0);
+        // ...the part offered the railway: all of it before 0.7.86, which had no ports.
+        rOfferedBill = extras.getOrDefault("offeredBill", rTruckBill);
         rHaulage = extras.getOrDefault("haulage", 0.0);
         rFuel = extras.getOrDefault("fuel", 0.0);
         // A save from before 0.7.62 imported every litre.
@@ -882,7 +977,7 @@ public final class Rail extends Sector {
         quote = OPENING_QUOTE;
         fleetKnown = false;
         java.util.Arrays.fill(carried, 0);
-        rTonnes = rHauled = rCapacity = rTightness = rTruckBill = rHaulage = rFuel = rFuelImported = 0;
+        rTonnes = rCrossed = rHauled = rCapacity = rTightness = rTruckBill = rOfferedBill = rHaulage = rFuel = rFuelImported = 0;
         rAllowed = rPaidAbroad = 0;
         allowedKnown = abroadKnown = true;
     }
@@ -898,6 +993,7 @@ public final class Rail extends Sector {
     @Override
     protected void redenominateExtras(double scale) {
         rTruckBill *= scale;
+        rOfferedBill *= scale;
         rHaulage *= scale;
         rFuel *= scale;
         rFuelImported *= scale;

@@ -982,12 +982,44 @@ final class BuildScreen {
                 return "brings " + money(d[0]) + " of shareholders' capital";
             case POINTS:
                 return "the builders make " + formatter.format(d[0]) + " pts a month";
+            case PUMP:
+                // A filling station (0.7.83): the pump price on today's wholesale.
+                return d.length < 2 || !(d[0] > 0) ? "no petrol priced yet"
+                        : "at " + unitPrice(d[0]) + " a litre on " + unitPrice(d[1]) + " wholesale";
+            case BERTHS:
+                // A sea terminal (0.7.86): the kind's month - what could go by sea, the berths, the share at sea.
+                if (d.length < 3) return "";
+                return "the city's · last month " + shortNumber(d[0]) + " t of it could go by sea; the berths take "
+                        + shortNumber(d[1]) + " t, " + Math.round(d[2] * 100) + "% of it";
+            case SLOTS:
+                // An offshore platform (0.7.91): the city's shallow sea sites, the slots standing, the wells in them.
+                if (d.length < 3) return "";
+                return "on a field 150 m deep at most · the city's shallow sea sites " + formatter.format(d[0]) + ", "
+                        + formatter.format(d[1]) + " slotted, " + formatter.format(d[2]) + " wells lifting";
+            case PIPE:
+                // A kilometre of crude pipeline (0.7.91): the kilometres standing, the fields piped, the shuttle's tonnes.
+                if (d.length < 3) return "";
+                return "a field's whole pipe ends its shuttle tankers · " + formatter.format(d[0]) + " km standing, "
+                        + formatter.format(d[1]) + " field(s) piped, " + shortNumber(d[2]) + " t by tanker this month";
+            case TANKS:
+                // Oil storage (0.7.85): what is in store now, against what may be.
+                if (d.length < 2) return "";
+                return StrategicReserve.isReserve(t)
+                        ? "the city's crude, filled and released on your order · " + shortNumber(d[0]) + " t held of "
+                                + shortNumber(d[1]) + " t of room"
+                        : "the refiners keep a month of their crude in it, their products the rest · "
+                                + shortNumber(d[0]) + " t on hand of " + shortNumber(d[1]) + " t";
             case OFFICE:
                 return f.addsNothing() ? "the world pays nothing for it at today's prices"
                         : "worth " + money(f.valueAdded()) + " a month at " + unitPrice(d[0]) + " a seat-month";
             case MAKER: {
                 List<String> parts = new ArrayList<>();
-                if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) {
+                if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
+                    // A conversion unit (0.7.80): the hero names its feed, and this what the feed becomes.
+                    parts.add("into " + goodsList(ham.citybuildersim.sectors.Refining.madeBy(t)) + " from the crude units' run"
+                            + (t.refineryUnit() == ham.citybuildersim.sectors.RefineryFlow.Kind.HYDROCRACKER
+                            ? " and a reformer's hydrogen" : ""));
+                } else if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) {
                     // A crude unit (0.7.76): the hero names its crude, and this what the crude becomes.
                     parts.add(crudeUnitWords(ham.citybuildersim.sectors.Refining.madeBy(t)));
                 } else {
@@ -998,7 +1030,11 @@ final class BuildScreen {
                 }
                 parts.add(f.addsNothing() ? "adds nothing at today's prices: its inputs cost more than it makes"
                         : "adds " + money(f.valueAdded()) + " a month at today's prices");
-                if (d.length == 3) {
+                if (d.length == 3 && t.isPlatformWell()) {
+                    // ...a platform's well (0.7.91): a slot on a platform standing, not a deposit of its own.
+                    parts.add("needs a platform's slot: " + formatter.format(d[0]) + " standing, "
+                            + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t in the ground");
+                } else if (d.length == 3) {
                     parts.add("needs a deposit: the city owns " + formatter.format(d[0]) + ", "
                             + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t in the ground");
                 }
@@ -1028,6 +1064,46 @@ final class BuildScreen {
         if (others > 0) words += ", and " + shortNumber(rest) + " L of " + (others == 1 ? "one product" : others + " products")
                 + " it ships";
         return words;
+    }
+
+    /**
+     * What a refinery's conversion unit is, in sentences, before its products
+     * (0.7.80, batch O4): its size and its feed, where the feed comes from,
+     * what its kind needs or does that the others do not, and when it runs -
+     * off the template and RefineryFlow's own figures.
+     */
+    static List<String> conversionUnitLines(BuildingsTemplate t) {
+        ham.citybuildersim.sectors.RefineryFlow.Kind k = t.refineryUnit();
+        List<String> out = new ArrayList<>();
+        out.add(String.format("A %s-barrel-a-day %s: it takes %s litres of %s a month from the refinery's crude units, not"
+                        + " from the market, and makes what follows of it.",
+                formatter.format(Math.round(t.feedPerMonth() / ham.citybuildersim.sectors.RefineryFlow.LITRES_A_MONTH_PER_BARREL_A_DAY)),
+                k.unitName().toLowerCase(), formatter.format(Math.round(t.feedPerMonth())), k.feed().words()));
+        switch (k) {
+            case REFORMER:
+                out.add("It also makes the hydrogen a hydrocracker needs - the only unit that does.");
+                break;
+            case HYDROCRACKER:
+                out.add(String.format("It needs hydrogen, which only a reformer makes: a barrel of heavy naphtha reformed treats"
+                                + " %.2f of a barrel of gas oil here, and with no reformer running it runs nothing.",
+                        ham.citybuildersim.sectors.RefineryFlow.HYDROGEN_MADE / ham.citybuildersim.sectors.RefineryFlow.HYDROGEN_USED));
+                break;
+            case ALKYLATION:
+                out.add("Its feed is the cracked gas a cracking unit or a coker makes: with neither running it has none.");
+                break;
+            case COKER:
+                out.add("Residue the refinery's diesel cannot cut into fuel oil is burned for nothing; a coker makes lighter"
+                        + " products and coke of it, which is why heavy crude wants one.");
+                break;
+            case ASPHALT:
+                out.add("It takes only the residue of heavy crude, from the city's own heavy fields: on imported crude it has none.");
+                break;
+            default:
+                break;
+        }
+        out.add("It runs only while what it makes is worth more than its feed would fetch unworked, and the units that share"
+                + " a stream take it widest margin first.");
+        return out;
     }
 
     /** Goods and their counts: "1,320 t of iron ore", "5,000 kg of dairy and eggs and 1,400 kg of meat". */
@@ -1376,7 +1452,8 @@ final class BuildScreen {
         switch (v.kind()) {
             case NO_DEPOSIT: return new Pieces.Press(Pieces.Look.HELD, "No " + BuildCard.depositWord(v.site()) + " deposit",
                     "whole fields of " + (v.site() == Resource.OIL ? "oil" : "ore") + " come with land: the Land office ›");
-            case NO_COAST:   return new Pieces.Press(Pieces.Look.HELD, "No sea to draw",
+            // ...a desalination plant's or, since 0.7.86, a sea terminal's: the words fit both.
+            case NO_COAST:   return new Pieces.Press(Pieces.Look.HELD, "No sea owned",
                     "sea comes with land: the Land office ›");
             case NO_LICENCE: return new Pieces.Press(Pieces.Look.HELD, "Nobody licensed to work in it",
                     "a school licenses them: Education ›");
@@ -1398,7 +1475,7 @@ final class BuildScreen {
     String[] quoteVerdict(BuildCard.Verdict v) {
         switch (v.kind()) {
             case NO_DEPOSIT: return new String[] {"no " + BuildCard.depositWord(v.site()) + " deposit", Palette.BAD};
-            case NO_COAST:   return new String[] {"no sea owned to draw", Palette.BAD};
+            case NO_COAST:   return new String[] {"no sea owned", Palette.BAD};
             case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
             case NO_LAND:    return new String[] {"short " + LandManager.areaWords(v.figure()) + " of land", Palette.BAD};
             case BILL:       return new String[] {"short " + money(v.figure()) + " — you will be offered a bill", Palette.WARN};
@@ -1436,7 +1513,7 @@ final class BuildScreen {
 
     /**
      * The stat cover, as tall as the card it covers: what the building does
-     * in sentences (whatItDoes(), which BuildMenuCheck holds for all 73), the
+     * in sentences (whatItDoes(), which BuildMenuCheck holds for all 91), the
      * figures the face does not say - materials, build points, road load,
      * electricity, water, the wage bill and the job mix - and on a market
      * card the investors' estimate of what one would make its owner.
@@ -2015,7 +2092,7 @@ final class BuildScreen {
             BuildingsTemplate stopAt = at;
             String why = switch (g.buildRunStop(run)) {
                 case NO_DEPOSIT -> Game.siteOf(stopAt) == Resource.OIL ? "no oil left to drill" : "no ore left to dig";
-                case NO_COAST   -> "no sea owned to draw";
+                case NO_COAST   -> "no sea owned for it";
                 case NO_LICENCE -> "nobody licensed to practise";
                 default         -> "short of land - buy it at the land office first";
             };
@@ -2297,8 +2374,13 @@ final class BuildScreen {
        set at once as every dial is, and what it has done with the switch
        under it. The model is AutoBuilder; every figure is its or the
        Finances tab's. The words are worked out apart from the nodes
-       (autoMarginWords(), autoLimitWords(), autoStatusWords(), autoPress()),
-       so a probe measures them at the 1,389 window.
+       (autoMarginWords(), autoLimitWords(), autoStatusWords(), autoPress(),
+       and since 0.7.81 autoCashWords()), so a probe measures them at the
+       1,389 window. Since 0.7.81 (batch N6) the limit is the city's debt over
+       a year of GDP, its "now" mark the city's own ratio, and under it the
+       choice Jerus asked for beside it: "with an optional button of if cash
+       available build regardless" - over the limit, build nothing, or build
+       from cash anyway.
        ----------------------------------------------------------------------- */
 
     /** Build's heading chip on every page but the Overview while it is on: the way back to its cards. */
@@ -2307,9 +2389,9 @@ final class BuildScreen {
     /** The section's (i). */
     static final String AUTO_INFO = "Turned on, it orders every month what this page advises for the city's works - "
             + "power, water, roads and transit, care, schools, police, cells - kept ahead of demand with the spare margin "
-            + "on top. It pays from the cash over a month's tax, then borrows on Build's 20-year bond while debt payments "
-            + "stay under the limit. It buys the land its orders need and orders no more than the builders open in a year "
-            + "or the budget can run. The inbox says what it bought and why.";
+            + "on top. It pays from the cash over a month's tax, then borrows on Build's 20-year bond while the city's "
+            + "debt stays under the limit, a share of a year's GDP; over it, it builds nothing, or only from cash. It buys "
+            + "the land its orders need and orders no more than the builders open in a year or the budget can run.";
 
     /** The heading's quiet words: on or off. */
     static String autoHint(AutoBuilder ab) {
@@ -2336,14 +2418,22 @@ final class BuildScreen {
                         + "off Needs you. A network keeps the quarter in hand Needs you asks of it as well." };
     }
 
-    /** The debt limit's card's two lines, and the mark under its slider: where the city stands now. */
+    /** The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP). */
     static String[] autoLimitWords(AutoBuilder ab, Game g) {
-        double now = ab.serviceShare(g);
-        String stands = Double.isFinite(now) ? "Now " + pct1(now) + "." : "No revenue this month to set it against.";
+        double now = AutoBuilder.ratio(g);
+        String stands = Double.isFinite(now) ? "Now " + AutoBuilder.gdpShare(now) + (ab.within(g) ? "." : ", over it.")
+                : "No GDP recorded yet to set its debt against.";
         return new String[] { "Debt limit",
-                "Debt payments at most " + pct(ab.getDebtLimit()) + " of revenue, land sales and the builders' tax left "
-                        + "out. It borrows only past the cash over a month's tax. " + stands,
-                Double.isFinite(now) ? "now " + pct1(now) : null };
+                "The city's debt at most " + AutoBuilder.gdpShare(ab.getDebtLimit()) + " of a year's GDP - the Debt/GDP"
+                        + " the left panel shows; over it, it builds nothing. " + stands,
+                Double.isFinite(now) ? "now " + AutoBuilder.gdpShare(now) : null };
+    }
+
+    /** "Build from cash anyway" (0.7.81): the lead, the two chips, and each chip's tooltip. */
+    static String[] autoCashWords() {
+        return new String[] { "Over the limit", "Build nothing", "Build from cash anyway",
+                "Over the limit it builds nothing and borrows nothing.",
+                "Over the limit it builds what the cash over a month's tax pays for, and never borrows." };
     }
 
     /**
@@ -2414,15 +2504,34 @@ final class BuildScreen {
 
     VBox autoLimitCard(AutoBuilder ab) {
         String[] w = autoLimitWords(ab, ui.game);
-        double now = ab.serviceShare(ui.game);
-        Ladder ladder = Ladder.of(0, AutoBuilder.DEBT_LIMIT_MOST * 100, AutoBuilder.STEP * 100, v -> String.format("%.0f%%", v))
+        double now = AutoBuilder.ratio(ui.game);
+        Ladder ladder = Ladder.of(0, AutoBuilder.DEBT_LIMIT_MOST * 100, AutoBuilder.DEBT_STEP * 100, v -> String.format("%.0f%%", v))
                 .current(ab.getDebtLimit() * 100)
                 .appliesAtOnce(v -> { ab.setDebtLimit(v / 100, ui.game.getDecisions()); showOverview(); })
                 .wide(AUTO_DIAL);
         if (w[2] != null && now * 100 <= AutoBuilder.DEBT_LIMIT_MOST * 100) {
             ladder.marks(new double[] { now * 100 }, new String[] { w[2] });
         }
-        return autoCard(w[0], ladder.build(), w[1]);
+        VBox card = autoCard(w[0], ladder.build(), w[1]);
+        // ...and Build from cash anyway (0.7.81), under the words: two chips, applied at once.
+        String[] c = autoCashWords();
+        javafx.scene.layout.FlowPane chips = chipStrip(new String[] { c[1], c[2] }, ab.isCashAnyway() ? c[2] : c[1],
+                Palette.SIZE_LABEL, name -> { ab.setCashAnyway(c[2].equals(name), ui.game.getDecisions()); showOverview(); });
+        chips.setAlignment(Pos.CENTER_LEFT);
+        for (int i = 0; i < chips.getChildren().size(); i++) {
+            if (chips.getChildren().get(i) instanceof Button b) {
+                Tooltip tip = new Tooltip(c[3 + i]);
+                tip.setShowDelay(Duration.millis(300));
+                b.setTooltip(tip);
+            }
+        }
+        Label lead = new Label(c[0]);
+        lead.setStyle(wordsAt(10.5, Palette.TEXT_MUTED));
+        lead.setMinWidth(Region.USE_PREF_SIZE);
+        HBox row = new HBox(8, lead, chips);
+        row.setAlignment(Pos.CENTER_LEFT);
+        card.getChildren().add(row);
+        return card;
     }
 
     VBox autoStatusCard(AutoBuilder ab) {
@@ -3182,6 +3291,11 @@ final class BuildScreen {
             case BRANCH:    return "the city's bank, a counter at a time";
             case RAIL:      return "freight across the city's boundary";
             case POINTS:    return "the crews every site waits on";
+            case PUMP:      return "the drivers' petrol, at the pump";
+            case TANKS:     return "crude and products in store";
+            case BERTHS:    return "the city's trade by sea";
+            case SLOTS:     return "the slots a platform's wells stand in";
+            case PIPE:      return "the sea's crude, ashore by pipe";
             case OFFICE:    return "work the world buys";
             default: {
                 java.util.Set<String> made = new java.util.LinkedHashSet<>(), used = new java.util.LinkedHashSet<>();
@@ -3218,6 +3332,9 @@ final class BuildScreen {
                         + formatter.format(Math.round(n.b()));
             case RAIL:
                 return "the city trades " + formatter.format(Math.round(n.a())) + " t a month; the network carries "
+                        + formatter.format(Math.round(n.b()));
+            case PUMP:
+                return "the drivers bought " + formatter.format(Math.round(n.a())) + " L; the stations sell "
                         + formatter.format(Math.round(n.b()));
             case LUXURY:
                 // Not counted yet since the load (BuildCard.Note): what the counters serve alone.
@@ -3261,6 +3378,16 @@ final class BuildScreen {
         return r;
     }
 
+    /** A kind of cargo's goods, in words (0.7.86; Good.cargo()). */
+    static String cargoWords(ham.citybuildersim.Ports.Cargo k) {
+        switch (k) {
+            case LIQUID:    return "crude, petrol, diesel and the refinery's other products";
+            case DRY_BULK:  return "iron ore, crops, grain, building materials and coke";
+            case CONTAINER: return "the shelf's goods, drinks and watches, in boxes";
+            default:        return "steel, machinery, wagon sets, cars and vans";
+        }
+    }
+
 
     /**
      * What this building actually does for the city, worked out from its own
@@ -3297,9 +3424,66 @@ final class BuildScreen {
                     formatter.format(t.getCapacity())));
             return out;
         }
-        // ...what it makes: a crude unit's slate since 0.7.76 (Refining.madeBy()).
+        // ...a filling station (0.7.83): what it sells and at what, the grocers' forecourts' rule (sectors.Retail, THE FORECOURTS).
+        if (ham.citybuildersim.sectors.Retail.isStation(t)) {
+            ham.citybuildersim.sectors.Retail grocers = ui.game.getSectors().retail();
+            double pump = grocers.pumpPriceToday(ui.game);
+            out.add(String.format("Sells up to %s litres of petrol a month to the city's drivers, at the pump: what the"
+                    + " grocers paid a litre wholesale, %.0f%% more, with the sales tax on top%s.",
+                    formatter.format(t.pumpLitres()), ham.citybuildersim.sectors.Retail.PUMP_MARGIN * 100,
+                    pump > 0 ? " - " + unitPrice(pump) + " a litre today" : ""));
+            out.add(String.format("The grocers buy it off the city's refineries first and from the world for the rest."
+                    + " Past what the stations can sell the drivers queue and pay %.0f%% more, and the grocers build"
+                    + " another.", ham.citybuildersim.sectors.Retail.QUEUE_MARGIN * 100));
+            return out;
+        }
+        // ...oil storage (0.7.85): the refiners' Tank Farm and the city's Strategic Reserve (sectors.Refining, THE TANK FARM; StrategicReserve).
+        if (ham.citybuildersim.sectors.Refining.isTankFarm(t)) {
+            out.add(String.format("Holds %s litres: the refiners keep a month of their crude units' crude in it, and"
+                    + " their products share the rest of the room.", formatter.format(t.getStock())));
+            out.add("While the refiners keep crude, they buy it as stock and run on what they have and what they"
+                    + " bought. A port's tankers will land their cargo in it.");
+            return out;
+        }
+        // ...a sea terminal (0.7.86): its berth, its kind's goods, and what a tonne by sea costs (Ports).
+        if (ham.citybuildersim.Ports.isPort(t)) {
+            ham.citybuildersim.Ports.Cargo k = t.berthCargo();
+            out.add(String.format("One berth on the city's coast for %s t a year of %s - %s. Those goods go by sea in the"
+                    + " share the berths cover, their freight at %.0f%% of what a lorry charges.",
+                    formatter.format(t.berthTonnesAYear()), k.label().toLowerCase(), cargoWords(k), k.seaFreightShare() * 100));
+            out.add("The city builds it and pays its crews with transit's. It needs the city to own some sea"
+                    + (k == ham.citybuildersim.Ports.Cargo.LIQUID
+                            ? ", and crude lands only where a Tank Farm has room for a tanker's cargo." : "."));
+            return out;
+        }
+        // ...the oil at sea (0.7.91): a platform's jacket and a kilometre of pipeline (sectors.Oil, THE OIL AT SEA).
+        if (t.isPlatform()) {
+            out.add(String.format("A steel jacket on a shallow oil field the city owns in the sea, %.0f m deep at most, with"
+                    + " slots for %d wells - one a sea site of the field. It lifts nothing itself: its Platform Wells do.",
+                    ham.citybuildersim.sectors.Oil.PLATFORM_MAX_DEPTH_M, t.platformSlots()));
+            out.add("Its crude goes ashore by shuttle tanker at the boundary's freight a tonne, paid abroad, until a"
+                    + " Crude Pipeline from its field stands.");
+            return out;
+        }
+        if (t.isPipeline()) {
+            out.add(String.format("A kilometre of pipe, %s at sea and %s on land: a field's pipe runs straight from the"
+                    + " field to the city.", money(t.getCashCost()), money(t.onshoreCashPerKm())));
+            out.add(String.format("Once a field's whole pipe stands, its platforms' crude comes ashore without the shuttle"
+                    + " tankers. The wells build one only where the freight it saves over %d years repays it %.2f times.",
+                    ham.citybuildersim.sectors.Oil.PIPE_LIFE_MONTHS / 12, ham.citybuildersim.sectors.Oil.PIPE_PAYBACK));
+            return out;
+        }
+        if (StrategicReserve.isReserve(t)) {
+            out.add(String.format("Holds %s litres of crude oil, %s t, for the city.", formatter.format(t.getStock()),
+                    formatter.format(Math.round(t.getStock() / ham.citybuildersim.sectors.Refining.CRUDE_LITRES_PER_TONNE))));
+            out.add("The city fills it in the month's crude market, from its wells first and the world for the rest,"
+                    + " and releases it there to the refiners, shipping what they do not take. Paid at the next strike.");
+            return out;
+        }
+        // ...what it makes: a crude unit's slate since 0.7.76 (Refining.madeBy()), a conversion unit's products of its feed since 0.7.80.
         java.util.Map<Good, Double> makesNow = ham.citybuildersim.sectors.Refining.madeBy(t);
         if (t.isOwnedBySector() && !makesNow.isEmpty()) {
+            if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) out.addAll(conversionUnitLines(t));
             for (java.util.Map.Entry<Good, Double> e : makesNow.entrySet()) {
                 Good g = e.getKey();
                 if (g == Good.GROCERIES) {
@@ -3332,7 +3516,11 @@ final class BuildScreen {
                         formatter.format(e.getValue()), Formats.plural(g.unit()), g.label().toLowerCase(),
                         price > 0 ? " - " + money(e.getValue() * price) + " at today's price" : ""));
             }
-            if (Game.siteOf(t) != null) {
+            if (t.isPlatformWell()) {
+                // ...a platform's well (0.7.91): at sea, in a platform's slot.
+                out.add("Stands in a free slot on an Offshore Platform, one a sea site of its field - cash alone will not"
+                        + " put one up. Its crude goes ashore by shuttle tanker, or by a field's pipe once one stands.");
+            } else if (Game.siteOf(t) != null) {
                 out.add("Needs land with an " + (Game.siteOf(t) == Resource.OIL ? "oil" : "iron")
                         + " field under it - cash and space alone will not put one up.");
             }
@@ -3934,8 +4122,12 @@ final class BuildScreen {
 
         LandManager land = ui.game.getLandManager();
         Resource site = Game.siteOf(selected) == null ? Resource.IRON : Game.siteOf(selected);
-        String[] words = noDepositPage(site, selected.getName(), quantity, land.getSites(site),
-                ui.game.committedOn(site), land.getRemaining(site));
+        // ...counted against its own kind (0.7.91, Game.committedFor()): a land well the land wells, a platform's well the slots.
+        String[] words = selected.standsAtSea()
+                ? noDepositAtSea(selected.isPlatform(), selected.getName(), quantity, ui.game.sitesFor(selected),
+                        ui.game.committedFor(selected), land.getRemaining(site))
+                : noDepositPage(site, selected.getName(), quantity, ui.game.sitesFor(selected),
+                        ui.game.committedFor(selected), land.getRemaining(site));
 
         Label title = new Label(words[0]);
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
@@ -3980,6 +4172,29 @@ final class BuildScreen {
                 : "the cheapest offer holding iron: whole fields, the ore in its price" };
     }
 
+    /**
+     * ...and for the oil at sea (0.7.91; pure, as above): an Offshore
+     * Platform with no shallow sea field to take it, or a Platform Well with
+     * no free slot - `owned` is Game.sitesFor()'s, the platforms the fields
+     * could still take or the slots standing.
+     */
+    static String[] noDepositAtSea(boolean platform, String building, int quantity, int owned, int committed, double left) {
+        return new String[] {
+            "NO OIL DEPOSIT",
+            platform ? quantity + " x " + building + " needs a shallow sea field with room."
+                     : quantity + " x " + building + " needs " + (committed + quantity) + " platform slot(s).",
+            platform ? "The city's sea fields could take " + owned + " more, " + committed + " on site."
+                     : "The platforms standing hold " + owned + ", " + committed + " spoken for.",
+            platform ? "A platform stands on an oil field in the sea, 150 m deep"
+                     : "A platform's well stands in one of its slots, one a sea",
+            platform ? "at most, its wells one a sea site. Sites are the world's"
+                     : "site of its field: an Offshore Platform on a shallow sea",
+            platform ? "oil fields, sold whole: an offer holds every field in it."
+                     : "field the city owns brings its slots with it.",
+            String.format("Oil still in the ground: %,.0f tonnes", left),
+            "the cheapest offer holding oil: whole fields, the oil in its price" };
+    }
+
     /** The no-deposit page's Buy: "Buy the cheapest: East 7 · 1 iron site, 12.8 Mt for US$6.16M" (or oil sites, 0.7.62) - its sites and, since 0.7.64, its tonnes: the whole of every field centred in it; "the cheapest" since 0.7.64 ("the best" was the most sites a dollar). */
     static String noDepositWords(LandParcel p, Resource site) {
         Resource r = site == null ? Resource.IRON : site;
@@ -4008,12 +4223,14 @@ final class BuildScreen {
         Label title = new Label("NO COAST");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
 
+        // ...or a sea terminal's quay (0.7.86): the same refusal, its own why.
+        boolean port = ham.citybuildersim.Ports.isPort(selected);
         VBox explanation = reportSection("WHY",
-                quantity + " x " + selected.getName() + " needs the sea to draw.",
+                quantity + " x " + selected.getName() + (port ? " needs the sea for its quay." : " needs the sea to draw."),
                 "The city owns none: its land is all dry ground, lake and river.",
                 "",
-                "A desalination plant stands on the coast and draws seawater, so",
-                "the fresh water limit does not reach it. Offers in the land office",
+                port ? "A terminal's berth stands on the coast, and its ships come in" : "A desalination plant stands on the coast and draws seawater, so",
+                port ? "from the open sea. Offers in the land office" : "the fresh water limit does not reach it. Offers in the land office",
                 "that run out to the sea carry some, its square kilometre priced",
                 String.format("at %.0f%% of dry ground's.", LandMarket.SEA_PRICE_SHARE * 100));
 
@@ -4034,7 +4251,7 @@ final class BuildScreen {
         if (coast != null) {
             ui.rootMenu.getChildren().add(bestLandButton(coast, "Buy the cheapest with sea: " + coast.where() + " for "
                             + usd(coast.getPriceUsd()), LandManager.areaWords(LandManager.sqFt(coast.getKm2(CityLand.SEA)))
-                            + " of sea for the plant to draw",
+                            + (port ? " of sea for the quay" : " of sea for the plant to draw"),
                     () -> handleAllBuildingMenus(menuTitle, categories)));
         }
         ui.rootMenu.getChildren().addAll(toLand, back);
@@ -4328,7 +4545,7 @@ final class BuildScreen {
             }
             String why = switch (g.buildRunStop(run)) {
                 case NO_DEPOSIT -> "no " + BuildCard.depositWord(Game.siteOf(at.getKey())) + " deposit is free for it";
-                case NO_COAST   -> "the city owns no sea for it to draw";
+                case NO_COAST   -> "the city owns no sea for it";
                 case NO_LICENCE -> "nobody is licensed to work in it";
                 default         -> "not enough ground is free for it";
             };

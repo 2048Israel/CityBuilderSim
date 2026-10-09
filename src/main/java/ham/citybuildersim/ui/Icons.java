@@ -476,6 +476,7 @@ public final class Icons {
             case ham.citybuildersim.DecisionLog.BORROWING:
             case ham.citybuildersim.DecisionLog.FUND:         return FINANCES;
             case ham.citybuildersim.DecisionLog.CONSTRUCTION: return CRANE;
+            case ham.citybuildersim.DecisionLog.RESERVE:      return DROP;
             default:                                          return PIN;
         }
     }

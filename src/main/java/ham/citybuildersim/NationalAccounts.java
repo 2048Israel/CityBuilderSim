@@ -190,9 +190,16 @@ public class NationalAccounts {
      * (spec-oil 3). A save from before them is converted on its load
      * (FuelSplit) - FUEL's units split between the two, the seven at a known
      * zero - so this array's shape is the only one a load reads.
+     *
+     * ...AND SINCE 0.7.85 (batch O8) CRUDE, on the end: crude held is the
+     * refiners' store in a Tank Farm (sectors.Refining, THE TANK FARM) and
+     * the city's strategic reserve (StrategicReserve, added by
+     * EconomyManager.updateNationalAccounts()) - crude a flow until then,
+     * which nobody held. A save from before carries one slot fewer and reads
+     * crude's last units as none, which is what that city held.
      */
     public static final Good[] HELD = { Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL,
-            Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE };
+            Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;
@@ -260,7 +267,8 @@ public class NationalAccounts {
      * The rolling history is not restored here: it is not saved with the
      * month, and inventing entries for it would be worse than a short one.
      * Since 0.7.31 the load path puts it back from the graph history's GDP
-     * series, which is saved - see seedHistory().
+     * series, which is saved, and since 0.7.81 from the save's exact copy
+     * (DataSave.gdpRolling) where it has one - see seedHistory().
      */
     public void restore(double gdp, double lastFoodVolume,
                         double consumptionGoods, double consumptionHousing,
@@ -990,10 +998,12 @@ public class NationalAccounts {
      * to two places), so the year read after a load is the year the city had. A city with no
      * graph history (no history file) keeps what the rebuild recorded.
      *
-     * Read only by screens, the time skip's report and the year's GDP
-     * EconomyManager keeps for the left panel: nothing in the month reads
-     * the history, so a loaded city
-     * plays on exactly as before.
+     * Read by screens, the time skip's report and the year's GDP
+     * EconomyManager keeps for the left panel - and since 0.7.81 by
+     * automatic building's debt limit in the month (AutoBuilder.annualGdp()),
+     * so a save carries the history exactly (DataSave.gdpRolling) and the
+     * load path seeds it again from that; an older save's, from the graph's
+     * series, is ten dollars a month off at most.
      */
     public void seedHistory(List<Double> monthly) {
         if (monthly == null || monthly.isEmpty()) return;

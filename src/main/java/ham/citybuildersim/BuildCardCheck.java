@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The build card (0.7.25): BuildCard's figures for all 76 buildings held to
+ * The build card (0.7.25): BuildCard's figures for all 94 buildings held to
  * the model's own reads - the quote, the land, the staffing tests, the
  * markets, the investors' words and their gates - in a played city.
  *
@@ -229,15 +229,67 @@ public class BuildCardCheck {
         assertTrue("...and every card and group has a name", named);
         assertTrue("every card has a unit above zero, or reads \"adds nothing\"", units);
         // The market's groups are the design note's: Industry seven, Shops two - Industry nine since 0.7.62, the
-        // wells' and the refinery's after the mines'.
+        // wells' and the refinery's after the mines' - and since 0.7.85 (batch O8) oil storage after the refinery's,
+        // the refiners' Tank Farm and the city's Strategic Reserve measured in tank room, as the filling stations
+        // are their own group in litres (0.7.83) - and since 0.7.86 (batch O9) the ports after oil storage, the
+        // city's sea terminals measured in their berths' tonnes (spec-oil 4: "plus Ports") - and since 0.7.91 (batch O10) the
+        // oil at sea after the wells', the platforms measured in their wells' slots and the pipelines in kilometres.
         List<String> industry = new ArrayList<>(), shops = new ArrayList<>();
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
-        assertTrue("Industry is nine groups by owning sector: " + industry, industry.equals(List.of("Food mills",
-                "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil", "Refining", "Building materials",
-                "Builders")));
-        assertTrue("Shops is the groceries and the bank's branches: " + shops,
-                shops.equals(List.of("Groceries", "The bank's branches")));
+        assertTrue("Industry is nine groups by owning sector, and oil storage (0.7.85), the ports (0.7.86) and the oil at sea's"
+                        + " platforms and pipelines (0.7.91): " + industry,
+                industry.equals(List.of("Food mills", "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil",
+                        "Oil platforms", "Oil pipelines", "Refining", "Oil storage", "Ports", "Building materials", "Builders")));
+        // ...the oil at sea (0.7.91): the wells' group the Oil Well and the Platform Well, the platforms' the jacket in its wells'
+        // slots, the pipelines' a kilometre of pipe - all the investors'.
+        java.util.Map<String, List<String>> oilGroups = new java.util.LinkedHashMap<>();
+        boolean sea = true;
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
+            if (!gr.title().startsWith("Oil") || gr.title().equals("Oil storage")) continue;
+            List<String> names = new ArrayList<>();
+            for (BuildCard.Figures f : gr.cards()) {
+                names.add(f.template().getName());
+                sea &= f.market() && !BuildCard.citys(f.template())
+                        && (f.template().isPlatform() ? f.kind() == BuildCard.Kind.SLOTS && f.figure() == f.template().platformSlots()
+                        : f.template().isPipeline() ? f.kind() == BuildCard.Kind.PIPE && f.figure() == 1
+                        : f.kind() == BuildCard.Kind.MAKER);
+            }
+            oilGroups.put(gr.title(), names);
+        }
+        assertTrue("...the wells' group is the Oil Well and the Platform Well, makers both; the platforms' the Offshore Platform"
+                + " in its wells' slots; the pipelines' the Crude Pipeline a kilometre: " + oilGroups,
+                sea && oilGroups.equals(java.util.Map.of("Oil", List.of("Oil Well", "Platform Well"),
+                        "Oil platforms", List.of("Offshore Platform"), "Oil pipelines", List.of("Crude Pipeline"))));
+        // ...oil storage the Tank Farm and the Strategic Reserve, the reserve the city's alone (0.7.85).
+        BuildCard.Group storage = null;
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) if (gr.title().equals("Oil storage")) storage = gr;
+        List<String> stored = new ArrayList<>();
+        boolean tanks = storage != null;
+        if (storage != null) for (BuildCard.Figures f : storage.cards()) {
+            stored.add(f.template().getName());
+            tanks &= f.kind() == BuildCard.Kind.TANKS && f.market() == f.template().isOwnedBySector();
+        }
+        assertTrue("...oil storage is the refiners' Tank Farm and the city's Strategic Reserve, measured in tank room, the"
+                + " reserve built by the city alone: " + stored, tanks && stored.equals(List.of("Tank Farm", "Strategic Reserve")));
+        // ...the ports the four sea terminals, the city's alone, measured in their berths' tonnes a year (0.7.86).
+        List<String> berthed = new ArrayList<>();
+        boolean ports = false;
+        for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) {
+            if (!gr.title().equals("Ports")) continue;
+            ports = true;
+            for (BuildCard.Figures f : gr.cards()) {
+                berthed.add(f.template().getName());
+                ports &= f.kind() == BuildCard.Kind.BERTHS && !f.market() && BuildCard.citys(f.template())
+                        && f.figure() == f.template().berthTonnesAYear();
+            }
+        }
+        assertTrue("...the ports are the Tanker, Bulk, Container and General Cargo Terminals, measured in their berths' tonnes"
+                + " a year, built by the city alone: " + berthed, ports && berthed.equals(List.of("Tanker Terminal", "Bulk Terminal",
+                "Container Terminal", "General Cargo Terminal")));
+        // ...and the grocers' filling stations their own group since 0.7.83 (batch O6), measured in litres.
+        assertTrue("Shops is the groceries, the filling stations (0.7.83) and the bank's branches: " + shops,
+                shops.equals(List.of("Groceries", "Filling stations", "The bank's branches")));
     }
 
     /* ============================ 2. THE HERO AND THE BARS ============================ */
@@ -246,7 +298,7 @@ public class BuildCardCheck {
         out.println("\n--- 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets ---");
         double[] fill = g.getPopulationManager().getJobFillRate();
         double[] wages = g.getPopulationManager().getWagesPerType();
-        int cards = 0, makers = 0, offices = 0, cityCards = 0, landBars = 0, roadCards = 0;
+        int cards = 0, makers = 0, offices = 0, cityCards = 0, landBars = 0, roadCards = 0, conversion = 0;
         boolean hero = true, bar1 = true, bar2 = true, va = true, run = true, sticker = true, head = true;
         for (BuildCard.Group gr : allGroups(g)) {
             for (BuildCard.Figures f : gr.cards()) {
@@ -259,7 +311,8 @@ public class BuildCardCheck {
                 head &= f.owned() == g.getBuildingManager().getQuantity(t.getId()) && f.onSite() == site
                         && f.siteMonths() == (site > 0 ? g.onSiteMonths(t) : 0)
                         && f.landFree() == g.getLandManager().getAvailableSqFt();
-                double scale = f.kind() == BuildCard.Kind.MEALS ? 1000 : 1;
+                double scale = f.kind() == BuildCard.Kind.MEALS || f.kind() == BuildCard.Kind.PUMP
+                        || f.kind() == BuildCard.Kind.TANKS || f.kind() == BuildCard.Kind.BERTHS ? 1000 : 1;
 
                 // The hero, off the template's own fields.
                 double expectFigure;
@@ -268,10 +321,21 @@ public class BuildCardCheck {
                     case CUSTOMERS: case MEALS: expectFigure = t.getCoverage(); break;
                     case BRANCH:    expectFigure = Bank.CUSTOMERS_PER_BRANCH; break;
                     case RAIL:      expectFigure = t.getRailCapacity(); break;
+                    // ...a filling station's litres a month at its typical throughput (0.7.83).
+                    case PUMP:      expectFigure = t.pumpLitres(); break;
+                    // ...oil storage's tank room, in litres (0.7.85).
+                    case TANKS:     expectFigure = t.getStock(); break;
+                    // ...a sea terminal's berth's tonnes a year (0.7.86).
+                    case BERTHS:    expectFigure = t.berthTonnesAYear(); break;
+                    // ...an offshore platform's wells' slots, and a pipeline's kilometre (0.7.91).
+                    case SLOTS:     expectFigure = t.platformSlots(); break;
+                    case PIPE:      expectFigure = 1; break;
                     case POINTS:    expectFigure = t.makes(Good.BUILDING_WORK); break;
-                    // ...a crude unit's the crude it refines (0.7.76): its products are the slate of it.
+                    // ...a crude unit's the crude it refines (0.7.76): its products are the slate of it; a conversion
+                    // unit's the feed it upgrades (0.7.80), a stream of the crude units' run.
                     case MAKER: case OFFICE: expectFigure = ham.citybuildersim.sectors.Refining.isCrudeUnit(t)
-                            ? t.uses(Good.CRUDE) : t.makes(f.good()); break;
+                            ? t.uses(Good.CRUDE) : ham.citybuildersim.sectors.Refining.isConversionUnit(t)
+                            ? t.feedPerMonth() : t.makes(f.good()); break;
                     default: {
                         BuildAdvice.Measure m = measureOf(gr);
                         expectFigure = m.kind() == BuildAdvice.Kind.ROADS ? t.getCapacity() : BuildAdvice.unit(g, m, t);
@@ -292,6 +356,16 @@ public class BuildCardCheck {
                     }
                     for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
                         if (e.getKey().traded()) v -= e.getValue() * g.getMarkets().get(e.getKey()).getLocalPrice();
+                    }
+                    // ...a conversion unit's feed (0.7.80) at what it would make with no unit: residue (4 x fuel oil - diesel) / 3,
+                    // the rest its own product's price.
+                    if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
+                        ham.citybuildersim.sectors.RefineryFlow.Stream feed = t.refineryUnit().feed();
+                        double each = feed.residue()
+                                ? (4 * g.getMarkets().get(Good.FUEL_OIL).getLocalPrice() - g.getMarkets().get(Good.DIESEL).getLocalPrice()) / 3
+                                : g.getMarkets().get(feed.leftover()).getLocalPrice();
+                        v -= t.feedPerMonth() * each;
+                        conversion++;
                     }
                     if (f.valueAdded() != v || f.unit() != v) { va = false; out.println("      value added: " + t.getName()); }
                     if (f.kind() == BuildCard.Kind.OFFICE) offices++; else makers++;
@@ -355,10 +429,12 @@ public class BuildCardCheck {
                 cards, makers, offices, landBars, cityCards);
         assertTrue("every card's price and sticker are Game.quoteBuild(t, 1)'s", sticker);
         assertTrue("...its head the count standing, what is on site and its wait, and the land free the city's own", head);
-        assertTrue("the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude)"
+        assertTrue("the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude,"
+                + " a conversion unit's feed, oil storage's tank room, a terminal's berth)"
                 + " or a city building's served at today's staffing", hero);
         assertTrue("value added is what one makes less what it uses at the markets' prices, an office's at"
-                + " the price of a seat (" + makers + " makers, " + offices + " offices)", va && makers > 0 && offices == 3);
+                + " the price of a seat, a conversion unit's less its feed at what that makes unworked (" + makers + " makers, "
+                + offices + " offices, " + conversion + " conversion units)", va && makers > 0 && offices == 3 && conversion == 14);
         assertTrue("bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life"
                 + " over the trips it takes off the road (0.7.70; " + roadCards + " road cards)", bar1 && roadCards > 0);
         assertTrue("bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100"
@@ -430,6 +506,8 @@ public class BuildCardCheck {
                 case LUXURY: ok &= n.a() == s.luxuryRetail().getWanted() && n.b() == s.luxuryRetail().coverage(); break;
                 case MEALS:  ok &= n.a() == s.restaurants().getWanted() && n.b() == s.restaurants().seats(); break;
                 case RAIL:   ok &= n.a() == s.rail().getTradeTonnes() && n.b() == s.rail().getCapacityTonnes(); break;
+                case PUMP:   ok &= n.a() == s.retail().getPumpLitres() + s.retail().getQueueLitres()
+                                     && n.b() == s.retail().getPumpCapacity() && n.good() == Good.PETROL; break;
                 case MADE: {
                     made++;
                     Sector owner = s.ownerOf(gr.cards().get(0).template());
@@ -457,15 +535,19 @@ public class BuildCardCheck {
             if (c.cityBuilds()) continue;
             for (BuildCard.Group gr : BuildCard.groups(g, c.name(), null)) {
                 for (BuildCard.Figures f : gr.cards()) {
+                    // ...a market card's: the city's own Strategic Reserve (0.7.85) has no investors.
+                    if (!f.market()) continue;
                     BuildCard.Investors i = BuildCard.investors(g, f.template());
                     words &= i.word().equals(g.getLastInvestment(i.slot()))
-                            && i.slot().equals(f.template().isOwnedBySector() ? f.template().getSector() : "Bank");
+                            && i.slot().equals(ham.citybuildersim.sectors.Retail.isStation(f.template()) ? Game.STATIONS_SLOT
+                                    : f.template().isOwnedBySector() ? f.template().getSector() : "Bank");
                     if (!i.word().isEmpty()) said++;
                 }
             }
         }
         assertTrue("every market card's word is Game.getLastInvestment() under its sector, the branch's under"
-                + " \"Bank\" (" + said + " of them with a word, the month after the load)", words && said > 0);
+                + " \"Bank\" and a filling station's under the forecourts' own (0.7.83; " + said
+                + " of them with a word, the month after the load)", words && said > 0);
         assertTrue("...and the bank has a word of its own, filed under \"Bank\": "
                 + g.getLastInvestment("Bank"), !g.getLastInvestment("Bank").isEmpty());
 
@@ -701,6 +783,15 @@ public class BuildCardCheck {
             // ...and the refinery's two (0.7.62).
             { "Holding: the city's fuel is covered already, and its wells have no crude to spare", BuildCard.WordKind.ENOUGH },
             { "Holding: 1,234,567 L of fuel and 4,321 t of crude to spare: none for another refinery", BuildCard.WordKind.ENOUGH },
+            // ...and the spread planner's (0.7.82): a unit or a package under its hurdle or losing money, and nothing to refine.
+            { "Holding: a Small Lube Plant would earn $305.2k a month on $29,145k, which would not clear 1.25 times the interest on"
+                    + " what it would borrow ($512.3k)", BuildCard.WordKind.MONEY },
+            { "Holding: an Oil Refinery with a Small Lube Plant behind it would lose $523.8k a month on it: it does not pay",
+                    BuildCard.WordKind.MONEY },
+            { "Holding: 2,910 L of petrol and diesel and 0 t of crude to spare: none for another refinery, and no stream spare for"
+                    + " a unit", BuildCard.WordKind.ENOUGH },
+            { "Holding: the city's petrol and diesel are covered already, its wells have no crude to spare, and no stream is spare"
+                    + " for a unit", BuildCard.WordKind.ENOUGH },
             { "", BuildCard.WordKind.NONE },
             { "Holding: nobody to build it", BuildCard.WordKind.OTHER } };
 
@@ -746,7 +837,8 @@ public class BuildCardCheck {
             BuildCard.SectorInvestors si = BuildCard.sectorInvestors(g, s);
             int mine = 0;
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
-                if (BuildCard.kindOf(t) != BuildCard.Kind.CITY && BuildCard.ownerOf(g, t) == s) mine++;
+                // ...its market buildings: not the city's own, the Strategic Reserve among them (0.7.85, BuildCard.citys()).
+                if (!BuildCard.citys(t) && BuildCard.ownerOf(g, t) == s) mine++;
             }
             own &= si.word().equals(g.getLastInvestment(s.key())) && si.buildings().size() == mine
                     && si.landBlocked() == g.getLandBlockedSectors().contains(s.key());

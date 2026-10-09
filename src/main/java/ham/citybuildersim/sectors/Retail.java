@@ -50,6 +50,10 @@ import java.util.Map;
  * The bank's branches are COMMERCIAL buildings and used to be inside this
  * sector's payroll; they belong to no sector now and their tellers are the
  * bank's own bill (see EconomyManager.getBankPayroll()).
+ *
+ * AND THE GROCERS' FORECOURTS (0.7.83, batch O6): the drivers' petrol is
+ * sold here, drawn at wholesale and sold at the pump, and the Filling
+ * Stations are what the forecourts can sell. See THE FORECOURTS.
  */
 public final class Retail extends Sector {
 
@@ -692,7 +696,9 @@ public final class Retail extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
+        // ...its shops' sites: a Filling Station on site is the forecourts' own order (0.7.83; planStations()).
+        if (buildings.underConstructionBySector(sector, t -> t.getCoverage() > 0 ? 1 : 0)
+                >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
             return BusinessInvestment.Decision.no(sector, "already building");
         }
 
@@ -757,10 +763,17 @@ public final class Retail extends Sector {
         return rate > 0 ? rate : 1;
     }
 
-    /** Gross margin on a store: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then). */
+    /** Gross margin on a store: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then) - and a Filling Station's on the litres it can sell (0.7.83; stationEarns()). */
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        if (isStation(t)) return stationEarns(t, plans);
         return t.getCoverage() * handOverRate() * (storeSellPrice - getFoodPrice());
+    }
+
+    /** A Filling Station is not sold by the shops' rules (0.7.83, star O6): it serves the drivers' litres, not the baskets they measure. */
+    @Override
+    public boolean mayRetire(BuildingsTemplate t) {
+        return !isStation(t);
     }
 
     /*
@@ -782,6 +795,262 @@ public final class Retail extends Sector {
     @Override
     public double unitsOf(BuildingsTemplate t) {
         return t == null ? 0 : t.getCoverage() * handOverRate();
+    }
+
+    /* ===================================================================
+       THE FORECOURTS (0.7.83, batch O6; runs/research-pump.md; the brief's
+       O6 note)
+
+       Jerus (2026-10-08): "fuel isnt cheap, we are going to add another
+       building, the pump ... its owned by grocery stores, and well ya theyll
+       make money probably although refineries will probably raise prices".
+
+       THE GROCERS SELL THE DRIVERS' PETROL. At 6d, when the drivers' month
+       is struck (Motoring.drawFuel()), Retail draws their litres at
+       wholesale - the refiners' tanks first and the world for the rest
+       (Markets.draw()), on its own books - and sells them to the households
+       at the pump: the wholesale price it paid a litre times 1 + PUMP_MARGIN,
+       with its sales tax passed on as a seller that remits its rate on what
+       it bills passes it on (EconomyManager.withBuildersTax(): over 1 - the
+       rate). So the households' petrol is a sale on Retail's statement, its
+       wholesale petrol a purchase there - the refiners' sale, or Retail's
+       import - and the households import none of it themselves. The
+       research's rule (runs/research-pump.md 7): pump = wholesale x (1 + m),
+       then the sales tax as the game has it. No fuel duty yet (its 6).
+
+       ITS FILLING STATIONS ARE WHAT IT CAN SELL: each a template's
+       pumpLitres() a month at its typical throughput, at the operating rate
+       - staffed, powered, watered, on the road, as a shop's baskets are.
+
+       PAST THEIR CAPACITY THE DRIVERS PAY MORE; THEY DO NOT DRIVE LESS (star
+       O6). The litres the stations cannot sell are sold anyway, at the dear
+       end of the research's range, QUEUE_MARGIN - a rural or post-spike
+       forecourt's, the queue's price - so a city with too few stations, or
+       none, pays more for the same journeys. Driving less would need the
+       road's commute to answer the fuel within the month, and the owners
+       already answer its price: a journey's fuel is what they weigh a ride
+       against (InfrastructureManager.transitChosen()).
+
+       THE VANS AND THE RAILWAY DO NOT COME HERE (star O6): a fleet buys its
+       diesel at commercial cardlock prices near wholesale, and a railway at
+       its depot - both draw it straight off the market (Sector.runFleet(),
+       Rail.haul()). No driver in the model burns diesel, so a station sells
+       petrol.
+
+       AND RETAIL BUILDS THEM AS IT BUILDS SHOPS: the drivers' litres, grown
+       as the people are over the order's lead time, against what its
+       stations can sell, with TARGET_HEADROOM to spare - its own question
+       each month (planStations()), as the bank's branch is, so wanting a
+       station never stops a shop.
+       =================================================================== */
+
+    /**
+     * What a station adds to the wholesale price it paid a litre, before the
+     * sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L
+     * in 2025, about 10% of the wholesale ex tax [6]; the US 35-43 c/gal,
+     * 16-19% [9][10]; range 6-18%).
+     */
+    public static final double PUMP_MARGIN = .12;
+
+    /**
+     * ...and on the litres past what the stations can sell: eighteen per
+     * cent, the top of the research's range - a rural or post-spike
+     * forecourt's (runs/research-pump.md 2, 7). Star O6: the drivers pay
+     * more; they do not drive less.
+     */
+    public static final double QUEUE_MARGIN = .18;
+
+    /** The month's forecourts, struck at the sale (sellFuel()) and saved for the screens and the planner: the litres sold at the pump and past the stations, what the stations could sell, the prices, the wholesale a litre and the bill. NaN prices before a sale. */
+    private double rPumpLitres, rQueueLitres, rPumpCapacity, rPumpPrice = Double.NaN, rQueuePrice = Double.NaN,
+            rWholesale = Double.NaN, rFuelBill, rFuelImported;
+
+    /** Whether a building is a Filling Station: it sells litres at the pump. */
+    public static boolean isStation(BuildingsTemplate t) {
+        return t != null && t.pumpLitres() > 0;
+    }
+
+    /** Filling Stations standing. */
+    public int stationsStanding() {
+        return buildings == null ? 0 : (int) Math.round(buildings.totalBySector(key(), t -> isStation(t) ? 1 : 0));
+    }
+
+    /** ...and on site. */
+    public int stationsOnSite() {
+        return buildings == null ? 0 : (int) Math.round(buildings.underConstructionBySector(key(), t -> isStation(t) ? 1 : 0));
+    }
+
+    /** Litres a month the standing stations sell at their typical throughput, at nameplate. */
+    public double stationLitres() {
+        return buildings == null ? 0 : buildings.totalBySector(key(), BuildingsTemplate::pumpLitres);
+    }
+
+    /** ...and at the operating rate: what the forecourts can sell this month. */
+    public double stationCapacity() {
+        double litres = stationLitres();
+        return litres > 0 ? litres * getOperatingRate() : 0;
+    }
+
+    /** The pump price of a litre bought at `wholesale`, with the sales tax at `salesRate` passed on: wholesale x (1 + PUMP_MARGIN) / (1 - rate). Pure. */
+    public static double pumpPrice(double wholesale, double salesRate) {
+        return wholesale * (1 + PUMP_MARGIN) / (1 - clampRate(salesRate));
+    }
+
+    /** ...and past the stations' capacity: QUEUE_MARGIN in place of PUMP_MARGIN. Pure. */
+    public static double queuePrice(double wholesale, double salesRate) {
+        return wholesale * (1 + QUEUE_MARGIN) / (1 - clampRate(salesRate));
+    }
+
+    private static double clampRate(double r) {
+        return Double.isFinite(r) ? Math.max(0, Math.min(ham.citybuildersim.TaxPolicy.MAX_INCOME_TAX, r)) : 0;
+    }
+
+    /** Retail's own sales tax rate in a city, nothing without one. */
+    private double salesRate(Game game) {
+        return game == null ? 0 : game.getEconomyManager().getTaxPolicy().effectiveSalesRate(this);
+    }
+
+    /**
+     * What a litre costs the drivers at the pump today, before any is drawn
+     * (Motoring.journeyFuel(): what the owners weigh a ride against): what a
+     * litre of petrol costs to bring in (GoodsMarket.landedPrice() - the
+     * refiners' price while they have it on offer, the import price while
+     * they have none), at the pump price.
+     */
+    public double pumpPriceToday(Game game) {
+        double litre = markets == null ? Double.NaN : markets.get(Good.PETROL).landedPrice();
+        return Double.isFinite(litre) && litre > 0 ? pumpPrice(litre, salesRate(game)) : 0;
+    }
+
+    /** A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, and what the households paid. */
+    public record FuelSale(double litres, double queued, double wholesale, double imported, double bill) {
+        public static final FuelSale NONE = new FuelSale(0, 0, 0, 0, 0);
+    }
+
+    /**
+     * The drivers' month at the pump (0.7.83): `litres` drawn at wholesale on
+     * Retail's books, the refiners' tanks first (Markets.draw()), and sold
+     * to the households - what the stations can sell at the pump price, the
+     * rest at the queue's (THE FORECOURTS). The bill is the two sales'
+     * values exactly, so what the households are charged is what Retail is
+     * paid. Struck at 6d by Motoring.drawFuel().
+     */
+    public FuelSale sellFuel(double litres, Game game) {
+        rPumpLitres = rQueueLitres = rFuelBill = rFuelImported = 0;
+        rPumpCapacity = stationCapacity();
+        if (!(litres > 0) || !Double.isFinite(litres) || markets == null || game == null) return FuelSale.NONE;
+        Markets.Draw took = markets.draw(Good.PETROL, this, key(), litres, game.getSectors());
+        double wholesale = took.units() > 0 ? took.cost() / took.units() : 0;
+        double rate = salesRate(game);
+        double atPump = Math.min(took.units(), rPumpCapacity), queued = took.units() - atPump;
+        rPumpPrice = pumpPrice(wholesale, rate);
+        rQueuePrice = queuePrice(wholesale, rate);
+        rWholesale = wholesale;
+        double bill = 0;
+        if (atPump > 0) {
+            Trade t = new Trade(Good.PETROL, key(), Trade.HOUSEHOLDS, atPump, rPumpPrice);
+            bookSale(t);
+            bill += t.value();
+        }
+        if (queued > 0) {
+            Trade t = new Trade(Good.PETROL, key(), Trade.HOUSEHOLDS, queued, rQueuePrice);
+            bookSale(t);
+            bill += t.value();
+        }
+        rPumpLitres = atPump;
+        rQueueLitres = queued;
+        rFuelBill = bill;
+        rFuelImported = took.importCost();
+        return new FuelSale(took.units(), queued, took.cost(), took.importCost(), bill);
+    }
+
+    /** The month's litres sold at the pump price, and past the stations at the queue's. */
+    public double getPumpLitres()  { return rPumpLitres; }
+    public double getQueueLitres() { return rQueueLitres; }
+
+    /** ...what the stations could sell this month, at the operating rate. */
+    public double getPumpCapacity() { return rPumpCapacity; }
+
+    /** ...the two prices a litre, and the wholesale Retail paid a litre: NaN before a month's sale. */
+    public double getPumpPrice()   { return rPumpPrice; }
+    public double getQueuePrice()  { return rQueuePrice; }
+    public double getWholesaleLitre() { return rWholesale; }
+
+    /** ...what the households paid for their petrol, and what of the wholesale bill Retail paid the world. */
+    public double getFuelBill()     { return rFuelBill; }
+    public double getFuelImported() { return rFuelImported; }
+
+    /**
+     * A station's earnings a month, for the interest test (0.7.83): the
+     * litres it would sell - its typical throughput at the operating rate
+     * (handOverRate(), full with no rate yet), or the forecast's litres the
+     * stations standing cannot sell, if fewer (litresForecast()) - at what it
+     * keeps of a litre: the pump price less the sales tax it remits and the
+     * wholesale, which is the wholesale times PUMP_MARGIN, at today's
+     * wholesale. Gross of its posts, as a shop's margin is. A 350,000-litre
+     * station in a village that burns 15,000 earns on the 15,000.
+     */
+    public double stationEarns(BuildingsTemplate t, BusinessInvestment plans) {
+        if (!isStation(t)) return 0;
+        double litre = markets == null ? Double.NaN : markets.get(Good.PETROL).landedPrice();
+        if (!Double.isFinite(litre) || litre <= 0) return 0;
+        double rate = handOverRate();
+        double unsold = Math.max(0, litresForecast(t, plans) - stationLitres() * rate);
+        return Math.min(t.pumpLitres() * rate, unsold) * litre * PUMP_MARGIN;
+    }
+
+    /**
+     * The drivers' litres a month the planner sees ahead (0.7.83): last
+     * month's at the pump and past it, grown as the shops' baskets are - as
+     * the people are, over a station's lead time and the planning horizon,
+     * to what the city could house. Without a city to read, last month's.
+     */
+    public double litresForecast(BuildingsTemplate station, BusinessInvestment plans) {
+        double litres = rPumpLitres + rQueueLitres;
+        if (game == null || plans == null || station == null || population <= 0) return litres;
+        double months = plans.leadTime(station, 1, game.getBuildingOutputAtEveryPost()) + BusinessInvestment.PLANNING_HORIZON;
+        double projected = Math.min(population + plans.getPopulationGrowth() * months,
+                Math.max(population, plans.reachablePopulation()));
+        return litres * projected / population;
+    }
+
+    /**
+     * Retail's other question each month (0.7.83): a Filling Station when
+     * the drivers' litres outrun what its stations can sell. The litres are
+     * last month's at the pump and past it, grown as the shops' baskets are
+     * over the order's lead time and the planning horizon; the stations' at
+     * the operating rate, with TARGET_HEADROOM to spare. Staffed as a shop
+     * is, sized as a shop is; one station's site at a time. Asked apart from
+     * the shops (Game's investment pass, as the bank's branch is), so a
+     * station never holds a shop up.
+     */
+    public BusinessInvestment.Decision planStations(BusinessInvestment plans, Game game) {
+        String sector = key();
+        BuildingsTemplate best = null;
+        for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
+            if (isStation(t) && (best == null || t.pumpLitres() > best.pumpLitres())) best = t;
+        }
+        if (best == null) return BusinessInvestment.Decision.no(sector, "no filling station in the catalogue");
+        if (stationsOnSite() >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
+            return BusinessInvestment.Decision.no(sector, "a filling station on site already");
+        }
+        double rate = handOverRate();
+        double supply = stationLitres() * rate;
+        double output = game.getBuildingOutputAtEveryPost();
+        double forecast = litresForecast(best, plans);
+        if (!(forecast > supply * (1 + BusinessInvestment.TARGET_HEADROOM))) {
+            return BusinessInvestment.Decision.no(sector, "the stations can sell what the drivers burn");
+        }
+        Staffing staffing = staffing(best);
+        if (!staffing.passes()) return BusinessInvestment.Decision.no(sector, staffing.why(best.getName()));
+        if (!(stationEarns(best, plans) > 0) || plans.getCostOf(best, 1) <= 0) {
+            return BusinessInvestment.Decision.no(sector, "no wholesale petrol price to sell at");
+        }
+        int quantity = plans.orderSize(forecast - supply, best.pumpLitres() * rate, best, output);
+        if (quantity <= 0) return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
+        quantity = staffableCount(best, quantity);
+        return new BusinessInvestment.Decision(sector, best, quantity,
+                String.format("%,.0f L of petrol a month forecast against %,.0f L the stations can sell", forecast, supply),
+                true);
     }
 
     /* ===================================================================
@@ -876,6 +1145,25 @@ public final class Retail extends Sector {
         lines.add(Line.note("One basket is one person for one month. What is in it comes from "
                 + "the consumption model at this city's own incomes, so a richer city stocks "
                 + "a different shelf."));
+
+        // ...and the forecourts (0.7.83): the drivers' petrol, at the pump and past it.
+        if (stationsStanding() > 0 || rPumpLitres + rQueueLitres > 0) {
+            lines.add(Line.head("The forecourts"));
+            lines.add(Line.of("Filling stations", f.count(stationsStanding())
+                    + (stationsOnSite() > 0 ? ", " + f.count(stationsOnSite()) + " on site" : "")));
+            lines.add(Line.of("They can sell", f.count(rPumpCapacity) + " L a month"));
+            lines.add(Line.of("Petrol sold at the pump", f.count(rPumpLitres) + " L"));
+            lines.add(Line.of("Sold past the stations", f.count(rQueueLitres) + " L",
+                    rQueueLitres > 0 ? Line.Tone.WARN : Line.Tone.GOOD));
+            if (Double.isFinite(rPumpPrice)) {
+                lines.add(Line.of("A litre at the pump", f.amount(rPumpPrice) + " on " + f.amount(rWholesale) + " wholesale"));
+                if (rQueueLitres > 0) lines.add(Line.of("...and past the stations", f.amount(rQueuePrice), Line.Tone.WARN));
+            }
+            lines.add(Line.note(String.format("The grocers draw the drivers' petrol at wholesale, the city's refineries first, "
+                    + "and sell it at the pump for %.0f%% more with the sales tax on top. Past what the stations can sell the "
+                    + "drivers queue and pay %.0f%% more, and the grocers build another station.",
+                    PUMP_MARGIN * 100, QUEUE_MARGIN * 100)));
+        }
         return lines;
     }
 
@@ -916,6 +1204,15 @@ public final class Retail extends Sector {
         if (!Double.isNaN(chargedPrice)) extras.put("chargedPrice", chargedPrice);
         // ...and what it owes its suppliers (0.7.44): the next strike pays it, so a save that dropped it would not replay.
         supplierCredit.save(extras, SUPPLIER_CREDIT_KEY);
+        // ...and the forecourts' month (0.7.83): the planner reads its litres next month, the page its prices.
+        extras.put("pump.litres", rPumpLitres);
+        extras.put("pump.queued", rQueueLitres);
+        extras.put("pump.capacity", rPumpCapacity);
+        extras.put("pump.bill", rFuelBill);
+        extras.put("pump.imported", rFuelImported);
+        if (!Double.isNaN(rPumpPrice)) extras.put("pump.price", rPumpPrice);
+        if (!Double.isNaN(rQueuePrice)) extras.put("pump.queuePrice", rQueuePrice);
+        if (!Double.isNaN(rWholesale)) extras.put("pump.wholesale", rWholesale);
     }
 
     /** The prefix the suppliers' credit is saved under among the extras. */
@@ -941,6 +1238,15 @@ public final class Retail extends Sector {
         handOver = extras.getOrDefault("handOver", Double.NaN);
         chargedPrice = extras.getOrDefault("chargedPrice", Double.NaN);
         supplierCredit.restore(extras, SUPPLIER_CREDIT_KEY);
+        // A save from before 0.7.83 sold no petrol here: nothing at the pump, no price.
+        rPumpLitres = extras.getOrDefault("pump.litres", 0.0);
+        rQueueLitres = extras.getOrDefault("pump.queued", 0.0);
+        rPumpCapacity = extras.getOrDefault("pump.capacity", 0.0);
+        rFuelBill = extras.getOrDefault("pump.bill", 0.0);
+        rFuelImported = extras.getOrDefault("pump.imported", 0.0);
+        rPumpPrice = extras.getOrDefault("pump.price", Double.NaN);
+        rQueuePrice = extras.getOrDefault("pump.queuePrice", Double.NaN);
+        rWholesale = extras.getOrDefault("pump.wholesale", Double.NaN);
     }
 
     @Override
@@ -957,6 +1263,8 @@ public final class Retail extends Sector {
         expectedLevel = 1;
         expectedMonthly = 0;
         supplierCredit.clear();
+        rPumpLitres = rQueueLitres = rPumpCapacity = rFuelBill = rFuelImported = 0;
+        rPumpPrice = rQueuePrice = rWholesale = Double.NaN;
     }
 
     @Override
@@ -969,6 +1277,11 @@ public final class Retail extends Sector {
         floorPrice *= scale;
         chargedPrice *= scale;
         supplierCredit.redenominate(scale);
+        rPumpPrice *= scale;
+        rQueuePrice *= scale;
+        rWholesale *= scale;
+        rFuelBill *= scale;
+        rFuelImported *= scale;
     }
 
     /** Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). See Denomination. */

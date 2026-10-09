@@ -142,13 +142,22 @@ public class MoneyCheck {
          * nobody, and a car cost nothing to run. The month's audit names
          * both legs and still closes - the drivers' fuel PetrolFunded and
          * PetrolImports since 0.7.76, what they burn being petrol.
+         *
+         * ...AND SINCE 0.7.83 (batch O6) THEY BUY IT AT THE PUMP: the grocers'
+         * forecourts import it on their own books and sell it to the drivers,
+         * so the legs are Retail's - its sales to the households and its
+         * imports - and the households' own PetrolFunded and PetrolImports
+         * read nothing. Until then the audit had to name those two.
          */
         MoneyAudit.Result busMonth = g.getLastMoneyAudit();
-        assertTrue("the bus town's audit closes with the bill paid and the fuel abroad",
+        assertTrue("the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump",
                 busMonth.relative() < 1e-4 && g.getEconomyManager().getTransitBill() > 0 && g.getHouseholdFuel() > 0
+                        && g.getSectors().retail().statement().bought.getOrDefault(Good.PETROL, new Sector.Split()).abroad > 0
                         && busMonth.detail.contains("- transit Bill")
-                        && busMonth.detail.contains("+ households PetrolFunded")
-                        && busMonth.detail.contains("- households PetrolImports"));
+                        && busMonth.detail.contains("+ Retail SalesToHouseholds")
+                        && busMonth.detail.contains("- Retail Imports")
+                        && !busMonth.detail.contains("+ households PetrolFunded")
+                        && !busMonth.detail.contains("- households PetrolImports"));
 
         /* ==================================================================
            AND LAND PAID FOR OUT OF THE VAULT (0.7.6).

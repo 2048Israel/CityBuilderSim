@@ -220,6 +220,123 @@ public class BuildingsTemplate {
     /** The same, asked per good: a building has one warehouse and it holds whatever the building holds. */
     public double stocks(Good good) { return stock; }
 
+    /* ----- A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; runs/spec-oil.md 2.3) -----
+       A reformer, a cracking unit, a coker and the rest buy nothing and make
+       nothing of their own: each takes one stream of the crude units' run - its
+       feed, in litres a month at nameplate - and the refinery's flow
+       (sectors.RefineryFlow) says what comes of it. So the template says only
+       which kind of unit it is and how much feed it takes ("refinery":
+       {"unit": "REFORMER", "feed": 1161495} in buildings.json); every other
+       building has no unit and no feed. A crude unit is not one of these: it
+       still says the crude it uses. */
+    private ham.citybuildersim.sectors.RefineryFlow.Kind refineryUnit;
+    private double feedPerMonth;
+
+    /** Makes this a refinery's conversion unit of a kind, taking `litresAMonth` of its feed stream at nameplate. */
+    public BuildingsTemplate setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind unit, double litresAMonth) {
+        this.refineryUnit = unit;
+        this.feedPerMonth = unit == null ? 0 : Math.max(0, litresAMonth);
+        return this;
+    }
+
+    /** The kind of conversion unit this is, or null for every building that is not one. */
+    public ham.citybuildersim.sectors.RefineryFlow.Kind refineryUnit() { return refineryUnit; }
+
+    /** Litres a month of its feed stream a conversion unit takes at nameplate; 0 for every other building. */
+    public double feedPerMonth() { return feedPerMonth; }
+
+    /* ----- A FILLING STATION'S PUMPS (0.7.83, batch O6; runs/research-pump.md 7) -----
+       A Filling Station buys and makes nothing of its own on a market: the
+       grocers' forecourts draw the drivers' petrol at wholesale and sell it to
+       them at the pump (sectors.Retail, THE FORECOURTS), and what a station
+       adds is the litres a month it can sell at its typical throughput
+       ("pump": 350000 in buildings.json). Every other building has none. */
+    private double pumpLitres;
+
+    /** Makes this a filling station that sells `litresAMonth` at its typical throughput. */
+    public BuildingsTemplate setPumpLitres(double litresAMonth) {
+        this.pumpLitres = Double.isFinite(litresAMonth) ? Math.max(0, litresAMonth) : 0;
+        return this;
+    }
+
+    /** Litres a month a filling station sells at its typical throughput; 0 for every other building. */
+    public double pumpLitres() { return pumpLitres; }
+
+    /* ----- A SEA TERMINAL'S BERTH (0.7.86, batch O9; runs/spec-oil.md 2.9) -----
+       A terminal is one berth of one kind of cargo (Ports.Cargo) and handles
+       its berth's tonnes a year ("port": {"cargo": "LIQUID", "tonnes":
+       3250000} in buildings.json): what share of that kind's trade goes by
+       sea is Ports' arithmetic on the berths standing. Every other building
+       has no berth. */
+    private Ports.Cargo berthCargo;
+    private double berthTonnesAYear;
+
+    /** Makes this a berth of a kind of cargo, handling `tonnesAYear` of it. */
+    public BuildingsTemplate setBerth(Ports.Cargo cargo, double tonnesAYear) {
+        this.berthCargo = cargo;
+        this.berthTonnesAYear = cargo == null || !Double.isFinite(tonnesAYear) ? 0 : Math.max(0, tonnesAYear);
+        return this;
+    }
+
+    /** The kind of cargo a terminal's berth handles, or null for every building that is not a berth. */
+    public Ports.Cargo berthCargo() { return berthCargo; }
+
+    /** Tonnes a year a terminal's berth handles; 0 for every other building. */
+    public double berthTonnesAYear() { return berthTonnesAYear; }
+
+    /** Whether this is a sea terminal (0.7.86): a PORTS building with a berth. */
+    public boolean isPort() { return category == BuildingType.PORTS && berthCargo != null && berthTonnesAYear > 0; }
+
+    /** Whether an order for this has to stand on owned sea: a desalination plant (0.7.59) and a sea terminal (0.7.86). */
+    public boolean needsCoast() { return isSeaWater() || isPort(); }
+
+    /* ----- THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7, 2.11) -----
+       Three of the Oil sector's buildings stand at sea, not on the city's
+       dry ground ("offshore": {"kind": "PLATFORM", "slots": 12} in
+       buildings.json): an Offshore Platform, a steel jacket on a shallow
+       sea field with slots for wells; a Platform Well, which lifts crude in
+       one of them; and a Crude Pipeline, counted in kilometres, which takes
+       a field's crude ashore in place of the shuttle tankers ("onshore" is
+       its kilometre's cash on land, the template's own cash being a
+       kilometre at sea). sectors.Oil keeps where each stands. Every other
+       building is none of them. */
+
+    /** What a building at sea is: a platform's jacket, a well in one of its slots, or a kilometre of crude pipeline. */
+    public enum Offshore { PLATFORM, WELL, PIPELINE }
+
+    private Offshore offshore;
+    private int platformSlots;
+    private double onshoreCashPerKm;
+
+    /** Makes this one of the oil buildings at sea: a PLATFORM with `slots` for wells, a WELL, or a PIPELINE whose kilometre on land costs `onshoreCash` (thousands). */
+    public BuildingsTemplate setOffshore(Offshore kind, int slots, double onshoreCash) {
+        this.offshore = kind;
+        this.platformSlots = kind == Offshore.PLATFORM ? Math.max(0, slots) : 0;
+        this.onshoreCashPerKm = kind == Offshore.PIPELINE && Double.isFinite(onshoreCash) ? Math.max(0, onshoreCash) : 0;
+        return this;
+    }
+
+    /** Which of the buildings at sea this is, or null for every building on the ground. */
+    public Offshore offshore() { return offshore; }
+
+    /** Whether this stands at sea (an Offshore Platform, a Platform Well, a Crude Pipeline): not on the city's dry ground, nor drawn on its land. */
+    public boolean standsAtSea() { return offshore != null; }
+
+    /** Whether this is an offshore platform's jacket. */
+    public boolean isPlatform() { return offshore == Offshore.PLATFORM; }
+
+    /** Whether this is a well in a platform's slot. */
+    public boolean isPlatformWell() { return offshore == Offshore.WELL; }
+
+    /** Whether this is a kilometre of crude pipeline. */
+    public boolean isPipeline() { return offshore == Offshore.PIPELINE; }
+
+    /** The wells a platform's jacket holds: 12 for the Offshore Platform; 0 for every other building. */
+    public int platformSlots() { return platformSlots; }
+
+    /** A pipeline's kilometre on land, in thousands (its own cash is a kilometre at sea); 0 for every other building. */
+    public double onshoreCashPerKm() { return onshoreCashPerKm; }
+
 
 
     //enums

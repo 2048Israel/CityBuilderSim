@@ -28,6 +28,14 @@ import java.util.Map;
  *   4. the stockable goods are made into the warehouses, for next month
  *   5. each sector finishes its month
  *
+ * THE CITY TRADES IN ONE MARKET (0.7.85, batch O8; runs/spec-oil.md 2.8):
+ * its strategic reserve (StrategicReserve, a CityTrader) bids for crude to
+ * fill it and offers crude to release it, in crude's clearing beside the
+ * sectors - its fill pro rata with theirs from the wells and the world for
+ * the rest, its release pro rata with the wells' offers and shipped, as
+ * their unsold crude is, past what the buyers take. A city with no order
+ * standing trades nothing, and every figure of the clearing is what it was.
+ *
  * PRO RATA BOTH WAYS. With one mill and ten shops, or three mines and one
  * mill, somebody has to decide who gets what. Every buyer gets the same
  * share of its bid and every seller sells the same share of its offer, and
@@ -46,6 +54,33 @@ import java.util.Map;
 public final class Markets {
 
     private final Map<Good, GoodsMarket> markets = new EnumMap<>(Good.class);
+
+    /**
+     * The city as a trader in a market (0.7.85): what it bids for and offers
+     * in the month's clearing of a good, and what it bought and sold there -
+     * its strategic reserve's crude (StrategicReserve). Read once a clearing;
+     * the trades it makes are booked to it as they are recorded, and its
+     * money moves at the next strike (Game.settleReserve()), beside the
+     * sectors it traded with.
+     */
+    public interface CityTrader {
+        /** Units of a good the city bids for in this month's clearing. */
+        double cityBid(Good g);
+        /** ...and offers in it. A city never bids and offers the same good in one month. */
+        double cityOffer(Good g);
+        /** A fill it bought: from a seller here, or the world's. */
+        void cityBought(Trade t);
+        /** A sale it made: to a buyer here, or shipped abroad. */
+        void citySold(Trade t);
+        /** The good's clearing is done: whatever of its bid the month did not fill lapses. */
+        void cityCleared(Good g);
+    }
+
+    /** The city's trader, or null - a harness's bare market (0.7.85). */
+    private CityTrader city;
+
+    /** The city's trader (Game.buildWorld()): its strategic reserve. */
+    public void setCity(CityTrader trader) { this.city = trader; }
 
     public Markets() {
         for (Good g : Good.values()) markets.put(g, new GoodsMarket(g));
@@ -89,8 +124,10 @@ public final class Markets {
          * everything the four steps below do, and because a sector that is
          * handed its opening fleet here is running at its own rate in the same
          * month rather than at zero for one of them. See Sector.runFleet().
+         * ...and the month's diesel for them (0.7.83, batch O6), drawn off the
+         * refiners' tanks and the world as the railway draws its own.
          */
-        for (Sector s : sectors.all()) s.runFleet();
+        for (Sector s : sectors.all()) s.runFleet(sectors);
 
         // 1. the flow goods are made
         for (Sector s : sectors.all()) {
@@ -137,7 +174,7 @@ public final class Markets {
     private double orderValue(Sector s, boolean stock) {
         double total = 0;
         for (Good g : Good.values()) {
-            if (!g.traded() || !s.isUser(g) || s.hasPantry(g) != stock) continue;
+            if (!g.traded() || !s.isUser(g) || s.buysAhead(g) != stock) continue;
             GoodsMarket m = markets.get(g);
             if (m == null) continue;
             double units = Math.max(0, s.bid(g));
@@ -182,6 +219,12 @@ public final class Markets {
             flow += g.stockable() ? s.getPlannedOutput(g) : s.output(g).produced;
             held += s.getStock(g);
         }
+        // ...and the city's, when it trades this good this month (0.7.85): its
+        // release comes to market as a flow does, and its fill is wanted. A
+        // city that bids offers nothing (CityTrader).
+        double cityBid = city == null ? 0 : Math.max(0, city.cityBid(g));
+        double cityOffer = city == null || cityBid > 0 ? 0 : Math.max(0, city.cityOffer(g));
+        if (cityOffer > 0) flow += cityOffer;
         double[] bids = new double[users.size()];
         double[] asked = new double[users.size()];
         for (int j = 0; j < users.size(); j++) {
@@ -189,9 +232,10 @@ public final class Markets {
             // ...the share of an order for stock the buyer can pay for (0.7.12
             // round 6): an order it cannot pay for is not placed, so it is not
             // demand. A maker's input is bought whole - see Sector.
-            bids[j] = users.get(j).hasPantry(g) ? asked[j] * users.get(j).purchaseShare(g) : asked[j];
+            bids[j] = users.get(j).buysAhead(g) ? asked[j] * users.get(j).purchaseShare(g) : asked[j];
             wanted += bids[j];
         }
+        if (cityBid > 0) wanted += cityBid;
         // ...and what was drawn on demand since the last strike counts as wanted too
         double drawn = m.takeDrawn();
         wanted += drawn;
@@ -207,6 +251,10 @@ public final class Markets {
             offered += offers[i];
             m.noteOffered(offers[i]);
         }
+        if (cityOffer > 0) {
+            offered += cityOffer;
+            m.noteOffered(cityOffer);
+        }
         /*
          * ...AND NEVER PAST WHAT IS LEFT OF IT, at what a unit will cost this
          * buyer now the price is struck: the local price on the share the
@@ -217,6 +265,7 @@ public final class Markets {
          */
         double asking = 0;
         for (double b : bids) asking += b;
+        if (cityBid > 0) asking += cityBid;
         // ...and with every order cut to nothing, the share the makers could
         // have filled: all of it at home if anybody here offers, none if not.
         double filled = asking > 0 ? Math.min(1, offered / asking) : offered > 0 ? 1 : 0;
@@ -224,7 +273,7 @@ public final class Markets {
         double unitValue = g.importable() ? unit : filled * price;
         for (int j = 0; j < users.size(); j++) {
             Sector u = users.get(j);
-            if (u.hasPantry(g) && unit > 0 && bids[j] * unit > u.purchasesLeft()) bids[j] = u.purchasesLeft() / unit;
+            if (u.buysAhead(g) && unit > 0 && bids[j] * unit > u.purchasesLeft()) bids[j] = u.purchasesLeft() / unit;
             u.noteForgone(g, asked[j] - bids[j], (asked[j] - bids[j]) * unitValue);
         }
 
@@ -235,8 +284,13 @@ public final class Markets {
             m.noteBid(bids[j]);
             bid += bids[j];
         }
+        if (cityBid > 0) {
+            m.noteBid(cityBid);
+            bid += cityBid;
+        }
 
         double fill = Math.min(offered, bid);
+        double citySoldHere = 0;
 
         if (fill > 0) {
             for (int j = 0; j < users.size(); j++) {
@@ -247,6 +301,30 @@ public final class Markets {
                     double units = take * offers[i] / offered;
                     if (units <= 0) continue;
                     trade(m, makers.get(i), users.get(j), units, price);
+                }
+                // ...and from the city's release, its share of the offers (0.7.85).
+                if (cityOffer > 0) {
+                    double units = take * cityOffer / offered;
+                    if (units > 0) {
+                        Trade t = m.record(Trade.CITY, users.get(j).key(), units, price);
+                        users.get(j).bookPurchase(t);
+                        users.get(j).receiveInput(g, units);
+                        city.citySold(t);
+                        citySoldHere += units;
+                    }
+                }
+            }
+            // ...and the city's fill, from the makers here (0.7.85).
+            if (cityBid > 0) {
+                double take = cityBid * fill / bid;
+                for (int i = 0; i < makers.size(); i++) {
+                    if (offers[i] <= 0) continue;
+                    double units = take * offers[i] / offered;
+                    if (units <= 0) continue;
+                    Trade t = m.record(makers.get(i).key(), Trade.CITY, units, price);
+                    makers.get(i).bookSale(t);
+                    makers.get(i).takeFromStock(g, units);
+                    city.cityBought(t);
                 }
             }
         }
@@ -262,10 +340,24 @@ public final class Markets {
                 users.get(j).bookPurchase(t);
                 users.get(j).receiveInput(g, shortfall);
             }
+            // ...and the city's (0.7.85).
+            if (cityBid > 0) {
+                double got = bid <= 0 ? 0 : cityBid * fill / bid;
+                double shortfall = Math.max(0, cityBid - got);
+                if (shortfall > 0) city.cityBought(m.record(Trade.WORLD, Trade.CITY, shortfall, importPrice));
+            }
         }
 
         // the makers' unsold flow, to the world or to nobody
         for (Sector s : makers) s.shipUnsoldFlow(g, m);
+        // ...and the city's release past what the buyers took, shipped as theirs is (0.7.85).
+        if (cityOffer > 0 && g.exportable()) {
+            double unsold = cityOffer - citySoldHere;
+            if (unsold > 0) city.citySold(m.record(Trade.CITY, Trade.WORLD, unsold, m.exportPrice()));
+        }
+        if (city != null && (cityBid > 0 || cityOffer > 0)) city.cityCleared(g);
+        // ...and each buyer told its good has cleared (0.7.85; Sector.afterClearing()).
+        for (Sector u : users) u.afterClearing(g);
 
         m.closeMonth();
     }
@@ -294,10 +386,21 @@ public final class Markets {
      * The same split draw() makes, so a quote is what is charged.
      */
     public Draw quote(Good g, double units, Sectors sectors) {
+        return quote(g, units, sectors, 0);
+    }
+
+    /**
+     * ...with `takenAhead` units of the makers' stock drawn first by orders
+     * placed before this one (0.7.83: the refiners' bitumen a run's earlier
+     * roads take as they are placed - Game.buildRunInvoice()). Nothing ahead
+     * is the quote above, to the bit.
+     */
+    public Draw quote(Good g, double units, Sectors sectors, double takenAhead) {
         if (!(units > 0)) return new Draw(0, 0, 0, 0, 0);
         GoodsMarket m = markets.get(g);
         double held = 0;
         for (Sector s : sectors.all()) if (s.isMaker(g)) held += s.getStock(g);
+        if (takenAhead > 0) held = Math.max(0, held - takenAhead);
         double local = Math.min(units, held);
         double shortfall = units - local;
         double imported = g.importable() ? shortfall : 0;

@@ -76,6 +76,9 @@ public final class DecisionLog {
     /** The construction queue (0.7.22): the order, rushes, cancels, restarts, demolitions, buy-outs. */
     public static final String CONSTRUCTION = "construction";
 
+    /** The city's strategic reserve (0.7.85): a fill ordered, a release set or stopped. */
+    public static final String RESERVE = "reserve";
+
     /** One decision: when, what kind, and what it was, in a few words. Public fields, for the save. */
     public static final class Entry {
         public int month;

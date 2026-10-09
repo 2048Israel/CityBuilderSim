@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter keeps the mockup's rules and paints the same pixels from the same inputs, the sidecar comes back byte for byte, and a screen costs what the screen holds, never what the city does - at Jerus's size and at five and ten billion people.
+ * The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the drawn raster itself is one street network with + junctions apart and every building within reach, the sidecar comes back byte for byte, and a screen costs what the screen holds, never what the city does - at Jerus's size and at five and ten billion people.
  *
  * WHY THIS EXISTS (0.7.60, batch J3; the project's spec-land.md 2.5, 2.6 and
  * 3). The map is the one part of the city nothing in the model reads, so
@@ -31,47 +31,46 @@ import java.util.Map;
  *      districts; a district recounted after a purchase holds what a map
  *      drawn afresh measures - a whole iron field's sites among it, wherever
  *      they lie (0.7.64); its mines stand on owned iron sites; a demolition
- *      comes off the outermost district holding the type; and (0.7.64) at
- *      every DRAWN_EVERY-th month, every tile painted, the map draws exactly
- *      what the city has - each type's buildings as many as the model's, a
- *      mine once on its site, every road plot of every kind - none without
- *      a plot;
+ *      comes off the outermost district holding the type; and at every
+ *      DRAWN_EVERY-th month, every tile painted, the map draws exactly what
+ *      the city has - each type's buildings as many as the model's (since
+ *      0.7.88 those its plans could not hold packed at the city's edge), a
+ *      mine once on its site, its streets' surface kind by kind with what the
+ *      plans have no street for the model's road plots, every plot of its
+ *      track;
  *   2. nothing placed moves: one more building changes one district's count
  *      by one, inner types in the first district with room, outer types in
- *      the last - and one tile of the map by one; one fewer takes its own
- *      kind off one tile and moves nothing else but a smaller kind into the
- *      room it frees (since 0.7.64 the deal keeps a district on its own
- *      tiles; J3b spread it over the tiles about it);
- *   3. the painter keeps the mockup's rules on Jerus's city: shared ports
- *      agree - since 0.7.72 each edge's crossing, the same pair of plots read
- *      from either tile - and no road meets a tile's border but where the
- *      next tile's road meets it, every tile lays
- *      exactly the road plots of each kind dealt to it and no bridge longer
- *      than its kind allows nor over the sea - across the founding river a
- *      street's of its own kind, paved and (since 0.7.77) gravel - the same
- *      inputs paint the same pixels (and the far view's blocks), and one more model building in a
- *      tile with room for it (as the deal reckons room: since 0.7.72 less its
- *      track) moves none of those placed before it (0.7.64; a
- *      median of none of the others before, at J3b's 30% built) and never
- *      draws fewer of anything;
+ *      the last; and (0.7.88, spec-roads-and-ports.md 8.4; one tile's count
+ *      by one while the deal stood) in that district's plan it moves only the
+ *      buildings placed after it - where the plan's ladder takes the same
+ *      step and its first band is dealt round as many cells - and one fewer
+ *      likewise;
+ *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
+ *      tiles before): on the dense screen every plot a district's plan
+ *      surfaces is painted as that street - kind and width - its seams once;
+ *      no bridge crosses more fresh water than its line may (a street
+ *      STREET_BRIDGE, an arterial ARTERIAL_BRIDGE) and no road is on the sea;
+ *      every mine on its own site; the same inputs paint the same pixels,
+ *      and the far view's blocks, from a twin map drawn the same way;
  *   4. the sidecar round-trips byte for byte through a save and a load, the
  *      next month plays to the same map, a stale or missing sidecar draws the
- *      map again canonically, a city with no map saves none; and at five and
- *      ten billion it is written and read back the same;
+ *      map again canonically, a city with no map saves none, and (0.7.88) a
+ *      FORMAT 4 sidecar still loads into the same map - and (0.7.89) it and
+ *      0.7.88's FORMAT 5, which wrote no runs, with their runs laid as a map
+ *      drawn afresh lays them; and at five and ten billion it is written and
+ *      read back the same;
  *   5. the cost follows the screen: a 1,389 x 868 L0 screen (SCREEN_TILES)
- *      paints and rasters in no more than SCREEN_MS (the design's 80 ms,
- *      derived from 38 at its measured 0.19 ms a tile) at Jerus's city x 1,
- *      x 9,814 (5B), x 10,000 and x 19,629 (10B), each within SCREEN_RATIO of
- *      the 5B copy's, the first whose screen is all city (until 0.7.64, of
- *      x 1's: section 5's note); and a month's change at 5B and 10B in no
- *      more than RECONCILE_MS (the design's 5 ms; measured 0.76);
- *   6. the city is drawn as what it has (0.7.64, batch L2; J3b's homes from
- *      people and workplaces from jobs gone): a new default city as founded,
- *      a month on and a year on draws its own buildings and nothing else -
- *      at its founding the bank and bare ground, no road, no highway; on the
- *      dense screen every building dealt is drawn, on its own type's land
- *      but for the few no free box of the tile could hold (SHRUNK_MOST),
- *      and the screen is built as full as its districts are used;
+ *      paints and rasters from its districts' plans in no more than SCREEN_MS
+ *      at Jerus's city x 1, x 9,814 (5B), x 10,000 and x 19,629 (10B), each
+ *      within SCREEN_RATIO of the 5B copy's, the first whose screen is all
+ *      city; the plans themselves are made away from the screen (PlanCheck
+ *      holds their PLAN_MS); and a month's change at 5B and 10B in no more
+ *      than RECONCILE_MS (the design's 5 ms; measured 0.76);
+ *   6. the city is drawn as what it has (0.7.64, batch L2): a new default
+ *      city as founded, a month on and a year on draws its own buildings and
+ *      nothing else - at its founding the bank and bare ground, no road, no
+ *      highway; on the dense screen every building is drawn on its own
+ *      type's land;
  *   7. the view's pure half (J4: MapFrame, LandMap, MapTiles, Game's draft):
  *      a screen point and its plot go back and forth, a notch of the wheel
  *      zooms by ZOOM_STEP with the plot under the pointer kept, the zoom
@@ -80,32 +79,44 @@ import java.util.Map;
  *      click picks on the played city - the centre, a purchase, an offer, the
  *      world - agrees with the model's grid (CityLand.holdingOf()) and
  *      GridOffers' sides and places on every plot tried and with the
- *      rectangles the map outlines (the lanes' owns() and sideLane() until
- *      0.7.66); the map drawn on a copy of
+ *      rectangles the map outlines; the map drawn on a copy of
  *      the land on another thread is the map drawn on the city, and one with
- *      a month between is caught up; a tile is restamped only when what it
+ *      a month between is caught up; a tile is restamped only when a plan it
  *      is painted from moved; the view's own per-tile path holds section 5's
- *      bounds; and every cache fits MapTiles.BUDGET_MB at the design's size;
- *      and (0.7.69) the overlay on the block grid: the city's edge as whole
- *      straight runs with its ground on their right, drawn crisp on whole
- *      pixels just inside it with no gap at a corner; an offer's box on its
- *      pixel lines, shared with an offer beside it, drawn over all of a view
- *      it is larger than; its hatch on its free plots exactly; the block
- *      lines from 6 px a block; every offer at the opening zoom numbered;
- *   8. the network (0.7.72, batch N3; Jerus: "to make the map generation
- *      prettier"), on Jerus's city x 1, every tile: its roads one network,
- *      no road apart; no two + junctions - streets crossing, road on four
- *      sides and none on the corners - nearer than JUNCTION_APART (about
- *      eight houses' length); each district's highways one straight run,
- *      turning only where the sea, the city's edge or a mine stops it,
- *      crossing at most once and meeting a district's edge on its main
- *      line; every building within REACH of a road but where the ground
- *      near its own tile's roads is all built, none on a tile without road;
- *      every plot of the model's track drawn, each district's track one
- *      line; and with rail yards added, each beside its track on the tile of
- *      it nearest a mine that had room for it; and (0.7.77, batch N5) a river
- *      parts gravel streets no more than paved ones - Jerus's city x 1 at the
- *      founding river, its streets all gravel, against its paved twin.
+ *      bounds; and every cache - since 0.7.88 the plans among them - fits
+ *      MapTiles.BUDGET_MB at the design's size; and (0.7.69) the overlay on
+ *      the block grid: the city's edge as whole straight runs with its
+ *      ground on their right, drawn crisp on whole pixels just inside it
+ *      with no gap at a corner; an offer's box on its pixel lines, shared
+ *      with an offer beside it, drawn over all of a view it is larger than;
+ *      its hatch on its free plots exactly; the block lines from 6 px a
+ *      block; every offer at the opening zoom numbered;
+ *   8. the network ON THE DRAWN RASTER (0.7.88, batch RD2; Jerus, of his
+ *      screenshot: "does that look like highways that prefer going straight
+ *      and must be connected? roads that arent doing endless + juncitons,
+ *      and all roads connected, no stray roads?"), every tile of every
+ *      district and a tile round them painted and put together - on Jerus's
+ *      city x 1, the played city, and any save named on the command line:
+ *      its streets one network, every other piece one the city's own ground
+ *      does not join to it (the sea, water past an arterial's bridge, ground
+ *      it does not own); no plot of road alone; no two + junctions of drawn
+ *      street nearer than JUNCTION_APART (about eight houses' length);
+ *      every building within REACH of a street, but those packed at the
+ *      city's edge (R7) and the mines on their sites; the streets' surface
+ *      the model's road plots kind by kind, with what the plans have no
+ *      street for; every building drawn, one for one; and a river parts
+ *      gravel streets no more than paved ones, its bridges no longer than
+ *      their lines may span. And the city's RUNS (0.7.89, batch RD3;
+ *      spec-roads-and-ports.md 2.7, 2.8): its highways drawn plot for plot
+ *      as the runs lay them, one network, no building beside one (H5) and
+ *      their junctions few; spec 2.7's table on the design's square city,
+ *      each stage straight but where the sea, water past its bridge or the
+ *      city's edge stopped it, and grown month by month without a plot
+ *      moving (H4); every plot of the model's track drawn or counted short,
+ *      one railway network; and its Rail Terminals as yards on the track
+ *      in the cells nearest the mines. On 0.7.86's painter the network's
+ *      checks fail on Jerus's save and the playtest (runs/fixRD2-notes.md):
+ *      N3's passed because they measured the deal's x 1 fixture.
  */
 public class MapCheck {
 
@@ -194,17 +205,6 @@ public class MapCheck {
     /** The months of section 1's city at which every tile is painted and what is drawn counted against the model: every 30th, four of its 120 (0.7.64). */
     static final int DRAWN_EVERY = 30;
 
-    /**
-     * The most of the dense screen's buildings drawn smaller than their own
-     * land, because no free box of their tile held it: a tenth (star, 0.7.64).
-     * The screen is dealt about 95% of its free plots in whole plots - Jerus's
-     * buildings at 92% of his ground (JERUS_FILL), the small ones rounded up
-     * to a plot - its roads a fifth of them, and what no box holds is drawn
-     * as the largest square left: 9.2% to 9.6% measured (L2's scratch;
-     * Jerus's own city at month 416, 7 of 2,340; his city of 0.7.49, 4.7%).
-     */
-    static final double SHRUNK_MOST = 0.10;
-
     public static void main(String[] args) throws Exception {
         boolean quietRun = Arrays.asList(args).contains("-q");
         if (quietRun) out = new PrintStream(new OutputStream() { @Override public void write(int b) { } }) {
@@ -220,7 +220,8 @@ public class MapCheck {
         Squares sq = new Squares();
         painterRules(sq.maps[DENSE]);
         drawnAsItIs(sq.maps[DENSE]);
-        network(sq);
+        String[] saves = Arrays.stream(args).filter(a -> !a.startsWith("-")).toArray(String[]::new);
+        network(sq, city, saves);
         sidecar(city, root, sq);
         cost(sq);
         viewHalf(city, sq, root);
@@ -308,9 +309,9 @@ public class MapCheck {
                     boolean exact = dr.sameAs(model, map.types());
                     drawnSamples++;
                     if (exact) drawnExact++;
-                    drawnLines.append(String.format("      month %d: %,d buildings of %d kinds drawn (the model %,d), %,d road plots (the model %,d);"
-                                    + " %d without a plot, %d drawn smaller%n", g.getMonth(), dr.total(), dr.kinds(), modelBuildings(model, map.types()),
-                            dr.roadPlots(), modelRoadPlots(model, map.types()), dr.dropped, dr.shrunk));
+                    drawnLines.append(String.format("      month %d: %,d buildings of %d kinds drawn (the model %,d; %d packed at the city's edge),"
+                                    + " %,.1f plots of road as the streets' surface and %,.1f the streets do not carry (the model %,d)%n", g.getMonth(),
+                            dr.total(), dr.kinds(), modelBuildings(model, map.types()), dr.packed, dr.surfaced(), dr.left(), modelRoadPlots(model, map.types())));
                 }
             }
             bought = g.getCityLand().purchases().size() - purchases0;
@@ -346,8 +347,9 @@ public class MapCheck {
                 map.ownedSites(Resource.IRON) == g.getLandManager().getIronDeposits());
         check("its mines stand on owned iron sites, never more of them on sites than there are", sitedWorst <= 0);
         out.print(drawnLines);
-        check("at every " + DRAWN_EVERY + "th month the map draws exactly what the city has: each type's buildings, every road plot of"
-                + " each kind, every plot of its track, a mine once on its site", drawnSamples == MONTHS / DRAWN_EVERY && drawnExact == drawnSamples);
+        check("at every " + DRAWN_EVERY + "th month the map draws exactly what the city has: each type's buildings, its road kind by kind"
+                + " as its streets' surface and what they do not carry, every plot of its track, a mine once on its site",
+                drawnSamples == MONTHS / DRAWN_EVERY && drawnExact == drawnSamples);
         return g;
     }
 
@@ -355,54 +357,65 @@ public class MapCheck {
        WHAT THE MAP DRAWS, EVERY TILE PAINTED (0.7.64)
        --------------------------------------------------------------------- */
 
-    /** What the painted map draws over every tile of a map's districts. */
+    /** What the painted map draws over every tile of a map's districts and a tile round them (0.7.88: a district's plan lays the next one's first column and row). */
     static final class Drawn {
-        /** Buildings by type id: a mine or well on a site once, however many tiles its site spans. */
+        /** Buildings by type id: a mine or well on a site once, however many tiles its site spans; packed ones among them. */
         long[] buildings;
-        /** Road plots laid by kind [0, gravel, paved, highway]. */
-        final long[] roads = new long[4];
-        /** The railway's track laid, in plots (0.7.72). */
-        long rail;
-        /** Buildings dealt and drawn on no plot; drawn smaller than their own land; road plots dealt and not laid; tiles painted. */
-        long dropped, shrunk, roadShort, tiles;
+        /** The streets' surface in plots by kind [0, gravel, paved, highway] - a highway's own plots among the highway's - and what the plans have no street for (CityMap.leftoverByKind()). */
+        final double[] surface = new double[4], leftover = new double[4];
+        /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay; buildings packed at the city's edge (R7); tiles painted; districts. */
+        long rail, railShort, packed, tiles, districts;
 
         long total() { return Arrays.stream(buildings).sum(); }
         int kinds() { int n = 0; for (long b : buildings) if (b > 0) n++; return n; }
-        long roadPlots() { return roads[1] + roads[2] + roads[3]; }
+        double surfaced() { return surface[1] + surface[2] + surface[3]; }
+        double left() { return leftover[1] + leftover[2] + leftover[3]; }
 
-        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn), every road kind's plots, every plot of its railway's track (0.7.72), none without a plot. */
+        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn); each road kind's plots its streets' surface and what they do not carry, to within half a plot a district (a street's least surface: DistrictPlan.HALF); every plot of its railway's track (0.7.72). */
         boolean sameAs(long[] model, BuildingVisual.Type[] types) {
-            boolean same = dropped == 0 && roadShort == 0;
+            boolean same = true;
             for (int t = 0; t < types.length; t++) {
                 if (types[t] == null) continue;
                 long want = t < model.length ? model[t] : 0;
                 if (types[t].drawn()) same &= buildings[t] == want;
             }
-            for (int kind = BuildingVisual.GRAVEL; kind <= BuildingVisual.HIGHWAY; kind++) same &= roads[kind] == roadPlotsOf(model, types, kind);
+            for (int kind = BuildingVisual.GRAVEL; kind <= BuildingVisual.HIGHWAY; kind++) {
+                same &= Math.abs(surface[kind] + leftover[kind] - roadPlotsOf(model, types, kind)) <= DistrictPlan.HALF * Math.max(1, districts);
+            }
             long track = 0;
             for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
-            return same && rail == track;
+            return same && rail + railShort == track;
         }
     }
 
-    /** Paints every tile of every district on a map and counts what is drawn. */
+    /** The tiles a map's districts cover and one round them: {tx0, ty0, across, down}. */
+    static long[] tilesOf(CityMap m) {
+        long x0 = Long.MAX_VALUE, y0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y1 = Long.MIN_VALUE;
+        for (CityMap.District d : m.districts()) {
+            long ax = (m.baseDX() + d.dx) * CityMap.TILES_A_SIDE, ay = (m.baseDY() + d.dy) * CityMap.TILES_A_SIDE;
+            x0 = Math.min(x0, ax); y0 = Math.min(y0, ay);
+            x1 = Math.max(x1, ax + CityMap.TILES_A_SIDE - 1); y1 = Math.max(y1, ay + CityMap.TILES_A_SIDE - 1);
+        }
+        return new long[] { x0 - 1, y0 - 1, x1 - x0 + 3, y1 - y0 + 3 };
+    }
+
+    /** Paints every tile of every district on a map, and a tile round them, and counts what is drawn. */
     static Drawn drawn(CityMap m) {
         Drawn d = new Drawn();
         d.buildings = new long[m.types().length];
+        d.districts = m.districts().size();
         TilePainter.Input in = new TilePainter.Input();
         TilePainter.Painted p = new TilePainter.Painted();
         java.util.Set<Long> sites = new java.util.HashSet<>();
-        for (CityMap.District dist : m.districts()) {
-            for (int k = 0; k < CityMap.TILES; k++) {
-                long tx = (m.baseDX() + dist.dx) * CityMap.TILES_A_SIDE + k % CityMap.TILES_A_SIDE;
-                long ty = (m.baseDY() + dist.dy) * CityMap.TILES_A_SIDE + k / CityMap.TILES_A_SIDE;
+        long[] box = tilesOf(m);
+        for (long ty = box[1]; ty < box[1] + box[3]; ty++) {
+            for (long tx = box[0]; tx < box[0] + box[2]; tx++) {
                 m.tileInput(tx, ty, in);
                 TilePainter.paint(in, p);
                 d.tiles++;
-                d.dropped += p.dropped;
-                d.shrunk += p.shrunk;
-                d.roadShort += p.roadShort;
-                for (int kind = 1; kind < 4; kind++) d.roads[kind] += p.laid[kind];
+                d.packed += p.packed;
+                for (int kind = 1; kind < 4; kind++) d.surface[kind] += p.halves[kind] / 2.0;
+                d.surface[BuildingVisual.HIGHWAY] += p.highwayPlots;
                 d.rail += p.railLaid;
                 for (int b = 0; b < p.buildings; b++) {
                     if (p.bsite[b] >= 0) {
@@ -411,6 +424,9 @@ public class MapCheck {
                 }
             }
         }
+        double[] left = m.leftoverByKind();
+        System.arraycopy(left, 0, d.leftover, 0, 4);
+        d.railShort = m.runs().railShort();
         return d;
     }
 
@@ -449,7 +465,7 @@ public class MapCheck {
        ===================================================================== */
 
     static void nothingMoves(Game g) {
-        out.println("\n--- 2. nothing placed moves: one more building, and one fewer, on a copy of the city's map ---");
+        out.println("\n--- 2. nothing placed moves: one more building, and one fewer, on a copy of the city's map - and in its district's plan ---");
         long[] counts = g.getMapCounts();
         BuildingVisual.Type[] types = g.getMapTypes();
         for (String name : new String[] { "House", "Mixed Farm" }) {
@@ -460,9 +476,8 @@ public class MapCheck {
                 CityMap m = CityMap.canonical(g.getCityLand(), g.getLandManager()::remainingByHolding, types, counts);
                 List<CityMap.District> ds = m.districts();
                 int[][] before = new int[ds.size()][];
-                int[][][] deals = new int[ds.size()][][];
+                DistrictPlan[] plans = new DistrictPlan[ds.size()];
                 int expected = -1;
-                long each = BuildingVisual.cells(types[t.getId()]);
                 for (int i = 0; i < ds.size(); i++) {
                     // Added: the first district in its direction with room for its whole plots, keeping room for the road its
                     // buildings need (0.7.72, CityMap.hasRoomFor()). Taken away: the last holding one.
@@ -473,16 +488,12 @@ public class MapCheck {
                 if (sign > 0 && expected < 0) expected = m.roomiest().index;
                 for (CityMap.District d : ds) {
                     before[d.index] = d.counts.clone();
-                    int[][] deal = m.deal(d);
-                    deals[d.index] = new int[deal.length][];
-                    for (int i = 0; i < deal.length; i++) deals[d.index][i] = deal[i].clone();
+                    plans[d.index] = m.plan(d);
                 }
                 long[] changedCounts = counts.clone();
                 changedCounts[t.getId()] += sign;
                 m.reconcile(changedCounts);
-                int changed = 0, by = 0, where = -1, tilesChanged = 0, tileBy = 0, ownTiles = 0, ownBy = 0, othersNet = 0, othersLarger = 0;
-                int[] rank = BuildingVisual.placeRanks(types);
-                java.util.Map<Integer, Integer> net = new java.util.HashMap<>();
+                int changed = 0, by = 0, where = -1;
                 for (CityMap.District d : m.districts()) {
                     for (int k = 0; k < d.counts.length; k++) {
                         if (d.counts[k] != before[d.index][k]) {
@@ -491,32 +502,33 @@ public class MapCheck {
                             where = d.index;
                         }
                     }
-                    int[][] deal = m.deal(d);
-                    for (int i = 0; i < deal.length; i++) {
-                        for (int k = 0; k < deal[i].length; k++) {
-                            if (deal[i][k] == deals[d.index][i][k]) continue;
-                            int dk = deal[i][k] - deals[d.index][i][k];
-                            tilesChanged++;
-                            tileBy += dk;
-                            if (k == t.getId()) { ownTiles++; ownBy += dk; }
-                            else {
-                                net.merge(k, dk, Integer::sum);
-                                if (rank[k] >= 0 && rank[k] < rank[t.getId()]) othersLarger++;
-                            }
-                        }
-                    }
                 }
                 String what = (sign > 0 ? "one more " : "one fewer ") + name;
-                for (int v : net.values()) othersNet += Math.abs(v);
-                out.printf("      %s: %d district count(s) changed by %d, in district %d of %d (expected %d); %d tile count(s) by %d"
-                        + " (its own kind in %d tile(s) by %d, %d of smaller kinds moved)%n",
-                        what, changed, by, where, ds.size(), expected, tilesChanged, tileBy, ownTiles, ownBy, tilesChanged - ownTiles);
+                out.printf("      %s: %d district count(s) changed by %d, in district %d of %d (expected %d)%n", what, changed, by, where, ds.size(), expected);
                 check(what + " changes one district's count, by " + sign + ", and no other", changed == 1 && by == sign);
                 check(sign > 0 ? "...in the " + way + " district with room for it"
                                : "...from the " + (outer ? "nearest" : "outermost") + " district holding one", where == expected);
-                if (sign > 0) check("...and one tile of the map, by " + sign, tilesChanged == 1 && tileBy == sign);
-                else check("...its own kind one tile of the map, by " + sign + "; anything else a smaller kind the room it frees takes, moved"
-                        + " and not lost", ownTiles == 1 && ownBy == sign && othersNet == 0 && othersLarger == 0);
+                // Its district's plan (spec 8.4): the first building placed differently is the one added (or, one fewer, the one
+                // taken) - none placed before it moves - where the plan's ladder takes the same step and its first band is dealt
+                // round as many cells; else the ladder relays the cells it changes (spec 2.9).
+                if (where < 0) continue;
+                DistrictPlan p0 = plans[where], p1 = m.plan(m.districts().get(where));
+                int f = 0;
+                while (f < p0.buildings && f < p1.buildings && p0.btype[f] == p1.btype[f] && p0.bx[f] == p1.bx[f] && p0.by[f] == p1.by[f]
+                        && p0.bw[f] == p1.bw[f] && p0.bh[f] == p1.bh[f]) f++;
+                boolean sameStep = p0.squares == p1.squares && p0.boulevards == p1.boulevards && p0.mixedSlots == p1.mixedSlots;
+                DistrictPlan more = sign > 0 ? p1 : p0;
+                boolean first = f >= more.buildings || more.btype[f] == t.getId();
+                int moved = 0;
+                for (int k = f; k < Math.min(p0.buildings, p1.buildings); k++) {
+                    if (p0.btype[k] != p1.btype[k] || p0.bx[k] != p1.bx[k] || p0.by[k] != p1.by[k]) moved++;
+                }
+                out.printf("      ...its plan: %,d buildings placed; the first placed otherwise is number %,d (%s), %,d after it placed otherwise;"
+                        + " the ladder's step %d/%d -> %d/%d, the first band's slots %d -> %d%n", p0.buildings, f,
+                        f < more.buildings ? (more.btype[f] == t.getId() ? "the " + name.toLowerCase(java.util.Locale.ROOT) : "type " + more.btype[f]) : "none",
+                        moved, p0.squares, p0.boulevards, p1.squares, p1.boulevards, p0.mixedSlots, p1.mixedSlots);
+                check("...and in its district's plan it moves none placed before it, while the ladder takes the same step (spec 8.4)",
+                        !sameStep || first);
             }
         }
     }
@@ -592,19 +604,18 @@ public class MapCheck {
     }
 
     /* =====================================================================
-       3. THE PAINTER'S RULES
+       3. THE PAINTER DRAWS THE PLAN (0.7.88, batch RD2; the mockup's rules on
+       the deal's tiles until 0.7.87)
        ===================================================================== */
 
     static void painterRules(CityMap m) {
-        out.println("\n--- 3. the painter keeps the mockup's rules: Jerus's density, the screen at the site of his city x 10,000 ---");
+        out.println("\n--- 3. the painter draws the plan: the screen at the site of Jerus's city x 10,000 ---");
         long tx0 = Math.floorDiv(m.land().siteX(), World.TILE) - SCREEN_ACROSS / 2;
         long ty0 = Math.floorDiv(m.land().siteY(), World.TILE) - SCREEN_DOWN / 2;
         TilePainter.Input in = new TilePainter.Input();
         TilePainter.Painted p = new TilePainter.Painted();
-        long seed = m.seed();
-        int borderOff = 0, portsDiffer = 0, notExact = 0, longBridge = 0, gravelBridge = 0, onSea = 0, notSame = 0;
-        long drawn = 0, dropped = 0, shrunk = 0, laid = 0, budget = 0, filled = 0, besideRoad = 0, rowTwo = 0, bridges = 0, mines = 0, minesOff = 0;
-        long[] laidKind = new long[4];
+        int notSame = 0, mines = 0, minesOff = 0;
+        long drawn = 0;
         int[] img = new int[(World.TILE * PX) * (World.TILE * PX)], again = img.clone();
         int[] far = new int[World.TILE * World.TILE], far2 = far.clone();
         TilePainter.Input in2 = new TilePainter.Input();
@@ -631,287 +642,29 @@ public class MapCheck {
                 TileRaster.blocks(in2, p2, 1, TileRaster.BLOCK_FAR, false, far2);
                 if (!Arrays.equals(far, far2)) notSame++;
                 drawn += p.buildings;
-                dropped += p.dropped;
-                shrunk += p.shrunk;
-                laid += p.roadPlots;
-                filled += p.filledPlots;
-                int b = in.roadBudget[1] + in.roadBudget[2] + in.roadBudget[3];
-                budget += b;
-                // Every road plot dealt is laid, kind by kind, and none more (0.7.64; within its budget before).
-                for (int kind = 1; kind < 4; kind++) {
-                    laidKind[kind] += p.laid[kind];
-                    if (p.laid[kind] != in.roadBudget[kind]) notExact++;
-                }
-                // Ports (0.7.72): each edge's crossing, where a main street meets it, read from either tile's side - the
-                // plot on its edge and the plot across it, the same pair.
-                portsDiffer += crossingsDiffer(m, tx, ty);
-                int T = World.TILE;
-                // Bridges: over fresh water only, never longer than the kind allows - gravel's as paved's since 0.7.77.
-                for (int q = 0; q < TilePainter.PLOTS; q++) {
-                    if (p.use[q] != TilePainter.ROAD) continue;
-                    if (in.terrain[q] == World.SALT) onSea++;
-                    if (p.bridge[q]) {
-                        bridges++;
-                        if (p.road[q] == BuildingVisual.GRAVEL) gravelBridge++;
-                        int run = 1, x = q % T, y = q / T;
-                        for (int dx = 1; x + dx < T && p.bridge[q + dx]; dx++) run++;
-                        for (int dy = 1; y + dy < T && p.bridge[q + dy * T]; dy++) run = Math.max(run, dy + 1);
-                        if (run > TilePainter.MAX_BRIDGE[p.road[q]]) longBridge++;
-                    }
-                }
                 for (int k = 0; k < p.buildings; k++) {
-                    if (p.bsite[k] >= 0) {
-                        mines++;
-                        int s = p.bsite[k];
-                        if (p.bx[k] < in.siteX0[s] || p.by[k] < in.siteY0[s] || p.bx[k] + p.bw[k] - 1 > in.siteX1[s]
-                                || p.by[k] + p.bh[k] - 1 > in.siteY1[s]) minesOff++;
-                        continue;
-                    }
-                    int row = 99;
-                    for (int y = p.by[k]; y < p.by[k] + p.bh[k]; y++) for (int x = p.bx[k]; x < p.bx[k] + p.bw[k]; x++) row = Math.min(row, p.row[y * T + x]);
-                    if (row == 1) besideRoad++;
-                    if (row == 2) rowTwo++;
+                    if (p.bsite[k] < 0) continue;
+                    mines++;
+                    int s = p.bsite[k];
+                    if (p.bx[k] < in.siteX0[s] || p.by[k] < in.siteY0[s] || p.bx[k] + p.bw[k] - 1 > in.siteX1[s]
+                            || p.by[k] + p.bh[k] - 1 > in.siteY1[s]) minesOff++;
                 }
             }
         }
-        long placed = drawn - mines;
-        out.printf("      %d tiles: %.1f buildings drawn a tile (%.2f drawn smaller than their land, %.2f found no place); road plots %.1f laid of"
-                        + " %.1f dealt (gravel %d, paved %d, highway %d; %d laid beside a road after growth stopped), %d bridge plots%n",
-                SCREEN_TILES, (double) drawn / SCREEN_TILES, (double) shrunk / SCREEN_TILES, (double) dropped / SCREEN_TILES,
-                (double) laid / SCREEN_TILES, (double) budget / SCREEN_TILES, laidKind[1], laidKind[2], laidKind[3], filled, bridges);
-        out.printf("      %d of the bridge plots gravel (a street's bridge, gravel or paved, since 0.7.77)%n", gravelBridge);
-        out.printf("      %.0f%% of buildings beside a road, %.0f%% in the row behind; %d mines on their sites%n",
-                100.0 * besideRoad / Math.max(1, placed), 100.0 * rowTwo / Math.max(1, placed), mines);
-        // A road at a tile's edge goes on in the next tile (0.7.72): every road plot on an edge between two of the
-        // screen's tiles has a road across it.
-        Net screen = new Net(m, tx0, ty0, SCREEN_ACROSS, SCREEN_DOWN);
-        for (int g = 0; g < screen.w * screen.h; g++) {
-            int x = g % screen.w, y = g / screen.w;
-            if (x % World.TILE == World.TILE - 1 && x + 1 < screen.w && screen.isRoad(g) != screen.isRoad(g + 1)) borderOff++;
-            if (y % World.TILE == World.TILE - 1 && y + 1 < screen.h && screen.isRoad(g) != screen.isRoad(g + screen.w)) borderOff++;
-        }
-        check("shared ports agree, read from either tile: each edge's crossing the same pair of plots", portsDiffer == 0);
-        check("no road meets a tile's border but where the next tile's road meets it, the same street going on", borderOff == 0);
-        check("every tile lays exactly the road plots of each kind the model's roads dealt it, a highway only where one was",
-                notExact == 0 && laid == budget);
-        check("no bridge crosses more fresh water than its kind may - a street STREET_BRIDGE, gravel or paved (gravel none"
-                + " until 0.7.77), a highway more - and no road is on the sea", longBridge == 0 && onSea == 0);
+        Raster r = new Raster(m, tx0, ty0, SCREEN_ACROSS, SCREEN_DOWN);
+        int[] asPlanned = r.asPlanned();
+        int[] spans = r.bridges();
+        out.printf("      %d tiles: %,d buildings drawn (%d mines on their sites); %,d street plots, %,d of them bridges%n", SCREEN_TILES, drawn, mines,
+                r.streetPlots(), spans[2]);
+        out.printf("      every plot the screen's districts' plans surface: %,d, painted as planned %,d; bridges too long %d, roads on the sea %d%n",
+                asPlanned[0], asPlanned[0] - asPlanned[1], spans[0], spans[1]);
+        check("fixture: the screen draws streets, and bridges", r.streetPlots() > 0 && spans[2] >= 0);
+        check("every plot a district's plan surfaces is painted as that street, its kind and its width - a seam once, the district's"
+                + " that surfaces it", asPlanned[0] > 0 && asPlanned[1] == 0);
+        check("no bridge crosses more fresh water than its line may - a street STREET_BRIDGE, an arterial ARTERIAL_BRIDGE, a"
+                + " highway MAX_BRIDGE - and no road is on the sea", spans[0] == 0 && spans[1] == 0);
         check("every mine stands on its own site", minesOff == 0);
         check("the same inputs paint the same pixels, from a twin map drawn the same way", notSame == 0);
-        bridges(m, tx0, ty0);
-        moves(m, tx0, ty0);
-    }
-
-    /**
-     * Bridges, where there is fresh water to cross: the default world's
-     * founding river, every tile it runs through painted owned with the
-     * dense screen's middle tile's buildings and its whole road budget of one
-     * kind, no more than the tile's dry plots inside its edge ring hold (a
-     * fixture, so roads that can bridge meet the river) - paved, and since
-     * 0.7.77 again all gravel (Jerus: "gravel road bridge rivers sure").
-     */
-    static void bridges(CityMap m, long tx0, long ty0) {
-        TilePainter.Input dense = new TilePainter.Input();
-        m.tileInput(tx0 + SCREEN_ACROSS / 2, ty0 + SCREEN_DOWN / 2, dense);
-        World w = World.of(Founding.DEFAULT_WORLD_SEED);
-        World.River river = w.river();
-        java.util.Set<Long> tiles = new java.util.LinkedHashSet<>();
-        for (int k = 0; k < river.points(); k++) {
-            tiles.add(CityMap.key((int) Math.floorDiv((long) river.xs()[k], World.TILE), (int) Math.floorDiv((long) river.ys()[k], World.TILE)));
-        }
-        TilePainter.Input in = new TilePainter.Input();
-        TilePainter.Painted p = new TilePainter.Painted();
-        int T = World.TILE;
-        for (int kind : new int[] { BuildingVisual.PAVED, BuildingVisual.GRAVEL }) {
-            int bridges = 0, wet = 0, otherKind = 0, tooLong = 0, onSea = 0, borderOff = 0, crossings = 0;
-            for (long key : tiles) {
-                long tx = key >> 32, ty = (int) key;
-                in.seed = w.seed();
-                in.tx = tx;
-                in.ty = ty;
-                in.types = m.types();
-                w.tileTerrain(tx, ty, in.terrain);
-                Arrays.fill(in.owned, true);
-                in.counts = dense.counts.clone();
-                in.model = dense.model.clone();
-                Arrays.fill(in.roadBudget, 0);
-                // ...no more than its dry plots inside the edge ring hold, as the deal gives a tile (0.7.64).
-                int innerDry = 0;
-                for (int q = 0; q < TilePainter.PLOTS; q++) {
-                    int x = q % T, y = q / T;
-                    if (x >= 1 && y >= 1 && x < T - 1 && y < T - 1 && in.terrain[q] != World.SALT && in.terrain[q] != World.FRESH) innerDry++;
-                }
-                in.roadBudget[kind] = Math.min(innerDry, dense.roadBudget[1] + dense.roadBudget[2] + dense.roadBudget[3]);
-                Arrays.fill(in.neighbourRoads, true);
-                in.clearSites();
-                TilePainter.paint(in, p);
-                // Painted alone, with no deal's crossing to meet, a tile lays no road on its edge (0.7.72; off a hashed port before).
-                for (int k = 0; k < T; k++) {
-                    if (road(p, k)) borderOff++;
-                    if (road(p, (T - 1) * T + k)) borderOff++;
-                    if (road(p, k * T)) borderOff++;
-                    if (road(p, k * T + T - 1)) borderOff++;
-                }
-                for (int q = 0; q < TilePainter.PLOTS; q++) {
-                    if (in.terrain[q] == World.FRESH) wet++;
-                    if (p.use[q] != TilePainter.ROAD) continue;
-                    if (in.terrain[q] == World.SALT) onSea++;
-                    if (!p.bridge[q]) continue;
-                    bridges++;
-                    if (p.road[q] != kind) otherKind++;
-                    int x = q % T, y = q / T;
-                    boolean startX = x == 0 || !p.bridge[q - 1], startY = y == 0 || !p.bridge[q - T];
-                    int runX = 0, runY = 0;
-                    if (startX) for (int dx = 0; x + dx < T && p.bridge[q + dx]; dx++) runX++;
-                    if (startY) for (int dy = 0; y + dy < T && p.bridge[q + dy * T]; dy++) runY++;
-                    if (startX && runX > 1 || startY && runY > 1 || startX && startY) crossings++;
-                    if (Math.max(runX, runY) > TilePainter.MAX_BRIDGE[p.road[q]]) tooLong++;
-                }
-            }
-            String name = kind == BuildingVisual.PAVED ? "paved" : "gravel";
-            out.printf("      the founding river's %d tiles, %s: %,d plots of fresh water, %d bridge plots in %d crossing(s) (of another kind %d,"
-                            + " too long %d, on the sea %d, at a border with no crossing %d)%n",
-                    tiles.size(), name, wet, bridges, crossings, otherKind, tooLong, onSea, borderOff);
-            check("fixture: " + name + " roads meet the founding river and cross it on bridges"
-                    + (kind == BuildingVisual.GRAVEL ? " - gravel too since 0.7.77" : ""), bridges > 0);
-            check("...each " + name + ", none longer than a street may cross (STREET_BRIDGE), none on the sea, none at a border it"
-                    + " has no crossing on", otherKind == 0 && tooLong == 0 && onSea == 0 && borderOff == 0);
-        }
-    }
-
-    /** A road plot. */
-    static boolean road(TilePainter.Painted p, int i) { return p.use[i] == TilePainter.ROAD; }
-
-    /**
-     * How many of tile (tx, ty)'s four edges its deal and the next tile's
-     * read differently (0.7.72): each side's main street to its crossing ends
-     * on the edge, and where both are laid the two plots face each other
-     * across it - the plot along the edge the same.
-     */
-    static int crossingsDiffer(CityMap m, long tx, long ty) {
-        CityMap.District d = m.districtOfTile(tx, ty);
-        if (d == null) return 0;
-        CityMap.RoadTiles rt = m.roadTilesOf(d);
-        int k = (int) (Math.floorMod(ty, CityMap.TILES_A_SIDE) * CityMap.TILES_A_SIDE + Math.floorMod(tx, CityMap.TILES_A_SIDE)), differ = 0;
-        for (int dir = 0; dir < 4; dir++) {
-            long ox = tx + TilePainter.DX[dir], oy = ty + TilePainter.DY[dir];
-            CityMap.District od = m.districtOfTile(ox, oy);
-            if (od == null || rt.arm[k][dir] == null) continue;
-            CityMap.RoadTiles ort = m.roadTilesOf(od);
-            int ok = (int) (Math.floorMod(oy, CityMap.TILES_A_SIDE) * CityMap.TILES_A_SIDE + Math.floorMod(ox, CityMap.TILES_A_SIDE));
-            short[] mine = rt.arm[k][dir], theirs = ort.arm[ok][(dir + 2) % 4];
-            if (theirs == null) continue;
-            // ...an arm of no plots: the hub stands on the edge itself.
-            int a = mine.length == 0 ? rt.hub[k] : mine[mine.length - 1], b = theirs.length == 0 ? ort.hub[ok] : theirs[theirs.length - 1];
-            boolean ns = dir == 0 || dir == 2;
-            if (ns ? a % World.TILE != b % World.TILE : a / World.TILE != b / World.TILE) differ++;
-        }
-        return differ;
-    }
-
-    /**
-     * The city grown by one building in a tile (0.7.64: one more of each
-     * model type the tile holds, painted again, where the tile has room for
-     * its whole plots as the deal reckons room - its free plots less what was
-     * dealt it, CityMap.deal(), which gives a full tile none) - none placed
-     * before it moved, how many of the others did, and whether any kind was
-     * drawn fewer; and one more Paved Road's plots, laid again.
-     */
-    static void moves(CityMap m, long tx0, long ty0) {
-        TilePainter.Input in = new TilePainter.Input();
-        TilePainter.Painted p = new TilePainter.Painted();
-        List<Integer> moved = new ArrayList<>();
-        double stepMoved = 0;
-        int stepCases = 0, fewer = 0, earlierMoved = 0;
-        BuildingVisual.Type[] types = m.types();
-        int[] rank = BuildingVisual.placeRanks(types);
-        int paved = -1;
-        for (BuildingVisual.Type t : types) if (t != null && t.road() == BuildingVisual.PAVED) { paved = t.id(); break; }
-        for (int j = 0; j < SCREEN_DOWN; j++) {
-            for (int i = 0; i < SCREEN_ACROSS; i++) {
-                long tx = tx0 + i, ty = ty0 + j;
-                m.tileInput(tx, ty, in);
-                TilePainter.paint(in, p);
-                if (p.buildings < 2) continue;
-                java.util.Map<Long, Long> before = positions(p);
-                long[] drawnBefore = drawnByType(p, types.length);
-                int[] counts = in.counts.clone();
-                // The tile's room as the deal reckons it: its free plots less the whole plots and road plots dealt it, and
-                // (0.7.72) its railway's track, which the deal charges the tile as it does a road.
-                long left = -m.tileRail(tx, ty);
-                for (int q = 0; q < TilePainter.PLOTS; q++) {
-                    byte gr = in.terrain[q];
-                    if (in.owned[q] && gr != World.SALT && gr != World.FRESH && p.site[q] == 0) left++;
-                }
-                for (int t = 0; t < counts.length; t++) if (counts[t] > 0 && types[t] != null && types[t].drawn()) left -= (long) counts[t] * BuildingVisual.cells(types[t]);
-                for (int k = 1; k < 4; k++) left -= in.roadBudget[k];
-                for (int t = 0; t < counts.length; t++) {
-                    if (counts[t] == 0 || types[t] == null || !types[t].drawn() || BuildingVisual.cells(types[t]) > left) continue;
-                    in.counts[t]++;
-                    TilePainter.paint(in, p);
-                    long[] after = drawnByType(p, types.length);
-                    for (int k = 0; k < after.length; k++) if (after[k] < drawnBefore[k]) fewer++;
-                    java.util.Map<Long, Long> now = positions(p);
-                    moved.add(movedOf(before, now));
-                    // Those placed before it - the larger, and its own type's earlier numbers - stand where they stood.
-                    for (java.util.Map.Entry<Long, Long> e : before.entrySet()) {
-                        int bt = (int) (e.getKey() >>> 32), bj = (int) (long) e.getKey();
-                        boolean earlier = rank[bt] < rank[t] || (bt == t && bj < counts[t]);
-                        if (earlier && !e.getValue().equals(now.get(e.getKey()))) earlierMoved++;
-                    }
-                    in.counts[t]--;
-                }
-                // One more Paved Road's plots, as the model builds one: the tile's roads laid again.
-                if (paved >= 0) {
-                    in.roadBudget[BuildingVisual.PAVED] += BuildingVisual.cells(types[paved]);
-                    TilePainter.paint(in, p);
-                    stepMoved += movedOf(before, positions(p));
-                    stepCases++;
-                    in.roadBudget[BuildingVisual.PAVED] -= BuildingVisual.cells(types[paved]);
-                }
-            }
-        }
-        Collections.sort(moved);
-        int n = moved.size();
-        long zero = moved.stream().filter(v -> v == 0).count();
-        double mean = moved.stream().mapToInt(Integer::intValue).average().orElse(0);
-        out.printf("      %,d cases of one more model building in a tile with room for it: a median of %d others moved, 75th %d, 90th %d, 99th %d, mean %.2f;"
-                        + " none in %.0f%%; of those placed before it, %d; one more Paved Road's plots moves %.1f%n", n, n == 0 ? 0 : moved.get(n / 2),
-                n == 0 ? 0 : moved.get(n * 3 / 4), n == 0 ? 0 : moved.get(n * 9 / 10), n == 0 ? 0 : moved.get(n * 99 / 100), mean,
-                100.0 * zero / Math.max(1, n), earlierMoved, stepCases == 0 ? 0 : stepMoved / stepCases);
-        check("fixture: the screen holds buildings to add to", n > 100);
-        check("one more building moves none placed before it - the larger, and its own type's earlier - only the smaller after it", n > 0 && earlierMoved == 0);
-        check("...and the city grown by it is never drawn with fewer of anything", fewer == 0);
-    }
-
-    /** A painted tile's buildings by type id. */
-    static long[] drawnByType(TilePainter.Painted p, int types) {
-        long[] n = new long[types];
-        for (int b = 0; b < p.buildings; b++) n[p.btype[b]]++;
-        return n;
-    }
-
-    /** A tile's owned dry plots. */
-    static int dryOwned(TilePainter.Input in) {
-        int n = 0;
-        for (int i = 0; i < TilePainter.PLOTS; i++) if (in.owned[i] && in.terrain[i] != World.SALT && in.terrain[i] != World.FRESH) n++;
-        return n;
-    }
-
-    /** Each building's place, keyed by its type and number. */
-    static java.util.Map<Long, Long> positions(TilePainter.Painted p) {
-        java.util.Map<Long, Long> m = new java.util.HashMap<>();
-        for (int b = 0; b < p.buildings; b++) {
-            if (p.bj[b] < 0) continue;
-            m.put(((long) p.btype[b] << 32) | p.bj[b], ((long) p.by[b] << 16) | p.bx[b]);
-        }
-        return m;
-    }
-
-    static int movedOf(java.util.Map<Long, Long> before, java.util.Map<Long, Long> after) {
-        int n = 0;
-        for (java.util.Map.Entry<Long, Long> e : before.entrySet()) if (!e.getValue().equals(after.get(e.getKey()))) n++;
-        return n;
     }
 
     /* =====================================================================
@@ -927,10 +680,9 @@ public class MapCheck {
      * a year on is exactly what it holds - as founded, its one Commercial Bank
      * (Game.foundingBank()) on bare ground, no road and no highway, where J3b
      * drew it as a shop of the shops' colour beside the mockup's two world
-     * highways; and on the dense screen every building dealt is drawn, each
-     * on its own type's land but the few no free box of its tile could hold,
-     * its buildings and roads covering exactly the plots the model gives them
-     * less only what was drawn smaller.
+     * highways; and on the dense screen every building is drawn on its own
+     * type's land where its district's plan placed it (0.7.88; until 0.7.87
+     * the deal's, a tenth of them drawn smaller), none packed.
      */
     static void drawnAsItIs(CityMap dense) {
         out.println("\n--- 6. the city drawn as what it has: a new city as founded, a month and a year on, and the dense screen ---");
@@ -954,13 +706,16 @@ public class MapCheck {
                 StringBuilder what = new StringBuilder(), has = new StringBuilder();
                 for (int t = 0; t < model.length; t++) if (model[t] > 0) has.append(has.length() == 0 ? "" : ", ").append(model[t]).append(" ").append(names.get(t));
                 for (int t = 0; t < d.buildings.length; t++) if (d.buildings[t] > 0) what.append(what.length() == 0 ? "" : ", ").append(d.buildings[t]).append(" ").append(names.get(t));
-                lines.append(String.format("      month %d (%d months on), %,d people: it holds %s; the map draws %s, %d road plots%n",
+                Raster r = Raster.of(map);
+                long tracks = 0;
+                for (int q = 0; q < r.w * r.h; q++) if (r.isStreet(q) && r.road[q] == TilePainter.TRACK) tracks++;
+                lines.append(String.format("      month %d (%d months on), %,d people: it holds %s; the map draws %s, %,.1f plots of road, %,d of track%n",
                         g.getMonth(), months, g.getPopulationManager().getPopulation(), has.length() == 0 ? "nothing" : has,
-                        what.length() == 0 ? "nothing" : what, d.roadPlots()));
+                        what.length() == 0 ? "nothing" : what, d.surfaced(), tracks));
                 if (months == 0) {
                     BuildingsTemplate bank = g.getBuildingManager().getTemplateByName("Commercial Bank");
                     bare = bank != null && d.total() == 1 && d.buildings[bank.getId()] == 1 && model[bank.getId()] == 1
-                            && modelBuildings(model, map.types()) == 1 && d.roadPlots() == 0 && d.roads[BuildingVisual.HIGHWAY] == 0;
+                            && modelBuildings(model, map.types()) == 1 && d.surfaced() == 0 && r.count(r::isHighway) == 0;
                 }
             }
         } finally {
@@ -969,86 +724,82 @@ public class MapCheck {
         out.print(lines);
         check("a new default city is drawn as what it holds, as founded, a month on and a year on: each type's buildings, no more, no less",
                 exact);
-        check("...as founded, its one Commercial Bank on bare ground: no other building, no road, no highway", bare);
-        // The dense screen, painted: every building dealt drawn, on its own land, covering what the model gives it.
+        check("...as founded, its one Commercial Bank: no other building, no road (its streets tracks, the model's base streets: spec 2.2), no highway", bare);
+        // The dense screen, painted: every building on its own type's land, where its district's plan put it.
         long tx0 = Math.floorDiv(dense.land().siteX(), World.TILE) - SCREEN_ACROSS / 2;
         long ty0 = Math.floorDiv(dense.land().siteY(), World.TILE) - SCREEN_DOWN / 2;
         TilePainter.Input in = new TilePainter.Input();
         TilePainter.Painted p = new TilePainter.Painted();
         BuildingVisual.Type[] types = dense.types();
-        long dealt = 0, drawnPlots = 0, lost = 0, buildings = 0, shrunk = 0, dropped = 0, offLand = 0, free = 0, dealtBuildings = 0;
+        long drawnPlots = 0, buildings = 0, offLand = 0, packed = 0, free = 0, streets = 0;
+        java.util.Set<CityMap.District> shown = new java.util.LinkedHashSet<>();
         for (int j = 0; j < SCREEN_DOWN; j++) {
             for (int i = 0; i < SCREEN_ACROSS; i++) {
                 dense.tileInput(tx0 + i, ty0 + j, in);
                 TilePainter.paint(in, p);
-                dropped += p.dropped;
-                shrunk += p.shrunk;
-                for (int t = 0; t < in.counts.length; t++) {
-                    if (in.counts[t] <= 0 || types[t] == null || !types[t].drawn()) continue;
-                    dealt += (long) in.counts[t] * BuildingVisual.cells(types[t]);
-                    dealtBuildings += in.counts[t];
-                }
-                for (int k = 1; k < 4; k++) dealt += in.roadBudget[k];
-                drawnPlots += p.roadPlots;
+                shown.add(dense.districtOfTile(tx0 + i, ty0 + j));
+                packed += p.packed;
                 for (int b = 0; b < p.buildings; b++) {
                     if (p.bsite[b] >= 0) continue;
                     buildings++;
                     int[] f = BuildingVisual.footprint(types[p.btype[b]]);
                     boolean own = (p.bw[b] == f[0] && p.bh[b] == f[1]) || (p.bw[b] == f[1] && p.bh[b] == f[0]);
-                    if (!own) {
-                        offLand++;
-                        lost += (long) f[0] * f[1] - (long) p.bw[b] * p.bh[b];
-                    }
+                    if (!own) offLand++;
                     drawnPlots += (long) p.bw[b] * p.bh[b];
                 }
                 for (int q = 0; q < TilePainter.PLOTS; q++) {
                     byte gr = in.terrain[q];
                     if (in.owned[q] && gr != World.SALT && gr != World.FRESH && p.site[q] == 0) free++;
+                    if (p.isRoad(q)) streets++;
                 }
             }
         }
-        out.printf("      the dense screen's %d tiles: %,d buildings dealt, %,d drawn, %d with no plot, %d drawn smaller than their own land (%.2f%%);"
-                        + " their buildings and roads %,d plots of %,d the model gives them (%,d lost to the smaller), %.1f%% of the free ground%n",
-                SCREEN_TILES, dealtBuildings, buildings, dropped, shrunk, 100.0 * shrunk / Math.max(1, buildings), drawnPlots, dealt, lost,
-                100.0 * drawnPlots / Math.max(1, free));
-        check("on the dense screen every building dealt is drawn, none without a plot", dropped == 0 && buildings == dealtBuildings);
-        check("...each on its own type's land, turned or not, but those no free box of its tile held (at most "
-                + Math.round(100 * SHRUNK_MOST) + "%)", offLand == shrunk && shrunk <= SHRUNK_MOST * buildings);
-        check("...its buildings and roads covering exactly the plots the model gives them, less only what was drawn smaller",
-                drawnPlots + lost == dealt);
+        long placed = 0, refused = 0;
+        for (CityMap.District d : shown) {
+            if (d == null) continue;
+            CityMap.Drawn dr = dense.drawn(d);
+            placed += dr.placed();
+            refused += dr.refused();
+        }
+        out.printf("      the dense screen's %d tiles, %d districts: %,d buildings drawn, %d off their own land, %d packed; buildings %.1f%% and streets %.1f%%"
+                        + " of the free ground; its districts' plans place %,d and carry on %,d they cannot hold (R7)%n",
+                SCREEN_TILES, shown.size(), buildings, offLand, packed, 100.0 * drawnPlots / Math.max(1, free), 100.0 * streets / Math.max(1, free), placed, refused);
+        check("on the dense screen every building is drawn on its own type's land, turned or not, where its district's plan put it",
+                buildings > 0 && offLand == 0);
+        check("...none packed without a street there: the city's edge holds what it has no room for, not its middle", packed == 0);
     }
 
     /* =====================================================================
-       8. THE NETWORK (0.7.72, batch N3)
+       8. THE NETWORK ON THE DRAWN RASTER (0.7.88, batch RD2; N3's on its
+       deal's x 1 fixture from 0.7.72)
 
-       Jerus, "to make the map generation prettier": highways connect to each
-       other, prefer straight lines and curve only when they hit the ocean,
-       with T and + junctions used very sparingly; ordinary roads "love being
-       a continuous + junction", about eight houses' length apart at the
-       least; all roads connect to one network, no road standing alone; every
-       building is near a road; rail connects to the rail network and its
-       terminals prefer to sit near mines. Measured on Jerus's city x 1, every
-       tile of its districts painted (the copies' own fixture: his counts at
-       his density), and on it with two rail yards and a freight line added.
+       Jerus, of his screenshot of 0.7.84: "does that look like highways that
+       prefer going straight and must be connected? roads that arent doing
+       endless + juncitons, and all roads connected, no stray roads?". N3's
+       checks passed on that map because they measured the deal's square
+       fixture, not what a real city drew. These measure the raster itself -
+       every tile of every district and a tile round them, painted and put
+       together, plot by plot as the screen shows them - on Jerus's city x 1,
+       on the played city of section 1, and on any save named on the command
+       line (MapCheck <save folder> ...). On 0.7.86's painter they fail on his
+       save and the playtest (runs/fixRD2-notes.md, the probe RD2Raster).
        ===================================================================== */
 
-    /** The fixture's added rail: Rail Terminals (yards) and Freight Lines, to hold the yards' rule on (his city has spurs, no yard). */
-    static final int YARDS_ADDED = 2, FREIGHT_ADDED = 1;
-
-    /** A map painted whole over a box of tiles and put together: what each plot is, every building's box, what holds the network's rules. */
-    static final class Net {
+    /** A map painted whole over a box of tiles and put together: what each plot is, every building's box - what holds the network's rules. */
+    static final class Raster {
         final CityMap map;
         final long px0, py0;
         final int w, h;
-        final byte[] use, road;
-        final boolean[] owned, sea, wet;
-        /** A road plot (or track) that bridges fresh water (0.7.77). */
-        final boolean[] bridge;
-        /** Each building: {x0, y0, w, h, type, site} in the box's plots. */
+        final byte[] use, road, width, role, run;
+        final boolean[] owned, sea, wet, bridge, beneath, mined;
+        /** Each building: {x0, y0, w, h, type, site (or -1), packed (1 or 0)} in the box's plots. */
         final List<int[]> boxes = new ArrayList<>();
-        long dropped, filled, crossings, rail;
+        long rail, crossings, packed;
+        final double[] surface = new double[4];
+        final long[] buildings;
+        final java.util.Set<Long> sites = new java.util.HashSet<>();
 
-        Net(CityMap map, long tx0, long ty0, int tw, int th) {
+        Raster(CityMap map, long tx0, long ty0, int tw, int th) {
             this.map = map;
             px0 = tx0 * World.TILE;
             py0 = ty0 * World.TILE;
@@ -1056,52 +807,80 @@ public class MapCheck {
             h = th * World.TILE;
             use = new byte[w * h];
             road = new byte[w * h];
+            width = new byte[w * h];
+            role = new byte[w * h];
+            run = new byte[w * h];
             owned = new boolean[w * h];
             sea = new boolean[w * h];
             wet = new boolean[w * h];
             bridge = new boolean[w * h];
+            beneath = new boolean[w * h];
+            mined = new boolean[w * h];
+            buildings = new long[map.types().length];
             TilePainter.Input in = new TilePainter.Input();
             TilePainter.Painted p = new TilePainter.Painted();
             for (int j = 0; j < th; j++) {
                 for (int i = 0; i < tw; i++) {
                     map.tileInput(tx0 + i, ty0 + j, in);
                     TilePainter.paint(in, p);
-                    dropped += p.dropped;
-                    filled += p.filledPlots;
                     crossings += p.crossings;
                     rail += p.railLaid;
+                    packed += p.packed;
+                    for (int k = 1; k < 4; k++) surface[k] += p.halves[k] / 2.0;
+                    surface[BuildingVisual.HIGHWAY] += p.highwayPlots;
                     int ox = i * World.TILE, oy = j * World.TILE;
                     for (int k = 0; k < TilePainter.PLOTS; k++) {
                         int g = (oy + k / World.TILE) * w + ox + k % World.TILE;
                         use[g] = p.use[k];
                         road[g] = p.road[k];
+                        width[g] = p.width[k];
+                        role[g] = p.role[k];
                         owned[g] = in.owned[k];
                         sea[g] = in.terrain[k] == World.SALT;
                         wet[g] = sea[g] || in.terrain[k] == World.FRESH;
                         bridge[g] = p.bridge[k];
+                        beneath[g] = p.beneath[k];
+                        run[g] = p.run[k];
                     }
-                    for (int b = 0; b < p.buildings; b++) boxes.add(new int[] { ox + p.bx[b], oy + p.by[b], p.bw[b], p.bh[b], p.btype[b], p.bsite[b] });
+                    for (int b = 0; b < p.buildings; b++) {
+                        boxes.add(new int[] { ox + p.bx[b], oy + p.by[b], p.bw[b], p.bh[b], p.btype[b], p.bsite[b], p.bpacked[b] ? 1 : 0 });
+                        if (p.bsite[b] >= 0) {
+                            if (sites.add(in.siteKey[p.bsite[b]])) buildings[p.btype[b]]++;
+                            for (int y = p.by[b]; y < p.by[b] + p.bh[b]; y++) for (int x = p.bx[b]; x < p.bx[b] + p.bw[b]; x++) mined[(oy + y) * w + ox + x] = true;
+                        } else buildings[p.btype[b]]++;
+                    }
                 }
             }
         }
 
-        /** Every tile of every district of a map. */
-        static Net of(CityMap map) {
-            long x0 = Long.MAX_VALUE, y0 = Long.MAX_VALUE, x1 = Long.MIN_VALUE, y1 = Long.MIN_VALUE;
-            for (CityMap.District d : map.districts()) {
-                long ax = (map.baseDX() + d.dx) * CityMap.TILES_A_SIDE, ay = (map.baseDY() + d.dy) * CityMap.TILES_A_SIDE;
-                x0 = Math.min(x0, ax); y0 = Math.min(y0, ay);
-                x1 = Math.max(x1, ax + CityMap.TILES_A_SIDE - 1); y1 = Math.max(y1, ay + CityMap.TILES_A_SIDE - 1);
-            }
-            return new Net(map, x0, y0, (int) (x1 - x0 + 1), (int) (y1 - y0 + 1));
+        /** Every tile of every district of a map, and a tile round them. */
+        static Raster of(CityMap map) {
+            long[] b = tilesOf(map);
+            return new Raster(map, b[0], b[1], (int) b[2], (int) b[3]);
         }
 
-        /** A road plot: a road, or the track where a road crosses it. */
+        /** A road plot: a street (a track among them, the track's level crossings among them), or a highway's. */
         boolean isRoad(int g) { return use[g] == TilePainter.ROAD || (use[g] == TilePainter.RAIL && road[g] != 0); }
 
-        boolean isHighway(int g) { return isRoad(g) && road[g] == BuildingVisual.HIGHWAY; }
+        /** A street plot: a road plot with a street's role - not a highway's own. */
+        boolean isStreet(int g) { return isRoad(g) && role[g] != 0; }
+
+        /** A highway's own plot (its runs'). */
+        boolean isHighway(int g) { return use[g] == TilePainter.ROAD && road[g] == BuildingVisual.HIGHWAY && role[g] == 0; }
 
         boolean isRail(int g) { return use[g] == TilePainter.RAIL; }
+
+        /** A plot of the city's highways as its runs lay it (0.7.89), under a building or not - the railway bridging it among them. */
+        boolean isRunHighway(int g) { return run[g] == BuildingVisual.HIGHWAY || run[g] == TilePainter.RAIL_OVER; }
+
+        /** ...of its railway's track, under a yard or a mine too, or bridging a highway. */
+        boolean isRunRail(int g) { return run[g] == TilePainter.RAIL || run[g] == TilePainter.RAIL_OVER; }
+
+        long streetPlots() {
+            long n = 0;
+            for (int g = 0; g < w * h; g++) if (isStreet(g)) n++;
+            return n;
+        }
 
         int beside(int g, java.util.function.IntPredicate is) {
             int x = g % w, y = g / w, n = 0;
@@ -1112,7 +891,7 @@ public class MapCheck {
             return n;
         }
 
-        /** The pieces plots of a kind make, four ways joined: each plot's piece number (0 for none), and [0] = how many pieces. */
+        /** The pieces plots of a kind make, four ways joined: each plot's piece number (0 for none), [0] = how many pieces. */
         int[] pieces(java.util.function.IntPredicate is) {
             int[] piece = new int[w * h + 1];
             int[] q = new int[w * h];
@@ -1133,13 +912,74 @@ public class MapCheck {
             return piece;
         }
 
-        /** A crossing of two streets: a road plot with road on its four sides and none on its four corners (a square's middle, road on its corners too, is not one). */
+        /**
+         * The road's pieces and those the city's own ground joins to the
+         * largest: {pieces, plots of the largest, pieces the ground joins to
+         * it} - from the largest piece, four ways over owned ground that is not
+         * the sea or a mine's site, fresh water as far as an arterial's bridge
+         * (ARTERIAL_BRIDGE) spans it along the way, a building's plots among
+         * the ground (a piece buildings wall in is the plans' to join, as
+         * PlanCheck's rule has it): another piece reached is one the ground
+         * does not part.
+         */
+        int[] network() {
+            int[] piece = pieces(this::isRoad);
+            int n = piece[0];
+            if (n <= 1) return new int[] { n, n == 0 ? 0 : (int) count(this::isRoad), 0 };
+            int[] size = new int[n + 1];
+            for (int g = 0; g < w * h; g++) if (piece[g + 1] > 0) size[piece[g + 1]]++;
+            int main = 1;
+            for (int k = 2; k <= n; k++) if (size[k] > size[main]) main = k;
+            boolean[] seen = new boolean[w * h];
+            int[] q = new int[w * h];
+            int qh = 0, qt = 0;
+            for (int g = 0; g < w * h; g++) if (piece[g + 1] == main) { seen[g] = true; q[qt++] = g; }
+            java.util.Set<Integer> reached = new java.util.HashSet<>();
+            while (qh < qt) {
+                int u = q[qh++], ux = u % w, uy = u / w;
+                for (int d = 0; d < 4; d++) {
+                    int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
+                    if (ax < 0 || ay < 0 || ax >= w || ay >= h) continue;
+                    int v = ay * w + ax;
+                    if (seen[v]) continue;
+                    if (piece[v + 1] != 0 && piece[v + 1] != main) { reached.add(piece[v + 1]); seen[v] = true; continue; }
+                    if (!owned[v] || sea[v] || mined[v]) continue;
+                    if (wet[v]) {
+                        int run = 1;
+                        for (int k = 1; k <= DistrictPlan.ARTERIAL_BRIDGE; k++) {
+                            int bx = ax + TilePainter.DX[d] * k, by = ay + TilePainter.DY[d] * k;
+                            if (bx < 0 || by < 0 || bx >= w || by >= h || !wet[by * w + bx]) break;
+                            run++;
+                        }
+                        if (run > DistrictPlan.ARTERIAL_BRIDGE) continue;
+                    }
+                    seen[v] = true;
+                    q[qt++] = v;
+                }
+            }
+            return new int[] { n, size[main], reached.size() };
+        }
+
+        long count(java.util.function.IntPredicate is) {
+            long n = 0;
+            for (int g = 0; g < w * h; g++) if (is.test(g)) n++;
+            return n;
+        }
+
+        /** Road plots with no road beside them, four ways: a stray. */
+        long alone() {
+            long n = 0;
+            for (int g = 0; g < w * h; g++) if (isRoad(g) && beside(g, this::isRoad) == 0) n++;
+            return n;
+        }
+
+        /** A + junction of streets: a street plot with street on its four sides and none on its four corners (a square's middle, street on its corners too, is not one; nor a street beneath a highway, which passes under it). */
         boolean crossing(int g) {
-            if (!isRoad(g) || beside(g, this::isRoad) != 4) return false;
+            if (!isStreet(g) || beside(g, this::isStreet) != 4) return false;
             int x = g % w, y = g / w;
             for (int dy = -1; dy <= 1; dy += 2) for (int dx = -1; dx <= 1; dx += 2) {
                 int xx = x + dx, yy = y + dy;
-                if (xx >= 0 && yy >= 0 && xx < w && yy < h && isRoad(yy * w + xx)) return false;
+                if (xx >= 0 && yy >= 0 && xx < w && yy < h && isStreet(yy * w + xx)) return false;
             }
             return true;
         }
@@ -1162,24 +1002,19 @@ public class MapCheck {
             return new long[] { n, near };
         }
 
-        /** Each plot's distance from a road, either way and across corners (a road 0), to `most` + 1; with `ownTile`, from its own tile's roads only, as its tile was painted. */
+        /** Each plot's distance from a street, across corners (a street 0), to `most` + 1. */
         int[] reach(int most) {
-            return reach(most, false);
-        }
-
-        int[] reach(int most, boolean ownTile) {
             int[] dist = new int[w * h];
             Arrays.fill(dist, most + 1);
             int[] q = new int[w * h];
             int qh = 0, qt = 0;
-            for (int g = 0; g < w * h; g++) if (isRoad(g)) { dist[g] = 0; q[qt++] = g; }
+            for (int g = 0; g < w * h; g++) if (isStreet(g)) { dist[g] = 0; q[qt++] = g; }
             while (qh < qt) {
                 int g = q[qh++], x = g % w, y = g / w;
                 if (dist[g] >= most) continue;
                 for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) {
                     int xx = x + dx, yy = y + dy;
                     if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
-                    if (ownTile && (xx / World.TILE != x / World.TILE || yy / World.TILE != y / World.TILE)) continue;
                     int m = yy * w + xx;
                     if (dist[m] > dist[g] + 1) { dist[m] = dist[g] + 1; q[qt++] = m; }
                 }
@@ -1187,7 +1022,7 @@ public class MapCheck {
             return dist;
         }
 
-        /** A box's nearest plot's distance from a road. */
+        /** A box's nearest plot's distance. */
         static int boxReach(int[] dist, int w, int[] b) {
             int best = Integer.MAX_VALUE;
             for (int y = b[1]; y < b[1] + b[3]; y++) for (int x = b[0]; x < b[0] + b[2]; x++) best = Math.min(best, dist[y * w + x]);
@@ -1198,56 +1033,169 @@ public class MapCheck {
         CityMap.District districtAt(int g) {
             return map.districtOfTile(Math.floorDiv(px0 + g % w, World.TILE), Math.floorDiv(py0 + g / w, World.TILE));
         }
+
+        /**
+         * Every plot the plans of the districts in the box surface (Drawn's
+         * codes, its frame's east column and south row among them) against
+         * the painted plot: {plots, those not painted as that street - its
+         * kind and its width}.
+         */
+        int[] asPlanned() {
+            int plots = 0, off = 0, T = World.TILE;
+            java.util.Set<CityMap.District> seen = new java.util.HashSet<>();
+            for (int g = 0; g < w * h; g += 1) {
+                CityMap.District d = districtAt(g);
+                if (d == null || !seen.add(d)) continue;
+                CityMap.Drawn dr = map.drawn(d);
+                long dx0 = (map.baseDX() + d.dx) * CityMap.DISTRICT, dy0 = (map.baseDY() + d.dy) * CityMap.DISTRICT;
+                for (int y = 0; y <= CityMap.DISTRICT; y++) {
+                    for (int x = 0; x <= CityMap.DISTRICT; x++) {
+                        long ax = dx0 + x - px0, ay = dy0 + y - py0;
+                        if (ax < 0 || ay < 0 || ax >= w || ay >= h) continue;
+                        byte c = dr.codeAt(x, y);
+                        int kind = c & TilePainter.S_KIND, wd = (c >> TilePainter.S_WIDTH_SHIFT) & 3;
+                        if (kind != DistrictPlan.GRAVEL && kind != DistrictPlan.PAVED && kind != DistrictPlan.HIGHWAY) continue;
+                        if (wd == 0) continue;
+                        plots++;
+                        int gg = (int) (ay * w + ax);
+                        if (!(isStreet(gg) && road[gg] == TilePainter.kindOf(c) && width[gg] == wd)) off++;
+                    }
+                }
+            }
+            return new int[] { plots, off };
+        }
+
+        /** The bridges: {runs longer than their line may cross - an arterial's or a boulevard's ARTERIAL_BRIDGE, a street's STREET_BRIDGE, a highway's MAX_BRIDGE - roads on the sea, bridge plots}. */
+        int[] bridges() {
+            int tooLong = 0, onSea = 0, plots = 0;
+            for (int g = 0; g < w * h; g++) {
+                if (!isRoad(g)) continue;
+                if (sea[g]) onSea++;
+                if (!bridge[g] || !wet[g]) continue;
+                plots++;
+                int x = g % w, y = g / w;
+                // A run starting here along each axis, of this plot's kind of line.
+                for (int axis = 0; axis < 2; axis++) {
+                    int dx = axis == 0 ? 1 : 0, dy = 1 - dx;
+                    int bx = x - dx, by = y - dy;
+                    if (bx >= 0 && by >= 0 && wet[by * w + bx] && isRoad(by * w + bx)) continue;
+                    int run = 0;
+                    for (int k = 0; ; k++) {
+                        int ax = x + dx * k, ay = y + dy * k;
+                        if (ax >= w || ay >= h || !wet[ay * w + ax] || !isRoad(ay * w + ax)) break;
+                        run++;
+                    }
+                    if (run < 2) continue;
+                    int most = isHighway(g) ? TilePainter.MAX_BRIDGE[BuildingVisual.HIGHWAY]
+                            : role[g] == TilePainter.ARTERIAL || role[g] == TilePainter.BOULEVARD ? DistrictPlan.ARTERIAL_BRIDGE : DistrictPlan.STREET_BRIDGE;
+                    if (run > most) tooLong++;
+                }
+            }
+            return new int[] { tooLong, onSea, plots };
+        }
     }
 
-    static void network(Squares sq) {
-        out.println("\n--- 8. the network: one road network, + junctions apart, highways straight, buildings near a road, rail joined, yards near mines ---");
-        CityMap m = sq.maps[0];
-        Net net = Net.of(m);
-        int W = net.w;
-        // One network.
-        int[] roads = net.pieces(net::isRoad);
-        long roadPlots = 0;
-        for (int g = 0; g < W * net.h; g++) if (net.isRoad(g)) roadPlots++;
-        out.printf("      Jerus's city x 1, %d districts, every tile: %,d road plots in %d piece(s) (%,d laid as a fill beside the roads), %d crossings of the track%n",
-                m.districts().size(), roadPlots, roads[0], net.filled, net.crossings);
-        check("fixture: the city has roads, a fill among them, and its track crossed by roads", roadPlots > 0 && net.filled > 0 && net.crossings > 0);
-        check("its roads are one network: every road plot joins every other through roads, no road stands alone", roads[0] == 1);
-        // The junction floor.
-        long[] cr = net.crossings(TilePainter.JUNCTION_APART);
-        long plazas = 0;
-        for (int g = 0; g < W * net.h; g++) if (net.isRoad(g) && net.beside(g, net::isRoad) == 4 && !net.crossing(g)) plazas++;
-        out.printf("      %,d + junctions (streets crossing: road on four sides, none on the corners), %d of them nearer than %d plots to another; %,d plots inside a square of road%n",
-                cr[0], cr[1], TilePainter.JUNCTION_APART, plazas);
-        check("fixture: its streets cross in + junctions", cr[0] > 100);
-        check("no two + junctions nearer than JUNCTION_APART plots, either way: about eight houses' length apart at the least", cr[1] == 0);
-        // Highways.
-        highways(net);
-        // Every building near a road.
-        // A building's reach from any road; the room near a road its tile has left, from the tile's own roads - a tile is
-        // painted from its own inputs, the next tile's fill unseen.
-        int[] dist = net.reach(TilePainter.REACH), own = net.reach(TilePainter.REACH, true);
-        int near = 0, far = 0, farWithRoom = 0, onNoRoad = 0, mines = 0;
-        for (int[] b : net.boxes) {
+    /**
+     * The network's rules on a map's drawn raster (0.7.88): one network but
+     * where the ground parts it, no road alone, + junctions apart, every
+     * building within reach, the streets' surface the model's road kind by
+     * kind, every building drawn - `what` names the city.
+     */
+    static void networkOn(CityMap m, long[] model, String what) {
+        Raster r = Raster.of(m);
+        int[] net = r.network();
+        long roadPlots = r.count(r::isRoad), alone = r.alone();
+        long[] cr = r.crossings(TilePainter.JUNCTION_APART);
+        int[] dist = r.reach(TilePainter.REACH);
+        long near = 0, far = 0, mines = 0, packed = 0;
+        for (int[] b : r.boxes) {
             if (b[5] >= 0) { mines++; continue; }
-            int r = Net.boxReach(dist, W, b);
-            if (r <= TilePainter.REACH) { near++; continue; }
-            far++;
-            if (roomNear(net, own, b)) farWithRoom++;
-            if (!m.tileHasRoads(Math.floorDiv(net.px0 + b[0], World.TILE), Math.floorDiv(net.py0 + b[1], World.TILE))) onNoRoad++;
+            if (b[6] == 1) { packed++; continue; }
+            if (Raster.boxReach(dist, r.w, b) <= TilePainter.REACH) near++; else far++;
         }
-        out.printf("      %,d buildings (and %d mines on their sites): %,d within %d plots of a road (%.1f%%), %d farther - %d of them where their tile had room for them near its roads, %d on a tile without road%n",
-                near + far, mines, near, TilePainter.REACH, 100.0 * near / Math.max(1, near + far), far, farWithRoom, onNoRoad);
-        check("every building stands within REACH plots of a road, but where its tile has no room for it near its own roads", farWithRoom == 0);
-        check("...and none on a tile without road: a district with road deals its buildings to its road tiles", onNoRoad == 0);
-        check("...the most of them near: at least 99% (no building of a tile with room left farther)", near >= 0.99 * (near + far));
-        // Rail, and the yards near the mines.
+        BuildingVisual.Type[] types = m.types();
+        double[] left = m.leftoverByKind();
+        double worst = 0;
+        StringBuilder sf = new StringBuilder();
+        for (int k = BuildingVisual.GRAVEL; k <= BuildingVisual.HIGHWAY; k++) {
+            long want = roadPlotsOf(model, types, k);
+            worst = Math.max(worst, Math.abs(r.surface[k] + left[k] - want));
+            sf.append(String.format("%s%s %,.1f + %,.1f of %,d", k == 1 ? "" : "; ", k == 1 ? "gravel" : k == 2 ? "paved" : "highway", r.surface[k], left[k], want));
+        }
+        long off = 0, modelN = 0, drawnN = 0;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] == null || !types[t].drawn()) continue;
+            long want = t < model.length ? model[t] : 0;
+            modelN += want;
+            drawnN += r.buildings[t];
+            off += Math.abs(want - r.buildings[t]);
+        }
+        int[] pk = m.packedCounts();
+        out.printf("      %s, %d districts, every tile and a tile round them: %,d road plots in %d piece(s) (the largest %,d), %d of them the city's"
+                + " own ground joins to it; %,d alone; %,d + junctions, %d pairs nearer than %d%n", what, m.districts().size(), roadPlots, net[0], net[1],
+                net[2], alone, cr[0], cr[1], TilePainter.JUNCTION_APART);
+        out.printf("      ...%,d buildings, %,d within %d plots of a street, %d farther; %d mines on their sites, %d packed at the city's edge (%d drawn"
+                + " smaller, %d with no ground); surface: %s; %,d buildings drawn of the model's %,d%n", near + far, near, TilePainter.REACH, far, mines,
+                packed, pk[1], pk[2], sf, drawnN, modelN);
+        check(what + ": fixture: the city has streets and + junctions", roadPlots > 0 && cr[0] > 0);
+        check("...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an"
+                + " arterial's bridge, ground it does not own)", net[2] == 0);
+        check("...no plot of road alone, no stray road", alone == 0);
+        check("...no two + junctions of drawn street nearer than JUNCTION_APART plots, either way: about eight houses' length apart", cr[1] == 0);
+        check("...every building within REACH plots of a street, but those packed at the city's edge and the mines on their sites", far == 0);
+        check("...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district)",
+                worst <= DistrictPlan.HALF * Math.max(1, m.districts().size()));
+        check("...and every building drawn, one for one", off == 0 && pk[2] == 0);
+    }
+
+    static void network(Squares sq, Game city, String[] saves) throws Exception {
+        out.println("\n--- 8. the network on the drawn raster: one network, no road alone, + junctions apart, every building near a street, the surface,"
+                + " one for one; highways, rail, the river ---");
+        CityMap m = sq.maps[0];
+        networkOn(m, m.totals(), "Jerus's city x 1");
+        networkOn(city.getCityMap(), city.getMapCounts(), "the played city");
+        for (String dir : saves) {
+            Game g = loadCopy(Path.of(dir));
+            if (g == null) {
+                check("the save " + dir + " loads", false);
+                continue;
+            }
+            networkOn(g.getCityMap(), g.getMapCounts(), "the save " + Path.of(dir).getFileName() + " (month " + g.getMonth() + ")");
+        }
+        Raster net = Raster.of(m);
+        highways(net, "Jerus's city x 1");
+        corridors(sq);
         rail(net, "Jerus's city x 1");
         CityMap yards = yardCity(sq);
-        Net yn = Net.of(yards);
+        Raster yn = Raster.of(yards);
         rail(yn, "...with " + YARDS_ADDED + " Rail Terminals and " + FREIGHT_ADDED + " Freight Line added");
-        yardsNearMines(yn);
+        yardsNearMines(yards, yn);
         riverCrossed(sq);
+    }
+
+    /** A save's autosave copied into a temporary folder and loaded (its map drawn from its sidecar or canonically): saves named on the command line, never written. */
+    static Game loadCopy(Path src) throws Exception {
+        Path work = Files.createTempDirectory("mapcheck-save");
+        GameFiles files = new GameFiles(work.resolve("data"), work.resolve("no-legacy"));
+        Files.createDirectories(files.savesDirectory());
+        boolean any = false;
+        for (String suffix : new String[] { ".json", "-history.json", "-map.bin" }) {
+            Path f = src.resolve("autosave" + suffix);
+            if (!Files.exists(f)) continue;
+            Files.copy(f, files.savesDirectory().resolve("autosave" + suffix), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            any |= suffix.equals(".json");
+        }
+        if (!any) return null;
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try {
+            Game g = new Game(files);
+            g.loadGameSave(GameFiles.AUTOSAVE_SLOT);
+            g.getCityMap();
+            return g;
+        } finally {
+            System.setOut(real);
+        }
     }
 
     /**
@@ -1294,24 +1242,28 @@ public class MapCheck {
      * 2026-10-08: "gravel road bridge rivers sure"): the river fixture all
      * gravel against its paved twin - the road pieces with a plot within a
      * tile of the river's line, and the city's in all, no more than the
-     * twin's, and its gravel streets across the river on gravel bridges. On
-     * 0.7.76, when gravel never bridged, the gravel city's streets near the
-     * river lay in 16 pieces against the twin's 4 (runs/fixN5-notes.md).
+     * twin's, and its gravel streets across the river on gravel bridges, none
+     * longer than its line may span (since 0.7.88 the plan's: a street's
+     * STREET_BRIDGE, an arterial's ARTERIAL_BRIDGE).
      */
     static void riverCrossed(Squares sq) {
         World.River river = World.of(sq.seed).river();
         int[][] found = new int[2][];
         int[] kinds = { BuildingVisual.GRAVEL, BuildingVisual.PAVED };
+        int tooLong = 0, onSea = 0;
         for (int i = 0; i < 2; i++) {
-            Net net = Net.of(riverCity(sq, kinds[i]));
+            Raster net = Raster.of(riverCity(sq, kinds[i]));
             int[] pieces = net.pieces(net::isRoad);
+            int[] spans = net.bridges();
+            tooLong += spans[0];
+            onSea += spans[1];
             java.util.Set<Integer> near = new java.util.HashSet<>();
             int[] banks = new int[2];
-            int[] laid = new int[4], bridged = new int[4];
+            int[] laid = new int[5], bridged = new int[5];
             for (int g = 0; g < net.w * net.h; g++) {
                 if (!net.isRoad(g)) continue;
                 laid[net.road[g]]++;
-                if (net.use[g] == TilePainter.ROAD && net.bridge[g]) bridged[net.road[g]]++;
+                if (net.use[g] == TilePainter.ROAD && net.bridge[g] && net.wet[g]) bridged[net.road[g]]++;
                 // Its nearest stretch of the river's line, and the bank it lies on (the side of that stretch).
                 double x = net.px0 + g % net.w + .5, y = net.py0 + g / net.w + .5, d2 = Double.MAX_VALUE, side = 0;
                 for (int k = 0; k + 1 < river.points(); k++) {
@@ -1325,9 +1277,9 @@ public class MapCheck {
                 banks[side > 0 ? 1 : 0]++;
             }
             found[i] = new int[] { pieces[0], near.size(), banks[0], banks[1], laid[1], laid[2], laid[3], bridged[1], bridged[2] };
-            out.printf("      the river fixture, its streets all %s: %,d road plots in %d piece(s); within a tile of the river %,d and %,d on"
+            out.printf("      the river fixture, its streets all %s: %,d road plots in %d piece(s) (%,d tracks); within a tile of the river %,d and %,d on"
                             + " its banks, in %d piece(s); bridge plots gravel %d, paved %d%n", kinds[i] == BuildingVisual.GRAVEL ? "gravel" : "paved",
-                    laid[1] + laid[2] + laid[3], pieces[0], banks[0], banks[1], near.size(), bridged[1], bridged[2]);
+                    laid[1] + laid[2] + laid[3] + laid[4], pieces[0], laid[4], banks[0], banks[1], near.size(), bridged[1], bridged[2]);
         }
         int[] g = found[0], p = found[1];
         check("fixture: the river city stands on both banks of the founding river, its streets all gravel",
@@ -1335,99 +1287,207 @@ public class MapCheck {
         check("its gravel streets cross the river on gravel bridges (since 0.7.77; gravel never bridged before)", g[7] > 0);
         check(String.format("the river parts gravel streets no more than paved: %d piece(s) near it against the paved twin's %d, %d in"
                 + " the city against %d", g[1], p[1], g[0], p[0]), g[1] <= p[1] && g[0] <= p[0]);
+        check("...and no bridge is longer than its line may span (a street STREET_BRIDGE, an arterial ARTERIAL_BRIDGE), none on the sea",
+                tooLong == 0 && onSea == 0);
     }
 
     /**
-     * Whether building box b's tile has room for it near its own roads: a box
-     * of b's drawn size, either way round, on the tile's free owned dry
-     * ground (a site's plots among it), one of its plots within REACH of a
-     * road of that tile - where b could have stood near a road and did not.
+     * The city's highways on the drawn raster (0.7.89, batch RD3; spec 2.7):
+     * drawn plot for plot as its runs lay them, and with what they could not
+     * lay the model's Elevated Highways; one network; no building plot
+     * touching a highway plot, corners included (H5) - but a mine standing on
+     * its site beneath one; and few junctions - every plot where highways
+     * meet is an interchange of the runs or an arm's end against one.
      */
-    static boolean roomNear(Net net, int[] own, int[] b) {
-        int W = net.w, T = World.TILE, tx = b[0] / T * T, ty = b[1] / T * T;
-        for (int turn = 0; turn < 2; turn++) {
-            int bw = turn == 0 ? b[2] : b[3], bh = turn == 0 ? b[3] : b[2];
-            for (int y0 = ty; y0 + bh <= ty + T; y0++) {
-                for (int x0 = tx; x0 + bw <= tx + T; x0++) {
-                    boolean fits = true, nearOne = false;
-                    for (int y = y0; y < y0 + bh && fits; y++) {
-                        for (int x = x0; x < x0 + bw && fits; x++) {
-                            int g = y * W + x;
-                            byte u = net.use[g];
-                            fits = (u == TilePainter.EMPTY || u == TilePainter.FIELD) && net.owned[g] && !net.wet[g];
-                            nearOne |= own[g] <= TilePainter.REACH;
-                        }
-                    }
-                    if (fits && nearOne) return true;
+    static void highways(Raster net, String what) {
+        CityMap m = net.map;
+        CityRuns.Net hw = m.runs().highways();
+        int W = net.w;
+        long plots = net.count(net::isRunHighway), model = roadPlotsOf(m.totals(), m.types(), BuildingVisual.HIGHWAY);
+        int[] pieces = net.pieces(net::isRunHighway);
+        long junctions = 0;
+        for (int g = 0; g < W * net.h; g++) if (net.isRunHighway(g) && net.beside(g, net::isRunHighway) >= 3) junctions++;
+        boolean[] hwy = new boolean[W * net.h];
+        for (int g = 0; g < W * net.h; g++) hwy[g] = net.isRunHighway(g);
+        long beside = 0, minesUnder = 0;
+        for (int[] b : net.boxes) {
+            boolean touches = false;
+            for (int y = b[1] - 1; y <= b[1] + b[3] && !touches; y++) {
+                for (int x = b[0] - 1; x <= b[0] + b[2] && !touches; x++) {
+                    if (x >= 0 && y >= 0 && x < W && y < net.h && hwy[y * W + x]) touches = true;
                 }
             }
+            if (!touches) continue;
+            if (b[5] >= 0) minesUnder++;
+            else beside++;
         }
-        return false;
+        out.printf("      %s's highways: %,d plots drawn of the runs' %,d (%,d the runs could not lay; the model %,d), %d piece(s); %d junction plot(s) for %d"
+                + " interchange(s) and %d arm(s); %d building(s) beside one, %d mine(s) on their sites beneath one%n", what, plots, hw.plots(),
+                m.runs().highwayShort(), model, pieces[0], junctions, hw.interchanges(), hw.arms(), beside, minesUnder);
+        check(what + ": fixture: the city has highways", plots > 0);
+        check("...drawn plot for plot as its runs lay them, and with what they could not lay, the model's Elevated Highways",
+                plots == hw.plots() && plots + m.runs().highwayShort() == model);
+        check("...one highway network: \"highways that prefer going straight and must be connected\"", pieces[0] == 1);
+        check("...no building plot touching a highway plot, corners included (H5), but a mine standing on its site beneath one", beside == 0);
+        check("...junctions few: every plot where highways meet an interchange of the runs or an arm's end against one", junctions <= hw.interchanges() + hw.arms());
     }
 
-    /** Each district's highways: one straight run, turning only beside the sea or ground the city does not own, crossing itself at most once; meeting the district's edge only on its main line. */
-    static void highways(Net net) {
-        int W = net.w;
-        int[] runs = net.pieces(net::isHighway);
-        java.util.Map<CityMap.District, java.util.Set<Integer>> perDistrict = new java.util.HashMap<>();
-        java.util.Map<CityMap.District, Integer> junctions = new java.util.HashMap<>();
-        long plots = 0, turns = 0, dryTurns = 0, offLine = 0;
-        for (int g = 0; g < W * net.h; g++) {
-            if (!net.isHighway(g)) continue;
-            plots++;
-            CityMap.District d = net.districtAt(g);
-            perDistrict.computeIfAbsent(d, k -> new java.util.HashSet<>()).add(runs[g + 1]);
-            int x = g % W, y = g / W;
-            boolean n = y > 0 && net.isHighway(g - W), s = y < net.h - 1 && net.isHighway(g + W), e = x < W - 1 && net.isHighway(g + 1), wv = x > 0 && net.isHighway(g - 1);
-            int k = (n ? 1 : 0) + (s ? 1 : 0) + (e ? 1 : 0) + (wv ? 1 : 0);
-            if (k >= 3) junctions.merge(d, 1, Integer::sum);
-            if (k == 2 && !(n && s) && !(e && wv)) {
-                turns++;
-                // ...beside the sea or ground the city does not own, which stopped it: the way on, from where it came, within a plot.
-                boolean stopped = false;
-                for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) {
-                    int xx = x + dx, yy = y + dy;
-                    if (xx >= 0 && yy >= 0 && xx < W && yy < net.h && (net.sea[yy * W + xx] || !net.owned[yy * W + xx] || net.use[yy * W + xx] == TilePainter.BUILDING)) stopped = true;
+    /** Spec 2.7's table on the game's own ground: the design's dry place, the city's ground a square 1, 3, 6 and 9 districts a side (4 to 35 km from its middle, the prototype's 4 to 34), and its Elevated Highways the prototype's 6, 92, 400 and 1,385. */
+    static final int[][] CORRIDOR_STAGES = { { 1, 6 }, { 3, 92 }, { 6, 400 }, { 9, 1385 } };
+
+    /**
+     * The highways on corridors on the game's own ground (0.7.89; spec 2.7):
+     * each stage of spec 2.7's table on a square city of highways alone at
+     * the dry place, laid at once - its plots each laid or counted, one
+     * network, straight but where its way was stopped (an arm bends only
+     * where the sea, water wider than its bridge or the city's edge stopped
+     * it within LOOK plots, and turns back only where its way home runs
+     * TURN_COST), its junctions its interchanges and arms' ends; and on the
+     * largest, grown stage by stage, no plot laid ever moved and a
+     * demolition taking from the newest end (H4).
+     */
+    static void corridors(Squares sq) {
+        out.println("      spec 2.7's table on the game's own ground (the dry place, a square city of highways alone):");
+        out.printf("      %10s %9s %7s %8s %10s %13s %6s %6s%n", "radius km", "highways", "plots", "km", "corridors", "interchanges", "bends", "short");
+        int hwType = -1;
+        for (BuildingVisual.Type t : sq.types) if (t != null && t.road() == BuildingVisual.HIGHWAY) hwType = t.id();
+        int each = BuildingVisual.cells(sq.types[hwType]);
+        boolean laid = true, oneNet = true, straight = true, few = true;
+        CityMap last = null;
+        for (int[] st : CORRIDOR_STAGES) {
+            long[] c = new long[sq.types.length];
+            c[hwType] = st[1];
+            CityMap m = CityMap.square(sq.seed, sq.x, sq.y, sq.types, st[0], CityMap.DISTRICT * CityMap.DISTRICT, c);
+            CityRuns.Net hw = m.runs().highways();
+            out.printf("      %10.1f %9d %7d %8.1f %10d %13d %6d %6d%n", st[0] * CityMap.DISTRICT * World.PLOT_M / 2000.0, st[1], hw.plots(),
+                    hw.plots() * World.PLOT_M / 1000.0, hw.corridors(), hw.interchanges(), hw.bends(), m.runs().highwayShort());
+            laid &= hw.plots() + m.runs().highwayShort() == (long) st[1] * each;
+            Box b = Box.of(m);
+            oneNet &= b.pieces() <= 1;
+            straight &= bendsStopped(m, hw) == 0;
+            few &= b.junctions() <= hw.interchanges() + hw.arms();
+            last = m;
+        }
+        check("each stage: its highways' plots laid, or counted as what the runs could not lay", laid);
+        check("...one highway network", oneNet);
+        check("...straight but where its way was stopped: an arm bends only where the sea, water wider than its bridge or the city's"
+                + " edge stopped it within LOOK plots, and turns back where its way home runs TURN_COST", straight);
+        check("...few junctions: its interchanges and arms' ends against one", few);
+        // Grown stage by stage on the largest square's ground, then taken back.
+        CityRuns grown = new CityRuns();
+        long[] site = last.site();
+        byte[][] at = new byte[CORRIDOR_STAGES.length][];
+        boolean kept = true;
+        for (int i = 0; i < CORRIDOR_STAGES.length; i++) {
+            grown.layTo((long) CORRIDOR_STAGES[i][1] * each, 0, 0, 0, 0, last.runGround(), site[0], site[1], site[0], site[1], new ArrayList<>());
+            at[i] = Box.of(last, grown).fixed;
+            if (i > 0) for (int g = 0; g < at[i].length; g++) if (at[i - 1][g] != 0 && at[i][g] == 0) kept = false;
+        }
+        grown.layTo((long) CORRIDOR_STAGES[1][1] * each, 0, 0, 0, 0, last.runGround(), site[0], site[1], site[0], site[1], new ArrayList<>());
+        boolean back = Arrays.equals(Box.of(last, grown).fixed, at[1]);
+        out.printf("      grown on the %d-district square's ground from %d to %d highways and taken back to %d: %s; %s%n", CORRIDOR_STAGES[3][0],
+                CORRIDOR_STAGES[0][1], CORRIDOR_STAGES[3][1], CORRIDOR_STAGES[1][1], kept ? "no plot moved" : "plots moved", back ? "back where it was" : "not as it was");
+        check("grown month by month, no highway plot laid ever moves (H4)", kept);
+        check("...and a demolition takes from the newest end: taken back, the same plots as when it was that size", back);
+    }
+
+    /** The runs' plots over a map's districts and a plot round them, put together: one network, its junctions. */
+    static final class Box {
+        final long x0, y0;
+        final int w, h;
+        final byte[] fixed;
+
+        Box(long x0, long y0, int w, int h, CityRuns r) {
+            this.x0 = x0; this.y0 = y0; this.w = w; this.h = h;
+            fixed = new byte[w * h];
+            r.fill(x0, y0, w, h, fixed, null, false);
+        }
+
+        static Box of(CityMap m) { return of(m, m.runs()); }
+
+        static Box of(CityMap m, CityRuns r) {
+            long[] t = tilesOf(m);
+            return new Box(t[0] * World.TILE, t[1] * World.TILE, (int) t[2] * World.TILE, (int) t[3] * World.TILE, r);
+        }
+
+        boolean hw(int g) { return fixed[g] == CityRuns.F_HIGHWAY || fixed[g] == CityRuns.F_RAIL_OVER; }
+
+        /** The highways' pieces, four ways joined. */
+        int pieces() {
+            int[] q = new int[w * h];
+            boolean[] seen = new boolean[w * h];
+            int n = 0;
+            for (int s = 0; s < w * h; s++) {
+                if (!hw(s) || seen[s]) continue;
+                n++;
+                int qh = 0, qt = 0;
+                q[qt++] = s;
+                seen[s] = true;
+                while (qh < qt) {
+                    int g = q[qh++], x = g % w, y = g / w;
+                    int[] nb = { x > 0 ? g - 1 : -1, x < w - 1 ? g + 1 : -1, y > 0 ? g - w : -1, y < h - 1 ? g + w : -1 };
+                    for (int k : nb) if (k >= 0 && hw(k) && !seen[k]) { seen[k] = true; q[qt++] = k; }
                 }
-                if (!stopped) dryTurns++;
             }
-            // At a district's edge: on the main line of the tile, which the next district's runs along.
-            long ax = net.px0 + x, ay = net.py0 + y;
-            boolean ew = Math.floorMod(ax, (long) CityMap.DISTRICT) == 0 || Math.floorMod(ax, (long) CityMap.DISTRICT) == CityMap.DISTRICT - 1;
-            boolean ns = Math.floorMod(ay, (long) CityMap.DISTRICT) == 0 || Math.floorMod(ay, (long) CityMap.DISTRICT) == CityMap.DISTRICT - 1;
-            if (ew && Math.floorMod(ay, (long) World.TILE) != TilePainter.mainY(net.map.seed(), Math.floorDiv(ay, World.TILE))) offLine++;
-            if (ns && Math.floorMod(ax, (long) World.TILE) != TilePainter.mainX(net.map.seed(), Math.floorDiv(ax, World.TILE))) offLine++;
+            return n;
         }
-        int many = 0, crossed = 0;
-        for (java.util.Set<Integer> r : perDistrict.values()) if (r.size() > 1) many++;
-        for (int j : junctions.values()) if (j > 1) crossed++;
-        out.printf("      highways: %d plots in %d district(s), %d run(s); %d turn(s), %d of them away from the sea and the city's edge; %d junction plot(s); %d at a district's edge off its main line%n",
-                plots, perDistrict.size(), runs[0], turns, dryTurns, junctions.values().stream().mapToInt(Integer::intValue).sum(), offLine);
-        check("fixture: the city has highways", plots > 0);
-        check("each district's highways are one run, joined", many == 0);
-        check("...straight, turning only where the sea, the city's edge or a mine stopped it", dryTurns == 0);
-        check("...crossing at most once a district (the cross at its hub): T and + junctions very sparingly", crossed == 0);
-        check("...and meeting a district's edge only on its main line, where the next district's highway runs on", offLine == 0);
+
+        /** Highway plots with highways on three or four sides: where they meet. */
+        long junctions() {
+            long n = 0;
+            for (int g = 0; g < w * h; g++) {
+                if (!hw(g)) continue;
+                int x = g % w, y = g / w, k = 0;
+                if (x > 0 && hw(g - 1)) k++;
+                if (x < w - 1 && hw(g + 1)) k++;
+                if (y > 0 && hw(g - w)) k++;
+                if (y < h - 1 && hw(g + w)) k++;
+                if (k >= 3) n++;
+            }
+            return n;
+        }
     }
 
-    /** Each district's track one line; every plot of the model's track drawn. */
-    static void rail(Net net, String what) {
+    /** The bends of a net that are not where its way was stopped: a stretch off its arm's heading begun where the way on along the heading before ran LOOK plots clear, or one back onto it where the way home did not run TURN_COST. */
+    static int bendsStopped(CityMap m, CityRuns.Net n) {
+        CityRuns.Ground g = m.runGround();
+        int bad = 0;
+        int[] why = new int[1];
+        for (CityRuns.Arm a : n.arms) {
+            for (int s = 0; s < a.segs; s++) {
+                int before = s == 0 ? a.home : a.segHead[s - 1], now = a.segHead[s];
+                if (now == before) continue;
+                long x = a.segX[s], y = a.segY[s];
+                if (now != a.home) {
+                    int run = CityRuns.clear(n, g, x, y, before, CityRuns.LOOK, why);
+                    if (run >= CityRuns.LOOK || why[0] == CityRuns.OPEN) bad++;
+                } else if (CityRuns.clear(n, g, x, y, a.home, CityRuns.TURN_COST, why) < CityRuns.TURN_COST) bad++;
+            }
+        }
+        return bad;
+    }
+
+    /** The railway on the drawn raster (0.7.89; spec 2.8): one network, every plot of the model's track drawn - under its yards and mines too - or counted as what the runs could not lay, its streets crossing it level. */
+    static void rail(Raster net, String what) {
         int W = net.w;
-        int[] pieces = net.pieces(net::isRail);
-        java.util.Map<CityMap.District, java.util.Set<Integer>> per = new java.util.HashMap<>();
-        for (int g = 0; g < W * net.h; g++) if (net.isRail(g)) per.computeIfAbsent(net.districtAt(g), k -> new java.util.HashSet<>()).add(pieces[g + 1]);
+        int[] pieces = net.pieces(net::isRunRail);
         long model = 0;
         long[] totals = net.map.totals();
         for (int t = 0; t < totals.length; t++) if (net.map.types()[t] != null && net.map.types()[t].track()) model += totals[t] * BuildingVisual.cells(net.map.types()[t]);
-        int split = 0;
-        for (java.util.Set<Integer> s : per.values()) if (s.size() > 1) split++;
-        out.printf("      %s: %,d plots of track drawn of the model's %,d, in %d district(s), %d piece(s)%n", what, net.rail, model, per.size(), pieces[0]);
+        long plots = net.count(net::isRunRail), over = 0;
+        for (int g = 0; g < W * net.h; g++) if (net.run[g] == TilePainter.RAIL_OVER) over++;
+        long shortBy = net.map.runs().railShort();
+        out.printf("      %s: %,d plots of track drawn of the model's %,d (%,d the runs could not lay), %d piece(s), %d crossed by streets, %d bridging a highway%n",
+                what, net.rail, model, shortBy, pieces[0], net.crossings, over);
         check(what + ": fixture: the city has a railway", model > 0);
-        check("...every plot of its track drawn, as the model has it", net.rail == model);
-        check("...and each district's track one line joined to its railway, no piece apart", split == 0);
+        check("...every plot of its track drawn, as the model has it, or counted as what its runs could not lay", net.rail + shortBy == model && plots == net.rail);
+        check("...one railway network, no piece apart", pieces[0] == 1);
     }
 
-    /** The x 1 copy with rail yards and a freight line added, its mines on their sites. */
+    /** The fixture's added rail: Rail Terminals (yards) and Freight Lines, to hold the yards' rule on (his city has spurs, no yard; 0.7.72's fixture). */
+    static final int YARDS_ADDED = 2, FREIGHT_ADDED = 1;
+
+    /** The x 1 copy with rail yards and a freight line added (0.7.72's fixture, restored in 0.7.89): its buildings, then its mines on their sites, then its railway - so the railway starts at its mine nearest the founding site and its yards are laid with the mines there. */
     static CityMap yardCity(Squares sq) {
         long[] c = sq.counts[0].clone();
         int yard = -1, freight = -1, mine = -1;
@@ -1437,8 +1497,10 @@ public class MapCheck {
             else if (t.track() && t.plots() > 100) freight = t.id();
             if (t.site() == Resource.IRON) mine = t.id();
         }
-        c[yard] += YARDS_ADDED;
-        c[freight] += FREIGHT_ADDED;
+        long[] rail = new long[c.length];
+        for (int t = 0; t < c.length; t++) if (sq.types[t] != null && (sq.types[t].track() || sq.types[t].terminal())) { rail[t] = c[t]; c[t] = 0; }
+        rail[yard] += YARDS_ADDED;
+        rail[freight] += FREIGHT_ADDED;
         long wantMines = c[mine];
         c[mine] = 0;
         int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
@@ -1446,71 +1508,57 @@ public class MapCheck {
         CityMap m = CityMap.square(sq.seed, sq.x, sq.y, sq.types, side, capacity, c);
         c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON));
         m.reconcile(c);
+        for (int t = 0; t < c.length; t++) c[t] += rail[t];
+        m.reconcile(c);
         return m;
     }
 
     /**
-     * Every rail yard beside its track, on the tile of it nearest a mine that
-     * had room for it: no tile of its district's track nearer a mine had room
-     * for one more, as the deal reckons room - its free plots less its mines'
-     * sites (a mine stands on its own field, which no other building takes),
-     * its roads and its track - less the yards already on it.
+     * Every rail yard on its track, in the cell along it nearest a mine that
+     * had room (spec 2.8: "laid as runs from the rail terminals, which sit in
+     * estate cells nearest the mines"; 0.7.72's rule, restored): the track
+     * runs through its box on its line, and no box along the track nearer a
+     * mine had room for it when it was laid; each drawn once, as a building.
      */
-    static void yardsNearMines(Net net) {
-        int W = net.w, yards = 0, beside = 0, nearest = 0;
-        CityMap m = net.map;
-        // Each tile's plots the mines stand on, owned and dry, and the yards on it.
-        int tw = W / World.TILE;
-        int[] mined = new int[tw * (net.h / World.TILE)], yardsOn = new int[mined.length];
-        for (int[] b : net.boxes) {
-            int tile = (b[1] / World.TILE) * tw + b[0] / World.TILE;
-            BuildingVisual.Type t = m.types()[b[4]];
-            if (t != null && t.terminal()) yardsOn[tile]++;
-            if (b[5] < 0) continue;
-            for (int y = b[1]; y < b[1] + b[3]; y++) for (int x = b[0]; x < b[0] + b[2]; x++) if (net.owned[y * W + x] && !net.wet[y * W + x]) mined[tile]++;
-        }
-        for (int[] b : net.boxes) {
-            BuildingVisual.Type t = m.types()[b[4]];
-            if (t == null || !t.terminal()) continue;
-            yards++;
-            boolean touches = false;
-            for (int y = b[1] - 1; y <= b[1] + b[3]; y++) for (int x = b[0] - 1; x <= b[0] + b[2]; x++) {
-                if (x < 0 || y < 0 || x >= W || y >= net.h) continue;
-                if (net.isRail(y * W + x)) touches = true;
+    static void yardsNearMines(CityMap m, Raster net) {
+        CityRuns r = m.runs();
+        List<long[]> mines = m.minedSites();
+        int terminal = -1;
+        for (BuildingVisual.Type t : m.types()) if (t != null && t.terminal()) terminal = t.id();
+        int[] fp = BuildingVisual.footprint(m.types()[terminal]);
+        List<long[]> spots = r.yardSpots(fp[0], fp[1], mines);
+        int onTrack = 0, nearest = 0, drawn = 0;
+        List<long[]> before = new ArrayList<>();
+        for (long[] y : r.yards()) {
+            // On its track: its line's plots across the box all track.
+            long lineY = Math.floorDiv(y[1], World.TILE) * World.TILE + CityRuns.RAIL_AT, lineX = Math.floorDiv(y[0], World.TILE) * World.TILE + CityRuns.RAIL_AT;
+            boolean alongRow = lineY >= y[1] && lineY < y[1] + y[3], alongCol = lineX >= y[0] && lineX < y[0] + y[2];
+            boolean all = false;
+            if (alongRow) {
+                all = true;
+                for (long x = y[0]; x < y[0] + y[2]; x++) all &= CityRuns.covered(r.rail(), x, lineY);
             }
-            if (touches) beside++;
-            // Its tile, and every tile its district's track crosses nearer a mine (as the deal measures it, to the mines'
-            // sites' middles): had any of them room for one more yard?
-            long tx = Math.floorDiv(net.px0 + b[0], World.TILE), ty = Math.floorDiv(net.py0 + b[1], World.TILE);
-            CityMap.District d = m.districtOfTile(tx, ty);
-            List<CityMap.DrawnSite> mines = m.minesNear(d);
-            double mine = nearestMine(mines, tx, ty);
-            short[] free = m.tileFreeOf(d);
-            boolean ok = true;
-            for (int k = 0; k < CityMap.TILES; k++) {
-                long kx = (m.baseDX() + d.dx) * CityMap.TILES_A_SIDE + k % CityMap.TILES_A_SIDE, ky = (m.baseDY() + d.dy) * CityMap.TILES_A_SIDE + k / CityMap.TILES_A_SIDE;
-                if (m.tileRail(kx, ky) <= 0 || nearestMine(mines, kx, ky) >= mine) continue;
-                int tile = (int) ((ky - Math.floorDiv(net.py0, World.TILE)) * tw + (kx - Math.floorDiv(net.px0, World.TILE)));
-                int[] roadsK = m.roads(d)[k];
-                long used = roadsK[1] + roadsK[2] + roadsK[3] + m.tileRail(kx, ky) + mined[tile] + (long) yardsOn[tile] * BuildingVisual.cells(t);
-                if (free[k] - used >= BuildingVisual.cells(t)) ok = false;
+            if (!all && alongCol) {
+                all = true;
+                for (long yy = y[1]; yy < y[1] + y[3]; yy++) all &= CityRuns.covered(r.rail(), lineX, yy);
             }
-            if (ok) nearest++;
+            if (all) onTrack++;
+            // The nearest with room: every box ranked before it had none, the yards before it laid.
+            boolean first = true;
+            for (long[] s : spots) {
+                if (Arrays.equals(s, y)) break;
+                if (r.yardFits(s, m.runGround(), mines, before)) { first = false; break; }
+            }
+            if (first) nearest++;
+            before.add(y);
         }
-        out.printf("      %d rail yard(s): %d beside their track, %d on the tile of it nearest a mine that had room%n", yards, beside, nearest);
-        check("fixture: the city has rail yards and mines", yards == YARDS_ADDED);
-        check("every rail yard stands beside its track", beside == yards);
-        check("...on the tile of the track nearest a mine that had room for it: rail terminals near mines", nearest == yards);
-    }
-
-    /** The squared distance from tile (tx, ty)'s middle to the nearest mine's site's middle, as the deal measures it (CityMap.yardOrder()). */
-    static double nearestMine(List<CityMap.DrawnSite> mines, long tx, long ty) {
-        double cx = tx * World.TILE + World.TILE / 2.0, cy = ty * World.TILE + World.TILE / 2.0, best = Double.MAX_VALUE;
-        for (CityMap.DrawnSite s : mines) {
-            double mx = (s.x0() + s.x1()) / 2.0 - cx, my = (s.y0() + s.y1()) / 2.0 - cy;
-            best = Math.min(best, mx * mx + my * my);
-        }
-        return best;
+        for (int[] b : net.boxes) if (b[4] == terminal) drawn++;
+        out.printf("      %d rail yard(s) for the city's %d Rail Terminals: %d on their track, %d in the cell along it nearest a mine that had room; %d drawn%n",
+                r.yards().size(), m.totals()[terminal], onTrack, nearest, drawn);
+        check("fixture: the city has rail yards, and mines", r.yards().size() == YARDS_ADDED && !mines.isEmpty());
+        check("every rail yard stands on its track, across its line", onTrack == r.yards().size());
+        check("...in the cell along it nearest a mine that had room: rail terminals near mines", nearest == r.yards().size());
+        check("...each drawn once, as the Rail Terminal it is", drawn == m.totals()[terminal]);
     }
 
     /* =====================================================================
@@ -1569,6 +1617,23 @@ public class MapCheck {
                 && !next.hasCityMap());
         check("...and a sidecar that is not one is read as none", CityMap.readSidecar(new byte[] { 1, 2, 3 },
                 back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(), back.getMonth(), stampInSave) == null);
+        // An older sidecar (FORMAT 4, 0.7.72 to 0.7.87: the districts, no runs; or 0.7.88's FORMAT 5, its runs' count none) still read
+        // into the same districts (0.7.88), its runs laid from its counts on its ground (0.7.89) - as a map drawn afresh lays them.
+        CityMap live = back.getCityMap();
+        byte[] old = live.writeSidecar(back.getMonth(), CityMap.OLDEST_READ);
+        CityMap fromOld = CityMap.readSidecar(old, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
+                back.getMonth(), CityMap.stampIn(old));
+        byte[] none = live.writeSidecar(back.getMonth(), CityMap.FORMAT, false);
+        CityMap fromNone = CityMap.readSidecar(none, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
+                back.getMonth(), CityMap.stampIn(none));
+        CityMap afresh = CityMap.canonical(back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(), back.getMapCounts());
+        out.printf("      the same map as a FORMAT %d sidecar: %,d bytes; as FORMAT %d %,d (its runs: %d arms, %,d highway and %,d track plots)%n",
+                CityMap.OLDEST_READ, old.length, CityMap.FORMAT, live.writeSidecar(back.getMonth()).length, live.runs().runs(),
+                live.runs().highways().plots(), live.runs().rail().plots());
+        check("a FORMAT " + CityMap.OLDEST_READ + " sidecar (0.7.72 to 0.7.87) still loads, into the same districts, its runs laid from its counts",
+                fromOld != null && fromOld.sameDistricts(live) && fromOld.runs().same(afresh.runs()));
+        check("...and 0.7.88's FORMAT " + CityMap.FORMAT + ", which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live)
+                && fromNone.runs().same(afresh.runs()));
         for (int i = 1; i < TIMES.length; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;
             CityMap m = sq.maps[i];
@@ -1596,6 +1661,7 @@ public class MapCheck {
         double[] best = new double[k];
         Arrays.fill(best, Double.MAX_VALUE);
         long[] drawn = new long[k];
+        double[] cold = new double[k];
         TilePainter.Input in = new TilePainter.Input();
         TilePainter.Painted p = new TilePainter.Painted();
         int[] img = new int[(World.TILE * PX) * (World.TILE * PX)];
@@ -1616,6 +1682,9 @@ public class MapCheck {
                 }
                 double ms = (System.nanoTime() - t0) / 1e6;
                 drawn[i] = n;
+                // The first round makes the screen's plans (away from the screen in the game: MapView's worker), the rounds after
+                // paint from them, as a screen does once they are drawn.
+                if (round == 0) cold[i] = ms;
                 if (round >= WARM_ROUNDS) best[i] = Math.min(best[i], ms);
             }
         }
@@ -1636,12 +1705,13 @@ public class MapCheck {
         boolean under = true, near = true;
         for (int i = 0; i < k; i++) {
             double ratio = best[i] / best[base];
-            out.printf("      x %,.0f: the screen's %d tiles - terrain, the deal, paint and raster at %d px - in %.1f ms (%.3f ms a tile),"
-                    + " %,d buildings; %.2f x the 5B copy's%n", TIMES[i], SCREEN_TILES, PX, best[i], best[i] / SCREEN_TILES, drawn[i], ratio);
+            out.printf("      x %,.0f: the screen's %d tiles - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile),"
+                    + " %,d buildings; %.2f x the 5B copy's; the first time, its plans made, %.0f ms%n", TIMES[i], SCREEN_TILES, PX, best[i],
+                    best[i] / SCREEN_TILES, drawn[i], ratio, cold[i]);
             under &= best[i] <= SCREEN_MS;
             if (i != base) near &= ratio <= SCREEN_RATIO;
         }
-        check("a 1,389 x 868 L0 screen paints and rasters in no more than 80 ms, at every size", under);
+        check("a 1,389 x 868 L0 screen paints and rasters from its districts' plans in no more than 80 ms, at every size", under);
         check("...and x 1, x 10,000 and 10B within 1.5 times the 5B copy's, the first all city: it follows the screen", near);
         // A month's change at 5B and 10B: +0.05%, a year of +0.01%, then -0.05%.
         for (int i = 0; i < k; i++) {
@@ -2253,10 +2323,13 @@ public class MapCheck {
         TilePainter.Input in = new TilePainter.Input();
         long tx0 = Math.floorDiv(sq.x, World.TILE) - SCREEN_ACROSS / 2, ty0 = Math.floorDiv(sq.y, World.TILE) - SCREEN_DOWN / 2;
         long[] stamps = new long[SCREEN_TILES];
-        int[][] model = new int[SCREEN_TILES][];
         for (int j = 0; j < SCREEN_DOWN; j++) for (int i = 0; i < SCREEN_ACROSS; i++) {
             stamps[j * SCREEN_ACROSS + i] = tiles.input(tx0 + i, ty0 + j, in);
-            model[j * SCREEN_ACROSS + i] = in.model.clone();
+        }
+        // Each district the screen is drawn from, and its plan's stamp (0.7.88: a tile is painted from its plans).
+        java.util.Map<CityMap.District, Long> planStamps = new java.util.HashMap<>();
+        for (int j = 0; j < SCREEN_DOWN; j++) for (int i = 0; i < SCREEN_ACROSS; i++) {
+            for (CityMap.District d : m.tileDistricts(tx0 + i, ty0 + j)) planStamps.computeIfAbsent(d, x -> m.drawn(x).stamp);
         }
         boolean steady = true;
         for (int j = 0; j < SCREEN_DOWN; j++) for (int i = 0; i < SCREEN_ACROSS; i++) {
@@ -2269,31 +2342,28 @@ public class MapCheck {
         long changesBefore = m.changes();
         c[house] += 1;
         m.reconcile(c);
-        int restamped = 0, modelMoved = 0, unexplained = 0;
+        int restamped = 0, fromMoved = 0, unexplained = 0;
+        java.util.Set<CityMap.District> plansMoved = new java.util.HashSet<>();
         for (int j = 0; j < SCREEN_DOWN; j++) for (int i = 0; i < SCREEN_ACROSS; i++) {
             int k = j * SCREEN_ACROSS + i;
             long s = tiles.input(tx0 + i, ty0 + j, in);
-            boolean moved = !Arrays.equals(in.model, model[k]);
-            if (moved) modelMoved++;
+            boolean moved = false;
+            for (CityMap.District d : m.tileDistricts(tx0 + i, ty0 + j)) {
+                Long was = planStamps.get(d);
+                if (was == null || was != m.drawn(d).stamp || m.isEdge(d)) { moved = true; plansMoved.add(d); }
+            }
+            if (moved) fromMoved++;
             if (s != stamps[k]) {
                 restamped++;
-                if (!moved) {
-                    // A neighbour's first building gives this tile a port: its neighbours' roads moved.
-                    boolean neighbour = false;
-                    for (int[] o : new int[][] { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }) {
-                        int a = i + o[0], b = j + o[1];
-                        if (a >= 0 && b >= 0 && a < SCREEN_ACROSS && b < SCREEN_DOWN) {
-                            neighbour |= !Arrays.equals(model[b * SCREEN_ACROSS + a], tilesModel(tiles, tx0 + a, ty0 + b));
-                        }
-                    }
-                    if (!neighbour) unexplained++;
-                }
+                if (!moved) unexplained++;
             }
         }
-        out.printf("      one more %s: the map's changes %d -> %d; %d of %d tiles' model counts moved, %d restamped%n",
-                m.types()[house] == null ? "home" : "home (type " + house + ")", changesBefore, m.changes(), modelMoved, SCREEN_TILES, restamped);
+        out.printf("      one more %s: the map's changes %d -> %d; %d district plan(s) the screen is drawn from moved, %d of its %d tiles drawn"
+                + " from them, %d restamped%n", m.types()[house] == null ? "home" : "home (type " + house + ")", changesBefore, m.changes(),
+                plansMoved.size(), fromMoved, SCREEN_TILES, restamped);
         check("one more building moves the map's changes, which the view stamps its tiles again on", m.changes() > changesBefore);
-        check("...and restamps only the tiles whose counts it changed, or a neighbour's road", unexplained == 0 && restamped <= 5 * Math.max(1, modelMoved));
+        check("...and restamps only tiles drawn from a district plan it moved (its district's, those its chain carries on to, their"
+                + " neighbours' edges; an edge district's packing)", unexplained == 0 && restamped > 0);
         // The view's own path a frame takes, the ground kept, against section 5's (the ground read from the world), in turn:
         // at Jerus's city x 1 and x 10,000. Too few painted tiles are kept for a screen, so every round paints all 198.
         double[] view = { Double.MAX_VALUE, Double.MAX_VALUE }, modelMs = { Double.MAX_VALUE, Double.MAX_VALUE };
@@ -2328,17 +2398,22 @@ public class MapCheck {
                 modelMs[0], modelMs[1], modelMs[1] / modelMs[0]);
         check("the view's own path for a 1,389 x 868 L0 screen takes no more than 80 ms, x 1 and x 10,000", view[0] <= SCREEN_MS && view[1] <= SCREEN_MS);
         check("...and no more than section 5's at either size: the view adds nothing a tile", view[0] <= modelMs[0] && view[1] <= modelMs[1]);
-        long kept = 0;
+        long kept = 0, plan = 0;
         for (int j = 0; j < SCREEN_DOWN; j++) for (int i = 0; i < SCREEN_ACROSS; i++) {
+            // Each tile painted and kept (PAINTED_KEPT is the hover's one), and weighed as kept.
+            long stamp = each[1].input(tx1 + i, ty0 + j, in);
+            TilePainter.Painted got = each[1].painted(tx1 + i, ty0 + j, in, stamp);
             TilePainter.Input k = each[1].paintedInput(tx1 + i, ty0 + j);
-            if (k == null) continue;
-            each[1].input(tx1 + i, ty0 + j, in);
-            kept = Math.max(kept, MapTiles.paintedBytes(k, each[1].painted(tx1 + i, ty0 + j, in, MapTiles.stamp(in))));
+            if (k != null) kept = Math.max(kept, MapTiles.paintedBytes(k, got));
+            CityMap.District d = sq.maps[DENSE].districtOfTile(tx1 + i, ty0 + j);
+            if (d != null) plan = Math.max(plan, sq.maps[DENSE].drawn(d).bytes());
         }
         MapFrame design = new MapFrame(MapTiles.DESIGN_W, MapTiles.DESIGN_H);
-        double mb = MapTiles.budgetBytes(design, kept) / 1e6;
-        out.printf("      every cache of the expanded map at 1,389 x 868: %.1f MB (a painted tile kept at x 10,000: %,d bytes)%n", mb, kept);
-        check("every cache of the view fits the design's 48 MB at 1,389 x 868", kept > 0 && mb <= MapTiles.BUDGET_MB);
+        double mb = MapTiles.budgetBytes(design, kept, plan) / 1e6, own = MapTiles.budgetBytes(design, kept) / 1e6;
+        out.printf("      every cache of the expanded map at 1,389 x 868: %.1f MB - the view's %.1f and %d district plans of at most %,d bytes"
+                + " (a painted tile kept at x 10,000: %,d bytes)%n", mb, own, CityMap.PLANS_KEPT, plan, kept);
+        check("every cache of the view, the district plans it paints from among them, fits the design's 48 MB at 1,389 x 868",
+                kept > 0 && plan > 0 && mb <= MapTiles.BUDGET_MB);
         // A far node over the city x 1: its owned dry ground tinted by its districts, the rest dimmed.
         long plots = 16, span = MapFrame.NODE_PX * plots;
         long nx = Math.floorDiv(sq.x, span) * span, ny = Math.floorDiv(sq.y, span) * span;
@@ -2363,10 +2438,4 @@ public class MapCheck {
         check("a far node tints the city's built ground by its districts and dims the rest", tinted > 0 && dimmed > 0);
     }
 
-    /** A tile's model counts, as the map deals them now. */
-    static int[] tilesModel(MapTiles tiles, long tx, long ty) {
-        TilePainter.Input in = new TilePainter.Input();
-        tiles.input(tx, ty, in);
-        return in.model.clone();
-    }
 }

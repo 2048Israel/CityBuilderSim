@@ -260,6 +260,9 @@ public final class Sectors {
     /** The name the households' own imports are kept under among a good's buyers: the cars they buy from the world (Game.getHouseholdCarImports()). */
     public static final String HOUSEHOLDS = "Households";
 
+    /** ...and the city's, among crude's buyers and sellers: its strategic reserve (0.7.85; StrategicReserve). */
+    public static final String CITY = "City";
+
     /**
      * One good across the city's edge in the month the books last struck:
      * what was sold of it abroad and bought of it abroad, in money, and by
@@ -316,6 +319,18 @@ public final class Sectors {
      * @param householdFuel ...and for fuel (Game.getHouseholdFuelImports())
      */
     public TradeByGood tradeByGood(double householdCars, double householdFuel) {
+        return tradeByGood(householdCars, householdFuel, 0, 0);
+    }
+
+    /**
+     * ...and the city's own crude across the edge (0.7.85): its strategic
+     * reserve's fill bought from the world and its release shipped to it, as
+     * the last strike settled them (StrategicReserve), among crude's, CITY
+     * among its buyers and sellers - the audit's "- city ReserveFill" and "+
+     * city ReserveSales", so it still foots.
+     */
+    public TradeByGood tradeByGood(double householdCars, double householdFuel, double cityCrudeBought,
+                                   double cityCrudeSold) {
         Map<Good, double[]> sums = new EnumMap<>(Good.class);
         Map<Good, Map<String, Double>> sellers = new EnumMap<>(Good.class), buyers = new EnumMap<>(Good.class);
         Map<String, Double> services = new LinkedHashMap<>();
@@ -346,6 +361,14 @@ public final class Sectors {
         if (householdCars > 0) {
             sums.computeIfAbsent(Good.CARS, k -> new double[2])[1] += householdCars;
             buyers.computeIfAbsent(Good.CARS, k -> new LinkedHashMap<>()).merge(HOUSEHOLDS, householdCars, Double::sum);
+        }
+        if (cityCrudeBought > 0) {
+            sums.computeIfAbsent(Good.CRUDE, k -> new double[2])[1] += cityCrudeBought;
+            buyers.computeIfAbsent(Good.CRUDE, k -> new LinkedHashMap<>()).merge(CITY, cityCrudeBought, Double::sum);
+        }
+        if (cityCrudeSold > 0) {
+            sums.computeIfAbsent(Good.CRUDE, k -> new double[2])[0] += cityCrudeSold;
+            sellers.computeIfAbsent(Good.CRUDE, k -> new LinkedHashMap<>()).merge(CITY, cityCrudeSold, Double::sum);
         }
         Map<Good, GoodTrade> goods = new EnumMap<>(Good.class);
         for (Map.Entry<Good, double[]> e : sums.entrySet()) {

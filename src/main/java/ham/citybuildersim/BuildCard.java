@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * One build card's figures, for every one of the 76 buildings (0.7.25): what
+ * One build card's figures, for every one of the 101 buildings (0.7.25): what
  * it gives the city and in what unit, its price per unit of that, the scarce
  * resource it takes, the group it is compared within and where in that group
  * it stands, what one costs to run, the verdict on an order of it - and, for
@@ -52,9 +52,14 @@ public final class BuildCard {
      * a month (groceries and luxury counters). MEALS: meals a month. BRANCH:
      * the bank's customers per branch. RAIL: tonnes a month across the
      * boundary. POINTS: building points a month. MAKER: value added.
-     * OFFICE: the value of its exports.
+     * OFFICE: the value of its exports. PUMP (0.7.83): litres of petrol a
+     * month. TANKS (0.7.85): litres of tank room - the refiners' Tank Farm
+     * and the city's Strategic Reserve. BERTHS (0.7.86): a sea terminal's
+     * tonnes a year of its kind of cargo - the city's. SLOTS (0.7.91): an
+     * offshore platform's wells' slots. PIPE (0.7.91): a kilometre of crude
+     * pipeline.
      */
-    public enum Kind { CITY, HOMES, CUSTOMERS, MEALS, BRANCH, RAIL, POINTS, MAKER, OFFICE }
+    public enum Kind { CITY, HOMES, CUSTOMERS, MEALS, BRANCH, RAIL, POINTS, MAKER, OFFICE, PUMP, TANKS, BERTHS, SLOTS, PIPE }
 
     /**
      * What bar 2 measures: LAND per unit (the market's scarce resource),
@@ -110,8 +115,8 @@ public final class BuildCard {
         /** Measured in months of what it adds or exports, not a price per unit. */
         public boolean inMonths() { return kind == Kind.MAKER || kind == Kind.OFFICE; }
 
-        /** Built by investors as well as by the city. */
-        public boolean market() { return kind != Kind.CITY; }
+        /** Built by investors as well as by the city - not the city's own Strategic Reserve (0.7.85) or sea terminals (0.7.86), which only the city builds. */
+        public boolean market() { return kind != Kind.CITY && kind != Kind.BERTHS && !StrategicReserve.isReserve(template); }
     }
 
     /* =====================================================================
@@ -213,9 +218,10 @@ public final class BuildCard {
 
     /** The market groups, in the order a page lays them out. */
     static final String[] GROUP_ORDER = {
-            "Homes", "Groceries", "The bank's branches",
-            "Food mills", "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil", "Refining",
-            "Building materials", "Builders",
+            "Homes", "Groceries", "Filling stations", "The bank's branches",
+            "Food mills", "Food processing", "Steel", "Fabrication & machinery", "Iron", "Oil", "Oil platforms",
+            "Oil pipelines", "Refining",
+            "Oil storage", "Ports", "Building materials", "Builders",
             "Offices", "Farms", "Rail", "Vehicles", "Luxury shops", "Restaurants" };
 
     /**
@@ -226,13 +232,22 @@ public final class BuildCard {
     public static String group(BuildingsTemplate t) {
         BuildAdvice.Category c = BuildAdvice.categoryOf(t.getCategory());
         if (c == null) return t.getCategory().name();
+        // ...the refiners' Tank Farm and the city's Strategic Reserve together, measured in tank room (0.7.85).
+        if (kindOf(t) == Kind.TANKS) return "Oil storage";
+        // ...and the city's sea terminals, measured in their berths' tonnes (0.7.86).
+        if (kindOf(t) == Kind.BERTHS) return "Ports";
+        // ...and the oil at sea's platforms, in their wells' slots, and pipelines, in kilometres (0.7.91): the wells stay with the land's.
+        if (kindOf(t) == Kind.SLOTS) return "Oil platforms";
+        if (kindOf(t) == Kind.PIPE) return "Oil pipelines";
         if (c.cityBuilds()) {
             BuildAdvice.Measure m = cityMeasure(t);
             return m == null ? c.name() : m.label();
         }
         switch (c.name()) {
             case BuildAdvice.SHOPS:
-                return t.isOwnedBySector() ? "Groceries" : "The bank's branches";
+                // ...and the grocers' forecourts (0.7.83): their own group, measured in litres.
+                return !t.isOwnedBySector() ? "The bank's branches"
+                        : ham.citybuildersim.sectors.Retail.isStation(t) ? "Filling stations" : "Groceries";
             case BuildAdvice.INDUSTRY:
                 switch (t.getSector()) {
                     case Sectors.INDUSTRY:        return "Food mills";
@@ -259,15 +274,20 @@ public final class BuildCard {
      */
     public static String groupOf(Game game, Sector sector) {
         for (BuildingsTemplate t : game.getBuildingManager().getTemplatesBySector(sector.key())) {
-            if (t.isOwnedBySector() && kindOf(t) != Kind.CITY) return group(t);
+            if (t.isOwnedBySector() && !citys(t)) return group(t);
         }
         return null;
+    }
+
+    /** A building only the city builds and nobody's investors weigh: a city category's, and the city's Strategic Reserve (0.7.85) and sea terminals (0.7.86) on a market page. */
+    public static boolean citys(BuildingsTemplate t) {
+        return kindOf(t) == Kind.CITY || StrategicReserve.isReserve(t) || Ports.isPort(t);
     }
 
     /** ...and the Build category that group is on: "Industry"; null with none. */
     public static String categoryOf(Game game, Sector sector) {
         for (BuildingsTemplate t : game.getBuildingManager().getTemplatesBySector(sector.key())) {
-            if (!t.isOwnedBySector() || kindOf(t) == Kind.CITY) continue;
+            if (!t.isOwnedBySector() || citys(t)) continue;
             BuildAdvice.Category c = BuildAdvice.categoryOf(t.getCategory());
             return c == null ? null : c.name();
         }
@@ -287,6 +307,11 @@ public final class BuildCard {
         if (t.getCategory() == BuildingType.RESIDENTIAL) return Kind.HOMES;
         if (t.getCategory() == BuildingType.BUSINESS_SERVICES) return Kind.OFFICE;
         if (t.getCategory() == BuildingType.COMMERCIAL && !t.isOwnedBySector()) return Kind.BRANCH;
+        if (ham.citybuildersim.sectors.Retail.isStation(t)) return Kind.PUMP;
+        if (ham.citybuildersim.sectors.Refining.isTankFarm(t) || StrategicReserve.isReserve(t)) return Kind.TANKS;
+        if (Ports.isPort(t)) return Kind.BERTHS;
+        if (t.isPlatform()) return Kind.SLOTS;
+        if (t.isPipeline()) return Kind.PIPE;
         if (t.getRailCapacity() > 0) return Kind.RAIL;
         if (t.makes(Good.MEALS) > 0) return Kind.MEALS;
         if (t.makes(Good.GROCERIES) > 0 || t.makes(Good.LUXURY_TRADE) > 0) return Kind.CUSTOMERS;
@@ -324,7 +349,9 @@ public final class BuildCard {
     /**
      * What one makes less what it uses a month, at today's prices - what it
      * makes being a crude unit's slate since 0.7.76 (sectors.Refining.madeBy()),
-     * its template naming only the crude.
+     * its template naming only the crude. A conversion unit (0.7.80) uses no
+     * good: what it makes of its feed is less what the feed would have made
+     * with no unit (Refining.feedValueOf()), its spread on the whole feed.
      */
     public static double valueAdded(Game game, BuildingsTemplate t) {
         double v = 0;
@@ -336,7 +363,16 @@ public final class BuildCard {
             double p = priceOf(game, e.getKey());
             if (Double.isFinite(p)) v -= e.getValue() * p;
         }
+        if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
+            v -= ham.citybuildersim.sectors.Refining.feedValueOf(t,
+                    ham.citybuildersim.sectors.RefineryFlow.values(g -> priceOf(game, g)));
+        }
         return v;
+    }
+
+    /** A conversion unit's feed in words, after its figure (0.7.80): " litres of heavy naphtha a month". */
+    public static String feedWords(BuildingsTemplate t) {
+        return " litres of " + t.refineryUnit().feed().words() + " a month";
     }
 
     /**
@@ -495,10 +531,67 @@ public final class BuildCard {
                 per = perTag = "customer";
                 detail = new double[] { Bank.PAID_IN_PER_BRANCH };
                 break;
+            case PUMP: {
+                // A filling station (0.7.83): the litres it sells a month at its typical throughput, and the pump
+                // price on today's wholesale.
+                verb = "sells "; words = " L of petrol a month"; figure = unit = t.pumpLitres();
+                per = "1,000 L a month"; perTag = "1,000 L"; scale = 1000;
+                ham.citybuildersim.sectors.Retail grocers = game.getSectors().retail();
+                double litre = game.getMarkets().get(Good.PETROL).landedPrice();
+                detail = new double[] { grocers.pumpPriceToday(game), Double.isFinite(litre) ? litre : 0 };
+                break;
+            }
             case RAIL:
                 verb = "hauls up to "; words = " t a month across the boundary"; figure = unit = t.getRailCapacity();
                 per = perTag = "tonne a month";
                 break;
+            case TANKS: {
+                // Oil storage (0.7.85): its tank room in litres, and what is in store now against what may be -
+                // the refiners' crude kept against crudeKept(), the city's reserve against its room, in tonnes.
+                boolean city = StrategicReserve.isReserve(t);
+                verb = "holds "; words = city ? " L of the city's crude" : " L of the refiners' crude and products";
+                figure = unit = t.stocks(Good.CRUDE);
+                per = "1,000 L of room"; perTag = "1,000 L"; scale = 1000;
+                ham.citybuildersim.sectors.Refining refiners = game.getSectors().refining();
+                detail = city ? new double[] { game.getReserve().getTonnes(), StrategicReserve.room(game.getBuildingManager()) }
+                        : new double[] { refiners.getPantry(Good.CRUDE), refiners.crudeKept() };
+                break;
+            }
+            case BERTHS: {
+                // A sea terminal (0.7.86): its berth's tonnes a year of its kind, and the kind's month - what could go
+                // by sea, the berths standing, and the share at sea in force (Ports).
+                Ports.Cargo k = t.berthCargo();
+                Ports ports = game.getPorts();
+                verb = "handles up to "; words = " t a year of " + k.label().toLowerCase();
+                figure = unit = t.berthTonnesAYear();
+                per = "1,000 t a year"; perTag = "1,000 t"; scale = 1000;
+                detail = new double[] { ports.carriable(k), Ports.berths(game.getBuildingManager())[k.ordinal()], ports.share(k) };
+                break;
+            }
+            case SLOTS: {
+                // An offshore platform (0.7.91): its wells' slots, and the city's shallow sea sites - owned, slotted by the
+                // platforms standing - and the wells in their slots (sectors.Oil, THE OIL AT SEA).
+                verb = "holds up to "; words = " wells on a shallow sea field"; figure = unit = t.platformSlots();
+                per = perTag = "well's slot";
+                ham.citybuildersim.sectors.Oil wells = game.getSectors().oil();
+                int sites = 0;
+                for (LandManager.SeaField s : wells.shallowFields()) sites += s.sites();
+                detail = new double[] { sites, wells.slotsStanding(), wells.platformWellsInSlots() };
+                break;
+            }
+            case PIPE: {
+                // A kilometre of crude pipeline (0.7.91): the kilometres standing, the fields whose whole pipe stands, and the
+                // shuttle tankers' tonnes this month (sectors.Oil, THE OIL AT SEA).
+                verb = "lays "; words = " km of pipe from a sea field ashore"; figure = unit = 1;
+                per = perTag = "km";
+                ham.citybuildersim.sectors.Oil wells = game.getSectors().oil();
+                long[] at = { game.getCityLand().siteX(), game.getCityLand().siteY() };
+                detail = new double[] { wells.pipeKmStanding(),
+                        ham.citybuildersim.sectors.Oil.pipedFields(wells.pipelinesNow(), wells.pipeKmStanding(),
+                                wells.shallowFields(), at[0], at[1]).size(),
+                        wells.getShuttleTonnes() };
+                break;
+            }
             case POINTS:
                 verb = "adds "; words = " building points a month"; figure = unit = t.makes(Good.BUILDING_WORK);
                 per = perTag = "point a month";
@@ -521,12 +614,18 @@ public final class BuildCard {
                     verb = "refines "; words = goodWords(good) + " a month";
                     figure = t.uses(good);
                 }
+                // ...and a conversion unit (0.7.80) by the feed it upgrades: a stream of the crude units' run, no good.
+                if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
+                    verb = "upgrades "; words = feedWords(t);
+                    figure = t.feedPerMonth();
+                }
                 va = valueAdded(game, t); unit = va;
                 Resource site = Game.siteOf(t);
                 if (site != null) {
-                    // ...the sites of its own resource (0.7.62): an Oil Well's oil, a mine's iron.
+                    // ...the sites of its own resource (0.7.62): an Oil Well's oil, a mine's iron - a land well's dry ones (0.7.84,
+                    // Game.sitesFor()), a platform's well its platforms' slots (0.7.91), counted against its own kind (committedFor()).
                     LandManager ground = game.getLandManager();
-                    detail = new double[] { ground.getSites(site), game.committedOn(site), ground.getRemaining(site) };
+                    detail = new double[] { game.sitesFor(t), game.committedFor(t), ground.getRemaining(site) };
                 }
         }
 
@@ -568,7 +667,8 @@ public final class BuildCard {
      * without a door, families'} (RealEstate.doorShortfall(); a negative is
      * doors to spare); SHOPS {the shops' coverage a month, the people};
      * MADE {the city's demand for the planning good this month, the sector's
-     * nameplate} with the good; RAIL {the city's trade in tonnes, the
+     * nameplate} with the good; PUMP {the drivers' litres last month, what the
+     * filling stations could sell} (0.7.83); RAIL {the city's trade in tonnes, the
      * network's capacity}; LUXURY {customers who came, the counters'
      * coverage}; MEALS {meals wanted, the kitchens' seats}; NONE.
      *
@@ -578,7 +678,7 @@ public final class BuildCard {
      * so the note carries NaN for them instead - not counted yet - and says
      * only what the counters or the kitchens serve.
      */
-    public enum NoteKind { DOORS, SHOPS, MADE, RAIL, LUXURY, MEALS, NONE }
+    public enum NoteKind { DOORS, SHOPS, MADE, RAIL, LUXURY, MEALS, PUMP, NONE }
 
     public record Note(NoteKind kind, double a, double b, Good good) { }
 
@@ -669,6 +769,10 @@ public final class BuildCard {
                         sectors.restaurants().seats(), null);
             case RAIL:
                 return new Note(NoteKind.RAIL, sectors.rail().getTradeTonnes(), sectors.rail().getCapacityTonnes(), null);
+            case PUMP:
+                // The forecourts' month (0.7.83): the drivers' litres, at the pump and past it, and what the stations could sell.
+                return new Note(NoteKind.PUMP, sectors.retail().getPumpLitres() + sectors.retail().getQueueLitres(),
+                        sectors.retail().getPumpCapacity(), Good.PETROL);
             case MAKER: {
                 Sector owner = sectors.ownerOf(f.template());
                 // The mine's ore and nothing else: it has its deposit on its own card.
@@ -693,7 +797,7 @@ public final class BuildCard {
      */
     public static Note noteOf(Game game, Sector sector) {
         for (BuildingsTemplate t : game.getBuildingManager().getTemplatesBySector(sector.key())) {
-            if (!t.isOwnedBySector() || kindOf(t) == Kind.CITY) continue;
+            if (!t.isOwnedBySector() || citys(t)) continue;
             return note(game, List.of(of(game, t, null)));
         }
         return new Note(NoteKind.NONE, 0, 0, null);
@@ -721,6 +825,8 @@ public final class BuildCard {
 
     /** Where Game files a building's word: the branch under "Bank" (Game.consider()'s label), every other under its sector. */
     public static String slot(BuildingsTemplate t) {
+        // ...and a filling station's under the forecourts' own (0.7.83; Game.STATIONS_SLOT), as the branch's is the bank's.
+        if (ham.citybuildersim.sectors.Retail.isStation(t)) return Game.STATIONS_SLOT;
         return !t.isOwnedBySector() && t.getCategory() == BuildingType.COMMERCIAL ? "Bank" : t.getSector();
     }
 
@@ -783,9 +889,9 @@ public final class BuildCard {
     static Gate gate(Game game, BuildingsTemplate t, Sector owner, double estimate) {
         LandManager ground = game.getLandManager();
         if (!game.hasDepositFor(t, 1)) {
-            // ...on its own resource's sites (0.7.62), named in `why`: "iron" or "oil".
+            // ...on its own resource's sites (0.7.62), named in `why`: "iron" or "oil" - a land well's dry ones (0.7.84).
             Resource site = Game.siteOf(t);
-            return new Gate(GateKind.DEPOSIT, ground.getSites(site), game.committedOn(site), null, depositWord(site));
+            return new Gate(GateKind.DEPOSIT, game.sitesFor(t), game.committedFor(t), null, depositWord(site));
         }
         if (!game.hasLicencesFor(t, 1)) {
             JobType licence = t.getRequiresLicence();
@@ -867,7 +973,7 @@ public final class BuildCard {
         gates.add(site == null ? new GateMark(GateKind.DEPOSIT, Mark.NONE, null)
                 : game.hasDepositFor(t, 1) ? new GateMark(GateKind.DEPOSIT, Mark.PASS, null)
                 : new GateMark(GateKind.DEPOSIT, Mark.FAIL,
-                        new Gate(GateKind.DEPOSIT, ground.getSites(site), game.committedOn(site), null, depositWord(site))));
+                        new Gate(GateKind.DEPOSIT, game.sitesFor(t), game.committedFor(t), null, depositWord(site))));
         // The licence its posts need.
         JobType licence = t.getRequiresLicence();
         gates.add(licence == null ? new GateMark(GateKind.LICENCE, Mark.NONE, null)
@@ -898,7 +1004,7 @@ public final class BuildCard {
     public static List<Appraisal> appraiseAll(Game game, Sector sector) {
         List<Appraisal> out = new ArrayList<>();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
-            if (kindOf(t) == Kind.CITY || ownerOf(game, t) != sector) continue;
+            if (citys(t) || ownerOf(game, t) != sector) continue;
             out.add(appraise(game, t));
         }
         return out;
@@ -1033,7 +1139,7 @@ public final class BuildCard {
         int onSite = 0;
         double months = 0;
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
-            if (kindOf(t) == Kind.CITY || ownerOf(game, t) != sector) continue;
+            if (citys(t) || ownerOf(game, t) != sector) continue;
             Investors i = investors(game, t);
             all.add(i);
             if (!i.theirs()) continue;

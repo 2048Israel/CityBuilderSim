@@ -124,6 +124,27 @@ public class DataSave {
      */
     private AutoBuilder.State autoBuild;
 
+    /**
+     * The city's strategic reserve (0.7.85, batch O8; StrategicReserve): the
+     * crude its tanks hold and what it cost, the release standing and the
+     * fill ordered, and the month's trades the next strike settles (runs/
+     * spec-oil.md 2.8's {tonnes, cost, release}, and what a reload needs to
+     * pay what the live city pays). Absent on an older save, which loads
+     * with an empty reserve - what that city had. No format bump.
+     */
+    private StrategicReserve.State reserve;
+
+    /**
+     * The city's ports (0.7.86, batch O9; Ports): each kind of cargo's share
+     * of its tonnes at sea in force, whether it goes before the railway, the
+     * class crude goes in, the road's two shares, and the month's tonnes by
+     * kind and direction, at sea and in all (runs/spec-oil.md 2.9's
+     * portMonth). The boats are worked out from it and never saved. Absent on
+     * an older save, which loads with nothing at sea - what that city had.
+     * No format bump.
+     */
+    private Ports.State portMonth;
+
     /*
      * The property tax the city CHARGED this month, rather than a figure
      * derived from its state.
@@ -270,6 +291,17 @@ public class DataSave {
      * last month's stock was zero books its entire warehouse as new production.
      */
     private double[] nationalAccounts;
+
+    /*
+     * The rolling year of GDP, exactly (0.7.81, batch N6): NationalAccounts'
+     * history, the last HISTORY_MONTHS of the month's GDP. Automatic
+     * building's debt limit reads a year of it in the month
+     * (AutoBuilder.annualGdp()), and the graph history's series, which seeds
+     * it on a load (NationalAccounts.seedHistory()), keeps thousands to two
+     * places - ten dollars a month - so a loaded city read its year a few
+     * dollars off the live one's. Null in an older save: the graph's seeds it.
+     */
+    private List<Double> gdpRolling;
 
     /*
      * Two records of things that HAPPENED, rather than things the city has.
@@ -741,6 +773,14 @@ public class DataSave {
     public void setAutoBuild(AutoBuilder.State state) { this.autoBuild = state; }
     /** Null on a save from before 0.7.73. */
     public AutoBuilder.State getAutoBuild() { return autoBuild; }
+
+    public void setReserve(StrategicReserve.State state) { this.reserve = state; }
+    /** Null on a save from before 0.7.85. */
+    public StrategicReserve.State getReserve() { return reserve; }
+
+    public void setPortMonth(Ports.State state) { this.portMonth = state; }
+    /** Null on a save from before 0.7.86. */
+    public Ports.State getPortMonth() { return portMonth; }
 
     /** False for a save written before the format changed. */
     public boolean hasConstructionById() {
@@ -1962,6 +2002,9 @@ public class DataSave {
 
     public void setNationalAccounts(double[] state) { this.nationalAccounts = state; }
     public double[] getNationalAccounts()           { return nationalAccounts; }
+
+    public void setGdpRolling(List<Double> months) { this.gdpRolling = months; }
+    public List<Double> getGdpRolling()            { return gdpRolling; }
 
     //getters
     /*

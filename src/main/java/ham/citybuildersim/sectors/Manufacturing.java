@@ -71,11 +71,27 @@ import java.util.List;
  */
 public final class Manufacturing extends Sector {
 
+    /*
+     * THE OIL ON THE LINE (0.7.83, batch O6; runs/spec-oil.md 2.5, est., to
+     * confirm). A machine shop's cutting fluids, hydraulic and gear oils, and
+     * the grease on a fabricator's cranes: LUBRICANTS, in litres, on each
+     * template's `uses` - bought on the market as the steel is, the refiners'
+     * lube plants first and the world for the rest. The first home buyer the
+     * refinery's lubricants have had.
+     */
+
+    /** Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). */
+    public static final double LUBRICANT_LITRES_A_TONNE_OF_MACHINERY = 10;
+
+    /** ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). */
+    public static final double LUBRICANT_LITRES_A_TONNE_FABRICATED = 2;
+
     public Manufacturing() {
         super("Manufacturing", "Manufacturing", BuildingType.HEAVY_INDUSTRY);
         makes(Good.FABRICATED_STEEL);
         makes(Good.MACHINERY);
         uses(Good.STEEL);
+        uses(Good.LUBRICANTS);   // 0.7.83, batch O6: the oil on the line
         blurb("Buys steel - from the city's mills if it has any, from the world if "
                 + "not - cuts, welds and machines it, and ships it out. The first "
                 + "thing in the city that ever wanted a tonne of steel, so a mill "

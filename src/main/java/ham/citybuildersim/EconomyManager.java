@@ -84,6 +84,21 @@ public class EconomyManager {
     public void setHouseholds(long houseCap)  { households = houseCap; }
     public void setCash(int money)            { cash = money; }
     public void setTotalWage(double wage)     { totalWage = wage; }
+
+    /**
+     * The city's own crude for the month's accounts (0.7.85; StrategicReserve):
+     * the tonnes its strategic reserve holds - among the goods held, beside
+     * the sectors' - and what the strike settled of its fill bought abroad
+     * and its release shipped, among the imports and the exports. Told by
+     * Game before updateNationalAccounts().
+     */
+    private double cityCrudeTonnes, cityCrudeImports, cityCrudeExports;
+
+    public void setCityCrude(double tonnes, double imports, double exports) {
+        cityCrudeTonnes = Double.isFinite(tonnes) ? Math.max(0, tonnes) : 0;
+        cityCrudeImports = Double.isFinite(imports) ? Math.max(0, imports) : 0;
+        cityCrudeExports = Double.isFinite(exports) ? Math.max(0, exports) : 0;
+    }
     public void setWageDetail(double[] staffedPerType) {
         if (staffedPerType != null) this.staffedWagePerType = staffedPerType.clone();
     }
@@ -585,7 +600,9 @@ public class EconomyManager {
      */
     private static final BuildingType[] CITY_MAINTAINED = {
         BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE,
-        BuildingType.HEALTHCARE,  BuildingType.EDUCATION, BuildingType.SAFETY
+        BuildingType.HEALTHCARE,  BuildingType.EDUCATION, BuildingType.SAFETY,
+        // ...and the city's sea terminals (0.7.86, batch O9): nothing with none standing.
+        BuildingType.PORTS
     };
 
     private double maintenanceBillTotal;
@@ -1847,6 +1864,8 @@ public class EconomyManager {
         for (int i = 0; i < NationalAccounts.HELD.length; i++) {
             Good g = NationalAccounts.HELD[i];
             for (Sector s : sectors.all()) heldUnits[i] += s.getStock(g) + s.getPantry(g);
+            // ...and the city's own crude, its strategic reserve (0.7.85).
+            if (g == Good.CRUDE && cityCrudeTonnes > 0) heldUnits[i] += cityCrudeTonnes;
             heldPrices[i] = heldPrice(markets.get(g));
         }
 
@@ -1855,6 +1874,9 @@ public class EconomyManager {
             exports += s.statement().exports;
             if (s != retail && s != construction) rawImports += s.statement().imports;
         }
+        // ...and the reserve's crude across the edge, as the strike settled it (0.7.85).
+        if (cityCrudeExports > 0) exports += cityCrudeExports;
+        if (cityCrudeImports > 0) rawImports += cityCrudeImports;
         double foodImports = retail.statement().imports;
         double materialImports = construction.statement().imports;
 
@@ -2133,6 +2155,7 @@ public class EconomyManager {
         totalWage = 0;
         totalPropertyTax = 0;
         salesTax = 0;
+        cityCrudeTonnes = cityCrudeImports = cityCrudeExports = 0;
         sectors.reset();
         markets.reset();
         salesTaxLedger.reset();
@@ -2163,6 +2186,8 @@ public class EconomyManager {
         totalWageTax *= scale;
         interest *= scale;
         totalWage *= scale;
+        cityCrudeImports *= scale;
+        cityCrudeExports *= scale;
         GDP *= scale;
         yearGDP *= scale;
         salesTax *= scale;

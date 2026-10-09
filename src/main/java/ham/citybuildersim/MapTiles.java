@@ -19,15 +19,19 @@ import java.util.Map;
  * changed, and a purchase repaints the districts it touched", as one rule.
  *
  * NOT THREAD-SAFE: the FX thread's alone, as CityMap is. Only nodeTerrain()
- * (the world's ground, which World keeps safe) runs on the view's worker.
+ * (the world's ground, which World keeps safe) and, since 0.7.88, the
+ * district plans' jobs (CityMap.Job: their inputs gathered on the FX thread,
+ * kept there by CityMap.adopt()) run on the view's worker: a tile is painted
+ * only once ready() says its plans are drawn, and jobs() hands out what
+ * draws them.
  */
 public final class MapTiles {
 
     /** Tiles' ground kept: 2,048 (spec-land 2.6), a kilobyte each - a far screen of NEAR_TILES_MOST and its margin. */
     public static final int TERRAIN_KEPT = 2048;
 
-    /** Painted tiles kept, with their inputs: 64 (star) - measured at up to about 36 KB each on MapCheck 7's densest screen, x 10,000 (the painter's arrays grow to 512), so the design's 1,024 would be 36 MB; the hover asks for one and a change of level for a screen's worth, which a repaint (0.1 to 0.2 ms) serves. */
-    public static final int PAINTED_KEPT = 64;
+    /** Painted tiles kept, with their inputs: 1, the hover's (star RD2-5; 64 until 0.7.87) - about 31 KB each on MapCheck 7's densest screen, x 10,000 (the painter's arrays grow to 512). Since 0.7.88 a tile paints from its district plans in about 0.1 ms, so a frame paints a tile again rather than keep it, and the 48 MB holds the plans instead (CityMap.PLANS_KEPT). */
+    public static final int PAINTED_KEPT = 1;
 
     /** What every cache of the view together may hold, in MB: 48 (spec-land 2.6). */
     public static final double BUDGET_MB = 48;
@@ -83,7 +87,17 @@ public final class MapTiles {
         return t;
     }
 
-    /** A tile's inputs into `in` (its ground from the cache), and their stamp. */
+    /** Whether tile (tx, ty) paints without planning (0.7.88): the district plans it is drawn from are drawn (CityMap.tileReady()). */
+    public boolean ready(long tx, long ty) {
+        return map.tileReady(tx, ty);
+    }
+
+    /** The jobs that draw tile (tx, ty)'s plans, to run in order on one thread away from the screen's and then keep (CityMap.adopt()); none handed out twice. */
+    public java.util.List<CityMap.Job> jobs(long tx, long ty) {
+        return map.tileJobs(tx, ty);
+    }
+
+    /** A tile's inputs into `in` (its ground from the cache), and their stamp - its plans made here if they are not drawn (a harness's way; the view asks ready() first). */
     public long input(long tx, long ty, TilePainter.Input in) {
         map.tileInput(tx, ty, in, terrain(tx, ty));
         stamps++;
@@ -92,26 +106,36 @@ public final class MapTiles {
 
     /**
      * A stamp of everything a tile is painted from but its ground, which is
-     * the world's and never changes: what is owned, the buildings and road
-     * plots dealt to it, its neighbours' roads, the plan's runs through it
-     * (0.7.72) and its sites with their states and mines. Two tiles with one
-     * stamp paint the same pixels.
+     * the world's and never changes: what is owned, its plan's streets and
+     * those just beyond its edges, the city's highways and track through it,
+     * its buildings' boxes (0.7.88; the counts and road plots dealt to it, its
+     * neighbours' roads and the deal's plan before), and its sites with their
+     * states and mines. Two tiles with one stamp paint the same pixels.
      */
     public static long stamp(TilePainter.Input in) {
         long h = World.mix(in.seed ^ World.mix(in.tx * 0x9E3779B97F4A7C15L ^ in.ty));
         h = World.mix(h ^ packed(in.owned));
-        for (int c : in.counts) h = World.mix(h ^ c);
-        for (int b : in.roadBudget) h = World.mix(h ^ b);
-        for (boolean b : in.neighbourRoads) h = World.mix(h ^ (b ? 1 : 2));
-        // The plan's runs through it: its main streets, highways and track (0.7.72).
-        h = World.mix(h ^ in.plans);
-        for (int k = 0; k < in.plans; k++) {
-            h = World.mix(h ^ ((long) in.planX0[k] << 40 ^ (long) in.planY0[k] << 30 ^ (long) in.planX1[k] << 20 ^ (long) in.planY1[k] << 10 ^ in.planKind[k]));
-        }
+        h = World.mix(h ^ packed(in.street));
+        h = World.mix(h ^ packed(in.beyond));
+        h = World.mix(h ^ packed(in.fixed));
+        h = World.mix(h ^ packed(in.fixedBeyond));
+        h = World.mix(h ^ in.buildings);
+        for (int b = 0; b < 2 * in.buildings; b++) h = World.mix(h ^ in.boxes[b]);
         h = World.mix(h ^ in.sites);
         for (int s = 0; s < in.sites; s++) {
             h = World.mix(h ^ ((long) in.siteX0[s] << 40 ^ (long) in.siteY0[s] << 30 ^ (long) in.siteX1[s] << 20 ^ (long) in.siteY1[s] << 10));
             h = World.mix(h ^ ((long) in.siteKind[s] << 40 ^ (long) in.siteState[s] << 32 ^ (in.siteMine[s] + 1)));
+        }
+        return h;
+    }
+
+    /** Bytes a plot folded into one number, eight a word. */
+    private static long packed(byte[] codes) {
+        long h = 0;
+        for (int i = 0; i < codes.length; i += 8) {
+            long w = 0;
+            for (int b = 0; b < 8 && i + b < codes.length; b++) w |= (codes[i + b] & 0xffL) << (8 * b);
+            if (w != 0) h = World.mix(h ^ w ^ i);
         }
         return h;
     }
@@ -158,11 +182,14 @@ public final class MapTiles {
         b.ty = a.ty;
         System.arraycopy(a.terrain, 0, b.terrain, 0, TilePainter.PLOTS);
         System.arraycopy(a.owned, 0, b.owned, 0, TilePainter.PLOTS);
-        b.counts = a.counts.clone();
-        b.model = a.model.clone();
+        System.arraycopy(a.street, 0, b.street, 0, TilePainter.PLOTS);
+        System.arraycopy(a.beyond, 0, b.beyond, 0, a.beyond.length);
+        System.arraycopy(a.fixed, 0, b.fixed, 0, TilePainter.PLOTS);
+        System.arraycopy(a.fixedBeyond, 0, b.fixedBeyond, 0, a.fixedBeyond.length);
         b.types = a.types;
-        System.arraycopy(a.roadBudget, 0, b.roadBudget, 0, a.roadBudget.length);
-        System.arraycopy(a.neighbourRoads, 0, b.neighbourRoads, 0, a.neighbourRoads.length);
+        if (b.counts.length != a.counts.length) b.counts = new int[a.counts.length];
+        b.clearBuildings();
+        for (int k = 0; k < a.buildings; k++) b.addBuilding(a.boxes[2 * k], a.boxes[2 * k + 1]);
         b.clearSites();
         for (int s = 0; s < a.sites; s++) {
             b.addSite(a.siteX0[s], a.siteY0[s], a.siteX1[s], a.siteY1[s], a.siteKind[s], a.siteState[s], a.siteMine[s], a.siteKey[s]);
@@ -213,11 +240,11 @@ public final class MapTiles {
         }
     }
 
-    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh. */
+    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out. */
     public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p) {
-        long input = 2L * TilePainter.PLOTS + 4L * (in.counts.length + in.model.length) + 16 + 4
-                + 36L * in.siteX0.length + 17L * in.planX0.length;
-        long picture = 4L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 28L * p.bx.length;
+        long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + 4L * (in.counts.length + in.boxes.length) + 16 + 4
+                + 36L * in.siteX0.length;
+        long picture = 6L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 29L * p.bx.length;
         return input + picture;
     }
 
@@ -225,8 +252,15 @@ public final class MapTiles {
      * Every cache of the view together, in bytes, for a view this size: each
      * level's images at four bytes a pixel (L0 at both widths, L1, L2), the
      * far nodes (MapFrame.nodesAtMost()), the tiles' ground and PAINTED_KEPT
-     * painted tiles of `paintedBytes` each.
+     * painted tiles of `paintedBytes` each - and since 0.7.88 the district
+     * plans the tiles are painted from, CityMap.PLANS_KEPT of `planBytes`
+     * each.
      */
+    public static double budgetBytes(MapFrame f, double paintedBytes, double planBytes) {
+        return budgetBytes(f, paintedBytes) + CityMap.PLANS_KEPT * planBytes;
+    }
+
+    /** ...without the plans: what the view's own caches hold. */
     public static double budgetBytes(MapFrame f, double paintedBytes) {
         double bytes = 0;
         bytes += 4.0 * tilesKept(f, MapFrame.L0, MapFrame.SMALL_TILE_PX) * tileImagePixels(MapFrame.SMALL_TILE_PX);

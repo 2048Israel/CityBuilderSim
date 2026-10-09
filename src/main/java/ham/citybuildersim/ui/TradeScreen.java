@@ -819,9 +819,19 @@ final class TradeScreen {
         StringBuilder s = new StringBuilder();
         for (Map.Entry<String, Double> e : rows) {
             if (s.length() > 0) s.append(", ");
-            s.append(e.getKey().equals(Sectors.HOUSEHOLDS) ? "the households" : e.getKey()).append(' ').append(d(e.getValue()));
+            s.append(who(e.getKey())).append(' ').append(d(e.getValue()));
         }
         return s.toString();
+    }
+
+    /** A buyer's or seller's name in words: a sector's key, "the households", and since 0.7.85 "the city's reserve" (Sectors.CITY: its crude). */
+    static String who(String key) {
+        return Sectors.HOUSEHOLDS.equals(key) ? "the households" : Sectors.CITY.equals(key) ? "the city's reserve" : key;
+    }
+
+    /** ...and whether it has a sector's page to open: not the households, not the city (0.7.85). */
+    static boolean hasPage(String key) {
+        return !Sectors.HOUSEHOLDS.equals(key) && !Sectors.CITY.equals(key);
     }
 
     /**
@@ -910,8 +920,9 @@ final class TradeScreen {
     /** WHAT WE TRADE's (i). */
     static final String TRADE_INFO = "Every good the city's businesses sold abroad and bought abroad this month, from "
             + "their own books - each line of revenue and of cost split home and abroad as it was traded - so it adds to "
-            + "SOLD ABROAD and BOUGHT ABROAD to the dollar. The households' drivers buy petrol and the railway diesel, "
-            + "off the city's refineries first and from the world for the rest. Every world price is quoted in the world's money and converted at the rate, so a weaker "
+            + "SOLD ABROAD and BOUGHT ABROAD to the dollar. The grocers' filling stations buy the drivers' petrol, and the "
+            + "railway and the businesses' vans their diesel, off the city's refineries first and from the world for the rest. "
+            + "Every world price is quoted in the world's money and converted at the rate, so a weaker "
             + "currency raises what imports cost at home and what exports earn at home, both at once.";
 
     /** The empty month's whole (the spec's M2). */
@@ -936,18 +947,18 @@ final class TradeScreen {
         String main = null;
         if (g != null && g.sold() > 0) {
             box.getChildren().add(cardLine("sold abroad", d(g.sold()), null));
-            for (Map.Entry<String, Double> e : sorted(g.sellers())) box.getChildren().add(cardLine("   by " + e.getKey(), d(e.getValue()), Palette.TEXT_LABEL));
-            main = sorted(g.sellers()).get(0).getKey();
+            for (Map.Entry<String, Double> e : sorted(g.sellers())) box.getChildren().add(cardLine("   by " + who(e.getKey()), d(e.getValue()), Palette.TEXT_LABEL));
+            String firstSeller = sorted(g.sellers()).get(0).getKey();
+            if (hasPage(firstSeller)) main = firstSeller;
         }
         if (g != null && g.bought() > 0) {
             box.getChildren().add(cardLine("bought abroad", d(g.bought()), null));
             for (Map.Entry<String, Double> e : sorted(g.buyers())) {
-                box.getChildren().add(cardLine("   by " + (Sectors.HOUSEHOLDS.equals(e.getKey()) ? "the households" : e.getKey()),
-                        d(e.getValue()), Palette.TEXT_LABEL));
+                box.getChildren().add(cardLine("   by " + who(e.getKey()), d(e.getValue()), Palette.TEXT_LABEL));
             }
             if (main == null) {
                 String first = sorted(g.buyers()).get(0).getKey();
-                if (!Sectors.HOUSEHOLDS.equals(first)) main = first;
+                if (hasPage(first)) main = first;
             }
         }
         if (market != null) {
@@ -963,6 +974,15 @@ final class TradeScreen {
             }
             if (!fx.isMonthCounted()) box.getChildren().add(muted(FREIGHT_AFTER_LOAD));
         }
+        // ...and petrol at the pump (0.7.83, batch O6): what the grocers' forecourts charge the drivers on it.
+        if (good == Good.PETROL) {
+            ham.citybuildersim.sectors.Retail grocers = ui.game.getSectors().retail();
+            double pump = grocers.pumpPriceToday(ui.game);
+            if (pump > 0) {
+                box.getChildren().add(cardLine("at the pump today", unitD(pump) + " a litre", null));
+                box.getChildren().add(muted(PUMP_WORDS));
+            }
+        }
         if (main != null) box.getChildren().add(sectorDoor(main, main));
         box.setPrefWidth(POPOVER_WIDTH);
         return box;
@@ -974,6 +994,11 @@ final class TradeScreen {
         rows.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
         return rows;
     }
+
+    /** Petrol's popover, under the pump price (0.7.83): where it comes from. */
+    static final String PUMP_WORDS = String.format("The grocers' filling stations buy the drivers' petrol at wholesale - the"
+            + " city's refineries first, the world for the rest - and sell it %.0f%% dearer with the sales tax on top.",
+            ham.citybuildersim.sectors.Retail.PUMP_MARGIN * 100);
 
     /** The prices before a month is counted - a city just founded, or loaded from a save before 0.7.46 (the spec's B14; a newer save carries the month's trade the freight is struck on, A1). */
     static final String FREIGHT_AFTER_LOAD = "Not counted yet: the railway's freight on each good is struck when the month "
@@ -1750,8 +1775,8 @@ final class TradeScreen {
         c.getChildren().add(figure("sold " + d(t.sold()) + " · bought " + d(t.bought()) + " · balance " + signedD(t.balance()),
                 Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
         if (!fx.isMonthCounted()) c.getChildren().add(noteLine("From the businesses' saved books: the balance of payments "
-                + "counts again a month on.", NOT_SAVED_INFO + " The households' own imports - their cars, and since 0.7.49 "
-                + "their petrol - are counted from the next month.", 1100));
+                + "counts again a month on.", NOT_SAVED_INFO + " The households' own imports - their cars, and from 0.7.49 to "
+                + "0.7.82 their petrol - are counted from the next month.", 1100));
         List<GoodRow> rows = byBusiness ? businessRows(t) : goodRows(t);
         if (rows.isEmpty()) {
             c.getChildren().add(line("Nothing crossed the city's edge this month.", NOTHING_CROSSED));

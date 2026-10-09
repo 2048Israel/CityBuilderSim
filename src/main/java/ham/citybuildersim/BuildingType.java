@@ -220,6 +220,20 @@ public enum BuildingType {
      * month, because a person eats ninety of them and buys one basket - and
      * the distinction matters the moment anything divides one by the other.
      */
-    HOSPITALITY
+    HOSPITALITY,
+
+    /**
+     * ...and for the eleventh time, on the end. See above.
+     *
+     * The city's sea terminals (0.7.86, batch O9; runs/spec-oil.md 2.9, the
+     * research's Q9): a tanker, a bulk, a container and a general cargo
+     * terminal, each a berth of one kind of cargo on the city's owned coast.
+     * THE CITY'S, NOT A SECTOR'S, as the roads are and the railway is not: at
+     * believable fees a tanker terminal earns about D$0.9M a month on D$205M
+     * of capital, so no investor would build one, and what a port is for is
+     * a narrower freight wedge on the city's seaborne trade (Ports). The
+     * treasury pays its crews with transit's and its repairs with the roads'.
+     */
+    PORTS
 
 }

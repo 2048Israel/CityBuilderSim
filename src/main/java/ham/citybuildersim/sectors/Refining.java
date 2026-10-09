@@ -4,21 +4,26 @@ import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Deposit;
-import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.LandManager;
+import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Sectors;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * The refinery. THE SEVENTEENTH SECTOR (0.7.62, batch K; the project's
  * spec-land.md 2.7), and since 0.7.76 a crude unit that cuts a barrel into
- * what a real one does (batch O1; runs/spec-oil.md 2.1 and 2.3).
+ * what a real one does (batch O1; runs/spec-oil.md 2.1 and 2.3) - and since
+ * 0.7.80 a campus: crude units, and the conversion units behind them that
+ * turn the cheap cuts into dear products (batch O4; THE FLOW, below).
  *
  * HEAVY INDUSTRY'S SHAPE, ON OIL. A refinery buys crude - the city's wells'
  * first, the world's for the rest (CRUDE is importable, so the shortfall is
@@ -34,17 +39,19 @@ import java.util.Map;
  * plant's worth of that. A tonne of medium crude makes 70 L of petrol and
  * 169 L of diesel, and the rest is products the city does not burn.
  *
- * WHEN TO BUILD ONE is the one thing it knows (plan()): only for a whole
- * plant's worth of the city's own petrol and diesel not yet covered, or of
- * crude its wells lift that no refinery takes - HeavyIndustry's rule - and
- * then while what its slate would fetch clears above what it costs to make
- * at nameplate: the investors' own estimate over the slate
- * (BusinessInvestment.estimatedMakerProfit()), which values what the city
- * will take at the local price and the rest at the export price, with its
- * crude at the local price for the wells' spare and at what an import costs
- * landed and hauled for the rest (estimatedMonthlyProfit()). The interest
- * test (BusinessInvestment.servicesItsOwnDebt()) holds it as it holds any
- * plant.
+ * WHAT TO BUILD is the spread planner's since 0.7.82 (batch O5; THE SPREAD
+ * PLANNER, below, and the shared SpreadPlanner): of the refiners' buildings
+ * that pass the gates - feed, ground, staff, money - the one that earns most
+ * on its cost at the city's own prices: a conversion unit on its spread on
+ * the stream it would find spare, a crude unit (for the city's own petrol
+ * and diesel or its wells' spare crude) with the units its cuts would feed.
+ * Until then it was one building, the Oil Refinery, for a whole plant's
+ * worth of the city's own petrol and diesel or of its wells' spare crude,
+ * on the investors' estimate over its slate (K's rule, 0.7.62 to 0.7.81).
+ *
+ * AND ITS TANK FARM (0.7.85, batch O8; spec-oil 2.8; THE TANK FARM, below):
+ * with one standing the refiners keep a month of their crude on hand and
+ * run on what they have and what they bought.
  */
 public final class Refining extends Sector {
 
@@ -210,14 +217,28 @@ public final class Refining extends Sector {
         return t != null && Sectors.REFINING.equals(t.getSector()) && t.uses(Good.CRUDE) > 0;
     }
 
+    /** Whether a building is one of the refiners' conversion units (0.7.80): a reformer, a cracking unit and the rest, fed a stream of the crude units' run (BuildingsTemplate.refineryUnit()). */
+    public static boolean isConversionUnit(BuildingsTemplate t) {
+        return t != null && Sectors.REFINING.equals(t.getSector()) && t.refineryUnit() != null;
+    }
+
     /**
      * What a building makes a month at nameplate, by good (pure, 0.7.76): a
-     * crude unit's slate of its crude, and every other building's template
+     * crude unit's slate of its crude, a conversion unit's products of its
+     * whole feed with nothing downstream to take them (0.7.80,
+     * RefineryFlow.madeAlone()), and every other building's template
      * (BuildingsTemplate.goodsMade()). What the build card values and lists.
      */
     public static Map<Good, Double> madeBy(BuildingsTemplate t) {
         if (t == null) return Collections.emptyMap();
+        if (isConversionUnit(t)) return RefineryFlow.madeAlone(t.refineryUnit(), t.feedPerMonth());
         return isCrudeUnit(t) ? slate(t.uses(Good.CRUDE)).products() : t.goodsMade();
+    }
+
+    /** What a conversion unit's whole feed is worth a month with no unit to take it, at `value` (RefineryFlow.values()): what its value added is struck against. 0 for any other building. */
+    public static double feedValueOf(BuildingsTemplate t, double[] value) {
+        if (!isConversionUnit(t)) return 0;
+        return t.feedPerMonth() * RefineryFlow.feedValue(t.refineryUnit().feed(), value);
     }
 
     public Refining() {
@@ -246,9 +267,9 @@ public final class Refining extends Sector {
        0.7.79 reads MEDIUM, which is what its refineries ran.
 
        The tanks' shares stay the slate of a tonne of medium crude (O1's
-       star 4), and the planner still judges a new crude unit on medium
-       crude (madeBy(), the gate's plant's worth): the crude a unit not yet
-       built would run is O5's to price (spec-oil 2.4, the package).
+       star 4). A crude unit not yet built is judged on the crude it would
+       run (0.7.82, THE SPREAD PLANNER): the wells' spare at the grades they
+       lift next (gradesAhead()), the rest at medium.
        ===================================================================== */
 
     /** The crude units' mix this month, each grade's share of their run in Deposit.Grade's order: last month's purchases. */
@@ -287,7 +308,12 @@ public final class Refining extends Sector {
         return mix;
     }
 
-    /** The month's markets have cleared: its crude mix struck from what the crude units bought, at home and abroad. */
+    /**
+     * The month's markets have cleared: its crude mix struck from what the
+     * crude units bought, at home and abroad - and (0.7.82) each kind of
+     * unit standing counted idle or working in the month's flow, for the
+     * spread planner's shedding (THE SPREAD PLANNER).
+     */
     @Override
     public void endOfMonth(Game game) {
         Sector.Input in = inputRow(Good.CRUDE);
@@ -295,11 +321,17 @@ public final class Refining extends Sector {
         double[] lifted = game == null || game.getLandManager() == null ? null : game.getLandManager().getOilLiftedByGrade();
         double[] mix = monthsMix(local, lifted, imported);
         System.arraycopy(mix, 0, crudeMix, 0, crudeMix.length);
+        noteIdleUnits();
+        // ...and the crude kept in a Tank Farm (0.7.85): what it had, and the month's fill, less the month's run.
+        if (keepsCrude()) setPantry(Good.CRUDE, crudeAfterRun(getPantry(Good.CRUDE), monthsCrudeFill(),
+                getInputAtCapacity(Good.CRUDE) * getOperatingRate()));
+        crudeCleared = false;
     }
 
     @Override
     protected void saveExtras(Map<String, Double> extras) {
         for (Deposit.Grade g : Deposit.Grade.values()) extras.put("crudeMix." + g.name(), crudeMix[g.ordinal()]);
+        planner.saveIdle(extras, KIND_NAMES);
     }
 
     /** A save from before 0.7.79, or one whose mix is not a mix, reads MEDIUM. */
@@ -317,26 +349,120 @@ public final class Refining extends Sector {
             }
         }
         System.arraycopy(whole && sum > 0 ? mix : MEDIUM_MIX, 0, crudeMix, 0, crudeMix.length);
+        // ...and each kind's idle months (0.7.82); a save from before them reads none idle.
+        planner.restoreIdle(extras, KIND_NAMES);
     }
 
     @Override
     public void reset() {
         super.reset();
         System.arraycopy(MEDIUM_MIX, 0, crudeMix, 0, crudeMix.length);
+        planner.reset();
+        crudeCleared = false;
     }
 
-    /* ----- the reads, off the slate (spec-oil 2.3, 6) ----- */
+    /* =====================================================================
+       THE FLOW (0.7.80, batch O4; spec-oil 2.3)
 
-    /** Nameplate output of a product a month: the slate of the crude its standing crude units take, at the month's crude mix (0.7.79). */
+       The crude units' run goes through the conversion units the refinery
+       has standing (RefineryFlow.solve(): a reformer takes the heavy
+       naphtha, a cracking unit the gas oil, and so on, each stream to its
+       units widest spread first), and what comes out is the nameplate of
+       each product - so the slate is now the flow with no unit, to the bit.
+
+       AT NAMEPLATE, AND THE RATE ON TOP. The flow is struck on the crude
+       units' whole run; the month's operating rate then multiplies every
+       product's nameplate, as it does every maker's (Sector.produceStock()).
+       The units are one crew with the crude units at one rate, and the flow
+       is homogeneous - every step a sum, a share or the least of two runs -
+       so the flow at nameplate times the rate is the flow at the rate.
+
+       AT THE CITY'S OWN PRICES (★ O4-1): a unit's spread is struck on each
+       product market's local price (GoodsMarket.getLocalPrice()), the price
+       the build card values the products at, which the save restores - so a
+       loaded city runs the flow its saved month did, with nothing new saved.
+       Only the order of the spreads and their signs reach the products, so
+       a currency reform moves nothing. The spread planner (0.7.82, below)
+       prices what one more litre would actually fetch (cityValues()): a
+       unit it orders on a spread above nothing at those values runs here
+       only while its spread at the local prices is too, and idles else
+       (★ O5-3; the idle months then count).
+
+       CACHED ON ITS INPUTS: each kind's feed standing, the crude, the mix
+       and the values; the same four give the same flow, unsolved again.
+
+       THE TANKS FOLLOW THE FLOW once a unit stands (getStockCapacity()):
+       every product has the same months of its own nameplate as room - the
+       tankage over the flow's litres - so lubricants, bitumen and coke,
+       which only a unit makes, have room as the rest do, in their own
+       units. With no unit standing they stay shared as a tonne of medium
+       crude's slate is (O1's star 4), to the bit.
+       ===================================================================== */
+
+    /** The flow last solved, and what it was solved on. */
+    private RefineryFlow.Flow flowSolved;
+    private double[] flowFeed, flowMix, flowPrices;
+    private double flowCrude = Double.NaN;
+
+    /** Litres a month of feed each kind of conversion unit could take, by RefineryFlow.Kind's ordinal: its buildings standing, and with `onSite` those on site too. */
+    public double[] unitFeed(boolean onSite) {
+        double[] feed = new double[RefineryFlow.Kind.values().length];
+        if (buildings == null) return feed;
+        for (RefineryFlow.Kind k : RefineryFlow.Kind.values()) {
+            feed[k.ordinal()] = buildings.totalBySector(key(), t -> t.refineryUnit() == k ? t.feedPerMonth() : 0);
+            if (onSite) feed[k.ordinal()] += buildings.underConstructionBySector(key(), t -> t.refineryUnit() == k ? t.feedPerMonth() : 0);
+        }
+        return feed;
+    }
+
+    /** The values the flow's spreads are struck at, by Good's ordinal: each product market's local price (★ O4-1); nothing for one with none. */
+    public double[] flowValues() {
+        return RefineryFlow.values(g -> {
+            GoodsMarket m = markets == null ? null : markets.get(g);
+            double p = m == null ? 0 : m.getLocalPrice();
+            return Double.isFinite(p) ? p : 0;
+        });
+    }
+
+    /** This month's flow at nameplate: the standing crude units' crude, at the month's crude mix, through the standing conversion units, at the city's prices. Pure in those; cached. */
+    public RefineryFlow.Flow flow() {
+        double[] feed = unitFeed(false), values = flowValues();
+        double crude = getInputAtCapacity(Good.CRUDE);
+        if (flowSolved == null || Double.compare(crude, flowCrude) != 0 || !java.util.Arrays.equals(feed, flowFeed)
+                || !java.util.Arrays.equals(crudeMix, flowMix) || !java.util.Arrays.equals(values, flowPrices)) {
+            flowSolved = RefineryFlow.solve(feed, crude, crudeMix, values);
+            flowFeed = feed;
+            flowMix = crudeMix.clone();
+            flowPrices = values;
+            flowCrude = crude;
+        }
+        return flowSolved;
+    }
+
+    /* ----- the reads, off the flow (spec-oil 2.3, 6) ----- */
+
+    /** Nameplate output of a product a month: the flow's (0.7.80) - with no conversion unit the slate of the crude its standing crude units take, at the month's crude mix (0.7.79). */
     @Override
     public double getCapacity(Good g) {
-        return slateOf(getInputAtCapacity(Good.CRUDE)).of(g);
+        return flow().of(g);
     }
 
-    /** ...and of the crude units on site, which counts as supply for the planner. */
+    /**
+     * ...and what the units on site will add to it, which counts as supply
+     * for the planner: the flow with them less the flow without, never below
+     * nothing (a reformer on site makes more petrol and less naphtha). With
+     * no conversion unit standing or on site, the slate of the crude units'
+     * crude on site, as before 0.7.80: the slate is linear in its crude, so
+     * it is the same figure.
+     */
     @Override
     public double getPipeline(Good g) {
-        return slateOf(crudeOnSite()).of(g);
+        double[] all = unitFeed(true);
+        boolean units = false;
+        for (double f : all) units |= f > 0;
+        if (!units) return slateOf(crudeOnSite()).of(g);
+        double with = RefineryFlow.solve(all, getInputAtCapacity(Good.CRUDE) + crudeOnSite(), crudeMix, flowValues()).of(g);
+        return Math.max(0, with - flow().of(g));
     }
 
     /**
@@ -344,11 +470,33 @@ public final class Refining extends Sector {
      * `stock`, litres) times the product's share of the slate - an Oil
      * Refinery's 25M L shared as its run is, so each product has the room its
      * share of the run would fill. A product the slate makes none of has none.
+     * Once a conversion unit stands (0.7.80), the flow's products, each the
+     * same months of its own nameplate (THE FLOW). With a Tank Farm (0.7.85),
+     * the crude kept on hand takes its room first, crudeKept() - CRUDE's own
+     * room, in tonnes - and the products share the rest (THE TANK FARM).
      */
     @Override
     public double getStockCapacity(Good g) {
         double tankage = super.getStockCapacity(g);
         if (!(tankage > 0)) return 0;
+        // ...less the crude kept in a Tank Farm's room (0.7.85), with none the tankage as it was.
+        if (keepsCrude()) {
+            double crude = crudeKept();
+            if (g == Good.CRUDE) return crude;
+            tankage = Math.max(0, tankage - crude * CRUDE_LITRES_PER_TONNE);
+            if (!(tankage > 0)) return 0;
+        }
+        // ...the flow's since 0.7.80 once a unit stands: each product the same months of its nameplate (THE FLOW).
+        boolean units = false;
+        for (double f : unitFeed(false)) units |= f > 0;
+        if (units) {
+            RefineryFlow.Flow f = flow();
+            double litres = 0;
+            for (Map.Entry<Good, Double> e : f.slate().products().entrySet()) {
+                if (Double.isFinite(e.getKey().litresPerTonne())) litres += e.getValue();
+            }
+            return litres > 0 ? tankage * f.of(g) / litres : 0;
+        }
         Slate one = slate(1);
         double all = 0;
         for (double v : one.products().values()) all += v;
@@ -392,10 +540,17 @@ public final class Refining extends Sector {
         return getInputAtCapacity(Good.CRUDE) * getOperatingRate();
     }
 
-    /** What a crude unit is measured in, for the retirement rules: the crude it takes (its products are its slate). */
+    /**
+     * What a building is measured in, for the retirement rules: a crude
+     * unit's crude it takes (its products are its slate), and since 0.7.82 a
+     * conversion unit's feed, the litres a month of its stream it takes - so
+     * the spare-capacity rule can sell a kind that stands idle (THE SPREAD
+     * PLANNER).
+     */
     @Override
     public double unitsOf(BuildingsTemplate t) {
-        return t == null ? 0 : t.uses(Good.CRUDE);
+        if (t == null) return 0;
+        return isConversionUnit(t) ? t.feedPerMonth() : t.uses(Good.CRUDE);
     }
 
     /** The products the city buys, a month, at a crude unit's nameplate: its petrol and its diesel. */
@@ -403,127 +558,6 @@ public final class Refining extends Sector {
         double v = 0;
         for (Good g : BOUGHT_HERE) v += s.of(g);
         return v;
-    }
-
-    /**
-     * Whether to build another refinery: the best template by what the
-     * investors' estimate says it would clear a month over its cost, while
-     * that clears at all (spec-land 2.7) - and only for one of the city's own
-     * two reasons, HeavyIndustry's shape, each a whole plant's worth: the
-     * city's own petrol and diesel not yet covered by as much as the plant
-     * makes of them (the drivers and the railway draw that much more than the
-     * refineries standing and on site make), or its wells lifting as much
-     * crude as the plant takes that no refinery is taking - as a mill is built
-     * only into ore the mines have spare, all of its input.
-     *
-     * THE GATE IS THE MEASUREMENT. Without it the playtest's city stood 120
-     * refineries at month 4,002 (scratch-k pt1): a tonne of crude bought at
-     * .60 and sold abroad as a thousand litres at .0007 leaves $100 a tonne,
-     * and a refinery's crew and power took less than that, so every refinery
-     * the interest test passed was one more exporter on imported crude - the
-     * unbounded export market at a fixed floor Good's header names (the van
-     * plants, the locomotive works), here at a hundred posts a plant. With
-     * the gate at any fuel not covered (pt2) the first refinery stood at
-     * month 438 in a town of 800 people, exporting all but a few thousand of
-     * its 8.3M litres a month, and a 300-house fixture town built one.
-     *
-     * ...IN PETROL AND DIESEL SINCE 0.7.76 (O1): a plant's worth is the 1.98M
-     * litres of the two its 8,300 t make, where it was 8.3M litres of FUEL -
-     * so the gate opens about four times as early in a city's demand.
-     */
-    @Override
-    public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
-
-        String sector = key();
-        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
-            return BusinessInvestment.Decision.no(sector, "already building");
-        }
-
-        // The city's own petrol and diesel, not yet covered, and its own crude, not yet taken.
-        double room = 0;
-        for (Good g : BOUGHT_HERE) room += plans.forecast(this, markets.get(g)) - getCapacity(g) - getPipeline(g);
-        double spare = spareCrude();
-        if (!(room > 0) && !(spare > 0)) {
-            return BusinessInvestment.Decision.no(sector,
-                    "the city's petrol and diesel are covered already, and its wells have no crude to spare");
-        }
-        boolean anyWhole = false;
-
-        BuildingsTemplate best = null;
-        double bestScore = 0;
-        Staffing staffingHold = null;
-        String staffingHoldName = null;
-        for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
-            if (!isCrudeUnit(t)) continue;
-            // A whole plant's worth of the city's own petrol and diesel, or of the wells' spare crude (HeavyIndustry's rule).
-            if (boughtHere(slate(t.uses(Good.CRUDE))) > room && t.uses(Good.CRUDE) > spare) continue;
-            anyWhole = true;
-            // ...and one the city could staff (0.7.18; see Sector.staffing()).
-            Staffing staffing = staffing(t);
-            if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
-                continue;
-            }
-            double cost = plans.getCostOf(t, 1);
-            if (cost <= 0) continue;
-            double score = estimatedMonthlyProfit(t, plans) / cost;
-            if (score > bestScore) {
-                bestScore = score;
-                best = t;
-            }
-        }
-
-        if (best == null) {
-            if (staffingHold != null) {
-                return BusinessInvestment.Decision.no(sector, staffingHold.why(staffingHoldName));
-            }
-            if (!anyWhole) {
-                return BusinessInvestment.Decision.no(sector, String.format(
-                        "%,.0f L of petrol and diesel and %,.0f t of crude to spare: none for another refinery",
-                        Math.max(0, room), spare));
-            }
-            return BusinessInvestment.Decision.no(sector, "its products at today's prices would not clear a refinery's cost");
-        }
-        if (plans.plotsAvailableFor(best) < 1) {
-            return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
-        }
-        GoodsMarket petrol = markets.get(Good.PETROL), diesel = markets.get(Good.DIESEL);
-        return new BusinessInvestment.Decision(sector, best, 1,
-                String.format("petrol at %s and diesel at %s a litre clear a refinery's cost",
-                        Formats.INSTANCE.amount(petrol.getLocalPrice()), Formats.INSTANCE.amount(diesel.getLocalPrice())), true);
-    }
-
-    /**
-     * What one more refinery would clear a month: the investors' estimate
-     * over its slate (BusinessInvestment.estimatedMakerProfit()), with its
-     * crude at what it would actually cost - the wells' spare crude at the
-     * local price and the rest at what an import costs landed and hauled
-     * (netImportPrice()).
-     *
-     * HEAVY INDUSTRY'S SPARE-ORE RULE AS A PRICE RATHER THAN A GATE. A mill is
-     * not built past the ore the mines have spare; a refinery can import its
-     * crude, so it is not held back - but the estimate read crude at the local
-     * price, which with nothing traded is the middle of the band (0.55, where
-     * the city would pay 0.60), and with the wells' crude all spoken for is the
-     * price that crude clears at, not what this plant's 8,300 t more would
-     * fetch. Measured in a 1,500-person town (scratch-k KProbe): the
-     * template's estimate ordered a refinery for 2,455 litres a month of the
-     * city's own fuel, an exporter on crude it would have had to import.
-     */
-    @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        double estimate = plans.estimatedMakerProfit(this, t, madeBy(t));
-        if (t == null || markets == null) return estimate;
-        double need = t.uses(Good.CRUDE);
-        if (!(need > 0)) return estimate;
-        double imported = Math.max(0, need - spareCrude());
-        GoodsMarket crude = markets.get(Good.CRUDE);
-        double dearer = crude.netImportPrice() - crude.getLocalPrice();
-        if (!(imported > 0) || !(dearer > 0) || !Double.isFinite(dearer)) return estimate;
-        return estimate - imported * dearer * BusinessInvestment.operatingRateOf(getOperatingRate());
     }
 
     /**
@@ -536,7 +570,594 @@ public final class Refining extends Sector {
         return Math.max(0, wells.getPotentialOutput() - getCrudeDemand() - crudeOnSite());
     }
 
-    /** A price-taking exporter always sells what it makes: it shrinks on distress only (HeavyIndustry's rule). */
+    /* =====================================================================
+       THE TANK FARM (0.7.85, batch O8; spec-oil 2.8, the research's 4.5)
+
+       Crude was a flow here: the crude units bought what they ran, at the
+       rate, the month they ran it - a well ships what it lifts. A Tank Farm
+       (buildings.json: the refiners' 500,000 m3 of tanks) makes it a stock.
+       With one standing the refiners keep CRUDE_COVER_MONTHS of their crude
+       units' run on hand (crudeKept(): a month at nameplate, as far as the
+       farms' room holds it, ★ spec-oil 2.8), and their products share the
+       rest of the room (getStockCapacity()). The tanks are what a tanker's
+       cargo will land in (the ports, batch O9: a farm is built for them
+       when a port holds crude back for room; until then the investors
+       never order one, and the player may).
+
+       BOUGHT AS STOCK. While they keep crude, their order for it is the
+       month's run at the rate and what brings the store back to what they
+       keep (bid()), and it is stock (buysAhead()): cut, with the rest of
+       their stock, to what they can pay for (Sector, BUY ONLY WHAT IT CAN
+       PAY FOR), where a maker's inputs are bought whole.
+
+       AND THE RUN IS HELD TO THE CRUDE: once crude's market has cleared
+       (afterClearing()), the operating rate is no more than the crude on
+       hand and the month's fill will run (crudeRunCap()), so a refinery
+       short of cash runs down its tanks, and then runs below its rate - its
+       output reads the inputs it bought, which a maker's does not (Sector,
+       BUY ONLY WHAT IT CAN PAY FOR). The month's end books the store: what
+       it had, and the fill, less the run (crudeAfterRun()). The crude on
+       hand is the sector's own (Sector's pantry map, saved as its pantry
+       is), valued at crude's price like any stock, and counted in the
+       national accounts' held goods (NationalAccounts.HELD).
+
+       WITH NO FARM, NOTHING MOVES: no crude kept, the tankage the products'
+       as it was, crude bought whole at the rate and run the month it lands
+       - every figure what it was. A farm sold off leaves its crude to be
+       run down before the old rule returns (keepsCrude()).
+       ===================================================================== */
+
+    /** Months of the crude units' run kept on hand in a Tank Farm's room (★ spec-oil 2.8): one, a month's run. */
+    public static final double CRUDE_COVER_MONTHS = 1;
+
+    /** Whether a building is a Tank Farm (0.7.85): one of the refiners' that runs nothing and has tanks - no crude unit, no conversion unit. */
+    public static boolean isTankFarm(BuildingsTemplate t) {
+        return t != null && Sectors.REFINING.equals(t.getSector()) && !isCrudeUnit(t) && !isConversionUnit(t)
+                && t.stocks(Good.CRUDE) > 0;
+    }
+
+    /** Litres of tank room the refiners' Tank Farms standing give. */
+    public double tankFarmRoom() {
+        return buildings == null ? 0 : buildings.totalBySector(key(), t -> isTankFarm(t) ? t.stocks(Good.CRUDE) : 0);
+    }
+
+    /** Tonnes of crude the refiners keep on hand: CRUDE_COVER_MONTHS of their crude units' run at nameplate, as far as their Tank Farms' room holds it; none without a farm. */
+    public double crudeKept() {
+        double room = tankFarmRoom();
+        if (!(room > 0)) return 0;
+        return Math.min(CRUDE_COVER_MONTHS * getInputAtCapacity(Good.CRUDE), room / CRUDE_LITRES_PER_TONNE);
+    }
+
+    /** Whether they keep crude: a Tank Farm stands, or crude is left on hand from one. With neither, crude is a flow, as it was. */
+    public boolean keepsCrude() {
+        return tankFarmRoom() > 0 || getPantry(Good.CRUDE) > 0;
+    }
+
+    /*
+     * THE FARM'S ORDER (0.7.86, batch O9; spec-oil 2.8: "built only when a
+     * port holds crude back for room"). While a tanker berth stands and the
+     * refiners' tanks have no room for a tanker's cargo, the crude it would
+     * take is held back (ham.citybuildersim.Ports.getHeldBack()), and the
+     * refiners' part of it - their share of the crude across the boundary,
+     * which is what they import - pays its lorry and rail freight where a
+     * ship would carry it at the sea's. A Tank Farm is weighed (plan()) on
+     * that freight saved, less its own running and standing, by the spread
+     * planner's gates; with nothing held back it is not weighed at all, and
+     * the planner is what it was.
+     */
+
+    /** Freight a tonne of crude brought in would save going by sea, in city money: crude's lorry freight at the band's and the railway's shares in force, less the ship's (Ports.SEA_FREIGHT_SHARE_LIQUID). */
+    public double crudeFreightSavedByShip() {
+        GoodsMarket m = markets == null ? null : markets.get(Good.CRUDE);
+        if (m == null) return 0;
+        double saved = Good.CRUDE.baseFreight() * m.getExchangeRate()
+                * (m.getFreightFactor() + m.getRailCharge() - ham.citybuildersim.Ports.SEA_FREIGHT_SHARE_LIQUID);
+        return Double.isFinite(saved) ? Math.max(0, saved) : 0;
+    }
+
+    /** Tonnes a month of the refiners' own imported crude a port holds back for room: their share of the crude across the boundary, of what is held back. */
+    public double crudeHeldBackForThem(ham.citybuildersim.Ports ports) {
+        if (ports == null || !(ports.getHeldBack() > 0) || !(ports.crudeTrade() > 0)) return 0;
+        Sector.Input in = inputRow(Good.CRUDE);
+        double imported = in == null ? 0 : Math.max(0, in.imported);
+        return ports.getHeldBack() * Math.min(1, imported / ports.crudeTrade());
+    }
+
+    /** A Tank Farm weighed (pure): `tonnes` of crude a month at `saved` a tonne, less its running and standing; refused at its feed with nothing held back. */
+    public static SpreadPlanner.Candidate farmEstimate(BuildingsTemplate farm, double tonnes, double saved, SpreadPlanner.City city) {
+        double earns = tonnes * saved - city.running(farm) - city.standing(farm);
+        String feed = tonnes > 0 ? null : "no crude of theirs is held back for room at a port";
+        return SpreadPlanner.judge(farm, earns, city.cost(farm), feed, city, null);
+    }
+
+    /** The Tank Farm's candidate this month: null with no farm in the catalogue, one standing or on site, or none of their crude held back. */
+    public SpreadPlanner.Candidate farmCandidate(BusinessInvestment plans, Game game) {
+        if (game == null || buildings == null) return null;
+        double tonnes = crudeHeldBackForThem(game.getPorts());
+        if (!(tonnes > 0) || tankFarmRoom() > 0) return null;
+        for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
+            if (!isTankFarm(t)) continue;
+            if (buildings.getQuantity(t.getId()) > 0) return null;
+            for (ham.citybuildersim.BuildingsStacks s : buildings.getStacksUnderConstruction()) {
+                if (s.getBuilding() == t && s.getUnderConstruction() > 0) return null;
+            }
+            return farmEstimate(t, tonnes, crudeFreightSavedByShip(), planner.city(this, plans, game));
+        }
+        return null;
+    }
+
+    /*
+     * ...AND THE PORT'S TANKERS LAND IN IT (0.7.86, batch O9; spec-oil 2.9):
+     * a tanker berth takes crude only while the farms have room free for at
+     * least an MR's cargo (ham.citybuildersim.Ports.freeCrudeRoom()). The
+     * page says what the berth would take and the room holds back, or the
+     * class the crude goes in; nothing with no tanker berth.
+     */
     @Override
-    public double[] retirementDemandAndCapacity(Game game) { return null; }
+    public List<Sector.Line> ownLines(Game game) {
+        List<Sector.Line> lines = super.ownLines(game);
+        ham.citybuildersim.Ports ports = game == null ? null : game.getPorts();
+        if (ports == null) return lines;
+        ham.citybuildersim.Formats f = ham.citybuildersim.Formats.INSTANCE;
+        if (ports.getHeldBack() > 0) {
+            lines.add(Line.head("The port"));
+            lines.add(Line.of("Crude held back for room", f.count(ports.getHeldBack()) + " t a month", Line.Tone.WARN));
+            lines.add(Line.note(String.format("A tanker lands its whole cargo at once. With room free in a Tank Farm"
+                    + " for an MR's %s t, the tanker berth would take this crude off the railway and the lorries.",
+                    f.count(ham.citybuildersim.Ports.Ship.MR.tonnes()))));
+        } else if (ports.crudeShip() != null && ports.share(ham.citybuildersim.Ports.Cargo.LIQUID) > 0) {
+            lines.add(Line.head("The port"));
+            lines.add(Line.of("Crude by sea", ports.crudeShip().label() + ", the largest the room takes"));
+        }
+        return lines;
+    }
+
+    /** Their crude, while they keep it, is stock (Sector.buysAhead()). */
+    @Override
+    public boolean buysAhead(Good g) {
+        return g == Good.CRUDE ? keepsCrude() : super.buysAhead(g);
+    }
+
+    /** ...and their order for it is the month's run at the rate, and what brings the store back to crudeKept(). Every other good the template's. */
+    @Override
+    public double bid(Good g) {
+        if (g != Good.CRUDE || !keepsCrude()) return super.bid(g);
+        double run = getInputAtCapacity(Good.CRUDE) * getOperatingRate();
+        return Math.max(0, run + crudeKept() - getPantry(Good.CRUDE));
+    }
+
+    /** Whether the month's crude has cleared with a store kept, so the rate is held to the crude (afterClearing()); until the month's end. */
+    private boolean crudeCleared;
+
+    @Override
+    protected void afterClearing(Good g) {
+        if (g == Good.CRUDE && keepsCrude()) crudeCleared = true;
+    }
+
+    /** The crude bought this month, at home and from the world, in tonnes. */
+    double monthsCrudeFill() {
+        Sector.Input in = inputRow(Good.CRUDE);
+        return in == null ? 0 : in.boughtLocal + in.imported;
+    }
+
+    /**
+     * The share of nameplate the crude on hand and the month's fill will run
+     * (pure): the two over the crude units' nameplate run, in tonnes; no cap
+     * (infinite) with no crude unit.
+     */
+    public static double crudeRunCap(double onHand, double fill, double nameplate) {
+        if (!(nameplate > 0)) return Double.POSITIVE_INFINITY;
+        return (Math.max(0, onHand) + Math.max(0, fill)) / nameplate;
+    }
+
+    /** What is left on hand after the month's run (pure): what it had and the fill, less the run, never below nothing. */
+    public static double crudeAfterRun(double onHand, double fill, double run) {
+        return Math.max(0, Math.max(0, onHand) + Math.max(0, fill) - Math.max(0, run));
+    }
+
+    /** The template's rate - and, once crude has cleared with a store kept, no more than the crude will run (crudeRunCap()). */
+    @Override
+    public double getOperatingRate() {
+        double rate = super.getOperatingRate();
+        if (!crudeCleared) return rate;
+        double cap = crudeRunCap(getPantry(Good.CRUDE), monthsCrudeFill(), getInputAtCapacity(Good.CRUDE));
+        return cap < rate ? cap : rate;
+    }
+
+    /* =====================================================================
+       THE SPREAD PLANNER (0.7.82, batch O5; spec-oil 2.4)
+
+       What the refiners order, each month (plan()): of their buildings that
+       pass the gates, the one that earns most on its cost at the city's own
+       prices - SpreadPlanner's rule, which the materials chains will share.
+       Two kinds of candidate (appraise()):
+
+       A CONVERSION UNIT on its spread (RefineryFlow.spread()) at the city's
+       values (cityValues(): each product at SpreadPlanner.cityValue()), on
+       the feed it would find spare (spareFeed()) in the flow of the units
+       standing struck at those values - the coker the residue and the heavy
+       residue, the asphalt unit the heavy residue, a hydrocracker no more
+       gas oil than the spare hydrogen treats - at the rate, less its running
+       and standing costs. Its feed gate: spare for FEED_GATE of one.
+
+       A CRUDE UNIT (rule 6) only while the city's own petrol and diesel not
+       covered on the trend come to FEED_GATE of what it would make of them,
+       or the wells' spare crude to FEED_GATE of what it runs - and then AS A
+       PACKAGE (★ spec-oil 2.4, packageEstimate()). On imported crude a crude
+       unit alone fails at the research's prices in any city (scratch-oil's
+       topping-gate.txt), and then its units never come. So it is weighed
+       with the conversion units of its own size (the smallest crude unit
+       with each kind's smallest unit, a larger one with each kind's
+       largest) whose spread and feed gates its cuts would pass, added one at
+       a time, the widest margin first, at most PACKAGE_MOST_UNITS. The
+       margin is its products' gain through the units standing at the city's
+       values less its crude at K's prices - the wells' spare at the local
+       price, the rest at the net import price - plus each unit's; the cost
+       is all of theirs. Only the crude unit is ordered; its units follow on
+       their own spreads. Its crude is the wells' spare at the grades they
+       lift next (gradesAhead()) and the rest MEDIUM, the world's - the
+       prototype's hypothetical mix.
+
+       THE MONEY GATE is the planner's, one replaceable piece (SpreadPlanner.
+       MoneyGate): in force, 1.25 times the interest at the real rate on what
+       the order would borrow - Game.consider()'s own test. A package is
+       tested on its whole margin against its whole cost.
+
+       WHAT THE INVESTORS' TEST READS (estimatedMonthlyProfit()): a unit's
+       earnings, and a crude unit's share of its package's by cost, so
+       Game.consider()'s test on the crude unit's own cost is the package's
+       on its, margin over cost being the same. The build card reads it too.
+
+       PURE ON ITS OUTLOOK: appraise() reads the city through an Outlook (the
+       units standing, the crude and its mix, the values, what is short, the
+       wells' spare and its grades, the crude's two prices) and a
+       SpreadPlanner.City (costs and gates), so RefineryCheck runs it in the
+       prototype's frame as well as in a town.
+
+       IDLE, THEN SHED: a kind whose units stood with no feed in the month's
+       flow SpreadPlanner.IDLE_MONTHS running (extras idleMonths.<KIND>) is
+       the one kind mayRetire() passes; retirementDemandAndCapacity() is then
+       {0, its feed}, so the spare-capacity rule sells it while Refining
+       loses money. ★ The crude units stay the distress rule's, as every
+       maker's plant is, while no kind of unit stands idle long enough to go
+       first.
+       ===================================================================== */
+
+    /** The most conversion units a crude unit is weighed with: the prototype's twelve rounds (spread.py, its package) - more than one of each of the seven kinds. */
+    public static final int PACKAGE_MOST_UNITS = 12;
+
+    /** Each kind's name, in Kind's order: what the idle months are saved by. */
+    static final List<String> KIND_NAMES;
+    static {
+        List<String> names = new ArrayList<>();
+        for (RefineryFlow.Kind k : RefineryFlow.Kind.values()) names.add(k.name());
+        KIND_NAMES = Collections.unmodifiableList(names);
+    }
+
+    /** The refiners' spread planner: their money gate and their kinds' idle months. */
+    private final SpreadPlanner planner = new SpreadPlanner();
+
+    /** The refiners' spread planner (a probe sets its money gate for the counterfactual). */
+    public SpreadPlanner planner() { return planner; }
+
+    /** Each product at the city's own price (SpreadPlanner.cityValue()), by Good's ordinal: what the planner's spreads are struck at. */
+    public double[] cityValues() {
+        return RefineryFlow.values(g -> SpreadPlanner.cityValue(markets == null ? null : markets.get(g)));
+    }
+
+    /**
+     * What the planner reads of the city (spec-oil 2.4).
+     *
+     * @param feed        litres a month each kind of unit standing takes, by RefineryFlow.Kind's ordinal
+     * @param crude       tonnes a month the crude units standing run
+     * @param mix         their crude mix, each grade's share in Deposit.Grade's order
+     * @param values      each product's value, by Good's ordinal (cityValues())
+     * @param room        litres a month of petrol and diesel the city wants on the trend past what its
+     *                    refinery makes and has coming: what it imports
+     * @param spareCrude  tonnes a month the wells could lift that no refinery takes (spareCrude())
+     * @param spareMix    the grades of the wells' next crude (gradesAhead())
+     * @param crudeLocal  a tonne of the wells' crude at home: crude's local price
+     * @param crudeImport a tonne imported, landed and hauled: crude's net import price
+     */
+    public record Outlook(double[] feed, double crude, double[] mix, double[] values, double room,
+                          double spareCrude, double[] spareMix, double crudeLocal, double crudeImport) { }
+
+    /** This month's outlook, as plan() reads it. */
+    public Outlook outlook(BusinessInvestment plans) {
+        double room = 0;
+        for (Good g : BOUGHT_HERE) room += plans.forecast(this, markets.get(g)) - getCapacity(g) - getPipeline(g);
+        double spare = spareCrude();
+        GoodsMarket crude = markets.get(Good.CRUDE);
+        double local = crude.getLocalPrice(), imported = crude.netImportPrice();
+        return new Outlook(unitFeed(false), getInputAtCapacity(Good.CRUDE), crudeMix.clone(), cityValues(), room,
+                spare, spare > 0 ? wellsGradesAhead() : MEDIUM_MIX.clone(),
+                Double.isFinite(local) ? local : 0, Double.isFinite(imported) ? imported : 0);
+    }
+
+    /** The grades the wells lift next: their month's potential laid along the city's oil from what has been lifted (LandManager.oilRuns()); MEDIUM with no wells. */
+    double[] wellsGradesAhead() {
+        Oil wells = game == null ? null : game.getSectors().oil();
+        LandManager land = game == null ? null : game.getLandManager();
+        if (wells == null || land == null) return MEDIUM_MIX.clone();
+        return gradesAhead(land.oilRuns(), land.getExtracted(Resource.OIL), wells.getPotentialOutput());
+    }
+
+    /**
+     * The grades of the city's oil from `from` to `from + tonnes` tonnes, as
+     * it is worked out (pure): each run's part of it ({end, grade's ordinal},
+     * LandManager.oilRuns()), past the last run MEDIUM, as a mix in
+     * Deposit.Grade's order; MEDIUM_MIX for no tonnes.
+     */
+    public static double[] gradesAhead(double[][] runs, double from, double tonnes) {
+        if (!(tonnes > 0)) return MEDIUM_MIX.clone();
+        double[] mix = new double[Deposit.Grade.values().length];
+        double to = from + tonnes, start = 0, counted = 0;
+        for (double[] r : runs) {
+            double part = Math.min(r[0], to) - Math.max(start, from);
+            if (part > 0) {
+                mix[(int) r[1]] += part;
+                counted += part;
+            }
+            start = r[0];
+            if (start >= to) break;
+        }
+        if (tonnes - counted > 0) mix[Deposit.Grade.MEDIUM.ordinal()] += tonnes - counted;
+        for (int i = 0; i < mix.length; i++) mix[i] /= tonnes;
+        return mix;
+    }
+
+    /** Two runs' mixes as one: `a` over `wa` tonnes and `b` over `wb`, each grade's share of the two; MEDIUM_MIX for none. */
+    static double[] blend(double[] a, double wa, double[] b, double wb) {
+        double all = Math.max(0, wa) + Math.max(0, wb);
+        if (!(all > 0)) return MEDIUM_MIX.clone();
+        double[] mix = new double[Deposit.Grade.values().length];
+        for (int i = 0; i < mix.length; i++) {
+            if (wa > 0) mix[i] += a[i] * wa / all;
+            if (wb > 0) mix[i] += b[i] * wb / all;
+        }
+        return mix;
+    }
+
+    /** The feed a kind of unit would find spare in a flow (the prototype's): its stream's; the coker's the residue and the heavy residue; a hydrocracker's no more gas oil than the spare hydrogen treats. */
+    public static double spareFeed(RefineryFlow.Flow f, RefineryFlow.Kind k) {
+        return switch (k) {
+            case COKER -> f.spare(RefineryFlow.Stream.RESIDUE) + f.spare(RefineryFlow.Stream.HEAVY_RESIDUE);
+            case HYDROCRACKER -> Math.min(f.spare(RefineryFlow.Stream.GAS_OIL), f.spareHydrogen() / RefineryFlow.HYDROGEN_USED);
+            default -> f.spare(k.feed());
+        };
+    }
+
+    /** What a kind's feed is called in a refusal: its stream, and a hydrocracker's the hydrogen with it. */
+    static String feedWords(RefineryFlow.Kind k) {
+        return k == RefineryFlow.Kind.HYDROCRACKER ? "gas oil with hydrogen to treat it"
+                : k == RefineryFlow.Kind.COKER ? "residue" : k.feed().words();
+    }
+
+    /**
+     * Every building of the refiners' weighed at the gates, in `templates`'
+     * order (pure in its arguments): each conversion unit on its spread, each
+     * crude unit as a package. The flow they are weighed in is the units
+     * standing at the outlook's values.
+     */
+    public static List<SpreadPlanner.Candidate> appraise(Outlook o, List<BuildingsTemplate> templates, SpreadPlanner.City city) {
+        RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
+        List<SpreadPlanner.Candidate> out = new ArrayList<>();
+        for (BuildingsTemplate t : templates) {
+            if (isConversionUnit(t)) out.add(unitEstimate(flow, t, city));
+            else if (isCrudeUnit(t)) out.add(packageEstimate(o, flow, t, templates, city));
+        }
+        return out;
+    }
+
+    /** One conversion unit weighed (pure): its spread on the feed it would find spare in `flow`, at most its own, at the rate less its costs; its feed gate FEED_GATE of one. */
+    public static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city) {
+        RefineryFlow.Kind k = t.refineryUnit();
+        double one = t.feedPerMonth(), spare = Math.max(0, spareFeed(flow, k));
+        double earns = SpreadPlanner.earns(t, flow.spread(k) * Math.min(spare, one), city);
+        String feed = spare >= SpreadPlanner.FEED_GATE * one ? null
+                : String.format("%,.0f L a month of %s spare, under %.0f%% of %s's %,.0f L", spare, feedWords(k),
+                        SpreadPlanner.FEED_GATE * 100, a(t.getName()), one);
+        return SpreadPlanner.judge(t, earns, city.cost(t), feed, city, null);
+    }
+
+    /**
+     * One crude unit weighed as a package (pure; spec-oil 2.4, rule 6 and the
+     * package): a candidate only while the city's petrol and diesel short on
+     * the trend come to FEED_GATE of what it would make of them, or the
+     * wells' spare to FEED_GATE of its crude. Its margin: the products its
+     * crude adds through the units standing (`before` is their flow) at the
+     * outlook's values, less the crude at K's prices, at the rate, less its
+     * costs - then each unit of its own size its cuts would feed, the widest
+     * margin first, added with its margin and cost. The candidate is the
+     * crude unit's, its earnings and cost the package's.
+     */
+    public static SpreadPlanner.Candidate packageEstimate(Outlook o, RefineryFlow.Flow before, BuildingsTemplate t,
+                                                          List<BuildingsTemplate> templates, SpreadPlanner.City city) {
+        double add = t.uses(Good.CRUDE);
+        double local = Math.min(add, Math.max(0, o.spareCrude()));
+        double[] own = blend(o.spareMix(), local, MEDIUM_MIX, add - local);
+        double makes = boughtHere(slate(add, own));
+        String feed = o.room() >= SpreadPlanner.FEED_GATE * makes || o.spareCrude() >= SpreadPlanner.FEED_GATE * add ? null
+                : String.format("%,.0f L of petrol and diesel and %,.0f t of crude to spare: none for another refinery",
+                        Math.max(0, o.room()), Math.max(0, o.spareCrude()));
+        double run = o.crude() + add;
+        double[] mix = blend(o.mix(), o.crude(), own, add);
+        double[] values = o.values();
+        RefineryFlow.Flow after = RefineryFlow.solve(o.feed(), run, mix, values);
+        double gain = 0;
+        for (Good g : PRODUCTS) gain += (after.of(g) - before.of(g)) * values[g.ordinal()];
+        double crude = local * o.crudeLocal() + (add - local) * o.crudeImport();
+        double earns = SpreadPlanner.earns(t, gain - crude, city), cost = city.cost(t);
+        // ...and the units of its own size its cuts would feed, one at a time.
+        int size = sizeOf(t, templates);
+        double[] with = o.feed().clone();
+        List<BuildingsTemplate> units = new ArrayList<>();
+        for (int round = 0; round < PACKAGE_MOST_UNITS; round++) {
+            RefineryFlow.Flow f = RefineryFlow.solve(with, run, mix, values);
+            BuildingsTemplate next = null;
+            double best = 0;
+            for (RefineryFlow.Kind k : RefineryFlow.Kind.values()) {
+                BuildingsTemplate u = unitOfSize(k, size, templates);
+                if (u == null || !(f.spread(k) > 0)) continue;
+                double spare = Math.max(0, spareFeed(f, k));
+                if (spare < SpreadPlanner.FEED_GATE * u.feedPerMonth()) continue;
+                double margin = SpreadPlanner.earns(u, f.spread(k) * Math.min(spare, u.feedPerMonth()), city);
+                if (margin > best) {
+                    best = margin;
+                    next = u;
+                }
+            }
+            if (next == null) break;
+            with[next.refineryUnit().ordinal()] += next.feedPerMonth();
+            earns += best;
+            cost += city.cost(next);
+            units.add(next);
+        }
+        return SpreadPlanner.judge(t, earns, cost, feed, city, units);
+    }
+
+    /** A crude unit's size among the crude units of `templates`: 0 for the one taking the least crude, and so on. */
+    static int sizeOf(BuildingsTemplate t, List<BuildingsTemplate> templates) {
+        int rank = 0;
+        for (BuildingsTemplate c : templates) {
+            if (isCrudeUnit(c) && c.uses(Good.CRUDE) < t.uses(Good.CRUDE)) rank++;
+        }
+        return rank;
+    }
+
+    /** A kind's unit of a size: its templates by feed, the smallest first, the one at `size` (its largest past them); null for a kind with none. */
+    static BuildingsTemplate unitOfSize(RefineryFlow.Kind k, int size, List<BuildingsTemplate> templates) {
+        List<BuildingsTemplate> of = new ArrayList<>();
+        for (BuildingsTemplate u : templates) if (isConversionUnit(u) && u.refineryUnit() == k) of.add(u);
+        if (of.isEmpty()) return null;
+        of.sort(java.util.Comparator.comparingDouble(BuildingsTemplate::feedPerMonth));
+        return of.get(Math.min(size, of.size() - 1));
+    }
+
+    /** "a Small Coker", "an Oil Refinery". */
+    static String a(String name) {
+        return (name != null && !name.isEmpty() && "AEIOUaeiou".indexOf(name.charAt(0)) >= 0 ? "an " : "a ") + name;
+    }
+
+    /** A candidate named, with the units it was weighed with: "an Oil Refinery with a Small Lube Plant and a Small Coker behind it". */
+    static String named(SpreadPlanner.Candidate c) {
+        String name = a(c.template().getName());
+        List<BuildingsTemplate> with = c.with();
+        if (with.isEmpty()) return name;
+        StringBuilder s = new StringBuilder(name).append(" with ");
+        for (int i = 0; i < with.size(); i++) {
+            if (i > 0) s.append(i == with.size() - 1 ? " and " : ", ");
+            s.append(a(with.get(i).getName()));
+        }
+        return s.append(" behind it").toString();
+    }
+
+    /**
+     * Whether to build, and what (THE SPREAD PLANNER): one order in flight;
+     * of the refiners' buildings that pass the gates, the one that earns
+     * most on its cost; with none, ground if ground was all that stood in
+     * the way, else the best-fed candidate's refusal.
+     */
+    @Override
+    public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
+        String sector = key();
+        if (buildings.getUnderConstructionBySector(sector) >= BusinessInvestment.MAX_CONCURRENT_ORDERS) {
+            return BusinessInvestment.Decision.no(sector, "already building");
+        }
+        Outlook o = outlook(plans);
+        List<SpreadPlanner.Candidate> all = appraise(o, buildings.getTemplatesBySector(sector), planner.city(this, plans, game));
+        SpreadPlanner.Candidate best = SpreadPlanner.best(all);
+        // ...and a Tank Farm while a port holds their crude back for room (0.7.86), weighed beside the units on its cost.
+        SpreadPlanner.Candidate farm = farmCandidate(plans, game);
+        if (farm != null && farm.passes() && farm.earns() > 0 && farm.cost() > 0 && (best == null || farm.score() > best.score())) {
+            return new BusinessInvestment.Decision(sector, farm.template(), 1, String.format(
+                    "a Tank Farm saves $%,.1fk a month of freight on the crude a port holds back for room, on $%,.0fk, %.2f%%"
+                            + " a month", farm.earns(), farm.cost(), 100 * farm.score()), true);
+        }
+        if (best != null) {
+            return new BusinessInvestment.Decision(sector, best.template(), 1, String.format(
+                    "%s earns $%,.1fk a month on $%,.0fk at the city's prices, %.2f%% a month", named(best), best.earns(),
+                    best.cost(), 100 * best.score()), true);
+        }
+        SpreadPlanner.Candidate land = SpreadPlanner.bestBlockedByLand(all);
+        if (land != null) return BusinessInvestment.Decision.noLand(sector, plans.landReason(land.template()));
+        SpreadPlanner.Candidate fed = SpreadPlanner.bestFed(all);
+        if (fed == null) {
+            return BusinessInvestment.Decision.no(sector, o.room() > 0 || o.spareCrude() > 0
+                    ? String.format("%,.0f L of petrol and diesel and %,.0f t of crude to spare: none for another refinery,"
+                            + " and no stream spare for a unit", Math.max(0, o.room()), o.spareCrude())
+                    : "the city's petrol and diesel are covered already, its wells have no crude to spare, and no stream"
+                            + " is spare for a unit");
+        }
+        // ...worded by what matters most: that it would not pay, then the staff, then the ground.
+        String money = fed.refusal(SpreadPlanner.Gate.MONEY), staff = fed.refusal(SpreadPlanner.Gate.STAFF);
+        return BusinessInvestment.Decision.no(sector, money != null
+                ? named(fed) + " " + money + (fed.earns() > 0 ? "" : ": it does not pay")
+                : staff != null ? staff : fed.why());
+    }
+
+    /** One building of the refiners' weighed now (THE SPREAD PLANNER), at this month's outlook and the game's gates. */
+    public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
+        SpreadPlanner.City city = planner.city(this, plans, game);
+        Outlook o = outlook(plans);
+        RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
+        return isConversionUnit(t) ? unitEstimate(flow, t, city)
+                : packageEstimate(o, flow, t, buildings.getTemplatesBySector(key()), city);
+    }
+
+    /**
+     * What one more building of the refiners' would earn its owner a month
+     * (THE SPREAD PLANNER): a conversion unit's earnings on the feed it would
+     * find, and a crude unit's share of its package's earnings by cost - what
+     * Game.consider() tests the order on, and the build card shows.
+     */
+    @Override
+    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        if (t == null || markets == null || buildings == null || !(isConversionUnit(t) || isCrudeUnit(t))) {
+            return t == null ? 0 : plans.estimatedMakerProfit(this, t, madeBy(t));
+        }
+        SpreadPlanner.Candidate c = appraise(t, plans);
+        if (isConversionUnit(t) || !(c.cost() > 0)) return c.earns();
+        return c.earns() * plans.getCostOf(t, 1) / c.cost();
+    }
+
+    /* ----- idle, then shed ----- */
+
+    /** The month's end for the units: each kind standing counted idle (no feed in the month's flow) or working. */
+    private void noteIdleUnits() {
+        double[] standing = unitFeed(false);
+        boolean any = false;
+        for (double f : standing) any |= f > 0;
+        RefineryFlow.Flow f = any ? flow() : null;
+        for (RefineryFlow.Kind k : RefineryFlow.Kind.values()) {
+            planner.noteMonth(k.name(), standing[k.ordinal()] > 0, f == null || !(f.run(k) > 0));
+        }
+    }
+
+    /** Litres a month the kinds idle long enough to shed would take: their units standing. */
+    public double idleFeed() {
+        double[] standing = unitFeed(false);
+        double idle = 0;
+        for (RefineryFlow.Kind k : RefineryFlow.Kind.values()) {
+            if (planner.mayShed(k.name())) idle += standing[k.ordinal()];
+        }
+        return idle;
+    }
+
+    /** Months a kind of unit has stood idle running (extras idleMonths.<KIND>). */
+    public int idleMonths(RefineryFlow.Kind k) { return planner.idleMonths(k.name()); }
+
+    /** A conversion unit only once its kind has stood idle long enough; a crude unit only while no kind has (THE SPREAD PLANNER). */
+    @Override
+    public boolean mayRetire(BuildingsTemplate t) {
+        if (isConversionUnit(t)) return planner.mayShed(t.refineryUnit().name());
+        return !(idleFeed() > 0);
+    }
+
+    /** The spare-capacity rule's measure: {0, the idle kinds' feed} while a kind stands idle long enough to shed; otherwise none - a price-taking exporter shrinks on distress only (HeavyIndustry's rule). */
+    @Override
+    public double[] retirementDemandAndCapacity(Game game) {
+        double idle = idleFeed();
+        return idle > 0 ? new double[] { 0, idle } : null;
+    }
 }

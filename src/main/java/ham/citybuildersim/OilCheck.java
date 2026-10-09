@@ -2,7 +2,10 @@ package ham.citybuildersim;
 
 import ham.citybuildersim.sectors.Oil;
 import ham.citybuildersim.sectors.Rail;
+import ham.citybuildersim.sectors.RefineryFlow;
 import ham.citybuildersim.sectors.Refining;
+import ham.citybuildersim.sectors.Retail;
+import ham.citybuildersim.sectors.SpreadPlanner;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -31,7 +34,10 @@ import java.nio.file.Path;
  *   2. A WELL LIFTS ONLY OWNED OIL. No oil site, no well - the order, the
  *      card, the investors all refuse it; an offer with oil bought is one
  *      well a site; and what the wells lift is exactly what leaves the
- *      ground, the world's oil conserved to the tonne.
+ *      ground, the world's oil conserved to the tonne. A well has one post,
+ *      a diploma's (0.7.84, batch O7; spec-oil 2.6, the research's Q13 -
+ *      three until then); its decline, its life and its dry sites are
+ *      WellCheck's.
  *
  *   3. THE OIL RUNS OUT, AND THE WELLS RETIRE, as the mines do when the ore
  *      does.
@@ -40,12 +46,17 @@ import java.nio.file.Path;
  *
  *   5. THE DRIVERS AND THE RAILWAY TAKE THE REFINERS' FUEL FIRST, and import
  *      only what the tanks do not hold - the drivers' petrol and the
- *      railway's diesel since 0.7.76.
+ *      railway's diesel since 0.7.76. The drivers' since 0.7.83 (batch O6)
+ *      through the grocers' forecourts, which draw it at the refiners'
+ *      price and sell it on at the pump's (sectors.Retail, THE FORECOURTS).
  *
  *   6. FUEL'S MONEY AUDIT CLOSES in every month of a city with wells and a
  *      refinery: the imported part is the households' PetrolImports (their
- *      FuelImports until 0.7.76), the domestic part is on Refining's
- *      statement, and the goods foot to the balance of payments - and the
+ *      FuelImports until 0.7.76) - since 0.7.83 the forecourts' import, on
+ *      Retail's books, and the households' own nothing - the domestic part
+ *      is on Refining's statement (a sale to the forecourts since 0.7.83,
+ *      the drivers' bill Retail's sale to them), and the goods foot to the
+ *      balance of payments - and the
  *      tanks, shared among the products, write none of them off: what nobody
  *      here buys fills its share to the dump line, then ships or (on the
  *      wholesale ladder, 0.7.78, a medium crude's slate) idles.
@@ -53,17 +64,26 @@ import java.nio.file.Path;
  *   7. WITH NO REFINERY, THE HOUSEHOLDS PAY TODAY'S BILL AT THE WORLD'S PRICE
  *      LEVEL, as every good is priced - the railway's fuel always was. Since
  *      0.7.78 (batch O2) the bill is a journey's litres at petrol's place on
- *      the wholesale ladder, 63% under 0.7.49's journey at the pump price.
+ *      the wholesale ladder, 63% under 0.7.49's journey at the pump price -
+ *      the forecourts' wholesale bill since 0.7.83, the drivers paying the
+ *      pump's price on it.
  *
- *   8. A REFINERY IS BUILT FOR THE CITY'S OWN FUEL OR ITS OWN CRUDE, a whole
- *      plant's worth (Refining.plan(), the star the playtest measured: 120
- *      export refineries without it), and its estimate pays for the crude it
- *      would have to import at the import price. The plant's worth is its
- *      petrol and diesel since 0.7.76, the estimate struck over its slate.
+ *   8. A REFINERY IS BUILT FOR THE CITY'S OWN FUEL OR ITS OWN CRUDE
+ *      (Refining.plan(), the star the playtest measured: 120 export
+ *      refineries without it), and pays for the crude it would have to
+ *      import at the import price. Since 0.7.82 (batch O5, the spread
+ *      planner; spec-oil 2.4's rule 6) a crude unit is weighed once the
+ *      city's petrol and diesel short come to FEED_GATE (60%) of what it
+ *      would make of them, or the wells' spare to FEED_GATE of its crude -
+ *      a whole plant's worth until then - and as a package with the units
+ *      its cuts would feed: its crude at the net import price, the wells'
+ *      spare at the local price, and its estimate its share of the
+ *      package's by cost.
  *
  *   9. THE MONTH'S FUEL CROSSES A SAVE: the bill, the imports and the litres
- *      as 6d drew them, and a save from before them derives what that month
- *      struck - every litre imported.
+ *      as 6d drew them - and since 0.7.83 the forecourts' month - and a save
+ *      from before them derives what that month struck - every litre
+ *      imported.
  *
  *  10. A SAVE FROM BEFORE 0.7.76 HAS ITS FUEL SPLIT (FuelSplit, spec-oil 3):
  *      every FUEL figure into PETROL and DIESEL by the drivers' share of the
@@ -85,6 +105,46 @@ import java.nio.file.Path;
  *      crude at the lift's grades and its imports at medium, next month's
  *      slate is struck on it, and it crosses a save (a save without it
  *      reads medium).
+ *
+ *  13. THE PHASE-1 BUYERS (0.7.83, batch O6; spec-oil 2.5): the vans burn
+ *      diesel and the factories lubricants, the paved roads take bitumen,
+ *      the drivers' petrol comes from the forecourts - each drawn or bought
+ *      off the refiners' tanks first and the world for the rest - and the
+ *      goods, the four among them, foot to the balance of payments' imports
+ *      every month, the audit closing.
+ *
+ *  14. THE FORECOURTS (0.7.83; runs/research-pump.md 7): the grocers draw
+ *      the drivers' litres at wholesale and sell them at the pump price -
+ *      the wholesale a litre times 1 + PUMP_MARGIN, the sales tax passed on
+ *      - as far as their stations can sell, and at the queue's price
+ *      (QUEUE_MARGIN) past that; the drivers' bill is Retail's sale to the
+ *      households to the bit; a journey's fuel is the pump's; the grocers
+ *      order a Filling Station when the drivers' litres outrun what their
+ *      stations can sell, earning on the litres it would sell, and the shops'
+ *      rules never sell one; the month crosses a save, and a save from
+ *      before reads none sold.
+ *
+ *  15. THE TANK FARM (0.7.85, batch O8; spec-oil 2.8): with none standing
+ *      the refiners keep no crude and every figure is what it was; with one
+ *      they keep CRUDE_COVER_MONTHS of their crude units' run as far as its
+ *      room holds, their products share the rest of the room, their order
+ *      is the run and what fills the store, bought as stock - and a refinery
+ *      short of cash runs down its tanks and then runs no more than its
+ *      crude on hand and the month's fill: the run held to the crude. The
+ *      store crosses a save.
+ *
+ *  16. THE STRATEGIC RESERVE (0.7.85; spec-oil 2.8): no room, no fill; a
+ *      fill, cut to the room and the treasury's means, bought in the month's
+ *      crude market from the wells first and the world for the rest, its
+ *      book what it paid; settled at the next strike - the part bought
+ *      abroad the audit's "- city ReserveFill", the part from the wells
+ *      Oil's sale banked at the same strike, the whole journalled, the
+ *      reserve's cash exact; a release sold to the refiners pro rata with
+ *      the wells and shipped past what they take ("+ city ReserveSales"),
+ *      its book falling at average cost; each lever the player's decision,
+ *      a release cancelling a fill; the crude among the goods held, the
+ *      goods footing to the balance of payments and the audit closing
+ *      every month; and the reserve crossing a save to settle the same.
  *
  * Every fixture CAUSES its condition: the city is handed its oil the way
  * MiningCheck hands a city its ore (LandManager.restoreSites()), except in
@@ -110,6 +170,11 @@ public class OilCheck {
         boolean ok = Math.abs(actual - expected) <= Math.max(tol, Math.abs(expected) * tol);
         if (!ok) fails++;
         out.printf("%-96s %s  %,.6f against %,.6f%n", label, ok ? "OK" : "FAIL", actual, expected);
+    }
+
+    /** Bitwise, NaN equal to NaN: a figure that crossed a save (0.7.83). */
+    static boolean same(double a, double b) {
+        return Double.compare(a, b) == 0;
     }
 
     static void quietly(Runnable r) {
@@ -203,6 +268,10 @@ public class OilCheck {
         Game back = theSplit(oilTown);
         aRefineryCloses(back);
         crudeByGrade();
+        phaseOneBuyers();
+        theForecourts();
+        theTankFarm();
+        theStrategicReserve();
 
         out.println();
         if (fails == 0) {
@@ -211,6 +280,490 @@ public class OilCheck {
             out.println(fails + " FAILED");
             System.exit(fails);
         }
+    }
+
+    /* ============================ 15. THE TANK FARM (0.7.85) ============================ */
+
+    /** The litres a tonne of medium crude's slate makes, every product: what the tanks are shared by with no unit standing (Refining.getStockCapacity()). */
+    static double slateLitres(Refining.Slate one) {
+        double all = 0;
+        for (double v : one.products().values()) all += v;
+        return all;
+    }
+
+    /**
+     * A 600-house town with an Oil Refinery (held, as section 4's is) on
+     * imported crude, then a Tank Farm beside it: the store, the room, the
+     * order; two months with the refiners' till emptied, so their order for
+     * crude - stock now - is not placed, and they run down the store and
+     * then run on what is left of it; and the store across a save.
+     */
+    static void theTankFarm() throws Exception {
+        out.println("\n--- 15. the tank farm: a month's crude kept, the products the rest of the room, the run held to the"
+                + " crude (0.7.85) ---");
+        Game g = town("oilcheck-tanks", 600, 870_000 + 1_076_391 + 700_000);
+        BuildingsTemplate refinery = template(g, "Oil Refinery"), farm = template(g, "Tank Farm");
+        Refining refiners = g.getSectors().refining();
+        quietly(() -> {
+            g.getBusinessInvestment().holdSector(Sectors.REFINING);
+            g.buildStack(refinery, 1, true);
+            g.simulateMonths(3);
+        });
+        double run = refiners.getInputAtCapacity(Good.CRUDE), tanks = refinery.getStock();
+        Refining.Slate one = Refining.slate(1);
+        double all = slateLitres(one);
+        report("with no Tank Farm the refiners keep no crude: bought whole at the rate, the tanks the products' as they"
+                        + " were, to the bit",
+                !refiners.keepsCrude() && refiners.crudeKept() == 0 && !refiners.buysAhead(Good.CRUDE)
+                        && refiners.getPantry(Good.CRUDE) == 0 && refiners.tankFarmRoom() == 0
+                        && refiners.getStockCapacity(Good.PETROL) == tanks * one.of(Good.PETROL) / all
+                        && refiners.bid(Good.CRUDE) == run * refiners.getOperatingRate(),
+                String.format("%,.0f t a month, %,.0f L of tanks", run, tanks));
+
+        quietly(() -> g.buildStack(farm, 1, true));
+        double kept = refiners.crudeKept();
+        double rest = tanks + farm.getStock() - kept * Refining.CRUDE_LITRES_PER_TONNE;
+        report("a Tank Farm standing, they keep CRUDE_COVER_MONTHS of their crude units' run at nameplate, as far as its"
+                        + " room holds: a month, 8,300 t - crude's own room",
+                refiners.keepsCrude() && refiners.tankFarmRoom() == farm.getStock() && kept == 8300
+                        && kept == Math.min(Refining.CRUDE_COVER_MONTHS * run, farm.getStock() / Refining.CRUDE_LITRES_PER_TONNE)
+                        && refiners.getStockCapacity(Good.CRUDE) == kept,
+                String.format("%,.0f t of %,.0f L", kept, farm.getStock()));
+        boolean shared = true;
+        for (Good p : refiners.goodsMade()) shared &= refiners.getStockCapacity(p) == rest * one.of(p) / all;
+        report("...and the products share the rest of the room, the farm's and the refinery's tanks less the crude's"
+                + " litres, as they shared the tanks before, to the bit", shared,
+                String.format("%,.0f L of %,.0f", rest, tanks + farm.getStock()));
+        double held0 = refiners.getPantry(Good.CRUDE), rate0 = refiners.getOperatingRate();
+        report("...their order the month's run at the rate and what fills the store to it, and their crude is stock:"
+                        + " bought as far as they can pay (Sector.buysAhead())",
+                refiners.buysAhead(Good.CRUDE) && refiners.bid(Good.CRUDE) == Math.max(0, run * rate0 + kept - held0),
+                String.format("%,.0f t", refiners.bid(Good.CRUDE)));
+
+        // A month: the store fills.
+        quietly(() -> g.simulateMonths(1));
+        Sector.Input in = refiners.inputRow(Good.CRUDE);
+        double fill1 = in.boughtLocal + in.imported, rate1 = refiners.getOperatingRate();
+        double held1 = refiners.getPantry(Good.CRUDE);
+        report("a month on, what it had and the fill less the run at the rate: the store a month's run",
+                held1 == Refining.crudeAfterRun(held0, fill1, run * rate1) && Math.abs(held1 - kept) <= 1e-9 * kept,
+                String.format("%,.4f t on hand, %,.4f t bought", held1, fill1));
+        report("...counted among the goods the national accounts hold (NationalAccounts.HELD)",
+                java.util.Arrays.asList(NationalAccounts.HELD).contains(Good.CRUDE)
+                        && g.getEconomyManager().getNationalAccounts().getLastHeldUnits()[NationalAccounts.HELD.length - 1] >= 0,
+                "");
+
+        // ...across a save, before the till is emptied.
+        GameFiles files = FILES.get(g);
+        quietly(() -> g.saveGame(10, "tanks"));
+        Game twin = new Game(files);
+        quietly(() -> twin.loadGameSave(10));
+        Refining twinRefiners = twin.getSectors().refining();
+        report("the store crosses a save: the crude on hand, to the bit, and kept as the live city keeps it",
+                same(twinRefiners.getPantry(Good.CRUDE), held1) && twinRefiners.keepsCrude() && twinRefiners.crudeKept() == kept,
+                String.format("%,.4f t", twinRefiners.getPantry(Good.CRUDE)));
+        quietly(() -> { g.simulateMonths(1); twin.simulateMonths(1); });
+        report("...and a month on the reloaded city's store is the live one's, to the bit",
+                same(twinRefiners.getPantry(Good.CRUDE), refiners.getPantry(Good.CRUDE)),
+                String.format("%,.4f t", refiners.getPantry(Good.CRUDE)));
+
+        // The till emptied two months running: the order for stock is not placed; the store runs down, then binds.
+        double[] h = new double[3], fills = new double[2], made = new double[2], cap = new double[2], ratesAfter = new double[2];
+        h[0] = refiners.getPantry(Good.CRUDE);
+        for (int m = 0; m < 2; m++) {
+            final int k = m;
+            quietly(() -> {
+                refiners.setCash(-1e12);
+                g.simulateMonths(1);
+            });
+            Sector.Input row = refiners.inputRow(Good.CRUDE);
+            fills[k] = row.boughtLocal + row.imported;
+            h[k + 1] = refiners.getPantry(Good.CRUDE);
+            ratesAfter[k] = refiners.getOperatingRate();
+            cap[k] = Refining.crudeRunCap(h[k], fills[k], run);
+            Sector.Output petrol = refiners.output(Good.PETROL);
+            made[k] = petrol.planned + petrol.exportBound + petrol.idled;
+        }
+        report("fixture: with the refiners' till emptied their order for crude is not placed, and the store pays",
+                fills[0] == 0 && fills[1] == 0 && h[1] < h[0],
+                String.format("bought %,.0f and %,.0f t; on hand %,.0f, %,.0f, %,.0f t", fills[0], fills[1], h[0], h[1], h[2]));
+        report("...the first month runs on the store, at the rate, the crude on hand covering it",
+                cap[0] >= ratesAfter[0] && h[1] == Refining.crudeAfterRun(h[0], fills[0], run * ratesAfter[0])
+                        && Math.abs(made[0] - refiners.getCapacity(Good.PETROL) * ratesAfter[0]) <= 1e-9 * made[0],
+                String.format("cap %.4f, rate %.4f", cap[0], ratesAfter[0]));
+        report("...and the second runs no more than what was left: the rate held to the crude on hand and the month's fill"
+                        + " (Refining.crudeRunCap()), the store empty",
+                cap[1] < ratesAfter[1] && h[2] <= 1e-9 * h[1]
+                        && Math.abs(made[1] - refiners.getCapacity(Good.PETROL) * cap[1]) <= 1e-9 * Math.max(1, made[1]),
+                String.format("cap %.4f under the rate %.4f; %,.0f L of petrol's nameplate run, %,.0f at the rate",
+                        cap[1], ratesAfter[1], made[1], refiners.getCapacity(Good.PETROL) * ratesAfter[1]));
+        assertTrue("...the run's cap is the crude on hand and the fill over the nameplate run, none with no crude unit (pure)",
+                Refining.crudeRunCap(100, 200, 400) == .75 && Refining.crudeRunCap(-5, 300, 600) == .5
+                        && Refining.crudeRunCap(1, 1, 0) == Double.POSITIVE_INFINITY
+                        && Refining.crudeAfterRun(100, 200, 250) == 50 && Refining.crudeAfterRun(100, 0, 250) == 0);
+    }
+
+    /* ============================ 16. THE STRATEGIC RESERVE (0.7.85) ============================ */
+
+    /** The amount of a journal line last month (Game.getTreasuryJournal()), summed; NaN when absent. */
+    static double journalled(Game g, String label) {
+        double sum = Double.NaN;
+        for (TreasuryJournal.Entry e : g.getTreasuryJournal()) {
+            if (!e.label().equals(label)) continue;
+            sum = Double.isNaN(sum) ? e.amount() : sum + e.amount();
+        }
+        return sum;
+    }
+
+    /**
+     * A 600-house town with four wells and room for a Strategic Reserve: no
+     * room, no fill; a fill more than the wells lift, with no refinery to
+     * share their crude; the strike after; a refinery (held) and a release it
+     * takes all of, then one past what it takes; and the reserve across a
+     * save. Every month the audit closes and the goods foot to the balance of
+     * payments.
+     */
+    static void theStrategicReserve() throws Exception {
+        out.println("\n--- 16. the strategic reserve: the city's crude, filled from the wells and the world, released to"
+                + " the refiners and the world, its money at the strike (0.7.85) ---");
+        int wellsN = 4;
+        Game g = town("oilcheck-reserve", 600, wellsN * 87_120 + 870_000 + 1_076_391 + 700_000);
+        BuildingsTemplate well = template(g, "Oil Well"), refinery = template(g, "Oil Refinery");
+        BuildingsTemplate reserveT = template(g, "Strategic Reserve");
+        StrategicReserve reserve = g.getReserve();
+        Oil oil = g.getSectors().oil();
+        Refining refiners = g.getSectors().refining();
+        double[] noRoom = new double[1];
+        int[] logged = new int[1];
+        quietly(() -> {
+            g.getBusinessInvestment().holdSector(Sectors.REFINING);
+            g.getLandManager().restoreSites(Resource.OIL, wellsN, 5_000_000);
+            g.buildStack(well, wellsN, true);
+            g.simulateMonths(3);
+            logged[0] = g.getDecisions().size();
+            noRoom[0] = g.fillReserve(1_000);
+        });
+        report("with no Strategic Reserve standing there is no room: a fill orders nothing, and is no decision",
+                noRoom[0] == 0 && reserve.getFill() == 0 && g.getDecisions().size() == logged[0]
+                        && StrategicReserve.room(g.getBuildingManager()) == 0, "");
+        quietly(() -> g.buildStack(reserveT, 1, true));
+        double room = StrategicReserve.room(g.getBuildingManager());
+        report("a Strategic Reserve's room is its tanks' litres at a tonne of crude's: 429,185 t",
+                room == reserveT.getStock() / Refining.CRUDE_LITRES_PER_TONNE && Math.round(room) == 429_185,
+                String.format("%,.2f t", room));
+
+        // The fill: more than the wells lift, with no refinery to share their crude.
+        double order = 50_000;
+        double ordered = g.fillReserve(order);
+        DecisionLog.Entry said = g.getDecisions().last();
+        report("a fill is ordered for the next clearing and recorded as the player's decision",
+                ordered == order && reserve.getFill() == order && g.getDecisions().size() == logged[0] + 1
+                        && DecisionLog.RESERVE.equals(said.kind()),
+                said.label());
+        double worstAudit = 0, worstGoods = 0;
+        quietly(() -> g.simulateMonths(1));
+        worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
+        Sector.Output lifted = oil.output(Good.CRUDE);
+        GoodsMarket crude = g.getMarkets().get(Good.CRUDE);
+        report("fixture: four wells lift less than the order, and no refinery buys their crude",
+                lifted.produced > 0 && lifted.produced < order && refiners.buildingsStanding() == 0,
+                String.format("%,.0f t lifted", lifted.produced));
+        close("the reserve holds the order, bought in the month's crude market", reserve.getTonnes(), order, 1e-12);
+        close("...every tonne the wells lifted first", reserve.getBoughtHomeTonnes(), lifted.produced, 1e-12);
+        close("...and the world's for the rest", reserve.getBoughtAbroadTonnes(), order - lifted.produced, 1e-12);
+        report("...at the local price and the import price, its book what it paid, to the bit",
+                same(reserve.getCost(), reserve.getBoughtHome() + reserve.getBoughtAbroad())
+                        && same(reserve.getBoughtAbroad(), reserve.getBoughtAbroadTonnes() * crude.importPrice())
+                        && reserve.getFill() == 0,
+                String.format("$%,.2fk, $%,.2fk of it abroad", reserve.getCost(), reserve.getBoughtAbroad()));
+        report("...the wells' crude Oil's sale to the city, on its books, none shipped",
+                same(oil.pending().soldOf(Good.CRUDE).atHome, reserve.getBoughtHome()) && oil.unitsExported(Good.CRUDE) == 0,
+                String.format("$%,.2fk", oil.pending().soldOf(Good.CRUDE).atHome));
+
+        // The strike settles it.
+        double boughtHome = reserve.getBoughtHome(), boughtAbroad = reserve.getBoughtAbroad(), tonnes1 = reserve.getTonnes();
+        quietly(() -> g.simulateMonths(1));
+        MoneyAudit.Result a = g.getLastMoneyAudit();
+        worstAudit = Math.max(worstAudit, a.relative());
+        report("the next strike settles it: what it bought abroad is the audit's - city ReserveFill, TRADE",
+                reserve.getSettledImports() == boughtAbroad && Math.abs(auditLine(a, "- city ReserveFill") - boughtAbroad) <= .005
+                        && auditLine(a, "+ city ReserveSales") == 0,
+                String.format("$%,.2fk", auditLine(a, "- city ReserveFill")));
+        report("...the treasury paid the whole, at home and abroad, and the bridge names it: the reserve's cash, exact",
+                same(reserve.getSettledBought(), boughtHome + boughtAbroad)
+                        && same(journalled(g, "Bought crude for the strategic reserve"), -(boughtHome + boughtAbroad)),
+                String.format("$%,.2fk", -journalled(g, "Bought crude for the strategic reserve")));
+        report("...and what it paid the wells is Oil's sale, banked at the same strike: a pool paying a pool, not listed",
+                same(oil.statement().sold.get(Good.CRUDE).atHome, boughtHome),
+                String.format("$%,.2fk", oil.statement().sold.get(Good.CRUDE).atHome));
+        Sectors.TradeByGood goods = g.getTradeByGood();
+        Sectors.GoodTrade crudeTrade = goods.goods().get(Good.CRUDE);
+        report("...the crude it bought abroad among crude's, the city among its buyers, footing to the balance of payments",
+                crudeTrade != null && same(crudeTrade.buyers().getOrDefault(Sectors.CITY, 0.0), boughtAbroad)
+                        && Math.abs(goods.bought() - g.getForeignAccounts().tradeImports())
+                        <= 1e-9 * Math.max(1, g.getForeignAccounts().tradeImports()),
+                String.format("$%,.2fk", crudeTrade == null ? 0 : crudeTrade.bought()));
+        report("...and its crude among the goods held, the national accounts' fifth term",
+                g.getEconomyManager().getNationalAccounts().getLastHeldUnits()[NationalAccounts.HELD.length - 1] == tonnes1
+                        && NationalAccounts.HELD[NationalAccounts.HELD.length - 1] == Good.CRUDE,
+                String.format("%,.0f t", tonnes1));
+
+        // A fill past the room is cut to it, or to what the treasury could pay; a release cancels it.
+        double cut = Math.min(room - reserve.getTonnes(), g.discretionaryRoom() / crude.importPrice());
+        double asked = g.fillReserve(1e12);
+        report("a fill past the room is cut to the room left, or to what the treasury could pay at the import price",
+                asked == cut && reserve.getFill() == cut, String.format("%,.0f t", asked));
+        double release = 2_000;
+        g.releaseReserve(release);
+        report("...and a release cancels it: the city never trades with itself",
+                reserve.getFill() == 0 && reserve.getRelease() == release
+                        && g.getDecisions().last().label().contains("the fill cancelled"),
+                g.getDecisions().last().label());
+
+        // The refinery: a release it takes all of, pro rata with the wells, wanting more.
+        quietly(() -> {
+            g.releaseReserve(0);
+            g.buildStack(refinery, 1, true);
+        });
+        quietly(() -> g.simulateMonths(1));
+        worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
+        g.releaseReserve(release);
+        double tonnes2 = reserve.getTonnes(), cost2 = reserve.getCost();
+        quietly(() -> g.simulateMonths(1));
+        worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
+        Sector.Input in = refiners.inputRow(Good.CRUDE);
+        report("fixture: the refinery wants more than the wells and the release offer it",
+                in.bid > release + lifted.produced, String.format("%,.0f t wanted", in.bid));
+        close("the refiners took the release whole, at the local price, pro rata with the wells", reserve.getSoldHomeTonnes(),
+                release, 1e-12);
+        report("...nothing of it shipped, and their books the purchase from the city at the local price",
+                reserve.getSoldAbroadTonnes() == 0 && same(refiners.pending().purchasesBySupplier.getOrDefault(Trade.CITY, 0.0),
+                        reserve.getSoldHome())
+                        && Math.abs(reserve.getSoldHome() - release * crude.getLocalPrice()) <= 1e-9 * reserve.getSoldHome(),
+                String.format("$%,.2fk", reserve.getSoldHome()));
+        close("...the reserve's tonnes fall by the release", reserve.getTonnes(), tonnes2 - release, 1e-12);
+        close("...and its book by the share of it the tonnes were, at average cost", reserve.getCost(),
+                cost2 - cost2 * (release / tonnes2), 1e-12);
+
+        // ...a release past what the refiners take: the rest ships at the export price.
+        double big = 30_000, tonnes3 = reserve.getTonnes();
+        g.releaseReserve(big);
+        quietly(() -> g.simulateMonths(1));
+        worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
+        double home = reserve.getSoldHomeTonnes(), abroad = reserve.getSoldAbroadTonnes();
+        report("a release past what the refiners want ships the rest at the export price, as the wells' unsold crude does",
+                home > 0 && abroad > 0 && Math.abs(home + abroad - big) <= 1e-9 * big
+                        && same(reserve.getSoldAbroad(), abroad * crude.exportPrice()),
+                String.format("%,.0f t to the refiners, %,.0f t shipped", home, abroad));
+        double shipped = reserve.getSoldAbroad(), soldHome = reserve.getSoldHome();
+
+        // ...across a save, its month unsettled.
+        GameFiles files = FILES.get(g);
+        quietly(() -> g.saveGame(10, "reserve"));
+        Game twin = new Game(files);
+        quietly(() -> twin.loadGameSave(10));
+        StrategicReserve back = twin.getReserve();
+        report("the reserve crosses a save: its crude, its book, its release and the month the strike will settle, to the bit",
+                same(back.getTonnes(), reserve.getTonnes()) && same(back.getCost(), reserve.getCost())
+                        && back.getRelease() == big && same(back.getSoldAbroad(), shipped) && same(back.getSoldHome(), soldHome),
+                String.format("%,.2f t, $%,.2fk", back.getTonnes(), back.getCost()));
+        quietly(() -> { g.simulateMonths(1); twin.simulateMonths(1); });
+        worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
+        MoneyAudit.Result b = g.getLastMoneyAudit();
+        report("...the strike after settles what shipped as the audit's + city ReserveSales, TRADE, journalled",
+                reserve.getSettledExports() == shipped && Math.abs(auditLine(b, "+ city ReserveSales") - shipped) <= .005
+                        && same(journalled(g, "Sold crude from the strategic reserve"), soldHome + shipped),
+                String.format("$%,.2fk", auditLine(b, "+ city ReserveSales")));
+        report("...and the reloaded city settles the same, and holds the same, to the bit",
+                same(twin.getReserve().getSettledSold(), reserve.getSettledSold())
+                        && same(twin.getReserve().getSettledExports(), reserve.getSettledExports())
+                        && same(twin.getReserve().getTonnes(), reserve.getTonnes())
+                        && same(twin.getReserve().getCost(), reserve.getCost()),
+                String.format("$%,.2fk", twin.getReserve().getSettledSold()));
+        report("...the release a standing order, the tonnes falling by it", reserve.getTonnes() < tonnes3 - big,
+                String.format("%,.0f t left", reserve.getTonnes()));
+
+        // A year more: the release runs the reserve down and stops with it, the audit closing and the goods footing.
+        for (int m = 0; m < 12; m++) {
+            quietly(() -> g.simulateMonths(1));
+            worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
+            Sectors.TradeByGood gd = g.getTradeByGood();
+            double imports = g.getForeignAccounts().tradeImports(), exports = g.getForeignAccounts().getExports();
+            worstGoods = Math.max(worstGoods, Math.max(Math.abs(gd.bought() - imports) / Math.max(1, imports),
+                    Math.abs(gd.sold() - exports) / Math.max(1, exports)));
+        }
+        report("a release offers no more than the reserve holds: it empties, and its book with it",
+                reserve.getTonnes() == 0 && reserve.getCost() == 0, String.format("%,.2f t", reserve.getTonnes()));
+        report("the goods, the city's crude among them, foot to the balance of payments both ways every month",
+                worstGoods < 1e-9, String.format("worst %.2e", worstGoods));
+        report("...and the audit closes every month", worstAudit < 1e-10, String.format("worst %.2e", worstAudit));
+    }
+
+    /* ============================ 13. THE PHASE-1 BUYERS (0.7.83) ============================ */
+
+    /**
+     * A town that drives, with two filling stations, two fabrication shops, a
+     * machine works and a vehicle works, and a Paved Road ordered: its vans
+     * burn diesel, its factories lubricants, the road bitumen and its drivers
+     * petrol bought at the pump - each from the world, the town having no
+     * refinery - and for a year the goods, the four among them, foot to the
+     * balance of payments' imports and the audit closes.
+     */
+    static void phaseOneBuyers() {
+        out.println("\n--- 13. the phase-1 buyers: vans' diesel, lubricants, bitumen and the pump, footing to the balance of"
+                + " payments (0.7.83) ---");
+        Game g = town("oilcheck-buyers", 600, 4_000_000);
+        BuildingsTemplate paved = template(g, "Paved Road");
+        double[] bitumen = new double[2];
+        quietly(() -> {
+            BuildingManager b = g.getBuildingManager();
+            for (String[] w : new String[][] { { "Filling Station", "2" }, { "Fabrication Shop", "2" }, { "Machine Works", "1" },
+                    { "Vehicle Works", "1" } }) {
+                g.buildStack(b.getTemplateByName(w[0]), Integer.parseInt(w[1]), true);
+            }
+            g.simulateMonths(2);
+            bitumen[0] = g.getBitumenTonnes();
+            g.buildStack(paved, 1, false);
+            bitumen[1] = g.getBitumenTonnes();
+        });
+        report("a Paved Road ordered draws its bitumen as it is placed: 64.25 t, bought by the builders",
+                bitumen[1] - bitumen[0] == g.bitumenFor(paved) && g.bitumenFor(paved) == 64.25
+                        && g.getSectors().construction().pending().boughtOf(Good.BITUMEN).abroad > 0,
+                String.format("%,.2f t, $%,.2fk", bitumen[1] - bitumen[0], g.getBitumenCost()));
+        double worstAudit = 0, worstGoods = 0, diesel = 0, lubricants = 0, petrol = 0, bitumenBought = 0;
+        java.util.Set<String> dieselBuyers = new java.util.TreeSet<>(), lubricantBuyers = new java.util.TreeSet<>();
+        int months = 12;
+        for (int m = 0; m < months; m++) {
+            quietly(() -> g.simulateMonths(1));
+            worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
+            Sectors.TradeByGood goods = g.getTradeByGood();
+            double tradeImports = g.getForeignAccounts().tradeImports();
+            worstGoods = Math.max(worstGoods, Math.abs(goods.bought() - tradeImports) / Math.max(1, tradeImports));
+            Sectors.GoodTrade d = goods.goods().get(Good.DIESEL), l = goods.goods().get(Good.LUBRICANTS),
+                    p = goods.goods().get(Good.PETROL), t = goods.goods().get(Good.BITUMEN);
+            if (d != null) { diesel += d.bought(); dieselBuyers.addAll(d.buyers().keySet()); }
+            if (l != null) { lubricants += l.bought(); lubricantBuyers.addAll(l.buyers().keySet()); }
+            if (p != null) petrol += p.buyers().getOrDefault(Sectors.RETAIL, 0.0);
+            if (t != null) bitumenBought += t.buyers().getOrDefault(Sectors.CONSTRUCTION, 0.0);
+        }
+        report("fixture: the town has no refinery, so its four fuels and oils come from the world",
+                g.getSectors().refining().buildingsStanding() == 0, "");
+        report("the vans' diesel is DIESEL bought abroad, by the sectors that run fleets", diesel > 0
+                        && dieselBuyers.contains(Sectors.MANUFACTURING) && dieselBuyers.contains(Sectors.RETAIL),
+                String.format("$%,.1fk over %d months, by %s", diesel, months, dieselBuyers));
+        report("...the factories' lubricants LUBRICANTS', by Manufacturing and Automotive and nobody else", lubricants > 0
+                        && lubricantBuyers.equals(new java.util.TreeSet<>(java.util.List.of(Sectors.MANUFACTURING, Sectors.AUTOMOTIVE))),
+                String.format("$%,.1fk, by %s", lubricants, lubricantBuyers));
+        report("...the drivers' petrol PETROL's, by the forecourts", petrol > 0, String.format("$%,.1fk", petrol));
+        report("...and the road's bitumen BITUMEN's, by the builders, the month after it was drawn",
+                bitumenBought > 0, String.format("$%,.2fk", bitumenBought));
+        report("the goods, the four among them, foot to the balance of payments' imports every month", worstGoods < 1e-9,
+                String.format("worst %.2e", worstGoods));
+        report("...and the audit closes every month", worstAudit < 1e-10, String.format("worst %.2e over %d months", worstAudit, months));
+    }
+
+    /* ============================ 14. THE FORECOURTS (0.7.83) ============================ */
+
+    static void theForecourts() throws Exception {
+        out.println("\n--- 14. the forecourts: the pump price, the queue past the stations, the grocers' books and their stations (0.7.83) ---");
+        double w = .00071, r = .15;
+        assertTrue("the pump price is the wholesale times 1 + PUMP_MARGIN, over 1 less the sales tax, to the bit; the queue's"
+                        + " QUEUE_MARGIN's; no tax, no gross-up",
+                Retail.pumpPrice(w, r) == w * (1 + Retail.PUMP_MARGIN) / (1 - r)
+                        && Retail.queuePrice(w, r) == w * (1 + Retail.QUEUE_MARGIN) / (1 - r)
+                        && Retail.pumpPrice(w, 0) == w * (1 + Retail.PUMP_MARGIN)
+                        && Retail.PUMP_MARGIN == .12 && Retail.QUEUE_MARGIN == .18);
+        close("...so on a litre the grocers keep PUMP_MARGIN of its wholesale once they have remitted their rate on the price",
+                Retail.pumpPrice(w, r) * (1 - r) - w, w * Retail.PUMP_MARGIN, 1e-12);
+
+        // A town that drives, the grocers' own orders held, with three filling stations, two years on.
+        Game g = town("oilcheck-pump", 600, 2_000_000);
+        Retail pump = g.getSectors().retail();
+        BuildingsTemplate station = template(g, "Filling Station");
+        quietly(() -> {
+            g.getBusinessInvestment().holdSector(Sectors.RETAIL);
+            g.buildStack(station, 3, true);
+            g.simulateMonths(24);
+        });
+        report("fixture: three filling stations stand, and the town drives", pump.stationsStanding() == 3
+                        && pump.stationLitres() == 3 * 350_000 && pump.getPumpLitres() > 0,
+                String.format("%,.0f L a month at nameplate, %,.0f L sold", pump.stationLitres(), pump.getPumpLitres()));
+        close("what they can sell is their litres at the grocers' operating rate", pump.stationCapacity(),
+                pump.stationLitres() * pump.getOperatingRate(), 1e-12);
+        // The grocers' word on a station: these can sell what the town burns.
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BusinessInvestment.Decision covered = pump.planStations(plans, g);
+        report("with stations that can sell what the drivers burn, the grocers order none", !covered.build
+                        && pump.litresForecast(station, plans) <= pump.stationLitres() * pump.getOperatingRate()
+                        && covered.reason.startsWith("the stations can sell"),
+                String.format("%,.0f L forecast: \"%s\"", pump.litresForecast(station, plans), covered.reason));
+
+        // A month's sale past what they can sell, drawn by hand: the pump's price on their litres, the queue's on the rest.
+        double cap = pump.stationCapacity(), litres = cap * 1.5;
+        double rate = g.getEconomyManager().getTaxPolicy().effectiveSalesRate(pump);
+        Sector.Ledger before = pump.pending();
+        double soldBefore = before.soldOf(Good.PETROL).atHome, homesBefore = before.salesToHouseholds,
+                boughtBefore = before.boughtOf(Good.PETROL).total();
+        Retail.FuelSale sale = pump.sellFuel(litres, g);
+        double wl = pump.getWholesaleLitre();
+        report("a month past their capacity: what they can sell at the pump, the rest past the stations",
+                pump.getPumpLitres() == cap && pump.getQueueLitres() == litres - cap && sale.queued() == litres - cap,
+                String.format("%,.0f L at the pump, %,.0f L past them", pump.getPumpLitres(), pump.getQueueLitres()));
+        report("...at the pump price and the queue's on the wholesale they paid a litre, the bill the two sales to the bit",
+                pump.getPumpPrice() == Retail.pumpPrice(wl, rate) && pump.getQueuePrice() == Retail.queuePrice(wl, rate)
+                        && sale.bill() == cap * pump.getPumpPrice() + (litres - cap) * pump.getQueuePrice(),
+                String.format("%.6f and %.6f on %.6f", pump.getPumpPrice(), pump.getQueuePrice(), wl));
+        close("...the bill a sale to the households on Retail's books", pump.pending().salesToHouseholds - homesBefore, sale.bill(), 1e-12);
+        close("...and its petrol line's", pump.pending().soldOf(Good.PETROL).atHome - soldBefore, sale.bill(), 1e-12);
+        close("...the wholesale its purchase, bought from the world with no refinery here", pump.pending().boughtOf(Good.PETROL).total()
+                - boughtBefore, sale.wholesale(), 1e-12);
+        assertTrue("...and none of it the households' own import", sale.imported() == sale.wholesale() && pump.getFuelImported() == sale.imported());
+
+        // ...and a town with no station, two years on, its drivers' litres all past them - with three hundred houses
+        // more than its jobs, so it has the hands to staff one.
+        Game bare = town("oilcheck-nopump", 600, 8_000_000);
+        Retail none = bare.getSectors().retail();
+        quietly(() -> {
+            bare.getBusinessInvestment().holdSector(Sectors.RETAIL);
+            bare.buildStack(template(bare, "House"), 300, true);
+            bare.simulateMonths(24);
+        });
+        BusinessInvestment barePlans = bare.getBusinessInvestment();
+        BusinessInvestment.Decision wanted = none.planStations(barePlans, bare);
+        report("a town with no station, its drivers' petrol all past the stations at the queue's price, is given one",
+                none.stationsStanding() == 0 && none.getQueueLitres() > 0 && none.getPumpLitres() == 0 && wanted.build
+                        && wanted.template == template(bare, "Filling Station") && wanted.quantity >= 1,
+                String.format("%,.0f L past them: \"%s\"", none.getQueueLitres(), wanted.reason));
+        BuildingsTemplate one = template(bare, "Filling Station");
+        double landed = bare.getMarkets().get(Good.PETROL).landedPrice();
+        double expected = Math.min(one.pumpLitres(), none.litresForecast(one, barePlans)) * landed * Retail.PUMP_MARGIN;
+        close("...earning, for the interest test, its margin on the litres it would sell: the forecast's, under its 350,000",
+                none.estimatedMonthlyProfit(one, barePlans), expected, 1e-12);
+        assertTrue("...and the shops' rules never sell a station: it serves the drivers, not the baskets they count",
+                !none.mayRetire(one) && none.mayRetire(template(bare, "Convenience Store")));
+
+        // The month crosses a save (section 9); a save from before 0.7.83 sold no petrol here.
+        GameFiles files = FILES.get(g);
+        quietly(() -> g.saveGame(10, "pump"));
+        Path file = files.saveFile(10);
+        com.google.gson.JsonObject o = com.google.gson.JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+        com.google.gson.JsonObject shops = sectorOf(o, Sectors.RETAIL);
+        com.google.gson.JsonObject extras = shops.getAsJsonObject("extras");
+        java.util.List<String> keys = new java.util.ArrayList<>();
+        for (String k : extras.keySet()) if (k.startsWith("pump.")) keys.add(k);
+        for (String k : keys) extras.remove(k);
+        Files.writeString(file, new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(o));
+        Game old = new Game(files);
+        quietly(() -> old.loadGameSave(10));
+        Retail oldPump = old.getSectors().retail();
+        report("a save from before 0.7.83 loads with no petrol sold at the pump and no pump price",
+                keys.size() >= 5 && oldPump.getPumpLitres() == 0 && oldPump.getQueueLitres() == 0
+                        && Double.isNaN(oldPump.getPumpPrice()) && oldPump.getFuelBill() == 0,
+                keys.size() + " keys taken out");
+        quietly(() -> old.simulateMonths(1));
+        report("...and its first month sells the drivers' petrol at the pump, the audit closing",
+                oldPump.getPumpLitres() > 0 && old.getLastMoneyAudit().relative() < 1e-10,
+                String.format("%,.0f L, %.2e", oldPump.getPumpLitres(), old.getLastMoneyAudit().relative()));
     }
 
     /* ============================ 1. THE GOODS AND THE BUILDINGS ============================ */
@@ -372,6 +925,8 @@ public class OilCheck {
         BusinessInvestment.Decision d = g.getSectors().oil().plan(g.getBusinessInvestment(), g);
         report("...and the investors drill nothing: the wells' word names the deposit", !d.build && d.reason.contains("deposit"),
                 "\"" + d.reason + "\"");
+        assertTrue("an Oil Well has one post, a diploma's (0.7.84; three until then: two without a diploma and one with)",
+                well.getTotalJobs() == 1 && well.getJobs(JobType.DIPLOMA) == 1);
 
         // Bought: toward the nearest oil field, the offer nearest it each time, until an offer holds a site.
         int pushes = 0;
@@ -540,19 +1095,41 @@ public class OilCheck {
         quietly(() -> g.simulateMonths(1));
         report("fixture: the refinery's tanks hold petrol and the town drives", refiners.getStock(Good.PETROL) > 0 && mo.getFuelLitres() > 0,
                 String.format("%,.0f L in the tanks, %,.0f L burned", refiners.getStock(Good.PETROL), mo.getFuelLitres()));
-        close("the month's drivers bought every litre at home: none imported", mo.getFuelImports(), 0, 1e-12);
-        close("...and paid the refiners' price for it", mo.getFuelBill(), mo.getFuelLitres() * priced, 1e-9);
+        /*
+         * THROUGH THE FORECOURTS SINCE 0.7.83 (batch O6): the grocers draw the
+         * drivers' litres at the refiners' price and sell them at the pump's.
+         * Until then: "the month's drivers bought every litre at home: none
+         * imported" (the households' imports nothing), "...and paid the
+         * refiners' price for it" (their bill the litres at it). The litres
+         * its filling stations can sell (the grocers order them as the town
+         * drives) go at the pump price, the rest at the queue's (QUEUE_MARGIN).
+         */
+        ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
+        double rate = g.getEconomyManager().getTaxPolicy().effectiveSalesRate(pump);
+        close("the month's drivers' petrol, all of it, the forecourts bought at home: none imported, by them or by the"
+                + " households", pump.getFuelImported() + mo.getFuelImports(), 0, 1e-12);
+        close("...at the refiners' price", pump.getWholesaleLitre(), priced, 1e-12);
+        report("fixture: every litre the forecourts sold, at the pump or past the stations",
+                pump.getPumpLitres() + pump.getQueueLitres() == mo.getFuelLitres(),
+                String.format("%,.0f L at the pump, %,.0f past %d station(s)", pump.getPumpLitres(), pump.getQueueLitres(),
+                        pump.stationsStanding()));
+        close("...and the drivers paid the pump's price on it: the refiners' price times 1 + PUMP_MARGIN, over 1 less the"
+                        + " grocers' sales tax, on what the stations can sell, and 1 + QUEUE_MARGIN on the rest", mo.getFuelBill(),
+                pump.getPumpLitres() * ham.citybuildersim.sectors.Retail.pumpPrice(priced, rate)
+                        + pump.getQueueLitres() * ham.citybuildersim.sectors.Retail.queuePrice(priced, rate), 1e-9);
 
         // A draw past the tanks, on a copy of what the refinery holds: the shelf first, the world for the rest.
         double held = refiners.getStock(Good.PETROL);
-        double salesBefore = refiners.pending().salesToHouseholds;
+        double salesBefore = refiners.pending().localSales, toHouseholds = refiners.pending().salesToHouseholds;
         double journeys = (held * 1.5) / Motoring.LITRES_PER_JOURNEY;
         double local = fuel.getLocalPrice(), imported = fuel.importPrice();
         quietly(() -> mo.drawFuel(g, journeys));
         close("a draw past the tanks takes all the petrol they hold", refiners.getStock(Good.PETROL), 0, 1e-9);
-        close("...imports the rest at the import price", mo.getFuelImports(), (held * 1.5 - held) * imported, 1e-9);
-        close("...and the bill is the two together", mo.getFuelBill(), held * local + (held * .5) * imported, 1e-9);
-        close("...the shelf's part a sale to the households on Refining's books", refiners.pending().salesToHouseholds - salesBefore,
+        close("...the forecourts import the rest at the import price", pump.getFuelImported(), (held * 1.5 - held) * imported, 1e-9);
+        close("...and their wholesale bill is the two together", pump.getWholesaleLitre() * mo.getFuelLitres(),
+                held * local + (held * .5) * imported, 1e-9);
+        close("...the shelf's part a sale to the forecourts on Refining's books, none to the households",
+                refiners.pending().localSales - salesBefore + Math.abs(refiners.pending().salesToHouseholds - toHouseholds),
                 held * local, 1e-9);
 
         // The railway: track in the oil town, carrying its crude and its fuel across the edge.
@@ -591,10 +1168,14 @@ public class OilCheck {
             quietly(() -> g.simulateMonths(1));
             MoneyAudit.Result r = g.getLastMoneyAudit();
             worstAudit = Math.max(worstAudit, r.relative());
-            double imports = g.getHouseholdFuelImports();
+            // The forecourts' month the strike just banked (0.7.83): their petrol, its imported part, the drivers' bill.
+            ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
+            Sector.Split petrol = pump.statement().bought.getOrDefault(Good.PETROL, new Sector.Split());
+            double imports = petrol.abroad;
             if (imports > 0) withImports++;
-            worstImports = Math.max(worstImports, Math.abs(auditLine(r, "+ households PetrolFunded") - imports)
-                    + Math.abs(auditLine(r, "- households PetrolImports") - imports));
+            worstImports = Math.max(worstImports, Math.abs(auditLine(r, "+ households PetrolFunded"))
+                    + Math.abs(auditLine(r, "- households PetrolImports"))
+                    + Math.abs(g.getHouseholdFuelImports()));
             for (Good p : refiners.goodsMade()) {
                 Sector.Output o = refiners.outputRow(p);
                 if (o == null) continue;
@@ -604,9 +1185,12 @@ public class OilCheck {
                 idled += o.idled;
                 toTheLine &= refiners.getStock(p) <= refiners.getStockCapacity(p) * Sector.DUMP_THRESHOLD * (1 + 1e-12);
             }
-            double domestic = g.getHouseholdFuel() - imports;
+            double domestic = petrol.atHome;
             if (domestic > 0) withDomestic++;
-            worstDomestic = Math.max(worstDomestic, Math.abs(refiners.statement().salesToHouseholds - domestic)
+            Sector.Split sold = pump.statement().sold.getOrDefault(Good.PETROL, new Sector.Split());
+            Sector.Split refined = refiners.statement().sold.getOrDefault(Good.PETROL, new Sector.Split());
+            worstDomestic = Math.max(worstDomestic, (Math.abs(refined.atHome - domestic)
+                    + Math.abs(refiners.statement().salesToHouseholds) + Math.abs(sold.atHome - g.getHouseholdFuel()))
                     / Math.max(1, g.getHouseholdFuel()));
             Sectors.TradeByGood goods = g.getTradeByGood();
             double tradeImports = g.getForeignAccounts().tradeImports();
@@ -614,10 +1198,18 @@ public class OilCheck {
         }
         report("the audit closes every month (relative to what moved)", worstAudit < 1e-10,
                 String.format("worst %.2e over %d months", worstAudit, months));
-        report("fixture: months the drivers imported and months they bought at home", withImports > 0 && withDomestic > 0,
-                withImports + " and " + withDomestic + " of " + months);
-        report("the imported part is the audit's PetrolFunded and PetrolImports, to the cent", worstImports <= .011,
-                String.format("worst %.4f", worstImports));
+        /*
+         * THE FORECOURTS' SINCE 0.7.83 (batch O6): the drivers' petrol is bought
+         * by the grocers and sold to the drivers, so its imported part is
+         * Retail's import, and the households' own - the audit's PetrolFunded
+         * and PetrolImports - nothing. Until then: "fixture: months the drivers
+         * imported and months they bought at home", "the imported part is the
+         * audit's PetrolFunded and PetrolImports, to the cent".
+         */
+        report("fixture: months the forecourts imported the drivers' petrol and months they bought it at home",
+                withImports > 0 && withDomestic > 0, withImports + " and " + withDomestic + " of " + months);
+        report("the households import none of it: the audit's PetrolFunded and PetrolImports are nothing, to the cent",
+                worstImports <= .011, String.format("worst %.4f", worstImports));
         /*
          * SHIPPED OR IDLED (0.7.78, batch O2): the products nobody here buys
          * fill their share of the tanks to the dump line and no further; past
@@ -632,7 +1224,8 @@ public class OilCheck {
                         + " idled, and the tanks write none of any product off (spec-oil 6)",
                 toTheLine && shipped + idled > 0 && writtenOff == 0,
                 String.format("%,.0f L shipped, %,.0f L of nameplate idled, %,.0f written off", shipped, idled, writtenOff));
-        report("...and the domestic part is on Refining's statement, its sales to the households", worstDomestic < 1e-9,
+        report("...and the domestic part is on Refining's statement, its sales to the forecourts (to the households until"
+                        + " 0.7.83), and the drivers' bill Retail's sale of petrol to them", worstDomestic < 1e-9,
                 String.format("worst %.2e of the bill", worstDomestic));
         report("...and the goods, fuel among them, foot to the balance of payments' imports", worstGoods < 1e-9,
                 String.format("worst %.2e", worstGoods));
@@ -659,51 +1252,80 @@ public class OilCheck {
                 String.format("%,.0f drivers", drivers));
         close("its drivers burned a month of journeys at 1.2 litres", mo.getFuelLitres(),
                 drivers * TaxPolicy.JOURNEYS_A_MONTH * Motoring.LITRES_PER_JOURNEY, 1e-12);
-        close("...every litre imported", mo.getFuelImports(), mo.getFuelBill(), 1e-12);
+        /*
+         * THE FORECOURTS BUY IT SINCE 0.7.83 (batch O6), so the wholesale bill
+         * is theirs and the drivers pay the pump's price on it. Until then
+         * "...every litre imported" and the ladder premises below read the
+         * drivers' bill, which was the wholesale bill; they read the
+         * forecourts' now, and the drivers' is the pump's on it.
+         */
+        ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
+        double wholesale = pump.getWholesaleLitre() * mo.getFuelLitres();
+        close("...every litre imported, by the forecourts", pump.getFuelImported(), wholesale, 1e-12);
         // Since 0.7.78 (O2) a journey's litres at petrol's place on the wholesale ladder; 0.7.49's journey at the pump price before.
         double ladderBill = drivers * TaxPolicy.JOURNEYS_A_MONTH * Motoring.LITRES_PER_JOURNEY * Good.PETROL.worldImportPrice()
                 * g.getForeignAccounts().getRate();
         close("...at the import price: a journey's litres at petrol's ladder price, at the rate, times the world's price level",
-                mo.getFuelBill(), ladderBill * level, 1e-12);
+                wholesale, ladderBill * level, 1e-12);
         double oldBill = drivers * TaxPolicy.JOURNEYS_A_MONTH * Motoring.CAR_FUEL_PER_JOURNEY * g.getForeignAccounts().getRate();
-        double cut = 1 - mo.getFuelBill() / (oldBill * level);
+        double cut = 1 - wholesale / (oldBill * level);
         report("...63% under the bill the pump price struck (0.7.49's journey at the rate and the level)",
                 Math.round(100 * cut) == PETROL_CUT_PCT,
-                String.format("%,.2fk against %,.2fk, %.2f%% less", mo.getFuelBill(), oldBill * level, 100 * cut));
+                String.format("%,.2fk against %,.2fk, %.2f%% less", wholesale, oldBill * level, 100 * cut));
+        double rate = g.getEconomyManager().getTaxPolicy().effectiveSalesRate(pump);
+        double litre = pump.getWholesaleLitre();
+        close("...and the drivers pay the forecourts' price on it: the pump's on what their stations can sell, the queue's on"
+                        + " the rest", mo.getFuelBill(), pump.getPumpLitres() * ham.citybuildersim.sectors.Retail.pumpPrice(litre, rate)
+                        + pump.getQueueLitres() * ham.citybuildersim.sectors.Retail.queuePrice(litre, rate), 1e-12);
         close("...the level the markets were told", fuel.getExchangeRate() / g.getForeignAccounts().getRate(), level, 1e-12);
-        close("a journey's fuel, which the owners weigh a ride against, is a journey's litres at the import price",
-                g.getInfrastructureManager().getFuelPerJourney(), Motoring.LITRES_PER_JOURNEY * fuel.importPrice(), 1e-12);
+        // ...a journey's litres at the pump price on the import price since 0.7.83: the price on the sign (star O6).
+        close("a journey's fuel, which the owners weigh a ride against, is a journey's litres at the pump price on the import"
+                        + " price (0.7.83; at the import price until then)",
+                g.getInfrastructureManager().getFuelPerJourney(), Motoring.LITRES_PER_JOURNEY
+                        * ham.citybuildersim.sectors.Retail.pumpPrice(fuel.importPrice(), rate), 1e-12);
     }
 
     /* ============================ 8. WHEN A REFINERY IS BUILT ============================ */
 
     static void whenARefineryIsBuilt() {
-        out.println("\n--- 8. a refinery is built for the city's own fuel or its own crude, a whole plant's worth ---");
+        out.println("\n--- 8. a refinery is built for the city's own fuel or its own crude: rule 6 and the package (0.7.82) ---");
         Game g = town("oilcheck-plan", 600, 0);
-        // Two years, so the town burns fuel: some, not a refinery's worth.
+        // Two years, so the town burns fuel: some, not FEED_GATE of a refinery's worth.
         quietly(() -> g.simulateMonths(24));
         Refining refiners = g.getSectors().refining();
+        BusinessInvestment plans = g.getBusinessInvestment();
         BuildingsTemplate refinery = template(g, "Oil Refinery");
+        double gate = SpreadPlanner.FEED_GATE;
         // ...its petrol and diesel since 0.7.76 (O1): the forecast of each, against what the plant makes of the two.
         double room = 0;
-        for (Good p : Refining.BOUGHT_HERE) room += g.getBusinessInvestment().forecast(refiners, g.getMarkets().get(p));
+        for (Good p : Refining.BOUGHT_HERE) {
+            room += plans.forecast(refiners, g.getMarkets().get(p)) - refiners.getCapacity(p) - refiners.getPipeline(p);
+        }
         double plantsWorth = Refining.boughtHere(Refining.slate(refinery.uses(Good.CRUDE)));
-        BusinessInvestment.Decision d = refiners.plan(g.getBusinessInvestment(), g);
-        report("a town burning less petrol and diesel than a refinery makes, with no wells, is not given one", !d.build && room > 0
-                        && room < plantsWorth && refiners.spareCrude() == 0,
-                String.format("%,.0f L a month against %,.0f: \"%s\"", room, plantsWorth, d.reason));
-        double estimate = refiners.estimatedMonthlyProfit(refinery, g.getBusinessInvestment());
+        BusinessInvestment.Decision d = refiners.plan(plans, g);
+        SpreadPlanner.Candidate c = refiners.appraise(refinery, plans);
+        report("a town short of less petrol and diesel than FEED_GATE of what a refinery makes of them, with no wells, is not given"
+                        + " one: refused at its feed", !d.build && room > 0 && room < gate * plantsWorth && refiners.spareCrude() == 0
+                        && c.failed() == SpreadPlanner.Gate.FEED,
+                String.format("%,.0f L a month against %,.0f: \"%s\"", room, gate * plantsWorth, d.reason));
+        // Its crude, imported: a dearer import costs the package every tonne of it, at the rate (spec-oil 2.4, K's prices).
         GoodsMarket crude = g.getMarkets().get(Good.CRUDE);
-        // The investors' estimate over what it makes, its slate (0.7.76): its template makes nothing.
-        double template = g.getBusinessInvestment().estimatedMakerProfit(refiners, refinery, Refining.madeBy(refinery));
-        close("...and its estimate pays for every tonne of crude at the import price, not the band's middle",
-                template - estimate, refinery.uses(Good.CRUDE) * (crude.netImportPrice() - crude.getLocalPrice())
-                        * BusinessInvestment.operatingRateOf(refiners.getOperatingRate()), 1e-9);
+        Refining.Outlook o = refiners.outlook(plans);
+        double rate = BusinessInvestment.operatingRateOf(refiners.getOperatingRate()), dear = .01, tonnes = refinery.uses(Good.CRUDE);
+        report("...its package charges every tonne of its crude at the net import price, not the band's middle: a dearer import"
+                        + " costs it the tonnes at the rate", o.crudeImport() == crude.netImportPrice()
+                        && crude.netImportPrice() > crude.getLocalPrice()
+                        && Math.abs(packageEarns(refiners, plans, g, o, 0, dear) - packageEarns(refiners, plans, g, o, 0, 0)
+                        + tonnes * dear * rate) <= 1e-9 * tonnes * dear,
+                String.format("%,.0f t at %.4f landed and hauled, the local price %.4f", tonnes, crude.netImportPrice(),
+                        crude.getLocalPrice()));
 
         BuildingsTemplate well = template(g, "Oil Well");
-        // Wells, ten at a time, until they lift a refinery's worth at the rate the town runs them.
+        // Wells, ten at a time, until they lift FEED_GATE of a refinery's crude that nobody takes, then a whole refinery's.
         int[] sites = { 0 };
-        while (refiners.spareCrude() < refinery.uses(Good.CRUDE) && sites[0] < 300) {
+        boolean opened = false;
+        String atGate = "";
+        while (refiners.spareCrude() < tonnes && sites[0] < 300) {
             quietly(() -> {
                 sites[0] += 10;
                 g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 10 * well.getLandSqFt());
@@ -712,15 +1334,35 @@ public class OilCheck {
                 if (sites[0] % 40 == 0) g.buildStack(template(g, "Coal Power Plant"), 1, true);
                 g.simulateMonths(1);
             });
+            if (!opened && refiners.spareCrude() >= gate * tonnes) {
+                opened = refiners.appraise(refinery, plans).refusal(SpreadPlanner.Gate.FEED) == null;
+                atGate = String.format("%d wells, %,.0f t spare: \"%s\"", sites[0], refiners.spareCrude(),
+                        refiners.plan(plans, g).reason);
+            }
         }
-        double spare = refiners.spareCrude();
-        BusinessInvestment.Decision with = refiners.plan(g.getBusinessInvestment(), g);
-        report("with a refinery's worth of crude the wells lift and nobody takes, the gate opens", spare >= refinery.uses(Good.CRUDE)
-                        && (with.build || !with.reason.contains("none for another")),
-                String.format("%d wells, %,.0f t spare: \"%s\"", sites[0], spare, with.reason));
-        double withSpare = refiners.estimatedMonthlyProfit(refinery, g.getBusinessInvestment());
-        close("...and its estimate is the investors' over its slate: no crude to import", withSpare,
-                g.getBusinessInvestment().estimatedMakerProfit(refiners, refinery, Refining.madeBy(refinery)), 1e-12);
+        report("with FEED_GATE of a refinery's crude lifted that nobody takes, the gate opens: it passes its feed", opened, atGate);
+        double spare = refiners.spareCrude(), local = .01;
+        Refining.Outlook own = refiners.outlook(plans);
+        rate = BusinessInvestment.operatingRateOf(refiners.getOperatingRate());
+        report("...and with a whole refinery's worth spare its crude is the wells', at the local price: the import price moves its"
+                        + " package nothing, the local price every tonne at the rate", spare >= tonnes
+                        && packageEarns(refiners, plans, g, own, 0, dear) == packageEarns(refiners, plans, g, own, 0, 0)
+                        && Math.abs(packageEarns(refiners, plans, g, own, local, 0) - packageEarns(refiners, plans, g, own, 0, 0)
+                        + tonnes * local * rate) <= 1e-9 * tonnes * local,
+                String.format("%d wells, %,.0f t spare", sites[0], spare));
+        SpreadPlanner.Candidate pkg = refiners.appraise(refinery, plans);
+        report("...its estimate (what Game.consider() tests) is its share of its package's earnings, by cost", pkg.cost() > 0
+                        && refiners.estimatedMonthlyProfit(refinery, plans) == pkg.earns() * plans.getCostOf(refinery, 1) / pkg.cost(),
+                String.format("%,.1fk a month on %,.0fk with %d unit(s)", pkg.earns(), pkg.cost(), pkg.with().size()));
+    }
+
+    /** The Oil Refinery's package earnings at an outlook with its crude's two prices raised by `local` and `imported` (Refining.packageEstimate()). */
+    static double packageEarns(Refining refiners, BusinessInvestment plans, Game g, Refining.Outlook o, double local, double imported) {
+        Refining.Outlook moved = new Refining.Outlook(o.feed(), o.crude(), o.mix(), o.values(), o.room(), o.spareCrude(), o.spareMix(),
+                o.crudeLocal() + local, o.crudeImport() + imported);
+        RefineryFlow.Flow before = RefineryFlow.solve(moved.feed(), moved.crude(), moved.mix(), moved.values());
+        return Refining.packageEstimate(moved, before, template(g, "Oil Refinery"),
+                g.getBuildingManager().getTemplatesBySector(refiners.key()), refiners.planner().city(refiners, plans, g)).earns();
     }
 
     /* ============================ 9. ACROSS A SAVE ============================ */
@@ -733,9 +1375,13 @@ public class OilCheck {
         refiners.setStock(Good.PETROL, .5 * mo.getFuelLitres());
         refiners.setStock(Good.DIESEL, g.getSectors().rail().getHauledTonnes() * Rail.FUEL_LITRES_PER_TONNE);
         quietly(() -> g.simulateMonths(1));
+        // ...the forecourts' since 0.7.83: their wholesale bill, from the tanks and the world (the drivers' own imports nothing).
+        ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
+        double wholesale = pump.getWholesaleLitre() * mo.getFuelLitres();
         report("fixture: a month with fuel from both the tanks and the world",
-                mo.getFuelImports() > 0 && mo.getFuelImports() < mo.getFuelBill(),
-                String.format("bill %,.2fk, %,.2fk of it imported", mo.getFuelBill(), mo.getFuelImports()));
+                pump.getFuelImported() > 0 && pump.getFuelImported() < wholesale,
+                String.format("wholesale %,.2fk, %,.2fk of it imported; the drivers' bill %,.2fk", wholesale,
+                        pump.getFuelImported(), mo.getFuelBill()));
         GameFiles files = FILES.get(g);
         quietly(() -> g.saveGame(10, "oil"));
         Path file = files.saveFile(10);
@@ -745,9 +1391,18 @@ public class OilCheck {
         assertTrue("the bill, its imported part and the litres load as 6d drew them",
                 back.getFuelBill() == mo.getFuelBill() && back.getFuelImports() == mo.getFuelImports()
                         && back.getFuelLitres() == mo.getFuelLitres());
+        ham.citybuildersim.sectors.Retail pumpBack = twin.getSectors().retail();
+        assertTrue("...and the forecourts' month: the litres at the pump and past it, what the stations could sell, the two"
+                        + " prices, the wholesale a litre, the bill and its imported part (0.7.83)",
+                pumpBack.getPumpLitres() == pump.getPumpLitres() && pumpBack.getQueueLitres() == pump.getQueueLitres()
+                        && pumpBack.getPumpCapacity() == pump.getPumpCapacity()
+                        && same(pumpBack.getPumpPrice(), pump.getPumpPrice()) && same(pumpBack.getQueuePrice(), pump.getQueuePrice())
+                        && same(pumpBack.getWholesaleLitre(), pump.getWholesaleLitre())
+                        && pumpBack.getFuelBill() == pump.getFuelBill() && pumpBack.getFuelImported() == pump.getFuelImported());
         quietly(() -> { g.simulateMonths(1); twin.simulateMonths(1); });
-        report("...and a month on, both cities' households pay the same fuel, as much of it abroad",
-                twin.getHouseholdFuel() == g.getHouseholdFuel() && twin.getHouseholdFuelImports() == g.getHouseholdFuelImports(),
+        report("...and a month on, both cities' households pay the same fuel, as much of it abroad by the forecourts",
+                twin.getHouseholdFuel() == g.getHouseholdFuel() && twin.getHouseholdFuelImports() == g.getHouseholdFuelImports()
+                        && twin.getSectors().retail().getFuelImported() == g.getSectors().retail().getFuelImported(),
                 String.format("%,.4fk / %,.4fk", twin.getHouseholdFuel(), g.getHouseholdFuel()));
 
         // A save from before the fuel was drawn: no householdFuel key.
@@ -1201,12 +1856,24 @@ public class OilCheck {
             if (!quietlyGet(() -> g.buyLandParcel(p.getId()))) break;
             pushes++;
         }
+        /*
+         * ITS WELLS ON DRY SITES HANDED TO ITS CENTRE (0.7.84): a land well
+         * stands only on dry ground (Game.sitesFor(); WellCheck 5), and every
+         * site of this field is the sea's - so the centre is handed as many
+         * dry sites with none of the oil (LandManager.restoreSites() at the
+         * tonnes the town owns), and the wells lift the town's oil, which is
+         * the field's. Until 0.7.84 they stood on the field's own sites.
+         */
         int wellsOn = glm.getOilSites();
+        double fieldTonnes = glm.getOwnedAmount(Resource.OIL);
+        quietly(() -> glm.restoreSites(Resource.OIL, 2 * wellsOn, fieldTonnes));
         Game.BuildResult wellsBuilt = quietlyGet(() -> g.buildStack(t[0], wellsOn, true));
         Game.BuildResult refineryBuilt = quietlyGet(() -> g.buildStack(t[1], 1, true));
         double[][] gruns = glm.oilRuns();
-        report("fixture: a town on that world owns the field, its wells on every site and a refinery standing, all its oil heavy",
-                wellsBuilt == Game.BuildResult.SUCCESS && refineryBuilt == Game.BuildResult.SUCCESS && gruns.length == 1 && gruns[0][1] == heavy,
+        report("fixture: a town on that world owns the field, its wells on as many dry sites handed to its centre with none of the"
+                        + " oil, and a refinery standing, all its oil heavy",
+                wellsBuilt == Game.BuildResult.SUCCESS && refineryBuilt == Game.BuildResult.SUCCESS && gruns.length == 1 && gruns[0][1] == heavy
+                        && glm.getSites(Resource.OIL, true) == wellsOn && glm.getOwnedAmount(Resource.OIL) == fieldTonnes,
                 String.format("%d purchase(s), %d well(s), %s / %s", pushes, wellsOn, wellsBuilt, refineryBuilt));
         Refining refiners = g.getSectors().refining();
         // A month for the wells and the refinery to start, then the month measured.

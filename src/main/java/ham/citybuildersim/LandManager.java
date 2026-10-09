@@ -703,6 +703,66 @@ public class LandManager {
         return sea;
     }
 
+    /** A field of a resource whose centre is in the sea, the sites of it the city owns, and its depth there in metres (0.7.91). */
+    public record SeaField(Deposit field, int sites, double depth) { }
+
+    /** The sea fields by resource, kept with the ground they were listed on and its key. */
+    private final java.util.Map<Resource, java.util.List<SeaField>> seaFieldsKept = new java.util.EnumMap<>(Resource.class);
+    private final java.util.Map<Resource, Long> seaFieldsKey = new java.util.EnumMap<>(Resource.class);
+    private CityLand seaFieldsLand;
+
+    /**
+     * The fields of a resource the city owns whose centre is in the sea
+     * (0.7.91, batch O10; spec-oil 2.7): each field once, its owned sites
+     * summed over the holdings that hold them (CityLand.heldFields()), in
+     * the order the holdings were acquired and the world lists them, with
+     * its depth at the centre (World.depthAt()). What an offshore platform
+     * stands on (sectors.Oil, THE OIL AT SEA). Pure on the ground, kept until
+     * the ground or what it lists changes.
+     */
+    public java.util.List<SeaField> seaFields(Resource r) {
+        CityLand l = land();
+        long[] listed = l.sitesInOrder(r);
+        double[] asKey = new double[listed.length];
+        for (int i = 0; i < listed.length; i++) asKey[i] = listed[i];
+        long key = groundKey(l, asKey);
+        if (seaFieldsLand != l) {
+            seaFieldsKept.clear();
+            seaFieldsKey.clear();
+            seaFieldsLand = l;
+        }
+        java.util.List<SeaField> kept = seaFieldsKept.get(r);
+        Long at = seaFieldsKey.get(r);
+        if (kept != null && at != null && at == key) return kept;
+        World world = World.of(l.seed());
+        java.util.Map<Long, Integer> where = new java.util.HashMap<>();
+        java.util.List<Deposit> fields = new java.util.ArrayList<>();
+        java.util.List<Integer> sites = new java.util.ArrayList<>();
+        for (java.util.List<CityLand.Held> holding : l.heldFields(r)) {
+            for (CityLand.Held f : holding) {
+                if (!(world.depthAt(f.field().x(), f.field().y()) > 0)) continue;
+                long id = ((long) f.field().cell() << 32) | (f.field().index() & 0xffffffffL);
+                Integer i = where.get(id);
+                if (i == null) {
+                    where.put(id, fields.size());
+                    fields.add(f.field());
+                    sites.add(f.sites());
+                } else {
+                    sites.set(i, sites.get(i) + f.sites());
+                }
+            }
+        }
+        java.util.List<SeaField> out = new java.util.ArrayList<>(fields.size());
+        for (int i = 0; i < fields.size(); i++) {
+            Deposit d = fields.get(i);
+            out.add(new SeaField(d, sites.get(i), world.depthAt(d.x(), d.y())));
+        }
+        kept = java.util.Collections.unmodifiableList(out);
+        seaFieldsKept.put(r, kept);
+        seaFieldsKey.put(r, key);
+        return kept;
+    }
+
     public boolean hasUnminedDeposit(int minesStanding) {
         return minesStanding < getIronDeposits() && getIronReserveTonnes() > 0;
     }

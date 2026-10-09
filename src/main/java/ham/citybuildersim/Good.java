@@ -991,6 +991,33 @@ public enum Good {
         }
     }
 
+    /**
+     * What kind of ship carries it, and so which terminal's berth (0.7.86,
+     * batch O9; runs/spec-oil.md 2.1, Ports.Cargo), or null for the things
+     * that never cross the boundary as freight.
+     *
+     * LIQUID is crude, the eight litre goods and bitumen - tankers, the
+     * bitumen in a heated one. DRY_BULK is what a grab lifts out of a hold:
+     * iron ore, crops, grains, building materials and coke. GENERAL is what
+     * is lifted piece by piece - steel, fabricated steel, machinery, wagon
+     * sets, cars and vans. CONTAINER is the rest of what the GOODS stream
+     * carries: the shelf, the drinks and the watches, in boxes.
+     */
+    public Ports.Cargo cargo() {
+        switch (this) {
+            case CRUDE: case LPG: case NAPHTHA: case PETROL: case JET: case DIESEL:
+            case LUBRICANTS: case FUEL_OIL: case BITUMEN:
+                return Ports.Cargo.LIQUID;
+            case IRON: case CROPS: case GRAINS: case MATERIALS: case COKE:
+                return Ports.Cargo.DRY_BULK;
+            case STEEL: case FABRICATED_STEEL: case MACHINERY: case ROLLING_STOCK: case CARS: case VANS:
+                return Ports.Cargo.GENERAL;
+            default:
+                Traffic stream = traffic();
+                return stream == Traffic.GOODS ? Ports.Cargo.CONTAINER : null;
+        }
+    }
+
     /** The good with this saved name, or null - a save from a build without it loses that line, not the load. */
     public static Good byName(String name) {
         if (name == null) return null;

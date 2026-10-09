@@ -138,7 +138,17 @@ public enum TreasuryLine {
      * it is the city's own wages, as the schools' and the police's are.
      * Appended last, for the food vouchers' reason.
      */
-    TRANSIT("Transit's wages and upkeep", true, false);
+    TRANSIT("Transit's wages and upkeep", true, false),
+
+    /**
+     * Crude for the strategic reserve (0.7.85; StrategicReserve): bought in
+     * the month's crude market on the player's order, which the treasury
+     * could pay for when it was placed (Game.fillReserve()), and paid at the
+     * next strike (Game.settleReserve()). A promise, because the crude has
+     * landed by the time the bill comes, as the food vouchers have been
+     * eaten. Appended last, for their reason.
+     */
+    OIL_RESERVE("Crude for the strategic reserve", true, false);
 
     /** The player's words for it, for the Government tab's arrears list and the playtest. */
     public final String label;

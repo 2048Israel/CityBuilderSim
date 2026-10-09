@@ -1203,8 +1203,8 @@ final class InfrastructureScreen {
     static final String BILL_INFO = "The month's lorry bill is what the tonnes that crossed the city's boundary "
             + "would have cost entirely by lorry. It is three things. Billed at home is the railway's revenue, "
             + "for the part it carried, and it stays in the city - somebody's wages, somebody's profit. Paid "
-            + "abroad is what the lorries were paid for the part it did not carry, and it leaves the city with "
-            + "the cargo. Kept is what neither is paid: the railway's quote under the lorry rate, on what it "
+            + "abroad is what the lorries - and, with a port, the ships - were paid for the part it did not "
+            + "carry, and it leaves the city with the cargo. Kept is what neither is paid: the railway's quote under the lorry rate, on what it "
             + "carried. Billed at home and kept stay in the city: that is the difference a railway makes to the "
             + "trade balance, before it makes any difference to the road.";
 
@@ -1369,7 +1369,7 @@ final class InfrastructureScreen {
                 statementLine("What the rule allows it to bill", moneyOr(rail.getAllowedRevenue()), Palette.TEXT_MUTED),
                 statementLine("What it actually billed", money(rail.getHaulageBilled())),
                 statementLine("What those tonnes would have cost by lorry", money(rail.getTruckBill()), Palette.TEXT_MUTED),
-                statementLine("...of which paid abroad, by lorry", moneyOr(rail.getPaidAbroad()), Palette.TEXT_MUTED),
+                statementLine("...of which paid abroad, by lorry or ship", moneyOr(rail.getPaidAbroad()), Palette.TEXT_MUTED),
                 statementLine("...and kept by the shippers", moneyOr(rail.getKept()), Palette.TEXT_MUTED),
                 statementLine("Diesel", signedTight(rail.getFuelBill(), true)),
                 statementTotal("Net income", signedTight(Math.abs(rail.statement().netIncome), rail.statement().netIncome < 0),
@@ -1409,7 +1409,7 @@ final class InfrastructureScreen {
                 limitCell("BILLED AT HOME", money(rail.getHaulageBilled()), "by the railway: stays in the city",
                         Palette.TEXT_HEAD, "The railway", () -> open("The railway")),
                 limitCell("PAID ABROAD", moneyOr(rail.getPaidAbroad()), Double.isFinite(rail.getPaidAbroad())
-                                ? "to the lorries: leaves with the cargo" : UNKNOWN_YET,
+                                ? "to lorries and ships: leaves with the cargo" : UNKNOWN_YET,
                         Palette.TEXT_HEAD, "The railway", () -> open("The railway")),
                 limitCell("KEPT", moneyOr(rail.getKept()), Double.isFinite(rail.getKept())
                                 ? "what neither is paid" : UNKNOWN_YET,

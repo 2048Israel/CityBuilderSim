@@ -426,6 +426,28 @@ public class InfrastructureManager {
     }
 
     /**
+     * ...AND THE SHIPS' (0.7.86, batch O9; Ports): what share of each stream
+     * the city's berths take, handed over beside the railway's by
+     * Game.chargeFreight(). A tonne that leaves by sea is off the street as
+     * one that leaves by rail is, less the lorry to the quay, so it is
+     * relieved at the railway's RAIL_ROAD_RELIEF (spec-oil 2.9). Zero with no
+     * terminal, which is every city until somebody builds one.
+     */
+    private final double[] seaShare = new double[Traffic.values().length];
+
+    public void setSeaShare(double[] shares) {
+        for (Traffic stream : Traffic.values()) {
+            int i = stream.ordinal();
+            double s = shares != null && i < shares.length ? shares[i] : 0;
+            seaShare[i] = Double.isFinite(s) ? Math.max(0, Math.min(1, s)) : 0;
+        }
+    }
+
+    public double getSeaShare(Traffic stream) {
+        return stream == null ? 0 : seaShare[stream.ordinal()];
+    }
+
+    /**
      * True once the city has something other than an ordinary street.
      *
      * A CAR COUNTS, which is not obvious and is the line that lets the
@@ -436,6 +458,7 @@ public class InfrastructureManager {
     private boolean hasModes() {
         if (highwayCapacity > 0 || transitCapacity > 0 || carOwnership > 0) return true;
         for (double s : railShare) if (s > 0) return true;
+        for (double s : seaShare) if (s > 0) return true;
         return false;
     }
 
@@ -725,7 +748,8 @@ public class InfrastructureManager {
     /** What one unit of a stream costs the road, after the highways are counted. */
     public double roadCostOf(Traffic stream) {
         double grade = getHighwayShare();
-        double railed = 1 - RAIL_ROAD_RELIEF * getRailShare(stream);
+        // ...and the berths' share beside the railway's (0.7.86): nothing added with no terminal.
+        double railed = 1 - RAIL_ROAD_RELIEF * (getRailShare(stream) + getSeaShare(stream));
         switch (stream) {
             case BULK:  return (1 - BULK_HIGHWAY_RELIEF * grade) * railed;
             case GOODS: return (1 - GOODS_HIGHWAY_RELIEF * grade) * railed;
@@ -1039,6 +1063,7 @@ public class InfrastructureManager {
         copy.highwayCapacity = highwayCapacity + Math.max(0, highwayAdded);
         copy.transitCapacity = transitCapacity + Math.max(0, transitAdded);
         System.arraycopy(railShare, 0, copy.railShare, 0, railShare.length);
+        System.arraycopy(seaShare, 0, copy.seaShare, 0, seaShare.length);
         copy.fareShare = fareShare;
         copy.fareDial = fareDial;
         copy.captiveShare = captiveShare;

@@ -3044,6 +3044,11 @@ final class HistoryScreen {
             double local = m == null ? 0 : m.getLocalPrice();
             String figure = local > 0 ? goodPrice(local) + " /" + g.unit() : "";
             String flow = flowWords(m);
+            // ...and petrol at the pump (0.7.83, batch O6): the forecourts' price on its wholesale, beside what crossed.
+            if (g == Good.PETROL) {
+                double pump = ui.game.getSectors().retail().pumpPriceToday(ui.game);
+                if (pump > 0) flow = (flow == null ? "" : flow + " · ") + "at the pump " + goodPrice(pump);
+            }
             if (!g.traded()) {
                 Sector s = seller(g);
                 out.add(new GoodLine(g, s == null ? "" : s.key() + " ›", "set by the seller", Double.NaN, null));

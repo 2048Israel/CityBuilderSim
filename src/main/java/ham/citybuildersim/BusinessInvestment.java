@@ -89,6 +89,9 @@ public class BusinessInvestment {
     /** Harnesses only: this sector will not ask to build for the rest of the run. */
     public void holdSector(String key) { if (key != null) held.add(key); }
 
+    /** Harnesses only (0.7.91, WellCheck): this sector asks to build again. */
+    public void releaseSector(String key) { if (key != null) held.remove(key); }
+
     /** Whether a sector has been held out by a fixture. */
     public boolean isHeld(String key) { return key != null && held.contains(key); }
 

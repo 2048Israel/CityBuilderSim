@@ -963,12 +963,24 @@ public class BondCheck {
          * stock it bought this month: that it bought on its suppliers'
          * credit. Until 0.7.44: "on no more than the principal: nothing it
          * bought is in what it could not pay", unpaid <= due, inputs nil.
+         *
+         * ...FOR ITS SHELVES, since 0.7.83 (batch O6): the grocers also draw
+         * two fuels outside BUY ONLY WHAT IT CAN PAY FOR, as the railway draws
+         * its diesel - the drivers' petrol, sold on at the pump in the same
+         * month (sectors.Retail, THE FORECOURTS), and their vans' diesel
+         * (Sector.runFleet()) - which the strike pays as it pays the wages.
+         * Until then: "...nothing it bought this month is in what it could
+         * not pay", every input on credit.
          */
         out.printf("   ...of which it repaid its suppliers $%,.1fk for stock it had sold%n", shops.getTradeCreditRepaid());
+        double fuels = shops.statement().bought.getOrDefault(Good.PETROL, new Sector.Split()).total()
+                + shops.statement().bought.getOrDefault(Good.DIESEL, new Sector.Split()).total();
+        out.printf("   ...and it drew $%,.1fk of the drivers' petrol and its vans' diesel, and sold the petrol for $%,.1fk%n",
+                fuels, shops.statement().sold.getOrDefault(Good.PETROL, new Sector.Split()).total());
         assertTrue("...on no more than the principal and what it owed its suppliers for stock it has sold:"
-                        + " nothing it bought this month is in what it could not pay",
+                        + " nothing it bought this month for its shelves is in what it could not pay",
                 credit.getCannotPayShort(R) <= (due + shops.getTradeCreditRepaid()) * (1 + 1e-9)
-                        && shops.statement().inputs - shops.statement().paidEarlier - shops.getTradeCreditTaken()
+                        && shops.statement().inputs - fuels - shops.statement().paidEarlier - shops.getTradeCreditTaken()
                                 <= 1e-9 * Math.max(1, shops.statement().inputs));
         assertTrue("the month closes", closes(r));
     }

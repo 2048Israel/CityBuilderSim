@@ -400,7 +400,7 @@ public final class PolicyPreview {
      * What the rule would do at one step of the strictness dial, at the
      * city's target: the step; what it aims at, in words
      * (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past
-     * 4.0% (or under 0.0%)"); the rate it sets on target; and its advice at
+     * 4.0% (or under 2.0%)"); the rate it sets on target; and its advice at
      * this year's inflation, inside the dial - NaN before there is a year of
      * prices to read.
      */

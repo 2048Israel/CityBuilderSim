@@ -133,6 +133,16 @@ public abstract class Sector {
     /** True for a good it keeps on hand and restocks - a shelf, a larder, a fleet - and so, since 0.7.12 round 6, what a budget can cut (BUY ONLY WHAT IT CAN PAY FOR); false for a maker's input, consumed as it makes. */
     public final boolean hasPantry(Good g) { return pantryMonths.containsKey(g); }
 
+    /**
+     * Whether its order of a good is for stock it keeps - cut, with the rest
+     * of its stock, to what it can pay for (BUY ONLY WHAT IT CAN PAY FOR) -
+     * rather than a maker's input bought whole (0.7.85): its pantry goods
+     * (hasPantry()), and an input a sector keeps in store, for as long as it
+     * keeps one - the refiners' crude in a Tank Farm (sectors.Refining, THE
+     * TANK FARM), whose run is held to what it has and what it bought.
+     */
+    public boolean buysAhead(Good g) { return hasPantry(g); }
+
     /* ===================================================================
        WIRING - set once by Sectors, through attach()
        =================================================================== */
@@ -693,6 +703,36 @@ public abstract class Sector {
      */
     public static final double MIN_VAN_RATE = .6;
 
+    /* -------------------------------------------------------------------
+       AND THE DIESEL THEY BURN (0.7.83, batch O6; runs/spec-oil.md 2.5)
+
+       A van cost a sector its price and its wear and nothing to run. Since
+       0.7.83 every van-month burns diesel, drawn as the railway draws its own
+       (Markets.draw(): the refiners' tanks first, the world for the rest) at
+       the litre's wholesale price - a fleet buys at commercial cardlock
+       prices near wholesale, not at a filling station's pump (the brief's O6
+       note; sectors.Retail, THE FORECOURTS, sells the drivers' petrol only).
+       ------------------------------------------------------------------- */
+
+    /** The loads a van-month carries: TONNES_PER_VAN at a van's own weight, three tonnes (Good.VANS.tonnesPerUnit()) - forty. */
+    public static final double LOADS_A_VAN_MONTH = TONNES_PER_VAN / Good.VANS.tonnesPerUnit();
+
+    /** How far a load goes, there and back: fifty kilometres (runs/spec-oil.md 2.5, est.; to confirm). */
+    public static final double KM_A_LOAD = 50;
+
+    /** What a laden van or truck burns: twelve litres of diesel a hundred kilometres (runs/spec-oil.md 2.5, est.; to confirm). */
+    public static final double DIESEL_LITRES_PER_100_KM = 12;
+
+    /** ...so a van-month burns LOADS_A_VAN_MONTH x KM_A_LOAD x DIESEL_LITRES_PER_100_KM / 100 litres: 240. */
+    public static final double DIESEL_LITRES_A_VAN_MONTH = LOADS_A_VAN_MONTH * KM_A_LOAD * DIESEL_LITRES_PER_100_KM / 100;
+
+    /** The month's diesel for the fleet (0.7.83): the litres drawn, what they cost, and the part bought abroad. Struck at the top of the market pass; not saved - the statement carries the bill. */
+    private double fleetDieselLitres, fleetDieselCost, fleetDieselImported;
+
+    public double getFleetDieselLitres()   { return fleetDieselLitres; }
+    public double getFleetDieselCost()     { return fleetDieselCost; }
+    public double getFleetDieselImported() { return fleetDieselImported; }
+
     /**
      * Whether this sector's fleet is a fact about the sector rather than a fact
      * about the version it was saved from.
@@ -756,16 +796,40 @@ public abstract class Sector {
      *
      * Called once a month for every sector, at the top of the market pass and
      * before anything is produced. The wear is why a Commercial Vehicle Plant
-     * has a customer next year as well as this one.
+     * has a customer next year as well as this one. With no markets to draw
+     * on - a bare fixture's month of wear - no diesel is drawn; see
+     * runFleet(Sectors).
      */
     public void runFleet() {
+        runFleet(null);
+    }
+
+    /**
+     * ...and the month's diesel (0.7.83, batch O6; spec-oil 2.5): the van-months
+     * the sector works this month - what its standing plant moves at the
+     * operating rate, over TONNES_PER_VAN, the same measure its fleet is sized
+     * by - at DIESEL_LITRES_A_VAN_MONTH, drawn as a buyer off the refiners'
+     * tanks and the rest from the world (Markets.draw()). A sector with
+     * nothing to move draws nothing, and the month a fleet is seeded is a
+     * month it drives.
+     */
+    public void runFleet(Sectors sectors) {
+        fleetDieselLitres = fleetDieselCost = fleetDieselImported = 0;
         if (!vansKnown) {
             pantry.put(Good.VANS, vansNeeded());   // see vansKnown
             vansKnown = true;
-            return;                                 // a fleet bought this month is not worn yet
+            // a fleet bought this month is not worn yet - but it drives
+        } else {
+            double have = vanFleet();
+            if (have > 0) usePantry(Good.VANS, have / VAN_LIFE_MONTHS);
         }
-        double have = vanFleet();
-        if (have > 0) usePantry(Good.VANS, have / VAN_LIFE_MONTHS);
+        if (sectors == null || markets == null) return;
+        double litres = vansNeeded() * getOperatingRate() * DIESEL_LITRES_A_VAN_MONTH;
+        if (!(litres > 0) || !Double.isFinite(litres)) return;
+        Markets.Draw took = markets.draw(Good.DIESEL, this, key(), litres, sectors);
+        fleetDieselLitres = took.units();
+        fleetDieselCost = took.cost();
+        fleetDieselImported = took.importCost();
     }
 
     /* ===================================================================
@@ -1218,7 +1282,7 @@ public abstract class Sector {
     protected void bookPurchase(Trade t) {
         if (t == null) return;
         // ...stock out of what the clearing lets it pay for (0.7.12 round 6).
-        if (purchasesLeft != Double.POSITIVE_INFINITY && hasPantry(t.good())) {
+        if (purchasesLeft != Double.POSITIVE_INFINITY && buysAhead(t.good())) {
             purchasesLeft = Math.max(0, purchasesLeft - t.value());
         }
         // ...and against the supplier that filled it, for its credit (0.7.44; see SupplierCredit).
@@ -1534,6 +1598,21 @@ public abstract class Sector {
      * bought on an ordinary market and the call would go away; it went in
      * 0.7.62 (batch K), when the railway began drawing FUEL (Rail.haul()).
      */
+
+    /**
+     * ...AND ONE AGAIN SINCE 0.7.91 (batch O10; spec-oil 2.7): the shuttle
+     * tankers that take a platform's crude ashore, a service the world's
+     * ships sell with no good behind it. Bought from the world, so an
+     * import (Ledger.imports) - the money audit's "- <sector> Imports", the
+     * sales tax charged on imports and credited back as on any - and named
+     * on the input line as it is charged (Ledger.otherInputs). No cash moves
+     * here: bank() settles the month at net income, as for every input.
+     */
+    protected final void bookImportedService(String what, double amount) {
+        if (!(amount > 0) || !Double.isFinite(amount)) return;
+        pending.imports += amount;
+        pending.otherInputs.merge(what == null ? "Services" : what, amount, Double::sum);
+    }
 
     /* ===================================================================
        THE STATEMENT
@@ -2054,6 +2133,15 @@ public abstract class Sector {
 
     /** After every market has cleared and every good is made: anything the month still needs. */
     public void endOfMonth(Game game) { }
+
+    /**
+     * One good's market has cleared this month and its fills are booked
+     * (0.7.85; Markets.clear()), told to each of its buyers: a sector whose
+     * month reads what it bought says so here - the refiners' run, held to
+     * their crude on hand and the month's fill (sectors.Refining, THE TANK
+     * FARM). Nothing by default.
+     */
+    protected void afterClearing(Good g) { }
 
     /* ===================================================================
        PLANNING - the decision to grow, and to shrink

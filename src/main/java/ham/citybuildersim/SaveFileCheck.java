@@ -718,7 +718,12 @@ public class SaveFileCheck {
          * national accounts' rolling history was not restored at all, so a
          * loaded city had one month recorded - the rebuild's - and every "of
          * annual GDP" read that month times twelve for a year. The load path
-         * seeds it from the graph history's GDP series now.
+         * seeds it from the graph history's GDP series now - and since 0.7.81
+         * from the save's exact copy (DataSave.gdpRolling): automatic
+         * building's debt limit reads the year in the month, and the graph
+         * keeps thousands to two places. Until 0.7.81 the label below read
+         * "...and its year is the history's last twelve months" of the loaded
+         * city; that is now the older save's (no copy), asserted after it.
          */
         java.util.List<Double> keptGdp = reloaded.getHistorySave().getGdp();
         NationalAccounts naBack = reloaded.getEconomyManager().getNationalAccounts();
@@ -727,7 +732,19 @@ public class SaveFileCheck {
         assertTrue("fixture: the city kept more than a year of GDP", keptGdp.size() > 12);
         assertEquals("a loaded city has the months its history kept, up to ten years",
                 naBack.getMonthsRecorded(), Math.min(120, keptGdp.size()));
-        same("...and its year is the history's last twelve months", naBack.getAnnualGdp(), lastTwelve);
+        NationalAccounts naLive = city.getEconomyManager().getNationalAccounts();
+        assertTrue("...and its year is the live city's to the bit: the rolling year saved exactly (0.7.81)",
+                Double.doubleToLongBits(naBack.getAnnualGdp()) == Double.doubleToLongBits(naLive.getAnnualGdp())
+                        && naBack.getHistory().equals(naLive.getHistory()));
+        com.google.gson.JsonObject withYear = com.google.gson.JsonParser.parseString(
+                Files.readString(cityFiles.saveFile(1))).getAsJsonObject();
+        assertTrue("fixture: the save carries the rolling year", withYear.has("gdpRolling"));
+        withYear.remove("gdpRolling");
+        Files.writeString(cityFiles.saveFile(1), withYear.toString());
+        Game olderYear = new Game(cityFiles);
+        olderYear.loadGameSave(1);
+        same("...and a save without it (before 0.7.81) reads its year from the history's last twelve months",
+                olderYear.getEconomyManager().getNationalAccounts().getAnnualGdp(), lastTwelve);
 
         // The order book, which is what makes the GDP line above hold.
         ham.citybuildersim.sectors.Construction b1 = city.getSectors().construction();
@@ -1223,6 +1240,44 @@ public class SaveFileCheck {
         // ...and a refinery's crude mix no city founds with (0.7.79): a quarter light, half medium, a quarter heavy.
         double[] crudeMix = { .25, .5, .25 };
         full.getSectors().refining().setCrudeMixForTest(crudeMix);
+        // ...and the spread planner's idle months (0.7.82), which no city founds with: two kinds idle, the rest working.
+        full.getSectors().refining().planner().setIdleMonthsForTest("ASPHALT", 4);
+        full.getSectors().refining().planner().setIdleMonthsForTest("COKER", 9);
+        // ...and the wells' vintages (0.7.84), which no city founds with: two batches, struck as given.
+        java.util.List<ham.citybuildersim.sectors.Oil.Vintage> vintages = java.util.List.of(
+                new ham.citybuildersim.sectors.Oil.Vintage(full.getMonth() - 30, 3, ham.citybuildersim.sectors.Oil.WellKind.LAND),
+                new ham.citybuildersim.sectors.Oil.Vintage(full.getMonth() - 5, 1, ham.citybuildersim.sectors.Oil.WellKind.LAND));
+        full.getSectors().oil().setVintagesForTest(vintages);
+        // ...and the oil at sea's records (0.7.91), which no city founds with: two platforms, one on no field, and a pipe.
+        java.util.List<ham.citybuildersim.sectors.Oil.Platform> seaPlatforms = java.util.List.of(
+                new ham.citybuildersim.sectors.Oil.Platform(4_242, 3, 7, full.getMonth() - 40),
+                new ham.citybuildersim.sectors.Oil.Platform(-1, -1, 0, full.getMonth() - 2));
+        java.util.List<ham.citybuildersim.sectors.Oil.Pipeline> seaPipes = java.util.List.of(
+                new ham.citybuildersim.sectors.Oil.Pipeline(4_242, 3, 17, full.getMonth() - 30));
+        full.getSectors().oil().setOffshoreForTest(seaPlatforms, seaPipes);
+        // ...and the strategic reserve (0.7.85), which no city founds with: crude, a book, a release standing and a
+        // month the strike has yet to settle. (The refiners' crude kept in a Tank Farm crosses a save in OilCheck 15:
+        // it is a sector's stock, struck into what the bank reads at the close, so it cannot be handed in here.)
+        StrategicReserve.State reserveState = new StrategicReserve.State();
+        reserveState.tonnes = 12_345.25; reserveState.cost = 7_777.125; reserveState.release = 1_000;
+        reserveState.boughtHome = 11.5; reserveState.boughtAbroad = 22.25; reserveState.soldHome = 33.75;
+        reserveState.soldAbroad = 44.5; reserveState.settledImports = 55.25; reserveState.settledExports = 66.75;
+        full.getReserve().restore(reserveState);
+        // ...and the ports' month (0.7.86), which no city founds with: shares in force, a kind after the railway,
+        // crude in a VLCC, the road's two shares, and the month's tonnes by kind and direction.
+        Ports.State portState = new Ports.State();
+        portState.share = new double[] { .25, .5, .125, 1 };
+        portState.first = new boolean[] { true, true, false, true };
+        portState.firstOfStream = new double[] { 0, .0625, .375 };
+        portState.seaOfStream = new double[] { 0, .125, .5 };
+        portState.seaIn = new double[] { 1_000.5, 2_000.25, 3_000.125, 4_000.75 };
+        portState.seaOut = new double[] { 5_000.5, 6_000.25, 7_000.125, 8_000.75 };
+        portState.tradeIn = new double[] { 10_000.5, 20_000.25, 30_000.125, 40_000.75 };
+        portState.tradeOut = new double[] { 50_000.5, 60_000.25, 70_000.125, 80_000.75 };
+        portState.crudeShip = "VLCC";
+        portState.billedCrudeShip = "SUEZMAX";
+        portState.heldBack = 123.5; portState.crudeSeaIn = 900.25; portState.crudeSeaOut = 100.125; portState.crudeTrade = 9_999.5;
+        full.getPorts().restore(portState);
 
         assertTrue("saved a city with one of everything in it",
                 full.saveGame(1, "everything").ok);
@@ -1268,6 +1323,56 @@ public class SaveFileCheck {
         assertEquals("...and the ground it stands on (0.7.56)", back.getWorldSeed(), full.getWorldSeed());
         assertTrue("the refinery's crude mix, light, medium and heavy (0.7.79)",
                 java.util.Arrays.equals(back.getSectors().refining().getCrudeMix(), crudeMix));
+        boolean idle = true;
+        for (ham.citybuildersim.sectors.RefineryFlow.Kind k : ham.citybuildersim.sectors.RefineryFlow.Kind.values()) {
+            idle &= back.getSectors().refining().idleMonths(k) == full.getSectors().refining().idleMonths(k);
+        }
+        assertTrue("the refiners' idle months by kind, the spread planner's (0.7.82)", idle
+                && back.getSectors().refining().idleMonths(ham.citybuildersim.sectors.RefineryFlow.Kind.COKER) == 9);
+        assertTrue("the wells' vintages, each batch's month, count and kind (0.7.84)",
+                back.getSectors().oil().vintages().equals(vintages));
+        assertTrue("the oil at sea's platforms - each one's field, wells and month - and pipelines, each one's field,"
+                        + " kilometres and month (0.7.91)",
+                back.getSectors().oil().platforms().equals(seaPlatforms) && back.getSectors().oil().pipelines().equals(seaPipes));
+        // ...and the strategic reserve (0.7.85).
+        StrategicReserve resThen = full.getReserve(), resNow = back.getReserve();
+        assertTrue("fixture: the reserve really did hold crude, with a release standing and a month to settle",
+                resThen.getTonnes() > 0 && resThen.getRelease() > 0 && resThen.getSoldAbroad() > 0);
+        same("the strategic reserve's crude (0.7.85)", resNow.getTonnes(), resThen.getTonnes());
+        same("...its book", resNow.getCost(), resThen.getCost());
+        same("...its release", resNow.getRelease(), resThen.getRelease());
+        same("...what it bought at home and abroad, for the strike", resNow.getBoughtHome() + resNow.getBoughtAbroad(),
+                resThen.getBoughtHome() + resThen.getBoughtAbroad());
+        same("...what it sold and shipped", resNow.getSoldHome() + resNow.getSoldAbroad(),
+                resThen.getSoldHome() + resThen.getSoldAbroad());
+        same("...and what the last strike settled abroad", resNow.getSettledImports() + resNow.getSettledExports(),
+                resThen.getSettledImports() + resThen.getSettledExports());
+        // ...and the ports' month (0.7.86): the band and the road are struck from it on the load, the boats from its tonnes.
+        Ports portThen = full.getPorts(), portNow = back.getPorts();
+        boolean portSame = portThen.anyAtSea() && portNow.crudeShip() == Ports.Ship.VLCC
+                && portNow.billedCrudeShip() == Ports.Ship.SUEZMAX && portNow.getHeldBack() == portThen.getHeldBack()
+                && portNow.crudeSeaIn() == portThen.crudeSeaIn() && portNow.crudeSeaOut() == portThen.crudeSeaOut()
+                && portNow.crudeTrade() == portThen.crudeTrade()
+                && java.util.Arrays.equals(portNow.seaOfStream(), portThen.seaOfStream());
+        for (Ports.Cargo c : Ports.Cargo.values()) {
+            portSame &= portNow.share(c) == portThen.share(c) && portNow.seaFirst(c) == portThen.seaFirst(c)
+                    && portNow.seaIn(c) == portThen.seaIn(c) && portNow.seaOut(c) == portThen.seaOut(c)
+                    && portNow.tradeIn(c) == portThen.tradeIn(c) && portNow.tradeOut(c) == portThen.tradeOut(c);
+        }
+        assertTrue("the ports' month: each kind's share in force and whether it goes before the railway, crude's class,"
+                + " the road's shares, and the month's tonnes by kind and direction (0.7.86)", portSame);
+        // ...and the forecourts' month (0.7.83): the planner reads its litres next month, the page its prices.
+        ham.citybuildersim.sectors.Retail pumpThen = full.getSectors().retail(), pumpNow = back.getSectors().retail();
+        assertTrue("fixture: the forecourts really were selling the drivers' petrol",
+                pumpThen.getPumpLitres() + pumpThen.getQueueLitres() > 0 && pumpThen.getFuelBill() > 0);
+        same("the forecourts' litres at the pump (0.7.83)", pumpNow.getPumpLitres(), pumpThen.getPumpLitres());
+        same("...past the stations", pumpNow.getQueueLitres(), pumpThen.getQueueLitres());
+        same("...what the stations could sell", pumpNow.getPumpCapacity(), pumpThen.getPumpCapacity());
+        same("...the pump price", pumpNow.getPumpPrice(), pumpThen.getPumpPrice());
+        same("...the queue's", pumpNow.getQueuePrice(), pumpThen.getQueuePrice());
+        same("...the wholesale a litre", pumpNow.getWholesaleLitre(), pumpThen.getWholesaleLitre());
+        same("...the drivers' bill", pumpNow.getFuelBill(), pumpThen.getFuelBill());
+        same("...and what of the wholesale the world was paid", pumpNow.getFuelImported(), pumpThen.getFuelImported());
 
         /*
          * WHAT A LOAN COSTS, STRUCK AT THE CLOSE (0.7.7). The bank prices

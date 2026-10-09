@@ -664,11 +664,18 @@ public class LandCheck {
         BuildingManager bm = new BuildingManager();
         bm.initializeTemplates();
 
-        boolean allHaveLand = true;
+        boolean allHaveLand = true, seaHasNone = true;
+        int atSea = 0;
         double biggest = 0;
         String biggestName = "";
 
         for (BuildingsTemplate t : bm.getTemplates()) {
+            // ...the oil at sea (0.7.91) stands on none of the city's dry ground: an offshore platform, its wells, a pipeline.
+            if (t.standsAtSea()) {
+                atSea++;
+                seaHasNone &= t.getLandSqFt() == 0;
+                continue;
+            }
             if (t.getLandSqFt() <= 0) {
                 allHaveLand = false;
                 System.out.println("  no footprint: " + t.getName());
@@ -679,7 +686,9 @@ public class LandCheck {
             }
         }
 
-        assertTrue("every building has a footprint", allHaveLand);
+        assertTrue("every building on the ground has a footprint", allHaveLand);
+        assertTrue("...and the three at sea none (0.7.91: the offshore platform, its wells, the crude pipeline)",
+                seaHasNone && atSea == 3);
         System.out.printf("   largest: %s at %,.0f sq ft (%.1f blocks)%n",
                 biggestName, biggest, biggest / LandManager.BLOCK_SQ_FT);
 

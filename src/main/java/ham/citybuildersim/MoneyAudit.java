@@ -568,6 +568,9 @@ public final class MoneyAudit {
         for (Sector s : sectors.all()) {
             in += credit.apply("+ " + s.key() + " Exports", s.statement().exports, Scope.TRADE);
         }
+        // ...and the strategic reserve's crude shipped (0.7.85), settled at the strike beside the
+        // sectors' month; what the refiners bought of it is a pool paying a pool, not listed.
+        in += credit.apply("+ city ReserveSales", g.getReserve().getSettledExports(), Scope.TRADE);
         /*
          * THE LENDER IS INSIDE THE CITY NOW.
          *
@@ -900,6 +903,9 @@ public final class MoneyAudit {
         for (Sector s : sectors.all()) {
             out += debit.apply("- " + s.key() + " Imports", s.statement().imports, Scope.TRADE);
         }
+        // ...and the strategic reserve's crude bought from the world (0.7.85), settled at the strike
+        // beside the sectors' month; what it bought of the wells is a pool paying a pool, not listed.
+        out += debit.apply("- city ReserveFill", g.getReserve().getSettledImports(), Scope.TRADE);
         // Lending to a family crosses the city's edge; lending to a sector or
         // to the treasury no longer does - see the pools above.
         out += debit.apply("- bank LentToHouseholds", g.getBank().getLentToHouseholds(), Scope.DOMESTIC);

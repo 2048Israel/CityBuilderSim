@@ -92,14 +92,19 @@ These are Jerus's, and they do not move.
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; over 15,000 lines, 40 banner sections
+        Game.java                  the month, the seam every system meets at; over 15,000 lines, 41 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
                                    project's splitting-game.md)
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
-        sectors/                   seventeen sector classes; Mining.java is the shape to copy
+        sectors/                   seventeen sector classes, RefineryFlow (0.7.80: the refinery's units, the
+                                   flow through them) and SpreadPlanner (0.7.82: what a processing sector
+                                   orders - the best earnings on cost at the city's own prices, past the
+                                   feed, ground, staff and money gates - and the idle-then-shed rule; the
+                                   refinery its first client, the materials chains' works next); Mining.java
+                                   is the shape to copy
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on
@@ -127,6 +132,19 @@ These are Jerus's, and they do not move.
                                    state, saved under one key, and each rule's
                                    arithmetic with its source; BuildingManager applies the crews and Game's
                                    THE PLAYER'S HAND ON THE QUEUE moves the money
+        StrategicReserve.java      the city's strategic reserve of crude (0.7.85): what its tanks hold and cost,
+                                   the fill ordered and the release standing, the city's side of crude's
+                                   clearing (Markets.CityTrader) and the month the next strike settles;
+                                   Game's THE STRATEGIC RESERVE pulls the levers and pays - OilCheck 16
+                                   holds it (runs/spec-oil.md 2.8)
+        Ports.java, BoatSchedule.java
+                                   the city's sea terminals (0.7.86): each kind of cargo's berths, the share
+                                   of its goods they take before or after the railway, the band they narrow
+                                   (Ports.factor(), at the railway's step 5) and the month's tonnes by sea,
+                                   saved under one key; and the month's ships as a pure function of time -
+                                   the calls those tonnes make, each boat's place on its lane, a frame's
+                                   query - never saved, the map's to draw (O13). PortCheck holds both
+                                   (runs/spec-oil.md 2.9-2.10)
         DecisionLog.java           what the player decided, and when (0.7.23): every change of a policy and
                                    every spend at scale, recorded where it is applied, held while a city is
                                    founded or loaded, saved under one key; the History chart's flags
@@ -148,12 +166,14 @@ These are Jerus's, and they do not move.
                                    need); advice, not a model change - BuildAdviceCheck, RoadCheck and
                                    ChildcareCheck hold it
         AutoBuilder.java           automatic building (0.7.73): the player's switch and two dials (a
-                                   spare margin, a debt limit), and the month's pass that orders the
+                                   spare margin, a debt limit - since 0.7.81 the city's debt over a year
+                                   of GDP, and "Build from cash anyway" for when it is over), and the
+                                   month's pass that orders the
                                    build advice's own cards for the city's works within the builders,
                                    the budget and the limit - since 0.7.77 buying the bare ground they
                                    lack as Build's land shortcut would - borrowing on the funding page's
                                    bond; its log, its inbox notices - AutoBuildCheck holds it
-        BuildCard.java             one build card's figures for all 76 buildings (0.7.25): what it gives the
+        BuildCard.java             one build card's figures for all 101 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
                                    fails for them, the verdict on an order; pure - BuildCardCheck holds it
@@ -193,10 +213,26 @@ These are Jerus's, and they do not move.
                                    put on the grid once at load - GridCheck and ConversionCheck hold them
         CityMap.java, TilePainter.java, TileRaster.java, BuildingVisual.java
                                    the city map (0.7.60): the buildings by type in 7.68 km districts,
-                                   each drawn once on its own land and the roads laid plot for plot
-                                   (since 0.7.64), a tile painted and rastered when a screen asks, the
-                                   sidecar beside the save; nothing in the model reads it - MapCheck
-                                   holds it
+                                   each drawn once on its own land; since 0.7.88 a tile painted from
+                                   its district's street plan, what a plan cannot hold carried to the
+                                   next district and the rest packed at the city's edge (since 0.7.89
+                                   within bands of CHAIN_BAND districts), and rastered when a screen
+                                   asks; the sidecar beside the save; nothing in the model reads it -
+                                   MapCheck holds it
+        CityRuns.java              the city's highways and railway (0.7.89): laid city-wide, month by
+                                   month, on corridors from the founding site's lines - straight by
+                                   preference, never moved, the newest end taken first - with the
+                                   rail yards near the mines; kept in the map's sidecar, each
+                                   district's plan drawn round them (spec-roads-and-ports.md 2.7,
+                                   2.8) - MapCheck 8 holds it
+        DistrictPlan.java          a district's street plan (0.7.87): the cells it opens and their
+                                   layouts, every street with its kind and width - the model's road
+                                   drawn as the streets' surface - and every building's box; pure, a
+                                   port of the project's roads prototype (spec-roads-and-ports.md 2);
+                                   the painter draws from it since 0.7.88; since 0.7.90 an estate
+                                   cell's streets sized to what opens it, since 0.7.92 the outer
+                                   kinds on industry's leftover ground when no cell is left -
+                                   PlanCheck holds it
         ui/                        the interface: UserInterface.java is the window (about 6,000 lines: the header
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's
@@ -212,7 +248,7 @@ These are Jerus's, and they do not move.
                                    (the city map on a canvas, 0.7.61: small in the land office, over the
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
                                    MapTiles, which MapCheck holds). The model never imports it.
-        *Check.java                eighty-five harnesses, each a main() with static helpers
+        *Check.java                eighty-nine harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them

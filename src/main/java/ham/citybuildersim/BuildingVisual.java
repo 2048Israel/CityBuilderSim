@@ -129,13 +129,16 @@ public final class BuildingVisual {
      * @param jobs      the jobs it holds
      * @param track     a railway line, drawn as track plot by plot (0.7.72): a RAIL type not in RAIL_TERMINALS
      * @param terminal  a rail yard, drawn as a building beside its track (0.7.72): RAIL_TERMINALS
+     * @param sea       a building at sea (0.7.91): an offshore platform, its wells, a crude pipeline
+     *                  (BuildingsTemplate.standsAtSea()) - on none of the city's dry ground, so neither
+     *                  dealt to a district nor drawn on the land; batch O13 draws them on their field
      */
     public record Type(int id, BuildingType category, int cls, boolean flats, int road, Resource site,
                        boolean outer, double plots, boolean transit, long sqFt, int people, int jobs,
-                       boolean track, boolean terminal) {
+                       boolean track, boolean terminal, boolean sea) {
 
-        /** Whether it is drawn as a building: not a road, nor a railway line (0.7.72). */
-        public boolean drawn() { return road == NOT_A_ROAD && !track; }
+        /** Whether it is drawn as a building: not a road, nor a railway line (0.7.72), nor at sea (0.7.91). */
+        public boolean drawn() { return road == NOT_A_ROAD && !track && !sea; }
 
         /** Its fill. */
         public int fill() { return flats ? FLATS_FILL : FILL[cls]; }
@@ -155,7 +158,8 @@ public final class BuildingVisual {
             road = g <= 0 ? GRAVEL : g < 1 ? PAVED : HIGHWAY;
         }
         Resource site = null;
-        if (c == BuildingType.MINING) {
+        boolean sea = t.standsAtSea();
+        if (c == BuildingType.MINING && !sea) {
             for (Resource r : Resource.values()) {
                 if (r.good() != null && t.makes(r.good()) > 0) site = r;
             }
@@ -170,7 +174,7 @@ public final class BuildingVisual {
         for (int r : RAIL_TERMINALS) if (r == id) terminal = true;
         boolean track = c == BuildingType.RAIL && !terminal;
         return new Type(id, c, cls, flats, road, site, outer, plots, t.isTransit(), Math.round(Math.max(0, t.getLandSqFt())),
-                people, Math.max(0, t.getTotalJobs()), track, terminal);
+                people, Math.max(0, t.getTotalJobs()), track, terminal, sea);
     }
 
     /** A category's class (the mockup's ten). */

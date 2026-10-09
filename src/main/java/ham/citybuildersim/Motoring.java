@@ -123,6 +123,14 @@ public final class Motoring {
      * world's part the households' only import of fuel (fuelImports, the
      * audit's PetrolFunded and PetrolImports). With no refinery all of it is
      * imported at the world's price level, as every good is.
+     *
+     * ...AND SINCE 0.7.83 (batch O6) AT THE PUMP: the grocers' forecourts draw
+     * the litres at wholesale on their own books and sell them to the
+     * drivers at the pump price (sectors.Retail, THE FORECOURTS), so the bill
+     * is what Retail charged, a sale on its statement, and the households
+     * import none of it themselves: what the world sold is Retail's import.
+     * The audit's PetrolFunded and PetrolImports read nothing from then on;
+     * a save from before keeps the month it struck.
      */
     private double fuelImports, fuelLitres;
 
@@ -157,9 +165,9 @@ public final class Motoring {
      * What a journey's fuel costs today, in today's money (0.7.62): its
      * litres at what a litre costs to bring in (GoodsMarket.landedPrice()) -
      * the refiners' price while the city has fuel on offer, the import price
-     * while it has none. What the owners weigh a ride against
-     * (InfrastructureManager.setCommute()); CAR_FUEL_PER_JOURNEY at the
-     * world's price level with no refinery.
+     * while it has none. CAR_FUEL_PER_JOURNEY at the world's price level with
+     * no refinery. The wholesale journey since 0.7.83: what the owners weigh
+     * a ride against is journeyFuel(Game), at the pump.
      */
     public static double journeyFuel(Markets markets) {
         double litre = markets == null ? Double.NaN : markets.get(Good.PETROL).landedPrice();
@@ -167,16 +175,30 @@ public final class Motoring {
     }
 
     /**
-     * The drivers' month of fuel, drawn (6d, 0.7.62): `journeys` at
-     * LITRES_PER_JOURNEY off the refiners' shelf and the rest from the world,
-     * at what the draw came to. See THE FUEL IS DRAWN.
+     * ...at the pump (0.7.83, batch O6): a journey's litres at the forecourts'
+     * pump price today (Retail.pumpPriceToday()) - the price on the sign, the
+     * wholesale with the stations' margin and the sales tax on it. What the
+     * owners weigh a ride against (InfrastructureManager.setCommute()); the
+     * queue's dearer litres past the stations are paid, not posted (star O6).
+     */
+    public static double journeyFuel(Game game) {
+        double litre = game == null ? Double.NaN : game.getSectors().retail().pumpPriceToday(game);
+        return Double.isFinite(litre) && litre > 0 ? litre * LITRES_PER_JOURNEY : 0;
+    }
+
+    /**
+     * The drivers' month of fuel (6d, 0.7.62): `journeys` at
+     * LITRES_PER_JOURNEY, bought at the pump since 0.7.83 - the grocers'
+     * forecourts draw them off the refiners' shelf and the world at
+     * wholesale and sell them on (Retail.sellFuel()) - at what the drivers
+     * were charged, none of it imported by them. See THE FUEL IS DRAWN.
      */
     void drawFuel(Game game, double journeys) {
         double litres = Double.isFinite(journeys) ? Math.max(0, journeys) * LITRES_PER_JOURNEY : 0;
-        Markets.Draw took = game.getMarkets().draw(Good.PETROL, null, Trade.HOUSEHOLDS, litres, game.getSectors());
-        fuelLitres = took.units();
-        fuelBill = took.cost();
-        fuelImports = took.importCost();
+        ham.citybuildersim.sectors.Retail.FuelSale sale = game.getSectors().retail().sellFuel(litres, game);
+        fuelLitres = sale.litres();
+        fuelBill = sale.bill();
+        fuelImports = 0;
     }
     public double getPrefersTransit() { return prefersTransit; }
     public double getOwnershipCeiling() { return ownershipCeiling; }

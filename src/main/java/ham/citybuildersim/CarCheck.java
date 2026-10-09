@@ -890,15 +890,25 @@ public class CarCheck {
          * weigh the same journey's fuel against a ride (WHO RIDES, BY WHAT
          * THEY PAY), so at the default fare fewer of them take the bus on cost
          * alone than the pump price sent there.
+         *
+         * ...AT THE FORECOURTS' PRICE ON IT SINCE 0.7.83 (batch O6): the
+         * grocers sell the drivers' petrol at the wholesale they paid times 1 +
+         * Retail.PUMP_MARGIN, their sales tax passed on, and a journey's fuel
+         * is what the sign says (sectors.Retail, THE FORECOURTS). Until then:
+         * "a journey's fuel is its litres of petrol at the import price, in a
+         * town with no refinery: the wholesale ladder".
          */
         InfrastructureManager pricedRoads = priced.getInfrastructureManager();
         GoodsMarket petrol = priced.getMarkets().get(Good.PETROL);
         double journey = pricedRoads.getFuelPerJourney();
-        report("a journey's fuel is its litres of petrol at the import price, in a town with no refinery: the wholesale ladder",
+        double grocersTax = priced.getEconomyManager().getTaxPolicy().effectiveSalesRate(priced.getSectors().retail());
+        report("a journey's fuel is its litres of petrol at the pump price on the import price, in a town with no refinery:"
+                        + " the wholesale ladder, the forecourts' margin and the sales tax on it",
                 priced.getSectors().refining().buildingsStanding() == 0 && journey > 0
-                        && Math.abs(journey - Motoring.LITRES_PER_JOURNEY * petrol.importPrice()) <= 1e-12 * journey
+                        && Math.abs(journey - Motoring.LITRES_PER_JOURNEY
+                                * ham.citybuildersim.sectors.Retail.pumpPrice(petrol.importPrice(), grocersTax)) <= 1e-12 * journey
                         && petrol.importPrice() == Good.PETROL.worldImportPrice() * petrol.getExchangeRate(),
-                String.format("$%,.4f a journey: %.1f L at $%,.4f a litre", journey * 1000, Motoring.LITRES_PER_JOURNEY,
+                String.format("$%,.4f a journey: %.1f L at $%,.4f a litre wholesale", journey * 1000, Motoring.LITRES_PER_JOURNEY,
                         petrol.importPrice() * 1000));
         double dial = priced.getEconomyManager().getTaxPolicy().getTransitFare();
         double ride = dial * pricedRoads.getFareLevel();

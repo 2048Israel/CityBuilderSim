@@ -1166,9 +1166,95 @@ public class ReadPathCheck {
         for (Resource r : Resource.values()) { lm.getSites(r, true); lm.getSites(r, false); }
         g.getWorld().shelfTheta(); g.getWorld().depthAt(g.getCityLand().siteX(), g.getCityLand().siteY());
         g.getSectors().refining().estimatedMonthlyProfit(refineryT, g.getBusinessInvestment());
+        // ...and the refinery's units and flow (0.7.80): the flow and what it is solved on, a unit's products, feed and estimate.
+        g.getSectors().refining().flow(); g.getSectors().refining().flowValues();
+        g.getSectors().refining().unitFeed(false); g.getSectors().refining().unitFeed(true);
+        BuildingsTemplate reformerT = g.getBuildingManager().getTemplateByName("Small Reformer");
+        ham.citybuildersim.sectors.Refining.madeBy(reformerT);
+        ham.citybuildersim.sectors.Refining.feedValueOf(reformerT, g.getSectors().refining().flowValues());
+        g.getSectors().refining().estimatedMonthlyProfit(reformerT, g.getBusinessInvestment());
+        BuildCard.valueAdded(g, reformerT);
+        // ...and the spread planner (0.7.82): the city's values, the outlook and the appraisal, the money gate's hurdle,
+        // and the idle months and the shedding hooks.
+        ham.citybuildersim.sectors.Refining refiners = g.getSectors().refining();
+        refiners.cityValues(); refiners.outlook(g.getBusinessInvestment());
+        refiners.appraise(refineryT, g.getBusinessInvestment()); refiners.appraise(reformerT, g.getBusinessInvestment());
+        refiners.planner().hurdle(refiners, g.getBusinessInvestment(), g, g.getBusinessInvestment().getCostOf(reformerT, 1));
+        refiners.idleFeed(); refiners.idleMonths(ham.citybuildersim.sectors.RefineryFlow.Kind.LUBE);
+        refiners.mayRetire(reformerT); refiners.mayRetire(refineryT); refiners.retirementDemandAndCapacity(g);
+        refiners.unitsOf(reformerT);
+        // ...and the wells' decline (0.7.84): the vintages as struck and as read, the lift, the worn out, a well's part of
+        // the shrinking measure, the land well and its dry sites.
+        ham.citybuildersim.sectors.Oil wellsR = g.getSectors().oil();
+        BuildingsTemplate wellT = g.getBuildingManager().getTemplateByName("Oil Well");
+        wellsR.vintages(); wellsR.vintagesNow(); wellsR.getCapacity(Good.CRUDE); wellsR.newWellsCapacity(); wellsR.wornOut();
+        wellsR.landWellsStanding(); wellsR.wellNameplate(); wellsR.landWell(); wellsR.unitsOf(wellT);
+        wellsR.retirementDemandAndCapacity(g); g.sitesFor(wellT); g.getWellsWornOut();
         g.getMotoring().getFuelBill(); g.getMotoring().getFuelImports(); g.getMotoring().getFuelLitres();
         Motoring.journeyFuel(g.getMarkets());
         g.getSectors().rail().getFuelBill(); g.getSectors().rail().getFuelImported();
+        // ...and the phase-1 buyers (0.7.83): the forecourts' month, their stations, the price on the sign, a station's
+        // word and estimate; the vans' diesel; a road's bitumen and its quote
+        ham.citybuildersim.sectors.Retail forecourts = g.getSectors().retail();
+        BuildingsTemplate stationT = g.getBuildingManager().getTemplateByName("Filling Station");
+        Motoring.journeyFuel(g);
+        forecourts.pumpPriceToday(g); forecourts.stationsStanding(); forecourts.stationsOnSite(); forecourts.stationLitres();
+        forecourts.stationCapacity(); forecourts.getPumpLitres(); forecourts.getQueueLitres(); forecourts.getPumpCapacity();
+        forecourts.getPumpPrice(); forecourts.getQueuePrice(); forecourts.getWholesaleLitre(); forecourts.getFuelBill();
+        forecourts.getFuelImported(); forecourts.litresForecast(stationT, g.getBusinessInvestment());
+        forecourts.estimatedMonthlyProfit(stationT, g.getBusinessInvestment()); forecourts.mayRetire(stationT);
+        forecourts.planStations(g.getBusinessInvestment(), g);
+        for (Sector fleet : g.getSectors().all()) { fleet.getFleetDieselLitres(); fleet.getFleetDieselCost(); fleet.getFleetDieselImported(); }
+        g.bitumenFor(g.getBuildingManager().getTemplateByName("Paved Road")); g.bitumenForPaving();
+        g.getBitumenTonnes(); g.getBitumenCost(); g.getBitumenImported();
+        g.quoteBuild(g.getBuildingManager().getTemplateByName("Elevated Highway"), 2);
+        // ...and the oil storage (0.7.85): the refiners' Tank Farm and its store, the city's reserve, their cards
+        BuildingsTemplate farmT = g.getBuildingManager().getTemplateByName("Tank Farm");
+        BuildingsTemplate reserveT = g.getBuildingManager().getTemplateByName("Strategic Reserve");
+        ham.citybuildersim.sectors.Refining.isTankFarm(farmT); StrategicReserve.isReserve(reserveT);
+        refiners.tankFarmRoom(); refiners.crudeKept(); refiners.keepsCrude(); refiners.buysAhead(Good.CRUDE);
+        refiners.bid(Good.CRUDE); refiners.getStockCapacity(Good.CRUDE); refiners.getPantry(Good.CRUDE);
+        StrategicReserve.room(g.getBuildingManager());
+        StrategicReserve res = g.getReserve();
+        res.getTonnes(); res.getCost(); res.costPerTonne(); res.getRelease(); res.getFill();
+        res.getBoughtHome(); res.getBoughtAbroad(); res.getSoldHome(); res.getSoldAbroad();
+        res.getSettledImports(); res.getSettledExports(); res.getSettledBought(); res.getSettledSold();
+        res.cityBid(Good.CRUDE); res.cityOffer(Good.CRUDE); res.toState();
+        BuildCard.of(g, farmT, null); BuildCard.of(g, reserveT, null); BuildCard.citys(reserveT);
+        // ...and the ports (0.7.86): the terminals, their berths and cards, the shares in force, the month, the boats
+        BuildingsTemplate portT = g.getBuildingManager().getTemplateByName("General Cargo Terminal");
+        Ports.isPort(portT); Ports.berthMonth(portT); portT.berthCargo(); portT.berthTonnesAYear(); portT.needsCoast();
+        Ports.berths(g.getBuildingManager()); Ports.berthsOnSite(g.getBuildingManager()); Ports.freeCrudeRoom(refiners);
+        Ports.crudeShipFor(50_000); Ports.bulkShipFor(70_000); Ports.factor(.25, .5, Ports.SEA_FREIGHT_SHARE_GENERAL);
+        Ports pts = g.getPorts();
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            pts.share(kind); pts.seaFirst(kind); pts.seaIn(kind); pts.seaOut(kind); pts.tradeIn(kind); pts.tradeOut(kind);
+            pts.carriable(kind);
+        }
+        for (Good good : Good.values()) { good.cargo(); pts.seaShareOf(good, .5); pts.railShareOf(good, .5); Ports.seaFreightShareOf(good); }
+        pts.crudeShip(); pts.billedCrudeShip(); pts.getHeldBack(); pts.anyAtSea(); pts.seaTonnes(); pts.crudeTrade();
+        pts.crudeSeaIn(); pts.crudeSeaOut(); pts.railOfStream(g.getSectors().rail().getCarried()); pts.seaOfStream(); pts.toState();
+        BoatSchedule boats = g.boats(java.util.List.of(new BoatSchedule.Berth(Ports.Cargo.GENERAL, 0, 0)));
+        boats.callCount(); boats.calls(); boats.frame(-256, -256, 256, 256, .5); boats.touched(); boats.routes();
+        g.getInfrastructureManager().getSeaShare(Traffic.BULK);
+        BuildCard.of(g, portT, null); BuildCard.citys(portT); g.hasCoastFor(portT, 1); refiners.ownLines(g);
+        // ...and the oil at sea (0.7.91): the platforms, their slots and wells, the pipelines, the shuttle tankers, the
+        // planner's cases, the cards and the counts the orders are weighed against
+        BuildingsTemplate jacketT = g.getBuildingManager().getTemplateByName("Offshore Platform");
+        BuildingsTemplate seaWellT = g.getBuildingManager().getTemplateByName("Platform Well");
+        BuildingsTemplate pipeT = g.getBuildingManager().getTemplateByName("Crude Pipeline");
+        wellsR.platforms(); wellsR.pipelines(); wellsR.platformsNow(); wellsR.pipelinesNow(); wellsR.shallowFields();
+        wellsR.slotsStanding(); wellsR.platformWellsInSlots(); wellsR.platformRoom(); wellsR.jacketsStanding();
+        wellsR.jacketsOnSite(); wellsR.platformWellsStanding(); wellsR.platformWellsCommitted(); wellsR.pipeKmStanding();
+        wellsR.pipeKmCommitted(); wellsR.pipedShare(); wellsR.getCapacityAtSea(); wellsR.shuttleFreightPerTonne();
+        wellsR.getShuttleTonnes(); wellsR.getShuttleBill(); wellsR.homeShareLastMonth(); wellsR.wornOut(ham.citybuildersim.sectors.Oil.WellKind.PLATFORM);
+        wellsR.jacketCase(g.getBusinessInvestment()); wellsR.bestPipe(g.getBusinessInvestment()); wellsR.atSeaWord();
+        wellsR.estimatedMonthlyProfit(jacketT, g.getBusinessInvestment()); wellsR.estimatedMonthlyProfit(seaWellT, g.getBusinessInvestment());
+        wellsR.estimatedMonthlyProfit(pipeT, g.getBusinessInvestment()); wellsR.mayRetire(jacketT); wellsR.mayRetire(pipeT);
+        wellsR.planOnLand(g.getBusinessInvestment(), g); wellsR.ownLines(g); g.getLandManager().seaFields(Resource.OIL);
+        g.sitesFor(jacketT); g.sitesFor(seaWellT); g.committedFor(jacketT); g.committedFor(seaWellT); g.committedFor(wellT);
+        g.landWellsCommitted(); g.platformWellsCommitted(); g.hasDepositFor(jacketT, 1); g.hasDepositFor(seaWellT, 1);
+        BuildCard.of(g, jacketT, null); BuildCard.of(g, seaWellT, null); BuildCard.of(g, pipeT, null);
         // ...and the graduates the next census carries the loans of, as the save carries them (0.7.63)
         g.getHouseholdBalance().getGraduating(); g.getHouseholdBalance().getLastGraduated();
         g.getHouseholdBalance().graduatesToSave();

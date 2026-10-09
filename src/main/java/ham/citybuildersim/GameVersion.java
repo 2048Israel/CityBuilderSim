@@ -3960,8 +3960,423 @@ public final class GameVersion {
      *   - Harnesses: OilCheck 12 (crude by grade), WorldCheck 7 (the depth,
      *     the grades), CentralBankCheck 21, MapCheck 7 (the opening zoom),
      *     SaveFileCheck and ReadPathCheck (the mix) (85).
+     *
+     * 0.7.80 (2026-10-08) - OIL: THE REFINERY'S UNITS AND THE FLOW. Batch O4
+     * (runs/spec-oil.md 5's fourth row and 2.3; runs/fixO4-notes.md).
+     *   - THE BUILDINGS: the Crude Unit (id 76), the large crude unit -
+     *     100,000 barrels a day, 50 Oil Refineries' crude, road load and
+     *     tanks; and fourteen conversion units, a small and a large of each of
+     *     seven kinds (ids 77 to 90): reformer, cracking unit, hydrocracker,
+     *     alkylation, coker, lube plant and asphalt unit, at the research's
+     *     sizes and capital, the small ones' capital on the 0.485 scale
+     *     between the two crude units. A conversion unit buys and makes
+     *     nothing of its own: "refinery": {"unit", "feed"} says its kind and
+     *     the litres a month of its stream it takes (BuildingsTemplate.
+     *     refineryUnit(), feedPerMonth()). 91 buildings.
+     *   - THE FLOW (sectors.RefineryFlow, spread.py's solve ported): the
+     *     crude units' run cut into its streams, each stream taken by its
+     *     units widest spread first - a unit at a spread of nothing idles -
+     *     the hydrocrackers held to the reformers' hydrogen, the leftovers to
+     *     their products and the residue cut with diesel or burned. With no
+     *     unit it is the slate to the bit. The refinery's nameplate, its
+     *     pipeline and (once a unit stands) its tanks are the flow's, its
+     *     spreads at each product's local price.
+     *   - WHO BUILDS THEM: the player; the investors order the Oil Refinery
+     *     alone until the spread planner (O5). A unit's card upgrades its
+     *     feed and adds its spread on it.
+     *   - The playtest is byte-identical to 0.7.79's: it builds no refinery.
+     *   - Harnesses: RefineryCheck (new: the flow), BuildingDataCheck (91; the
+     *     units), BuildCardCheck (a unit's hero and value added),
+     *     ReadPathCheck (the flow's reads) (86).
+     *
+     * 0.7.81 (2026-10-08) - JERUS'S TWO TWEAKS: LOOSE MINDS LOW INFLATION, AND
+     * AUTOMATIC BUILDING'S DEBT LIMIT A SHARE OF GDP. Batch N6
+     * (runs/fixN6-notes.md).
+     *   - THE CENTRAL BANK: Jerus, "loose yes, its just doesnt mind high
+     *     inflation as much, but low inflation definitely". Loose and Very
+     *     loose let inflation run inside a band over the target only; under
+     *     the target they cut as Standard does, to the bit (DebtManager, LOOSE
+     *     MINDS LOW INFLATION), so their money is never dearer than
+     *     Standard's. Over the target, and the strict steps everywhere, the
+     *     rule is as it was. The words: "acts only past 4.0% (or under
+     *     2.0%)".
+     *   - AUTOMATIC BUILDING'S DEBT LIMIT: Jerus, "just make it a debt to gdp
+     *     ratio that you choose, if below then it auto builds, if above then
+     *     no, with an optional button of if cash available build regardless".
+     *     The limit is the city's debt - its bonds and bills, the left
+     *     panel's Debt/GDP - over a year of its GDP: 60% by default, the
+     *     Maastricht reference value, from 0 to 300% in steps of 5%. At or
+     *     under it, it builds and borrows no further than the limit; over it,
+     *     it builds nothing and borrows nothing - or with "Build from cash
+     *     anyway" (off by default) builds what the cash over a month's tax
+     *     pays for. The ground it buys follows the same rule. Build's card
+     *     shows the city's ratio on the slider. An older save reads the
+     *     default and the toggle off (its 15% was of revenue).
+     *   - THE YEAR OF GDP, SAVED EXACTLY (DataSave.gdpRolling): the month now
+     *     reads it, and the graph history keeps it to ten dollars a month; an
+     *     older save is seeded from the graph as before.
+     *   - The playtest is byte-identical to 0.7.79's: it plays at Standard
+     *     with automatic building off.
+     *   - Harnesses: CentralBankCheck 21 (the loose steps under the target;
+     *     the probe city's very loose twin, month by month), AutoBuildCheck
+     *     (the limit over GDP, the toggle, the ground), SaveFileCheck (the
+     *     year of GDP across a save) (86).
+     *
+     * 0.7.82 (2026-10-08) - OIL: THE SPREAD PLANNER. Batch O5
+     * (runs/spec-oil.md 5's fifth row and 2.4; runs/fixO5-notes.md).
+     *   - SHARED (sectors.SpreadPlanner): what a processing sector orders -
+     *     of its buildings that pass the gates (feed, ground, staff, money),
+     *     the one that earns most on its cost at the city's own prices - and
+     *     which kind it may sell back once it stands idle. Refining is its
+     *     first client; the materials chains' works are the next
+     *     (runs/spec-materials.md 2.6).
+     *   - THE CITY'S OWN PRICE: a good at its net import price while the city
+     *     imports it, its net export price while it exports it, its local
+     *     price otherwise.
+     *   - THE REFINERS' ORDERS: a conversion unit on its spread on the stream
+     *     it would find spare; a crude unit only for 60% of its petrol and
+     *     diesel the city lacks or of its crude the wells spare, and then as
+     *     a package with the units its cuts would feed - its crude at the
+     *     import price, the wells' at the local price. Only the crude unit is
+     *     ordered; its units follow on their own spreads. Until now the
+     *     investors ordered the Oil Refinery alone, on K's gate.
+     *   - THE MONEY GATE is one replaceable piece: in force, 1.25 times the
+     *     interest at the real rate on what the order borrows (Game.consider()'s
+     *     own test); the stricter rule Jerus has to answer (spec-materials A:
+     *     the whole cost, whoever pays) is there to be measured
+     *     (-Dplaytest.moneyGate=whole), not in force.
+     *   - IDLE, THEN SHED: a kind of unit with no feed six months running may
+     *     be sold back while the refiners lose money (saved: Refining's extras
+     *     idleMonths.<KIND>; an older save reads none idle).
+     *   - The playtest is byte-identical to 0.7.79's: on imported crude its
+     *     Oil Refinery with the units its cuts would feed loses money every
+     *     year of the run, and its fuel never comes to 60% of a Crude Unit's.
+     *   - Harnesses: RefineryCheck (the planner: the city's price, a unit's
+     *     earnings, each gate, the four rows of spec-oil 2.4, the idle rule,
+     *     the investors' order), OilCheck 8 (rule 6 and the package),
+     *     SaveFileCheck and ReadPathCheck (the idle months), BuildCardCheck
+     *     (the planner's words) (86).
+     *
+     * 0.7.83 (2026-10-08) - OIL: THE PHASE-1 BUYERS, AND THE FILLING STATION.
+     * Batch O6 (runs/spec-oil.md 5's sixth row and 2.5; the brief's O6 note,
+     * runs/research-pump.md; runs/fixO6-notes.md).
+     *   - THE VANS BURN DIESEL: every van-month 240 L - forty loads of fifty
+     *     km at twelve litres a hundred (Sector.DIESEL_LITRES_A_VAN_MONTH,
+     *     est.) - drawn at the operating rate with the month's wear, off the
+     *     refiners' tanks and the world, at wholesale (Sector.runFleet()).
+     *   - THE FACTORIES BUY LUBRICANTS: 8 L a car or van built, 10 L a tonne of
+     *     machinery, 2 L a tonne of fabricated steel, on the templates' uses
+     *     (est.); a maker's input like the steel.
+     *   - THE PAVED ROADS TAKE BITUMEN: the surface past a Gravel Road's
+     *     material at five per cent binder [R18] - 64.25 t a Paved Road or a
+     *     paving, 151.75 t an Elevated Highway - bought by the builders as the
+     *     order is placed and billed in its quote (Game.drawBitumen(),
+     *     BuildQuote.bitumen).
+     *   - THE FILLING STATION (id 91, Retail's; Jerus: "the pump ... its owned
+     *     by grocery stores"): 350,000 L a month, US$0.5M, three posts, an
+     *     acre. The grocers draw the drivers' petrol at wholesale and sell it
+     *     at the pump - the wholesale times 1.12 with the sales tax passed on
+     *     - as far as their stations can sell, and at 1.18 past them: the
+     *     drivers pay more; they do not drive less. A journey's fuel, which
+     *     the owners weigh a ride against, is the pump's. Retail orders a
+     *     station when the drivers' litres outrun its stations, its own
+     *     question each month beside the shops'. The vans and the railway buy
+     *     their diesel near wholesale, not at the pump. Saved: Retail's extras
+     *     pump.* (an older save reads none sold); no format bump.
+     *   - The playtest moves from the first van (m4).
+     *   - Harnesses: VanCheck 7, ManufacturingCheck (lubricants), RoadCheck 4
+     *     (bitumen), OilCheck 13-14 (the buyers foot to the balance of
+     *     payments; the forecourts) and 5-7, 9 restated, BuildingDataCheck
+     *     (92 buildings), BuildCardCheck, CarCheck 8, MoneyCheck, ForeignCheck,
+     *     BondCheck 5d, SaveFileCheck, ReadPathCheck (86).
+     *
+     * 0.7.84 (2026-10-08) - OIL: THE WELLS DECLINE, AND ONE POST A WELL.
+     * Batch O7 (runs/spec-oil.md 5's seventh row and 2.6; runs/fixO7-notes.md).
+     *   - A WELL DECLINES: it lifts its 415 t the month it opens and 10% less
+     *     each year after (sectors.Oil.LAND_KEEPS_A_YEAR, est. [W6]); a
+     *     platform well's profile - three years flat, then 8.5% less a year -
+     *     is written for batch O10. The wells are kept as vintages (the month
+     *     a batch opened, how many, their kind), read against the wells
+     *     standing and struck once a month after the retirements; the
+     *     sector's nameplate is their sum (Oil.getCapacity()).
+     *   - WORN OUT AT TEN BARRELS A DAY: a land well is retired at 263
+     *     months, oldest first, by the month's retirements (Game.runRetirement()),
+     *     and the one-well-a-month rule drills its site again.
+     *   - A LAND WELL STANDS ONLY ON A DRY SITE, a field whose centre is on
+     *     land (Game.sitesFor(); the order, the card and the investors); the
+     *     sea's wait for a platform, and wells already on them are kept.
+     *   - THE OIL WELL HAS ONE POST, a diploma's (the research's Q13; it had
+     *     three).
+     *   - Saved: Oil's extras vintages.<month>.<KIND>; a save from before
+     *     reads every well new, opened the first month it plays. No format bump.
+     *   - The playtest moves from the first well (m830).
+     *   - Harnesses: WellCheck (new: the profiles, the life, the lift, the
+     *     retirements and refills, dry and sea sites, the save), OilCheck 2
+     *     (one post) and 12 (its wells on dry sites), SaveFileCheck,
+     *     ReadPathCheck (87).
+     *
+     * 0.7.85 (2026-10-08) - OIL: THE TANK FARM AND THE CITY'S STRATEGIC RESERVE.
+     * Batch O8 (runs/spec-oil.md 5's eighth row and 2.8; runs/fixO8-notes.md).
+     *   - THE TANK FARM (id 92, the refiners'): 500,000 m3 of tanks on 10 ha,
+     *     D$190M (the research's US$60 a barrel), ten posts. With one standing
+     *     the refiners keep a month of their crude units' crude on hand
+     *     (sectors.Refining, THE TANK FARM), their products share the rest of
+     *     the room, their crude is bought as stock - cut to what they can pay
+     *     for - and their run is held to the crude on hand and the month's
+     *     fill. With none, every figure is what it was. The investors order
+     *     none until a port holds crude back for room (batch O9).
+     *   - THE STRATEGIC RESERVE (id 93, the city's): the farm's tanks, ground
+     *     and price, no posts. Game.fillReserve(t) orders crude, bought in the
+     *     month's crude market - the wells' first, the world's for the rest -
+     *     and Game.releaseReserve(t) offers it there a month at a time, to the
+     *     refiners and past them to the world (Markets.clear()'s city trader;
+     *     StrategicReserve). Paid at the next strike beside the businesses it
+     *     traded with; the audit's "- city ReserveFill" and "+ city
+     *     ReserveSales" are what crossed the edge, the treasury journals the
+     *     whole, and each lever is the player's decision (DecisionLog.RESERVE).
+     *   - The crude held, the refiners' and the city's, joins the national
+     *     accounts' held goods (NationalAccounts.HELD, on the end), and the
+     *     city's crude trade the trade by good.
+     *   - Saved: DataSave.reserve; the refiners' crude on hand in their pantry.
+     *     A save from before reads an empty reserve and no crude kept. No
+     *     format bump.
+     *   - Build: an "Oil storage" group after Refining (BuildCard.Kind.TANKS).
+     *   - The playtest builds neither: its traces are 0.7.84's, byte for byte.
+     *   - Harnesses: OilCheck 15 (the tank farm) and 16 (the reserve),
+     *     BuildingDataCheck (94 buildings), BuildCardCheck (oil storage),
+     *     SaveFileCheck, ReadPathCheck (87).
+     *
+     * 0.7.86 (2026-10-08) - OIL AND PORTS: THE CITY'S SEA TERMINALS, AND THE BOATS.
+     * Batch O9 (runs/spec-oil.md 5's ninth row, 2.9 and 2.10; runs/research-freight.md;
+     * runs/fixO9-notes.md).
+     *   - FOUR TERMINALS, THE CITY'S (BuildingType.PORTS, appended; ids
+     *     94-97): a Tanker Terminal (3.25 Mt a year, D$96M, 7 posts), a Bulk
+     *     Terminal (27.5 Mt, D$2,310M, 234), a Container Terminal (0.75M TEU,
+     *     D$461M, 585) and a General Cargo Terminal (0.45 Mt, D$70M, 11), each
+     *     one berth of its kind of cargo (Good.cargo(): liquid, dry bulk,
+     *     boxes, general). An order with no owned sea is refused NO_COAST.
+     *     Their crews are paid with transit's, their repairs with the roads'.
+     *   - THE WEDGE (Ports, at the railway's step 5): a kind's berths are
+     *     shared among its goods by their boundary tonnes; a kind whose sea
+     *     freight is under the railway's quote goes first and the railway
+     *     hauls what it leaves; a good's band carries 1 - rail - sea + sea x
+     *     its kind's SEA_FREIGHT_SHARE of its freight, paid abroad as the
+     *     lorries' is. The shares are the research's freight rule at 5,000 km:
+     *     liquid .08, dry bulk .07, boxes .16, general cargo .20. With no
+     *     terminal every band is the railway's own, to the bit. What goes by
+     *     sea is off the road as rail freight is.
+     *   - CRUDE NEEDS ROOM: by sea only while the refiners' Tank Farms have
+     *     room for an MR's cargo, in the largest tanker that fits; else it is
+     *     held back for room, Refining's page says so, and the refiners weigh
+     *     a Tank Farm on the freight a ship would save them.
+     *   - THE BOATS (BoatSchedule, model only, never saved): the month's
+     *     calls - tonnes over the class's cargo, by kind and direction - each
+     *     a hashed arrival on a lane straight out to sea, a boat's place a
+     *     pure function of (call, t); the map draws them at O13.
+     *   - Saved: DataSave.portMonth; a save from before reads nothing at sea.
+     *     No format bump.
+     *   - Build: a "Ports" group in Industry beside oil storage
+     *     (BuildCard.Kind.BERTHS), the city's cards.
+     *   - The playtest's player orders a terminal when a kind's trade that
+     *     could go by sea passes the berths it has by 60% of a berth's month
+     *     and the city owns coast: it moves from the first terminal.
+     *   - Harnesses: PortCheck (new), InfrastructureCheck (the band with a
+     *     port), BuildingDataCheck (98 buildings), BuildCardCheck (the ports),
+     *     BuildAdviceCheck (the market's pages), SaveFileCheck, ReadPathCheck
+     *     (88).
+     *
+     * 0.7.87 (2026-10-09) - THE ROADS, FIRST: A DISTRICT'S STREET PLAN.
+     * Batch RD1 (the project's spec-roads-and-ports.md 2.3 to 2.6 and 2.9, its
+     * batch N4; runs/fixRD1-notes.md). Drawing only, and not drawn yet: the
+     * painter moves onto the plan in 0.7.88.
+     *   - DistrictPlan (new, pure): a district's cells - a tile each, its
+     *     arterials on its west column and north row - opened outward from its
+     *     cell nearest the founding site: homes cells of long blocks (+ every 8
+     *     plots one way, 16 the other) for what follows people, estate cells of
+     *     one spine for industry and the outer kinds; the buildings placed
+     *     largest first, touching a street first, within REACH; the model's
+     *     gravel, paved and unlaid highway plots drawn exactly as the streets'
+     *     surface - half width, then full, tracks where it runs out, square
+     *     blocks and boulevards where it is left over; one network. With the
+     *     spec's rules the prototype did not draw: bridges up to 6 plots on a
+     *     street and 14 on an arterial, streets along a cut joining its dead
+     *     ends (H2), no stray piece, no building beside a highway (H5),
+     *     streets beneath a highway and across a railway, fields built on
+     *     last, a building wider than a strip a whole estate cell; what does not
+     *     fit reported (R7). A port of the prototype's proto2.py: with its
+     *     hashes and rules it is the prototype's plan, box for box.
+     *   - CityMap.planInput(), plan(): a district's inputs from the map - the
+     *     highways and railway its network's plan laid, until batch RD3's runs.
+     *   - Harnesses: PlanCheck (new; AllChecks after MapCheck): the prototype's
+     *     test district replayed, the game's rules on it, a highway row, how
+     *     full a district draws (2.10), MapCheck's fixture of Jerus's city and
+     *     its dense screen, a city played as the playtest plays it; any save
+     *     named on its command line.
+     *   - The playtest is 0.7.86's, byte for byte.
+     *
+     * 0.7.88 (2026-10-09) - THE ROADS, SECOND: THE PAINTER ON THE PLAN.
+     * Batch RD2 (the project's spec-roads-and-ports.md 2.6, 2.9 and 5, its
+     * batch N5; runs/fixRD2-notes.md). Drawing only.
+     *   - The map paints each tile from its district's plan (CityMap, THE
+     *     DRAWN PLANS): its streets with their kind, width and role, and a box
+     *     for every building. The deal, the road tiles, the lanes, the fill and
+     *     the edge ring are gone, and with them the word "ports" for a road's
+     *     crossing of a tile's edge (spec 8.3). Plans are kept, 64 of them,
+     *     packed for the painter (a tile's rows once a pattern, four bytes a
+     *     building), and drawn on the view's worker: a tile waits, another
+     *     level's picture standing in, until its plans are drawn.
+     *   - R7: what a district's plan cannot hold goes to the next district in
+     *     the map's order, a chain whose every link is kept; what the last
+     *     cannot hold is packed at the city's edge, spread thin over its edge
+     *     districts' free ground, drawn dimmed, and counted in the legend ("n
+     *     buildings packed without a street"): 177 in Jerus's city, 420 in
+     *     the playtest's at month 4,000.
+     *   - Across districts: a district's streets join those of the districts
+     *     before it, and a piece their own ground parted is joined over the
+     *     next one's; a seam the district that surfaces it leaves unlaid is
+     *     surfaced by the one that lays it. Road the streets cannot carry is
+     *     counted in the legend's note.
+     *   - The look (spec 5): streets as verge and surface - gravel tan, paved
+     *     grey, a track brown and dashed - arterials and boulevards, highways
+     *     cased with a centre line; forest under a building cleared. The
+     *     hover: "Paved street, 15 m · arterial", "Track: the city has bought
+     *     no road here"; the legend adds Track.
+     *   - Until batch RD3 the highways and the railway are laid as before
+     *     (CityMap, THE NETWORK).
+     *   - The sidecar is FORMAT 5 (the runs' count, none yet); FORMAT 4 loads.
+     *   - MapTiles keeps one painted tile, the hover's (64 before): a tile
+     *     paints from its plans in about 0.1 ms, and the 48 MB holds the plans.
+     *   - Harnesses: MapCheck rewritten to test the painted raster - one
+     *     network, no stray plot, the + floor, reach, the surface kind by
+     *     kind, every building one for one, the 80 ms screen - and its
+     *     section 2 on the plan (spec 8.4).
+     *   - The playtest is 0.7.87's, byte for byte.
+     *
+     * 0.7.89 (2026-10-09) - THE ROADS, THIRD: THE CITY'S HIGHWAYS AND RAILWAY.
+     * Batch RD3 (the project's spec-roads-and-ports.md 2.7 and 2.8, its batch
+     * N6; runs/fixRD3-notes.md). Drawing only.
+     *   - CityRuns (new): the city's Elevated Highways laid city-wide, month by
+     *     month, on the founding site's lines - a hub where its row and column
+     *     cross, four arms, more corridors one district apart - straight by
+     *     preference (a 45-degree turn costs 40 straight plots, a junction 200:
+     *     the prototype's hw.py), turning 45 degrees along the sea and the
+     *     city's edge, meeting in a T where crossing would cost more; never
+     *     moved, the newest end taken up first (H4); ramps at every other
+     *     arterial and each arm's end. The railway likewise on its own lines a
+     *     quarter of a district in, from the city's mine nearest the founding
+     *     site, crossing streets level and bridging the highways; its Rail
+     *     Terminals as yards on the track in the cells nearest the mines. What
+     *     no corridor has ground for is counted, and the legend says so.
+     *   - Each district's plan is drawn round the runs, a verge a plot wide
+     *     either side of a highway, corners included (H5). CityMap's THE
+     *     NETWORK (each district's own highways and track) is gone, and with it
+     *     the short highway that floated in a block of Jerus's city.
+     *   - The chain in bands of 128 districts (CHAIN_BAND): a screen at the
+     *     edge of a city of ten billion plans one band - 50 plans, about a
+     *     second on the worker, where 0.7.88 would plan all 14,898 - and a city
+     *     of 128 districts or fewer (Jerus's has 93) is drawn as before.
+     *   - A district's plan about 30% sooner, the same plan: a chain of the
+     *     ladder's steps built once and each next step gone on with from where
+     *     it turns from the first; a box looked for from where its shape's last
+     *     look found one.
+     *   - The sidecar writes the runs (FORMAT 5); 0.7.88's, which wrote none,
+     *     and FORMAT 4 load with their runs laid from their counts.
+     *   - The hover: "· a ramp", "· the railway over it".
+     *   - Harnesses: MapCheck 8 on the runs - one highway network, straight
+     *     but where water or the edge turns it, junctions few, no building
+     *     beside one, spec 2.7's table grown and taken back without a plot
+     *     moving, every plot of track drawn or counted, the yards near the
+     *     mines - and MapCheck 4 on 0.7.88's sidecar.
+     *   - The playtest is 0.7.88's, byte for byte.
+     *
+     * 0.7.90 (2026-10-09) - THE ROADS, FOURTH: ESTATE CELLS LAID TO FIT WHAT
+     * THEY HOLD. Batch RD5 (the project's spec-roads-and-ports.md 2.3 and 2.6;
+     * runs/fixRD5-notes.md). Drawing only.
+     *   - An estate cell's streets are sized to the building that opens it
+     *     (DistrictPlan's ESTATE LINES). The prototype's one spine left rows 4
+     *     to 10 and 20 to 26 of a cell out of a street's reach, so works less
+     *     than 11 plots deep wasted them. Its streets now run one way across
+     *     the cell, meeting the arterials in T's, on lines 7 to 23 plots in and
+     *     8 or more apart (the + floor holds where one meets a neighbour's), in
+     *     strips two rows of the building deep where those hold more of it
+     *     than the spine; a cell the ground cuts tries the other way too.
+     *   - Each estate-band type alone on flat ground fills 71% of its cells'
+     *     ground, where the spine filled 60%: a 4 x 4 works 44 to a cell, not
+     *     32; a 9 x 9 plant 9, not 6. An 11 x 11 Fabrication Works holds 4 to
+     *     a cell either way (31 = 2 x 11 + 9), now with a strip 8 deep beside
+     *     them for the smaller works.
+     *   - Packed at the city's edge: Jerus's city 148 (0.7.89: 156), the
+     *     playtest at month 4,000 413 (424). The rest are Wind Farms and
+     *     Assembly Plants, 4 to a cell at most, for which the districts have no
+     *     cells left.
+     *   - A district's plan keeps its working arrays from build to build:
+     *     about 17% less garbage a plan, the same plans.
+     *   - Harnesses: PlanCheck 7 (each estate-band type against the spine; a
+     *     plan worked out afresh is the same plan), and no + junction inside an
+     *     estate cell among every plan's checks. The saves named are its 8.
+     *   - The playtest is 0.7.89's, byte for byte.
+     *
+     * 0.7.91 (2026-10-09) - OIL AND PORTS, TENTH: THE OIL AT SEA.
+     * Batch O10 (runs/spec-oil.md 5's tenth row, 2.7 and 2.11; Jerus's answer
+     * B, the per-well platform; runs/fixO10-notes.md).
+     *   - THREE BUILDINGS AT SEA, the Oil sector's (ids 98-100; on none of the
+     *     city's dry ground, BuildingsTemplate.standsAtSea()): an Offshore
+     *     Platform, a steel jacket (D$18M, 12 posts) on a shallow sea field
+     *     the city owns - 150 m deep or less at its centre - with slots for 12
+     *     wells, at most one a sea site of its field; a Platform Well in a
+     *     slot (D$14M, one post), lifting 415 t a month held three years and
+     *     then 8.5% less a year, retired at 348 months; a Crude Pipeline,
+     *     counted in kilometres (D$4.5M at sea, D$3M on land).
+     *   - The wells' sites kept apart: a land well on a dry site, a platform's
+     *     in a slot (Game.sitesFor(), committedFor()); a jacket's order needs a
+     *     shallow field with sea sites no platform has slotted.
+     *   - SHUTTLE TANKERS: platform crude sold at home pays CRUDE's band freight
+     *     a tonne, booked as the Oil sector's imported "Shuttle tankers";
+     *     crude shipped abroad pays none.
+     *   - THE PIPELINE RULE: a field's pipe - a straight line to the founding
+     *     site - is built when the shuttle freight it saves, less its repairs
+     *     and tax, over the oil's months left (at most 480) repays its cost
+     *     1.25 times, while the refiners are not losing money and the field is
+     *     on its plateau. A whole pipe's field pays no shuttle.
+     *   - THE PLANNER, after the land well: a platform well into a free slot,
+     *     a field's pipe that pays, a jacket on the shallow field with the
+     *     most sea sites free, judged with min(12, those sites) wells by the
+     *     investors' interest test. Once the oil is worked out the empty
+     *     jackets and the pipes are decommissioned.
+     *   - Saved: the Oil sector's extras platforms.* and pipelines.*; a save
+     *     from before has none. No format bump.
+     *   - Build: "Oil platforms" and "Oil pipelines" groups after the wells'
+     *     (BuildCard.Kind.SLOTS, PIPE); the Oil page's "At sea" lines. The map
+     *     draws none of the three on the land (batch O13 draws them at sea).
+     *   - Harnesses: WellCheck 8-12 (the sea), BuildingDataCheck (101
+     *     buildings), BuildCardCheck (the groups), LandCheck (the three at sea
+     *     have no footprint), SaveFileCheck, ReadPathCheck.
+     *   - The playtest is 0.7.90's, byte for byte: its city builds no
+     *     platform.
+     *
+     * 0.7.92 (2026-10-09) - THE ROADS, FIFTH: INDUSTRY AND THE OUTER KINDS
+     * SHARE ESTATE CELLS. Batch RD6 (the project's spec-roads-and-ports.md 2.3
+     * and 2.6; Jerus, 2026-10-09: "sure they can share"; runs/fixRD6-notes.md).
+     * Drawing only.
+     *   - An outer kind (a farm, a utility, a plant, the rail) that a district's
+     *     own estate cells cannot hold, with no cell left to open, now takes
+     *     the leftover ground of the district's industry cells - in the order
+     *     they opened, an empty one whole - before it is carried on to the next
+     *     district (DistrictPlan's SHARED ESTATES). A district that does not
+     *     run out of cells draws as 0.7.91 drew it, box for box: homes,
+     *     industry nearest, then the outer kinds' own cells. Every rule of an
+     *     estate cell holds.
+     *   - Packed at the city's edge: the playtest at month 4,000 345 (0.7.91:
+     *     413), at month 1,000 28 (48); Jerus's city 148, as before - what is
+     *     packed there is Wind Farms and Assembly Plants, 13 x 14, which no
+     *     industry cell's leftover ground holds.
+     *   - Harnesses: PlanCheck 8 (the bands sharing against apart: the same
+     *     plan with cells to spare; with none left fewer without a place, and
+     *     every homes and industry building where it stood). The saves named
+     *     are its 9.
+     *   - The playtest is 0.7.91's, byte for byte.
      */
-    public static final String VERSION = "0.7.79";
+    public static final String VERSION = "0.7.92";
 
     /**
      * The save shape.

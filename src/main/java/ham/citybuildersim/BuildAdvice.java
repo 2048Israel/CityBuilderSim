@@ -92,8 +92,9 @@ public final class BuildAdvice {
         out.add(new Category(SAFETY,      null, EnumSet.of(BuildingType.SAFETY), true));
         out.add(new Category(HOMES,       "Residential", EnumSet.of(BuildingType.RESIDENTIAL), false));
         out.add(new Category(SHOPS,       "Commercial", EnumSet.of(BuildingType.COMMERCIAL), false));
+        // ...and the city's sea terminals (0.7.86, batch O9), their own group beside oil storage (BuildCard, star O9-1).
         out.add(new Category(INDUSTRY,    "Industrial", EnumSet.of(BuildingType.INDUSTRIAL,
-                BuildingType.HEAVY_INDUSTRY, BuildingType.MINING, BuildingType.CONSTRUCTION), false));
+                BuildingType.HEAVY_INDUSTRY, BuildingType.MINING, BuildingType.CONSTRUCTION, BuildingType.PORTS), false));
         out.add(new Category(OFFICES,     "Services", EnumSet.of(BuildingType.BUSINESS_SERVICES), false));
         out.add(new Category(FARMS,       null, EnumSet.of(BuildingType.AGRICULTURE), false));
         out.add(new Category(RAIL,        null, EnumSet.of(BuildingType.RAIL), false));

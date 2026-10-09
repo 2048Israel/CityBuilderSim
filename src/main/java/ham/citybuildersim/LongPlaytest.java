@@ -2355,6 +2355,18 @@ public class LongPlaytest {
        was, to the byte.
        ===================================================================== */
 
+    /**
+     * THE STRICTER MONEY GATE, FOR THE COUNTERFACTUAL (0.7.82, batch O5):
+     * -Dplaytest.moneyGate=whole has the refiners' spread planner test every
+     * order on its whole cost, whoever pays (SpreadPlanner.ON_ITS_WHOLE_COST,
+     * runs/spec-materials.md's item A, which Jerus has not answered), where
+     * the rule in force tests what the order borrows. Unset, a no-op.
+     */
+    static final boolean MONEY_GATE_WHOLE = "whole".equalsIgnoreCase(System.getProperty("playtest.moneyGate", "").trim());
+
+    /** -Dplaytest.refinery=true (0.7.82): the refiners' planner yearly - its outlook and its best candidates under both money gates (refineryLine()). */
+    static final boolean REFINERY_TRACE = Boolean.getBoolean("playtest.refinery");
+
     /** The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. */
     static final Double INFLATION_TARGET = System.getProperty("playtest.inflationTarget") == null
             ? null : Double.valueOf(System.getProperty("playtest.inflationTarget"));
@@ -2675,6 +2687,9 @@ public class LongPlaytest {
         // Iron, a whole field at a time (0.7.64, batch L): a rule, as the
         // ground kept ahead is - see ironWhenNeeded().
         ironWhenNeeded(g);
+
+        // ...and a sea terminal when a kind's trade would fill most of a berth (0.7.86, batch O9): portsWhenNeeded().
+        portsWhenNeeded(g);
 
         /* --- room to grow. Not a building, and it gates every building. --- */
         double roomLost = roomToGrow(g);
@@ -3160,22 +3175,78 @@ public class LongPlaytest {
     /** Offers with oil the test player bought over the run (0.7.62). */
     static int oilBought;
 
-    /** The fuel the world sold the city last month (0.7.62): its drivers' (Game.getHouseholdFuelImports()) and its railway's (Rail.getFuelImported()) - their petrol and its diesel since 0.7.76. */
+    /**
+     * The fuel the world sold the city last month (0.7.62): its drivers'
+     * (Game.getHouseholdFuelImports()) and its railway's (Rail.getFuelImported())
+     * - their petrol and its diesel since 0.7.76 - and since 0.7.83 (batch O6)
+     * the drivers' petrol the grocers' forecourts imported for them
+     * (Retail.getFuelImported(); the households' own is nothing from then on)
+     * and the diesel the businesses' vans burned (Sector.getFleetDieselImported(),
+     * star O6: fuel bought abroad is fuel bought abroad, whoever burns it).
+     */
     static double fuelBoughtAbroad(Game g) {
-        return g.getHouseholdFuelImports() + g.getSectors().rail().getFuelImported();
+        double vans = 0;
+        for (Sector s : g.getSectors().all()) vans += s.getFleetDieselImported();
+        return g.getHouseholdFuelImports() + g.getSectors().rail().getFuelImported()
+                + g.getSectors().retail().getFuelImported() + vans;
     }
 
     /** Over the run (0.7.62): the drivers' and the railway's fuel, what of it was bought abroad, the first well and refinery, and the most refineries standing. */
     static double fuelBillRun, fuelAbroadRun;
     static int firstWellMonth, firstRefineryMonth, mostRefineries;
 
+    /** ...and the wells' decline over the run (0.7.84, batch O7; spec-oil 2.6): the crude they lifted and the most standing. */
+    static double crudeLiftedRun;
+    static int mostWells;
+
     /** ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). */
     static final java.util.Map<Good, Double> refinedRun = new java.util.EnumMap<>(Good.class);
     static double refinedWrittenOff;
 
+    /**
+     * THE PHASE-1 BUYERS OVER THE RUN (0.7.83, batch O6; spec-oil 2.5 and 6's
+     * measure-first 4 and 5): the vans' diesel against the businesses'
+     * payrolls; the drivers' petrol at the pump against what it cost at
+     * wholesale, and the litres past the stations; the stations at the end and
+     * at most, and the cars a station at the end; the lubricants the factories
+     * bought and the bitumen the roads took; and the lubricants the refiners
+     * made against the crude they ran.
+     */
+    static double vanDieselRun, vanDieselLitresRun, payrollRun, pumpBillRun, pumpWholesaleRun, pumpLitresRun, queueLitresRun;
+    static double lubricantsBoughtRun, lubricantsImportedRun, crudeRefinedLitresRun;
+    static int mostStations, firstStationMonth;
+
     static void countFuel(Game g) {
-        fuelBillRun += g.getHouseholdFuel() + g.getSectors().rail().getFuelBill();
+        // The drivers' petrol at what it cost wholesale since 0.7.83 (their bill is the pump's), so the share
+        // bought abroad stays a share of what the fuel cost the city; the vans' diesel below.
+        ham.citybuildersim.sectors.Retail pump = g.getSectors().retail();
+        double drivers = Double.isFinite(pump.getWholesaleLitre())
+                ? pump.getWholesaleLitre() * (pump.getPumpLitres() + pump.getQueueLitres()) : g.getHouseholdFuel();
+        fuelBillRun += drivers + g.getSectors().rail().getFuelBill();
         fuelAbroadRun += fuelBoughtAbroad(g);
+        for (Sector s : g.getSectors().all()) {
+            vanDieselRun += s.getFleetDieselCost();
+            vanDieselLitresRun += s.getFleetDieselLitres();
+            fuelBillRun += s.getFleetDieselCost();
+            payrollRun += Math.max(0, s.getPayroll());
+            Sector.Input lub = s.inputRow(Good.LUBRICANTS);
+            if (lub != null) {
+                lubricantsBoughtRun += Math.max(0, lub.boughtLocal) + Math.max(0, lub.imported);
+                lubricantsImportedRun += Math.max(0, lub.imported);
+            }
+        }
+        ham.citybuildersim.sectors.Retail shops = g.getSectors().retail();
+        pumpBillRun += shops.getFuelBill();
+        if (Double.isFinite(shops.getWholesaleLitre())) {
+            pumpWholesaleRun += shops.getWholesaleLitre() * (shops.getPumpLitres() + shops.getQueueLitres());
+        }
+        pumpLitresRun += shops.getPumpLitres();
+        queueLitresRun += shops.getQueueLitres();
+        mostStations = Math.max(mostStations, shops.stationsStanding());
+        if (firstStationMonth == 0 && shops.stationsStanding() > 0) firstStationMonth = g.getMonth();
+        Sector.Input crude = g.getSectors().refining().inputRow(Good.CRUDE);
+        if (crude != null) crudeRefinedLitresRun += (Math.max(0, crude.boughtLocal) + Math.max(0, crude.imported))
+                * ham.citybuildersim.sectors.Refining.CRUDE_LITRES_PER_TONNE;
         Sector refiners = g.getSectors().refining();
         for (Good p : refiners.goodsMade()) {
             Sector.Output o = refiners.outputRow(p);
@@ -3185,8 +3256,170 @@ public class LongPlaytest {
         }
         int wells = qty(g, "Oil Well"), refineries = qty(g, "Oil Refinery");
         if (firstWellMonth == 0 && wells > 0) firstWellMonth = g.getMonth();
+        mostWells = Math.max(mostWells, wells);
+        Sector.Output lifted = g.getSectors().oil().outputRow(Good.CRUDE);
+        if (lifted != null) crudeLiftedRun += Math.max(0, lifted.produced);
         if (firstRefineryMonth == 0 && refineries > 0) firstRefineryMonth = g.getMonth();
         mostRefineries = Math.max(mostRefineries, refineries);
+        countRefiners(g);
+        if (REFINERY_TRACE && g.getMonth() % 12 == 0) out.println(refineryLine(g));
+        countPorts(g);
+    }
+
+    /* =====================================================================
+       THE PORTS (0.7.86, batch O9; runs/spec-oil.md 5's O9 row)
+
+       The test player's rule, at each look: while the city owns coast
+       (Game.hasCoastFor()), when a kind's tonnes across the boundary that
+       could go by sea last month (Ports.carriable(): crude left out while
+       the refiners' tanks have no room for a tanker's cargo) are more than
+       the berths of that kind standing and on site by WORTH_A_BERTH of a
+       berth's month, it orders one terminal of that kind through build(), as
+       every city order is placed (ground bought, the bond when the cash is
+       short). One a kind each time it is advised - up to movesPerLook() times
+       a look - the berths on site counted against the next. A rule, as the
+       iron is, not a scored move:
+       what a terminal is worth is the band it narrows, which no move here
+       prices.
+       ===================================================================== */
+
+    /** Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. */
+    static final java.util.Map<String, Integer> terminalsOrdered = new java.util.TreeMap<>();
+    static int portsNoCoast, firstTerminalMonth;
+
+    /** The boats over the run: calls, the most in a month and when; the tonnes by sea and across the boundary; months crude was held back for room. */
+    static long callsRun;
+    static int mostCalls, mostCallsMonth, lastCalls, heldBackMonths;
+    static double seaTonnesRun, boundaryTonnesRun;
+
+    /** -Dplaytest.ports=true (0.7.86): the ports yearly - each kind's tonnes across the boundary, its berths, its share at sea and the month's calls (portsLine()). */
+    static final boolean PORTS_TRACE = Boolean.getBoolean("playtest.ports");
+
+    static void portsWhenNeeded(Game g) {
+        Ports ports = g.getPorts();
+        BuildingManager b = g.getBuildingManager();
+        double[] standing = Ports.berths(b), onSite = Ports.berthsOnSite(b);
+        for (Ports.Cargo k : Ports.Cargo.values()) {
+            BuildingsTemplate t = terminalFor(g, k);
+            if (t == null) continue;
+            double uncovered = ports.carriable(k) - standing[k.ordinal()] - onSite[k.ordinal()];
+            if (!(uncovered >= Ports.WORTH_A_BERTH * Ports.berthMonth(t))) continue;
+            if (!g.hasCoastFor(t, 1)) {
+                portsNoCoast++;
+                return;
+            }
+            if (build(g, t.getName(), 1)) {
+                terminalsOrdered.merge(t.getName(), 1, Integer::sum);
+                if (firstTerminalMonth == 0) firstTerminalMonth = g.getMonth();
+            }
+        }
+    }
+
+    /** The sea terminals standing, all kinds. */
+    static int terminalsStanding(Game g) {
+        int n = 0;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (Ports.isPort(t)) n += g.getBuildingManager().getQuantity(t.getId());
+        return n;
+    }
+
+    /** The catalogue's terminal for a kind of cargo, or null. */
+    static BuildingsTemplate terminalFor(Game g, Ports.Cargo k) {
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (Ports.isPort(t) && t.berthCargo() == k) return t;
+        return null;
+    }
+
+    /** The month's boats and sea tonnes, counted (the calls without their quays: the map places them, O13). */
+    static void countPorts(Game g) {
+        Ports ports = g.getPorts();
+        int calls = BoatSchedule.of(g.getMonth(), ports, java.util.List.of(), 0, 0).callCount();
+        callsRun += calls;
+        lastCalls = calls;
+        if (calls > mostCalls) {
+            mostCalls = calls;
+            mostCallsMonth = g.getMonth();
+        }
+        seaTonnesRun += ports.seaTonnes();
+        for (Ports.Cargo k : Ports.Cargo.values()) boundaryTonnesRun += ports.tradeIn(k) + ports.tradeOut(k);
+        if (ports.getHeldBack() > 0) heldBackMonths++;
+        if (PORTS_TRACE && g.getMonth() % 12 == 0) out.println(portsLine(g, calls));
+    }
+
+    /** The ports this month, a line: by kind, tonnes in and out across the boundary, the berths standing, the share in force and the sea tonnes; the calls. */
+    static String portsLine(Game g, int calls) {
+        Ports ports = g.getPorts();
+        double[] berths = Ports.berths(g.getBuildingManager());
+        StringBuilder s = new StringBuilder(String.format("  PORTS m%d coast %s:", g.getMonth(),
+                g.getLandManager().getSeaKm2() > 0 ? String.format("%.2f km2", g.getLandManager().getSeaKm2()) : "none"));
+        for (Ports.Cargo k : Ports.Cargo.values()) {
+            s.append(String.format(" %s in %,.0f out %,.0f berths %,.0f share %.3f sea %,.0f;", k.name(),
+                    ports.tradeIn(k), ports.tradeOut(k), berths[k.ordinal()], ports.share(k), ports.seaIn(k) + ports.seaOut(k)));
+        }
+        s.append(String.format(" crude %,.0f held back %,.0f; calls %d", ports.crudeTrade(), ports.getHeldBack(), calls));
+        return s.toString();
+    }
+
+    /**
+     * THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of
+     * the refiners' buildings opened and sold back, and the crude units and
+     * the conversion units standing at most. Which rule sold one follows from
+     * Refining.mayRetire(): a crude unit only the distress rule sells (the
+     * spare-capacity rule has no measure while no kind of unit stands idle),
+     * a conversion unit only once its kind has stood idle six months, which
+     * the spare-capacity rule sells first.
+     */
+    static final java.util.Map<String, Integer> refinersOpened = new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>();
+    static int[] refinersLast;
+    static int mostCrudeUnits, mostConversionUnits, firstRefinerMonth;
+
+    static void countRefiners(Game g) {
+        BuildingManager b = g.getBuildingManager();
+        List<BuildingsTemplate> all = b.getTemplatesBySector(Sectors.REFINING);
+        if (refinersLast == null) refinersLast = new int[all.size()];
+        int crude = 0, units = 0;
+        for (int i = 0; i < all.size(); i++) {
+            BuildingsTemplate t = all.get(i);
+            int q = b.getQuantity(t.getId());
+            if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) crude += q; else units += q;
+            if (q > refinersLast[i]) refinersOpened.merge(t.getName(), q - refinersLast[i], Integer::sum);
+            if (q < refinersLast[i]) refinersSold.merge(t.getName(), refinersLast[i] - q, Integer::sum);
+            refinersLast[i] = q;
+        }
+        if (firstRefinerMonth == 0 && crude + units > 0) firstRefinerMonth = g.getMonth();
+        mostCrudeUnits = Math.max(mostCrudeUnits, crude);
+        mostConversionUnits = Math.max(mostConversionUnits, units);
+    }
+
+    /** The refiners' planner this month, a line: what is short and spare, and the best-earning candidate (and the Oil Refinery's package) with the hurdle each money gate asks of it. */
+    static String refineryLine(Game g) {
+        ham.citybuildersim.sectors.Refining r = g.getSectors().refining();
+        BusinessInvestment plans = g.getBusinessInvestment();
+        ham.citybuildersim.sectors.Refining.Outlook o = r.outlook(plans);
+        ham.citybuildersim.sectors.SpreadPlanner p = r.planner();
+        StringBuilder sb = new StringBuilder(String.format("REFINERY m%-4d room %,.0f L spare %,.0f t cash %,.0fk losses %d |",
+                g.getMonth(), o.room(), o.spareCrude(), r.getCash(), plans.getLossMonths(r.key())));
+        ham.citybuildersim.sectors.SpreadPlanner.MoneyGate was = p.moneyGate();
+        for (ham.citybuildersim.sectors.SpreadPlanner.MoneyGate mg : new ham.citybuildersim.sectors.SpreadPlanner.MoneyGate[] {
+                ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_BORROWING, ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_WHOLE_COST }) {
+            p.setMoneyGate(mg);
+            List<ham.citybuildersim.sectors.SpreadPlanner.Candidate> all = ham.citybuildersim.sectors.Refining.appraise(o,
+                    g.getBuildingManager().getTemplatesBySector(r.key()), p.city(r, plans, g));
+            ham.citybuildersim.sectors.SpreadPlanner.Candidate top = null;
+            for (ham.citybuildersim.sectors.SpreadPlanner.Candidate c : all) {
+                if (c.failed() == ham.citybuildersim.sectors.SpreadPlanner.Gate.FEED) continue;
+                if (top == null || c.score() > top.score()) top = c;
+            }
+            for (ham.citybuildersim.sectors.SpreadPlanner.Candidate c : all) {
+                if (c != top && !"Oil Refinery".equals(c.template().getName())) continue;
+                if (mg == ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_WHOLE_COST && c != top) continue;
+                double hurdle = p.hurdle(r, plans, g, c.cost());
+                sb.append(String.format(" %s %s: earns %,.1fk on %,.0fk (%.4f%%/mo), hurdle %,.1fk (%.4f%%/mo) %s |",
+                        mg, c.template().getName() + (c.with().isEmpty() ? "" : "+" + c.with().size()), c.earns(), c.cost(),
+                        100 * c.score(), hurdle, c.cost() > 0 ? 100 * hurdle / c.cost() : 0,
+                        c.passes() ? "PASS" : c.failed().name()));
+            }
+        }
+        p.setMoneyGate(was);
+        return sb.toString();
     }
 
     /**
@@ -4498,6 +4731,9 @@ public class LongPlaytest {
             g.setFundDial(FUND_DIAL);
             if (ADVANCES_MONTHS != null) g.getCentralBank().setAdvancesCeilingMonths(ADVANCES_MONTHS);
             if (INFLATION_TARGET != null) g.getDebtManager().setInflationTarget(INFLATION_TARGET);
+            // ...and the refiners' money gate (0.7.82): MONEY_GATE_WHOLE, the counterfactual; unset, the rule in force.
+            if (MONEY_GATE_WHOLE) g.getSectors().refining().planner()
+                    .setMoneyGate(ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_WHOLE_COST);
 
             /* ---------- founding: a few months at a time, by hand ---------- */
             /*
@@ -5828,7 +6064,8 @@ public class LongPlaytest {
                 water.getFreshCap(), g.getFreshRights(), water.getFreshIdleShare() * 100);
         out.printf("  ...fuel (0.7.62): %,d offer(s) with oil bought; the first well %s, the first refinery %s; at the end"
                 + " %d well(s) on %,d oil site(s) with %,.0f t of crude left, and %d refinery(ies), at most %d; the"
-                + " drivers' and the railway's fuel $%,.0fk over the run, %.1f%% of it bought abroad%n", oilBought,
+                + " drivers', the railway's and (0.7.83) the vans' fuel $%,.0fk over the run at wholesale, %.1f%% of it"
+                + " bought abroad%n", oilBought,
                 firstWellMonth > 0 ? "m" + firstWellMonth : "never", firstRefineryMonth > 0 ? "m" + firstRefineryMonth : "never",
                 qty(g, "Oil Well"), g.getLandManager().getOilSites(), g.getLandManager().getOilReserveTonnes(),
                 qty(g, "Oil Refinery"), mostRefineries, fuelBillRun,
@@ -5841,6 +6078,46 @@ public class LongPlaytest {
         }
         out.printf("  ...the refinery's products (0.7.76): made over the run %s; written off for want of tank room %,.0f%n",
                 refined.length() == 0 ? "none" : refined.toString(), refinedWrittenOff);
+        out.printf("  ...the spread planner (0.7.82, money gate %s): the first refiners' building %s; opened %s; sold back"
+                        + " %s; at most %d crude unit(s) and %d conversion unit(s)%n",
+                g.getSectors().refining().planner().moneyGate(), firstRefinerMonth > 0 ? "m" + firstRefinerMonth : "never",
+                refinersOpened.isEmpty() ? "none" : refinersOpened, refinersSold.isEmpty() ? "none" : refinersSold,
+                mostCrudeUnits, mostConversionUnits);
+        ham.citybuildersim.sectors.Oil oilWells = g.getSectors().oil();
+        double wellsAsNew = oilWells.newWellsCapacity(), wellsLift = oilWells.getCapacity(Good.CRUDE);
+        out.printf("  ...the wells' decline (0.7.84): %,.0f t of crude lifted over the run, at most %d well(s); %d retired worn"
+                        + " out (after %d months); at the end %d on %d dry oil site(s) of %d, lifting %,.0f t a month, %s of new%n",
+                crudeLiftedRun, mostWells, g.getWellsWornOut(),
+                ham.citybuildersim.sectors.Oil.lifeMonths(ham.citybuildersim.sectors.Oil.WellKind.LAND),
+                oilWells.landWellsStanding(), g.getLandManager().getSites(Resource.OIL, true), g.getLandManager().getOilSites(),
+                wellsLift, wellsAsNew > 0 ? String.format("%.0f%%", wellsLift / wellsAsNew * 100) : "none");
+        ham.citybuildersim.sectors.Retail forecourts = g.getSectors().retail();
+        double cars = g.getHouseholdBalance().totalCars();
+        out.printf("  ...the phase-1 buyers (0.7.83): the vans' diesel $%,.0fk over the run (%,.0f L), %.2f%% of the"
+                        + " businesses' payrolls; lubricants %,.0f L bought (%.1f%% abroad); bitumen %,.1f t drawn for roads"
+                        + " ($%,.0fk); the refiners' lubricants %s of the crude they ran%n",
+                vanDieselRun, vanDieselLitresRun, payrollRun > 0 ? vanDieselRun / payrollRun * 100 : 0,
+                lubricantsBoughtRun, lubricantsBoughtRun > 0 ? lubricantsImportedRun / lubricantsBoughtRun * 100 : 0,
+                g.getBitumenTonnes(), g.getBitumenCost(),
+                crudeRefinedLitresRun > 0
+                        ? String.format("%.2f%%", refinedRun.getOrDefault(Good.LUBRICANTS, 0.0) / crudeRefinedLitresRun * 100)
+                        : "none (no crude run)");
+        out.printf("  ...the forecourts (0.7.83): the first filling station %s; %d at the end, at most %d; %,.0f car(s) a"
+                        + " station at the end; the drivers' petrol %,.0f L at the pump and %,.0f L past the stations over the"
+                        + " run, paid %.4fx its wholesale cost; the last month a litre %s at the pump on %s wholesale%n",
+                firstStationMonth > 0 ? "m" + firstStationMonth : "never", forecourts.stationsStanding(), mostStations,
+                forecourts.stationsStanding() > 0 ? cars / forecourts.stationsStanding() : 0,
+                pumpLitresRun, queueLitresRun, pumpWholesaleRun > 0 ? pumpBillRun / pumpWholesaleRun : 0,
+                Double.isFinite(forecourts.getPumpPrice()) ? String.format("%.6f", forecourts.getPumpPrice()) : "none",
+                Double.isFinite(forecourts.getWholesaleLitre()) ? String.format("%.6f", forecourts.getWholesaleLitre()) : "none");
+        out.printf("  ...the ports (0.7.86): %s ordered, the first %s; %d terminal(s) standing at the end; a look found a"
+                        + " berth's worth and no coast %d time(s); %,.0f t by sea over the run, %.2f%% of the %,.0f t across"
+                        + " the boundary; the boats: %,d calls over the run, at most %d a month (%s), %d the last month; crude"
+                        + " held back for room %d month(s)%n",
+                terminalsOrdered.isEmpty() ? "no terminal" : terminalsOrdered.toString(),
+                firstTerminalMonth > 0 ? "m" + firstTerminalMonth : "never", terminalsStanding(g), portsNoCoast,
+                seaTonnesRun, boundaryTonnesRun > 0 ? seaTonnesRun / boundaryTonnesRun * 100 : 0, boundaryTonnesRun,
+                callsRun, mostCalls, mostCallsMonth > 0 ? "m" + mostCallsMonth : "never", lastCalls, heldBackMonths);
         out.printf("  ...the vault at its lowest US$%,.0fk (m%d); half the founders' dollars gone %s; all but a"
                 + " hundredth gone %s%n", vaultLow == Double.MAX_VALUE ? 0 : vaultLow, vaultLowMonth,
                 halfGoneMonth > 0 ? "by month " + halfGoneMonth : "never",

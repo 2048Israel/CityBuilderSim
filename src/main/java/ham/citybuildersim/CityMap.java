@@ -18,7 +18,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
- * The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, dealt out over each district's tiles with its roads, one drawn building for each the model has, summed up a pyramid for the far view, and written beside the save as a sidecar - what the tile painter paints the city from.
+ * The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot hold carried to the next, the city's highways and railway laid on corridors across it, one drawn building for each the model has, summed up a pyramid for the far view, and written beside the save as a sidecar - what the tile painter paints the city from.
  *
  * WHY THIS EXISTS (0.7.60, batch J3; the project's spec-land.md 2.5). The
  * model counts buildings by type and nothing else: a city of ten billion has
@@ -54,19 +54,23 @@ import java.util.zip.InflaterInputStream;
  * first, the remainders by largest remainder - exact. The picture shifts
  * once.
  *
- * THE DEAL (deal(), 0.7.64) puts each of a district's buildings and road
- * plots on one of its own 64 tiles, never more than a tile has free plots
- * for: the roads first, ROAD_PIECE plots at a time, then the buildings
- * largest first (BuildingVisual.rankedTypes()), each where its own hash
- * says through a table weighted by the tile's free plots - leaning toward
- * the founding site for what follows people, away from it for farms,
- * utilities, mines, the railway and the car plants - and, its tile full,
- * the nearest tile with room (the farthest for the outer kinds). One more
- * building changes one tile by one while its tile has room. The painter
- * then draws a tile's buildings one for one on their own land and grows
- * its road plots exactly: a city is drawn as what it has, not more, not
- * less (Jerus, 2026-10-07; J3b's homes from people and workplaces from
- * jobs, and the mockup's two world highways, are gone).
+ * THE DRAWN PLANS (0.7.88, batch RD2; the deal of 0.7.64 to 0.7.87 before
+ * them, which dealt a district's buildings and road plots onto its tiles
+ * for each to grow its own roads): each district is painted from its
+ * street plan (DistrictPlan) - its streets with the model's road as their
+ * surface, a box for every building - kept for the last PLANS_KEPT districts
+ * asked and made away from the screen's thread; what a district's plan
+ * cannot hold goes to the next district in the map's order, and what none
+ * can is packed at the city's edge without a street (R7). A city is drawn
+ * as what it has, not more, not less (Jerus, 2026-10-07). Since 0.7.89 the
+ * order is cut into bands of CHAIN_BAND districts (THE CHAIN'S BANDS), so a
+ * screen at the edge of a city of ten billion plans one band, not the city;
+ * a city of CHAIN_BAND districts or fewer is one band, drawn as before.
+ *
+ * THE RUNS (0.7.89, batch RD3; spec-roads-and-ports.md 2.7, 2.8): the
+ * city's Elevated Highways and railway are laid city-wide, month by month,
+ * on corridors from the founding site's lines (CityRuns) - never moved, the
+ * newest end taken first - and each district's plan is drawn round them.
  *
  * THE PYRAMID sums ten classes, used plots and owned plots two by two up to
  * one node, built when the map is, each district's ancestors updated as it
@@ -86,7 +90,10 @@ import java.util.zip.InflaterInputStream;
  * (CityLand.siteHolding()), and a purchase recounts exactly the districts
  * under its rectangle. The sidecar's land stamp is the holdings' count and a
  * hash of their rectangles (CityLand.stamp(), FORMAT 3; FORMAT 4 since 0.7.72,
- * the roads following their buildings).
+ * the roads following their buildings; FORMAT 5 since 0.7.88, the city's
+ * highway and railway runs after the districts - 0.7.88 wrote none, and a
+ * sidecar with none has them laid from its counts as it is read - an older
+ * one still read).
  */
 public final class CityMap {
 
@@ -124,8 +131,11 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. An older sidecar is not read, and the map is drawn again once. */
-    static final int FORMAT = 4;
+    /** The sidecar's format: 5 since 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 5;
+
+    /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
+    static final int OLDEST_READ = 4;
 
     /** Where the stamp sits in the sidecar's raw bytes: after the magic, the format, the seed and the month. */
     static final int STAMP_AT = 4 + 4 + 8 + 4;
@@ -146,7 +156,7 @@ public final class CityMap {
         long usedHalf;
         /** The whole plots its buildings and roads are drawn on (BuildingVisual.cells()), a mine or well on its site taking its own: what its room is kept in (0.7.64). */
         long usedCells;
-        /** Its free plots inside its tiles' edge rings, where alone a road is laid, and the road plots it holds: its room for roads (0.7.64). */
+        /** Its free plots inside its tiles' edge rings, where alone the painter laid a road until 0.7.87, and the road plots it holds: its room for roads, by which its counts are still placed (0.7.64). */
         int inner;
         long usedRoad;
         /** Its count of every type, by id. */
@@ -155,7 +165,7 @@ public final class CityMap {
         final int[] sites = new int[SITED.length];
         /** Each tile's free plots, row by row: owned and dry; null until measured or asked for. */
         short[] tileFree;
-        /** ...and those inside its edge ring, where alone the painter lays a road. */
+        /** ...and those inside its edge ring, where alone the painter laid a road until 0.7.87 (the counts' room for roads still measures it). */
         short[] tileInner;
         /** Each tile's sites, by key (TilePainter.Input.siteKey), and their free plots on it, all and inside the edge ring: what a mine standing on one takes of the tile. */
         long[][] tileSiteKey;
@@ -164,7 +174,7 @@ public final class CityMap {
         int[] sited;
         /** For painting: per SITED resource, pairs of {holding, mines} - how many of each holding's sites here carry one. */
         int[][] holdingMines = new int[SITED.length][];
-        /** Bumped whenever its counts change: what its deal is cached against. */
+        /** Bumped whenever its counts change: what its sites' list is kept against (its deal's until 0.7.87). */
         long version;
         /** Its place in the map's order, nearest first. */
         int index;
@@ -286,6 +296,7 @@ public final class CityMap {
         m.remaining = remaining;
         m.measureAll();
         m.allocate(counts);
+        m.layRuns(counts);
         return m;
     }
 
@@ -325,6 +336,7 @@ public final class CityMap {
         m.centreSeen = m.land.centreStamp();
         m.siteIndex();
         m.allocate(counts);
+        m.layRuns(counts);
         return m;
     }
 
@@ -640,7 +652,8 @@ public final class CityMap {
         builtInSet.clear();
         for (int roads = 0; roads < 2; roads++) {
             for (int t = 0; t < types.length; t++) {
-                if (types[t] == null || types[t].site() != null || (types[t].road() != BuildingVisual.NOT_A_ROAD) != (roads == 1)) continue;
+                // ...not the buildings at sea (0.7.91): on none of the city's dry ground, so in no district (BuildingVisual.of()'s sea flag).
+                if (types[t] == null || types[t].sea() || types[t].site() != null || (types[t].road() != BuildingVisual.NOT_A_ROAD) != (roads == 1)) continue;
                 long want = t < model.length ? model[t] : 0;
                 long delta = want - have[t];
                 if (delta > 0) touched += roads == 1 ? placeRoad(t, delta) : place(t, delta);
@@ -649,6 +662,10 @@ public final class CityMap {
         }
         placeSited(model);
         advanceCursors();
+        // The highways and railway to the month's counts (0.7.89): grown from their newest end, or taken back from it.
+        long r0 = System.nanoTime();
+        layRuns(model);
+        lastRunsMs = (System.nanoTime() - r0) / 1e6;
         lastTouched = touched;
         // What is worked out moved: the sites drawn are drawn again (their states), the deals stand.
         int[][] states = new int[Resource.values().length][];
@@ -687,6 +704,9 @@ public final class CityMap {
     /** How many district-types the last month's change touched. */
     int lastTouched;
 
+    /** How long the last month's runs took to lay, in ms (0.7.89): a harness's. */
+    double lastRunsMs;
+
     /* ---------------------------------------------------------------------
        ROADS FOLLOW THEIR BUILDINGS (0.7.72, batch N3)
 
@@ -708,7 +728,7 @@ public final class CityMap {
     double roadShareOf(long[] model) {
         double road = 0, other = 0;
         for (int t = 0; t < types.length && t < model.length; t++) {
-            if (types[t] == null || model[t] <= 0) continue;
+            if (types[t] == null || model[t] <= 0 || types[t].sea()) continue;
             double c = model[t] * (double) BuildingVisual.cells(types[t]);
             if (types[t].road() != BuildingVisual.NOT_A_ROAD) road += c; else other += c;
         }
@@ -882,7 +902,7 @@ public final class CityMap {
         for (int i = 0; i < n; i++) used[i] = cellsOf(districts.get(i));
         double total = 0;
         for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || types[t].site() != null || t >= counts.length) continue;
+            if (types[t] == null || types[t].site() != null || types[t].sea() || t >= counts.length) continue;
             total += counts[t] * (double) BuildingVisual.cells(types[t]);
         }
         double[] share = new double[n];
@@ -1175,6 +1195,11 @@ public final class CityMap {
         sitedPlaced = true;
     }
 
+    /** The mines and wells stood on their sites (placeSited()), once, before anything reads a district's counts less them: a plan's inputs and its stamp (0.7.88), as the sites' lists do. */
+    private void sitedNow() {
+        if (!sitedPlaced && !districts.isEmpty()) placeSited(totals());
+    }
+
     private District home() {
         District d = byKey.get(key(0, 0));
         if (d == null) {
@@ -1290,1241 +1315,1274 @@ public final class CityMap {
     }
 
     /* =====================================================================
-       THE DEAL: EACH DISTRICT ONTO ITS OWN TILES, AS FULL AS THEY HOLD
-       (0.7.64, batch L2)
+       THE DRAWN PLANS: EVERY DISTRICT FROM ITS STREET PLAN (0.7.88, batch
+       RD2; the project's spec-roads-and-ports.md 2.6, 2.9 and R7)
 
-       J3b spread a district over the 16 x 16 tiles about it by a hash, so
-       a tile could be dealt more than it holds - harmless while the painter
-       drew homes from people and could draw fewer; now every building the
-       model has is drawn, so the deal keeps every tile to its free plots.
-       Roads first, ROAD_PIECE plots at a time, then buildings largest first
-       (BuildingVisual.rankedTypes(), the painter's own order), each to the
-       tile its hash picks through a table weighted by the tiles' free plots
-       - times the core's lean for what follows people, divided by it for
-       the outer kinds - or, that tile full, to the nearest tile with room
-       for its whole plots (the farthest for the outer kinds), else the one
-       with the most room, where it is drawn smaller. A district holds no
-       more than its tiles have room for (place(), in whole plots), so every
-       building finds a plot; one more changes one tile by one while its
-       tile has room.
+       0.7.64 to 0.7.87 DEALT a district's buildings and road plots onto its
+       64 tiles - its road onto a few ROAD TILES - and each tile grew its
+       roads from what it was dealt, as lanes and a fill beside them inside
+       an edge ring: the maze, the tiles with no road and the walls of
+       buildings along every tile edge in Jerus's screenshot (spec 1). Since
+       0.7.88 a district is painted from its PLAN (DistrictPlan): its
+       streets - one network, + junctions on the lattice, the model's road
+       as their surface - and a box for every building. A plan is packed as
+       the painter reads it (Drawn: each tile's street codes, its buildings'
+       boxes) and kept, PLANS_KEPT of them, against a stamp of everything it
+       is drawn from (ownStamp()); made away from the screen's thread
+       (planJobs(), Job.run() on any thread, adopt() back here) or, for a
+       harness or a probe, here (drawnOf()).
+
+       R7, WHAT A DISTRICT CANNOT HOLD. The buildings a plan finds no place
+       for are CARRIED to the next district in the map's order
+       (DISTRICT_ORDER: nearest the founding site first, the order the month
+       fills districts in), which plans them with its own: a chain whose
+       every link is kept (Link: its own stamp, what came in, what went on),
+       so a month that changes a district plans again only it and those
+       after it whose carry moved. What the last district cannot hold, the
+       city has no room for anywhere: it is PACKED at the city's edge
+       (PackJob) - into the free ground the plans of its EDGE districts
+       leave (a district with a neighbour off the map), spread over their
+       tiles, the farthest from the founding site first, without a street -
+       and counted in the map's legend. A district inside the edge is drawn
+       from itself and the districts before it alone; an edge district
+       waits for them all.
        ===================================================================== */
 
-    /** How much more of what follows people a tile at the founding site takes, before its district's share is shared out: 6 times more (J3b's star) - its middle a town's size... */
-    public static final double CORE_BOOST = 6;
+    /** How many districts' plans are kept, packed for the painter (Drawn): 64, as the deals and road tiles were (spec 2.9) - each tile's street rows once a pattern and four bytes a building (RD1's plan was 140 KB as DistrictPlan holds it); counted in the view's budget (MapTiles.budgetBytes()). */
+    public static final int PLANS_KEPT = 64;
 
-    /** ...falling off over this many plots: 80 (2.4 km, J3b's star). */
-    public static final double CORE_RADIUS = 80;
+    /** A packed box's flag (Drawn.boxes): drawn without a street, R7's packing at the city's edge. */
+    public static final int PACKED_BIT = 1 << 20;
 
-    /** How many districts' deals are kept: 64 - about 1.3 MB, a screen's and its neighbours' many times over. */
-    static final int TILE_COUNTS_KEPT = 64;
+    /** Where a Drawn box's type id starts: above the box's 20 bits and PACKED_BIT, eleven bits for ids under 2,048 (buildings.json's ids are under 128). */
+    public static final int BOX_TYPE_SHIFT = 21;
 
-    /** Bumped whenever free ground is measured again: what the deals are kept against. */
-    private long landVersion;
-
-    /** A district's deal: each tile's counts by type id (a mine or well on a site apart), its road plots by kind [0, gravel, paved, highway], and (0.7.72) its railway's plots and the plan's runs on it (Plan.segments). */
-    static final class Dealt {
+    /** A district's plan as the painter reads it (0.7.88): each tile's street codes and its buildings' boxes, and the figures a harness reads. */
+    public static final class Drawn {
+        /** Its link's stamp: its own inputs (ownStamp()) and what was carried to it. */
         long stamp;
-        int[][] counts;
-        int[][] roads;
-        int[] rail;
-        int[][] plan;
-        /** The railway's plots the plan found no way for. */
-        long railShort;
-        /** Plots of each tile the deal charged and found none for: buildings with no plot at all, roads unlaid (0 while the district has room). */
-        int overDealt;
-    }
+        /** Each tile's street codes (TilePainter's S_ codes), null where it has none, packed by row (pack()): a byte for each of its 32 rows saying which of its patterns that row is, then the patterns, 32 codes each - a tile's streets run along its rows and columns, so a handful of patterns draw it, not a byte a plot. */
+        final byte[][] tiles = new byte[TILES][];
+        /** The frame's east column and south row: the first column and row of the districts east and south of it, where its edge cells' last arterials run (null where it lays none). */
+        byte[] east, south;
+        /** Each tile's buildings, an int each: the box - x, y, w - 1 and h - 1 in the tile's plots, five bits each, PACKED_BIT when packed without a street - and the type id from BOX_TYPE_SHIFT. */
+        final int[][] boxes = new int[TILES][];
+        /** Buildings its plan placed, and what it could not hold (carried on, R7). */
+        int placed, refused;
+        /** Its streets' surface in half plots by kind, [0, gravel, paved, highway], the plots of street it lays and how many of them are tracks: what its own road is drawn as. */
+        final long[] halves = new long[4];
+        int streets, tracks;
+        /** Its pieces joined to the streets of the districts before it, those no way over its ground joins, and its one-sided seams surfaced (DistrictPlan's figures). */
+        int joinsOut, partedOut, seamsSurfaced;
+        public int joinsOut() { return joinsOut; }
+        public int partedOut() { return partedOut; }
+        public int seamsSurfaced() { return seamsSurfaced; }
 
-    private final Map<District, Dealt> dealt = new LinkedHashMap<>(TILE_COUNTS_KEPT * 2, 0.75f, true) {
-        @Override protected boolean removeEldestEntry(Map.Entry<District, Dealt> e) { return size() > TILE_COUNTS_KEPT; }
-    };
+        /** Road it has no street for (the plan's surplus), in plots, and by kind [0, gravel, paved, highway]. */
+        double surplus;
+        final double[] leftover = new double[4];
 
-    /** Whether a type leans toward the founding site in the deal: everything but roads and the outer kinds - what follows people. */
-    static boolean leansToCore(BuildingVisual.Type t) {
-        return t != null && t.road() == BuildingVisual.NOT_A_ROAD && !t.outer();
-    }
-
-    /** The core's lean at a tile: 1 + CORE_BOOST e^-(r / CORE_RADIUS)^2, r from the founding site to the tile's middle in plots. */
-    double coreLean(long tx, long ty) {
-        double dx = tx * World.TILE + World.TILE / 2.0 - siteX, dy = ty * World.TILE + World.TILE / 2.0 - siteY;
-        double q = (dx * dx + dy * dy) / (CORE_RADIUS * CORE_RADIUS);
-        return 1 + CORE_BOOST * Math.exp(-q);
-    }
-
-    /** Vose's alias table for weights w, into prob and alias. */
-    static void aliasTable(double[] w, double[] prob, int[] alias) {
-        int n = w.length;
-        double sum = 0;
-        for (double v : w) sum += v;
-        double[] scaled = new double[n];
-        int[] small = new int[n], large = new int[n];
-        int ns = 0, nl = 0;
-        for (int i = 0; i < n; i++) {
-            scaled[i] = sum > 0 ? w[i] * n / sum : 1;
-            if (scaled[i] < 1) small[ns++] = i; else large[nl++] = i;
+        /** The bytes it holds, about: what the view's budget counts. */
+        long bytes() {
+            long b = 64 + 2L * DistrictPlan.FRAME;
+            for (byte[] t : tiles) if (t != null) b += 16 + t.length;
+            for (int[] x : boxes) if (x != null) b += 16 + 4L * x.length;
+            return b;
         }
-        while (ns > 0 && nl > 0) {
-            int s = small[--ns], l = large[--nl];
-            prob[s] = scaled[s];
-            alias[s] = l;
-            scaled[l] = scaled[l] + scaled[s] - 1;
-            if (scaled[l] < 1) small[ns++] = l; else large[nl++] = l;
+
+        /** Its plan's buildings, by type id: the boxes counted. */
+        public long[] buildingsByType(int types) {
+            long[] n = new long[types];
+            for (int[] x : boxes) if (x != null) for (int b : x) n[b >>> BOX_TYPE_SHIFT]++;
+            return n;
         }
-        while (nl > 0) prob[large[--nl]] = 1;
-        while (ns > 0) prob[small[--ns]] = 1;
-    }
 
-    /** A pick through an alias table by a hash. */
-    private static int pick(long h, double[] prob, int[] alias) {
-        int i = (int) ((h >>> 32) % prob.length);
-        double u = (h & 0xffffffffL) * 0x1.0p-32;
-        return u < prob[i] ? i : alias[i];
-    }
-
-    /**
-     * A district's tiles' counts, [tile][type] (tile = row x 8 + column):
-     * every building it holds but its mines and wells on sites, each on one
-     * of its own tiles (THE DEAL). Kept for the last TILE_COUNTS_KEPT
-     * districts asked.
-     */
-    public int[][] deal(District d) {
-        return dealtOf(d).counts;
-    }
-
-    /** ...and their road plots by kind, [tile][0, gravel, paved, highway]. */
-    public int[][] roads(District d) {
-        return dealtOf(d).roads;
-    }
-
-    /** What the deal of a district could not fit: plots charged to no tile (0 while the district holds no more than its tiles have room for). */
-    public int overDealt(District d) {
-        return dealtOf(d).overDealt;
-    }
-
-    private Dealt dealtOf(District d) {
-        long stamp = World.mix(World.mix(landVersion ^ 0x5EEDL) ^ d.version);
-        // ...and its neighbours' roads: their road tiles meet its own (0.7.72, THE NETWORK).
-        for (int dir = 0; dir < 4; dir++) {
-            District b = byKey.get(key(d.dx + TilePainter.DX[dir], d.dy + TilePainter.DY[dir]));
-            stamp = World.mix(stamp ^ (b == null ? -1 : b.usedRoad));
+        /** The street code its plan lays on plot (x, y) of its frame: the district's 256 x 256 and its east column and south row (x or y = DISTRICT); 0 for none. */
+        public byte codeAt(int x, int y) {
+            if (x == DISTRICT) return east == null ? 0 : east[y];
+            if (y == DISTRICT) return south == null ? 0 : south[x];
+            byte[] t = tiles[(y / World.TILE) * TILES_A_SIDE + x / World.TILE];
+            return t == null ? 0 : codeIn(t, x % World.TILE, y % World.TILE);
         }
-        Dealt got = dealt.get(d);
-        if (got != null && got.stamp == stamp) return got;
-        got = dealNow(d);
-        got.stamp = stamp;
-        dealt.put(d, got);
-        return got;
-    }
 
-    private Dealt dealNow(District d) {
-        Dealt out = new Dealt();
-        out.counts = new int[TILES][types.length];
-        out.roads = new int[TILES][4];
-        out.plan = new int[TILES][];
-        out.rail = new int[TILES];
-        short[] free = tileFree(d), inner = d.tileInner;
-        int[] spare = new int[TILES], innerSpare = new int[TILES];
-        // The sites a mine or well stands on: their plots are the mines', not the tiles' to deal.
-        java.util.Set<Long> mined = new java.util.HashSet<>();
-        List<DrawnSite> minedSites = new ArrayList<>();
-        for (int b = -1; b <= 1; b++) {
-            for (int a = -1; a <= 1; a++) {
-                if (byKey.get(key(d.dx + a, d.dy + b)) == null) continue;
-                for (DrawnSite site : siteList(d.dx + a, d.dy + b)) {
-                    if (site.mine() < 0) continue;
-                    mined.add((site.x0() << 32) | (site.y0() & 0xffffffffL));
-                    minedSites.add(site);
-                }
+        /** A packed tile's code at plot (x, y) of it. */
+        static byte codeIn(byte[] t, int x, int y) { return t[World.TILE + (t[y] & 0xff) * World.TILE + x]; }
+
+        /** A packed tile's codes, a byte a plot row by row, into out. */
+        static void unpack(byte[] t, byte[] out) {
+            for (int y = 0; y < World.TILE; y++) System.arraycopy(t, World.TILE + (t[y] & 0xff) * World.TILE, out, y * World.TILE, World.TILE);
+        }
+
+        /** A tile's codes (a byte a plot row by row) packed by row: each row's pattern once, in the order first met. */
+        static byte[] pack(byte[] plots) {
+            int n = World.TILE, rows = 0;
+            int[] which = new int[n], first = new int[n];
+            for (int y = 0; y < n; y++) {
+                int r = 0;
+                while (r < rows && !Arrays.equals(plots, y * n, y * n + n, plots, first[r] * n, first[r] * n + n)) r++;
+                if (r == rows) first[rows++] = y;
+                which[y] = r;
             }
+            byte[] out = new byte[n + rows * n];
+            for (int y = 0; y < n; y++) out[y] = (byte) which[y];
+            for (int r = 0; r < rows; r++) System.arraycopy(plots, first[r] * n, out, n + r * n, n);
+            return out;
         }
-        double[] in = new double[TILES], away = new double[TILES], dist = new double[TILES], lean = new double[TILES];
-        long t0x = (baseDX + d.dx) * TILES_A_SIDE, t0y = (baseDY + d.dy) * TILES_A_SIDE;
-        for (int k = 0; k < TILES; k++) {
-            long tx = t0x + k % TILES_A_SIDE, ty = t0y + k / TILES_A_SIDE;
-            spare[k] = free[k];
-            innerSpare[k] = inner == null ? free[k] : inner[k];
-            if (d.tileSiteKey != null && d.tileSiteKey[k] != null) {
-                for (int a = 0; a < d.tileSiteKey[k].length; a++) {
-                    if (!mined.contains(d.tileSiteKey[k][a])) continue;
-                    spare[k] -= d.tileSiteFree[k][a];
-                    innerSpare[k] -= d.tileSiteInner[k][a];
-                }
-            }
-            spare[k] = Math.max(0, spare[k]);
-            innerSpare[k] = Math.max(0, innerSpare[k]);
-            lean[k] = coreLean(tx, ty);
-            double cx = tx * World.TILE + World.TILE / 2.0 - siteX, cy = ty * World.TILE + World.TILE / 2.0 - siteY;
-            dist[k] = cx * cx + cy * cy;
-        }
-        // The tiles nearest the founding site first; the outer kinds take them the other way round.
-        Integer[] byDist = new Integer[TILES];
-        for (int k = 0; k < TILES; k++) byDist[k] = k;
-        Arrays.sort(byDist, (a, b) -> dist[a] != dist[b] ? Double.compare(dist[a], dist[b]) : Integer.compare(a, b));
-        int[] near = new int[TILES], far = new int[TILES];
-        for (int k = 0; k < TILES; k++) { near[k] = byDist[k]; far[TILES - 1 - k] = byDist[k]; }
-        long dseed = World.mix(seed ^ ((baseDX + d.dx) << 32) ^ ((baseDY + d.dy) & 0xffffffffL));
 
-        // THE NETWORK (0.7.72): the road tiles, the plan's highways and railway lines, the mains and the grid's streets.
-        RoadTiles rt = roadTilesOf(d);
-        long[] kindPlots = new long[4];
-        long track = 0;
-        for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || d.counts[t] <= 0) continue;
-            if (types[t].road() != BuildingVisual.NOT_A_ROAD) kindPlots[types[t].road()] += (long) d.counts[t] * BuildingVisual.cells(types[t]);
-            else if (types[t].track()) track += (long) d.counts[t] * BuildingVisual.cells(types[t]);
-        }
-        Plan plan = planOf(d, rt, kindPlots[BuildingVisual.HIGHWAY], track, minedSites, spare);
-        out.plan = plan.segments;
-        out.railShort = plan.railLeft;
-        for (int k = 0; k < TILES; k++) {
-            out.roads[k][BuildingVisual.HIGHWAY] = plan.hw[k];
-            out.rail[k] = plan.rail[k];
-        }
-        // A highway the plan could not lay, and every road of a district with no road tile, the grid lays as streets.
-        long hwLeft = plan.hwLeft;
-        long ordinary = kindPlots[BuildingVisual.GRAVEL] + kindPlots[BuildingVisual.PAVED];
-        int[] total = new int[TILES];
-        if (rt.n > 0) {
-            // Each road tile its main streets first, in the order the tiles were taken: the plan's, its hub and an arm
-            // to each road tile it is joined to, in this district and the next.
-            long left = ordinary + hwLeft;
-            for (int m = 0; m < rt.n && left > 0; m++) {
-                int k = rt.order[m];
-                int give = (int) Math.min(left, plan.mains[k]);
-                total[k] += give;
-                left -= give;
-            }
-            // ...then the grid's streets, in proportion to the tiles' free plots and the core's lean, as the buildings
-            // that follow people are dealt, each to its grid and lanes (LANES_TOO); what none has room for, by the
-            // same weights.
-            double[] w = new double[TILES];
-            long[] cap = new long[TILES];
-            long spareAll = 0;
-            for (int k = 0; k < TILES; k++) if (rt.road[k]) spareAll += spare[k];
-            double share = spareAll > 0 ? (ordinary + hwLeft + kindPlots[BuildingVisual.HIGHWAY]) / (double) spareAll : 0;
-            for (int k = 0; k < TILES; k++) {
-                if (!rt.road[k]) continue;
-                w[k] = Math.max(0, spare[k] - total[k] - plan.hw[k] - plan.rail[k]) * lean[k];
-                long most = Math.min((long) Math.floor(rt.grid[k] * (1 + LANES_TOO)), (long) Math.ceil(spare[k] * share * ROAD_LEAN_MOST));
-                cap[k] = Math.max(0, most - total[k] - plan.hw[k]);
-            }
-            for (int pass = 0; pass < 2 && left > 0; pass++) {
-                long given = shareOut(w, pass == 0 ? cap : null, left, total, rt);
-                left -= given;
-            }
-            // Paved first: the main streets' bridges, then in the order the road tiles were taken - the core's streets
-            // and mains paved.
-            long paved = kindPlots[BuildingVisual.PAVED], gravel = kindPlots[BuildingVisual.GRAVEL], hw = hwLeft;
-            int[] pv = new int[TILES];
-            for (int m = 0; m < rt.n; m++) {
-                int k = rt.order[m];
-                pv[k] = (int) Math.min(Math.min(plan.bridges[k], total[k]), paved);
-                paved -= pv[k];
-            }
-            for (int m = 0; m < rt.n; m++) {
-                int k = rt.order[m];
-                int p = (int) Math.min(total[k] - pv[k], paved) + pv[k];
-                paved -= p - pv[k];
-                int g = (int) Math.min(total[k] - p, gravel);
-                gravel -= g;
-                int h = (int) Math.min(total[k] - p - g, hw);
-                hw -= h;
-                out.roads[k][BuildingVisual.PAVED] += p;
-                out.roads[k][BuildingVisual.GRAVEL] += g;
-                out.roads[k][BuildingVisual.HIGHWAY] += h;
-            }
-            if (paved + gravel + hw > 0) out.overDealt += (int) (paved + gravel + hw);
-        } else if (ordinary + hwLeft > 0) {
-            // No tile with ground for a road tile: the roads on the roomiest tiles, nearest first, as 0.7.64 dealt them.
-            long[] kp = { 0, kindPlots[BuildingVisual.GRAVEL], kindPlots[BuildingVisual.PAVED], hwLeft };
-            for (int kind = BuildingVisual.HIGHWAY; kind >= BuildingVisual.GRAVEL; kind--) {
-                for (int n : near) {
-                    int take = (int) Math.min(kp[kind], Math.max(0, spare[n] - total[n] - plan.rail[n] - plan.hw[n]));
-                    out.roads[n][kind] += take;
-                    total[n] += take;
-                    kp[kind] -= take;
-                }
-                if (kp[kind] > 0) out.overDealt += (int) kp[kind];
-            }
-        }
-        // What each tile keeps free for its buildings' shapes while another tile has room (TILE_FULL_MOST), and its room
-        // short of that.
-        int[] soft = new int[TILES];
-        for (int k = 0; k < TILES; k++) {
-            int keep = (int) Math.floor(spare[k] * (1 - TILE_FULL_MOST));
-            spare[k] = Math.max(0, spare[k] - out.roads[k][BuildingVisual.GRAVEL] - out.roads[k][BuildingVisual.PAVED]
-                    - out.roads[k][BuildingVisual.HIGHWAY] - out.rail[k]);
-            soft[k] = Math.max(0, spare[k] - keep);
-        }
-        // The buildings, largest first, type by type and number by number - onto the road tiles while the district
-        // has any (0.7.72: every building near a road), the rest where there is room.
-        boolean anyRoad = rt.n > 0;
-        boolean any = false;
-        for (int k = 0; k < TILES; k++) {
-            boolean ok = !anyRoad || rt.road[k];
-            in[k] = ok ? spare[k] * lean[k] : 0;
-            away[k] = ok ? spare[k] / lean[k] : 0;
-            any |= in[k] > 0;
-        }
-        if (!any) for (int k = 0; k < TILES; k++) { in[k] = spare[k] * lean[k]; away[k] = spare[k] / lean[k]; any |= in[k] > 0; }
-        if (!any) { Arrays.fill(in, 1); Arrays.fill(away, 1); }
-        double[] probIn = new double[TILES], probAway = new double[TILES];
-        int[] aliasIn = new int[TILES], aliasAway = new int[TILES];
-        aliasTable(in, probIn, aliasIn);
-        aliasTable(away, probAway, aliasAway);
-        int[] nearRoad = onRoadFirst(near, rt), farRoad = onRoadFirst(far, rt);
-        int[] yards = yardOrder(plan, minedSites, t0x, t0y);
-        for (int t : BuildingVisual.rankedTypes(types)) {
-            int c = d.counts[t] - (d.sited == null ? 0 : d.sited[t]);
-            if (c <= 0) continue;
-            int need = BuildingVisual.cells(types[t]);
-            boolean outer = !leansToCore(types[t]);
-            double[] prob = outer ? probAway : probIn;
-            int[] alias = outer ? aliasAway : aliasIn, order = outer ? farRoad : nearRoad;
-            long base = World.mix(dseed ^ ((long) t << 40));
-            for (int j = 0; j < c; j++) {
-                int k = -1;
-                // A rail yard beside its track, on the track's tile nearest a mine (Jerus: "rail terminals prefer to sit near mines").
-                if (types[t].terminal()) k = firstWith(yards, spare, need);
-                if (k < 0) {
-                    // Its hashed tile, or the nearest (farthest) with room short of what it keeps for shapes; then with
-                    // any room; then the roomiest.
-                    int hashed = pick(World.mix(base + j), prob, alias);
-                    k = soft[hashed] >= need ? hashed : firstWith(order, soft, need);
-                    if (k < 0) k = spare[hashed] >= need ? hashed : firstWith(order, spare, need);
-                    if (k < 0) k = roomiest(order, spare);
-                }
-                int charge = Math.min(need, spare[k]);
-                if (charge < 1) out.overDealt++;
-                out.counts[k][t]++;
-                spare[k] -= Math.max(0, charge);
-                soft[k] = Math.max(0, soft[k] - Math.max(0, charge));
-            }
-        }
-        if (rt.n > 0) moveExcess(out, rt, plan, free, spare);
-        return out;
+        /** Its surface in plots of kind (BuildingVisual's GRAVEL to HIGHWAY). */
+        public double surface(int kind) { return halves[kind] / 2.0; }
+        /** The plots of street it lays, and those of them tracks. */
+        public int streets() { return streets; }
+        public int tracks() { return tracks; }
+        /** Buildings its plan placed, and refused (carried on). */
+        public int placed() { return placed; }
+        public int refused() { return refused; }
+        /** Road it has no street for, in plots; of a kind. */
+        public double surplus() { return surplus; }
+        public double leftover(int kind) { return leftover[kind]; }
     }
 
-    /**
-     * The streets a road tile cannot hold as lines, moved to road tiles that
-     * can (0.7.72): a tile's streets are its grid and lanes, which run round
-     * its large buildings, not under them - so a tile dealt many is dealt road
-     * its lines cannot hold, and the painter laid the rest as a fill beside
-     * its roads, plazas of + junctions. A road tile holds about its main
-     * streets and its line share (its grid and lanes over its free plots) of
-     * the plots its large buildings leave; what it is dealt past that goes, a
-     * plot at a time - gravel first, so the paved stay where the order put
-     * them - to the road tiles in the order taken that hold less than they
-     * could and have plots to spare. The buildings dealt stand as they were.
-     */
-    private void moveExcess(Dealt out, RoadTiles rt, Plan plan, short[] free, int[] spare) {
-        int[] cells = BuildingVisual.cellsById(types);
-        long[] over = new long[TILES], under = new long[TILES];
-        long excess = 0;
-        for (int m = 0; m < rt.n; m++) {
-            int k = rt.order[m];
-            long large = 0;
-            for (int t = 0; t < types.length; t++) {
-                if (out.counts[k][t] > 0 && types[t] != null && types[t].drawn() && TilePainter.passOf(types[t], cells[t]) != TilePainter.SMALL) large += (long) out.counts[k][t] * cells[t];
-            }
-            double share = free[k] > 0 ? rt.grid[k] * (1 + LANES_TOO) / free[k] : 0;
-            long open = Math.max(0, free[k] - large - plan.mains[k] - plan.hw[k] - plan.rail[k]);
-            long holds = plan.mains[k] + plan.hw[k] + (long) Math.floor(open * share * LINES_HOLD);
-            long roads = out.roads[k][BuildingVisual.GRAVEL] + out.roads[k][BuildingVisual.PAVED] + out.roads[k][BuildingVisual.HIGHWAY];
-            if (roads > holds) { over[k] = roads - holds; excess += over[k]; }
-            else under[k] = Math.min(holds - roads, spare[k]);
-        }
-        if (excess == 0) return;
-        for (int m = 0; m < rt.n && excess > 0; m++) {
-            int to = rt.order[m];
-            for (int n = rt.n - 1; n >= 0 && under[to] > 0 && excess > 0; n--) {
-                int from = rt.order[n];
-                if (from == to || over[from] <= 0) continue;
-                long move = Math.min(under[to], over[from]);
-                for (int kind : new int[] { BuildingVisual.GRAVEL, BuildingVisual.PAVED, BuildingVisual.HIGHWAY }) {
-                    long take = Math.min(move, out.roads[from][kind] - (kind == BuildingVisual.HIGHWAY ? plan.hw[from] : 0));
-                    if (take <= 0) continue;
-                    out.roads[from][kind] -= (int) take;
-                    out.roads[to][kind] += (int) take;
-                    spare[to] -= (int) take;
-                    spare[from] += (int) take;
-                    over[from] -= take;
-                    under[to] -= take;
-                    excess -= take;
-                    move -= take;
-                }
-            }
-        }
+    /** A plan's street code as the painter reads it (TilePainter's S_ codes): DistrictPlan's kind and width, its role - an arterial, a boulevard's, or a street (a cell's, along a cut, the join's) - and a bridge. */
+    static byte paintCode(short code) {
+        if (code == 0) return 0;
+        int kind = code & DistrictPlan.KIND_MASK, width = (code >> DistrictPlan.WIDTH_SHIFT) & 3, role = (code >> DistrictPlan.ROLE_SHIFT) & 7;
+        int r = role == DistrictPlan.ROLE_ARTERIAL ? TilePainter.S_ARTERIAL : role == DistrictPlan.ROLE_BOULEVARD ? TilePainter.S_BOULEVARD : 0;
+        int b = kind | (width << TilePainter.S_WIDTH_SHIFT) | (r << TilePainter.S_ROLE_SHIFT);
+        if ((code & DistrictPlan.BRIDGE) != 0) b |= TilePainter.S_BRIDGE;
+        return (byte) b;
     }
 
-    /** Tiles in `order`, the road tiles first (each part in its own order). */
-    private static int[] onRoadFirst(int[] order, RoadTiles rt) {
-        int[] o = new int[order.length];
-        int n = 0;
-        for (int k : order) if (rt.road[k]) o[n++] = k;
-        for (int k : order) if (!rt.road[k]) o[n++] = k;
-        return o;
-    }
-
-    /** The tiles a rail yard stands on, first choice first: those the plan's track crosses, nearest a mine first (the nearest the track's middle where there is none). */
-    private int[] yardOrder(Plan plan, List<DrawnSite> mines, long t0x, long t0y) {
-        int n = 0;
-        for (int k = 0; k < TILES; k++) if (plan.rail[k] > 0) n++;
-        Integer[] ks = new Integer[n];
-        double[] key = new double[TILES];
-        n = 0;
-        for (int k = 0; k < TILES; k++) {
-            if (plan.rail[k] <= 0) continue;
-            ks[n++] = k;
-            double cx = (t0x + k % TILES_A_SIDE) * World.TILE + World.TILE / 2.0, cy = (t0y + k / TILES_A_SIDE) * World.TILE + World.TILE / 2.0;
-            double best = Double.MAX_VALUE;
-            for (DrawnSite s : mines) {
-                double mx = (s.x0() + s.x1()) / 2.0 - cx, my = (s.y0() + s.y1()) / 2.0 - cy;
-                best = Math.min(best, mx * mx + my * my);
-            }
-            if (mines.isEmpty()) {
-                double mx = (plan.railX + 0.5) - cx, my = (plan.railY + 0.5) - cy;
-                best = mx * mx + my * my;
-            }
-            key[k] = best;
-        }
-        Arrays.sort(ks, (a, b) -> key[a] != key[b] ? Double.compare(key[a], key[b]) : Integer.compare(a, b));
-        int[] o = new int[n];
-        for (int i = 0; i < n; i++) o[i] = ks[i];
-        return o;
-    }
-
-    /**
-     * Shares `amount` road plots over the road tiles by weight w, each to its
-     * cap (none with caps null): whole plots by largest remainder, the taken
-     * order breaking ties; what the caps leave over is returned unshared. Into
-     * total; the plots given.
-     */
-    private static long shareOut(double[] w, long[] cap, long amount, int[] total, RoadTiles rt) {
-        long given = 0;
-        boolean[] full = new boolean[TILES];
-        for (int round = 0; round < TILES && amount - given > 0; round++) {
-            double sum = 0;
-            for (int m = 0; m < rt.n; m++) { int k = rt.order[m]; if (!full[k]) sum += w[k]; }
-            if (sum <= 0) {
-                // No weight left: the taken order.
-                for (int m = 0; m < rt.n && amount - given > 0; m++) {
-                    int k = rt.order[m];
-                    if (full[k]) continue;
-                    long take = cap == null ? amount - given : Math.min(amount - given, cap[k]);
-                    if (take <= 0) continue;
-                    total[k] += (int) take;
-                    if (cap != null) cap[k] -= take;
-                    given += take;
-                }
-                break;
-            }
-            long want = amount - given, round0 = given;
-            double[] rem = new double[TILES];
-            boolean capped = false;
-            for (int m = 0; m < rt.n; m++) {
-                int k = rt.order[m];
-                if (full[k]) continue;
-                double q = want * w[k] / sum;
-                long whole = (long) Math.floor(q);
-                if (cap != null && whole >= cap[k]) { whole = cap[k]; full[k] = true; capped = true; }
-                rem[k] = full[k] ? -1 : q - whole;
-                total[k] += (int) whole;
-                if (cap != null) cap[k] -= whole;
-                given += whole;
-            }
-            if (!capped) {
-                // The remainders, largest first, the taken order on a tie.
-                long extra = want - (given - round0);
-                Integer[] byRem = new Integer[rt.n];
-                for (int m = 0; m < rt.n; m++) byRem[m] = m;
-                Arrays.sort(byRem, (a, b) -> rem[rt.order[a]] != rem[rt.order[b]] ? Double.compare(rem[rt.order[b]], rem[rt.order[a]]) : Integer.compare(a, b));
-                for (int m = 0; m < rt.n && extra > 0; m++) {
-                    int k = rt.order[byRem[m]];
-                    if (full[k] || (cap != null && cap[k] <= 0)) continue;
-                    total[k]++;
-                    if (cap != null) cap[k]--;
-                    given++;
-                    extra--;
-                }
-                break;
-            }
-        }
-        return given;
-    }
-
-    /* =====================================================================
-       THE NETWORK: EACH DISTRICT'S ROAD TILES, HIGHWAYS AND RAILWAY
-       (0.7.72, batch N3)
-
-       Jerus, "to make the map generation prettier": highways connect to
-       each other, prefer straight lines and curve only when they hit the
-       ocean, with T and + junctions used very sparingly; ordinary roads
-       "love being a continuous + junction"; all roads connect to one network
-       and no road stands alone; every building is near a road; rail connects
-       to the rail network and its terminals prefer to sit near mines.
-
-       A district's road plots are laid on its ROAD TILES: a connected set
-       grown from the tile nearest the founding site - the tiles a mine or
-       well stands on joined first, by the shortest way over owned ground,
-       then the rest nearest the founding site first - while the main streets
-       joining them (TilePainter's MAINS: the hub and an arm to each road
-       neighbour, along the main lines) cost no more than MAINS_SHARE of the
-       district's road. A district's first road tile is the one nearest the
-       founding site, beside the district before it, whose road tiles the
-       main streets cross the shared edge into: one network, district to
-       district. The set hangs on the district's road plots and its mines
-       alone - never on its buildings - so one more house moves one tile's
-       count by one (MapCheck 2), as before.
-
-       THE PLAN lays the district's highways and railway lines plot for plot:
-       a highway from the first road tile's hub along its main row, both ways
-       (away from the founding site first), so the highways of districts in a
-       row lie on one line; where the sea, the city's edge, a mine or water
-       wider than it may bridge stops it, it turns and runs on straight, at
-       most TURNS_MOST times; both ways spent, it runs across its hub once (the
-       one + it makes); it stops short of the district's edge unless it meets
-       it on the main line, where the next district's runs on. The railway
-       likewise, along its tile's rail column (TilePainter.railX(): the edge
-       away from the tile's main, so a yard fits whole beside it) from the
-       tile with the most mines, so a rail yard - dealt
-       to the track's tile nearest a mine - stands near the mines; it passes
-       a highway by as it passes the sea. The plan reads the tiles' ground and
-       ownership as the painter does (World.tileTerrain(), the grid's leaves).
-       ===================================================================== */
-
-    /** At most this share of a district's road plots joins its road tiles to one another as main streets: a half, so at least the other half is the grid's streets among its buildings (star N3-4). */
-    static final double MAINS_SHARE = 0.5;
-
-    /** A tile is taken among the road tiles only with at least this many free plots: a block's at the junction floor, 7 x 7 = 49 - fewer is a sliver at the land's edge a main street would only cross. */
-    static final int ROAD_TILE_LEAST = (TilePainter.JUNCTION_APART - 1) * (TilePainter.JUNCTION_APART - 1);
-
-    /** A road tile's streets are dealt, while another road tile has room, no more than its grid's plots on its own dry ground and this share of them more for its lanes: 1.05 - a whole tile's grid is 240 plots on its 4 lines each way, and its lanes, three a segment (TilePainter.LANE_FEET) across a block of LANE_MOST plots, each block's shared by its two sides, 252. */
-    static final double LANES_TOO = TilePainter.SEGMENTS * TilePainter.LANE_FEET.length * TilePainter.LANE_MOST / 2.0 / 240;
-
-    /** A road tile's grid and lanes hold this share of the plots the estimate gives them (its grid and lanes over its free plots, of the plots its large buildings leave): 0.66, as measured where the painter filled - on Jerus's city x 1 and x 10,000, 5,534 of 8,448 and 32.9 of 47.4 million (a lane is not laid where it would touch another road, nor a segment a building covers); past it, the painter's fill makes plazas (star N3-8). */
-    static final double LINES_HOLD = 0.66;
-
-    /** A tile is dealt buildings, while another tile has room, to no more than this share of its free plots with its roads and track: 0.9 - a tenth kept for the shapes its buildings come in, which no tile at 95% packed whole (MapCheck 6: the dense screen drew 16.7% of its buildings smaller at 0.7.71, every core tile dealt full); the rest of a district's buildings, where it is fuller, as before (star N3-7). */
-    static final double TILE_FULL_MOST = 0.9;
-
-    /** A road tile is dealt streets, while another road tile has room, to no more than this many times its district's road over its road tiles' free plots: 1.25 - so the streets lean toward the founding site as the buildings that follow people do, a quarter over the district's share at most, and a crowded tile at the core is not given road its grid and lanes cannot hold (star N3-5). */
-    static final double ROAD_LEAN_MOST = 1.25;
-
-    /** How many times a highway or a railway line turns, each way from its hub, where the sea, the city's edge or a mine stops it: 4 at most - four turns the same way go round a square, so a run that needs more is coiling, not going anywhere (star N3-10). */
-    static final int TURNS_MOST = 4;
-
-    /** A district's road tiles: the connected set its main streets join, the order they were taken in, and each tile's hub and main street to each edge's crossing, on its own ground. */
-    static final class RoadTiles {
-        long stamp;
-        /** The map's changes() and land version when it was last found current. */
-        long changesSeen = -1, landSeen = -1;
-        final boolean[] road = new boolean[TILES];
-        final int[] order = new int[TILES];
-        int n;
-        /** Each tile's hub, a plot of the tile (y x 32 + x), or -1: where its main streets meet - the main lines' crossing, or the dry owned plot nearest it. */
-        final int[] hub = new int[TILES];
-        /** Each tile's main street from its hub to its crossing on each edge (north, east, south, west): its plots from the hub out, ending on the edge; null where none can be laid. */
-        final short[][][] arm = new short[TILES][4][];
-        /** Each tile's grid plots on its own dry ground: the streets its grid can hold (TilePainter.LINES). */
-        final int[] grid = new int[TILES];
-    }
-
-    private final Map<District, RoadTiles> roadTiles = new LinkedHashMap<>(TILE_COUNTS_KEPT * 8, 0.75f, true) {
-        @Override protected boolean removeEldestEntry(Map.Entry<District, RoadTiles> e) { return size() > TILE_COUNTS_KEPT * 4; }
-    };
-
-    /** The tile beside k in direction dir in the same district, or -1. */
-    static int besideIn(int k, int dir) {
-        int x = k % TILES_A_SIDE + TilePainter.DX[dir], y = k / TILES_A_SIDE + TilePainter.DY[dir];
-        return x < 0 || y < 0 || x >= TILES_A_SIDE || y >= TILES_A_SIDE ? -1 : y * TILES_A_SIDE + x;
-    }
-
-    /** The district beside d in direction dir and the tile there that k of d faces across their edge, {district or null, tile}; for a tile inside d, {d, the tile}. */
-    private Object[] across(District d, int k, int dir) {
-        int b = besideIn(k, dir);
-        if (b >= 0) return new Object[] { d, b };
-        District o = byKey.get(key(d.dx + TilePainter.DX[dir], d.dy + TilePainter.DY[dir]));
-        int x = Math.floorMod(k % TILES_A_SIDE + TilePainter.DX[dir], TILES_A_SIDE), y = Math.floorMod(k / TILES_A_SIDE + TilePainter.DY[dir], TILES_A_SIDE);
-        return new Object[] { o, y * TILES_A_SIDE + x };
-    }
-
-    /** Whether tile k of d and the tile it faces in direction dir are joined by main streets: both road tiles, each with its main street to their shared crossing. */
-    boolean joined(District d, RoadTiles rt, int k, int dir) {
-        if (!rt.road[k] || rt.arm[k][dir] == null) return false;
-        Object[] o = across(d, k, dir);
-        District od = (District) o[0];
-        int b = (Integer) o[1];
-        if (od == null) return false;
-        RoadTiles ort = od == d ? rt : roadTilesOf(od);
-        return ort.road[b] && ort.arm[b][(dir + 2) % 4] != null;
-    }
-
-    /** A road tile's main streets' plots: its hub and its arm to each tile it is joined to (joined()). */
-    int mainsOf(District d, RoadTiles rt, int k) {
-        if (!rt.road[k]) return 0;
-        int n = 1;
-        for (int dir = 0; dir < 4; dir++) if (joined(d, rt, k, dir)) n += rt.arm[k][dir].length;
-        return n;
-    }
-
-    /** A district's road tiles (THE NETWORK), kept against its road plots, its mines and the land. */
-    RoadTiles roadTilesOf(District d) {
-        // Nothing the map holds has changed since it was last asked: as it was (a screen asks every tile's neighbours).
-        RoadTiles seen = roadTiles.get(d);
-        if (seen != null && seen.changesSeen == changes && seen.landSeen == landVersion) return seen;
-        long budget = d.usedRoad;
-        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
-        List<DrawnSite> mines = budget > 0 ? minesNear(d) : new ArrayList<>();
-        List<Integer> mineTiles = new ArrayList<>();
-        for (DrawnSite s : mines) {
-            long cx = (s.x0() + s.x1()) / 2, cy = (s.y0() + s.y1()) / 2;
-            if (cx < x0 || cy < y0 || cx >= x0 + DISTRICT || cy >= y0 + DISTRICT) continue;
-            int k = (int) ((cy - y0) / World.TILE * TILES_A_SIDE + (cx - x0) / World.TILE);
-            if (!mineTiles.contains(k)) mineTiles.add(k);
-        }
-        long stamp = World.mix(World.mix(landVersion ^ 0x70ADL) ^ budget);
-        for (DrawnSite s : mines) stamp = World.mix(stamp ^ s.x0() ^ (s.y0() << 20));
-        RoadTiles got = roadTiles.get(d);
-        if (got != null && got.stamp == stamp) {
-            got.changesSeen = changes;
-            got.landSeen = landVersion;
-            return got;
-        }
-        RoadTiles rt = new RoadTiles();
-        rt.stamp = stamp;
-        rt.changesSeen = changes;
-        rt.landSeen = landVersion;
-        Arrays.fill(rt.hub, -1);
-        roadTiles.put(d, rt);
-        if (budget <= 0) return rt;
-        short[] free = tileFree(d);
-        PlanGround g = new PlanGround(d, mines);
-        long tx0 = x0 / World.TILE, ty0 = y0 / World.TILE;
-        // Every district's main streets may bridge a river since 0.7.77, gravel as paved (TilePainter.STREET_BRIDGE; Jerus:
-        // "gravel road bridge rivers sure") - only a district with paved road until then, so a district of gravel parted
-        // at its river drew its streets across it as a network apart.
-        for (int k = 0; k < TILES; k++) {
-            if (free[k] <= 0) continue;
-            rt.hub[k] = hubOf(g, k, tx0, ty0);
-            if (rt.hub[k] < 0) continue;
-            for (int dir = 0; dir < 4; dir++) rt.arm[k][dir] = armOf(g, k, dir, rt.hub[k], tx0, ty0);
-            int bx = (k % TILES_A_SIDE) * World.TILE, by = (k / TILES_A_SIDE) * World.TILE;
-            for (int y = TilePainter.STREET_AT; y <= TilePainter.LINES[TilePainter.LINES.length - 1]; y++) {
-                for (int x = TilePainter.STREET_AT; x <= TilePainter.LINES[TilePainter.LINES.length - 1]; x++) {
-                    boolean line = (x - TilePainter.STREET_AT) % TilePainter.JUNCTION_APART == 0 || (y - TilePainter.STREET_AT) % TilePainter.JUNCTION_APART == 0;
-                    if (line && dryAt(g, bx + x, by + y)) rt.grid[k]++;
-                }
-            }
-        }
-        double[] lean = new double[TILES];
-        for (int k = 0; k < TILES; k++) lean[k] = coreLean(tx0 + k % TILES_A_SIDE, ty0 + k / TILES_A_SIDE);
-        int root = -1;
-        for (int pass = 0; pass < 2 && root < 0; pass++) {
-            for (int k = 0; k < TILES; k++) {
-                if (rt.hub[k] < 0 || free[k] < (pass == 0 ? ROAD_TILE_LEAST : 1)) continue;
-                if (root < 0 || lean[k] > lean[root]) root = k;
-            }
-        }
-        if (root < 0) return rt;
-        double most = budget * MAINS_SHARE;
-        long cost = 1;
-        take(rt, root);
-        // The mines' tiles first, each by the shortest way over tiles whose main streets join.
-        for (int m : mineTiles) {
-            if (rt.road[m]) continue;
-            int[] from = new int[TILES];
-            Arrays.fill(from, -2);
-            int[] q = new int[TILES];
-            int qh = 0, qt = 0;
-            for (int k = 0; k < TILES; k++) if (rt.road[k]) { from[k] = -1; q[qt++] = k; }
-            while (qh < qt && from[m] == -2) {
-                int k = q[qh++];
-                for (int dir = 0; dir < 4; dir++) {
-                    int b = besideIn(k, dir);
-                    if (b < 0 || from[b] != -2 || !armsMeet(rt, k, dir)) continue;
-                    from[b] = k;
-                    q[qt++] = b;
-                }
-            }
-            if (from[m] == -2) continue;
-            List<Integer> path = new ArrayList<>();
-            for (int k = m; from[k] != -1; k = from[k]) path.add(0, k);
-            long add = 0;
-            boolean[] would = rt.road.clone();
-            for (int k : path) { add += joinCost(rt, would, k); would[k] = true; }
-            if (cost + add > most) continue;
-            for (int k : path) take(rt, k);
-            cost += add;
-        }
-        // Then the rest, nearest the founding site first, while the mains cost no more than MAINS_SHARE of the road:
-        // a tile whose main streets meet a road tile's; and where none is left, a tile of the district's ground that
-        // meets none of them - a piece its land joins to the rest only through the next district (the hub alone).
-        while (true) {
-            int best = -1;
-            boolean joins = false;
-            for (int k = 0; k < TILES; k++) {
-                if (rt.road[k] || free[k] < ROAD_TILE_LEAST || rt.hub[k] < 0) continue;
-                boolean touches = false;
-                for (int dir = 0; dir < 4; dir++) {
-                    int b = besideIn(k, dir);
-                    if (b >= 0 && rt.road[b] && armsMeet(rt, b, (dir + 2) % 4)) touches = true;
-                }
-                if (touches != joins && best >= 0) { if (!touches) continue; best = -1; }
-                if (best < 0 || lean[k] > lean[best]) { best = k; joins = touches; }
-            }
-            if (best < 0) break;
-            long add = joinCost(rt, rt.road, best);
-            if (cost + add > most) break;
-            take(rt, best);
-            cost += add;
-        }
-        return rt;
-    }
-
-    /** The mines and wells on the sites of the districts about d: what no road crosses and the road tiles reach first. */
-    List<DrawnSite> minesNear(District d) {
-        List<DrawnSite> out = new ArrayList<>();
-        for (int b = -1; b <= 1; b++) {
-            for (int a = -1; a <= 1; a++) {
-                if (byKey.get(key(d.dx + a, d.dy + b)) == null) continue;
-                for (DrawnSite site : siteList(d.dx + a, d.dy + b)) if (site.mine() >= 0) out.add(site);
-            }
-        }
-        return out;
-    }
-
-    /** Whether tile k's arm toward dir and the arm of the tile there back toward it, both in the district, are both laid. */
-    private static boolean armsMeet(RoadTiles rt, int k, int dir) {
-        int b = besideIn(k, dir);
-        return b >= 0 && rt.arm[k][dir] != null && rt.arm[b][(dir + 2) % 4] != null;
-    }
-
-    private static void take(RoadTiles rt, int k) {
-        rt.road[k] = true;
-        rt.order[rt.n++] = k;
-    }
-
-    /** What joining tile k to the road tiles `road` costs in main streets: its hub and both arms to each road neighbour in the district whose arms meet it. */
-    private static long joinCost(RoadTiles rt, boolean[] road, int k) {
-        long c = 1;
-        for (int dir = 0; dir < 4; dir++) {
-            int b = besideIn(k, dir);
-            if (b >= 0 && road[b] && armsMeet(rt, k, dir)) c += rt.arm[k][dir].length + rt.arm[b][(dir + 2) % 4].length;
-        }
-        return c;
-    }
-
-    /** A plot a main street may take: owned, dry, no mine's. */
-    private static boolean dryAt(PlanGround g, int x, int y) {
-        int gr = g.ground(x, y);
-        return gr >= 0 && gr != World.SALT && gr != World.FRESH && !g.mined(x, y);
-    }
-
-    /** Tile k's hub: its main lines' crossing if a main street may take it, else the plot nearest it that can (breadth first over the tile) - inside the tile's edge ring where any can (0.7.72: a hub on the edge had no way in), else on it; -1 for none. A plot of the tile. */
-    private int hubOf(PlanGround g, int k, long tx0, long ty0) {
-        int bx = (k % TILES_A_SIDE) * World.TILE, by = (k / TILES_A_SIDE) * World.TILE;
-        int at = TilePainter.mainY(seed, ty0 + k / TILES_A_SIDE) * World.TILE + TilePainter.mainX(seed, tx0 + k % TILES_A_SIDE);
-        boolean[] seen = new boolean[TilePainter.PLOTS];
-        int[] q = new int[TilePainter.PLOTS];
-        int qh = 0, qt = 0;
-        q[qt++] = at;
-        seen[at] = true;
-        int ring = -1;
-        while (qh < qt) {
-            int i = q[qh++];
-            int ix = i % World.TILE, iy = i / World.TILE;
-            if (dryAt(g, bx + ix, by + iy)) {
-                if (ix > 0 && iy > 0 && ix < World.TILE - 1 && iy < World.TILE - 1) return i;
-                if (ring < 0) ring = i;
-            }
-            for (int dir = 0; dir < 4; dir++) {
-                int x = i % World.TILE + TilePainter.DX[dir], y = i / World.TILE + TilePainter.DY[dir];
-                if (x < 0 || y < 0 || x >= World.TILE || y >= World.TILE || seen[y * World.TILE + x]) continue;
-                seen[y * World.TILE + x] = true;
-                q[qt++] = y * World.TILE + x;
-            }
-        }
-        return ring;
-    }
-
-    /**
-     * Tile k's main street toward dir: to its crossing on that edge - the
-     * plot along the edge nearest the main line where it and the plot across
-     * the edge, and since 0.7.72 the plot inside each, are all owned, dry and
-     * no mine's, read the same from either
-     * side - straight along the main line where it can run so, else the
-     * shortest way over the tile's dry ground inside its edge ring (0.7.72:
-     * along the edge, a street met the next tile's border where nothing of
-     * the next tile's met it), else the shortest that bridges fresh water
-     * (bridgedArm()); its plots from the hub out, ending on the edge, or
-     * null where there is no crossing or no way. Straight or bridged, its
-     * water no wider than TilePainter.STREET_BRIDGE at a stretch, in any
-     * district since 0.7.77 (one with paved road before).
-     */
-    private short[] armOf(PlanGround g, int k, int dir, int hub, long tx0, long ty0) {
-        int bx = (k % TILES_A_SIDE) * World.TILE, by = (k / TILES_A_SIDE) * World.TILE;
-        boolean ns = dir == 0 || dir == 2;
-        int main = ns ? TilePainter.mainX(seed, tx0 + k % TILES_A_SIDE) : TilePainter.mainY(seed, ty0 + k / TILES_A_SIDE);
-        int edge = dir == 0 || dir == 3 ? 0 : World.TILE - 1;
-        int cross = -1;
-        for (int off = 0; off < World.TILE && cross < 0; off++) {
-            for (int side = 1; side >= -1 && cross < 0; side -= 2) {
-                if (off == 0 && side < 0) continue;
-                int along = main + side * off;
-                if (along < 0 || along >= World.TILE) continue;
-                int x = ns ? along : edge, y = ns ? edge : along;
-                // The edge's plot and the one inside it, and the two across - a street enters each side straight, and
-                // either tile reads the same four.
-                if (!dryAt(g, bx + x, by + y) || !dryAt(g, bx + x - TilePainter.DX[dir], by + y - TilePainter.DY[dir])) continue;
-                if (!g.dryAbs(g.x0 + bx + x + TilePainter.DX[dir], g.y0 + by + y + TilePainter.DY[dir])) continue;
-                if (!g.dryAbs(g.x0 + bx + x + 2 * TilePainter.DX[dir], g.y0 + by + y + 2 * TilePainter.DY[dir])) continue;
-                cross = y * World.TILE + x;
-            }
-        }
-        if (cross < 0) return null;
-        int hx = hub % World.TILE, hy = hub / World.TILE, cx = cross % World.TILE, cy = cross / World.TILE;
-        // Straight along the main line, from the hub to the edge.
-        if ((ns ? hx == cx : hy == cy)) {
-            int len = ns ? Math.abs(cy - hy) : Math.abs(cx - hx);
-            short[] path = new short[len];
-            boolean ok = true;
-            int water = 0;
-            for (int m = 1; m <= len && ok; m++) {
-                int x = hx + TilePainter.DX[dir] * m, y = hy + TilePainter.DY[dir] * m;
-                // ...over fresh water on a bridge, where the water is narrow enough (since 0.7.77 gravel's as paved's).
-                if (g.ground(bx + x, by + y) == World.FRESH && !g.mined(bx + x, by + y)) {
-                    ok = ++water <= TilePainter.STREET_BRIDGE;
+    /** A plan packed for the painter, with its stamp. */
+    static Drawn drawnOf(DistrictPlan p, long stamp) {
+        Drawn out = new Drawn();
+        out.stamp = stamp;
+        int f = DistrictPlan.FRAME;
+        byte[][] raw = new byte[TILES][];
+        for (int y = 0; y < f; y++) {
+            for (int x = 0; x < f; x++) {
+                short code = p.street[y * f + x];
+                if (code == 0) continue;
+                int kind = code & DistrictPlan.KIND_MASK;
+                byte b = paintCode(code);
+                if (x == DISTRICT || y == DISTRICT) {
+                    if (x == DISTRICT) {
+                        if (out.east == null) out.east = new byte[f];
+                        out.east[y] = b;
+                    }
+                    if (y == DISTRICT) {
+                        if (out.south == null) out.south = new byte[f];
+                        out.south[x] = b;
+                    }
                 } else {
-                    water = 0;
-                    ok = dryAt(g, bx + x, by + y);
+                    int k = (y / World.TILE) * TILES_A_SIDE + x / World.TILE;
+                    if (raw[k] == null) raw[k] = new byte[TilePainter.PLOTS];
+                    raw[k][(y % World.TILE) * World.TILE + x % World.TILE] = b;
                 }
-                path[m - 1] = (short) (y * World.TILE + x);
-            }
-            if (ok && water == 0) return path;
-        }
-        // The shortest way over the tile's dry ground, inside its edge ring but for the crossing itself: a main street
-        // meets an edge only where it crosses it, so a street that leaves a tile goes on in the next.
-        int[] from = new int[TilePainter.PLOTS];
-        Arrays.fill(from, -2);
-        int[] q = new int[TilePainter.PLOTS];
-        int qh = 0, qt = 0;
-        q[qt++] = hub;
-        from[hub] = -1;
-        while (qh < qt && from[cross] == -2) {
-            int i = q[qh++];
-            for (int d2 = 0; d2 < 4; d2++) {
-                int x = i % World.TILE + TilePainter.DX[d2], y = i / World.TILE + TilePainter.DY[d2];
-                if (x < 0 || y < 0 || x >= World.TILE || y >= World.TILE) continue;
-                int j = y * World.TILE + x;
-                if (from[j] != -2 || !dryAt(g, bx + x, by + y)) continue;
-                if (j != cross && (x == 0 || y == 0 || x == World.TILE - 1 || y == World.TILE - 1)) continue;
-                from[j] = i;
-                q[qt++] = j;
+                // Its own road as drawn: every street it lays, its surface by kind (a seam's and a street's beneath a highway are none).
+                if (kind == DistrictPlan.UNDER || kind == DistrictPlan.SEAM) continue;
+                out.streets++;
+                int halves = ((code >> DistrictPlan.WIDTH_SHIFT) & 3);
+                if (kind == DistrictPlan.TRACK) out.tracks++;
+                else if (kind == DistrictPlan.GRAVEL) out.halves[BuildingVisual.GRAVEL] += halves;
+                else if (kind == DistrictPlan.PAVED) out.halves[BuildingVisual.PAVED] += halves;
+                else if (kind == DistrictPlan.HIGHWAY) out.halves[BuildingVisual.HIGHWAY] += halves;
             }
         }
-        if (from[cross] == -2) return bridgedArm(g, bx, by, hub, cross);
-        int len = 0;
-        for (int i = cross; i != hub; i = from[i]) len++;
-        short[] path = new short[len];
-        for (int i = cross, m = len - 1; i != hub; i = from[i], m--) path[m] = (short) i;
-        return path;
+        for (int k = 0; k < TILES; k++) if (raw[k] != null) out.tiles[k] = Drawn.pack(raw[k]);
+        int[] n = new int[TILES];
+        for (int b = 0; b < p.buildings; b++) n[(p.by[b] / World.TILE) * TILES_A_SIDE + p.bx[b] / World.TILE]++;
+        for (int k = 0; k < TILES; k++) if (n[k] > 0) out.boxes[k] = new int[n[k]];
+        Arrays.fill(n, 0);
+        for (int b = 0; b < p.buildings; b++) {
+            int k = (p.by[b] / World.TILE) * TILES_A_SIDE + p.bx[b] / World.TILE;
+            out.boxes[k][n[k]++] = box(p.bx[b] % World.TILE, p.by[b] % World.TILE, p.bw[b], p.bh[b], false) | (p.btype[b] << BOX_TYPE_SHIFT);
+        }
+        out.placed = p.buildings;
+        out.refused = p.overflowCount();
+        out.surplus = p.surplus;
+        System.arraycopy(p.leftover, 0, out.leftover, 0, 4);
+        out.joinsOut = p.joinsOut;
+        out.partedOut = p.partedOut;
+        out.seamsSurfaced = p.seamsSurfaced;
+        return out;
     }
 
-    /**
-     * An arm with no way over dry ground (0.7.72): the shortest way inside the
-     * tile's edge ring that crosses fresh water as a main street may - on a
-     * bridge of at most TilePainter.STREET_BRIDGE plots at a stretch, paved
-     * or since 0.7.77 gravel - so a river through a district parts its
-     * streets no more than its straight mains; null for none. Walked plot by
-     * plot with the water crossed so far.
-     */
-    private short[] bridgedArm(PlanGround g, int bx, int by, int hub, int cross) {
-        int most = TilePainter.STREET_BRIDGE, states = most + 1;
-        int[] from = new int[TilePainter.PLOTS * states];
-        Arrays.fill(from, -2);
-        int[] q = new int[TilePainter.PLOTS * states];
-        int qh = 0, qt = 0;
-        q[qt++] = hub * states;
-        from[hub * states] = -1;
-        int end = -1;
-        while (qh < qt && end < 0) {
-            int st = q[qh++], i = st / states, run = st % states;
-            for (int d2 = 0; d2 < 4 && end < 0; d2++) {
-                int x = i % World.TILE + TilePainter.DX[d2], y = i / World.TILE + TilePainter.DY[d2];
-                if (x < 0 || y < 0 || x >= World.TILE || y >= World.TILE) continue;
-                int j = y * World.TILE + x;
-                if (j != cross && (x == 0 || y == 0 || x == World.TILE - 1 || y == World.TILE - 1)) continue;
-                int next;
-                if (dryAt(g, bx + x, by + y)) next = 0;
-                else if (g.ground(bx + x, by + y) == World.FRESH && !g.mined(bx + x, by + y) && run < most) next = run + 1;
-                else continue;
-                int ns = j * states + next;
-                if (from[ns] != -2) continue;
-                from[ns] = st;
-                q[qt++] = ns;
-                if (j == cross) end = ns;
-            }
-        }
-        if (end < 0) return null;
-        int len = 0;
-        for (int s = end; s / states != hub || from[s] != -1; s = from[s]) len++;
-        short[] path = new short[len];
-        for (int s = end, m = len - 1; m >= 0; s = from[s], m--) path[m] = (short) (s / states);
-        return path;
+    /** A box packed into an int: x, y, w - 1 and h - 1 at five bits each, PACKED_BIT when packed without a street. */
+    static int box(int x, int y, int w, int h, boolean packed) {
+        return x | (y << 5) | ((w - 1) << 10) | ((h - 1) << 15) | (packed ? PACKED_BIT : 0);
     }
 
-    /** A district's plan: its highways' and railway's plots, tile by tile, and their runs. */
-    static final class Plan {
-        final int[] hw = new int[TILES], rail = new int[TILES], mains = new int[TILES], bridges = new int[TILES];
-        /** Each tile's runs, five numbers each: x0, y0, x1, y1 in the tile's plots, and the kind (HIGHWAY or TilePainter.RAIL); null for none. */
-        final int[][] segments = new int[TILES][];
-        long hwLeft, railLeft;
-        /** The railway's first plot, in the world's plots. */
-        long railX, railY;
+    /** A district's link in the chain (R7): the stamp of its own inputs, what was carried to it and what it carried on (by type id, null for none); for an edge district, its plan's free ground (a bit a plot of the district), where the city's packed buildings may stand; its frame's edges' street codes (margins), which tell the districts after it which of their seams it leaves unlaid and where their streets join its; and the districts about it before it in the map's order, with the stamps of their links its plan read (readNeighbours()). Kept for every district planned, never dropped. */
+    static final class Link {
+        final long own, serial;
+        final int[] in, out;
+        final long[] free;
+        final byte[][] margins;
+        final District[] earlier;
+        final long[] read;
+        /** Its plan's road with no street to carry it (DistrictPlan.surplus), in plots: what the legend counts (star RD2-4); by kind [0, gravel, paved, highway]. */
+        final double surplus;
+        double[] leftover;
+        Link(long own, int[] in, int[] out, long[] free, byte[][] margins, District[] earlier, long[] read, double surplus, long serial) {
+            this.own = own; this.in = in; this.out = out; this.free = free; this.margins = margins;
+            this.earlier = earlier; this.read = read; this.surplus = surplus; this.serial = serial;
+        }
+        /** Its plan's stamp: its own inputs and what came in. */
+        long stamp() { return stampOf(own, in); }
     }
 
-    /** The plan's ground, a tile at a time as it is asked for: its terrain, ownership and the mines' sites on it - the district's tiles, and the tiles about it a crossing looks across into. */
-    private final class PlanGround {
-        final District d;
-        final long x0, y0;
-        final byte[][] terrain = new byte[TILES][];
-        final boolean[][] owned = new boolean[TILES][];
-        final byte[] laid = new byte[DISTRICT * DISTRICT];
-        final List<DrawnSite> mines;
-        final Map<Long, Object[]> outside = new HashMap<>();
-        PlanGround(District d, List<DrawnSite> mines) {
-            this.d = d;
-            this.x0 = (baseDX + d.dx) * DISTRICT;
-            this.y0 = (baseDY + d.dy) * DISTRICT;
-            this.mines = mines;
-        }
-        void load(int k) {
-            if (terrain[k] != null) return;
-            long tx = x0 / World.TILE + k % TILES_A_SIDE, ty = y0 / World.TILE + k / TILES_A_SIDE;
-            terrain[k] = new byte[TilePainter.PLOTS];
-            owned[k] = new boolean[TilePainter.PLOTS];
-            World.of(seed).tileTerrain(tx, ty, terrain[k]);
-            tileOwnership(tx, ty, owned[k]);
-        }
-        /** The ground at district plot (x, y): a World class, or -1 where the city does not own it. */
-        int ground(int x, int y) {
-            int k = (y / World.TILE) * TILES_A_SIDE + x / World.TILE;
-            load(k);
-            int i = (y % World.TILE) * World.TILE + x % World.TILE;
-            return owned[k][i] ? terrain[k][i] : -1;
-        }
-        /** Whether the world's plot (ax, ay), in the district or past it, is owned, dry and no mine's - read from its tile as the painter reads it. */
-        boolean dryAbs(long ax, long ay) {
-            if (ax >= x0 && ay >= y0 && ax < x0 + DISTRICT && ay < y0 + DISTRICT) {
-                int gr = ground((int) (ax - x0), (int) (ay - y0));
-                return gr >= 0 && gr != World.SALT && gr != World.FRESH && !minedAbs(ax, ay);
-            }
-            long tx = Math.floorDiv(ax, World.TILE), ty = Math.floorDiv(ay, World.TILE);
-            Object[] t = outside.computeIfAbsent((tx << 32) ^ (ty & 0xffffffffL), key -> {
-                byte[] ter = new byte[TilePainter.PLOTS];
-                boolean[] own = new boolean[TilePainter.PLOTS];
-                World.of(seed).tileTerrain(tx, ty, ter);
-                tileOwnership(tx, ty, own);
-                return new Object[] { ter, own };
-            });
-            int i = (int) (Math.floorMod(ay, World.TILE) * World.TILE + Math.floorMod(ax, World.TILE));
-            byte gr = ((byte[]) t[0])[i];
-            return ((boolean[]) t[1])[i] && gr != World.SALT && gr != World.FRESH && !minedAbs(ax, ay);
-        }
-        boolean minedAbs(long ax, long ay) {
-            for (DrawnSite s : mines) if (ax >= s.x0() && ax <= s.x1() && ay >= s.y0() && ay <= s.y1()) return true;
-            return false;
-        }
-        boolean mined(int x, int y) {
-            return minedAbs(x0 + x, y0 + y);
-        }
-        /** Whether a run of `kind` may lay a plot at (x, y): in the district, owned, dry, no mine's, nothing laid - the track may cross a main street. */
-        boolean open(int x, int y, int kind) {
-            if (x < 0 || y < 0 || x >= DISTRICT || y >= DISTRICT) return false;
-            int g = ground(x, y);
-            byte l = laid[y * DISTRICT + x];
-            boolean free = l == 0 || (kind == TilePainter.RAIL && l == TilePainter.PLAN_MAIN);
-            return g >= 0 && g != World.SALT && g != World.FRESH && free && !mined(x, y);
-        }
-        /** Whether (x, y) is fresh water the city owns, with nothing laid. */
-        boolean fresh(int x, int y) {
-            if (x < 0 || y < 0 || x >= DISTRICT || y >= DISTRICT) return false;
-            return ground(x, y) == World.FRESH && laid[y * DISTRICT + x] == 0 && !mined(x, y);
-        }
-        /** Whether a run of `kind` going dir may take (x, y): open, and the track over a main street only across it (0.7.72) - never on along the street, every plot of it a crossing. */
-        boolean openGoing(int x, int y, int kind, int dir) {
-            if (!open(x, y, kind)) return false;
-            if (kind != TilePainter.RAIL || laid[y * DISTRICT + x] != TilePainter.PLAN_MAIN) return true;
-            int ax = x + TilePainter.DX[dir], ay = y + TilePainter.DY[dir], bx = x - TilePainter.DX[dir], by = y - TilePainter.DY[dir];
-            boolean ahead = ax >= 0 && ay >= 0 && ax < DISTRICT && ay < DISTRICT && (laid[ay * DISTRICT + ax] == TilePainter.PLAN_MAIN || laid[ay * DISTRICT + ax] == TilePainter.PLAN_CROSS);
-            boolean behind = bx >= 0 && by >= 0 && bx < DISTRICT && by < DISTRICT && (laid[by * DISTRICT + bx] == TilePainter.PLAN_MAIN || laid[by * DISTRICT + bx] == TilePainter.PLAN_CROSS);
-            return !ahead && !behind;
-        }
-        /** Lays a plot of `kind`: the track over a main street makes a crossing. */
-        void lay(int x, int y, int kind) {
-            int i = y * DISTRICT + x;
-            laid[i] = (byte) (kind == TilePainter.RAIL && laid[i] == TilePainter.PLAN_MAIN ? TilePainter.PLAN_CROSS : kind);
-        }
+    /** A plan's stamp: its own inputs' and the carry in's. */
+    static long stampOf(long own, int[] in) {
+        long h = World.mix(own ^ 0x4C494E4BL);
+        if (in != null) for (int t = 0; t < in.length; t++) if (in[t] != 0) h = World.mix(h ^ ((long) t << 32) ^ in[t]);
+        return h;
     }
 
-    /** A run's head: where it is, which way it goes and how often it has turned. */
-    private static final class Head {
-        int x, y, dir, turns;
-        boolean alive = true;
-        Head(int x, int y, int dir) { this.x = x; this.y = y; this.dir = dir; }
-    }
+    /** A plan frame's edges' street codes (Link.margins): its west column (x 0) and north row (y 0), its east column (x 256, the next district's first) and south row (y 256), each 257 long; and M_PARTED, a byte along them with bit M_WEST to M_SOUTH set where that edge's street is parted from the network (DistrictPlan.parted). */
+    static final int M_WEST = 0, M_NORTH = 1, M_EAST = 2, M_SOUTH = 3, M_PARTED = 4;
 
-    /** The district's plan (THE NETWORK). */
-    private Plan planOf(District d, RoadTiles rt, long highway, long track, List<DrawnSite> mines, int[] spare) {
-        Plan plan = new Plan();
-        plan.hwLeft = highway;
-        plan.railLeft = track;
-        if (highway <= 0 && track <= 0 && rt.n == 0) return plan;
-        PlanGround g = new PlanGround(d, mines);
-        long tx0 = g.x0 / World.TILE, ty0 = g.y0 / World.TILE;
-        boolean east = (baseDX + d.dx) * DISTRICT + DISTRICT / 2 >= siteX, south = (baseDY + d.dy) * DISTRICT + DISTRICT / 2 >= siteY;
-        if (highway > 0 && rt.n > 0) {
-            int k = rt.order[0];
-            int hx = (k % TILES_A_SIDE) * World.TILE + TilePainter.mainX(seed, tx0 + k % TILES_A_SIDE);
-            int hy = (k / TILES_A_SIDE) * World.TILE + TilePainter.mainY(seed, ty0 + k / TILES_A_SIDE);
-            plan.hwLeft = run(g, BuildingVisual.HIGHWAY, hx, hy, east ? 1 : 3, highway, true, tx0, ty0);
-        }
-        // The main streets: each road tile's hub and its arm to each tile it is joined to, here and in the next district.
-        for (int m = 0; m < rt.n; m++) {
-            int k = rt.order[m];
-            int bx = (k % TILES_A_SIDE) * World.TILE, by = (k / TILES_A_SIDE) * World.TILE;
-            int hub = rt.hub[k];
-            if (g.laid[(by + hub / World.TILE) * DISTRICT + bx + hub % World.TILE] == 0) g.lay(bx + hub % World.TILE, by + hub / World.TILE, TilePainter.PLAN_MAIN);
-            for (int dir = 0; dir < 4; dir++) {
-                if (!joined(d, rt, k, dir)) continue;
-                for (short i : rt.arm[k][dir]) {
-                    int x = bx + i % World.TILE, y = by + i / World.TILE;
-                    if (g.laid[y * DISTRICT + x] == 0) g.lay(x, y, TilePainter.PLAN_MAIN);
-                }
-            }
-        }
-        if (track > 0) {
-            // The railway's tile: the one with the most mines' sites, the nearer the founding site on a tie; else the first road tile, else the roomiest.
-            int[] minesOn = new int[TILES];
-            for (DrawnSite s : mines) {
-                long cx = (s.x0() + s.x1()) / 2 - g.x0, cy = (s.y0() + s.y1()) / 2 - g.y0;
-                if (cx >= 0 && cy >= 0 && cx < DISTRICT && cy < DISTRICT) minesOn[(int) (cy / World.TILE) * TILES_A_SIDE + (int) (cx / World.TILE)]++;
-            }
-            // The tiles to start from, first choice first: those with the most mines' sites (the road tiles first among
-            // equals, in the order taken), then the road tiles, then the rest by their room.
-            Integer[] cand = new Integer[TILES];
-            int[] rank = new int[TILES];
-            Arrays.fill(rank, TILES);
-            for (int m = 0; m < rt.n; m++) rank[rt.order[m]] = m;
-            for (int t = 0; t < TILES; t++) cand[t] = t;
-            Arrays.sort(cand, (a, b) -> minesOn[a] != minesOn[b] ? Integer.compare(minesOn[b], minesOn[a])
-                    : rank[a] != rank[b] ? Integer.compare(rank[a], rank[b]) : spare[a] != spare[b] ? Integer.compare(spare[b], spare[a]) : Integer.compare(a, b));
-            int rx = -1, ry = -1;
-            for (int c = 0; c < TILES && ry < 0; c++) {
-                int k = cand[c];
-                if (spare[k] <= 0 && minesOn[k] == 0) continue;
-                int x = (k % TILES_A_SIDE) * World.TILE + TilePainter.railX(seed, tx0 + k % TILES_A_SIDE), base = (k / TILES_A_SIDE) * World.TILE;
-                for (int dy = 0; dy < World.TILE && ry < 0; dy++) {
-                    for (int side = -1; side <= 1 && ry < 0; side += 2) {
-                        int y = base + World.TILE / 2 + side * dy;
-                        if (y >= base && y < base + World.TILE && g.open(x, y, TilePainter.RAIL)) { rx = x; ry = y; }
-                    }
-                }
-            }
-            if (ry >= 0) {
-                plan.railX = g.x0 + rx;
-                plan.railY = g.y0 + ry;
-                plan.railLeft = run(g, TilePainter.RAIL, rx, ry, south ? 2 : 0, track, true, tx0, ty0);
-                // Track the line could not lay: branches off the line laid, from its plots in turn, each a run across
-                // it - so every plot of the city's track is drawn, on one railway.
-                for (int pass = 0; pass < 2 && plan.railLeft > 0; pass++) {
-                    for (int y = 0; y < DISTRICT && plan.railLeft > 0; y++) {
-                        for (int x = 0; x < DISTRICT && plan.railLeft > 0; x++) {
-                            byte l = g.laid[y * DISTRICT + x];
-                            if (l != TilePainter.RAIL && l != TilePainter.PLAN_CROSS) continue;
-                            boolean ns = (y > 0 && isTrack(g.laid[(y - 1) * DISTRICT + x])) || (y + 1 < DISTRICT && isTrack(g.laid[(y + 1) * DISTRICT + x]));
-                            // Off a north-south line east and west; off an east-west one north and south (on the second pass, any way).
-                            for (int dir = 0; dir < 4 && plan.railLeft > 0; dir++) {
-                                if (pass == 0 && (dir == 0 || dir == 2) == ns) continue;
-                                int nx = x + TilePainter.DX[dir], ny = y + TilePainter.DY[dir];
-                                if (!g.open(nx, ny, TilePainter.RAIL) || atEdge(nx, ny)) continue;
-                                plan.railLeft = branch(g, nx, ny, dir, plan.railLeft, tx0, ty0);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        // Each tile's runs: east-west first, two plots or more; then north-south, the plots left.
-        for (int k = 0; k < TILES; k++) {
-            int bx = (k % TILES_A_SIDE) * World.TILE, by = (k / TILES_A_SIDE) * World.TILE;
-            int[] segs = new int[0];
-            boolean[] used = new boolean[TilePainter.PLOTS];
-            for (int y = 0; y < World.TILE; y++) {
-                for (int x = 0; x < World.TILE; ) {
-                    byte kind = g.laid[(by + y) * DISTRICT + bx + x];
-                    if (kind == 0) { x++; continue; }
-                    int e = x;
-                    while (e + 1 < World.TILE && g.laid[(by + y) * DISTRICT + bx + e + 1] == kind) e++;
-                    if (e > x) {
-                        segs = Arrays.copyOf(segs, segs.length + 5);
-                        segs[segs.length - 5] = x; segs[segs.length - 4] = y; segs[segs.length - 3] = e; segs[segs.length - 2] = y; segs[segs.length - 1] = kind;
-                        for (int m = x; m <= e; m++) used[y * World.TILE + m] = true;
-                    }
-                    x = e + 1;
-                }
-            }
-            for (int x = 0; x < World.TILE; x++) {
-                for (int y = 0; y < World.TILE; ) {
-                    byte kind = g.laid[(by + y) * DISTRICT + bx + x];
-                    if (kind == 0 || used[y * World.TILE + x]) { y++; continue; }
-                    int e = y;
-                    while (e + 1 < World.TILE && g.laid[(by + e + 1) * DISTRICT + bx + x] == kind && !used[(e + 1) * World.TILE + x]) e++;
-                    segs = Arrays.copyOf(segs, segs.length + 5);
-                    segs[segs.length - 5] = x; segs[segs.length - 4] = y; segs[segs.length - 3] = x; segs[segs.length - 2] = e; segs[segs.length - 1] = kind;
-                    y = e + 1;
-                }
-            }
-            for (int y = 0; y < World.TILE; y++) {
-                for (int x = 0; x < World.TILE; x++) {
-                    byte kind = g.laid[(by + y) * DISTRICT + bx + x];
-                    if (kind == BuildingVisual.HIGHWAY) plan.hw[k]++;
-                    else if (kind == TilePainter.RAIL || kind == TilePainter.PLAN_CROSS) plan.rail[k]++;
-                    else if (kind == TilePainter.PLAN_MAIN) {
-                        plan.mains[k]++;
-                        if (g.ground(bx + x, by + y) == World.FRESH) plan.bridges[k]++;
-                    }
-                }
-            }
-            if (segs.length > 0) plan.segments[k] = segs;
-        }
-        return plan;
-    }
-
-    /**
-     * Lays a run of `kind` (a highway, or TilePainter.RAIL) from district plot
-     * (sx, sy): two heads, first `dir` and then the opposite way, a plot each
-     * in turn; a head blocked by the sea, the city's edge or a mine turns
-     * (left or right, the way open, toward the district's middle on a tie) at
-     * most TURNS_MOST times, crosses fresh water up to the kind's bridge, and
-     * stops short of the district's edge unless it meets it on its tile's
-     * line (a main line for a highway, the rail column or row for the track), which the next
-     * district's runs on. Both heads spent, two more across the start once
-     * (`cross`). The plots left unlaid.
-     */
-    private long run(PlanGround g, int kind, int sx, int sy, int dir, long budget, boolean cross, long tx0, long ty0) {
-        if (budget <= 0 || !g.open(sx, sy, kind)) return budget;
-        g.lay(sx, sy, kind);
-        budget--;
-        int bridgeMost = kind == TilePainter.RAIL ? TilePainter.RAIL_BRIDGE : TilePainter.MAX_BRIDGE[BuildingVisual.HIGHWAY];
-        for (int round = 0; round < (cross ? 2 : 1) && budget > 0; round++) {
-            int d0 = round == 0 ? dir : (dir + 1) % 4;
-            Head[] heads = { new Head(sx, sy, d0), new Head(sx, sy, (d0 + 2) % 4) };
-            int turn = 0;
-            while (budget > 0 && (heads[0].alive || heads[1].alive)) {
-                Head h = heads[turn];
-                turn = 1 - turn;
-                if (!h.alive) continue;
-                int nx = h.x + TilePainter.DX[h.dir], ny = h.y + TilePainter.DY[h.dir];
-                // The district's edge stops it, but on its tile's line, which the next district's run goes on along.
-                if (!inside(nx, ny) || (atEdge(nx, ny) && !onLine(kind, nx, ny, h.dir, tx0, ty0))) { h.alive = false; continue; }
-                {
-                    if (g.openGoing(nx, ny, kind, h.dir)) {
-                        g.lay(nx, ny, kind);
-                        budget--;
-                        h.x = nx;
-                        h.y = ny;
-                        continue;
-                    }
-                    if (g.fresh(nx, ny)) {
-                        // A bridge: the water's width along the way, and the dry plot past it.
-                        int w = 0;
-                        while (w <= bridgeMost && g.fresh(nx + TilePainter.DX[h.dir] * w, ny + TilePainter.DY[h.dir] * w)) w++;
-                        int lx = nx + TilePainter.DX[h.dir] * w, ly = ny + TilePainter.DY[h.dir] * w;
-                        if (w <= bridgeMost && w + 1 <= budget && g.openGoing(lx, ly, kind, h.dir) && (onLine(kind, lx, ly, h.dir, tx0, ty0) || !atEdge(lx, ly))) {
-                            for (int m = 0; m <= w; m++) g.lay(nx + TilePainter.DX[h.dir] * m, ny + TilePainter.DY[h.dir] * m, kind);
-                            budget -= w + 1;
-                            h.x = lx;
-                            h.y = ly;
-                            continue;
-                        }
-                    }
-                }
-                // Blocked by the sea, the city's edge, a mine or a run laid: turn, the way that is open, toward the
-                // district's middle on a tie.
-                if (h.turns >= TURNS_MOST) { h.alive = false; continue; }
-                int a = (h.dir + 1) % 4, b = (h.dir + 3) % 4;
-                boolean oa = g.openGoing(h.x + TilePainter.DX[a], h.y + TilePainter.DY[a], kind, a) && !atEdge(h.x + TilePainter.DX[a], h.y + TilePainter.DY[a]);
-                boolean ob = g.openGoing(h.x + TilePainter.DX[b], h.y + TilePainter.DY[b], kind, b) && !atEdge(h.x + TilePainter.DX[b], h.y + TilePainter.DY[b]);
-                if (!oa && !ob) { h.alive = false; continue; }
-                int pick;
-                if (oa && ob) {
-                    double da = Math.abs(h.x + TilePainter.DX[a] * 8 - DISTRICT / 2.0) + Math.abs(h.y + TilePainter.DY[a] * 8 - DISTRICT / 2.0);
-                    double db = Math.abs(h.x + TilePainter.DX[b] * 8 - DISTRICT / 2.0) + Math.abs(h.y + TilePainter.DY[b] * 8 - DISTRICT / 2.0);
-                    pick = da <= db ? a : b;
-                } else pick = oa ? a : b;
-                h.dir = pick;
-                h.turns++;
-            }
-        }
-        return budget;
-    }
-
-    /** Whether a plan plot is track. */
-    private static boolean isTrack(byte l) {
-        return l == TilePainter.RAIL || l == TilePainter.PLAN_CROSS;
-    }
-
-    /** A branch of track from district plot (x, y), open and beside the line, going dir: straight on while the ground is open and track is left, short of the district's edge and of any other track but the line it leaves. The plots left unlaid. */
-    private long branch(PlanGround g, int x, int y, int dir, long budget, long tx0, long ty0) {
-        int cx = x, cy = y;
-        while (budget > 0 && g.openGoing(cx, cy, TilePainter.RAIL, dir) && !atEdge(cx, cy)) {
-            // Touching no track but the plot it comes from.
-            boolean clear = true;
+    /** A plan's frame edges' street codes (M_WEST to M_SOUTH) and which of them are parted (M_PARTED). */
+    static byte[][] marginsOf(DistrictPlan p) {
+        int f = DistrictPlan.FRAME;
+        byte[][] m = new byte[5][f];
+        int[] at = new int[4];
+        for (int i = 0; i < f; i++) {
+            at[M_WEST] = i * f;
+            at[M_NORTH] = i;
+            at[M_EAST] = i * f + DISTRICT;
+            at[M_SOUTH] = DISTRICT * f + i;
             for (int k = 0; k < 4; k++) {
-                int ax = cx + TilePainter.DX[k], ay = cy + TilePainter.DY[k];
-                if (ax == cx - TilePainter.DX[dir] && ay == cy - TilePainter.DY[dir]) continue;
-                if (inside(ax, ay) && isTrack(g.laid[ay * DISTRICT + ax])) clear = false;
+                m[k][i] = paintCode(p.street[at[k]]);
+                if (p.parted[at[k]]) m[M_PARTED][i] |= (byte) (1 << k);
             }
-            if (!clear) break;
-            g.lay(cx, cy, TilePainter.RAIL);
-            budget--;
-            cx += TilePainter.DX[dir];
-            cy += TilePainter.DY[dir];
         }
-        return budget;
+        return m;
     }
 
-    /** Whether district plot (x, y) is inside the district. */
-    private static boolean inside(int x, int y) {
-        return x >= 0 && y >= 0 && x < DISTRICT && y < DISTRICT;
+    /** The eight districts about one, by offset {dx, dy}: north, east, south, west, then north-west, north-east, south-east, south-west - the order of a frame's seam parts (DistrictPlan.Input.surfaces). */
+    static final int[][] AROUND = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { -1, -1 }, { 1, -1 }, { 1, 1 }, { -1, 1 } };
+
+    /** Each corner seam part's districts sharing it besides its own, as AROUND's directions: north-west, north-east, south-east, south-west. */
+    static final int[][] CORNER_DIRS = { { 3, 0, 4 }, { 1, 0, 5 }, { 1, 2, 6 }, { 3, 2, 7 } };
+
+    /** The districts about d (AROUND's order) that come before it in the map's order, in its band (0.7.89; CHAIN_BAND), null for the rest: whose plans its plan reads - which of its seams they leave unlaid, and where its streets join theirs. */
+    District[] earlierOf(District d) {
+        District[] out = new District[AROUND.length];
+        for (int k = 0; k < AROUND.length; k++) {
+            District od = byKey.get(key(d.dx + AROUND[k][0], d.dy + AROUND[k][1]));
+            if (od != null && DISTRICT_ORDER.compare(od, d) < 0 && band(od.index) == band(d.index)) out[k] = od;
+        }
+        return out;
     }
 
-    /** Whether district plot (x, y) is on the district's edge ring. */
-    private static boolean atEdge(int x, int y) {
-        return x <= 0 || y <= 0 || x >= DISTRICT - 1 || y >= DISTRICT - 1;
+    /** Where district d's frame plot (x, y) lies in the frame of its neighbour at offset (ox, oy), read from that plan's margins - a plot of its frame's edge - or 0 when it is not on them. */
+    static byte marginAt(byte[][] m, int x, int y, int ox, int oy) {
+        int k = marginOf(x, y, ox, oy);
+        return k < 0 ? 0 : m[k >> 16][k & 0xffff];
     }
 
-    /** Whether a run of `kind` going `dir` at district plot (x, y) is on its tile's line, where it may meet the district's edge: a highway on the main line it runs along, the track on its rail column or row (TilePainter.railX(), railY()). */
-    private boolean onLine(int kind, int x, int y, int dir, long tx0, long ty0) {
-        if (!inside(x, y)) return false;
-        boolean ns = dir == 0 || dir == 2;
-        int at = ns ? x % World.TILE : y % World.TILE;
-        if (kind == TilePainter.RAIL) return at == (ns ? TilePainter.railX(seed, tx0 + x / World.TILE) : TilePainter.railY(seed, ty0 + y / World.TILE));
-        return at == (ns ? TilePainter.mainX(seed, tx0 + x / World.TILE) : TilePainter.mainY(seed, ty0 + y / World.TILE));
+    /** ...whether the street there is parted from the network (M_PARTED); false where it is not on them. */
+    static boolean partedAt(byte[][] m, int x, int y, int ox, int oy) {
+        int k = marginOf(x, y, ox, oy);
+        return k >= 0 && (m[M_PARTED][k & 0xffff] & (1 << (k >> 16))) != 0;
     }
 
-    /** The first tile in `order` with at least `need` plots spare, or -1. */
-    private static int firstWith(int[] order, int[] spare, int need) {
-        for (int k : order) if (spare[k] >= need) return k;
+    /** ...which margin and place: the margin (M_WEST to M_SOUTH) << 16 | the index along it, or -1. */
+    private static int marginOf(int x, int y, int ox, int oy) {
+        int e = DISTRICT, sx = x - ox * e, sy = y - oy * e;
+        if (sx < 0 || sy < 0 || sx > e || sy > e) return -1;
+        if (sx == 0) return M_WEST << 16 | sy;
+        if (sx == e) return M_EAST << 16 | sy;
+        if (sy == 0) return M_NORTH << 16 | sx;
+        if (sy == e) return M_SOUTH << 16 | sx;
         return -1;
     }
 
-    /** The tile in `order` with the most plots spare, the first on a tie. */
-    private static int roomiest(int[] order, int[] spare) {
-        int best = order[0];
-        for (int k : order) if (spare[k] > spare[best]) best = k;
-        return best;
+    /**
+     * What district d's plan reads of the plans before it (0.7.88), from
+     * their frames' edges (margins, AROUND's order; null for a district after
+     * it or none): ONE-SIDED SEAMS, its seams no district before it sharing
+     * them lays a street on (in.seamOpen) - an edge's the district beyond it,
+     * which surfaces it; a corner's up to three - so the first district that
+     * lays a seam the surfacing one leaves surfaces it, once; and ACROSS
+     * DISTRICTS, every plot of its frame's edge a district before it lays a
+     * street on the network on (in.anchor) - and PARTED, those it lays a
+     * street on its own ground parted from the network (in.partedAnchor),
+     * which this plan joins where its ground lets it.
+     */
+    static void readNeighbours(District d, District[] earlier, byte[][][] margins, DistrictPlan.Input in) {
+        int e = DISTRICT;
+        for (int k = 0; k < AROUND.length; k++) {
+            if (earlier[k] == null || margins[k] == null) continue;
+            byte[][] m = margins[k];
+            int ox = AROUND[k][0], oy = AROUND[k][1];
+            // The plots of d's frame this neighbour's frame shares: an edge's line, or a corner's plot.
+            for (int i = 0; i <= e; i++) {
+                int x, y;
+                if (k == 0) { x = i; y = 0; } else if (k == 1) { x = e; y = i; } else if (k == 2) { x = i; y = e; } else if (k == 3) { x = 0; y = i; }
+                else { if (i > 0) break; x = ox < 0 ? 0 : e; y = oy < 0 ? 0 : e; }
+                byte code = marginAt(m, x, y, ox, oy);
+                if ((code & TilePainter.S_KIND) == DistrictPlan.NONE) continue;
+                if (partedAt(m, x, y, ox, oy)) in.partedAnchor[y * DistrictPlan.FRAME + x] = true;
+                else in.anchor[y * DistrictPlan.FRAME + x] = true;
+            }
+        }
+        // A plot one district before it has on the network is on it.
+        for (int p = 0; p < DistrictPlan.AREA; p++) if (in.anchor[p]) in.partedAnchor[p] = false;
+        // The seams it does not surface: open where every district before it sharing the plot leaves it without a street - an
+        // edge's the one beyond it, which surfaces it; a corner's up to three, of which the first surfaces it and, where that one
+        // leaves it, the first that lays it does (so a corner is surfaced once).
+        for (int k = 0; k < AROUND.length; k++) {
+            int[] dirs = k < 4 ? new int[] { k } : CORNER_DIRS[k - 4];
+            boolean any = false;
+            for (int c : dirs) any |= earlier[c] != null;
+            if (!any) continue;
+            if (k < 4) {
+                if (margins[k] == null) continue;
+                int ox = AROUND[k][0], oy = AROUND[k][1];
+                for (int i = 1; i < e; i++) {
+                    int x = k == 1 ? e : k == 3 ? 0 : i, y = k == 0 ? 0 : k == 2 ? e : i;
+                    open(in, x, y, marginAt(margins[k], x, y, ox, oy));
+                }
+            } else {
+                int x = k == 4 || k == 7 ? 0 : e, y = k == 4 || k == 5 ? 0 : e;
+                boolean laid = false, read = true;
+                for (int c : dirs) {
+                    if (earlier[c] == null) continue;
+                    if (margins[c] == null) { read = false; continue; }
+                    laid |= (marginAt(margins[c], x, y, AROUND[c][0], AROUND[c][1]) & TilePainter.S_KIND) != DistrictPlan.NONE;
+                }
+                if (read && !laid) in.seamOpen[y * DistrictPlan.FRAME + x] = true;
+            }
+        }
+    }
+
+    private static void open(DistrictPlan.Input in, int x, int y, byte code) {
+        if ((code & TilePainter.S_KIND) == DistrictPlan.NONE) in.seamOpen[y * DistrictPlan.FRAME + x] = true;
+    }
+
+    /** What the city has no room for, packed at its edge (R7): each edge district's packed boxes by tile, an int each as Drawn.boxes; how many were packed, how many drawn smaller than their own land, and how many found no ground at all. */
+    static final class Pack {
+        long stamp;
+        final Map<District, int[][]> boxes = new HashMap<>();
+        int packed, smaller, none;
+    }
+
+    private final Map<District, Drawn> drawn = new LinkedHashMap<>(PLANS_KEPT * 2, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<District, Drawn> e) { return size() > PLANS_KEPT; }
+    };
+    private final Map<District, Link> links = new HashMap<>();
+    private final Map<District, PlanJob> pending = new HashMap<>();
+    /** Each band's packing at its edge, and the job making it. */
+    private final Map<Integer, Pack> packs = new HashMap<>();
+    private final Map<Integer, PackJob> packings = new HashMap<>();
+
+    /**
+     * THE CHAIN'S BANDS (0.7.89, batch RD3). A district's plan reads the
+     * plans before it - what they carry on, their frames' edges - and an edge
+     * district's waits for the packing, so a screen at the edge of a city of
+     * ten billion would plan every district (RD2's estimate: minutes on the
+     * worker) and keep a link for each. The map's order is cut into bands of
+     * CHAIN_BAND districts, nearest the founding site first: what a district
+     * cannot hold is carried on within its band, its plan reads its
+     * neighbours before it in its band, and what the band's last district
+     * cannot hold is packed at the band's own edge districts (none: counted).
+     * A city of CHAIN_BAND districts or fewer - Jerus's has 93 - is one band,
+     * drawn as 0.7.88 drew it.
+     */
+    public static final int CHAIN_BAND = 128;
+
+    /** The bands whose links are kept, the last used: 16 (2,048 districts' links, about 4 MB) - a band let go is planned again when a screen asks for it. */
+    public static final int BANDS_KEPT = 16;
+
+    /** The band of the district at index i in the map's order. */
+    static int band(int i) { return i / CHAIN_BAND; }
+
+    /** Bands in the map's order. */
+    int bands() { return (districts.size() + CHAIN_BAND - 1) / CHAIN_BAND; }
+
+    /** Each band's links checked at an epoch (bandEpoch): those of its districts up to bandValidTo (an index in the map's order) hold, and (when all do) the stamp of the packing they make. */
+    private long[] bandEpoch = new long[0], bandPackWanted = new long[0];
+    private int[] bandValidTo = new int[0];
+    private int bandsSized = -1;
+
+    /** The bands used, the last last: those past BANDS_KEPT are let go (forgetBand()). */
+    private final LinkedHashMap<Integer, Boolean> bandsUsed = new LinkedHashMap<>(BANDS_KEPT * 2, 0.75f, true);
+
+    /** Jobs handed out so far: each job's serial, which keeps a later job's link over an earlier one's adopted after it. */
+    private long jobsHanded;
+
+    /** What the plans hang on, cheaply: the map's changes, and the land's purchases (a purchase owns ground at once, before the month measures it; the land drawn again draws a new map). */
+    private long planEpoch() {
+        return World.mix(World.mix(changes ^ 0x91A7L) ^ land.purchases().size());
+    }
+
+    /** Whether district d is at the city's edge: a neighbour of its eight is not on the map - where what the city has no room for is packed (R7). */
+    boolean isEdge(District d) {
+        for (int b = -1; b <= 1; b++) for (int a = -1; a <= 1; a++) if ((a != 0 || b != 0) && byKey.get(key(d.dx + a, d.dy + b)) == null) return true;
+        return false;
+    }
+
+    /**
+     * A stamp of everything district d's own plan is drawn from but what is
+     * carried to it: its buildings and road by type (its mines and wells on
+     * sites apart), the ground the city owns over its frame (ownership only
+     * grows, and a restatement draws the map again, so the count of owned
+     * plots tells), the sites and mines about it, the city's highway and
+     * railway runs through its frame (0.7.89) and its terminals they draw as
+     * yards, and which neighbours are on the map (whose seams it surfaces).
+     */
+    long ownStamp(District d) {
+        sitedNow();
+        long h = World.mix(seed ^ d.key * 0x9E3779B97F4A7C15L);
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        h = World.mix(h ^ land.grid().owned(x0, y0, x0 + DistrictPlan.FRAME, y0 + DistrictPlan.FRAME));
+        for (int t = 0; t < types.length; t++) {
+            int c = d.counts[t] - (d.sited == null ? 0 : d.sited[t]);
+            if (c != 0) h = World.mix(h ^ ((long) t << 32) ^ c);
+        }
+        long fx1 = x0 + DistrictPlan.FRAME - 1, fy1 = y0 + DistrictPlan.FRAME - 1;
+        for (int b = -1; b <= 1; b++) {
+            for (int a = -1; a <= 1; a++) {
+                boolean on = byKey.get(key(d.dx + a, d.dy + b)) != null;
+                h = World.mix(h ^ (on ? 0x0A + 3 * a + b : 0x0FF));
+                if (!on) continue;
+                for (DrawnSite s : siteList(d.dx + a, d.dy + b)) {
+                    if (s.x1() < x0 || s.y1() < y0 || s.x0() > fx1 || s.y0() > fy1) continue;
+                    h = World.mix(h ^ (s.x0() * 0x9E3779B97F4A7C15L) ^ (s.y0() << 20) ^ ((long) s.mine() << 50) ^ s.state());
+                }
+            }
+        }
+        // The city's runs over its frame (0.7.89), and its Rail Terminals the runs draw as yards.
+        h = World.mix(h ^ runs.frameHash(x0, y0, DistrictPlan.FRAME, DistrictPlan.FRAME));
+        h = World.mix(h ^ yardsOf(d));
+        return h;
+    }
+
+    /** The bands' arrays sized to the districts, every band to be checked again. */
+    private void sizeBands() {
+        if (bandsSized == districts.size()) return;
+        int n = bands();
+        bandEpoch = new long[n];
+        Arrays.fill(bandEpoch, Long.MIN_VALUE);
+        bandPackWanted = new long[n];
+        bandValidTo = new int[n];
+        bandsSized = districts.size();
+    }
+
+    /** Every band to be checked again (a plan adopted). */
+    private void bandsStale() {
+        sizeBands();
+        Arrays.fill(bandEpoch, Long.MIN_VALUE);
+    }
+
+    /** Band b's links walked in the map's order at the current epoch: its bandValidTo is the first whose own stamp moved, whose carry in is not the one before's carry on (none for the band's first), or (an edge district) that kept no free ground; and when all hold, the stamp of the packing they make. */
+    private void checkBand(int b) {
+        sitedNow();
+        sizeBands();
+        long e = planEpoch();
+        if (b >= bandEpoch.length || e == bandEpoch[b]) return;
+        bandEpoch[b] = e;
+        int start = b * CHAIN_BAND, end = Math.min(districts.size(), start + CHAIN_BAND), valid = start;
+        int[] carry = null;
+        long ps = World.mix(0x5041434BL);
+        for (int i = start; i < end; i++) {
+            District d = districts.get(i);
+            Link l = links.get(d);
+            if (l == null || !Arrays.equals(l.in, carry) || l.own != ownStamp(d) || !readHolds(l)) break;
+            boolean edge = isEdge(d);
+            if (edge && l.free == null) break;
+            if (edge) ps = World.mix(ps ^ l.stamp());
+            carry = l.out;
+            valid = i + 1;
+        }
+        bandValidTo[b] = valid;
+        bandPackWanted[b] = valid == end ? stampOf(ps, carry) : 0;
+    }
+
+    /** Marks band b used, letting go of the bands used longest ago past BANDS_KEPT. */
+    private void useBand(int b) {
+        bandsUsed.put(b, Boolean.TRUE);
+        while (bandsUsed.size() > BANDS_KEPT) {
+            int old = bandsUsed.keySet().iterator().next();
+            bandsUsed.remove(old);
+            forgetBand(old);
+        }
+    }
+
+    /** Lets go of band b's links, plans and packing: drawn again when a screen asks for it. */
+    private void forgetBand(int b) {
+        int start = b * CHAIN_BAND, end = Math.min(districts.size(), start + CHAIN_BAND);
+        for (int i = start; i < end; i++) {
+            District d = districts.get(i);
+            links.remove(d);
+            drawn.remove(d);
+        }
+        packs.remove(b);
+        sizeBands();
+        if (b < bandEpoch.length) bandEpoch[b] = Long.MIN_VALUE;
+    }
+
+    /** Whether every band's links hold and its packing is current: the whole city drawn. */
+    private boolean allDrawn() {
+        for (int b = 0; b < bands(); b++) {
+            checkBand(b);
+            Pack p = packs.get(b);
+            if (bandValidTo[b] != Math.min(districts.size(), (b + 1) * CHAIN_BAND) || p == null || p.stamp != bandPackWanted[b]) return false;
+        }
+        return true;
+    }
+
+    /** District d's band's packing of what the band cannot hold, by tile, when current; null for none. */
+    private int[][] packedIn(District d) {
+        if (d == null) return null;
+        int b = band(d.index);
+        sizeBands();
+        if (b >= bandPackWanted.length) return null;
+        Pack p = packs.get(b);
+        return p != null && p.stamp == bandPackWanted[b] ? p.boxes.get(d) : null;
+    }
+
+    /** Whether the plans a link read its neighbours' edges from are those standing: each such district's link the one it read (they are before it in the map's order, walked first). */
+    private boolean readHolds(Link l) {
+        if (l.earlier == null) return true;
+        for (int k = 0; k < l.earlier.length; k++) {
+            District s = l.earlier[k];
+            if (s == null) continue;
+            Link sl = links.get(s);
+            if (sl == null || l.read == null || sl.stamp() != l.read[k]) return false;
+        }
+        return true;
+    }
+
+    /** Whether district d's plan is drawn and current, and every link before it in its band holds; for an edge district, its band's packing too: its tiles paint without planning. The screen's thread. */
+    public boolean planned(District d) {
+        if (d == null) return true;
+        int b = band(d.index);
+        checkBand(b);
+        if (d.index >= bandValidTo[b]) return false;
+        Drawn got = drawn.get(d);
+        if (got == null || got.stamp != links.get(d).stamp()) return false;
+        if (!isEdge(d)) return true;
+        Pack p = packs.get(b);
+        return p != null && p.stamp == bandPackWanted[b];
+    }
+
+    /** A job to run away from the screen's thread (0.7.88): run() on any one thread, in the order handed out, then adopt() on the map's. */
+    public abstract static class Job {
+        final CityMap map;
+        /** The epoch it was handed out at (planEpoch()), and its place among every job the map handed out: a later job's inputs are the newer. */
+        final long epoch, serial;
+        private boolean done;
+        Job(CityMap map, long epoch) { this.map = map; this.epoch = epoch; this.serial = ++map.jobsHanded; }
+        /** Does the work: any thread, the jobs handed out in their order on one; safe to call twice. */
+        public final synchronized void run() {
+            if (done) return;
+            work();
+            done = true;
+        }
+        abstract void work();
+        /** Whether it has run. */
+        public final synchronized boolean done() { return done; }
+    }
+
+    /** One district's plan: its inputs gathered on the map's thread, its ground read and its plan drawn by run(), with what the job before it carried on (R7). */
+    public static final class PlanJob extends Job {
+        final District d;
+        final DistrictPlan.Input in;
+        final long own;
+        final PlanJob after;
+        final int[] given;
+        final boolean edge;
+        /** The districts about it before it in the map's order (earlierOf()), and each one's link or job: whose frames' edges it reads (readNeighbours()). */
+        final District[] earlier;
+        final Object[] sources;
+        int[] carryIn, carryOut;
+        Drawn result;
+        long[] free, read;
+        byte[][] margins;
+        double ms;
+
+        PlanJob(CityMap map, District d, DistrictPlan.Input in, long own, PlanJob after, int[] given, boolean edge,
+                District[] earlier, Object[] sources, long epoch) {
+            super(map, epoch);
+            this.d = d; this.in = in; this.own = own; this.after = after; this.given = given; this.edge = edge;
+            this.earlier = earlier; this.sources = sources;
+        }
+
+        @Override void work() {
+            long t0 = System.nanoTime();
+            if (after != null) after.run();
+            int[] c = after != null ? after.carryOut : given;
+            readGround(in);
+            if (c != null) for (int t = 0; t < c.length && t < in.counts.length; t++) in.counts[t] += c[t];
+            // What it reads of the districts before it about it (readNeighbours()), and the stamps of the plans it read.
+            byte[][][] m = new byte[AROUND.length][][];
+            read = new long[AROUND.length];
+            for (int k = 0; k < AROUND.length; k++) {
+                Object src = sources[k];
+                if (src instanceof PlanJob j) {
+                    j.run();
+                    m[k] = j.margins;
+                    read[k] = stampOf(j.own, j.carryIn);
+                } else if (src instanceof Link l) {
+                    m[k] = l.margins;
+                    read[k] = l.stamp();
+                }
+            }
+            readNeighbours(d, earlier, m, in);
+            DistrictPlan p = DistrictPlan.make(in);
+            carryIn = c;
+            carryOut = p.overflowCount() > 0 ? p.overflow.clone() : null;
+            result = drawnOf(p, stampOf(own, c));
+            margins = marginsOf(p);
+            if (edge) free = freeGround(in, p);
+            ms = (System.nanoTime() - t0) / 1e6;
+        }
+
+        /** How long it took, in ms: a harness's figure. */
+        public double ms() { return ms; }
+    }
+
+    /** A band's packing at its edge (R7; the city's, in a city of one band): what its last link carried on, into its edge districts' free ground - their links', or the jobs' that make them. */
+    public static final class PackJob extends Job {
+        long stamp;
+        int band;
+        final District[] edges;
+        final Object[] from;
+        final Object last;
+        final BuildingVisual.Type[] types;
+        final long[] tileOrder;
+        Pack result;
+
+        PackJob(CityMap map, District[] edges, Object[] from, Object last, long[] tileOrder, long epoch) {
+            super(map, epoch);
+            this.edges = edges; this.from = from; this.last = last; this.types = map.types; this.tileOrder = tileOrder;
+        }
+
+        @Override void work() {
+            // Each edge district's free ground, copied (the packing takes plots of it), and the stamp its links make - as
+            // checkBand() walks them, nearest first - with the carry the band's last district let go.
+            long[][] free = new long[edges.length][];
+            long[] stamps = new long[edges.length];
+            for (int i = 0; i < edges.length; i++) {
+                if (from[i] instanceof PlanJob j) {
+                    j.run();
+                    free[i] = j.free == null ? null : j.free.clone();
+                    stamps[i] = stampOf(j.own, j.carryIn);
+                } else {
+                    Link l = (Link) from[i];
+                    free[i] = l == null || l.free == null ? null : l.free.clone();
+                    stamps[i] = l == null ? 0 : l.stamp();
+                }
+            }
+            int[] p;
+            if (last instanceof PlanJob j) { j.run(); p = j.carryOut; }
+            else p = last == null ? null : ((Link) last).out;
+            long ps = World.mix(0x5041434BL);
+            for (int i = edges.length - 1; i >= 0; i--) ps = World.mix(ps ^ stamps[i]);
+            stamp = stampOf(ps, p);
+            result = packAtEdge(p, types, edges, free, tileOrder);
+            result.stamp = stamp;
+        }
+    }
+
+    /**
+     * The jobs that make district d's plan current (R7: every district before
+     * it in the map's order whose link does not hold, each after the one
+     * before it), and, for an edge district, the city's packing after them:
+     * to run in this order on one thread, then adopt(). A job already handed
+     * out at this epoch is not handed out again. Empty when it is current.
+     * The screen's thread.
+     */
+    public List<Job> planJobs(District d) {
+        List<Job> out = new ArrayList<>();
+        if (d == null || planned(d)) return out;
+        useBand(band(d.index));
+        chainTo(d.index, out);
+        if (isEdge(d)) packAfter(band(d.index), out);
+        return out;
+    }
+
+    /** The plan jobs up to the district at index i from its band's first, into out; the last job of the chain to it (handed out now or before), or null when its link holds. */
+    private PlanJob chainTo(int i, List<Job> out) {
+        int b = band(i), start = b * CHAIN_BAND;
+        checkBand(b);
+        long e = planEpoch();
+        District di = districts.get(i);
+        if (i < bandValidTo[b]) {
+            Drawn got = drawn.get(di);
+            if (got != null && got.stamp == links.get(di).stamp()) return null;
+            PlanJob p = pending.get(di);
+            if (p != null && p.epoch == e) return p;
+            // Its link holds: only its plan was let go - drawn again with the carry its link came in with.
+            District[] near = earlierOf(di);
+            PlanJob j = new PlanJob(this, di, planInputHere(di), links.get(di).own, null, links.get(di).in, isEdge(di), near, sources(near), e);
+            pending.put(di, j);
+            out.add(j);
+            return j;
+        }
+        PlanJob prev = null;
+        for (int k = bandValidTo[b]; k <= i; k++) {
+            District dk = districts.get(k);
+            PlanJob p = pending.get(dk);
+            if (p != null && p.epoch == e) { prev = p; continue; }
+            int[] given = prev == null && k > start ? links.get(districts.get(k - 1)).out : null;
+            District[] near = earlierOf(dk);
+            PlanJob j = new PlanJob(this, dk, planInputHere(dk), ownStamp(dk), prev, given, isEdge(dk), near, sources(near), e);
+            pending.put(dk, j);
+            out.add(j);
+            prev = j;
+        }
+        return prev;
+    }
+
+    /** Each earlier district's plan as a job reads it: its job handed out at this epoch, else its link (it is before the job's district in the map's order, so one or the other holds). */
+    private Object[] sources(District[] earlier) {
+        Object[] out = new Object[earlier.length];
+        for (int k = 0; k < earlier.length; k++) {
+            District s = earlier[k];
+            if (s == null) continue;
+            PlanJob p = pending.get(s);
+            out[k] = p != null && p.epoch == planEpoch() ? p : links.get(s);
+        }
+        return out;
+    }
+
+    /** Band b's packing at its edge, after the chain to its last district, into out - unless it is current or handed out at this epoch. */
+    private void packAfter(int b, List<Job> out) {
+        checkBand(b);
+        long e = planEpoch();
+        int start = b * CHAIN_BAND, end = Math.min(districts.size(), start + CHAIN_BAND);
+        Pack cur = packs.get(b);
+        if (bandValidTo[b] == end && cur != null && cur.stamp == bandPackWanted[b]) return;
+        PackJob was = packings.get(b);
+        if (was != null && was.epoch == e) return;
+        PlanJob tail = end <= start ? null : chainTo(end - 1, out);
+        // Every edge district of the band, the farthest from the founding site first: its link's free ground, or its job's.
+        List<District> edges = new ArrayList<>();
+        for (int i = end - 1; i >= start; i--) if (isEdge(districts.get(i))) edges.add(districts.get(i));
+        Object[] from = new Object[edges.size()];
+        for (int i = 0; i < edges.size(); i++) {
+            District d = edges.get(i);
+            PlanJob p = pending.get(d);
+            from[i] = p != null && p.epoch == e ? p : links.get(d);
+        }
+        Object last = end <= start ? null : tail != null ? tail : links.get(districts.get(end - 1));
+        PackJob j = new PackJob(this, edges.toArray(new District[0]), from, last, tileOrder(edges), e);
+        j.band = b;
+        packings.put(b, j);
+        out.add(j);
+    }
+
+    /** The edge districts' tiles in the order the packing spreads over them: each a district's index in `edges` and the tile, the farthest tile from the founding site first. */
+    private long[] tileOrder(List<District> edges) {
+        int n = edges.size() * TILES;
+        long[] keys = new long[n];
+        double[] dist = new double[n];
+        Integer[] idx = new Integer[n];
+        for (int i = 0; i < edges.size(); i++) {
+            District d = edges.get(i);
+            for (int k = 0; k < TILES; k++) {
+                int at = i * TILES + k;
+                double cx = ((baseDX + d.dx) * TILES_A_SIDE + k % TILES_A_SIDE) * World.TILE + World.TILE / 2.0 - siteX;
+                double cy = ((baseDY + d.dy) * TILES_A_SIDE + k / TILES_A_SIDE) * World.TILE + World.TILE / 2.0 - siteY;
+                dist[at] = cx * cx + cy * cy;
+                keys[at] = ((long) i << 32) | k;
+                idx[at] = at;
+            }
+        }
+        Arrays.sort(idx, (a, b) -> dist[a] != dist[b] ? Double.compare(dist[b], dist[a]) : Long.compare(keys[a], keys[b]));
+        long[] out = new long[n];
+        for (int i = 0; i < n; i++) out[i] = keys[idx[i]];
+        return out;
+    }
+
+    /** Keeps a job's work: a plan's link and its packed plan, the city's packing. False when it is another map's, or has not run. The screen's thread. */
+    public boolean adopt(Job j) {
+        if (j == null || j.map != this || !j.done()) return false;
+        if (j instanceof PlanJob p) {
+            if (pending.get(p.d) == p) pending.remove(p.d);
+            Link was = links.get(p.d);
+            if (was != null && was.serial > p.serial) return true;
+            Link l = new Link(p.own, p.carryIn, p.carryOut, p.free, p.margins, p.earlier, p.read, p.result.surplus, p.serial);
+            l.leftover = p.result.leftover.clone();
+            links.put(p.d, l);
+            drawn.put(p.d, p.result);
+            bandsStale();
+            return true;
+        }
+        PackJob k = (PackJob) j;
+        if (packings.get(k.band) == k) packings.remove(k.band);
+        checkBand(k.band);
+        // Kept when every link of its band holds and they are the ones it packed into.
+        int end = Math.min(districts.size(), (k.band + 1) * CHAIN_BAND);
+        if (k.band < bandValidTo.length && bandValidTo[k.band] == end && k.stamp == bandPackWanted[k.band]) packs.put(k.band, k.result);
+        return true;
+    }
+
+    /** District d's plan for the painter, made here when it is not current - every district before it in the map's order first where its link does not hold, and for an edge district the city's packing - on this thread: a harness's, a probe's, or the view's once its jobs have run. Null for no district. */
+    Drawn drawnOf(District d) {
+        if (d == null) return null;
+        // Twice at most: an edge district's packing plans every district, which may let its own plan go from the cache.
+        for (int round = 0; round < 2; round++) {
+            for (Job j : planJobs(d)) {
+                j.run();
+                adopt(j);
+            }
+            Drawn got = drawn.get(d);
+            if (got != null && planned(d)) return got;
+        }
+        return drawn.get(d);
+    }
+
+    /** Every band's packing at its edge, made here when it is not current (a harness's): the whole city drawn. */
+    void packed() {
+        for (int b = 0; b < bands(); b++) {
+            List<Job> out = new ArrayList<>();
+            packAfter(b, out);
+            for (Job j : out) { j.run(); adopt(j); }
+        }
+    }
+
+    /** The bands' packings summed: {packed, smaller, none}; null when one is not current. */
+    private int[] packSums() {
+        if (!allDrawn()) return null;
+        int[] out = new int[3];
+        for (int b = 0; b < bands(); b++) {
+            Pack p = packs.get(b);
+            out[0] += p.packed;
+            out[1] += p.smaller;
+            out[2] += p.none;
+        }
+        return out;
+    }
+
+    /** How many buildings the city has no room for in any district's plan, packed at its edge (R7; since 0.7.89 at its band's edge) - and how many of them drawn smaller than their own land or with no ground at all: {packed, smaller, none}. The legend's words read it. */
+    public int[] packedCounts() {
+        packed();
+        int[] p = packSums();
+        return p == null ? new int[3] : p;
+    }
+
+    /** ...the same, or null when the packing is not current: the screen's thread, which never plans. */
+    public int[] packedCountsIfDrawn() {
+        return packSums();
+    }
+
+    /** The legend's figures once every plan and the packing are drawn (never planned here: the screen's thread): {buildings packed at the city's edge, plots of road its streets do not carry (star RD2-4) - since 0.7.89 with the highway plots the runs could not lay -, plots of track the runs could not lay}; null until they are. */
+    public long[] legendFiguresIfDrawn() {
+        int[] p = packSums();
+        if (p == null) return null;
+        double surplus = runs.highwayShort();
+        for (District d : districts) surplus += links.get(d).surplus;
+        return new long[] { p[0], Math.round(surplus), runs.railShort() };
+    }
+
+    /** The road the plans have no street for, by kind [0, gravel, paved, highway], over every district (made now if need be), and (0.7.89) the Elevated Highway plots the runs could not lay: a harness's - with the surface drawn, the model's road kind by kind. */
+    public double[] leftoverByKind() {
+        packed();
+        double[] out = new double[4];
+        for (District d : districts) {
+            Link l = links.get(d);
+            if (l != null && l.leftover != null) for (int k = 0; k < 4; k++) out[k] += l.leftover[k];
+        }
+        out[BuildingVisual.HIGHWAY] += runs.highwayShort();
+        return out;
+    }
+
+    /** ...the same, made now if need be: a harness's. */
+    public long[] legendFigures() {
+        packed();
+        return legendFiguresIfDrawn();
+    }
+
+    /** District d's plan as drawn (made now if need be): a harness's and a probe's. */
+    public Drawn drawn(District d) { return drawnOf(d); }
+
+    /** What was carried to district d and what it carried on (R7), by type id, null for none - its link's, once planned. */
+    public int[][] carried(District d) {
+        drawnOf(d);
+        Link l = links.get(d);
+        return l == null ? new int[2][] : new int[][] { l.in, l.out };
+    }
+
+    /** The links kept (0.7.89: a band's let go past BANDS_KEPT): a harness's. */
+    int linksKept() { return links.size(); }
+
+    /** The bytes the kept plans hold: what MapTiles' budget counts. */
+    public long plansBytes() {
+        long b = 0;
+        for (Drawn x : drawn.values()) b += x.bytes();
+        return b;
+    }
+
+    /**
+     * A plan's free ground (R7), for an edge district: a bit a plot of the
+     * district's 256 x 256, set where the city owns dry ground no street,
+     * building, highway or its verge (H5), track or mine's site takes - a
+     * field's plots among it, built on last as the plan builds on them.
+     */
+    static long[] freeGround(DistrictPlan.Input in, DistrictPlan p) {
+        int f = DistrictPlan.FRAME, words = DISTRICT / 64;
+        long[] out = new long[DISTRICT * words];
+        boolean[] taken = new boolean[DistrictPlan.AREA];
+        for (int b = 0; b < p.buildings; b++) {
+            for (int y = p.by[b]; y < p.by[b] + p.bh[b]; y++) for (int x = p.bx[b]; x < p.bx[b] + p.bw[b]; x++) taken[y * f + x] = true;
+        }
+        for (int y = 0; y < DISTRICT; y++) {
+            for (int x = 0; x < DISTRICT; x++) {
+                int q = y * f + x;
+                byte t = in.terrain[q];
+                if (!in.owned[q] || !(t == World.GRASS || t == World.FOREST || t == World.SAND)) continue;
+                if (taken[q] || p.street[q] != 0 || in.fixed[q] != 0 || in.site[q] == DistrictPlan.SITE_MINED) continue;
+                boolean verge = false;
+                for (int dy = -1; dy <= 1 && !verge; dy++) {
+                    for (int dx = -1; dx <= 1 && !verge; dx++) {
+                        int ax = x + dx, ay = y + dy;
+                        if (ax >= 0 && ay >= 0 && ax < f && ay < f && in.fixed[ay * f + ax] == DistrictPlan.FIXED_HIGHWAY) verge = true;
+                    }
+                }
+                if (verge) continue;
+                out[y * words + (x >>> 6)] |= 1L << (x & 63);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * PACKED AT THE CITY'S EDGE (R7; spec 2.6: "a city with no room anywhere
+     * packs them at its edge, without a street, and the map's legend says how
+     * many"). What the last district carried on, largest first (the plans'
+     * own order), each into the edge districts' free ground - on a tile's
+     * interior, off its arterial lines, so it stands on one tile and blocks
+     * no street the cells may yet lay - the tiles in turn from the farthest
+     * from the founding site, each building on the next tile that holds it
+     * whole from the one the last took: spread thin over the city's edge,
+     * not a wall of them in one place (star RD2-2). One no free box holds
+     * whole is drawn as the largest square any tile still has (0.7.64's rule
+     * for a building no box held), at least a plot; with none left at all it
+     * is counted, not drawn.
+     */
+    static Pack packAtEdge(int[] carry, BuildingVisual.Type[] types, District[] edges, long[][] free, long[] tileOrder) {
+        Pack out = new Pack();
+        if (carry == null) return out;
+        int words = DISTRICT / 64;
+        int[] ranked = BuildingVisual.rankedTypes(types);
+        int nt = tileOrder.length;
+        // Shapes each tile is known to hold no box of: free ground only shrinks.
+        int[][] failW = new int[nt][], failH = new int[nt][];
+        int[] fails = new int[nt];
+        List<Integer>[][] boxes = new List[edges.length][TILES];
+        int at = 0;
+        for (int t : ranked) {
+            if (t >= carry.length || carry[t] <= 0) continue;
+            int[] fp = BuildingVisual.footprint(types[t]);
+            for (int j = 0; j < carry[t]; j++) {
+                out.packed++;
+                int[] got = null;
+                for (int m = 0; m < nt && got == null; m++) {
+                    int ti = (at + m) % nt;
+                    got = fitTile(free, tileOrder[ti], fp[0], fp[1], failW, failH, fails, ti);
+                    if (got != null) at = (ti + 1) % nt;
+                }
+                if (got == null) {
+                    // Smaller: the largest square some tile still holds, at least a plot.
+                    for (int s = Math.min(INTERIOR_MOST, Math.max(fp[0], fp[1]) - 1); s >= 1 && got == null; s--) {
+                        int w = Math.min(fp[0], s), h = Math.min(fp[1], s);
+                        for (int m = 0; m < nt && got == null; m++) {
+                            int ti = (at + m) % nt;
+                            got = fitTile(free, tileOrder[ti], w, h, failW, failH, fails, ti);
+                            if (got != null) at = (ti + 1) % nt;
+                        }
+                    }
+                    if (got != null) out.smaller++;
+                }
+                if (got == null) { out.none++; continue; }
+                int di = got[0], k = got[1];
+                if (boxes[di][k] == null) boxes[di][k] = new ArrayList<>();
+                boxes[di][k].add(box(got[2], got[3], got[4], got[5], true) | (t << BOX_TYPE_SHIFT));
+                // Its plots taken.
+                int x0 = (k % TILES_A_SIDE) * World.TILE + got[2], y0 = (k / TILES_A_SIDE) * World.TILE + got[3];
+                for (int y = y0; y < y0 + got[5]; y++) for (int x = x0; x < x0 + got[4]; x++) free[di][y * words + (x >>> 6)] &= ~(1L << (x & 63));
+            }
+        }
+        for (int i = 0; i < edges.length; i++) {
+            int[][] per = null;
+            for (int k = 0; k < TILES; k++) {
+                if (boxes[i][k] == null) continue;
+                if (per == null) per = new int[TILES][];
+                per[k] = new int[boxes[i][k].size()];
+                for (int b = 0; b < per[k].length; b++) per[k][b] = boxes[i][k].get(b);
+            }
+            if (per != null) out.boxes.put(edges[i], per);
+        }
+        return out;
+    }
+
+    /** A tile's interior holds a box no larger than this a side: 31 plots, off its arterial lines. */
+    static final int INTERIOR_MOST = World.TILE - 1;
+
+    /** The first spot, in rows, on tile key (edge index << 32 | tile) of the free ground where a w x h box - or h x w - fits inside the tile's interior: {edge index, tile, x, y, w, h} in the tile's plots, or null (and the shape remembered as not held). */
+    private static int[] fitTile(long[][] free, long key, int w, int h, int[][] failW, int[][] failH, int[] fails, int ti) {
+        for (int f = 0; f < fails[ti]; f++) {
+            int a = failW[ti][f], b = failH[ti][f];
+            if ((w >= a && h >= b) || (w >= b && h >= a)) return null;
+        }
+        int di = (int) (key >>> 32), k = (int) key, words = DISTRICT / 64;
+        int bx = (k % TILES_A_SIDE) * World.TILE, by = (k / TILES_A_SIDE) * World.TILE;
+        long[] g = free[di];
+        if (g != null) {
+            for (int turn = 0; turn < 2; turn++) {
+                int ww = turn == 0 ? w : h, hh = turn == 0 ? h : w;
+                if (turn == 1 && w == h) break;
+                if (ww > INTERIOR_MOST || hh > INTERIOR_MOST) continue;
+                for (int y = 1; y + hh <= World.TILE; y++) {
+                    for (int x = 1; x + ww <= World.TILE; x++) {
+                        boolean fits = true;
+                        for (int yy = y; yy < y + hh && fits; yy++) {
+                            int row = (by + yy) * words;
+                            for (int xx = x; xx < x + ww && fits; xx++) {
+                                int ax = bx + xx;
+                                fits = (g[row + (ax >>> 6)] & (1L << (ax & 63))) != 0;
+                            }
+                        }
+                        if (fits) return new int[] { di, k, x, y, ww, hh };
+                    }
+                }
+            }
+        }
+        if (failW[ti] == null) { failW[ti] = new int[4]; failH[ti] = new int[4]; }
+        if (fails[ti] == failW[ti].length) { failW[ti] = Arrays.copyOf(failW[ti], fails[ti] * 2); failH[ti] = Arrays.copyOf(failH[ti], fails[ti] * 2); }
+        failW[ti][fails[ti]] = w;
+        failH[ti][fails[ti]] = h;
+        fails[ti]++;
+        return null;
+    }
+
+    /* =====================================================================
+       THE RUNS: THE CITY'S HIGHWAYS AND RAILWAY ON CORRIDORS (0.7.89, batch
+       RD3; the project's spec-roads-and-ports.md 2.7 and 2.8)
+
+       From 0.7.72 to 0.7.88 each district laid its own highways and track
+       from its first road tile's hub (THE NETWORK, its road tiles, hubs and
+       main streets worked out since 0.7.88 for that alone): a city's six
+       highways were six stubs, each crossing itself, and at 0.7.88 a short
+       highway floated inside a block of Jerus's city. Since 0.7.89 they are
+       the city's RUNS (CityRuns): laid city-wide, month by month, on
+       corridors from the founding site's lines - the railway's from the
+       city's mine nearest the founding site - straight by preference, never
+       moved, the newest end taken first; kept here and in the sidecar
+       (FORMAT 5). Each district's plan is drawn round them (their plots
+       fixed, a verge either side of a highway: H5) and the painter draws them
+       plot for plot. A Rail Terminal is the railway's YARD, on its track in
+       the cell nearest a mine; one the runs find no place for is its
+       district's plan's to draw. What the runs cannot lay - no ground left
+       for a corridor - is counted, and the legend says so.
+       ===================================================================== */
+
+    /** Bumped whenever free ground is measured again (a purchase): what a run waiting on the ground is tried again on. */
+    private long landVersion;
+
+    /** The city's highways and railway (spec 2.7, 2.8). */
+    private CityRuns runs = new CityRuns();
+
+    /** The city's runs. */
+    public CityRuns runs() { return runs; }
+
+    /** Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. */
+    static final int RUN_LINES_KEPT = 4096;
+
+    /** ...whole tiles, for a 45-degree way: 256. */
+    static final int RUN_TILES_KEPT = 256;
+
+    /**
+     * The ground the runs read (CityRuns.Ground): a plot's World class where
+     * the city owns it, -1 where it does not - the terrain a tile's row or
+     * column at a time (World.lineTerrain(), byte for byte the painter's
+     * tileTerrain()), a 45-degree way a whole tile at a time, ownership a tile
+     * at a time from the grid (tileOwnership()).
+     */
+    private final class RunGround implements CityRuns.Ground {
+        private final Map<Long, byte[]> lines = new LinkedHashMap<>(RUN_LINES_KEPT * 2, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > RUN_LINES_KEPT; }
+        };
+        private final Map<Long, byte[]> tiles = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, byte[]> e) { return size() > RUN_TILES_KEPT; }
+        };
+        private final Map<Long, boolean[]> owned = new LinkedHashMap<>(RUN_TILES_KEPT * 2, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(Map.Entry<Long, boolean[]> e) { return size() > RUN_TILES_KEPT; }
+        };
+        private long ownedAt = Long.MIN_VALUE, lastLineKey = Long.MIN_VALUE, lastOwnKey = Long.MIN_VALUE;
+        private byte[] lastLine;
+        private boolean[] lastOwn;
+        private int lastCover;
+        private final boolean[] ALL_OWNED = new boolean[0], NONE_OWNED = new boolean[0];
+
+        @Override public int at(long x, long y, int dir) {
+            if (x < 0 || y < 0 || x >= World.SIDE || y >= World.SIDE) return -1;
+            long tx = x >> 5, ty = y >> 5;
+            int ix = (int) (x & (World.TILE - 1)), iy = (int) (y & (World.TILE - 1));
+            if (!ownedAt(tx, ty, ix, iy)) return -1;
+            long tk = (tx << 20) | ty;
+            if (dir < 0 || (dir & 1) == 1) {
+                byte[] t = tiles.get(tk);
+                if (t == null) {
+                    t = new byte[TilePainter.PLOTS];
+                    World.of(seed).tileTerrain(tx, ty, t);
+                    tiles.put(tk, t);
+                }
+                return t[iy * World.TILE + ix];
+            }
+            boolean col = dir == 2 || dir == 6;
+            int at = col ? ix : iy;
+            long key = (tk << 6) | ((long) at << 1) | (col ? 1 : 0);
+            if (key != lastLineKey) {
+                byte[] t = tiles.get(tk);
+                byte[] line = lines.get(key);
+                if (line == null) {
+                    line = new byte[World.TILE];
+                    if (t != null) {
+                        for (int i = 0; i < World.TILE; i++) line[i] = t[col ? i * World.TILE + at : at * World.TILE + i];
+                    } else World.of(seed).lineTerrain(tx, ty, col, at, line);
+                    lines.put(key, line);
+                }
+                lastLineKey = key;
+                lastLine = line;
+            }
+            return lastLine[col ? iy : ix];
+        }
+
+        /** Whether the city owns plot (ix, iy) of tile (tx, ty): the grid's cover of the tile, its leaves where it owns some. */
+        private boolean ownedAt(long tx, long ty, int ix, int iy) {
+            long v = version();
+            if (v != ownedAt) { owned.clear(); ownedAt = v; lastOwnKey = Long.MIN_VALUE; }
+            long tk = (tx << 20) | ty;
+            if (tk != lastOwnKey) {
+                boolean[] o = owned.get(tk);
+                if (o == null) {
+                    int c = cover(land.grid().cover(5, tx, ty));
+                    if (c == ALL) o = ALL_OWNED;
+                    else if (c == NONE) o = NONE_OWNED;
+                    else {
+                        o = new boolean[TilePainter.PLOTS];
+                        land.grid().tileFlags(tx, ty, o);
+                    }
+                    owned.put(tk, o);
+                }
+                lastOwnKey = tk;
+                lastOwn = o;
+            }
+            if (lastOwn == ALL_OWNED) return true;
+            if (lastOwn == NONE_OWNED) return false;
+            return lastOwn[iy * World.TILE + ix];
+        }
+
+        @Override public long version() {
+            return World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp());
+        }
+
+        @Override public long[] box() {
+            LandGrid g = land.grid();
+            if (g.ownedPlots() == 0) return new long[] { siteX, siteY, siteX, siteY };
+            return new long[] { g.minX(), g.minY(), g.maxX() - 1, g.maxY() - 1 };
+        }
+    }
+
+    private final RunGround runGround = new RunGround();
+
+    /** The ground the runs read: a harness's, to lay runs of its own on the city's ground. */
+    CityRuns.Ground runGround() { return runGround; }
+
+    /** The founding site, {x, y} in plots. */
+    long[] site() { return new long[] { siteX, siteY }; }
+
+    /**
+     * Lays the runs to the model's counts (CityRuns.layTo()): its Elevated
+     * Highways' plots, its track's, its Rail Terminals as yards - the
+     * highways from the founding site, the railway from the city's mine
+     * nearest it (the founding site with none). True, and the map's changes
+     * bumped, when they moved.
+     */
+    boolean layRuns(long[] model) {
+        long highway = 0, track = 0;
+        int yards = 0, yw = 0, yh = 0;
+        for (int t = 0; t < types.length && t < model.length; t++) {
+            if (types[t] == null || model[t] <= 0) continue;
+            if (types[t].road() == BuildingVisual.HIGHWAY) highway += model[t] * BuildingVisual.cells(types[t]);
+            else if (types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
+            else if (types[t].terminal()) {
+                yards += (int) Math.min(Integer.MAX_VALUE, model[t]);
+                int[] fp = BuildingVisual.footprint(types[t]);
+                yw = fp[0];
+                yh = fp[1];
+            }
+        }
+        CityRuns.Net rail = runs.rail();
+        boolean needMines = (track > 0 || yards > 0) && (!rail.started || yards != runs.yards().size());
+        List<long[]> mines = needMines ? minedSites() : new ArrayList<>();
+        long rx = siteX, ry = siteY;
+        double best = Double.MAX_VALUE;
+        for (long[] s : mines) {
+            double cx = (s[0] + s[2] + 1) / 2.0, cy = (s[1] + s[3] + 1) / 2.0, d = (cx - siteX) * (cx - siteX) + (cy - siteY) * (cy - siteY);
+            if (d < best) { best = d; rx = (long) Math.floor(cx); ry = (long) Math.floor(cy); }
+        }
+        boolean moved = runs.layTo(highway, track, yards, yw, yh, runGround, siteX, siteY, rx, ry, mines);
+        if (moved) {
+            changes++;
+            yardShare = null;
+        }
+        return moved;
+    }
+
+    /** The city's mines and wells standing on their sites, each {x0, y0, x1, y1} inclusive: where the railway starts and its yards are drawn near. */
+    List<long[]> minedSites() {
+        sitedNow();
+        List<long[]> out = new ArrayList<>();
+        for (District d : districts) {
+            if (d.sited == null) continue;
+            boolean any = false;
+            for (int c : d.sited) any |= c > 0;
+            if (!any) continue;
+            for (DrawnSite s : siteList(d.dx, d.dy)) if (s.mine() >= 0) out.add(new long[] { s.x0(), s.y0(), s.x1(), s.y1() });
+        }
+        return out;
+    }
+
+    /** Each district's Rail Terminals the runs draw as yards, by its index: the yards dealt to the districts holding terminals in the map's order, so the rest are their plans' (kept against the runs' version). */
+    private int[] yardShare;
+    private long yardShareAt = Long.MIN_VALUE;
+
+    /** How many of district d's Rail Terminals are the runs' yards. */
+    int yardsOf(District d) {
+        long at = World.mix(runs.version() ^ changes);
+        if (yardShare == null || yardShareAt != at || yardShare.length != districts.size()) {
+            yardShare = new int[districts.size()];
+            yardShareAt = at;
+            int left = runs.yards().size();
+            for (int i = 0; i < districts.size() && left > 0; i++) {
+                District o = districts.get(i);
+                int n = 0;
+                for (int t = 0; t < types.length && t < o.counts.length; t++) if (types[t] != null && types[t].terminal()) n += o.counts[t];
+                int take = Math.min(n, left);
+                yardShare[i] = take;
+                left -= take;
+            }
+        }
+        return d.index < yardShare.length ? yardShare[d.index] : 0;
+    }
+
+    /** The runs' frame for district d's plan: their plots over its 257 x 257 (DistrictPlan's codes), a hash of them returned. */
+    long runsInto(District d, byte[] fixed) {
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        int f = DistrictPlan.FRAME;
+        long h = runs.fill(x0, y0, f, f, fixed, null, true);
+        for (int i = 0; i < f * f; i++) {
+            byte b = fixed[i];
+            if (b == CityRuns.F_RAIL_OVER) fixed[i] = DistrictPlan.FIXED_HIGHWAY;
+            else if (b == CityRuns.F_YARD) fixed[i] = DistrictPlan.FIXED_YARD;
+        }
+        return h;
     }
 
     /* =====================================================================
@@ -2536,41 +2594,21 @@ public final class CityMap {
         return byKey.get(key((int) (Math.floorDiv(tx, TILES_A_SIDE) - baseDX), (int) (Math.floorDiv(ty, TILES_A_SIDE) - baseDY)));
     }
 
-    /** A tile's counts of the model's types from the deal: a copy into out, zeros where no district is. */
+    /** The tile in district d at its column and row of tiles (tile = row x 8 + column), from world tile (tx, ty). */
+    static int tileIn(long tx, long ty) {
+        return (int) (Math.floorMod(ty, TILES_A_SIDE) * TILES_A_SIDE + Math.floorMod(tx, TILES_A_SIDE));
+    }
+
+    /** A tile's buildings by type id as its district's plan draws them (0.7.88; the deal's until 0.7.87), packed ones among them: into out, zeros where no district is. */
     public void tileCounts(long tx, long ty, int[] out) {
         Arrays.fill(out, 0);
         District d = districtOfTile(tx, ty);
         if (d == null) return;
-        int[] c = deal(d)[(int) (Math.floorMod(ty, TILES_A_SIDE) * TILES_A_SIDE + Math.floorMod(tx, TILES_A_SIDE))];
-        System.arraycopy(c, 0, out, 0, Math.min(c.length, out.length));
-    }
-
-    /** A tile's road plots by kind from the deal, into out [0, gravel, paved, highway]. */
-    public void tileRoads(long tx, long ty, int[] out) {
-        Arrays.fill(out, 0);
-        District d = districtOfTile(tx, ty);
-        if (d == null) return;
-        int[] r = roads(d)[(int) (Math.floorMod(ty, TILES_A_SIDE) * TILES_A_SIDE + Math.floorMod(tx, TILES_A_SIDE))];
-        System.arraycopy(r, 0, out, 0, Math.min(r.length, out.length));
-    }
-
-    /** Whether a tile is one of its district's road tiles (0.7.72, THE NETWORK): what its neighbours' main streets run to the port for. */
-    boolean tileHasRoads(long tx, long ty) {
-        District d = districtOfTile(tx, ty);
-        if (d == null) return false;
-        return roadTilesOf(d).road[(int) (Math.floorMod(ty, TILES_A_SIDE) * TILES_A_SIDE + Math.floorMod(tx, TILES_A_SIDE))];
-    }
-
-    /** A tile's railway plots from the deal (0.7.72). */
-    public int tileRail(long tx, long ty) {
-        District d = districtOfTile(tx, ty);
-        if (d == null) return 0;
-        return dealtOf(d).rail[(int) (Math.floorMod(ty, TILES_A_SIDE) * TILES_A_SIDE + Math.floorMod(tx, TILES_A_SIDE))];
-    }
-
-    /** The railway's plots a district's plan found no way for (0.7.72). */
-    public long railShort(District d) {
-        return dealtOf(d).railShort;
+        Drawn dr = drawnOf(d);
+        int k = tileIn(tx, ty);
+        if (dr != null && dr.boxes[k] != null) for (int b : dr.boxes[k]) if (b >>> BOX_TYPE_SHIFT < out.length) out[b >>> BOX_TYPE_SHIFT]++;
+        int[][] pk = packedIn(d);
+        if (pk != null && pk[k] != null) for (int b : pk[k]) if (b >>> BOX_TYPE_SHIFT < out.length) out[b >>> BOX_TYPE_SHIFT]++;
     }
 
     /** Which of a tile's plots the city owns: a tile owned wholly or not at all in one test (the grid's cover at level 5), the rest from the grid's leaves under it (spec-grid 2.4). */
@@ -2585,12 +2623,13 @@ public final class CityMap {
 
     /**
      * Everything the painter needs for tile (tx, ty), into in: its ground,
-     * what the city owns of it, the model's buildings and road plots the deal
-     * gave it, which neighbours have roads, and the sites on it with their
-     * states and the mines standing on them. Since 0.7.64 nothing is drawn
-     * that the model does not have: J3b's homes from people, workplaces from
-     * jobs and roads from frontage, and the mockup's two world highways, are
-     * gone.
+     * what the city owns of it, and from its district's plan (0.7.88; the
+     * deal's counts and road plots until 0.7.87) the streets through it and
+     * every building's box on it, the city's highways and railway through it,
+     * and the sites on it with their states and the mines standing on them.
+     * Its plan is made here when it is not current (drawnOf()): the view asks
+     * only for a tile whose plans are (tileReady()). Since 0.7.64 nothing is
+     * drawn that the model does not have.
      */
     public void tileInput(long tx, long ty, TilePainter.Input in) {
         World.of(seed).tileTerrain(tx, ty, in.terrain);
@@ -2603,6 +2642,77 @@ public final class CityMap {
         fillInput(tx, ty, in);
     }
 
+    /** The districts a tile's picture is drawn from (0.7.88): those of the tiles about it - its own, the ones whose plans lay the street on its first column or row (west, north, north-west) and those its edges look across to (the streets and runs just beyond it). */
+    public List<District> tileDistricts(long tx, long ty) {
+        List<District> out = new ArrayList<>(4);
+        for (int b = -1; b <= 1; b++) {
+            for (int a = -1; a <= 1; a++) {
+                District d = districtOfTile(tx + a, ty + b);
+                if (d != null && !out.contains(d)) out.add(d);
+            }
+        }
+        return out;
+    }
+
+    /** Whether tile (tx, ty) paints without planning: every plan it is drawn from current (planned()). The screen's thread. */
+    public boolean tileReady(long tx, long ty) {
+        for (District d : tileDistricts(tx, ty)) if (!planned(d)) return false;
+        return true;
+    }
+
+    /** The jobs that make tile (tx, ty)'s plans current (planJobs()), in order; empty when they are. The screen's thread. */
+    public List<Job> tileJobs(long tx, long ty) {
+        List<Job> out = new ArrayList<>();
+        for (District d : tileDistricts(tx, ty)) out.addAll(planJobs(d));
+        return out;
+    }
+
+    /**
+     * The street a plan draws on world plot (x, y) (TilePainter's S_ codes):
+     * the district's own; on its first column or row the district west or
+     * north of it (or north-west, at its corner) lays the same plot as its
+     * frame's margin - a SEAM (DistrictPlan.SEAMS) where the other surfaces
+     * it - so the surfaced code wins; a seam laid by a district that does not
+     * surface it, with no surfaced street under it, is a track (star RD1-1).
+     */
+    byte streetAt(long x, long y) {
+        return streetAt(x, y, new HashMap<>());
+    }
+
+    /** ...the plans looked up through `seen`, by district key (null for none), which it fills. */
+    private byte streetAt(long x, long y, Map<Long, Drawn> seen) {
+        long dxl = Math.floorDiv(x, DISTRICT), dyl = Math.floorDiv(y, DISTRICT);
+        int lx = (int) (x - dxl * DISTRICT), ly = (int) (y - dyl * DISTRICT);
+        int ddx = (int) (dxl - baseDX), ddy = (int) (dyl - baseDY);
+        byte best = 0;
+        boolean seam = false;
+        for (int c = 0; c < 4; c++) {
+            int ox = c == 1 || c == 3 ? -1 : 0, oy = c >= 2 ? -1 : 0;
+            if ((ox < 0 && lx != 0) || (oy < 0 && ly != 0)) continue;
+            long dk = key(ddx + ox, ddy + oy);
+            Drawn dr;
+            if (seen.containsKey(dk)) dr = seen.get(dk);
+            else {
+                District d = byKey.get(dk);
+                dr = d == null ? null : drawnOf(d);
+                seen.put(dk, dr);
+            }
+            if (dr == null) continue;
+            byte b;
+            if (ox == 0 && oy == 0) b = dr.codeAt(lx, ly);
+            else if (oy == 0) b = dr.east == null ? 0 : dr.east[ly];
+            else if (ox == 0) b = dr.south == null ? 0 : dr.south[lx];
+            else b = dr.east == null ? 0 : dr.east[DISTRICT];
+            int kind = b & TilePainter.S_KIND;
+            if (kind == DistrictPlan.NONE) continue;
+            if (kind == DistrictPlan.SEAM) { seam = true; if (best == 0) best = b; continue; }
+            if (kind == DistrictPlan.UNDER) { if (best == 0 || (best & TilePainter.S_KIND) == DistrictPlan.SEAM) best = b; continue; }
+            return b;
+        }
+        if (seam && (best & TilePainter.S_KIND) == DistrictPlan.SEAM) return (byte) ((best & ~TilePainter.S_KIND & ~(3 << TilePainter.S_WIDTH_SHIFT)) | DistrictPlan.TRACK);
+        return best;
+    }
+
     /** Everything tileInput() fills but the ground, which is in `in` already. */
     private void fillInput(long tx, long ty, TilePainter.Input in) {
         in.seed = seed;
@@ -2611,23 +2721,68 @@ public final class CityMap {
         in.types = types;
         tileOwnership(tx, ty, in.owned);
         if (in.counts.length != types.length) in.counts = new int[types.length];
-        if (in.model.length != types.length) in.model = new int[types.length];
-        tileCounts(tx, ty, in.counts);
-        System.arraycopy(in.counts, 0, in.model, 0, types.length);
-        tileRoads(tx, ty, in.roadBudget);
-        in.neighbourRoads[0] = tileHasRoads(tx, ty - 1);
-        in.neighbourRoads[1] = tileHasRoads(tx + 1, ty);
-        in.neighbourRoads[2] = tileHasRoads(tx, ty + 1);
-        in.neighbourRoads[3] = tileHasRoads(tx - 1, ty);
-        // The plan's highways and railway through it (0.7.72).
-        in.clearPlans();
-        District pd = districtOfTile(tx, ty);
-        if (pd != null) {
-            int[] segs = dealtOf(pd).plan[(int) (Math.floorMod(ty, TILES_A_SIDE) * TILES_A_SIDE + Math.floorMod(tx, TILES_A_SIDE))];
-            if (segs != null) for (int s = 0; s + 4 < segs.length; s += 5) in.addPlan(segs[s], segs[s + 1], segs[s + 2], segs[s + 3], segs[s + 4]);
-        }
-        in.clearSites();
+        in.clearBuildings();
+        java.util.Arrays.fill(in.street, (byte) 0);
+        java.util.Arrays.fill(in.fixed, (byte) 0);
+        District d = districtOfTile(tx, ty);
+        int k = tileIn(tx, ty);
         long px0 = tx * World.TILE, py0 = ty * World.TILE;
+        // Its streets: its district's plan's, and on its first column and row its neighbours' where they lay them.
+        Map<Long, Drawn> seen = new HashMap<>();
+        Drawn own = d == null ? null : drawnOf(d);
+        if (d != null) seen.put(d.key, own);
+        boolean firstCol = Math.floorMod(tx, TILES_A_SIDE) == 0, firstRow = Math.floorMod(ty, TILES_A_SIDE) == 0;
+        if (own != null && own.tiles[k] != null) Drawn.unpack(own.tiles[k], in.street);
+        if (firstCol || firstRow || own == null) {
+            for (int y = 0; y < World.TILE; y++) {
+                for (int x = 0; x < World.TILE; x++) {
+                    if (!(firstCol && x == 0) && !(firstRow && y == 0) && own != null) continue;
+                    in.street[y * World.TILE + x] = streetAt(px0 + x, py0 + y, seen);
+                }
+            }
+        }
+        // ...and just beyond its edges, north, east, south and west.
+        for (int m = 0; m < World.TILE; m++) {
+            in.beyond[m] = streetAt(px0 + m, py0 - 1, seen);
+            in.beyond[World.TILE + m] = streetAt(px0 + World.TILE, py0 + m, seen);
+            in.beyond[2 * World.TILE + m] = streetAt(px0 + m, py0 + World.TILE, seen);
+            in.beyond[3 * World.TILE + m] = streetAt(px0 - 1, py0 + m, seen);
+        }
+        // The city's highways and track through it and the ring about it (0.7.89: the city's runs; THE NETWORK's plan's until
+        // 0.7.88), their ramps and 45-degree stretches; its yards drawn over their track.
+        int rw = World.TILE + 2;
+        byte[] ringFixed = new byte[rw * rw], ringMarks = new byte[rw * rw];
+        {
+            runs.fill(px0 - 1, py0 - 1, rw, rw, ringFixed, ringMarks, false);
+            for (int y = 0; y < World.TILE; y++) {
+                for (int x = 0; x < World.TILE; x++) {
+                    in.fixed[y * World.TILE + x] = ringFixed[(y + 1) * rw + x + 1];
+                    in.marks[y * World.TILE + x] = ringMarks[(y + 1) * rw + x + 1];
+                }
+            }
+            for (int m = 0; m < World.TILE; m++) {
+                in.fixedBeyond[m] = ringFixed[m + 1];
+                in.fixedBeyond[World.TILE + m] = ringFixed[(m + 1) * rw + rw - 1];
+                in.fixedBeyond[2 * World.TILE + m] = ringFixed[(rw - 1) * rw + m + 1];
+                in.fixedBeyond[3 * World.TILE + m] = ringFixed[(m + 1) * rw];
+                in.marksBeyond[m] = ringMarks[m + 1];
+                in.marksBeyond[World.TILE + m] = ringMarks[(m + 1) * rw + rw - 1];
+                in.marksBeyond[2 * World.TILE + m] = ringMarks[(rw - 1) * rw + m + 1];
+                in.marksBeyond[3 * World.TILE + m] = ringMarks[(m + 1) * rw];
+            }
+        }
+        // Its buildings: its yards (0.7.89), its plan's boxes, and those packed at the city's edge (R7).
+        int boxBits = (1 << BOX_TYPE_SHIFT) - 1;
+        int terminal = -1;
+        for (int t = 0; t < types.length; t++) if (types[t] != null && types[t].terminal()) { terminal = t; break; }
+        for (long[] yd : runs.yards()) {
+            if (terminal < 0 || yd[0] < px0 || yd[1] < py0 || yd[0] >= px0 + World.TILE || yd[1] >= py0 + World.TILE) continue;
+            in.addBuilding(box((int) (yd[0] - px0), (int) (yd[1] - py0), (int) yd[2], (int) yd[3], false), terminal);
+        }
+        if (own != null && own.boxes[k] != null) for (int b : own.boxes[k]) in.addBuilding(b & boxBits, b >>> BOX_TYPE_SHIFT);
+        int[][] pk = packedIn(d);
+        if (pk != null && pk[k] != null) for (int b : pk[k]) in.addBuilding(b & boxBits, b >>> BOX_TYPE_SHIFT);
+        in.clearSites();
         int ddx = (int) (Math.floorDiv(tx, TILES_A_SIDE) - baseDX), ddy = (int) (Math.floorDiv(ty, TILES_A_SIDE) - baseDY);
         for (int b = -1; b <= 1; b++) {
             for (int a = -1; a <= 1; a++) {
@@ -2705,11 +2860,146 @@ public final class CityMap {
         return out;
     }
 
-    /** Forgets the painted state of every district - the deals and the site lists - after the ground's states moved (what is worked out). */
+    /** Forgets the painted state of every district - the plans, their links, the packing and the site lists - after the ground's states moved (what is worked out). The runs stand: they are laid, not painted. */
     public void forgetPainted() {
-        dealt.clear();
+        drawn.clear();
+        links.clear();
+        pending.clear();
+        packs.clear();
+        packings.clear();
+        bandsUsed.clear();
+        bandsStale();
         siteLists.clear();
         siteListVersion.clear();
+    }
+
+    /* =====================================================================
+       THE DISTRICT PLAN'S INPUTS (0.7.87, batch RD1; the project's
+       spec-roads-and-ports.md 2.9)
+
+       What DistrictPlan draws a district from: the ground and what the city
+       owns of it over the plan's frame (the district and the first column
+       and row of its east and south neighbours), its buildings by type - its
+       mines and wells on sites apart, which stand on them - and its road
+       plots by kind, the resource sites, which seams it surfaces (the
+       district first in the map's order does: DISTRICT_ORDER), and the
+       city's highway and railway plots through it: since 0.7.89 the city's
+       runs' (THE RUNS), every Elevated Highway plot theirs and none a
+       street's surface - what they cannot lay is counted - where 0.7.88's
+       NETWORK left the plots it did not lay to the streets' surface.
+       Since 0.7.88 the painter draws from these plans (THE DRAWN PLANS),
+       each with what the districts before it could not hold (R7).
+       ===================================================================== */
+
+    /** District d's own plan, drawn now from planInput(d) - its own buildings alone, none carried to it (R7): not kept (THE DRAWN PLANS keep the painter's). */
+    DistrictPlan plan(District d) {
+        return DistrictPlan.make(planInput(d));
+    }
+
+    /** The inputs of district d's plan (DistrictPlan.Input), its ground read from the world. */
+    DistrictPlan.Input planInput(District d) {
+        DistrictPlan.Input in = planInputHere(d);
+        readGround(in);
+        return in;
+    }
+
+    /** The ground over a plan's frame, a World class a plot, read from the world: any thread (World is safe), so a plan's job reads it away from the screen's (0.7.88). */
+    static void readGround(DistrictPlan.Input in) {
+        int f = DistrictPlan.FRAME;
+        byte[] ter = new byte[TilePainter.PLOTS];
+        int tiles = (f + World.TILE - 1) / World.TILE;
+        World w = World.of(in.seed);
+        for (int j = 0; j < tiles; j++) {
+            for (int i = 0; i < tiles; i++) {
+                long tx = Math.floorDiv(in.x0, World.TILE) + i, ty = Math.floorDiv(in.y0, World.TILE) + j;
+                w.tileTerrain(tx, ty, ter);
+                for (int y = 0; y < World.TILE && j * World.TILE + y < f; y++) {
+                    System.arraycopy(ter, y * World.TILE, in.terrain, (j * World.TILE + y) * f + i * World.TILE, Math.min(World.TILE, f - i * World.TILE));
+                }
+            }
+        }
+    }
+
+    /** ...everything but the ground: what the map's own thread reads (the land, the counts, the sites, the runs). */
+    DistrictPlan.Input planInputHere(District d) {
+        sitedNow();
+        DistrictPlan.Input in = new DistrictPlan.Input();
+        int f = DistrictPlan.FRAME;
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        in.seed = seed;
+        in.x0 = x0;
+        in.y0 = y0;
+        in.hubX = siteX - x0;
+        in.hubY = siteY - y0;
+        in.types = types;
+        // What the city owns, tile by tile over the frame (its ground is readGround()'s).
+        boolean[] own = new boolean[TilePainter.PLOTS];
+        int tiles = (f + World.TILE - 1) / World.TILE;
+        for (int j = 0; j < tiles; j++) {
+            for (int i = 0; i < tiles; i++) {
+                long tx = Math.floorDiv(x0, World.TILE) + i, ty = Math.floorDiv(y0, World.TILE) + j;
+                tileOwnership(tx, ty, own);
+                for (int y = 0; y < World.TILE && j * World.TILE + y < f; y++) {
+                    System.arraycopy(own, y * World.TILE, in.owned, (j * World.TILE + y) * f + i * World.TILE, Math.min(World.TILE, f - i * World.TILE));
+                }
+            }
+        }
+        // Its buildings, its mines and wells on sites apart; its road plots by kind.
+        in.counts = new int[types.length];
+        long[] kind = new long[4];
+        for (int t = 0; t < types.length && t < d.counts.length; t++) {
+            if (types[t] == null || d.counts[t] <= 0) continue;
+            if (types[t].road() != BuildingVisual.NOT_A_ROAD) { kind[types[t].road()] += (long) d.counts[t] * BuildingVisual.cells(types[t]); continue; }
+            if (!types[t].drawn()) continue;
+            in.counts[t] = Math.max(0, d.counts[t] - (d.sited == null ? 0 : d.sited[t]));
+        }
+        // ...less its Rail Terminals the runs draw as yards (0.7.89).
+        int yards = yardsOf(d);
+        for (int t = 0; t < types.length && yards > 0 && t < in.counts.length; t++) {
+            if (types[t] == null || !types[t].terminal()) continue;
+            int take = Math.min(yards, in.counts[t]);
+            in.counts[t] -= take;
+            yards -= take;
+        }
+        // The city's highways and railway through its frame (0.7.89: the city's runs; THE NETWORK's plan's until 0.7.88), its yards
+        // among them. The model's Elevated Highways are the runs' plots, none a street's surface: what the runs could not lay the
+        // map counts (THE RUNS).
+        runsInto(d, in.fixed);
+        in.gravel = kind[BuildingVisual.GRAVEL];
+        in.paved = kind[BuildingVisual.PAVED];
+        in.highway = 0;
+        // The resource sites over the frame: a mine's or well's its own, the rest fields; the district's own mines reached.
+        for (int b = -1; b <= 1; b++) {
+            for (int a = -1; a <= 1; a++) {
+                if (byKey.get(key(d.dx + a, d.dy + b)) == null) continue;
+                for (DrawnSite s : siteList(d.dx + a, d.dy + b)) {
+                    long sx0 = Math.max(s.x0(), x0), sy0 = Math.max(s.y0(), y0), sx1 = Math.min(s.x1(), x0 + f - 1), sy1 = Math.min(s.y1(), y0 + f - 1);
+                    if (sx0 > sx1 || sy0 > sy1) continue;
+                    byte mark = s.mine() >= 0 ? DistrictPlan.SITE_MINED : DistrictPlan.SITE_FIELD;
+                    for (long y = sy0; y <= sy1; y++) {
+                        for (long x = sx0; x <= sx1; x++) {
+                            int p = (int) ((y - y0) * f + (x - x0));
+                            if (in.site[p] != DistrictPlan.SITE_MINED) in.site[p] = mark;
+                        }
+                    }
+                    if (a == 0 && b == 0 && s.mine() >= 0) in.mines.add(new int[] { (int) (sx0 - x0), (int) (sy0 - y0), (int) (sx1 - x0), (int) (sy1 - y0) });
+                }
+            }
+        }
+        // The seams it surfaces: north, east, south, west, then the corners north-west, north-east, south-east, south-west.
+        int[][][] others = { { { 0, -1 } }, { { 1, 0 } }, { { 0, 1 } }, { { -1, 0 } },
+                { { -1, 0 }, { 0, -1 }, { -1, -1 } }, { { 1, 0 }, { 0, -1 }, { 1, -1 } },
+                { { 1, 0 }, { 0, 1 }, { 1, 1 } }, { { -1, 0 }, { 0, 1 }, { -1, 1 } } };
+        for (int k = 0; k < others.length; k++) {
+            boolean first = true;
+            for (int[] o : others[k]) {
+                District od = byKey.get(key(d.dx + o[0], d.dy + o[1]));
+                if (od != null && DISTRICT_ORDER.compare(od, d) < 0) first = false;
+            }
+            in.surfaces[k] = first;
+        }
+        in.root = d.index % CHAIN_BAND == 0;
+        return in;
     }
 
     /* =====================================================================
@@ -2854,16 +3144,28 @@ public final class CityMap {
      * it was drawn on (CityLand.stamp(), 0.7.67) and its purchases, the type count, the district count), then a
      * record a district in its order - dx and dy (int16), its free plots and
      * those inside its tiles' edge rings (int32), plots used (double), owned
-     * iron and oil sites and a count a type (int32).
+     * iron and oil sites and a count a type (int32) - and since FORMAT 5 the
+     * city's highway and railway runs (int32 their count: 0 until batch RD3
+     * lays them, which adds their records).
      * The stamp is a hash of every other byte, so the same map always writes
      * the same file.
      */
     public byte[] writeSidecar(int month) {
+        return writeSidecar(month, FORMAT);
+    }
+
+    /** ...in a given format, FORMAT or OLDEST_READ (a harness writes the older one to read it back). */
+    byte[] writeSidecar(int month, int format) {
+        return writeSidecar(month, format, true);
+    }
+
+    /** ...and with its runs or (a harness's, as 0.7.88 wrote FORMAT 5) a count of none. */
+    byte[] writeSidecar(int month, int format, boolean withRuns) {
         try {
             ByteArrayOutputStream raw = new ByteArrayOutputStream();
             DataOutputStream out = new DataOutputStream(raw);
             out.writeInt(MAGIC);
-            out.writeInt(FORMAT);
+            out.writeInt(format);
             out.writeLong(seed);
             out.writeInt(month);
             out.writeLong(0);                       // the stamp, below
@@ -2881,6 +3183,12 @@ public final class CityMap {
                 out.writeDouble(d.used());
                 for (int k = 0; k < SITED.length; k++) out.writeInt(d.sites[k]);
                 for (int t = 0; t < types.length; t++) out.writeInt(d.counts[t]);
+            }
+            // The runs (FORMAT 5): their count - 0 for none - and since 0.7.89 (batch RD3) the highways' and the railway's.
+            if (format >= 5) {
+                int n = withRuns ? runs.runs() : 0;
+                out.writeInt(n);
+                if (n > 0) runs.write(out);
             }
             out.flush();
             byte[] bytes = raw.toByteArray();
@@ -2950,7 +3258,9 @@ public final class CityMap {
         if (raw == null || raw.length < STAMP_AT + 8) return null;
         try {
             DataInputStream in = new DataInputStream(new ByteArrayInputStream(raw));
-            if (in.readInt() != MAGIC || in.readInt() != FORMAT) return null;
+            if (in.readInt() != MAGIC) return null;
+            int format = in.readInt();
+            if (format < OLDEST_READ || format > FORMAT) return null;
             long seed = in.readLong();
             int savedMonth = in.readInt();
             long savedStamp = in.readLong();
@@ -2981,18 +3291,32 @@ public final class CityMap {
                 d.usedRoad = m.roadOf(d);
                 if (used != d.used()) return null;
             }
+            // The runs: read back; none written before 0.7.89 (batch RD3), nor by a FORMAT 4 map - laid now from its counts.
+            int nRuns = format >= 5 ? in.readInt() : 0;
+            if (nRuns < 0) return null;
+            if (nRuns > 0) {
+                CityRuns r = CityRuns.read(in);
+                if (r == null) return null;
+                m.runs = r;
+            }
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
             m.sortDistricts();
             m.pyramid = new Pyramid(m);
+            if (nRuns == 0) m.layRuns(m.have);
             return m;
         } catch (IOException | RuntimeException e) {
             return null;
         }
     }
 
-    /** Whether two maps hold the same districts with the same figures, in the same order. */
+    /** Whether two maps hold the same districts with the same figures, in the same order, and (0.7.89) the same runs. */
     public boolean same(CityMap o) {
+        return sameDistricts(o) && runs.same(o.runs);
+    }
+
+    /** Whether two maps hold the same districts with the same figures, in the same order. */
+    public boolean sameDistricts(CityMap o) {
         if (o == null || o.seed != seed || o.districts.size() != districts.size() || o.types.length != types.length) return false;
         for (int i = 0; i < districts.size(); i++) {
             District a = districts.get(i), b = o.districts.get(i);

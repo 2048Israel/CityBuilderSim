@@ -25,7 +25,9 @@ import java.nio.file.Path;
  *   4. the traps: no gated post without a licence, and the staffing floor bites
  *   5. the two brakes are different - fabrication dies on the steel price,
  *      the machine works on the wage bill, and each is CAUSED here
- *   6. it books like everybody else, the audit holds, and it reloads
+ *   6. it books like everybody else, the audit holds, and it reloads - and
+ *      since 0.7.83 (batch O6) it buys the oil on its line, lubricants at
+ *      the spec's rate a tonne made
  *
  * Every fixture causes its condition. The steel test moves the steel price
  * rather than waiting for a mill; the wage test moves the floor rather than
@@ -479,6 +481,25 @@ public class ManufacturingCheck {
         assertTrue("...and less than the fabricator would have paid the world",
                 steelPrice <= booked.getMarkets().get(Good.STEEL).ceiling() + 1e-9);
         assertTrue("the fabricators bought from them", withMill.input(Good.STEEL).boughtLocal > 0);
+
+        /*
+         * ...AND THE OIL ON THE LINE (0.7.83, batch O6; runs/spec-oil.md 2.5):
+         * LUBRICANTS on each plant's uses, ten litres a tonne of machinery and
+         * two a tonne of fabricated steel, bought on the market as the steel
+         * is - a maker's input, bought whole at the operating rate - from the
+         * world here, the city having no lube plant.
+         */
+        double oil = 2 * 1200 * Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED
+                + 180 * Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY;
+        check("the plants take lubricants at the spec's rate a tonne made: two shops' and a machine works' litres a month",
+                withMill.getInputAtCapacity(Good.LUBRICANTS), oil, 0);
+        Sector.Input lub = withMill.input(Good.LUBRICANTS);
+        assertTrue("...a maker's input, bid whole at the operating rate and bought: from the world, with no lube plant here",
+                withMill.isUser(Good.LUBRICANTS) && lub.bid > 0 && Math.abs(lub.bid - lub.needed) <= 1e-9 * lub.needed
+                        && Math.abs(lub.imported - lub.bid) <= 1e-9 * lub.bid && lub.boughtLocal == 0
+                        && booked.getSectors().automotive().isUser(Good.LUBRICANTS));
+        assertTrue("...and on the statement as an import of lubricants",
+                withMill.statement().bought.getOrDefault(Good.LUBRICANTS, new Sector.Split()).abroad > 0);
 
         assertTrue("Manufacturing is the ninth sector",
                 Sectors.KEYS.length > 8 && Sectors.KEYS[8].equals(Sectors.MANUFACTURING));

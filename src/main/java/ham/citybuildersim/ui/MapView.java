@@ -71,7 +71,12 @@ import static ham.citybuildersim.ui.Pieces.*;
  * copied, the counts as they stood (Game.mapDraft()) - drawn on WORKER and
  * kept back on the FX thread (Game.adoptMap()); the far nodes' ground is
  * read from the world (MapTiles.nodeTerrain(), World is safe) on WORKER and
- * coloured on the FX thread. Nothing on WORKER touches a node of the scene.
+ * coloured on the FX thread; and since 0.7.88 (batch RD2) the district plans
+ * the tiles are painted from: a tile whose plans are not drawn
+ * (MapTiles.ready()) hands out their jobs (MapTiles.jobs(): the inputs read
+ * here, the ground read and the plan drawn on WORKER, in order) and shows
+ * another level's picture until they come back and are kept here
+ * (CityMap.adopt()). Nothing on WORKER touches a node of the scene.
  *
  * THE OVERLAY ON THE BLOCK GRID (0.7.69, batch M5; the project's
  * spec-grid.md 2.4): the offers are rectangles of whole blocks, hatched on
@@ -194,6 +199,9 @@ final class MapView {
                 + " -fx-background-radius: 4; -fx-padding: 2 7 3 7;");
         readout.setMouseTransparent(true);
         readout.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        // Within the small map (0.7.88): a street's words after whose it is may run past it, so it wraps there.
+        readout.setWrapText(true);
+        readout.setMaxWidth(SMALL_W - 2 * Palette.GAP);
         showIf(readout, false);
         note.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 6; -fx-padding: 6 12 6 12;");
@@ -304,6 +312,7 @@ final class MapView {
         if (dirty) {
             dirty = false;
             draw();
+            if (expanded) legendNote();
         }
         // Idle: nothing to paint, nothing to draw. A draft or a far node coming back from WORKER asks again.
         if (!more && !dirty && hoverAt == null) {
@@ -415,6 +424,11 @@ final class MapView {
             Img img = pictures.get(key);
             if (img != null && img.version == version) continue;
             if (System.nanoTime() > deadline) return true;
+            // Its district plans drawn away from the screen first (0.7.88): it waits, another level's picture standing in.
+            if (!tiles.ready(tx, ty)) {
+                ask(tx, ty);
+                continue;
+            }
             long stamp = tiles.input(tx, ty, in);
             if (img != null && img.stamp == stamp) {
                 img.version = version;
@@ -434,6 +448,25 @@ final class MapView {
             dirty = true;
         }
         return false;
+    }
+
+    /** A tile's plans' jobs handed to WORKER, each kept on the FX thread when it has run, and the view drawn again. */
+    private void ask(long tx, long ty) {
+        final MapTiles askedFor = tiles;
+        final CityMap map = shownMap;
+        for (CityMap.Job j : tiles.jobs(tx, ty)) {
+            WORKER.submit(() -> {
+                try {
+                    j.run();
+                } catch (RuntimeException e) {
+                    System.out.println("A district's plan could not be drawn: " + e);
+                }
+                Platform.runLater(() -> {
+                    if (tiles == askedFor) map.adopt(j);
+                    requestDraw();
+                });
+            });
+        }
     }
 
     /** The tiles in view, nearest the view's middle first. */
@@ -878,7 +911,7 @@ final class MapView {
             dirty = true;
         }
         String what = null;
-        if (tiles != null && f.level() == MapFrame.L0) {
+        if (tiles != null && f.level() == MapFrame.L0 && tiles.ready(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE))) {
             long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
             long stamp = tiles.input(tx, ty, in);
             TilePainter.Painted painted = tiles.painted(tx, ty, in, stamp);
@@ -980,7 +1013,7 @@ final class MapView {
         card.setMouseTransparent(true);
         card.setManaged(false);
         card.setVisible(false);
-        GridPane legend = legend();
+        VBox legend = legend();
         StackPane.setAlignment(legend, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(legend, new Insets(Palette.GAP));
         bigBox = new StackPane(legend, card);
@@ -1030,7 +1063,7 @@ final class MapView {
         requestDraw();
     }
 
-    /** The legend's entries: the ten classes and flats, the three roads and (0.7.72) the railway, the land, the six resources in fields. */
+    /** The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, the land, the six resources in fields. */
     static List<String[]> legendEntries() {
         List<String[]> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {
@@ -1039,6 +1072,7 @@ final class MapView {
         }
         out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.GRAVEL]), "Gravel road" });
         out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.PAVED]), "Paved road" });
+        out.add(new String[] { css(TileRaster.TRACK_DASH), TRACK_ENTRY });
         out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.HIGHWAY]), "Highway" });
         out.add(new String[] { css(TileRaster.RAIL_LINE), "Railway" });
         out.add(new String[] { "#ffffff", "The city's edge" });
@@ -1047,10 +1081,33 @@ final class MapView {
         return out;
     }
 
-    /** Rows a column of the legend holds: 12, its 23 entries in two columns (11 until 0.7.72 added the railway to its 22). */
+    /** Rows a column of the legend holds: 12, its 24 entries in two columns (11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
     static final int LEGEND_ROWS = 12;
 
-    private static GridPane legend() {
+    /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. */
+    static final String TRACK_ENTRY = "Track";
+
+    /** The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed without a street. */
+    static String packedWords(int packed) {
+        return String.format("%,d building%s packed without a street: the city is short of ground for streets", packed, packed == 1 ? "" : "s");
+    }
+
+    /** ...and when the city has road its streets have no room for (star RD2-4): how much, in plots. */
+    static String surplusWords(long plots) {
+        return String.format("%,d plots of road more than its streets carry", plots);
+    }
+
+    /** ...and (0.7.89) when the railway's runs found no ground for some of its track: how much, in plots. */
+    static String trackWords(long plots) {
+        return String.format("%,d plots of track with no ground left for the railway's lines", plots);
+    }
+
+    /** The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. */
+    static final double LEGEND_NOTE_WIDTH = 300;
+
+    private final Label legendNote = new Label();
+
+    private VBox legend() {
         GridPane grid = new GridPane();
         grid.setHgap(Palette.GAP_LOOSE);
         grid.setVgap(2);
@@ -1058,10 +1115,27 @@ final class MapView {
         for (int i = 0; i < entries.size(); i++) {
             grid.add(keySwatch(entries.get(i)[0], entries.get(i)[1]), i / LEGEND_ROWS, i % LEGEND_ROWS);
         }
-        grid.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: 6; -fx-padding: 8 10 8 10;");
-        grid.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        grid.setMouseTransparent(true);
-        return grid;
+        legendNote.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
+        legendNote.setWrapText(true);
+        legendNote.setMaxWidth(LEGEND_NOTE_WIDTH);
+        showIf(legendNote, false);
+        VBox box = new VBox(6, grid, legendNote);
+        box.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: 6; -fx-padding: 8 10 8 10;");
+        box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        box.setMouseTransparent(true);
+        return box;
+    }
+
+    /** The legend's note, from the map's packing at the city's edge once it is drawn (never planned here): what the city has no room for. */
+    private void legendNote() {
+        if (shownMap == null) return;
+        long[] f = shownMap.legendFiguresIfDrawn();
+        String words = null;
+        if (f != null && f[0] > 0) words = packedWords((int) f[0]);
+        if (f != null && f[1] > 0) words = words == null ? surplusWords(f[1]) : words + "; " + surplusWords(f[1]);
+        if (f != null && f[2] > 0) words = words == null ? trackWords(f[2]) : words + "; " + trackWords(f[2]);
+        if (words != null) legendNote.setText(words);
+        showIf(legendNote, words != null);
     }
 
     /** A box's corners rounded off its contents. */

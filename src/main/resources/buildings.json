@@ -36,10 +36,40 @@
   "A mine also needs a DEPOSIT: buy a land parcel with iron under it, and one",
   "deposit supports one mine. An Oil Well needs an oil site the same way, one a",
   "well: a MINING building stands on the sites of the resource whose good it makes.",
+  "A well stands only on a dry site (a field whose centre is on land), lifts 10%",
+  "less each year and is retired under ten barrels a day, after 263 months.",
   "CRUDE is tonnes of crude oil, lifted by the wells and refined. A refinery 'uses'",
   "CRUDE and 'makes' nothing of its own: its products - petrol, diesel and the rest,",
   "in litres - are the cuts of the crude it runs (sectors.Refining, THE SLATE), its",
   "'stock' the tanks they share; the drivers draw the petrol, the railway the diesel.",
+  "A refinery's CONVERSION UNIT (a reformer, a cracking unit, a coker...) buys and",
+  "makes nothing of its own either: \"refinery\": {\"unit\": \"REFORMER\", \"feed\": 1161495}",
+  "says its kind and the litres a month of its feed stream it takes from the crude",
+  "units' run (sectors.RefineryFlow): REFORMER, CRACKER, HYDROCRACKER, ALKYLATION,",
+  "COKER, LUBE or ASPHALT.",
+  "A FILLING STATION (\"pump\": 350000) is the grocers' forecourt: it buys and makes",
+  "nothing on a market of its own. Retail draws the drivers' petrol at wholesale and",
+  "sells it at the pump (sectors.Retail, THE FORECOURTS); 'pump' is the litres a month",
+  "a station sells at its typical throughput. LUBRICANTS in a factory's 'uses' are",
+  "litres of oil on its line: 8 a vehicle built, 10 a tonne of machinery, 2 a tonne of",
+  "fabricated steel (runs/spec-oil.md 2.5).",
+  "A TANK FARM is the refiners' storage: its 'stock' is litres of tank room (500,000",
+  "m3). With one standing the refiners keep a month of their crude units' crude on",
+  "hand in it and their products share the rest (sectors.Refining, THE TANK FARM). A",
+  "STRATEGIC RESERVE is the same tanks owned by the city, holding crude oil only: the",
+  "city fills it and releases it in the month's crude market (StrategicReserve).",
+  "A PORTS building is one of the city's sea terminals: \"port\": {\"cargo\": \"LIQUID\",",
+  "\"tonnes\": 3250000} is the kind of cargo its berth handles - LIQUID, DRY_BULK,",
+  "CONTAINER or GENERAL - and the tonnes a year. It needs the city to own some sea, and",
+  "the kind's goods go by sea in the share its berths cover (Ports).",
+  "THE OIL AT SEA: \"offshore\": {\"kind\": \"PLATFORM\", \"slots\": 12} is an Offshore",
+  "Platform's jacket, standing on a shallow sea field the city owns (150 m deep at most)",
+  "with slots for 12 wells, at most one a sea site of its field; {\"kind\": \"WELL\"} is a",
+  "Platform Well in one of them, lifting its crude as a land well does, held three",
+  "years then 8.5% less a year; {\"kind\": \"PIPELINE\", \"onshore\": 3000} is a",
+  "kilometre of Crude Pipeline (its cash a kilometre at sea, \"onshore\" one on land),",
+  "which takes a field's crude ashore in place of the shuttle tankers. They stand at",
+  "sea and take none of the city's dry ground (sectors.Oil).",
   "production1 / production2 survive only for the utilities: watts for ELECTRICITY,",
   "water units for WATER.",
   "A WATER building draws fresh water unless it says \"source\": \"SEA\". Fresh water is",
@@ -66,7 +96,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 76,
+ "nextId": 101,
  "buildings": [
   {
    "id": 0,
@@ -1141,7 +1171,8 @@
     "FABRICATED_STEEL": 1200
    },
    "uses": {
-    "STEEL": 1260
+    "STEEL": 1260,
+    "LUBRICANTS": 2400
    }
   },
   {
@@ -1166,7 +1197,8 @@
     "MACHINERY": 180
    },
    "uses": {
-    "STEEL": 261
+    "STEEL": 261,
+    "LUBRICANTS": 1800
    }
   },
   {
@@ -1191,7 +1223,8 @@
     "FABRICATED_STEEL": 3000
    },
    "uses": {
-    "STEEL": 3150
+    "STEEL": 3150,
+    "LUBRICANTS": 6000
    }
   },
   {
@@ -1492,7 +1525,8 @@
    },
    "uses": {
     "FABRICATED_STEEL": 420,
-    "MACHINERY": 48
+    "MACHINERY": 48,
+    "LUBRICANTS": 960
    },
    "stock": 360
   },
@@ -1519,7 +1553,8 @@
    },
    "uses": {
     "FABRICATED_STEEL": 1750,
-    "MACHINERY": 200
+    "MACHINERY": 200,
+    "LUBRICANTS": 4000
    },
    "stock": 1500
   },
@@ -1546,7 +1581,8 @@
    },
    "uses": {
     "FABRICATED_STEEL": 750,
-    "MACHINERY": 90
+    "MACHINERY": 90,
+    "LUBRICANTS": 1200
    },
    "stock": 450
   },
@@ -1736,7 +1772,6 @@
    "electricity": 30,
    "water": 5,
    "jobs": {
-    "NO_DIPLOMA": 2,
     "DIPLOMA": 1
    },
    "land": 87120,
@@ -1767,6 +1802,510 @@
     "CRUDE": 8300
    },
    "stock": 25000000
+  },
+  {
+   "id": 76,
+   "name": "Crude Unit",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 400000,
+   "constructionPoints": 200000,
+   "constructionMaterials": 6667,
+   "electricity": 4400,
+   "water": 1100,
+   "jobs": {
+    "NO_DIPLOMA": 80,
+    "DIPLOMA": 48,
+    "COLLEGE_ENGINEERING": 24,
+    "UNIV_SCIENCE": 8
+   },
+   "land": 4305564,
+   "roadLoad": 32950,
+   "uses": {
+    "CRUDE": 415000
+   },
+   "stock": 1250000000
+  },
+  {
+   "id": 77,
+   "name": "Small Reformer",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 16200,
+   "constructionPoints": 8100,
+   "constructionMaterials": 270,
+   "electricity": 29,
+   "water": 7.25,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 64583,
+   "refinery": {
+    "unit": "REFORMER",
+    "feed": 1161495
+   }
+  },
+  {
+   "id": 78,
+   "name": "Reformer",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 108000,
+   "constructionPoints": 54000,
+   "constructionMaterials": 1800,
+   "electricity": 1450,
+   "water": 362.5,
+   "jobs": {
+    "NO_DIPLOMA": 15,
+    "DIPLOMA": 9,
+    "COLLEGE_ENGINEERING": 5,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 430556,
+   "refinery": {
+    "unit": "REFORMER",
+    "feed": 58074771
+   }
+  },
+  {
+   "id": 79,
+   "name": "Small Cracking Unit",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 19782,
+   "constructionPoints": 9891,
+   "constructionMaterials": 330,
+   "electricity": 74,
+   "water": 18.5,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 121675,
+   "refinery": {
+    "unit": "CRACKER",
+    "feed": 2322991
+   }
+  },
+  {
+   "id": 80,
+   "name": "Cracking Unit",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 105000,
+   "constructionPoints": 52500,
+   "constructionMaterials": 1750,
+   "electricity": 2300,
+   "water": 575,
+   "jobs": {
+    "NO_DIPLOMA": 20,
+    "DIPLOMA": 12,
+    "COLLEGE_ENGINEERING": 6,
+    "UNIV_SCIENCE": 2
+   },
+   "land": 645835,
+   "refinery": {
+    "unit": "CRACKER",
+    "feed": 72593464
+   }
+  },
+  {
+   "id": 81,
+   "name": "Small Hydrocracker",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 19035,
+   "constructionPoints": 9518,
+   "constructionMaterials": 317,
+   "electricity": 228,
+   "water": 57,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 123428,
+   "refinery": {
+    "unit": "HYDROCRACKER",
+    "feed": 2322991
+   }
+  },
+  {
+   "id": 82,
+   "name": "Hydrocracker",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 83000,
+   "constructionPoints": 41500,
+   "constructionMaterials": 1383,
+   "electricity": 4750,
+   "water": 1187.5,
+   "jobs": {
+    "NO_DIPLOMA": 18,
+    "DIPLOMA": 10,
+    "COLLEGE_ENGINEERING": 5,
+    "UNIV_SCIENCE": 2
+   },
+   "land": 538196,
+   "refinery": {
+    "unit": "HYDROCRACKER",
+    "feed": 48395643
+   }
+  },
+  {
+   "id": 83,
+   "name": "Small Alkylation Unit",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 18845,
+   "constructionPoints": 9422,
+   "constructionMaterials": 314,
+   "electricity": 60,
+   "water": 15,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 52915,
+   "refinery": {
+    "unit": "ALKYLATION",
+    "feed": 580748
+   }
+  },
+  {
+   "id": 84,
+   "name": "Alkylation Unit",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 115000,
+   "constructionPoints": 57500,
+   "constructionMaterials": 1917,
+   "electricity": 2500,
+   "water": 625,
+   "jobs": {
+    "NO_DIPLOMA": 15,
+    "DIPLOMA": 9,
+    "COLLEGE_ENGINEERING": 5,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 322917,
+   "refinery": {
+    "unit": "ALKYLATION",
+    "feed": 24197821
+   }
+  },
+  {
+   "id": 85,
+   "name": "Small Coker",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 18671,
+   "constructionPoints": 9336,
+   "constructionMaterials": 311,
+   "electricity": 68,
+   "water": 17,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 191400,
+   "refinery": {
+    "unit": "COKER",
+    "feed": 2177804
+   }
+  },
+  {
+   "id": 86,
+   "name": "Coker",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 84000,
+   "constructionPoints": 42000,
+   "constructionMaterials": 1400,
+   "electricity": 1500,
+   "water": 375,
+   "jobs": {
+    "NO_DIPLOMA": 20,
+    "DIPLOMA": 12,
+    "COLLEGE_ENGINEERING": 6,
+    "UNIV_SCIENCE": 2
+   },
+   "land": 861113,
+   "refinery": {
+    "unit": "COKER",
+    "feed": 48395643
+   }
+  },
+  {
+   "id": 87,
+   "name": "Small Lube Plant",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 18019,
+   "constructionPoints": 9010,
+   "constructionMaterials": 300,
+   "electricity": 360,
+   "water": 90,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 215509,
+   "refinery": {
+    "unit": "LUBE",
+    "feed": 2322991
+   }
+  },
+  {
+   "id": 88,
+   "name": "Lube Plant",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 36000,
+   "constructionPoints": 18000,
+   "constructionMaterials": 600,
+   "electricity": 1500,
+   "water": 375,
+   "jobs": {
+    "NO_DIPLOMA": 15,
+    "DIPLOMA": 9,
+    "COLLEGE_ENGINEERING": 5,
+    "UNIV_SCIENCE": 1
+   },
+   "land": 430556,
+   "refinery": {
+    "unit": "LUBE",
+    "feed": 9679129
+   }
+  },
+  {
+   "id": 89,
+   "name": "Small Asphalt Unit",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 2152,
+   "constructionPoints": 1076,
+   "constructionMaterials": 36,
+   "electricity": 9,
+   "water": 2.25,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 85792,
+   "refinery": {
+    "unit": "ASPHALT",
+    "feed": 2177804
+   }
+  },
+  {
+   "id": 90,
+   "name": "Asphalt Unit",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 5400,
+   "constructionPoints": 2700,
+   "constructionMaterials": 90,
+   "electricity": 60,
+   "water": 15,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 215278,
+   "refinery": {
+    "unit": "ASPHALT",
+    "feed": 14518693
+   }
+  },
+  {
+   "id": 91,
+   "name": "Filling Station",
+   "category": "COMMERCIAL",
+   "sector": "Retail",
+   "cashCost": 302,
+   "constructionPoints": 80,
+   "constructionMaterials": 11,
+   "electricity": 6,
+   "water": 1,
+   "jobs": {
+    "NO_DIPLOMA": 2,
+    "DIPLOMA": 1
+   },
+   "land": 43056,
+   "roadLoad": 10,
+   "pump": 350000
+  },
+  {
+   "id": 92,
+   "name": "Tank Farm",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Refining",
+   "cashCost": 190000,
+   "constructionPoints": 95000,
+   "constructionMaterials": 3167,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 3,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "land": 1076391,
+   "stock": 500000000
+  },
+  {
+   "id": 93,
+   "name": "Strategic Reserve",
+   "category": "HEAVY_INDUSTRY",
+   "cashCost": 190000,
+   "constructionPoints": 95000,
+   "constructionMaterials": 3167,
+   "electricity": 0,
+   "water": 0,
+   "land": 1076391,
+   "stock": 500000000
+  },
+  {
+   "id": 94,
+   "name": "Tanker Terminal",
+   "category": "PORTS",
+   "cashCost": 96000,
+   "constructionPoints": 48000,
+   "constructionMaterials": 1600,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 5,
+    "DIPLOMA": 2
+   },
+   "land": 430556,
+   "port": {
+    "cargo": "LIQUID",
+    "tonnes": 3250000
+   }
+  },
+  {
+   "id": 95,
+   "name": "Bulk Terminal",
+   "category": "PORTS",
+   "cashCost": 2310000,
+   "constructionPoints": 1155000,
+   "constructionMaterials": 38500,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 161,
+    "DIPLOMA": 62,
+    "COLLEGE_ENGINEERING": 11
+   },
+   "land": 2368060,
+   "port": {
+    "cargo": "DRY_BULK",
+    "tonnes": 27500000
+   }
+  },
+  {
+   "id": 96,
+   "name": "Container Terminal",
+   "category": "PORTS",
+   "cashCost": 461000,
+   "constructionPoints": 230500,
+   "constructionMaterials": 7683,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 403,
+    "DIPLOMA": 154,
+    "COLLEGE_ENGINEERING": 28
+   },
+   "land": 2152782,
+   "port": {
+    "cargo": "CONTAINER",
+    "tonnes": 6750000
+   }
+  },
+  {
+   "id": 97,
+   "name": "General Cargo Terminal",
+   "category": "PORTS",
+   "cashCost": 70000,
+   "constructionPoints": 35000,
+   "constructionMaterials": 1167,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 8,
+    "DIPLOMA": 3
+   },
+   "land": 107639,
+   "port": {
+    "cargo": "GENERAL",
+    "tonnes": 450000
+   }
+  },
+  {
+   "id": 98,
+   "name": "Offshore Platform",
+   "category": "MINING",
+   "sector": "Oil",
+   "cashCost": 18000,
+   "constructionPoints": 3600,
+   "constructionMaterials": 450,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 6,
+    "DIPLOMA": 4,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "offshore": {
+    "kind": "PLATFORM",
+    "slots": 12
+   }
+  },
+  {
+   "id": 99,
+   "name": "Platform Well",
+   "category": "MINING",
+   "sector": "Oil",
+   "cashCost": 14000,
+   "constructionPoints": 2800,
+   "constructionMaterials": 350,
+   "electricity": 0,
+   "water": 0,
+   "jobs": {
+    "DIPLOMA": 1
+   },
+   "makes": {
+    "CRUDE": 415
+   },
+   "offshore": {
+    "kind": "WELL"
+   }
+  },
+  {
+   "id": 100,
+   "name": "Crude Pipeline",
+   "category": "MINING",
+   "sector": "Oil",
+   "cashCost": 4500,
+   "constructionPoints": 900,
+   "constructionMaterials": 113,
+   "electricity": 0,
+   "water": 0,
+   "offshore": {
+    "kind": "PIPELINE",
+    "onshore": 3000
+   }
   }
  ]
 }

@@ -914,6 +914,123 @@ public final class World {
         }
     }
 
+    /**
+     * One row (or, `column`, one column) of a tile's ground, its `at`-th: the
+     * TILE plots tileTerrain() gives that line, byte for byte - the same
+     * corners, octaves and sums in the same order, evaluated on the line's
+     * plots alone (0.7.89, batch RD3: the city map's highway and railway runs
+     * read the ground along their corridors a line at a time, about a tenth of
+     * a tile's cost). out[i] is the line's i-th plot, west to east (north to
+     * south). A tile off the world is sea.
+     */
+    public void lineTerrain(long tx, long ty, boolean column, int at, byte[] out) {
+        build();
+        if (tx < 0 || ty < 0 || tx >= SIDE / TILE || ty >= SIDE / TILE) {
+            Arrays.fill(out, 0, TILE, SALT);
+            return;
+        }
+        LineScratch s = LINE_SCRATCH.get();
+        long x0 = tx * TILE, y0 = ty * TILE;
+        double[] eAcc = s.e, lAcc = s.lake, fAcc = s.forest;
+        // The tile's corners (the elevation's coarse octaves and the lake's), each kept a while: the lines of a corridor run
+        // through tiles side by side, which share two corners, and a tile's other lines all four.
+        double[] cv;
+        cv = s.corner(this, x0, y0);
+        double c00 = cv[0], l00 = cv[1];
+        cv = s.corner(this, x0 + TILE, y0);
+        double c10 = cv[0], l10 = cv[1];
+        cv = s.corner(this, x0, y0 + TILE);
+        double c01 = cv[0], l01 = cv[1];
+        cv = s.corner(this, x0 + TILE, y0 + TILE);
+        double c11 = cv[0], l11 = cv[1];
+        bilinearLine(c00, c10, c01, c11, ELEV_COARSE_WEIGHT, column, at, eAcc);
+        for (int k = ELEV_FINE_HI; k >= ELEV_FINE_LO; k--) {
+            octaveLine(s.lat, oct(F_ELEV_FINE, k), k, x0, y0, ELEV_FINE_WEIGHT * amp(ELEV_FINE_HI, k) / NORM_FINE, column, at, eAcc);
+        }
+        int lakeCorner = LAKE_HI - 2;
+        bilinearLine(l00, l10, l01, l11, 1, column, at, lAcc);
+        for (int k = lakeCorner - 1; k >= LAKE_LO; k--) octaveLine(s.lat, oct(F_LAKE, k), k, x0, y0, amp(LAKE_HI, k) / NORM_LAKE, column, at, lAcc);
+        Arrays.fill(fAcc, 0);
+        for (int k = FOREST_HI; k >= FOREST_LO; k--) octaveLine(s.lat, oct(F_FOREST, k), k, x0, y0, amp(FOREST_HI, k) / NORM_FOREST, column, at, fAcc);
+        int nseg = 0;
+        if (!(x0 + TILE < riverBox0x || x0 > riverBox1x || y0 + TILE < riverBox0y || y0 > riverBox1y)) {
+            if (s.segs.length < riverX.length) s.segs = new int[riverX.length];
+            double reach = RIVER_HALF_WIDTH + RIVER_WIDENS;
+            for (int k = 0; k + 1 < riverX.length; k++) {
+                double mx0 = Math.min(riverX[k], riverX[k + 1]) - reach, mx1 = Math.max(riverX[k], riverX[k + 1]) + reach;
+                double my0 = Math.min(riverY[k], riverY[k + 1]) - reach, my1 = Math.max(riverY[k], riverY[k + 1]) + reach;
+                if (mx1 >= x0 && mx0 <= x0 + TILE && my1 >= y0 && my0 <= y0 + TILE) s.segs[nseg++] = k;
+            }
+        }
+        double lakeReach = lakeR + TILE;
+        boolean lakeNear = Math.abs(x0 + TILE / 2.0 - lakeX) < lakeReach && Math.abs(y0 + TILE / 2.0 - lakeY) < lakeReach;
+        for (int i = 0; i < TILE; i++) {
+            double e = eAcc[i];
+            if (e < seaTheta) { out[i] = SALT; continue; }
+            int px = column ? at : i, py = column ? i : at;
+            double x = x0 + px + 0.5, y = y0 + py + 0.5;
+            boolean wet = lAcc[i] >= LAKE_THETA || (lakeNear && inLake(x, y));
+            for (int q = 0; q < nseg && !wet; q++) wet = onSegment(s.segs[q], x, y);
+            if (wet) { out[i] = FRESH; continue; }
+            if (e < seaTheta + BEACH_BAND) { out[i] = SAND; continue; }
+            out[i] = fAcc[i] >= FOREST_THETA ? FOREST : GRASS;
+        }
+    }
+
+    /** One thread's working arrays for a line, and the tile corners it met last (their elevation's coarse octaves and lake's, as tileTerrain() reads them). */
+    private static final class LineScratch {
+        final double[] e = new double[TILE], lake = new double[TILE], forest = new double[TILE];
+        final double[] lat = new double[64];
+        int[] segs = new int[64];
+        static final int CORNERS = 64;
+        final long[] cornerX = new long[CORNERS], cornerY = new long[CORNERS], cornerSeed = new long[CORNERS];
+        final boolean[] cornerSet = new boolean[CORNERS];
+        final double[][] cornerV = new double[CORNERS][2];
+
+        /** A tile corner's {elevation's coarse octaves, lake's corner octaves}, as tileTerrain()'s c00 and l00 at (x, y): kept by place and world. */
+        double[] corner(World w, long x, long y) {
+            int h = (int) ((World.mix(x * 0x9E3779B97F4A7C15L ^ y) >>> 58) & (CORNERS - 1));
+            if (cornerSet[h] && cornerX[h] == x && cornerY[h] == y && cornerSeed[h] == w.seed) return cornerV[h];
+            cornerV[h][0] = w.fbm(F_ELEV, x, y, ELEV_COARSE_HI, ELEV_COARSE_LO);
+            cornerV[h][1] = w.part(F_LAKE, x, y, LAKE_HI, LAKE_HI - 2) / NORM_LAKE;
+            cornerX[h] = x; cornerY[h] = y; cornerSeed[h] = w.seed; cornerSet[h] = true;
+            return cornerV[h];
+        }
+    }
+
+    private static final ThreadLocal<LineScratch> LINE_SCRATCH = ThreadLocal.withInitial(LineScratch::new);
+
+    /** bilinear() on one line of the tile's plots: acc[i] is the line's i-th plot's value. */
+    private static void bilinearLine(double c00, double c10, double c01, double c11, double scale, boolean column, int at, double[] acc) {
+        for (int i = 0; i < TILE; i++) {
+            int px = column ? at : i, py = column ? i : at;
+            double v = (py + 0.5) / TILE;
+            double u = (px + 0.5) / TILE;
+            acc[i] = scale * (c00 + (c10 - c00) * u + (c01 - c00) * v + (c00 - c10 - c01 + c11) * u * v);
+        }
+    }
+
+    /** octaveTile() on one line of the tile's plots: the same lattice, the same sum at each of its plots. */
+    private static void octaveLine(double[] lat, long os, int k, long x0, long y0, double amp, boolean column, int at, double[] acc) {
+        int w = 1 << k, n = TILE / w + 2;
+        long lx0 = x0 >> k, ly0 = y0 >> k;
+        for (int j = 0; j < n; j++) for (int i = 0; i < n; i++) lat[j * n + i] = amp * lattice(os, lx0 + i, ly0 + j);
+        double[] sm = SMOOTH[k];
+        int mask = w - 1;
+        for (int i = 0; i < TILE; i++) {
+            int px = column ? at : i, py = column ? i : at;
+            long gy = y0 + py;
+            int rj = (int) ((gy >> k) - ly0);
+            double v = sm[(int) (gy & mask)];
+            int r0 = rj * n, r1 = r0 + n;
+            long gx = x0 + px;
+            int ri = (int) ((gx >> k) - lx0);
+            double u = sm[(int) (gx & mask)];
+            double a = lat[r0 + ri], b = lat[r0 + ri + 1], c = lat[r1 + ri], d = lat[r1 + ri + 1];
+            acc[i] += a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+        }
+    }
+
     /** Sets acc to scale x the bilinear blend of four corner values at each plot's centre. */
     private static void bilinear(double c00, double c10, double c01, double c11, double scale, double[] acc) {
         for (int py = 0; py < TILE; py++) {

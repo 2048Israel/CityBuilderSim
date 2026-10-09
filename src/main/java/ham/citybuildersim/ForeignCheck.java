@@ -188,11 +188,17 @@ public class ForeignCheck {
                 // ...the households' fuel the world sold them: FUEL's since
                 // 0.7.62, the households among its buyers (an import with no
                 // good from 0.7.49 until fuel was a good) - PETROL's since 0.7.76.
-                double fuel = city.getHouseholdFuelImports();
+                // ...and since 0.7.83 (batch O6) bought for them by the grocers'
+                // forecourts, Retail among PETROL's buyers - the month the strike
+                // banked - and the households' own import nothing.
+                double fuel = city.getSectors().retail().statement().bought
+                        .getOrDefault(Good.PETROL, new Sector.Split()).abroad;
                 if (fuel > 0) monthsFuel++;
                 Sectors.GoodTrade fuelTrade = goods.goods().get(Good.PETROL);
-                double fuelBooked = fuelTrade == null ? 0 : fuelTrade.buyers().getOrDefault(Sectors.HOUSEHOLDS, 0.0);
-                worstFuel = Math.max(worstFuel, Math.abs(fuelBooked - fuel) / Math.max(1, fuel));
+                double fuelBooked = fuelTrade == null ? 0 : fuelTrade.buyers().getOrDefault(Sectors.RETAIL, 0.0);
+                double theirs = fuelTrade == null ? 0 : fuelTrade.buyers().getOrDefault(Sectors.HOUSEHOLDS, 0.0);
+                worstFuel = Math.max(worstFuel, (Math.abs(fuelBooked - fuel) + Math.abs(theirs)
+                        + Math.abs(city.getHouseholdFuelImports())) / Math.max(1, fuel));
             }
         } finally {
             System.setOut(out);
@@ -270,8 +276,9 @@ public class ForeignCheck {
                 worstSold, 0, 1e-9);
         close("...and what they bought, with the fuel and the households' cars, its imports",
                 worstBought, 0, 1e-9);
-        assertTrue("fixture: the city's drivers bought fuel abroad, month after month", monthsFuel > 12);
-        close("the households' imported fuel is PETROL's (FUEL's until 0.7.76), the households among its buyers", worstFuel, 0, 1e-9);
+        assertTrue("fixture: the city's drivers' fuel was bought abroad, month after month", monthsFuel > 12);
+        close("the drivers' imported fuel is PETROL's (FUEL's until 0.7.76), the forecourts among its buyers and the households"
+                + " not (0.7.83; the households until then)", worstFuel, 0, 1e-9);
 
         /*
          * WAGES ARE NOT IMPORTS, which is the whole reason for the split.

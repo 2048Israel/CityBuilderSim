@@ -129,19 +129,27 @@ import java.util.List;
  *      ones, and a new city's rule, advice, neutral rate and holdingRate()
  *      are the old ones; a strict step on its aim - never under
  *      MIN_INFLATION_TARGET - sets the neutral real rate plus the aim, a
- *      loose one holds the neutral rate inside its band and answers only
- *      the excess past it, every step's weight is over one, and over the
- *      target the rate rises with each step; the words say what it aims at.
+ *      loose one holds the neutral rate from the target to its band's top
+ *      and answers only the excess past it, and since 0.7.81 - Jerus:
+ *      "loose yes, its just doesnt mind high inflation as much, but low
+ *      inflation definitely" - under the target a loose step is Standard's
+ *      rule to the bit, its money never dearer than Standard's at any
+ *      inflation, while over the target the loose steps, and everywhere the
+ *      strict ones, are the 0.7.52 rule to the bit; every step's weight is
+ *      over one, and over the target the rate rises with each step; the
+ *      words say what it aims at.
  *      Then a probe city - the playtest's founding and rhythm (its seed 11's
  *      shape since 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
  *      months from one save at each end and at Standard: the Policy tab's
  *      preview (PolicyPreview.ruleAt()) at the step in force is the rule's
- *      own; very strict holds prices lower than Standard, and very loose
- *      lies on the side of Standard its band puts it (0.7.79): over the
- *      target, where Standard's money is dearer, very loose's prices run
- *      higher; under it, where Standard eases and very loose holds the
- *      neutral rate, they run lower - the side read off the Standard twin,
- *      its dial's average against very loose's the fixture; neither end's rate reaches the dial's stop or leaves
+ *      own; very strict holds prices lower than Standard; the very loose
+ *      twin, reading inflation under its target in some months and over it
+ *      in others, set Standard's rate to the bit in every month under it
+ *      and money cheaper than Standard's rule in every month over it
+ *      (0.7.81; until then very loose was held to lie on the side of
+ *      Standard its band put it - over the target dearer prices, under it
+ *      lower, where it held the neutral rate and Standard eased);
+ *      neither end's rate reaches the dial's stop or leaves
  *      its last year more than a full miss off the target; and the very
  *      loose city trusts the bank less. The dial is a decision, survives a
  *      save, and a save without it, or with a name this build does not
@@ -1502,6 +1510,19 @@ public class CentralBankCheck {
                 + DebtManager.TAYLOR_WEIGHT * (inflation - target);
     }
 
+    /**
+     * The rule at a step as it was from 0.7.52 to 0.7.80, written out: struck at the aim, on the gap past the band either
+     * side of it, at the step's weight. Over the target the loose steps, and everywhere the strict ones, are still this
+     * (0.7.81); under the target a loose step is Standard's.
+     */
+    static double rule052(double inflation, double target, DebtManager.Strictness s) {
+        double aim = s.aim(target);
+        double gap = inflation - aim;
+        double band = s.band();
+        double answered = Math.abs(gap) <= band ? 0 : gap - Math.copySign(band, gap);
+        return DebtManager.NEUTRAL_RATE + (aim - DebtManager.DEFAULT_INFLATION_TARGET) + s.weight * answered;
+    }
+
     /** Equal to the bit (a NaN as any NaN). */
     static boolean bits(double a, double b) { return Double.doubleToLongBits(a) == Double.doubleToLongBits(b); }
 
@@ -1512,7 +1533,7 @@ public class CentralBankCheck {
     static final int STRICT_HORIZON = 240;
 
     static void howStrict() throws Exception {
-        out.println("\n--- 21. how strict: Standard is the old rule to the bit, the ends hold prices lower and higher, and neither spirals ---");
+        out.println("\n--- 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals ---");
         DebtManager.Strictness standard = DebtManager.Strictness.STANDARD;
         DebtManager.Strictness strictest = DebtManager.Strictness.VERY_STRICT;
         DebtManager.Strictness loosest = DebtManager.Strictness.VERY_LOOSE;
@@ -1572,11 +1593,10 @@ public class CentralBankCheck {
                         - (DebtManager.NEUTRAL_RATE + (aim - DebtManager.DEFAULT_INFLATION_TARGET))) <= 1e-15;
             }
             if (band > 0) {
-                for (double inside : new double[] { -band, -band / 2, 0, band / 2, band }) {
+                for (double inside : new double[] { 0, band / 2, band }) {
                     inBand &= DebtManager.ruleRate(target + inside, target, s) == neutral;
                 }
-                past &= Math.abs(DebtManager.ruleRate(target + band + .01, target, s) - neutral - s.weight * .01) <= 1e-15
-                        && Math.abs(DebtManager.ruleRate(target - band - .01, target, s) - neutral + s.weight * .01) <= 1e-15;
+                past &= Math.abs(DebtManager.ruleRate(target + band + .01, target, s) - neutral - s.weight * .01) <= 1e-15;
             }
             if (s.ordinal() > 0) {
                 DebtManager.Strictness looser = DebtManager.Strictness.values()[s.ordinal() - 1];
@@ -1584,8 +1604,38 @@ public class CentralBankCheck {
             }
         }
         assertTrue("a strict step on its aim sets the neutral real rate plus the aim", onAim);
-        assertTrue("a loose step holds the neutral rate anywhere inside its band", inBand);
-        assertTrue("...and past it answers only the excess, at its weight, either way", past);
+        assertTrue("a loose step holds the neutral rate from the target to the top of its band", inBand);
+        assertTrue("...and past the top answers only the excess, at its weight", past);
+        /*
+         * ...AND UNDER THE TARGET A LOOSE STEP IS STANDARD'S RULE (0.7.81, batch N6). Jerus: "loose yes, its just
+         * doesnt mind high inflation as much, but low inflation definitely". Until 0.7.81 its band lay either side of
+         * the target, and "...past it answers only the excess, at its weight, either way" was this section's label:
+         * under the target it held the neutral rate where Standard eased. Now the band is over the target only, and
+         * under it the loose steps cut as Standard does, to the bit (DebtManager, LOOSE MINDS LOW INFLATION).
+         */
+        int below = 0, belowDiffer = 0, dearer = 0, kept052 = 0, kept052Differ = 0;
+        for (DebtManager.Strictness s : DebtManager.Strictness.values()) {
+            for (int t = 0; t <= Math.round(DebtManager.MAX_INFLATION_TARGET / .005); t++) {
+                double tg = t * .005;
+                for (int k = -400; k <= 2000; k++) {
+                    double inflation = k * .0005, rate = DebtManager.ruleRate(inflation, tg, s);
+                    double standardRate = DebtManager.ruleRate(inflation, tg, standard);
+                    if (s.band() > 0 && inflation < tg) {
+                        below++;
+                        if (!bits(rate, standardRate)) belowDiffer++;
+                    } else {
+                        kept052++;
+                        if (!bits(rate, rule052(inflation, tg, s))) kept052Differ++;
+                    }
+                    if (s.band() > 0 && rate > standardRate) dearer++;
+                }
+            }
+        }
+        assertTrue(String.format("...and under the target a loose step is Standard's rule to the bit: it minds low inflation as"
+                + " Standard does (0.7.81; %,d points, %d differ)", below, belowDiffer), below > 0 && belowDiffer == 0);
+        assertTrue(String.format("...so at no inflation is a loose step's money dearer than Standard's (%d points are)", dearer), dearer == 0);
+        assertTrue(String.format("over the target the loose steps, and everywhere the strict ones, are the 0.7.52 rule to the bit"
+                + " (%,d points, %d differ)", kept052, kept052Differ), kept052Differ == 0);
         assertTrue("every step's weight is over one: past its band, inflation makes money dearer", principle);
         assertTrue("three points over the target, each step sets more than the one looser", rises);
         assertTrue("the words: Standard aims at the target",
@@ -1593,9 +1643,10 @@ public class CentralBankCheck {
         assertTrue("...very strict under it, at its aim: " + DebtManager.aimWords(target, strictest),
                 DebtManager.aimWords(target, strictest).equals(String.format("aims under 2.0%%, at %.1f%%",
                         (target - DebtManager.STRICTEST_AIM) * 100)));
-        assertTrue("...very loose acts only past its band: " + DebtManager.aimWords(target, loosest),
-                DebtManager.aimWords(target, loosest).startsWith(String.format("acts only past %.1f%%",
-                        (target + DebtManager.LOOSEST_BAND) * 100)));
+        assertTrue("...very loose acts only past its band, or under the target (0.7.81; under the band until then): "
+                        + DebtManager.aimWords(target, loosest),
+                DebtManager.aimWords(target, loosest).equals(String.format("acts only past %.1f%% (or under %.1f%%)",
+                        (target + DebtManager.LOOSEST_BAND) * 100, target * 100)));
 
         /* ---- the probe city ---- */
         GameFiles files = GameFiles.scratch("howstrict");
@@ -1612,6 +1663,9 @@ public class CentralBankCheck {
         double[] meanRate = new double[3];
         Game[] twins = new Game[3];
         boolean previewIsTheRule = true;
+        // The very loose twin's months by the side of its target the rule read (0.7.81): under it Standard's rate, to the
+        // bit; over it money cheaper than Standard's rule at that reading - inside the band the neutral rate.
+        int looseUnder = 0, looseUnderAsStandard = 0, looseOver = 0, looseOverCheaper = 0, loosePast = 0;
         for (int e = 0; e < ends.length; e++) {
             final int i = e;
             quietly(() -> {
@@ -1623,7 +1677,20 @@ public class CentralBankCheck {
             double start = g.getPriceIndex().getIndex(), yearAgo = start;
             for (int m = 1; m <= STRICT_HORIZON; m++) {
                 if (m == STRICT_HORIZON - 11) yearAgo = g.getPriceIndex().getIndex();
+                // What the autopilot reads at the top of the month (Game.nextMonth(), THE AUTOPILOT).
+                double read = g.getPriceIndex().inflation();
                 strictMonth(g);
+                if (ends[i] == loosest) {
+                    double set = g.getDebtManager().getPolicyRate(), holding = g.getDebtManager().holdingRate(read);
+                    if (read < target) {
+                        looseUnder++;
+                        if (bits(set, holding)) looseUnderAsStandard++;
+                    } else if (read > target) {
+                        looseOver++;
+                        if (set < holding) looseOverCheaper++;
+                        if (read > target + loosest.band()) loosePast++;
+                    }
+                }
                 topRate[i] = Math.max(topRate[i], g.getDebtManager().getPolicyRate());
                 meanRate[i] += g.getDebtManager().getPolicyRate() / STRICT_HORIZON;
                 trust[i] += g.getExpectations().getCredibility() / STRICT_HORIZON;
@@ -1642,25 +1709,23 @@ public class CentralBankCheck {
         assertTrue("the Policy tab's preview at the step in force is the rule's own, to the bit", previewIsTheRule);
         assertTrue("very strict holds prices lower than Standard over the horizon", inflation[0] < inflation[1]);
         /*
-         * ...AND VERY LOOSE ON THE SIDE OF STANDARD ITS BAND PUTS IT (0.7.79, star O3-1: the premise made
-         * correct). Very loose holds the neutral rate anywhere inside its band, LOOSEST_BAND either side
-         * of the target, where Standard answers every point of the gap: over the target Standard's money
-         * is the dearer and holds prices lower than very loose's; under it Standard eases while very
-         * loose holds, and very loose holds them lower. Until 0.7.77 the probe city ran over its target
-         * (3.32% a year at Standard) and the label asserted that side alone, "Standard lower than very
-         * loose"; from 0.7.78 (wholesale fuel) it runs under (1.59%), and no branch month from 612 to 660
-         * runs over (runs/fixO2-notes.md). So the side is read off the Standard twin, the fixture asserts
-         * the twins' dials went the way that side says, and the order is asserted for that side.
+         * ...AND VERY LOOSE MINDS LOW INFLATION AS STANDARD DOES, AND HIGH INFLATION LESS (0.7.81, batch N6). Until
+         * 0.7.80 very loose held the neutral rate inside its band either side of the target, and this asserted it lay on
+         * the side of Standard that band put it (0.7.79, star O3-1): over the target Standard's dearer money held prices
+         * lower; under it - where the probe city has run since 0.7.78 (Standard 1.590% a year) - Standard eased while very
+         * loose held, and very loose held them lower (1.501%). Under the target very loose now cuts as Standard does,
+         * so that order is gone with the rule that made it. What the rule now says is asserted in the run itself, month
+         * by month, on the very loose twin: the twins part from the first month (the branch reads 2.45%, over the
+         * target), so which of them ends the twenty years with the dearer prices is the city's path - on 0.7.81 a
+         * grocery price shock in the very loose twin's fifth year (its fifth-year reading 9.96%, Standard's 0.67%),
+         * met past the band and followed by a fall (runs/fixN6-notes.md) - and not the rule's.
          */
-        boolean over = inflation[1] > target;
-        assertTrue(String.format("fixture: the Standard twin runs %s its target (%.3f%% a year against %.1f%%), and its dial averages %s"
-                + " very loose's (%.3f%% against %.3f%%): %s", over ? "over" : "under", inflation[1] * 100, target * 100,
-                over ? "over" : "under", meanRate[1] * 100, meanRate[2] * 100,
-                over ? "the dearer money" : "it eases where very loose holds the neutral rate"),
-                over ? meanRate[1] > meanRate[2] : meanRate[1] < meanRate[2]);
-        assertTrue(over ? "...and over its target Standard holds prices lower than very loose"
-                        : "...and under its target very loose holds prices lower than Standard, which eases there while very loose holds",
-                over ? inflation[1] < inflation[2] : inflation[2] < inflation[1]);
+        assertTrue(String.format("fixture: the very loose twin read inflation under its target in %d months and over it in %d"
+                + " (past its band in %d)", looseUnder, looseOver, loosePast), looseUnder > 0 && looseOver > 0);
+        assertTrue(String.format("...and in every month under its target it set Standard's rate, to the bit (%d of %d): it minds low"
+                + " inflation as Standard does", looseUnderAsStandard, looseUnder), looseUnderAsStandard == looseUnder);
+        assertTrue(String.format("...and in every month over it, money cheaper than Standard's rule at that reading (%d of %d): it"
+                + " minds high inflation less", looseOverCheaper, looseOver), looseOverCheaper == looseOver);
         double fullMiss = Expectations.TOLERANCE + Expectations.MISS_SCALE;
         for (int i : new int[] { 0, 2 }) {
             assertTrue(ends[i].words + ": the dial never reaches its stop", topRate[i] < DebtManager.MAX_POLICY_RATE);

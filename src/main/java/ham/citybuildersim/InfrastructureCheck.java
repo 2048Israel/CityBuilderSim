@@ -1031,6 +1031,40 @@ public class InfrastructureCheck {
                 lorryOk);
         assertTrue("no good's world margin is below zero, so a bar of it can be drawn", marginOk);
 
+        /*
+         * ...AND WITH A PORT (0.7.86, batch O9; spec-oil 4's "the band with a
+         * port"). A fixture berth takes half of every good that has a kind of
+         * cargo before a railway carrying 30% of the rest at a quote of 25%:
+         * the ships' freight is paid abroad inside the band at the kind's
+         * SEA_FREIGHT_SHARE, so the band is still the world's margin and the
+         * freight paid abroad - the lorries' part and the ships' - and the
+         * railway's charge is still its own share at its quote.
+         */
+        Markets portMarkets = new Markets();
+        portMarkets.setExchangeRate(1.3);
+        boolean portBand = true, portDelivered = true, portFreight = true;
+        int shipped = 0;
+        for (Good g : Good.values()) {
+            if (!g.traded() || !g.exportable() || !g.importable() || g.cargo() == null) continue;
+            GoodsMarket m = portMarkets.get(g);
+            double sea = .5, rail = .3 * (1 - sea), x = g.cargo().seaFreightShare();
+            m.setFreightFactor(Ports.factor(rail, sea, x));
+            m.setRailCharge(rail * .25);
+            if (!(m.importPrice() > 0)) continue;
+            shipped++;
+            double tol = 1e-9 * Math.max(1, m.importPrice());
+            portBand &= Math.abs(m.worldMargin() + m.freightInBand() - (m.importPrice() - m.exportPrice())) <= tol;
+            portDelivered &= Math.abs(m.worldMargin() + m.freightInBand() + m.railInWedge()
+                    - (m.netImportPrice() - m.netExportPrice())) <= tol;
+            portFreight &= Math.abs(m.freightInBand() - 2 * g.baseFreight() * ((1 - rail - sea) + sea * x) * 1.3) <= tol
+                    && m.getFreightFactor() < 1 - rail;
+        }
+        assertTrue("WITH A PORT the world's margin and the freight paid abroad - the lorries' and the ships' - are the band",
+                shipped > 0 && portBand);
+        assertTrue("...and with the railway's charge, the delivered wedge", portDelivered);
+        assertTrue("...the freight in the band the lorries' part and the ships' at their kind's sea freight, under the"
+                + " railway's alone", portFreight);
+
         /* ======= 11. WHO RIDES, BY WHAT THEY PAY (0.7.49) =======
 
            Jerus: "if one household category has 3k workers and 2k cars, then

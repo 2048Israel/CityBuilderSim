@@ -475,8 +475,12 @@ public final class LandMap {
      * What a painted plot holds, in the hover card's words, or null for bare
      * ground: a building by its type's name (nameOf, by type id; its class
      * when null) - since 0.7.64 every drawn building is one of the model's -
-     * or a road's kind, "a bridge" over water; since 0.7.72 the railway's
-     * track, and a road where it crosses the track.
+     * and since 0.7.88 "packed without a street" when the city had no room
+     * for it by one (R7); a street by its surface, its width and its role
+     * (spec-roads-and-ports.md 5: "Paved street, 15 m · arterial"), a track
+     * as one the city has bought no road for, "a bridge" over water and
+     * "crossing the railway" across the track; a highway, a street beneath
+     * it, its ramp and (0.7.89) the railway bridging it; the railway's track.
      */
     public static String plotWords(TilePainter.Input in, TilePainter.Painted p, int plot,
                                    java.util.function.IntFunction<String> nameOf) {
@@ -487,14 +491,41 @@ public final class LandMap {
             BuildingVisual.Type t = in.types[p.btype[b]];
             if (t == null) return null;
             String name = nameOf == null ? null : nameOf.apply(t.id());
-            return name != null ? name : CLASS_ONE[t.cls()];
+            String what = name != null ? name : CLASS_ONE[t.cls()];
+            return p.bpacked[b] ? what + PACKED_WORDS : what;
         }
-        if (p.use[plot] == TilePainter.ROAD || (p.use[plot] == TilePainter.RAIL && p.road[plot] != 0)) {
-            String kind = p.road[plot] == BuildingVisual.HIGHWAY ? "Highway" : p.road[plot] >= BuildingVisual.PAVED ? "Paved road" : "Gravel road";
-            if (p.use[plot] == TilePainter.RAIL) kind += " crossing the railway";
-            return p.bridge[plot] ? kind + ", a bridge" : kind;
+        boolean road = p.use[plot] == TilePainter.ROAD || (p.use[plot] == TilePainter.RAIL && p.road[plot] != 0);
+        if (road && p.road[plot] == BuildingVisual.HIGHWAY && p.role[plot] == 0) {
+            String w = p.bridge[plot] ? "Highway, a bridge" : "Highway";
+            if (p.beneath[plot]) w += " · a street beneath";
+            if ((in.marks[plot] & CityRuns.M_RAMP) != 0 && p.beneath[plot]) w += RAMP_WORDS;
+            if (p.run[plot] == TilePainter.RAIL_OVER) w += RAIL_OVER_WORDS;
+            return w;
+        }
+        if (road) {
+            String role = p.role[plot] == TilePainter.BOULEVARD ? " · boulevard" : p.role[plot] == TilePainter.ARTERIAL ? " · arterial" : "";
+            String more = (p.bridge[plot] ? " · a bridge" : "") + (p.use[plot] == TilePainter.RAIL ? " · crossing the railway" : "");
+            if (p.road[plot] == TilePainter.TRACK) return TRACK_WORDS + role + more;
+            String kind = p.road[plot] == BuildingVisual.PAVED ? "Paved street" : p.road[plot] == BuildingVisual.GRAVEL ? "Gravel street"
+                    : "Street of highway plots";
+            return kind + ", " + (p.width[plot] >= 2 ? FULL_WORDS : HALF_WORDS) + role + more;
         }
         if (p.use[plot] == TilePainter.RAIL) return p.bridge[plot] ? "Railway, a bridge" : "Railway";
         return null;
     }
+
+    /** A highway's ramp in the hover (0.7.89; spec 2.7). */
+    public static final String RAMP_WORDS = " · a ramp";
+
+    /** ...and the railway bridging it (0.7.89; spec 2.8). */
+    public static final String RAIL_OVER_WORDS = " · the railway over it";
+
+    /** A track's words in the hover (0.7.88; spec 5). */
+    public static final String TRACK_WORDS = "Track: the city has bought no road here";
+
+    /** A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). */
+    public static final String HALF_WORDS = "15 m", FULL_WORDS = "30 m";
+
+    /** A building packed without a street, in the hover (R7). */
+    public static final String PACKED_WORDS = " · packed without a street";
 }

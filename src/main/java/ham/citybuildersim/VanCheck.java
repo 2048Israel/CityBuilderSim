@@ -297,6 +297,62 @@ public class VanCheck {
                 van.getBid() > 0,
                 String.format("%,.0f vehicles wanted this month", van.getBid()));
 
+        /* ================================================================
+           7. AND THE VANS BURN DIESEL (0.7.83, batch O6; spec-oil 2.5)
+           ================================================================ */
+
+        System.out.println("\n--- and every van-month burns diesel, drawn at wholesale ---");
+
+        report("a van-month is TONNES_PER_VAN's loads at a van's weight, KM_A_LOAD a load at DIESEL_LITRES_PER_100_KM: 240 L",
+                same(Sector.LOADS_A_VAN_MONTH, Sector.TONNES_PER_VAN / Good.VANS.tonnesPerUnit())
+                        && same(Sector.DIESEL_LITRES_A_VAN_MONTH,
+                                Sector.LOADS_A_VAN_MONTH * Sector.KM_A_LOAD * Sector.DIESEL_LITRES_PER_100_KM / 100)
+                        && same(Sector.DIESEL_LITRES_A_VAN_MONTH, 240),
+                String.format("%.0f loads x %.0f km x %.0f L/100 km", Sector.LOADS_A_VAN_MONTH, Sector.KM_A_LOAD,
+                        Sector.DIESEL_LITRES_PER_100_KM));
+
+        // The mills' month of driving, drawn by hand on the running city: no refinery, so every litre is the world's.
+        Sector.Split dieselBefore = new Sector.Split();
+        Sector.Split was = bench.pending().boughtOf(Good.DIESEL);
+        dieselBefore.atHome = was.atHome;
+        dieselBefore.abroad = was.abroad;
+        GoodsMarket diesel = game.getMarkets().get(Good.DIESEL);
+        bench.runFleet(game.getSectors());
+        double litres = bench.vansNeeded() * bench.getOperatingRate() * Sector.DIESEL_LITRES_A_VAN_MONTH;
+        report("a sector's month draws its van-months at the operating rate, DIESEL_LITRES_A_VAN_MONTH each, to the bit",
+                litres > 0 && same(bench.getFleetDieselLitres(), litres),
+                String.format("%,.0f L for %,.1f vans at %.1f%%", bench.getFleetDieselLitres(), bench.vansNeeded(),
+                        bench.getOperatingRate() * 100));
+        Sector.Split now = bench.pending().boughtOf(Good.DIESEL);
+        report("...bought on its own books, from the world with no refinery in the city, at the import price",
+                game.getSectors().refining().buildingsStanding() == 0
+                        && Math.abs(now.abroad - dieselBefore.abroad - litres * diesel.importPrice()) <= 1e-9 * litres * diesel.importPrice()
+                        && same(now.atHome, dieselBefore.atHome)
+                        && same(bench.getFleetDieselImported(), bench.getFleetDieselCost()),
+                String.format("$%,.2fk at %.6f a litre", now.abroad - dieselBefore.abroad, diesel.importPrice()));
+        services.runFleet(game.getSectors());
+        report("...and a sector with nothing to move burns none",
+                same(services.getFleetDieselLitres(), 0) && same(services.getFleetDieselCost(), 0), "");
+        double kept = bench.vanFleet();
+        bench.runFleet();
+        report("...nor does a bare month of wear, with no market to draw on",
+                same(bench.getFleetDieselLitres(), 0) && bench.vanFleet() < kept, "");
+        bench.setPantry(Good.VANS, had);
+
+        double[] burned = new double[2];
+        quietly(() -> {
+            game.toggleNextMonth();
+            for (Sector s : game.getSectors().all()) {
+                burned[0] += s.getFleetDieselLitres();
+                burned[1] += s.statement().bought.getOrDefault(Good.DIESEL, new Sector.Split()).total();
+            }
+        });
+        report("in a month that runs, the fleets burn diesel and the businesses pay for it",
+                burned[0] > 0 && burned[1] > 0,
+                String.format("%,.0f L, $%,.1fk on the statements", burned[0], burned[1]));
+        report("...and the money audit closes with it", game.getLastMoneyAudit().relative() < 1e-10,
+                String.format("%.2e", game.getLastMoneyAudit().relative()));
+
         System.out.println();
         if (fails == 0) {
             System.out.println("The vans work: a fleet is sized by the tonnage, built up rather than"

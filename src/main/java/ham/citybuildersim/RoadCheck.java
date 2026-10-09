@@ -51,7 +51,9 @@ import java.util.Map;
  *   4. THE PAVING'S PRICE: a Paved Road's work and the take-up at
  *      DEMOLITION_SHARE of the gravel road's, the material of a Paved Road
  *      less a gravel road's, no ground, a Paved Road's wait; a gravel road
- *      and its paving cost more than a Paved Road built outright.
+ *      and its paving cost more than a Paved Road built outright. Since
+ *      0.7.83 (batch O6) plus its surface's bitumen, a Paved Road's 64.25 t,
+ *      in the quote - as a new Paved Road's and an Elevated Highway's are.
  *   5. PAVING, ONE ROAD AND MANY, PLAYED: a paving of one and a paving of
  *      three behind a new Paved Road; the treasury pays the quote; each
  *      gravel road carries its traffic until its own Paved Road opens, the
@@ -379,6 +381,41 @@ public class RoadCheck {
         }
         assertTrue("its work is a Paved Road's and DEMOLITION_SHARE of a gravel road's, its material a Paved Road's less a"
                 + " gravel road's, no ground, a Paved Road's wait - to the bit, one road and many", parts);
+        /*
+         * ...PLUS ITS SURFACE'S BITUMEN (0.7.83, batch O6; spec-oil 2.5): the
+         * material past a gravel road's, at five tonnes a unit, five per cent
+         * binder [R18] - 64.25 t a road, a Paved Road's own, the bed having
+         * none; an Elevated Highway 151.75 t. The builders buy it as the
+         * order is placed, the refiners' tanks first and the world for the
+         * rest, and bill it in the quote: the refiners' net of the credit on
+         * it at their rate, the world's at its landed cost, their own tax
+         * passed on. This town has no refinery, so it is all the world's.
+         */
+        BuildingsTemplate highway = template(g, HIGHWAY);
+        bits("a Paved Road takes 64.25 t of bitumen: (450 - 193) units at five tonnes, BITUMEN_BINDER_SHARE of it",
+                g.bitumenFor(paved), (paved.getConstructionMaterials() - gravel.getConstructionMaterials())
+                        * Good.MATERIALS.tonnesPerUnit() * Game.BITUMEN_BINDER_SHARE);
+        assertTrue("...64.25 t; an Elevated Highway 151.75 t; a Gravel Road, the bed, none; and a paving a Paved Road's",
+                g.bitumenFor(paved) == 64.25 && g.bitumenFor(highway) == 151.75 && g.bitumenFor(gravel) == 0
+                        && g.bitumenForPaving() == g.bitumenFor(paved) && g.bitumenFor(template(g, "House")) == 0);
+        GoodsMarket bitumen = g.getMarkets().get(Good.BITUMEN);
+        double gross = 1 / (1 - g.getEconomyManager().buildersSalesRate());
+        double rM = g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().materials());
+        boolean billed = true;
+        for (int n : new int[] { 1, 3, 4 }) {
+            Game.BuildQuote q = g.quotePave(n);
+            billed &= q.bitumenNeeded == g.bitumenForPaving() * n && q.bitumenFromRefiners == 0
+                    && Double.doubleToLongBits(q.bitumenImportCost) == Double.doubleToLongBits(q.bitumenNeeded * bitumen.importPrice())
+                    && Double.doubleToLongBits(q.bitumen) == Double.doubleToLongBits(q.bitumenImportCost * gross)
+                    && Double.doubleToLongBits(q.total) == Double.doubleToLongBits(
+                            q.sticker * gross + q.plantCost * (1 - rM) * gross + q.importCost * gross + q.bitumen);
+        }
+        assertTrue("the paving's quote carries its bitumen, the world's at the import price with the builders' tax passed on,"
+                + " in its total - to the bit, one road and many", billed);
+        Game.BuildQuote one = g.quotePave(1), road = g.quoteBuild(paved, 1), raised = g.quoteBuild(highway, 1);
+        assertTrue("...and a new Paved Road's and Elevated Highway's quotes carry theirs, a Gravel Road's none",
+                road.bitumenNeeded == 64.25 && raised.bitumenNeeded == 151.75 && g.quoteBuild(gravel, 1).bitumenNeeded == 0
+                        && Double.doubleToLongBits(one.bitumen) == Double.doubleToLongBits(road.bitumen));
         // Jerus: "total cost is higher than just building paved". At one price for the material the work
         // decides it: a gravel road's and its paving's are a Paved Road's and more, by the gravel road's own
         // work and its take-up, and their material is a Paved Road's. (Each quote takes the yard's material

@@ -79,6 +79,40 @@ public class Game {
     /** Automatic building (0.7.73): its settings, its log and its last pass. */
     public AutoBuilder getAutoBuilder() { return autoBuilder; }
 
+    /**
+     * The city's strategic reserve of crude (0.7.85, batch O8; StrategicReserve):
+     * what its tanks hold and cost, the fill ordered and the release standing,
+     * and the month's trades the next strike settles. Built fresh by
+     * buildWorld() and handed to the markets as the city's trader; saved under
+     * one key (DataSave.reserve).
+     */
+    private StrategicReserve reserve = new StrategicReserve();
+
+    /** The city's strategic reserve (0.7.85). */
+    public StrategicReserve getReserve() { return reserve; }
+
+    /**
+     * The city's ports (0.7.86, batch O9; Ports): the berths' shares of each
+     * kind of cargo in force, and the month's tonnes by sea, struck with the
+     * railway's month (chargeFreight()). Built fresh by buildWorld(); saved
+     * under one key (DataSave.portMonth).
+     */
+    private Ports ports = new Ports();
+
+    /** The city's ports (0.7.86). */
+    public Ports getPorts() { return ports; }
+
+    /**
+     * The month's ships (0.7.86, batch O9; BoatSchedule): the calls the
+     * ports' month billed makes, on these quays, with the lanes run away from
+     * the founding site. Pure; nothing is kept. The map passes its quays
+     * (O13); with none the calls are counted and not placed.
+     */
+    public BoatSchedule boats(java.util.List<BoatSchedule.Berth> quays) {
+        World w = getWorld();
+        return BoatSchedule.of(month, ports, quays, w.foundingX(), w.foundingY());
+    }
+
     /** A harness's look at the city either side of automatic building's pass (AutoBuildCheck): false before, true after. Null in play. */
     java.util.function.Consumer<Boolean> autoBuildProbeForTest;
 
@@ -225,6 +259,11 @@ public class Game {
 
         buildingManager = new BuildingManager();
         economyManager = new EconomyManager(buildingManager);
+        // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
+        reserve = new StrategicReserve();
+        economyManager.getMarkets().setCity(reserve);
+        // ...and its ports, nothing at sea (0.7.86).
+        ports = new Ports();
         populationManager = new PopulationManager();
         servicesManager = new ServicesManager(buildingManager);
         dataSave = new DataSave();
@@ -1882,8 +1921,23 @@ public class Game {
             if (businessInvestment.isHeld(sector.key())) continue;
             refreshLand();
             consider(sector.plan(businessInvestment, this), sectorInvestor(sector.key()));
+            /*
+             * ...AND THE GROCERS' FORECOURTS, right after their shops (0.7.83,
+             * batch O6): retail's money and retail's investor, its own
+             * question as the bank's branch is, so a station wanted never
+             * stops a shop - and before the builders, who read the queue. See
+             * sectors.Retail, THE FORECOURTS.
+             */
+            if (sector == getSectors().retail()) {
+                refreshLand();
+                consider(getSectors().retail().planStations(businessInvestment, this),
+                        sectorInvestor(sector.key()), STATIONS_SLOT);
+            }
         }
     }
+
+    /** Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. */
+    public static final String STATIONS_SLOT = "Filling stations";
 
     /**
      * The residents' side of the month.
@@ -3675,6 +3729,83 @@ public class Game {
         return sold;
     }
 
+    /* =======================================================================
+       THE STRATEGIC RESERVE (0.7.85, batch O8; runs/spec-oil.md 2.8)
+
+       The city's crude, in its own tanks (StrategicReserve; the buildings are
+       the Strategic Reserves standing). Two levers, recorded where they are
+       applied: fillReserve() orders crude, bought in the month's crude market
+       as a buyer - the wells' first, pro rata with the refiners, the world's
+       for the rest - and releaseReserve() offers it there, a month at a time,
+       to the refiners and past them to the world (Markets.clear()). The money
+       moves at the next strike, beside the businesses it traded with
+       (settleReserve()): what it paid the wells and the refiners paid it is a
+       pool paying a pool, and what crossed the edge is the audit's "- city
+       ReserveFill" and "+ city ReserveSales". No budget line: a fill buys an
+       asset, as the vault's reserves are bought, so the treasury journals it.
+       ======================================================================= */
+
+    /**
+     * Orders crude for the strategic reserve: `tonnes`, cut to the room its
+     * tanks have left and to what the treasury could pay at crude's import
+     * price (what no tonne costs more than) - bought in the month's crude
+     * market and paid at the next strike. Stops a release standing.
+     *
+     * @return the tonnes ordered; nothing with no room or no money
+     */
+    public double fillReserve(double tonnes) {
+        double room = Math.max(0, StrategicReserve.room(buildingManager) - reserve.getTonnes());
+        double price = getMarkets().get(Good.CRUDE).importPrice();
+        double afford = price > 0 ? discretionaryRoom() / price : 0;
+        double order = Math.max(0, Math.min(tonnes, Math.min(room, afford)));
+        if (!(order > 0) || !Double.isFinite(order)) return 0;
+        boolean releasing = reserve.getRelease() > 0;
+        reserve.orderFill(order);
+        decisions.record(DecisionLog.RESERVE, String.format("Strategic reserve: fill %,.0f t of crude%s", order,
+                releasing ? ", the release stopped" : ""));
+        GameLog.note(String.format("The city ordered %,.0f t of crude for its strategic reserve.", order));
+        return order;
+    }
+
+    /**
+     * Releases the strategic reserve's crude, `tonnesAMonth` a month from the
+     * next clearing on, as long as it holds any; nothing stops it. Cancels a
+     * fill not yet bought.
+     *
+     * @return the release set
+     */
+    public double releaseReserve(double tonnesAMonth) {
+        double was = reserve.getRelease();
+        double set = Double.isFinite(tonnesAMonth) ? Math.max(0, tonnesAMonth) : 0;
+        if (set == was) return set;
+        boolean filling = reserve.getFill() > 0;
+        reserve.setRelease(set);
+        decisions.record(DecisionLog.RESERVE, set > 0
+                ? String.format("Strategic reserve: release %,.0f t of crude a month%s", set,
+                        filling ? ", the fill cancelled" : "")
+                : "Strategic reserve: release stopped");
+        return set;
+    }
+
+    /**
+     * The reserve's month, settled at the strike beside the businesses it
+     * traded with (StrategicReserve.settle()): the treasury pays for the
+     * crude bought - a promise, the crude having landed - and takes in what
+     * was sold, each journalled, since no budget line carries an asset
+     * bought or sold.
+     */
+    private void settleReserve() {
+        double[] s = reserve.settle();
+        if (s[0] > 0) {
+            treasuryPays(TreasuryLine.OIL_RESERVE, s[0]);
+            treasuryJournal.record("Bought crude for the strategic reserve", -s[0]);
+        }
+        if (s[1] > 0) {
+            cash += s[1];
+            treasuryJournal.record("Sold crude from the strategic reserve", s[1]);
+        }
+    }
+
     /** Tells the investment engine what land is left to sell, right now. */
     private void refreshLand(){
         businessInvestment.setLandAvailable(landManager.getAvailableSqFt(),
@@ -3743,8 +3874,9 @@ public class Game {
              */
             if (businessInvestment.isHeld(sector.key())) continue;
             int orders = buildingManager.getUnderConstructionBySector(sector.key());
-            int shed = 0;
-            double[] measure = sector.retirementDemandAndCapacity(this);
+            // The wells past their life first (0.7.84), and nothing else of the sector's that month.
+            int shed = sector == getSectors().oil() ? retireWornOutWells() : 0;
+            double[] measure = shed > 0 ? null : sector.retirementDemandAndCapacity(this);
             if (measure != null) {
                 shed = retire(businessInvestment.planRetirement(
                         sector, measure[0], measure[1], orders),
@@ -3776,6 +3908,77 @@ public class Game {
         int branchesStanding = buildingManager.countByName("Commercial Bank");
         if (bank.closesBranch(branchesStanding)) closeBranches(bank.branchesToClose(branchesStanding));
     }
+
+    /**
+     * THE WELLS PAST THEIR LIFE (0.7.84, batch O7; spec-oil 2.6): every land
+     * well lifting under ten barrels a day (sectors.Oil.wornOut(): 263 months
+     * on land) is retired this month, oldest first, by the path any retired
+     * building takes - the plot back to the city, the material to the
+     * builders - whatever the field still holds; the sector's one-well-a-month
+     * rule (Oil.plan()) refills the sites it frees. Asked at the top of the
+     * month, before anything is lifted, so a well lifts its last month at
+     * ten barrels a day or more and never under. Not the planner's choice
+     * but the well's age, so it waits on no loss and no order in flight; a
+     * held sector's wells stand, as everything held does (HELD MEANS HELD).
+     *
+     * @return the wells retired, so the month's other rules leave the sector
+     *         alone this month
+     */
+    private int retireWornOutWells() {
+        ham.citybuildersim.sectors.Oil wells = getSectors().oil();
+        int retired = 0;
+        // Each kind past its own life (0.7.91): the land wells at 263 months, the platforms' at 348.
+        for (ham.citybuildersim.sectors.Oil.WellKind kind : ham.citybuildersim.sectors.Oil.WellKind.values()) {
+            boolean land = kind == ham.citybuildersim.sectors.Oil.WellKind.LAND;
+            int worn = land ? wells.wornOut() - wells.wornOut(ham.citybuildersim.sectors.Oil.WellKind.PLATFORM) : wells.wornOut(kind);
+            BuildingsTemplate well = land ? wells.landWell() : wells.platformWell();
+            if (worn <= 0 || well == null) continue;
+            String why = String.format("%d well(s) past their life: under %.0f barrels a day after %d months",
+                    worn, ham.citybuildersim.sectors.Oil.WORN_OUT_BARRELS_A_DAY,
+                    ham.citybuildersim.sectors.Oil.lifeMonths(kind));
+            int gone = retire(new BusinessInvestment.Decision(wells.key(), well, worn, why, true),
+                    sectorInvestor(wells.key()), false);
+            wellsWornOut += gone;
+            retired += gone;
+        }
+        return retired + decommissionAtSea(wells);
+    }
+
+    /**
+     * THE OIL AT SEA DECOMMISSIONED (0.7.91, batch O10): once the city's oil
+     * is worked out, every platform's jacket that holds no well, and - with no
+     * jacket left standing - every kilometre of pipeline, retired by the path
+     * any retired building takes. Neither is plant the lift measures, so the
+     * shrinking rules never sell them (sectors.Oil.mayRetire()); without this
+     * their crews and repairs would be paid for ever. Nothing while there is
+     * oil in the ground.
+     */
+    private int decommissionAtSea(ham.citybuildersim.sectors.Oil wells) {
+        if (landManager.getOilReserveTonnes() > 0) return 0;
+        int retired = 0;
+        BuildingsTemplate jacket = wells.platformTemplate(), pipe = wells.pipelineTemplate();
+        int jackets = wells.jacketsStanding();
+        if (jacket != null && jackets > 0) {
+            int empty = 0;
+            for (ham.citybuildersim.sectors.Oil.Platform p : wells.platformsNow()) if (p.wells() == 0) empty++;
+            if (empty > 0) {
+                retired += retire(new BusinessInvestment.Decision(wells.key(), jacket, empty,
+                        String.format("%d platform(s) decommissioned: no well in their slots and the oil worked out", empty), true),
+                        sectorInvestor(wells.key()), false);
+            }
+        }
+        int km = wells.pipeKmStanding();
+        if (pipe != null && km > 0 && wells.jacketsStanding() <= 0) {
+            retired += retire(new BusinessInvestment.Decision(wells.key(), pipe, km,
+                    String.format("%d km of pipeline decommissioned: no platform left and the oil worked out", km), true),
+                    sectorInvestor(wells.key()), false);
+        }
+        return retired;
+    }
+
+    /** Wells retired worn out over the run (0.7.84): a count for the playtest, not saved. */
+    private int wellsWornOut;
+    public int getWellsWornOut() { return wellsWornOut; }
 
     /**
      * Closes branches (0.7.19: as many as the rule says, at once; one at a
@@ -5062,8 +5265,19 @@ public class Game {
      */
     private void chargeFreight() {
         ham.citybuildersim.sectors.Rail rail = getSectors().rail();
-        rail.haul(getSectors());
-        getInfrastructureManager().setRailShare(rail.getCarried());
+        // ...WITH THE CITY'S PORTS (0.7.86, batch O9): the berths take their
+        // kinds' shares beside the railway, and the road is told both - the
+        // railway's of each whole stream, and the ships'. With no terminal
+        // the railway's is its own carried share, to the bit, and the ships' nothing.
+        rail.haul(getSectors(), ports);
+        getInfrastructureManager().setRailShare(ports.railOfStream(rail.getCarried()));
+        getInfrastructureManager().setSeaShare(ports.seaOfStream());
+    }
+
+    /** The sea terminals' crews at these fill rates and their upkeep, a month (0.7.86): paid with transit's bill (TreasuryLine.TRANSIT); nothing with no terminal. */
+    double portsBill(double[] fill) {
+        return buildingManager.getCategoryPayroll(BuildingType.PORTS, populationManager.getWagesPerType(), fill)
+                + buildingManager.getUpkeepByCategory(BuildingType.PORTS);
     }
 
     /**
@@ -5388,11 +5602,32 @@ public class Game {
          * have no site output.
          */
         public final double months;
+        /**
+         * The bitumen the order's paving takes (0.7.83, batch O6; spec-oil 2.5),
+         * in tonnes - none for anything but a paved road, a highway and a
+         * paving (Game.bitumenFor()) - what of it the refiners' tanks would
+         * sell and what the world, at today's prices, and what the builders
+         * bill for it: the refiners' net of the credit they claim at the
+         * refiners' rate and the world's at its landed cost, with their own
+         * tax passed on (billableMaterial()'s arithmetic). Drawn whole when
+         * the order is placed (drawBitumen()), so the quote is what it costs:
+         * no escalation is struck on it.
+         */
+        public final double bitumenNeeded, bitumenFromRefiners, bitumenImported, bitumenLocalCost, bitumenImportCost, bitumen;
 
         BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate) {
+            this(quantity, sticker, materialsNeeded, materialsInStock, boughtIn, plantPrice, materialsPrice,
+                    landNeeded, landFree, months, buildersRate, plantRate, new Markets.Draw(0, 0, 0, 0, 0), 0);
+        }
+
+        /** ...with the bitumen its paving takes, quoted (Markets.quote()), and the refiners' sales tax rate it is credited at (0.7.83). */
+        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+                   Markets.Draw boughtIn, double plantPrice, double materialsPrice,
+                   double landNeeded, double landFree, double months,
+                   double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate) {
             this.quantity = quantity;
             this.sticker = sticker;
             this.materialsNeeded = materialsNeeded;
@@ -5406,10 +5641,18 @@ public class Game {
             double gross = 1 / (1 - Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersRate)));
             double plantNet = plantCost * (1 - Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, plantRate)));
             this.allowance = (importCost + plantNet) * gross;
+            this.bitumenNeeded = bitumen.units();
+            this.bitumenFromRefiners = bitumen.local();
+            this.bitumenImported = bitumen.imported();
+            this.bitumenLocalCost = bitumen.localCost();
+            this.bitumenImportCost = bitumen.importCost();
+            this.bitumen = (bitumenLocalCost * (1 - Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, refinersRate)))
+                    + bitumenImportCost) * gross;
             // Summed in the order the price always was - the work, the plant's,
-            // the world's - so an untaxed quote is the old one to the last bit.
-            this.total = sticker * gross + plantNet * gross + importCost * gross;
-            this.salesTax = total - sticker - plantCost - importCost;
+            // the world's - so an untaxed quote is the old one to the last bit;
+            // the bitumen last (0.7.83), nothing for every order but a paved road's.
+            this.total = sticker * gross + plantNet * gross + importCost * gross + this.bitumen;
+            this.salesTax = total - sticker - plantCost - importCost - bitumenLocalCost - bitumenImportCost;
             this.landNeeded = landNeeded;
             this.landFree = landFree;
             this.months = months;
@@ -5567,10 +5810,17 @@ public class Game {
 
     /** ...against a yard holding `yardHolds` units (0.7.40): an order in a run, priced on the yard the orders before it leave (buildRunInvoice()). */
     private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds) {
+        return quoteBuild(selected, quantity, yardHolds, 0);
+    }
+
+    /** ...and with `bitumenAhead` tonnes of the refiners' bitumen taken by the orders before it in a run (0.7.83; drawBitumen()). */
+    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead) {
         double needed = selected.constructionMaterials * (double) quantity;
         double yard = yardHolds;
         double beyondYard = Math.max(0, needed - yard);
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, beyondYard, getSectors());
+        Markets.Draw bitumen = getMarkets().quote(Good.BITUMEN, bitumenFor(selected) * (double) quantity, getSectors(),
+                bitumenAhead);
         return new BuildQuote(
                 quantity,
                 buildingManager.nonMaterialCost(selected) * quantity,
@@ -5586,7 +5836,75 @@ public class Game {
                 // one, where the order would land in it (quoteCityMonths()).
                 quoteCityMonths(selected, quantity),
                 buildersSalesRate(),
-                plantSalesRate());
+                plantSalesRate(),
+                bitumen,
+                refinersSalesRate());
+    }
+
+    /* ---------------------------------------------------------------------
+       BITUMEN FOR THE PAVING (0.7.83, batch O6; runs/spec-oil.md 2.5)
+
+       A paved road's surface is asphalt, and asphalt is aggregate bound with
+       bitumen - five per cent of it by weight [R18]. The model's road is its
+       material: a Gravel Road's is the bed, and what a Paved Road or an
+       Elevated Highway takes past it is the surface. So the order draws
+       BITUMEN_BINDER_SHARE of that surface's tonnes (a unit of material is
+       Good.MATERIALS.tonnesPerUnit(), five tonnes) - (450 - 193) x 5 x .05 =
+       64.25 t for a Paved Road and for a gravel road paved (ConstructionControl,
+       F), and (800 - 193) x 5 x .05 = 151.75 t for an Elevated Highway - off
+       the refiners' tanks first and from the world for the rest, the builders'
+       purchase billed on in the quote (BuildQuote.bitumen), drawn whole when
+       the order is placed, with the order's yard material. The first home
+       buyer the refinery's bitumen has had.
+       --------------------------------------------------------------------- */
+
+    /** The share of an asphalt surface's weight that is bitumen: five per cent [R18]. */
+    public static final double BITUMEN_BINDER_SHARE = .05;
+
+    /**
+     * Tonnes of bitumen one of these takes (0.7.83): a road - INFRASTRUCTURE
+     * with road capacity - past a Gravel Road's material, its surface's
+     * tonnes at BITUMEN_BINDER_SHARE; none for anything else, and none in a
+     * catalogue without a Gravel Road.
+     */
+    public double bitumenFor(BuildingsTemplate t) {
+        BuildingsTemplate bed = paveFrom();
+        if (t == null || bed == null || t.getCategory() != BuildingType.INFRASTRUCTURE || t.getCapacity() <= 0) return 0;
+        double surface = t.getConstructionMaterials() - bed.getConstructionMaterials();
+        return surface > 0 ? surface * Good.MATERIALS.tonnesPerUnit() * BITUMEN_BINDER_SHARE : 0;
+    }
+
+    /** ...and one gravel road paved (0.7.83): a Paved Road's less a Gravel Road's, which is a Paved Road's - the bed has none. */
+    public double bitumenForPaving() {
+        return Math.max(0, bitumenFor(paveTo()) - bitumenFor(paveFrom()));
+    }
+
+    /** The refiners' sales tax rate: the builders' credit on the bitumen they buy from them (0.7.83). */
+    private double refinersSalesRate() {
+        return economyManager.getTaxPolicy().effectiveSalesRate(getSectors().refining());
+    }
+
+    /** The bitumen drawn for roads since this game was founded or loaded, in tonnes, what it cost the builders and the part bought abroad (0.7.83): running totals for the checks and the playtest, never reset and not saved - the builders' statement carries each month's bill. */
+    private double bitumenTonnes, bitumenCost, bitumenImported;
+
+    public double getBitumenTonnes()   { return bitumenTonnes; }
+    public double getBitumenCost()     { return bitumenCost; }
+    public double getBitumenImported() { return bitumenImported; }
+
+    /**
+     * Draws an order's bitumen (0.7.83): the builders buy it as they buy the
+     * material beyond the yard (drawMaterials()), off the refiners' tanks and
+     * the rest from the world (Markets.draw()), booked in their ledger and
+     * billed on inside the order's price (BuildQuote.bitumen). Nothing for
+     * nothing.
+     */
+    public Markets.Draw drawBitumen(double tonnes) {
+        if (!(tonnes > 0)) return new Markets.Draw(0, 0, 0, 0, 0);
+        Markets.Draw d = getMarkets().draw(Good.BITUMEN, getSectors().construction(), null, tonnes, getSectors());
+        bitumenTonnes += d.units();
+        bitumenCost += d.cost();
+        bitumenImported += d.importCost();
+        return d;
     }
 
     /**
@@ -6181,9 +6499,12 @@ public class Game {
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
         double sticker = (buildingManager.nonMaterialCost(to)
                 + ConstructionControl.DEMOLITION_SHARE * buildingManager.nonMaterialCost(from)) * n;
+        // ...and its surface's bitumen (0.7.83): a Paved Road's, the bed having none (bitumenForPaving()).
+        Markets.Draw bitumen = getMarkets().quote(Good.BITUMEN, bitumenForPaving() * (double) n, getSectors());
         return new BuildQuote(n, sticker, needed, yard, boughtIn,
                 getMarkets().get(Good.MATERIALS).getLocalPrice(), buildingManager.getConstructionMaterialPrice(),
-                0, landManager.getAvailableSqFt(), quoteCityMonths(to, n), buildersSalesRate(), plantSalesRate());
+                0, landManager.getAvailableSqFt(), quoteCityMonths(to, n), buildersSalesRate(), plantSalesRate(),
+                bitumen, refinersSalesRate());
     }
 
     /**
@@ -6213,6 +6534,8 @@ public class Game {
         // The gravel roads' own material, on site already: the new roads' bed.
         buildingManager.deliverToSites(to, from.getConstructionMaterials() * (double) n);
         double fromYard = deliverYardToSites(to, q.materialsNeeded);
+        // ...and the surface's bitumen, bought by the builders with it (0.7.83; drawBitumen()).
+        drawBitumen(q.bitumenNeeded);
         buildingManager.bookContract(to, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
         treasuryPays(TreasuryLine.BUILDINGS, q.total);
         cityCapitalSpending += q.total;
@@ -6489,6 +6812,9 @@ public class Game {
             buildingManager.addStack(selected, quantity, noConstruction);
             if (!noConstruction) {
                 double fromYard = deliverYardToSites(selected, totalMaterialsRequired);
+                // ...and a paved road's bitumen, bought by the builders with the
+                // yard's material and billed in the quote (0.7.83; drawBitumen()).
+                drawBitumen(quote.bitumenNeeded);
                 // ...booked to the city, which claims no tax back - its rebate
                 // is the tax coming home to the treasury as the builders remit
                 // it (EconomyManager, THE REBATES ON A NEW HOME, AND THE
@@ -6582,19 +6908,21 @@ public class Game {
      */
     public int minesCommitted() { return committedOn(Resource.IRON); }
 
-    /** ...and the Oil Wells standing, being built or ordered (0.7.62): one an oil site. */
+    /** ...and the Oil Wells standing, being built or ordered (0.7.62): one an oil site - since 0.7.91 the land wells and the platforms' wells. */
     public int wellsCommitted() { return committedOn(Resource.OIL); }
 
-    /**
-     * The MINING buildings that stand on a resource's sites - standing, on
-     * site or ordered (0.7.62): every MINING template whose good is the
-     * resource's (siteOf()).
-     */
-    public int committedOn(Resource r) {
+    /** The land wells standing, being built or ordered (0.7.91): what the dry sites are counted against - every oil well until the platforms' came. */
+    public int landWellsCommitted() { return committedWhere(ham.citybuildersim.sectors.Oil::isLandWell); }
+
+    /** ...and the platforms' wells (0.7.91): what the platforms' slots are counted against. */
+    public int platformWellsCommitted() { return committedWhere(BuildingsTemplate::isPlatformWell); }
+
+    /** The buildings `which` picks, standing, on site or ordered. */
+    private int committedWhere(java.util.function.Predicate<BuildingsTemplate> which) {
         int committed = 0;
         int[] underConstruction = buildingManager.getUnderConstructionById();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
-            if (siteOf(t) != r) continue;
+            if (!which.test(t)) continue;
             committed += buildingManager.getQuantity(t.getId());
             if (t.getId() < underConstruction.length) {
                 committed += underConstruction[t.getId()];
@@ -6604,17 +6932,55 @@ public class Game {
     }
 
     /**
+     * The MINING buildings that stand on a resource's sites - standing, on
+     * site or ordered (0.7.62): every MINING template whose good is the
+     * resource's (siteOf()) - and since 0.7.91 not an offshore platform's
+     * jacket, which stands on its field and takes none of its sites (its
+     * wells do).
+     */
+    public int committedOn(Resource r) {
+        int committed = 0;
+        int[] underConstruction = buildingManager.getUnderConstructionById();
+        for (BuildingsTemplate t : buildingManager.getTemplates()) {
+            if (siteOf(t) != r || t.isPlatform()) continue;
+            committed += buildingManager.getQuantity(t.getId());
+            if (t.getId() < underConstruction.length) {
+                committed += underConstruction[t.getId()];
+            }
+        }
+        return committed;
+    }
+
+    /**
+     * What an order for this building is counted against its sites with
+     * (0.7.91, batch O10): a land well the land wells, a platform's well the
+     * platforms' wells, a platform's jacket the jackets on site (those
+     * standing have taken their field's slots already); anything else every
+     * building on its resource's sites (committedOn()). The same as
+     * committedOn() in a city with no platform.
+     */
+    public int committedFor(BuildingsTemplate t) {
+        if (t == null) return 0;
+        if (t.isPlatform()) return getSectors().oil().jacketsOnSite();
+        if (t.isPlatformWell()) return platformWellsCommitted();
+        if (ham.citybuildersim.sectors.Oil.isLandWell(t)) return landWellsCommitted();
+        Resource r = siteOf(t);
+        return r == null ? 0 : committedOn(r);
+    }
+
+    /**
      * The resource whose sites a building stands on (0.7.62): a MINING
      * template's, the resource whose good it makes - iron for an Iron Mine,
      * oil for an Oil Well; null for anything else. The map's rule
-     * (BuildingVisual.of()).
+     * (BuildingVisual.of()). Since 0.7.91 an offshore platform's jacket, too,
+     * stands on oil: a shallow sea field's.
      */
     public static Resource siteOf(BuildingsTemplate t) {
         if (t == null || t.getCategory() != BuildingType.MINING) return null;
         for (Resource r : Resource.values()) {
             if (r.good() != null && t.makes(r.good()) > 0) return r;
         }
-        return null;
+        return t.isPlatform() ? Resource.OIL : null;
     }
 
     /**
@@ -6631,12 +6997,39 @@ public class Game {
         return hasDepositFor(template, quantity, 0);
     }
 
-    /** ...with `before` more on the same resource's sites already put on site by the orders ahead of it in a run (0.7.40, buildRunAhead()). */
+    /** ...with `before` more on the same sites already put on site by the orders ahead of it in a run (0.7.40, buildRunAhead()). */
     private boolean hasDepositFor(BuildingsTemplate template, int quantity, int before) {
         Resource r = siteOf(template);
         if (r == null) return true;
-        return landManager.getSites(r) >= committedOn(r) + before + quantity
+        return sitesFor(template) >= committedFor(template) + before + quantity
                 && landManager.getRemaining(r) > 0;
+    }
+
+    /**
+     * The sites the city owns that a building may stand on (0.7.84, batch O7;
+     * spec-oil 2.6): its resource's sites (siteOf()) - and for a land well
+     * (sectors.Oil.isLandWell()) only the dry ones, a field whose centre is
+     * on land (LandManager.getSites(r, true)); the sea's are a platform's.
+     * The wells standing on sea sites from before are kept, and counted
+     * against the dry sites first, so none is ordered past them. Nothing for
+     * a building that stands on no resource.
+     *
+     * AT SEA (0.7.91, batch O10; spec-oil 2.7): a platform's well the slots
+     * of the platforms standing (sectors.Oil.slotsStanding()), at most the
+     * sea's sites less those the land wells past the dry ones stand on; a
+     * platform's jacket the jackets the shallow sea fields the city owns
+     * could still take (sectors.Oil.platformRoom()).
+     */
+    public int sitesFor(BuildingsTemplate template) {
+        Resource r = siteOf(template);
+        if (r == null) return 0;
+        if (template.isPlatform()) return getSectors().oil().platformRoom();
+        if (template.isPlatformWell()) {
+            int seaFree = landManager.getSites(r, false) - Math.max(0, landWellsCommitted() - landManager.getSites(r, true));
+            return Math.max(0, Math.min(getSectors().oil().slotsStanding(), seaFree));
+        }
+        return r == Resource.OIL && ham.citybuildersim.sectors.Oil.isLandWell(template)
+                ? landManager.getSites(r, true) : landManager.getSites(r);
     }
 
     /* -------------------------------------------------------------------
@@ -6695,9 +7088,9 @@ public class Game {
         return rights;
     }
 
-    /** Whether this order can stand on the city's coast: true for everything but a desalination plant, which needs owned sea. */
+    /** Whether this order can stand on the city's coast: true for everything but a desalination plant and a sea terminal (0.7.86), which need owned sea. */
     public boolean hasCoastFor(BuildingsTemplate template, int quantity) {
-        return template == null || !template.isSeaWater() || landManager.getSeaKm2() > 0;
+        return template == null || !template.needsCoast() || landManager.getSeaKm2() > 0;
     }
 
     /**
@@ -6755,6 +7148,8 @@ public class Game {
 
         buildingManager.addStack(template, quantity, false);
         double fromYard = deliverYardToSites(template, quote.materialsNeeded);
+        // ...and a paved road's bitumen, should a business ever order one (0.7.83; drawBitumen()).
+        drawBitumen(quote.bitumenNeeded);
         // ...booked to the business that ordered it, with the share of the
         // tax on it that it gets back - a credit, or a landlord's rebate on a
         // new rental home, on the tax a building of it was charged (0.7.19;
@@ -6872,7 +7267,10 @@ public class Game {
        later one dearer"); it is this invoice now.
        Nothing else an order changes reaches the next one's price: the
        plant's stock is drawn by the crews month by month, not at the order,
-       and the wages and the tax rates do not move. So buildRunInvoice() is
+       and the wages and the tax rates do not move - but a paved road's
+       bitumen is drawn as it is placed (0.7.83, drawBitumen()), so the
+       refiners' tanks the orders before it take are counted against the
+       next, as the yard is. So buildRunInvoice() is
        what placing the run charges, order by order, to the last bit
        (BuildCardCheck, section 9, places one and sums what it was charged).
 
@@ -6889,13 +7287,15 @@ public class Game {
     /** What placing these orders in turn would charge altogether: each one's quote on the yard the ones before it leave. */
     public double buildRunInvoice(java.util.Map<BuildingsTemplate, Integer> run) {
         int yard = buildingManager.getConstructionMaterials();
-        double total = 0;
+        double total = 0, bitumenAhead = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
-            BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard);
+            BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead);
             total += q.total;
             // What deliverYardToSites() will take: BuildingManager.takeFromYard()'s own rule.
             yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
+            // ...and the refiners' bitumen an order's paving draws as it is placed (0.7.83; drawBitumen()).
+            bitumenAhead += q.bitumenFromRefiners;
         }
         return total;
     }
@@ -6919,15 +7319,16 @@ public class Game {
 
     private int runAhead(java.util.Map<BuildingsTemplate, Integer> run, BuildResult[] stop) {
         int ahead = 0;
-        // ...the run's own orders on each resource's sites so far (0.7.62: iron and oil apart).
-        int[] onSites = new int[Resource.values().length];
+        // ...the run's own orders on each resource's sites so far (0.7.62: iron and oil apart; since 0.7.91 a platform's
+        // wells and its jackets each apart from the land's, sitePool()).
+        int[] onSites = new int[Resource.values().length + 2];
         double ground = 0;
         for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
             int n = e.getValue() == null ? 0 : e.getValue();
-            Resource site = siteOf(t);
+            int pool = sitePool(t);
             if (t != null && n > 0) {
-                BuildResult refused = !hasDepositFor(t, n, site == null ? 0 : onSites[site.ordinal()]) ? BuildResult.NO_DEPOSIT
+                BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool]) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
                         : !landManager.canAllocate(ground + t.getLandSqFt() * (double) n) ? BuildResult.NO_LAND
@@ -6936,12 +7337,21 @@ public class Game {
                     if (stop != null) stop[0] = refused;
                     return ahead;
                 }
-                if (site != null) onSites[site.ordinal()] += n;
+                if (pool >= 0) onSites[pool] += n;
                 ground += t.getLandSqFt() * (double) n;
             }
             ahead++;
         }
         return ahead;
+    }
+
+    /** The sites an order is counted against in a run (0.7.91): its resource's (siteOf()), a platform's well and a platform's jacket each a pool of their own after the resources; -1 for none. */
+    static int sitePool(BuildingsTemplate t) {
+        Resource site = siteOf(t);
+        if (site == null) return -1;
+        if (t.isPlatformWell()) return Resource.values().length;
+        if (t.isPlatform()) return Resource.values().length + 1;
+        return site.ordinal();
     }
 
     /** What the treasury is overdrawn by right now (0.7.40): the cash below nothing, or nothing - Finances' "overdrawn by" ask. */
@@ -9219,6 +9629,8 @@ public class Game {
          * hand-written ledger.
          */
         economyManager.strikeSectors();
+        // ...and the strategic reserve's month, beside the businesses it traded with (0.7.85).
+        settleReserve();
         // ...and the sales tax a business claimed back on the buildings it
         // bought reached its till at the bank (Sector.bank()) as cash back on
         // them, so the month's building spending is net of it (0.7.19).
@@ -9227,6 +9639,8 @@ public class Game {
             if (credit != 0 && Double.isFinite(credit)) sectorInvested.merge(s.key(), -credit, Double::sum);
         }
 
+        // The reserve's crude among the goods held, and what it bought and shipped among the trade (0.7.85).
+        economyManager.setCityCrude(reserve.getTonnes(), reserve.getSettledImports(), reserve.getSettledExports());
         economyManager.updateNationalAccounts(
                 constructionWorkDone,
                 /*
@@ -9649,6 +10063,8 @@ public class Game {
         tempCash += servicesNet;
         // Every market clears and every maker produces - see Markets.clearMonth().
         // The mines ask the ground through their own hook; see sectors.Mining.
+        // ...the strategic reserve told the room its tanks have, which its fill is cut to (0.7.85).
+        reserve.setRoom(StrategicReserve.room(buildingManager));
         economyManager.finalEconUpdate(this);
         /*
          * ...AND THE FOOD VOUCHERS THE SALE TOOK ARE PAID (0.7.43): what the
@@ -10331,14 +10747,21 @@ public class Game {
          *     the drivers' litres are drawn off the refiners' shelf and the
          *     rest imported (Motoring, THE FUEL IS DRAWN).
          */
+        // ...AT THE PUMP SINCE 0.7.83 (batch O6): the forecourts' price on the
+        // sign, and the drivers' litres bought from them (sectors.Retail, THE
+        // FORECOURTS).
         getInfrastructureManager().setCommute(householdBalance.captiveShare(),
-                Motoring.journeyFuel(getMarkets()));
+                Motoring.journeyFuel(this));
         servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());
         motoring.drawFuel(this, getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH);
+        // ...AND THE PORTS' CREWS (0.7.86, batch O9): a terminal's dockers are
+        // the city's, paid with transit's - its wages and upkeep added to the
+        // bill, nothing with no terminal (star O9-2).
         economyManager.setTransit(
                 buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                         populationManager.getWagesPerType(), fill)
-                        + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE),
+                        + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE)
+                        + portsBill(fill),
                 getInfrastructureManager().getTransitRiders()
                         * economyManager.getTaxPolicy().monthlyFare());
 
@@ -11039,7 +11462,9 @@ public class Game {
      * The Trade tab's mirrored bars. Pure.
      */
     public Sectors.TradeByGood getTradeByGood() {
-        return economyManager.getSectors().tradeByGood(getHouseholdCarImports(), getHouseholdFuelImports());
+        // ...and the strategic reserve's crude, bought from the world and shipped to it (0.7.85).
+        return economyManager.getSectors().tradeByGood(getHouseholdCarImports(), getHouseholdFuelImports(),
+                reserve.getSettledImports(), reserve.getSettledExports());
     }
 
     /**
@@ -11422,6 +11847,10 @@ public class Game {
         dataSave.setDecisionLog(decisions.toState());
         // ...and automatic building (0.7.73): its settings, its log, what held it back.
         dataSave.setAutoBuild(autoBuilder.toState());
+        // ...and the strategic reserve (0.7.85): its crude, its book, its levers and the month the next strike settles.
+        dataSave.setReserve(reserve.toState());
+        // ...and the ports (0.7.86): the berths' shares in force and the month's sea tonnes.
+        dataSave.setPortMonth(ports.toState());
 
         // Charged during the month rather than derived from state, so nothing
         // can recompute it on load. Without this the freshly loaded city showed
@@ -11570,6 +11999,8 @@ public class Game {
         dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
 
         dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
+        // ...and its rolling year of GDP exactly (0.7.81): automatic building's debt limit reads it in the month.
+        dataSave.setGdpRolling(new ArrayList<>(economyManager.getNationalAccounts().getHistory()));
 
         // History, not state: what the city lost and what its lenders wrote off.
         dataSave.setDemolitions(demolitionLog.all());
@@ -13425,10 +13856,12 @@ public class Game {
      * the track it was saved with, so the relief has to be back on the network
      * before anything is measured against it. See chargeFreight().
      */
-    getInfrastructureManager().setRailShare(getSectors().rail().getCarried());
+    // ...the railway's share of each whole stream, and the ships' beside it (0.7.86; chargeFreight()).
+    getInfrastructureManager().setRailShare(ports.railOfStream(getSectors().rail().getCarried()));
+    getInfrastructureManager().setSeaShare(ports.seaOfStream());
     // ...and the band the saved month was quoting, which lives on the markets
     // and is not saved there. See sectors.Rail.reapplyBand().
-    getSectors().rail().reapplyBand();
+    getSectors().rail().reapplyBand(ports);
     /*
      * ...AND THE CARS, for the same reason and one line later: a reloaded city
      * has the fleet it was saved with, and a fleet is a load on the road. See
@@ -13532,7 +13965,8 @@ public class Game {
     economyManager.setTransit(carriedTransitBill >= 0 ? carriedTransitBill :
             buildingManager.getCategoryPayroll(BuildingType.INFRASTRUCTURE,
                     populationManager.getWagesPerType(), populationManager.getJobFillRate())
-                    + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE),
+                    + buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE)
+                    + portsBill(populationManager.getJobFillRate()),
             getInfrastructureManager().getTransitRiders()
                     * economyManager.getTaxPolicy().monthlyFare());
 
@@ -14346,6 +14780,10 @@ public class Game {
             // Automatic building (0.7.73): a save from before it has none, and
             // loads with it off at its defaults.
             autoBuilder.restore(loaded.getAutoBuild());
+            // The strategic reserve (0.7.85): a save from before it has none, and loads empty.
+            reserve.restore(loaded.getReserve());
+            // The ports (0.7.86): a save from before them has none, and loads with nothing at sea.
+            ports.restore(loaded.getPortMonth());
 
             /*
              * Land, after the buildings, because the allocation is derived from
@@ -14807,6 +15245,12 @@ public class Game {
             // Government tab and the header's GDP tile read one month after a
             // load, scaled up, until a year had been played again.
             economyManager.getNationalAccounts().seedHistory(historySave.getGdp());
+            // ...and from the save's own exact copy where it carries one (0.7.81, DataSave.gdpRolling): the graph
+            // keeps thousands to two places, and automatic building's debt limit reads the year in the month
+            // (AutoBuilder.annualGdp()), so a loaded city reads the year the live one did.
+            if (restoredFlows.getGdpRolling() != null) {
+                economyManager.getNationalAccounts().seedHistory(restoredFlows.getGdpRolling());
+            }
 
             demolitionLog.restore(restoredFlows.getDemolitions());
             buildLog.restore(restoredFlows.getBuilds());
@@ -15215,6 +15659,8 @@ public class Game {
         bondMarket.redenominate(scale);
         // ...and the city's fund (0.7.14): its cash, its record and its orders.
         fund.redenominate(scale);
+        // ...and the strategic reserve's book and its month's trades (0.7.85).
+        reserve.redenominate(scale);
         ownersWipedAbroadThisMonth *= scale;
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);

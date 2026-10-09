@@ -14,7 +14,9 @@ import java.util.Set;
  * safety - each kept ahead of its demand with the player's spare margin past
  * it, by the build advice's own ranking and count, paid out of the cash and,
  * when the cash runs out, on the funding page's bond no further than the
- * player's debt limit.
+ * player's debt limit - since 0.7.81 the city's debt over a year of its GDP,
+ * over which it builds nothing, or with "Build from cash anyway" on, only
+ * what the cash pays for.
  *
  * WHY. Jerus: "an automatic build and acquire debt button for basically
  * automatic building, with a required slack button that you add, aka
@@ -24,9 +26,10 @@ import java.util.Set;
  * roads, transit, schools, health, childcare and safety; not land, not
  * mines, wells or industry - and since 0.7.77 it buys the ground its own
  * orders need (THE GROUND ITS ORDERS NEED, below). A slider for the debt
- * limit, 15% by default: it caps debt payments as a share of the city's
- * revenue, and it borrows on the funding page's bonds only when the cash
- * runs out. A slider for the spare
+ * limit - until 0.7.81 debt payments at most 15% of the city's revenue, and
+ * since then the city's debt over a year of GDP (THE DEBT LIMIT, A SHARE OF
+ * GDP, below) - and it borrows on the funding page's bonds only when the
+ * cash runs out. A slider for the spare
  * margin, 15% by default, held for every service. On and off in the Build
  * menu, off by default. Until now only the test player (LongPlaytest) built
  * a city by itself, by rules of its own; this is the player's, in the game,
@@ -62,8 +65,9 @@ import java.util.Set;
  *     land shortcut buys it (groundFor()), and the ground and the order paid
  *     for out of the cash over a month's tax (reserve()), then for the rest
  *     the funding page's bond (Game.handleLongBondForCash(),
- *     BUILD_BOND_YEARS), only as large as keeps debt payments within the
- *     limit (serviceShareWith()).
+ *     BUILD_BOND_YEARS), only as large as keeps the city's debt within the
+ *     limit (canPay()) - and with the debt already over it, nothing at all,
+ *     or with "Build from cash anyway" on, only what the cash pays for.
  *   - PLACED through Build's own path (Game.buildStack(); Game.paveRoads()
  *     when the advice's road is a paving), its ground first through the
  *     land office's (Game.buyLandParcel()), in its log with why, and the
@@ -72,15 +76,16 @@ import java.util.Set;
  *     the inbox's notice (Inbox, "autobuild"), a line a service; the ground
  *     it bought, and why, another ("autobuild-land").
  *
- * DEBT PAYMENTS, A SHARE OF REVENUE (serviceShare()): the Finances tab's
- * debt service gauge, its leading mark - the larger of a month's coupon
- * over a month's revenue and the next twelve months of coupons and
- * principal over twelve months of it (FinancesScreen.serviceCard(), the
- * bands CityNeeds.SERVICE_FELT and SERVICE_CONSTRAINED) - against the
- * revenue the city can count on (revenue(): a year's, its land sales and
- * the builders' tax left out). A new term bond adds its coupon to the
- * first and twelve of them to the second: its principal falls due at the
- * end of its term.
+ * THE DEBT LIMIT, A SHARE OF GDP (0.7.81, batch N6; ratio()): the city's
+ * debt - its bonds and bills, the left panel's Debt/GDP - over a year of
+ * its output, read before every order. From
+ * 0.7.73 to 0.7.80 the limit was debt payments as a share of the revenue
+ * the city can count on (the Finances tab's debt service gauge, its
+ * leading mark). The revenue it can count on (revenue()) still holds the
+ * budget.
+ *
+ * THE BUDGET'S REVENUE (revenue()): a year's, its land sales and the
+ * builders' tax left out - what a staffed order is held to.
  *
  * THE PLAYER'S SETTING AT WORK, NOT A DECISION: like the rollover's issues
  * (Game.issueForRollover()), what it orders and borrows is not in the
@@ -98,17 +103,31 @@ public final class AutoBuilder {
     /** The spare margin a new city is given (Jerus, 2026-10-08: "maintain say 15% surplus service of everything"). */
     public static final double DEFAULT_SLACK = .15;
 
-    /** The debt limit a new city is given: debt payments at most this share of revenue (Jerus, 2026-10-08). */
-    public static final double DEFAULT_DEBT_LIMIT = .15;
+    /**
+     * The debt limit a new city is given, the city's debt over a year of its GDP (0.7.81, star N6-2): the Maastricht
+     * Treaty's reference value for government debt, 60% of GDP (Treaty on the Functioning of the European Union,
+     * Protocol No 12 on the excessive deficit procedure, Article 1) - the most widely used ceiling on public debt. A city
+     * here is a whole government: its own money, central bank and benefits. From 0.7.73 to 0.7.80 debt payments at most
+     * 15% of revenue (Jerus, 2026-10-08).
+     */
+    public static final double DEFAULT_DEBT_LIMIT = .60;
 
     /** The spare margin's slider runs from none - just enough - to this: half again what the city uses of every service (star N4-3). */
     public static final double SLACK_MOST = .50;
 
-    /** The debt limit's slider runs from none - it never borrows - to the Finances tab's "constrained" line, past which a city stops choosing what it spends on (CityNeeds.SERVICE_CONSTRAINED). */
-    public static final double DEBT_LIMIT_MOST = CityNeeds.SERVICE_CONSTRAINED;
+    /**
+     * The debt limit's slider runs from none - with any debt it builds nothing - to three years of GDP (star N6-2): past
+     * the most any large government has owed in peace or war, about two and a half years - Britain's after Waterloo and
+     * after 1945 (Bank of England, A millennium of macroeconomic data), Japan's today (IMF, World Economic Outlook) - in
+     * whole years. Until 0.7.81, the Finances tab's "constrained" line of debt payments (CityNeeds.SERVICE_CONSTRAINED).
+     */
+    public static final double DEBT_LIMIT_MOST = 3.0;
 
-    /** The sliders' step: a whole per cent. */
+    /** The spare margin's step: a whole per cent (the debt limit's until 0.7.81). */
     public static final double STEP = .01;
+
+    /** The debt limit's step (0.7.81, star N6-4): five per cent of a year's GDP - sixty steps to DEBT_LIMIT_MOST, where whole per cents were three hundred on a slider a third of the Build page wide; DEFAULT_DEBT_LIMIT is one of them. */
+    public static final double DEBT_STEP = .05;
 
     /** The most of its orders the log keeps, newest kept (BuildLog's cap). */
     public static final int LOG_MOST = 40;
@@ -116,15 +135,24 @@ public final class AutoBuilder {
     private boolean on = false;
     private double slack = DEFAULT_SLACK;
     private double debtLimit = DEFAULT_DEBT_LIMIT;
+    /** "Build from cash anyway" (0.7.81): over the debt limit, build what the cash alone pays for, never borrowing. Off in a new city and an older save. */
+    private boolean cashAnyway = false;
 
     public boolean isOn() { return on; }
     public double getSlack() { return slack; }
+    /** The debt limit: the city's debt over a year of its GDP (0.7.81; debt payments over revenue until then). */
     public double getDebtLimit() { return debtLimit; }
+    public boolean isCashAnyway() { return cashAnyway; }
 
     /** A slider's value on its own steps and inside its ends. */
     static double onSteps(double v, double most) {
+        return onSteps(v, most, STEP);
+    }
+
+    /** ...on steps of the caller's. */
+    static double onSteps(double v, double most, double step) {
         if (!Double.isFinite(v)) return 0;
-        double stepped = Math.round(v / STEP) * STEP;
+        double stepped = Math.round(v / step) * step;
         return Math.max(0, Math.min(most, Math.round(stepped * 100) / 100.0));
     }
 
@@ -134,8 +162,8 @@ public final class AutoBuilder {
         this.on = on;
         if (!on) { held.clear(); bought.clear(); }
         if (decisions != null) decisions.record(DecisionLog.CONSTRUCTION, on
-                ? "Automatic building on: " + DecisionLog.pct(slack) + " spare, debt payments to "
-                        + DecisionLog.pct(debtLimit) + " of revenue"
+                ? "Automatic building on: " + DecisionLog.pct(slack) + " spare, debt to "
+                        + DecisionLog.pct(debtLimit) + " of GDP" + (cashAnyway ? ", from cash over it" : "")
                 : "Automatic building off");
     }
 
@@ -150,11 +178,19 @@ public final class AutoBuilder {
 
     /** The debt limit, on its slider's steps. */
     public void setDebtLimit(double limit, DecisionLog decisions) {
-        double v = onSteps(limit, DEBT_LIMIT_MOST);
+        double v = onSteps(limit, DEBT_LIMIT_MOST, DEBT_STEP);
         if (v == this.debtLimit) return;
         this.debtLimit = v;
         if (decisions != null) decisions.record(DecisionLog.CONSTRUCTION,
-                "Automatic building's debt limit to " + DecisionLog.pct(v) + " of revenue");
+                "Automatic building's debt limit to " + DecisionLog.pct(v) + " of GDP");
+    }
+
+    /** "Build from cash anyway", on or off; the change is a decision. */
+    public void setCashAnyway(boolean anyway, DecisionLog decisions) {
+        if (this.cashAnyway == anyway) return;
+        this.cashAnyway = anyway;
+        if (decisions != null) decisions.record(DecisionLog.CONSTRUCTION, anyway
+                ? "Automatic building over its debt limit: builds from cash" : "Automatic building over its debt limit: builds nothing");
     }
 
     /* =====================================================================
@@ -353,22 +389,72 @@ public final class AutoBuilder {
     }
 
     /* =====================================================================
-       DEBT PAYMENTS, A SHARE OF REVENUE
+       THE DEBT LIMIT, A SHARE OF GDP (0.7.81, batch N6)
+
+       Jerus: "instead of % of revenue, just make it a debt to gdp ratio that
+       you choose, if below then it auto builds, if above then no, with an
+       optional button of if cash available build regardless". So the limit
+       is the city's debt over a year of its output (ratio()), read before
+       every order, the ground's with it (canPay()):
+         - AT OR UNDER IT it builds, out of the cash over the reserve and
+           past it on the funding page's bond, and borrows no further than
+           keeps the debt at or under it once the bond is on the books
+           (ratioAfter());
+         - OVER IT it builds nothing and borrows nothing - unless "Build from
+           cash anyway" is on (cashAnyway), when it builds what the cash over
+           the reserve pays for, never borrowing.
+       THE CITY'S DEBT (debt(), star N6-3) is its bonds and bills
+       (DebtManager.getAllPrincipal()): the debt every screen calls the
+       city's - the left panel's Debt/GDP, the Finances tab's "debt
+       outstanding", City History's debt - so the ratio a player sets is the
+       one the game shows him. A bond adds its face (ratioAfter()). What the
+       treasury is overdrawn and the central bank's advances are not in it:
+       the central bank's page carries them, and a bond the order takes
+       clears the overdraft as Build's funding page sizes it. (Counting them,
+       as the market prices the city, Jerus's live city read 274% of GDP
+       against its Debt/GDP of 250%, and ten years on 470% against 134%: the
+       advances, $25B by then, the difference - runs/fixN6-notes.md.) A YEAR
+       OF GDP (annualGdp()) is the last twelve months' output, scaled up to a
+       year while the city has fewer, as every screen's "of annual GDP".
+       The default and the slider's ends: DEFAULT_DEBT_LIMIT, DEBT_LIMIT_MOST.
        ===================================================================== */
 
-    /** Debt payments over revenue, the Finances tab's leading mark (see the header), against revenue(); +∞ with no revenue. */
-    public double serviceShare(Game game) {
-        return serviceShareWith(game, 0);
+    /** A year of the city's output: the last twelve months', scaled up to a year from fewer (as the screens read it, Pieces.annualGdp()); 0 with none recorded. */
+    public static double annualGdp(Game game) {
+        NationalAccounts na = game.getEconomyManager().getNationalAccounts();
+        int months = na.getMonthsRecorded();
+        if (months <= 0) return 0;
+        return months >= 12 ? na.getAnnualGdp() : na.getAnnualGdp() / months * 12;
     }
 
-    /** ...with a new term bond's monthly coupon on the books as well. */
-    public double serviceShareWith(Game game, double addedCoupon) {
-        double revenue = revenue(game);
-        if (!(revenue > 0)) return Double.POSITIVE_INFINITY;
-        DebtManager ledger = game.getDebtManager();
-        double month = (ledger.getMonthlyCoupon() + addedCoupon) / revenue;
-        double year = (ledger.dueWithin(12) + 12 * addedCoupon) / (12 * revenue);
-        return Math.max(month, year);
+    /** The city's debt (star N6-3): its bonds and bills, as the left panel's Debt/GDP reads it. */
+    public static double debt(Game game) {
+        return game.getDebtManager().getAllPrincipal();
+    }
+
+    /** ...once a bond is on the books: its face added. */
+    public static double debtAfter(Game game, DebtQuote q) {
+        return debt(game) + q.faceValue();
+    }
+
+    /** The city's debt over a year of its GDP: 0 owing nothing, +∞ owing with no GDP recorded. */
+    public static double ratio(Game game) {
+        return over(debt(game), annualGdp(game));
+    }
+
+    /** ...once a bond is on the books. */
+    public static double ratioAfter(Game game, DebtQuote q) {
+        return over(debtAfter(game, q), annualGdp(game));
+    }
+
+    private static double over(double debt, double gdp) {
+        if (!(debt > 0)) return 0;
+        return gdp > 0 ? debt / gdp : Double.POSITIVE_INFINITY;
+    }
+
+    /** Whether the city's debt is at or under the limit: it builds, and may borrow up to it; over it, it builds only from cash with cashAnyway on. */
+    public boolean within(Game game) {
+        return ratio(game) <= debtLimit;
     }
 
     /**
@@ -396,7 +482,7 @@ public final class AutoBuilder {
     private final List<Double> recent = new ArrayList<>();
 
     /**
-     * The revenue the limit and the budget are read against (star N4-2): the
+     * The revenue the budget is read against (star N4-2; the limit too until 0.7.81): the
      * lesser of the month's (monthRevenue()) and its average over the last
      * REVENUE_MONTHS passes, so a month that swells - a batch of mortgages
      * insured, a central bank's remittance - is read at the year's, and a
@@ -451,13 +537,14 @@ public final class AutoBuilder {
         return total - spendable(game);
     }
 
-    /** Whether the cash and, past it, a bond within the limit pay for `total`. */
+    /** Whether `total` is paid for: at or under the limit, by the cash and past it a bond that keeps the debt within it; over it, by the cash alone with cashAnyway on, and otherwise not at all (0.7.81). */
     boolean canPay(Game game, double total) {
         double gap = gapFor(game, total);
+        if (!within(game)) return cashAnyway && !(gap > 0);
         if (!(gap > 0)) return true;
         if (!(debtLimit > 0)) return false;
         DebtQuote q = bondFor(game, gap);
-        return q != null && serviceShareWith(game, q.monthlyInterest()) <= debtLimit;
+        return q != null && ratioAfter(game, q) <= debtLimit;
     }
 
     /* =====================================================================
@@ -478,8 +565,8 @@ public final class AutoBuilder {
         NOTHING
     }
 
-    /** Why a count was cut or an order held. */
-    public enum Cut { NONE, BUILDERS, GROUND, BUDGET, DEBT }
+    /** Why a count was cut or an order held: DEBT the limit - over it, or a bond that would cross it; CASH (0.7.81) over it with "Build from cash anyway" on, to what the cash pays for. */
+    public enum Cut { NONE, BUILDERS, GROUND, BUDGET, DEBT, CASH }
 
     /**
      * One measure at the last pass: what it did, and why - and since 0.7.77
@@ -564,6 +651,7 @@ public final class AutoBuilder {
         held.clear();
         bought.clear();
         steps.clear();
+        overSaid = false;
         lastPass = game.getMonth();
         remember(game);
         // The player's setting at work, not a decision (the rollover's rule).
@@ -658,8 +746,10 @@ public final class AutoBuilder {
             // the two paid for out of the cash over the reserve, then the bond within the limit - fewer where all of
             // it is not; none, held: for want of bare ground on offer, or of the limit.
             Ground ground = s.paving() ? Ground.NONE : groundFor(game, t, n);
+            // Over the limit with "Build from cash anyway" on, what holds it is the cash (0.7.81).
+            Cut money = !within(game) && cashAnyway ? Cut.CASH : Cut.DEBT;
             if (ground == null || !canPay(game, ground.cash() + total(game, s, n))) {
-                Cut why = ground == null ? Cut.GROUND : Cut.DEBT;
+                Cut why = ground == null ? Cut.GROUND : money;
                 int lo = 0, hi = n;                      // lo is paid for, its ground and all; hi is not
                 while (hi - lo > 1) {
                     int mid = lo + (hi - lo) / 2;
@@ -675,7 +765,7 @@ public final class AutoBuilder {
                                 + LandManager.areaWords(Math.max(0, free)) + " free) and no bare ground on offer to buy for"
                                 + " it. Buy land at the land office.");
                     } else {
-                        hold(m, s, Cut.DEBT, wanted, m.label() + ": " + wanted + " " + name + " wanted; "
+                        hold(m, s, money, wanted, m.label() + ": " + wanted + " " + name + " wanted; "
                                 + debtWords(game, s, one));
                     }
                     return;
@@ -897,20 +987,41 @@ public final class AutoBuilder {
                 wanted, 0, cut, 0, 0));
     }
 
-    /** Why the limit pays for none: one more and (0.7.77) the ground it lacks, borrowed for, against the limit. */
+    /** Whether this pass has said why over the limit it builds nothing: the first such line says it whole, the rest in short (0.7.81). */
+    private boolean overSaid;
+
+    /** A share of GDP as the card writes it: "262%", "7%", "0%", and a place under a tenth: "0.4%", "7.2%". */
+    public static String gdpShare(double share) {
+        double pct = share * 100;
+        boolean whole = Math.abs(pct - Math.rint(pct)) < 1e-9;
+        return share < .1 && !whole ? String.format("%.1f%%", pct) : String.format("%.0f%%", pct);
+    }
+
+    /** Why the money pays for none: one more and (0.7.77) the ground it lacks - over the limit, or a bond that would cross it (0.7.81). */
     private String debtWords(Game game, BuildAdvice.Suggestion s, Ground ground) {
         String one = ground.offers().isEmpty() ? "one" : "one and the " + LandManager.areaWords(ground.sqFt())
                 + " of ground it lacks (" + money(ground.cash()) + ")";
+        double now = ratio(game);
+        if (!(now <= debtLimit)) {
+            String owes = Double.isFinite(now) ? "the city owes " + gdpShare(now) + " of a year's GDP, over your limit of "
+                    + gdpShare(debtLimit) : "the city owes " + money(debt(game)) + " and has no GDP recorded to set it against";
+            if (cashAnyway) return owes + ", so it builds from the cash alone, and the cash over a month's tax is short of "
+                    + one + ".";
+            if (overSaid) return "over your debt limit, so it builds nothing.";
+            overSaid = true;
+            return owes + ", so it builds nothing and borrows nothing. Pay the debt down, raise the limit, or turn on Build"
+                    + " from cash anyway.";
+        }
         if (!(debtLimit > 0)) return "the cash over a month's tax is short of " + one + " and your debt limit is 0%, so it"
                 + " borrows nothing.";
         double gap = gapFor(game, total(game, s, 1) + ground.cash());
         DebtQuote q = bondFor(game, gap);
         if (q == null) return "the cash over a month's tax is short of " + one + " and no bond can be had.";
-        double share = serviceShareWith(game, q.monthlyInterest());
-        if (!Double.isFinite(share)) return "the cash over a month's tax is short of " + one + " and the city has no revenue"
-                + " to borrow against.";
-        return String.format("borrowing $%,.0fk for %s would take debt payments to %.1f%% of revenue, past your"
-                + " limit of %.0f%%.", gap, one, share * 100, debtLimit * 100);
+        double after = ratioAfter(game, q);
+        if (!Double.isFinite(after)) return "the cash over a month's tax is short of " + one + " and the city has no GDP"
+                + " recorded to borrow against.";
+        return String.format("borrowing $%,.0fk for %s would take the city's debt to %s of a year's GDP, past your"
+                + " limit of %s.", gap, one, gdpShare(after), gdpShare(debtLimit));
     }
 
     /** Why nothing the city could build moves a measure short of its margin: water past the fresh water it owns with no sea, or no building it could staff. */
@@ -932,6 +1043,7 @@ public final class AutoBuilder {
             case GROUND:   return " (" + wanted + " wanted; the ground to be had for " + n + ")";
             case BUDGET:   return " (" + wanted + " wanted; the budget runs " + n + ")";
             case DEBT:     return " (" + wanted + " wanted; " + n + " within the debt limit)";
+            case CASH:     return " (" + wanted + " wanted; " + n + " the cash pays for, over the debt limit)";
             default:       return "";
         }
     }
@@ -957,7 +1069,10 @@ public final class AutoBuilder {
     public static final class State {
         public boolean on;
         public double slack;
-        public double debtLimit;
+        /** The debt limit over a year of GDP (0.7.81): a save from before has none - its "debtLimit" was a share of revenue, which nothing reads now - and loads DEFAULT_DEBT_LIMIT. */
+        public Double debtToGdp;
+        /** "Build from cash anyway" (0.7.81): off in a save from before. */
+        public boolean cashAnyway;
         public List<Entry> log;
         public List<String> held;
         public int lastPass;
@@ -977,7 +1092,8 @@ public final class AutoBuilder {
         State s = new State();
         s.on = on;
         s.slack = slack;
-        s.debtLimit = debtLimit;
+        s.debtToGdp = debtLimit;
+        s.cashAnyway = cashAnyway;
         s.log = new ArrayList<>(log);
         s.held = new ArrayList<>(held);
         s.lastPass = lastPass;
@@ -993,7 +1109,7 @@ public final class AutoBuilder {
         return s;
     }
 
-    /** Puts a saved state back; null - a save from before 0.7.73 - is off, at the defaults, with nothing done. */
+    /** Puts a saved state back; null - a save from before 0.7.73 - is off, at the defaults, with nothing done; one from 0.7.73 to 0.7.80 keeps its switch and margin and reads the default limit, "Build from cash anyway" off. */
     public void restore(State s) {
         log.clear();
         held.clear();
@@ -1004,6 +1120,7 @@ public final class AutoBuilder {
             on = false;
             slack = DEFAULT_SLACK;
             debtLimit = DEFAULT_DEBT_LIMIT;
+            cashAnyway = false;
             lastPass = orders = bonds = landOffers = 0;
             buildings = 0;
             spent = borrowed = landSqFt = landSpent = 0;
@@ -1011,7 +1128,8 @@ public final class AutoBuilder {
         }
         on = s.on;
         slack = onSteps(s.slack, SLACK_MOST);
-        debtLimit = onSteps(s.debtLimit, DEBT_LIMIT_MOST);
+        debtLimit = s.debtToGdp == null ? DEFAULT_DEBT_LIMIT : onSteps(s.debtToGdp, DEBT_LIMIT_MOST, DEBT_STEP);
+        cashAnyway = s.cashAnyway;
         if (s.log != null) for (Entry e : s.log) if (e != null) log.add(e);
         if (s.held != null) for (String h : s.held) if (h != null) held.add(h);
         lastPass = s.lastPass;

@@ -202,7 +202,9 @@ public class BuildingCatalog {
                 .setProduction1(number(o, "production1"))
                 .setProduction2(number(o, "production2"))
                 .setProductionModifier1(number(o, "productionModifier1"))
-                .setProductionModifier2(number(o, "productionModifier2"));
+                .setProductionModifier2(number(o, "productionModifier2"))
+                // A filling station's litres a month at the pump (0.7.83): absent, none.
+                .setPumpLitres(number(o, "pump"));
 
         readCare(o, template, name);
         readJobs(o, template, name);
@@ -211,8 +213,51 @@ public class BuildingCatalog {
         readRequiresLicence(o, template, name);
         readSector(o, template, name);
         readSource(o, template, name);
+        readRefinery(o, template, name);
+        readPort(o, template, name);
+        readOffshore(o, template, name);
 
         return template;
+    }
+
+    /**
+     * One of the oil buildings at sea (0.7.91, batch O10): "offshore":
+     * {"kind": "PLATFORM", "slots": 12}, {"kind": "WELL"} or {"kind":
+     * "PIPELINE", "onshore": 3000} - a platform's jacket and its wells'
+     * slots, a well in one, or a kilometre of crude pipeline and its
+     * kilometre's cash on land. Absent, the building stands on the ground;
+     * an unknown kind is reported and the line ignored, as an unknown cargo is.
+     */
+    private void readOffshore(JsonObject o, BuildingsTemplate template, String name) {
+
+        if (!o.has("offshore") || !o.get("offshore").isJsonObject()) return;
+        JsonObject p = o.getAsJsonObject("offshore");
+        String kind = string(p, "kind");
+        try {
+            template.setOffshore(BuildingsTemplate.Offshore.valueOf(kind), (int) number(p, "slots"), number(p, "onshore"));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown offshore kind \""
+                    + kind + "\"; that line ignored.");
+        }
+    }
+
+    /**
+     * A sea terminal's berth (0.7.86, batch O9): "port": {"cargo": "LIQUID",
+     * "tonnes": 3250000} - the kind of cargo it handles (Ports.Cargo) and its
+     * tonnes a year. Absent, no berth; an unknown kind is reported and the
+     * line ignored, as an unknown refinery unit is.
+     */
+    private void readPort(JsonObject o, BuildingsTemplate template, String name) {
+
+        if (!o.has("port") || !o.get("port").isJsonObject()) return;
+        JsonObject p = o.getAsJsonObject("port");
+        String cargo = string(p, "cargo");
+        try {
+            template.setBerth(Ports.Cargo.valueOf(cargo), number(p, "tonnes"));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown cargo \""
+                    + cargo + "\"; that line ignored.");
+        }
     }
 
     /**
@@ -321,6 +366,28 @@ public class BuildingCatalog {
         } catch (Exception e) {
             System.out.println(FILE_NAME + ": \"" + name + "\" has unknown source \""
                     + source + "\"; treated as FRESH.");
+        }
+    }
+
+    /**
+     * A refinery's conversion unit (0.7.80, batch O4): its kind and the litres
+     * a month of its feed stream it takes at nameplate,
+     *
+     *     "refinery": { "unit": "REFORMER", "feed": 1161495 }
+     *
+     * Absent reads as no unit, which is every building but fourteen. An
+     * unknown kind is reported and the line ignored, as an unknown good is.
+     */
+    private void readRefinery(JsonObject o, BuildingsTemplate template, String name) {
+
+        if (!o.has("refinery") || !o.get("refinery").isJsonObject()) return;
+        JsonObject r = o.getAsJsonObject("refinery");
+        String unit = string(r, "unit");
+        try {
+            template.setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.valueOf(unit), number(r, "feed"));
+        } catch (Exception e) {
+            System.out.println(FILE_NAME + ": \"" + name + "\" has unknown refinery unit \""
+                    + unit + "\"; that line ignored.");
         }
     }
 

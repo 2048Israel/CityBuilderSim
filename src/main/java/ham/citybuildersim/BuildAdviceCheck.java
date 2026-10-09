@@ -276,7 +276,8 @@ public class BuildAdviceCheck {
             every &= in == 1;
         }
         assertTrue("every building in the catalogue (" + bm.getTemplates().size() + ") sits in exactly one", every);
-        assertTrue("investors build the market's nine, by BusinessInvestment's own list, and none of the city's five",
+        assertTrue("investors build the market's nine, by BusinessInvestment's own list - the city's sea terminals (PORTS,"
+                        + " 0.7.86) filed beside them in Industry - and none of the city's five",
                 checkInvestors(cats));
     }
 
@@ -286,8 +287,14 @@ public class BuildAdviceCheck {
                 BuildingType.BUSINESS_SERVICES, BuildingType.AGRICULTURE, BuildingType.RAIL, BuildingType.AUTOMOTIVE,
                 BuildingType.LUXURY, BuildingType.HOSPITALITY);
         for (BuildAdvice.Category c : cats) {
-            boolean market = theirs.containsAll(c.types());
+            // The city's sea terminals are filed in Industry as their own group (0.7.86, BuildCard's "Ports"), as
+            // its Strategic Reserve is among the heavy industry: city buildings on a market page, which only the
+            // city builds (BuildCard.citys()). Every other type on a market page is one investors build.
+            EnumSet<BuildingType> types = c.types();
+            types.remove(BuildingType.PORTS);
+            boolean market = theirs.containsAll(types);
             if (market == c.cityBuilds()) return false;
+            if (c.types().contains(BuildingType.PORTS) && !c.name().equals(BuildAdvice.INDUSTRY)) return false;
         }
         return true;
     }

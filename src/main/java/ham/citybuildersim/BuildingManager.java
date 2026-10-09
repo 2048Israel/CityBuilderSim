@@ -1604,6 +1604,7 @@ public class BuildingManager {
                 .makes(Good.CARS, 120)                  // cars a month
                 .uses(Good.FABRICATED_STEEL, 420)       // 3.5 t a car
                 .uses(Good.MACHINERY, 48)               // 400 kg a car
+                .uses(Good.LUBRICANTS, 120 * ham.citybuildersim.sectors.Automotive.LUBRICANT_LITRES_A_VEHICLE)   // 0.7.83: 8 L a car
                 .setCashCost(66000)
                 .setConstructionPoints(7260)
                 .setConstructionMaterials(1580)
@@ -1804,6 +1805,7 @@ public class BuildingManager {
                 .makes(Good.CARS, 500)
                 .uses(Good.FABRICATED_STEEL, 1750)
                 .uses(Good.MACHINERY, 200)
+                .uses(Good.LUBRICANTS, 500 * ham.citybuildersim.sectors.Automotive.LUBRICANT_LITRES_A_VEHICLE)   // 0.7.83: 8 L a car
                 .setCashCost(221000)
                 .setConstructionPoints(24300)
                 .setConstructionMaterials(5300)
@@ -1829,6 +1831,7 @@ public class BuildingManager {
                 .makes(Good.VANS, 150)
                 .uses(Good.FABRICATED_STEEL, 750)       // 5 t a van
                 .uses(Good.MACHINERY, 90)               // 600 kg a van
+                .uses(Good.LUBRICANTS, 150 * ham.citybuildersim.sectors.Automotive.LUBRICANT_LITRES_A_VEHICLE)   // 0.7.83: a car's 8 L a van (star O6)
                 .setCashCost(132000)
                 .setConstructionPoints(14500)
                 .setConstructionMaterials(3170)
@@ -1941,6 +1944,10 @@ public class BuildingManager {
            barrels a day at 7.33 barrels a tonne over 30.44 days - from an owned
            oil site, on a two-acre pad (87,120 sq ft), with three people on it.
            Its road load is the Iron Mine's a tonne (420 for 2,500 t: 70 for 415).
+           SINCE 0.7.84 (batch O7; spec-oil 2.6, the research's Q13) ONE POST, a
+           diploma's: a real well takes 0.2-0.4 full-time workers [W12], and the
+           three were a mine's crew. Its lift declines from the month it opens
+           (sectors.Oil, THE WELLS DECLINE), and it stands only on a dry site.
 
            An Oil Refinery is a modular plant of 2,000 barrels a day: 8,300 t of
            crude a month (2,000 x 30.44 / 7.33), on twenty acres, with 25M L of
@@ -1963,8 +1970,7 @@ public class BuildingManager {
                 .setWaterConsumption(5)
                 .setLandSqFt(87120)
                 .setRoadLoad(70)
-                .setJobs(JobType.NO_DIPLOMA, 2)
-                .setJobs(JobType.DIPLOMA, 1)
+                .setJobs(JobType.DIPLOMA, 1)      // one post since 0.7.84 (two NO_DIPLOMA and one DIPLOMA until then)
                 .setId(74);
 
         templates.add(oilWell);
@@ -1987,6 +1993,461 @@ public class BuildingManager {
         oilRefinery.setStock(25000000);
 
         templates.add(oilRefinery);
+
+        /* ------------------- THE REFINERY'S UNITS (0.7.80, batch O4) -------------------
+           runs/spec-oil.md 2.3. The Oil Refinery above is the small crude unit;
+           the Crude Unit is the large one, 100,000 barrels a day: 50 of its
+           crude (415,000 t), its road load (32,950) and its tanks (1.25B L),
+           D$400M [the research's 2.4], 160 posts, 4,400 kW, 40 ha.
+
+           Behind the crude units, seven kinds of conversion unit in two sizes
+           each (sectors.RefineryFlow.Kind), each taking a stream of the crude
+           units' run - its feed, in litres a month - and buying nothing:
+             - the large unit at the research's 2.4: barrels a day, capital,
+               posts, kW and land; the small at one 2,000 b/d plant's stream of
+               its feed on medium crude (for alkylation, a small cracking
+               unit's cracked gas);
+             - feed: barrels a day x 30.44 days x 158.987 L, to the litre;
+             - small capital: large x (small / large)^0.485, the exponent
+               measured between the Oil Refinery's D$60M at 2,000 b/d and the
+               Crude Unit's D$400M at 100,000; the cash cost is the capital,
+               the materials a sixtieth of it and the points half, the Oil
+               Refinery's own ratios;
+             - small posts 10 (the low end of [R5]'s 10-15 operators), the
+               skills at the Oil Refinery's 50/30/15/5%, a part post going to
+               the largest remainder (on a tie, the less skilled: star O4-4);
+             - small power the large unit's x the size ratio [R6], water a
+               quarter of a unit a kW (the Oil Refinery's), land the large
+               unit's x the capital ratio;
+             - no road load and no tanks: the feed comes by pipe from the crude
+               units, and what they make goes to the crude units' tanks.
+           ------------------------------------------------------------------------- */
+        BuildingsTemplate crudeUnit = new BuildingsTemplate("Crude Unit", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(400000)
+                .setConstructionPoints(200000)
+                .setConstructionMaterials(6667)
+                .setSector("Refining")
+                .uses(Good.CRUDE, 415000)       // tonnes of crude a month: 50 Oil Refineries' worth
+                .setElectricityConsumption(4400)
+                .setWaterConsumption(1100)
+                .setLandSqFt(4305564)
+                .setRoadLoad(32950)
+                .setJobs(JobType.NO_DIPLOMA, 80)
+                .setJobs(JobType.DIPLOMA, 48)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 24)
+                .setJobs(JobType.UNIV_SCIENCE, 8)
+                .setId(76);
+        crudeUnit.setStock(1250000000);
+        templates.add(crudeUnit);
+
+        BuildingsTemplate smallReformer = new BuildingsTemplate("Small Reformer", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(16200)
+                .setConstructionPoints(8100)
+                .setConstructionMaterials(270)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.REFORMER, 1161495)   // litres of feed a month: 240 b/d
+                .setElectricityConsumption(29)
+                .setWaterConsumption(7.25)
+                .setLandSqFt(64583)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(77);
+        templates.add(smallReformer);
+
+        BuildingsTemplate reformer = new BuildingsTemplate("Reformer", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(108000)
+                .setConstructionPoints(54000)
+                .setConstructionMaterials(1800)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.REFORMER, 58074771)   // litres of feed a month: 12,000 b/d
+                .setElectricityConsumption(1450)
+                .setWaterConsumption(362.5)
+                .setLandSqFt(430556)
+                .setJobs(JobType.NO_DIPLOMA, 15)
+                .setJobs(JobType.DIPLOMA, 9)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 5)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setId(78);
+        templates.add(reformer);
+
+        BuildingsTemplate smallCrackingUnit = new BuildingsTemplate("Small Cracking Unit", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(19782)
+                .setConstructionPoints(9891)
+                .setConstructionMaterials(330)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER, 2322991)   // litres of feed a month: 480 b/d
+                .setElectricityConsumption(74)
+                .setWaterConsumption(18.5)
+                .setLandSqFt(121675)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(79);
+        templates.add(smallCrackingUnit);
+
+        BuildingsTemplate crackingUnit = new BuildingsTemplate("Cracking Unit", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(105000)
+                .setConstructionPoints(52500)
+                .setConstructionMaterials(1750)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER, 72593464)   // litres of feed a month: 15,000 b/d
+                .setElectricityConsumption(2300)
+                .setWaterConsumption(575)
+                .setLandSqFt(645835)
+                .setJobs(JobType.NO_DIPLOMA, 20)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setJobs(JobType.UNIV_SCIENCE, 2)
+                .setId(80);
+        templates.add(crackingUnit);
+
+        BuildingsTemplate smallHydrocracker = new BuildingsTemplate("Small Hydrocracker", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(19035)
+                .setConstructionPoints(9518)
+                .setConstructionMaterials(317)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.HYDROCRACKER, 2322991)   // litres of feed a month: 480 b/d
+                .setElectricityConsumption(228)
+                .setWaterConsumption(57)
+                .setLandSqFt(123428)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(81);
+        templates.add(smallHydrocracker);
+
+        BuildingsTemplate hydrocracker = new BuildingsTemplate("Hydrocracker", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(83000)
+                .setConstructionPoints(41500)
+                .setConstructionMaterials(1383)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.HYDROCRACKER, 48395643)   // litres of feed a month: 10,000 b/d
+                .setElectricityConsumption(4750)
+                .setWaterConsumption(1187.5)
+                .setLandSqFt(538196)
+                .setJobs(JobType.NO_DIPLOMA, 18)
+                .setJobs(JobType.DIPLOMA, 10)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 5)
+                .setJobs(JobType.UNIV_SCIENCE, 2)
+                .setId(82);
+        templates.add(hydrocracker);
+
+        BuildingsTemplate smallAlkylationUnit = new BuildingsTemplate("Small Alkylation Unit", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(18845)
+                .setConstructionPoints(9422)
+                .setConstructionMaterials(314)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.ALKYLATION, 580748)   // litres of feed a month: 120 b/d
+                .setElectricityConsumption(60)
+                .setWaterConsumption(15)
+                .setLandSqFt(52915)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(83);
+        templates.add(smallAlkylationUnit);
+
+        BuildingsTemplate alkylationUnit = new BuildingsTemplate("Alkylation Unit", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(115000)
+                .setConstructionPoints(57500)
+                .setConstructionMaterials(1917)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.ALKYLATION, 24197821)   // litres of feed a month: 5,000 b/d
+                .setElectricityConsumption(2500)
+                .setWaterConsumption(625)
+                .setLandSqFt(322917)
+                .setJobs(JobType.NO_DIPLOMA, 15)
+                .setJobs(JobType.DIPLOMA, 9)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 5)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setId(84);
+        templates.add(alkylationUnit);
+
+        BuildingsTemplate smallCoker = new BuildingsTemplate("Small Coker", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(18671)
+                .setConstructionPoints(9336)
+                .setConstructionMaterials(311)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.COKER, 2177804)   // litres of feed a month: 450 b/d
+                .setElectricityConsumption(68)
+                .setWaterConsumption(17)
+                .setLandSqFt(191400)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(85);
+        templates.add(smallCoker);
+
+        BuildingsTemplate coker = new BuildingsTemplate("Coker", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(84000)
+                .setConstructionPoints(42000)
+                .setConstructionMaterials(1400)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.COKER, 48395643)   // litres of feed a month: 10,000 b/d
+                .setElectricityConsumption(1500)
+                .setWaterConsumption(375)
+                .setLandSqFt(861113)
+                .setJobs(JobType.NO_DIPLOMA, 20)
+                .setJobs(JobType.DIPLOMA, 12)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setJobs(JobType.UNIV_SCIENCE, 2)
+                .setId(86);
+        templates.add(coker);
+
+        BuildingsTemplate smallLubePlant = new BuildingsTemplate("Small Lube Plant", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(18019)
+                .setConstructionPoints(9010)
+                .setConstructionMaterials(300)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.LUBE, 2322991)   // litres of feed a month: 480 b/d
+                .setElectricityConsumption(360)
+                .setWaterConsumption(90)
+                .setLandSqFt(215509)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(87);
+        templates.add(smallLubePlant);
+
+        BuildingsTemplate lubePlant = new BuildingsTemplate("Lube Plant", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(36000)
+                .setConstructionPoints(18000)
+                .setConstructionMaterials(600)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.LUBE, 9679129)   // litres of feed a month: 2,000 b/d
+                .setElectricityConsumption(1500)
+                .setWaterConsumption(375)
+                .setLandSqFt(430556)
+                .setJobs(JobType.NO_DIPLOMA, 15)
+                .setJobs(JobType.DIPLOMA, 9)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 5)
+                .setJobs(JobType.UNIV_SCIENCE, 1)
+                .setId(88);
+        templates.add(lubePlant);
+
+        BuildingsTemplate smallAsphaltUnit = new BuildingsTemplate("Small Asphalt Unit", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(2152)
+                .setConstructionPoints(1076)
+                .setConstructionMaterials(36)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.ASPHALT, 2177804)   // litres of feed a month: 450 b/d
+                .setElectricityConsumption(9)
+                .setWaterConsumption(2.25)
+                .setLandSqFt(85792)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(89);
+        templates.add(smallAsphaltUnit);
+
+        BuildingsTemplate asphaltUnit = new BuildingsTemplate("Asphalt Unit", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(5400)
+                .setConstructionPoints(2700)
+                .setConstructionMaterials(90)
+                .setSector("Refining")
+                .setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind.ASPHALT, 14518693)   // litres of feed a month: 3,000 b/d
+                .setElectricityConsumption(60)
+                .setWaterConsumption(15)
+                .setLandSqFt(215278)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(90);
+        templates.add(asphaltUnit);
+
+        /* ----------------------- THE FILLING STATION (0.7.83) -----------------------
+           Jerus (2026-10-08): "fuel isnt cheap, we are going to add another
+           building, the pump ... its owned by grocery stores". The grocers'
+           forecourt - the fuel-only kiosk of runs/research-pump.md 7, since the
+           shop beside it is the grocery store already in the game: US$0.5M
+           all in ([16]'s fuel-only kiosk, $0.25-1.8M; the research's estimate),
+           split as the Convenience Store's cash and material are (star O6); three
+           posts (the research's 2-4 for a fuel-only kiosk, est.); 4,000 m2 of
+           ground, an acre ([18]: 0.4 ha the common plot); 350,000 litres a month
+           at its typical throughput ([6][14][20]: 288,000-310,000 average, range
+           200,000-600,000). Power, water and road load are the Convenience
+           Store's (star O6: the research gives none). It sells what Retail
+           draws at wholesale; see sectors.Retail, THE FORECOURTS.
+           ---------------------------------------------------------------------------- */
+        BuildingsTemplate fillingStation = new BuildingsTemplate("Filling Station", BuildingType.COMMERCIAL)
+                .setSector("Retail")
+                .setCashCost(302)
+                .setConstructionPoints(80)
+                .setConstructionMaterials(11)
+                .setElectricityConsumption(6)
+                .setWaterConsumption(1)
+                .setLandSqFt(43056)
+                .setRoadLoad(10)
+                .setPumpLitres(350000)
+                .setJobs(JobType.NO_DIPLOMA, 2)
+                .setJobs(JobType.DIPLOMA, 1)
+                .setId(91);
+        templates.add(fillingStation);
+
+        /* ------------------ THE TANK FARM AND THE STRATEGIC RESERVE (0.7.85) ------------------
+           Batch O8 (runs/spec-oil.md 2.8; the research's 4.5 and Q14). A tank
+           farm of 500,000 m3 - 500,000,000 litres of room, about 3.1M barrels -
+           on 10 ha ([P13]: 27 ha of tanks for 1.3M m3; 1,076,391 sq ft), for
+           D$190M (the research's estimate at US$60 a barrel of room, star; the
+           one figure found, Edmonton's Base Line Terminal at about $150 a barrel
+           all in [S1], is its upper bound), split as the refiners' units are
+           (O4): the cash cost the capital, material a sixtieth of it and
+           points a half, id 75's ratios. Ten posts (est., spec-oil 6), in the
+           units' mix, 5/3/2. No power, water or road load: the research gives
+           none, and the crude it holds is the crude units' own, moved by their
+           pumps and their lorries (star).
+             - The TANK FARM is the refiners' (sectors.Refining, THE TANK FARM):
+               with one standing they keep a month of their crude units' crude
+               on hand, and their products share the rest of the room.
+             - The STRATEGIC RESERVE is the city's, with the same tanks, ground
+               and price, and no posts (star O8-2: the treasury pays a crew only
+               in its five services, and a post nobody pays would be wages from
+               nowhere): the city fills it with crude and releases it in the
+               month's crude market (StrategicReserve).
+           ------------------------------------------------------------------------------------------ */
+        BuildingsTemplate tankFarm = new BuildingsTemplate("Tank Farm", BuildingType.HEAVY_INDUSTRY)
+                .setSector("Refining")
+                .setCashCost(190000)
+                .setConstructionPoints(95000)
+                .setConstructionMaterials(3167)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setLandSqFt(1076391)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setId(92);
+        tankFarm.setStock(500000000);   // litres of tank room: 500,000 m3
+        templates.add(tankFarm);
+
+        BuildingsTemplate strategicReserve = new BuildingsTemplate("Strategic Reserve", BuildingType.HEAVY_INDUSTRY)
+                .setCashCost(190000)
+                .setConstructionPoints(95000)
+                .setConstructionMaterials(3167)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setLandSqFt(1076391)
+                .setId(93);
+        strategicReserve.setStock(500000000);   // litres of crude: 429,185 t
+        templates.add(strategicReserve);
+
+        /* ---------------------------- THE PORTS (0.7.86) ----------------------------
+           Batch O9 (runs/spec-oil.md 2.9; the research's 4.1 and Q9). Four sea
+           terminals, the city's (no sector), each one berth of one kind of
+           cargo on owned coast (Game.hasCoastFor()), its tonnes a year
+           (Ports): a Tanker Terminal 3.25 Mt [P1][P2], D$96M [P11], 7 posts
+           [P13][P28], 4 ha (est.); a Bulk Terminal 27.5 Mt [P3][P5], D$2,310M
+           (US$84 a tonne-year [P3]), 234 posts [P22], 22 ha [P14]; a
+           Container Terminal 0.75M TEU at 9 t [P6][P7][P43], D$461M [P7],
+           585 posts [P25][P26], 20 ha [P15]; a General Cargo Terminal 0.45 Mt
+           [P6][P8], D$70M [P9], 11 posts [P27], 1 ha [P12]. Split as the
+           refiners' units are (O4): the cash cost the capital, material a
+           sixtieth and points a half. The posts in a Rail Terminal's mix (a
+           freight terminal: 1,020 / 390 / 72), by largest remainder (O4-4).
+           No power, water or road load: the research gives none (star).
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Tanker Terminal", BuildingType.PORTS)
+                .setCashCost(96000)
+                .setConstructionPoints(48000)
+                .setConstructionMaterials(1600)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setLandSqFt(430556)
+                .setJobs(JobType.NO_DIPLOMA, 5)
+                .setJobs(JobType.DIPLOMA, 2)
+                .setBerth(Ports.Cargo.LIQUID, 3250000)
+                .setId(94));
+        templates.add(new BuildingsTemplate("Bulk Terminal", BuildingType.PORTS)
+                .setCashCost(2310000)
+                .setConstructionPoints(1155000)
+                .setConstructionMaterials(38500)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setLandSqFt(2368060)
+                .setJobs(JobType.NO_DIPLOMA, 161)
+                .setJobs(JobType.DIPLOMA, 62)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 11)
+                .setBerth(Ports.Cargo.DRY_BULK, 27500000)
+                .setId(95));
+        templates.add(new BuildingsTemplate("Container Terminal", BuildingType.PORTS)
+                .setCashCost(461000)
+                .setConstructionPoints(230500)
+                .setConstructionMaterials(7683)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setLandSqFt(2152782)
+                .setJobs(JobType.NO_DIPLOMA, 403)
+                .setJobs(JobType.DIPLOMA, 154)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 28)
+                .setBerth(Ports.Cargo.CONTAINER, 6750000)
+                .setId(96));
+        templates.add(new BuildingsTemplate("General Cargo Terminal", BuildingType.PORTS)
+                .setCashCost(70000)
+                .setConstructionPoints(35000)
+                .setConstructionMaterials(1167)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setLandSqFt(107639)
+                .setJobs(JobType.NO_DIPLOMA, 8)
+                .setJobs(JobType.DIPLOMA, 3)
+                .setBerth(Ports.Cargo.GENERAL, 450000)
+                .setId(97));
+
+        /* ------------------------- THE OIL AT SEA (0.7.91) -------------------------
+           Batch O10 (runs/spec-oil.md 2.7, 2.11; the research's 3.1-3.2 and
+           4.5), the Oil sector's, standing at sea on none of the city's dry
+           ground (BuildingsTemplate.standsAtSea()):
+             - an OFFSHORE PLATFORM, a fixed steel jacket on a shallow sea field
+               (150 m at most) with slots for 12 wells: D$18M, [W13]'s jacket;
+               12 posts, 6 aboard on a two-on, two-off rota (est., [W14][W27]),
+               in the refiners' units' mix by largest remainder, ties to the
+               less skilled (O4-4): 6/4/2; no power or water, its own;
+             - a PLATFORM WELL in one of its slots, one a sea site of the
+               field: D$14M ([W13]: US$13-15M a well); 415 t a month, a Gulf
+               shelf well's hundred barrels a day [W15], held three years and
+               then 8.5% less a year (sectors.Oil, THE WELLS DECLINE); one post,
+               a diploma's, as a land well's;
+             - a kilometre of CRUDE PIPELINE: D$4.5M at sea and D$3M on land
+               (the research's estimate on [S2]'s US$7.5M a km); no posts or
+               power, its running cost the house's repairs and property tax.
+           Split as the sector's own Oil Well is (id 74: D$2M, 50 units of
+           material, 400 points): the cash cost the capital, material a
+           fortieth of it and points a fifth (star; the refiners' units and the
+           ports took the Oil Refinery's sixtieth and half).
+           ------------------------------------------------------------------------------ */
+        templates.add(new BuildingsTemplate("Offshore Platform", BuildingType.MINING)
+                .setSector("Oil")
+                .setCashCost(18000)
+                .setConstructionPoints(3600)
+                .setConstructionMaterials(450)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 6)
+                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setOffshore(BuildingsTemplate.Offshore.PLATFORM, 12, 0)
+                .setId(98));
+        templates.add(new BuildingsTemplate("Platform Well", BuildingType.MINING)
+                .setSector("Oil")
+                .makes(Good.CRUDE, 415)
+                .setCashCost(14000)
+                .setConstructionPoints(2800)
+                .setConstructionMaterials(350)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setJobs(JobType.DIPLOMA, 1)
+                .setOffshore(BuildingsTemplate.Offshore.WELL, 0, 0)
+                .setId(99));
+        templates.add(new BuildingsTemplate("Crude Pipeline", BuildingType.MINING)
+                .setSector("Oil")
+                .setCashCost(4500)
+                .setConstructionPoints(900)
+                .setConstructionMaterials(113)
+                .setElectricityConsumption(0)
+                .setWaterConsumption(0)
+                .setOffshore(BuildingsTemplate.Offshore.PIPELINE, 0, 3000)
+                .setId(100));
 
         /* ---------------------------- EDUCATION ----------------------------
            The other half of the labour market.
@@ -2672,6 +3133,7 @@ public class BuildingManager {
                 .setCashCost(22260).setConstructionPoints(2445).setConstructionMaterials(530)
                 .setSector("Manufacturing")
                 .makes(Good.FABRICATED_STEEL, 1200).uses(Good.STEEL, 1260)
+                .uses(Good.LUBRICANTS, 1200 * ham.citybuildersim.sectors.Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED)   // 0.7.83: 2 L a tonne
                 .setElectricityConsumption(190).setWaterConsumption(18)
                 .setLandSqFt(480000).setRoadLoad(200)
                 .setJobs(JobType.NO_DIPLOMA, 68)
@@ -2709,6 +3171,7 @@ public class BuildingManager {
                 .setCashCost(14580).setConstructionPoints(1143).setConstructionMaterials(270)
                 .setSector("Manufacturing")
                 .makes(Good.MACHINERY, 180).uses(Good.STEEL, 261)
+                .uses(Good.LUBRICANTS, 180 * ham.citybuildersim.sectors.Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY)   // 0.7.83: 10 L a tonne
                 .setElectricityConsumption(820).setWaterConsumption(24)
                 .setLandSqFt(150000).setRoadLoad(190)
                 .setJobs(JobType.NO_DIPLOMA, 30)
@@ -2737,6 +3200,7 @@ public class BuildingManager {
                 .setCashCost(55690).setConstructionPoints(6120).setConstructionMaterials(1326)
                 .setSector("Manufacturing")
                 .makes(Good.FABRICATED_STEEL, 3000).uses(Good.STEEL, 3150)
+                .uses(Good.LUBRICANTS, 3000 * ham.citybuildersim.sectors.Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED)   // 0.7.83: 2 L a tonne
                 .setElectricityConsumption(440).setWaterConsumption(40)
                 .setLandSqFt(1150000).setRoadLoad(480)
                 .setJobs(JobType.NO_DIPLOMA, 142)

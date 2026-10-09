@@ -2604,9 +2604,10 @@ final class PolicyScreen {
         // A point of target moves the rule's rate by 1 - TAYLOR_WEIGHT at any inflation since 0.7.42
         // (DebtManager.ruleRate(): the target lifts the neutral rate a point, and the gap it fights
         // TAYLOR_WEIGHT times over falls a point) - the UI spec's B8: it said TAYLOR_WEIGHT. Since 0.7.52
-        // the weight is the strictness's, and a loose step's band moves with the target too. At a target
-        // nearer MIN_INFLATION_TARGET than a strict step's slack, the step's aim is held there, so a point
-        // of target moves it less than a point (aimHeld): the sentence says from which target up it holds.
+        // the weight is the strictness's, and a loose step's band moves with the target too - and since
+        // 0.7.81 under the target a loose step is Standard's rule, so there it moves as Standard's does. At a
+        // target nearer MIN_INFLATION_TARGET than a strict step's slack, the step's aim is held there, so a
+        // point of target moves it less than a point (aimHeld): the sentence says from which target up it holds.
         DebtManager.Strictness how = market.getStrictness();
         double perPoint = 1 - how.weight;
         boolean aimHeld = how.slack < 0 && target + how.slack < DebtManager.MIN_INFLATION_TARGET;
@@ -2619,7 +2620,8 @@ final class PolicyScreen {
                 DebtManager.targetWords(target), example * 100, market.ruleRate(example) * 100,
                 DebtManager.targetWords(otherTarget), market.ruleRate(example, otherTarget) * 100,
                 pointsOf(Math.abs(perPoint)), perPoint < 0 ? "lower" : "higher",
-                how.band() > 0 ? " past its band (inside it, a point higher)"
+                how.band() > 0 ? " past its band (inside it, a point higher; under the target "
+                        + pointsOf(DebtManager.TAYLOR_WEIGHT - 1) + " lower, as Standard)"
                         : aimHeld ? " from a " + DebtManager.targetWords(DebtManager.MIN_INFLATION_TARGET - how.slack)
                                 + " target up (under it, its aim is held at "
                                 + DebtManager.targetWords(DebtManager.MIN_INFLATION_TARGET) + ")" : "",
@@ -2670,8 +2672,8 @@ final class PolicyScreen {
         return String.format("How strictly the bank holds the target. Standard is the rule as it was before this dial. Strict "
                 + "aims under the target and treats it as a ceiling, answering inflation over its aim harder; very strict "
                 + "aims %s under, never under 0%%, and answers each point over it with %s of rate. Loose lets inflation "
-                + "be inside a band either side of the target and answers only what is past it, more gently; very "
-                + "loose's band is %s each way, and it answers each point past it with %s of rate. Trust is still "
+                + "run in a band over the target, %s at very loose, and answers what is past it more gently, %s of "
+                + "rate a point; under the target it cuts as Standard does. Trust is still "
                 + "judged on the target itself, and the lean that spares it is measured against what holding the "
                 + "target takes - so a looser bank loses trust as far as it falls short. It moves no price this "
                 + "month, only what the rule says, and the dial with it while the rule holds the dial.",
