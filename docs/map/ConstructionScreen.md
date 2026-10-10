@@ -1,4 +1,4 @@
-# ConstructionScreen.java - 1,076 lines · 39 methods · 7 constants · interface
+# ConstructionScreen.java - 1,080 lines · 39 methods · 7 constants · interface
 
 `ham/citybuildersim/ui/ConstructionScreen.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -25,7 +25,7 @@
 > site. The cancel, the demolition and the buy-out ask first, with the
 > money in the dialog (UserInterface.confirm()).
 
-**Uses:** [Palette](Palette.md) (178), [Game](Game.md) (24), [ConstructionControl](ConstructionControl.md) (14), [BuildingManager](BuildingManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (6), [BuildingsStacks](BuildingsStacks.md) (4), [LandManager](LandManager.md) (4), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (2), [SafetyType](SafetyType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [EducationType](EducationType.md) (1), [CareType](CareType.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Palette](Palette.md) (178), [Game](Game.md) (24), [ConstructionControl](ConstructionControl.md) (16), [BuildingManager](BuildingManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (6), [BuildingsStacks](BuildingsStacks.md) (4), [LandManager](LandManager.md) (4), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (2), [SafetyType](SafetyType.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [EducationType](EducationType.md) (1), [CareType](CareType.md) (1), [Sector](Sector.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -38,8 +38,8 @@
 | 204 | THE SITES |
 | 502 | THE TIMELINE: a bar a site, from now to when it finishes at today's |
 | 631 | DEMOLISH: the city's buildings by type, the stopped shells, and the |
-| 894 | THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). |
-| 996 | THE PIECES this page is drawn with. |
+| 898 | THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). |
+| 1000 | THE PIECES this page is drawn with. |
 
 ## Constants
 
@@ -50,8 +50,8 @@
 | 216 | `ConstructionScreen.COL_RANK` | `34, COL_PROGRESS = 140, COL_CREWS = 100, COL_MONEY = 104, COL_STATUS = 168` | The columns, by width: the order, the building, its progress, crews and time, money, status and the hand. |
 | 552 | `ConstructionScreen.TIMELINE_MAX` | `600` | The longest the timeline's axis runs, in months: fifty years; a site later than that runs off its end. |
 | 557 | `ConstructionScreen.Timeline.NAME` | `210, ROW = 26, TOP = 18` | The names' column, a row, and the band the years are labelled in above the bars, in pixels. |
-| 899 | `ConstructionScreen.PAVING_WORDS` | `"%,d paving · no stop"` | The Paved Road site's words while it paves gravel roads (0.7.70), where Cancel would be: how many, and that it runs on. |
-| 902 | `ConstructionScreen.PAVING_TIP` | `"Some of these Paved Roads pave gravel roads, which carry their traffic until...` | ...and why. |
+| 903 | `ConstructionScreen.PAVING_WORDS` | `"%,d paving · no stop"` | The Paved Road site's words while it paves gravel roads (0.7.70), where Cancel would be: how many, and that it runs on. |
+| 906 | `ConstructionScreen.PAVING_TIP` | `"Some of these Paved Roads pave gravel roads, which carry their traffic until...` | ...and why. |
 
 ## Fields (state)
 
@@ -75,7 +75,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 1030 | **type** `final class ConstructionScreen` | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - priority, rush, cancel, restart - a timeline of when each finishes, and t... |
+| 47 | 1034 | **type** `final class ConstructionScreen` | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - priority, rush, cancel, restart - a timeline of when each finishes, and t... |
 | 54 | 1 | `ConstructionScreen(UserInterface ui)` |  |
 | 69 | 1 | `void show()` | The page, on the tab it was left on. |
 | 72 | 5 | `void showSite(String key)` | ...at one site, from a build card's "N on site" or a site's name on the right panel. |
@@ -113,7 +113,7 @@
 | 604 | 1 | `protected double computePrefWidth(double height)` _(in ConstructionScreen.Timeline)_ |  |
 | 606 | 23 | `protected void layoutChildren()` _(in ConstructionScreen.Timeline)_ |  |
 
-### DEMOLISH: the city's buildings by type, the stopped shells, and the (lines 631-893)
+### DEMOLISH: the city's buildings by type, the stopped shells, and the (lines 631-897)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -121,34 +121,34 @@
 | 670 | 28 | `private void fillPicker(VBox list)` | The picker's rows: the city's buildings, the shells, then the businesses' and the landlords'. |
 | 699 | 5 | `private Label listHead(String text)` |  |
 | 705 | 20 | `private Node pickRow(String name, int n, boolean shell)` |  |
-| 726 | 122 | `private VBox stagingCard()` |  |
-| 850 | 18 | `private HBox rulesLine()` | The rules behind the card, a line and an (i). |
-| 869 | 7 | `private static String placesWord(BuildingsTemplate t)` |  |
-| 878 | 15 | `private HBox effect(String label, String value, String note, String tone)` | One line of the staging card: what, its figure, and a note under it. |
+| 726 | 124 | `private VBox stagingCard()` |  |
+| 852 | 20 | `private HBox rulesLine()` | The rules behind the card, a line and an (i). |
+| 873 | 7 | `private static String placesWord(BuildingsTemplate t)` |  |
+| 882 | 15 | `private HBox effect(String label, String value, String note, String tone)` | One line of the staging card: what, its figure, and a note under it. |
 
-### THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). (lines 894-995)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 905 | 13 | `private void confirmCancel(String key)` |  |
-| 919 | 15 | `private void confirmDemolition(BuildingsTemplate t, int n, Game.DemolitionQuote q)` |  |
-| 935 | 19 | `private void confirmBuyOut(BuildingsTemplate t, int n, Game.BuyOutQuote q)` |  |
-| 955 | 18 | `private void confirmRestart(ConstructionControl.Shell shell)` |  |
-| 974 | 16 | `private void confirmShellDemolition(ConstructionControl.Shell shell)` |  |
-| 992 | 3 | `private void refused(String why)` | A hand the model refused, said where the player is looking. |
-
-### THE PIECES this page is drawn with. (lines 996-1076)
+### THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). (lines 898-999)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1001 | 6 | `static String payerLabel(Game g, String payer)` | Who placed an order, in the player's words: the city, the landlords, or the business by its name. |
-| 1008 | 5 | `private static Label sectionCaption(String text)` |  |
-| 1014 | 5 | `private static Label head(String text)` |  |
-| 1020 | 6 | `private static Label caption(String text)` |  |
-| 1027 | 5 | `private static Label figureLabel(String text, String tone)` |  |
-| 1035 | 8 | `private static Button action(String text, String tone, Runnable act)` | The chip and its tint are Pieces.chip() and Pieces.tint() since 0.7.27. |
-| 1044 | 7 | `private static Label arrow(String glyph, boolean live, Runnable act)` |  |
-| 1052 | 5 | `private static void tip(Node node, String text)` |  |
-| 1058 | 8 | `private static Region cell(Node content, double width)` |  |
-| 1067 | 9 | `private static Region grow(Node content)` |  |
+| 909 | 13 | `private void confirmCancel(String key)` |  |
+| 923 | 15 | `private void confirmDemolition(BuildingsTemplate t, int n, Game.DemolitionQuote q)` |  |
+| 939 | 19 | `private void confirmBuyOut(BuildingsTemplate t, int n, Game.BuyOutQuote q)` |  |
+| 959 | 18 | `private void confirmRestart(ConstructionControl.Shell shell)` |  |
+| 978 | 16 | `private void confirmShellDemolition(ConstructionControl.Shell shell)` |  |
+| 996 | 3 | `private void refused(String why)` | A hand the model refused, said where the player is looking. |
+
+### THE PIECES this page is drawn with. (lines 1000-1080)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1005 | 6 | `static String payerLabel(Game g, String payer)` | Who placed an order, in the player's words: the city, the landlords, or the business by its name. |
+| 1012 | 5 | `private static Label sectionCaption(String text)` |  |
+| 1018 | 5 | `private static Label head(String text)` |  |
+| 1024 | 6 | `private static Label caption(String text)` |  |
+| 1031 | 5 | `private static Label figureLabel(String text, String tone)` |  |
+| 1039 | 8 | `private static Button action(String text, String tone, Runnable act)` | The chip and its tint are Pieces.chip() and Pieces.tint() since 0.7.27. |
+| 1048 | 7 | `private static Label arrow(String glyph, boolean live, Runnable act)` |  |
+| 1056 | 5 | `private static void tip(Node node, String text)` |  |
+| 1062 | 8 | `private static Region cell(Node content, double width)` |  |
+| 1071 | 9 | `private static Region grow(Node content)` |  |
 

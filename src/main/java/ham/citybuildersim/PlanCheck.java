@@ -215,9 +215,11 @@ public class PlanCheck {
             0.14575023866893685, 0.17028678553403506 };
     /** Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (half that the third budget). */
     static final double TEST_GRAVEL = 8407.741935483871, TEST_PAVED = 980.6451612903226, TEST_PAVED_ALL = 4483.870967741936;
-    /** Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()). */
+    /** Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()): his roads... */
     static final long TEST_PLACED_JERUS = -1980402857778823524L, TEST_STREETS_JERUS = -7143981648789130548L;
+    /** ...the same trips paved... */
     static final long TEST_PLACED_PAVED = 9000504916410474359L, TEST_STREETS_PAVED = -4283127041626870812L;
+    /** ...and half that. */
     static final long TEST_PLACED_THIN = 9000504916410474359L, TEST_STREETS_THIN = 4092048347058802282L;
 
     public static void main(String[] args) throws Exception {

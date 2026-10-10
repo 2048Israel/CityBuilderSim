@@ -1,6 +1,6 @@
-# FundCheck.java - 1,307 lines · 26 methods · 0 constants · harnesses
+# FundCheck.java - 1,331 lines · 26 methods · 0 constants · harnesses
 
-`ham/citybuildersim/FundCheck.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). Not part of the game.
 > 
@@ -60,11 +60,11 @@
 >      the default it is the transfer to the bit; whole steps from nothing
 >      to MAX_WITHDRAWAL_STEPS; at nothing it pays and sells nothing; over
 >      the default what the cash cannot cover is sold from the market book
->      at the step, pro rata, and paid at the next month's top, it buys
->      nothing, and the rescue book is never sold; at or under the default a
-> ... (16 more lines in the source)
+>      at the step, pro rata - since 0.7.102 asked at the desk's bid (A21),
+>      where at fair value nobody bid - and paid at the next month's top, it
+> ... (17 more lines in the source)
 
-**Uses:** [TreasuryFund](TreasuryFund.md) (65), [Equity](Equity.md) (64), [Game](Game.md) (62), [Bank](Bank.md) (44), [Exchange](Exchange.md) (31), [OrderBook](OrderBook.md) (25), [Founding](Founding.md) (16), [Household](Household.md) (8), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Sectors](Sectors.md) (3), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2), [DebtQuote](DebtQuote.md) (2), [TreasuryJournal](TreasuryJournal.md) (1), [CityCalendar](CityCalendar.md) (1), [FundView](FundView.md) (1), [DecisionLog](DecisionLog.md) (1), [LandManager](LandManager.md) (1), [LandMarket](LandMarket.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [TreasuryFund](TreasuryFund.md) (68), [Equity](Equity.md) (64), [Game](Game.md) (62), [Bank](Bank.md) (44), [Exchange](Exchange.md) (32), [OrderBook](OrderBook.md) (25), [Founding](Founding.md) (17), [Household](Household.md) (8), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [CityLand](CityLand.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [LandMarket](LandMarket.md) (4), [MoneyAudit](MoneyAudit.md) (3), [Sectors](Sectors.md) (3), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [LandManager](LandManager.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2), [DebtQuote](DebtQuote.md) (2), [TreasuryJournal](TreasuryJournal.md) (1), [CityCalendar](CityCalendar.md) (1), [FundView](FundView.md) (1), [DecisionLog](DecisionLog.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 **Used by (1):** [FundLedgerCheck](FundLedgerCheck.md)
 
@@ -72,130 +72,130 @@
 
 | line | section |
 |---:|---|
-| 170 | · the city |
-| 216 | 1. automatic |
-| 291 | 2. the button, and 3. dilution |
-| 395 | 4. the preferred |
-| 488 | 5. the repayment |
-| 664 | 6. the offer |
-| 727 | 7. the dial |
-| 769 | 8. the rule |
-| 870 | 8b. the city's mark (0.7.48, C4) |
-| 905 | 9. the transfer |
-| 929 | 9b. the withdrawal dial (0.7.48, C1) |
-| 1087 | 10. the hand |
-| 1127 | 11. the save |
-| 1181 | 12. Insane |
-| 1235 | 13. Insane, never borrowing (0.7.15) |
+| 171 | · the city |
+| 217 | 1. automatic |
+| 292 | 2. the button, and 3. dilution |
+| 396 | 4. the preferred |
+| 489 | 5. the repayment |
+| 665 | 6. the offer |
+| 728 | 7. the dial |
+| 770 | 8. the rule |
+| 871 | 8b. the city's mark (0.7.48, C4) |
+| 906 | 9. the transfer |
+| 930 | 9b. the withdrawal dial (0.7.48, C1) |
+| 1101 | 10. the hand |
+| 1141 | 11. the save |
+| 1195 | 12. Insane |
+| 1259 | 13. Insane, never borrowing (0.7.15) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 88 | `static int fails` |  |
-| 89 | `static PrintStream out` |  |
-| 90 | `static PrintStream quiet` |  |
-| 126 | `static GameFiles files` |  |
+| 89 | `static int fails` |  |
+| 90 | `static PrintStream out` |  |
+| 91 | `static PrintStream quiet` |  |
+| 127 | `static GameFiles files` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 1222 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
-| 92 | 4 | `static void check(String label, boolean ok)` |  |
-| 97 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 107 | 4 | `static void quietly(Runnable r)` |  |
-| 112 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 120 | 5 | `static boolean play(Game g)` | One month, pressed, and whether its audit closed: the playtest's own test (LongPlaytest.audit()). |
-| 129 | 5 | `static Game copy()` | A copy of the fixture city, loaded from its save: every scenario starts from the same city. |
-| 136 | 3 | `static void takeEquityTo(Bank bank, double equity)` | Takes the bank to `equity` by losing money between two presses - a loss nobody is paid for, which the next strike does not see. |
-| 157 | 8 | `static void takeEquityToOwn(Bank bank, java.util.function.ToDoubleFunction<Bank> level)` | ...TO A LEVEL OF ITS OWN MEASURE, AS THE MOVE LEAVES IT - RE-CAUSED (0.7.19). |
-| 166 | 49 | `public static void main(String[] args)` |  |
+| 87 | 1245 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
+| 93 | 4 | `static void check(String label, boolean ok)` |  |
+| 98 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 108 | 4 | `static void quietly(Runnable r)` |  |
+| 113 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 121 | 5 | `static boolean play(Game g)` | One month, pressed, and whether its audit closed: the playtest's own test (LongPlaytest.audit()). |
+| 130 | 5 | `static Game copy()` | A copy of the fixture city, loaded from its save: every scenario starts from the same city. |
+| 137 | 3 | `static void takeEquityTo(Bank bank, double equity)` | Takes the bank to `equity` by losing money between two presses - a loss nobody is paid for, which the next strike does not see. |
+| 158 | 8 | `static void takeEquityToOwn(Bank bank, java.util.function.ToDoubleFunction<Bank> level)` | ...TO A LEVEL OF ITS OWN MEASURE, AS THE MOVE LEAVES IT - RE-CAUSED (0.7.19). |
+| 167 | 49 | `public static void main(String[] args)` |  |
 
-### 1. automatic (lines 216-290)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 218 | 65 | `static void resolvedAutomatically()` |  |
-| 284 | 6 | `static boolean journalHas(Game g, String label, double amount)` |  |
-
-### 2. the button, and 3. dilution (lines 291-394)
+### 1. automatic (lines 217-291)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 293 | 101 | `static void resolvedOnTheButton()` |  |
+| 219 | 65 | `static void resolvedAutomatically()` |  |
+| 285 | 6 | `static boolean journalHas(Game g, String label, double amount)` |  |
 
-### 4. the preferred (lines 395-487)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 397 | 90 | `static void thePreferred()` |  |
-
-### 5. the repayment (lines 488-663)
+### 2. the button, and 3. dilution (lines 292-395)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 496 | 167 | `static void theRepayment()` | THE PREFERRED REPAID AT ITS THIRD ANNIVERSARY (Jerus: "Sell new shares to repay"): whole, at par with its unpaid dividends, from the bank's capital over its target and then an offering of new common to the public; the... |
+| 294 | 101 | `static void resolvedOnTheButton()` |  |
 
-### 6. the offer (lines 664-726)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 666 | 60 | `static void theOffer()` |  |
-
-### 7. the dial (lines 727-768)
+### 4. the preferred (lines 396-488)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 729 | 39 | `static void theDial()` |  |
+| 398 | 90 | `static void thePreferred()` |  |
 
-### 8. the rule (lines 769-869)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 771 | 98 | `static void theRule()` |  |
-
-### 8b. the city's mark (0.7.48, C4) (lines 870-904)
+### 5. the repayment (lines 489-664)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 872 | 32 | `static void theStaleMark()` |  |
+| 497 | 167 | `static void theRepayment()` | THE PREFERRED REPAID AT ITS THIRD ANNIVERSARY (Jerus: "Sell new shares to repay"): whole, at par with its unpaid dividends, from the bank's capital over its target and then an offering of new common to the public; the... |
 
-### 9. the transfer (lines 905-928)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 907 | 21 | `static void theTransfer()` |  |
-
-### 9b. the withdrawal dial (0.7.48, C1) (lines 929-1086)
+### 6. the offer (lines 665-727)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 939 | 19 | `static int[] holdTwoAndARescueBook(Game g)` | A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX TIMES THAT, WITH NO CASH: each company's households hand it 5% of the company (a fixture of a holding, not a trade, as section 8's band) and the ba... |
-| 960 | 3 | `static double soldOrAsked(Game g, int c, double before)` | What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. |
-| 964 | 122 | `static void theWithdrawal()` |  |
+| 667 | 60 | `static void theOffer()` |  |
 
-### 10. the hand (lines 1087-1126)
+### 7. the dial (lines 728-769)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1089 | 37 | `static void theHand()` |  |
+| 730 | 39 | `static void theDial()` |  |
 
-### 11. the save (lines 1127-1180)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1129 | 51 | `static void theSave()` |  |
-
-### 12. Insane (lines 1181-1234)
+### 8. the rule (lines 770-870)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1183 | 51 | `static void insane()` |  |
+| 772 | 98 | `static void theRule()` |  |
 
-### 13. Insane, never borrowing (0.7.15) (lines 1235-1307)
+### 8b. the city's mark (0.7.48, C4) (lines 871-905)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1245 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
+| 873 | 32 | `static void theStaleMark()` |  |
+
+### 9. the transfer (lines 906-929)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 908 | 21 | `static void theTransfer()` |  |
+
+### 9b. the withdrawal dial (0.7.48, C1) (lines 930-1100)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 940 | 19 | `static int[] holdTwoAndARescueBook(Game g)` | A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX TIMES THAT, WITH NO CASH: each company's households hand it 5% of the company (a fixture of a holding, not a trade, as section 8's band) and the ba... |
+| 961 | 3 | `static double soldOrAsked(Game g, int c, double before)` | What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. |
+| 965 | 135 | `static void theWithdrawal()` |  |
+
+### 10. the hand (lines 1101-1140)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1103 | 37 | `static void theHand()` |  |
+
+### 11. the save (lines 1141-1194)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1143 | 51 | `static void theSave()` |  |
+
+### 12. Insane (lines 1195-1258)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1197 | 61 | `static void insane()` |  |
+
+### 13. Insane, never borrowing (0.7.15) (lines 1259-1331)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1269 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
 

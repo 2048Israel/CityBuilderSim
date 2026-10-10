@@ -1,4 +1,4 @@
-# SectorStatementCheck.java - 848 lines · 19 methods · 5 constants · harnesses
+# SectorStatementCheck.java - 889 lines · 19 methods · 5 constants · harnesses
 
 `ham/citybuildersim/SectorStatementCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -56,123 +56,127 @@
 >      the cent;
 >   8. THE DEBT SCHEDULE (R7): each kind's start, borrowed, repaid, written
 >      off and end close, and from close to close the running totals are
->      the month's own loans, bonds, repayments and write-offs;
+>      the month's own loans, bonds, repayments and write-offs - and since
+>      0.7.102 (A16, F-S1-2) the sheet is read at the close, so nothing is
+>      lent after it and section 3 holds its debt, land and buildings to
+>      what the business owes and holds as the month closes;
 >   9. EVERY GATE (R4): each building's first failure is its build card's
 >      gate, a gate it has not is no gate, its cost is paid for in full.
 
-**Uses:** [SectorStatements](SectorStatements.md) (170), [Game](Game.md) (23), [SectorBooks](SectorBooks.md) (18), [Bank](Bank.md) (18), [LongPlaytest](LongPlaytest.md) (16), [Equity](Equity.md) (15), [Sector](Sector.md) (14), [BuildCard](BuildCard.md) (11), [Sectors](Sectors.md) (8), [GameVersion](GameVersion.md) (6), [Debt](Debt.md) (5), [GameFiles](GameFiles.md) (2), [JobType](JobType.md) (2), [TreasuryFund](TreasuryFund.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [SectorStatements](SectorStatements.md) (172), [Game](Game.md) (23), [SectorBooks](SectorBooks.md) (18), [Bank](Bank.md) (18), [LongPlaytest](LongPlaytest.md) (16), [Equity](Equity.md) (15), [Sector](Sector.md) (14), [BuildCard](BuildCard.md) (11), [Sectors](Sectors.md) (8), [GameVersion](GameVersion.md) (6), [Debt](Debt.md) (5), [GameFiles](GameFiles.md) (2), [JobType](JobType.md) (2), [TreasuryFund](TreasuryFund.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [LandManager](LandManager.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 157 | · the two cities |
-| 228 | · one month |
-| 243 | · · 1. the income statement |
-| 280 | · · 2. the cash flow |
-| 294 | · · 3. the classified sheet |
-| 335 | · · 4. the equity statement |
-| 383 | · · 5. the bank |
-| 419 | · 8, a month |
-| 453 | · 1-5 |
-| 484 | · 6 |
-| 629 | · 7 |
-| 669 | · 6, an older save |
-| 762 | · 8 |
-| 776 | · 9 |
+| 163 | · the two cities |
+| 234 | · one month |
+| 249 | · · 1. the income statement |
+| 305 | · · 2. the cash flow |
+| 319 | · · 3. the classified sheet |
+| 367 | · · 4. the equity statement |
+| 415 | · · 5. the bank |
+| 451 | · 8, a month |
+| 485 | · 1-5 |
+| 518 | · 6 |
+| 663 | · 7 |
+| 703 | · 6, an older save |
+| 796 | · 8 |
+| 817 | · 9 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 87 | `SectorStatementCheck.CENT` | `.00001` | A cent, in the model's thousands. |
-| 125 | `SectorStatementCheck.tallies` | `new LinkedHashMap<>()` | The tallies of one city's run, by identity. |
-| 231 | `SectorStatementCheck.bondsSoonBefore` | `new LinkedHashMap<>()` | Last month's bonds falling due within a year, by sector: what this month's bond repayments must be inside. |
-| 520 | `SectorStatementCheck.SPLIT_ROWS` | `Set.of(SectorStatements.SOON_HEAD, SectorStatements.DEBT_SOON, SectorStatemen...` | The rows R2 splits the debt into, which a load does not keep. |
-| 672 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
+| 90 | `SectorStatementCheck.CENT` | `.00001` | A cent, in the model's thousands. |
+| 128 | `SectorStatementCheck.tallies` | `new LinkedHashMap<>()` | The tallies of one city's run, by identity. |
+| 237 | `SectorStatementCheck.bondsSoonBefore` | `new LinkedHashMap<>()` | Last month's bonds falling due within a year, by sector: what this month's bond repayments must be inside. |
+| 554 | `SectorStatementCheck.SPLIT_ROWS` | `Set.of(SectorStatements.SOON_HEAD, SectorStatements.DEBT_SOON, SectorStatemen...` | The rows R2 splits the debt into, which a load does not keep. |
+| 706 | `SectorStatementCheck.NEW_FIELDS` | `{ "paidIn", "founded", "paidInDerived", "loanFees", "premiums", "bondCosts", ...` | The S2 fields a save from before 0.7.75 does not carry in its books' months. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 82 | `static int fails` |  |
-| 83 | `static PrintStream out` |  |
-| 84 | `static PrintStream quiet` |  |
-| 102 | `int checked, missed` |  |
-| 103 | `double worst` |  |
-| 104 | `String where` |  |
-| 130 | `static int statements, outsideMonths, splitCounted, splitMissing, owedMissing, dueSoonMonths, residualShown...` | What the cities caused: sector-months with each condition. |
-| 134 | `static int upfrontMonths, bondCostMonths, foundedMonths, issuedMonths, boughtBackMonths, derivedMonths, sto...` | ...and S2's (0.7.75): sector-months with each of the new lines, and with each flow of the debt schedule. |
-| 517 | `static String worstRow` | The row the last comparison missed worst on, for the message. |
+| 85 | `static int fails` |  |
+| 86 | `static PrintStream out` |  |
+| 87 | `static PrintStream quiet` |  |
+| 105 | `int checked, missed` |  |
+| 106 | `double worst` |  |
+| 107 | `String where` |  |
+| 133 | `static int statements, outsideMonths, splitCounted, splitMissing, owedMissing, dueSoonMonths, residualShown...` | What the cities caused: sector-months with each condition. |
+| 137 | `static int upfrontMonths, bondCostMonths, foundedMonths, issuedMonths, boughtBackMonths, derivedMonths, sto...` | ...and S2's (0.7.75): sector-months with each of the new lines, and with each flow of the debt schedule. |
+| 142 | `static int expensedMonths` | ...and 0.7.102's (A16): sector-months that expensed some of what their borrowing cost them up front. |
+| 551 | `static String worstRow` | The row the last comparison missed worst on, for the message. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 80 | 769 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
-| 89 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 94 | 5 | `static void quietly(Runnable r)` |  |
-| 101 | 22 | **type** `static final class Tally` | One identity's tally over a run: how many times it was checked, how many missed by more than a cent, and the worst miss. |
-| 106 | 11 | `void near(double actual, double expected, String at)` _(in SectorStatementCheck.Tally)_ |  |
-| 118 | 4 | `String words()` _(in SectorStatementCheck.Tally)_ |  |
-| 127 | 1 | `static Tally t(String name)` |  |
-| 138 | 18 | `public static void main(String[] args) throws Exception` |  |
+| 83 | 807 | **type** `public class SectorStatementCheck` | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every month of two played cities, and across a save. |
+| 92 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 97 | 5 | `static void quietly(Runnable r)` |  |
+| 104 | 22 | **type** `static final class Tally` | One identity's tally over a run: how many times it was checked, how many missed by more than a cent, and the worst miss. |
+| 109 | 11 | `void near(double actual, double expected, String at)` _(in SectorStatementCheck.Tally)_ |  |
+| 121 | 4 | `String words()` _(in SectorStatementCheck.Tally)_ |  |
+| 130 | 1 | `static Tally t(String name)` |  |
+| 144 | 18 | `public static void main(String[] args) throws Exception` |  |
 
-### the two cities (lines 157-227)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 160 | 43 | `static Game playersCity(Path root)` | The test player's city (LongPlaytest.main()'s founding and its rhythm), audited every month: thirty years. |
-| 205 | 14 | `static Game plainCity(Path root)` | SectorBooksCheck's city: a plain founding, played on, audited every month. |
-| 221 | 6 | `static void months(Game g, int n)` | Months played one at a time, each audited. |
-
-### one month (lines 228-418)
+### the two cities (lines 163-233)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 234 | 184 | `static void audit(Game g)` | Every sector's four statements and the bank's two, held to the model. |
+| 166 | 43 | `static Game playersCity(Path root)` | The test player's city (LongPlaytest.main()'s founding and its rhythm), audited every month: thirty years. |
+| 211 | 14 | `static Game plainCity(Path root)` | SectorBooksCheck's city: a plain founding, played on, audited every month. |
+| 227 | 6 | `static void months(Game g, int n)` | Months played one at a time, each audited. |
 
-### 8, a month (lines 419-452)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 429 | 23 | `static void scheduleOf(String key, SectorBooks books, SectorBooks.SectorMonth now, String at)` | The debt schedule (R7), this month: each kind closes from last month's sheet to this month's; and from close to close the running totals are the month's own figures - the loans' principal written (what it was handed a... |
-
-### 1-5 (lines 453-483)
+### one month (lines 234-450)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 455 | 28 | `static void everyMonth()` |  |
+| 240 | 210 | `static void audit(Game g)` | Every sector's four statements and the bank's two, held to the model. |
 
-### 6 (lines 484-628)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 487 | 10 | `static Map<String, double[]> rows(SectorStatements.Table t)` | Every row of a table, this month and last, as text to the cent: what a save must keep. |
-| 499 | 16 | `static double compare(Map<String, double[]> a, Map<String, double[]> b, Set<String> skip)` | The rows two tables share, compared to the cent; @return the worst miss, infinite for a figure one knows and the other does not. |
-| 524 | 104 | `static void savedAndLoaded(Path root, Game g)` |  |
-
-### 7 (lines 629-668)
+### 8, a month (lines 451-484)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 631 | 37 | `static void theFormats(Game g)` |  |
+| 461 | 23 | `static void scheduleOf(String key, SectorBooks books, SectorBooks.SectorMonth now, String at)` | The debt schedule (R7), this month: each kind closes from last month's sheet to this month's; and from close to close the running totals are the month's own figures - the loans' principal written (what it was handed a... |
 
-### 6, an older save (lines 669-761)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 684 | 77 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - loads with every listed sector's share capital der... |
-
-### 8 (lines 762-775)
+### 1-5 (lines 485-517)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 764 | 11 | `static void theSchedule()` |  |
+| 487 | 30 | `static void everyMonth()` |  |
 
-### 9 (lines 776-848)
+### 6 (lines 518-662)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 787 | 61 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
+| 521 | 10 | `static Map<String, double[]> rows(SectorStatements.Table t)` | Every row of a table, this month and last, as text to the cent: what a save must keep. |
+| 533 | 16 | `static double compare(Map<String, double[]> a, Map<String, double[]> b, Set<String> skip)` | The rows two tables share, compared to the cent; @return the worst miss, infinite for a figure one knows and the other does not. |
+| 558 | 104 | `static void savedAndLoaded(Path root, Game g)` |  |
+
+### 7 (lines 663-702)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 665 | 37 | `static void theFormats(Game g)` |  |
+
+### 6, an older save (lines 703-795)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 718 | 77 | `static void anOlderSave(Game g) throws Exception` | A FORMAT-32 SAVE (0.7.74's shape), made from the test player's city by taking out what 0.7.75 added - the register's three slots a company and the books' new fields - loads with every listed sector's share capital der... |
+
+### 8 (lines 796-816)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 798 | 18 | `static void theSchedule()` |  |
+
+### 9 (lines 817-889)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 828 | 61 | `static void everyGate(Game...cities)` | Every building at every gate (R4), on the test player's city as it stands: each one's first failure is the build card's gate (gate()); a gate it has not is NONE - no ore without a site, no licence, no posts, no ground... |
 

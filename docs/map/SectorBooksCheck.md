@@ -1,6 +1,6 @@
-# SectorBooksCheck.java - 332 lines · 5 methods · 1 constants · harnesses
+# SectorBooksCheck.java - 335 lines · 5 methods · 1 constants · harnesses
 
-`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorBooksCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits every sector's statements, every month. Not part of
 > the game.
@@ -19,8 +19,9 @@
 >      plug means a figure moved between being read and being used.
 > 
 >   2. THE INCOME STATEMENT ADDS UP, top to bottom: revenue less the operating
->      lines is operating income, less property tax, interest and sales tax is
->      pre-tax, less profit tax is what the sector kept. Every line on the
+>      lines is operating income, less property tax, interest, the borrowing
+>      costs (0.7.102) and sales tax is pre-tax, less profit tax is what the
+>      sector kept. Every line on the
 >      screen is one of these, so a break here is a screen that does not foot.
 > 
 >      The sales tax joined that chain on 2026-09-09. It used to be remitted
@@ -42,42 +43,42 @@
 
 | line | section |
 |---:|---|
-| 45 | 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) |
-| 126 | · · the sheet |
-| 131 | · · the income statement |
-| 142 | · · the cash flow |
-| 218 | · AND IT HAS TO SURVIVE A SAVE. |
-| 250 | · · and the month after |
-| 256 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
+| 46 | 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) |
+| 127 | · · the sheet |
+| 132 | · · the income statement |
+| 145 | · · the cash flow |
+| 221 | · AND IT HAS TO SURVIVE A SAVE. |
+| 253 | · · and the month after |
+| 259 | · 5. CONSTRUCTION'S MATERIALS ARE THE STATEMENT'S MONTH (A5, 0.7.46) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `SectorBooksCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
+| 89 | `SectorBooksCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 40 | `static int fails` |  |
-| 41 | `static int months` |  |
-| 42 | `static int statements` |  |
-| 43 | `static int screenLines` |  |
+| 41 | `static int fails` |  |
+| 42 | `static int months` |  |
+| 43 | `static int statements` |  |
+| 44 | `static int screenLines` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 295 | **type** `public class SectorBooksCheck` | Plays a city and audits every sector's statements, every month. |
+| 39 | 297 | **type** `public class SectorBooksCheck` | Plays a city and audits every sector's statements, every month. |
 
-### 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) (lines 45-332)
+### 4. AND EVERY FIGURE ON THE PAGE IS A FIGURE (2026-09-16) (lines 46-335)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 61 | 10 | `static boolean isAFigure(String value)` |  |
-| 72 | 14 | `static void pageIsReadable(Game game)` |  |
-| 91 | 4 | `static void check(String label, boolean ok, String detail)` | One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. |
-| 96 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` |  |
-| 106 | 226 | `public static void main(String[] args)` |  |
+| 62 | 10 | `static boolean isAFigure(String value)` |  |
+| 73 | 14 | `static void pageIsReadable(Game game)` |  |
+| 92 | 4 | `static void check(String label, boolean ok, String detail)` | One labelled assertion, printed either way (0.7.46): the rest of this harness speaks only when it fails. |
+| 97 | 9 | `static void near(String what, String sector, int month, double actual, double expected)` |  |
+| 107 | 228 | `public static void main(String[] args)` |  |
 

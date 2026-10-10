@@ -1,4 +1,4 @@
-# RoadCheck.java - 724 lines · 24 methods · 2 constants · harnesses
+# RoadCheck.java - 851 lines · 28 methods · 2 constants · harnesses
 
 `ham/citybuildersim/RoadCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -27,12 +27,20 @@
 >      for the road is its quote, its ground at landValue(), and running()
 >      for LIFE_MONTHS at the real rate - each part recomputed here, to the
 >      bit; the repairs in running() are what the month's maintenance bill
->      charges the city for one more such road.
+>      charges the city for one more such road - since 0.7.103 (batch P4,
+>      Jerus's A11) each road kind at its own share a year of its price
+>      (BuildingsTemplate.repairsPerYear(): gravel 3%, paved 2%, the
+>      highway 1.25%; a line the house's 1%), so gravel's share of its
+>      price is the dearest and the highway's the least, and gravel's lead
+>      a trip it carries over paved shrinks from nearly half to a seventh.
 >   2. THE ADVICE TAKES THE LEAST OVER ITS LIFE, AND GRAVEL CAN STILL WIN:
 >      with no ground free, the road the advice suggests is the candidate
->      least over its life a trip; with the land office's prices at nothing
->      it is the gravel road, past the crossover the model's figures give
->      the paved road, and past the next the highway.
+>      whose order costs least over its life for the trips it will take off
+>      over that life (0.7.101, Jerus's A4 and A19; its life a trip until
+>      then), every candidate's figure recomputed; by their lives a trip,
+>      with the land office's prices at nothing the gravel road is the
+>      least, past the crossover the model's figures give the paved road,
+>      and past the next the highway.
 >   3. THE ROAD CARDS SAY THE SAME: bar 1 is the road's life a trip off the
 >      road and bar 2 its ground a trip, to the bit, and the card tagged
 >      cheapest is the road the advice ranks first among the three.
@@ -54,120 +62,116 @@
 >      not demolished.
 >   7. A SAVE AND A LOAD, TO THE CENT: a paving in progress reads back, its
 >      ground and the ledger to the bit, and the two cities play its
->      months alike; an older save, with no pavings, loads with none.
->   8. THE ADVICE OFFERS THE PAVING WHEN IT BEATS A NEW PAVED ROAD, and not
->      before: at the crossover the model's figures give, the suggestion is
->      the paving - its quote, its gravel roads gone, the ground it frees -
->      and the Gravel Road card's paving says so; "Build all three" leaves
->      it out.
->   9. THE TEST PLAYER ASKS THE ADVICE: its first road move is the road the
->      advice ranks first, and the paving where it beats a new Paved Road
-> ... (3 more lines in the source)
+> ... (12 more lines in the source)
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (73), [Game](Game.md) (34), [BuildingsTemplate](BuildingsTemplate.md) (25), [ConstructionControl](ConstructionControl.md) (10), [BuildCard](BuildCard.md) (10), [CityNeeds](CityNeeds.md) (7), [BuildingManager](BuildingManager.md) (6), [LongPlaytest](LongPlaytest.md) (6), [GameFiles](GameFiles.md) (4), [BuildingType](BuildingType.md) (4), [Founding](Founding.md) (3), [MoneyAudit](MoneyAudit.md) (2), [Sector](Sector.md) (2), [LandManager](LandManager.md) (2), [LandMarket](LandMarket.md) (2), [Good](Good.md) (2), [BuildAdviceCheck](BuildAdviceCheck.md) (1), [EconomyManager](EconomyManager.md) (1), [RealEstate](RealEstate.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (82), [Game](Game.md) (38), [BuildingsTemplate](BuildingsTemplate.md) (33), [LongPlaytest](LongPlaytest.md) (11), [ConstructionControl](ConstructionControl.md) (10), [BuildCard](BuildCard.md) (10), [CityNeeds](CityNeeds.md) (8), [BuildingManager](BuildingManager.md) (6), [BuildingType](BuildingType.md) (5), [GameFiles](GameFiles.md) (4), [BuildAdviceCheck](BuildAdviceCheck.md) (4), [Founding](Founding.md) (3), [MoneyAudit](MoneyAudit.md) (2), [Sector](Sector.md) (2), [LandManager](LandManager.md) (2), [LandMarket](LandMarket.md) (2), [Good](Good.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [EconomyManager](EconomyManager.md) (1), [RealEstate](RealEstate.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 206 | 1. A ROAD'S LIFE |
-| 261 | 2. THE ADVICE |
-| 331 | 3. THE CARDS |
-| 368 | 4. THE PAVING'S PRICE |
-| 442 | 5. PLAYED |
-| 505 | 6. REFUSED |
-| 545 | 7. SAVE AND LOAD |
-| 608 | 8. OFFERED |
-| 657 | 9. THE TEST PLAYER |
+| 220 | 1. A ROAD'S LIFE |
+| 304 | 2. THE ADVICE |
+| 401 | 3. THE CARDS |
+| 438 | 4. THE PAVING'S PRICE |
+| 512 | 5. PLAYED |
+| 575 | 6. REFUSED |
+| 615 | 7. SAVE AND LOAD |
+| 678 | 8. OFFERED |
+| 731 | 9. THE TEST PLAYER |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 118 | `RoadCheck.GRAVEL` | `ConstructionControl.PAVE_FROM, PAVED = ConstructionControl.PAVE_TO, HIGHWAY =...` | The three roads by name: the paving's from and to, and the highway. |
-| 122 | `RoadCheck.ROADS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS)` | The advice's measure for roads, which the sections here read the site, the units and the cards through. |
+| 132 | `RoadCheck.GRAVEL` | `ConstructionControl.PAVE_FROM, PAVED = ConstructionControl.PAVE_TO, HIGHWAY =...` | The three roads by name: the paving's from and to, and the highway. |
+| 136 | `RoadCheck.ROADS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS)` | The advice's measure for roads, which the sections here read the site, the units and the cards through. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 84 | `static int fails` |  |
-| 85 | `static PrintStream out` |  |
-| 86 | `static PrintStream quiet` |  |
-| 125 | `static int monthsAudited` | The months audited, and the worst: a month passes the playtest's audit within a cent or 1e-7 of what moved. |
+| 93 | `static int fails` |  |
+| 94 | `static PrintStream out` |  |
+| 95 | `static PrintStream quiet` |  |
+| 139 | `static int monthsAudited` | The months audited, and the worst: a month passes the playtest's audit within a cent or 1e-7 of what moved. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 643 | **type** `public class RoadCheck` | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to their own arithmetic in a played city. |
-| 88 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 93 | 5 | `static void bits(String label, double actual, double expected)` |  |
-| 99 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 105 | 5 | `static void quietly(Runnable r)` |  |
-| 111 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 127 | 6 | `static void month(Game g)` |  |
-| 139 | 3 | `static Game town(Path root, String name)` | The fixture: a town of 1,200 houses on four gravel roads, every sector held, played three years - the road past NEEDS YOU's line, and four gravel roads to pave (calibrated: scratch-n1/fix-1200.txt). |
-| 144 | 19 | `static Game town(Path root, String name, String road, int n)` | ...or on `n` roads of another kind: three Paved Roads carry what the four gravel roads do, and leave nothing to pave. |
-| 165 | 9 | `static double[][] noGroundFree(Game g)` | The same town with no ground free: every road's ground bought at the land office's price. |
-| 176 | 4 | `static void scale(Game g, double[][] base, double f)` | The land office's listing at f times its prices. |
-| 181 | 4 | `static CityNeeds.Need roadNeed(Game g)` |  |
-| 186 | 19 | `public static void main(String[] args) throws Exception` |  |
+| 91 | 761 | **type** `public class RoadCheck` | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to their own arithmetic in a played city. |
+| 97 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 102 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 107 | 5 | `static void bits(String label, double actual, double expected)` |  |
+| 113 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 119 | 5 | `static void quietly(Runnable r)` |  |
+| 125 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 141 | 6 | `static void month(Game g)` |  |
+| 153 | 3 | `static Game town(Path root, String name)` | The fixture: a town of 1,200 houses on four gravel roads, every sector held, played three years - the road past NEEDS YOU's line, and four gravel roads to pave (calibrated: scratch-n1/fix-1200.txt). |
+| 158 | 19 | `static Game town(Path root, String name, String road, int n)` | ...or on `n` roads of another kind: three Paved Roads carry what the four gravel roads do, and leave nothing to pave. |
+| 179 | 9 | `static double[][] noGroundFree(Game g)` | The same town with no ground free: every road's ground bought at the land office's price. |
+| 190 | 4 | `static void scale(Game g, double[][] base, double f)` | The land office's listing at f times its prices. |
+| 195 | 4 | `static CityNeeds.Need roadNeed(Game g)` |  |
+| 200 | 19 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. A ROAD'S LIFE (lines 206-260)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 208 | 52 | `static void life(Path root)` |  |
-
-### 2. THE ADVICE (lines 261-330)
+### 1. A ROAD'S LIFE (lines 220-303)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 264 | 15 | `static String[] least(Game g, boolean roadsOnly)` | The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. |
-| 285 | 8 | `static double crossover(Game g, BuildingsTemplate a, BuildingsTemplate b)` | The land price a square foot, all of a road's ground at it, at which two roads cost the same a trip over their lives: (u_a k_b - u_b k_a) / (u_b A_a - u_a A_b), k a road's life but its ground, A its ground. |
-| 294 | 36 | `static void advice(Path root)` |  |
+| 222 | 81 | `static void life(Path root)` |  |
 
-### 3. THE CARDS (lines 331-367)
+### 2. THE ADVICE (lines 304-400)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 333 | 34 | `static void cards(Path root)` |  |
+| 314 | 15 | `static boolean leastOrder(Game g, CityNeeds.Need need, BuildAdvice.Suggestion first)` | Whether the advice's road card is the least of its own candidates (0.7.101): the ranking walked as automatic building walks it - each card in turn left out (BuildAdvice.suggestFor()'s skip) - every card's figure its o... |
+| 331 | 15 | `static String[] least(Game g, boolean roadsOnly)` | The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. |
+| 352 | 8 | `static double crossover(Game g, BuildingsTemplate a, BuildingsTemplate b)` | The land price a square foot, all of a road's ground at it, at which two roads cost the same a trip over their lives: (u_a k_b - u_b k_a) / (u_b A_a - u_a A_b), k a road's life but its ground, A its ground. |
+| 361 | 39 | `static void advice(Path root)` |  |
 
-### 4. THE PAVING'S PRICE (lines 368-441)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 370 | 71 | `static void pavePrice(Path root)` |  |
-
-### 5. PLAYED (lines 442-504)
+### 3. THE CARDS (lines 401-437)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 444 | 60 | `static void played(Path root)` |  |
+| 403 | 34 | `static void cards(Path root)` |  |
 
-### 6. REFUSED (lines 505-544)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 507 | 37 | `static void refused(Path root)` |  |
-
-### 7. SAVE AND LOAD (lines 545-607)
+### 4. THE PAVING'S PRICE (lines 438-511)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 547 | 60 | `static void saveAndLoad(Path root) throws Exception` |  |
+| 440 | 71 | `static void pavePrice(Path root)` |  |
 
-### 8. OFFERED (lines 608-656)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 610 | 46 | `static void offered(Path root)` |  |
-
-### 9. THE TEST PLAYER (lines 657-724)
+### 5. PLAYED (lines 512-574)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 659 | 44 | `static void player(Path root)` |  |
-| 708 | 16 | `static boolean firstRoad(Game g, double[][] base, double f, String want)` | The test player's first road move at the land office's prices x f, against the advice's ranking recomputed: the least of the three roads over its life a trip, and the paving where it beats a new Paved Road and is less. |
+| 514 | 60 | `static void played(Path root)` |  |
+
+### 6. REFUSED (lines 575-614)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 577 | 37 | `static void refused(Path root)` |  |
+
+### 7. SAVE AND LOAD (lines 615-677)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 617 | 60 | `static void saveAndLoad(Path root) throws Exception` |  |
+
+### 8. OFFERED (lines 678-730)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 680 | 50 | `static void offered(Path root)` |  |
+
+### 9. THE TEST PLAYER (lines 731-851)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 733 | 83 | `static void player(Path root)` |  |
+| 818 | 6 | `static BuildAdvice.Suggestion roadCard(Game g)` | The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. |
+| 826 | 4 | `static int standingAndOnSite(Game g, BuildingsTemplate t)` | A building's count standing and on site. |
+| 835 | 16 | `static boolean firstRoad(Game g, double[][] base, double f, String want)` | The test player's first road move at the land office's prices x f, against the advice's ranking recomputed: the least of the three roads over its life a trip, and the paving where it beats a new Paved Road and is less. |
 
