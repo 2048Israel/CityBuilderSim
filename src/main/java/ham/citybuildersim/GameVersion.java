@@ -4810,7 +4810,7 @@ public final class GameVersion {
      *     payback's (runs/fixP2b-notes.md, section 3).
      *   - The playtest is 0.7.102's byte for byte (its player builds its own
      *     works). The auto-built one (-Dplaytest.autobuild), seeds 0 to 7:
-     *     PEOPLE_AT_END; four villages stand at 2,000 to 3,600 people for some
+     *     1.5M-2.1M people each; four villages stand at 2,000 to 3,600 people for some
      *     400 months while care, essential now, runs them into deficit
      *     (runs/fixP2b-notes.md, section 4).
      *
@@ -4908,14 +4908,23 @@ public final class GameVersion {
      *     opening dollar price, where it was STARTING_SQ_FT's 3,000,000
      *     square feet: US$3.81M on the default world (US$2.1M). The founding
      *     screen prices it on the world typed.
+     *   - A LOAD PUTS BACK THE CENTRAL BANK'S LINES AND THE FUND'S TRANSFER
+     *     (Game's load path): only the government block carried them, so a
+     *     refresh of the books before a loaded city's first month struck its
+     *     interest on its advances as nothing (AutoBuildCheck 4's twin read
+     *     each resident as costing half what the city saved read).
      *   - Harnesses: InvestCheck (the test reads the margin less the staff,
-     *     and refuses a loan the margin alone would carry), BuildAdviceCheck
+     *     and refuses a loan the margin alone would carry) and OilCheck (a
+     *     station's figure less its staff), BuildAdviceCheck
      *     12 (new: the beds less the priced out, NEEDS YOU's row, the ring and
      *     an order's after), ConstructionControlCheck and BankCheck (the
      *     salvage at SALVAGE_SHARE), WaterCheck 11 (a new city's first plant
-     *     idles nothing), LandCheck 1 (the rings, then the river), 5 and 24
-     *     (twenty-one offers, two clipped, one all water) and 5d (built out
-     *     on what a new city owns), FundCheck 12 (the bond on the plots).
+     *     idles nothing), LandCheck 1 (the rings as they were, then the
+     *     lake's whole blocks, edge to edge, until one plant's fresh water;
+     *     the world's totals untouched) and 5 (twenty offers of twenty-four:
+     *     North 6 stands against the lake's blocks), FundCheck 12 (the bond
+     *     on the plots); MapCheck 2's expectation at the month's road share
+     *     (the lake's bank on world 35), its premise unchanged.
      *   - The playtest moves from month 17 (A23: the first plant retired
      *     sells a quarter of its material); alone, A18 moves it from month 75
      *     (the first filling station waits 30 months for its staff to pay),

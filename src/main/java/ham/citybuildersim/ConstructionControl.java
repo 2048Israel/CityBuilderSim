@@ -403,7 +403,7 @@ public final class ConstructionControl {
         /** The points of work it is, all told: DEMOLITION_SHARE of the work it holds. */
         public double points;
         public double progress;
-        /** Units of construction material the buildings hold, salvaged when it completes. */
+        /** Units of construction material salvaged when it completes, as quoted: SALVAGE_SHARE of what the buildings hold since 0.7.106 (all of it until then). */
         public double salvageUnits;
         /** The ground it holds until it completes, in square feet. */
         public double landSqFt;

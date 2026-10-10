@@ -139,7 +139,8 @@ public final class CityLand {
      * their dry plots reach dryKm2 rounded up to a whole plot; nothing bought.
      * Its books are its plots counted, so it holds a little more dry ground
      * than asked: the default city 315 plots for 309.7 (+1.7%), 21 blocks of
-     * 120 m, 0.3024 km2.
+     * 120 m, 0.3024 km2. These are the rings alone; since 0.7.106 a new
+     * city's founding takes its lake's blocks after them (the next found()).
      */
     public static CityLand found(World world, long x, long y, double dryKm2) {
         return found(world, x, y, dryKm2, 0);
@@ -164,7 +165,7 @@ public final class CityLand {
      * never lies beyond; a world with too little nearer founds with what
      * there is. The rings are what they were, so the city's dry ground is
      * what it was and the lake an island of its own ground, 1.9 to 2.7 km
-     * off: on the default world 35 blocks of open lake and no dry plot. Every
+     * off: on the default world 33 blocks of open lake and no dry plot. Every
      * block is holding 0's, drawn plot by plot like the rings (drawnBooks());
      * the world's fields and its totals are untouched - a field whose centre
      * plot the lake's blocks hold goes with them whole, as with any of the

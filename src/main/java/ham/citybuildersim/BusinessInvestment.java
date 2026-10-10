@@ -57,7 +57,7 @@ public class BusinessInvestment {
     /** A project must clear its interest by this much to be worth doing. */
     public static final double PROFIT_OVER_INTEREST = 1.25;
 
-    /** Never start a second order for a sector while one is still on site - every sector but the landlords, who hold work by the month (0.7.17; withinMonthsOfWork()). */
+    /** Never start a second order for a sector while one is still on site - every sector but the landlords, who hold work by the month (0.7.17; withinMonthsOfWork()); the refiners count no crude unit on site against it since 0.7.105 (sectors.Refining, ONE ORDER IN FLIGHT). */
     public static final int MAX_CONCURRENT_ORDERS = 1;
 
     /* =====================================================================

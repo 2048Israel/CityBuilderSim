@@ -33,7 +33,8 @@ import java.util.Map;
  * 0.7.83) draw the petrol, and its railway (Rail.haul()) and since 0.7.83
  * its vans the diesel, off those tanks before the world, as the factories
  * do the lubricants and the builders the bitumen (0.7.83); the rest leaves
- * by the export-bound line until something here buys it.
+ * by the export-bound line until something here buys it - the lubricants
+ * since 0.7.103 no more than the world takes (LUBRICANTS_WORLD_SHARE).
  *
  * WHY. Until 0.7.76 it made FUEL, a thousand litres from a tonne - 86% of a
  * barrel as transport fuels and the rest left out - so one refinery was
@@ -44,7 +45,8 @@ import java.util.Map;
  * WHAT TO BUILD is the spread planner's since 0.7.82 (batch O5; THE SPREAD
  * PLANNER, below, and the shared SpreadPlanner): of the refiners' buildings
  * that pass the gates - feed, ground, staff, money - the one that earns most
- * on its cost at the city's own prices: a conversion unit on its spread on
+ * on its cost at the city's own prices (at the margin since 0.7.105, THE
+ * PLANNER'S PRICES AT THE MARGIN): a conversion unit on its spread on
  * the stream it would find spare, a crude unit (for the city's own petrol
  * and diesel or its wells' spare crude) with the units its cuts would feed.
  * Until then it was one building, the Oil Refinery, for a whole plant's
@@ -52,8 +54,9 @@ import java.util.Map;
  * on the investors' estimate over its slate (K's rule, 0.7.62 to 0.7.81).
  *
  * AND ITS TANK FARM (0.7.85, batch O8; spec-oil 2.8; THE TANK FARM, below):
- * with one standing the refiners keep a month of their crude on hand and
- * run on what they have and what they bought.
+ * with one standing the refiners keep a month of their crude on hand (since
+ * 0.7.105 of their run, an MR's cargo of room kept free: THE NEXT CARGO'S
+ * ROOM) and run on what they have and what they bought.
  *
  * AND ITS RUN (0.7.105, batch P6; THE RUN, below): the crude units run only
  * the barrels that pay at what their products would fetch, moving a quarter
