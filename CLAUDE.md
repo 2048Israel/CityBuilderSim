@@ -173,12 +173,15 @@ These are Jerus's, and they do not move.
                                    of GDP, since 0.7.101 all it owes over the year it has recorded, 240%
                                    by default and to 600%, and "Build from cash anyway" for when it is
                                    over), and the month's pass that orders the build advice's own cards
-                                   for the city's works within the builders, the budget and the limit (a
-                                   first of a kind from the cash alone) - since 0.7.77 buying the bare
-                                   ground they lack as Build's land shortcut would, since 0.7.101 only an
-                                   order's own, and the next card in the advice's ranking where the money,
-                                   the ground or the budget will not run to the first - borrowing on the
-                                   funding page's bond; its log, its inbox notices - AutoBuildCheck holds it
+                                   for the city's works within the builders and the limit (a first of a
+                                   kind from the cash alone) - since 0.7.104 power, water, care and death
+                                   care whatever they cost to run, a school, station, prison or line only
+                                   as far as it pays back over its life (the budget until then) - since
+                                   0.7.77 buying the bare ground they lack as Build's land shortcut would,
+                                   since 0.7.101 only an order's own, and the next card in the advice's
+                                   ranking where the money, the ground or the payback will not run to the
+                                   first - borrowing on the funding page's bond; its log, its inbox
+                                   notices - AutoBuildCheck holds it
         BuildCard.java             one build card's figures for all 101 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it

@@ -593,7 +593,7 @@ public final class AutoBuilder {
         ORDERED,
         /** Works for it are on site and the builders could open no more inside a year. */
         WAITING,
-        /** The builders have no site output, or no ground is to be had for one (since 0.7.77 it buys the rest), or the budget cannot run one, or the limit - over it, the cash - would not pay for one, of any building in the advice's ranking (the ground and the money walked since 0.7.101). */
+        /** The builders have no site output, or no ground is to be had for one (since 0.7.77 it buys the rest), or none would pay back (since 0.7.104; the budget could not run one until then), or the limit - over it, the cash - would not pay for one, of any building in the advice's ranking (the ground and the money walked since 0.7.101). */
         HELD,
         /** No building the city could staff moves it (the advice offers nothing). */
         NOTHING
@@ -606,7 +606,10 @@ public final class AutoBuilder {
      * One measure at the last pass: what it did, and why - and since 0.7.77
      * the ground its order lacked when it was weighed (landShort, square feet
      * past what was free), the offers it bought for it and their price in
-     * local money.
+     * local money; and since 0.7.104 the payback it weighed (payback): an
+     * order's, for its count, or a hold's, for one of the card it held on -
+     * null where the payback does not hold the building, or the hold was for
+     * the money, the ground or the builders.
      */
     public record Step(BuildAdvice.Measure measure, Outcome outcome, String building, int wanted, int ordered,
                        Cut cut, double cost, double borrowed, double landShort, List<LandParcel> land, double landCost,
@@ -937,7 +940,8 @@ public final class AutoBuilder {
      * would not pay for one of the advice's card - a Coal Power Plant past the
      * debt limit, a building no bare ground can be had for - the pass takes the
      * next building in the advice's ranking (its skip), as it takes the next
-     * past one the budget cannot run (since 0.7.73), and holds only when none
+     * past one that would not pay back (since 0.7.104; one the budget could not
+     * run from 0.7.73), and holds only when none
      * is left, in the first card's words. Until 0.7.101 it held the
      * measure on the first card, month after month, while a building the money
      * would pay for served it: on the auto-built playtest's seed 1 the advice's
