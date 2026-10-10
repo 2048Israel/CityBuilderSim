@@ -199,9 +199,14 @@ public final class World {
 
        Take the cells that are 25 to 75% land, start at the nearest to the
        world's middle, and spiral out from its centre; the first plot that
-       passes all four tests is the site. A cell whose spiral finds none hands
+       passes the tests is the site. A cell whose spiral finds none hands
        on to the next nearest (the prototype stopped at the first cell; seed
-       2026 needs a second, WorldCheck).
+       2026 needs a second, WorldCheck). Since 0.7.99 (batch W1) a founding
+       asks the first three - dry ground, land round it, a coast - and no
+       longer the fourth, iron near the site: a city may start with no
+       deposit at all, and imports what it needs. The search an older
+       save's land is converted on (searchSites()) keeps all four, on the
+       fields the world had then, so it finds the site it always found.
        ===================================================================== */
 
     /** The least land, in quarters of a cell's SEA_SAMPLES, a cell needs to be searched for a site: 1, 25%. */
@@ -234,7 +239,15 @@ public final class World {
     /** ...but sea within this many in at least one: 70 (2.1 km) - a coast with room for a town. */
     public static final int SITE_SEA_WITHIN = 70;
 
-    /** Test 4 (spec-land star): an iron field's centre within this many km - the mockup put deposits near the site "so the first mines come early"; at IRON's 0.2 fields a km2 it passes about 92% of the time. */
+    /**
+     * Test 4 (spec-land star), the conversion's alone since 0.7.99: an iron
+     * field's centre within this many km of the old world's fields
+     * (legacyFieldsInCell()) - the mockup put deposits near the site "so the
+     * first mines come early"; at IRON's 0.2 fields a km2 it passed about 92%
+     * of the time. A founding no longer asks it (batch W1; Jerus, 2026-10-08:
+     * "a city doesnt require a deposit"): only searchSites(), where an older
+     * save's land is put back on the site it had.
+     */
     public static final double SITE_IRON_KM = 2;
 
     /* =====================================================================
@@ -321,15 +334,22 @@ public final class World {
        taking the remainder. Amounts are whole tonnes (or cubic metres), so
        every sum is exact in a double: the world's largest, its iron, is
        1.1e15, under 2^53 (9.0e15).
+
+       THAT IS THE OLD WORLD'S FIELDS (to 0.7.98), kept as
+       legacyFieldsInCell(): an older save's ground holds them (CityLand,
+       THE FIELDS ON A PIECE OF GROUND). The count and the total of a cell
+       are still drawn so, and still make the world's totals to the tonne;
+       since 0.7.99 the fields a city sees are drawn from them as FEWER AND
+       BIGGER DEPOSITS, below.
        ===================================================================== */
 
     /** How heavy the tail of a field's size is: 1.5, so P(sites >= k) = k^-1.5 - most small, a few huge. */
     public static final double FIELD_TAIL = 1.5;
 
-    /** The most sites one field holds: 512. */
-    public static final int MAX_SITES = 512;
+    /** The most sites one of the old world's fields holds: 512 (the cap of the tail's draw, sites()). */
+    public static final int LEGACY_MAX_SITES = 512;
 
-    /** The mean sites a field: the sum of k^-1.5 for k = 1 to MAX_SITES, 2.524 - exact for the capped tail, since P(sites >= k) = k^-1.5. */
+    /** The mean sites one of the old world's fields: the sum of k^-1.5 for k = 1 to LEGACY_MAX_SITES, 2.524 - exact for the capped tail, since P(sites >= k) = k^-1.5. */
     public static final double MEAN_SITES = meanSites();
 
     /** A cell's richness, its total against its count's mean, at the least: 0.6... */
@@ -346,6 +366,72 @@ public final class World {
 
     /** Standing timber a square kilometre of forest, in cubic metres: 13,700 (FAO 2020: 557 billion m3 on 4.06 billion hectares). */
     public static final double FOREST_M3_PER_KM2 = 13_700;
+
+    /* =====================================================================
+       FEWER AND BIGGER DEPOSITS (0.7.99, batch W1; Jerus, 2026-10-08: "the
+       world has too many deposits, a city doesnt require a deposit, you can
+       just make a deposit deeper or in very big clusters"; asked to choose,
+       a tenth as many fields, each ten times bigger, clustered, and the
+       world's totals of each resource as they were)
+
+       THE TONNES DO NOT MOVE. Every cell's count and total are drawn as the
+       old world drew them (countOf(), totalOf()), so computeTotals() - what
+       every saved city stores as W - is the same to the tonne. The fields are
+       drawn a POOL at a time: a square of poolCells(r) cells, sized so a pool
+       of land holds about POOL_CLUSTERS clusters. The pool's total, its cells'
+       totals added, is shared among its fields exactly as a cell's was -
+       whole tonnes, the last taking the remainder - so the world's fields
+       still add up to W.
+
+       A TENTH AS MANY, EACH TEN TIMES WIDER. A pool of N of the old world's
+       fields holds N / FIELD_SCALE fields (the fraction drawn, at least one
+       when N is not nought), and each of them is FIELD_SCALE of the old
+       fields' sites added (★W1-1: wider, not deeper: the same tonnes a site,
+       so a mine or a well lasts as long as it did and its ground costs what
+       it did a site; the world keeps its sites, and a field has ten times
+       as many). So a field holds ten times the tonnes on the mean, the most
+       FIELD_SCALE x LEGACY_MAX_SITES sites, the least FIELD_SCALE.
+
+       IN CLUSTERS. A pool's fields lie in about one cluster for every
+       CLUSTER_FIELDS of them, each cluster's centre in one of the pool's
+       cells drawn as its share of the old fields (so on land as the old
+       fields were, and the world's ore off the sea), its fields anywhere in a
+       disc of clusterKm(r) round it: a disc holding CLUSTER_FIELDS fields at
+       the old world's density (★W1-2). Where there are fields they lie as
+       thickly as they did everywhere, and a tenth of the land holds them.
+       A field takes the richness of the cell its cluster stands in, as a
+       cell's fields did (its share of the pool's total by its sites times
+       that richness). Ore is drawn off the sea as the old fields were; oil
+       keeps its place, offshore fields and all.
+
+       A FIELD IS LISTED IN THE CELL ITS CENTRE IS IN, as before, so the
+       land office, the map and the city find it by its cell: a cell's fields
+       are the fields of every pool whose clusters reach it, in the pools'
+       order and then the order drawn, numbered from FIELD_INDEX_FROM - never
+       an old world's field's number, so the two can stand in one city.
+       Pools are drawn once and kept (POOLS_KEPT).
+       ===================================================================== */
+
+    /** How many of the old world's fields one field stands for: 10 (Jerus, 2026-10-08: "a tenth as many fields, each ten times bigger", the world's totals as they were). */
+    public static final int FIELD_SCALE = 10;
+
+    /** The most sites one field holds: FIELD_SCALE of the old world's largest, 5,120. */
+    public static final int MAX_SITES = FIELD_SCALE * LEGACY_MAX_SITES;
+
+    /** The fields a cluster holds on the mean: 10 (★W1-2, est.: Jerus's "very big clusters" - ten fields a cluster, as a field is ten of the old). */
+    public static final int CLUSTER_FIELDS = 10;
+
+    /** The clusters a pool of land holds on the mean, at the least: 10 (★W1-2, est.): enough that a pool's clusters lie where the draws put them, not one a pool on a lattice - a pool a quarter land still holds two or three. */
+    public static final int POOL_CLUSTERS = 10;
+
+    /** The first number a field is listed under in its cell: 65,536, past any old world's field's (a cell held at most 868 of them on the default world, iron's). */
+    public static final int FIELD_INDEX_FROM = 1 << 16;
+
+    /** Pools kept, by resource and place: 256 (an iron pool is about 300 fields, some 15 KB). */
+    static final int POOLS_KEPT = 256;
+
+    /** The stream a pool is drawn from. */
+    private static final long POOL_SALT = 0x5EB0C1A5L;
 
     /* =====================================================================
        THE WORLD, ITS STATE
@@ -570,7 +656,6 @@ public final class World {
         }
         order = Arrays.copyOf(order, count);
         Arrays.sort(order);
-        Map<Integer, List<Deposit>> iron = new HashMap<>();
         for (long key : order) {
             int c = (int) (key & 0xFFFFF);
             siteCells++;
@@ -580,7 +665,7 @@ public final class World {
                 for (int p = 0; p < pts; p++) {
                     double a = 2 * Math.PI * p / pts, r = ring * (double) SITE_STEP;
                     long px = Math.round(ox + r * StrictMath.cos(a)), py = Math.round(oy + r * StrictMath.sin(a));
-                    if (siteOk(px, py, iron)) {
+                    if (siteOk(px, py)) {
                         fx = px;
                         fy = py;
                         return;
@@ -594,13 +679,17 @@ public final class World {
     /** Dry ground at a point: land, and not a lake. */
     private boolean dryAt(double x, double y) { return elevation(x, y) >= seaTheta && lakeField(x, y) < LAKE_THETA; }
 
-    /** The four tests, cheapest first, at the centre of plot (px, py) - counted in siteChecks(). */
-    private boolean siteOk(long px, long py, Map<Integer, List<Deposit>> iron) {
+    /** A founding's tests, cheapest first, at the centre of plot (px, py) - the first three since 0.7.99 (no iron) - counted in siteChecks(). */
+    private boolean siteOk(long px, long py) {
         siteChecks++;
-        return siteTests(px, py, iron);
+        return siteTests(px, py, null);
     }
 
-    /** ...and uncounted, for a search after the founding's (searchSites()). */
+    /**
+     * ...and uncounted: tests 1 to 3, and with `iron` (the old world's iron
+     * fields by cell, filled as they are asked for) the fourth, for the
+     * conversion's search (searchSites()).
+     */
     private boolean siteTests(long px, long py, Map<Integer, List<Deposit>> iron) {
         double x = px + 0.5, y = py + 0.5;
         if (!dryAt(x, y)) return false;
@@ -621,12 +710,13 @@ public final class World {
             if (!sea && elevation(x + SITE_SEA_WITHIN * c, y + SITE_SEA_WITHIN * s) < seaTheta) sea = true;
         }
         if (!sea) return false;
+        if (iron == null) return true;
         double reach = SITE_IRON_KM * 1000 / PLOT_M;
         for (long cy = (long) Math.floor((y - reach) / CELL); cy <= (long) Math.floor((y + reach) / CELL); cy++) {
             for (long cx = (long) Math.floor((x - reach) / CELL); cx <= (long) Math.floor((x + reach) / CELL); cx++) {
                 if (cx < 0 || cy < 0 || cx >= CELLS || cy >= CELLS) continue;
                 int cell = (int) (cy * CELLS + cx);
-                for (Deposit d : iron.computeIfAbsent(cell, k -> fieldsOf(k, Resource.IRON))) {
+                for (Deposit d : iron.computeIfAbsent(cell, k -> legacyFieldsOf(k, Resource.IRON))) {
                     double dx = d.x() + 0.5 - x, dy = d.y() + 0.5 - y;
                     if (dx * dx + dy * dy <= reach * reach) return true;
                 }
@@ -640,10 +730,13 @@ public final class World {
      * each of the nearest `cells` coastal cells, in the founding search's
      * order, the first plot of its spiral that passes the four tests is
      * offered to `accept`, and the first site it takes is returned as {x, y}
-     * - or null, when it takes none. The founding site is the first offered
-     * whenever the nearest cell holds one. What LandConversion puts an older
+     * - or null, when it takes none. What LandConversion puts an older
      * city's land on, with a fifth test of its own (spec-land 2.9). Counts
      * nothing in siteChecks() or siteCells(), which are the founding's.
+     * Since 0.7.99 its fourth test, iron within SITE_IRON_KM, reads the old
+     * world's fields (legacyFieldsInCell()), and a founding no longer asks
+     * it: an older save is converted on the site it always was, and the
+     * founding site is no longer always the first offered.
      */
     public long[] searchSites(int cells, java.util.function.Predicate<long[]> accept) {
         build();
@@ -1138,16 +1231,16 @@ public final class World {
        THE DEPOSITS
        ===================================================================== */
 
-    /** The mean of the capped tail: P(sites >= k) summed over k = 1 .. MAX_SITES. */
+    /** The mean of the capped tail: P(sites >= k) summed over k = 1 .. LEGACY_MAX_SITES. */
     private static double meanSites() {
         double m = 0;
-        for (int k = 1; k <= MAX_SITES; k++) m += StrictMath.pow(k, -FIELD_TAIL);
+        for (int k = 1; k <= LEGACY_MAX_SITES; k++) m += StrictMath.pow(k, -FIELD_TAIL);
         return m;
     }
 
-    /** A field's sites from a uniform draw: floor((1-u)^(-1/FIELD_TAIL)), at most MAX_SITES. */
+    /** One of the old world's fields' sites from a uniform draw: floor((1-u)^(-1/FIELD_TAIL)), at most LEGACY_MAX_SITES - and since 0.7.99 each of the FIELD_SCALE draws a field's sites add up. */
     static int sites(double u) {
-        return (int) Math.min(MAX_SITES, Math.floor(StrictMath.pow(1 - u, -1 / FIELD_TAIL)));
+        return (int) Math.min(LEGACY_MAX_SITES, Math.floor(StrictMath.pow(1 - u, -1 / FIELD_TAIL)));
     }
 
     /** A Poisson count from a hash: by inversion for a small mean, a rounded normal above POISSON_NORMAL_ABOVE. */
@@ -1177,8 +1270,14 @@ public final class World {
     /** A cell's land, in square kilometres: its land share times its area. */
     private double landKm2(int cell) { return landQuarters[cell] / (double) SEA_SAMPLES * CELL_KM2; }
 
-    /** How many fields of a resource a cell holds: a Poisson count, its mean the resource's density times the cell's land. None of forest. */
+    /** How many fields of a resource a cell lists (fieldsInCell(); since 0.7.99 the fewer and bigger ones). None of forest. */
     public long cellFieldCount(int cell, Resource r) {
+        build();
+        return fieldsOf(cell, r).size();
+    }
+
+    /** ...and how many of the old world's it held (to 0.7.98): a Poisson count, its mean the resource's density times the cell's land - what its total is drawn from, and what legacyFieldsInCell() lists. */
+    public long legacyCellFieldCount(int cell, Resource r) {
         build();
         return countOf(cell, r);
     }
@@ -1190,9 +1289,11 @@ public final class World {
 
     /**
      * What a cell holds of a resource, in whole tonnes (forest, whole cubic
-     * metres): its count x MEAN_SITES x the amount a site x the cell's
+     * metres): its old count x MEAN_SITES x the amount a site x the cell's
      * richness, drawn without drawing a field. Forest: its forest area x
-     * FOREST_M3_PER_KM2.
+     * FOREST_M3_PER_KM2. The old world's fields of the cell share it; since
+     * 0.7.99 it is the cell's part of its pool's total, which the pool's
+     * fields share (poolTotal()), wherever in the pool they lie.
      */
     public double cellTotal(int cell, Resource r) {
         build();
@@ -1209,18 +1310,25 @@ public final class World {
         return Math.rint(n * MEAN_SITES * r.amountPerSite() * rich);
     }
 
-    /**
-     * A cell's fields of a resource, drawn from the cell's own stream: each
-     * one's centre (drawn again, up to SEA_REDRAWS times, while it is in the
-     * sea - but oil's), its sites, and its share of cellTotal() by sites,
-     * rounded so the shares sum to the total exactly. Empty for forest.
-     */
-    public List<Deposit> fieldsInCell(int cell, Resource r) {
-        build();
-        return fieldsOf(cell, r);
+    /** A cell's richness for a resource, RICHNESS_MIN to + RICHNESS_SPAN: the draw its total is struck at (totalOf()), and since 0.7.99 the richness of a cluster standing in it. */
+    private double richnessOf(int cell, Resource r) {
+        return RICHNESS_MIN + RICHNESS_SPAN * unit(mix(cellHash(cell, r) ^ 0x77));
     }
 
-    private List<Deposit> fieldsOf(int cell, Resource r) {
+    /**
+     * A cell's fields of a resource as the old world drew them (to 0.7.98),
+     * from the cell's own stream: each one's centre (drawn again, up to
+     * SEA_REDRAWS times, while it is in the sea - but oil's), its sites, and
+     * its share of cellTotal() by sites, rounded so the shares sum to the
+     * total exactly, numbered from 0. Empty for forest. What an older save's
+     * ground holds (CityLand.fieldsIn()), and the conversion's.
+     */
+    public List<Deposit> legacyFieldsInCell(int cell, Resource r) {
+        build();
+        return legacyFieldsOf(cell, r);
+    }
+
+    private List<Deposit> legacyFieldsOf(int cell, Resource r) {
         if (!r.inFields()) return List.of();
         int n = (int) countOf(cell, r);
         if (n == 0) return List.of();
@@ -1250,6 +1358,310 @@ public final class World {
             double upTo = i == n - 1 ? total : Math.rint(total * cum / raw);
             out.add(new Deposit(r, cell, i, xs[i], ys[i], s[i], upTo - before));
             before = upTo;
+        }
+        return out;
+    }
+
+    /* =====================================================================
+       FEWER AND BIGGER DEPOSITS: THE POOLS AND THEIR CLUSTERS (0.7.99; the
+       banner above, under THE DEPOSITS' constants)
+       ===================================================================== */
+
+    /** Each resource's pool side in cells, in Resource's order (poolCells()). */
+    private static final int[] POOL_SIDE = new int[Resource.values().length];
+    static {
+        for (Resource r : Resource.values()) {
+            POOL_SIDE[r.ordinal()] = r.inFields()
+                    ? (int) Math.max(1, Math.ceil(Math.sqrt((double) POOL_CLUSTERS * CLUSTER_FIELDS * FIELD_SCALE
+                            / (r.fieldsPerKm2() * CELL_KM2))))
+                    : 0;
+        }
+    }
+
+    /**
+     * The side of a resource's pool, in cells (0.7.99): the fewest whose
+     * square of land holds POOL_CLUSTERS clusters on the mean, POOL_CLUSTERS
+     * x CLUSTER_FIELDS x FIELD_SCALE of the old world's fields - iron 2, oil
+     * 4, stone 6, coal 12, copper 24, uranium 37. 0 for forest.
+     */
+    public static int poolCells(Resource r) { return POOL_SIDE[r.ordinal()]; }
+
+    /** A resource's pools on the world's side: CELLS over poolCells(), rounded up (the last a part pool); 0 for forest. */
+    public static int poolsOnSide(Resource r) {
+        int b = poolCells(r);
+        return b == 0 ? 0 : (CELLS + b - 1) / b;
+    }
+
+    /**
+     * A cluster's radius for a resource, in km (0.7.99): the disc that holds
+     * CLUSTER_FIELDS fields at the old world's density, sqrt(CLUSTER_FIELDS /
+     * (pi x its fields a km2)) - iron 4.0, oil 12.6, stone 17.8, coal 39.9,
+     * copper 79.8, uranium 126. 0 for forest.
+     */
+    public static double clusterKm(Resource r) {
+        return r.inFields() ? Math.sqrt(CLUSTER_FIELDS / (Math.PI * r.fieldsPerKm2())) : 0;
+    }
+
+    /** A pool's fields as drawn: each one's centre plot, sites and amount, in the order drawn; the pool's total and its old count. */
+    private static final class Pool {
+        final long[] xs, ys;
+        final int[] sites;
+        final double[] amounts;
+        final double total;
+        final long old;
+
+        Pool(long[] xs, long[] ys, int[] sites, double[] amounts, double total, long old) {
+            this.xs = xs;
+            this.ys = ys;
+            this.sites = sites;
+            this.amounts = amounts;
+            this.total = total;
+            this.old = old;
+        }
+    }
+
+    private static final Pool NO_POOL = new Pool(new long[0], new long[0], new int[0], new double[0], 0, 0);
+
+    /** The pools drawn, kept: by resource and place, the last POOLS_KEPT asked for. */
+    private final Map<Long, Pool> pools = new LinkedHashMap<>(64, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Long, Pool> eldest) {
+            return size() > POOLS_KEPT;
+        }
+    };
+
+    /** A pool, drawn once and kept: its place in pools (px east, py south, each 0 to poolsOnSide() - 1). */
+    private Pool pool(Resource r, int px, int py) {
+        long key = (((long) py * CELLS + px) << 8) | r.ordinal();
+        synchronized (pools) {
+            Pool p = pools.get(key);
+            if (p != null) return p;
+        }
+        Pool p = drawPool(r, px, py);
+        synchronized (pools) {
+            pools.put(key, p);
+        }
+        return p;
+    }
+
+    /** A pool's stream for a resource. */
+    private long poolHash(Resource r, int px, int py) {
+        return mix(seed ^ mix((((long) py * CELLS + px) << 8) | r.ordinal()) ^ POOL_SALT);
+    }
+
+    /** `count` over `per`, its fraction a draw (u under it adds one), at least one when `count` is not nought: how many fields N old ones make, and how many clusters those fields lie in. */
+    static int atLeastOne(long count, int per, double u) {
+        if (count <= 0) return 0;
+        long whole = count / per, part = count % per;
+        return (int) Math.max(1, whole + (u < (double) part / per ? 1 : 0));
+    }
+
+    /**
+     * Draws a pool (0.7.99): its cells' old counts and totals, row by row;
+     * its fields, N / FIELD_SCALE of the old count's N; its clusters, one for
+     * every CLUSTER_FIELDS fields, each centred in a cell drawn as its share
+     * of the old fields (off the sea, but oil's, as the old fields were) with
+     * that cell's richness; each field in a cluster drawn as evenly as the
+     * cluster's disc allows (drawn again off the sea up to SEA_REDRAWS times,
+     * but oil's), its sites FIELD_SCALE of the old draws added; and the
+     * pool's total shared by sites x richness, whole tonnes, the last taking
+     * the remainder - so the pool's fields sum to its cells' totals exactly.
+     */
+    private Pool drawPool(Resource r, int px, int py) {
+        int b = poolCells(r);
+        int cx0 = px * b, cy0 = py * b, cx1 = Math.min(CELLS, cx0 + b), cy1 = Math.min(CELLS, cy0 + b);
+        int nc = Math.max(0, cx1 - cx0) * Math.max(0, cy1 - cy0);
+        int[] cellAt = new int[nc];
+        long[] upTo = new long[nc];
+        long old = 0;
+        double total = 0;
+        int k = 0;
+        for (int cy = cy0; cy < cy1; cy++) {
+            for (int cx = cx0; cx < cx1; cx++, k++) {
+                int c = cy * CELLS + cx;
+                cellAt[k] = c;
+                if (landQuarters[c] > 0) {
+                    old += countOf(c, r);
+                    total += totalOf(c, r);
+                }
+                upTo[k] = old;
+            }
+        }
+        if (old == 0) return NO_POOL;
+        long h = poolHash(r, px, py);
+        h = mix(h);
+        int n = atLeastOne(old, FIELD_SCALE, unit(h));
+        h = mix(h);
+        int clusters = atLeastOne(n, CLUSTER_FIELDS, unit(h));
+        // The clusters: each centred in a cell drawn as its share of the old fields, with that cell's richness.
+        long[] ccx = new long[clusters], ccy = new long[clusters];
+        double[] rich = new double[clusters];
+        for (int c = 0; c < clusters; c++) {
+            h = mix(h);
+            long pick = Math.min(old - 1, (long) (unit(h) * old));
+            int lo = 0, hi = nc - 1;
+            while (lo < hi) {
+                int mid = (lo + hi) >>> 1;
+                if (upTo[mid] > pick) hi = mid; else lo = mid + 1;
+            }
+            int cell = cellAt[lo];
+            long ox = (long) (cell % CELLS) * CELL, oy = (long) (cell / CELLS) * CELL;
+            h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
+            h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
+            if (r != Resource.OIL) {
+                for (int again = 0; again < SEA_REDRAWS && elevation(ccx[c] + 0.5, ccy[c] + 0.5) < seaTheta; again++) {
+                    h = mix(h); ccx[c] = ox + (long) (unit(h) * CELL);
+                    h = mix(h); ccy[c] = oy + (long) (unit(h) * CELL);
+                }
+            }
+            rich[c] = richnessOf(cell, r);
+        }
+        // The fields: each anywhere in its cluster's disc, its sites FIELD_SCALE of the old draws.
+        double radius = clusterKm(r) * 1000 / PLOT_M;
+        long[] xs = new long[n], ys = new long[n];
+        int[] s = new int[n];
+        double[] weight = new double[n];
+        double all = 0;
+        for (int i = 0; i < n; i++) {
+            h = mix(h);
+            int c = (int) Math.min(clusters - 1, (long) (unit(h) * clusters));
+            for (int tries = 0; ; tries++) {
+                h = mix(h);
+                double rr = radius * Math.sqrt(unit(h));
+                h = mix(h);
+                double a = 2 * Math.PI * unit(h);
+                xs[i] = Math.max(0, Math.min(SIDE - 1, ccx[c] + Math.round(rr * StrictMath.cos(a))));
+                ys[i] = Math.max(0, Math.min(SIDE - 1, ccy[c] + Math.round(rr * StrictMath.sin(a))));
+                if (r == Resource.OIL || tries >= SEA_REDRAWS || elevation(xs[i] + 0.5, ys[i] + 0.5) >= seaTheta) break;
+            }
+            int sum = 0;
+            for (int j = 0; j < FIELD_SCALE; j++) {
+                h = mix(h);
+                sum += sites(unit(h));
+            }
+            s[i] = sum;
+            weight[i] = sum * rich[c];
+            all += weight[i];
+        }
+        // The pool's total shared by weight: whole tonnes, the last the remainder, so the fields sum to it exactly.
+        double[] amounts = new double[n];
+        double cum = 0, before = 0;
+        for (int i = 0; i < n; i++) {
+            cum += weight[i];
+            double to = i == n - 1 ? total : Math.rint(total * cum / all);
+            amounts[i] = to - before;
+            before = to;
+        }
+        return new Pool(xs, ys, s, amounts, total, old);
+    }
+
+    /** The pool holding a cell, as {px, py}, for a resource; null for forest or off the world. */
+    public static int[] poolOf(int cell, Resource r) {
+        int b = poolCells(r);
+        if (b == 0 || cell < 0 || cell >= CELLS * CELLS) return null;
+        return new int[] { (cell % CELLS) / b, (cell / CELLS) / b };
+    }
+
+    /** What a pool shares among its fields: its cells' totals added (cellTotal()), whole tonnes, row by row - without drawing a field. */
+    public double poolTotal(Resource r, int px, int py) {
+        build();
+        int b = poolCells(r);
+        double total = 0;
+        for (int cy = py * b; cy < Math.min(CELLS, py * b + b); cy++) {
+            for (int cx = px * b; cx < Math.min(CELLS, px * b + b); cx++) {
+                int c = cy * CELLS + cx;
+                if (landQuarters[c] > 0) total += totalOf(c, r);
+            }
+        }
+        return total;
+    }
+
+    /** How many fields a pool holds (fewer and bigger, 0.7.99) - computed from its cells' old counts without drawing them. */
+    public long poolFieldCount(Resource r, int px, int py) {
+        build();
+        int b = poolCells(r);
+        if (b == 0) return 0;
+        long old = poolLegacyCount(r, px, py);
+        long h = mix(poolHash(r, px, py));
+        return atLeastOne(old, FIELD_SCALE, unit(h));
+    }
+
+    /** ...and how many of the old world's fields its cells held: their old counts added. */
+    public long poolLegacyCount(Resource r, int px, int py) {
+        build();
+        int b = poolCells(r);
+        if (b == 0) return 0;
+        long old = 0;
+        for (int cy = py * b; cy < Math.min(CELLS, py * b + b); cy++) {
+            for (int cx = px * b; cx < Math.min(CELLS, px * b + b); cx++) {
+                int c = cy * CELLS + cx;
+                if (landQuarters[c] > 0) old += countOf(c, r);
+            }
+        }
+        return old;
+    }
+
+    /** The fields of a resource the whole world holds (0.7.99): every pool's, from their old counts, without drawing one. */
+    public long fieldCount(Resource r) {
+        long n = 0;
+        for (int py = 0; py < poolsOnSide(r); py++) for (int px = 0; px < poolsOnSide(r); px++) n += poolFieldCount(r, px, py);
+        return n;
+    }
+
+    /** ...and the old world's: every cell's old count. */
+    public long legacyFieldCount(Resource r) {
+        build();
+        long n = 0;
+        for (int c = 0; c < CELLS * CELLS; c++) if (landQuarters[c] > 0) n += countOf(c, r);
+        return n;
+    }
+
+    /** A pool's fields, each as the cell its centre is in lists it (fieldsInCell()), in the order the pool drew them; one not found there is left out. */
+    public List<Deposit> poolFields(Resource r, int px, int py) {
+        build();
+        Pool p = pool(r, px, py);
+        Map<Integer, List<Deposit>> listed = new HashMap<>();
+        List<Deposit> out = new ArrayList<>(p.xs.length);
+        for (int i = 0; i < p.xs.length; i++) {
+            for (Deposit d : listed.computeIfAbsent(cellOf(p.xs[i], p.ys[i]), c -> fieldsOf(c, r))) {
+                if (d.x() == p.xs[i] && d.y() == p.ys[i] && d.sites() == p.sites[i] && d.amount() == p.amounts[i]) {
+                    out.add(d);
+                    break;
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * A cell's fields of a resource (since 0.7.99, FEWER AND BIGGER
+     * DEPOSITS): every field of every pool whose clusters reach the cell
+     * whose centre plot is in it, pool by pool (north to south, west to
+     * east) in the order each was drawn, numbered from FIELD_INDEX_FROM.
+     * Empty for forest.
+     */
+    public List<Deposit> fieldsInCell(int cell, Resource r) {
+        build();
+        return fieldsOf(cell, r);
+    }
+
+    private List<Deposit> fieldsOf(int cell, Resource r) {
+        if (!r.inFields() || cell < 0 || cell >= CELLS * CELLS) return List.of();
+        int b = poolCells(r), last = poolsOnSide(r) - 1;
+        long x0 = (long) (cell % CELLS) * CELL, y0 = (long) (cell / CELLS) * CELL;
+        long reach = (long) Math.ceil(clusterKm(r) * 1000 / PLOT_M) + 1;
+        int px0 = (int) Math.max(0, Math.floorDiv(Math.floorDiv(x0 - reach, CELL), b));
+        int px1 = (int) Math.min(last, Math.floorDiv(Math.floorDiv(x0 + CELL - 1 + reach, CELL), b));
+        int py0 = (int) Math.max(0, Math.floorDiv(Math.floorDiv(y0 - reach, CELL), b));
+        int py1 = (int) Math.min(last, Math.floorDiv(Math.floorDiv(y0 + CELL - 1 + reach, CELL), b));
+        List<Deposit> out = new ArrayList<>();
+        for (int py = py0; py <= py1; py++) {
+            for (int px = px0; px <= px1; px++) {
+                Pool p = pool(r, px, py);
+                for (int i = 0; i < p.xs.length; i++) {
+                    if (cellOf(p.xs[i], p.ys[i]) != cell) continue;
+                    out.add(new Deposit(r, cell, FIELD_INDEX_FROM + out.size(), p.xs[i], p.ys[i], p.sites[i], p.amounts[i]));
+                }
+            }
         }
         return out;
     }

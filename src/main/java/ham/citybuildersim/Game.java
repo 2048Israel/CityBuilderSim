@@ -12101,6 +12101,8 @@ public class Game {
                 landManager.getWorldSeaTheta());
         // ...and the offshore pool's E (0.7.93, SAVE_FORMAT 35): the depletion's oil is the ground pool's.
         dataSave.setOilDepletionAtSea(landManager.getOilExtractedAtSea());
+        // ...and how many holdings hold the old world's fields (0.7.99, SAVE_FORMAT 36; CityLand.oldWorldHoldings()).
+        dataSave.setLandOldWorldHoldings(land.oldWorldHoldings());
         dataSave.setLandMarketPrices(landManager.getMarket().getPriceState());
         // ...and the city's water rights (0.7.59): THE FRESH WATER LIMIT AND THE COAST.
         dataSave.setFreshRights(freshRights);
@@ -14297,6 +14299,8 @@ public class Game {
                         minesCommitted());
             }
             CityLand on = landManager.getCityLand();
+            // Converted on the old world's fields (GridConversion, World.legacyFieldsInCell()): its ground is the old world's (0.7.99).
+            on.setOldWorldHoldings(1 + on.purchases().size());
             System.out.printf("Put the city's land on the block grid (save format %d, %s): %s of dry ground for the save's %s,"
                             + " %s in all, in blocks of %,.0f m at (%d, %d) on world %d, %d fields held in part; %d iron sites and"
                             + " %,.0f t; %.0f ms.%n",
@@ -14308,8 +14312,21 @@ public class Game {
                     (System.nanoTime() - t0) / 1e6);
             return true;
         }
+        // THE OLD WORLD'S GROUND (0.7.99, batch W1; CityLand.oldWorldHoldings()): a save from before holds the fields
+        // the world had then on all the ground it owned, as saved; one since says how many of its holdings do.
+        boolean oldWorld = format < CityLand.NEW_FIELDS_FORMAT;
+        Integer kept = loaded.getLandOldWorldHoldings();
+        land.setOldWorldHoldings(oldWorld ? 1 + land.purchases().size() : kept != null ? kept : 0);
         landManager.install(land, loaded.getDepletion(), loaded.getWorldTotals(), sea);
         landManager.getMarket().restoreOffers(loaded.getLandOffers(), loaded.getNextOfferId());
+        if (oldWorld) {
+            // ...and its offers were listed on the old world's fields, gone from every plot it does not own: measured again, once.
+            int standing = landManager.getMarket().getListing().size();
+            int[] seen = landManager.getMarket().remeasureStanding();
+            System.out.printf("The world's deposits are fewer and bigger (save format %d): the city's %d holding(s) keep the fields they"
+                            + " held; its %d offer(s) measured again on the world as it is now - iron in %d before, %d now; oil in %d"
+                            + " before, %d now.%n", format, land.oldWorldHoldings(), standing, seen[0], seen[1], seen[2], seen[3]);
+        }
         landManager.restoreOwnedSqFt(owned);
         double ground = landManager.getLandDrySqFt();
         if (!LandConversion.sameGround(owned, ground)) {

@@ -51,19 +51,25 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
 
     /**
      * The grid points a field's sites stand on, nearest the centre first, in
-     * site widths east and south: every point within 14 of the centre each
-     * way sorted by its squared distance, then from north to south, then west
-     * to east, the first World.MAX_SITES of them. 14 is enough: the 512th
-     * point lies about 12.8 from the centre (512 = pi r^2), so every ring the
-     * table reaches is whole in the box.
+     * site widths east and south: every point within PLACES_BOX of the centre
+     * each way sorted by its squared distance, then from north to south, then
+     * west to east, the first World.MAX_SITES of them. The box is enough: the
+     * k-th point lies about sqrt(k / pi) from the centre, so every ring the
+     * table reaches is whole in it. To 0.7.98 the box was 14 for 512 sites;
+     * since 0.7.99 (World.FIELD_SCALE) it is 42 for 5,120, and its first 512
+     * points are the old table's, in its order - so the old world's fields'
+     * sites stand where they stood.
      */
     static final int[][] SITE_PLACES = places();
+
+    /** The box the site table is sorted in, in site widths each way: sqrt(World.MAX_SITES / pi) rounded up, and one more - 14 for the old world's 512 sites, 42 for 5,120. */
+    static final int PLACES_BOX = (int) Math.ceil(Math.sqrt(World.MAX_SITES / Math.PI)) + 1;
 
     /** How far, in site widths each way (L-infinity), the first k + 1 sites reach from the centre. */
     private static final int[] PLACES_REACH = reaches();
 
     private static int[][] places() {
-        int box = 14, n = (2 * box + 1) * (2 * box + 1), at = 0;
+        int box = (int) Math.ceil(Math.sqrt(World.MAX_SITES / Math.PI)) + 1, n = (2 * box + 1) * (2 * box + 1), at = 0;
         int[][] all = new int[n][];
         for (int j = -box; j <= box; j++) for (int i = -box; i <= box; i++) all[at++] = new int[] { i, j };
         java.util.Arrays.sort(all, (a, b) -> {

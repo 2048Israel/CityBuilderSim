@@ -4550,7 +4550,7 @@ public final class GameVersion {
      *     tile the runs mark rastered through the view as the model rasters
      *     it). The playtest is 0.7.97's, byte for byte.
      */
-    public static final String VERSION = "0.7.98";
+    public static final String VERSION = "0.7.99";
 
     /**
      * The save shape.
@@ -5152,7 +5152,7 @@ public final class GameVersion {
      *     the world has back. No money moves: the crude was sold when it was
      *     lifted.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 35;
+    public static final int SAVE_FORMAT = 36;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

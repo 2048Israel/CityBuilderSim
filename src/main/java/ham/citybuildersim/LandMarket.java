@@ -579,14 +579,45 @@ public class LandMarket {
      * on the shelf - listMissing() does that.
      */
     LandParcel measure(GridOffers.Rect r) {
-        int id = nextId++;
+        return measure(r, nextId++, month);
+    }
+
+    /** ...under a given id, as listed in a given month. */
+    private LandParcel measure(GridOffers.Rect r, int id, int listedIn) {
         double[] km2 = land.groundOf(r.x0(), r.y0(), r.x1(), r.y1());
         int[] sites = new int[CityLand.KINDS];
         double[] amounts = new double[CityLand.KINDS];
         land.fieldsOn(r.x0(), r.y0(), r.x1(), r.y1(), sites, amounts);
         amounts[Resource.FOREST.ordinal()] = Math.rint(km2[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
         double usd = price(km2, amounts, groundUsdPerSqFt, usPriceLevel);
-        return new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, sites, amounts, usd, month);
+        return new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, sites, amounts, usd, listedIn);
+    }
+
+    /**
+     * THE WORLD'S FIELDS CHANGED UNDER THE OFFERS (0.7.99, batch W1): every
+     * offer standing measured again on the world as it is now - the same
+     * place, rectangle, id and month listed; its ground counted, its fields
+     * the world's (CityLand.fieldsOn()) and its price struck again at the
+     * prices last struck (price()). What a save from before 0.7.99 has done
+     * to its offers once, at its first load (Game): they were listed on the
+     * old world's fields, which are gone from every plot the city does not
+     * own. Returns how many held a deposit before and how many do now, of
+     * iron and oil: {iron before, iron now, oil before, oil now}.
+     */
+    public int[] remeasureStanding() {
+        int[] seen = new int[4];
+        if (land == null) return seen;
+        for (int i = 0; i < OFFERS; i++) {
+            LandParcel p = offers[i];
+            if (p == null) continue;
+            if (p.getSites(Resource.IRON) > 0) seen[0]++;
+            if (p.getSites(Resource.OIL) > 0) seen[2]++;
+            LandParcel again = measure(p.rect(), p.getId(), p.getListedMonth());
+            offers[i] = again;
+            if (again.getSites(Resource.IRON) > 0) seen[1]++;
+            if (again.getSites(Resource.OIL) > 0) seen[3]++;
+        }
+        return seen;
     }
 
     /** The city's block level now: LandGrid.levelFor() of every plot it owns - what a new offer's blocks are, or one finer (spec-grid star 2); 0 on a bare office. */

@@ -1248,13 +1248,12 @@ public final class CityMap {
         return land.holdingOf(siteX + dx, siteY + dy);
     }
 
-    /** The fields of a resource that reach into a box of plots: the world's, and a converted centre's legacy iron field. */
+    /** The fields of a resource that reach into a box of plots: the world's as the city sees them (CityLand.fieldsIn(): its old world's ground's own, 0.7.99), and a converted centre's legacy iron field. */
     private List<Deposit> fieldsNear(Resource r, double bx0, double by0, double bx1, double by1) {
-        World world = World.of(seed);
         List<Deposit> out = new ArrayList<>();
         double reach = Deposit.mostReach(r);
         for (int cell : CityLand.cellsUnder(bx0 - reach, by0 - reach, bx1 + reach, by1 + reach)) {
-            for (Deposit d : CityLand.fields(world, cell, r)) {
+            for (Deposit d : land.fieldsIn(cell, r)) {
                 double o = d.reach();
                 if (d.x() + o < bx0 || d.x() - o > bx1 || d.y() + o < by0 || d.y() - o > by1) continue;
                 out.add(d);
@@ -1270,7 +1269,7 @@ public final class CityMap {
 
     /** A converted centre's legacy iron field, as a field of its sites at its plot (cell -1). */
     Deposit legacyField() {
-        int n = Math.min(World.MAX_SITES, land.legacySites());
+        int n = Math.min(World.LEGACY_MAX_SITES, land.legacySites());
         return new Deposit(Resource.IRON, -1, 0, land.legacyX(), land.legacyY(), n, land.centreAmount(Resource.IRON));
     }
 

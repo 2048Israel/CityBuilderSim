@@ -206,8 +206,9 @@ public final class LandConversion {
         World world = World.of(land.seed());
         int ironSites = (int) Math.min(Integer.MAX_VALUE, land.totalSites(Resource.IRON));
         double ironTonnes = land.totalAmount(Resource.IRON);
+        // On the old world's fields when the city's centre holds them (0.7.99, CityLand.oldWorldHoldings()), else the world's.
         GridConversion.Result r = GridConversion.fromFigure(world, land.siteX(), land.siteY(),
-                Math.max(0, LandManager.km2(drySqFt)), ironSites, ironTonnes, 0);
+                Math.max(0, LandManager.km2(drySqFt)), ironSites, ironTonnes, 0, land.oldWorldHoldings() > 0);
         land.redraw(r);
         lm.restoreOwnedSqFt(drySqFt);
         lm.getMarket().attach(land);
