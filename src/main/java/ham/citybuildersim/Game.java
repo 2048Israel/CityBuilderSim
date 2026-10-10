@@ -1902,6 +1902,26 @@ public class Game {
     }
 
     /** Every word the investors left last month, by the slot it was filed under (a sector's key, or the bank branch's label) - saved since 0.7.102 (A22); read-only. */
+    /**
+     * WHAT EACH BUSINESS'S BORROWING COST IT UP FRONT THIS MONTH (0.7.102,
+     * Jerus's A16): the fees the bank kept out of its loans, its mortgages'
+     * insurance premiums and its bonds' issuing costs - the month's own
+     * figures, the ones its books read as loanFees, premiums and bondCosts -
+     * handed to it to be expensed a sixtieth a month from the next strike
+     * and deducted from its profit tax. At the month's close, after every
+     * loan and issue of the month, before the books read the sheet. No money
+     * moves: its cash paid them when it borrowed. See Sector, WHAT ITS
+     * BORROWING COST IT UP FRONT.
+     */
+    private void deferBorrowingCosts() {
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        for (Sector s : getSectors().all()) {
+            String k = s.key();
+            s.deferBorrowingCosts(credit.getFeesThisMonth(k) + credit.getPremiumsThisMonth(k)
+                    + (bondMarket.getIssued(k) - bondMarket.getProceeds(k)));
+        }
+    }
+
     public java.util.Map<String, String> getLastInvestments(){
         return java.util.Collections.unmodifiableMap(lastInvestment);
     }
@@ -9554,6 +9574,8 @@ public class Game {
         }
 
         printEndOfTurn();
+        // What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16). Moves no pool.
+        deferBorrowingCosts();
         recordMonth();
         // The city map takes the month's buildings (0.7.60): THE CITY MAP. Moves no pool.
         reconcileMap();

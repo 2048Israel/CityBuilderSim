@@ -134,6 +134,9 @@ public class SectorStatementCheck {
             bondsRepaidMonths, bondsRepaidOver, equityStatements;
 
     /** ...and S2's (0.7.75): sector-months with each of the new lines, and with each flow of the debt schedule. */
+    /** ...and 0.7.102's (A16): sector-months that expensed some of what their borrowing cost them up front. */
+    static int expensedMonths;
+
     static int upfrontMonths, bondCostMonths, foundedMonths, issuedMonths, boughtBackMonths, derivedMonths,
             stockMonths, landMonths, buildingsMonths, abroadMonths, schedules, scheduleBorrowed, scheduleRepaid,
             scheduleWrittenOff, lentAfterSheet;
@@ -258,12 +261,31 @@ public class SectorStatementCheck {
                         inc.then(SectorStatements.PRE_TAX), then.preTaxIncome(), at);
                 t("1 last month's profit is last month's netIncome").near(inc.then(SectorStatements.PROFIT), then.netIncome(), at);
             }
+            /*
+             * ...AND WHAT ITS BORROWING COST IT UP FRONT IS A COST SINCE 0.7.102 (Jerus's A16). Before: the
+             * outside lines took the loans' fees, the premiums and the bonds' issuing costs off the result
+             * every month (F2, R5). Since, a month struck in this build carries them as an asset and expenses
+             * a sixtieth a month inside the profit, so they are outside nothing; an older save's month as before.
+             */
+            double upfront = now.loanFees() + now.premiums() + now.bondCosts();
             double outside = now.fromTheCity() + now.arrearsPaid() + now.depositInterest() + now.bondCoupons()
                     + now.foreignInterest() + now.forgiven() + now.writtenOff() - now.stolen()
-                    // ...and since 0.7.75 the bonds written off, and what its borrowing cost up front (F2, R5).
-                    + now.bondsWrittenOff() - now.loanFees() - now.premiums() - now.bondCosts();
+                    // ...and since 0.7.75 the bonds written off, and what its borrowing cost up front (F2, R5) -
+                    // until 0.7.102, which expenses it (A16).
+                    + now.bondsWrittenOff() - (now.borrowingCostsDeferred() ? 0 : upfront);
             t("1 the total result is the profit and the outside lines").near(SectorStatements.result(inc),
                     now.netIncome() + outside, at);
+            t("1 a month struck in this build carries what its borrowing cost it, not outside the result (0.7.102)").near(
+                    now.borrowingCostsDeferred() ? 0 : 1, 0, at);
+            t("1 the borrowing costs line is the month's sixtieths, before the tax").near(
+                    inc.row(SectorStatements.BORROWING_COSTS) == null ? 0 : -inc.now(SectorStatements.BORROWING_COSTS),
+                    now.borrowingCosts(), at);
+            if (!then.isEmpty() && then.borrowingCostsDeferred()) {
+                t("1 what is still to expense is last month's, and the month's fees, premiums and issuing costs, less the"
+                        + " month's sixtieths").near(now.borrowingCostsToExpense(),
+                        then.borrowingCostsToExpense() + upfront - now.borrowingCosts(), at);
+            }
+            if (now.borrowingCosts() > CENT) expensedMonths++;
             if (inc.row(SectorStatements.RESULT) != null) outsideMonths++;
             if (now.loanFees() + now.premiums() > CENT) upfrontMonths++;
             // R5: a bond's issuing costs are the face it sold less what it handed it - something, when it sold any.
@@ -486,6 +508,8 @@ public class SectorStatementCheck {
         assertTrue("fixture: the cities had months with fees kept out of a loan, bonds' issuing costs, founders' shares,"
                 + " shares issued and bought back", upfrontMonths > 0 && bondCostMonths > 0 && foundedMonths > 0
                 && issuedMonths > 0 && boughtBackMonths > 0);
+        assertTrue("fixture: the businesses expensed what their borrowing cost them up front in " + expensedMonths
+                + " sector-months (0.7.102)", expensedMonths > 0);
         assertTrue("fixture: ...and R6's parts: the stock, the land, the buildings and what is held abroad each moved in some"
                 + " month", stockMonths > 0 && landMonths > 0 && buildingsMonths > 0 && abroadMonths > 0);
         assertTrue("a city founded in this build derives no paid-in: " + derivedMonths + " derived sector-months", derivedMonths == 0);

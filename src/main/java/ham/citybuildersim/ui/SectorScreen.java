@@ -1615,6 +1615,10 @@ final class SectorScreen {
         steps.add(fallTotal(StatementView.sentence(f.operating), t.now(SectorStatements.OPERATING)));
         if (now.interest() != 0) steps.add(Step.of("Interest", -now.interest(), Palette.SPENDING_RAMP[2])
                 .go(n -> openNote(sector, INCOME, SectorStatements.FINANCE_NOTE)));
+        // ...and what its borrowing cost it up front, a sixtieth a month (0.7.102, A16).
+        if (now.borrowingCosts() != 0) steps.add(Step.of("Borrowing costs", -now.borrowingCosts(), Palette.SPENDING_RAMP[2])
+                .tip("What its loans' fees, its mortgages' insurance and its bonds' issuing cost it, a sixtieth a month for "
+                        + "five years from the month it paid them\n" + m(now.borrowingCosts())));
         steps.add(fallTotal("Profit before tax", now.preTaxIncome()));
         if (now.tax() != 0) steps.add(Step.of("Business tax", -now.tax(), Palette.SPENDING_RAMP[2]));
         steps.add(fallTotal("What it kept", now.netIncome()));
@@ -1742,14 +1746,14 @@ final class SectorScreen {
     VBox everyDollar(SectorBooks.SectorMonth now) {
         HBox title = head("OF EVERY DOLLAR IT TOOK", "Each line of the month as cents of a dollar of its revenue, on "
                 + "one bar: what the sales tax, its suppliers, its workers, its power, water and repairs, the ground, its "
-                + "lenders and the business tax took, and what it kept. A month it lost money, the costs come to more "
-                + "than the dollar.", null);
+                + "lenders - their interest, and what its borrowing cost it up front, a sixtieth a month - and the "
+                + "business tax took, and what it kept. A month it lost money, the costs come to more than the dollar.", null);
         double rev = now.revenue();
         if (!(rev > 0)) return card(title, caption("It took nothing this month.", Palette.TEXT_MUTED));
         String[] names = { "sales tax", "bought in", "wages", "power, water, repairs", "property tax", "interest",
                 "business tax", "kept" };
         double[] parts = { now.salesTaxPaid(), now.inputs(), now.payroll(), now.electricity() + now.water() + now.maintenance(),
-                now.propertyTax(), now.interest(), now.tax(), now.netIncome() };
+                now.propertyTax(), now.interest() + now.borrowingCosts(), now.tax(), now.netIncome() };
         String[] colours = { Palette.SPENDING_RAMP[4], Palette.SPENDING_RAMP[3], Palette.SPENDING_RAMP[2],
                 Palette.SPENDING_RAMP[1], Palette.SPENDING_RAMP[0], Palette.RAMP_REST, Palette.TEXT_SPENT, Palette.BUSINESS };
         List<Segment> bar = new ArrayList<>();
@@ -2627,10 +2631,11 @@ final class SectorScreen {
     /** Note 6, and the equity statement's outside line: what the outside lines are (F1). */
     static final String OUTSIDE_INFO = "Money that reached its books outside its trading: the city's subsidy and the "
             + "arrears it paid, the bank's interest on its till, the coupons on the bonds it holds, the interest its money "
-            + "abroad earned, an overdraft forgiven, loans and bonds its lenders wrote off, and a theft - and what its "
-            + "borrowing cost it up front: the bank's fee, a mortgage's insurance premium and a bond's issuing costs, each "
-            + "taken out of what it was handed while it owes the whole. Each moved its equity and reached no statement "
-            + "until this one, so none of it is taxed or in what its dividend is struck on.";
+            + "abroad earned, an overdraft forgiven, loans and bonds its lenders wrote off, and a theft. Each moved its "
+            + "equity and reached no statement until this one, so none of it is taxed or in what its dividend is struck "
+            + "on. What its borrowing cost it up front - the bank's fee, a mortgage's insurance premium, a bond's issuing "
+            + "costs - was here until 0.7.102; it is a cost above the profit now, a sixtieth a month for five years, and "
+            + "deducted from its tax, and is here only for a month from an older save.";
 
     /** Share capital's line and note, when a save from before 0.7.75 was loaded (R3). */
     static final String DERIVED_INFO = "Derived when the city was loaded: its save was made before share capital was "

@@ -235,6 +235,51 @@ public class BooksCheck {
         check("...and the statement's after-tax line is what was banked",
                 t.statement().netIncome, 100 - 100 * taxRate);
 
+        /* ===== what its borrowing cost it up front, expensed and deducted (0.7.102, A16) ===== */
+        // Jerus's A16: the bank's fee, a mortgage's premium and a bond's issuing costs are deductible
+        // expenses - a sixtieth a month for Sector.BORROWING_COST_MONTHS from the strike after they are paid,
+        // before the profit tax (Canada's Income Tax Act s.20(1)(e): a fifth a year over five years).
+        System.out.println("\n--- what its borrowing cost it up front is expensed over five years, before the tax ---");
+        int n = Sector.BORROWING_COST_MONTHS;
+        Sector b = new ham.citybuildersim.sectors.FoodIndustry();
+        b.setCash(1000);
+        b.setEnergyRatio(1);
+        b.setWaterRatio(1);
+        b.updateJobFillRate(fullFill);
+        b.updateWages(new double[11], new long[11]);
+        b.setTaxRate(taxRate);
+        double cost = 600;
+        b.deferBorrowingCosts(cost);
+        check("fixture: paid up front, all of it still to expense", b.getBorrowingCostsToExpense(), cost);
+        b.bookSale(new Trade(Good.BREAD, b.key(), Sectors.RETAIL, 1000, .10));   // revenue 100
+        b.strike();
+        b.bank(0);
+        double charge = cost / n;
+        check("the next strike expenses a sixtieth of it", b.statement().borrowingCosts, charge);
+        check("...before the tax: the profit before tax is less by it", b.statement().preTaxIncome, 100 - charge);
+        check("...so the tax is less by the rate of it", b.getProfitTax(), (100 - charge) * taxRate);
+        check("...and the cash moves by the tax it saved only: it paid the cost when it borrowed", b.getCash(),
+                1000 + (100 - charge) * (1 - taxRate) + charge);
+        check("...and the rest is still to expense", b.getBorrowingCostsToExpense(), cost - charge);
+        SectorState saved = b.toState();
+        Sector back = new ham.citybuildersim.sectors.FoodIndustry();
+        back.restore(saved);
+        check("what is still to expense crosses a save", back.getBorrowingCostsToExpense(), cost - charge);
+        double expensed = charge;
+        for (int i = 1; i < n; i++) {
+            b.strike();
+            b.bank(0);
+            expensed += b.statement().borrowingCosts;
+        }
+        check("in BORROWING_COST_MONTHS strikes all of it is expensed, a sixtieth each", expensed, cost);
+        check("...and nothing is left to expense", b.getBorrowingCostsToExpense(), 0);
+        b.strike();
+        b.bank(0);
+        check("...nor expensed again the month after", b.statement().borrowingCosts, 0);
+        back.strike();
+        back.bank(0);
+        check("...and the reloaded one expenses the same next month", back.statement().borrowingCosts, charge);
+
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

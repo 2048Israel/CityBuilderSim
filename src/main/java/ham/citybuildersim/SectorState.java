@@ -60,6 +60,17 @@ public final class SectorState {
     public StatementState statement;
 
     /**
+     * What its borrowing cost it up front and it is still to expense (0.7.102,
+     * A16): the vintages a sixtieth of each is expensed a month, newest first
+     * (Sector.BORROWING_COST_MONTHS of them), and what it paid since the last
+     * strike. Null and zero in an older save: its borrowing's costs moved its
+     * equity the month they were paid, outside the trading result, so there
+     * is nothing left to expense. See Sector, WHAT ITS BORROWING COST IT UP FRONT.
+     */
+    public double[] borrowingCostVintages;
+    public double borrowingCostsPending;
+
+    /**
      * The month's trade in units by good name: what it shipped and what it
      * landed in the month the save was taken (A1, 0.7.46). The railway bills
      * it at the top of the next month, before the strike clears it, so a
@@ -185,6 +196,8 @@ public final class SectorState {
         /** Sector.Statement.capitalBySupplier and capitalTaxCredit (0.7.19); an older save reads none. */
         public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
         public double capitalTaxCredit;
+        /** Sector.Statement.borrowingCosts (0.7.102, A16); an older save reads none, which is what it expensed. */
+        public double borrowingCosts;
 
         static StatementState of(Sector.Statement t) {
             StatementState s = new StatementState();
@@ -203,6 +216,7 @@ public final class SectorState {
             s.paidEarlier = t.paidEarlier;
             s.capitalBySupplier = new LinkedHashMap<>(t.capitalBySupplier);
             s.capitalTaxCredit = t.capitalTaxCredit;
+            s.borrowingCosts = t.borrowingCosts;
             return s;
         }
 
@@ -224,6 +238,7 @@ public final class SectorState {
             t.paidEarlier = paidEarlier;
             t.capitalBySupplier = capitalBySupplier == null ? new LinkedHashMap<>() : new LinkedHashMap<>(capitalBySupplier);
             t.capitalTaxCredit = capitalTaxCredit;
+            t.borrowingCosts = borrowingCosts;
             return t;
         }
     }

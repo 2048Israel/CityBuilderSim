@@ -274,7 +274,20 @@ public final class SectorBooks {
              * false there.
              */
             double stockRevalued,
-            boolean stockCounted) {
+            boolean stockCounted,
+
+            /* -------------- and what its borrowing cost it, expensed (0.7.102, A16) -------------- */
+            /** The month's sixtieth of what its borrowing cost it up front (Sector.Statement.borrowingCosts): a cost before the profit tax, inside netIncome, paid when it borrowed - so the cash flow adds it back. */
+            double borrowingCosts,
+            /** ...what it has paid and is still to expense, as the month closed (Sector.getBorrowingCostsToExpense()): an asset on its sheet. */
+            double borrowingCostsToExpense,
+            /**
+             * True for a month struck since 0.7.102, whose fees, premiums and
+             * bonds' issuing costs went to borrowingCostsToExpense; false in an
+             * older save's months, where they moved its equity the month they
+             * were paid and are its outside lines (SectorStatements.outside()).
+             */
+            boolean borrowingCostsDeferred) {
 
         /** What the sheet says the owners have. */
         public double equity() {
@@ -287,7 +300,9 @@ public final class SectorBooks {
         }
 
         public double totalAssets() {
-            return cash + inventory + land + buildings + foreignAssets + bondAssets + tradeReceivables;
+            return cash + inventory + land + buildings + foreignAssets + bondAssets + tradeReceivables
+                    // ...and what its borrowing cost it up front and it is still to expense (0.7.102).
+                    + borrowingCostsToExpense;
         }
 
         /** Everything above operating income: goods bought, payroll, utilities, repairs. */
@@ -316,14 +331,16 @@ public final class SectorBooks {
                     // ...and its trade credit, net (0.7.44).
                     + tradeCredit
                     // ...and what the city owed it and paid (0.7.55).
-                    + arrearsPaid);
+                    + arrearsPaid
+                    // ...and its borrowing's costs, expensed now and paid when it borrowed (0.7.102).
+                    + borrowingCosts);
         }
 
         /** The size of the figures unexplained() is made of, every one of them as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). */
         public double unexplainedScale() {
             double[] terms = { cash, openingCash, netIncome, paidEarlier, borrowed, repaid, fromTheCity, forgiven,
                     depositInterest, investedAbroad, equityRaised, dividendsPaid, sharesBoughtBack, spentOnBuildings,
-                    stolen, bondsIssued, bondsRepaid, bondsBought, bondCoupons, tradeCredit, arrearsPaid };
+                    stolen, bondsIssued, bondsRepaid, bondsBought, bondCoupons, tradeCredit, arrearsPaid, borrowingCosts };
             double size = 0;
             for (double t : terms) size += Math.abs(t);
             return size;
@@ -348,7 +365,8 @@ public final class SectorBooks {
                     0,
                     0, 0, false,
                     0, 0, 0, 0,
-                    0, 0, 0, 0, 0, false);
+                    0, 0, 0, 0, 0, false,
+                    0, 0, true);
         }
 
         /** Its equity less its share capital: what it kept and what the model revalued (R3). */
@@ -365,7 +383,8 @@ public final class SectorBooks {
                     dividendsPaid, sharesBoughtBack, maintenance, stolen, salvage, paidEarlier, bondAssets, bondsIssued,
                     bondsRepaid, bondsBought, bondCoupons, tradeReceivables, tradePayables, tradeCredit, arrearsPaid,
                     capital, founded, derived, loanFees, premiums, bondCosts, bondsWrittenOff,
-                    landSqFt, landPrice, buildingMaterials, materialsPrice, stockRevalued, stockCounted);
+                    landSqFt, landPrice, buildingMaterials, materialsPrice, stockRevalued, stockCounted,
+                    borrowingCosts, borrowingCostsToExpense, borrowingCostsDeferred);
         }
 
         public boolean isEmpty() {
@@ -654,7 +673,9 @@ public final class SectorBooks {
                 game.getBondMarket().getIssued(key) - game.getBondMarket().getProceeds(key),
                 credit.getBondWrittenOffThisMonth(key),
                 valued[0], valued[1], valued[2], valued[3],
-                stockRevalued, stockBefore != null);
+                stockRevalued, stockBefore != null,
+                // ...and what its borrowing cost it up front: the month's sixtieth, and what is still to expense (0.7.102).
+                st.borrowingCosts, sector.getBorrowingCostsToExpense(), true);
     }
 
     /**
@@ -771,6 +792,7 @@ public final class SectorBooks {
                 m.paidIn() * s, m.founded() * s, m.paidInDerived(),
                 m.loanFees() * s, m.premiums() * s, m.bondCosts() * s, m.bondsWrittenOff() * s,
                 m.landSqFt(), m.landPrice() * s, m.buildingMaterials(), m.materialsPrice() * s,
-                m.stockRevalued() * s, m.stockCounted());
+                m.stockRevalued() * s, m.stockCounted(),
+                m.borrowingCosts() * s, m.borrowingCostsToExpense() * s, m.borrowingCostsDeferred());
     }
 }
