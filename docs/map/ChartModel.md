@@ -1,6 +1,6 @@
 # ChartModel.java - 715 lines · 49 methods · 11 constants · model
 
-`ham/citybuildersim/ChartModel.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartModel.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > What a time chart shows, as numbers: the window of months it looks at and
 > how a drag, a wheel, a range button and the overview move it; the ticks on
@@ -30,7 +30,7 @@
 
 **Uses:** [DecisionLog](DecisionLog.md) (14), [CityCalendar](CityCalendar.md) (9), [PriceIndex](PriceIndex.md) (9), [YearBook](YearBook.md) (6), [HistorySave](HistorySave.md) (4)
 
-**Used by (15):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md)
+**Used by (16):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [ChartCheck](ChartCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [GovernmentScreen](GovernmentScreen.md), [HistoryCheck](HistoryCheck.md), [HistoryScreen](HistoryScreen.md), [OilView](OilView.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

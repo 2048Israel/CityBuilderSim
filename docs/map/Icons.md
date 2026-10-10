@@ -1,6 +1,6 @@
-# Icons.java - 498 lines · 6 methods · 61 constants · interface
+# Icons.java - 529 lines · 6 methods · 67 constants · interface
 
-`ham/citybuildersim/ui/Icons.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Icons.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one
 > per category, and the few the frame draws (the money block, the "Needs you"
@@ -41,7 +41,7 @@
 > get stroked - and the circles and rectangles are written out as arcs, because
 > SVGPath has no notion of either.
 
-**Uses:** [Sectors](Sectors.md) (17), [DecisionLog](DecisionLog.md) (8), [Good](Good.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Sectors](Sectors.md) (17), [DecisionLog](DecisionLog.md) (9), [Good](Good.md) (1), [Sector](Sector.md) (1)
 
 **Used by (17):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [MapView](MapView.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
@@ -111,26 +111,32 @@
 | 351 | `Icons.PAPER` | `"M15 2H6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V7z" + " M14 2v4a2 ...` | A sheet of paper with its lines: the city's paper, The book. |
 | 355 | `Icons.BANKNOTE` | `"M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2H4a2 2 0 0 1 -2 -2V8a2 2 0 0 1 2 -2z" ...` | A banknote: the money itself, M0 and M2. |
 | 359 | `Icons.SAFE` | `"M5 3h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"...` | A safe on two feet, its dial and its handle: the city's fund. |
-| 363 | `Icons.EXCHANGE` | `"M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4"` | Two arrows passing, one each way (Lucide's arrow-left-right): money changed from one currency to the other - the Trade tab's exchange (0.7.35). |
-| 480 | `Icons.DICE` | `"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"...` | A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). |
-| 484 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.7.69). |
-| 487 | `Icons.EXPAND` | `"M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"` | Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). |
-| 490 | `Icons.SETTINGS` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2...` | A gear. |
+| 370 | `Icons.WELL` | `"M3 21h18 M8 21l3-9 3 9 M2 9l14-4 3 3-14 4z M16 5v3 M5 12v4"` | A land well, its beam nodding over the pad: the pictogram's land wells. |
+| 373 | `Icons.PLATFORM` | `"M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5" + " M6...` | A platform on its legs over the waves: the pictogram's platform wells. |
+| 377 | `Icons.TANKER` | `"M2 15l2 4h16l2-4z M5 15v-3h9v3 M16 15V8h3v7"` | A tanker, low in the water: imported crude. |
+| 380 | `Icons.VESSEL` | `"M8 7a4 4 0 0 1 8 0v10a4 4 0 0 1 -8 0z M8 9h8 M8 15h8"` | A process vessel, a column with its trays: a conversion unit's box. |
+| 383 | `Icons.TANK` | `"M4 9l8-4 8 4 M4 9v11h16V9 M4 14h16"` | A storage tank, its roof a shallow cone: what goes into the refiners' tanks, and a Tank Farm's crude. |
+| 386 | `Icons.FLAME` | `"M12 3c3 4 5 6.5 5 10a5 5 0 0 1 -10 0c0-2 1-3.5 2.5-5.5 2 1.5 3 2.5 3 -1-3 -....` | A flame: the furnaces, where residue no diesel can cut is burned. |
+| 389 | `Icons.EXCHANGE` | `"M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4"` | Two arrows passing, one each way (Lucide's arrow-left-right): money changed from one currency to the other - the Trade tab's exchange (0.7.35). |
+| 511 | `Icons.DICE` | `"M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"...` | A die showing five (Lucide "dice-5"): the founding screen's roll of a new world (0.7.56). |
+| 515 | `Icons.MAP` | `"M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z M9 3v15 M15 6v15"` | A folded map (Lucide "map", its earlier three-panel form): the land office's map, expanded over the window, and Build's shortcut, "Buy the best: North 3 · ..." (0.7.61; "Buy the best land" until 0.7.69). |
+| 518 | `Icons.EXPAND` | `"M15 3h6v6 M9 21H3v-6 M21 3l-7 7 M3 21l7-7"` | Two arrows out to the corners (Lucide "maximize-2"): the land office's Expand (0.7.61). |
+| 521 | `Icons.SETTINGS` | `"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915" + "a2.34 2...` | A gear. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 454 | **type** `public final class Icons` | The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one per category, and the few the frame draws (the money block, the "Needs you" chip, the construction tab). |
+| 45 | 485 | **type** `public final class Icons` | The rail's icons, as vector outlines - and since 0.7.24 the Build tab's, one per category, and the few the frame draws (the money block, the "Needs you" chip, the construction tab). |
 | 47 | 1 | `private Icons()` |  |
 
-### THE BUILD TAB'S AND THE FRAME'S (0.7.24) (lines 162-498)
+### THE BUILD TAB'S AND THE FRAME'S (0.7.24) (lines 162-529)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 374 | 17 | `public static String ofGood(ham.citybuildersim.Good good)` | The icon of a good (0.7.35, the Trade tab's rows): its family's - FOOD for the fourteen foods and the restaurants' meals, ORE for iron ore, INDUSTRY for steel, fabricated steel and machinery, VEHICLES for cars and van... |
-| 393 | 24 | `public static String ofSector(ham.citybuildersim.Sector sector)` | The icon of a sector (0.7.30): its Build category's, or one of the five above where the category is shared. |
-| 419 | 19 | `public static String ofCategory(String name)` | The icon of a Build category, by its name (BuildAdvice's). |
-| 446 | 11 | `public static String ofEpisode(String kind)` | The icon of a named episode's kind (0.7.37, City History's hard times): a recession or a depression the History chart's own line, a slump the out of work, an epidemic the cross, a financial crisis the bank, the money'... |
-| 465 | 13 | `public static String ofDecision(String kind)` | The icon of a decision's kind (0.7.37, City History's decisions), as its flag is coloured by the area it is about: a tax the government's, a promise the policy scales, the central bank and the bank the bank's, the mon... |
+| 400 | 21 | `public static String ofGood(ham.citybuildersim.Good good)` | The icon of a good (0.7.35, the Trade tab's rows): its family's - FOOD for the fourteen foods and the restaurants' meals, ORE for iron ore, INDUSTRY for steel, fabricated steel and machinery, VEHICLES for cars and van... |
+| 423 | 24 | `public static String ofSector(ham.citybuildersim.Sector sector)` | The icon of a sector (0.7.30): its Build category's, or one of the five above where the category is shared. |
+| 449 | 19 | `public static String ofCategory(String name)` | The icon of a Build category, by its name (BuildAdvice's). |
+| 476 | 11 | `public static String ofEpisode(String kind)` | The icon of a named episode's kind (0.7.37, City History's hard times): a recession or a depression the History chart's own line, a slump the out of work, an epidemic the cross, a financial crisis the bank, the money'... |
+| 495 | 14 | `public static String ofDecision(String kind)` | The icon of a decision's kind (0.7.37, City History's decisions), as its flag is coloured by the area it is about: a tax the government's, a promise the policy scales, the central bank and the bank the bank's, the mon... |
 

@@ -1,6 +1,6 @@
 # Healthcare.java - 950 lines · 55 methods · 18 constants · model
 
-`ham/citybuildersim/Healthcare.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Healthcare.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The city's healthcare service: what it costs, what it collects, and what it
 > does with the dead.
@@ -39,7 +39,7 @@
 
 **Uses:** [CareType](CareType.md) (46), [AgeBand](AgeBand.md) (12), [PopulationCohorts](PopulationCohorts.md) (4), [TaxPolicy](TaxPolicy.md) (2)
 
-**Used by (22):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CityNeeds](CityNeeds.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [SafetyType](SafetyType.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md)
+**Used by (23):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [SafetyType](SafetyType.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 

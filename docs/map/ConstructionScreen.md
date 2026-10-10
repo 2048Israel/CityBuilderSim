@@ -1,6 +1,6 @@
-# ConstructionScreen.java - 1,064 lines · 39 methods · 5 constants · interface
+# ConstructionScreen.java - 1,076 lines · 39 methods · 7 constants · interface
 
-`ham/citybuildersim/ui/ConstructionScreen.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ConstructionScreen.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The construction page (0.7.22): the builders' gauge, every site with its
 > order, its crews, its time and its money and the player's hand on it -
@@ -36,10 +36,10 @@
 | 105 | THE HEAD: the title with the building area's swatch, the three tabs, |
 | 134 | THE BUILDERS' GAUGE: what they do a month, everything owed on site, |
 | 204 | THE SITES |
-| 497 | THE TIMELINE: a bar a site, from now to when it finishes at today's |
-| 626 | DEMOLISH: the city's buildings by type, the stopped shells, and the |
-| 889 | THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). |
-| 984 | THE PIECES this page is drawn with. |
+| 502 | THE TIMELINE: a bar a site, from now to when it finishes at today's |
+| 631 | DEMOLISH: the city's buildings by type, the stopped shells, and the |
+| 894 | THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). |
+| 996 | THE PIECES this page is drawn with. |
 
 ## Constants
 
@@ -48,8 +48,10 @@
 | 50 | `ConstructionScreen.SCREEN` | `"showConstruction"` | The screen's name, for clearMenu() and the rail (the Build tab owns it). |
 | 202 | `ConstructionScreen.BAR_BAND` | `10` | How tall the page's bars are: the gauge's queue and each site's and stopped shell's progress. |
 | 216 | `ConstructionScreen.COL_RANK` | `34, COL_PROGRESS = 140, COL_CREWS = 100, COL_MONEY = 104, COL_STATUS = 168` | The columns, by width: the order, the building, its progress, crews and time, money, status and the hand. |
-| 547 | `ConstructionScreen.TIMELINE_MAX` | `600` | The longest the timeline's axis runs, in months: fifty years; a site later than that runs off its end. |
-| 552 | `ConstructionScreen.Timeline.NAME` | `210, ROW = 26, TOP = 18` | The names' column, a row, and the band the years are labelled in above the bars, in pixels. |
+| 552 | `ConstructionScreen.TIMELINE_MAX` | `600` | The longest the timeline's axis runs, in months: fifty years; a site later than that runs off its end. |
+| 557 | `ConstructionScreen.Timeline.NAME` | `210, ROW = 26, TOP = 18` | The names' column, a row, and the band the years are labelled in above the bars, in pixels. |
+| 899 | `ConstructionScreen.PAVING_WORDS` | `"%,d paving · no stop"` | The Paved Road site's words while it paves gravel roads (0.7.70), where Cancel would be: how many, and that it runs on. |
+| 902 | `ConstructionScreen.PAVING_TIP` | `"Some of these Paved Roads pave gravel roads, which carry their traffic until...` | ...and why. |
 
 ## Fields (state)
 
@@ -62,18 +64,18 @@
 | 64 | `private boolean pickShell` |  |
 | 65 | `private int count` |  |
 | 66 | `private String filter` |  |
-| 553 | `private final List<Double> months` |  |
-| 554 | `private final double axis` |  |
-| 555 | `private final List<Region> bars` |  |
-| 556 | `private final List<Label> names` |  |
-| 557 | `private final List<Region> ticks` |  |
-| 558 | `private final List<Label> tickNames` |  |
+| 558 | `private final List<Double> months` |  |
+| 559 | `private final double axis` |  |
+| 560 | `private final List<Region> bars` |  |
+| 561 | `private final List<Label> names` |  |
+| 562 | `private final List<Region> ticks` |  |
+| 563 | `private final List<Label> tickNames` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 1018 | **type** `final class ConstructionScreen` | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - priority, rush, cancel, restart - a timeline of when each finishes, and t... |
+| 47 | 1030 | **type** `final class ConstructionScreen` | The construction page (0.7.22): the builders' gauge, every site with its order, its crews, its time and its money and the player's hand on it - priority, rush, cancel, restart - a timeline of when each finishes, and t... |
 | 54 | 1 | `ConstructionScreen(UserInterface ui)` |  |
 | 69 | 1 | `void show()` | The page, on the tab it was left on. |
 | 72 | 5 | `void showSite(String key)` | ...at one site, from a build card's "N on site" or a site's name on the right panel. |
@@ -92,61 +94,61 @@
 |---:|---:|---|---|
 | 140 | 54 | `private VBox gauge()` |  |
 
-### THE SITES (lines 204-496)
+### THE SITES (lines 204-501)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 219 | 66 | `private VBox sites()` |  |
 | 286 | 11 | `private HBox headerRow()` |  |
-| 299 | 154 | `private Node siteRow(String key, int rank, int ranks, BuildingManager.Plan plan, double output, double atEveryPost)` | One site on site: a stack or a demolition. |
-| 455 | 41 | `private Node shellRow(ConstructionControl.Shell shell)` | A stopped shell: what it holds, and Restart or Demolish. |
+| 299 | 159 | `private Node siteRow(String key, int rank, int ranks, BuildingManager.Plan plan, double output, double atEveryPost)` | One site on site: a stack or a demolition. |
+| 460 | 41 | `private Node shellRow(ConstructionControl.Shell shell)` | A stopped shell: what it holds, and Restart or Demolish. |
 
-### THE TIMELINE: a bar a site, from now to when it finishes at today's (lines 497-625)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 503 | 42 | `private VBox timeline()` |  |
-| 550 | 75 | **type** `private static final class Timeline extends Pane` | The bars, laid out to the width they are given. |
-| 560 | 38 | `Timeline(List<String> siteNames, List<Double> months, List<String> colours, double axis)` _(in ConstructionScreen.Timeline)_ |  |
-| 599 | 1 | `protected double computePrefWidth(double height)` _(in ConstructionScreen.Timeline)_ |  |
-| 601 | 23 | `protected void layoutChildren()` _(in ConstructionScreen.Timeline)_ |  |
-
-### DEMOLISH: the city's buildings by type, the stopped shells, and the (lines 626-888)
+### THE TIMELINE: a bar a site, from now to when it finishes at today's (lines 502-630)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 633 | 30 | `private HBox demolish()` |  |
-| 665 | 28 | `private void fillPicker(VBox list)` | The picker's rows: the city's buildings, the shells, then the businesses' and the landlords'. |
-| 694 | 5 | `private Label listHead(String text)` |  |
-| 700 | 20 | `private Node pickRow(String name, int n, boolean shell)` |  |
-| 721 | 122 | `private VBox stagingCard()` |  |
-| 845 | 18 | `private HBox rulesLine()` | The rules behind the card, a line and an (i). |
-| 864 | 7 | `private static String placesWord(BuildingsTemplate t)` |  |
-| 873 | 15 | `private HBox effect(String label, String value, String note, String tone)` | One line of the staging card: what, its figure, and a note under it. |
+| 508 | 42 | `private VBox timeline()` |  |
+| 555 | 75 | **type** `private static final class Timeline extends Pane` | The bars, laid out to the width they are given. |
+| 565 | 38 | `Timeline(List<String> siteNames, List<Double> months, List<String> colours, double axis)` _(in ConstructionScreen.Timeline)_ |  |
+| 604 | 1 | `protected double computePrefWidth(double height)` _(in ConstructionScreen.Timeline)_ |  |
+| 606 | 23 | `protected void layoutChildren()` _(in ConstructionScreen.Timeline)_ |  |
 
-### THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). (lines 889-983)
+### DEMOLISH: the city's buildings by type, the stopped shells, and the (lines 631-893)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 893 | 13 | `private void confirmCancel(String key)` |  |
-| 907 | 15 | `private void confirmDemolition(BuildingsTemplate t, int n, Game.DemolitionQuote q)` |  |
-| 923 | 19 | `private void confirmBuyOut(BuildingsTemplate t, int n, Game.BuyOutQuote q)` |  |
-| 943 | 18 | `private void confirmRestart(ConstructionControl.Shell shell)` |  |
-| 962 | 16 | `private void confirmShellDemolition(ConstructionControl.Shell shell)` |  |
-| 980 | 3 | `private void refused(String why)` | A hand the model refused, said where the player is looking. |
+| 638 | 30 | `private HBox demolish()` |  |
+| 670 | 28 | `private void fillPicker(VBox list)` | The picker's rows: the city's buildings, the shells, then the businesses' and the landlords'. |
+| 699 | 5 | `private Label listHead(String text)` |  |
+| 705 | 20 | `private Node pickRow(String name, int n, boolean shell)` |  |
+| 726 | 122 | `private VBox stagingCard()` |  |
+| 850 | 18 | `private HBox rulesLine()` | The rules behind the card, a line and an (i). |
+| 869 | 7 | `private static String placesWord(BuildingsTemplate t)` |  |
+| 878 | 15 | `private HBox effect(String label, String value, String note, String tone)` | One line of the staging card: what, its figure, and a note under it. |
 
-### THE PIECES this page is drawn with. (lines 984-1064)
+### THE CONFIRMATIONS, with the money in them (UserInterface.confirm()). (lines 894-995)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 989 | 6 | `static String payerLabel(Game g, String payer)` | Who placed an order, in the player's words: the city, the landlords, or the business by its name. |
-| 996 | 5 | `private static Label sectionCaption(String text)` |  |
-| 1002 | 5 | `private static Label head(String text)` |  |
-| 1008 | 6 | `private static Label caption(String text)` |  |
-| 1015 | 5 | `private static Label figureLabel(String text, String tone)` |  |
-| 1023 | 8 | `private static Button action(String text, String tone, Runnable act)` | The chip and its tint are Pieces.chip() and Pieces.tint() since 0.7.27. |
-| 1032 | 7 | `private static Label arrow(String glyph, boolean live, Runnable act)` |  |
-| 1040 | 5 | `private static void tip(Node node, String text)` |  |
-| 1046 | 8 | `private static Region cell(Node content, double width)` |  |
-| 1055 | 9 | `private static Region grow(Node content)` |  |
+| 905 | 13 | `private void confirmCancel(String key)` |  |
+| 919 | 15 | `private void confirmDemolition(BuildingsTemplate t, int n, Game.DemolitionQuote q)` |  |
+| 935 | 19 | `private void confirmBuyOut(BuildingsTemplate t, int n, Game.BuyOutQuote q)` |  |
+| 955 | 18 | `private void confirmRestart(ConstructionControl.Shell shell)` |  |
+| 974 | 16 | `private void confirmShellDemolition(ConstructionControl.Shell shell)` |  |
+| 992 | 3 | `private void refused(String why)` | A hand the model refused, said where the player is looking. |
+
+### THE PIECES this page is drawn with. (lines 996-1076)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1001 | 6 | `static String payerLabel(Game g, String payer)` | Who placed an order, in the player's words: the city, the landlords, or the business by its name. |
+| 1008 | 5 | `private static Label sectionCaption(String text)` |  |
+| 1014 | 5 | `private static Label head(String text)` |  |
+| 1020 | 6 | `private static Label caption(String text)` |  |
+| 1027 | 5 | `private static Label figureLabel(String text, String tone)` |  |
+| 1035 | 8 | `private static Button action(String text, String tone, Runnable act)` | The chip and its tint are Pieces.chip() and Pieces.tint() since 0.7.27. |
+| 1044 | 7 | `private static Label arrow(String glyph, boolean live, Runnable act)` |  |
+| 1052 | 5 | `private static void tip(Node node, String text)` |  |
+| 1058 | 8 | `private static Region cell(Node content, double width)` |  |
+| 1067 | 9 | `private static Region grow(Node content)` |  |
 

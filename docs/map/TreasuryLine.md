@@ -1,6 +1,6 @@
-# TreasuryLine.java - 160 lines · 2 methods · 0 constants · model
+# TreasuryLine.java - 170 lines · 2 methods · 0 constants · model
 
-`ham/citybuildersim/TreasuryLine.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryLine.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Every kind of payment the treasury makes, and whether it is a promise.
 > 
@@ -59,20 +59,21 @@
 | 122 | `TreasuryLine.BUYBACKS` | A bond bought back before it is due. |
 | 132 | `TreasuryLine.FOOD_ASSISTANCE` | Food assistance (0.7.43): the vouchers the households spent at the shops this month, paid in the month of the sale. |
 | 141 | `TreasuryLine.TRANSIT` | Transit's wages and upkeep (0.7.49, B9): the buses' and trains' crews and what the lines cost to keep running, struck at advanceDemographics() 6d since 2026-09-16 and paid by nobody until now. |
+| 151 | `TreasuryLine.OIL_RESERVE` | Crude for the strategic reserve (0.7.85; StrategicReserve): bought in the month's crude market on the player's order, which the treasury could pay for when it was placed (Game.fillReserve()), and paid at the next stri... |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 144 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
-| 147 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
-| 150 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
+| 154 | `public final String label` | The player's words for it, for the Government tab's arrears list and the playtest. |
+| 157 | `public final boolean promise` | Paid whatever the treasury holds, past the ceiling if it must be. |
+| 160 | `public final boolean purchase` | Refused, it is simply not made; nothing is owed. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 133 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
-| 152 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
-| 159 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
+| 28 | 143 | **type** `public enum TreasuryLine` | Every kind of payment the treasury makes, and whether it is a promise. |
+| 162 | 5 | `TreasuryLine(String label, boolean promise, boolean purchase)` |  |
+| 169 | 1 | `public boolean accruesArrears()` | True for a discretionary line whose refusal is owed as arrears. |
 

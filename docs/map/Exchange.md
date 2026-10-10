@@ -1,6 +1,6 @@
 # Exchange.java - 1,841 lines · 149 methods · 26 constants · model
 
-`ham/citybuildersim/Exchange.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Exchange.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The stock exchange: one order book per company, where every share that
 > changes hands meets its buyer, and the price is the last trade.
@@ -66,7 +66,7 @@
 
 **Uses:** [Equity](Equity.md) (61), [OrderBook](OrderBook.md) (54), [TreasuryFund](TreasuryFund.md) (14), [Household](Household.md) (13), [HouseholdBalance](HouseholdBalance.md) (8), [Bank](Bank.md) (7), [BondMarket](BondMarket.md) (3), [OutwardInvestment](OutwardInvestment.md) (2), [FundLedger](FundLedger.md) (1)
 
-**Used by (20):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [Equity](Equity.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [TreasuryFund](TreasuryFund.md)
+**Used by (21):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [Equity](Equity.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [TreasuryFund](TreasuryFund.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
-# Construction.java - 919 lines · 49 methods · 1 constants · sectors
+# Construction.java - 923 lines · 50 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/Construction.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Construction.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The builders. Every build order in the city is theirs, and they bill it.
 > 
@@ -33,9 +33,9 @@
 > city's own works department (BuildingManager.BASE_CONSTRUCTION) builds
 > alongside the depots and has no payroll; it is capacity, not a company.
 
-**Uses:** [Good](Good.md) (16), [BusinessInvestment](BusinessInvestment.md) (11), [Game](Game.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [BuildingManager](BuildingManager.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [JobType](JobType.md) (1)
+**Uses:** [Good](Good.md) (16), [BusinessInvestment](BusinessInvestment.md) (11), [Game](Game.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [BuildingManager](BuildingManager.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [JobType](JobType.md) (1)
 
-**Used by (14):** [BankCheck](BankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Game](Game.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [UserInterface](UserInterface.md)
+**Used by (15):** [BankCheck](BankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Game](Game.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -47,7 +47,7 @@
 | 490 | MATERIALS ARE DRAWN, NOT BID FOR |
 | 558 | PLANNING - off the order book |
 | 724 | THE SCREEN |
-| 836 | SAVE |
+| 840 | SAVE |
 
 ## Constants
 
@@ -79,7 +79,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 873 | **type** `public final class Construction extends Sector` | The builders. |
+| 47 | 877 | **type** `public final class Construction extends Sector` | The builders. |
 | 152 | 13 | `public void strikeCrews(double work, double cityWorks, double depots)` | Strikes the month's crews. |
 | 167 | 1 | `public double getPostsOfferedShare()` | The share of the depots' posts on offer this month. |
 | 170 | 1 | `public double getCrewsNeeded()` | The work over the depots' full-staffing output, as struck - above 1 when the work is more than they can do. |
@@ -147,21 +147,22 @@
 | 674 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | WHAT A DEPOT WOULD EARN, LESS WHAT IT WOULD COST (0.7.19). |
 | 710 | 13 | `public double[] retirementDemandAndCapacity(Game game)` | Its demand is the repairs and the queue: the city's repair order and the work ordered and not yet done, the queue capped at what the sites could take this month, and never less than what the city has undertaken to kee... |
 
-### THE SCREEN (lines 724-835)
+### THE SCREEN (lines 724-839)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 729 | 1 | `public String inputLabel()` |  |
-| 745 | 9 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
-| 756 | 1 | `public boolean hasPlantBlock()` |  |
-| 759 | 76 | `public List<Line> ownLines(Game game)` |  |
+| 730 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a builder, whose middle line is its gross profit on contracts. |
+| 733 | 1 | `public String inputLabel()` |  |
+| 749 | 9 | `protected java.util.Map<String, Double> nameOtherRevenue()` | THE BUILDERS' REVENUE IS TWO BUSINESSES and the statement showed one figure. |
+| 760 | 1 | `public boolean hasPlantBlock()` |  |
+| 763 | 76 | `public List<Line> ownLines(Game game)` |  |
 
-### SAVE (lines 836-919)
+### SAVE (lines 840-923)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 841 | 26 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 869 | 26 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 897 | 10 | `protected void resetExtras()` |  |
-| 910 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
+| 845 | 26 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 873 | 26 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 901 | 10 | `protected void resetExtras()` |  |
+| 914 | 9 | `protected void redenominateExtras(double scale)` | Points, the utilisation and the materials struck are work, not money; the book is money. |
 

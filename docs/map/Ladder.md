@@ -1,6 +1,6 @@
 # Ladder.java - 354 lines · 26 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/Ladder.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Ladder.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > One dial, drawn the one way: a "−" worth one step, a slider that snaps to
 > the step, a "+" worth one step, the reading, and a line under them saying
@@ -51,7 +51,7 @@
 
 **Uses:** [Palette](Palette.md) (26)
 
-**Used by (11):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [Levers](Levers.md), [MortgageCheck](MortgageCheck.md), [PolicyScreen](PolicyScreen.md)
+**Used by (13):** [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [Levers](Levers.md), [MortgageCheck](MortgageCheck.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md)
 
 ## Constants
 

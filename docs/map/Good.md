@@ -1,6 +1,6 @@
-# Good.java - 907 lines · 18 methods · 0 constants · model
+# Good.java - 1,027 lines · 21 methods · 0 constants · model
 
-`ham/citybuildersim/Good.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Good.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > A thing that can be made, bought, held, imported and exported.
 > 
@@ -64,15 +64,15 @@
 > one ulp, which in this codebase is never nothing: DenominationCheck spent
 > ... (46 more lines in the source)
 
-**Uses:** [Traffic](Traffic.md) (3), [Motoring](Motoring.md) (2)
+**Uses:** [Traffic](Traffic.md) (5), [Ports](Ports.md) (5)
 
-**Used by (82):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CityBasket](CityBasket.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConsumptionCheck](ConsumptionCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [Formats](Formats.md), [Founding](Founding.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GoodsMarket](GoodsMarket.md), [HealthCheck](HealthCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [NationalAccounts](NationalAccounts.md), [NewGameCheck](NewGameCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Refining](Refining.md), [Resource](Resource.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [SummaryScreen](SummaryScreen.md), [SupplierCredit](SupplierCredit.md), [SupplierCreditCheck](SupplierCreditCheck.md), [Trade](Trade.md), [TradeCostCheck](TradeCostCheck.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md)
+**Used by (97):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CityBasket](CityBasket.md), [ConservationCheck](ConservationCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConsumptionCheck](ConsumptionCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [Formats](Formats.md), [Founding](Founding.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GoodsMarket](GoodsMarket.md), [HealthCheck](HealthCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Icons](Icons.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [Markets](Markets.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [Motoring](Motoring.md), [NationalAccounts](NationalAccounts.md), [NewGameCheck](NewGameCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryFlow](RefineryFlow.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [Resource](Resource.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [StrategicReserve](StrategicReserve.md), [SummaryScreen](SummaryScreen.md), [SupplierCredit](SupplierCredit.md), [SupplierCreditCheck](SupplierCreditCheck.md), [Trade](Trade.md), [TradeCostCheck](TradeCostCheck.md), [TradeScreen](TradeScreen.md), [VanCheck](VanCheck.md), [WellCheck](WellCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 804 | WHAT IT TAKES TO CARRY ONE (2026-09-16) |
+| 895 | WHAT IT TAKES TO CARRY ONE (2026-09-16) |
 
 ## Enum constants
 
@@ -109,51 +109,63 @@
 | 625 | `Good.LUXURIES` |  |
 | 641 | `Good.LUXURY_TRADE` | ...and what a shop sells one for, which is not what it paid. |
 | 669 | `Good.MEALS` |  |
-| 701 | `Good.CRUDE` |  |
-| 703 | `Good.FUEL` |  |
-| 709 | `Good.Pricing.BAND` | Clears in GoodsMarket between the export floor and the import ceiling. |
-| 711 | `Good.Pricing.SELLER` | The selling sector strikes it; the market only records the sale. |
+| 695 | `Good.CRUDE` |  |
+| 759 | `Good.LPG` | Liquefied petroleum gas - propane and butane, the lightest cut - by the litre, 1,850 to the tonne. |
+| 762 | `Good.NAPHTHA` | Naphtha, the petrochemical feed and the reformer's: 1,351 litres a tonne (est., JODI). |
+| 765 | `Good.PETROL` | What the drivers burn (Motoring.drawFuel()): the ladder's 1.20 of crude since 0.7.78 (FUEL's band before), 1,320 litres a tonne. |
+| 768 | `Good.JET` | Kerosene for aircraft, 1,260 litres a tonne. |
+| 771 | `Good.DIESEL` | What the railway burns (Rail.haul()), and since 0.7.83 the vans (Sector.runFleet()): the ladder's 1.35 of crude since 0.7.78 (FUEL's band before), 1,180 litres a tonne. |
+| 774 | `Good.LUBRICANTS` | Base oils, the dearest litre in the barrel: 1,127 litres a tonne (est., JODI). |
+| 777 | `Good.FUEL_OIL` | Heavy fuel oil - the gas oil and the residue no conversion unit here upgrades (none until 0.7.80) - 1,010 litres a tonne. |
+| 780 | `Good.BITUMEN` | Road binder, by the tonne: an asphalt unit's, from heavy crude's residue. |
+| 783 | `Good.COKE` | Petroleum coke, by the tonne: a coker's solid residue. |
+| 788 | `Good.Pricing.BAND` | Clears in GoodsMarket between the export floor and the import ceiling. |
+| 790 | `Good.Pricing.SELLER` | The selling sector strikes it; the market only records the sale. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 714 | `private final String label` |  |
-| 715 | `private final String unit` |  |
-| 716 | `private final double worldImportPrice` |  |
-| 717 | `private final double worldExportPrice` |  |
-| 718 | `private final double baseFreight` |  |
-| 719 | `private final boolean stockable` |  |
-| 720 | `private final Pricing pricing` |  |
-| 721 | `private final boolean taxExempt` |  |
+| 793 | `private final String label` |  |
+| 794 | `private final String unit` |  |
+| 795 | `private final double worldImportPrice` |  |
+| 796 | `private final double worldExportPrice` |  |
+| 797 | `private final double baseFreight` |  |
+| 798 | `private final boolean stockable` |  |
+| 799 | `private final Pricing pricing` |  |
+| 800 | `private final boolean taxExempt` |  |
+| 803 | `private final double litresPerTonne` | Litres to the tonne for a good counted in litres (0.7.76), NaN for every other. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 111 | 797 | **type** `public enum Good` | A thing that can be made, bought, held, imported and exported. |
-| 707 | 6 | **type** `public enum Pricing` | How a good's price is struck. |
-| 723 | 11 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
-| 735 | 1 | `public String label()` |  |
-| 736 | 1 | `public String unit()` |  |
-| 746 | 1 | `public double worldImportPrice()` | What the world charges for one DELIVERED HERE, in ITS money. |
-| 749 | 1 | `public double worldExportPrice()` | What the world pays for one DELIVERED THERE, in ITS money. |
-| 760 | 1 | `public double baseFreight()` | What it costs to move one unit between the city and the world, in the world's money - three quarters of the wedge on every good that has both ends, and zero for the things nobody ships. |
-| 769 | 1 | `public double worldBuyPrice()` | The world's own ask, before anything is moved - the import price less the freight in it. |
-| 780 | 1 | `public double worldSellPrice()` | The world's own bid, before anything is moved - the export price with the freight added back. |
-| 782 | 1 | `public boolean importable()` |  |
-| 783 | 1 | `public boolean exportable()` |  |
-| 784 | 1 | `public boolean stockable()` |  |
-| 785 | 1 | `public Pricing pricing()` |  |
-| 788 | 1 | `public boolean taxExempt()` | True for a supply the sales tax never touches. |
-| 799 | 1 | `public int planningMonths()` | How many months of the city's take a maker averages before it plans a plant against it. |
-| 802 | 1 | `public boolean traded()` | Clears in the band on scarcity, as opposed to being priced by its seller. |
+| 111 | 917 | **type** `public enum Good` | A thing that can be made, bought, held, imported and exported. |
+| 786 | 6 | **type** `public enum Pricing` | How a good's price is struck. |
+| 805 | 4 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
+| 810 | 12 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
+| 824 | 1 | `public double litresPerTonne()` | Litres to the tonne (0.7.76): what a litre of this weighs, inverted; NaN for a good not counted in litres. |
+| 826 | 1 | `public String label()` |  |
+| 827 | 1 | `public String unit()` |  |
+| 837 | 1 | `public double worldImportPrice()` | What the world charges for one DELIVERED HERE, in ITS money. |
+| 840 | 1 | `public double worldExportPrice()` | What the world pays for one DELIVERED THERE, in ITS money. |
+| 851 | 1 | `public double baseFreight()` | What it costs to move one unit between the city and the world, in the world's money - three quarters of the wedge on every good that has both ends, and zero for the things nobody ships. |
+| 860 | 1 | `public double worldBuyPrice()` | The world's own ask, before anything is moved - the import price less the freight in it. |
+| 871 | 1 | `public double worldSellPrice()` | The world's own bid, before anything is moved - the export price with the freight added back. |
+| 873 | 1 | `public boolean importable()` |  |
+| 874 | 1 | `public boolean exportable()` |  |
+| 875 | 1 | `public boolean stockable()` |  |
+| 876 | 1 | `public Pricing pricing()` |  |
+| 879 | 1 | `public boolean taxExempt()` | True for a supply the sales tax never touches. |
+| 890 | 1 | `public int planningMonths()` | How many months of the city's take a maker averages before it plans a plant against it. |
+| 893 | 1 | `public boolean traded()` | Clears in the band on scarcity, as opposed to being priced by its seller. |
 
-### WHAT IT TAKES TO CARRY ONE (2026-09-16) (lines 804-907)
+### WHAT IT TAKES TO CARRY ONE (2026-09-16) (lines 895-1027)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 830 | 29 | `public double tonnesPerUnit()` | One unit, in tonnes. |
-| 876 | 24 | `public Traffic traffic()` | Which stream of traffic a tonne of this joins, or null for the things that never take up road at all. |
-| 902 | 5 | `public static Good byName(String name)` | The good with this saved name, or null - a save from a build without it loses that line, not the load. |
+| 921 | 29 | `public double tonnesPerUnit()` | One unit, in tonnes. |
+| 967 | 26 | `public Traffic traffic()` | Which stream of traffic a tonne of this joins, or null for the things that never take up road at all. |
+| 1006 | 14 | `public Ports.Cargo cargo()` | What kind of ship carries it, and so which terminal's berth (0.7.86, batch O9; runs/spec-oil.md 2.1, Ports.Cargo), or null for the things that never cross the boundary as freight. |
+| 1022 | 5 | `public static Good byName(String name)` | The good with this saved name, or null - a save from a build without it loses that line, not the load. |
 

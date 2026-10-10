@@ -1,6 +1,6 @@
 # Crime.java - 525 lines · 61 methods · 18 constants · model
 
-`ham/citybuildersim/Crime.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Crime.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Crime, the police who deter and catch it, and the prisons that hold who
 > they catch.
@@ -66,7 +66,7 @@
 
 **Uses:** [PopulationCohorts](PopulationCohorts.md) (1), [AgeBand](AgeBand.md) (1)
 
-**Used by (16):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [PeopleScreen](PeopleScreen.md), [SafetyType](SafetyType.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md)
+**Used by (17):** [AutoBuildCheck](AutoBuildCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [PeopleScreen](PeopleScreen.md), [SafetyType](SafetyType.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md)
 
 ## Sections
 

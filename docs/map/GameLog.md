@@ -1,6 +1,6 @@
 # GameLog.java - 348 lines · 20 methods · 6 constants · model
 
-`ham/citybuildersim/GameLog.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameLog.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Everything the game prints, written somewhere a player can find it.
 > 
@@ -47,7 +47,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (1), [GameVersion](GameVersion.md) (1)
 
-**Used by (9):** [CityBuilderSim](CityBuilderSim.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [GameFiles](GameFiles.md), [GamePrefs](GamePrefs.md), [PolicyScreen](PolicyScreen.md), [RobustnessCheck](RobustnessCheck.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md)
+**Used by (10):** [AutoBuilder](AutoBuilder.md), [CityBuilderSim](CityBuilderSim.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [GameFiles](GameFiles.md), [GamePrefs](GamePrefs.md), [PolicyScreen](PolicyScreen.md), [RobustnessCheck](RobustnessCheck.md), [TimeChart](TimeChart.md), [UserInterface](UserInterface.md)
 
 ## Constants
 

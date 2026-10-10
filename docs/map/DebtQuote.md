@@ -1,6 +1,6 @@
 # DebtQuote.java - 209 lines · 9 methods · 1 constants · model
 
-`ham/citybuildersim/DebtQuote.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtQuote.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > What a loan would cost, worked out BEFORE the player agrees to it.
 > 
@@ -29,7 +29,7 @@
 >                        exactly what this borrowing costs the city's credit
 >                        discount or premium, plus all the coupons
 
-**Used by (12):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CreditCheck](CreditCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md)
+**Used by (14):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CreditCheck](CreditCheck.md), [FinancesScreen](FinancesScreen.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md)
 
 ## Constants
 

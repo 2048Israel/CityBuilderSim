@@ -1,6 +1,6 @@
-# Sectors.java - 382 lines · 38 methods · 3 constants · model
+# Sectors.java - 406 lines · 39 methods · 4 constants · model
 
-`ham/citybuildersim/Sectors.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Sectors.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Every sector in the city, in one order, by one name.
 > 
@@ -25,9 +25,9 @@
 > third, and the two export sectors each answer a question no other sector
 > can. Everything else reaches a sector by name.
 
-**Uses:** [Sector](Sector.md) (18), [Good](Good.md) (17), [SectorState](SectorState.md) (4), [Retail](Retail.md) (3), [RealEstate](RealEstate.md) (3), [FoodIndustry](FoodIndustry.md) (3), [Construction](Construction.md) (3), [HeavyIndustry](HeavyIndustry.md) (3), [Mining](Mining.md) (3), [Materials](Materials.md) (3), [BusinessServices](BusinessServices.md) (3), [Manufacturing](Manufacturing.md) (3), [Agriculture](Agriculture.md) (3), [FoodProcessing](FoodProcessing.md) (3), [Rail](Rail.md) (3), [Automotive](Automotive.md) (3), [LuxuryRetail](LuxuryRetail.md) (3), [Restaurants](Restaurants.md) (3), [Oil](Oil.md) (3), [Refining](Refining.md) (3), [BuildingManager](BuildingManager.md) (2), [Markets](Markets.md) (2), [Game](Game.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Statement](Statement.md) (1)
+**Uses:** [Good](Good.md) (21), [Sector](Sector.md) (18), [SectorState](SectorState.md) (4), [Retail](Retail.md) (3), [RealEstate](RealEstate.md) (3), [FoodIndustry](FoodIndustry.md) (3), [Construction](Construction.md) (3), [HeavyIndustry](HeavyIndustry.md) (3), [Mining](Mining.md) (3), [Materials](Materials.md) (3), [BusinessServices](BusinessServices.md) (3), [Manufacturing](Manufacturing.md) (3), [Agriculture](Agriculture.md) (3), [FoodProcessing](FoodProcessing.md) (3), [Rail](Rail.md) (3), [Automotive](Automotive.md) (3), [LuxuryRetail](LuxuryRetail.md) (3), [Restaurants](Restaurants.md) (3), [Oil](Oil.md) (3), [Refining](Refining.md) (3), [BuildingManager](BuildingManager.md) (2), [Markets](Markets.md) (2), [Game](Game.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Statement](Statement.md) (1)
 
-**Used by (58):** [AgricultureCheck](AgricultureCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BooksCheck](BooksCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [ChartCheck](ChartCheck.md), [ConservationCheck](ConservationCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [Equity](Equity.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [ForeignCheck](ForeignCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [HistoryScreen](HistoryScreen.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [Icons](Icons.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [MiningCheck](MiningCheck.md), [MoneyAudit](MoneyAudit.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [Offending](Offending.md), [OilCheck](OilCheck.md), [OutwardInvestment](OutwardInvestment.md), [PolicyCheck](PolicyCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TaxPolicy](TaxPolicy.md), [TradeScreen](TradeScreen.md), [TreasuryCheck](TreasuryCheck.md)
+**Used by (71):** [AgricultureCheck](AgricultureCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BooksCheck](BooksCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [ChartCheck](ChartCheck.md), [ConservationCheck](ConservationCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [Equity](Equity.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [ForeignCheck](ForeignCheck.md), [FuelSplit](FuelSplit.md), [FundCheck](FundCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [HistoryScreen](HistoryScreen.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [Icons](Icons.md), [InvestCheck](InvestCheck.md), [LandCheck](LandCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [Markets](Markets.md), [MiningCheck](MiningCheck.md), [MoneyAudit](MoneyAudit.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [Offending](Offending.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OutwardInvestment](OutwardInvestment.md), [PolicyCheck](PolicyCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PortCheck](PortCheck.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [RestaurantsCheck](RestaurantsCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TaxPolicy](TaxPolicy.md), [TradeScreen](TradeScreen.md), [TreasuryCheck](TreasuryCheck.md), [WellCheck](WellCheck.md)
 
 ## Sections
 
@@ -43,6 +43,7 @@
 | 60 | `Sectors.RETAIL` | `"Retail", REAL_ESTATE = "Real Estate", INDUSTRY = "Industry", CONSTRUCTION = ...` | The names, in the order, known before any instance exists - for the things that size an array by the count at construction (Equity's company list, the households' share cells) and cannot wait for a registry to be built. |
 | 78 | `Sectors.KEYS` | `{ RETAIL, REAL_ESTATE, INDUSTRY, CONSTRUCTION, HEAVY_INDUSTRY, MINING, MATERI...` | ON THE END, AND IT HAS TO STAY THAT WAY - but for a softer reason than BuildingType's. |
 | 261 | `Sectors.HOUSEHOLDS` | `"Households"` | The name the households' own imports are kept under among a good's buyers: the cars they buy from the world (Game.getHouseholdCarImports()). |
+| 264 | `Sectors.CITY` | `"City"` | ...and the city's, among crude's buyers and sellers: its strategic reserve (0.7.85; StrategicReserve). |
 
 ## Fields (state)
 
@@ -72,7 +73,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 331 | **type** `public final class Sectors` | Every sector in the city, in one order, by one name. |
+| 52 | 355 | **type** `public final class Sectors` | Every sector in the city, in one order, by one name. |
 | 107 | 27 | `public Sectors(BuildingManager buildings, Markets markets)` |  |
 | 135 | 9 | `private<T extends Sector> T add(T sector, BuildingManager buildings, Markets markets)` |  |
 | 145 | 1 | `public List<Sector> all()` |  |
@@ -108,19 +109,20 @@
 | 246 | 5 | `public double totalCash()` |  |
 | 252 | 5 | `public double totalPayroll()` |  |
 
-### the month across the edge, by good (lines 258-382)
+### the month across the edge, by good (lines 258-406)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 268 | 5 | **type** `public record GoodTrade(Good good, double sold, double bought, Map<String, Double> sellers, Map<String, Dou...` | One good across the city's edge in the month the books last struck: what was sold of it abroad and bought of it abroad, in money, and by whom - sector keys, and HOUSEHOLDS among the buyers of cars. |
-| 271 | 1 | `public double net()` _(in Sectors.GoodTrade)_ | What the city sold of it abroad less what it bought: its row's net. |
-| 281 | 18 | **type** `public record TradeByGood(Map<Good, GoodTrade> goods, Map<String, Double> services, double householdCars, d...` | The month across the edge by good (0.7.35): every good that crossed it, the imports with no good behind them by the sector that bought them, and the households' cars and - since 0.7.62, when fuel became a good - their... |
-| 284 | 5 | `public double sold()` _(in Sectors.TradeByGood)_ | Everything sold abroad: the balance of payments' exports, by its own construction. |
-| 290 | 6 | `public double bought()` _(in Sectors.TradeByGood)_ | Everything bought abroad - the goods, the households' cars among them, and the services with no good: its imports. |
-| 297 | 1 | `public double balance()` _(in Sectors.TradeByGood)_ | ...the one less the other: the trade balance. |
-| 317 | 42 | `public TradeByGood tradeByGood(double householdCars, double householdFuel)` | WHAT THE CITY SOLD AND BOUGHT ABROAD, GOOD BY GOOD (0.7.35), read off the statements every sector struck - each line of revenue and of cost split home and abroad as the trade was booked (Sector.Split) - so it foots to... |
-| 360 | 5 | `public List<SectorState> toState()` |  |
-| 366 | 8 | `public void restore(List<SectorState> saved)` |  |
-| 375 | 3 | `public void reset()` |  |
-| 379 | 3 | `public void redenominate(double scale)` |  |
+| 271 | 5 | **type** `public record GoodTrade(Good good, double sold, double bought, Map<String, Double> sellers, Map<String, Dou...` | One good across the city's edge in the month the books last struck: what was sold of it abroad and bought of it abroad, in money, and by whom - sector keys, and HOUSEHOLDS among the buyers of cars. |
+| 274 | 1 | `public double net()` _(in Sectors.GoodTrade)_ | What the city sold of it abroad less what it bought: its row's net. |
+| 284 | 18 | **type** `public record TradeByGood(Map<Good, GoodTrade> goods, Map<String, Double> services, double householdCars, d...` | The month across the edge by good (0.7.35): every good that crossed it, the imports with no good behind them by the sector that bought them, and the households' cars and - since 0.7.62, when fuel became a good - their... |
+| 287 | 5 | `public double sold()` _(in Sectors.TradeByGood)_ | Everything sold abroad: the balance of payments' exports, by its own construction. |
+| 293 | 6 | `public double bought()` _(in Sectors.TradeByGood)_ | Everything bought abroad - the goods, the households' cars among them, and the services with no good: its imports. |
+| 300 | 1 | `public double balance()` _(in Sectors.TradeByGood)_ | ...the one less the other: the trade balance. |
+| 321 | 3 | `public TradeByGood tradeByGood(double householdCars, double householdFuel)` | WHAT THE CITY SOLD AND BOUGHT ABROAD, GOOD BY GOOD (0.7.35), read off the statements every sector struck - each line of revenue and of cost split home and abroad as the trade was booked (Sector.Split) - so it foots to... |
+| 332 | 51 | `public TradeByGood tradeByGood(double householdCars, double householdFuel, double cityCrudeBought, double cityCrudeSold)` | ...and the city's own crude across the edge (0.7.85): its strategic reserve's fill bought from the world and its release shipped to it, as the last strike settled them (StrategicReserve), among crude's, CITY among its... |
+| 384 | 5 | `public List<SectorState> toState()` |  |
+| 390 | 8 | `public void restore(List<SectorState> saved)` |  |
+| 399 | 3 | `public void reset()` |  |
+| 403 | 3 | `public void redenominate(double scale)` |  |
 

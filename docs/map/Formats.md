@@ -1,6 +1,6 @@
 # Formats.java - 122 lines · 9 methods · 2 constants · model
 
-`ham/citybuildersim/Formats.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Formats.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The few formats a sector needs to describe itself, without the toolkit.
 > 
@@ -12,7 +12,7 @@
 
 **Uses:** [Good](Good.md) (1)
 
-**Used by (37):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [Construction](Construction.md), [DecisionLog](DecisionLog.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [Mining](Mining.md), [Money](Money.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md), [Oil](Oil.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [Rail](Rail.md), [RealEstate](RealEstate.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [TradeCostCheck](TradeCostCheck.md), [YearBook](YearBook.md)
+**Used by (40):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [Automotive](Automotive.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [Construction](Construction.md), [DecisionLog](DecisionLog.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [Mining](Mining.md), [Money](Money.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md), [Oil](Oil.md), [OilView](OilView.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [Rail](Rail.md), [RealEstate](RealEstate.md), [RefineryView](RefineryView.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [TradeCostCheck](TradeCostCheck.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
 
 ## Constants
 

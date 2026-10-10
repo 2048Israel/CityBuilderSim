@@ -1,6 +1,6 @@
-# HistoryScreen.java - 3,124 lines · 109 methods · 23 constants · interface
+# HistoryScreen.java - 3,129 lines · 109 methods · 23 constants · interface
 
-`ham/citybuildersim/ui/HistoryScreen.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/HistoryScreen.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > City History: the city as a shape over time.
 > 
@@ -33,7 +33,7 @@
 > goods table followed later the same day (it had sat under the shell's THE
 > STATEMENT banner); since 0.7.37 it is PRICES THIS MONTH.
 
-**Uses:** [Palette](Palette.md) (153), [YearBook](YearBook.md) (54), [HistorySave](HistorySave.md) (47), [Icons](Icons.md) (23), [TimeChart](TimeChart.md) (23), [ChartModel](ChartModel.md) (20), [PriceIndex](PriceIndex.md) (15), [CityCalendar](CityCalendar.md) (14), [GamePrefs](GamePrefs.md) (9), [Good](Good.md) (9), [DecisionLog](DecisionLog.md) (7), [Crime](Crime.md) (6), [FamilyStructure](FamilyStructure.md) (6), [GoodsMarket](GoodsMarket.md) (6), [Equity](Equity.md) (5), [Sector](Sector.md) (5), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (3), [Pieces](Pieces.md) (3), [SectorScreen](SectorScreen.md) (3), [GameFiles](GameFiles.md) (2), [Currency](Currency.md) (2), [LandManager](LandManager.md) (2)
+**Uses:** [Palette](Palette.md) (153), [YearBook](YearBook.md) (54), [HistorySave](HistorySave.md) (47), [Icons](Icons.md) (23), [TimeChart](TimeChart.md) (23), [ChartModel](ChartModel.md) (20), [PriceIndex](PriceIndex.md) (15), [CityCalendar](CityCalendar.md) (14), [Good](Good.md) (10), [GamePrefs](GamePrefs.md) (9), [DecisionLog](DecisionLog.md) (7), [Crime](Crime.md) (6), [FamilyStructure](FamilyStructure.md) (6), [GoodsMarket](GoodsMarket.md) (6), [Equity](Equity.md) (5), [Sector](Sector.md) (5), [UserInterface](UserInterface.md) (3), [Sectors](Sectors.md) (3), [Pieces](Pieces.md) (3), [SectorScreen](SectorScreen.md) (3), [GameFiles](GameFiles.md) (2), [Currency](Currency.md) (2), [LandManager](LandManager.md) (2)
 
 **Used by (10):** [BankScreen](BankScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [LandScreen](LandScreen.md), [MapView](MapView.md), [PolicyScreen](PolicyScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
@@ -126,7 +126,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 3065 | **type** `final class HistoryScreen` | City History: the city as a shape over time. |
+| 60 | 3070 | **type** `final class HistoryScreen` | City History: the city as a shape over time. |
 | 65 | 1 | `HistoryScreen(UserInterface ui)` |  |
 
 ### THE HISTORY SCREEN (lines 67-538)
@@ -301,7 +301,7 @@
 | 2882 | 3 | `static String howLong(int months)` | "42 years" all told, or "9 months" under two years. |
 | 2894 | 33 | `javafx.scene.Node byKind(HistorySave h, List<YearBook.Episode> episodes, List<ChartModel.Flag> flags)` | Every named episode since founding, by kind (0.7.37): a row a kind that has happened, its episodes on one scale of the history's months in their colour - each at least two pixels, its name, span and worst on its toolt... |
 
-### PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) (lines 2928-3124)
+### PRICES THIS MONTH (0.7.37; EVERY GOOD, ON ONE PAGE before) (lines 2928-3129)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -314,6 +314,6 @@
 | 3006 | 17 | `String priceSummary()` | The line over the fold (pure): how many goods trade with the world and where in their bands the both-ways ones stand - at what the world charges, between, at what it pays - how many are open at one end, and how many t... |
 | 3025 | 10 | `VBox prices()` | The section: its head with the (i), the line of counts, and every good behind "details". |
 | 3037 | 1 | **type** `record GoodLine(Good good, String figure, String says, double at, String flow)` | One good as a row of the fold, as words (pure): what the probe reads. |
-| 3040 | 25 | `List<GoodLine> goodLines()` | Every good, as the fold draws it: the both-ways goods with their place in the band, the rest with their words. |
-| 3075 | 49 | `javafx.scene.Node goodsRows()` | The fold: the goods traded both ways on their bands, the world's floor and ceiling a rule through every row; then those open at one end and those their seller prices, in words. |
+| 3040 | 30 | `List<GoodLine> goodLines()` | Every good, as the fold draws it: the both-ways goods with their place in the band, the rest with their words. |
+| 3080 | 49 | `javafx.scene.Node goodsRows()` | The fold: the goods traded both ways on their bands, the world's floor and ceiling a rule through every row; then those open at one end and those their seller prices, in words. |
 

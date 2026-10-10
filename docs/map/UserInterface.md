@@ -1,6 +1,6 @@
-# UserInterface.java - 6,134 lines · 139 methods · 42 constants · interface
+# UserInterface.java - 6,153 lines · 140 methods · 42 constants · interface
 
-`ham/citybuildersim/ui/UserInterface.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/UserInterface.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The window: the stage and its theme, the header - the clock and the speed,
 > the money block, five headline tiles, the "Needs you" chip, the rating and
@@ -80,10 +80,10 @@
 | 5502 | · · what an urgent notice gets |
 | 5512 | · · the list |
 | 5559 | · the envelope |
-| 5750 | TOASTS (0.7.20) |
-| 5833 | TIME, AND WHAT THE MONTH IS WORTH |
-| 5985 | THE CHART OVER THE WHOLE WINDOW (0.7.23) |
-| 6102 | TWELVE PIPS, AND ONE OF THEM MOVED. |
+| 5760 | TOASTS (0.7.20) |
+| 5843 | TIME, AND WHAT THE MONTH IS WORTH |
+| 5995 | THE CHART OVER THE WHOLE WINDOW (0.7.23) |
+| 6121 | TWELVE PIPS, AND ONE OF THEM MOVED. |
 
 ## Constants
 
@@ -128,9 +128,9 @@
 | 5042 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
 | 5045 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
 | 5486 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 5773 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 5776 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 5779 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 5783 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 5786 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 5789 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
 
 ## Fields (state)
 
@@ -223,17 +223,17 @@
 | 5382 | `private boolean railJump` | Set for exactly one clearMenu, by goHome(). |
 | 5489 | `private boolean inboxOpen` | Whether the list is dropped down. |
 | 5492 | `private String inboxExpanded` | Which notice's body is unfolded, by key. |
-| 5782 | `private final java.util.Set<String> toasted` | The notices already toasted, as key@raised. |
-| 6001 | `private javafx.scene.Node chartFull` | The chart's pane while it has the window, its clock line, and what closes it; null otherwise. |
-| 6002 | `private Label chartFullClock` |  |
-| 6003 | `private java.util.function.Consumer<Boolean> chartFullLeave` |  |
-| 6006 | `private String chartFullOwner` | The screen that laid the pane (a clearMenu() name): its own redraws keep it, any other screen closes it (0.7.61: City History's chart, the land office's map). |
+| 5792 | `private final java.util.Set<String> toasted` | The notices already toasted, as key@raised. |
+| 6011 | `private javafx.scene.Node chartFull` | The chart's pane while it has the window, its clock line, and what closes it; null otherwise. |
+| 6012 | `private Label chartFullClock` |  |
+| 6013 | `private java.util.function.Consumer<Boolean> chartFullLeave` |  |
+| 6016 | `private String chartFullOwner` | The screen that laid the pane (a clearMenu() name): its own redraws keep it, any other screen closes it (0.7.61: City History's chart, the land office's map). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 6082 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
+| 53 | 6101 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
 
 ### THE SCREENS, one class each since 2026-09-18, in the order the rail (lines 57-79)
 
@@ -469,52 +469,53 @@
 |---:|---:|---|---|
 | 5494 | 64 | `private void refreshInbox()` |  |
 
-### the envelope (lines 5559-5749)
+### the envelope (lines 5559-5759)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 5566 | 48 | `private void refreshInboxButton()` |  |
 | 5628 | 58 | `private VBox noticeRow(Notice notice)` | One notice: its title, and its body when it is unfolded. |
-| 5687 | 14 | `private String dealLabel(String key)` |  |
-| 5711 | 38 | `private void deal(Notice notice)` | Take the player to the control that answers it. |
+| 5687 | 16 | `private String dealLabel(String key)` |  |
+| 5713 | 46 | `private void deal(Notice notice)` | Take the player to the control that answers it. |
 
-### TOASTS (0.7.20) (lines 5750-5832)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5785 | 13 | `private void refreshToasts()` | New urgent notices become toasts; read or settled ones leave the stack. |
-| 5800 | 32 | `private Label toast(Notice notice)` | One toast: the notice's title, a timer, and a door to the inbox. |
-
-### TIME, AND WHAT THE MONTH IS WORTH (lines 5833-5984)
+### TOASTS (0.7.20) (lines 5760-5842)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5852 | 64 | `private void startClock()` | Starts the frame loop. |
-| 5926 | 15 | `private void holdPresses()` | A PRESS IS NEVER REBUILT AWAY (0.7.40; see the clock's fields): a press anywhere in the window holds the clock's redraw, and the release lets it go once the release - and the click the scene makes of it - has been del... |
-| 5943 | 4 | `private void letAllGo()` | No button is down after all: a move without one, or the window gone from under the pointer. |
-| 5949 | 5 | `private void setPressHeld(boolean held)` | Holds the redraw, or lets it go - and says so on the scene, for TimeChart. |
-| 5961 | 4 | `void redrawSoon()` | The open screen redrawn on the next frame no button is held on (0.7.40): for a change made as a press takes the focus - Finances' ask, set as its box is left - which a redraw at once would take from under the release. |
-| 5967 | 4 | `static boolean pressHeld(javafx.scene.Node node)` | Whether a mouse button is down in the scene a node is in (0.7.40): what a redraw on a timer waits for. |
-| 5979 | 5 | `private void paintDay()` | The day, repainted in place. |
+| 5795 | 13 | `private void refreshToasts()` | New urgent notices become toasts; read or settled ones leave the stack. |
+| 5810 | 32 | `private Label toast(Notice notice)` | One toast: the notice's title, a timer, and a door to the inbox. |
 
-### THE CHART OVER THE WHOLE WINDOW (0.7.23) (lines 5985-6101)
+### TIME, AND WHAT THE MONTH IS WORTH (lines 5843-5994)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6014 | 10 | `void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave)` | Lays the chart's pane over the whole window. |
-| 6026 | 7 | `void closeChartFullScreen()` | Takes the pane off the window; the screen redraws its page. |
-| 6035 | 4 | `private void leaveChartFullScreen(boolean redraw)` | Esc, P or another screen: the screen's own way back, which calls closeChartFullScreen(). |
-| 6041 | 1 | `boolean isChartFullScreen()` | Whether a chart has the whole window. |
-| 6044 | 1 | `boolean isShowing(String screen)` | Whether this screen - a clearMenu() name, "showHistoryMenu" - is the one on show: a late redraw asks before it draws. |
-| 6047 | 4 | `String clockWords()` | The date and what the clock is doing, for a line that stands in for the header: "14 February 2151 · paused". |
-| 6053 | 8 | `private static boolean overAChart(Object target)` | Whether a wheel event's target is inside a chart that takes the wheel (TimeChart.WHEEL_OWNER). |
-| 6075 | 11 | `private boolean stopIfSomethingHappened()` | Stops the clock when the city has something to say, if the player wants that. |
-| 6088 | 7 | `private void setClockRunning(boolean run)` | Play, or pause. |
-| 6097 | 4 | `private static String speedLabel(int index)` | "0.25×", "1×", "10×" - no trailing zeros on the round ones; the header's speed reads it (0.7.21: "×", the mockups', for "x"). |
+| 5862 | 64 | `private void startClock()` | Starts the frame loop. |
+| 5936 | 15 | `private void holdPresses()` | A PRESS IS NEVER REBUILT AWAY (0.7.40; see the clock's fields): a press anywhere in the window holds the clock's redraw, and the release lets it go once the release - and the click the scene makes of it - has been del... |
+| 5953 | 4 | `private void letAllGo()` | No button is down after all: a move without one, or the window gone from under the pointer. |
+| 5959 | 5 | `private void setPressHeld(boolean held)` | Holds the redraw, or lets it go - and says so on the scene, for TimeChart. |
+| 5971 | 4 | `void redrawSoon()` | The open screen redrawn on the next frame no button is held on (0.7.40): for a change made as a press takes the focus - Finances' ask, set as its box is left - which a redraw at once would take from under the release. |
+| 5977 | 4 | `static boolean pressHeld(javafx.scene.Node node)` | Whether a mouse button is down in the scene a node is in (0.7.40): what a redraw on a timer waits for. |
+| 5989 | 5 | `private void paintDay()` | The day, repainted in place. |
 
-### TWELVE PIPS, AND ONE OF THEM MOVED. (lines 6102-6134)
+### THE CHART OVER THE WHOLE WINDOW (0.7.23) (lines 5995-6120)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6123 | 11 | `static void popPip(Region pip)` | A quarter second of "that landed", on the figure the month just changed - and since 0.7.26 on the land office's figures the month moved. |
+| 6024 | 10 | `void showChartFullScreen(Region pane, Label clockLine, java.util.function.Consumer<Boolean> leave)` | Lays the chart's pane over the whole window. |
+| 6036 | 7 | `void closeChartFullScreen()` | Takes the pane off the window; the screen redraws its page. |
+| 6045 | 4 | `private void leaveChartFullScreen(boolean redraw)` | Esc, P or another screen: the screen's own way back, which calls closeChartFullScreen(). |
+| 6051 | 1 | `boolean isChartFullScreen()` | Whether a chart has the whole window. |
+| 6054 | 1 | `boolean isShowing(String screen)` | Whether this screen - a clearMenu() name, "showHistoryMenu" - is the one on show: a late redraw asks before it draws. |
+| 6061 | 3 | `double clockMonths()` | The game's clock in months (0.7.97, batch O13): the month and the share of the next the clock has run - what the map's boats sail on (MapView.BOAT_GAME_MONTHS). |
+| 6066 | 4 | `String clockWords()` | The date and what the clock is doing, for a line that stands in for the header: "14 February 2151 · paused". |
+| 6072 | 8 | `private static boolean overAChart(Object target)` | Whether a wheel event's target is inside a chart that takes the wheel (TimeChart.WHEEL_OWNER). |
+| 6094 | 11 | `private boolean stopIfSomethingHappened()` | Stops the clock when the city has something to say, if the player wants that. |
+| 6107 | 7 | `private void setClockRunning(boolean run)` | Play, or pause. |
+| 6116 | 4 | `private static String speedLabel(int index)` | "0.25×", "1×", "10×" - no trailing zeros on the round ones; the header's speed reads it (0.7.21: "×", the mockups', for "x"). |
+
+### TWELVE PIPS, AND ONE OF THEM MOVED. (lines 6121-6153)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6142 | 11 | `static void popPip(Region pip)` | A quarter second of "that landed", on the figure the month just changed - and since 0.7.26 on the land office's figures the month moved. |
 

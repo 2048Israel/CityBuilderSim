@@ -1,6 +1,6 @@
 # CareType.java - 133 lines · 6 methods · 1 constants · model
 
-`ham/citybuildersim/CareType.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CareType.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > What a healthcare building actually does.
 > 
@@ -37,14 +37,14 @@
 
 **Uses:** [AgeBand](AgeBand.md) (7), [PopulationCohorts](PopulationCohorts.md) (1)
 
-**Used by (26):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [CityNeeds](CityNeeds.md), [ConstructionScreen](ConstructionScreen.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [Inbox](Inbox.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (29):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionScreen](ConstructionScreen.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [Inbox](Inbox.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
 | 40 | `CareType.NONE` | Everything that is not a healthcare building. |
-| 43 | `CareType.CHILDCARE` | Daycare and nurseries: babies and children. |
+| 43 | `CareType.CHILDCARE` | Childcare centres (the daycares until 0.7.71): babies and children. |
 | 46 | `CareType.GENERAL` | Clinics and hospitals: the whole city, and the sick rate comes from here. |
 | 49 | `CareType.SENIOR` | Home care through long-term care: seniors. |
 | 52 | `CareType.BURIAL` | Cemeteries. |

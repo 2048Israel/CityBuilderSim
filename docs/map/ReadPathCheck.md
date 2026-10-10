@@ -1,6 +1,6 @@
-# ReadPathCheck.java - 1,610 lines · 9 methods · 0 constants · harnesses
+# ReadPathCheck.java - 1,723 lines · 9 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReadPathCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Reading the city must not change the city.
 > 
@@ -36,19 +36,19 @@
 > would pass a before/after comparison; one that accumulates shows up as a field
 > that drifts further the more the screens are opened.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (27), [Game](Game.md) (25), [FundView](FundView.md) (23), [Bank](Bank.md) (18), [CityNeeds](CityNeeds.md) (16), [Good](Good.md) (15), [PolicyPreview](PolicyPreview.md) (11), [OrderBook](OrderBook.md) (10), [Sectors](Sectors.md) (8), [CorporateBond](CorporateBond.md) (7), [Sector](Sector.md) (7), [CareType](CareType.md) (7), [Retail](Retail.md) (6), [ChartModel](ChartModel.md) (6), [BuildCard](BuildCard.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [TaxPolicy](TaxPolicy.md) (5), [Resource](Resource.md) (5), [TilePainter](TilePainter.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (4), [Equity](Equity.md) (4), [FundLedger](FundLedger.md) (4), [BondMarket](BondMarket.md) (4), [EducationType](EducationType.md) (4), [Founding](Founding.md) (4), [World](World.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Mortgage](Mortgage.md) (3), [TreasuryFund](TreasuryFund.md) (3), [ForeignAccounts](ForeignAccounts.md) (3)... and 36 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (27), [Game](Game.md) (25), [Good](Good.md) (25), [FundView](FundView.md) (23), [Bank](Bank.md) (18), [CityNeeds](CityNeeds.md) (16), [BuildCard](BuildCard.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (14), [Ports](Ports.md) (14), [PolicyPreview](PolicyPreview.md) (11), [OrderBook](OrderBook.md) (10), [Sectors](Sectors.md) (8), [Sector](Sector.md) (8), [Resource](Resource.md) (8), [CorporateBond](CorporateBond.md) (7), [Retail](Retail.md) (7), [CareType](CareType.md) (7), [Refining](Refining.md) (7), [ChartModel](ChartModel.md) (6), [Equity](Equity.md) (5), [TaxPolicy](TaxPolicy.md) (5), [TilePainter](TilePainter.md) (5), [BusinessDebtManager](BusinessDebtManager.md) (4), [FundLedger](FundLedger.md) (4), [BondMarket](BondMarket.md) (4), [EducationType](EducationType.md) (4), [Founding](Founding.md) (4), [World](World.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [Mortgage](Mortgage.md) (3)... and 43 more
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 1211 | · a city with money moving in every sector |
-| 1292 | · the FIRST read, which is the hard one |
-| 1369 | · read it, and read it again |
-| 1398 | · and the specific one item 7 was about |
-| 1466 | · the tax the city takes is the tax it shows |
-| 1483 | · a rate change reaches the treasury at once |
-| 1516 | · the build advice's reads, after a load (0.7.51) |
+| 1322 | · a city with money moving in every sector |
+| 1403 | · the FIRST read, which is the hard one |
+| 1480 | · read it, and read it again |
+| 1509 | · and the specific one item 7 was about |
+| 1577 | · the tax the city takes is the tax it shows |
+| 1594 | · a rate change reaches the treasury at once |
+| 1627 | · the build advice's reads, after a load (0.7.51) |
 
 ## Fields (state)
 
@@ -62,14 +62,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 1566 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
+| 45 | 1679 | **type** `public class ReadPathCheck` | Reading the city must not change the city. |
 | 51 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 56 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 68 | 162 | `static void bankPrint(Game g, Map<String, Double> into)` | The bank's own fields beside NewGameCheck's (0.7.7): its price is now struck from records it keeps, and a read that struck it again would move the price and nothing in the shared snapshot. |
 | 232 | 5 | `static int restingOrders(BondMarket bm)` | What rests on every bond's book. |
-| 246 | 956 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
-| 1203 | 322 | `public static void main(String[] args) throws Exception` |  |
-| 1527 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
-| 1572 | 30 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
-| 1603 | 7 | `static void cleanUp(Path root)` |  |
+| 246 | 1067 | `static void readEverything(Game g)` | Everything a screen can ask the game, called the way a player browsing would call it. |
+| 1314 | 322 | `public static void main(String[] args) throws Exception` |  |
+| 1638 | 36 | `static Map<String, Double> adviceReads(Game g)` | The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. |
+| 1683 | 32 | `static void afterALoad(Game g, GameFiles files)` | THE BUILD ADVICE READS SAVED STATE (0.7.51): its new reads - the businesses' growth, the land office's price, the high schools' leavers (not getNewDiplomas(), this month's flow, NaN after a load), the higher schools' ... |
+| 1716 | 7 | `static void cleanUp(Path root)` |  |
 

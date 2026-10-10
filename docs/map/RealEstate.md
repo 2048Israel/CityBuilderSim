@@ -1,6 +1,6 @@
-# RealEstate.java - 945 lines · 90 methods · 9 constants · sectors
+# RealEstate.java - 949 lines · 91 methods · 9 constants · sectors
 
-`ham/citybuildersim/sectors/RealEstate.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/RealEstate.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The landlords. Own every home in the city and let them by the month.
 > 
@@ -64,9 +64,9 @@
 > rentBreakEven() - is what the EXISTING stock costs to hold this month, per
 > ... (12 more lines in the source)
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (12), [FamilyModel](FamilyModel.md) (10), [Game](Game.md) (5), [PayTier](PayTier.md) (3), [Trade](Trade.md) (3), [Good](Good.md) (2), [Retail](Retail.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (12), [FamilyModel](FamilyModel.md) (10), [Game](Game.md) (5), [PayTier](PayTier.md) (3), [Trade](Trade.md) (3), [Good](Good.md) (2), [Retail](Retail.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
-**Used by (16):** [BusinessInvestment](BusinessInvestment.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
+**Used by (18):** [BuildAdvice](BuildAdvice.md), [BusinessInvestment](BusinessInvestment.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -80,7 +80,7 @@
 | 445 | THE SALE, at the bottom of the month |
 | 479 | PLANNING - off jobs, and off the segment that is short |
 | 811 | THE SCREEN |
-| 882 | SAVE, RESET, THE REFORM |
+| 886 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 93 | 853 | **type** `public final class RealEstate extends Sector` | The landlords. |
+| 93 | 857 | **type** `public final class RealEstate extends Sector` | The landlords. |
 
 ### the prices (lines 132-142)
 
@@ -244,20 +244,21 @@
 | 802 | 4 | `public String noRetirementReason(boolean distress)` |  |
 | 809 | 1 | `public double unitsOf(BuildingsTemplate t)` | People, not doors: the measure the spare-capacity rule counts in. |
 
-### THE SCREEN (lines 811-881)
+### THE SCREEN (lines 811-885)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 816 | 1 | `public String inputLabel()` |  |
-| 819 | 1 | `public boolean hasPlantBlock()` |  |
-| 822 | 59 | `public List<Line> ownLines(Game game)` |  |
+| 817 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a landlord, whose middle line is its net operating income, before its mortgages. |
+| 820 | 1 | `public String inputLabel()` |  |
+| 823 | 1 | `public boolean hasPlantBlock()` |  |
+| 826 | 59 | `public List<Line> ownLines(Game game)` |  |
 
-### SAVE, RESET, THE REFORM (lines 882-945)
+### SAVE, RESET, THE REFORM (lines 886-949)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 887 | 13 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 902 | 13 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 917 | 13 | `protected void resetExtras()` |  |
-| 933 | 12 | `protected void redenominateExtras(double scale)` | The prices and the per-capacity costs are money; the doors, the weights and the rates are not. |
+| 891 | 13 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 906 | 13 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 921 | 13 | `protected void resetExtras()` |  |
+| 937 | 12 | `protected void redenominateExtras(double scale)` | The prices and the per-capacity costs are money; the doors, the weights and the rates are not. |
 

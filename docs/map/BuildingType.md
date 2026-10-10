@@ -1,10 +1,10 @@
-# BuildingType.java - 225 lines · 0 methods · 0 constants · model
+# BuildingType.java - 239 lines · 0 methods · 0 constants · model
 
-`ham/citybuildersim/BuildingType.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildingType.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
-**Used by (46):** [Agriculture](Agriculture.md), [Automotive](Automotive.md), [BooksCheck](BooksCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingVisual](BuildingVisual.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessServices](BusinessServices.md), [CityNeeds](CityNeeds.md), [Construction](Construction.md), [CrimeCheck](CrimeCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [HouseholdCheck](HouseholdCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [Rail](Rail.md), [RealEstate](RealEstate.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md)
+**Used by (51):** [Agriculture](Agriculture.md), [Automotive](Automotive.md), [BooksCheck](BooksCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingVisual](BuildingVisual.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessServices](BusinessServices.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [Construction](Construction.md), [CrimeCheck](CrimeCheck.md), [EconomyManager](EconomyManager.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [HouseholdCheck](HouseholdCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [Materials](Materials.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [Rail](Rail.md), [RealEstate](RealEstate.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [StrategicReserve](StrategicReserve.md)
 
 ## Enum constants
 
@@ -28,10 +28,11 @@
 | 204 | `BuildingType.AUTOMOTIVE` | The automobile industry. |
 | 214 | `BuildingType.LUXURY` | ...and for the ninth time, on the end. |
 | 223 | `BuildingType.HOSPITALITY` | ...and for the tenth time, on the end. |
+| 237 | `BuildingType.PORTS` | ...and for the eleventh time, on the end. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 215 | **type** `public enum BuildingType` |  |
+| 11 | 229 | **type** `public enum BuildingType` |  |
 

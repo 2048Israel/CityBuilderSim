@@ -1,6 +1,6 @@
 # TreasuryJournal.java - 255 lines · 16 methods · 0 constants · model
 
-`ham/citybuildersim/TreasuryJournal.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryJournal.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The treasury's journal: every movement of the city's cash that is neither a
 > budget line nor paper raised or repaid, recorded by name as it happens, so
@@ -64,7 +64,7 @@
 >   buyForeignCurrency()      JOURNALLED  "Bought reserves" - no budget line
 > ... (72 more lines in the source)
 
-**Used by (10):** [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [EducationCheck](EducationCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LandCheck](LandCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md)
+**Used by (11):** [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [EducationCheck](EducationCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LandCheck](LandCheck.md), [OilCheck](OilCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
-# BusinessServices.java - 270 lines · 8 methods · 0 constants · sectors
+# BusinessServices.java - 274 lines · 9 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Somebody else's work, done here, paid for from outside.
 > 
@@ -58,7 +58,7 @@
 > shedding two thousand jobs to the Philippines and India inside a decade.
 > Boom and bleed, documented. See claude/business-services.md.
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (9), [Game](Game.md) (3), [JobType](JobType.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (9), [Game](Game.md) (3), [JobType](JobType.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Formats](Formats.md) (2), [SectorStatements](SectorStatements.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (3):** [BusinessServicesCheck](BusinessServicesCheck.md), [LongPlaytest](LongPlaytest.md), [Sectors](Sectors.md)
 
@@ -73,7 +73,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 71 | 200 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
+| 71 | 204 | **type** `public final class BusinessServices extends Sector` | Somebody else's work, done here, paid for from outside. |
 | 73 | 11 | `public BusinessServices()` |  |
 | 86 | 5 | `public double getSeats()` | Seats of every kind, staffed or not - the sector in one number. |
 | 99 | 3 | `public double priceOfSeat(Good g)` | What a seat-month of each kind fetches in the city's own money. |
@@ -87,9 +87,10 @@
 | 212 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
 | 218 | 10 | `private static String licenceLabel(JobType job)` | A licence, in words, without reaching into the UI for it - a sector must not depend on the screen that draws it. |
 
-### the screen (lines 229-270)
+### the screen (lines 229-274)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 232 | 38 | `public List<Line> ownLines(Game game)` |  |
+| 273 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a service, read by its revenue a worker. |
 
