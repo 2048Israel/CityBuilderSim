@@ -1240,10 +1240,21 @@ public class SaveFileCheck {
          * repairs were that line until Jerus's A15 made them a budget line;
          * a fixture has to cause what it tests. At least one month, so the
          * month after the dials is never the one read without it.
+         *
+         * ...AND THE SHOPS' SHELF AT HALF WHAT WAS ASKED FOR (0.7.102), for
+         * the same reason: once 0.7.102's books moved this city its shops
+         * handed over every basket asked for in every one of the 240 months
+         * the loop may wait (a probe, runs/fixP3-notes.md), so "the share the
+         * shops handed over" would cross the save at the whole - the value a
+         * save that forgot it loads with. Half of last month's ask on the
+         * shelf before each waited month makes the month the loop stops on
+         * one the shops fell short in.
          */
         int extraMonths = 0;
         do {
             full.buyForeignCurrency(1);
+            ham.citybuildersim.sectors.Retail shops = full.getSectors().retail();
+            shops.setStoreInventory((int) Math.min(Integer.MAX_VALUE, shops.getHouseholdWant() / 2));
             full.simulateMonths(1);
         } while (++extraMonths < 240
                 && (full.getHealth().getHungerRate() <= 0

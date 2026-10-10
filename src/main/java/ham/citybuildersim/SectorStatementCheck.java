@@ -134,12 +134,12 @@ public class SectorStatementCheck {
             bondsRepaidMonths, bondsRepaidOver, equityStatements;
 
     /** ...and S2's (0.7.75): sector-months with each of the new lines, and with each flow of the debt schedule. */
-    /** ...and 0.7.102's (A16): sector-months that expensed some of what their borrowing cost them up front. */
-    static int expensedMonths;
-
     static int upfrontMonths, bondCostMonths, foundedMonths, issuedMonths, boughtBackMonths, derivedMonths,
             stockMonths, landMonths, buildingsMonths, abroadMonths, schedules, scheduleBorrowed, scheduleRepaid,
             scheduleWrittenOff, lentAfterSheet;
+
+    /** ...and 0.7.102's (A16): sector-months that expensed some of what their borrowing cost them up front. */
+    static int expensedMonths;
 
     public static void main(String[] args) throws Exception {
         Locale.setDefault(Locale.CANADA);
