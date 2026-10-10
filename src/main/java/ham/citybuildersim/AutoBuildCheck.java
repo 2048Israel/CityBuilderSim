@@ -618,6 +618,11 @@ public class AutoBuildCheck {
         int months = 36, drift = 0, ordersBefore = a.getOrders();
         // Ground for both, the same: the decades ended short of it, and a city that can build nothing proves little.
         for (Game c : new Game[] { g, back }) c.getLandManager().setOwnedSqFt(c.getLandManager().getOwnedSqFt() + 50_000_000L);
+        // ...and the budget's room for both, the same (withRoom()): since 0.7.102 the decades end with the city spending past
+        // its revenue - $73,708k a month against $59,907k at the first pass after them, the repairs $4,816k of it, inside the
+        // budget's spending since (A15) - every staffed service held for the budget, and a city whose budget runs nothing
+        // proves as little.
+        for (Game c : new Game[] { g, back }) withRoom(c);
         double worst = 0;
         String first = null;
         for (int i = 0; i < months; i++) {
@@ -869,12 +874,17 @@ public class AutoBuildCheck {
      * education bills - four medical schools and a university, three times
      * its revenue - cleared, ROOM more property tax, and its accounts
      * refreshed, so the next pass's budget runs every staffed order it
-     * weighs; the pass reads the accounts first.
+     * weighs; the pass reads the accounts first. And since 0.7.102 the
+     * arrears it paid down in the month cleared too: they are inside the
+     * budget's spending since then (A15), and the walk's town paid down
+     * $97,246k of them in the month before its pass, past ROOM, which left
+     * its budget $58,386k short of running any clinic.
      */
     static void withRoom(Game g) {
         EconomyManager em = g.getEconomyManager();
         em.setHealthcare(0, 0);
         em.setEducation(0, 0);
+        em.setArrearsPaidDown(0);
         em.setTotalPropertyTax(em.getTotalPropertyTax() + ROOM);
         em.refreshGovernmentAccounts(0, 0, 0, 0);
     }
