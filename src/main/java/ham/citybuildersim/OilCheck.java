@@ -145,13 +145,15 @@ import java.nio.file.Path;
  *      crude market from the wells first and the world for the rest, its
  *      book what it paid; settled at the next strike - the part bought
  *      abroad the audit's "- city ReserveFill", the part from the wells
- *      Oil's sale banked at the same strike, the whole journalled, the
+ *      Oil's sale banked at the same strike, the whole on the budget's
+ *      "Crude for the reserve" since 0.7.102 (A15; journalled before), the
  *      reserve's cash exact; a release sold to the refiners pro rata with
  *      the wells, its book falling at average cost - and since 0.7.103
  *      (batch P4, Jerus's A8) what they do not take of it STAYS IN THE
  *      TANKS, nothing shipped ("+ city ReserveSales" none), the treasury
- *      taking in what the refiners paid to the bit (it shipped at the
- *      export price from 0.7.85); each lever the player's decision,
+ *      taking in what the refiners paid to the bit, on the budget's "Crude
+ *      sold from the reserve" (it shipped at the export price from 0.7.85);
+ *      each lever the player's decision,
  *      a release cancelling a fill; the crude among the goods held, the
  *      goods footing to the balance of payments and the audit closing
  *      every month; and the reserve crossing a save to settle the same.
@@ -512,10 +514,15 @@ public class OilCheck {
                 reserve.getSettledImports() == boughtAbroad && Math.abs(auditLine(a, "- city ReserveFill") - boughtAbroad) <= .005
                         && auditLine(a, "+ city ReserveSales") == 0,
                 String.format("$%,.2fk", auditLine(a, "- city ReserveFill")));
-        report("...the treasury paid the whole, at home and abroad, and the bridge names it: the reserve's cash, exact",
+        // ...ON THE BUDGET'S OWN LINE SINCE 0.7.102 (Jerus's A15: every monthly treasury flow inside the
+        // budget's totals). Before: "...and the bridge names it", the journal's "Bought crude for the strategic
+        // reserve" at the whole. Now the budget's "Crude for the reserve" is the whole, and the journal names none.
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        report("...the treasury paid the whole, at home and abroad, and the budget carries it: the reserve's cash, exact",
                 same(reserve.getSettledBought(), boughtHome + boughtAbroad)
-                        && same(journalled(g, "Bought crude for the strategic reserve"), -(boughtHome + boughtAbroad)),
-                String.format("$%,.2fk", -journalled(g, "Bought crude for the strategic reserve")));
+                        && same(na.getReserveCrudeBought(), boughtHome + boughtAbroad)
+                        && Double.isNaN(journalled(g, "Bought crude for the strategic reserve")),
+                String.format("$%,.2fk", na.getReserveCrudeBought()));
         report("...and what it paid the wells is Oil's sale, banked at the same strike: a pool paying a pool, not listed",
                 same(oil.statement().sold.get(Good.CRUDE).atHome, boughtHome),
                 String.format("$%,.2fk", oil.statement().sold.get(Good.CRUDE).atHome));
@@ -599,13 +606,15 @@ public class OilCheck {
         quietly(() -> { g.simulateMonths(1); twin.simulateMonths(1); });
         worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
         MoneyAudit.Result b = g.getLastMoneyAudit();
+        // ...on the budget's revenue line since 0.7.102 (A15); before, journalled as "Sold crude from the strategic reserve".
         report("...the strike after settles what the refiners took: the treasury takes in the reserve's sale to the bit,"
-                        + " journalled, and nothing as + city ReserveSales",
+                        + " on the budget's line, and nothing as + city ReserveSales",
                 same(reserve.getSettledSold(), soldHome) && reserve.getSettledExports() == 0
                         && auditLine(b, "+ city ReserveSales") == 0
-                        && same(journalled(g, "Sold crude from the strategic reserve"), soldHome),
-                String.format("$%,.2fk, the treasury's cash %+,.2fk over the month", journalled(g,
-                        "Sold crude from the strategic reserve"), g.getCash() - cashBefore));
+                        && same(na.getReserveCrudeSold(), soldHome)
+                        && Double.isNaN(journalled(g, "Sold crude from the strategic reserve")),
+                String.format("$%,.2fk, the treasury's cash %+,.2fk over the month", na.getReserveCrudeSold(),
+                        g.getCash() - cashBefore));
         report("...and the reloaded city settles the same, and holds the same, to the bit",
                 same(twin.getReserve().getSettledSold(), reserve.getSettledSold())
                         && same(twin.getReserve().getSettledExports(), reserve.getSettledExports())

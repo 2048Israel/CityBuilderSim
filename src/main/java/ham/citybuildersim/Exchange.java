@@ -1067,10 +1067,15 @@ public class Exchange {
      * THE WITHDRAWAL OVER THE DEFAULT (0.7.48, C1): what the month's cash
      * could not pay of the withdrawal (TreasuryFund.getToRaise()) is sold
      * from the market book pro rata - each company's part the shares' share
-     * of the market book, held / (held + its bonds) - at fair value, with
-     * the rebalancing and over-the-limit sales, whichever is largest; and
-     * while the dial is over the default (TreasuryFund.sellsToPay()) the rule
-     * buys nothing. Never the rescue book, the preferred or the warrants.
+     * of the market book, held / (held + its bonds) - with the rebalancing
+     * and over-the-limit sales, whichever is largest; and while the dial is
+     * over the default (TreasuryFund.sellsToPay()) the rule buys nothing.
+     * Never the rescue book, the preferred or the warrants. Asked at fair
+     * value until 0.7.102, where nobody bid (SaveFileCheck's town at 10%
+     * asked D$467k and was paid D$52k); since, when the withdrawal's part is
+     * the largest, at the desk's bid, fair value less
+     * TreasuryFund.RULE_PREMIUM (Jerus's A21) - the mirror of the rule's buy
+     * at the desk's ask (C3), and the price the emigrants ask at.
      *
      * THE HAND, SINCE 0.7.39 (the project's spec-fund-0739.md, D2 and B1): at
      * the price the player named, or fair value when it named none; a buy no
@@ -1107,9 +1112,13 @@ public class Exchange {
                 double over = mine - TreasuryFund.OWNERSHIP_LIMIT * register.getShares(c);
                 double rebalance = excess > 0 && held > 0 ? mine * excess / held : 0;
                 // ...and its part of what the withdrawal must raise (C1): the market book pro rata.
-                if (toRaise > 0 && held > 0) rebalance = Math.max(rebalance, mine * toRaise * held / (held + fundBondsValue) / held);
-                double q = Math.min(mine, Math.max(over, rebalance));
-                if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
+                double raise = toRaise > 0 && held > 0 ? mine * toRaise * held / (held + fundBondsValue) / held : 0;
+                double q = Math.min(mine, Math.max(over, Math.max(rebalance, raise)));
+                // ...asked at the desk's bid when the withdrawal is what sells it (0.7.102, Jerus's A21): at fair
+                // value nobody bid, and a sale the dial forces has to meet the price somebody stands ready to pay
+                // - C3's mirror, the rule buying at the desk's ask. Over the limit or over its weight, fair value.
+                double ask = raise > Math.max(over, rebalance) ? fair[c] * (1 - TreasuryFund.RULE_PREMIUM) : fair[c];
+                if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.SELL, ask, q);
             }
             if (!(excess > 0) && cash > 0 && !fund.sellsToPay()) {
                 double target = TreasuryFund.EQUITY_WEIGHT * value;

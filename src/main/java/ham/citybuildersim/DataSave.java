@@ -1962,6 +1962,23 @@ public class DataSave {
 
     public void setCityMaintenancePaid(double v){ this.cityMaintenancePaid = v; }
     public double getCityMaintenancePaid(){ return cityMaintenancePaid; }
+
+    /**
+     * THE INVESTORS' LAST WORD ON EACH SECTOR (0.7.102, Jerus's A22): what
+     * the month's investment pass decided for it and why - "Built 2 ...",
+     * "Holding: ...", a refusal - as Game.getLastInvestment() reads it, the
+     * Sectors screen's investors' line and its Investors page. Words the
+     * pass wrote inside the tick, so a load cannot rebuild them; until now a
+     * reloaded city read "nothing recorded" until its next month.
+     *
+     * NOT a SAVE_FORMAT change: an older save has no key here and Gson leaves
+     * the field null, which loads as no word for any sector - exactly what
+     * the city read after a load before this was kept.
+     */
+    private java.util.Map<String, String> lastInvestment;
+
+    public void setLastInvestment(java.util.Map<String, String> m){ this.lastInvestment = m; }
+    public java.util.Map<String, String> getLastInvestment(){ return lastInvestment; }
     public void setMonthlyMaterialImports(double v){ this.monthlyMaterialImports = v; }
     public double getMonthlyMaterialImports(){ return monthlyMaterialImports; }
     public void setMonthlyMaterialImportBill(double v){ this.monthlyMaterialImportBill = v; }

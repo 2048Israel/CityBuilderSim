@@ -324,10 +324,11 @@ public final class Sectors {
 
     /**
      * ...and the city's own crude across the edge (0.7.85): its strategic
-     * reserve's fill bought from the world and its release shipped to it, as
-     * the last strike settled them (StrategicReserve), among crude's, CITY
-     * among its buyers and sellers - the audit's "- city ReserveFill" and "+
-     * city ReserveSales", so it still foots.
+     * reserve's fill bought from the world and - until 0.7.103, when a release
+     * the refiners do not take stays in the tanks (Jerus's A8) - its release
+     * shipped to it, as the last strike settled them (StrategicReserve), among
+     * crude's, CITY among its buyers and sellers - the audit's "- city
+     * ReserveFill" and "+ city ReserveSales", so it still foots.
      */
     public TradeByGood tradeByGood(double householdCars, double householdFuel, double cityCrudeBought,
                                    double cityCrudeSold) {

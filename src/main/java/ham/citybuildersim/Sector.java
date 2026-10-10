@@ -872,6 +872,82 @@ public abstract class Sector {
     public double getBuildingsValue() { return buildingsValue; }
     public double getBondsPayable()   { return bondsPayable; }
 
+    /* -------------------------------------------------------------------
+       WHAT ITS BORROWING COST IT UP FRONT, EXPENSED AND DEDUCTED (0.7.102)
+
+       Jerus's A16: the fee the bank keeps out of a loan (0.7.7), a
+       mortgage's insurance premium paid out of its principal (0.7.11) and a
+       bond's issuing costs (0.7.12) are "deductible expenses" for the profit
+       tax. Until now each moved its equity the month it borrowed - it owed
+       the whole principal and its cash had the rest - on no statement but
+       "outside the trading result" (0.7.75, F2), and was neither taxed as a
+       cost nor in what its dividend is struck on.
+
+       HOW EACH IS BOOKED, AND WHY. Each is a cost of the debt it raised,
+       and is expensed over that debt's life, a month's share at a time,
+       beside the interest and before the profit tax: IFRS 9 deducts the
+       transaction costs of a liability held at amortised cost from what it
+       first owes (5.1.1) and spreads them over its expected life inside its
+       effective rate (Appendix A; B5.4.1 to B5.4.3) - here in equal months,
+       carried until then as an asset, its borrowing's costs still to expense.
+       A mortgage's premium and fee over its amortization
+       (Mortgage.MORTGAGE_AMORTIZATION_MONTHS, forty years: the insurance
+       covers the loan for all of it, renewals and all), a loan's fee over its
+       term (BusinessDebtManager.LOAN_TERM_MONTHS), a bond's issuing costs
+       over its term (CorporateBond.TERM_MONTHS). The book is the tax's, so no
+       deferred tax: Canada's Income Tax Act deducts the same expenses faster,
+       a fifth a year over five years (s.20(1)(e)), and that spread was tried
+       first and measured: a landlord's 5.75% premium against its rent turned
+       the test player's founding landlords to a loss for their first year
+       and a half, and AutoBuildCheck's city of decades ended with 3,022
+       people against 13,483 (runs/fixP3-notes.md). Expensed whole it would
+       have been months of rent in a month.
+
+       THE CLOCK. borrowingChargesLeft[k] is the month's charge that has k
+       months still to run. What it pays in a month is handed it at the
+       month's close (Game.deferBorrowingCosts()), its cost over its life L
+       put at L; each strike expenses every charge with a month still to run
+       (the statement's borrowingCosts) and moves them all down a month. Its
+       cash paid them when it borrowed, so bank() adds the charge back: the
+       cash moves only by the tax it saved. Saved; an older save carries
+       none - what its last months' borrowing cost moved its equity already,
+       outside the trading result, so there is nothing to expense.
+       ------------------------------------------------------------------- */
+
+    /** The longest life a cost of borrowing is expensed over, in months: a mortgage's amortization, forty years (0.7.102, A16) - the clock's length. */
+    public static final int BORROWING_COST_MOST_MONTHS = Mortgage.MORTGAGE_AMORTIZATION_MONTHS;
+
+    /** The month's charge by how many months it has still to run: index k, k months; nothing at 0. */
+    private final double[] borrowingChargesLeft = new double[BORROWING_COST_MOST_MONTHS + 1];
+
+    /** What its borrowing cost it up front this month on debts of this life, in months: expensed in equal months from the next strike. */
+    public void deferBorrowingCosts(double cost, int lifeMonths) {
+        if (!(cost > 0) || !Double.isFinite(cost)) return;
+        int life = Math.max(1, Math.min(BORROWING_COST_MOST_MONTHS, lifeMonths));
+        borrowingChargesLeft[life] += cost / life;
+    }
+
+    /** What its borrowing cost it up front and is still to expense: the sheet's asset (SectorBooks), as of now. */
+    public double getBorrowingCostsToExpense() {
+        double left = 0;
+        for (int k = 1; k <= BORROWING_COST_MOST_MONTHS; k++) {
+            if (borrowingChargesLeft[k] != 0) left += borrowingChargesLeft[k] * k;
+        }
+        return left;
+    }
+
+    /** The strike's charge: every charge with a month to run, then each a month nearer its end. */
+    private double expenseBorrowingCosts() {
+        double charge = 0;
+        for (int k = 1; k <= BORROWING_COST_MOST_MONTHS; k++) {
+            if (borrowingChargesLeft[k] != 0) charge += borrowingChargesLeft[k];
+        }
+        System.arraycopy(borrowingChargesLeft, 1, borrowingChargesLeft, 0, BORROWING_COST_MOST_MONTHS);
+        borrowingChargesLeft[BORROWING_COST_MOST_MONTHS] = 0;
+        borrowingChargesLeft[0] = 0;
+        return charge;
+    }
+
     /** Stock on hand at the price it would fetch today, every good together. */
     public double getInventoryValue() {
         double total = 0;
@@ -1653,6 +1729,8 @@ public abstract class Sector {
         public Map<String, Double> otherInputs = new LinkedHashMap<>();
         /** The part of inputs drawn from stock paid for in an earlier month - see Ledger.paidEarlier. In inputs, and added back to the cash at bank(). */
         public double paidEarlier;
+        /** What its borrowing cost it up front, the month's share of each over its debt's life (0.7.102, A16): a cost before the profit tax, paid when it borrowed, so added back to the cash at bank(). See Sector, WHAT ITS BORROWING COST IT UP FRONT. */
+        public double borrowingCosts;
         /** Buildings bought from other businesses this month, by supplier (0.7.19) - see Ledger.capitalBySupplier. */
         public Map<String, Double> capitalBySupplier = new LinkedHashMap<>();
         /**
@@ -1667,6 +1745,7 @@ public abstract class Sector {
         void scale(double s) {
             revenue *= s; inputs *= s; payroll *= s; electricity *= s; water *= s; maintenance *= s;
             paidEarlier *= s;
+            borrowingCosts *= s;
             operatingIncome *= s; interest *= s; propertyTax *= s; salesTax *= s;
             preTaxIncome *= s; profitTax *= s; netIncome *= s;
             localSales *= s; exports *= s; otherRevenue *= s; salesToHouseholds *= s;
@@ -1720,9 +1799,11 @@ public abstract class Sector {
         s.maintenance = maintenanceExpense;
         s.operatingIncome = s.revenue - s.inputs - s.payroll - s.electricity - s.water - s.maintenance;
         s.interest = interestExpense;
+        // ...and what its borrowing cost it up front, each over its debt's life (0.7.102, A16).
+        s.borrowingCosts = expenseBorrowingCosts();
         s.propertyTax = propertyTaxExpense;
         s.salesTax = 0;
-        s.preTaxIncome = s.operatingIncome - s.interest - s.propertyTax;
+        s.preTaxIncome = s.operatingIncome - s.interest - s.borrowingCosts - s.propertyTax;
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
     }
@@ -1753,7 +1834,7 @@ public abstract class Sector {
         // in floating point (-0.0 + 0.0 is 0.0), and a month with no credit
         // is struck exactly as it was before there were any.
         s.salesTax = capitalTaxCredit != 0 ? salesTaxRemitted + capitalTaxCredit : salesTaxRemitted;
-        s.preTaxIncome = s.operatingIncome - s.interest - s.propertyTax - s.salesTax;
+        s.preTaxIncome = s.operatingIncome - s.interest - s.borrowingCosts - s.propertyTax - s.salesTax;
         s.profitTax = Math.max(s.preTaxIncome * taxRate, 0);
         s.netIncome = s.preTaxIncome - s.profitTax;
         // ...less nothing twice: stock paid for when it was bought is a cost
@@ -1761,6 +1842,8 @@ public abstract class Sector {
         // credited back on a building is cash back on the building.
         cash += s.netIncome + s.paidEarlier;
         if (s.capitalTaxCredit != 0) cash += s.capitalTaxCredit;
+        // ...and what its borrowing cost it up front was paid when it borrowed (0.7.102): a cost now, no cash now.
+        if (s.borrowingCosts != 0) cash += s.borrowingCosts;
         pending.clear();
         rShelfShort = rShelfShortValue = 0;
         for (Output o : outputs.values()) {
@@ -1808,6 +1891,7 @@ public abstract class Sector {
         s.otherInputs = saved.otherInputs == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.otherInputs);
         s.paidEarlier = saved.paidEarlier;
+        s.borrowingCosts = saved.borrowingCosts;
         s.capitalBySupplier = saved.capitalBySupplier == null
                 ? new LinkedHashMap<>() : new LinkedHashMap<>(saved.capitalBySupplier);
         s.capitalTaxCredit = saved.capitalTaxCredit;
@@ -2474,6 +2558,10 @@ public abstract class Sector {
         for (Map.Entry<Good, Double> e : pantryUsedLastMonth.entrySet()) s.pantryUsed.put(e.getKey().name(), e.getValue());
         s.ledger = SectorState.LedgerState.of(pending);
         s.statement = SectorState.StatementState.of(statement);
+        // ...and what its borrowing cost it up front, still to expense (0.7.102, A16): to its last charge.
+        int last = BORROWING_COST_MOST_MONTHS;
+        while (last > 0 && borrowingChargesLeft[last] == 0) last--;
+        s.borrowingChargesLeft = last > 0 ? java.util.Arrays.copyOf(borrowingChargesLeft, last + 1) : null;
         s.vansKnown = vansKnown;
         // The month's trade in units (A1): through the getters, so a city
         // loaded and saved again before its first press carries it again -
@@ -2527,6 +2615,15 @@ public abstract class Sector {
         }
         pending = s.ledger == null ? new Ledger() : s.ledger.toLedger();
         if (s.statement != null) restoreStatement(s.statement.toStatement());
+        // ...and its borrowing's costs still to expense (0.7.102): an older save has none - what its borrowing
+        // cost it moved its equity the month it was paid, outside the trading result - which is nothing to expense.
+        java.util.Arrays.fill(borrowingChargesLeft, 0);
+        if (s.borrowingChargesLeft != null) {
+            for (int k = 1; k < Math.min(BORROWING_COST_MOST_MONTHS + 1, s.borrowingChargesLeft.length); k++) {
+                double v = s.borrowingChargesLeft[k];
+                borrowingChargesLeft[k] = Double.isFinite(v) ? v : 0;
+            }
+        }
         /*
          * FALSE IN A SAVE FROM BEFORE VANS, which is what the flag is for -
          * see vansKnown. It is a field on SectorState rather than an extra
@@ -2583,6 +2680,7 @@ public abstract class Sector {
         restoreStatement(new Statement());
         interestExpense = propertyTaxExpense = maintenanceExpense = 0;
         landValue = buildingsValue = bondsPayable = 0;
+        java.util.Arrays.fill(borrowingChargesLeft, 0);
         averageFill = 1;
         java.util.Arrays.fill(wages, 0);
         java.util.Arrays.fill(jobs, 0);
@@ -2606,6 +2704,7 @@ public abstract class Sector {
         landValue *= scale;
         buildingsValue *= scale;
         bondsPayable *= scale;
+        for (int k = 0; k <= BORROWING_COST_MOST_MONTHS; k++) borrowingChargesLeft[k] *= scale;
         pricePerWatt *= scale;
         pricePerWaterUnit *= scale;
         for (int i = 0; i < wages.length; i++) wages[i] *= scale;

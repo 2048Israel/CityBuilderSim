@@ -129,7 +129,7 @@ public final class TreasuryFund {
     /** ...or falls this far under EQUITY_WEIGHT: four points, the same mandate's "more than four percentage points lower than the weight in the strategic benchmark index". */
     public static final double REBALANCE_UNDER = .04;
 
-    /** The rule bids at the desk's ask: the cheapest price anybody stands ready to sell at; at fair value it met nobody (C3). */
+    /** The rule bids at the desk's ask: the cheapest price anybody stands ready to sell at; at fair value it met nobody (C3). Since 0.7.102 the withdrawal's forced sale asks at the desk's bid, this under fair value - the mirror (A21; Exchange.postFund()). */
     public static final double RULE_PREMIUM = Exchange.SPREAD / 2;
 
     /** The most of any one company's shares the rule holds: 10%, the GPFG mandate's "may not be invested in more than 10 per cent of the voting shares in an individual company" (14 May 2018). The bank's shares bought on the market count; the rescue book does not. */

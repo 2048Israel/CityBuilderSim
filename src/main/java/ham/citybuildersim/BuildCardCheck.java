@@ -574,16 +574,27 @@ public class BuildCardCheck {
         assertTrue("a department store of the city's beside theirs reads \"yours among them\"",
                 BuildCard.investors(g, store).yoursToo() && BuildCard.investors(g, store).onSite() == 4);
 
-        // After a load the word is gone until a month runs - and the bank's planner sees the bank.
+        // After a load the word is the one saved (0.7.102, A22) - and the bank's planner sees the bank.
         quietly(() -> g.saveGame(10, "buildcardcheck"));
         Game twin = new Game(new GameFiles(root.resolve("town"), root.resolve("town-no-legacy")));
         quietly(() -> twin.loadGameSave(10));
-        boolean empty = true;
+        /*
+         * BEFORE 0.7.102: "loaded, no market card has a word until a month runs (the words are not saved)". Jerus's
+         * A22 saves them (DataSave.lastInvestment), so a loaded card reads the word its city had, card for card.
+         */
+        boolean same = true;
+        int worded = 0;
         for (BuildingsTemplate t : twin.getBuildingManager().getTemplates()) {
             if (BuildCard.kindOf(t) == BuildCard.Kind.CITY) continue;
-            empty &= BuildCard.investors(twin, t).word().isEmpty();
+            String word = BuildCard.investors(twin, t).word();
+            same &= word.equals(BuildCard.investors(g, t).word());
+            if (!word.isEmpty()) worded++;
         }
-        assertTrue("loaded, no market card has a word until a month runs (the words are not saved)", empty);
+        assertTrue("fixture: the town's market cards had words before the save (" + worded + " after it)", worded > 0);
+        assertTrue("loaded, every market card has the word it had: the words are saved (0.7.102)", same
+                && twin.getLastInvestments().equals(g.getLastInvestments()));
+        assertTrue("...while no month has run since the load (Game.hasMonthRun()), as the month's flows are not saved",
+                !twin.hasMonthRun() && g.hasMonthRun());
         BuildCard.Note lux = BuildCard.groups(twin, BuildAdvice.LUXURY, null).get(0).note();
         BuildCard.Note meals = BuildCard.groups(twin, BuildAdvice.RESTAURANTS, null).get(0).note();
         assertTrue("loaded, the customers who came and the meals wanted are not counted yet, not zero (the save"

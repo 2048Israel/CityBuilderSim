@@ -124,8 +124,8 @@ public final class SectorFlow {
     /**
      * The flow.
      *
-     * @param counted   whether the units are this month's: false after a load until a month runs (the
-     *                  sector has no word for the month - BuildCard.counted()'s rule)
+     * @param counted   whether the units are this month's: false after a load until a month runs
+     *                  (Game.hasMonthRun() - BuildCard.counted()'s rule)
      * @param note      the Build group's note for its own buildings (BuildCard.noteOf())
      * @param points    the builders' output a month, building points (Game.getConstructionOutput()); NaN for others
      * @param busy      ...and how busy they were (Construction.getUtilisation()); NaN for others
@@ -151,7 +151,8 @@ public final class SectorFlow {
     public static Flow of(Game game, Sector sector) {
         Sector.Statement st = sector.statement();
         Markets markets = game.getMarkets();
-        boolean counted = !game.getLastInvestment(sector.key()).isEmpty();
+        // ...a month run since the load (0.7.102: Game.hasMonthRun(); until then the sector's word being there, now saved).
+        boolean counted = game.hasMonthRun();
         double unknown = Double.NaN;
 
         /* ------------------------------- what went in ------------------------------- */

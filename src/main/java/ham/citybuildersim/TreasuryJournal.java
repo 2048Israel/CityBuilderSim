@@ -73,13 +73,18 @@ import java.util.List;
  *                                         line too (NationalAccounts' student loan
  *                                         interest) and is added to the cash there but
  *                                         NOT journalled, for the rule above
- *   chargeBuildingMaintenance() JOURNALLED "Repaired the city's own buildings" - the
- *                                         Government screen names it under spending's
- *                                         total, outside the budget's (a line of the
- *                                         list until 0.7.31), because
- *                                         NationalAccounts.getTotalExpenses() does not
- *                                         carry it, so the balance omits it (measured:
- *                                         the residual was exactly -repairs every month)
+ *   chargeBuildingMaintenance() not       a budget line since 0.7.102 (A15,
+ *                                         NationalAccounts' cityRepairs). It was
+ *                                         JOURNALLED "Repaired the city's own buildings"
+ *                                         until then, and named under spending's total,
+ *                                         outside the budget's, from 0.7.31: the balance
+ *                                         omitted it (measured: the residual was exactly
+ *                                         -repairs every month)
+ *   settleReserve() (0.7.85)  not         budget lines since 0.7.102 (A15): the reserve's
+ *                                         crude bought and sold, a thing bought as land
+ *                                         is. JOURNALLED "Bought crude for the strategic
+ *                                         reserve" and "Sold crude from the strategic
+ *                                         reserve" until then
  *   finalUpdateEconomy()      not         the transit fares and the bill they are set
  *                                         against: budget lines since 0.7.49 (B9). The
  *                                         fares were JOURNALLED "Took in transit fares"
@@ -88,12 +93,17 @@ import java.util.List;
  *                                         (measured: the residual was exactly +fares)
  *   settleTreasury() (0.7.0)  JOURNALLED  "Advanced by the central bank (printed)",
  *                                         "Repaid the central bank" - financing, like
- *                                         paper raised and repaid, but not paper; and
- *                                         "Paid down arrears" - owed from a month whose
- *                                         budget carried only what was paid then. The
+ *                                         paper raised and repaid, but not paper. The
  *                                         advances' interest and the remittance are
  *                                         budget lines (NationalAccounts' central bank
- *                                         pair) and are not journalled
+ *                                         pair) and are not journalled; nor, since
+ *                                         0.7.102 (A15), are the arrears it pays down
+ *                                         to the businesses - a bill of an earlier
+ *                                         month paid in this one, a budget line on the
+ *                                         budget's cash basis (NationalAccounts'
+ *                                         arrearsPaid), as the students' arrears were
+ *                                         always on the grant line; JOURNALLED "Paid
+ *                                         down arrears" until then
  *   paySubsidyIfOwed()        not         budget line (subsidies)
  *   buyLandBlock/Parcel()     not         budget line (land purchases) - EXCEPT the
  *                                         part paid out of the vault (0.7.6), JOURNALLED
@@ -133,10 +143,26 @@ import java.util.List;
  *                                         repayment of the advances, first by rule
  *   setCashForTest()          not         a fixture's hand
  *
- * The two lines marked "measured" are budget omissions, not the player's
- * decisions. They are journalled because the row is honest only if it names
- * what is actually in it; the day NationalAccounts carries repairs and fares,
- * those two record() calls come out and the residual stays where it is.
+ * The two lines marked "measured" were budget omissions, not the player's
+ * decisions. They were journalled because the row is honest only if it names
+ * what is actually in it; NationalAccounts carries the fares since 0.7.49 and
+ * the repairs since 0.7.102, and both record() calls came out with the
+ * residual where it was.
+ *
+ * WHAT STAYS OUTSIDE THE BUDGET, AND WHY (0.7.102, Jerus's A15: "every
+ * monthly treasury flow inside the budget's totals; the batch lists anything
+ * else that sits outside, and why"). The budget is the city's revenue and
+ * spending on a cash basis, with what it buys and sells that is a thing -
+ * land, buildings, crude. What is journalled is a claim or a debt changing
+ * hands, which Canada's public accounts call non-budgetary - loans,
+ * investments and advances - or is not monthly: the students' loans (lent
+ * against a repayment; their interest is a budget line), the fund's pay-ins
+ * and draws (savings moved; the dial's pay-in once a year, the transfer back
+ * a budget line), reserves bought and sold, the bank's shares and preferred
+ * (a resolution or an offer, not a month's), a bond bought back and the
+ * central bank's advances and repayments (financing, as paper raised and
+ * repaid is on the bridge's own rows), a demolition's material sold (once,
+ * at the site's end), and land paid for out of the vault (no cash moved).
  */
 public final class TreasuryJournal {
 

@@ -732,6 +732,18 @@ public class BusinessDebtManager {
     public double getFeesThisMonth() { return feesThisMonth; }
     public double getFeesThisMonth(String sector) { return feesBySector.getOrDefault(sector, 0.0); }
 
+    /**
+     * ...the part of a sector's fees that was on its mortgages (0.7.102, A16):
+     * the sector expenses what its borrowing cost it up front over each
+     * debt's life (Sector, WHAT ITS BORROWING COST IT UP FRONT) - a
+     * mortgage's over its amortization, a loan's over its term - so the
+     * month's fees are told apart. Cleared with them; read, never acted on.
+     */
+    private final Map<String, Double> mortgageFeesBySector = new LinkedHashMap<>();
+
+    /** The fees on the mortgages written for this sector this month: part of getFeesThisMonth(sector). */
+    public double getMortgageFeesThisMonth(String sector) { return mortgageFeesBySector.getOrDefault(sector, 0.0); }
+
     /*
      * THE SAME TWO FIGURES, PER SECTOR.
      *
@@ -764,6 +776,7 @@ public class BusinessDebtManager {
         repaidBySector.clear();
         feesThisMonth = 0;
         feesBySector.clear();
+        mortgageFeesBySector.clear();
         writtenThisMonth.clear();
         // ...and the month's mortgages (0.7.11): the premiums written and
         // the principal the payments took. See THE LANDLORDS' MORTGAGES.
@@ -2089,6 +2102,7 @@ public class BusinessDebtManager {
         double fee = feeOn(principal);
         feesThisMonth += fee;
         feesBySector.merge(sector, fee, Double::sum);
+        mortgageFeesBySector.merge(sector, fee, Double::sum);
         premiumsThisMonth += m.getPremium();
         premiumsBySector.merge(sector, m.getPremium(), Double::sum);
         premiumsTotal += m.getPremium();
@@ -3560,6 +3574,7 @@ public class BusinessDebtManager {
         // ...and the mortgages' flows and the insurance book (0.7.11).
         premiumsThisMonth *= scale;
         premiumsBySector.replaceAll((k, v) -> v * scale);
+        mortgageFeesBySector.replaceAll((k, v) -> v * scale);
         mortgageRepaidBySector.replaceAll((k, v) -> v * scale);
         insuredWrittenOffThisMonth.replaceAll((k, v) -> v * scale);
         insuredWrittenOffTotal.replaceAll((k, v) -> v * scale);

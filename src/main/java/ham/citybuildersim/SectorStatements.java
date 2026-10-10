@@ -325,7 +325,9 @@ public final class SectorStatements {
     public static final String REVENUE = "revenue", SALES_TAX = "salesTax", NET_REVENUE = "netRevenue",
             INPUTS = "inputs", GROSS = "gross", PAYROLL = "payroll", ELECTRICITY = "electricity", WATER = "water",
             MAINTENANCE = "maintenance", PROPERTY_TAX = "propertyTax", OPERATING = "operating", INTEREST = "interest",
-            PRE_TAX = "preTax", TAX = "tax", PROFIT = "profit", OUTSIDE = "outside", RESULT = "result";
+            PRE_TAX = "preTax", TAX = "tax", PROFIT = "profit", OUTSIDE = "outside", RESULT = "result",
+            // ...and since 0.7.102 (A16) what its borrowing cost it up front, over each debt's life, beside the interest.
+            BORROWING_COSTS = "borrowingCosts";
 
     /** The outside-the-trading-result lines' ids, in their order (F1; since 0.7.75 the bonds written off and F2's three). */
     public static final String SUBSIDY = "subsidy", ARREARS = "arrears", DEPOSIT_INTEREST = "depositInterest",
@@ -352,13 +354,20 @@ public final class SectorStatements {
      * bank kept out of a loan, a mortgage's insurance premium, a bond's
      * issuing costs - each paid out of the proceeds, so it owes the whole
      * principal and its cash had the rest. Presentation only: none of them
-     * is taxed or in what its dividend is struck on (F1's and F2's model
-     * questions stand).
+     * was taxed or in what its dividend is struck on (F1's and F2's model
+     * questions) - until 0.7.102, when Jerus's A16 made the three deductible
+     * expenses: carried as an asset from the month they are paid and
+     * expensed over each debt's life inside the profit (Sector, WHAT ITS
+     * BORROWING COST IT UP FRONT), so they move its equity through the
+     * profit and are outside nothing. Their three lines read nothing on a
+     * month struck since (SectorMonth.borrowingCostsDeferred()), and what
+     * an older save's months paid, which moved its equity then, as before.
      */
     static double[] outside(SectorBooks.SectorMonth m) {
+        boolean deferred = m.borrowingCostsDeferred();
         return new double[] { m.fromTheCity(), m.arrearsPaid(), m.depositInterest(), m.bondCoupons(),
                 m.foreignInterest(), m.forgiven(), m.writtenOff(), m.bondsWrittenOff(), -m.stolen(),
-                -m.loanFees(), -m.premiums(), -m.bondCosts() };
+                deferred ? 0 : -m.loanFees(), deferred ? 0 : -m.premiums(), deferred ? 0 : -m.bondCosts() };
     }
 
     /** The outside lines' row ids, in outside()'s order. */
@@ -396,6 +405,10 @@ public final class SectorStatements {
         b.line(PROPERTY_TAX, "Property tax", -now.propertyTax(), -then.propertyTax(), 0);
         b.subtotal(OPERATING, f.operating);
         b.line(INTEREST, "Finance costs", -now.interest(), -then.interest(), FINANCE_NOTE);
+        // ...and what its borrowing cost it up front, over each debt's life (0.7.102, A16): only when either month had some.
+        if (now.borrowingCosts() != 0 || then.borrowingCosts() != 0) {
+            b.line(BORROWING_COSTS, "Borrowing costs, over each debt's life", -now.borrowingCosts(), -then.borrowingCosts(), 0);
+        }
         b.subtotal(PRE_TAX, "PROFIT BEFORE TAX");
         b.line(TAX, "Business tax", -now.tax(), -then.tax(), 0);
         b.total(PROFIT, "PROFIT FOR THE MONTH");
@@ -451,7 +464,9 @@ public final class SectorStatements {
             SUPPLIERS = "suppliers", DEBT_SOON = "debtSoon", SOON = "soon", LATER_HEAD = "laterHead",
             LATER = "later", DEBT_WHOLE = "debtWhole", TOTAL_LIABILITIES = "totalLiabilities",
             EQUITY_HEAD = "equityHead", SHARE_CAPITAL = "shareCapital", RETAINED = "retained",
-            TOTAL_EQUITY = "totalEquity", TOTAL_CLAIMS = "totalClaims";
+            TOTAL_EQUITY = "totalEquity", TOTAL_CLAIMS = "totalClaims",
+            // ...and since 0.7.102 (A16) what its borrowing cost it up front and it is still to expense.
+            BORROWING_TO_EXPENSE = "borrowingToExpense";
 
     /** The stock's note, the buildings' and what it holds abroad - and since 0.7.75 its share capital's (R3). */
     public static final int STOCK_NOTE = 7, BUILDINGS_NOTE = 8, ABROAD_NOTE = 9, CAPITAL_NOTE = 10;
@@ -475,6 +490,10 @@ public final class SectorStatements {
         b.line(BUILDINGS, "Buildings, at cost", now.buildings(), then.buildings(), BUILDINGS_NOTE);
         b.line(ABROAD, "Held abroad", now.foreignAssets(), then.foreignAssets(), ABROAD_NOTE);
         b.line(BONDS_HELD, "Other businesses' bonds", now.bondAssets(), then.bondAssets(), 0);
+        if (now.borrowingCostsToExpense() != 0 || then.borrowingCostsToExpense() != 0) {
+            b.line(BORROWING_TO_EXPENSE, "Borrowing costs still to expense", now.borrowingCostsToExpense(),
+                    then.borrowingCostsToExpense(), 0);
+        }
         b.groupTotal(LONG, "Total long-lived assets");
         b.total(TOTAL_ASSETS, "TOTAL ASSETS");
 
@@ -524,7 +543,8 @@ public final class SectorStatements {
 
     /** The cash flow statement's row ids, which the screens and SectorStatementCheck look a row up by. */
     public static final String OPERATING_HEAD = "operatingHead", NET_INCOME = "netIncome",
-            PAID_EARLIER = "paidEarlier", TRADE_CREDIT = "tradeCredit", CASH_DEPOSIT_INTEREST = "cash.depositInterest",
+            PAID_EARLIER = "paidEarlier", BORROWING_PAID_EARLIER = "borrowingPaidEarlier",
+            TRADE_CREDIT = "tradeCredit", CASH_DEPOSIT_INTEREST = "cash.depositInterest",
             CASH_COUPONS = "cash.coupons", CASH_SUBSIDY = "cash.subsidy", CASH_ARREARS = "cash.arrears",
             CASH_STOLEN = "cash.stolen", FROM_OPERATING = "fromOperating", INVESTING_HEAD = "investingHead",
             PREMISES = "premises", SALVAGE = "salvage", BONDS_BOUGHT = "bondsBought",
@@ -546,6 +566,11 @@ public final class SectorStatements {
         b.head(OPERATING_HEAD, "Cash flows from operating").group();
         b.line(NET_INCOME, "Profit for the month", now.netIncome(), then.netIncome(), 0);
         b.line(PAID_EARLIER, "Stock used, paid for in an earlier month", now.paidEarlier(), then.paidEarlier(), 0);
+        // ...and its borrowing's costs expensed, paid when it borrowed (0.7.102, A16).
+        if (now.borrowingCosts() != 0 || then.borrowingCosts() != 0) {
+            b.line(BORROWING_PAID_EARLIER, "Borrowing costs, paid when it borrowed", now.borrowingCosts(),
+                    then.borrowingCosts(), 0);
+        }
         b.line(TRADE_CREDIT, buyer ? "Its suppliers' credit, net" : "Its buyers' credit, net",
                 now.tradeCredit(), then.tradeCredit(), 0);
         b.line(CASH_DEPOSIT_INTEREST, "Interest on its bank balance", now.depositInterest(), then.depositInterest(), 0);
@@ -591,8 +616,8 @@ public final class SectorStatements {
 
     /** Free cash flow: the operating section less what its premises and scrapped plant took (the investing section's buildings). */
     public static double freeCashOf(SectorBooks.SectorMonth m) {
-        return m.netIncome() + m.paidEarlier() + m.tradeCredit() + m.depositInterest() + m.bondCoupons()
-                + m.fromTheCity() + m.arrearsPaid() - m.stolen() - m.spentOnBuildings();
+        return m.netIncome() + m.paidEarlier() + m.borrowingCosts() + m.tradeCredit() + m.depositInterest()
+                + m.bondCoupons() + m.fromTheCity() + m.arrearsPaid() - m.stolen() - m.spentOnBuildings();
     }
 
     /* =====================================================================
@@ -712,14 +737,16 @@ public final class SectorStatements {
        month's (R2 now) - with the rate it pays, the month's interest (R1) and
        when the last of it falls due. The three flows are the differences of
        the running totals BusinessDebtManager keeps where each moves, read
-       with R2 - so the window is the sheet's: from last month's settle to
-       this month's (F-S1-2: the sheet reads its debt before the month's
-       building loans, which are next month's here, as they are on the
-       sheet). `after` is what it borrowed this month after the sheet was
-       read: next month's. A kind's residual is NOT ACCOUNTED FOR, which the
-       harness holds at nothing. Null when either month's R2 or totals are
-       not counted: the month after a load, and the month after that for
-       last month's.
+       with R2 - so the window is the sheet's. Until 0.7.102 that was from
+       last month's settle to this month's (F-S1-2: the sheet read its debt
+       before the month's building loans, which were next month's here, as on
+       the sheet), and `after` was what it borrowed this month after the
+       sheet was read. Since 0.7.102 (Jerus's A16) the sheet is read at the
+       month's close (Game.recordMonth()), so the window is the calendar
+       month, close to close, and `after` is nothing. A kind's residual is
+       NOT ACCOUNTED FOR, which the harness holds at nothing. Null when either
+       month's R2 or totals are not counted: the month after a load, and the
+       month after that for last month's.
        ===================================================================== */
 
     /** One sector's debt schedule: each in DEBT_KINDS' order. */
