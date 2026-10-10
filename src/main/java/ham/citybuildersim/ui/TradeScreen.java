@@ -997,9 +997,10 @@ final class TradeScreen {
         return rows;
     }
 
-    /** Petrol's popover, under the pump price (0.7.83): where it comes from. */
+    /** Petrol's popover, under the pump price (0.7.83): where it comes from - the fuel duty on the sign since 0.7.103. */
     static final String PUMP_WORDS = String.format("The grocers' filling stations buy the drivers' petrol at wholesale - the"
-            + " city's refineries first, the world for the rest - and sell it %.0f%% dearer with the sales tax on top.",
+            + " city's refineries first, the world for the rest - and sell it %.0f%% dearer with the sales tax and the city's"
+            + " fuel duty on top.",
             ham.citybuildersim.sectors.Retail.PUMP_MARGIN * 100);
 
     /** The prices before a month is counted - a city just founded, or loaded from a save before 0.7.46 (the spec's B14; a newer save carries the month's trade the freight is struck on, A1). */

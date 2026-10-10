@@ -17,7 +17,7 @@ import java.util.function.ToDoubleFunction;
  * of each stream sold as the product it is worth with no unit to upgrade it.
  *
  * WHY. Until 0.7.80 a refinery was only its crude units (Refining, THE
- * SLATE): a barrel of medium crude made 70 L of petrol, 169 L of diesel and
+ * SLATE): a tonne of medium crude made 70 L of petrol, 169 L of diesel and
  * a fuel oil worth less than the crude, and nothing could turn the cheap
  * cuts into dear ones. A real refinery is a crude unit and the units behind
  * it - a reformer, a cracking unit, a hydrocracker, alkylation, a coker, a

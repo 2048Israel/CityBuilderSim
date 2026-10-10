@@ -178,7 +178,8 @@ public final class Motoring {
     /**
      * ...at the pump (0.7.83, batch O6): a journey's litres at the forecourts'
      * pump price today (Retail.pumpPriceToday()) - the price on the sign, the
-     * wholesale with the stations' margin and the sales tax on it. What the
+     * wholesale with the stations' margin and the sales tax on it, and since
+     * 0.7.103 the city's fuel duty. What the
      * owners weigh a ride against (InfrastructureManager.setCommute()); the
      * queue's dearer litres past the stations are paid, not posted (star O6).
      */

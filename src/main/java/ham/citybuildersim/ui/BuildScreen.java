@@ -3447,7 +3447,7 @@ final class BuildScreen {
             ham.citybuildersim.sectors.Retail grocers = ui.game.getSectors().retail();
             double pump = grocers.pumpPriceToday(ui.game);
             out.add(String.format("Sells up to %s litres of petrol a month to the city's drivers, at the pump: what the"
-                    + " grocers paid a litre wholesale, %.0f%% more, with the sales tax on top%s.",
+                    + " grocers paid a litre wholesale, %.0f%% more, with the sales tax and the city's fuel duty on top%s.",
                     formatter.format(t.pumpLitres()), ham.citybuildersim.sectors.Retail.PUMP_MARGIN * 100,
                     pump > 0 ? " - " + unitPrice(pump) + " a litre today" : ""));
             out.add(String.format("The grocers buy it off the city's refineries first and from the world for the rest."

@@ -996,7 +996,7 @@ public enum Good {
      * batch O9; runs/spec-oil.md 2.1, Ports.Cargo), or null for the things
      * that never cross the boundary as freight.
      *
-     * LIQUID is crude, the eight litre goods and bitumen - tankers, the
+     * LIQUID is crude, the seven litre goods and bitumen - tankers, the
      * bitumen in a heated one. DRY_BULK is what a grab lifts out of a hold:
      * iron ore, crops, grains, building materials and coke. GENERAL is what
      * is lifted piece by piece - steel, fabricated steel, machinery, wagon
