@@ -626,6 +626,12 @@ public class CentralBankCheck {
         close("the builders' cash-flow statement carries the arrears paid them",
                 builtBooks.arrearsPaid(), owedBuilders, 1e-6);
         close("...and the shops' theirs", shopBooks.arrearsPaid(), owedShops, 1e-6);
+        // ...ON THE STATEMENT ITSELF (0.7.102, Jerus's A17: "add the line"). It has been a row of the cash flow
+        // since 0.7.55; held here on the row the Sectors screen draws, not only on the books' figure.
+        SectorStatements.Table builtCash = SectorStatements.cashFlow(builtBooks, city.getSectorBooks().previous(
+                city.getSectors().construction()));
+        close("...on the row its cash-flow statement draws, \"Arrears the city paid\", in its operating cash",
+                builtCash.now(SectorStatements.CASH_ARREARS), owedBuilders, 1e-6);
         double onStatements = 0, worstGap = 0;
         boolean allClose = true;
         for (Sector s : city.getSectors().all()) {
@@ -1213,7 +1219,14 @@ public class CentralBankCheck {
         Debt serial = fixtureSerial(city, soldIn);
         assertTrue("fixture: the treasury sold a two-year serial", serial != null);
         play(city);                                        // the settle: the households take their share
-        double dial = .5;
+        /*
+         * THE DIAL LEAVES THE BANK A PART WHATEVER THE HOUSEHOLDS TAKE (0.7.102). It was .5: the households take
+         * at most HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE of an issue at its settle, half, so a central bank
+         * buying half of what was left from the market left the bank nothing whenever they took their whole half -
+         * which they did once 0.7.102's books moved the city (they took $5,176k of the $20,000k before, $10,000k
+         * after), and the fixture stopped causing the three holders it is about. Four fifths of the rest: .4.
+         */
+        double dial = (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE) * .8;
         city.getCentralBank().setTargetShare(dial);
         while (serial.getRemainingMonths() > 16) play(city);
         assertTrue("fixture: the households, the bank and the central bank each hold part of it",

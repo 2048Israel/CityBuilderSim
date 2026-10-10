@@ -4610,8 +4610,44 @@ public final class GameVersion {
      *   - The inflation ensemble (outside the tree; A27) restates two
      *     premises, S1 and H1, to what the model claims. The playtest is
      *     0.7.99's, byte for byte.
+     *
+     * 0.7.102 (2026-10-10) - THE BUDGET AND THE BOOKS. Batch P3 (Jerus's A15,
+     * A16, A17, A21, A22 and B of 2026-10-10, the project's
+     * decisions-2026-10-10.md; runs/brief-batchP3.md, runs/fixP3-notes.md).
+     * Save format 36: every new field reads as nothing in an older save,
+     * which is what that city's month carried.
+     *   - EVERY MONTHLY TREASURY FLOW INSIDE THE BUDGET'S TOTALS (A15: "rec
+     *     plus maintence"). The repairs to the city's own buildings, the
+     *     arrears it pays down to the businesses and the strategic reserve's
+     *     crude bought and sold are budget lines (NationalAccounts, slots 30
+     *     to 33 of the government block), so the surplus, the rings, the
+     *     lists and the surplus series carry them; the journal no longer
+     *     names them, the walk from EARNED takes them as steps, and nothing
+     *     is named "outside the budget's total" any more. What stays outside,
+     *     and why, is TreasuryJournal's list: loans, savings and debts, and
+     *     what is not monthly.
+     *   - THE BOOKS' SHEET AT THE MONTH'S CLOSE (A16, F-S1-2): the sheet is
+     *     pushed again at the close (Game.recordMonth()), so a business's
+     *     debt, land and buildings are as they stand when its cash is read;
+     *     the debt schedule runs close to close.
+     *   - WHAT BORROWING COSTS UP FRONT IS EXPENSED AND DEDUCTED (A16, F1 and
+     *     F2): the bank's fee, a mortgage's insurance premium and a bond's
+     *     issuing costs are carried as an asset and expensed a sixtieth a
+     *     month for five years before the profit tax (Canada's Income Tax
+     *     Act s.20(1)(e); Sector.BORROWING_COST_MONTHS) - no longer outside
+     *     the trading result.
+     *   - A17: the arrears a business is paid have been a line of its cash
+     *     flow statement since 0.7.55; now asserted on the statement's row.
+     *   - THE FUND'S FORCED SALE AT THE DESK'S BID (A21): over the default
+     *     withdrawal its shares are asked at fair value less RULE_PREMIUM,
+     *     where at fair value nobody bid. THE FUND SUMMARY NEUTRAL (B) while
+     *     the dial sells: what the step sells for is no warning and no
+     *     "not paid".
+     *   - THE INVESTORS' LAST WORD SAVED (A22): Game.lastInvestment crosses
+     *     a save (DataSave), so the Sectors screen's investors' line survives
+     *     a load.
      */
-    public static final String VERSION = "0.7.100";
+    public static final String VERSION = "0.7.102";
 
     /**
      * The save shape.

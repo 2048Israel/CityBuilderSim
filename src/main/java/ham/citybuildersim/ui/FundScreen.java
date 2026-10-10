@@ -2312,10 +2312,10 @@ final class FundScreen {
         if (fund.getTransferPaidLate() > 0) {
             card.getChildren().add(cardLine("...and the month before's, paid from what it sold", d(g, fund.getTransferPaidLate()), null));
         }
-        // ...and the year's short without what the step is selling for, which is paid next month (0.7.102, B).
+        // ...and the year's short without what the step is selling for, the line above's, which the next month
+        // pays: "not paid" was counting it (0.7.102, Jerus's B - the fund summary neutral while the dial sells).
         double notPaidThisYear = Math.max(0, fund.getTransferShortThisYear() - Math.max(0, fund.getToRaise()));
         card.getChildren().add(cardLine("This year so far", d(g, fund.getTransfersThisYear())
-                + (fund.getToRaise() > 0 ? " · " + d(g, fund.getToRaise()) + " being sold for" : "")
                 + (notPaidThisYear > 0 ? " · " + d(g, notPaidThisYear) + " not paid" : ""), null));
         card.getChildren().add(cardLine("Next month's, on what it is worth now", d(g, g.fundTransferDue()), null));
         card.getChildren().add(caption("WHAT CAME IN LAST MONTH", null));
