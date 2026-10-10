@@ -264,7 +264,6 @@ public class RoadCheck {
 
     /* ============================ 2. THE ADVICE ============================ */
 
-    /** The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. */
     /**
      * Whether the advice's road card is the least of its own candidates
      * (0.7.101): the ranking walked as automatic building walks it - each
@@ -289,6 +288,7 @@ public class RoadCheck {
         return ok;
     }
 
+    /** The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. */
     static String[] least(Game g, boolean roadsOnly) {
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
         double free = g.getLandManager().getAvailableSqFt();

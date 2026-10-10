@@ -2445,7 +2445,8 @@ public class LongPlaytest {
     /**
      * Under the childcare flag (0.7.71, batch N2): when NEEDS YOU lists
      * childcare, the build advice's own card for it - the size that fits the
-     * need (BuildAdvice.perPlaceNeeded()) and the count that keeps it ahead
+     * need (since 0.7.101 its order over its life for the places it will fill,
+     * BuildAdvice.lifePerServed()) and the count that keeps it ahead
      * at its projection, as "Build all three" would place it - through
      * build(), which buys the ground and borrows as for any order. Nothing
      * while what is on site keeps it ahead (suggestFor() says nothing).

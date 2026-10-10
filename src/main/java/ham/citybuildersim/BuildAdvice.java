@@ -1261,7 +1261,7 @@ public final class BuildAdvice {
        of thirty children. So from 0.7.71 to 0.7.100 a living care building -
        childcare, general or senior - was ranked by what its order costs over
        the places the need lacks at the demand it is sized to
-       (perPlaceNeeded(), gone): the order's own quote - Game.quoteBuild() for
+       (perPlaceNeeded, gone): the order's own quote - Game.quoteBuild() for
        the count, which takes the yard's material once, where a quote for one
        takes it for every building - and its ground, over that demand less
        what is on site. Where the order is many buildings that is its price a

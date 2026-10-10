@@ -3703,7 +3703,7 @@ public final class GameVersion {
      *   - A CITY'S BUILDINGS KEEP THEIR TYPE (Jerus: "keep them as they
      *     are"): a save holds them by id, so a Home Daycare loads as a Small
      *     Childcare Centre with its places, posts and ground. No format bump.
-     *   - THE SIZE THAT FITS THE NEED (BuildAdvice.perPlaceNeeded()): a
+     *   - THE SIZE THAT FITS THE NEED (BuildAdvice.perPlaceNeeded, since 0.7.101 lifePerServed()): a
      *     living care building is ranked by its whole order - quote and
      *     ground - over the places the need lacks, so a town short of a few
      *     children gets one small centre and a city short of thousands the

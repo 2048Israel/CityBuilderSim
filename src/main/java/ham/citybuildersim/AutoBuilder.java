@@ -545,7 +545,7 @@ public final class AutoBuilder {
      * THE BUDGET, GONE (0.7.101, batch P2). From 0.7.73 a staffed building -
      * care, death care, a school, the police, the cells and a transit line -
      * was ordered only within what a year's revenue left after the month's
-     * spending (budgetRoom(), revenue(), REVENUE_MONTHS; star N4-6), and past
+     * spending (its budget room, revenue and REVENUE_MONTHS; star N4-6), and past
      * one the budget could not run, the next in the ranking. Jerus (decision
      * A4, 2026-10-10): "for some reason some checks to check revenue, while
      * the real thing is only debt to gdp ratio". So nothing reads the revenue
