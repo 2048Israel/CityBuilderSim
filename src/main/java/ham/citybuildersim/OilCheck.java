@@ -1034,9 +1034,10 @@ public class OilCheck {
         quietly(() -> {
             /*
              * THE REFINERY THE FIXTURE STANDS IS HELD (0.7.76): on imported
-             * crude its slate is worth less abroad than the crude costs, so it
-             * idles once its tanks are full and the distress rule sheds it in
-             * its third year - this section and the next five are about where
+             * crude its slate is worth less abroad than the crude costs - at
+             * 0.7.76 it idled once its tanks were full and the distress rule
+             * shed it in its third year; since 0.7.98 it ships what it makes,
+             * at a loss - and this section and the next five are about where
              * its crude comes from and where its products go, not whether a
              * refinery pays in a town of 600 houses (that is section 8's).
              */

@@ -247,8 +247,8 @@ public final class Rail extends Sector {
      * ...AND SINCE 0.7.78 (batch O2) IT IS HISTORY: diesel is priced on the
      * research's wholesale ladder, .0006883 a litre where FUEL's pump price
      * was .0016667, so a tonne's diesel now costs 18 L at the ladder's price,
-     * .0124, not this. Nothing reads it; FUEL_LITRES_PER_TONNE keeps the
-     * litres it gave.
+     * .0124, not this. Nothing in the model reads it (OilCheck 1 holds the
+     * eighteen to it); FUEL_LITRES_PER_TONNE keeps the litres it gave.
      */
     public static final double WORLD_FUEL_PER_TONNE = .03;
 
