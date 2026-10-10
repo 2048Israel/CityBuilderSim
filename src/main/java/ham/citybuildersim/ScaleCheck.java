@@ -689,6 +689,19 @@ public class ScaleCheck {
         int arrearsMonths;
 
         /**
+         * A figure the history rounds to the cent (HistorySave's round2())
+         * misses its own by up to `half` and the steps of the double it was
+         * rounded in, which past 2^27 units are no longer under the floor's
+         * old 1e-9 (0.7.105, batch P6: Retail's net income at month 605 of
+         * the 10-billion copy, -2,099,835,084.4750001 in its books, kept as
+         * -2,099,835,084.47 - half a cent and 1.0e-7). The floor is the
+         * rounding's own bound: `half`, and ULP_STEPS of the double's steps.
+         */
+        static double roundedToTheCent(double half, double size) {
+            return half + MoneyAudit.ULP_STEPS * Math.ulp(Math.abs(size));
+        }
+
+        /**
          * One reading of an identity: what it missed by, the size of the
          * figures it is made of, the tolerance its harness held it to before
          * 0.7.54 (oldTolerance; for one already relative, that at this size)
@@ -778,23 +791,23 @@ public class ScaleCheck {
                 sum += kept;
                 size = Math.max(size, Math.abs(kept));
                 miss("the history's GDP parts are the accounts' own, to the cent (HistoryCheck)", .005 + 1e-9,
-                        .005 + 1e-9, kept - live[p], live[p]);
+                        roundedToTheCent(.005, live[p]), kept - live[p], live[p]);
             }
-            miss("the history's GDP parts add up to its GDP, to the cent (HistoryCheck)", .025 + 1e-9, .025 + 1e-9,
-                    sum - h.aligned("gdp")[last], size);
+            miss("the history's GDP parts add up to its GDP, to the cent (HistoryCheck)", .025 + 1e-9,
+                    roundedToTheCent(.025, size), sum - h.aligned("gdp")[last], size);
             for (Sector s : g.getSectors().all()) {
                 List<? extends Number> income = h.seriesByName().get(HistorySave.netIncomeKey(s.key()));
                 if (income == null || income.isEmpty()) continue;
                 double net = g.getSectorBooks().get(s).netIncome();
                 miss("the history's net income is the sector books', to the cent (HistoryCheck)", .005 + 1e-9,
-                        .005 + 1e-9, income.get(income.size() - 1).doubleValue() - net, net);
+                        roundedToTheCent(.005, net), income.get(income.size() - 1).doubleValue() - net, net);
             }
             Bank lender = g.getBank();
             String[] bankKeys = { "bankFees", "bankAllowance", "bankProvisions", "bankDividends" };
             double[] bankLive = { lender.feeIncome(), lender.getAllowance(), lender.provisions(), lender.getDividendsPaid() };
             for (int b = 0; b < bankKeys.length; b++) {
                 miss("the history's bank figures are the bank's own, to the cent (HistoryCheck)", .005 + 1e-9,
-                        .005 + 1e-9, h.aligned(bankKeys[b])[last] - bankLive[b], bankLive[b]);
+                        roundedToTheCent(.005, bankLive[b]), h.aligned(bankKeys[b])[last] - bankLive[b], bankLive[b]);
             }
         }
 
