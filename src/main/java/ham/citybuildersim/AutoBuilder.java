@@ -40,8 +40,10 @@ import java.util.Set;
  * cities of eight (runs/fixP2-notes.md). It now chooses by the long run - the
  * advice's figure is each building's order over its life for what it will
  * serve (BuildAdvice, A BUILDING OVER ITS LIFE); builds the first of a kind
- * where there is none (kept()); is held by the debt limit alone - the
- * revenue it read the budget against is gone (THE BUDGET, GONE); walks down
+ * where there is none, from the cash (kept(), pays()); is held by the debt
+ * limit alone - the revenue it read the budget against is gone (THE BUDGET,
+ * GONE), and the limit counts everything the city owes over the output it
+ * has recorded (THE DEBT LIMIT); walks down
  * the advice's ranking past a building the money or the ground cannot pay
  * for one of (step()); buys only an order's own ground (lacks()); and its
  * limit is 240% of a year's GDP by default, the dial to 600%. The walk and
@@ -60,8 +62,9 @@ import java.util.Set;
  *     ITS LIFE), so a bus is built where it keeps the road ahead for less
  *     over its life. A school above the ladder only where NEEDS YOU lists
  *     it (kept()); a first school down the ladder, police station or prison
- *     wherever the figure is short, however far past the need one goes
- *     (0.7.101; it waited for half its worth until then).
+ *     wherever the figure is short, however far past the need one goes, and
+ *     paid from the cash alone (0.7.101; it waited for half its worth until
+ *     then).
  *   - THE ORDER: the advice's own card for the measure at the player's
  *     margin (BuildAdvice.suggestFor(..., slack)) - nothing while what
  *     stands and what is on site keep it ahead of the demand it will have
@@ -359,6 +362,18 @@ public final class AutoBuilder {
         return n;
     }
 
+    /**
+     * Whether an order for a measure is a FIRST OF A KIND WHERE THERE IS NONE
+     * (0.7.101): a school down the ladder, a police station or a prison -
+     * the buildings that waited for half their worth until then - with none
+     * standing or on site. Paid from the cash alone (pays(), star P2-1).
+     */
+    public static boolean firstOfAKind(Game game, BuildAdvice.Measure m) {
+        boolean waited = m.kind() == BuildAdvice.Kind.POLICE || m.kind() == BuildAdvice.Kind.CELLS
+                || (m.kind() == BuildAdvice.Kind.SCHOOL && m.school().isBasic());
+        return waited && serving(game, m) == 0;
+    }
+
     /** Every measure the pass keeps this month, in its order: NEEDS YOU's listed ones first, in its order, then the rest in the rings' order. */
     public static List<BuildAdvice.Measure> remit(Game game, List<CityNeeds.Need> all) {
         List<BuildAdvice.Measure> rings = new ArrayList<>();
@@ -401,38 +416,54 @@ public final class AutoBuilder {
          - OVER IT it builds nothing and borrows nothing - unless "Build from
            cash anyway" is on (cashAnyway), when it builds what the cash over
            the reserve pays for, never borrowing.
-       THE CITY'S DEBT (debt(), star N6-3) is its bonds and bills
-       (DebtManager.getAllPrincipal()): the debt every screen calls the
-       city's - the left panel's Debt/GDP, the Finances tab's "debt
-       outstanding", City History's debt - so the ratio a player sets is the
-       one the game shows him. A bond adds its face (ratioAfter()). What the
-       treasury is overdrawn and the central bank's advances are not in it:
-       the central bank's page carries them, and a bond the order takes
-       clears the overdraft as Build's funding page sizes it. (Counting them,
-       as the market prices the city, Jerus's live city read 274% of GDP
-       against its Debt/GDP of 250%, and ten years on 470% against 134%: the
-       advances, $25B by then, the difference - runs/fixN6-notes.md.) A YEAR
-       OF GDP (annualGdp()) is the last twelve months' output, scaled up to a
-       year while the city has fewer, as every screen's "of annual GDP".
+       THE CITY'S DEBT (debt(); 0.7.101, star P2-9) is everything it owes:
+       its bonds and bills (DebtManager.getAllPrincipal()), what the treasury
+       is overdrawn, and what it owes its central bank in advances - the debt
+       the market prices it on (DebtManager.getPricedDebt()), read live. A
+       bond adds its face and clears the overdraft its cash covers
+       (debtAfter()). From 0.7.81 to 0.7.100 (star N6-3) it was the bonds and
+       bills alone, the left panel's Debt/GDP, so the wages of the staffed
+       services it built, paid on an overdraft the central bank advanced,
+       never reached the limit until the next order's bond turned them into
+       paper: the auto-built playtest's seed 6 ran overdrawn from month 84
+       with its advances outside the ratio (runs/fixP2-notes.md). (Counting
+       them, Jerus's live city read 274% of GDP against its Debt/GDP of 250%,
+       and ten years on 470% against 134%: the advances, $25B by then, the
+       difference - runs/fixN6-notes.md.) A YEAR OF GDP (annualGdp(); 0.7.101)
+       is the output of the last twelve months as recorded - a city younger
+       than a year is read at what it has produced, not scaled up to a year:
+       scaled up, as every screen's "of annual GDP" is, the playtest's village
+       of 18 at month 3 read its founding month's building as $51.4M a year,
+       and 240% of that let it borrow $38M for a school.
        The default and the slider's ends: DEFAULT_DEBT_LIMIT, DEBT_LIMIT_MOST.
        ===================================================================== */
 
-    /** A year of the city's output: the last twelve months', scaled up to a year from fewer (as the screens read it, Pieces.annualGdp()); 0 with none recorded. */
+    /**
+     * A year of the city's output (0.7.101): the last twelve months' as
+     * recorded (NationalAccounts.getAnnualGdp()) - a city younger than a year
+     * at what it has produced; 0 with none recorded. Until 0.7.101 scaled up
+     * to a year from fewer, as the screens read it (Pieces.annualGdp()).
+     */
     public static double annualGdp(Game game) {
         NationalAccounts na = game.getEconomyManager().getNationalAccounts();
-        int months = na.getMonthsRecorded();
-        if (months <= 0) return 0;
-        return months >= 12 ? na.getAnnualGdp() : na.getAnnualGdp() / months * 12;
+        return na.getMonthsRecorded() <= 0 ? 0 : na.getAnnualGdp();
     }
 
-    /** The city's debt (star N6-3): its bonds and bills, as the left panel's Debt/GDP reads it. */
+    /** What the treasury is overdrawn, 0 when it is not. */
+    static double overdraft(double cash) {
+        return Math.max(0, -cash);
+    }
+
+    /** The city's debt (0.7.101, star P2-9): everything it owes - its bonds and bills, what it is overdrawn, and its central bank's advances (DebtManager.getPricedDebt()'s three, read live); its bonds and bills alone until then (star N6-3). */
     public static double debt(Game game) {
-        return game.getDebtManager().getAllPrincipal();
+        return game.getDebtManager().getAllPrincipal() + overdraft(game.getCash())
+                + game.getCentralBank().getAdvancesToTreasury();
     }
 
-    /** ...once a bond is on the books: its face added. */
+    /** ...once a bond is on the books: its face added, and the overdraft its cash clears taken off. */
     public static double debtAfter(Game game, DebtQuote q) {
-        return debt(game) + q.faceValue();
+        return game.getDebtManager().getAllPrincipal() + q.faceValue() + overdraft(game.getCash() + q.cashReceived())
+                + game.getCentralBank().getAdvancesToTreasury();
     }
 
     /** The city's debt over a year of its GDP: 0 owing nothing, +∞ owing with no GDP recorded. */
@@ -488,6 +519,16 @@ public final class AutoBuilder {
     /** What a bond must bring for an order of `total`: the part the spendable cash does not cover. */
     public static double gapFor(Game game, double total) {
         return total - spendable(game);
+    }
+
+    /**
+     * Whether `total` is paid for an order (0.7.101): as canPay() says, and a
+     * FIRST OF A KIND WHERE THERE IS NONE (firstOfAKind()) out of the cash over
+     * the reserve alone, never on a bond (star P2-1): Jerus, "at first it doesnt
+     * build schools even tho it has the money".
+     */
+    boolean pays(Game game, double total, boolean fromCash) {
+        return canPay(game, total) && !(fromCash && gapFor(game, total) > 0);
     }
 
     /** Whether `total` is paid for: at or under the limit, by the cash and past it a bond that keeps the debt within it; over it, by the cash alone with cashAnyway on, and otherwise not at all (0.7.81). */
@@ -609,6 +650,8 @@ public final class AutoBuilder {
             return;
         }
         boolean worksOnSite = BuildAdvice.units(site) > 0;
+        // A first of a kind where there is none is paid from the cash alone (0.7.101, star P2-1).
+        boolean fromCash = firstOfAKind(game, m);
         Set<BuildingsTemplate> skip = new HashSet<>();
         boolean noPaving = false;
         Refused first = null;
@@ -659,21 +702,22 @@ public final class AutoBuilder {
             // it is not; none, the next in the ranking (0.7.101).
             Ground ground = s.paving() ? Ground.NONE : groundFor(game, t, n);
             // Over the limit with "Build from cash anyway" on, what holds it is the cash (0.7.81).
-            Cut money = !within(game) && cashAnyway ? Cut.CASH : Cut.DEBT;
-            if (ground == null || !canPay(game, ground.cash() + total(game, s, n))) {
+            Cut money = (!within(game) && cashAnyway) || (fromCash && within(game)) ? Cut.CASH : Cut.DEBT;
+            if (ground == null || !pays(game, ground.cash() + total(game, s, n), fromCash)) {
                 Cut why = ground == null ? Cut.GROUND : money;
                 int lo = 0, hi = n;                      // lo is paid for, its ground and all; hi is not
                 while (hi - lo > 1) {
                     int mid = lo + (hi - lo) / 2;
                     Ground g = s.paving() ? Ground.NONE : groundFor(game, t, mid);
-                    if (g != null && canPay(game, g.cash() + total(game, s, mid))) lo = mid; else hi = mid;
+                    if (g != null && pays(game, g.cash() + total(game, s, mid), fromCash)) lo = mid; else hi = mid;
                 }
                 if (lo < 1) {
                     Ground one = s.paving() ? Ground.NONE : groundFor(game, t, 1);
                     Cut refused = one == null ? Cut.GROUND : money;
                     if (first == null) {
                         first = new Refused(s, refused, wanted, m.label() + ": " + wanted + " " + name + " wanted; "
-                                + (one == null ? groundWords(game, t) : debtWords(game, s, one)));
+                                + (one == null ? groundWords(game, t) : fromCash && within(game) ? firstWords(game, s, one)
+                                : debtWords(game, s, one)));
                     }
                     // Over the limit, the toggle off, nothing is paid for: no other building in the ranking either.
                     if (refused == Cut.DEBT && !within(game)) {
@@ -972,6 +1016,14 @@ public final class AutoBuilder {
                 + " recorded to borrow against.";
         return String.format("borrowing $%,.0fk for %s would take the city's debt to %s of a year's GDP, past your"
                 + " limit of %s.", gap, one, gdpShare(after), gdpShare(debtLimit));
+    }
+
+    /** Why the cash pays for no first of a kind (0.7.101): built from the cash alone, and the cash over a month's tax short of one and its ground. */
+    private String firstWords(Game game, BuildAdvice.Suggestion s, Ground ground) {
+        String one = ground.offers().isEmpty() ? "one" : "one and its ground";
+        return "a first one where there is none is built from the cash, never on a bond, and the cash over a month's tax is "
+                + money(Math.max(0, spendable(game))) + ", short of " + one + " (" + money(total(game, s, 1) + ground.cash())
+                + ").";
     }
 
     /** Why nothing the city could build moves a measure short of its margin: water past the fresh water it owns with no sea, or no building it could staff. */

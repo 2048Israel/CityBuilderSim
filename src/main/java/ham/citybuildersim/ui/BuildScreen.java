@@ -2389,10 +2389,11 @@ final class BuildScreen {
     /** The section's (i). */
     static final String AUTO_INFO = "Turned on, it orders every month what this page advises for the city's works - "
             + "power, water, roads and transit, care, schools, police, cells - kept ahead of demand with the spare margin "
-            + "on top, a first one where there is none. It pays from the cash over a month's tax, then borrows on Build's "
-            + "20-year bond while the city's debt stays under the limit, a share of a year's GDP; over it, it builds "
-            + "nothing, or only from cash. It buys only its orders' own land, orders what the builders open in a year, "
-            + "and takes the next choice where the money will not pay for the first.";
+            + "on top - a first school, station or prison where there is none, from the cash alone. It pays from the cash "
+            + "over a month's tax, then borrows on Build's 20-year bond while all the city owes stays under the limit, a "
+            + "share of what it produced in the last year; over it, it builds nothing, or only from cash. It buys only its "
+            + "orders' own land, orders what the builders open in a year, and takes the next choice where the money will "
+            + "not pay for the first.";
 
     /** The heading's quiet words: on or off. */
     static String autoHint(AutoBuilder ab) {
@@ -2419,14 +2420,15 @@ final class BuildScreen {
                         + "off Needs you. A network keeps the quarter in hand Needs you asks of it as well." };
     }
 
-    /** The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP). */
+    /** The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP; since 0.7.101 all it owes over the output of its last twelve months). */
     static String[] autoLimitWords(AutoBuilder ab, Game g) {
         double now = AutoBuilder.ratio(g);
         String stands = Double.isFinite(now) ? "Now " + AutoBuilder.gdpShare(now) + (ab.within(g) ? "." : ", over it.")
                 : "No GDP recorded yet to set its debt against.";
         return new String[] { "Debt limit",
-                "The city's debt at most " + AutoBuilder.gdpShare(ab.getDebtLimit()) + " of a year's GDP - the Debt/GDP"
-                        + " the left panel shows; over it, it builds nothing. " + stands,
+                "All the city owes - bonds and bills, its overdraft, its central bank's advances - at most "
+                        + AutoBuilder.gdpShare(ab.getDebtLimit()) + " of what it produced in the last year; over it, it builds"
+                        + " nothing. " + stands,
                 Double.isFinite(now) ? "now " + AutoBuilder.gdpShare(now) : null };
     }
 

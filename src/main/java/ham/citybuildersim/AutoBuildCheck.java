@@ -482,20 +482,21 @@ public class AutoBuildCheck {
             BuildAdvice.Suggestion c = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(all, m), m, g.getCash(),
                     g.getLandManager().getAvailableSqFt(), ab.getSlack(), skip, noPaving);
             if (c == null || c.count() < 1 || !AutoBuilder.inRemit(c.template())) return true;
-            if (paysForOne(g, ab, c)) return false;
+            if (paysForOne(g, ab, c, AutoBuilder.firstOfAKind(g, m))) return false;
             if (c.paving()) noPaving = true; else skip.add(c.template());
         }
         return false;
     }
 
-    /** Whether one of a card, its ground and all, is paid for: at or under the limit by the cash over the reserve and past it a bond that keeps the debt within it; over it by the cash alone with the toggle on - the pass's rule, written out. */
-    static boolean paysForOne(Game g, AutoBuilder ab, BuildAdvice.Suggestion c) {
+    /** Whether one of a card, its ground and all, is paid for: at or under the limit by the cash over the reserve and past it a bond that keeps the debt within it - a first of a kind by the cash alone (0.7.101); over it by the cash alone with the toggle on - the pass's rule, written out. */
+    static boolean paysForOne(Game g, AutoBuilder ab, BuildAdvice.Suggestion c, boolean fromCash) {
         AutoBuilder.Ground ground = c.paving() ? new AutoBuilder.Ground(List.of(), 0, true) : AutoBuilder.groundFor(g, c.template(), 1);
         if (ground == null) return false;
         double total = (c.paving() ? g.quotePave(1).total : g.quoteBuild(c.template(), 1).total) + ground.cash();
         double gap = AutoBuilder.gapFor(g, total);
         if (!ab.within(g)) return ab.isCashAnyway() && !(gap > 0);
         if (!(gap > 0)) return true;
+        if (fromCash) return false;
         if (!(ab.getDebtLimit() > 0)) return false;
         DebtQuote q = AutoBuilder.bondFor(g, gap);
         return q != null && AutoBuilder.ratioAfter(g, q) <= ab.getDebtLimit();
@@ -536,8 +537,10 @@ public class AutoBuildCheck {
                 return q == null || AutoBuilder.ratioAfter(g, q) > ab.getDebtLimit();
             }
             case CASH: {
-                // Over the limit with Build from cash anyway on (0.7.81): the cash over the reserve short of one and its ground.
-                if (t == null || ab.within(g) || !ab.isCashAnyway()) return false;
+                // Over the limit with Build from cash anyway on (0.7.81), or (0.7.101) a first of a kind where there is none,
+                // paid from the cash alone: the cash over the reserve short of one and its ground.
+                boolean first = AutoBuilder.firstOfAKind(g, s.measure()) && ab.within(g);
+                if (t == null || !(first || (!ab.within(g) && ab.isCashAnyway()))) return false;
                 AutoBuilder.Ground ground = AutoBuilder.groundFor(g, t, 1);
                 return ground != null && AutoBuilder.gapFor(g, g.quoteBuild(t, 1).total + ground.cash()) > 0;
             }
@@ -771,6 +774,23 @@ public class AutoBuildCheck {
         assertTrue("its first school is ordered at 0% served, though one takes it far past the need (0.7.101; it waited for half"
                 + " a school's worth until then)", sk != null && sk.outcome() == AutoBuilder.Outcome.ORDERED
                 && sk.building().equals(sc.getName()));
+
+        // ...and from the cash alone (0.7.101: "even tho it has the money"): the twin with its cash at a month's tax, the limit
+        // at the most, holds it - no bond - and says why.
+        Game c = ChildcareCheck.town(root, "school-cash");
+        BuildingsTemplate sc2 = c.getBuildingManager().getTemplateByName(sc.getName());
+        quietly(() -> c.getBuildingManager().retire(sc2, c.getBuildingManager().getQuantity(sc2.getId())));
+        c.setCashForTest(AutoBuilder.reserve(c));
+        AutoBuilder ac = c.getAutoBuilder();
+        ac.setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
+        ac.setOn(true, null);
+        quietly(() -> c.simulateMonths(1));
+        AutoBuilder.Step scc = stepFor(ac, elementary);
+        assertTrue("...but only from the cash: with the cash at a month's tax and the limit at its most, the first school is held"
+                        + " for the cash, nothing borrowed for it, the inbox saying a first one is built from the cash (0.7.101)",
+                scc != null && scc.outcome() == AutoBuilder.Outcome.HELD
+                        && scc.cut() == AutoBuilder.Cut.CASH && scc.borrowed() == 0
+                        && String.join(" ", ac.held()).contains("a first one where there is none is built from the cash"));
 
         theWalk(root);
         overFull(root);
@@ -1131,12 +1151,43 @@ public class AutoBuildCheck {
         DebtQuote qo = AutoBuilder.bondFor(o, gdp / 10);
         double predictedO = qo == null ? Double.NaN : AutoBuilder.debtAfter(o, qo);
         quietly(() -> o.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
-        cents("...overdrawn, the same: the debt is the bonds and bills, the overdraft the central bank's page's",
+        cents("...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face"
+                + " with it, and what is still overdrawn (0.7.101; the overdraft outside the debt until then)",
                 AutoBuilder.debt(o), predictedO);
-        boolean asTheScreens = Math.abs(AutoBuilder.ratio(a) - a.getDebtManager().getAllPrincipal() / gdp) <= 1e-12
-                && gdp == annualised(a);
-        assertTrue(String.format("...and the ratio is the left panel's Debt/GDP: the bonds and bills over the year's GDP,"
-                + " annualised under a year (%.2f%%)", AutoBuilder.ratio(a) * 100), asTheScreens);
+        NationalAccounts naa = a.getEconomyManager().getNationalAccounts();
+        double owes = a.getDebtManager().getAllPrincipal() + Math.max(0, -a.getCash()) + a.getCentralBank().getAdvancesToTreasury();
+        boolean everything = Math.abs(AutoBuilder.ratio(a) - owes / gdp) <= 1e-12 && gdp == naa.getAnnualGdp()
+                && Math.abs(owes - (a.getDebtManager().getAllPrincipal() + Math.max(0, -a.getCash())
+                + a.getDebtManager().getAdvances())) <= 1e-6 * Math.max(1, owes);
+        assertTrue(String.format("...and the ratio is all the city owes - its bonds and bills, its overdraft, its central bank's"
+                + " advances, the market's priced debt read live - over the output of the last twelve months as recorded"
+                + " (%.2f%%; 0.7.101 - the left panel's Debt/GDP until then, bonds and bills over a year annualised)",
+                AutoBuilder.ratio(a) * 100), everything);
+        // The overdraft and the central bank's advances, counted (0.7.101): a town overdrawn, a month on.
+        Game v = ChildcareCheck.town(root, "limit-advances");
+        v.setCashForTest(-gdp / 20);
+        double owedBefore = AutoBuilder.debt(v), principalV = v.getDebtManager().getAllPrincipal();
+        double advancesBefore = v.getCentralBank().getAdvancesToTreasury();
+        quietly(() -> v.simulateMonths(1));
+        double advances = v.getCentralBank().getAdvancesToTreasury();
+        assertTrue(String.format("a town overdrawn by %s owes that in the limit's debt, and a month on its central bank's advances"
+                        + " (%s) and any overdraft left are in it too (0.7.101; outside it until then)", DecisionLog.money(gdp / 20),
+                        DecisionLog.money(advances)),
+                Math.abs(owedBefore - (principalV + gdp / 20 + advancesBefore)) <= 1e-6 * Math.max(1, owedBefore)
+                        && advances > advancesBefore
+                        && Math.abs(AutoBuilder.debt(v) - (v.getDebtManager().getAllPrincipal() + Math.max(0, -v.getCash())
+                        + advances)) <= 1e-6 * Math.max(1, advances));
+        // A young city's year (0.7.101): the output it has recorded, not scaled up to a year.
+        Game y = new Game(new GameFiles(root.resolve("young"), root.resolve("young-no-legacy")));
+        quietly(y::newGame);
+        quietly(() -> y.simulateMonths(3));
+        NationalAccounts nay = y.getEconomyManager().getNationalAccounts();
+        int monthsY = nay.getMonthsRecorded();
+        assertTrue(String.format("a city of %d months recorded reads a year of its output as what it has produced, %s, not scaled up"
+                        + " to a year as the screens show it, %s (0.7.101)", monthsY, DecisionLog.money(AutoBuilder.annualGdp(y)),
+                        DecisionLog.money(annualised(y))),
+                monthsY > 0 && monthsY < 12 && AutoBuilder.annualGdp(y) == nay.getAnnualGdp()
+                        && AutoBuilder.annualGdp(y) < annualised(y));
 
         // A limit a bond would cross: under it now, the cash at a month's tax.
         Game b = ChildcareCheck.town(root, "limit-binds");
