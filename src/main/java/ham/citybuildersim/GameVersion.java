@@ -4717,6 +4717,10 @@ public final class GameVersion {
      *     (the playtest's own founding), SaveFileCheck's withdrawal pressed
      *     two years, ScaleCheck's growing city at month 2,375 and
      *     OrderSearchCheck's copy at 2,475 (each the middle of a scan).
+     *     HealthCheck 13 reads the dear twin's fees in every month the fee
+     *     turned somebody away, where it read the last month alone (which
+     *     turned nobody away now); its hunger line, the known red, passes
+     *     (-1.8 points) on the shelves' timing, the fee's rule unchanged.
      *   - The playtest moves by A11 alone (with the roads' repairs at 1% it
      *     is 0.7.101's byte for byte): its player orders ten gravel roads for
      *     294 people at month 32, and their repairs pass the town's tax; it

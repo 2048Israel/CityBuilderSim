@@ -1189,6 +1189,10 @@ public class HealthCheck {
         double[] bedCover = new double[scales.length];
         double[] coverRead = new double[scales.length];
         double[] peakPeople = new double[scales.length];
+        // The months a twin turned somebody away and charged less than the
+        // same beds would raise at full service (0.7.103, see THE MONTHS THE
+        // FEE TURNED SOMEBODY AWAY below).
+        double[] feesShortMonths = new double[scales.length];
         final int clinics = 10;   // see TEN CLINICS below
         for (int k = 0; k < scales.length; k++) {
             Game town = new Game(files);
@@ -1249,7 +1253,10 @@ public class HealthCheck {
                  * the grocers' shelf (0.7.43's baskets at a price) running out
                  * in two growing cities at different months, which the 0.7.23
                  * trace (1.0 with this depot) predates; the halves are printed
-                 * below the twins (runs/fixP1-notes.md).
+                 * below the twins (runs/fixP1-notes.md). At 0.7.103 (each
+                 * road's own repairs, batch P4) -1.8: 3.6 priced out and -5.4
+                 * on the shelf - green on the shelves' timing, the fee's rule
+                 * unchanged (runs/fixP4-notes.md).
                  */
                 b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
                 town.simulateMonths(48);
@@ -1287,6 +1294,9 @@ public class HealthCheck {
                             + town.getCohorts().get(AgeBand.ELDER);
                     if (hc.getPricedOutTotal() > 0) pricedOutMonths[k]++;
                     if (hc.getPricedOutTotal() == 0) servedInFullMonths[k]++;
+                    if (hc.getPricedOutTotal() > 0 && hc.getTreatmentFees() < hc.fullTreatmentFees()) {
+                        feesShortMonths[k]++;
+                    }
                     if (m >= window - year) {
                         hungerYear[k] += town.getHouseholdBalance().getHungerRate();
                         hungerYearPriced[k] += town.getHouseholdBalance().getHungerPricedOut();
@@ -1397,8 +1407,23 @@ public class HealthCheck {
                 fromPayers += hc.getServed(care) * hc.feeNow(care);
             }
             check("the treatment fees are charged on the people treated", hc.getTreatmentFees(), fromPayers, 1e-9);
-            assertTrue("...which is less than the same beds would raise at full service",
-                    hc.getTreatmentFees() < hc.fullTreatmentFees());
+            /*
+             * THE MONTHS THE FEE TURNED SOMEBODY AWAY (0.7.103, batch P4).
+             * This read the dear twin's last month alone, which held only
+             * while that month turned somebody away: a month that serves
+             * everybody it offered care charges the full fees exactly, by
+             * fullTreatmentFees()'s own definition. With each road's own
+             * repairs (Jerus's A11) the dear twin turned somebody away in 91
+             * of its 96 months and not in the last (2,110 people at 0.7.101,
+             * none at 0.7.103), and the line went red on a month the fixture
+             * did not cause its condition in. It reads every month the twin
+             * turned somebody away now - the same claim, in more months -
+             * and the fixture line above holds that there was one.
+             */
+            System.out.printf("  the dear city turned somebody away in %.0f of %d months, and charged less than full service in %.0f of them%n",
+                    pricedOutMonths[2], window, feesShortMonths[2]);
+            check("...which is less than the same beds would raise at full service, in every month the fee turned somebody away",
+                    feesShortMonths[2], pricedOutMonths[2], 0);
             // ...and the cost of the buildings did not move for it: a ward is
             // paid for whether it is full or not. The same buildings stand in
             // both towns, so their upkeep is the same figure; the payroll
