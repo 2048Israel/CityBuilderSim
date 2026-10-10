@@ -113,9 +113,11 @@ public class RoadCheck {
         return t;
     }
 
+    /** The three roads by name: the paving's from and to, and the highway. */
     static final String GRAVEL = ConstructionControl.PAVE_FROM, PAVED = ConstructionControl.PAVE_TO,
             HIGHWAY = "Elevated Highway";
 
+    /** The advice's measure for roads, which the sections here read the site, the units and the cards through. */
     static final BuildAdvice.Measure ROADS = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
 
     /** The months audited, and the worst: a month passes the playtest's audit within a cent or 1e-7 of what moved. */

@@ -235,7 +235,9 @@ public class AutoBuildCheck {
     /** The ground it bought (0.7.77): passes the city's ground grew in, those not by exactly what its orders bought, orders that bought ground, those not its own short orders, offers holding ore, passes that borrowed with ground bought. */
     static int landPasses, landMismatch, landOrders, landNotItsOwn, oreBought, landBorrowPasses;
     static double landSqFt, landCost;
+    /** The passes that held a kept service short of its target with nothing on site, by the cut that held it. */
     static final Map<AutoBuilder.Cut, Integer> heldBy = new LinkedHashMap<>();
+    /** The buildings it ordered over the run, by measure. */
     static final Map<String, Integer> builtBy = new LinkedHashMap<>();
     /** The city's debt over a year of GDP after the passes that borrowed, the worst (0.7.81); passes that began over the limit, and the orders and bonds placed in them. */
     static double worstShare = 0;

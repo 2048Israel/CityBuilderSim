@@ -2512,6 +2512,7 @@ public class LongPlaytest {
 
     /** What the childcare flag has ordered: orders, and buildings by name. */
     static int childcareOrders = 0;
+    /** ...the buildings, by name. */
     static final java.util.Map<String, Integer> childcareBuilt = new java.util.TreeMap<>();
 
     /** What the flag has ordered of each school, so one under construction is not ordered twice. */

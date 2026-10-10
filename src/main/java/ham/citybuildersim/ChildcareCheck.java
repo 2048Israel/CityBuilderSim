@@ -64,8 +64,10 @@ public class ChildcareCheck {
     /** ...and in its preschool groups, 1 to 8: the fewest. */
     static final double ONTARIO_PRESCHOOL_PER_ADULT = 8;
 
+    /** The three centres' ids in buildings.json: the Small Childcare Centre, the Childcare Centre and the Large. */
     static final int SMALL = 15, CENTRE = 16, LARGE = 17;
 
+    /** The advice's measure for childcare, which the sections here read the need, the site and the card through. */
     static final BuildAdvice.Measure CHILDCARE = BuildAdvice.Measure.care(CareType.CHILDCARE);
 
     static void assertTrue(String label, boolean ok) {
