@@ -43,7 +43,9 @@ package ham.citybuildersim;
  * run it a month at a time, so crude goes by sea only while the refiners'
  * Tank Farms have room free for at least an MR's cargo, in the largest class
  * that fits (crudeShip()); without it crude stays on the railway and the
- * lorries, HELD BACK FOR ROOM, and Refining's page says how much. The other
+ * lorries, HELD BACK FOR ROOM, and Refining's page says how much. Since
+ * 0.7.105 the refiners keep that room free (sectors.Refining.
+ * CARGO_KEPT_FREE): a farm no longer fills with their month. The other
  * liquids go in MR product tankers, a depot's parcel.
  *
  * THE ROAD. What goes by sea is off the street as what goes by rail is, less
@@ -205,14 +207,17 @@ public final class Ports {
         return Double.isFinite(room) ? Math.max(0, room) : 0;
     }
 
-    /** The largest tanker whose cargo fits this room (spec-oil 2.9), or null under an MR's: no seaborne crude. */
+    /** The largest tanker whose cargo fits this room (spec-oil 2.9), or null under an MR's: no seaborne crude. A cargo fits to ROOM_TOLERANCE of the room (0.7.105): the room the refiners keep free for it is struck in floating point. */
     public static Ship crudeShipFor(double room) {
         Ship best = null;
         for (Ship s : Ship.values()) {
-            if (s.cargo() == Cargo.LIQUID && s.tonnes() <= room) best = s;
+            if (s.cargo() == Cargo.LIQUID && s.tonnes() <= room * (1 + ROOM_TOLERANCE)) best = s;
         }
         return best;
     }
+
+    /** How near a cargo may come to the free room and still fit: a billionth, a store's rounding (the refiners keep exactly an MR's cargo free since 0.7.105, sectors.Refining.CARGO_KEPT_FREE). */
+    public static final double ROOM_TOLERANCE = 1e-9;
 
     /** The bulk carrier a month's tonnes one way go in: a Capesize when they fill one, else a Panamax (star). */
     public static Ship bulkShipFor(double tonnes) {

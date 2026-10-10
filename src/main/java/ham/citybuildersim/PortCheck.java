@@ -44,7 +44,10 @@ import java.util.List;
  *
  *   7. CRUDE NEEDS ROOM: a refinery's crude with a tanker berth and no Tank
  *      Farm is held back for room, and its page says so; with a farm it goes
- *      by sea in the largest class the free room takes.
+ *      by sea in the largest class the free room takes. AND THE NEXT CARGO'S
+ *      ROOM (0.7.105, Jerus's R2): a Crude Unit's month beside one farm left
+ *      14,185 t free, under an MR's cargo, so no tanker ever landed; the
+ *      refiners now keep an MR's cargo free, and its crude goes by sea.
  *
  *   8. THE BOATS: whole calls, exact on average; inside their month; pure in
  *      (call, t), loaded the right way each leg; a lane straight out away
@@ -638,6 +641,40 @@ public class PortCheck {
                 String.format("a %s, %,.0f t of room; %,.0f t landed", ship == null ? "none" : ship.label(), room, ports.crudeSeaIn()));
         assertTrue("...its calls in that class", g.boats(List.of()).calls().stream().filter(c -> c.cargo() == Ports.Cargo.LIQUID
                 && c.inbound()).allMatch(c -> c.ship() == ports.billedCrudeShip() || c.ship() == Ports.Ship.MR));
+
+        /*
+         * THE NEXT CARGO'S ROOM (0.7.105, batch P6; Jerus's R2): a Crude Unit
+         * in the Oil Refinery's place. Its month is more than a farm holds
+         * less an MR's cargo, so the old rule - a month as far as the room
+         * held it - filled the room and left no tanker a place to land.
+         */
+        BuildingsTemplate crudeUnit = template(g, "Crude Unit");
+        double farmRoom = refiners.tankFarmRoom() / ham.citybuildersim.sectors.Refining.CRUDE_LITRES_PER_TONNE;
+        double month = ham.citybuildersim.sectors.Refining.CRUDE_COVER_MONTHS * crudeUnit.uses(Good.CRUDE);
+        double oldFree = farmRoom - Math.min(month, farmRoom);
+        report("fixture: one Crude Unit's month beside one Tank Farm's room: kept as far as the room held it (until 0.7.105) it"
+                        + " left under an MR's cargo free, and no tanker landed", oldFree < Ports.Ship.MR.tonnes()
+                        && Ports.crudeShipFor(oldFree) == null && month > farmRoom - Ports.Ship.MR.tonnes(),
+                String.format("%,.0f t a month, %,.0f t of room, %,.0f t free", month, farmRoom, oldFree));
+        quietly(() -> {
+            g.setCashForTest(Founding.WEALTHY_CASH * 100);
+            stood[0] = g.buildStack(crudeUnit, 1, true);
+        });
+        double kept = refiners.crudeKept();
+        report("THE ROOM AN MR'S CARGO NEEDS IS KEPT FREE (Refining.CARGO_KEPT_FREE): the refiners keep the rest of the room,"
+                        + " and the next cargo fits", stood[0] == Game.BuildResult.SUCCESS
+                        && ham.citybuildersim.sectors.Refining.CARGO_KEPT_FREE == Ports.Ship.MR.tonnes()
+                        && kept == farmRoom - Ports.Ship.MR.tonnes() && Ports.crudeShipFor(farmRoom - kept) == Ports.Ship.MR,
+                String.format("%,.0f t kept, %,.0f t free", kept, farmRoom - kept));
+        quietly(() -> {
+            refiners.setCash(Math.max(refiners.getCash(), 1e12));
+            g.simulateMonths(2);
+        });
+        report("...and a month on, the store kept, its crude goes by sea in an MR, none held back for room",
+                ports.crudeShip() == Ports.Ship.MR && ports.getHeldBack() == 0 && ports.crudeSeaIn() > 0
+                        && Math.abs(refiners.getPantry(Good.CRUDE) - refiners.crudeKept()) <= 1e-9 * refiners.crudeKept(),
+                String.format("a %s; %,.0f t on hand, %,.0f t free; %,.0f t landed", ports.crudeShip() == null ? "none"
+                        : ports.crudeShip().label(), refiners.getPantry(Good.CRUDE), Ports.freeCrudeRoom(refiners), ports.crudeSeaIn()));
     }
 
     /* ============================ 8. THE BOATS ============================ */

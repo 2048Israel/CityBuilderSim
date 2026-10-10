@@ -110,8 +110,10 @@ These are Jerus's, and they do not move.
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
                                    feed, ground, staff and money gates - and the idle-then-shed rule; the
-                                   refinery its first client, the materials chains' works next); Mining.java
-                                   is the shape to copy
+                                   refinery its first client, the materials chains' works next; since
+                                   0.7.105 its prices at the margin, and Refining's run rule beside it: the
+                                   crude units run only the barrels that pay); Mining.java is the shape to
+                                   copy
         BondMarket.java, CorporateBond.java, OrderBook.java, InterimLoan.java
                                    the businesses' bonds (0.7.12): the market and each participant's rule, the
                                    bond, the limit-order book the bonds and (since round 2) the shares trade on

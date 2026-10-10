@@ -1007,7 +1007,8 @@ public final class OilView {
      * @param running "94%", "idle", "on site", "—"
      * @param spread  "+$0.0800", "—"
      * @param spreadColour its colour
-     * @param state   the pill: "standing", "building", "would pay", "no feed", "no ground", "no staff", "does not pay", "would lose"
+     * @param state   the pill: "standing", "building", "would pay", "no feed", "no ground", "no staff", "does not pay", "would lose";
+     *                the crude units' "idle" or "part run" while the run is short of nameplate (0.7.105)
      * @param stateColour the pill's colour
      * @param words   after the pill: what stops one more, or what it would earn
      * @param tip     the whole of it, under the pointer
@@ -1043,8 +1044,10 @@ public final class OilView {
                 : u.onSite() > 0 ? "on site" : "—";
         String spread = u.crude() ? "—" : RefineryView.spreadWords(u.citySpread());
         String spreadColour = u.crude() || !(u.citySpread() != 0) ? RefineryView.TEXT_3 : u.citySpread() > 0 ? GOOD : BAD;
-        String[] state = stateOf(u);
-        return new UnitLine(name, count, what, barrels, running, spread, spreadColour, state[0], state[1], state[2], unitTip(u));
+        String[] state = stateOf(u, v.refinery());
+        String tip = unitTip(u);
+        if (u.crude() && v.refinery() != null && !RefineryView.runTip(v.refinery()).isEmpty()) tip += "\n" + RefineryView.runTip(v.refinery());
+        return new UnitLine(name, count, what, barrels, running, spread, spreadColour, state[0], state[1], state[2], tip);
     }
 
     /**
@@ -1085,7 +1088,16 @@ public final class OilView {
 
     /** The pill, its colour and its words: {state, colour, words}. */
     static String[] stateOf(UnitRow u) {
+        return stateOf(u, null);
+    }
+
+    /** ...and the crude units' run (0.7.105, Refining's THE RUN): "idle" or "part run" and why, while it is short of nameplate. */
+    static String[] stateOf(UnitRow u, RefineryView.View refinery) {
         SpreadPlanner.Candidate c = u.gate();
+        if (u.crude() && u.standing() > 0 && refinery != null && refinery.run() != null && refinery.runShare() < 1) {
+            return new String[] { refinery.runShare() > 0 ? "part run" : "idle", refinery.runShare() > 0 ? PILL_GATE : PILL_BAD,
+                    Refining.runShortWords(refinery.run()) };
+        }
         if (u.standing() > 0) return new String[] { "standing", PILL, oneMoreWords(u) };
         if (u.onSite() > 0) {
             return new String[] { "building", PILL_BUILDING, u.onSite() + " on site"
