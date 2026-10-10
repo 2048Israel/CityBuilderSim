@@ -263,6 +263,13 @@ These are Jerus's, and they do not move.
                                    oil in two pools, the ground's and the sea's (THE TWO OIL POOLS), and
                                    since 0.7.106 the land a new city is founded with (foundingLand()) - and
                                    the land office's window, six offers a side; LandCheck holds them
+        Zoning.java                zoning and the forest law (0.7.107, batch Z1): zones by sector, each a
+                                   share of the dry ground or km2 at a share of the going price, and the
+                                   law's two shares of the forest; LandManager's ZONES AND THE FOREST LAW
+                                   works out what each zone holds, clears the forest built on and sells,
+                                   assesses and buys back zoned ground at the zone's price; the zone's
+                                   taxes are the sector's own offsets (Game.setZoneTax()); ZoningCheck
+                                   holds it (the project's spec-zoning.md; runs/spec-materials.md 2.15)
         LandGrid.java, GridOffers.java, LegacyLand.java, GridConversion.java
                                    the block grid (0.7.65 to 0.7.67): the ground owned as a quadtree of
                                    blocks lined up with the world, the six places a side and their
@@ -316,7 +323,7 @@ These are Jerus's, and they do not move.
                                    (the city map on a canvas, 0.7.61: small in the land office, over the
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
                                    MapTiles, which MapCheck holds). The model never imports it.
-        *Check.java                ninety-one harnesses, each a main() with static helpers
+        *Check.java                ninety-two harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
                                    its player asks the build advice which road (0.7.70) and how many (0.7.103)
