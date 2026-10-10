@@ -1,15 +1,23 @@
 package ham.citybuildersim;
 
 /**
- * One field of a resource in the world's ground: which resource, the world cell it was drawn in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0.7.79) an oil field's grade.
+ * One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0.7.79) an oil field's grade.
  *
  * WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). A
  * field is the unit the land office sells and the map draws: it belongs
  * whole to the piece of ground that holds its centre (spec-land star 12), it
  * is mined a site at a time, and it is worked out in the order the city
- * bought it. World.fieldsInCell() draws a cell's fields from the cell's own
- * stream whenever they are asked for, so a field is never stored - the cell
- * and the index say which one it is, from any save, on any machine.
+ * bought it. World.fieldsInCell() draws a cell's fields whenever they are
+ * asked for, so a field is never stored - the cell and the index say which
+ * one it is, from any save, on any machine.
+ *
+ * FEWER AND BIGGER (0.7.99, batch W1; World's FEWER AND BIGGER DEPOSITS): a
+ * tenth as many fields, each World.FIELD_SCALE of the old draws' sites, in
+ * clusters, drawn a pool of cells at a time and listed in the cell their
+ * centre is in, numbered from World.FIELD_INDEX_FROM. The old world's fields
+ * (World.legacyFieldsInCell(), numbered from 0, at most
+ * World.LEGACY_MAX_SITES sites) are what an older save's ground still holds
+ * (CityLand.fieldsIn()); the two never share a number in a cell.
  *
  * ITS SITES LIE ON THE GROUND (0.7.58, batch J1c): each a square of its
  * resource's site area (siteWidth()) laid on a grid round the centre,
@@ -22,16 +30,21 @@ package ham.citybuildersim;
  * "whole iron fields as one offer") the whole field goes with its centre
  * again, every site and every tonne in one offer: the default world's
  * founding field, 35 sites and 449 Mt, for about US$180M (CityLand, THE
- * FIELDS IN A PIECE OF GROUND).
+ * FIELDS IN A PIECE OF GROUND) - to 0.7.98; since 0.7.99 a new city's
+ * nearest iron field on the default world lies twelve kilometres out.
  *
  * @param kind   the resource (never Resource.FOREST, which is terrain)
- * @param cell   the world cell it was drawn in: row x World.CELLS + column
- * @param index  its place in that cell's list, from 0
+ * @param cell   the world cell its centre is in: row x World.CELLS + column
+ * @param index  its place in that cell's list: from World.FIELD_INDEX_FROM
+ *               since 0.7.99, from 0 on the old world's
  * @param x      its centre's plot, east from the world's west edge
  * @param y      its centre's plot, south from the world's north edge
- * @param sites  how many mines or wells it takes, 1 to World.MAX_SITES
+ * @param sites  how many mines or wells it takes: World.FIELD_SCALE to
+ *               World.MAX_SITES since 0.7.99, 1 to World.LEGACY_MAX_SITES on
+ *               the old world's
  * @param amount what it holds, in its resource's unit, whole: the fields of a
- *               cell sum exactly to World.cellTotal()
+ *               pool sum exactly to its cells' World.cellTotal() since 0.7.99,
+ *               the old world's of a cell to the cell's
  */
 public record Deposit(Resource kind, int cell, int index, long x, long y, int sites, double amount) {
 
