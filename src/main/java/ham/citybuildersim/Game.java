@@ -436,6 +436,7 @@ public class Game {
         world.setMeanInflation(founding.getMeanInflation());
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
+        monthRun = false;
 
         this.isRunning = true;
         this.month = 1;
@@ -1899,6 +1900,49 @@ public class Game {
 
     public String getLastInvestment(String sector){
         return lastInvestment.getOrDefault(sector, "");
+    }
+
+    /**
+     * WHAT EACH BUSINESS'S BORROWING COST IT UP FRONT THIS MONTH (0.7.102,
+     * Jerus's A16): the fees the bank kept out of its loans, its mortgages'
+     * insurance premiums and its bonds' issuing costs - the month's own
+     * figures, the ones its books read as loanFees, premiums and bondCosts -
+     * handed to it to be expensed over each debt's life from the next strike
+     * and deducted from its profit tax: a mortgage's premium and fee over its
+     * amortization, a loan's fee over its term, a bond's issuing costs over
+     * its term. At the month's close, after every loan and issue of the
+     * month, before the books read the sheet. No money moves: its cash paid
+     * them when it borrowed. See Sector, WHAT ITS BORROWING COST IT UP FRONT.
+     */
+    private void deferBorrowingCosts() {
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        for (Sector s : getSectors().all()) {
+            String k = s.key();
+            double mortgages = credit.getPremiumsThisMonth(k) + credit.getMortgageFeesThisMonth(k);
+            s.deferBorrowingCosts(mortgages, Mortgage.MORTGAGE_AMORTIZATION_MONTHS);
+            s.deferBorrowingCosts(credit.getFeesThisMonth(k) - credit.getMortgageFeesThisMonth(k),
+                    BusinessDebtManager.LOAN_TERM_MONTHS);
+            s.deferBorrowingCosts(bondMarket.getIssued(k) - bondMarket.getProceeds(k), CorporateBond.TERM_MONTHS);
+        }
+    }
+
+    /**
+     * WHETHER A MONTH HAS RUN SINCE THE CITY WAS FOUNDED OR LOADED (0.7.102).
+     * The month's flows a save does not carry - a sector's units bid, made,
+     * idled and sold, the counters' customers and the kitchens' meals - read
+     * zero after a load, so the screens show them as not counted until a
+     * month has run (BuildCard.counted(), SectorFlow). They read that off the
+     * investors' word being empty, which a load left empty; since Jerus's A22
+     * saves the word, this says it. Not saved: a load is what it marks.
+     */
+    private boolean monthRun;
+
+    /** True once a month has run since the city was founded or loaded; false until then (0.7.102). */
+    public boolean hasMonthRun() { return monthRun; }
+
+    /** Every word the investors left last month, by the slot it was filed under (a sector's key, or the bank branch's label) - saved since 0.7.102 (A22); read-only. */
+    public java.util.Map<String, String> getLastInvestments(){
+        return java.util.Collections.unmodifiableMap(lastInvestment);
     }
 
     /* =======================================================================
@@ -3885,14 +3929,15 @@ public class Game {
      */
     private void settleReserve() {
         double[] s = reserve.settle();
-        if (s[0] > 0) {
-            treasuryPays(TreasuryLine.OIL_RESERVE, s[0]);
-            treasuryJournal.record("Bought crude for the strategic reserve", -s[0]);
-        }
+        double bought = 0, sold = 0;
+        if (s[0] > 0) bought = treasuryPays(TreasuryLine.OIL_RESERVE, s[0]);
         if (s[1] > 0) {
             cash += s[1];
-            treasuryJournal.record("Sold crude from the strategic reserve", s[1]);
+            sold = s[1];
         }
+        // Budget lines since 0.7.102 (A15): the crude is a thing the city buys and sells every month its
+        // order or its release stands, as land is - journalled by name until then. See NationalAccounts.
+        economyManager.setReserveCrude(bought, sold);
     }
 
     /** Tells the investment engine what land is left to sell, right now. */
@@ -5410,7 +5455,12 @@ public class Game {
         economyManager.chargeMaintenance(price);
 
         double bill = economyManager.getMaintenanceBillTotal();
-        if (!Double.isFinite(bill) || bill <= 0) return;
+        if (!Double.isFinite(bill) || bill <= 0) {
+            // Nothing standing to repair: the city paid nothing, and its budget line says so (0.7.102).
+            cityMaintenancePaid = 0;
+            economyManager.setCityRepairsPaid(0);
+            return;
+        }
 
         /*
          * The materials, for real. handleConstructionMaterials() is the same
@@ -5448,20 +5498,20 @@ public class Game {
             cityShare = paidNow;
             cityMaintenancePaid = cityShare;
             /*
-             * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
-             * Government screen listed this bill under spending as "Repairs"
-             * (since 0.7.31 it names it under the total, outside the
-             * budget's), but NationalAccounts.getTotalExpenses() has no line
-             * for it, so the surplus the bridge starts from is struck without
-             * it and the bridge's last row held exactly -cityShare every
-             * month, in every city with a road. Named here until the accounts
-             * carry it; the day they do, this line comes out. See
-             * TreasuryJournal.
+             * A BUDGET LINE SINCE 0.7.102 (Jerus's A15: "i see maintenance is
+             * out of the budget even tho its a monthly thing"). It was
+             * journalled here as "Repaired the city's own buildings" from
+             * 2026-09-18, because NationalAccounts.getTotalExpenses() had no
+             * line for it and the bridge's last row held exactly -cityShare
+             * every month; since 0.7.31 the Government screen named it under
+             * spending's total, outside it. The accounts carry it now
+             * (NationalAccounts' cityRepairs), so the record came out, as
+             * this note said it would. See TreasuryJournal.
              */
-            treasuryJournal.record("Repaired the city's own buildings", -cityShare);
         } else {
             cityMaintenancePaid = 0;
         }
+        economyManager.setCityRepairsPaid(cityMaintenancePaid);
 
         // ...AND THE BANK ITS BRANCHES, out of its own cash, with its payroll -
         // and since 0.7.19 their templates' operating cost beside the repairs,
@@ -9543,7 +9593,11 @@ public class Game {
         }
 
         printEndOfTurn();
+        // What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16). Moves no pool.
+        deferBorrowingCosts();
         recordMonth();
+        // A month has run since the city was founded or loaded: its flows are this month's (0.7.102).
+        monthRun = true;
         // The city map takes the month's buildings (0.7.60): THE CITY MAP. Moves no pool.
         reconcileMap();
 
@@ -11862,6 +11916,23 @@ public class Game {
         // raised in the middle of a fifty-month skip has to be raised by the
         // city, not by whichever screen the player comes back to.
         inbox.takeMonth(this);
+        /*
+         * THE SHEET AT THE MONTH'S CLOSE (0.7.102, Jerus's A16; the S1
+         * statements' finding F-S1-2). The books read each business's cash as
+         * it stands, and until now its land, buildings and debt as they were
+         * last pushed - at the insolvency settle, before the month's building
+         * loans and purchases (runPrivateInvestment()) - so a month that
+         * borrowed read the loan's cash without the loan: in city600, 47 of
+         * 408 sector-months over 24 months differed by more than $1k (the
+         * worst, Retail at month 613: a sheet owing $0 that owed $4.3M). The
+         * sheet is pushed again here, at the close, so all of it is one
+         * instant: the debt as it stands, and the buildings and land the
+         * loans paid for. Nothing in the model reads the push before the next
+         * month pushes it at the top (updateBusinessCredit()); the books, and
+         * through them the register's reading of a company's equity
+         * (Equity.raiseFor()), read the close.
+         */
+        economyManager.pushBalanceSheetInputs();
         sectorBooks.takeMonth(this);
 
         /*
@@ -12141,6 +12212,8 @@ public class Game {
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
+        // ...and the investors' last word on each sector (0.7.102, A22): words written inside the tick.
+        dataSave.setLastInvestment(new java.util.LinkedHashMap<>(lastInvestment));
         dataSave.setSubsidyPaid(new java.util.LinkedHashMap<>(subsidyPaid));
         dataSave.setHouseholdStatement(households.getStatementState());
         dataSave.setMonthlyMaterialImports(monthlyMaterialImports);
@@ -13082,10 +13155,11 @@ public class Game {
        else' - that should be expandable, cause a lot of times that's where a
        bunch of important things happen." Every non-budget movement of the cash
        is written into a TreasuryJournal by name as it happens - capital into
-       the bank, reserves, a buyback, the students' loans, and the two lines
-       the budget balance omits - and the screen opens the row into those
-       lines. What the lines do not explain is getTreasuryResidual(), printed
-       under them as "Not accounted for". See TreasuryJournal for which sites
+       the bank, reserves, a buyback, the students' loans, and (until 0.7.49
+       and 0.7.102, when the budget took them) the lines the budget balance
+       omitted - and the screen opens the row into those lines. What the
+       lines do not explain is getTreasuryResidual(), printed under them as
+       "Not accounted for". See TreasuryJournal for which sites
        are journalled and why the rest are not.
        ======================================================================= */
 
@@ -13162,11 +13236,12 @@ public class Game {
      *
      * NOT A RESIDUAL TO BE HIDDEN, and not zero in this model. It is the rest
      * of what the treasury did: reserves bought or sold, capital put into the
-     * bank, bonds bought back, the students' loans - none of which is a budget
-     * line - PLUS the line the budget balance omits (the city's repair bill,
-     * see TreasuryJournal; the transit fares were a second until 0.7.49,
-     * when the budget took them), PLUS whatever the
-     * government's books date to a different month from the money. Land and
+     * bank, bonds bought back, the students' loans, the central bank's
+     * advances - none of which is a budget line - PLUS whatever the
+     * government's books date to a different month from the money. (It held
+     * the lines the budget balance omitted, too, until the budget took them:
+     * the transit fares in 0.7.49, the city's repair bill, the arrears paid
+     * down and the reserve's crude in 0.7.102 - see TreasuryJournal.) Land and
      * buildings are NOT in it: land bought and sold and buildings paid for are
      * budget lines, struck over the same window, and the bridge's first row
      * already carries them. The screen prints this as its own row with its own
@@ -13222,8 +13297,10 @@ public class Game {
        and eleven more: land sold and bought, buildings, the fund's transfer,
        the mortgage insurance's premiums and claims, subsidies, the food
        vouchers (0.7.45), the central bank's remittance and its interest, the
-       students' loan interest. Those eleven are the steps, each an existing
-       getter. The transit fares were a twelfth until 0.7.49: in EARNED and in
+       students' loan interest - and since 0.7.102 (A15) four: the repairs to
+       the city's own buildings, the arrears paid down, and the reserve's
+       crude bought and sold. Those fifteen are the steps, each an existing
+       getter. The transit fares were a step until 0.7.49: in EARNED and in
        the cash, and not in the budget. The budget carries them since (B9),
        with the bill EARNED carries too.
 
@@ -13251,7 +13328,13 @@ public class Game {
                 new TreasuryJournal.Entry("Food assistance", -na.getFoodAssistance()),
                 new TreasuryJournal.Entry("Central bank remittance", na.getCentralBankRemittance()),
                 new TreasuryJournal.Entry("Interest to the central bank", -na.getCentralBankInterest()),
-                new TreasuryJournal.Entry("Student loan interest", na.getStudentLoanInterest()));
+                new TreasuryJournal.Entry("Student loan interest", na.getStudentLoanInterest()),
+                // ...and the four 0.7.102 took inside the budget (A15): outside EARNED, which is the
+                // tax take and the running programmes, and on the bridge's other half until then.
+                new TreasuryJournal.Entry("Repairs", -na.getCityRepairs()),
+                new TreasuryJournal.Entry("Arrears paid down", -na.getArrearsPaid()),
+                new TreasuryJournal.Entry("Crude for the reserve", -na.getReserveCrudeBought()),
+                new TreasuryJournal.Entry("Crude sold from the reserve", na.getReserveCrudeSold()));
     }
 
     /** What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. */
@@ -13426,6 +13509,11 @@ public class Game {
         }
 
         if (cash > 0) payDownArrears();
+        // ...on the budget's line since 0.7.102 (A15): what reached the businesses' tills. The students'
+        // arrears are paid with their grant, on the grant's line, as they always were (payStudentGrants()).
+        double paidDown = 0;
+        for (double v : arrearsPaidTo.values()) paidDown += v;
+        economyManager.setArrearsPaidDown(paidDown);
 
         if (cash < 0) {
             double advanced = centralBank.advanceToTreasury(-cash);
@@ -13498,7 +13586,7 @@ public class Game {
             arrearsPaidTo.merge(payee.key(), paid, Double::sum);
             arrearsPaidThisMonth += paid;
             arrearsPaidLifetime += paid;
-            treasuryJournal.record("Paid down arrears", -paid);
+            // A budget line since 0.7.102 (A15), "Arrears paid down": journalled "Paid down arrears" until then.
             if (owed.getValue() - paid <= 1e-9) it.remove();
             else owed.setValue(owed.getValue() - paid);
         }
@@ -15267,6 +15355,14 @@ public class Game {
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
+            // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which
+            // is the "nothing recorded" a reloaded city read until then.
+            lastInvestment = new java.util.LinkedHashMap<>();
+            if (restoredFlows.getLastInvestment() != null) {
+                for (java.util.Map.Entry<String, String> e : restoredFlows.getLastInvestment().entrySet()) {
+                    if (e.getKey() != null && e.getValue() != null) lastInvestment.put(e.getKey(), e.getValue());
+                }
+            }
             /*
              * What the dial paid out last month. A flow, and one the load path
              * cannot re-derive: paySubsidyIfOwed() decides it from a net income

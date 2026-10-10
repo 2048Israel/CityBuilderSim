@@ -271,7 +271,7 @@ public class AutoBuildCheck {
     /** The buildings it ordered over the run, by measure. */
     static final Map<String, Integer> builtBy = new LinkedHashMap<>();
     /** The city's debt over a year of GDP after the passes that borrowed, the worst (0.7.81); passes that began over the limit, and the orders and bonds placed in them. */
-    static double worstShare = 0;
+    static double worstShare = 0, worstLimit = 0;
     static int overPasses, overOrders, overBonds;
     static double mostOver = 0;
 
@@ -286,21 +286,7 @@ public class AutoBuildCheck {
         LongPlaytest.AUTOBUILD = true;
         Game g = new Game(files, LongPlaytest.founding());
         AutoBuilder ab = g.getAutoBuilder();
-        int[][] before = new int[1][];
-        double[] snap = new double[5];      // land owned, cash, reserve, the debt over GDP, bonds placed
-        g.autoBuildProbeForTest = after -> {
-            if (!ab.isOn()) return;
-            if (!after) {
-                before[0] = standingAndOnSite(g);
-                snap[0] = g.getLandManager().getOwnedSqFt();
-                snap[1] = g.getCash();
-                snap[2] = AutoBuilder.reserve(g);
-                snap[3] = AutoBuilder.ratio(g);
-                snap[4] = ab.getBonds();
-                return;
-            }
-            look(g, ab, before[0], snap);
-        };
+        g.autoBuildProbeForTest = passReader(g);
         try {
             quietly(() -> {
                 g.run();
@@ -338,6 +324,26 @@ public class AutoBuildCheck {
             LongPlaytest.AUTOBUILD = flag;
             LongPlaytest.out = was;
         }
+        /*
+         * ...AND A PASS THAT BORROWS, CAUSED (0.7.102). Whether the decades borrow is the city's own path: this one
+         * borrowed in 8 passes at 0.7.100 and in none at 0.7.102, whose books moved it (what borrowing costs up front
+         * expensed, the sheet read at the close), its treasury holding the cash for every order it placed. What is
+         * asserted of its borrowing needs a pass that borrowed, so a copy of the city at its end - saved and loaded -
+         * has its cash put at the reserve and its limit at DEBT_LIMIT_MOST, so that what it lacks is borrowed and
+         * not held for the limit, and runs one pass, read by the same look() as every pass of the decades (against
+         * the copy's own limit). A fixture has to cause what it tests.
+         */
+        int borrowedInTheDecades = borrowingPasses;
+        quietly(() -> g.saveGame(11, "autobuildcheck, a pass that borrows"));
+        Game copy = new Game(files);
+        quietly(() -> copy.loadGameSave(11));
+        copy.getAutoBuilder().setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
+        copy.setCashForTest(AutoBuilder.reserve(copy));
+        copy.autoBuildProbeForTest = passReader(copy);
+        quietly(() -> copy.simulateMonths(1));
+        copy.autoBuildProbeForTest = null;
+        out.printf("    (%d passes borrowed in the decades; the copy at the reserve borrowed %s)%n", borrowedInTheDecades,
+                DecisionLog.money(copy.getAutoBuilder().getBorrowed() - g.getAutoBuilder().getBorrowed()));
         out.printf("    (%d months, %,d people at the end; %d passes, %d orders: %s)%n", g.getMonth(),
                 g.getPopulationManager().getPopulation(), passes, ordered, builtBy);
         out.printf("    (after each pass, of %d services kept: %d at the target, %d with works under way, %d held %s,"
@@ -362,9 +368,9 @@ public class AutoBuildCheck {
                 landMismatch, landPasses), landMismatch == 0);
         assertTrue("...and bare ground only: no field bought for its ore (" + oreBought + " offers held ore)", oreBought == 0);
         assertTrue(String.format("it never borrows past the debt limit, the ground's price in what it borrowed: %d passes borrowed"
-                + " (%d of them buying ground), the city's debt after them at most %.2f%% of a year's GDP against %.0f%%"
-                + " (0.7.81; debt payments over revenue until then)",
-                borrowingPasses, landBorrowPasses, worstShare * 100, ab.getDebtLimit() * 100), overLimit == 0);
+                + " (%d of them buying ground), the city's debt after them at most %.2f%% of a year's GDP against %.0f%%,"
+                + " the limit that pass borrowed under (0.7.81; debt payments over revenue until then)",
+                borrowingPasses, landBorrowPasses, worstShare * 100, worstLimit * 100), overLimit == 0);
         assertTrue(String.format("...and a pass that begins over it orders nothing and borrows nothing: %d passes began over it"
                 + " (at most %.0f%% of a year's GDP), %d orders and %d bonds placed in them", overPasses, mostOver * 100,
                 overOrders, overBonds), overOrders == 0 && overBonds == 0);
@@ -374,6 +380,26 @@ public class AutoBuildCheck {
         out.printf("    (orders placed past the advice's first card, which the money, the ground or the budget would not pay for"
                 + " or run one of: %d)%n", walked);
         return g;
+    }
+
+    /** The decades' reading of a pass, before and after it, by look() (0.7.102: a function, so the copy that borrows is read the same). */
+    static java.util.function.Consumer<Boolean> passReader(Game g) {
+        AutoBuilder ab = g.getAutoBuilder();
+        int[][] before = new int[1][];
+        double[] snap = new double[5];      // land owned, cash, reserve, the debt over GDP, bonds placed
+        return after -> {
+            if (!ab.isOn()) return;
+            if (!after) {
+                before[0] = standingAndOnSite(g);
+                snap[0] = g.getLandManager().getOwnedSqFt();
+                snap[1] = g.getCash();
+                snap[2] = AutoBuilder.reserve(g);
+                snap[3] = AutoBuilder.ratio(g);
+                snap[4] = ab.getBonds();
+                return;
+            }
+            look(g, ab, before[0], snap);
+        };
     }
 
     /** Every template's standing and on-site count, by id. */
@@ -432,6 +458,8 @@ public class AutoBuildCheck {
             borrowingPasses++;
             if (anyLand) landBorrowPasses++;
             double share = AutoBuilder.ratio(g);
+            // ...and the limit that pass borrowed under (0.7.102): the copy that borrows at the decades' end has its own.
+            if (share >= worstShare) worstLimit = ab.getDebtLimit();
             worstShare = Math.max(worstShare, share);
             if (!(share <= ab.getDebtLimit() + 1e-12)) overLimit++;
         }
@@ -590,6 +618,11 @@ public class AutoBuildCheck {
         int months = 36, drift = 0, ordersBefore = a.getOrders();
         // Ground for both, the same: the decades ended short of it, and a city that can build nothing proves little.
         for (Game c : new Game[] { g, back }) c.getLandManager().setOwnedSqFt(c.getLandManager().getOwnedSqFt() + 50_000_000L);
+        // ...and the budget's room for both, the same (withRoom()): since 0.7.102 the decades end with the city spending past
+        // its revenue - $73,708k a month against $59,907k at the first pass after them, the repairs $4,816k of it, inside the
+        // budget's spending since (A15) - every staffed service held for the budget, and a city whose budget runs nothing
+        // proves as little.
+        for (Game c : new Game[] { g, back }) withRoom(c);
         double worst = 0;
         String first = null;
         for (int i = 0; i < months; i++) {
@@ -841,12 +874,17 @@ public class AutoBuildCheck {
      * education bills - four medical schools and a university, three times
      * its revenue - cleared, ROOM more property tax, and its accounts
      * refreshed, so the next pass's budget runs every staffed order it
-     * weighs; the pass reads the accounts first.
+     * weighs; the pass reads the accounts first. And since 0.7.102 the
+     * arrears it paid down in the month cleared too: they are inside the
+     * budget's spending since then (A15), and the walk's town paid down
+     * $97,246k of them in the month before its pass, past ROOM, which left
+     * its budget $58,386k short of running any clinic.
      */
     static void withRoom(Game g) {
         EconomyManager em = g.getEconomyManager();
         em.setHealthcare(0, 0);
         em.setEducation(0, 0);
+        em.setArrearsPaidDown(0);
         em.setTotalPropertyTax(em.getTotalPropertyTax() + ROOM);
         em.refreshGovernmentAccounts(0, 0, 0, 0);
     }

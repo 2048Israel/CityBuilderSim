@@ -674,7 +674,7 @@ public final class BuildCard {
      *
      * The customers who came and the meals wanted are the month's flows,
      * which the save does not carry: until a month has run since the city
-     * was loaded (the sector has no word for the month yet) they read zero,
+     * was loaded (Game.hasMonthRun()) they read zero,
      * so the note carries NaN for them instead - not counted yet - and says
      * only what the counters or the kitchens serve.
      */
@@ -803,9 +803,9 @@ public final class BuildCard {
         return new Note(NoteKind.NONE, 0, 0, null);
     }
 
-    /** A month's flow the save does not carry, or NaN while no month has run since the load: the sector has no word for the month. */
+    /** A month's flow the save does not carry, or NaN while no month has run since the load (Game.hasMonthRun(); until 0.7.102, while the sector had no word for the month - the word is saved since). */
     static double counted(Game game, Sector sector, double flow) {
-        return game.getLastInvestment(sector.key()).isEmpty() ? Double.NaN : flow;
+        return game.hasMonthRun() ? flow : Double.NaN;
     }
 
     /* =====================================================================

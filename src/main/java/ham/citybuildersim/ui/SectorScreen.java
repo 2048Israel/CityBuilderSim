@@ -1615,6 +1615,10 @@ final class SectorScreen {
         steps.add(fallTotal(StatementView.sentence(f.operating), t.now(SectorStatements.OPERATING)));
         if (now.interest() != 0) steps.add(Step.of("Interest", -now.interest(), Palette.SPENDING_RAMP[2])
                 .go(n -> openNote(sector, INCOME, SectorStatements.FINANCE_NOTE)));
+        // ...and what its borrowing cost it up front, a month's share over each debt's life (0.7.102, A16).
+        if (now.borrowingCosts() != 0) steps.add(Step.of("Borrowing costs", -now.borrowingCosts(), Palette.SPENDING_RAMP[2])
+                .tip("What its loans' fees, its mortgages' insurance and its bonds' issuing cost it, a month's share of "
+                        + "each over its debt's life\n" + m(now.borrowingCosts())));
         steps.add(fallTotal("Profit before tax", now.preTaxIncome()));
         if (now.tax() != 0) steps.add(Step.of("Business tax", -now.tax(), Palette.SPENDING_RAMP[2]));
         steps.add(fallTotal("What it kept", now.netIncome()));
@@ -1742,14 +1746,14 @@ final class SectorScreen {
     VBox everyDollar(SectorBooks.SectorMonth now) {
         HBox title = head("OF EVERY DOLLAR IT TOOK", "Each line of the month as cents of a dollar of its revenue, on "
                 + "one bar: what the sales tax, its suppliers, its workers, its power, water and repairs, the ground, its "
-                + "lenders and the business tax took, and what it kept. A month it lost money, the costs come to more "
-                + "than the dollar.", null);
+                + "lenders - their interest, and a month's share of what its borrowing cost it up front - and the "
+                + "business tax took, and what it kept. A month it lost money, the costs come to more than the dollar.", null);
         double rev = now.revenue();
         if (!(rev > 0)) return card(title, caption("It took nothing this month.", Palette.TEXT_MUTED));
         String[] names = { "sales tax", "bought in", "wages", "power, water, repairs", "property tax", "interest",
                 "business tax", "kept" };
         double[] parts = { now.salesTaxPaid(), now.inputs(), now.payroll(), now.electricity() + now.water() + now.maintenance(),
-                now.propertyTax(), now.interest(), now.tax(), now.netIncome() };
+                now.propertyTax(), now.interest() + now.borrowingCosts(), now.tax(), now.netIncome() };
         String[] colours = { Palette.SPENDING_RAMP[4], Palette.SPENDING_RAMP[3], Palette.SPENDING_RAMP[2],
                 Palette.SPENDING_RAMP[1], Palette.SPENDING_RAMP[0], Palette.RAMP_REST, Palette.TEXT_SPENT, Palette.BUSINESS };
         List<Segment> bar = new ArrayList<>();
@@ -2627,10 +2631,11 @@ final class SectorScreen {
     /** Note 6, and the equity statement's outside line: what the outside lines are (F1). */
     static final String OUTSIDE_INFO = "Money that reached its books outside its trading: the city's subsidy and the "
             + "arrears it paid, the bank's interest on its till, the coupons on the bonds it holds, the interest its money "
-            + "abroad earned, an overdraft forgiven, loans and bonds its lenders wrote off, and a theft - and what its "
-            + "borrowing cost it up front: the bank's fee, a mortgage's insurance premium and a bond's issuing costs, each "
-            + "taken out of what it was handed while it owes the whole. Each moved its equity and reached no statement "
-            + "until this one, so none of it is taxed or in what its dividend is struck on.";
+            + "abroad earned, an overdraft forgiven, loans and bonds its lenders wrote off, and a theft. Each moved its "
+            + "equity and reached no statement until this one, so none of it is taxed or in what its dividend is struck "
+            + "on. What its borrowing cost it up front - the bank's fee, a mortgage's insurance premium, a bond's issuing "
+            + "costs - was here until 0.7.102; it is a cost above the profit now, a month's share over each debt's life, "
+            + "and deducted from its tax, and is here only for a month from an older save.";
 
     /** Share capital's line and note, when a save from before 0.7.75 was loaded (R3). */
     static final String DERIVED_INFO = "Derived when the city was loaded: its save was made before share capital was "
@@ -2862,17 +2867,19 @@ final class SectorScreen {
     /** The schedule's (i). */
     static final String SCHEDULE_INFO = "What it owed of each kind at last month's sheet, what it borrowed, repaid and had "
             + "written off since, and what it owes at this month's; the rate it pays, weighted by what it owes, and the "
-            + "month the last of it falls due. Counted from sheet to sheet: the sheet reads what it owes at the month's "
-            + "settle, before the loans for the buildings it orders that month, which are next month's here as on the "
-            + "sheet - so its borrowing differs from the cash flow's, the calendar month's, by those.";
+            + "month the last of it falls due. Counted from sheet to sheet, and the sheet reads what it owes as the month "
+            + "closes - the loans for the buildings it ordered that month among it - so its borrowing is the calendar "
+            + "month's, as the cash flow's is.";
 
     /**
      * ITS DEBT THIS MONTH, BY KIND (the Cash & debt statement; R7): the
      * roll-forward from last month's sheet to this month's - at the start,
      * borrowed, repaid, written off, at the end - with each kind's rate and
      * when the last of it falls due, its suppliers on a memo row, and what it
-     * borrowed after the sheet was read. Not counted until two months have
-     * run after a load: one for each sheet.
+     * borrowed after the sheet was read - nothing since 0.7.102, when the
+     * sheet is read at the month's close (A16), so its caption never shows
+     * on a city played since; kept for the rule it states. Not counted until
+     * two months have run after a load: one for each sheet.
      */
     VBox scheduleCard(Sector sector, boolean millions) {
         SectorBooks books = ui.game.getSectorBooks();
@@ -4085,7 +4092,8 @@ final class SectorScreen {
     static final String OIL_RESERVE_INFO = "The city's own crude, in its Strategic Reserves' tanks. Fill orders crude for the next"
             + " clearing - the wells' first, beside the refiners, then the world's - cut to the room left and to what the treasury"
             + " can pay at crude's import price, paid at the next strike. Release offers that many tonnes a month to the"
-            + " refiners, and ships what they do not take at the export price. A fill stops a release; a release cancels a fill.";
+            + " refiners, and ships what they do not take at the export price. A fill stops a release; a release cancels a fill."
+            + " Both are lines of the budget: \"Crude for the reserve\" in spending, \"Crude sold from the reserve\" in revenue.";
     static final String RESERVE_CAVEAT = "bought at the next clearing at what crude then costs; what the room cannot take lapses";
     static final String RESERVE_CAVEAT_INFO = "A fill is an order for the next clearing: the wells' crude pro rata with the"
             + " refiners, the world's for the rest, each at its price then - this reads it at today's import price. What the"

@@ -567,6 +567,9 @@ final class GovernmentScreen {
             case "Food assistance"                  -> new String[] {"Promises", "Food"};
             case "Central bank remittance", "Interest to the central bank"
                                                     -> new String[] {"Money", "The policy rate"};
+            // ...and the arrears paid down (0.7.102): owed because the ceiling on the advances bound, set there,
+            // where the journal's line went until the budget took it.
+            case "Arrears paid down"                -> new String[] {"Money", "The policy rate"};
             default -> null;
         };
     }
@@ -587,6 +590,12 @@ final class GovernmentScreen {
             case "Police and prisons"         -> new Door("Services", () -> ui.servicesScreen.open("Safety", ServicesScreen.OVERVIEW));
             case "Utility income"             -> new Door("Services", () -> ui.servicesScreen.open("Utilities", ServicesScreen.OVERVIEW));
             case "Transit fares", "Transit"   -> new Door("Infrastructure", () -> ui.infrastructureScreen.open("Transit"));
+            // ...and two of the four 0.7.102 took inside the totals (A15): the repairs on Build's construction
+            // page, the reserve's crude on oil's Operations page, where its fill and release are set.
+            case "Repairs"                    -> new Door("Build", () -> ui.constructionScreen.show());
+            case "Crude for the reserve", "Crude sold from the reserve"
+                                              -> new Door("Oil", () -> ui.sectorScreen.openSectorBooks(
+                                                         ui.game.getSectors().oil(), "Operations"));
             default -> null;
         };
     }
@@ -613,6 +622,8 @@ final class GovernmentScreen {
             case "Subsidies"                         -> Icons.POLICY;
             case "Food assistance"                   -> Icons.FOOD;
             case "Transit fares", "Transit"          -> Icons.BUS;
+            case "Arrears paid down"                 -> Icons.BANK;
+            case "Crude for the reserve", "Crude sold from the reserve" -> Icons.TANK;
             default                                  -> Icons.COIN;
         };
     }
@@ -668,12 +679,8 @@ final class GovernmentScreen {
         List<Slice> outSlices = topSlices(outNames, outAmounts, Palette.CATEGORIES);
 
         List<Node> inFoot = new ArrayList<>(netted(inNames, inAmounts));
+        // Repairs were named here, "outside the total", from 0.7.31; a line of the ring since 0.7.102 (A15).
         List<Node> outFoot = new ArrayList<>(netted(outNames, outAmounts));
-        double repairs = ui.game.getCityMaintenancePaid();
-        if (Math.abs(repairs) >= .5) {
-            outFoot.add(door("outside the total: repairs " + s(-repairs), Palette.TEXT_MUTED,
-                    () -> showOnOverview(BRIDGE)));
-        }
 
         VBox left = ringBlock("WHERE IT COMES FROM", inSlices, "taken in", m(revenue), inFoot, "Revenue");
         VBox right = ringBlock("WHERE IT GOES", outSlices, "paid out", m(spending), outFoot, "Spending");
@@ -845,8 +852,9 @@ final class GovernmentScreen {
             + "and your own moves.\n\n"
             + "So the middle tile is the budget's surplus or deficit, and the last is what the balance actually "
             + "did between two presses of the arrow. The steps between them are the money that moved without being "
-            + "a budget line: paper raised and repaid, reserves, capital put into the bank, bonds bought back, the "
-            + "students' loans, and the one the budget leaves out (the city's own repairs). "
+            + "a budget line: paper raised and repaid, the central bank's advances, reserves, capital put into the "
+            + "bank, bonds bought back, the students' loans and the fund's pay-ins - each a loan, a saving or a "
+            + "debt, not spending. "
             + "“Not accounted for” is what is left after them - timing between the books and the money, "
             + "such as a coupon booked the month it is charged and paid the month after, and anything not yet "
             + "journalled - printed rather than folded in, because a bridge that hides its own gap is not a bridge.";
@@ -1156,7 +1164,7 @@ final class GovernmentScreen {
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
                 "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
-                "Transfer from the fund", "Transit fares");
+                "Transfer from the fund", "Transit fares", "Crude sold from the reserve");
     }
 
     List<Double> revenueAmounts(NationalAccounts na) {
@@ -1188,26 +1196,30 @@ final class GovernmentScreen {
                 na.getFundTransfer(),
                 // ...and the transit fares (0.7.49, B9): under the total since, where
                 // they were named outside it.
-                na.getTransitFares());
+                na.getTransitFares(),
+                // ...and what the strategic reserve's crude sold for (0.7.102, A15), journalled until then.
+                na.getReserveCrudeSold());
     }
 
     /*
-     * REPAIRS LEFT THIS LIST IN 0.7.31, and stayed on the page. It joined on
+     * REPAIRS LEFT THIS LIST IN 0.7.31, AND CAME BACK IN 0.7.102. It joined on
      * 2026-09-09 - Jerus: "all buildings need maintenance, and make sure they
      * get billed" - as a real line: the city owns the roads, the schools, the
      * hospitals and both utility plants, so the treasury pays their repair
-     * bill. But NationalAccounts.getTotalExpenses() does not carry it, so the
+     * bill. But NationalAccounts.getTotalExpenses() did not carry it, so the
      * list summed to more than "Paid out altogether" and the ring's key to
-     * 111% (the spec's B2). The rings and lists show the budget exactly as
-     * NationalAccounts strikes it now, and repairs are named under the total
-     * as "outside the budget's total", and on the bridge, where the cash pays
-     * them (D4). Carrying them in NationalAccounts is a model batch for Jerus.
+     * 111% (the spec's B2); from 0.7.31 it was named under the total as
+     * "outside the budget's total" (D4). Since 0.7.102 (Jerus's A15: "i see
+     * maintenance is out of the budget even tho its a monthly thing") the
+     * accounts carry it, and the arrears paid down and the reserve's crude
+     * with it, so all three are lines again and the list still adds up to
+     * the total under it - nothing is named outside it.
      */
     static List<String> spendingNames() {
         return List.of("Pensions", "EI", "Student grants", "Healthcare", "Education",
                 "Police and prisons", "Buildings", "Land bought", "Debt interest",
                 "Interest to the central bank", "Subsidies", "Mortgage insurance claims", "Food assistance",
-                "Transit");
+                "Transit", "Repairs", "Arrears paid down", "Crude for the reserve");
     }
 
     List<Double> spendingAmounts(NationalAccounts na) {
@@ -1237,7 +1249,12 @@ final class GovernmentScreen {
                 // total under them once the dial was on - 0.7.31's B2 again.
                 na.getFoodAssistance(),
                 // ...and transit's wages and upkeep, paid by the treasury since 0.7.49 (B9).
-                na.getTransitSpending());
+                na.getTransitSpending(),
+                // ...and the three spending lines 0.7.102 took inside the totals (A15), on the end:
+                // the repairs to its own buildings, the arrears it paid down, the reserve's crude.
+                na.getCityRepairs(),
+                na.getArrearsPaid(),
+                na.getReserveCrudeBought());
     }
 
     /** The column heads' widths: a month, of the budget, of GDP. */
@@ -1792,10 +1809,8 @@ final class GovernmentScreen {
         List<String> names = spendingNames();
         List<Double> amounts = spendingAmounts(na);
         double total = na.getTotalExpenses();
-        double repairs = ui.game.getCityMaintenancePaid();
-        Node outside = Math.abs(repairs) < .5 ? null
-                : door("Outside the budget's total: repairs " + s(-repairs) + ", paid from the cash",
-                        Palette.TEXT_MUTED, () -> showOnOverview(BRIDGE));
+        // "Outside the budget's total: repairs ..." stood here from 0.7.31; a line of the list since 0.7.102 (A15).
+        Node outside = null;
         listPage(page, "Spending", "paid out", names, amounts, total, na,
                 name -> {
                     double amount = amounts.get(names.indexOf(name));

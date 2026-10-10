@@ -73,7 +73,10 @@ import java.util.Set;
  *      the cent;
  *   8. THE DEBT SCHEDULE (R7): each kind's start, borrowed, repaid, written
  *      off and end close, and from close to close the running totals are
- *      the month's own loans, bonds, repayments and write-offs;
+ *      the month's own loans, bonds, repayments and write-offs - and since
+ *      0.7.102 (A16, F-S1-2) the sheet is read at the close, so nothing is
+ *      lent after it and section 3 holds its debt, land and buildings to
+ *      what the business owes and holds as the month closes;
  *   9. EVERY GATE (R4): each building's first failure is its build card's
  *      gate, a gate it has not is no gate, its cost is paid for in full.
  */
@@ -134,6 +137,9 @@ public class SectorStatementCheck {
     static int upfrontMonths, bondCostMonths, foundedMonths, issuedMonths, boughtBackMonths, derivedMonths,
             stockMonths, landMonths, buildingsMonths, abroadMonths, schedules, scheduleBorrowed, scheduleRepaid,
             scheduleWrittenOff, lentAfterSheet;
+
+    /** ...and 0.7.102's (A16): sector-months that expensed some of what their borrowing cost them up front. */
+    static int expensedMonths;
 
     public static void main(String[] args) throws Exception {
         Locale.setDefault(Locale.CANADA);
@@ -255,12 +261,31 @@ public class SectorStatementCheck {
                         inc.then(SectorStatements.PRE_TAX), then.preTaxIncome(), at);
                 t("1 last month's profit is last month's netIncome").near(inc.then(SectorStatements.PROFIT), then.netIncome(), at);
             }
+            /*
+             * ...AND WHAT ITS BORROWING COST IT UP FRONT IS A COST SINCE 0.7.102 (Jerus's A16). Before: the
+             * outside lines took the loans' fees, the premiums and the bonds' issuing costs off the result
+             * every month (F2, R5). Since, a month struck in this build carries them as an asset and expenses
+             * them over each debt's life inside the profit, so they are outside nothing; an older save's month as before.
+             */
+            double upfront = now.loanFees() + now.premiums() + now.bondCosts();
             double outside = now.fromTheCity() + now.arrearsPaid() + now.depositInterest() + now.bondCoupons()
                     + now.foreignInterest() + now.forgiven() + now.writtenOff() - now.stolen()
-                    // ...and since 0.7.75 the bonds written off, and what its borrowing cost up front (F2, R5).
-                    + now.bondsWrittenOff() - now.loanFees() - now.premiums() - now.bondCosts();
+                    // ...and since 0.7.75 the bonds written off, and what its borrowing cost up front (F2, R5) -
+                    // until 0.7.102, which expenses it (A16).
+                    + now.bondsWrittenOff() - (now.borrowingCostsDeferred() ? 0 : upfront);
             t("1 the total result is the profit and the outside lines").near(SectorStatements.result(inc),
                     now.netIncome() + outside, at);
+            t("1 a month struck in this build carries what its borrowing cost it, not outside the result (0.7.102)").near(
+                    now.borrowingCostsDeferred() ? 0 : 1, 0, at);
+            t("1 the borrowing costs line is the month's charges, before the tax").near(
+                    inc.row(SectorStatements.BORROWING_COSTS) == null ? 0 : -inc.now(SectorStatements.BORROWING_COSTS),
+                    now.borrowingCosts(), at);
+            if (!then.isEmpty() && then.borrowingCostsDeferred()) {
+                t("1 what is still to expense is last month's, and the month's fees, premiums and issuing costs, less the"
+                        + " month's charges").near(now.borrowingCostsToExpense(),
+                        then.borrowingCostsToExpense() + upfront - now.borrowingCosts(), at);
+            }
+            if (now.borrowingCosts() > CENT) expensedMonths++;
             if (inc.row(SectorStatements.RESULT) != null) outsideMonths++;
             if (now.loanFees() + now.premiums() > CENT) upfrontMonths++;
             // R5: a bond's issuing costs are the face it sold less what it handed it - something, when it sold any.
@@ -323,6 +348,13 @@ public class SectorStatementCheck {
                 bondsSoonBefore.remove(s.key());
             }
             t("3 equity is the model's").near(sheet.now(SectorStatements.TOTAL_EQUITY), now.equity(), at);
+            // ...AT THE MONTH'S CLOSE (0.7.102, Jerus's A16; F-S1-2): the debt as it stands, and the land and
+            // buildings the month's loans paid for - read where the audit runs, straight after the close.
+            EconomyManager em = g.getEconomyManager();
+            t("3 the sheet's debt is what it owes at the month's close").near(now.bondsPayable(),
+                    em.getBusinessDebtManager().getPrincipal(s.key()), at);
+            t("3 ...its buildings and land what it holds at the close").near(now.buildings() + now.land(),
+                    g.getBuildingManager().getBuildingsValueBySector(s.key()) + em.landValueOf(s), at);
             t("3 liabilities and equity are the total assets").near(sheet.now(SectorStatements.TOTAL_CLAIMS),
                     sheet.now(SectorStatements.TOTAL_ASSETS), at);
             if (!then.isEmpty()) {
@@ -476,6 +508,8 @@ public class SectorStatementCheck {
         assertTrue("fixture: the cities had months with fees kept out of a loan, bonds' issuing costs, founders' shares,"
                 + " shares issued and bought back", upfrontMonths > 0 && bondCostMonths > 0 && foundedMonths > 0
                 && issuedMonths > 0 && boughtBackMonths > 0);
+        assertTrue("fixture: the businesses expensed what their borrowing cost them up front in " + expensedMonths
+                + " sector-months (0.7.102)", expensedMonths > 0);
         assertTrue("fixture: ...and R6's parts: the stock, the land, the buildings and what is held abroad each moved in some"
                 + " month", stockMonths > 0 && landMonths > 0 && buildingsMonths > 0 && abroadMonths > 0);
         assertTrue("a city founded in this build derives no paid-in: " + derivedMonths + " derived sector-months", derivedMonths == 0);
@@ -769,8 +803,15 @@ public class SectorStatementCheck {
             if (!e.getKey().startsWith("8")) continue;
             assertTrue(e.getKey().substring(2) + ": " + e.getValue().words(), e.getValue().missed == 0);
         }
-        assertTrue("fixture: the cities' schedules borrowed, repaid and wrote off, and lent after a sheet was read",
-                scheduleBorrowed > 0 && scheduleRepaid > 0 && scheduleWrittenOff > 0 && lentAfterSheet > 0);
+        /*
+         * BEFORE 0.7.102: "fixture: ...and lent after a sheet was read", lentAfterSheet > 0 - the sheet was read at
+         * the insolvency settle, before the month's building loans. Since (Jerus's A16, F-S1-2) it is read at the
+         * close, so the schedule's window is the calendar month and nothing is lent after it.
+         */
+        assertTrue("fixture: the cities' schedules borrowed, repaid and wrote off",
+                scheduleBorrowed > 0 && scheduleRepaid > 0 && scheduleWrittenOff > 0);
+        assertTrue("the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)",
+                lentAfterSheet == 0);
     }
 
     /* ---------------------------------------------------------------- 9 */

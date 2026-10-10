@@ -138,8 +138,8 @@ import java.util.List;
  *      strict ones, are the 0.7.52 rule to the bit; every step's weight is
  *      over one, and over the target the rate rises with each step; the
  *      words say what it aims at.
- *      Then a probe city - the playtest's founding and rhythm (its seed 11's
- *      shape since 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
+ *      Then a probe city - the playtest's founding and rhythm (its seed 8's
+ *      shape since 0.7.102, seed 11's from 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
  *      months from one save at each end and at Standard: the Policy tab's
  *      preview (PolicyPreview.ruleAt()) at the step in force is the rule's
  *      own; very strict holds prices lower than Standard; the very loose
@@ -570,6 +570,25 @@ public class CentralBankCheck {
                 cb.getAdvancedToTreasury() > 0 && cb.getAdvancesToTreasury() > cb.ceiling());
 
         out.println("\n--- ...and the arrears are paid down first when cash returns ---");
+        /*
+         * THE ORDER, BY A FIXTURE (0.7.102). It was read off the journal's
+         * order, "Repaid the central bank" before "Paid down arrears"; since
+         * Jerus's A15 the arrears paid down are a budget line and not
+         * journalled. So: cash for half the advances, and nothing is paid
+         * down - the cash repays the central bank first.
+         */
+        double halfOwed = cb.getAdvancesToTreasury() / 2;
+        double arrearsWaiting = city.getArrearsTotal();
+        city.setCashForTest(halfOwed);
+        play(city);
+        double repaidFirst = 0;
+        for (TreasuryJournal.Entry e : city.getTreasuryJournal()) {
+            if (e.label().equals("Repaid the central bank")) repaidFirst -= e.amount();
+        }
+        assertTrue("fixture: cash for half what the central bank is owed, and arrears waiting", halfOwed > 0 && arrearsWaiting > 0);
+        assertTrue("the cash repays the central bank first, and nothing is paid down while it is owed",
+                repaidFirst > 0 && city.getArrearsPaidThisMonth() == 0
+                        && city.getEconomyManager().getNationalAccounts().getArrearsPaid() == 0);
         double arrearsOwed = city.getArrearsTotal();
         double grantArrears = city.getArrearsByLine().getOrDefault(TreasuryLine.STUDENT_GRANTS, 0.0);
         assertTrue("fixture: the treasury owes arrears", arrearsOwed > 0);
@@ -583,13 +602,19 @@ public class CentralBankCheck {
         close("the central bank was repaid in full", cb.getAdvancesToTreasury(), 0, 1e-6);
         close("...and then the arrears", city.getArrearsTotal(), grantArrears, 1e-6);
         close("...every dollar of them", city.getArrearsPaidThisMonth(), arrearsOwed - grantArrears, 1e-6);
+        /*
+         * ...ON THE BUDGET'S LINE SINCE 0.7.102 (Jerus's A15: every monthly
+         * treasury flow inside the budget's totals). Before: "...in that
+         * order", read off the journal, which named them "Paid down arrears"
+         * after "Repaid the central bank" (the order is the fixture above now).
+         * The students' arrears are paid with their grant, on its line.
+         */
         journal = city.getTreasuryJournal();
-        int repaidAt = -1, arrearsAt = -1;
-        for (int i = 0; i < journal.size(); i++) {
-            if (journal.get(i).label().equals("Repaid the central bank")) repaidAt = i;
-            if (journal.get(i).label().equals("Paid down arrears")) arrearsAt = i;
-        }
-        assertTrue("...in that order", repaidAt >= 0 && arrearsAt > repaidAt);
+        boolean named = false;
+        for (TreasuryJournal.Entry e : journal) named |= e.label().equals("Paid down arrears");
+        close("...on the budget's own line, \"Arrears paid down\": what reached the businesses' tills",
+                city.getEconomyManager().getNationalAccounts().getArrearsPaid(), arrearsOwed - grantArrears, 1e-6);
+        assertTrue("...so the journal names none of it", !named);
         assertTrue(String.format("...and the audit closed on all %d months", monthsPlayed),
                 monthsBroken == 0);
 
@@ -601,6 +626,12 @@ public class CentralBankCheck {
         close("the builders' cash-flow statement carries the arrears paid them",
                 builtBooks.arrearsPaid(), owedBuilders, 1e-6);
         close("...and the shops' theirs", shopBooks.arrearsPaid(), owedShops, 1e-6);
+        // ...ON THE STATEMENT ITSELF (0.7.102, Jerus's A17: "add the line"). It has been a row of the cash flow
+        // since 0.7.55; held here on the row the Sectors screen draws, not only on the books' figure.
+        SectorStatements.Table builtCash = SectorStatements.cashFlow(builtBooks, city.getSectorBooks().previous(
+                city.getSectors().construction()));
+        close("...on the row its cash-flow statement draws, \"Arrears the city paid\", in its operating cash",
+                builtCash.now(SectorStatements.CASH_ARREARS), owedBuilders, 1e-6);
         double onStatements = 0, worstGap = 0;
         boolean allClose = true;
         for (Sector s : city.getSectors().all()) {
@@ -1188,7 +1219,14 @@ public class CentralBankCheck {
         Debt serial = fixtureSerial(city, soldIn);
         assertTrue("fixture: the treasury sold a two-year serial", serial != null);
         play(city);                                        // the settle: the households take their share
-        double dial = .5;
+        /*
+         * THE DIAL LEAVES THE BANK A PART WHATEVER THE HOUSEHOLDS TAKE (0.7.102). It was .5: the households take
+         * at most HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE of an issue at its settle, half, so a central bank
+         * buying half of what was left from the market left the bank nothing whenever they took their whole half -
+         * which they did once 0.7.102's books moved the city (they took $5,176k of the $20,000k before, $10,000k
+         * after), and the fixture stopped causing the three holders it is about. Four fifths of the rest: .4.
+         */
+        double dial = (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE) * .8;
         city.getCentralBank().setTargetShare(dial);
         while (serial.getRemainingMonths() > 16) play(city);
         assertTrue("fixture: the households, the bank and the central bank each hold part of it",
@@ -1767,9 +1805,10 @@ public class CentralBankCheck {
 
     /**
      * The probe city: the playtest's founding (LongPlaytest.founding()) in
-     * its seed 11's shape - 43 houses, then five months before the next 20
-     * - and its rhythm (LongPlaytest.main's skips, schools and advice) to
-     * STRICT_BRANCH, on the rule at the default target and Standard.
+     * its seed 8's shape since 0.7.102 - 40 houses, then five months before
+     * the next 20 - and its rhythm (LongPlaytest.main's skips, schools and
+     * advice) to STRICT_BRANCH, on the rule at the default target and
+     * Standard.
      *
      * A SEED WHOSE CITY IS CALM: from its month 600 the twins keep the same
      * people and only the rule differs, so what the dial does to prices is
@@ -1797,6 +1836,18 @@ public class CentralBankCheck {
      * out of work) - and it holds every assertion: 2.987% < 3.321% <
      * 4.137%, the very loose twin's trust 0.624 against 0.933
      * (runs/fixM3b-notes.md).
+     *
+     * SEED 8'S SINCE 0.7.102, for seed 3's old reason. Once what borrowing
+     * costs up front was expensed and the sheet read at the close (Jerus's
+     * A16), seed 11's city reached month 600 at 0.50% a year and its twins
+     * kept inside the target's tolerance (1.797 to 1.946% a year): its very
+     * loose twin trusted the bank exactly as Standard's did (0.942153 both),
+     * and "very loose costs trust" could not be shown. Of the sixteen shapes
+     * probed on 0.7.102 (runs/fixP3-notes.md), eleven hold every premise;
+     * the calmest of them that shows the lean plainly is seed 8's - its twins
+     * 9,194 to 9,196 people - at 2.567% < 2.838% < 3.323% a year, the very
+     * loose twin's trust 0.753 against 0.932 (seed 3's twins are as calm,
+     * 4,783 to 4,784, but the lean costs them 0.915 against 0.949).
      */
     static Game probeCity(GameFiles files) {
         Game g = new Game(files, LongPlaytest.founding());
@@ -1810,7 +1861,7 @@ public class CentralBankCheck {
                 g.setRolloverMode(LongPlaytest.ROLLOVER);
                 g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
                 g.setFundDial(LongPlaytest.FUND_DIAL);
-                LongPlaytest.villageBuild(g, "House", 43);
+                LongPlaytest.villageBuild(g, "House", 40);
                 LongPlaytest.villageBuild(g, "Convenience Store", 3);
                 LongPlaytest.villageBuild(g, "Mixed Farm", 2);
                 LongPlaytest.run(g, 5);

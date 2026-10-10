@@ -661,9 +661,24 @@ public class TreasuryCheck {
                 buses.getInfrastructureManager().getTransitRiders() > 0 && be.getTransitBill() > 0
                         && be.getTransitFares() > 0);
         boolean billPaid = true, earnedCounts = true, noFaresStep = true;
+        boolean repairsInside = true, repairsStep = true;
+        double repairsPaid = 0;
         for (int i = 0; i < 12; i++) {
             press(buses);
             NationalAccounts bna = be.getNationalAccounts();
+            /*
+             * ...AND THEIR REPAIRS ARE A BUDGET LINE (0.7.102, Jerus's A15:
+             * "i see maintenance is out of the budget even tho its a monthly
+             * thing"). Before, the journal named them "Repaired the city's own
+             * buildings" every month and the budget's totals left them out; now
+             * the spending total carries what the treasury paid, the journal
+             * names nothing, and the walk from EARNED has a Repairs step.
+             */
+            double repairs = buses.getCityMaintenancePaid();
+            repairsPaid += repairs;
+            repairsInside &= bna.getCityRepairs() == repairs
+                    && line(buses.getTreasuryJournal(), "Repaired the city's own buildings") == null;
+            repairsStep &= amount(buses.getEarnedToBudget(), "Repairs") == -repairs;
             double bill = be.getTransitBill();
             double[] walk = earnedWalk(buses);
             billPaid &= bill > 0 && bna.getTransitSpending() == bill && bna.getTransitFares() == be.getTransitFares()
@@ -680,6 +695,10 @@ public class TreasuryCheck {
         check("the treasury pays transit's bill and the bridge closes with it", billPaid);
         check("...EARNED counts the bill, and walks to the budget with nothing for the dials", earnedCounts);
         check("...and the walk has no fares step: the budget carries them", noFaresStep);
+        System.out.printf("   the year's repairs to the city's own buildings: %,.2fk%n", repairsPaid);
+        check("fixture: the city paid to repair its own buildings that year", repairsPaid > 0);
+        check("its repairs are inside the budget's spending, as paid, and the journal names none (0.7.102)", repairsInside);
+        check("...and the walk from EARNED takes them as a step of their own", repairsStep);
     }
 
     /** A city founded as a player founds one: newGame(), so it rolls in the same structure. */
