@@ -939,7 +939,8 @@ public class PlanCheck {
                 + MapCheck.DRAWN_EVERY + "th month ---");
         Path root = Files.createTempDirectory("plancheck");
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
-        Game g = new Game(files, LongPlaytest.founding());
+        // MapCheck 1's city, on MiningCheck.IRON_SEED's world since 0.7.99 (its iron a kilometre out).
+        Game g = new Game(files, LongPlaytest.founding().withWorldSeed(MiningCheck.IRON_SEED));
         PrintStream real = System.out, was = LongPlaytest.out;
         LongPlaytest.out = QUIET;
         System.setOut(QUIET);
