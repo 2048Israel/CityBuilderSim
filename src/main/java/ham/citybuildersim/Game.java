@@ -14905,9 +14905,27 @@ public class Game {
                 }
             }
 
+            // ...and every stack the order names that the restore above left
+            // out, empty (0.7.103, batch P4): a building whose last unit went -
+            // every gravel road paved, the last one retired - keeps its stack
+            // in the city that was saved, at its place, and the month shares
+            // its crews out over the list as it stands, so a city loaded
+            // without it parted from the one saved at the low bits within two
+            // months and at the cent within six (AutoBuildCheck 4's decades
+            // city, once each road's own repairs had it pave every gravel
+            // road: m602, m606). The order lists every stack since 0.7.43.
+            int[] order = loaded.getStackOrder();
+            if (order != null) {
+                for (int id : order) {
+                    BuildingsTemplate template = buildingManager.getTemplate(id);
+                    if (template != null && buildingManager.getStack(template) == null) {
+                        buildingManager.addStack(template, 0, true);
+                    }
+                }
+            }
             // ...stood in the order the city stood them in (0.7.43): the
             // restore above is by id. See DataSave.getStackOrder().
-            buildingManager.orderStacks(loaded.getStackOrder());
+            buildingManager.orderStacks(order);
 
             // A save that kept one order book for the whole city: spread it
             // over the sites by the work still owed, which is the rate the

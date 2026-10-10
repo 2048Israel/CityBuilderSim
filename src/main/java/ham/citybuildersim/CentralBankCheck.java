@@ -1225,7 +1225,6 @@ public class CentralBankCheck {
          * buying half of what was left from the market left the bank nothing whenever they took their whole half -
          * which they did once 0.7.102's books moved the city (they took $5,176k of the $20,000k before, $10,000k
          * after), and the fixture stopped causing the three holders it is about. Four fifths of the rest: .4.
-         * (0.7.103's road repairs, Jerus's A11, moved the town the same way, and its batch made the same repair.)
          */
         double dial = (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE) * .8;
         city.getCentralBank().setTargetShare(dial);
@@ -1689,7 +1688,7 @@ public class CentralBankCheck {
 
         /* ---- the probe city ---- */
         GameFiles files = GameFiles.scratch("howstrict");
-        Game city = probeCity(files, PROBE_SHAPE);
+        Game city = probeCity(files);
         out.printf("   the probe city at m%d: %,d people, inflation %.2f%%, the dial %.2f%%, trust %.3f%n", city.getMonth(),
                 city.getPopulationManager().getPopulation(), city.getPriceIndex().inflation() * 100,
                 city.getDebtManager().getPolicyRate() * 100, city.getExpectations().getCredibility());
@@ -1849,19 +1848,14 @@ public class CentralBankCheck {
      * 9,194 to 9,196 people - at 2.567% < 2.838% < 3.323% a year, the very
      * loose twin's trust 0.753 against 0.932 (seed 3's twins are as calm,
      * 4,783 to 4,784, but the lean costs them 0.915 against 0.949).
+     *
+     * ...AND STILL SEED 8'S AT 0.7.103 (each road kind's own repairs and the
+     * test player's roads by need, Jerus's A11 of 2026-10-10): of the sixteen
+     * shapes probed again (runs/fixP4-notes.md), eleven hold every premise,
+     * seed 8's among them - its twins 4,156 to 4,157 people, 2.213% < 2.531%
+     * < 2.930% a year, the very loose twin's trust 0.806 against 0.948.
      */
-    /*
-     * THE PROBE CITY'S SHAPE (0.7.103): the playtest's founding nudges, as its ensemble mode makes them
-     * (LongPlaytest, ENSEMBLE MODE) - 40 + shape % 4 houses, then 3 + (shape / 4) % 3 months, then 20 +
-     * (shape / 12) % 3 houses more. Shape 11 is the founding this city had until 0.7.103 (43, 5, 20); each road's
-     * own repairs (Jerus's A11) keep that city over its target the whole twenty years, so the very loose twin no
-     * longer read a month under it, and section 21's fixture needs a city that does. Shape 0 is the default
-     * playtest's own founding (40, 3, 20): its very loose twin reads 141 months under the target and 99 over.
-     * Shapes 1 to 3 cause it too (54, 35 and 53 months under); 11 does not (0).
-     */
-    static final int PROBE_SHAPE = 0;
-
-    static Game probeCity(GameFiles files, int shape) {
+    static Game probeCity(GameFiles files) {
         Game g = new Game(files, LongPlaytest.founding());
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
@@ -1873,11 +1867,11 @@ public class CentralBankCheck {
                 g.setRolloverMode(LongPlaytest.ROLLOVER);
                 g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
                 g.setFundDial(LongPlaytest.FUND_DIAL);
-                LongPlaytest.villageBuild(g, "House", 40 + shape % 4);
+                LongPlaytest.villageBuild(g, "House", 40);
                 LongPlaytest.villageBuild(g, "Convenience Store", 3);
                 LongPlaytest.villageBuild(g, "Mixed Farm", 2);
-                LongPlaytest.run(g, 3 + (shape / 4) % 3);
-                LongPlaytest.villageBuild(g, "House", 20 + (shape / 12) % 3);
+                LongPlaytest.run(g, 5);
+                LongPlaytest.villageBuild(g, "House", 20);
                 LongPlaytest.run(g, 4);
                 LongPlaytest.villageBuild(g, "Convenience Store", 2);
                 LongPlaytest.villageBuild(g, "Construction Depot", 1);

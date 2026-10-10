@@ -172,19 +172,17 @@ public class ScaleCheck {
      * 535, 537, 540, 543, 545, 547, 550, 553, 555, 557, 560, 563, 565). 545
      * is the middle of that.
      *
-     * ...AT 2,375 SINCE 0.7.103, BY THE SAME PREMISE. Each road kind's own
-     * repairs (Jerus's A11; BuildingsTemplate, A ROAD'S OWN REPAIRS): the
-     * player's ten gravel roads of month 32 cost the village more than its
-     * tax, and it stands at about 250 people until month 2,000 (runs/
-     * fixP4-notes.md, 4) - 258 people at 547, growing by none. Scanned
-     * (scratch-p4/scan, ScaleCheck with the month changed, every assertion
-     * read): every assertion holds at 2,200, 2,300, 2,350, 2,375, 2,400,
-     * 2,425 and 2,450; at 2,250 the history's net income missed the sector
-     * books' by a cent; from 2,500 to 2,700 the copies' businesses do not
-     * pay the city's price for its ground. 2,375 is the middle: 31,664
-     * people at 2,380.
+     * ...AT 595 SINCE 0.7.103, BY THE SAME PREMISE. Each road kind's own
+     * repairs (Jerus's A11; BuildingsTemplate, A ROAD'S OWN REPAIRS) and the
+     * test player's roads ordered by need (LongPlaytest.roadsByNeed()) move
+     * its town: at 545 the larger copy built no more homes than it began
+     * with. Scanned (scratch-p4/scan2, ScaleCheck with the month changed,
+     * every assertion read): every assertion holds at 500, 580, 583, 585,
+     * 587, 590, 593, 595, 597, 600, 605, 610 and 620; at every month scanned
+     * from 510 to 575, and at 615, the larger copy built no more homes than
+     * it began with. 595 is the middle of 580 to 610: 4,303 people at 600.
      */
-    static final int FREE_FIXTURE_MONTHS = 2375;
+    static final int FREE_FIXTURE_MONTHS = 595;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

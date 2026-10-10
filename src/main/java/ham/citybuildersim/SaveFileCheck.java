@@ -585,6 +585,36 @@ public class SaveFileCheck {
         assertEquals("it did not vanish",
                 reopened.getBuildingManager().getUnderConstructionById()[depot.getId()], 1);
 
+        /* ============ 8b. a stack emptied keeps its place (0.7.103) ============ */
+        System.out.println("\n--- and a building whose last one went keeps its place in the queue ---");
+
+        // A stack stays in the list when its last building goes - every gravel
+        // road paved, the last one retired - and the month shares the crews out
+        // over the list as it stands. The load restored a stack only for a
+        // building with one standing or on site, so a city saved with an empty
+        // one came back without it and parted from the city saved within months
+        // (AutoBuildCheck 4, 0.7.103). The save's stack order names it.
+        BuildingsTemplate gravel = template(brandNew, "Gravel Road");
+        BuildingsTemplate homes = template(brandNew, "House");
+        brandNew.buildStack(gravel, 1, true);
+        brandNew.buildStack(homes, 2, true);
+        BuildingManager emptied = brandNew.getBuildingManager();
+        emptied.retire(gravel, 1);
+        assertTrue("fixture: the gravel road's stack stands empty, ahead of the houses",
+                emptied.getStack(gravel) != null && emptied.getQuantity(gravel.getId()) == 0
+                        && emptied.getStack(gravel).getUnderConstruction() == 0
+                        && java.util.Arrays.stream(emptied.stackOrder()).boxed().toList().indexOf(gravel.getId())
+                                < java.util.Arrays.stream(emptied.stackOrder()).boxed().toList().indexOf(homes.getId()));
+        assertTrue("saved", brandNew.saveGame(3).ok);
+        Game emptiedBack = new Game(freshFiles);
+        emptiedBack.loadGameSave(3);
+        assertEquals("...and the loaded city stands the same stacks in the same order, the empty one in its place",
+                java.util.Arrays.toString(emptiedBack.getBuildingManager().stackOrder()),
+                java.util.Arrays.toString(emptied.stackOrder()));
+        BuildingsStacks emptyBack = emptiedBack.getBuildingManager().getStack(template(emptiedBack, "Gravel Road"));
+        assertTrue("...with nothing in it", emptyBack != null && emptyBack.getQuantity() == 0
+                && emptyBack.getUnderConstruction() == 0);
+
         /* ============ 9. the headline income does not move ============ */
         System.out.println("\n--- and the next-month figure holds still ---");
 
@@ -2372,10 +2402,8 @@ public class SaveFileCheck {
         // city's treasury runs a surplus whose pay-in met the transfer every
         // month, so the fund never sold (its cash $136.6M after a year).
         drawing.setFundDial(0);
-        // A month for what it held to run short, and one to pay what it sold late: pressed until both, no more than two
-        // years (0.7.103: a year until each road's own repairs, Jerus's A11, moved this city - it owed at month 12, and
-        // had not yet paid late).
-        for (int m = 0; m < 24 && !(drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0); m++) {
+        // A month for what it held to run short, and one to pay what it sold late: pressed until both, no more than a year.
+        for (int m = 0; m < 12 && !(drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0); m++) {
             drawing.simulateMonths(1);
         }
         System.out.printf("   drawing %s a month: due $%,.2fk, paid $%,.2fk, to raise $%,.2fk, paid late $%,.2fk, cash $%,.2fk%n",

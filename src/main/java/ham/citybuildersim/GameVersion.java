@@ -4736,33 +4736,54 @@ public final class GameVersion {
      *   - EACH ROAD ITS OWN REPAIRS (A11; BuildingsTemplate, A ROAD'S OWN
      *     REPAIRS; buildings.json's "repairs"): the Gravel Road 3% of its
      *     price a year, the Paved Road 2%, the Elevated Highway 1.25% - the
-     *     Canadian Infrastructure Report Card 2016's reinvestment rates for
-     *     roads (2-3%) and bridges (1-1.5%) - where every road was at the
+     *     Canadian Infrastructure Report Card 2016's target reinvestment
+     *     rates (Key Messages, Figure 4: roads and sidewalks 2.0-3.0%,
+     *     bridges 1.0-1.5% of replacement value a year, "informative only";
+     *     checked by Jerus) - where every road was at the
      *     house's 1%; charged by the month's maintenance and read by the
      *     advice's road over its life. Jerus's 1008 city's road repairs go
      *     from $9.8B to $22.0B a month.
      *   - THE CARD WORDS (B; BuildCard): a land Oil Well's site count says
      *     "dry"; a conversion unit's card with no crude unit standing says
      *     NO_FEED where it read a loss.
-     *   - Harnesses: OilCheck 16 (a release stays) and 17 (new: the duty);
-     *     RefineryCheck 15 (new: the cap) and 14 (its town's order a unit
-     *     the till can pay for: its lube plant is capped out); RoadCheck 1;
+     *   - THE TEST PLAYER ORDERS ROADS BY NEED (Jerus, 2026-10-10: "Fix
+     *     the test player too"; LongPlaytest.roadsByNeed()): the advice's
+     *     card for the road - its road, ranked by its order over its life for
+     *     each trip it will take off, the road's own repairs in it, the city's
+     *     gravel roads paved among them, and its count, the least that keeps
+     *     the road ahead at its projection - where it ordered ceil(25 x the
+     *     share of output the road cost) of the road it chose, whatever the
+     *     trips; none when what is on site keeps the road ahead. The transit
+     *     lines stay its own moves.
+     *   - A STACK EMPTIED KEEPS ITS PLACE ACROSS A SAVE (Game's load path):
+     *     a building whose last unit went - every gravel road paved, the last
+     *     retired - keeps its stack in the list the month shares the crews
+     *     over; a load restored stacks only for buildings standing or on
+     *     site, so a city saved with an empty one parted from the city saved
+     *     within months. It stands where the save's stack order names it.
+     *   - Harnesses: OilCheck 16 (a release stays; on the budget's line since
+     *     0.7.102) and 17 (new: the duty); RefineryCheck 15 (new: the cap)
+     *     and 14 (its town's order a unit the till can pay for: its lube
+     *     plant is capped out); RoadCheck 1 and 9 (the player's road and
+     *     count the advice's card's, none when the road is ahead);
      *     BuildingDataCheck; BuildCardCheck 6; PolicyPreviewCheck 3;
-     *     ReadPathCheck. Fixtures the roads' repairs moved, re-made to cause
-     *     their conditions: OilCheck 5's spurs on their own ground,
-     *     CentralBankCheck 19's dial (the bank a part) and 21's probe city
-     *     (the playtest's own founding), SaveFileCheck's withdrawal pressed
-     *     two years, ScaleCheck's growing city at month 2,375 and
-     *     OrderSearchCheck's copy at 2,475 (each the middle of a scan).
-     *     HealthCheck 13 reads the dear twin's fees in every month the fee
-     *     turned somebody away, where it read the last month alone (which
-     *     turned nobody away now); its hunger line, the known red, passes
-     *     (-1.8 points) on the shelves' timing, the fee's rule unchanged.
-     *   - The playtest moves by A11 alone (with the roads' repairs at 1% it
-     *     is 0.7.101's byte for byte): its player orders ten gravel roads for
-     *     294 people at month 32, and their repairs pass the town's tax; it
-     *     stands at about 250 people to month 1,800, and ends at 229,295
-     *     (545,179). runs/fixP4-notes.md, section 4.
+     *     ReadPathCheck; SaveFileCheck 8b (an empty stack across a save:
+     *     AutoBuildCheck 4 found it). Fixtures re-made to cause their
+     *     conditions: OilCheck 5's spurs on their own ground, ScaleCheck's
+     *     growing city at month 595 (the middle of a scan). HealthCheck 13
+     *     reads the dear twin's fees in every month the fee turned somebody
+     *     away, where it read the last month alone (which turned nobody away
+     *     before the merge with 0.7.102); its hunger line, the known red,
+     *     passes (-1.8 points) on the shelves' timing, the fee's rule
+     *     unchanged. LongPlaytest's map sum leaves out the buildings at sea,
+     *     which no district holds since 0.7.91: no run had built one.
+     *   - The playtest: with the roads' repairs at 1% and the old road rule
+     *     it is 0.7.102's byte for byte. The road rule alone moves it from
+     *     month 32 (the old rule's ten gravel roads, $56.5M of $71M, against
+     *     the advice's card) and it ends at 674,737 (544,232 at 0.7.102);
+     *     with each road's own repairs as well, from month 37, and it ends at
+     *     617,942: 230 gravel, 291 paved and 161 highways standing where
+     *     0.7.102 had 683, 56 and none. runs/fixP4-notes.md, section 4.
      */
     public static final String VERSION = "0.7.103";
 

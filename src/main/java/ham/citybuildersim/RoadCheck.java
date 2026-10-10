@@ -731,7 +731,7 @@ public class RoadCheck {
     /* ============================ 9. THE TEST PLAYER ============================ */
 
     static void player(Path root) {
-        out.println("\n--- 9. the test player asks the advice which road, and paves where it beats a new Paved Road ---");
+        out.println("\n--- 9. the test player asks the advice which road and how many, and paves where it beats a new Paved Road ---");
         // New roads, on the paved town: gravel at nothing, the paved road past the crossover.
         Game a = town(root, "player-new", PAVED, 3);
         double[][] baseA = noGroundFree(a);
@@ -761,8 +761,11 @@ public class RoadCheck {
         first &= firstRoad(g, base, 1.5 * Math.max(overPaved, overGravel) / office, "paved gravel");
         assertTrue("its first road move is the advice's: the gravel road at nothing, the paved road past the crossover,"
                 + " paving past paving's", first);
-        // ...and the move paves: as many as a road order at its gap, no more than there are.
+        // ...and the move paves as many as the advice's card says (0.7.103; Jerus, 2026-10-10: "Fix the test player too"):
+        // its count, the least that keeps the road ahead at its projection - until then as many as a road order at its gap,
+        // ceil(25 x the share of output the road costs), and no more than there are.
         scale(g, base, 1.5 * Math.max(overPaved, overGravel) / office);
+        BuildAdvice.Suggestion paveCard = roadCard(g);
         List<LongPlaytest.Move> moves = new ArrayList<>();
         LongPlaytest.addRoadThrottle(moves, g, Math.max(1, g.getEconomyManager().getMonthGdp()) * .1);
         int before = LongPlaytest.roadsPaved, standing = g.paveable();
@@ -772,7 +775,57 @@ public class RoadCheck {
         out.printf("      the move paved %d of the %d gravel roads%n", count, standing);
         assertTrue("...and its move paves them: on the Paved Road site, out of the cash, counted in the report",
                 did[0] && count >= 1 && count <= standing && g.pavingNow() == count);
+        assertTrue("...as many as the advice's card: its count, the least that keeps the road ahead at its projection (0.7.103)",
+                paveCard != null && paveCard.paving() && count == paveCard.count());
         scale(g, base, 1);
+
+        /*
+         * ROADS BY NEED (0.7.103, batch P4). The player ordered ceil(25 x the share of output the road costs) of the
+         * road it chose, whatever the trips - ten Gravel Roads for 294 people at the playtest's month 32 - and once each
+         * road kind carried its own repairs (Jerus's A11) their bill passed that town's tax. It orders the advice's card
+         * now: the advice's road and the advice's count; and none when what is on site keeps the road ahead. Asked of
+         * the paved town with its ground free (gravel the least) and of a town whose roads are well ahead, each with the
+         * road's cost at a tenth of its output - three roads on the old rule's scale.
+         */
+        scale(a, baseA, 0);
+        BuildAdvice.Suggestion newCard = roadCard(a);
+        BuildingsTemplate gravelA = template(a, GRAVEL);
+        List<LongPlaytest.Move> roadMoves = new ArrayList<>();
+        LongPlaytest.addRoadThrottle(roadMoves, a, Math.max(1, a.getEconomyManager().getMonthGdp()) * .1);
+        int beforeA = standingAndOnSite(a, gravelA);
+        final boolean[] built = { false };
+        if (!roadMoves.isEmpty()) quietly(() -> built[0] = roadMoves.get(0).act().getAsBoolean());
+        int ordered = standingAndOnSite(a, gravelA) - beforeA;
+        out.printf("      the paved town, its ground free: the move ordered %d Gravel Road(s), the advice's card %d; the old"
+                + " rule's %d%n", ordered, newCard == null ? 0 : newCard.count(), (int) Math.ceil(.1 * 25));
+        assertTrue("the test player's road move orders the advice's road and the advice's count, by need (0.7.103)",
+                newCard != null && !newCard.paving() && newCard.template() == gravelA && built[0] && ordered == newCard.count());
+        scale(a, baseA, 1);
+        Game ahead = town(root, "player-ahead", PAVED, 60);
+        List<LongPlaytest.Move> aheadMoves = new ArrayList<>();
+        LongPlaytest.addRoadThrottle(aheadMoves, ahead, Math.max(1, ahead.getEconomyManager().getMonthGdp()) * .1);
+        int roadMovesAhead = 0;
+        for (LongPlaytest.Move m : aheadMoves) {
+            if (List.of("gravel road", "roads", "highway", "paved gravel").contains(m.label())) roadMovesAhead++;
+        }
+        out.printf("      sixty Paved Roads: roads at %.1f%% of capacity, %d road move(s)%n",
+                ahead.getInfrastructureManager().getUtilisation() * 100, roadMovesAhead);
+        assertTrue("...and none when what is on site keeps the road ahead at its projection (the old rule ordered three)",
+                roadCard(ahead) == null && roadMovesAhead == 0);
+    }
+
+    /** The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. */
+    static BuildAdvice.Suggestion roadCard(Game g) {
+        java.util.Set<BuildingsTemplate> lines = new java.util.HashSet<>();
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getTransitCapacity() > 0) lines.add(t);
+        return BuildAdvice.suggestFor(g, null, ROADS, g.getCash(), g.getLandManager().getAvailableSqFt(), BuildAdvice.SLACK,
+                lines, false);
+    }
+
+    /** A building's count standing and on site. */
+    static int standingAndOnSite(Game g, BuildingsTemplate t) {
+        BuildingsStacks s = g.getBuildingManager().getStack(t);
+        return g.getBuildingManager().getQuantity(t.getId()) + (s == null ? 0 : s.getUnderConstruction());
     }
 
     /**

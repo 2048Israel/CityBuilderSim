@@ -3623,73 +3623,99 @@ public class LongPlaytest {
          * over the template's founding cash cost - gravel first in every
          * city, at any price of ground: 124 of the 126 road orders of the
          * 0.7.69 run were gravel. A sensible player asks the advice which
-         * road: the one that costs least over its life a trip it takes off
-         * the road, its ground and its repairs in it
-         * (BuildAdvice.lifetime()), and paving the gravel roads it has when
-         * that beats a new Paved Road (BuildAdvice.pavingBeatsPaved()). So
-         * the roads keep their place among the moves - the best road's trips
-         * a founding dollar, as before, against the lines' - and are offered
-         * in the advice's order inside it. Whether a road or a line eases
-         * the road stays this player's own rule (star N1-6): the lines' place,
-         * their caps and linesThatPay() are untouched.
+         * road. So the roads keep their place among the moves - the best
+         * road's trips a founding dollar, as before, against the lines' - and
+         * are offered in the advice's order inside it. Whether a road or a
+         * line eases the road stays this player's own rule (star N1-6): the
+         * lines' place, their caps and linesThatPay() are untouched.
+         *
+         * ...AND HOW MANY, BY NEED (0.7.103, batch P4; Jerus, 2026-10-10:
+         * "Fix the test player too"). It ordered ceil(25 x the share of
+         * output lost to the road) of whichever road won, whatever the trips
+         * - ten Gravel Roads for 294 people at month 32, $56.5M of its $71M -
+         * and once each road kind carried its own repairs (A11: gravel 3% of
+         * its price a year, CIRC 2016) their bill passed the town's tax and
+         * it stood at about 250 people for 1,800 months. A sensible player
+         * orders what the advice says: its own road (BuildAdvice.suggestFor()
+         * on the road, the least over its life for each trip it will take off
+         * - lifePerServed(), the road's own repairs in it - the city's gravel
+         * roads paved among them) and its own count, the least that keeps the
+         * road ahead at the demand it opens to (count(), the projection and
+         * the slack every card is sized with). Nothing ordered when what is on
+         * site already keeps it ahead. The lines are left out of that ranking
+         * (they are this player's own moves below); where the money or the
+         * ground will not run to the advice's card the next in its ranking
+         * is offered after it, as the roads were offered after one another.
          */
         BuildAdvice.Measure roadM = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
-        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, roadM);
         double free = g.getLandManager().getAvailableSqFt();
         double roadsKey = Double.NEGATIVE_INFINITY;
-        java.util.List<double[]> roadOrder = new java.util.ArrayList<>();
-        java.util.List<String[]> roadNames = new java.util.ArrayList<>();
+        java.util.Map<String, String> roadLabels = new java.util.HashMap<>();
         for (int i = order.size() - 1; i >= 0; i--) {
             BuildingsTemplate t = template(g, names.get(i)[0]);
             if (t.getTransitCapacity() > 0) continue;
             roadsKey = Math.max(roadsKey, order.get(i)[0]);
-            double unit = BuildAdvice.unit(g, roadM, t);
-            roadOrder.add(0, new double[] { unit > 0 ? BuildAdvice.lifetime(g, t, free, site) / unit
-                    : Double.POSITIVE_INFINITY, order.get(i)[1], 0 });
-            roadNames.add(0, names.get(i));
+            roadLabels.put(names.get(i)[0], names.get(i)[1]);
             order.remove(i);
             names.remove(i);
         }
-        if (g.paveable() > 0 && BuildAdvice.pavingBeatsPaved(g, free, site)) {
-            double unit = BuildAdvice.pavingUnit(g, site);
-            roadOrder.add(new double[] { BuildAdvice.pavingLifetime(g, free, site) / unit, roadGap, 1 });
-            roadNames.add(new String[] { ConstructionControl.PAVE_FROM, "paved gravel" });
-        }
-        // The roads by the advice's figure, least first; a tie keeps the catalogue's order.
-        for (int i = 1; i < roadOrder.size(); i++) {
-            for (int k = i; k > 0 && roadOrder.get(k)[0] < roadOrder.get(k - 1)[0]; k--) {
-                java.util.Collections.swap(roadOrder, k, k - 1);
-                java.util.Collections.swap(roadNames, k, k - 1);
-            }
-        }
-        // ...each at the best road's key, ahead of the lines as the roads were listed, so a tie with a line keeps the roads first.
-        for (int i = 0; i < roadOrder.size(); i++) {
-            double[] road = roadOrder.get(i);
-            order.add(i, new double[] { roadsKey, road[1], road[2] });
-            names.add(i, roadNames.get(i));
-        }
-        // Best trips per dollar first. A plain insertion sort: six candidates.
+        java.util.List<BuildAdvice.Suggestion> roadAdvice = roadsKey > Double.NEGATIVE_INFINITY
+                ? roadsByNeed(g, roadM, free, roadLabels.keySet()) : java.util.List.of();
+        // Best trips per dollar first. A plain insertion sort: the lines.
         for (int i = 1; i < order.size(); i++) {
             for (int k = i; k > 0 && order.get(k)[0] > order.get(k - 1)[0]; k--) {
                 java.util.Collections.swap(order, k, k - 1);
                 java.util.Collections.swap(names, k, k - 1);
             }
         }
-        for (int i = 0; i < order.size(); i++) {
-            if (order.get(i).length > 2 && order.get(i)[2] == 1) addPaving(moves, g, lost, order.get(i)[1]);
-            else addThrottle(moves, g, names.get(i)[0], names.get(i)[1], lost, order.get(i)[1]);
+        // ...the roads at the best road's key, ahead of a line it ties with, as the roads were listed.
+        int line = 0;
+        while (line < order.size() && order.get(line)[0] > roadsKey) {
+            addThrottle(moves, g, names.get(line)[0], names.get(line)[1], lost, order.get(line)[1]);
+            line++;
+        }
+        for (BuildAdvice.Suggestion s : roadAdvice) {
+            int n = s.count();
+            if (s.paving()) {
+                moves.add(new Move("paved gravel", lost * (1 - moves.size() * 1e-6), () -> pave(g, n)));
+            } else {
+                String name = s.template().getName();
+                moves.add(new Move(roadLabels.getOrDefault(name, name), lost * (1 - moves.size() * 1e-6),
+                        () -> build(g, name, n)));
+            }
+        }
+        for (; line < order.size(); line++) {
+            addThrottle(moves, g, names.get(line)[0], names.get(line)[1], lost, order.get(line)[1]);
         }
     }
 
     /**
-     * Paving gravel roads as a way of easing the road (0.7.70, N1), as
-     * addThrottle() offers a building: as many as addThrottle() would order of
-     * a road at this gap, and no more than the gravel roads there are to pave.
+     * The roads by need (0.7.103, batch P4): the build advice's card for the
+     * road (BuildAdvice.suggestFor(), no NEEDS YOU row, the cash and the free
+     * ground as they stand, its own slack) among the road kinds named and the
+     * city's gravel roads paved - every other building that eases the road,
+     * the transit lines, left out - and after it the next in its ranking, and
+     * the next: each a card on its own, for when the money or the ground will
+     * not run to the one before. Empty when what is on site keeps the road
+     * ahead at its projection.
      */
-    static void addPaving(java.util.List<Move> moves, Game g, double lost, double gap) {
-        if (lost <= 0) return;
-        int quantity = (int) Math.max(1, Math.min(Math.min(25, Math.ceil(gap * 25)), g.paveable()));
-        moves.add(new Move("paved gravel", lost * (1 - moves.size() * 1e-6), () -> pave(g, quantity)));
+    static java.util.List<BuildAdvice.Suggestion> roadsByNeed(Game g, BuildAdvice.Measure roadM, double free,
+                                                             java.util.Set<String> roads) {
+        java.util.Set<BuildingsTemplate> skip = new java.util.HashSet<>();
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (!roads.contains(t.getName())) skip.add(t);
+        }
+        java.util.List<BuildAdvice.Suggestion> out = new java.util.ArrayList<>();
+        boolean noPaving = false;
+        for (int i = 0; i <= roads.size(); i++) {
+            BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, null, roadM, g.getCash(), free, BuildAdvice.SLACK,
+                    skip, noPaving);
+            if (s == null || s.count() <= 0) break;
+            out.add(s);
+            if (s.paving()) noPaving = true;
+            else skip.add(s.template());
+        }
+        return out;
     }
 
     /**
@@ -4088,7 +4114,24 @@ public class LongPlaytest {
             g.simulateMonths(1);
             if (g.hasCityMap()) {
                 mapMonths++;
-                if (!java.util.Arrays.equals(g.getCityMap().totals(), g.getMapCounts())) {
+                /*
+                 * ...THE BUILDINGS ON THE CITY'S GROUND (0.7.103, batch P4). The
+                 * buildings at sea - an Offshore Platform, its wells, a crude
+                 * pipeline (BuildingVisual.Type.sea()) - stand on none of the
+                 * city's dry ground, so no district holds them since 0.7.91;
+                 * the map draws them from the oil's records (CityMap, THE OIL
+                 * AT SEA). This compared every type's count, and no run had
+                 * built one until the road by need's (the first well m3884,
+                 * a platform m3911): 95 months flagged for a building the map
+                 * holds by design in no district. Those types are left out of
+                 * the sum; every building on the ground is compared as before.
+                 */
+                long[] onGround = g.getMapCounts();
+                BuildingVisual.Type[] mapTypes = g.getMapTypes();
+                for (int q = 0; q < onGround.length && q < mapTypes.length; q++) {
+                    if (mapTypes[q] != null && mapTypes[q].sea()) onGround[q] = 0;
+                }
+                if (!java.util.Arrays.equals(g.getCityMap().totals(), onGround)) {
                     mapMismatches++;
                     flag(g.getMonth(), "the city map's districts do not sum to the buildings", "month " + g.getMonth());
                 }

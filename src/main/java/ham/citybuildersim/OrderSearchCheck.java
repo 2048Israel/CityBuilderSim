@@ -63,17 +63,8 @@ public class OrderSearchCheck {
      * and how many months it plays. At month 400 the city is growing and its
      * copy orders: 28 orders judged on their interest in 24 months, 22 of
      * them trimmed by more than Game.COUNTDOWN_SLICES.
-     *
-     * ...AT 2,475 SINCE 0.7.103 (Jerus's A11, each road kind its own
-     * repairs): the village stands at about 250 people until month 2,000
-     * (runs/fixP4-notes.md, 4), and its copy at 400 ordered nothing. Scanned
-     * (scratch-p4/scan, this check with the month changed): the copy trims
-     * past the counted slices at 2,375, 2,425, 2,450, 2,475 and 2,500, and
-     * trims none at 2,300, 2,400 and 2,437. 2,475 is the middle of the
-     * three in a row: 16 orders judged on their interest, one trimmed past
-     * the counted slices.
      */
-    static final int COPY_MONTH = 2475;
+    static final int COPY_MONTH = 400;
     /** ...how many times over it is copied... */
     static final long COPY_TIMES = 1000;
     /** ...and the months the copy plays. */

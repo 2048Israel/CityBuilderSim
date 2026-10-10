@@ -5733,7 +5733,10 @@ public class BuildingManager {
      * The stack is left in place even when it empties, because the save format
      * indexes construction arrays by stack position and removing one would
      * shift every index after it. That is backlog item 5 biting from a new
-     * direction; an empty stack is harmless.
+     * direction. An empty stack is harmless within a city, but its place in
+     * the list is part of how the month shares out the crews, so a load
+     * stands it again where the save's stack order names it (0.7.103;
+     * Game's load path, SaveFileCheck 8b).
      *
      * @return how many were actually scrapped, which may be fewer than asked
      */

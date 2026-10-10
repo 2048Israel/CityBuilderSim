@@ -1255,8 +1255,9 @@ public class HealthCheck {
                  * trace (1.0 with this depot) predates; the halves are printed
                  * below the twins (runs/fixP1-notes.md). At 0.7.103 (each
                  * road's own repairs, batch P4) -1.8: 3.6 priced out and -5.4
-                 * on the shelf - green on the shelves' timing, the fee's rule
-                 * unchanged (runs/fixP4-notes.md).
+                 * on the shelf (3.2 and -5.0 merged with 0.7.102) - green on
+                 * the shelves' timing, the fee's rule unchanged
+                 * (runs/fixP4-notes.md).
                  */
                 b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
                 town.simulateMonths(48);
@@ -1415,8 +1416,9 @@ public class HealthCheck {
              * fullTreatmentFees()'s own definition. With each road's own
              * repairs (Jerus's A11) the dear twin turned somebody away in 91
              * of its 96 months and not in the last (2,110 people at 0.7.101,
-             * none at 0.7.103), and the line went red on a month the fixture
-             * did not cause its condition in. It reads every month the twin
+             * none at 0.7.103 before its merge with 0.7.102; 93 of 96 after
+             * it, 527 people the last), and the line went red on a month the
+             * fixture did not cause its condition in. It reads every month the twin
              * turned somebody away now - the same claim, in more months -
              * and the fixture line above holds that there was one.
              */

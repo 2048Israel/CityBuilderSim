@@ -268,12 +268,15 @@ public class BuildingsTemplate {
        (EconomyManager.maintenanceBillFor()). At that one rate gravel was the
        cheaper road to keep, which real gravel is not, so each road kind has
        its own share ("repairs" in buildings.json), from the Canadian
-       Infrastructure Report Card 2016's recommended reinvestment a year, a
-       share of replacement value: roads 2% to 3%, the Gravel Road at the top
-       (3%: its surface is renewed far oftener) and the Paved Road at the
-       bottom (2%); bridges 1% to 1.5%, the Elevated Highway - a bridge end to
-       end - at the middle (1.25%). Every other building has none and is
-       repaired at the house rate. */
+       Infrastructure Report Card 2016's target reinvestment rates a year, a
+       share of replacement value (its Key Messages, Figure 4; it says there
+       are "no formal industry-recognized target reinvestment rates", the
+       figures informative only - checked by Jerus, 2026-10-10): roads and
+       sidewalks 2.0% to 3.0%, the Gravel Road at the top (3%: its surface is
+       renewed far oftener) and the Paved Road at the bottom (2%); bridges 1.0%
+       to 1.5%, the Elevated Highway - a bridge end to end - at the middle
+       (1.25%). Every other building has none and is repaired at the house
+       rate. */
     private double repairsPerYear;
 
     /** Gives this building its own repairs a year, a share of what it cost to put up; 0 or less is none (the house rate). */
