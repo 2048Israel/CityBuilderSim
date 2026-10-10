@@ -153,7 +153,8 @@ public class LandManager {
      * Land the city starts with - thirty blocks, about 69 acres; since 0.7.67
      * the figure a new city's centre of whole blocks is drawn to hold, and it
      * owns the dry plots drawn, a little more (CityLand.found(): 3,051,569
-     * sq ft on the default world).
+     * sq ft on the default world) - and since 0.7.106 its river's banks
+     * besides (FOUNDING_FRESH_KM2; 3,681,257 sq ft on the default world).
      *
      * Sized off the two buildings the player cannot avoid: a coal plant is
      * twenty blocks and a water plant eight, so putting up both leaves two.
@@ -451,8 +452,11 @@ public class LandManager {
      * founding site of the seed's world holding at least the dry ground
      * owned (CityLand.found()), nothing taken out of it - and since 0.7.67 the
      * figure is then its dry plots, the ground drawn (the books follow the
-     * map, spec-grid star 8): a new city owns 3,051,569 sq ft, 315 plots, for
-     * STARTING_SQ_FT's 309.7.
+     * map, spec-grid star 8): the rings hold 3,051,569 sq ft, 315 plots, for
+     * STARTING_SQ_FT's 309.7. Since 0.7.106 the centre takes the founding
+     * river's blocks too, until its lake and river hold FOUNDING_FRESH_KM2
+     * (Jerus's A24): on the default world 38 blocks more, 0.5076 km2 of
+     * river and 65 plots of its banks, so a new city owns 3,681,257 sq ft.
      */
     CityLand land() {
         if (land == null) {

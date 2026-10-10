@@ -170,7 +170,7 @@ public final class CityLand {
     static final long FRESH_REACH = (long) Math.ceil(World.RIVER_LAKE_NEAR + World.RIVER_LAKE_SPAN
             + World.LAKE_R_MIN + World.LAKE_R_SPAN);
 
-    /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the water - see above. freshKm2 0 is the rings alone. */
+    /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the water - see above; on the default world at LandManager.FOUNDING_FRESH_KM2, 38 blocks past the rings' 21, 564 fresh plots and 65 dry. freshKm2 0 is the rings alone. */
     public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2) {
         CityLand land = new CityLand(world.seed(), x, y);
         int level = LandGrid.levelFor(dryKm2 / World.KM2_PER_PLOT);

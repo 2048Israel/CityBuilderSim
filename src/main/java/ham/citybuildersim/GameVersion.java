@@ -4813,8 +4813,64 @@ public final class GameVersion {
      *     PEOPLE_AT_END; four villages stand at 2,000 to 3,600 people for some
      *     400 months while care, essential now, runs them into deficit
      *     (runs/fixP2b-notes.md, section 4).
+     *
+     * 0.7.106 (2026-10-10) - PRICES AND RULES. Batch P5 (Jerus's A18, A20,
+     * A23, A24 and B of 2026-10-10, "all rec", the project's
+     * decisions-2026-10-10.md; runs/brief-batchP5.md, runs/fixP5-notes.md).
+     * No save format change (36): an older save keeps the centre it was
+     * founded with and the bond it owes, and a demolition on site the
+     * salvage it was quoted.
+     *   - THE GROCERS' INVESTMENT TEST COUNTS THE STAFF (A18;
+     *     sectors.Retail.estimatedMonthlyProfit()): a shop's, and a filling
+     *     station's, margin less its posts at today's wages
+     *     (BusinessInvestment.wageBillFor()) - the test only: the shelf's
+     *     floor and plan()'s ranking are what they were. The grocers at their
+     *     floor borrowed for shops whose margin did not pay their staff.
+     *   - CARE IS THE BEDS LESS THE PRICED OUT (A20, 0.7.27's D16; CityNeeds
+     *     careHave(), BuildAdvice.carePlaces()): NEEDS YOU's care rows,
+     *     Build's rings and an order's after read the staffed beds less the
+     *     people the fee turned away last month, as Services' rings have read
+     *     the month's coverage since 0.7.28; Build's ring says how many of
+     *     those without are priced out.
+     *   - WHAT A DEMOLITION RECOVERS (A23; ConstructionControl.SALVAGE_SHARE):
+     *     25% of a building's material comes back to the builders at the
+     *     market's price - the middle of the 20 to 30% of building-related
+     *     construction and demolition debris recovered for processing and
+     *     recycling in the US in 1996 (EPA530-R-98-010, 1998) - where all of
+     *     it did (an Elementary School's 666 units fetched $12.2M against a
+     *     $1.05M demolition). The player's demolitions, a shell's, and a
+     *     sector's plant retired (the 0.7.8 rule) alike; the demolition card
+     *     and its (i) say so.
+     *   - A NEW CITY IS FOUNDED WITH ONE PLANT'S FRESH WATER (A24;
+     *     CityLand.found(), LandManager.FOUNDING_FRESH_UNITS): past the
+     *     rings, the centre takes whole blocks along the founding river,
+     *     most fresh water first and nearest the site on a tie, until its
+     *     lake and river yield one Water Treatment Plant's 60,000 units -
+     *     the world untouched. The default world's city owns 59 blocks
+     *     where it owned 21: 0.5076 km2 of river (0.011 until now, a limit
+     *     of 1,324 units and its first plant 98% idle) and 65 more dry plots
+     *     of its banks, 3,681,257 sq ft in all.
+     *   - INSANE'S LAND BOND ON THE PLOTS IT OWNS (B; Founding.landBondUsd(),
+     *     LandMarket.groundKm2()): the centre's ground as the land office
+     *     charges it - dry whole, fresh water at 45%, sea at 8% - at the
+     *     opening dollar price, where it was STARTING_SQ_FT's 3,000,000
+     *     square feet: US$4.30M on the default world (US$2.1M). The founding
+     *     screen prices it on the world typed.
+     *   - Harnesses: InvestCheck (the test reads the margin less the staff,
+     *     and refuses a loan the margin alone would carry), BuildAdviceCheck
+     *     12 (new: the beds less the priced out, NEEDS YOU's row, the ring and
+     *     an order's after), ConstructionControlCheck and BankCheck (the
+     *     salvage at SALVAGE_SHARE), WaterCheck 11 (a new city's first plant
+     *     idles nothing), LandCheck 1 (the rings, then the river), 5 and 24
+     *     (twenty-one offers, two clipped, one all water) and 5d (built out
+     *     on what a new city owns), FundCheck 12 (the bond on the plots).
+     *   - The playtest moves from month 2 (A24: the land's inside price, so
+     *     the landlords' first home is cheaper); alone, A23 moves it from
+     *     month 17 and A18 from month 75, and A20 not at all. It ends at
+     *     495,329 people (617,942 at 0.7.103/0.7.104); runs/fixP5-notes.md,
+     *     section 4.
      */
-    public static final String VERSION = "0.7.104";
+    public static final String VERSION = "0.7.106";
 
     /**
      * The save shape.
