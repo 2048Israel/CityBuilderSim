@@ -685,10 +685,11 @@ public final class AutoBuilder {
      * to what pays back, and past a building none of which pays back the pass
      * takes the next in the advice's ranking, as it took the next past one
      * the budget could not run, and says so in the inbox, with the figure,
-     * only when none is left. THE BUDGET'S LINES (star P2b-4): it reads none
-     * of the four the budget's totals took in at 0.7.102 - the repairs are in
-     * running() since 0.7.70, the arrears paid down are a past month's bill,
-     * and the reserve's crude is an asset bought and sold, as land is.
+     * only when none is left. THE BUDGET'S LINES (star P2b-4): of the four
+     * the budget's totals took in at 0.7.102 it reads the repairs - a running
+     * cost, in what each resident costs and in running() since 0.7.70 - and
+     * leaves out the arrears paid down, a past month's bill, and the
+     * reserve's crude bought and sold, an asset as land is.
      *
      * THE BUDGET IT REPLACED (star N4-6, 0.7.73 to 0.7.103): a staffed
      * building - care, death care, a school, the police, the cells, and a
