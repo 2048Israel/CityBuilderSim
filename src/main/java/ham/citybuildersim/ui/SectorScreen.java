@@ -3194,7 +3194,9 @@ final class SectorScreen {
         if (fails.size() == 1) {
             return switch (first.kind()) {
                 case LAND -> "So: ground is all that stops it - " + words + ". The Land office sells it.";
-                case LOSS -> "So: it " + words + " at today's prices, so it would not build however the other gates stood.";
+                case LOSS -> first.failure().why() != null
+                        ? "So: " + words + ", so it would not build however the other gates stood."
+                        : "So: it " + words + " at today's prices, so it would not build however the other gates stood.";
                 default -> "So: " + words + ".";
             };
         }

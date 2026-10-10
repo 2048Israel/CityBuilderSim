@@ -838,12 +838,52 @@ public final class BuildCard {
         return r == null || r == Resource.IRON ? "iron" : r.label().toLowerCase(java.util.Locale.ROOT);
     }
 
+    /*
+     * THE TWO CARD WORDS (0.7.103, batch P4; Jerus's B, 2026-10-10). A land
+     * Oil Well counts the city's DRY oil sites only (Game.sitesFor(), 0.7.84 -
+     * the sea's are a platform's), where the land office counts every site,
+     * so its card says "dry" on the count. And a refinery's conversion unit
+     * with no crude unit standing has no stream to take, so its estimate is
+     * its running and standing costs and nothing else: its card says NO_FEED
+     * in place of the loss.
+     */
+
+    /** A DEPOSIT gate's word for a land Oil Well (0.7.103): its count is of dry sites (Game.sitesFor()). */
+    public static final String DRY_OIL = "dry oil";
+
+    /** What a conversion unit's card says in place of a loss with no crude unit standing to feed it (0.7.103). */
+    public static final String NO_FEED = "no feed: no crude unit stands to run its stream";
+
+    /** The word a building's site count carries (0.7.103): " dry" for a land Oil Well, whose count is the dry sites alone; "" for any other. */
+    public static String siteCountWord(BuildingsTemplate t) {
+        return ham.citybuildersim.sectors.Oil.isLandWell(t) ? " dry" : "";
+    }
+
+    /** A DEPOSIT gate's word: depositWord(), or DRY_OIL for a land Oil Well (0.7.103). */
+    static String depositWordFor(BuildingsTemplate t, Resource r) {
+        return ham.citybuildersim.sectors.Oil.isLandWell(t) ? DRY_OIL : depositWord(r);
+    }
+
+    /** Whether a building is a refinery's conversion unit with no crude unit standing to feed it (0.7.103): its estimate is a loss only for want of a stream. */
+    public static boolean unfed(Game game, BuildingsTemplate t) {
+        if (!ham.citybuildersim.sectors.Refining.isConversionUnit(t)) return false;
+        BuildingManager b = game.getBuildingManager();
+        return !(b.totalBySector(Sectors.REFINING, c -> ham.citybuildersim.sectors.Refining.isCrudeUnit(c) ? 1 : 0) > 0);
+    }
+
+    /** The LOSS gate: what it would lose, worded NO_FEED for a conversion unit nothing feeds (0.7.103). */
+    static Gate lossGate(Game game, BuildingsTemplate t, double estimate) {
+        return new Gate(GateKind.LOSS, -estimate, 0, null, unfed(game, t) ? NO_FEED : null);
+    }
+
     /**
      * One gate: DEPOSIT {deposits the city owns, mines committed} with the
-     * resource's word in `why` (depositWord()); LICENCE
+     * resource's word in `why` (depositWord(); DRY_OIL for a land Oil Well
+     * since 0.7.103); LICENCE
      * {licences one needs, spare licences} with the licence; STAFFING with
      * the staffing test's own why; LAND {sq ft one needs, sq ft free}; LOSS
-     * {what the estimate says it would lose a month}.
+     * {what the estimate says it would lose a month}, with NO_FEED in `why`
+     * for a conversion unit nothing feeds (0.7.103).
      */
     public record Gate(GateKind kind, double a, double b, JobType licence, String why) { }
 
@@ -891,7 +931,7 @@ public final class BuildCard {
         if (!game.hasDepositFor(t, 1)) {
             // ...on its own resource's sites (0.7.62), named in `why`: "iron" or "oil" - a land well's dry ones (0.7.84).
             Resource site = Game.siteOf(t);
-            return new Gate(GateKind.DEPOSIT, game.sitesFor(t), game.committedFor(t), null, depositWord(site));
+            return new Gate(GateKind.DEPOSIT, game.sitesFor(t), game.committedFor(t), null, depositWordFor(t, site));
         }
         if (!game.hasLicencesFor(t, 1)) {
             JobType licence = t.getRequiresLicence();
@@ -902,7 +942,7 @@ public final class BuildCard {
         if (!staffing.passes()) return new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()));
         double free = ground.getAvailableSqFt();
         if (t.getLandSqFt() > free) return new Gate(GateKind.LAND, t.getLandSqFt(), free, null, null);
-        if (estimate <= 0) return new Gate(GateKind.LOSS, -estimate, 0, null, null);
+        if (estimate <= 0) return lossGate(game, t, estimate);
         return null;
     }
 
@@ -973,7 +1013,7 @@ public final class BuildCard {
         gates.add(site == null ? new GateMark(GateKind.DEPOSIT, Mark.NONE, null)
                 : game.hasDepositFor(t, 1) ? new GateMark(GateKind.DEPOSIT, Mark.PASS, null)
                 : new GateMark(GateKind.DEPOSIT, Mark.FAIL,
-                        new Gate(GateKind.DEPOSIT, game.sitesFor(t), game.committedFor(t), null, depositWord(site))));
+                        new Gate(GateKind.DEPOSIT, game.sitesFor(t), game.committedFor(t), null, depositWordFor(t, site))));
         // The licence its posts need.
         JobType licence = t.getRequiresLicence();
         gates.add(licence == null ? new GateMark(GateKind.LICENCE, Mark.NONE, null)
@@ -995,7 +1035,7 @@ public final class BuildCard {
                 : new GateMark(GateKind.LAND, Mark.FAIL, new Gate(GateKind.LAND, t.getLandSqFt(), free, null, null)));
         // ...and whether it pays.
         gates.add(estimate > 0 ? new GateMark(GateKind.LOSS, Mark.PASS, null)
-                : new GateMark(GateKind.LOSS, Mark.FAIL, new Gate(GateKind.LOSS, -estimate, 0, null, null)));
+                : new GateMark(GateKind.LOSS, Mark.FAIL, lossGate(game, t, estimate)));
         double[] f = game.financingOf(owner.key(), t);
         return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3]);
     }
