@@ -11873,6 +11873,23 @@ public class Game {
         // raised in the middle of a fifty-month skip has to be raised by the
         // city, not by whichever screen the player comes back to.
         inbox.takeMonth(this);
+        /*
+         * THE SHEET AT THE MONTH'S CLOSE (0.7.102, Jerus's A16; the S1
+         * statements' finding F-S1-2). The books read each business's cash as
+         * it stands, and until now its land, buildings and debt as they were
+         * last pushed - at the insolvency settle, before the month's building
+         * loans and purchases (runPrivateInvestment()) - so a month that
+         * borrowed read the loan's cash without the loan: in city600, 47 of
+         * 408 sector-months over 24 months differed by more than $1k (the
+         * worst, Retail at month 613: a sheet owing $0 that owed $4.3M). The
+         * sheet is pushed again here, at the close, so all of it is one
+         * instant: the debt as it stands, and the buildings and land the
+         * loans paid for. Nothing in the model reads the push before the next
+         * month pushes it at the top (updateBusinessCredit()); the books, and
+         * through them the register's reading of a company's equity
+         * (Equity.raiseFor()), read the close.
+         */
+        economyManager.pushBalanceSheetInputs();
         sectorBooks.takeMonth(this);
 
         /*

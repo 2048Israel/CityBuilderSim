@@ -393,7 +393,9 @@ public final class SectorBooks {
      * by kind, as the sheet was read (`moved`) and as the month closed
      * (`movedAtClose`) - running totals in memory, which the debt schedule
      * differences a month apart (SectorStatements.schedule()): from sheet to
-     * sheet, and, for the harness, from close to close.
+     * sheet, and, for the harness, from close to close - one and the same
+     * since 0.7.102, when the sheet is pushed at the month's close (A16,
+     * Game.recordMonth()).
      */
     public record Debt(double[] interest, double[] owed, double[] withinYear, double[] withinFive, double[] rate,
                        double[] runsTo, double[][] moved, double[][] movedAtClose) {
@@ -585,7 +587,7 @@ public final class SectorBooks {
         Equity register = game.getEquity();
         int company = Equity.indexOf(key);
         boolean listed = register != null && company >= 0 && company != Equity.BANK;
-        // ...the sheet's prices and quantities, as it was pushed (R6)...
+        // ...the sheet's prices and quantities, as it was pushed (R6) - at the month's close since 0.7.102 (A16)...
         double[] valued = economy.getValuedAt(key);
         if (valued == null) valued = new double[4];
         // ...and last month's stock at this month's prices.

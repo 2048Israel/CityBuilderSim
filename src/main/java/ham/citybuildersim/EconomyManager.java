@@ -503,8 +503,11 @@ public class EconomyManager {
        pushBalanceSheetInputs() sets the sheet's - so each adds up to the
        figure it splits, frozen as the month's books will read it (the
        nameOtherRevenue lesson: a live read describes the next month).
-       SectorBooks copies them as it takes the month. Nothing reads them back
-       and they are not saved. */
+       SectorBooks copies them as it takes the month - since 0.7.102 off the
+       push Game.recordMonth() makes at the month's close (A16, F-S1-2), so
+       the debt and its split are what it owes as the month closes, not as the
+       insolvency settle left it before the month's building loans. Nothing
+       reads them back and they are not saved. */
 
     private final Map<String, double[]> interestByKind = new LinkedHashMap<>();
     private final Map<String, double[][]> debtByKind = new LinkedHashMap<>();

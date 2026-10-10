@@ -712,14 +712,16 @@ public final class SectorStatements {
        month's (R2 now) - with the rate it pays, the month's interest (R1) and
        when the last of it falls due. The three flows are the differences of
        the running totals BusinessDebtManager keeps where each moves, read
-       with R2 - so the window is the sheet's: from last month's settle to
-       this month's (F-S1-2: the sheet reads its debt before the month's
-       building loans, which are next month's here, as they are on the
-       sheet). `after` is what it borrowed this month after the sheet was
-       read: next month's. A kind's residual is NOT ACCOUNTED FOR, which the
-       harness holds at nothing. Null when either month's R2 or totals are
-       not counted: the month after a load, and the month after that for
-       last month's.
+       with R2 - so the window is the sheet's. Until 0.7.102 that was from
+       last month's settle to this month's (F-S1-2: the sheet read its debt
+       before the month's building loans, which were next month's here, as on
+       the sheet), and `after` was what it borrowed this month after the
+       sheet was read. Since 0.7.102 (Jerus's A16) the sheet is read at the
+       month's close (Game.recordMonth()), so the window is the calendar
+       month, close to close, and `after` is nothing. A kind's residual is
+       NOT ACCOUNTED FOR, which the harness holds at nothing. Null when either
+       month's R2 or totals are not counted: the month after a load, and the
+       month after that for last month's.
        ===================================================================== */
 
     /** One sector's debt schedule: each in DEBT_KINDS' order. */

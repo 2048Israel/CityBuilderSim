@@ -73,7 +73,10 @@ import java.util.Set;
  *      the cent;
  *   8. THE DEBT SCHEDULE (R7): each kind's start, borrowed, repaid, written
  *      off and end close, and from close to close the running totals are
- *      the month's own loans, bonds, repayments and write-offs;
+ *      the month's own loans, bonds, repayments and write-offs - and since
+ *      0.7.102 (A16, F-S1-2) the sheet is read at the close, so nothing is
+ *      lent after it and section 3 holds its debt, land and buildings to
+ *      what the business owes and holds as the month closes;
  *   9. EVERY GATE (R4): each building's first failure is its build card's
  *      gate, a gate it has not is no gate, its cost is paid for in full.
  */
@@ -323,6 +326,13 @@ public class SectorStatementCheck {
                 bondsSoonBefore.remove(s.key());
             }
             t("3 equity is the model's").near(sheet.now(SectorStatements.TOTAL_EQUITY), now.equity(), at);
+            // ...AT THE MONTH'S CLOSE (0.7.102, Jerus's A16; F-S1-2): the debt as it stands, and the land and
+            // buildings the month's loans paid for - read where the audit runs, straight after the close.
+            EconomyManager em = g.getEconomyManager();
+            t("3 the sheet's debt is what it owes at the month's close").near(now.bondsPayable(),
+                    em.getBusinessDebtManager().getPrincipal(s.key()), at);
+            t("3 ...its buildings and land what it holds at the close").near(now.buildings() + now.land(),
+                    g.getBuildingManager().getBuildingsValueBySector(s.key()) + em.landValueOf(s), at);
             t("3 liabilities and equity are the total assets").near(sheet.now(SectorStatements.TOTAL_CLAIMS),
                     sheet.now(SectorStatements.TOTAL_ASSETS), at);
             if (!then.isEmpty()) {
@@ -769,8 +779,15 @@ public class SectorStatementCheck {
             if (!e.getKey().startsWith("8")) continue;
             assertTrue(e.getKey().substring(2) + ": " + e.getValue().words(), e.getValue().missed == 0);
         }
-        assertTrue("fixture: the cities' schedules borrowed, repaid and wrote off, and lent after a sheet was read",
-                scheduleBorrowed > 0 && scheduleRepaid > 0 && scheduleWrittenOff > 0 && lentAfterSheet > 0);
+        /*
+         * BEFORE 0.7.102: "fixture: ...and lent after a sheet was read", lentAfterSheet > 0 - the sheet was read at
+         * the insolvency settle, before the month's building loans. Since (Jerus's A16, F-S1-2) it is read at the
+         * close, so the schedule's window is the calendar month and nothing is lent after it.
+         */
+        assertTrue("fixture: the cities' schedules borrowed, repaid and wrote off",
+                scheduleBorrowed > 0 && scheduleRepaid > 0 && scheduleWrittenOff > 0);
+        assertTrue("the sheet is read at the month's close: nothing is lent after it, in any schedule (0.7.102)",
+                lentAfterSheet == 0);
     }
 
     /* ---------------------------------------------------------------- 9 */

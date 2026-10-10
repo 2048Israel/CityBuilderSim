@@ -2862,17 +2862,19 @@ final class SectorScreen {
     /** The schedule's (i). */
     static final String SCHEDULE_INFO = "What it owed of each kind at last month's sheet, what it borrowed, repaid and had "
             + "written off since, and what it owes at this month's; the rate it pays, weighted by what it owes, and the "
-            + "month the last of it falls due. Counted from sheet to sheet: the sheet reads what it owes at the month's "
-            + "settle, before the loans for the buildings it orders that month, which are next month's here as on the "
-            + "sheet - so its borrowing differs from the cash flow's, the calendar month's, by those.";
+            + "month the last of it falls due. Counted from sheet to sheet, and the sheet reads what it owes as the month "
+            + "closes - the loans for the buildings it ordered that month among it - so its borrowing is the calendar "
+            + "month's, as the cash flow's is.";
 
     /**
      * ITS DEBT THIS MONTH, BY KIND (the Cash & debt statement; R7): the
      * roll-forward from last month's sheet to this month's - at the start,
      * borrowed, repaid, written off, at the end - with each kind's rate and
      * when the last of it falls due, its suppliers on a memo row, and what it
-     * borrowed after the sheet was read. Not counted until two months have
-     * run after a load: one for each sheet.
+     * borrowed after the sheet was read - nothing since 0.7.102, when the
+     * sheet is read at the month's close (A16), so its caption never shows
+     * on a city played since; kept for the rule it states. Not counted until
+     * two months have run after a load: one for each sheet.
      */
     VBox scheduleCard(Sector sector, boolean millions) {
         SectorBooks books = ui.game.getSectorBooks();
