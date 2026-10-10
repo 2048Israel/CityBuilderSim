@@ -3011,9 +3011,11 @@ public class LongPlaytest {
      * IRON, A WHOLE FIELD AT A TIME (0.7.64, batch L). Jerus, 2026-10-07:
      * "Yes whole iron fields as one offer, yes that means significant
      * investment." An offer holds every field centred on its ground whole
-     * (CityLand), so the default world's founding field is 35 sites and
+     * (CityLand), so the default world's founding field was 35 sites and
      * 449 Mt in one offer of about US$180M, and its nearest one-site fields
-     * about US$5.1M of ore each with their ground. The player's rule, a
+     * about US$5.1M of ore each with their ground (to 0.7.98; since 0.7.99,
+     * batch W1, the deposits are fewer and bigger, and no offer near the
+     * playtest's city holds iron: it finds none listed). The player's rule, a
      * sensible player's:
      *
      *   - WHEN IT NEEDS IRON: an Iron Mine would pay on the private sector's

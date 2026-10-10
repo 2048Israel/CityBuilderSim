@@ -4118,9 +4118,11 @@ final class BuildScreen {
      * cannot help. Since 0.7.61 it buys the most iron sites a dollar (THE
      * BUILD SHORTCUT). Since 0.7.64 (batch L) it says plainly that an offer
      * holds every field centred in it whole, and its Buy names the sites and
-     * the tonnes: the founding field of the default world is 35 sites and
+     * the tonnes: the founding field of the default world was 35 sites and
      * 449 Mt, about US$180M, which the land office's funding page sizes a
-     * bond to when the city is short.
+     * bond to when the city is short (to 0.7.98; since 0.7.99, batch W1, a
+     * founding asks no iron, and the default world's nearest field lies
+     * twelve kilometres out).
      *
      * ...AND AN OIL WELL'S (0.7.62, batch K): the same page on its own
      * resource - an Oil Well is short of an oil site - and the same Buy
@@ -4129,9 +4131,9 @@ final class BuildScreen {
      * ...THE CHEAPEST FIELD (0.7.64, batch L2): the Buy offers what the test
      * player buys (LongPlaytest.ironWhenNeeded()) - the cheapest offer holding
      * the deposit, LandMarket.cheapestWith() - where it offered the most sites
-     * a dollar, which on the default world is the 35-site founding field at
-     * about US$180M while a one-site field lies further out for a thirtieth of
-     * that. Its words name the offer, its sites, tonnes and price; short of
+     * a dollar, which on the default world was the 35-site founding field at
+     * about US$180M while a one-site field lay further out for a thirtieth of
+     * that (to 0.7.98). Its words name the offer, its sites, tonnes and price; short of
      * cash, the land office's funding page, sized to it, as before. The land
      * office still lists every offer.
      */

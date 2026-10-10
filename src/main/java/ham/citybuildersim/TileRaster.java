@@ -239,6 +239,7 @@ public final class TileRaster {
 
     /** A crude pipeline: the tan at the mockup's 50%, dashed 2 px on and 4 off (its "2 4"), 1.5 px wide (drawn 1 below 4 px a plot, 2 from it). */
     public static final double PIPE_ALPHA = 0.5;
+    /** ...its dash, 2 px on and 4 off along the pipe (the mockup's "2 4"). */
     public static final double PIPE_ON_PX = 2, PIPE_OFF_PX = 4;
 
     /**

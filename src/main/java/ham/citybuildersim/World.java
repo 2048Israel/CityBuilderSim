@@ -1422,6 +1422,7 @@ public final class World {
         }
     }
 
+    /** The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. */
     private static final Pool NO_POOL = new Pool(new long[0], new long[0], new int[0], new double[0], 0, 0);
 
     /** The pools drawn, kept: by resource and place, the last POOLS_KEPT asked for. */

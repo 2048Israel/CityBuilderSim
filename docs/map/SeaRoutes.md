@@ -102,7 +102,7 @@
 |---:|---:|---|---|
 | 111 | 57 | **type** `static final class Grid` | The sea's cells, read a block at a time as asked. |
 | 119 | 1 | `Grid(World world)` _(in SeaRoutes.Grid)_ |  |
-| 122 | 21 | `boolean sea(long ci, long cj)` _(in SeaRoutes.Grid)_ | Whether cell (ci, cj) is sea: every sample of it salt; off the world, sea. |
+| 122 | 21 | `boolean sea(long ci, long cj)` _(in SeaRoutes.Grid)_ | Whether cell (ci, cj) is sea: at least SALT_LEAST of its samples salt; off the world, sea. |
 | 145 | 12 | `boolean open(long ci, long cj)` _(in SeaRoutes.Grid)_ | Whether a sea cell is open water: every cell about it sea too; else it is the shore's. |
 | 159 | 8 | `boolean clear(double ai, double aj, double bi, double bj)` _(in SeaRoutes.Grid)_ | Whether the straight line between two cells' middles crosses only sea cells, looked at three times a cell along it (the prototype's clear()). |
 

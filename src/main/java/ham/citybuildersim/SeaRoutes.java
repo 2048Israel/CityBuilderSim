@@ -118,7 +118,7 @@ public final class SeaRoutes {
 
         Grid(World world) { this.world = world; }
 
-        /** Whether cell (ci, cj) is sea: every sample of it salt; off the world, sea. */
+        /** Whether cell (ci, cj) is sea: at least SALT_LEAST of its samples salt; off the world, sea. */
         boolean sea(long ci, long cj) {
             long cells = World.SIDE / CELL;
             if (ci < 0 || cj < 0 || ci >= cells || cj >= cells) return true;

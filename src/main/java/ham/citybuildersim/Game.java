@@ -1822,9 +1822,10 @@ public class Game {
        LandMarket.richest()); for a coast, the cheapest offer with sea in it.
 
        A SHORTFALL IS MET WITH GROUND, NOT ORE (0.7.58, batch J1c). An offer
-       holding ore is priced by its tonnes - since 0.7.64 a whole field's, the
-       default world's founding field 449 Mt at about US$180M, and even a
-       one-site field 12.8 Mt at about US$5.1M - against a few hundred
+       holding ore is priced by its tonnes - since 0.7.64 a whole field's: to
+       0.7.98 the default world's founding field 449 Mt at about US$180M, and
+       even a one-site field 12.8 Mt at about US$5.1M (since 0.7.99, batch W1,
+       a field holds ten sites at the least) - against a few hundred
        thousand for the ground under it. "The cheapest offer that covers it"
        bought, for the playtest's founding village at 0.7.58 (when fields
        were shared site by site), the one offer big enough - West 6, two

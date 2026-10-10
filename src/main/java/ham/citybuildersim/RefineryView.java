@@ -112,7 +112,7 @@ public final class RefineryView {
      */
     public record Unit(Kind kind, int standing, int onSite, double feed, double run, double share, double spread,
                        double citySpread, SpreadPlanner.Candidate gate) {
-        /** Whether it stood and took nothing: no feed spare, or a spread of nothing or less. */
+        /** Whether it stood and took nothing: no feed spare, or a spread of nothing or less - or, since 0.7.105, a month the crude units ran nothing (Refining's THE RUN), which the picture does not draw. */
         public boolean idle() { return standing > 0 && Double.isFinite(run) && !(run > 0); }
     }
 
@@ -170,6 +170,7 @@ public final class RefineryView {
 
     /** One end of a traced link: a straight-run cut, a kind of unit, a product, or the furnaces. */
     public record End(Stream cut, Kind unit, Good product) {
+        /** The furnaces, where the residue no unit takes is burned: an end with no cut, unit or product. */
         public static final End FURNACES = new End(null, null, null);
         public static End cut(Stream s) { return new End(s, null, null); }
         public static End unit(Kind k) { return new End(null, k, null); }

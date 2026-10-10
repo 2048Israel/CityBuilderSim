@@ -3783,7 +3783,9 @@ final class SectorScreen {
 
     /** The card's heading, its line, and what its (i) says. */
     static final String REFINERY_HEAD = "THE REFINERY THIS MONTH";
+    /** ...the line beside the heading... */
     static final String REFINERY_SUB = "where the crude went · ribbons to scale";
+    /** ...and the (i)'s words: the picture read from left to right. */
     static final String REFINERY_INFO = "The month's crude comes in on the left, from the wells, the reserve or the world. "
             + "The column cuts it by boiling point - gas at the top, residue at the bottom. Each cut goes through a "
             + "conversion unit, or straight to the product it is worth as it is. The tank in the middle is filled by "
@@ -3982,6 +3984,7 @@ final class SectorScreen {
         });
     }
 
+    /** The hatchings made so far, by colour and opacity (hatch()'s cache). */
     private static final java.util.Map<String, javafx.scene.paint.ImagePattern> HATCHES = new java.util.HashMap<>();
 
     /** THIS MONTH, BY PRODUCT: its heading, and a cell a product in equal columns. */
@@ -4084,22 +4087,28 @@ final class SectorScreen {
             + " years and then lose 8.5% a year. Each wears out under ten barrels a day. The chart is what the wells standing"
             + " would lift over the next ten years if nothing new were built: this month solid, each year ahead pale, each pool"
             + " lifted no further than it has oil.";
+    /** ...THE REFINERY's, its units' table... */
     static final String OIL_UNITS_INFO = "Every kind of refinery unit. Its spread is what it makes of a litre of its feed, less"
             + " what that litre would fetch as it is, at the city's own prices - the import price for a product the city is short"
             + " of, the export price for one it has spare. The refiners order the building that earns most on its cost and passes"
             + " every gate - feed, ground, staff, money; the state says what stops one more. Point at a row for the whole of it.";
+    /** ...PRODUCTS', crude's and the nine products' table... */
     static final String OIL_PRODUCTS_INFO = "Every product of the refinery, and crude: its price here and the world's, the"
             + " world's over crude's (the research's ladder), and this month's - made here, used here, imported, exported - with"
             + " who took it, the same takers as Refining's picture.";
+    /** ...and THE STRATEGIC RESERVE's, which the Fill and Release cards' (i)s say too. */
     static final String OIL_RESERVE_INFO = "The city's own crude, in its Strategic Reserves' tanks. Fill orders crude for the next"
             + " clearing - the wells' first, beside the refiners, then the world's - cut to the room left and to what the treasury"
             + " can pay at crude's import price, paid at the next strike. Release offers that many tonnes a month to the"
             + " refiners; what they do not take stays in the tanks. A fill stops a release; a release cancels a fill."
             + " Both are lines of the budget: \"Crude for the reserve\" in spending, \"Crude sold from the reserve\" in revenue.";
+    /** The Fill card's caveat under its effects... */
     static final String RESERVE_CAVEAT = "bought at the next clearing at what crude then costs; what the room cannot take lapses";
+    /** ...and what its (i) says: an order for the next clearing, paid at the next strike. */
     static final String RESERVE_CAVEAT_INFO = "A fill is an order for the next clearing: the wells' crude pro rata with the"
             + " refiners, the world's for the rest, each at its price then - this reads it at today's import price. What the"
             + " room left cannot hold lapses with the month. The treasury pays at the next strike.";
+    /** The Release card's caveat; its (i) is OIL_RESERVE_INFO. */
     static final String RELEASE_CAVEAT = "offered to the refiners; what they do not take stays in the tanks";
 
     /** The lever's ladder width on its dial card. */

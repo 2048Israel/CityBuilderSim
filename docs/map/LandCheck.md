@@ -1,4 +1,4 @@
-# LandCheck.java - 2,497 lines · 32 methods · 2 constants · harnesses
+# LandCheck.java - 2,499 lines · 32 methods · 2 constants · harnesses
 
 `ham/citybuildersim/LandCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 2452 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
+| 46 | 2454 | **type** `public class LandCheck` | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. |
 | 50 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 57 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 63 | 5 | `static void near(String label, double actual, double expected, double relative)` | ...and to a part in `relative` of the expected figure (0.7.55): prices a ten-thousandth of a unit, where check()'s 1e-6 is no test. |
@@ -195,11 +195,11 @@
 |---:|---:|---|---|
 | 2281 | 68 | `static void groundKeptAhead()` |  |
 
-### 23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L) (lines 2350-2497)
+### 23. THE TEST PLAYER BUYS ITS IRON A WHOLE FIELD AT A TIME (0.7.64, batch L) (lines 2350-2499)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2378 | 91 | `static void ironAWholeFieldAtATime()` |  |
-| 2471 | 10 | `static Game ironListed(String label)` | A new city at 1.6 to the dollar grown, by hand, toward the founding field - the offer nearest it each time - until an offer holds iron. |
-| 2483 | 13 | `static double[] recount(CityLand land, Resource kind, double out, java.util.function.BiPredicate<Double, Double> in)` | Every field of a resource centred within `out` plots of a city's site (L-infinity) whose centre, seen from the site, passes `in`: its sites and its amount, whole - read off the world's cells, with none of CityLand's s... |
+| 2380 | 91 | `static void ironAWholeFieldAtATime()` |  |
+| 2473 | 10 | `static Game ironListed(String label)` | A new city at 1.6 to the dollar grown, by hand, toward the iron field nearest its site (nearestUnowned(); its founding field until 0.7.98) - the offer nearest it each time - until an offer holds iron. |
+| 2485 | 13 | `static double[] recount(CityLand land, Resource kind, double out, java.util.function.BiPredicate<Double, Double> in)` | Every field of a resource centred within `out` plots of a city's site (L-infinity) whose centre, seen from the site, passes `in`: its sites and its amount, whole - read off the world's cells, with none of CityLand's s... |
 

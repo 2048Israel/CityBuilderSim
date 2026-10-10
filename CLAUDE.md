@@ -268,8 +268,8 @@ These are Jerus's, and they do not move.
                                    campus) - PlanCheck holds it
         CityShore.java, SeaRoutes.java, ShipShapes.java
                                    the map at the water (0.7.97): the sea terminals, tank farms and the
-                                   reserve's tanks laid once on the shore by water that opens to the sea,
-                                   a terminal's quay to its berth, kept in the map's sidecar (FORMAT 6);
+                                   reserve's tanks laid once on the shore, a terminal by water that opens
+                                   to the sea, its quay to its berth, kept in the map's sidecar (FORMAT 6);
                                    each terminal's route out to the world, found once on a 480 m sea grid
                                    and pulled straight to the offing and the abyss; a boat's hull, deck
                                    and colours by its class - the map's, nothing in the model reads them

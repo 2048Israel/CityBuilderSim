@@ -364,7 +364,7 @@ public class LandManager {
     /** The crude the wells lifted this month, in tonnes (0.7.62) - both pools' since 0.7.93. */
     private double oilLiftedThisMonth;
 
-    /** ...by grade, in Deposit.Grade's order (0.7.79): what extractOil()'s walk of the fields found it was. */
+    /** ...by grade, in Deposit.Grade's order (0.7.79): what extractOil()'s walk of the fields found it was - and since 0.7.93 extractOilAtSea()'s of the sea's. */
     private final double[] liftedByGrade = new double[Deposit.Grade.values().length];
 
     /* Monthly flows, for the government accounts. Cleared each month. */
@@ -608,7 +608,7 @@ public class LandManager {
     public double[] getOilLiftedByGrade() { return liftedByGrade.clone(); }
 
     /* ----- the oil by grade, as it is worked out (0.7.79, batch O3; spec-oil 2.2) -----
-     * The city's oil is one pool, O - E, worked out in acquisition order; a
+     * The city's oil was one pool to 0.7.92, O - E, worked out in acquisition order; a
      * grade belongs to a field, so the order is laid out field by field
      * (CityLand.heldFields()): each holding's fields, the centre's first, as
      * runs of one grade, each holding's runs ending where its listed amount
