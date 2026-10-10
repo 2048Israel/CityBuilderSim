@@ -4653,6 +4653,12 @@ public final class GameVersion {
      *     buildings, the over-full town), BuildAdviceCheck 7, RoadCheck,
      *     ChildcareCheck 2 - each premise moved where Jerus's decisions move
      *     the rule (runs/fixP2-notes.md, section 3).
+     *   - The playtest is 0.7.100's byte for byte (its player builds its own
+     *     works). The auto-built one (-Dplaytest.autobuild), seeds 0 to 7:
+     *     the walk and the 240% limit took every seed to 1.5M-2.3M people
+     *     (three of eight thrived before); with first buildings where there
+     *     are none and no revenue check together, seven stall at 2k-37k -
+     *     either alone is fine (runs/fixP2-notes.md, section 4).
      */
     public static final String VERSION = "0.7.101";
 
