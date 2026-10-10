@@ -170,6 +170,7 @@ public final class RefineryView {
 
     /** One end of a traced link: a straight-run cut, a kind of unit, a product, or the furnaces. */
     public record End(Stream cut, Kind unit, Good product) {
+        /** The furnaces, where the residue no unit takes is burned: an end with no cut, unit or product. */
         public static final End FURNACES = new End(null, null, null);
         public static End cut(Stream s) { return new End(s, null, null); }
         public static End unit(Kind k) { return new End(null, k, null); }

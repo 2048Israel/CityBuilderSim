@@ -678,7 +678,9 @@ public final class OilView {
 
     /** The land wells' colour (mockup 2's, the ore's), and the platforms' (mockup 2's two blues; a lighter and a darker step of the same hue for a third and the rest, ★ O12-6). */
     public static final String LAND = "#c9b68f";
+    /** ...Platforms A, B and C's colours, in the order the series list them (mockup 2's two blues, then the lighter step)... */
     public static final String[] PLATFORM_COLOURS = { "#4fa3c7", "#2c6f8f", "#86c6e2" };
+    /** ...and the rest together's, the darker step of the same hue. */
     public static final String OTHER_PLATFORMS = "#1d4b62";
 
     /** A gridline, and the now line (mockup 2's). */

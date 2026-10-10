@@ -94,7 +94,8 @@ public class RefineryViewCheck {
     /** ...and a picture's pixels: within a millionth of one. */
     static final double PX = 1e-6;
 
-    static final Map<Game, GameFiles> FILES = new java.util.IdentityHashMap<>();
+    /** Each town's scratch files, so a twin can load its save and the end can clean every folder up. */
+    static final Map<Game, GameFiles> FILES =new java.util.IdentityHashMap<>();
 
     /** The units of the campus town: one small of each kind but the asphalt unit (heavy crude's), so the cracking unit and the coker feed alkylation and the hydrocracker and the coker the reformer. */
     static final String[] CAMPUS = { "Small Reformer", "Small Cracking Unit", "Small Hydrocracker", "Small Alkylation Unit",
@@ -102,7 +103,8 @@ public class RefineryViewCheck {
 
     /** Land wells on fiat sites in the campus town - fewer than its refinery runs on, so it imports the rest - and the oil each site holds. */
     static final int WELLS = 2;
-    static final double SITE_TONNES = 5_000_000;
+    /** ...the tonnes each of those sites holds. */
+    static final double SITE_TONNES =5_000_000;
 
     /** Months the towns play before they are read: two years, so the households own cars and drive (OilCheck 4's). */
     static final int MONTHS = 24;

@@ -2966,6 +2966,7 @@ public class MapCheck {
 
     /** BoatProto's lanes at 10B: its cap of 20,000, each from its berth 200 plots east and 1,500 north ("a lane 45 km out to sea, north of the coast"). */
     static final int PROTO_LANES = 20_000;
+    /** ...each lane's far end, in plots from its berth: 200 east and 1,500 north (north is less y). */
     static final long PROTO_LANE_DX = 200, PROTO_LANE_DY = -1_500;
 
     /**
