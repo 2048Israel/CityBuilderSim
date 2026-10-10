@@ -4501,9 +4501,9 @@ public final class GameVersion {
      *     touching it - drawn in a dark violet of its own. A saved map's
      *     units are gathered there once, as it is read.
      *   - The sea terminals, the tank farms and the reserve's tanks stand on
-     *     the shore: each laid once, on owned dry ground by owned water that
-     *     opens to the sea, a terminal's quay out over the water to its berth
-     *     (CityShore, a new model class); never moved, the newest taken first
+     *     the shore: each laid once, on owned dry ground by owned salt water -
+     *     a terminal's by water that opens to the sea, its quay out over it to
+     *     its berth (CityShore, a new model class); never moved, the newest taken first
      *     when one goes. The map's sidecar keeps them (its FORMAT 6, an older
      *     one's laid from its counts); the plans draw round them.
      *   - At sea: each platform's jacket, its wells on their sites, its 500 m

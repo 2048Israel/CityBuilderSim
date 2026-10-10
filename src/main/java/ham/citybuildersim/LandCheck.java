@@ -2025,7 +2025,7 @@ public class LandCheck {
         }
         assertTrue("a shortfall: the cheapest offer whose dry ground covers it", cheapestCovering);
         // A deposit (0.7.64, batch L2; the most sites a dollar until then): the cheapest offer holding it, what
-        // the test player buys - on a city grown toward its founding field, the offer nearest it each time, until an offer holds iron.
+        // the test player buys - on a city grown toward the iron field nearest its site, the offer nearest it each time, until an offer holds iron.
         Game listed = ironListed("landcheck-best-deposit");
         LandMarket ironMarket = listed.getLandManager().getMarket();
         LandParcel deposit = listed.bestOffer(Game.LandNeed.deposit(Resource.IRON));
@@ -2359,9 +2359,11 @@ public class LandCheck {
        (canService()); neither, nothing, and the look counted. Jerus: "Yes
        whole iron fields as one offer, yes that means significant
        investment." The fixtures grow a new city toward the default world's
-       founding field, the offer nearest it each time (its lane pushed out
-       until 0.7.66), until it is listed (35 sites, 449 Mt, about
-       US$180M at 1.6 to the dollar), then hand the treasury the price and
+       iron field nearest its site, the offer nearest it each time (its lane
+       pushed out until 0.7.66), until it is listed - to 0.7.98 the founding
+       field (35 sites, 449 Mt, about US$180M at 1.6 to the dollar), since
+       0.7.99 (batch W1) a field of the fewer and bigger, some twelve
+       kilometres out - then hand the treasury the price and
        more, the price less a few thousand, and nothing; a fourth city is
        left as founded, with no iron listed.
 
@@ -2370,7 +2372,7 @@ public class LandCheck {
        each paying on the mining sector's screen) earn a month at least the
        level payment repaying its price over BUILD_BOND_YEARS
        (fieldPayment()). A new city of a month can staff none of them, so on
-       these fixtures the founding field does not pay back and is not bought,
+       these fixtures the field does not pay back and is not bought,
        whatever the cash; the land office's Buy and the funding page's bond,
        which the rule pays with once a field does, are held through
        LongPlaytest.buyWhole() on the same fixtures.
@@ -2467,7 +2469,7 @@ public class LandCheck {
                 !listed && founded.getLandManager().getIronDeposits() == 0 && LongPlaytest.ironNoneListed == none + 1);
     }
 
-    /** A new city at 1.6 to the dollar grown, by hand, toward the founding field - the offer nearest it each time - until an offer holds iron. */
+    /** A new city at 1.6 to the dollar grown, by hand, toward the iron field nearest its site (nearestUnowned(); its founding field until 0.7.98) - the offer nearest it each time - until an offer holds iron. */
     static Game ironListed(String label) {
         Game g = dollarCity(label);
         CityLand land = g.getCityLand();

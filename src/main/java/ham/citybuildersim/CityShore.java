@@ -32,7 +32,8 @@ import java.util.List;
  * ground on no run of the city's (highway, track or yard), on no mined site,
  * a plot clear of every other work, and no highway touches it, corners
  * included (H5). A terminal's quay runs from that plot's side QUAY_PLOTS of
- * its cargo straight out, every plot owned salt water and no other work's.
+ * its cargo straight out, every plot owned salt water and no other work's,
+ * and the water just past its end opening to the sea (SeaRoutes.opensToSea()).
  * Of the spots a district holds, one within TilePainter.REACH of its cell's
  * ring - where the cell's arterials run when the plan opens it - comes first
  * (star O13-4); the first district with a spot has the work. A city with no
