@@ -752,6 +752,63 @@ public class NationalAccounts {
 
     /** What the treasury paid toward the households' groceries this month - a spending line. */
     public double getFoodAssistance() { return foodAssistance; }
+
+    /*
+     * EVERY MONTHLY TREASURY FLOW INSIDE THE BUDGET'S TOTALS (0.7.102, Jerus's
+     * A15: "rec plus maintenance ... i see maintenance is out of the budget
+     * even tho its a monthly thing"). Three more of what the treasury pays and
+     * takes every month, each with its own setter for the fund transfer's
+     * reason - Game moves the cash where it happens, and EconomyManager hands
+     * the figure on at both strikes:
+     *
+     *   cityRepairs        the repair bill on the city's own buildings - the
+     *                      roads, the schools, the hospitals, both utilities,
+     *                      the police and the ports - as the treasury paid it
+     *                      (Game.chargeBuildingMaintenance(),
+     *                      TreasuryLine.CITY_REPAIRS); what it refused is owed
+     *                      as arrears and is the next line's when paid. Until
+     *                      now journalled "Repaired the city's own buildings"
+     *                      and named under spending's total, outside it (0.7.31's
+     *                      D4), which left the surplus too high by it every month.
+     *   arrearsPaid        what the treasury paid down this month of what it
+     *                      owed the businesses - subsidies, repairs, the
+     *                      escalation and overtime on its sites it refused while
+     *                      the central bank's ceiling bound (Game.payDownArrears())
+     *                      - a bill of an earlier month paid in this one, so the
+     *                      budget's cash basis puts it here, as the student
+     *                      grant's arrears have always been on the grant line.
+     *                      Journalled "Paid down arrears" until now.
+     *   reserveCrudeBought / reserveCrudeSold
+     *                      the strategic reserve's crude, bought on the player's
+     *                      order and sold on a release, at each month's strike
+     *                      (Game.settleReserve(), TreasuryLine.OIL_RESERVE) -
+     *                      a thing bought, as land and buildings are, not a
+     *                      claim: the US budget counts its reserve's oil bought
+     *                      as an outlay and sold as a receipt. Journalled until now.
+     *
+     * Saved on the government block's end; an older save reads zero for all
+     * four, which is the budget it struck - its journal carries them.
+     */
+    private double cityRepairs, arrearsPaid, reserveCrudeBought, reserveCrudeSold;
+
+    /** The month's repairs to the city's own buildings, as paid - a spending line (0.7.102). */
+    public void setCityRepairs(double paid)  { this.cityRepairs = Math.max(0, paid); }
+    /** What the treasury paid down of what it owed the businesses this month - a spending line (0.7.102). */
+    public void setArrearsPaid(double paid)  { this.arrearsPaid = Math.max(0, paid); }
+    /** The strategic reserve's crude bought and sold at the month's strike - a spending line and a revenue line (0.7.102). */
+    public void setReserveCrude(double bought, double sold) {
+        this.reserveCrudeBought = Math.max(0, bought);
+        this.reserveCrudeSold = Math.max(0, sold);
+    }
+
+    /** What the treasury paid this month to keep the city's own buildings up - a spending line since 0.7.102. */
+    public double getCityRepairs()        { return cityRepairs; }
+    /** What the treasury paid down this month of what it owed the businesses - a spending line since 0.7.102. */
+    public double getArrearsPaid()        { return arrearsPaid; }
+    /** The crude the treasury paid for at the month's strike, for the strategic reserve - a spending line since 0.7.102. */
+    public double getReserveCrudeBought() { return reserveCrudeBought; }
+    /** ...and what the reserve's crude sold for - a revenue line since 0.7.102. */
+    public double getReserveCrudeSold()   { return reserveCrudeSold; }
     /** What the city's insurance paid the bank this month on insured mortgages written down - a spending line. */
     public double getMortgageClaims()   { return mortgageClaims; }
 
@@ -864,11 +921,16 @@ public class NationalAccounts {
             fundTransfer,
             // ...and food assistance, appended in 0.7.43: an older save reads
             // zero, a city that paid none.
-            foodAssistance };
+            foodAssistance,
+            // ...and the four lines 0.7.102 took inside the totals (A15): an
+            // older save reads zero for each, the budget that city struck -
+            // its journal carries them by name.
+            cityRepairs, arrearsPaid, reserveCrudeBought, reserveCrudeSold };
     }
 
     void restoreGovernment(double[] saved) {
-        // Twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
+        // Thirty-three since the repairs, the arrears and the reserve's crude (0.7.102);
+        // twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
         // the student loan interest; twenty-two since the health premium;
         // twenty-one since the police; twenty since EI and the grants;
@@ -876,9 +938,13 @@ public class NationalAccounts {
         if (saved == null || (saved.length != 17 && saved.length != 20
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
-                && saved.length != 29)) return;
+                && saved.length != 29 && saved.length != 33)) return;
         fundTransfer          = saved.length >= 28 ? saved[27] : 0;
         foodAssistance        = saved.length >= 29 ? saved[28] : 0;
+        cityRepairs           = saved.length >= 33 ? saved[29] : 0;
+        arrearsPaid           = saved.length >= 33 ? saved[30] : 0;
+        reserveCrudeBought    = saved.length >= 33 ? saved[31] : 0;
+        reserveCrudeSold      = saved.length >= 33 ? saved[32] : 0;
         centralBankRemittance = saved.length >= 25 ? saved[23] : 0;
         centralBankInterest   = saved.length >= 25 ? saved[24] : 0;
         mortgagePremiums      = saved.length >= 27 ? saved[25] : 0;
@@ -1041,7 +1107,9 @@ public class NationalAccounts {
                 + fundTransfer
                 // ...and the transit fares (0.7.49, B9): in the cash through the
                 // tax take since 2026-09-16, and on no line of the budget until now.
-                + transitFares;
+                + transitFares
+                // ...and what the strategic reserve's crude sold for (0.7.102, A15).
+                + reserveCrudeSold;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -1059,7 +1127,10 @@ public class NationalAccounts {
                 // ...and the food vouchers it paid (0.7.43).
                 + foodAssistance
                 // ...and transit's wages and upkeep, which the treasury pays since 0.7.49 (B9).
-                + transitSpending;
+                + transitSpending
+                // ...and since 0.7.102 (A15) the repairs to its own buildings, the arrears it
+                // paid down and the crude it bought for its reserve: journalled until then.
+                + cityRepairs + arrearsPaid + reserveCrudeBought;
     }
 
     /** Surplus or deficit - what actually moves the city's cash this month. */
@@ -1138,6 +1209,8 @@ public class NationalAccounts {
         mortgagePremiums *= scale;  mortgageClaims *= scale;
         fundTransfer *= scale;
         foodAssistance *= scale;
+        cityRepairs *= scale;  arrearsPaid *= scale;
+        reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

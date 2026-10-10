@@ -1233,13 +1233,23 @@ public class SaveFileCheck {
          * while its poorest are priced out - hungry, with the delivered share
          * at one. The share is read below, so the loop waits for it too.
          */
-        for (int extra = 0; extra < 240
+        /*
+         * ...AND A MOVE OF THE PLAYER'S IN EVERY MONTH IT WAITS (0.7.102): a
+         * thousand of reserves bought before each month, so the month the
+         * loop stops on has a line in the treasury's journal to lose. Its
+         * repairs were that line until Jerus's A15 made them a budget line;
+         * a fixture has to cause what it tests. At least one month, so the
+         * month after the dials is never the one read without it.
+         */
+        int extraMonths = 0;
+        do {
+            full.buyForeignCurrency(1);
+            full.simulateMonths(1);
+        } while (++extraMonths < 240
                 && (full.getHealth().getHungerRate() <= 0
                     || full.getTotalSubsidyPaid() <= 0
                     || full.getBank().depositRate() <= 0
-                    || full.getHouseholdBalance().getDeliveredShare() >= 1); extra++) {
-            full.simulateMonths(1);
-        }
+                    || full.getHouseholdBalance().getDeliveredShare() >= 1));
 
         // The treasury's rollover (0.7.13), set after the city has played to
         // the one setting no city founds with, so the round trip can fail.
@@ -1316,6 +1326,14 @@ public class SaveFileCheck {
                 full.getCityMaintenancePaid() > 0);
         same("what the city paid to keep its buildings up",
                 back.getCityMaintenancePaid(), full.getCityMaintenancePaid());
+        // ...a line of the budget since 0.7.102 (A15), on the government block's end: it crosses with it.
+        same("...the budget's repairs line, which is what it paid",
+                back.getEconomyManager().getNationalAccounts().getCityRepairs(),
+                full.getEconomyManager().getNationalAccounts().getCityRepairs());
+        assertTrue("...and the line is the bill it paid, not nothing",
+                full.getEconomyManager().getNationalAccounts().getCityRepairs() == full.getCityMaintenancePaid());
+        same("...so the budget's spending, with it, is the same", back.getEconomyManager().getNationalAccounts().getTotalExpenses(),
+                full.getEconomyManager().getNationalAccounts().getTotalExpenses());
 
         /*
          * THE INVESTORS' LAST WORD (0.7.102, Jerus's A22): what the month's
@@ -1718,8 +1736,10 @@ public class SaveFileCheck {
          * THE TREASURY'S JOURNAL, since 2026-09-18: last month's non-budget
          * movements by name, which the bridge on the Government tab opens
          * into, and the residual under them. A flow, and a list of them, so
-         * a reloaded city cannot rebuild it. This city pays repairs every
-         * month, so the journal has at least one line to lose.
+         * a reloaded city cannot rebuild it. This city buys a thousand of
+         * reserves before every month the fixture waits (its repairs were the
+         * line until 0.7.102 made them a budget line), so the journal has at
+         * least one line to lose.
          */
         java.util.List<TreasuryJournal.Entry> lived = full.getTreasuryJournal();
         java.util.List<TreasuryJournal.Entry> loaded = back.getTreasuryJournal();

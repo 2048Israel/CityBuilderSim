@@ -570,6 +570,25 @@ public class CentralBankCheck {
                 cb.getAdvancedToTreasury() > 0 && cb.getAdvancesToTreasury() > cb.ceiling());
 
         out.println("\n--- ...and the arrears are paid down first when cash returns ---");
+        /*
+         * THE ORDER, BY A FIXTURE (0.7.102). It was read off the journal's
+         * order, "Repaid the central bank" before "Paid down arrears"; since
+         * Jerus's A15 the arrears paid down are a budget line and not
+         * journalled. So: cash for half the advances, and nothing is paid
+         * down - the cash repays the central bank first.
+         */
+        double halfOwed = cb.getAdvancesToTreasury() / 2;
+        double arrearsWaiting = city.getArrearsTotal();
+        city.setCashForTest(halfOwed);
+        play(city);
+        double repaidFirst = 0;
+        for (TreasuryJournal.Entry e : city.getTreasuryJournal()) {
+            if (e.label().equals("Repaid the central bank")) repaidFirst -= e.amount();
+        }
+        assertTrue("fixture: cash for half what the central bank is owed, and arrears waiting", halfOwed > 0 && arrearsWaiting > 0);
+        assertTrue("the cash repays the central bank first, and nothing is paid down while it is owed",
+                repaidFirst > 0 && city.getArrearsPaidThisMonth() == 0
+                        && city.getEconomyManager().getNationalAccounts().getArrearsPaid() == 0);
         double arrearsOwed = city.getArrearsTotal();
         double grantArrears = city.getArrearsByLine().getOrDefault(TreasuryLine.STUDENT_GRANTS, 0.0);
         assertTrue("fixture: the treasury owes arrears", arrearsOwed > 0);
@@ -583,13 +602,19 @@ public class CentralBankCheck {
         close("the central bank was repaid in full", cb.getAdvancesToTreasury(), 0, 1e-6);
         close("...and then the arrears", city.getArrearsTotal(), grantArrears, 1e-6);
         close("...every dollar of them", city.getArrearsPaidThisMonth(), arrearsOwed - grantArrears, 1e-6);
+        /*
+         * ...ON THE BUDGET'S LINE SINCE 0.7.102 (Jerus's A15: every monthly
+         * treasury flow inside the budget's totals). Before: "...in that
+         * order", read off the journal, which named them "Paid down arrears"
+         * after "Repaid the central bank" (the order is the fixture above now).
+         * The students' arrears are paid with their grant, on its line.
+         */
         journal = city.getTreasuryJournal();
-        int repaidAt = -1, arrearsAt = -1;
-        for (int i = 0; i < journal.size(); i++) {
-            if (journal.get(i).label().equals("Repaid the central bank")) repaidAt = i;
-            if (journal.get(i).label().equals("Paid down arrears")) arrearsAt = i;
-        }
-        assertTrue("...in that order", repaidAt >= 0 && arrearsAt > repaidAt);
+        boolean named = false;
+        for (TreasuryJournal.Entry e : journal) named |= e.label().equals("Paid down arrears");
+        close("...on the budget's own line, \"Arrears paid down\": what reached the businesses' tills",
+                city.getEconomyManager().getNationalAccounts().getArrearsPaid(), arrearsOwed - grantArrears, 1e-6);
+        assertTrue("...so the journal names none of it", !named);
         assertTrue(String.format("...and the audit closed on all %d months", monthsPlayed),
                 monthsBroken == 0);
 

@@ -3890,14 +3890,15 @@ public class Game {
      */
     private void settleReserve() {
         double[] s = reserve.settle();
-        if (s[0] > 0) {
-            treasuryPays(TreasuryLine.OIL_RESERVE, s[0]);
-            treasuryJournal.record("Bought crude for the strategic reserve", -s[0]);
-        }
+        double bought = 0, sold = 0;
+        if (s[0] > 0) bought = treasuryPays(TreasuryLine.OIL_RESERVE, s[0]);
         if (s[1] > 0) {
             cash += s[1];
-            treasuryJournal.record("Sold crude from the strategic reserve", s[1]);
+            sold = s[1];
         }
+        // Budget lines since 0.7.102 (A15): the crude is a thing the city buys and sells every month its
+        // order or its release stands, as land is - journalled by name until then. See NationalAccounts.
+        economyManager.setReserveCrude(bought, sold);
     }
 
     /** Tells the investment engine what land is left to sell, right now. */
@@ -5415,7 +5416,12 @@ public class Game {
         economyManager.chargeMaintenance(price);
 
         double bill = economyManager.getMaintenanceBillTotal();
-        if (!Double.isFinite(bill) || bill <= 0) return;
+        if (!Double.isFinite(bill) || bill <= 0) {
+            // Nothing standing to repair: the city paid nothing, and its budget line says so (0.7.102).
+            cityMaintenancePaid = 0;
+            economyManager.setCityRepairsPaid(0);
+            return;
+        }
 
         /*
          * The materials, for real. handleConstructionMaterials() is the same
@@ -5453,20 +5459,20 @@ public class Game {
             cityShare = paidNow;
             cityMaintenancePaid = cityShare;
             /*
-             * JOURNALLED, BECAUSE THE BUDGET BALANCE DOES NOT CARRY IT. The
-             * Government screen listed this bill under spending as "Repairs"
-             * (since 0.7.31 it names it under the total, outside the
-             * budget's), but NationalAccounts.getTotalExpenses() has no line
-             * for it, so the surplus the bridge starts from is struck without
-             * it and the bridge's last row held exactly -cityShare every
-             * month, in every city with a road. Named here until the accounts
-             * carry it; the day they do, this line comes out. See
-             * TreasuryJournal.
+             * A BUDGET LINE SINCE 0.7.102 (Jerus's A15: "i see maintenance is
+             * out of the budget even tho its a monthly thing"). It was
+             * journalled here as "Repaired the city's own buildings" from
+             * 2026-09-18, because NationalAccounts.getTotalExpenses() had no
+             * line for it and the bridge's last row held exactly -cityShare
+             * every month; since 0.7.31 the Government screen named it under
+             * spending's total, outside it. The accounts carry it now
+             * (NationalAccounts' cityRepairs), so the record came out, as
+             * this note said it would. See TreasuryJournal.
              */
-            treasuryJournal.record("Repaired the city's own buildings", -cityShare);
         } else {
             cityMaintenancePaid = 0;
         }
+        economyManager.setCityRepairsPaid(cityMaintenancePaid);
 
         // ...AND THE BANK ITS BRANCHES, out of its own cash, with its payroll -
         // and since 0.7.19 their templates' operating cost beside the repairs,
@@ -13089,9 +13095,9 @@ public class Game {
        else' - that should be expandable, cause a lot of times that's where a
        bunch of important things happen." Every non-budget movement of the cash
        is written into a TreasuryJournal by name as it happens - capital into
-       the bank, reserves, a buyback, the students' loans, and the two lines
-       the budget balance omits - and the screen opens the row into those
-       lines. What the lines do not explain is getTreasuryResidual(), printed
+       the bank, reserves, a buyback, the students' loans, and (until 0.7.49
+       and 0.7.102, when the budget took them) the lines the budget balance
+       omitted - and the screen opens the row into those lines. What the lines do not explain is getTreasuryResidual(), printed
        under them as "Not accounted for". See TreasuryJournal for which sites
        are journalled and why the rest are not.
        ======================================================================= */
@@ -13169,11 +13175,12 @@ public class Game {
      *
      * NOT A RESIDUAL TO BE HIDDEN, and not zero in this model. It is the rest
      * of what the treasury did: reserves bought or sold, capital put into the
-     * bank, bonds bought back, the students' loans - none of which is a budget
-     * line - PLUS the line the budget balance omits (the city's repair bill,
-     * see TreasuryJournal; the transit fares were a second until 0.7.49,
-     * when the budget took them), PLUS whatever the
-     * government's books date to a different month from the money. Land and
+     * bank, bonds bought back, the students' loans, the central bank's
+     * advances - none of which is a budget line - PLUS whatever the
+     * government's books date to a different month from the money. (It held
+     * the lines the budget balance omitted, too, until the budget took them:
+     * the transit fares in 0.7.49, the city's repair bill, the arrears paid
+     * down and the reserve's crude in 0.7.102 - see TreasuryJournal.) Land and
      * buildings are NOT in it: land bought and sold and buildings paid for are
      * budget lines, struck over the same window, and the bridge's first row
      * already carries them. The screen prints this as its own row with its own
@@ -13229,8 +13236,10 @@ public class Game {
        and eleven more: land sold and bought, buildings, the fund's transfer,
        the mortgage insurance's premiums and claims, subsidies, the food
        vouchers (0.7.45), the central bank's remittance and its interest, the
-       students' loan interest. Those eleven are the steps, each an existing
-       getter. The transit fares were a twelfth until 0.7.49: in EARNED and in
+       students' loan interest - and since 0.7.102 (A15) four: the repairs to
+       the city's own buildings, the arrears paid down, and the reserve's
+       crude bought and sold. Those fifteen are the steps, each an existing
+       getter. The transit fares were a step until 0.7.49: in EARNED and in
        the cash, and not in the budget. The budget carries them since (B9),
        with the bill EARNED carries too.
 
@@ -13258,7 +13267,13 @@ public class Game {
                 new TreasuryJournal.Entry("Food assistance", -na.getFoodAssistance()),
                 new TreasuryJournal.Entry("Central bank remittance", na.getCentralBankRemittance()),
                 new TreasuryJournal.Entry("Interest to the central bank", -na.getCentralBankInterest()),
-                new TreasuryJournal.Entry("Student loan interest", na.getStudentLoanInterest()));
+                new TreasuryJournal.Entry("Student loan interest", na.getStudentLoanInterest()),
+                // ...and the four 0.7.102 took inside the budget (A15): outside EARNED, which is the
+                // tax take and the running programmes, and on the bridge's other half until then.
+                new TreasuryJournal.Entry("Repairs", -na.getCityRepairs()),
+                new TreasuryJournal.Entry("Arrears paid down", -na.getArrearsPaid()),
+                new TreasuryJournal.Entry("Crude for the reserve", -na.getReserveCrudeBought()),
+                new TreasuryJournal.Entry("Crude sold from the reserve", na.getReserveCrudeSold()));
     }
 
     /** What the steps leave between EARNED and the budget: the dials moved since the month was struck, and nothing in a month nobody moved one. */
@@ -13433,6 +13448,11 @@ public class Game {
         }
 
         if (cash > 0) payDownArrears();
+        // ...on the budget's line since 0.7.102 (A15): what reached the businesses' tills. The students'
+        // arrears are paid with their grant, on the grant's line, as they always were (payStudentGrants()).
+        double paidDown = 0;
+        for (double v : arrearsPaidTo.values()) paidDown += v;
+        economyManager.setArrearsPaidDown(paidDown);
 
         if (cash < 0) {
             double advanced = centralBank.advanceToTreasury(-cash);
@@ -13505,7 +13525,7 @@ public class Game {
             arrearsPaidTo.merge(payee.key(), paid, Double::sum);
             arrearsPaidThisMonth += paid;
             arrearsPaidLifetime += paid;
-            treasuryJournal.record("Paid down arrears", -paid);
+            // A budget line since 0.7.102 (A15), "Arrears paid down": journalled "Paid down arrears" until then.
             if (owed.getValue() - paid <= 1e-9) it.remove();
             else owed.setValue(owed.getValue() - paid);
         }

@@ -497,10 +497,15 @@ public class OilCheck {
                 reserve.getSettledImports() == boughtAbroad && Math.abs(auditLine(a, "- city ReserveFill") - boughtAbroad) <= .005
                         && auditLine(a, "+ city ReserveSales") == 0,
                 String.format("$%,.2fk", auditLine(a, "- city ReserveFill")));
-        report("...the treasury paid the whole, at home and abroad, and the bridge names it: the reserve's cash, exact",
+        // ...ON THE BUDGET'S OWN LINE SINCE 0.7.102 (Jerus's A15: every monthly treasury flow inside the
+        // budget's totals). Before: "...and the bridge names it", the journal's "Bought crude for the strategic
+        // reserve" at the whole. Now the budget's "Crude for the reserve" is the whole, and the journal names none.
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        report("...the treasury paid the whole, at home and abroad, and the budget carries it: the reserve's cash, exact",
                 same(reserve.getSettledBought(), boughtHome + boughtAbroad)
-                        && same(journalled(g, "Bought crude for the strategic reserve"), -(boughtHome + boughtAbroad)),
-                String.format("$%,.2fk", -journalled(g, "Bought crude for the strategic reserve")));
+                        && same(na.getReserveCrudeBought(), boughtHome + boughtAbroad)
+                        && Double.isNaN(journalled(g, "Bought crude for the strategic reserve")),
+                String.format("$%,.2fk", na.getReserveCrudeBought()));
         report("...and what it paid the wells is Oil's sale, banked at the same strike: a pool paying a pool, not listed",
                 same(oil.statement().sold.get(Good.CRUDE).atHome, boughtHome),
                 String.format("$%,.2fk", oil.statement().sold.get(Good.CRUDE).atHome));
@@ -578,9 +583,11 @@ public class OilCheck {
         quietly(() -> { g.simulateMonths(1); twin.simulateMonths(1); });
         worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
         MoneyAudit.Result b = g.getLastMoneyAudit();
-        report("...the strike after settles what shipped as the audit's + city ReserveSales, TRADE, journalled",
+        // ...on the budget's revenue line since 0.7.102 (A15); before, "journalled" as "Sold crude from the strategic reserve".
+        report("...the strike after settles what shipped as the audit's + city ReserveSales, TRADE, on the budget's line",
                 reserve.getSettledExports() == shipped && Math.abs(auditLine(b, "+ city ReserveSales") - shipped) <= .005
-                        && same(journalled(g, "Sold crude from the strategic reserve"), soldHome + shipped),
+                        && same(g.getEconomyManager().getNationalAccounts().getReserveCrudeSold(), soldHome + shipped)
+                        && Double.isNaN(journalled(g, "Sold crude from the strategic reserve")),
                 String.format("$%,.2fk", auditLine(b, "+ city ReserveSales")));
         report("...and the reloaded city settles the same, and holds the same, to the bit",
                 same(twin.getReserve().getSettledSold(), reserve.getSettledSold())

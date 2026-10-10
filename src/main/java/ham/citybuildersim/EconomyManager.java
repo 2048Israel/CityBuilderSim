@@ -1609,6 +1609,26 @@ public class EconomyManager {
     public void setFoodAssistance(double paid) { this.foodAssistance = Math.max(0, paid); }
     public double getFoodAssistance()          { return foodAssistance; }
 
+    /**
+     * THE FOUR LINES 0.7.102 TOOK INSIDE THE BUDGET'S TOTALS (A15), set by
+     * Game where the treasury pays or takes them, for the central bank's
+     * lines' reason: the repairs to the city's own buildings as paid
+     * (chargeBuildingMaintenance()), the arrears it paid down to the
+     * businesses (settleTreasury()), and the strategic reserve's crude bought
+     * and sold (settleReserve()). See NationalAccounts, EVERY MONTHLY
+     * TREASURY FLOW INSIDE THE BUDGET'S TOTALS.
+     */
+    private double cityRepairsPaid, arrearsPaidDown, reserveCrudeBought, reserveCrudeSold;
+
+    public void setCityRepairsPaid(double paid)  { this.cityRepairsPaid = Math.max(0, paid); }
+    public void setArrearsPaidDown(double paid)  { this.arrearsPaidDown = Math.max(0, paid); }
+    public void setReserveCrude(double bought, double sold) {
+        this.reserveCrudeBought = Math.max(0, bought);
+        this.reserveCrudeSold = Math.max(0, sold);
+    }
+    public double getCityRepairsPaid()  { return cityRepairsPaid; }
+    public double getArrearsPaidDown()  { return arrearsPaidDown; }
+
     /** Sets the month's student-loan interest, the treasury's. See Game.getStudentLoanInterest(). */
     public void setStudentLoanInterest(double interest) { this.studentLoanInterest = Math.max(0, interest); }
 
@@ -1907,6 +1927,9 @@ public class EconomyManager {
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);
+        nationalAccounts.setCityRepairs(cityRepairsPaid);
+        nationalAccounts.setArrearsPaid(arrearsPaidDown);
+        nationalAccounts.setReserveCrude(reserveCrudeBought, reserveCrudeSold);
         setMortgageInsuranceLines();
 
         GDP = nationalAccounts.getGdp();
@@ -1950,6 +1973,9 @@ public class EconomyManager {
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);
+        nationalAccounts.setCityRepairs(cityRepairsPaid);
+        nationalAccounts.setArrearsPaid(arrearsPaidDown);
+        nationalAccounts.setReserveCrude(reserveCrudeBought, reserveCrudeSold);
         setMortgageInsuranceLines();
     }
 
@@ -2206,6 +2232,8 @@ public class EconomyManager {
         centralBankRemittance *= scale;  centralBankInterest *= scale;
         fundTransfer *= scale;
         foodAssistance *= scale;
+        cityRepairsPaid *= scale;  arrearsPaidDown *= scale;
+        reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
         // ...and the month's transit wages and fares (B6, 0.7.47): the next
         // month bills the households last month's fares (Game.startOfMonthUpdate,
         // households.setTransitFares()), and in the old unit a reform by a
