@@ -34,7 +34,9 @@ import java.util.Locale;
  *      and THE BUDGET moves by nothing.
  *   3. THE BUDGET is last month's balance plus each line's move: a tax-only
  *      set moves it by the take's move, the pension by the pensions', the
- *      clinic's fee by the fees at one.
+ *      clinic's fee by the fees at one - and since 0.7.103 (Jerus's A7) the
+ *      fuel duty by the month's litres at the pump at the duty charged, at
+ *      the city's own dial the month's duty.
  *   4. THE OTHER READS: the savers' rate the bank would choose, between where
  *      it is and where it heads; the compression and the ceiling at another
  *      setting; the floor's cash and founding figures one way and back; every
@@ -419,6 +421,20 @@ public class PolicyPreviewCheck {
                         -(PolicyPreview.tuitionWaived(g, live, Math.min(1, share + .1)) - PolicyPreview.tuitionWaived(g, live, share))));
         // (The food vouchers' line, 0.7.45's B19, is GroceryCheck's: this
         // Wealthy city has nobody a voucher would go to, so it cannot cause it.)
+
+        // THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): the month's litres at the pump at the duty as charged.
+        double litres = PolicyPreview.fuelLitres(g);
+        assertTrue("fixture: the drivers bought petrol at the pump last month (" + Formats.INSTANCE.count(litres) + " L)", litres > 0);
+        TaxPolicy duty = live.copy();
+        duty.setFuelDuty(.000215);
+        assertTrue("at the city's own dial the duty previewed is the month's, to the bit (none at the default)",
+                PolicyPreview.fuelDutyAt(g, live) == em.getFuelDuty());
+        assertTrue("a duty of 21.5 cents a litre moves the budget by the litres at it as charged, the expected price level in it",
+                near(PolicyPreview.change(g, live, duty, share, share), litres * duty.chargedFuelDuty() - PolicyPreview.fuelDutyAt(g, live))
+                        && PolicyPreview.fuelDutyAt(g, duty) == litres * .000215 * live.getExpectedLevel());
+        assertTrue("...and a litre at the pump by exactly the duty",
+                near(PolicyPreview.pumpPriceAt(g, duty) - PolicyPreview.pumpPriceAt(g, live),
+                        duty.chargedFuelDuty() - live.chargedFuelDuty()));
     }
 
     /* ============================ 4. THE OTHER READS ============================ */

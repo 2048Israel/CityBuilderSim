@@ -598,8 +598,9 @@ public class EconomyManager {
      * buildings need maintenance, and make sure they get billed." A real
      * order with the builders - money, materials and points - priced in the
      * building's own inputs at today's material price, one percent a year of
-     * what it cost to put up. The sectors bear their own; the city bears
-     * the buildings nobody else owns; the bank bears its branches.
+     * what it cost to put up - since 0.7.103 each road kind at its own share
+     * (BuildingsTemplate.repairsPerYear()). The sectors bear their own; the
+     * city bears the buildings nobody else owns; the bank bears its branches.
      */
     private static final BuildingType[] CITY_MAINTAINED = {
         BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE,
@@ -630,18 +631,36 @@ public class EconomyManager {
      * REBATES ON A NEW HOME, AND THE CITY'S).
      */
 
+    /*
+     * EACH ROAD KIND ITS OWN SHARE (0.7.103, batch P4; Jerus's A11): a
+     * building with a repairs share of its own (BuildingsTemplate
+     * .repairsPerYear(), the three roads) is charged at it; every other at
+     * MAINTENANCE_RATE, summed first and charged once as before, so a figure
+     * with no road in it is what it was to the bit (repaired()).
+     */
+
+    /** A month's repairs of `cost` over the buildings `total` sums: the house rate on those without a share of their own, and each with one at its own over twelve. */
+    private static double repaired(java.util.function.ToDoubleFunction<java.util.function.ToDoubleFunction<BuildingsTemplate>> total,
+                                   java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
+        double house = total.applyAsDouble(t -> t.hasOwnRepairs() ? 0 : cost.applyAsDouble(t)) * MAINTENANCE_RATE;
+        double own = total.applyAsDouble(t -> t.hasOwnRepairs() ? cost.applyAsDouble(t) * t.repairsPerYear() / 12 : 0);
+        return house + own;
+    }
+
     /** The month's repair bill for one sector, in money - materials priced in, and the builders' sales tax. */
     public double maintenanceBillFor(Sector s, double materialPrice) {
-        double cash = buildingManager.totalBySector(s.key(), buildingManager::nonMaterialCost) * MAINTENANCE_RATE;
-        double mats = buildingManager.totalBySector(s.key(), BuildingsTemplate::getConstructionMaterials) * MAINTENANCE_RATE;
+        double cash = repaired(f -> buildingManager.totalBySector(s.key(), f), buildingManager::nonMaterialCost);
+        double mats = repaired(f -> buildingManager.totalBySector(s.key(), f), BuildingsTemplate::getConstructionMaterials);
         double bill = withBuildersTax(cash + mats * Math.max(0, materialPrice));
         return Double.isFinite(bill) && bill > 0 ? bill : 0;
     }
 
-    /** The same for a city-owned category. */
+    /** The same for a city-owned category - since 0.7.103 each road kind at its own share. */
     public double maintenanceBillFor(BuildingType category, double materialPrice) {
-        double cash = buildingManager.getTotalByCategoryDouble(category, t -> t.isOwnedBySector() ? 0 : buildingManager.nonMaterialCost(t)) * MAINTENANCE_RATE;
-        double mats = buildingManager.getTotalByCategoryDouble(category, t -> t.isOwnedBySector() ? 0 : t.getConstructionMaterials()) * MAINTENANCE_RATE;
+        double cash = repaired(f -> buildingManager.getTotalByCategoryDouble(category, f),
+                t -> t.isOwnedBySector() ? 0 : buildingManager.nonMaterialCost(t));
+        double mats = repaired(f -> buildingManager.getTotalByCategoryDouble(category, f),
+                t -> t.isOwnedBySector() ? 0 : t.getConstructionMaterials());
         double bill = withBuildersTax(cash + mats * Math.max(0, materialPrice));
         return Double.isFinite(bill) && bill > 0 ? bill : 0;
     }
@@ -842,15 +861,15 @@ public class EconomyManager {
         return Math.max(0, Math.min(1, rentalPropertyRebate(t, taxPerBuilding) / taxPerBuilding));
     }
 
-    /** The material UNITS the whole city's repairs consume this month. */
+    /** The material UNITS the whole city's repairs consume this month - each road kind at its own share (0.7.103). */
     public double maintenanceMaterialsTotal() {
-        double mats = buildingManager.getTotalDouble(BuildingsTemplate::getConstructionMaterials) * MAINTENANCE_RATE;
+        double mats = repaired(buildingManager::getTotalDouble, BuildingsTemplate::getConstructionMaterials);
         return Double.isFinite(mats) && mats > 0 ? mats : 0;
     }
 
-    /** The builders' time the whole city's repairs consume this month. */
+    /** The builders' time the whole city's repairs consume this month - each road kind at its own share (0.7.103). */
     public double maintenancePointsTotal() {
-        double pts = buildingManager.getTotalDouble(BuildingsTemplate::getConstructionPoints) * MAINTENANCE_RATE;
+        double pts = repaired(buildingManager::getTotalDouble, BuildingsTemplate::getConstructionPoints);
         return Double.isFinite(pts) && pts > 0 ? pts : 0;
     }
 
@@ -1491,7 +1510,21 @@ public class EconomyManager {
         // the businesses paid.
         return profit + wageTax + salesTax + totalPropertyTax
                 + contributions + eiPremiums + healthcareFees + educationFees
-                + transitFares + totalBankTax + healthPremiums;
+                + transitFares + totalBankTax + healthPremiums
+                // ...and the fuel duty the drivers paid at the pump (0.7.103), as the fares are taken in.
+                + getFuelDuty();
+    }
+
+    /**
+     * THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): what the drivers paid
+     * the treasury a litre on their petrol this month, struck at the pump
+     * (sectors.Retail.sellFuel(), at 6d) and read from the forecourts' month
+     * - saved among Retail's extras, so the tax take, the budget's line and
+     * the audit read one figure on both paths. Nothing at the default dial.
+     */
+    public double getFuelDuty() {
+        double d = sectors.retail().getFuelDuty();
+        return Double.isFinite(d) && d > 0 ? d : 0;
     }
 
     /* ------------------- WHAT THE POLICY TAB ASKS (0.7.36) -------------------
@@ -1927,6 +1960,7 @@ public class EconomyManager {
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
+        nationalAccounts.setFuelDuty(getFuelDuty());
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);
@@ -1973,6 +2007,7 @@ public class EconomyManager {
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
+        nationalAccounts.setFuelDuty(getFuelDuty());
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);

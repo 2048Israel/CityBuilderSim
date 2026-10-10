@@ -565,6 +565,7 @@ final class GovernmentScreen {
                                                     -> new String[] {"Promises", "Schools"};
             case "Subsidies"                        -> new String[] {"Promises", "Subsidies"};
             case "Food assistance"                  -> new String[] {"Promises", "Food"};
+            case "Fuel duty"                        -> new String[] {"Taxes", "Fuel"};
             case "Central bank remittance", "Interest to the central bank"
                                                     -> new String[] {"Money", "The policy rate"};
             // ...and the arrears paid down (0.7.102): owed because the ceiling on the advances bound, set there,
@@ -624,6 +625,7 @@ final class GovernmentScreen {
             case "Transit fares", "Transit"          -> Icons.BUS;
             case "Arrears paid down"                 -> Icons.BANK;
             case "Crude for the reserve", "Crude sold from the reserve" -> Icons.TANK;
+            case "Fuel duty"                         -> Icons.DROP;
             default                                  -> Icons.COIN;
         };
     }
@@ -1164,7 +1166,7 @@ final class GovernmentScreen {
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
                 "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
-                "Transfer from the fund", "Transit fares", "Crude sold from the reserve");
+                "Transfer from the fund", "Transit fares", "Crude sold from the reserve", "Fuel duty");
     }
 
     List<Double> revenueAmounts(NationalAccounts na) {
@@ -1198,7 +1200,9 @@ final class GovernmentScreen {
                 // they were named outside it.
                 na.getTransitFares(),
                 // ...and what the strategic reserve's crude sold for (0.7.102, A15), journalled until then.
-                na.getReserveCrudeSold());
+                na.getReserveCrudeSold(),
+                // ...and the fuel duty on the drivers' petrol (0.7.103, Jerus's A7), its own line.
+                na.getFuelDuty());
     }
 
     /*

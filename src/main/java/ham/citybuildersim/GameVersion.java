@@ -4704,8 +4704,88 @@ public final class GameVersion {
      *   - THE INVESTORS' LAST WORD SAVED (A22): Game.lastInvestment crosses
      *     a save (DataSave), so the Sectors screen's investors' line survives
      *     a load.
+     *
+     * 0.7.103 (2026-10-10) - OIL AND ROADS. Batch P4 (Jerus's A7, A8, A9,
+     * A11 and B of 2026-10-10, the project's decisions-2026-10-10.md;
+     * runs/brief-batchP4.md, runs/fixP4-notes.md). No save format change
+     * (36): the new dial rides the end of the policy's array, the month's
+     * duty Retail's extras, and an older save reads none of either.
+     *   - THE FUEL DUTY (A7; TaxPolicy, THE FUEL DUTY): a Policy dial, Taxes
+     *     > Fuel, staged with the taxes, 0 by default - a duty a litre at
+     *     founding prices, charged at the expected price level, to a dollar
+     *     at most (MAX_FUEL_DUTY). The pump's price rises by exactly it
+     *     (sectors.Retail.pumpPrice(w, r, duty)); the grocers' sale, their
+     *     sales tax and their margin are what they were; the drivers pay it
+     *     with the litre, and it is the treasury's - in the tax take, its own
+     *     budget line (NationalAccounts.getFuelDuty(), the Government tab's
+     *     "Fuel duty") and the audit's "+ e FuelDuty". A journey's fuel is
+     *     the sign's, so a duty moves owners toward the bus. PolicyPreview
+     *     strikes it on the month's litres (fuelDutyAt()). Only petrol is sold
+     *     at the pump: the vans' and the railway's diesel pays none.
+     *   - THE RESERVE KEEPS WHAT THE REFINERS DO NOT TAKE (A8; Markets,
+     *     StrategicReserve): a release past their bid stays in the tanks; it
+     *     shipped at the export price from 0.7.85.
+     *   - THE WORLD'S DEMAND FOR LUBRICANTS (A9; sectors.Refining): the world
+     *     takes a city's lubricants up to 1% of the crude its crude units run
+     *     (LUBRICANTS_WORLD_SHARE, the real share [R37]); the ship's line is
+     *     cut to it and the spread planner weighs a lube plant on what the
+     *     world and the city would still take. A Small Lube Plant beside an
+     *     Oil Refinery made 9.6% of its crude into lubricants and shipped
+     *     every litre; now 0.8% ships and the rest idles. Jerus's 1008 city
+     *     makes 0.71% and ships 0.44%: unchanged.
+     *   - EACH ROAD ITS OWN REPAIRS (A11; BuildingsTemplate, A ROAD'S OWN
+     *     REPAIRS; buildings.json's "repairs"): the Gravel Road 3% of its
+     *     price a year, the Paved Road 2%, the Elevated Highway 1.25% - the
+     *     Canadian Infrastructure Report Card 2016's target reinvestment
+     *     rates (Key Messages, Figure 4: roads and sidewalks 2.0-3.0%,
+     *     bridges 1.0-1.5% of replacement value a year, "informative only";
+     *     checked by Jerus) - where every road was at the
+     *     house's 1%; charged by the month's maintenance and read by the
+     *     advice's road over its life. Jerus's 1008 city's road repairs go
+     *     from $9.8B to $22.0B a month.
+     *   - THE CARD WORDS (B; BuildCard): a land Oil Well's site count says
+     *     "dry"; a conversion unit's card with no crude unit standing says
+     *     NO_FEED where it read a loss.
+     *   - THE TEST PLAYER ORDERS ROADS BY NEED (Jerus, 2026-10-10: "Fix
+     *     the test player too"; LongPlaytest.roadsByNeed()): the advice's
+     *     card for the road - its road, ranked by its order over its life for
+     *     each trip it will take off, the road's own repairs in it, the city's
+     *     gravel roads paved among them, and its count, the least that keeps
+     *     the road ahead at its projection - where it ordered ceil(25 x the
+     *     share of output the road cost) of the road it chose, whatever the
+     *     trips; none when what is on site keeps the road ahead. The transit
+     *     lines stay its own moves.
+     *   - A STACK EMPTIED KEEPS ITS PLACE ACROSS A SAVE (Game's load path):
+     *     a building whose last unit went - every gravel road paved, the last
+     *     retired - keeps its stack in the list the month shares the crews
+     *     over; a load restored stacks only for buildings standing or on
+     *     site, so a city saved with an empty one parted from the city saved
+     *     within months. It stands where the save's stack order names it.
+     *   - Harnesses: OilCheck 16 (a release stays; on the budget's line since
+     *     0.7.102) and 17 (new: the duty); RefineryCheck 15 (new: the cap)
+     *     and 14 (its town's order a unit the till can pay for: its lube
+     *     plant is capped out); RoadCheck 1 and 9 (the player's road and
+     *     count the advice's card's, none when the road is ahead);
+     *     BuildingDataCheck; BuildCardCheck 6; PolicyPreviewCheck 3;
+     *     ReadPathCheck; SaveFileCheck 8b (an empty stack across a save:
+     *     AutoBuildCheck 4 found it). Fixtures re-made to cause their
+     *     conditions: OilCheck 5's spurs on their own ground, ScaleCheck's
+     *     growing city at month 595 (the middle of a scan). HealthCheck 13
+     *     reads the dear twin's fees in every month the fee turned somebody
+     *     away, where it read the last month alone (which turned nobody away
+     *     before the merge with 0.7.102); its hunger line, the known red,
+     *     passes (-1.8 points) on the shelves' timing, the fee's rule
+     *     unchanged. LongPlaytest's map sum leaves out the buildings at sea,
+     *     which no district holds since 0.7.91: no run had built one.
+     *   - The playtest: with the roads' repairs at 1% and the old road rule
+     *     it is 0.7.102's byte for byte. The road rule alone moves it from
+     *     month 32 (the old rule's ten gravel roads, $56.5M of $71M, against
+     *     the advice's card) and it ends at 674,737 (544,232 at 0.7.102);
+     *     with each road's own repairs as well, from month 37, and it ends at
+     *     617,942: 230 gravel, 291 paved and 161 highways standing where
+     *     0.7.102 had 683, 56 and none. runs/fixP4-notes.md, section 4.
      */
-    public static final String VERSION = "0.7.102";
+    public static final String VERSION = "0.7.103";
 
     /**
      * The save shape.

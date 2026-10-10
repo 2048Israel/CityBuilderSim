@@ -667,6 +667,33 @@ public class BuildCardCheck {
                 + Formats.INSTANCE.amount(-i.estimate()), i.own() != null && i.own().kind() == BuildCard.GateKind.LOSS
                 && i.own().a() == -i.estimate() && i.estimate() <= 0
                 && i.estimate() == g.getBusinessInvestment().estimatedMonthlyProfit(rail.key(), spur));
+        assertTrue("...worded as a loss, not as no feed: the spur is no refinery's unit (0.7.103)",
+                i.own() != null && i.own().why() == null && !BuildCard.unfed(g, spur));
+
+        // THE TWO CARD WORDS (0.7.103, batch P4; Jerus's B). An Oil Well's count is the dry sites alone: "dry" on it.
+        BuildingsTemplate well = template(g, "Oil Well");
+        gate = BuildCard.investors(g, well).own();
+        assertTrue("an Oil Well with no oil site free: its gate is the deposit, its count the dry sites (Game.sitesFor()),"
+                + " named so (0.7.103)", !g.hasDepositFor(well, 1) && gate != null
+                && gate.kind() == BuildCard.GateKind.DEPOSIT && BuildCard.DRY_OIL.equals(gate.why())
+                && gate.a() == g.sitesFor(well) && gate.b() == g.committedFor(well));
+        assertTrue("...every gate's report the same, and its card's count says \"dry\" where no other building's does",
+                BuildCard.DRY_OIL.equals(BuildCard.appraise(g, well).first().why())
+                && " dry".equals(BuildCard.siteCountWord(well)) && BuildCard.siteCountWord(mine).isEmpty()
+                && BuildCard.siteCountWord(template(g, "Platform Well")).isEmpty()
+                && "iron".equals(BuildCard.depositWordFor(mine, Resource.IRON)));
+        // ...and a conversion unit with no crude unit standing: no feed, not a loss.
+        BuildingsTemplate lube = template(g, "Small Lube Plant");
+        BuildCard.Investors fed = BuildCard.investors(g, lube);
+        double crudeUnits = g.getBuildingManager().totalBySector(Sectors.REFINING,
+                t -> ham.citybuildersim.sectors.Refining.isCrudeUnit(t) ? 1 : 0);
+        assertTrue("fixture: no crude unit stands in the town", crudeUnits == 0 && BuildCard.unfed(g, lube));
+        assertTrue("a Small Lube Plant with nothing to feed it: its gate says no feed where it read a loss of "
+                + Formats.INSTANCE.amount(-fed.estimate()) + " a month (0.7.103)", fed.own() != null
+                && fed.own().kind() == BuildCard.GateKind.LOSS && BuildCard.NO_FEED.equals(fed.own().why())
+                && fed.estimate() <= 0 && fed.own().a() == -fed.estimate());
+        assertTrue("...and every gate's report the same",
+                BuildCard.NO_FEED.equals(BuildCard.appraise(g, lube).first().why()));
 
         // ...and a building that passes them all has none.
         int clear = 0;

@@ -126,13 +126,13 @@ final class PolicyScreen {
      * shows the controls to change property tax and so on."
      */
     static final String[] POLICY_TAX_PAGES =
-            {"Everything", "Profit", "Sales", "Wage", "Property"};
+            {"Everything", "Profit", "Sales", "Wage", "Property", "Fuel"};
     static final String[] POLICY_WAGE_PAGES    = {"The floor"};
     static final String[] POLICY_MONEY_PAGES   = {"The policy rate", "Currency reform"};
     static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Food", "Health", "Schools", "Subsidies"};
 
     /** Each page's icon on its tab, in the pages' order. */
-    static final String[] TAX_ICONS = {Icons.OVERVIEW, Icons.SECTOR, Icons.SHOPS, Icons.STAFF, Icons.HOMES};
+    static final String[] TAX_ICONS = {Icons.OVERVIEW, Icons.SECTOR, Icons.SHOPS, Icons.STAFF, Icons.HOMES, Icons.DROP};
     /** ...Wages' one, the staff. */
     static final String[] WAGE_ICONS = {Icons.STAFF};
     /** ...Money's: the bank for the policy rate, the banknote for the currency reform. */
@@ -224,6 +224,7 @@ final class PolicyScreen {
                 default -> {
                     switch (policyPage) {
                         case "Profit", "Sales", "Wage", "Property" -> taxPage(page, policyPage);
+                        case "Fuel" -> fuelPage(page);
                         default -> everythingPage(page);
                     }
                 }
@@ -591,6 +592,7 @@ final class PolicyScreen {
             case "eiPremium"     -> p.setEiPremiumRate(v);
             case "eiBenefit"     -> p.setEiBenefitRate(v);
             case "foodAssistance" -> p.setFoodAssistance(v);
+            case FUEL_DUTY       -> p.setFuelDuty(v);
             case "healthFee"     -> p.setHealthFeeScale(v);
             case "healthPremium" -> p.setHealthPremiumRate(v);
             default -> { }
@@ -1500,6 +1502,63 @@ final class PolicyScreen {
             + "keeps its own offset on top of the new rate. While the three have parted, the dial's thumb sits on the "
             + "profit rate - what the save calls the income rate - with the three marked on its track, and its reading "
             + "says \"three rates\" until it is moved: an average of the three would be a rate nobody charges.";
+
+    /* ------------------------------ FUEL (0.7.103) ------------------------------ */
+
+    /** The staged key of the fuel duty dial (0.7.103, batch P4; Jerus's A7). */
+    static final String FUEL_DUTY = "fuelDuty";
+
+    /** One step of the fuel duty's ladder: a cent a litre at founding prices, in thousands. */
+    static final double FUEL_DUTY_STEP = .00001;
+
+    /** The fuel duty's (i). */
+    static final String FUEL_INFO = "A duty a litre on the petrol the drivers buy at the pump, paid to the treasury as a line"
+            + " of the budget of its own. The pump's price rises by exactly the duty; the grocers' sale, their sales tax and"
+            + " their margin are what they were. Dearer fuel makes a ride cheaper beside a drive, so some owners take the bus."
+            + " The dial is set at founding prices and charged at the price level people expect. Only petrol is sold at the"
+            + " pump: the vans and the railway buy their diesel near wholesale and pay none.";
+
+    /** The fuel duty's caveat, whole. */
+    static final String FUEL_CAVEAT = "Struck on last month's litres at the pump: the owners who would take the bus at a"
+            + " dearer litre do so a month on, and that arrives in the month's own books.";
+
+    /** THE FUEL DUTY (0.7.103): its month, and its dial, staged into the tray with the taxes. */
+    void fuelPage(VBox page) {
+        TaxPolicy live = policy();
+        double litres = PolicyPreview.fuelLitres(ui.game), took = ui.game.getEconomyManager().getFuelDuty();
+        page.getChildren().add(sectionHead("THE FUEL DUTY", FUEL_INFO, quiet(money(took) + " last month on "
+                + shortNumber(litres) + " L of petrol at the pump")));
+        page.getChildren().add(fuelDutyCard(live));
+    }
+
+    /** The fuel duty's dial card: the duty a litre in today's money, what it would raise, the pump's litre and THE BUDGET. */
+    VBox fuelDutyCard(TaxPolicy live) {
+        double current = live.getFuelDuty(), level = live.getExpectedLevel();
+        java.util.function.DoubleFunction<String> reads = v -> v <= 0 ? "none" : unitPrice(v * level) + " a litre";
+        Lever lever = new Lever(FUEL_DUTY, "The fuel duty", current, 0, live.maxFuelDuty(), FUEL_DUTY_STEP, reads,
+                live::setFuelDuty);
+        Ladder ladder = ladderOf(lever);
+        DoubleFunction<List<Effect>> effects = fuelDutyEffects(live);
+        String status = current <= 0 ? "None: the pump's price is the grocers' and their sales tax."
+                : "Set at " + unitPrice(current) + " a litre at founding prices, " + String.format("×%.3f", level)
+                  + " the prices people expect.";
+        return dialCard(new DialCard(Icons.DROP, Palette.MONEY, "THE FUEL DUTY", FUEL_INFO, null, status, null, ladder,
+                staged(FUEL_DUTY, current), effects, CAVEAT_LINE, FUEL_CAVEAT + " " + CAVEAT, null), 520, false);
+    }
+
+    /** The fuel duty's effects at any value of its thumb (pure: the probe reads them): the duty a month, a litre at the pump, THE BUDGET. */
+    DoubleFunction<List<Effect>> fuelDutyEffects(TaxPolicy live) {
+        double current = live.getFuelDuty();
+        return v -> {
+            TaxPolicy after = previewFor(FUEL_DUTY, v, current, FUEL_DUTY_STEP);
+            return List.of(
+                    Effect.of("Fuel duty, a month", PolicyPreview.fuelDutyAt(ui.game, live), PolicyPreview.fuelDutyAt(ui.game, after),
+                            PolicyScreen::amount).delta(PolicyScreen::moneyMove),
+                    Effect.of("A litre at the pump", PolicyPreview.pumpPriceAt(ui.game, live), PolicyPreview.pumpPriceAt(ui.game, after),
+                            Money::unitPrice),
+                    budgetEffect(after, stagedShare()));
+        };
+    }
 
     /** P6. */
     static final String PROPERTY_NOT = "Property is not on this dial: it is charged on value rather than on income, "

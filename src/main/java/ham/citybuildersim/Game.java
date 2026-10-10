@@ -3860,12 +3860,15 @@ public class Game {
        applied: fillReserve() orders crude, bought in the month's crude market
        as a buyer - the wells' first, pro rata with the refiners, the world's
        for the rest - and releaseReserve() offers it there, a month at a time,
-       to the refiners and past them to the world (Markets.clear()). The money
-       moves at the next strike, beside the businesses it traded with
+       to the refiners; what they do not take stays in the tanks (0.7.103,
+       Jerus's A8 - it shipped to the world from 0.7.85; Markets.clear()). The
+       money moves at the next strike, beside the businesses it traded with
        (settleReserve()): what it paid the wells and the refiners paid it is a
        pool paying a pool, and what crossed the edge is the audit's "- city
-       ReserveFill" and "+ city ReserveSales". No budget line: a fill buys an
-       asset, as the vault's reserves are bought, so the treasury journals it.
+       ReserveFill" ("+ city ReserveSales" only for a save's month in flight
+       from before 0.7.103). Both sides are budget lines since 0.7.102 (A15),
+       "Crude for the reserve" and "Crude sold from the reserve": a thing the
+       city buys and sells, as land is; the treasury journalled them before.
        ======================================================================= */
 
     /**
@@ -3924,8 +3927,8 @@ public class Game {
      * The reserve's month, settled at the strike beside the businesses it
      * traded with (StrategicReserve.settle()): the treasury pays for the
      * crude bought - a promise, the crude having landed - and takes in what
-     * was sold, each journalled, since no budget line carries an asset
-     * bought or sold.
+     * the refiners paid for it, each on its budget line since 0.7.102 (A15;
+     * journalled before).
      */
     private void settleReserve() {
         double[] s = reserve.settle();
@@ -14902,9 +14905,27 @@ public class Game {
                 }
             }
 
+            // ...and every stack the order names that the restore above left
+            // out, empty (0.7.103, batch P4): a building whose last unit went -
+            // every gravel road paved, the last one retired - keeps its stack
+            // in the city that was saved, at its place, and the month shares
+            // its crews out over the list as it stands, so a city loaded
+            // without it parted from the one saved at the low bits within two
+            // months and at the cent within six (AutoBuildCheck 4's decades
+            // city, once each road's own repairs had it pave every gravel
+            // road: m602, m606). The order lists every stack since 0.7.43.
+            int[] order = loaded.getStackOrder();
+            if (order != null) {
+                for (int id : order) {
+                    BuildingsTemplate template = buildingManager.getTemplate(id);
+                    if (template != null && buildingManager.getStack(template) == null) {
+                        buildingManager.addStack(template, 0, true);
+                    }
+                }
+            }
             // ...stood in the order the city stood them in (0.7.43): the
             // restore above is by id. See DataSave.getStackOrder().
-            buildingManager.orderStacks(loaded.getStackOrder());
+            buildingManager.orderStacks(order);
 
             // A save that kept one order book for the whole city: spread it
             // over the sites by the work still owed, which is the rate the

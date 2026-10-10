@@ -22,16 +22,20 @@ package ham.citybuildersim;
  * buys - cut to the room; what the room could not take lapses with the
  * month. RELEASE (Game.releaseReserve(t)): t a month offered into the same
  * market as a seller, pro rata with the wells' offers, as long as there is
- * crude to offer; what the buyers here do not take ships at the export
- * price, as the wells' unsold crude does. A fill order stops the release,
+ * crude to offer; what the buyers here do not take STAYS IN THE TANKS
+ * (0.7.103, batch P4; Jerus's A8, 2026-10-10 - it shipped at the export
+ * price, as the wells' unsold crude does, from 0.7.85, star O8-4): a reserve
+ * is held for a shock here, not sold to the world, so a release with no
+ * refinery to take it empties nothing. A fill order stops the release,
  * and a release cancels a fill, so the city never trades with itself.
  *
  * ITS MONEY MOVES AT THE NEXT STRIKE, beside the businesses it traded with
  * (Game.settleReserve()): what it bought from the wells and sold to the
  * refiners is a pool paying a pool in the same window, which the money
- * audit never lists; what it bought from the world and shipped to it
- * crosses the edge, as "- city ReserveFill" and "+ city ReserveSales"
- * (TRADE). The month's trades are carried to the strike in the save.
+ * audit never lists; what it bought from the world crosses the edge, as
+ * "- city ReserveFill" (TRADE). "+ city ReserveSales" is what shipped: none
+ * since 0.7.103, but a save's month in flight from before settles there.
+ * The month's trades are carried to the strike in the save.
  *
  * ITS BOOK is at average cost: a fill adds what was paid, a sale takes the
  * share of the book the tonnes sold were. Pure bookkeeping; nothing here

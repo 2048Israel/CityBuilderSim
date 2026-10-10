@@ -204,7 +204,9 @@ public class BuildingCatalog {
                 .setProductionModifier1(number(o, "productionModifier1"))
                 .setProductionModifier2(number(o, "productionModifier2"))
                 // A filling station's litres a month at the pump (0.7.83): absent, none.
-                .setPumpLitres(number(o, "pump"));
+                .setPumpLitres(number(o, "pump"))
+                // A road kind's own repairs a year, a share of its price (0.7.103): absent, the house rate.
+                .setRepairsPerYear(number(o, "repairs"));
 
         readCare(o, template, name);
         readJobs(o, template, name);

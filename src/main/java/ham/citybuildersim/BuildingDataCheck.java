@@ -143,6 +143,8 @@ public class BuildingDataCheck {
             check(who + " refinery feed", actual.feedPerMonth(), expected.feedPerMonth());
             // ...and a filling station's litres at the pump (0.7.83): one that lost its line sells nothing.
             check(who + " pump", actual.pumpLitres(), expected.pumpLitres());
+            // ...and a road kind's own repairs (0.7.103): one that lost its line is repaired at the house's 1%.
+            check(who + " repairs", actual.repairsPerYear(), expected.repairsPerYear());
             // ...and a sea terminal's berth (0.7.86): one that lost its line takes nothing off the lorries.
             if (actual.berthCargo() != expected.berthCargo()) {
                 fails++;
@@ -374,6 +376,12 @@ public class BuildingDataCheck {
         int stations = 0;
         for (BuildingsTemplate t : data) if (t.pumpLitres() > 0) stations++;
         assertTrue("...the only building with a pump", stations == 1);
+        // EACH ROAD KIND ITS OWN REPAIRS (0.7.103, batch P4; Jerus's A11): the three roads' "repairs", and no other's.
+        java.util.Map<String, Double> repairs = new java.util.TreeMap<>();
+        for (BuildingsTemplate t : data) if (t.hasOwnRepairs()) repairs.put(t.getName(), t.repairsPerYear());
+        assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
+                        + " Highway 1.25% - and no other building has: " + repairs,
+                repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
         assertTrue("...and 101 buildings in all (0.7.91; 98 from 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76"
                         + " until then)",
                 data.size() == 101);

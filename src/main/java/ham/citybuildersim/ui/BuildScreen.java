@@ -1035,7 +1035,8 @@ final class BuildScreen {
                     parts.add("needs a platform's slot: " + formatter.format(d[0]) + " standing, "
                             + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t under the sea");
                 } else if (d.length == 3) {
-                    parts.add("needs a deposit: the city owns " + formatter.format(d[0]) + ", "
+                    // ...a land Oil Well's count is its dry sites alone (0.7.103, Jerus's B): "dry" on it.
+                    parts.add("needs a deposit: the city owns " + formatter.format(d[0]) + BuildCard.siteCountWord(t) + ", "
                             + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t in the ground");
                 }
                 return String.join(" · ", parts);
@@ -1253,6 +1254,11 @@ final class BuildScreen {
     String gateWords(BuildCard.Gate gate) {
         switch (gate.kind()) {
             case DEPOSIT:
+                // ...a land Oil Well's count is its dry sites alone (0.7.103, Jerus's B): said so.
+                if (BuildCard.DRY_OIL.equals(gate.why())) {
+                    return "no oil site free (the city owns " + formatter.format(gate.a()) + " dry, "
+                            + formatter.format(gate.b()) + " spoken for)";
+                }
                 return "no " + (gate.why() == null ? "iron" : gate.why()) + " deposit free (the city owns "
                         + formatter.format(gate.a()) + ", " + formatter.format(gate.b()) + " spoken for)";
             case LICENCE:
@@ -1264,6 +1270,8 @@ final class BuildScreen {
                 return "no land - needs " + LandManager.areaWords(gate.a()) + ", "
                         + LandManager.areaWords(gate.b()) + " free";
             default:
+                // ...a conversion unit nothing feeds (0.7.103, Jerus's B): no feed, not a loss.
+                if (gate.why() != null) return gate.why();
                 return gate.a() > 0 ? "would lose " + money(gate.a()) + " a month" : "would make nothing";
         }
     }
@@ -3480,7 +3488,7 @@ final class BuildScreen {
             out.add(String.format("Holds %s litres of crude oil, %s t, for the city.", formatter.format(t.getStock()),
                     formatter.format(Math.round(t.getStock() / ham.citybuildersim.sectors.Refining.CRUDE_LITRES_PER_TONNE))));
             out.add("The city fills it in the month's crude market, from its wells first and the world for the rest,"
-                    + " and releases it there to the refiners, shipping what they do not take. Paid at the next strike.");
+                    + " and releases it there to the refiners, keeping what they do not take. Paid at the next strike.");
             return out;
         }
         // ...what it makes: a crude unit's slate since 0.7.76 (Refining.madeBy()), a conversion unit's products of its feed since 0.7.80.

@@ -607,6 +607,64 @@ public final class Refining extends Sector {
         return (getElectricityCost() + getWaterCost()) * costShareOf(g) / output;
     }
 
+    /* =====================================================================
+       THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103, batch P4; Jerus's A9,
+       2026-10-10; runs/spec-oil.md 6's risk, fixO5-notes 7)
+
+       A lube plant upgrades gas oil, and lubricants are the gas oil's best
+       use (1.89 times crude), so a Small Lube Plant beside an Oil Refinery
+       turned 9.6% of its crude into lubricants (6.0% on light crude), where
+       the world's refineries make about 1% [R37] - and every litre the city
+       did not use shipped at the export price, as if the world would take
+       any amount of them. It will not: the world buys lubricants in the
+       share its refineries make them, so it takes a city's up to
+       LUBRICANTS_WORLD_SHARE of the crude the city's crude units run, litre
+       for litre, in the month (★ the cap's form and its source: the real
+       share, not the research's risk line of 2%). What the city's own
+       buyers take is theirs on top.
+
+       THE SHIP'S LINE IS CUT TO IT (getExportBoundOutput()): past the cap
+       the plant's lubricants idle, as any maker's line idles past what it
+       can sell. The tanks emptied past their room (produceStock()) are a
+       refinery's being pulled down, not the run, and still ship. AND THE
+       PLANNER READS IT: a lube plant is weighed on no more gas oil than
+       makes the lubricants the world and the city would still take
+       (lubricantsRoom(), the Outlook's lubricantsHome), so none is ordered
+       for a market that is not there.
+       ===================================================================== */
+
+    /** The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (runs/spec-oil.md 6; the research's risk line was 2%). */
+    public static final double LUBRICANTS_WORLD_SHARE = .01;
+
+    /** Litres of lubricants the world takes a month of a city whose crude units run `crudeLitres`: LUBRICANTS_WORLD_SHARE of them. Pure. */
+    public static double lubricantsWorldTakes(double crudeLitres) {
+        return crudeLitres > 0 && Double.isFinite(crudeLitres) ? LUBRICANTS_WORLD_SHARE * crudeLitres : 0;
+    }
+
+    /** ...this month's: of the crude the crude units run at the rate, in litres. */
+    public double lubricantsWorldTakes() {
+        return lubricantsWorldTakes(getInputAtCapacity(Good.CRUDE) * getOperatingRate() * CRUDE_LITRES_PER_TONNE);
+    }
+
+    /** The lubricants a month the world and the city would still take past what `flow` makes: the world's share of its crude and `home`, less its lubricants; never below nothing. Infinite `home`, no cap (the prototype's frame). Pure. */
+    public static double lubricantsRoom(RefineryFlow.Flow flow, double home) {
+        if (!(home < Double.POSITIVE_INFINITY)) return Double.POSITIVE_INFINITY;
+        return Math.max(0, lubricantsWorldTakes(flow.crude()) + Math.max(0, home) - flow.of(Good.LUBRICANTS));
+    }
+
+    /** Lubricants a lube unit makes of a litre of its gas oil: its kind's yield (RefineryFlow.Kind.LUBE). */
+    public static double lubricantsPerLitreOfFeed() {
+        for (RefineryFlow.Yield y : RefineryFlow.Kind.LUBE.yields()) if (y.good() == Good.LUBRICANTS) return y.perLitre();
+        return 0;
+    }
+
+    /** What the ship's line takes of a product: the maker's rule (Sector.getExportBoundOutput()), lubricants no more than the world takes this month. */
+    @Override
+    public double getExportBoundOutput(Good g) {
+        double direct = super.getExportBoundOutput(g);
+        return g == Good.LUBRICANTS ? Math.min(direct, lubricantsWorldTakes()) : direct;
+    }
+
     /** The crude the crude units on site will take, in tonnes a month. */
     private double crudeOnSite() {
         return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.uses(Good.CRUDE));
@@ -935,9 +993,19 @@ public final class Refining extends Sector {
      * @param spareMix    the grades of the wells' next crude (gradesAhead())
      * @param crudeLocal  a tonne of the wells' crude at home: crude's local price
      * @param crudeImport a tonne imported, landed and hauled: crude's net import price
+     * @param lubricantsHome litres a month of lubricants the city's own buyers take on the trend (0.7.103):
+     *                    with the world's share of the crude, what a lube plant may make (lubricantsRoom());
+     *                    infinite in the prototype's frame, which has no cap
      */
     public record Outlook(double[] feed, double crude, double[] mix, double[] values, double room,
-                          double spareCrude, double[] spareMix, double crudeLocal, double crudeImport) { }
+                          double spareCrude, double[] spareMix, double crudeLocal, double crudeImport, double lubricantsHome) {
+
+        /** ...in the prototype's frame (spec-oil 2.4): no cap on lubricants. */
+        public Outlook(double[] feed, double crude, double[] mix, double[] values, double room,
+                       double spareCrude, double[] spareMix, double crudeLocal, double crudeImport) {
+            this(feed, crude, mix, values, room, spareCrude, spareMix, crudeLocal, crudeImport, Double.POSITIVE_INFINITY);
+        }
+    }
 
     /** This month's outlook, as plan() reads it. */
     public Outlook outlook(BusinessInvestment plans) {
@@ -946,9 +1014,11 @@ public final class Refining extends Sector {
         double spare = spareCrude();
         GoodsMarket crude = markets.get(Good.CRUDE);
         double local = crude.getLocalPrice(), imported = crude.netImportPrice();
+        double home = plans.forecast(this, markets.get(Good.LUBRICANTS));
         return new Outlook(unitFeed(false), getInputAtCapacity(Good.CRUDE), crudeMix.clone(), cityValues(), room,
                 spare, spare > 0 ? wellsGradesAhead() : MEDIUM_MIX.clone(),
-                Double.isFinite(local) ? local : 0, Double.isFinite(imported) ? imported : 0);
+                Double.isFinite(local) ? local : 0, Double.isFinite(imported) ? imported : 0,
+                Double.isFinite(home) ? Math.max(0, home) : 0);
     }
 
     /**
@@ -1031,20 +1101,37 @@ public final class Refining extends Sector {
         RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
         List<SpreadPlanner.Candidate> out = new ArrayList<>();
         for (BuildingsTemplate t : templates) {
-            if (isConversionUnit(t)) out.add(unitEstimate(flow, t, city));
+            if (isConversionUnit(t)) out.add(unitEstimate(flow, t, city, o.lubricantsHome()));
             else if (isCrudeUnit(t)) out.add(packageEstimate(o, flow, t, templates, city));
         }
         return out;
     }
 
-    /** One conversion unit weighed (pure): its spread on the feed it would find spare in `flow`, at most its own, at the rate less its costs; its feed gate FEED_GATE of one. */
+    /** One conversion unit weighed (pure): its spread on the feed it would find spare in `flow`, at most its own, at the rate less its costs; its feed gate FEED_GATE of one. In the prototype's frame: no cap on lubricants. */
     public static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city) {
+        return unitEstimate(flow, t, city, Double.POSITIVE_INFINITY);
+    }
+
+    /** ...a lube unit on no more gas oil than makes the lubricants the world and the city's `lubricantsHome` would still take (0.7.103; lubricantsRoom()). */
+    public static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city,
+                                                      double lubricantsHome) {
         RefineryFlow.Kind k = t.refineryUnit();
         double one = t.feedPerMonth(), spare = Math.max(0, spareFeed(flow, k));
-        double earns = SpreadPlanner.earns(t, flow.spread(k) * Math.min(spare, one), city);
         String feed = spare >= SpreadPlanner.FEED_GATE * one ? null
                 : String.format("%,.0f L a month of %s spare, under %.0f%% of %s's %,.0f L", spare, feedWords(k),
                         SpreadPlanner.FEED_GATE * 100, a(t.getName()), one);
+        if (k == RefineryFlow.Kind.LUBE && feed == null) {
+            double room = lubricantsRoom(flow, lubricantsHome), most = room / lubricantsPerLitreOfFeed();
+            if (most < spare) {
+                spare = most;
+                if (spare < SpreadPlanner.FEED_GATE * one) {
+                    feed = String.format("%,.0f L a month of lubricants the world and the city would still take, under %.0f%% of"
+                                    + " %s's %,.0f L", room, SpreadPlanner.FEED_GATE * 100, a(t.getName()),
+                            one * lubricantsPerLitreOfFeed());
+                }
+            }
+        }
+        double earns = SpreadPlanner.earns(t, flow.spread(k) * Math.min(spare, one), city);
         return SpreadPlanner.judge(t, earns, city.cost(t), feed, city, null);
     }
 
@@ -1088,6 +1175,8 @@ public final class Refining extends Sector {
                 BuildingsTemplate u = unitOfSize(k, size, templates);
                 if (u == null || !(f.spread(k) > 0)) continue;
                 double spare = Math.max(0, spareFeed(f, k));
+                // ...a lube unit on no more gas oil than the lubricants the world and the city would take (0.7.103).
+                if (k == RefineryFlow.Kind.LUBE) spare = Math.min(spare, lubricantsRoom(f, o.lubricantsHome()) / lubricantsPerLitreOfFeed());
                 if (spare < SpreadPlanner.FEED_GATE * u.feedPerMonth()) continue;
                 double margin = SpreadPlanner.earns(u, f.spread(k) * Math.min(spare, u.feedPerMonth()), city);
                 if (margin > best) {
@@ -1189,7 +1278,7 @@ public final class Refining extends Sector {
         SpreadPlanner.City city = planner.city(this, plans, game);
         Outlook o = outlook(plans);
         RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
-        return isConversionUnit(t) ? unitEstimate(flow, t, city)
+        return isConversionUnit(t) ? unitEstimate(flow, t, city, o.lubricantsHome())
                 : packageEstimate(o, flow, t, buildings.getTemplatesBySector(key()), city);
     }
 

@@ -40,7 +40,12 @@ import java.util.Map;
  *      for the road is its quote, its ground at landValue(), and running()
  *      for LIFE_MONTHS at the real rate - each part recomputed here, to the
  *      bit; the repairs in running() are what the month's maintenance bill
- *      charges the city for one more such road.
+ *      charges the city for one more such road - since 0.7.103 (batch P4,
+ *      Jerus's A11) each road kind at its own share a year of its price
+ *      (BuildingsTemplate.repairsPerYear(): gravel 3%, paved 2%, the
+ *      highway 1.25%; a line the house's 1%), so gravel's share of its
+ *      price is the dearest and the highway's the least, and gravel's lead
+ *      a trip it carries over paved shrinks from nearly half to a seventh.
  *   2. THE ADVICE TAKES THE LEAST OVER ITS LIFE, AND GRAVEL CAN STILL WIN:
  *      with no ground free, the road the advice suggests is the candidate
  *      whose order costs least over its life for the trips it will take off
@@ -92,6 +97,11 @@ public class RoadCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-96s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-96s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
     }
 
     static void bits(String label, double actual, double expected) {
@@ -232,7 +242,7 @@ public class RoadCheck {
             if (t.getCategory() != BuildingType.INFRASTRUCTURE) continue;
             double materials = Math.max(0, bm.getConstructionMaterialPrice());
             double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
-                    * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
+                    * t.repairsPerYear() / 12;
             double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
                     + t.getWaterConsumption() * econ.getPricePerWaterUnit();
             double riders = BuildAdvice.roads(g, BuildAdvice.plus(site, t, 1)).getTransitRiders()
@@ -247,8 +257,37 @@ public class RoadCheck {
                     g.quoteBuild(t, 1).total, BuildAdvice.landValue(g, t.getLandSqFt(), free), BuildAdvice.running(g, t, site),
                     BuildAdvice.lifetime(g, t, free, site));
         }
-        assertTrue("running() is the repairs (1% a year of its price, tax in), power and water at the utility's prices,"
-                + " its posts and upkeep, less its riders' fares, to the bit (" + weighed + " roads and lines)", run && weighed == 6);
+        assertTrue("running() is the repairs (its own share a year of its price since 0.7.103, tax in), power and water at"
+                + " the utility's prices, its posts and upkeep, less its riders' fares, to the bit (" + weighed
+                + " roads and lines)", run && weighed == 6);
+        // EACH ROAD KIND ITS OWN REPAIRS (0.7.103, batch P4; Jerus's A11), buildings.json's "repairs".
+        BuildingsTemplate gravelT = template(g, GRAVEL), pavedT = template(g, "Paved Road"),
+                highwayT = template(g, "Elevated Highway");
+        boolean lines = true;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (t.getCategory() == BuildingType.INFRASTRUCTURE && t != gravelT && t != pavedT && t != highwayT) {
+                lines &= !t.hasOwnRepairs() && t.repairsPerYear() == ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR;
+            }
+        }
+        assertTrue("each road kind's repairs are its own share a year - gravel 3%, paved 2%, the highway 1.25% - and every"
+                + " line's the house's 1% (0.7.103)", gravelT.repairsPerYear() == .03 && pavedT.repairsPerYear() == .02
+                && highwayT.repairsPerYear() == .0125 && lines);
+        double[] perTrip = new double[3];
+        BuildingsTemplate[] three = { gravelT, pavedT, highwayT };
+        for (int k = 0; k < 3; k++) {
+            double materials = Math.max(0, bm.getConstructionMaterialPrice());
+            perTrip[k] = econ.withBuildersTax(bm.nonMaterialCost(three[k]) + three[k].getConstructionMaterials() * materials)
+                    * three[k].repairsPerYear() / 12 / three[k].getCapacity();
+        }
+        // ...at the house's 1% a gravel road's repairs a trip were its price a trip's share of a paved road's; now its
+        // share's ratio over that: gravel's lead a trip narrows from nearly a half to a seventh, the highway under paved.
+        double atOnePercent = (perTrip[0] / gravelT.repairsPerYear()) / (perTrip[1] / pavedT.repairsPerYear());
+        report("...gravel's share of its price the dearest and the highway's the least; a trip it carries, gravel's repairs"
+                        + " come to its price's ratio times the shares' (3 to 2) of a paved road's, and the highway's under paved's",
+                gravelT.repairsPerYear() > pavedT.repairsPerYear() && pavedT.repairsPerYear() > highwayT.repairsPerYear()
+                        && Math.abs(perTrip[0] / perTrip[1] - atOnePercent * 1.5) <= 1e-12 && perTrip[2] < perTrip[1],
+                String.format("repairs a month a trip: gravel %.5f, paved %.5f, highway %.5f; gravel %.0f%% of paved's, %.0f%%"
+                        + " at the house's 1%%", perTrip[0], perTrip[1], perTrip[2], 100 * perTrip[0] / perTrip[1], 100 * atOnePercent));
         assertTrue("lifetime() is its quote, its ground at landValue() and running() x the life factor, to the bit", whole);
         // The repairs are the month's own bill: one more gravel road standing adds exactly them.
         BuildingsTemplate gravel = template(g, GRAVEL);
@@ -258,8 +297,8 @@ public class RoadCheck {
                 - gravel.getWaterConsumption() * econ.getPricePerWaterUnit() - BuildCard.runningCost(g, gravel);
         quietly(() -> g.buildStack(gravel, 1, true));
         double after = econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price);
-        close("...and the repairs are what the month's maintenance bill charges the city for one more gravel road",
-                after - before, repairs, 1e-9);
+        close("...and the repairs are what the month's maintenance bill charges the city for one more gravel road, at its"
+                + " own share", after - before, repairs, 1e-9);
     }
 
     /* ============================ 2. THE ADVICE ============================ */
@@ -692,7 +731,7 @@ public class RoadCheck {
     /* ============================ 9. THE TEST PLAYER ============================ */
 
     static void player(Path root) {
-        out.println("\n--- 9. the test player asks the advice which road, and paves where it beats a new Paved Road ---");
+        out.println("\n--- 9. the test player asks the advice which road and how many, and paves where it beats a new Paved Road ---");
         // New roads, on the paved town: gravel at nothing, the paved road past the crossover.
         Game a = town(root, "player-new", PAVED, 3);
         double[][] baseA = noGroundFree(a);
@@ -722,8 +761,11 @@ public class RoadCheck {
         first &= firstRoad(g, base, 1.5 * Math.max(overPaved, overGravel) / office, "paved gravel");
         assertTrue("its first road move is the advice's: the gravel road at nothing, the paved road past the crossover,"
                 + " paving past paving's", first);
-        // ...and the move paves: as many as a road order at its gap, no more than there are.
+        // ...and the move paves as many as the advice's card says (0.7.103; Jerus, 2026-10-10: "Fix the test player too"):
+        // its count, the least that keeps the road ahead at its projection - until then as many as a road order at its gap,
+        // ceil(25 x the share of output the road costs), and no more than there are.
         scale(g, base, 1.5 * Math.max(overPaved, overGravel) / office);
+        BuildAdvice.Suggestion paveCard = roadCard(g);
         List<LongPlaytest.Move> moves = new ArrayList<>();
         LongPlaytest.addRoadThrottle(moves, g, Math.max(1, g.getEconomyManager().getMonthGdp()) * .1);
         int before = LongPlaytest.roadsPaved, standing = g.paveable();
@@ -733,7 +775,57 @@ public class RoadCheck {
         out.printf("      the move paved %d of the %d gravel roads%n", count, standing);
         assertTrue("...and its move paves them: on the Paved Road site, out of the cash, counted in the report",
                 did[0] && count >= 1 && count <= standing && g.pavingNow() == count);
+        assertTrue("...as many as the advice's card: its count, the least that keeps the road ahead at its projection (0.7.103)",
+                paveCard != null && paveCard.paving() && count == paveCard.count());
         scale(g, base, 1);
+
+        /*
+         * ROADS BY NEED (0.7.103, batch P4). The player ordered ceil(25 x the share of output the road costs) of the
+         * road it chose, whatever the trips - ten Gravel Roads for 294 people at the playtest's month 32 - and once each
+         * road kind carried its own repairs (Jerus's A11) their bill passed that town's tax. It orders the advice's card
+         * now: the advice's road and the advice's count; and none when what is on site keeps the road ahead. Asked of
+         * the paved town with its ground free (gravel the least) and of a town whose roads are well ahead, each with the
+         * road's cost at a tenth of its output - three roads on the old rule's scale.
+         */
+        scale(a, baseA, 0);
+        BuildAdvice.Suggestion newCard = roadCard(a);
+        BuildingsTemplate gravelA = template(a, GRAVEL);
+        List<LongPlaytest.Move> roadMoves = new ArrayList<>();
+        LongPlaytest.addRoadThrottle(roadMoves, a, Math.max(1, a.getEconomyManager().getMonthGdp()) * .1);
+        int beforeA = standingAndOnSite(a, gravelA);
+        final boolean[] built = { false };
+        if (!roadMoves.isEmpty()) quietly(() -> built[0] = roadMoves.get(0).act().getAsBoolean());
+        int ordered = standingAndOnSite(a, gravelA) - beforeA;
+        out.printf("      the paved town, its ground free: the move ordered %d Gravel Road(s), the advice's card %d; the old"
+                + " rule's %d%n", ordered, newCard == null ? 0 : newCard.count(), (int) Math.ceil(.1 * 25));
+        assertTrue("the test player's road move orders the advice's road and the advice's count, by need (0.7.103)",
+                newCard != null && !newCard.paving() && newCard.template() == gravelA && built[0] && ordered == newCard.count());
+        scale(a, baseA, 1);
+        Game ahead = town(root, "player-ahead", PAVED, 60);
+        List<LongPlaytest.Move> aheadMoves = new ArrayList<>();
+        LongPlaytest.addRoadThrottle(aheadMoves, ahead, Math.max(1, ahead.getEconomyManager().getMonthGdp()) * .1);
+        int roadMovesAhead = 0;
+        for (LongPlaytest.Move m : aheadMoves) {
+            if (List.of("gravel road", "roads", "highway", "paved gravel").contains(m.label())) roadMovesAhead++;
+        }
+        out.printf("      sixty Paved Roads: roads at %.1f%% of capacity, %d road move(s)%n",
+                ahead.getInfrastructureManager().getUtilisation() * 100, roadMovesAhead);
+        assertTrue("...and none when what is on site keeps the road ahead at its projection (the old rule ordered three)",
+                roadCard(ahead) == null && roadMovesAhead == 0);
+    }
+
+    /** The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. */
+    static BuildAdvice.Suggestion roadCard(Game g) {
+        java.util.Set<BuildingsTemplate> lines = new java.util.HashSet<>();
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getTransitCapacity() > 0) lines.add(t);
+        return BuildAdvice.suggestFor(g, null, ROADS, g.getCash(), g.getLandManager().getAvailableSqFt(), BuildAdvice.SLACK,
+                lines, false);
+    }
+
+    /** A building's count standing and on site. */
+    static int standingAndOnSite(Game g, BuildingsTemplate t) {
+        BuildingsStacks s = g.getBuildingManager().getStack(t);
+        return g.getBuildingManager().getQuantity(t.getId()) + (s == null ? 0 : s.getUnderConstruction());
     }
 
     /**

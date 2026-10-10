@@ -171,8 +171,18 @@ public class ScaleCheck {
      * assertion holds at each month scanned from 527 to 565 (527, 530, 533,
      * 535, 537, 540, 543, 545, 547, 550, 553, 555, 557, 560, 563, 565). 545
      * is the middle of that.
+     *
+     * ...AT 595 SINCE 0.7.103, BY THE SAME PREMISE. Each road kind's own
+     * repairs (Jerus's A11; BuildingsTemplate, A ROAD'S OWN REPAIRS) and the
+     * test player's roads ordered by need (LongPlaytest.roadsByNeed()) move
+     * its town: at 545 the larger copy built no more homes than it began
+     * with. Scanned (scratch-p4/scan2, ScaleCheck with the month changed,
+     * every assertion read): every assertion holds at 500, 580, 583, 585,
+     * 587, 590, 593, 595, 597, 600, 605, 610 and 620; at every month scanned
+     * from 510 to 575, and at 615, the larger copy built no more homes than
+     * it began with. 595 is the middle of 580 to 610: 4,303 people at 600.
      */
-    static final int FREE_FIXTURE_MONTHS = 545;
+    static final int FREE_FIXTURE_MONTHS = 595;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

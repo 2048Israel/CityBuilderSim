@@ -130,8 +130,10 @@ public final class PolicyPreview {
      * nobody made); the tuition households pay at the scales and the city's
      * share (`shareNow`, `shareThen`: Education's dial, not the policy's - the
      * share the city waives is forgone revenue, not spending: D13); the
-     * students' grant; the interest on the graduates' loans; and (0.7.45, the
-     * UI spec's B19) the food vouchers at the last sale, foodAssistanceAt().
+     * students' grant; the interest on the graduates' loans; (0.7.45, the
+     * UI spec's B19) the food vouchers at the last sale, foodAssistanceAt();
+     * and (0.7.103, Jerus's A7) the fuel duty on the month's litres at the
+     * pump, fuelDutyAt().
      */
     public static double change(Game g, TaxPolicy live, TaxPolicy after, double shareNow, double shareThen) {
         EconomyManager em = g.getEconomyManager();
@@ -157,7 +159,39 @@ public final class PolicyPreview {
         moved += hb.studentInterestAt(after.getStudentLoanRate()) - hb.studentInterestAt(live.getStudentLoanRate());
 
         moved -= foodAssistanceAt(g, after.getFoodAssistance()) - foodAssistanceAt(g, live.getFoodAssistance());
+        moved += fuelDutyAt(g, after) - fuelDutyAt(g, live);
         return moved;
+    }
+
+    /* =====================================================================
+       THE FUEL DUTY (0.7.103, batch P4; Jerus's A7)
+       ===================================================================== */
+
+    /** The litres the drivers bought at the pump last month, at the stations and past them: what a duty is struck on (sectors.Retail). */
+    public static double fuelLitres(Game g) {
+        ham.citybuildersim.sectors.Retail r = g.getSectors().retail();
+        return Math.max(0, r.getPumpLitres()) + Math.max(0, r.getQueueLitres());
+    }
+
+    /**
+     * What the fuel duty would raise a month under a policy: the month's
+     * litres at the pump at its duty a litre as charged (TaxPolicy
+     * .chargedFuelDuty()) - at the city's own dial what the month took, to
+     * the bit (EconomyManager.getFuelDuty()). The litres held: dearer fuel
+     * moves the owners toward the bus a month on (Motoring.journeyFuel()),
+     * which this does not know (the tab's CAVEAT).
+     */
+    public static double fuelDutyAt(Game g, TaxPolicy p) {
+        double duty = p.chargedFuelDuty();
+        return duty > 0 ? fuelLitres(g) * duty : 0;
+    }
+
+    /** ...and a litre at the pump under it: the sign's price today without the city's duty, and the policy's on top. */
+    public static double pumpPriceAt(Game g, TaxPolicy p) {
+        ham.citybuildersim.sectors.Retail r = g.getSectors().retail();
+        double today = r.pumpPriceToday(g);
+        if (!(today > 0)) return 0;
+        return today - g.getEconomyManager().getTaxPolicy().chargedFuelDuty() + p.chargedFuelDuty();
     }
 
     /** THE BUDGET under `after` with the city's share of tuition at `shareThen`: last month's balance, and that plus change(). */

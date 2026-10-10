@@ -1848,6 +1848,12 @@ public class CentralBankCheck {
      * 9,194 to 9,196 people - at 2.567% < 2.838% < 3.323% a year, the very
      * loose twin's trust 0.753 against 0.932 (seed 3's twins are as calm,
      * 4,783 to 4,784, but the lean costs them 0.915 against 0.949).
+     *
+     * ...AND STILL SEED 8'S AT 0.7.103 (each road kind's own repairs and the
+     * test player's roads by need, Jerus's A11 of 2026-10-10): of the sixteen
+     * shapes probed again (runs/fixP4-notes.md), eleven hold every premise,
+     * seed 8's among them - its twins 4,156 to 4,157 people, 2.213% < 2.531%
+     * < 2.930% a year, the very loose twin's trust 0.806 against 0.948.
      */
     static Game probeCity(GameFiles files) {
         Game g = new Game(files, LongPlaytest.founding());
