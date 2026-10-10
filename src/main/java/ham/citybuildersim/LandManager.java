@@ -1347,7 +1347,7 @@ public class LandManager {
         }
         double free = freeSqFt(z);
         if (wanted > free && wanted > 0) {
-            for (int i = 0; i < held.length; i++) held[i] *= free / wanted;
+            for (int i = 0; i < held.length; i++) held[i] = free * (held[i] / wanted);
         }
         return held;
     }
