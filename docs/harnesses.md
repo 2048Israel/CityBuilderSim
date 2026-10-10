@@ -7153,24 +7153,24 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2339 ...and is counted stopped short
   - L2344 fixture: a city as founded is under the line
   - L2347 ...and buys nothing
-- **L2379 the test player buys its iron a whole field at a time (0.7.64)**
-  - L2388 the cheapest whole field: the offer holding iron at the least price, whatever its size
-  - L2389 fixture: an Iron Mine would pay, and the city owns no unworked iron site
-  - L2403 a field's payment repays its price here over BUILD_BOND_YEARS at the market's rate
-  - L2406 its mines no more than its sites and than the mining sector could staff
-  - L2408 fixture: a new city of a month staffs none of the field's mines, so it does not pay back
-  - L2416 with the cash to cover it, a field that does not pay back is not bought, nor anything borrowed
-  - L2419 ...and the look is counted, to ask again at the next
-  - L2424 with the cash to cover it, it buys that offer, whole, out of the cash
-  - L2427 ...the cash down by its price here
-  - L2428 ...and nothing borrowed
-  - L2431 with a site unworked it buys no more
-  - L2439 fixture: a few thousand short, which the player's test for borrowing carries
-  - L2444 short, it borrows the funding page's bond for the gap and buys the offer, whole
-  - L2447 ...the bond's cash covering it: the treasury not overdrawn
-  - L2453 fixture: a founding treasury, far short, which the player's test for borrowing refuses
-  - L2458 neither, it buys nothing and borrows nothing
-  - L2466 with no iron listed - a new city's first ring - it buys nothing, and counts the look
+- **L2381 the test player buys its iron a whole field at a time (0.7.64)**
+  - L2390 the cheapest whole field: the offer holding iron at the least price, whatever its size
+  - L2391 fixture: an Iron Mine would pay, and the city owns no unworked iron site
+  - L2405 a field's payment repays its price here over BUILD_BOND_YEARS at the market's rate
+  - L2408 its mines no more than its sites and than the mining sector could staff
+  - L2410 fixture: a new city of a month staffs none of the field's mines, so it does not pay back
+  - L2418 with the cash to cover it, a field that does not pay back is not bought, nor anything borrowed
+  - L2421 ...and the look is counted, to ask again at the next
+  - L2426 with the cash to cover it, it buys that offer, whole, out of the cash
+  - L2429 ...the cash down by its price here
+  - L2430 ...and nothing borrowed
+  - L2433 with a site unworked it buys no more
+  - L2441 fixture: a few thousand short, which the player's test for borrowing carries
+  - L2446 short, it borrows the funding page's bond for the gap and buys the offer, whole
+  - L2449 ...the bond's cash covering it: the treasury not overdrawn
+  - L2455 fixture: a founding treasury, far short, which the player's test for borrowing refuses
+  - L2460 neither, it buys nothing and borrows nothing
+  - L2468 with no iron listed - a new city's first ring - it buys nothing, and counts the look
 
 ## LongPlaytest.java - 0 labelled assertions
 
@@ -7194,13 +7194,13 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L2600 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L2655 AND EVERYTHING THAT IS A PURCHASE.**
 - **L2998 AND THE BEST OF THEM WINS.**
-- **L4742 founding: a few months at a time, by hand**
-- **L4837 then the real rhythm**
-- **L4985 the report**
-- **L4993 ==**
-- **L5079 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L6173 what the advisor tried, and what happened**
-- **L6179 findings**
+- **L4744 founding: a few months at a time, by hand**
+- **L4839 then the real rhythm**
+- **L4987 the report**
+- **L4995 ==**
+- **L5081 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L6175 what the advisor tried, and what happened**
+- **L6181 findings**
 
 ## ManufacturingCheck.java - 60 labelled assertions
 
@@ -7433,9 +7433,9 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2898 ...a call's last leg turned no more than SPREAD_DEG, where the fan keeps to the sea
   - L2928 THE BOATS: a boat is pure in (call, t), fading only in the abyss; a frame finds every boat on the routes on screen, touching only those
   - L2957 ...at 10 billion a frame's boats take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and the prototype's 8 districts
-  - L3054 fixture: WellCheck's sea town buys the ground over its sea field
-  - L3085 THE OIL AT SEA: the game hands the map its platform - the jacket amid its slotted sites, its wells on them - and its pipe from the
-  - L3119 ...on the tiles the jacket drawn once, each well once on its site, the 500 m ring and the pipe through every plot they cross once
+  - L3055 fixture: WellCheck's sea town buys the ground over its sea field
+  - L3086 THE OIL AT SEA: the game hands the map its platform - the jacket amid its slotted sites, its wells on them - and its pipe from the
+  - L3120 ...on the tiles the jacket drawn once, each well once on its site, the 500 m ring and the pipe through every plot they cross once
 
 ## MiningCheck.java - 30 labelled assertions
 
@@ -9445,49 +9445,49 @@ _(this harness does not label its checks through a helper - it prints its findin
 > What this has to prove:
 > ...
 
-- **L219 1. the flow, traced, foots to the flow**
-  - L245 fixture: a large crude unit's heavy crude through a small and a large of each kind, its units taking feed
-  - L247 into each unit its run, into each product its make, out of each cut the cut, the furnaces the burned
-  - L254 a cracking unit's cracked gas feeds alkylation, a hydrocracker's naphtha the reformers - links from unit to unit
-  - L262 ...and a cracking unit alone links to no unit: its cracked gas goes to petroleum gas
-- **L280 2. the month is the one the products were made on**
-  - L284 fixture: the campus town's refinery ran this month, units with it
-  - L286 the view's flow is the one the month's products were made on (Refining.monthsFlow())
-  - L301 each product's nameplate row is the view's flow, to the bit
-  - L302 each product's made is its row's, and its run - the flow at the month's rate - is made and idled
-  - L310 each unit's run and spread are the flow's, its city spread the planner's (cityValues())
-  - L316 ...and its gate is the planner's own appraisal of one more of its kind
-- **L328 3. the crude: the run, its sources, the column**
-  - L332 the run is the crude units' nameplate at the month's rate
-  - L343 fixture: the town's wells lift less than the refinery runs, so it imports the rest
-  - L346 the sources' tonnes are the run
-  - L350 what each was bought is crude's clearing's, and they come to the refiners' row, home and imported
-  - L354 the land wells standing are counted
-  - L357 the column's cuts are the run's litres
-  - L358 ...cut at the mix the month ran on (Refining.monthsMix())
-- **L364 4. the takers are the buyers' own rows**
-  - L385 what the refinery sold at home, product by product, is its takers' - its own vans' among them, the railway's
-  - L388 fixture: the households drive and the railway hauls
-  - L391 the cars' petrol is the forecourts' month (Retail's pump and queue)
-  - L396 the railway's diesel is its haul's tonnes at FUEL_LITRES_PER_TONNE (and its own vans')
-  - L413 the tanks take what was made and not taken: what the refiners' stock moved by over the month
-  - L419 every litre a taker took is a product's: taken here, imported, shipped, into the tanks or idled
-  - L453 every ribbon leaves one node's right edge and reaches another's left, inside each
-  - L483 each node's ribbons foot to its litres times the scale: a unit's in its run, a product's band its make,
-  - L504 every box, ribbon and line of words lies in the picture
-  - L517 ...and the tallest column fills most of it: the scale is the largest at which every column fits
-  - L528 the takers' labels stand LABEL_SPACING apart, a line from each bar to its moved label
-- **L541 6. the furnaces: residue the diesel cannot cut**
-  - L542 on medium crude with a coker, none is burned and no furnaces are drawn
-  - L553 on heavy crude with no unit the residue the diesel cannot cut is burned, the flow's to the litre, and drawn
-  - L558 ...and the column's diesel is all spent cutting it: none is left as diesel (to a billionth of the run)
-- **L566 7. nothing to draw: no crude unit, and a city just loaded**
-  - L575 a town with no crude unit has nothing standing, draws nothing and says so
-  - L582 a city just loaded is not counted, draws nothing and says a month has to run
-  - L597 ...and a month on, the loaded city's month is its twin's: the flow, the rate, each product made
-- **L603 8. pure**
-  - L605 read twice, the same view, figure for figure and word for word
-  - L609 ...and reading it makes no production row (asked of a sector that buys no product)
+- **L221 1. the flow, traced, foots to the flow**
+  - L247 fixture: a large crude unit's heavy crude through a small and a large of each kind, its units taking feed
+  - L249 into each unit its run, into each product its make, out of each cut the cut, the furnaces the burned
+  - L256 a cracking unit's cracked gas feeds alkylation, a hydrocracker's naphtha the reformers - links from unit to unit
+  - L264 ...and a cracking unit alone links to no unit: its cracked gas goes to petroleum gas
+- **L282 2. the month is the one the products were made on**
+  - L286 fixture: the campus town's refinery ran this month, units with it
+  - L288 the view's flow is the one the month's products were made on (Refining.monthsFlow())
+  - L303 each product's nameplate row is the view's flow, to the bit
+  - L304 each product's made is its row's, and its run - the flow at the month's rate - is made and idled
+  - L312 each unit's run and spread are the flow's, its city spread the planner's (cityValues())
+  - L318 ...and its gate is the planner's own appraisal of one more of its kind
+- **L330 3. the crude: the run, its sources, the column**
+  - L334 the run is the crude units' nameplate at the month's rate
+  - L345 fixture: the town's wells lift less than the refinery runs, so it imports the rest
+  - L348 the sources' tonnes are the run
+  - L352 what each was bought is crude's clearing's, and they come to the refiners' row, home and imported
+  - L356 the land wells standing are counted
+  - L359 the column's cuts are the run's litres
+  - L360 ...cut at the mix the month ran on (Refining.monthsMix())
+- **L366 4. the takers are the buyers' own rows**
+  - L387 what the refinery sold at home, product by product, is its takers' - its own vans' among them, the railway's
+  - L390 fixture: the households drive and the railway hauls
+  - L393 the cars' petrol is the forecourts' month (Retail's pump and queue)
+  - L398 the railway's diesel is its haul's tonnes at FUEL_LITRES_PER_TONNE (and its own vans')
+  - L415 the tanks take what was made and not taken: what the refiners' stock moved by over the month
+  - L421 every litre a taker took is a product's: taken here, imported, shipped, into the tanks or idled
+  - L455 every ribbon leaves one node's right edge and reaches another's left, inside each
+  - L485 each node's ribbons foot to its litres times the scale: a unit's in its run, a product's band its make,
+  - L506 every box, ribbon and line of words lies in the picture
+  - L519 ...and the tallest column fills most of it: the scale is the largest at which every column fits
+  - L530 the takers' labels stand LABEL_SPACING apart, a line from each bar to its moved label
+- **L543 6. the furnaces: residue the diesel cannot cut**
+  - L544 on medium crude with a coker, none is burned and no furnaces are drawn
+  - L555 on heavy crude with no unit the residue the diesel cannot cut is burned, the flow's to the litre, and drawn
+  - L560 ...and the column's diesel is all spent cutting it: none is left as diesel (to a billionth of the run)
+- **L568 7. nothing to draw: no crude unit, and a city just loaded**
+  - L577 a town with no crude unit has nothing standing, draws nothing and says so
+  - L584 a city just loaded is not counted, draws nothing and says a month has to run
+  - L599 ...and a month on, the loaded city's month is its twin's: the flow, the rate, each product made
+- **L605 8. pure**
+  - L607 read twice, the same view, figure for figure and word for word
+  - L611 ...and reading it makes no production row (asked of a sector that buys no product)
 
 ## RestaurantsCheck.java - 36 labelled assertions
 

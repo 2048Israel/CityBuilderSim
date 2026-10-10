@@ -1,4 +1,4 @@
-# RefineryViewCheck.java - 626 lines · 23 methods · 6 constants · harnesses
+# RefineryViewCheck.java - 628 lines · 23 methods · 6 constants · harnesses
 
 `ham/citybuildersim/RefineryViewCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -57,25 +57,25 @@
 
 | line | section |
 |---:|---|
-| 184 | 1. THE TRACE |
-| 277 | 2. THE MONTH |
-| 325 | 3. THE CRUDE |
-| 361 | 4. THE TAKERS |
-| 427 | 5. THE SCALE |
-| 538 | 6. THE FURNACES |
-| 563 | 7. NOTHING TO DRAW |
-| 600 | 8. PURE |
+| 186 | 1. THE TRACE |
+| 279 | 2. THE MONTH |
+| 327 | 3. THE CRUDE |
+| 363 | 4. THE TAKERS |
+| 429 | 5. THE SCALE |
+| 540 | 6. THE FURNACES |
+| 565 | 7. NOTHING TO DRAW |
+| 602 | 8. PURE |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 95 | `RefineryViewCheck.PX` | `1e-6` | ...and a picture's pixels: within a millionth of one. |
-| 97 | `RefineryViewCheck.FILES` | `new java.util.IdentityHashMap<>()` |  |
-| 100 | `RefineryViewCheck.CAMPUS` | `{ "Small Reformer", "Small Cracking Unit", "Small Hydrocracker", "Small Alkyl...` | The units of the campus town: one small of each kind but the asphalt unit (heavy crude's), so the cracking unit and the coker feed alkylation and the hydrocracker and the coker the reformer. |
-| 104 | `RefineryViewCheck.WELLS` | `2` | Land wells on fiat sites in the campus town - fewer than its refinery runs on, so it imports the rest - and the oil each site holds. |
-| 105 | `RefineryViewCheck.SITE_TONNES` | `5_000_000` |  |
-| 108 | `RefineryViewCheck.MONTHS` | `24` | Months the towns play before they are read: two years, so the households own cars and drive (OilCheck 4's). |
+| 98 | `RefineryViewCheck.FILES` | `new java.util.IdentityHashMap<>()` | Each town's scratch files, so a twin can load its save and the end can clean every folder up. |
+| 101 | `RefineryViewCheck.CAMPUS` | `{ "Small Reformer", "Small Cracking Unit", "Small Hydrocracker", "Small Alkyl...` | The units of the campus town: one small of each kind but the asphalt unit (heavy crude's), so the cracking unit and the coker feed alkylation and the hydrocracker and the coker the reformer. |
+| 105 | `RefineryViewCheck.WELLS` | `2` | Land wells on fiat sites in the campus town - fewer than its refinery runs on, so it imports the rest - and the oil each site holds. |
+| 107 | `RefineryViewCheck.SITE_TONNES` | `5_000_000` | ...the tonnes each of those sites holds. |
+| 110 | `RefineryViewCheck.MONTHS` | `24` | Months the towns play before they are read: two years, so the households own cars and drive (OilCheck 4's). |
 
 ## Fields (state)
 
@@ -89,68 +89,68 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 560 | **type** `public class RefineryViewCheck` | The refinery's pictogram (0.7.95, batch O11; runs/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads in played towns. |
+| 67 | 562 | **type** `public class RefineryViewCheck` | The refinery's pictogram (0.7.95, batch O11; runs/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads in played towns. |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 83 | 5 | `static void quietly(Runnable r)` |  |
 | 90 | 3 | `static boolean near(double a, double b)` | Within a billionth of the larger, or of one. |
-| 116 | 28 | `static Game town(String label, int wells, String...units)` | OilCheck's town (houses, shops, bakeries, power, water, roads and builders), with a rail spur and two filling stations, an Oil Refinery and `units`, and `wells` land wells on fiat sites; the refiners held, so what sta... |
-| 145 | 31 | `public static void main(String[] args) throws Exception` |  |
-| 177 | 6 | `static void printTown(Game g, RefineryView.View v)` |  |
+| 118 | 28 | `static Game town(String label, int wells, String...units)` | OilCheck's town (houses, shops, bakeries, power, water, roads and builders), with a rail spur and two filling stations, an Oil Refinery and `units`, and `wells` land wells on fiat sites; the refiners held, so what sta... |
+| 147 | 31 | `public static void main(String[] args) throws Exception` |  |
+| 179 | 6 | `static void printTown(Game g, RefineryView.View v)` |  |
 
-### 1. THE TRACE (lines 184-276)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 187 | 5 | `static double[] campus(BuildingManager b, int n)` | Each kind's feed: its small and its large unit, `n` of each, from the catalogue (RefineryCheck's campus). |
-| 194 | 23 | `static String foots(RefineryFlow.Flow f, double rate)` | Whether the links of `f` traced at `rate` foot to it: into each unit its run, into each product its make, out of each cut the cut, to the furnaces the burned. |
-| 218 | 46 | `static void theTrace()` |  |
-| 265 | 5 | `static double between(List<RefineryView.Link> links, Kind from, Kind to)` |  |
-| 271 | 5 | `static double[] only(Kind k, double litres)` |  |
-
-### 2. THE MONTH (lines 277-324)
+### 1. THE TRACE (lines 186-278)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 279 | 39 | `static void theMonth(Game g, RefineryView.View v)` |  |
-| 320 | 4 | `static boolean same(ham.citybuildersim.sectors.SpreadPlanner.Candidate a, ham.citybuildersim.sectors.SpreadPlanner.Candidate b)` | Whether two appraisals of a building are the same: its template, earnings, cost and first refusal. |
+| 189 | 5 | `static double[] campus(BuildingManager b, int n)` | Each kind's feed: its small and its large unit, `n` of each, from the catalogue (RefineryCheck's campus). |
+| 196 | 23 | `static String foots(RefineryFlow.Flow f, double rate)` | Whether the links of `f` traced at `rate` foot to it: into each unit its run, into each product its make, out of each cut the cut, to the furnaces the burned. |
+| 220 | 46 | `static void theTrace()` |  |
+| 267 | 5 | `static double between(List<RefineryView.Link> links, Kind from, Kind to)` |  |
+| 273 | 5 | `static double[] only(Kind k, double litres)` |  |
 
-### 3. THE CRUDE (lines 325-360)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 327 | 33 | `static void theCrude(Game g, RefineryView.View v)` |  |
-
-### 4. THE TAKERS (lines 361-426)
+### 2. THE MONTH (lines 279-326)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 363 | 58 | `static void theTakers(Game g, RefineryView.View v, double[] stockBefore)` |  |
-| 422 | 4 | `static RefineryView.Buyer buyer(RefineryView.View v, RefineryView.BuyerKind k)` |  |
+| 281 | 39 | `static void theMonth(Game g, RefineryView.View v)` |  |
+| 322 | 4 | `static boolean same(ham.citybuildersim.sectors.SpreadPlanner.Candidate a, ham.citybuildersim.sectors.SpreadPlanner.Candidate b)` | Whether two appraisals of a building are the same: its template, earnings, cost and first refusal. |
 
-### 5. THE SCALE (lines 427-537)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 429 | 102 | `static void theScale(RefineryView.View v, RefineryView.Picture p, String which)` |  |
-| 532 | 5 | `static void check(List<String> wrong, Map<String, double[]> sides, String key, int side, double want)` |  |
-
-### 6. THE FURNACES (lines 538-562)
+### 3. THE CRUDE (lines 327-362)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 540 | 22 | `static void theFurnaces(RefineryView.View medium)` |  |
+| 329 | 33 | `static void theCrude(Game g, RefineryView.View v)` |  |
 
-### 7. NOTHING TO DRAW (lines 563-599)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 565 | 34 | `static void nothingToDraw(Game g, RefineryView.View v)` |  |
-
-### 8. PURE (lines 600-626)
+### 4. THE TAKERS (lines 363-428)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 602 | 10 | `static void pure(Game g)` |  |
-| 614 | 12 | `static String words(RefineryView.View v)` | A view and its picture as text: every figure and every word. |
+| 365 | 58 | `static void theTakers(Game g, RefineryView.View v, double[] stockBefore)` |  |
+| 424 | 4 | `static RefineryView.Buyer buyer(RefineryView.View v, RefineryView.BuyerKind k)` |  |
+
+### 5. THE SCALE (lines 429-539)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 431 | 102 | `static void theScale(RefineryView.View v, RefineryView.Picture p, String which)` |  |
+| 534 | 5 | `static void check(List<String> wrong, Map<String, double[]> sides, String key, int side, double want)` |  |
+
+### 6. THE FURNACES (lines 540-564)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 542 | 22 | `static void theFurnaces(RefineryView.View medium)` |  |
+
+### 7. NOTHING TO DRAW (lines 565-601)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 567 | 34 | `static void nothingToDraw(Game g, RefineryView.View v)` |  |
+
+### 8. PURE (lines 602-628)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 604 | 10 | `static void pure(Game g)` |  |
+| 616 | 12 | `static String words(RefineryView.View v)` | A view and its picture as text: every figure and every word. |
 

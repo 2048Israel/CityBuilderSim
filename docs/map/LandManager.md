@@ -113,7 +113,7 @@
 | 309 | `private final java.util.function.DoubleSupplier usPrices` | The world's price level - WorldEconomy.getPriceLevel(), US prices against the founding's - read live like the rate (0.7.55): what the world's dollar price for ground follows. |
 | 362 | `private double ironMinedThisMonth` | Lifted this month, for the mining report. |
 | 365 | `private double oilLiftedThisMonth` | The crude the wells lifted this month, in tonnes (0.7.62) - both pools' since 0.7.93. |
-| 368 | `private final double[] liftedByGrade` | ...by grade, in Deposit.Grade's order (0.7.79): what extractOil()'s walk of the fields found it was. |
+| 368 | `private final double[] liftedByGrade` | ...by grade, in Deposit.Grade's order (0.7.79): what extractOil()'s walk of the fields found it was - and since 0.7.93 extractOilAtSea()'s of the sea's. |
 | 371 | `private double landSalesThisMonth` | Monthly flows, for the government accounts. |
 | 372 | `private double sqFtSoldThisMonth` |  |
 | 373 | `private double landPurchasesThisMonth` |  |
