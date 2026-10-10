@@ -82,7 +82,14 @@ These are Jerus's, and they do not move.
 - **The month is a sequence, not a set.** `Game.nextMonth()` and
   `SimulationEngine.simulateMonth()` hold it; `docs/month-order.md` lists it.
   A line that lands in one phase and not the other is the classic bug here.
-- **Bump `SAVE_FORMAT` only when an old save would load wrongly**, not merely
+- **Old saves need not load until the game is published** (Jerus,
+  2026-10-10: "old saves do not matter, only once we publish to old saves
+  matter"). Write no conversion code for an older save. If a change would
+  make one load *wrongly*, bump `SAVE_FORMAT` so it is refused cleanly
+  instead, and say so in the batch's notes. When the game is published this
+  rule ends, and old saves must load again. (Slots 1-9 are still never
+  written.)
+- **Bump `SAVE_FORMAT` when an old save would load wrongly**, not merely
   incompletely; Gson leaves a missing key alone.
 - **Every `println` is the log.** There is no separate logging call to adopt.
 - **Keep each file's own line endings** until the repository is normalised
@@ -364,7 +371,9 @@ project is the original.
   header's "what this has to prove" list), and its line in `AllChecks`.
 - **A saved field:** the field, `DataSave` out and in, `HistorySave` if it is
   a series, and the reader in `Game`'s load path; then `SaveFileCheck`.
-  No format bump unless an old save would now read wrongly.
+  No format bump unless an old save would now read wrongly; then bump it, so
+  the old save is refused, and write no conversion (until the game is
+  published: the standing rules above).
 - **A screen section:** a banner in the tab's own class in `ui/` (the window
   itself is `UserInterface`), the panel rebuilt on the clock so it must
   restore its own scroll position; every model figure it shows through a

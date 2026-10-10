@@ -153,11 +153,12 @@ Saves are written to a temp file, the existing save is backed up, then the temp
 file is atomically moved. The worst case is a stray temp file and a save one
 autosave old.
 
-**Older saves always load; only the future direction is refused.** Adding a
-field does not need a format bump — Gson leaves a missing key alone, and a city
-saved before the field loads with it empty, which is correct for that city. Bump
-`GameVersion.SAVE_FORMAT` only when an old save would be read *wrongly* rather
-than incompletely.
+**Until the game is published, old saves need not load** (Jerus, 2026-10-10).
+Adding a field does not need a format bump — Gson leaves a missing key alone,
+and a city saved before the field loads with it empty, which is correct for that
+city. Bump `GameVersion.SAVE_FORMAT` when an old save would be read *wrongly*
+rather than incompletely, so it is refused cleanly; no conversion code is written
+for it. Once the game is published, older saves must load again.
 
 ## Making the Windows build
 
