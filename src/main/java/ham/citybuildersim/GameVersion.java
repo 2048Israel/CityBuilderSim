@@ -4667,8 +4667,58 @@ public final class GameVersion {
      *     still three for a thousand months or more - a village's first
      *     school, paid from its founding cash, runs a deficit no debt limit
      *     sees before the order (runs/fixP2-notes.md, section 4).
+     *
+     * 0.7.103 (2026-10-10) - OIL AND ROADS. Batch P4 (Jerus's A7, A8, A9,
+     * A11 and B of 2026-10-10, the project's decisions-2026-10-10.md;
+     * runs/brief-batchP4.md, runs/fixP4-notes.md). No save format change
+     * (36): the new dial rides the end of the policy's array, the month's
+     * duty Retail's extras, and an older save reads none of either.
+     *   - THE FUEL DUTY (A7; TaxPolicy, THE FUEL DUTY): a Policy dial, Taxes
+     *     > Fuel, staged with the taxes, 0 by default - a duty a litre at
+     *     founding prices, charged at the expected price level, to a dollar
+     *     at most (MAX_FUEL_DUTY). The pump's price rises by exactly it
+     *     (sectors.Retail.pumpPrice(w, r, duty)); the grocers' sale, their
+     *     sales tax and their margin are what they were; the drivers pay it
+     *     with the litre, and it is the treasury's - in the tax take, its own
+     *     budget line (NationalAccounts.getFuelDuty(), the Government tab's
+     *     "Fuel duty") and the audit's "+ e FuelDuty". A journey's fuel is
+     *     the sign's, so a duty moves owners toward the bus. PolicyPreview
+     *     strikes it on the month's litres (fuelDutyAt()). Only petrol is sold
+     *     at the pump: the vans' and the railway's diesel pays none.
+     *   - THE RESERVE KEEPS WHAT THE REFINERS DO NOT TAKE (A8; Markets,
+     *     StrategicReserve): a release past their bid stays in the tanks; it
+     *     shipped at the export price from 0.7.85.
+     *   - THE WORLD'S DEMAND FOR LUBRICANTS (A9; sectors.Refining): the world
+     *     takes a city's lubricants up to 1% of the crude its crude units run
+     *     (LUBRICANTS_WORLD_SHARE, the real share [R37]); the ship's line is
+     *     cut to it and the spread planner weighs a lube plant on what the
+     *     world and the city would still take. A Small Lube Plant beside an
+     *     Oil Refinery made 9.6% of its crude into lubricants and shipped
+     *     every litre; now 0.8% ships and the rest idles. Jerus's 1008 city
+     *     makes 0.71% and ships 0.44%: unchanged.
+     *   - EACH ROAD ITS OWN REPAIRS (A11; BuildingsTemplate, A ROAD'S OWN
+     *     REPAIRS; buildings.json's "repairs"): the Gravel Road 3% of its
+     *     price a year, the Paved Road 2%, the Elevated Highway 1.25% - the
+     *     Canadian Infrastructure Report Card 2016's reinvestment rates for
+     *     roads (2-3%) and bridges (1-1.5%) - where every road was at the
+     *     house's 1%; charged by the month's maintenance and read by the
+     *     advice's road over its life. Jerus's 1008 city's road repairs go
+     *     from $9.8B to $22.0B a month.
+     *   - THE CARD WORDS (B; BuildCard): a land Oil Well's site count says
+     *     "dry"; a conversion unit's card with no crude unit standing says
+     *     NO_FEED where it read a loss.
+     *   - Harnesses: OilCheck 16 (a release stays) and 17 (new: the duty);
+     *     RefineryCheck 15 (new: the cap) and 14 (its town's order a unit
+     *     the till can pay for: its lube plant is capped out); RoadCheck 1;
+     *     BuildingDataCheck; BuildCardCheck 6; PolicyPreviewCheck 3;
+     *     ReadPathCheck; OilCheck 5's spurs on their own ground.
+     *   - The playtest moves by A11 alone (with the roads' repairs at 1% it
+     *     is 0.7.101's byte for byte): its player orders ten gravel roads for
+     *     294 people at month 32, and their repairs pass the town's tax; it
+     *     stands at about 250 people to month 1,800, and ends at 229,295
+     *     (545,179). runs/fixP4-notes.md, section 4.
      */
-    public static final String VERSION = "0.7.101";
+    public static final String VERSION = "0.7.103";
 
     /**
      * The save shape.
