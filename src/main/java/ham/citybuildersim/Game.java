@@ -14312,11 +14312,13 @@ public class Game {
                     (System.nanoTime() - t0) / 1e6);
             return true;
         }
-        // THE OLD WORLD'S GROUND (0.7.99, batch W1; CityLand.oldWorldHoldings()): a save from before holds the fields
-        // the world had then on all the ground it owned, as saved; one since says how many of its holdings do.
-        boolean oldWorld = format < CityLand.NEW_FIELDS_FORMAT;
+        // THE OLD WORLD'S GROUND (0.7.99, batch W1; CityLand.oldWorldHoldings()): a save since says how many of its
+        // holdings hold the fields the world had to 0.7.98; one from before carries no such key, and holds them on all
+        // the ground it owned, as saved. The key decides where it stands (a harness's save written again under an older
+        // format number keeps it).
         Integer kept = loaded.getLandOldWorldHoldings();
-        land.setOldWorldHoldings(oldWorld ? 1 + land.purchases().size() : kept != null ? kept : 0);
+        boolean oldWorld = kept == null && format < CityLand.NEW_FIELDS_FORMAT;
+        land.setOldWorldHoldings(kept != null ? kept : oldWorld ? 1 + land.purchases().size() : 0);
         landManager.install(land, loaded.getDepletion(), loaded.getWorldTotals(), sea);
         landManager.getMarket().restoreOffers(loaded.getLandOffers(), loaded.getNextOfferId());
         if (oldWorld) {
