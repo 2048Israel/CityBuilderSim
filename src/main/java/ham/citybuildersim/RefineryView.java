@@ -112,7 +112,7 @@ public final class RefineryView {
      */
     public record Unit(Kind kind, int standing, int onSite, double feed, double run, double share, double spread,
                        double citySpread, SpreadPlanner.Candidate gate) {
-        /** Whether it stood and took nothing: no feed spare, or a spread of nothing or less. */
+        /** Whether it stood and took nothing: no feed spare, or a spread of nothing or less - or, since 0.7.105, a month the crude units ran nothing (Refining's THE RUN), which the picture does not draw. */
         public boolean idle() { return standing > 0 && Double.isFinite(run) && !(run > 0); }
     }
 
