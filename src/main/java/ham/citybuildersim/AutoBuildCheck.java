@@ -901,8 +901,9 @@ public class AutoBuildCheck {
                         && pk.covered() > 0);
         Notice nk = k.getInbox().live("autobuild");
         String bodyK = nk == null ? "" : String.join(" ", nk.getBody());
-        assertTrue("...and the inbox says it would not pay back, with its figure", bodyK.contains("would not pay back")
-                && bodyK.contains("each already costs it"));
+        assertTrue("...and the inbox says it would not pay back, with its figure: what each resident it would cover pays the city"
+                + " and costs it", bodyK.contains("would not pay back") && bodyK.contains(DecisionLog.money(pk == null ? 0 : pk.paid())
+                + " a month each and cost it " + DecisionLog.money(pk == null ? 0 : pk.costs())));
         // ...and its twin given room (withRoom()) - its health and education bills cleared, ROOM more in property tax: one
         // pays back, and is ordered.
         Game k2 = ChildcareCheck.town(root, "school-room");

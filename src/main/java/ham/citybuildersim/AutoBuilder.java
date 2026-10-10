@@ -1365,21 +1365,21 @@ public final class AutoBuilder {
     }
 
     /**
-     * Why one would not pay back (0.7.104), with its figure: what it costs a
-     * month to run against what the residents it would cover pay in tax past
-     * what each costs the city's other services, a month on average over its
-     * life, and that as a share of its running.
+     * Why one would not pay back (0.7.104), with its figure: what each of
+     * the residents it would cover pays the city a month and what each
+     * already costs it, on average over its life, and what that leaves
+     * against its running - nothing, or a share of it. One line of the
+     * auto-build card's tooltip: at most 1,308 of the 1,349 px a tooltip
+     * line has at the 1,389 window with the widest figures the money words
+     * make (runs/fixP2b-notes.md).
      */
     static String paybackWords(Payback p) {
-        String who = String.format("the %,.0f residents it would cover, on average over its %d years,", p.covered(),
-                BuildAdvice.LIFE_YEARS);
-        if (!(p.paid() > p.costs())) {
-            return "it would not pay back: " + money(p.runs()) + " a month to run, and " + who + " pay the city "
-                    + money(p.paid()) + " a month each, no more than the " + money(p.costs()) + " each already costs it.";
-        }
-        return "it would not pay back: " + money(p.runs()) + " a month to run, against " + money(p.net()) + " from " + who
-                + " who pay the city " + money(p.paid()) + " a month each past the " + money(p.costs()) + " each already"
-                + " costs it - " + String.format("%.0f%%", 100 * p.share()) + " of its running.";
+        String leaves = String.format("it would not pay back: the %,.0f residents it would cover over its %d years pay the city ",
+                p.covered(), BuildAdvice.LIFE_YEARS) + money(p.paid()) + " a month each and cost it " + money(p.costs())
+                + " each, which leaves ";
+        if (!(p.paid() > p.costs())) return leaves + "nothing for the " + money(p.runs()) + " a month it runs at.";
+        return leaves + money(p.net()) + " a month, " + String.format("%.0f%%", 100 * p.share()) + " of the "
+                + money(p.runs()) + " it runs at.";
     }
 
     /** Why nothing the city could build moves a measure short of its margin: water past the fresh water it owns with no sea, or no building it could staff. */
