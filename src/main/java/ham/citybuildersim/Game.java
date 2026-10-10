@@ -15495,6 +15495,13 @@ public class Game {
             // ...and the food vouchers the month paid (0.7.43), which only the
             // block carries: paid after the sale, struck into it at the bottom.
             economyManager.setFoodAssistance(economyManager.getNationalAccounts().getFoodAssistance());
+            // ...and the central bank's two lines and the fund's transfer (0.7.106), which only the block carries
+            // too - set where the treasury settles at the top of the month: a refresh of the books before the next
+            // month (a harness's, AutoBuildCheck 4's withRoom()) struck the loaded city's interest on its advances
+            // as nothing, and its first pass read each resident as costing half what the city it was saved from read.
+            economyManager.setCentralBankLines(economyManager.getNationalAccounts().getCentralBankRemittance(),
+                    economyManager.getNationalAccounts().getCentralBankInterest());
+            economyManager.setFundTransfer(economyManager.getNationalAccounts().getFundTransfer());
             loadedGovernmentMonth = null;
         }
 

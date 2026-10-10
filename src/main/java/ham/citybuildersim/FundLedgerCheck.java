@@ -746,21 +746,53 @@ public class FundLedgerCheck {
      * The rule's bid makes way for the hand's: sized while the orders wait,
      * and filled between steps no further than the room they leave.
      */
-    static void theCapCountsEveryBuy(int c) {
-        Game twin = copy();
-        Equity r0 = twin.getEquity();
-        Exchange x0 = twin.getExchange();
+    /** The market caps of every company with shares and a fair value, on a city. */
+    static double capsOf(Game g) {
         double caps = 0;
         for (int i = 0; i < Equity.COMPANIES.length; i++) {
-            if (r0.getShares(i) > 0 && x0.fair(i) > 0) caps += x0.marketCap(r0, i);
+            if (g.getEquity().getShares(i) > 0 && g.getExchange().fair(i) > 0) caps += g.getExchange().marketCap(g.getEquity(), i);
         }
-        // The rule given money for about a hundredth of the market and a few orders' worth; orders for 4% of the company.
-        double each = .04 * r0.getShares(c) * x0.fair(c);
-        double lump = .01 * caps + 4 * each;
+        return caps;
+    }
+
+    /** What the rule alone bids for company c at the step, given money for about a hundredth of the market and four orders' worth of 4% of c (theCapCountsEveryBuy()'s twin): its shares resting on c's book. */
+    static double ruleAloneFor(int c) {
+        Game twin = copy();
+        if (!(twin.getEquity().getShares(c) > 0) || !(twin.getExchange().fair(c) > 0)) return 0;
+        double each = .04 * twin.getEquity().getShares(c) * twin.getExchange().fair(c);
+        double lump = .01 * capsOf(twin) + 4 * each;
         twin.setCashForTest(twin.getCash() + lump);
         twin.fundPayIn(lump);
         play(twin);
-        double ruleAlone = x0.bookOf(c).resting(Exchange.FUND, OrderBook.Side.BUY);
+        return twin.getExchange().bookOf(c).resting(Exchange.FUND, OrderBook.Side.BUY);
+    }
+
+    static void theCapCountsEveryBuy(int c0) {
+        /*
+         * ...ON A COMPANY THE RULE BIDS FOR (0.7.106): the households' largest
+         * holding, section 8's; or, where the rule given the money bids
+         * nothing for it, the company it bids most for. A fixture has to cause
+         * what it tests: at 0.7.106 (a quarter of a scrapped plant's material
+         * salvaged, Jerus's A23) this city's rule bid nothing for section 8's
+         * company at the step, and 2,027 shares of it at 0.7.104.
+         */
+        int c = c0;
+        double ruleAlone = ruleAloneFor(c0);
+        if (!(ruleAlone > FundLedger.DUST)) {
+            for (int i = 0; i < Equity.COMPANIES.length; i++) {
+                if (i == Equity.BANK || i == c0) continue;
+                double bid = ruleAloneFor(i);
+                if (bid > ruleAlone) { ruleAlone = bid; c = i; }
+            }
+        }
+        out.printf("   on %s (section 8's: %s)%n", Equity.COMPANIES[c], Equity.COMPANIES[c0]);
+        Game twin = copy();
+        Equity r0 = twin.getEquity();
+        Exchange x0 = twin.getExchange();
+        double caps = capsOf(twin);
+        // The rule given money for about a hundredth of the market and a few orders' worth; orders for 4% of the company.
+        double each = .04 * r0.getShares(c) * x0.fair(c);
+        double lump = .01 * caps + 4 * each;
 
         // The same city and money, with two orders for 4% each waiting for the step.
         Game k = copy();

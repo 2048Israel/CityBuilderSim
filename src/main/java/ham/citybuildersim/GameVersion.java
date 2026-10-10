@@ -4865,11 +4865,12 @@ public final class GameVersion {
      *     idles nothing), LandCheck 1 (the rings, then the river), 5 and 24
      *     (twenty-one offers, two clipped, one all water) and 5d (built out
      *     on what a new city owns), FundCheck 12 (the bond on the plots).
-     *   - The playtest moves from month 2 (A24: the land's inside price, so
-     *     the landlords' first home is cheaper); alone, A23 moves it from
-     *     month 17 and A18 from month 75, and A20 not at all. It ends at
-     *     495,512 people (617,942 at 0.7.103/0.7.104); runs/fixP5-notes.md,
-     *     section 4.
+     *   - The playtest moves from month 17 (A23: the first plant retired
+     *     sells a quarter of its material); alone, A18 moves it from month 75
+     *     (the first filling station waits 30 months for its staff to pay),
+     *     A24 from month 484 (its first water shortage, met on the lake) and
+     *     A20 not at all. It ends at 492,823 people at month 4,003 (617,942 at
+     *     month 4,005 at 0.7.103/0.7.104); runs/fixP5-notes.md, section 4.
      */
     public static final String VERSION = "0.7.106";
 

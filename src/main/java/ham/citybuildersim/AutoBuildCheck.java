@@ -358,6 +358,10 @@ public class AutoBuildCheck {
         Game roomy = new Game(files);
         quietly(() -> roomy.loadGameSave(11));
         withRoom(roomy);
+        // ...and its limit at the most, as the first copy's (0.7.106): with a quarter of a scrapped plant's material
+        // salvaged (Jerus's A23) this city stands a village at the decades' end, owing 250% of a year's GDP, and a pass
+        // over its limit orders nothing - what is asserted here is the payback's, not the limit's.
+        roomy.getAutoBuilder().setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
         // ...its year of what a resident paid cleared (its state saved and put back without it), so its pass reads the
         // month's room whole, as a first pass does (AutoBuilder.paid()); and WEALTHY_CASH over its reserve.
         AutoBuilder.State st = roomy.getAutoBuilder().toState();
