@@ -1085,7 +1085,7 @@ public final class BuildAdvice {
         return suggestFor(game, need, m, cashLeft, landLeft, slack, java.util.Collections.emptySet());
     }
 
-    /** ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one the money or the ground cannot pay for one of (since 0.7.101; its budget could not run one until then) - the next in the ranking is the card. */
+    /** ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one its budget cannot run one of, and since 0.7.101 one the money or the ground cannot pay for one of - the next in the ranking is the card. */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip) {
         return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, false);
