@@ -4589,8 +4589,29 @@ public final class GameVersion {
      *     player bought its first iron at month 359 (West 2, six sites) and
      *     now finds none listed in 202 looks; it ends at 545,179 people
      *     (630,290).
+     *
+     * 0.7.100 (2026-10-10) - THE CHECKS. Batch P1 (Jerus's A14 and A28 of
+     * 2026-10-10, the project's decisions-2026-10-10.md; runs/brief-batchP1.md,
+     * runs/fixP1-notes.md). Harnesses only: no model change, save format 36.
+     *   - HealthCheck 13 (A14, "O1"): one builders' depot stands with the
+     *     poor city the three care fees are tried on, as round 1 stood
+     *     theirs at 0.7.17. Its first depot had still been on site when the
+     *     fee was set, and the dear twin's sickness stalled its builders for
+     *     good. The dear city's year of hunger over the free one's goes from
+     *     19.7 points to 5.4: 0.1 priced out of a basket and 5.3 short on the
+     *     shelf, both now printed. The premise and its tolerance (5 points)
+     *     are untouched, so the line is still red by 0.4.
+     *   - MapCheck 5 (A28): a month's change at 5 and 10 billion is timed on
+     *     the main thread's CPU, not the wall clock, against the same 5 ms.
+     *     On the two-core cloud machine the compiler threads took the main
+     *     thread's core and failed the bound about one run in ten with no
+     *     change in the work. The wall clock is printed beside it, and a JVM
+     *     that cannot time a thread's CPU falls back to it and says so.
+     *   - The inflation ensemble (outside the tree; A27) restates two
+     *     premises, S1 and H1, to what the model claims. The playtest is
+     *     0.7.99's, byte for byte.
      */
-    public static final String VERSION = "0.7.99";
+    public static final String VERSION = "0.7.100";
 
     /**
      * The save shape.
