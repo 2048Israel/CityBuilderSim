@@ -4711,7 +4711,12 @@ public final class GameVersion {
      *     RefineryCheck 15 (new: the cap) and 14 (its town's order a unit
      *     the till can pay for: its lube plant is capped out); RoadCheck 1;
      *     BuildingDataCheck; BuildCardCheck 6; PolicyPreviewCheck 3;
-     *     ReadPathCheck; OilCheck 5's spurs on their own ground.
+     *     ReadPathCheck. Fixtures the roads' repairs moved, re-made to cause
+     *     their conditions: OilCheck 5's spurs on their own ground,
+     *     CentralBankCheck 19's dial (the bank a part) and 21's probe city
+     *     (the playtest's own founding), SaveFileCheck's withdrawal pressed
+     *     two years, ScaleCheck's growing city at month 2,375 and
+     *     OrderSearchCheck's copy at 2,475 (each the middle of a scan).
      *   - The playtest moves by A11 alone (with the roads' repairs at 1% it
      *     is 0.7.101's byte for byte): its player orders ten gravel roads for
      *     294 people at month 32, and their repairs pass the town's tax; it
