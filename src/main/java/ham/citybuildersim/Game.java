@@ -105,8 +105,10 @@ public class Game {
     /**
      * The month's ships (0.7.86, batch O9; BoatSchedule): the calls the
      * ports' month billed makes, on these quays, with the lanes run away from
-     * the founding site. Pure; nothing is kept. The map passes its quays
-     * (O13); with none the calls are counted and not placed.
+     * the founding site. Pure; nothing is kept. With no quays the calls are
+     * counted and not placed. The checks' (PortCheck): since 0.7.97
+     * the map strikes its own schedule on the sea routes it finds
+     * (ui/MapView, BoatSchedule.of(month, ports, routes)).
      */
     public BoatSchedule boats(java.util.List<BoatSchedule.Berth> quays) {
         World w = getWorld();

@@ -92,9 +92,10 @@ public class PlanCheck {
      * The most a district's plan may take, the slowest of the dense screen's
      * districts (each its median of TIMED): half MapCheck's screen, 40 ms
      * (star) - one plan and a screen painted from plans within SCREEN_MS, so
-     * long as batch RD2's paint keeps to the other half. RD2 makes the plans
-     * away from the screen's thread, as the map's snapshot is, and keeps them
-     * as the deals are kept, so a frame paints from plans made already.
+     * long as the paint keeps to the other half. Since 0.7.88 (batch RD2)
+     * the plans are made away from the screen's thread, as the map's
+     * snapshot is, and kept (CityMap's THE DRAWN PLANS), so a frame paints
+     * from plans made already.
      */
     static final double PLAN_MS = MapCheck.SCREEN_MS / 2;
 

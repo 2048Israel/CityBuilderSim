@@ -392,6 +392,7 @@ public class BuildingDataCheck {
            tanks [4.5] on 10 ha [P13], D$190M (the research's US$60 a barrel)
            split as the refiners' units are, cash the capital and material a
            sixtieth, ten posts the farm's and none the reserve's. */
+        System.out.println("\n--- the oil storage ---");
         BuildingsTemplate farm = null, store = null;
         for (BuildingsTemplate t : data) {
             if ("Tank Farm".equals(t.getName())) farm = t;
@@ -423,6 +424,7 @@ public class BuildingDataCheck {
            Four sea terminals, the city's, a berth each of one kind of cargo,
            their capital split as the refiners' units are (cash the capital,
            material a sixtieth, points a half). PortCheck holds the rest. */
+        System.out.println("\n--- the ports ---");
         String[] terminals = { "Tanker Terminal", "Bulk Terminal", "Container Terminal", "General Cargo Terminal" };
         boolean ports = true;
         int berths = 0;
@@ -448,6 +450,7 @@ public class BuildingDataCheck {
            (D$4.5M at sea, D$3M on land, est. on [S2]); their capital split as
            the sector's own Oil Well's is (id 74: material a fortieth of the
            cash, points a fifth). WellCheck holds the rest. */
+        System.out.println("\n--- the oil at sea ---");
         BuildingsTemplate jacket = null, platformWell = null, pipe = null, landWell = null;
         int atSea = 0;
         for (BuildingsTemplate t : data) {
