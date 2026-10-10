@@ -564,6 +564,9 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ e TransitFares",
                 e.getTransitFares(), Scope.DOMESTIC);
+        // ...and the fuel duty the drivers paid at the pump (0.7.103), into the treasury with the tax take
+        // as the fares are: a household -> treasury flow, beside the grocers' sale it came with.
+        in += credit.apply("+ e FuelDuty", e.getFuelDuty(), Scope.DOMESTIC);
         // The world: every sector's exports, at the price the statement sold them for.
         for (Sector s : sectors.all()) {
             in += credit.apply("+ " + s.key() + " Exports", s.statement().exports, Scope.TRADE);

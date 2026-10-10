@@ -752,6 +752,21 @@ public class NationalAccounts {
 
     /** What the treasury paid toward the households' groceries this month - a spending line. */
     public double getFoodAssistance() { return foodAssistance; }
+
+    /**
+     * THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): a duty a litre on the
+     * drivers' petrol at the pump (TaxPolicy, THE FUEL DUTY), a revenue
+     * line of its own - in the cash through the tax take, as the fares are,
+     * and set beside the fares' pair, from the forecourts' month
+     * (sectors.Retail.getFuelDuty(), saved among Retail's extras), so a
+     * reloaded city reads the month's without a slot in the block below.
+     */
+    private double fuelDuty;
+
+    public void setFuelDuty(double duty) { this.fuelDuty = Double.isFinite(duty) ? Math.max(0, duty) : 0; }
+
+    /** The fuel duty the drivers paid on their petrol this month - a revenue line (0.7.103). */
+    public double getFuelDuty() { return fuelDuty; }
     /** What the city's insurance paid the bank this month on insured mortgages written down - a spending line. */
     public double getMortgageClaims()   { return mortgageClaims; }
 
@@ -1041,7 +1056,9 @@ public class NationalAccounts {
                 + fundTransfer
                 // ...and the transit fares (0.7.49, B9): in the cash through the
                 // tax take since 2026-09-16, and on no line of the budget until now.
-                + transitFares;
+                + transitFares
+                // ...and the fuel duty (0.7.103), in the cash the same way.
+                + fuelDuty;
     }
 
     public double getInterestExpense() { return interestExpense; }
@@ -1138,6 +1155,7 @@ public class NationalAccounts {
         mortgagePremiums *= scale;  mortgageClaims *= scale;
         fundTransfer *= scale;
         foodAssistance *= scale;
+        fuelDuty *= scale;
         healthFees *= scale;  healthSpending *= scale;
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;

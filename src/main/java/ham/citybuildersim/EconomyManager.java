@@ -1507,7 +1507,21 @@ public class EconomyManager {
         // the businesses paid.
         return profit + wageTax + salesTax + totalPropertyTax
                 + contributions + eiPremiums + healthcareFees + educationFees
-                + transitFares + totalBankTax + healthPremiums;
+                + transitFares + totalBankTax + healthPremiums
+                // ...and the fuel duty the drivers paid at the pump (0.7.103), as the fares are taken in.
+                + getFuelDuty();
+    }
+
+    /**
+     * THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): what the drivers paid
+     * the treasury a litre on their petrol this month, struck at the pump
+     * (sectors.Retail.sellFuel(), at 6d) and read from the forecourts' month
+     * - saved among Retail's extras, so the tax take, the budget's line and
+     * the audit read one figure on both paths. Nothing at the default dial.
+     */
+    public double getFuelDuty() {
+        double d = sectors.retail().getFuelDuty();
+        return Double.isFinite(d) && d > 0 ? d : 0;
     }
 
     /* ------------------- WHAT THE POLICY TAB ASKS (0.7.36) -------------------
@@ -1923,6 +1937,7 @@ public class EconomyManager {
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
+        nationalAccounts.setFuelDuty(getFuelDuty());
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);
@@ -1966,6 +1981,7 @@ public class EconomyManager {
                 totalHealthPremiums, studentLoanInterest);
         nationalAccounts.setSafetySpending(safetyBill);
         nationalAccounts.setTransitLines(transitBill, transitFares);
+        nationalAccounts.setFuelDuty(getFuelDuty());
         nationalAccounts.setCentralBankLines(centralBankRemittance, centralBankInterest);
         nationalAccounts.setFundTransfer(fundTransfer);
         nationalAccounts.setFoodAssistance(foodAssistance);

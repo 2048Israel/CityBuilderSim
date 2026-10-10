@@ -834,6 +834,8 @@ public class TaxPolicy {
          * ratios.
          */
         if (grantBasis == GrantBasis.FIXED) grantAmount *= scale;
+        // ...AND THE FUEL DUTY (0.7.103), for the fare's reason: dollars a litre, not a share.
+        fuelDuty *= scale;
     }
 
     /* =======================================================================
@@ -998,6 +1000,56 @@ public class TaxPolicy {
         if (!fareNominal) return;
         fareNominal = false;
         if (level > 0) transitFare = transitFare / level;
+    }
+
+    /* =======================================================================
+       THE FUEL DUTY (0.7.103, batch P4; Jerus's A7, 2026-10-10)
+
+       A duty a litre on the petrol the forecourts sell the drivers, paid to
+       the treasury as its own budget line, the pump price rising by it - the
+       "third way" of runs/spec-oil.md 6 A: wholesale fuel, and a duty on top.
+       Jerus: a Policy dial, default 0. At 0 nothing moves.
+
+       A LITRE AT THE PUMP. The research's rule is the pump at wholesale x
+       (1 + the margin) plus the duty (runs/research-pump.md 7), and the
+       duty here is added to the pump's price as it stands, the sales tax
+       passed on before it (sectors.Retail.pumpPrice()): the price rises by
+       exactly the duty and the whole of it is the treasury's line - none of
+       it hidden in the sales tax (★). Only the petrol is sold at the pump:
+       no driver in the model burns diesel, and the vans and the railway buy
+       theirs off the market near wholesale (star O6-4), so they pay none.
+
+       THE DIAL IS REAL, as the fare is (THE FARE IS REAL): founding money a
+       litre in today's unit, charged at the expected price level the money
+       constants are struck at (chargedFuelDuty()), so inflation does not eat
+       it; a reform divides it with the money (redenominate()), and the dial
+       stops at MAX_FUEL_DUTY over the unit (maxFuelDuty()).
+       ======================================================================= */
+
+    /** No duty: the city it was (Jerus's A7: default 0). */
+    public static final double DEFAULT_FUEL_DUTY = 0;
+
+    /** The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ceiling, not a default. */
+    public static final double MAX_FUEL_DUTY = .001;
+
+    private double fuelDuty = DEFAULT_FUEL_DUTY;
+
+    /** The fuel duty dial: founding money a litre of petrol at the pump, in today's unit. What a litre is charged is chargedFuelDuty(). */
+    public double getFuelDuty() { return fuelDuty; }
+
+    /** What a litre is charged today: the dial at the expected price level (THE FUEL DUTY). */
+    public double chargedFuelDuty() { return fuelDuty * expectedLevel; }
+
+    /** The most the duty dial takes in today's unit: MAX_FUEL_DUTY over the unit. */
+    public double maxFuelDuty() { return MAX_FUEL_DUTY / moneyUnit; }
+
+    public void setFuelDuty(double dutyALitre) {
+        double was = fuelDuty;
+        fuelDuty = Double.isFinite(dutyALitre) ? Math.max(0, Math.min(maxFuelDuty(), dutyALitre)) : 0;
+        if (DecisionLog.moved(was, fuelDuty)) {
+            decided(DecisionLog.TAX, String.format(java.util.Locale.ROOT, "Fuel duty to $%.2f a litre at founding prices",
+                    fuelDuty * 1000));
+        }
     }
 
     /** Re-seeds the money CONSTANTS at a given unit. See Denomination. Since 0.7.42 Game calls it every month at the unit over the expected price level (Game.restrikeMoneyConstants()), so the pension's wage base keeps up with what prices are expected to be. */
@@ -1333,6 +1385,7 @@ public class TaxPolicy {
         c.pensionWageBase = pensionWageBase;
         c.transitFare = transitFare;
         c.foodAssistance = foodAssistance;
+        c.fuelDuty = fuelDuty;
         c.expectedLevel = expectedLevel;
         c.moneyUnit = moneyUnit;
         c.fareNominal = fareNominal;
@@ -1371,8 +1424,11 @@ public class TaxPolicy {
     /** ...and one from before food assistance (0.7.43): one slot on top saying the fare is real, in founding money (0.7.42) - see realiseFare(). */
     public static final int STATE_BEFORE_FOOD_ASSISTANCE = STATE_BEFORE_REAL_FARE + 1;
 
-    /** This build's array: the food assistance dial on top (0.7.43). */
-    public static final int STATE_SLOTS = STATE_BEFORE_FOOD_ASSISTANCE + 1;
+    /** ...and one from before the fuel duty (0.7.103): the food assistance dial on top (0.7.43). */
+    public static final int STATE_BEFORE_FUEL_DUTY = STATE_BEFORE_FOOD_ASSISTANCE + 1;
+
+    /** This build's array: the fuel duty dial on top (0.7.103). */
+    public static final int STATE_SLOTS = STATE_BEFORE_FUEL_DUTY + 1;
 
     /**
      * The city rates and the wage-band offsets as one array, city rates
@@ -1458,6 +1514,9 @@ public class TaxPolicy {
         // The food assistance dial of 0.7.43, on the end: an older save is one
         // slot shorter and reads none, which is the city it was.
         state[i++] = foodAssistance;
+        // The fuel duty of 0.7.103, on the end, for the same reason: an older
+        // save reads no duty, which is the city it was.
+        state[i++] = fuelDuty;
         return state;
     }
 
@@ -1499,6 +1558,7 @@ public class TaxPolicy {
         healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
         studentLoanRate = DEFAULT_STUDENT_LOAN_RATE;
         foodAssistance = DEFAULT_FOOD_ASSISTANCE;
+        fuelDuty = DEFAULT_FUEL_DUTY;
         setTuitionScale(DEFAULT_TUITION_SCALE);
         if (i < state.length) setEiPremiumRate(state[i++]);
         if (i < state.length) setEiBenefitRate(state[i++]);
@@ -1533,6 +1593,7 @@ public class TaxPolicy {
         boolean fareReal = i < state.length && state[i++] > 0;
         fareNominal = !fareReal;
         if (i < state.length) setFoodAssistance(state[i++]);
+        if (i < state.length) setFuelDuty(state[i++]);
         return true;
     }
 
@@ -1609,6 +1670,7 @@ public class TaxPolicy {
         healthFeeScale = DEFAULT_HEALTH_FEE_SCALE;
         healthPremiumRate = DEFAULT_HEALTH_PREMIUM;
         foodAssistance = DEFAULT_FOOD_ASSISTANCE;
+        fuelDuty = DEFAULT_FUEL_DUTY;
         java.util.Arrays.fill(wageOffset, 0);
         profitOffset.clear();
         salesOffset.clear();

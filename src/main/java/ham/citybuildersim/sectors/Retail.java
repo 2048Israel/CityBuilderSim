@@ -816,7 +816,13 @@ public final class Retail extends Sector {
        wholesale petrol a purchase there - the refiners' sale, or Retail's
        import - and the households import none of it themselves. The
        research's rule (runs/research-pump.md 7): pump = wholesale x (1 + m),
-       then the sales tax as the game has it. No fuel duty yet (its 6).
+       then the sales tax as the game has it - and since 0.7.103 (batch P4,
+       Jerus's A7) the city's FUEL DUTY a litre on top (TaxPolicy, THE FUEL
+       DUTY): the price on the sign rises by exactly it, the drivers pay it
+       with the litre, and it is the treasury's, not the grocers' - their
+       sale is the pump's price without it, so their books, their sales tax
+       and their margin are what they were (★). At the default 0 nothing
+       moves.
 
        ITS FILLING STATIONS ARE WHAT IT CAN SELL: each a template's
        pumpLitres() a month at its typical throughput, at the operating rate
@@ -860,9 +866,9 @@ public final class Retail extends Sector {
      */
     public static final double QUEUE_MARGIN = .18;
 
-    /** The month's forecourts, struck at the sale (sellFuel()) and saved for the screens and the planner: the litres sold at the pump and past the stations, what the stations could sell, the prices, the wholesale a litre and the bill. NaN prices before a sale. */
+    /** The month's forecourts, struck at the sale (sellFuel()) and saved for the screens and the planner: the litres sold at the pump and past the stations, what the stations could sell, the prices (the sign's, the fuel duty in them since 0.7.103), the wholesale a litre, the bill and the fuel duty in it. NaN prices before a sale. */
     private double rPumpLitres, rQueueLitres, rPumpCapacity, rPumpPrice = Double.NaN, rQueuePrice = Double.NaN,
-            rWholesale = Double.NaN, rFuelBill, rFuelImported;
+            rWholesale = Double.NaN, rFuelBill, rFuelImported, rFuelDuty;
 
     /** Whether a building is a Filling Station: it sells litres at the pump. */
     public static boolean isStation(BuildingsTemplate t) {
@@ -900,6 +906,22 @@ public final class Retail extends Sector {
         return wholesale * (1 + QUEUE_MARGIN) / (1 - clampRate(salesRate));
     }
 
+    /** The price on the sign with the city's fuel duty a litre on top (0.7.103): pumpPrice() + the duty, the price rising by exactly it. Pure. */
+    public static double pumpPrice(double wholesale, double salesRate, double duty) {
+        return pumpPrice(wholesale, salesRate) + Math.max(0, duty);
+    }
+
+    /** ...and past the stations' capacity. Pure. */
+    public static double queuePrice(double wholesale, double salesRate, double duty) {
+        return queuePrice(wholesale, salesRate) + Math.max(0, duty);
+    }
+
+    /** The fuel duty a litre the city charges today (TaxPolicy.chargedFuelDuty()); nothing without a city. */
+    private static double dutyIn(Game game) {
+        double d = game == null ? 0 : game.getEconomyManager().getTaxPolicy().chargedFuelDuty();
+        return Double.isFinite(d) && d > 0 ? d : 0;
+    }
+
     private static double clampRate(double r) {
         return Double.isFinite(r) ? Math.max(0, Math.min(ham.citybuildersim.TaxPolicy.MAX_INCOME_TAX, r)) : 0;
     }
@@ -918,12 +940,13 @@ public final class Retail extends Sector {
      */
     public double pumpPriceToday(Game game) {
         double litre = markets == null ? Double.NaN : markets.get(Good.PETROL).landedPrice();
-        return Double.isFinite(litre) && litre > 0 ? pumpPrice(litre, salesRate(game)) : 0;
+        // ...the fuel duty on the sign since 0.7.103 (THE FORECOURTS): what the owners weigh a ride against.
+        return Double.isFinite(litre) && litre > 0 ? pumpPrice(litre, salesRate(game), dutyIn(game)) : 0;
     }
 
-    /** A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, and what the households paid. */
-    public record FuelSale(double litres, double queued, double wholesale, double imported, double bill) {
-        public static final FuelSale NONE = new FuelSale(0, 0, 0, 0, 0);
+    /** A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, what the households paid, and of that the fuel duty, the treasury's (0.7.103). */
+    public record FuelSale(double litres, double queued, double wholesale, double imported, double bill, double duty) {
+        public static final FuelSale NONE = new FuelSale(0, 0, 0, 0, 0, 0);
     }
 
     /**
@@ -932,35 +955,42 @@ public final class Retail extends Sector {
      * to the households - what the stations can sell at the pump price, the
      * rest at the queue's (THE FORECOURTS). The bill is the two sales'
      * values exactly, so what the households are charged is what Retail is
-     * paid. Struck at 6d by Motoring.drawFuel().
+     * paid - and since 0.7.103 the fuel duty a litre on every litre with
+     * them, the treasury's (getFuelDuty()): Retail's sales are at the
+     * pump's price without it, the sign's price with it. Struck at 6d by
+     * Motoring.drawFuel().
      */
     public FuelSale sellFuel(double litres, Game game) {
-        rPumpLitres = rQueueLitres = rFuelBill = rFuelImported = 0;
+        rPumpLitres = rQueueLitres = rFuelBill = rFuelImported = rFuelDuty = 0;
         rPumpCapacity = stationCapacity();
         if (!(litres > 0) || !Double.isFinite(litres) || markets == null || game == null) return FuelSale.NONE;
         Markets.Draw took = markets.draw(Good.PETROL, this, key(), litres, game.getSectors());
         double wholesale = took.units() > 0 ? took.cost() / took.units() : 0;
-        double rate = salesRate(game);
+        double rate = salesRate(game), duty = dutyIn(game);
         double atPump = Math.min(took.units(), rPumpCapacity), queued = took.units() - atPump;
-        rPumpPrice = pumpPrice(wholesale, rate);
-        rQueuePrice = queuePrice(wholesale, rate);
+        double pump = pumpPrice(wholesale, rate), queue = queuePrice(wholesale, rate);
+        rPumpPrice = pump + duty;
+        rQueuePrice = queue + duty;
         rWholesale = wholesale;
         double bill = 0;
         if (atPump > 0) {
-            Trade t = new Trade(Good.PETROL, key(), Trade.HOUSEHOLDS, atPump, rPumpPrice);
+            Trade t = new Trade(Good.PETROL, key(), Trade.HOUSEHOLDS, atPump, pump);
             bookSale(t);
             bill += t.value();
         }
         if (queued > 0) {
-            Trade t = new Trade(Good.PETROL, key(), Trade.HOUSEHOLDS, queued, rQueuePrice);
+            Trade t = new Trade(Good.PETROL, key(), Trade.HOUSEHOLDS, queued, queue);
             bookSale(t);
             bill += t.value();
         }
+        // ...and the duty on every litre the drivers took, the treasury's, paid with the bill (0.7.103).
+        double dutyPaid = duty > 0 ? took.units() * duty : 0;
         rPumpLitres = atPump;
         rQueueLitres = queued;
-        rFuelBill = bill;
+        rFuelDuty = dutyPaid;
+        rFuelBill = bill + dutyPaid;
         rFuelImported = took.importCost();
-        return new FuelSale(took.units(), queued, took.cost(), took.importCost(), bill);
+        return new FuelSale(took.units(), queued, took.cost(), took.importCost(), rFuelBill, dutyPaid);
     }
 
     /** The month's litres sold at the pump price, and past the stations at the queue's. */
@@ -970,14 +1000,17 @@ public final class Retail extends Sector {
     /** ...what the stations could sell this month, at the operating rate. */
     public double getPumpCapacity() { return rPumpCapacity; }
 
-    /** ...the two prices a litre, and the wholesale Retail paid a litre: NaN before a month's sale. */
+    /** ...the two prices a litre on the sign (the fuel duty in them since 0.7.103), and the wholesale Retail paid a litre: NaN before a month's sale. */
     public double getPumpPrice()   { return rPumpPrice; }
     public double getQueuePrice()  { return rQueuePrice; }
     public double getWholesaleLitre() { return rWholesale; }
 
-    /** ...what the households paid for their petrol, and what of the wholesale bill Retail paid the world. */
+    /** ...what the households paid for their petrol, the duty in it, and what of the wholesale bill Retail paid the world. */
     public double getFuelBill()     { return rFuelBill; }
     public double getFuelImported() { return rFuelImported; }
+
+    /** ...and the fuel duty the drivers paid on their litres this month, the treasury's (0.7.103; EconomyManager.getFuelDuty()). */
+    public double getFuelDuty()     { return rFuelDuty; }
 
     /**
      * A station's earnings a month, for the interest test (0.7.83): the
@@ -1159,6 +1192,8 @@ public final class Retail extends Sector {
                 lines.add(Line.of("A litre at the pump", f.amount(rPumpPrice) + " on " + f.amount(rWholesale) + " wholesale"));
                 if (rQueueLitres > 0) lines.add(Line.of("...and past the stations", f.amount(rQueuePrice), Line.Tone.WARN));
             }
+            // ...and the city's fuel duty in it, the treasury's (0.7.103).
+            if (rFuelDuty > 0) lines.add(Line.of("Fuel duty, the city's", f.amount(rFuelDuty) + " on the drivers' litres"));
             lines.add(Line.note(String.format("The grocers draw the drivers' petrol at wholesale, the city's refineries first, "
                     + "and sell it at the pump for %.0f%% more with the sales tax on top. Past what the stations can sell the "
                     + "drivers queue and pay %.0f%% more, and the grocers build another station.",
@@ -1213,6 +1248,8 @@ public final class Retail extends Sector {
         if (!Double.isNaN(rPumpPrice)) extras.put("pump.price", rPumpPrice);
         if (!Double.isNaN(rQueuePrice)) extras.put("pump.queuePrice", rQueuePrice);
         if (!Double.isNaN(rWholesale)) extras.put("pump.wholesale", rWholesale);
+        // ...and the duty the month took (0.7.103): the budget's line reads it, so a reload reads the month's.
+        extras.put("pump.duty", rFuelDuty);
     }
 
     /** The prefix the suppliers' credit is saved under among the extras. */
@@ -1247,6 +1284,8 @@ public final class Retail extends Sector {
         rPumpPrice = extras.getOrDefault("pump.price", Double.NaN);
         rQueuePrice = extras.getOrDefault("pump.queuePrice", Double.NaN);
         rWholesale = extras.getOrDefault("pump.wholesale", Double.NaN);
+        // ...a save from before 0.7.103 charged no duty.
+        rFuelDuty = extras.getOrDefault("pump.duty", 0.0);
     }
 
     @Override
@@ -1263,7 +1302,7 @@ public final class Retail extends Sector {
         expectedLevel = 1;
         expectedMonthly = 0;
         supplierCredit.clear();
-        rPumpLitres = rQueueLitres = rPumpCapacity = rFuelBill = rFuelImported = 0;
+        rPumpLitres = rQueueLitres = rPumpCapacity = rFuelBill = rFuelImported = rFuelDuty = 0;
         rPumpPrice = rQueuePrice = rWholesale = Double.NaN;
     }
 
@@ -1282,6 +1321,7 @@ public final class Retail extends Sector {
         rWholesale *= scale;
         rFuelBill *= scale;
         rFuelImported *= scale;
+        rFuelDuty *= scale;
     }
 
     /** Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). See Denomination. */

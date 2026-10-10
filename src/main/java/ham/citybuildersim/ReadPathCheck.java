@@ -1210,6 +1210,14 @@ public class ReadPathCheck {
         forecourts.getFuelImported(); forecourts.litresForecast(stationT, g.getBusinessInvestment());
         forecourts.estimatedMonthlyProfit(stationT, g.getBusinessInvestment()); forecourts.mayRetire(stationT);
         forecourts.planStations(g.getBusinessInvestment(), g);
+        // ...and the fuel duty (0.7.103): the forecourts' month's, the treasury's, the budget's line, the dial and the previews.
+        forecourts.getFuelDuty(); g.getEconomyManager().getFuelDuty(); g.getEconomyManager().getNationalAccounts().getFuelDuty();
+        TaxPolicy dutyDial = g.getEconomyManager().getTaxPolicy();
+        dutyDial.getFuelDuty(); dutyDial.chargedFuelDuty(); dutyDial.maxFuelDuty();
+        PolicyPreview.fuelLitres(g); PolicyPreview.fuelDutyAt(g, dutyDial); PolicyPreview.pumpPriceAt(g, dutyDial);
+        // ...the lubricants' cap and the road kinds' repairs (0.7.103).
+        g.getSectors().refining().lubricantsWorldTakes(); g.getSectors().refining().getExportBoundOutput(Good.LUBRICANTS);
+        for (BuildingsTemplate road : g.getBuildingManager().getTemplates()) { road.repairsPerYear(); road.hasOwnRepairs(); }
         for (Sector fleet : g.getSectors().all()) { fleet.getFleetDieselLitres(); fleet.getFleetDieselCost(); fleet.getFleetDieselImported(); }
         g.bitumenFor(g.getBuildingManager().getTemplateByName("Paved Road")); g.bitumenForPaving();
         g.getBitumenTonnes(); g.getBitumenCost(); g.getBitumenImported();

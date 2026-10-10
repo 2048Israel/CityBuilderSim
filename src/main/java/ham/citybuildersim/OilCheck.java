@@ -156,6 +156,17 @@ import java.nio.file.Path;
  *      goods footing to the balance of payments and the audit closing
  *      every month; and the reserve crossing a save to settle the same.
  *
+ *  17. THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): a Policy dial, 0 by
+ *      default, founding money a litre charged at the expected price level
+ *      and held to its cap; on every litre the forecourts sell the drivers,
+ *      the price on the sign rising by exactly it - the grocers' sale, at
+ *      the pump's price without it, what it was - their bill the sale and
+ *      the duty, a journey's fuel dearer by its litres' duty; the duty the
+ *      treasury's, in the tax take, on the budget's own line and the
+ *      audit's "+ e FuelDuty", the audit closing every month; at 0 nothing;
+ *      and the dial and the month's duty crossing a save, a policy from
+ *      before it reading none.
+ *
  * Every fixture CAUSES its condition: the city is handed its oil the way
  * MiningCheck hands a city its ore (LandManager.restoreSites()), except in
  * section 2, which buys it.
@@ -283,6 +294,7 @@ public class OilCheck {
         theForecourts();
         theTankFarm();
         theStrategicReserve();
+        theFuelDuty();
 
         out.println();
         if (fails == 0) {
@@ -619,6 +631,132 @@ public class OilCheck {
         report("the goods, the city's crude among them, foot to the balance of payments both ways every month",
                 worstGoods < 1e-9, String.format("worst %.2e", worstGoods));
         report("...and the audit closes every month", worstAudit < 1e-10, String.format("worst %.2e", worstAudit));
+    }
+
+    /* ============================ 17. THE FUEL DUTY (0.7.103) ============================ */
+
+    /** The duty a litre the fixture sets, in thousands: the research's Canada-like default for petrol, 21.5 cents a litre (runs/research-pump.md 7). */
+    static final double DUTY = .000215;
+
+    /**
+     * A 600-house town that drives, with two filling stations, eighteen
+     * months on: the dial, then a month with the duty, its money followed to
+     * the treasury and the audit, then a year, then a save and an old policy.
+     */
+    static void theFuelDuty() throws Exception {
+        out.println("\n--- 17. the fuel duty: a dial, a litre at the pump dearer by it, the treasury's own line (0.7.103) ---");
+        Game g = town("oilcheck-duty", 600, 2_000_000);
+        Retail pump = g.getSectors().retail();
+        EconomyManager econ = g.getEconomyManager();
+        TaxPolicy policy = econ.getTaxPolicy();
+        quietly(() -> {
+            g.getBusinessInvestment().holdSector(Sectors.RETAIL);
+            g.buildStack(template(g, "Filling Station"), 2, true);
+            g.simulateMonths(18);
+        });
+        report("fixture: the town drives, and buys its petrol at the pump", pump.getPumpLitres() + pump.getQueueLitres() > 0,
+                String.format("%,.0f L", pump.getPumpLitres() + pump.getQueueLitres()));
+        assertTrue("the dial is 0 by default (Jerus's A7): no duty is charged and none taken, the sign the grocers' price",
+                TaxPolicy.DEFAULT_FUEL_DUTY == 0 && policy.getFuelDuty() == 0 && policy.chargedFuelDuty() == 0
+                        && pump.getFuelDuty() == 0 && econ.getFuelDuty() == 0 && econ.getNationalAccounts().getFuelDuty() == 0
+                        && Double.doubleToLongBits(Retail.pumpPrice(.0006, .15, 0)) == Double.doubleToLongBits(Retail.pumpPrice(.0006, .15)));
+
+        // The dial: the player's decision, charged at the expected level, held to its cap.
+        int logged = g.getDecisions().size();
+        policy.setFuelDuty(DUTY);
+        DecisionLog.Entry said = g.getDecisions().last();
+        report("set, it is the player's decision, a tax", policy.getFuelDuty() == DUTY && g.getDecisions().size() == logged + 1
+                && DecisionLog.TAX.equals(said.kind()), said.label());
+        TaxPolicy probe = policy.copy();
+        probe.setFuelDuty(1);
+        double negative;
+        probe.setFuelDuty(-1);
+        negative = probe.getFuelDuty();
+        assertTrue("...a litre charged at the expected price level, the dial held to MAX_FUEL_DUTY over the unit and never below"
+                + " nothing", policy.chargedFuelDuty() == DUTY * policy.getExpectedLevel() && negative == 0
+                && policy.copy().getFuelDuty() == DUTY && maxed(policy) == policy.maxFuelDuty()
+                && policy.maxFuelDuty() == TaxPolicy.MAX_FUEL_DUTY);
+        double charged = policy.chargedFuelDuty();
+        assertTrue("...and the sign today dearer by it: the price the owners weigh a ride against",
+                pump.pumpPriceToday(g) == Retail.pumpPrice(g.getMarkets().get(Good.PETROL).landedPrice(),
+                        econ.getTaxPolicy().effectiveSalesRate(pump), charged)
+                        && Math.abs(Motoring.journeyFuel(g) - pump.pumpPriceToday(g) * Motoring.LITRES_PER_JOURNEY) <= 1e-15);
+
+        // A month with the duty.
+        double worst = 0;
+        quietly(() -> g.simulateMonths(1));
+        worst = Math.max(worst, g.getLastMoneyAudit().relative());
+        double litres = pump.getPumpLitres() + pump.getQueueLitres(), wl = pump.getWholesaleLitre();
+        double rate = econ.getTaxPolicy().effectiveSalesRate(pump);
+        charged = policy.chargedFuelDuty();
+        report("a month with the duty: on every litre the drivers took, at the stations and past them",
+                litres > 0 && Math.abs(pump.getFuelDuty() - litres * charged) <= 1e-12 * pump.getFuelDuty(),
+                String.format("%,.0f L at $%.4f, $%,.2fk", litres, charged * 1000, pump.getFuelDuty()));
+        assertTrue("...the sign the pump's price and the queue's with exactly the duty on top",
+                pump.getPumpPrice() == Retail.pumpPrice(wl, rate) + charged && pump.getQueuePrice() == Retail.queuePrice(wl, rate) + charged
+                        && pump.getPumpPrice() == Retail.pumpPrice(wl, rate, charged));
+        Motoring mo = g.getMotoring();
+        close("...the drivers' bill the grocers' sale and the duty", mo.getFuelBill(),
+                pump.getPumpLitres() * Retail.pumpPrice(wl, rate) + pump.getQueueLitres() * Retail.queuePrice(wl, rate)
+                        + pump.getFuelDuty(), 1e-12);
+        close("...the grocers' petrol sold here the bill less the duty: their books what they were",
+                pump.pending().soldOf(Good.PETROL).atHome, mo.getFuelBill() - pump.getFuelDuty(), 1e-9);
+        NationalAccounts na = econ.getNationalAccounts();
+        MoneyAudit.Result a = g.getLastMoneyAudit();
+        report("the duty is the treasury's: in the tax take, the budget's own line, in its revenue, and the audit's + e FuelDuty",
+                same(econ.getFuelDuty(), pump.getFuelDuty()) && same(na.getFuelDuty(), pump.getFuelDuty())
+                        && Math.abs(auditLine(a, "+ e FuelDuty") - pump.getFuelDuty()) <= .005
+                        && Math.abs(na.getTotalRevenue() - na.getFuelDuty() - revenueWithout(na)) <= 1e-9 * na.getTotalRevenue(),
+                String.format("$%,.2fk of $%,.2fk revenue", na.getFuelDuty(), na.getTotalRevenue()));
+        // ...the households' books, struck a month on, pay the whole bill for their fuel.
+        double bill = mo.getFuelBill(), duty = pump.getFuelDuty();
+        quietly(() -> g.simulateMonths(1));
+        worst = Math.max(worst, g.getLastMoneyAudit().relative());
+        close("...and the households' books, struck a month on, pay the whole bill, the duty in it", g.getHouseholds().getFuel(),
+                bill, 1e-12);
+        close("...the grocers' statement the sale without it", pump.statement().sold.get(Good.PETROL).atHome, bill - duty, 1e-9);
+        // A year with it: the audit closes every month.
+        for (int m = 0; m < 11; m++) {
+            quietly(() -> g.simulateMonths(1));
+            worst = Math.max(worst, g.getLastMoneyAudit().relative());
+        }
+        report("...and the audit closes every month for a year with it", worst < 1e-10 && pump.getFuelDuty() > 0,
+                String.format("worst %.2e", worst));
+
+        // Across a save: the dial and the month's duty; a policy from before it reads none.
+        GameFiles files = FILES.get(g);
+        quietly(() -> g.saveGame(10, "duty"));
+        Game twin = new Game(files);
+        quietly(() -> twin.loadGameSave(10));
+        report("the dial and the month's duty cross a save, the budget's line reading the same",
+                twin.getEconomyManager().getTaxPolicy().getFuelDuty() == DUTY
+                        && same(twin.getSectors().retail().getFuelDuty(), pump.getFuelDuty())
+                        && same(twin.getEconomyManager().getNationalAccounts().getFuelDuty(), na.getFuelDuty())
+                        && same(twin.getEconomyManager().getFuelDuty(), econ.getFuelDuty()),
+                String.format("$%,.2fk", twin.getEconomyManager().getNationalAccounts().getFuelDuty()));
+        double[] state = policy.getPolicyState();
+        TaxPolicy older = new TaxPolicy();
+        older.setFuelDuty(DUTY);
+        boolean restored = older.restorePolicyState(java.util.Arrays.copyOf(state, TaxPolicy.STATE_BEFORE_FUEL_DUTY));
+        assertTrue("...and a policy from before 0.7.103, one slot shorter, loads with no duty",
+                state.length == TaxPolicy.STATE_SLOTS && state[TaxPolicy.STATE_SLOTS - 1] == DUTY && restored
+                        && older.getFuelDuty() == 0);
+    }
+
+    /** The dial pushed past its cap reads the cap. */
+    static double maxed(TaxPolicy p) {
+        TaxPolicy c = p.copy();
+        c.setFuelDuty(Double.MAX_VALUE);
+        return c.getFuelDuty();
+    }
+
+    /** The budget's revenue without its fuel duty line, every other line summed as NationalAccounts.getTotalRevenue() sums them. */
+    static double revenueWithout(NationalAccounts na) {
+        double d = na.getFuelDuty();
+        na.setFuelDuty(0);
+        double r = na.getTotalRevenue();
+        na.setFuelDuty(d);
+        return r;
     }
 
     /* ============================ 13. THE PHASE-1 BUYERS (0.7.83) ============================ */

@@ -565,6 +565,7 @@ final class GovernmentScreen {
                                                     -> new String[] {"Promises", "Schools"};
             case "Subsidies"                        -> new String[] {"Promises", "Subsidies"};
             case "Food assistance"                  -> new String[] {"Promises", "Food"};
+            case "Fuel duty"                        -> new String[] {"Taxes", "Fuel"};
             case "Central bank remittance", "Interest to the central bank"
                                                     -> new String[] {"Money", "The policy rate"};
             default -> null;
@@ -613,6 +614,7 @@ final class GovernmentScreen {
             case "Subsidies"                         -> Icons.POLICY;
             case "Food assistance"                   -> Icons.FOOD;
             case "Transit fares", "Transit"          -> Icons.BUS;
+            case "Fuel duty"                         -> Icons.DROP;
             default                                  -> Icons.COIN;
         };
     }
@@ -1156,7 +1158,7 @@ final class GovernmentScreen {
                 "Property tax", "Pension contributions", "EI premiums", "Utility income",
                 "Healthcare fees", "School fees", "Land sold", "Health premiums",
                 "Student loan interest", "Central bank remittance", "Mortgage insurance premiums",
-                "Transfer from the fund", "Transit fares");
+                "Transfer from the fund", "Transit fares", "Fuel duty");
     }
 
     List<Double> revenueAmounts(NationalAccounts na) {
@@ -1188,7 +1190,9 @@ final class GovernmentScreen {
                 na.getFundTransfer(),
                 // ...and the transit fares (0.7.49, B9): under the total since, where
                 // they were named outside it.
-                na.getTransitFares());
+                na.getTransitFares(),
+                // ...and the fuel duty on the drivers' petrol (0.7.103, Jerus's A7), its own line.
+                na.getFuelDuty());
     }
 
     /*
