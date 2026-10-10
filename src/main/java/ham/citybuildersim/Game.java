@@ -3751,7 +3751,8 @@ public class Game {
      * AN INSANE CITY OWES THE WORLD FOR ITS GROUND (0.7.14): the model's own
      * twenty-year dollar term loan, LongTermBond abroad, its coupon fixed at
      * Founding.INSANE_LAND_COUPON (Jerus's 3%) on Founding.landBondUsd() -
-     * STARTING_SQ_FT at the land market's opening dollar price. The proceeds
+     * the plots the city is founded on at the land market's opening dollar
+     * price (since 0.7.106; STARTING_SQ_FT's square feet until then). The proceeds
      * paid the land's sellers, so no cash arrives: booked on the debt and
      * the foreign accounts' stock of it at the founding rate (the rate
      * books no revaluation), and on no audited pool - the founding is before
@@ -3762,7 +3763,7 @@ public class Game {
      * converted from cash otherwise.
      */
     private void foundTheLandBond() {
-        double usd = Founding.landBondUsd();
+        double usd = Founding.landBondUsd(founding.getWorldSeed());
         if (!(usd > 0)) return;
         debtManager.addLongTermBond(usd, Founding.INSANE_LAND_YEARS * 12, month, Founding.INSANE_LAND_COUPON, true);
         foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());
@@ -4998,7 +4999,9 @@ public class Game {
        60% of its debt at once.
 
        Now the builders buy the MATERIAL the building was built with - its
-       template's constructionMaterials, the units an order draws - at the
+       template's constructionMaterials, the units an order draws, since
+       0.7.106 the share of them a demolition recovers
+       (ConstructionControl.SALVAGE_SHARE, Jerus's A23) - at the
        materials market's price the day it is sold, and take it into their
        own stock (Construction.addSalvage()), which their next draws take
        before they buy from the plant or the world (drawMaterials()). The
@@ -5044,7 +5047,8 @@ public class Game {
     /** @return what the builders paid */
     private double sellMaterialToTheBuilders(BusinessInvestment.Decision decision, int scrapped,
                                              Investor seller, boolean distress) {
-        double units = decision.template.getConstructionMaterials() * (double) scrapped;
+        // ...the share of it a demolition recovers (0.7.106; ConstructionControl.SALVAGE_SHARE).
+        double units = decision.template.getConstructionMaterials() * (double) scrapped * ConstructionControl.SALVAGE_SHARE;
         double price = getMarkets().get(Good.MATERIALS).getLocalPrice();
         if (!(units > 0) || !(price > 0)) return 0;
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
@@ -6362,7 +6366,7 @@ public class Game {
         double points = ConstructionControl.DEMOLITION_SHARE * t.getConstructionPoints() * (double) n;
         double months = demolitionMonths(t, n, points);
         BuildQuote price = demolitionPrice(t, t.getConstructionPoints() * (double) n, points, months);
-        double units = t.getConstructionMaterials() * (double) n;
+        double units = t.getConstructionMaterials() * (double) n * ConstructionControl.SALVAGE_SHARE;
         double unitPrice = getMarkets().get(Good.MATERIALS).getLocalPrice();
         double affordable = unitPrice > 0
                 ? Math.min(units, Math.max(0, getSectors().construction().getCash()) / unitPrice) : 0;
@@ -6392,7 +6396,8 @@ public class Game {
         double points = ConstructionControl.DEMOLITION_SHARE * shell.progress;
         double months = demolitionMonths(t, shell.buildings, points);
         BuildQuote price = demolitionPrice(t, shell.progress, points, months);
-        double units = Math.max(0, t.getConstructionMaterials() * (double) shell.buildings - shell.materialsOwed);
+        double units = Math.max(0, t.getConstructionMaterials() * (double) shell.buildings - shell.materialsOwed)
+                * ConstructionControl.SALVAGE_SHARE;
         double unitPrice = getMarkets().get(Good.MATERIALS).getLocalPrice();
         double affordable = unitPrice > 0
                 ? Math.min(units, Math.max(0, getSectors().construction().getCash()) / unitPrice) : 0;
@@ -15490,6 +15495,13 @@ public class Game {
             // ...and the food vouchers the month paid (0.7.43), which only the
             // block carries: paid after the sale, struck into it at the bottom.
             economyManager.setFoodAssistance(economyManager.getNationalAccounts().getFoodAssistance());
+            // ...and the central bank's two lines and the fund's transfer (0.7.106), which only the block carries
+            // too - set where the treasury settles at the top of the month: a refresh of the books before the next
+            // month (a harness's, AutoBuildCheck 4's withRoom()) struck the loaded city's interest on its advances
+            // as nothing, and its first pass read each resident as costing half what the city it was saved from read.
+            economyManager.setCentralBankLines(economyManager.getNationalAccounts().getCentralBankRemittance(),
+                    economyManager.getNationalAccounts().getCentralBankInterest());
+            economyManager.setFundTransfer(economyManager.getNationalAccounts().getFundTransfer());
             loadedGovernmentMonth = null;
         }
 

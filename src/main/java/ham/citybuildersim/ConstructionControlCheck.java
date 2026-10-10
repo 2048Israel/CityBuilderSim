@@ -521,7 +521,11 @@ public class ConstructionControlCheck {
         Game.Salvage sold = null;
         for (Game.Salvage x : g.getSalvageThisMonth()) if ("City".equals(x.seller())) sold = x;
         assertTrue("its material was sold", sold != null);
-        close("...all the material the buildings held", sold.units(), 2.0 * t.getConstructionMaterials(), 0);
+        // 0.7.106 (Jerus's A23, "discount it, with a sourced figure"): SALVAGE_SHARE of it; all of it until then.
+        close("...the share of the material the buildings held a demolition recovers (SALVAGE_SHARE)", sold.units(),
+                2.0 * t.getConstructionMaterials() * ConstructionControl.SALVAGE_SHARE, 0);
+        assertTrue("...less than all of it: the rest is debris, and fetches nothing",
+                sold.units() < 2.0 * t.getConstructionMaterials());
         assertTrue("...as much as the builders' cash covered", sold.unitsBought() <= sold.units() + 1e-9);
         close("...paid for at the price it was sold at", sold.paid(), sold.unitsBought() * sold.price(), 1e-9);
         close("...into the treasury, on the journal", g.getDemolitionSalvageThisMonth(), sold.paid(), 0);
@@ -549,7 +553,7 @@ public class ConstructionControlCheck {
         double till = g.getSectors().construction().getCash(), cashBefore = g.getCash();
         double salvage0 = g.getSectors().construction().getSalvage();
         double[] sale = handMoves(g, () -> quietly(() -> g.settleConstructionControl(ev)));
-        double units = t.getConstructionMaterials();
+        double units = t.getConstructionMaterials() * ConstructionControl.SALVAGE_SHARE;
         double bought = Math.min(units, Math.max(0, till) / price);
         close("the rule: the builders buy the material at the materials market's price", 
                 g.getSalvageThisMonth().get(g.getSalvageThisMonth().size() - 1).price(), price, 0);
@@ -806,12 +810,12 @@ public class ConstructionControlCheck {
             ev.completed.add(new ConstructionControl.Completed(d));
         }
         double price = g.getMarkets().get(Good.MATERIALS).getLocalPrice();
-        double units = school.getConstructionMaterials();
+        double units = school.getConstructionMaterials() * ConstructionControl.SALVAGE_SHARE;
         g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, 1.5 * units * price);
         quietly(() -> g.settleConstructionControl(ev));
         g.getInbox().takeMonth(g);
         ConstructionControl.Completed first = ev.completed.get(0), second = ev.completed.get(1);
-        close("the first sale is its own: all its material", first.unitsSold(), units, 1e-9);
+        close("the first sale is its own: all the material that comes back", first.unitsSold(), units, 1e-9);
         close("...the second its own: what the till had left", second.unitsSold(), .5 * units, 1e-9);
         Notice done = g.getInbox().live("demolished");
         List<String> lines = done == null ? java.util.List.of() : done.getBody();

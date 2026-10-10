@@ -493,6 +493,16 @@ public class MapCheck {
     /** The played city's save folder. */
     static GameFiles cityFiles;
 
+    /** Whether district d has room for one more of a type at a road share: CityMap.hasRoomFor()'s rule (buildingRoom()), at the share given rather than the map's own. */
+    static boolean roomAt(CityMap.District d, BuildingVisual.Type type, double share) {
+        long each = BuildingVisual.cells(type);
+        if (type.road() != BuildingVisual.NOT_A_ROAD) return d.freeRoad() >= each;
+        long free = d.freeCells();
+        double other = d.usedCells - d.usedRoad;
+        double k = Math.min(free / (double) each, (free + d.usedRoad - share * other) / (each * (1 + share)));
+        return Math.max(0, (long) Math.floor(k + 1e-9)) >= 1;
+    }
+
     static int mineId(Game g) {
         for (BuildingVisual.Type t : g.getMapTypes()) if (t != null && t.site() == Resource.IRON) return t.id();
         return 0;
@@ -516,11 +526,17 @@ public class MapCheck {
                 int[][] before = new int[ds.size()][];
                 DistrictPlan[] plans = new DistrictPlan[ds.size()];
                 int expected = -1;
+                // ...at the road share the change's month strikes (CityMap.reconcile(): the share of the counts with it), not
+                // the canonical map's, which strikes none (0.7.106: the founding lake's 77 plots of bank in a district of
+                // their own on this world have room for a Mixed Farm at a share of 0 and none at the month's .307).
+                long[] after = counts.clone();
+                after[t.getId()] += sign;
+                double share = m.roadShareOf(after);
                 for (int i = 0; i < ds.size(); i++) {
                     // Added: the first district in its direction with room for its whole plots, keeping room for the road its
                     // buildings need (0.7.72, CityMap.hasRoomFor()). Taken away: the last holding one.
                     CityMap.District d = ds.get(outer == (sign > 0) ? ds.size() - 1 - i : i);
-                    boolean fits = sign > 0 ? m.hasRoomFor(d, t.getId()) : d.count(t.getId()) > 0;
+                    boolean fits = sign > 0 ? roomAt(d, types[t.getId()], share) : d.count(t.getId()) > 0;
                     if (fits && expected < 0) expected = d.index;
                 }
                 if (sign > 0 && expected < 0) expected = m.roomiest().index;

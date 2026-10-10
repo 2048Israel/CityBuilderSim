@@ -5632,7 +5632,7 @@ public class LongPlaytest {
             out.printf("  the Insane founding: the land bond US$%,.0fk at %.0f%% for %d years; the village invoiced"
                             + " $%,.0fk; the day-0 quote for it: the %d-year bond %s, the %d-month note %s; borrowed"
                             + " $%,.0fk in its first year in %d issue(s) on the funding page%n",
-                    Founding.landBondUsd(), Founding.INSANE_LAND_COUPON * 100, Founding.INSANE_LAND_YEARS,
+                    Founding.landBondUsd(g.getLandManager().getCityLand()), Founding.INSANE_LAND_COUPON * 100, Founding.INSANE_LAND_YEARS,
                     villageInvoice, Game.BUILD_BOND_YEARS,
                     dayZeroBond == null ? "-" : String.format("at %.2f%% for $%,.0fk of face, bringing $%,.0fk",
                             dayZeroBond.marketRate() * 100, dayZeroBond.faceValue(), dayZeroBond.cashReceived()),

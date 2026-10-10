@@ -690,7 +690,7 @@ public class ReadPathCheck {
         bk.getRepaymentRaisedThisMonth(); bk.getRepaymentRaisedLifetime(); bk.getRepaymentShortLifetime();
         g.getDebtManager().marketToSave(); g.getDebtManager().getAdvances();
         g.getEconomyManager().getNationalAccounts().getFundTransfer();
-        Founding.landBondUsd();
+        Founding.landBondUsd(g.getLandManager().getCityLand());
         g.getHouseholdBalance().averageRate();
         for (int company = 0; company < Equity.COMPANIES.length; company++) g.getEquity().deskShare(company);
         g.getExchange().deskSoldToHouseholds();

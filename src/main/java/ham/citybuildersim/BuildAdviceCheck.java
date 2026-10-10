@@ -217,6 +217,7 @@ public class BuildAdviceCheck {
         thePipeline(root, g, all);
         sizedToTheProjection(root);
         theRun(root, g, advice);
+        thePricedOut(g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -1165,5 +1166,68 @@ public class BuildAdviceCheck {
         assertTrue("fixture: ...and no two cards are one building, so the run's orders are the cards", stops.size() == cut.size());
         assertTrue("...and the run stops at the first short card, for land",
                 h.buildRunAhead(stops) == firstShort && h.buildRunStop(stops) == Game.BuildResult.NO_LAND);
+    }
+
+    /* ============================ 12. THE BEDS LESS THE PRICED OUT ============================ */
+
+    /**
+     * THE BEDS LESS THE PRICED OUT (0.7.106, batch P5; Jerus's A20 - 0.7.27's
+     * D16, "switch"). NEEDS YOU's care rows, Build's rings and an order's
+     * after read a kind of care's places as its staffed beds less the people
+     * the fee turned away last month (Healthcare.getPricedOut()); the beds
+     * alone until then. The fixture causes the priced out: the month's
+     * record of the city's care, written by the service's own month
+     * (Healthcare.advanceMonth()), with the beds offered to the people they
+     * could take and half of them able to pay - after every other section,
+     * so nothing else reads it.
+     */
+    static void thePricedOut(Game g) {
+        out.println("\n--- 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after ---");
+        Healthcare hc = g.getHealthcare();
+        BuildingManager bm = g.getBuildingManager();
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        CareType care = null;
+        double beds = 0, people = 0;
+        for (CareType c : new CareType[] { CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR }) {
+            double b = bm.getStaffedCareCapacity(c, fill), n = c.populationServed(g.getCohorts());
+            if (care == null && b > 0 && b < n) { care = c; beds = b; people = n; }
+        }
+        assertTrue("fixture: a kind of care whose staffed beds are short of its people", care != null);
+        if (care == null) return;
+        BuildAdvice.Measure m = BuildAdvice.Measure.care(care);
+        double[] offered = new double[CareType.values().length], half = new double[CareType.values().length];
+        java.util.Arrays.fill(half, 1);
+        offered[care.ordinal()] = Math.min(beds, people);
+        half[care.ordinal()] = .5;
+        hc.advanceMonth(0, 0, offered, half, 0, 0, bm.getCareCapacity(CareType.BURIAL),
+                bm.getStaffedCareCapacity(CareType.CREMATION, fill));
+        double priced = hc.getPricedOut(care);
+        out.printf("      %s: %,.0f staffed beds for %,.0f, %,.0f priced out%n", care.getLabel(), beds, people, priced);
+        close("fixture: the fee turned away half of those the beds could take", priced, .5 * beds, 1e-9);
+        CityNeeds.Need row = null;
+        for (CityNeeds.Need n : CityNeeds.measure(g, CityNeeds.PLAIN)) {
+            if (n.kind() == CityNeeds.Kind.CARE && n.care() == care) row = n;
+        }
+        assertTrue("fixture: NEEDS YOU has its row", row != null);
+        if (row == null) return;
+        close("NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT", row.a(), beds - priced, 1e-9);
+        close("...and reads them served over its people", CityNeeds.careServed(g, care, g.getCohorts(), fill),
+                CityNeeds.servedShare(beds - priced, people), 1e-12);
+        assertTrue("...lower than the beds alone read", CityNeeds.careServed(g, care, g.getCohorts(), fill)
+                < CityNeeds.servedShare(beds, people));
+        close("...the share the month itself applies with the beds short: their cover times the share who could pay",
+                CityNeeds.careCover(g, care, g.getCohorts(), fill), Health.coverageOf(beds, people) * .5, 1e-12);
+        close("BUILD'S RING READS THE SAME", BuildAdvice.cover(g, m, Map.of()), Health.coverageOf(beds - priced, people), 1e-12);
+        BuildingsTemplate t = null;
+        for (BuildingsTemplate c : bm.getTemplates()) if (t == null && c.getCare() == care) t = c;
+        Map<BuildingsTemplate, Integer> one = new LinkedHashMap<>();
+        one.put(t, 1);
+        close("AN ORDER'S AFTER: its staffed places added, the month's priced out held",
+                BuildAdvice.supplyDemand(g, m, one)[0],
+                beds + t.getCapacity() * BuildAdvice.staffing(t, fill) - priced, 1e-9);
+        java.util.Arrays.fill(half, 1);
+        hc.advanceMonth(0, 0, offered, half, 0, 0, bm.getCareCapacity(CareType.BURIAL),
+                bm.getStaffedCareCapacity(CareType.CREMATION, fill));
+        close("NOBODY PRICED OUT, THE BEDS, AS BEFORE", BuildAdvice.supplyDemand(g, m, Map.of())[0], beds, 0);
     }
 }

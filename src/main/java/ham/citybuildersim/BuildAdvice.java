@@ -486,13 +486,8 @@ public final class BuildAdvice {
                 return roads(game, added, k).getUtilisation();
             case TRANSIT:
                 return roads(game, added, k).getTransitCover();
-            case CARE: {
-                double cap = bm.getStaffedCareCapacity(m.care(), fill);
-                for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-                    if (e.getKey().getCare() == m.care()) cap += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
-                }
-                return Health.coverageOf(cap, k * m.care().populationServed(game.getCohorts()));
-            }
+            case CARE:
+                return Health.coverageOf(carePlaces(game, m.care(), added, fill), k * m.care().populationServed(game.getCohorts()));
             case DEATH:
                 return unburiedNext(game, added, k);
             case PLOTS: {
@@ -562,13 +557,8 @@ public final class BuildAdvice {
                 InfrastructureManager r = roads(game, added, k);
                 return new double[] {r.getUsableTransit(), r.getLoad(Traffic.COMMUTERS)};
             }
-            case CARE: {
-                double cap = bm.getStaffedCareCapacity(m.care(), fill);
-                for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
-                    if (e.getKey().getCare() == m.care()) cap += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
-                }
-                return new double[] {cap, k * m.care().populationServed(game.getCohorts())};
-            }
+            case CARE:
+                return new double[] {carePlaces(game, m.care(), added, fill), k * m.care().populationServed(game.getCohorts())};
             case DEATH: {
                 Healthcare h = game.getHealthcare();
                 double toHandle = k * h.getDeaths() + h.getUnburied();
@@ -617,6 +607,23 @@ public final class BuildAdvice {
             return p.scale() * need;
         }
         return CityNeeds.wanted(game, type, p.months(), p.k()) * (1 + p.slack());
+    }
+
+    /**
+     * A kind of care's places with these buildings standing as well: the
+     * staffed beds and the order's at the fill, less the people the fee
+     * turned away last month (Healthcare.getPricedOut()) - the beds less the
+     * priced out, as NEEDS YOU reads them (CityNeeds.careHave(); 0.7.106,
+     * Jerus's A20), never under nothing. The priced out are held at the
+     * month's count for an order and for the demand ahead: the model has no
+     * forecast of who will be able to pay.
+     */
+    static double carePlaces(Game game, CareType care, Map<BuildingsTemplate, Integer> added, double[] fill) {
+        double cap = game.getBuildingManager().getStaffedCareCapacity(care, fill);
+        for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
+            if (e.getKey().getCare() == care) cap += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
+        }
+        return Math.max(0, cap - game.getHealthcare().getPricedOut(care));
     }
 
     /** The figure as a share of what is needed, 0 to 1 - supply over demand, held to it - for a ring and the order bar's stacked bar. */

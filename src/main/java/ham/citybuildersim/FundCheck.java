@@ -1212,8 +1212,18 @@ public class FundCheck {
         LongTermBond bond = (LongTermBond) land;
         close("...at 3%", bond.getCouponRate(), Founding.INSANE_LAND_COUPON, 1e-15);
         check("...for twenty years", bond.getDuration() == Founding.INSANE_LAND_YEARS * 12);
-        close("...for its ground at the land market's opening dollar price", bond.principalInCurrency(),
-                LandManager.STARTING_SQ_FT * LandMarket.openingUsdPerSqFt(), 1e-9);
+        // 0.7.106 (Jerus's B): for the plots it owns, not STARTING_SQ_FT's square feet - its centre as the
+        // land office charges ground, the founding lake its first water plant needs among them (A24).
+        CityLand centre = g.getLandManager().getCityLand();
+        close("...for the plots it was founded on, as the land office charges ground, at the opening dollar price",
+                bond.principalInCurrency(), LandMarket.openingUsdPerSqFt() * (centre.centreKm2(CityLand.DRY)
+                        + LandMarket.FRESH_PRICE_SHARE * centre.centreKm2(CityLand.FRESH)
+                        + LandMarket.SEA_PRICE_SHARE * centre.centreKm2(CityLand.SEA)) * LandManager.SQ_FT_PER_KM2, 1e-9);
+        close("...the figure the founding screen quotes for its world", bond.principalInCurrency(),
+                Founding.landBondUsd(g.getFounding().getWorldSeed()), 0);
+        check("...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it",
+                bond.principalInCurrency() > LandManager.STARTING_SQ_FT * LandMarket.openingUsdPerSqFt()
+                        && centre.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2);
         out.printf("   the land bond: US$%,.0fk face, worth US$%,.0fk on the world's curve; the window abroad: %s%n",
                 bond.principalInCurrency(), g.getDebtManager().marketValue(bond) / Math.max(1e-9, g.getForeignAccounts().getRate()),
                 g.foreignWindowOpen() ? "open" : "shut - " + g.foreignWindowReason());
@@ -1276,7 +1286,7 @@ public class FundCheck {
                 twin.treasuryPays(TreasuryLine.PENSIONS, 1_000) == 1_000 && twin.getCash() == -1_000);
 
         LongTermBond land = (LongTermBond) g.getDebtManager().getDebt().get(0);
-        double couponUsd = Founding.landBondUsd() * Founding.INSANE_LAND_COUPON / 12;
+        double couponUsd = Founding.landBondUsd(g.getLandManager().getCityLand()) * Founding.INSANE_LAND_COUPON / 12;
         int monthsLeft = land.getRemainingMonths();
         boolean everyMonthRan = true, everyAuditClosed = true, everyCoupon = true, withinRoom = true;
         double cashAfterOne = Double.NaN, paidInOne = Double.NaN, rateInOne = Double.NaN, advancedInTwo = Double.NaN;
@@ -1309,7 +1319,7 @@ public class FundCheck {
         close("month two's settle: the central bank advances the whole shortfall", advancedInTwo, -cashAfterOne, 1e-9);
         check("every month's coupon is paid, the land bond owed whole and never missed",
                 everyCoupon && land.getRemainingMonths() == monthsLeft - 12
-                        && land.principalInCurrency() == Founding.landBondUsd()
+                        && land.principalInCurrency() == Founding.landBondUsd(g.getLandManager().getCityLand())
                         && g.getDebtManager().getDefaultScar() == 0);
         check("nothing that is not a promise was spent past the room the month opened with", withinRoom);
         check("...and it borrowed nothing: the land bond is still all it owes",

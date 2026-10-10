@@ -110,7 +110,7 @@ public class LandMarket {
      */
     private static final double BASE_PRICE_PER_SQ_FT = .0007;
 
-    /** The ground's price a square foot at the founding, in thousands of US dollars: BASE_PRICE_PER_SQ_FT, before any premium - what an Insane city owes for its starting land (Founding.landBondUsd(), 0.7.14). */
+    /** The ground's price a square foot at the founding, in thousands of US dollars: BASE_PRICE_PER_SQ_FT, before any premium - what an Insane city owes a square foot of its starting land (Founding.landBondUsd(), 0.7.14; since 0.7.106 on the plots it owns, as the office charges them). */
     public static double openingUsdPerSqFt() { return BASE_PRICE_PER_SQ_FT; }
 
     /**
@@ -633,13 +633,18 @@ public class LandMarket {
      * nobody wants to compare US$103,847 against US$98,211.
      */
     public static double price(double[] km2, double[] amounts, double groundUsdPerSqFt, double usPriceLevel) {
-        double ground = km2[CityLand.DRY] + FRESH_PRICE_SHARE * km2[CityLand.FRESH] + SEA_PRICE_SHARE * km2[CityLand.SEA];
+        double ground = groundKm2(km2);
         double usd = groundUsdPerSqFt * ground * LandManager.SQ_FT_PER_KM2;
         for (Resource r : Resource.values()) {
             if (r.good() == null || !(r.inGroundShare() > 0)) continue;
             usd += amounts[r.ordinal()] * r.good().worldExportPrice() * r.inGroundShare() * usPriceLevel;
         }
         return Math.round(usd / 5) * 5.0;
+    }
+
+    /** A piece of ground's square kilometres as the office charges them (0.7.106, out of price()): its dry ground, FRESH_PRICE_SHARE of its fresh water and SEA_PRICE_SHARE of its sea - what the ground's price a square foot is paid on; Insane's land bond prices a founding's centre by it (Founding.landBondUsd()). */
+    public static double groundKm2(double[] km2) {
+        return km2[CityLand.DRY] + FRESH_PRICE_SHARE * km2[CityLand.FRESH] + SEA_PRICE_SHARE * km2[CityLand.SEA];
     }
 
     /* ===================================================================

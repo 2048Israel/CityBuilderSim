@@ -809,11 +809,13 @@ final class ConstructionScreen {
             card.getChildren().add(effect("Running cost saved", money(q.runningCost()) + " a month",
                     "its staff and its upkeep", Palette.TEXT_HEAD));
         }
+        // ...the share of its material a demolition recovers (0.7.106, ConstructionControl.SALVAGE_SHARE).
+        String recovered = String.format("%.0f%% of its material comes back", ConstructionControl.SALVAGE_SHARE * 100);
         card.getChildren().add(effect("Material back", String.format("%,.0f units", q.salvageUnits()),
                 q.salvageAffordable() + 1e-9 < q.salvageUnits()
-                        ? String.format("the builders could pay for %,.0f of them today, %s", q.salvageAffordable(),
-                                money(q.salvageProceeds()))
-                        : "the builders would pay " + money(q.salvageProceeds()) + " for it today, to the treasury",
+                        ? String.format("%s; the builders could pay for %,.0f units today, %s", recovered,
+                                q.salvageAffordable(), money(q.salvageProceeds()))
+                        : recovered + "; the builders would pay " + money(q.salvageProceeds()) + " today, to the treasury",
                 Palette.TEXT_HEAD));
         card.getChildren().add(effect("Cost to clear the site", money(q.price().total),
                 String.format("%,.0f pts of work, 5%% of %s, with the builders' tax", q.points(),
@@ -854,8 +856,10 @@ final class ConstructionScreen {
                 + "priced as any order: the work at the builders' rate today, no material, and the tax. The building "
                 + "closes as the month starts: its staff are let go, its households move into the homes that "
                 + "stand (crowded, or unhoused, never deleted), its service goes. When the work is done the "
-                + "builders buy its material at the materials market's price, as much as their cash covers, and "
-                + "its ground is the city's free land again.\n\n"
+                + "builders buy what of its material comes back at the materials market's price, as much as their "
+                + "cash covers - " + String.format("%.0f%%", ConstructionControl.SALVAGE_SHARE * 100) + " of it, "
+                + "the middle of the 20 to 30% of building demolition debris recovered for recycling in the US "
+                + "(EPA, 1998); the rest is rubble - and its ground is the city's free land again.\n\n"
                 + "BUY-OUTS. A business's or a landlord's building is bought by compulsory purchase first "
                 + "(Expropriations Act, R.S.O. 1990, c. E.26, ss. 13, 14 and 19): its market value - the building at "
                 + "the value its owner's books and the property tax carry, and its ground at the land market's "

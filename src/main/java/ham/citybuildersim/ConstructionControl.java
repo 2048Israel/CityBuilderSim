@@ -219,11 +219,22 @@ public final class ConstructionControl {
        posts and its wage bill from what stands, and the live one carries
        last month's, so a building gone in the gap would make the two play
        different months. When the
-       demolition completes, its construction material is salvaged by the
-       0.7.8 rule (Game, THE PLANT'S MATERIAL, TO THE BUILDERS: the builders
-       buy it at the materials market's price, as much as their cash covers),
-       with the proceeds to the treasury, and its ground returns to the city
-       as free land.
+       demolition completes, SALVAGE_SHARE of its construction material is
+       salvaged by the 0.7.8 rule (Game, THE PLANT'S MATERIAL, TO THE
+       BUILDERS: the builders buy it at the materials market's price, as much
+       as their cash covers), with the proceeds to the treasury, and its
+       ground returns to the city as free land.
+
+       WHAT A DEMOLITION RECOVERS (0.7.106, batch P5; Jerus's A23,
+       2026-10-10: "discount it, with a sourced figure"). Until then the
+       whole of the material came back at the market's price - an Elementary
+       School's 666 units fetched about $12.2M against a $1.05M demolition,
+       so tearing one down paid - while a real demolition recovers a part of
+       its debris, and that mostly downcycled (crushed concrete as aggregate,
+       metal as scrap). Now SALVAGE_SHARE of the units come back, bought at
+       the market's price as before; the rest is debris, and fetches nothing.
+       The same share for a sector's plant retired (Game.
+       sellMaterialToTheBuilders()), which is the same rule.
        ===================================================================== */
 
     /**
@@ -233,6 +244,17 @@ public final class ConstructionControl {
      * (NAHB) - 5.1%, taken at 5%.
      */
     public static final double DEMOLITION_SHARE = 0.05;
+
+    /**
+     * The share of a building's construction material its demolition
+     * recovers as material: 20 to 30 percent of building-related
+     * construction and demolition debris was recovered for processing and
+     * recycling in the United States in 1996 (US EPA, Characterization of
+     * Building-Related Construction and Demolition Debris in the United
+     * States, EPA530-R-98-010, June 1998) - taken at the middle, 25%
+     * (0.7.106; the whole of it until then).
+     */
+    public static final double SALVAGE_SHARE = 0.25;
 
     /* =====================================================================
        E. BUY-OUTS: A BUSINESS'S OR A LANDLORD'S BUILDING, BY COMPULSORY

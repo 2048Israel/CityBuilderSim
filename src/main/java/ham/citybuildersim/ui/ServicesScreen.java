@@ -2384,7 +2384,8 @@ final class ServicesScreen {
             + "commercial output is cut in proportion.\n\nA Water Treatment Plant treats fresh water, and the plants "
             + "together treat no more than the city's lakes and river yield - "
             + String.format("%,.0f", UtilitiesHandler.FRESH_UNITS_PER_KM2) + " units a month for each km² "
-            + "owned, plus what an older city already pumped. Past that limit the rest of their nameplate idles: "
+            + "owned, plus what an older city already pumped; a new city is founded with the lake one plant needs. "
+            + "Past that limit the rest of their nameplate idles: "
             + "buy lake or river at the land office, or build a Desalination Plant on owned sea, which the limit "
             + "does not reach.";
 

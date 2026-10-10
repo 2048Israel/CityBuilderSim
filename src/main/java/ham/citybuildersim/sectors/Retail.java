@@ -763,11 +763,30 @@ public final class Retail extends Sector {
         return rate > 0 ? rate : 1;
     }
 
-    /** Gross margin on a store: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then) - and a Filling Station's on the litres it can sell (0.7.83; stationEarns()). */
+    /*
+     * THE INVESTMENT TEST COUNTS THE STAFF (0.7.106, batch P5; Jerus's A18,
+     * 2026-10-10, "all rec"). What a shop or a station would clear a month -
+     * the figure Game.consider()'s interest test reads, through
+     * BusinessInvestment.estimatedMonthlyProfit() - is its margin less what
+     * its posts cost at today's wages (BusinessInvestment.wageBillFor(), the
+     * makers' own payroll line in runningCostOf()). Until then it was the
+     * margin alone, and the grocers at their floor borrowed for shops whose
+     * margin did not pay their staff: seed 12 m490-520 lost $0.5-1.1M a
+     * month (payroll $1.5-1.65M of $5.7-6.6M revenue) and sold the shops
+     * mid-boom (0.7.44's section 9). IN THE TEST ONLY, as the triage
+     * recommended: the shelf's floor is still the stock's cost and
+     * RETAIL_MARKUP (wages in the floor were measured to bankrupt the shops,
+     * spec-inflation star 13), and plan() still ranks a shop by its margin
+     * over its cost. A shop the till pays for outright is not asked the test
+     * (servicesItsOwnDebt() passes what borrows nothing), as before.
+     */
+
+    /** What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Filling Station's margin on the litres it can sell (0.7.83; stationEarns()) less its staff. The investment test's figure. */
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        if (isStation(t)) return stationEarns(t, plans);
-        return t.getCoverage() * handOverRate() * (storeSellPrice - getFoodPrice());
+        double staff = plans == null ? 0 : plans.wageBillFor(t);
+        if (isStation(t)) return stationEarns(t, plans) - staff;
+        return t.getCoverage() * handOverRate() * (storeSellPrice - getFoodPrice()) - staff;
     }
 
     /** A Filling Station is not sold by the shops' rules (0.7.83, star O6): it serves the drivers' litres, not the baskets they measure. */

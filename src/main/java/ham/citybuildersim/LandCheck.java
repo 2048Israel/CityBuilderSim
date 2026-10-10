@@ -103,6 +103,46 @@ public class LandCheck {
         assertTrue("...whole blocks holding at least STARTING_SQ_FT, and less than a block more",
                 founded >= LandManager.STARTING_SQ_FT && founded - LandManager.STARTING_SQ_FT
                         < LandManager.sqFt((1L << (2 * opening.level())) * World.KM2_PER_PLOT));
+        /*
+         * ...AND THE FOUNDING LAKE, ONE PLANT'S WATER (0.7.106, Jerus's A24).
+         * The rings are what they were - the centre's first blocks, round the
+         * site until their dry plots reach STARTING_SQ_FT - and past them the
+         * centre takes the founding lake's blocks, most fresh water first from
+         * the lake's centre, until its lake and river reach FOUNDING_FRESH_KM2:
+         * an island of the city's ground 2.4 km off. On the default world it is
+         * open water, so the dry ground above is the rings' alone.
+         */
+        World w0 = World.of(opening.seed());
+        CityLand rings = CityLand.found(w0, w0.foundingX(), w0.foundingY(), LandManager.km2(LandManager.STARTING_SQ_FT));
+        int r0 = rings.centreRects().size();
+        double block = (1L << (2 * opening.level())) * World.KM2_PER_PLOT;
+        World.River lake = w0.river();
+        System.out.printf("   the rings: %d blocks; the lake: %d blocks, %.4f km2 of lake and river in all (FOUNDING_FRESH_KM2 %.4f),"
+                        + " its centre %.0f plots from the site%n", r0, opening.centreRects().size() - r0,
+                opening.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2,
+                Math.hypot(lake.lakeX() - opening.siteX(), lake.lakeY() - opening.siteY()));
+        assertTrue("the rings are the centre's first blocks, in their order, and all its dry ground: the lake's hold none here",
+                opening.centreRects().size() > r0 && opening.centreRects().subList(0, r0).equals(rings.centreRects())
+                        && opening.centreKm2(CityLand.DRY) == rings.centreKm2(CityLand.DRY));
+        assertTrue("THE CENTRE HOLDS ONE WATER PLANT'S FRESH WATER: at least FOUNDING_FRESH_KM2, and less than a block more",
+                opening.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2
+                        && opening.centreKm2(CityLand.FRESH) - LandManager.FOUNDING_FRESH_KM2 < block);
+        boolean lakeBlocks = true, onTheLake = false;
+        java.util.List<LandGrid.Fill> blocks = opening.centreRects();
+        for (int i = r0; i < blocks.size(); i++) {
+            LandGrid.Fill b = blocks.get(i);
+            boolean touches = i == r0;
+            for (int j = r0; j < i && !touches; j++) {
+                LandGrid.Fill a = blocks.get(j);
+                touches = (a.x0() == b.x1() || a.x1() == b.x0()) && a.y0() == b.y0()
+                        || (a.y0() == b.y1() || a.y1() == b.y0()) && a.x0() == b.x0();
+            }
+            lakeBlocks &= touches && b.x1() - b.x0() == 1L << opening.level() && b.y1() - b.y0() == 1L << opening.level();
+            onTheLake |= b.x0() <= lake.lakeX() && lake.lakeX() < b.x1() && b.y0() <= lake.lakeY() && lake.lakeY() < b.y1();
+        }
+        assertTrue("...the lake's whole blocks of the city's level, each edge to edge with the lake's before it", lakeBlocks);
+        assertTrue("...one of them holding the lake's centre", onTheLake);
+        assertTrue("...and the world's totals untouched", java.util.Arrays.equals(lm.getWorldTotalsState(), w0.totals()));
         check("allocated", lm.getAllocatedSqFt(), 0);
         check("available", lm.getAvailableSqFt(), founded);
         check("thirty blocks and a little", lm.getAvailableBlocks(), founded / LandManager.BLOCK_SQ_FT);
@@ -160,7 +200,9 @@ public class LandCheck {
          * side. On the block grid each side has six places, and each place
          * one offer standing - a rectangle of whole blocks against the city's
          * edge (GridOffers) - or none while the side has no room for it. A new
-         * city of 120 m blocks lists 19, each 1 x 2 blocks (spec-grid 1.5).
+         * city of 120 m blocks lists 19, each 1 x 2 blocks (spec-grid 1.5) -
+         * 20 since its founding lake (0.7.106, Jerus's A24): North 6, which
+         * had no room against the rings, stands against the lake's blocks.
          */
         System.out.println("\n--- six offers a side ---");
 
@@ -174,7 +216,8 @@ public class LandCheck {
         for (int side = 0; side < CityLand.SIDES; side++) waiting += buy.getMarket().emptyOn(side);
         System.out.printf("   %d offers listed, %d places waiting for room (North %d, East %d, South %d, West %d)%n", listing.size(), waiting,
                 buy.getMarket().emptyOn(0), buy.getMarket().emptyOn(1), buy.getMarket().emptyOn(2), buy.getMarket().emptyOn(3));
-        check("a new city lists every place it has room for: nineteen of twenty-four (spec-grid 1.5)", listing.size(), 19);
+        check("a new city lists every place it has room for: twenty of twenty-four (nineteen until its lake, 0.7.106)",
+                listing.size(), 20);
         check("...the other places waiting", waiting, LandMarket.OFFERS - listing.size());
         boolean placeEach = true, against = true, whole = true, theirArea = true, apart = true;
         for (int side = 0; side < CityLand.SIDES; side++) {

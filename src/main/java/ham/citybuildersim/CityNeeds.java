@@ -682,11 +682,24 @@ public final class CityNeeds {
        THE PIECES
        ===================================================================== */
 
-    /** How much of the people who need a kind of care the staffed beds could take: the panel's coverage, Game.careCoverage()'s. */
+    /*
+     * THE BEDS LESS THE PRICED OUT (0.7.106, batch P5; Jerus's A20,
+     * 2026-10-10, "all rec" - 0.7.27's D16). A care row's places are the
+     * staffed beds less the people the fee turned away at the door last
+     * month (Healthcare.getPricedOut()): a bed a household cannot pay for
+     * serves nobody, as the month itself reads it (Game: the coverage times
+     * the share who can pay). Until then NEEDS YOU and Build's rings read the
+     * beds alone, and Services' rings - Healthcare.getCoverage(), net of the
+     * priced out since 0.7.28 - disagreed with them once the fees bit. Where
+     * the beds are short of the people this is the month's own rule (the
+     * beds' cover times the share who could pay); past them the spare beds
+     * still count, so a city with room and a dear fee is not told to build
+     * (its lever is the fee). Nobody priced out, the beds, as before.
+     */
+
+    /** How much of the people who need a kind of care the staffed beds less the priced out could take, 0 to 1 (0.7.106; the beds alone until then, Game.careCoverage()'s). */
     public static double careCover(Game game, CareType care, PopulationCohorts cohorts, double[] staffing) {
-        return Health.coverageOf(
-                game.getBuildingManager().getStaffedCareCapacity(care, staffing),
-                care.populationServed(cohorts));
+        return Health.coverageOf(careHave(game, care, staffing), care.populationServed(cohorts));
     }
 
     /** ...the same places over the same people, unclamped: what the care rows read as served (0.7.41), and Build's care rings. */
@@ -694,9 +707,10 @@ public final class CityNeeds {
         return servedShare(careHave(game, care, staffing), care.populationServed(cohorts));
     }
 
-    /** The staffed places of a kind of care: what its row carries as its supply (0.7.41). */
+    /** The places of a kind of care a row carries as its supply (0.7.41): its staffed beds less the people the fee turned away last month (0.7.106), never under nothing. */
     static double careHave(Game game, CareType care, double[] staffing) {
-        return game.getBuildingManager().getStaffedCareCapacity(care, staffing);
+        return Math.max(0, game.getBuildingManager().getStaffedCareCapacity(care, staffing)
+                - game.getHealthcare().getPricedOut(care));
     }
 
     /** What the city raised in tax last month: profit, sales, wages and property (the Policy tab's TAX A MONTH). */
