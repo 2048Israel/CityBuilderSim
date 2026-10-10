@@ -376,15 +376,16 @@ Conventions the code is written to, which the indexes rely on:
 **From a cloud session (the git era, since 2026-10-10):**
 
 Each batch runs in a worktree of the orchestrator's clone of GitHub, on a
-branch of its own made from `main` (`batch/<id>`). Build it there without
-JavaFX (`build.sh` leaves out `ui/`, `CityBuilderSim` and `BuildMenuCheck`;
-`build-ui.sh` compiles everything against the cached JavaFX jars), run
-`AllChecks -q` for the baseline, edit, rebuild, rerun, and commit to the
-branch, small and often. It ships by merge and push: the orchestrator gates
-the branch, merges it into `main`, tags it and pushes, and the PC pulls.
-Slot 10 for any playtest that touches a real save folder. The docs pass
-(step 6 above) is a batch of its own, on its own branch, by an agent with a
-fresh context.
+branch of its own made from `main` (`batch/<id>`); at most two batches at
+once, on files of their own, and one JVM at a time on the machine, under a
+shared lock. Build it there (`build.sh` compiles the model without JavaFX,
+leaving out `ui/`, `CityBuilderSim` and `BuildMenuCheck`; `build-ui.sh`
+compiles everything against the cached JavaFX jars), run `AllChecks -q` for
+the baseline, edit, rebuild, rerun, and commit to the branch, small and
+often. It ships by merge and push: the orchestrator gates the branch, merges
+it into `main`, tags it and pushes, and the PC pulls. Slot 10 for any
+playtest that touches a real save folder. The docs pass (step 6 above) is a
+batch of its own, on its own branch, by an agent with a fresh context.
 
 **Either way, before saying a change works:** the suite is green except for
 what was already red (say which), the map is regenerated, the write-up
