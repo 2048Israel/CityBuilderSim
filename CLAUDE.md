@@ -163,16 +163,22 @@ These are Jerus's, and they do not move.
                                    overview's WHAT WOULD HELP MOST (0.7.24; since 0.7.51 priced with its
                                    ground and sized to the businesses' projection, since 0.7.70 a road
                                    over its life, since 0.7.71 a care building the size that fits the
-                                   need); advice, not a model change - BuildAdviceCheck, RoadCheck and
-                                   ChildcareCheck hold it
+                                   need, since 0.7.101 every building its order over its life for what
+                                   it will serve - power, water, roads and care as the city grows into
+                                   it - and an iron field's pay-back, the test player's rule); advice,
+                                   not a model change - BuildAdviceCheck, RoadCheck and ChildcareCheck
+                                   hold it
         AutoBuilder.java           automatic building (0.7.73): the player's switch and two dials (a
                                    spare margin, a debt limit - since 0.7.81 the city's debt over a year
-                                   of GDP, and "Build from cash anyway" for when it is over), and the
-                                   month's pass that orders the
-                                   build advice's own cards for the city's works within the builders,
-                                   the budget and the limit - since 0.7.77 buying the bare ground they
-                                   lack as Build's land shortcut would - borrowing on the funding page's
-                                   bond; its log, its inbox notices - AutoBuildCheck holds it
+                                   of GDP, since 0.7.101 all it owes over the year it has recorded, 240%
+                                   by default and to 600%, and "Build from cash anyway" for when it is
+                                   over), and the month's pass that orders the build advice's own cards
+                                   for the city's works within the builders, the budget and the limit (a
+                                   first of a kind from the cash alone) - since 0.7.77 buying the bare
+                                   ground they lack as Build's land shortcut would, since 0.7.101 only an
+                                   order's own, and the next card in the advice's ranking where the money,
+                                   the ground or the budget will not run to the first - borrowing on the
+                                   funding page's bond; its log, its inbox notices - AutoBuildCheck holds it
         BuildCard.java             one build card's figures for all 101 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it

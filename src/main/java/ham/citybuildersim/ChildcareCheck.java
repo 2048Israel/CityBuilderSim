@@ -36,12 +36,15 @@ import java.util.Map;
  *      Ontario's infant and preschool ratios of children to an adult.
  *   2. THE SIZE THAT FITS THE NEED: in a town short of thousands of places
  *      and one short of hundreds the advice's childcare card is the order
- *      whose quote and ground over the places lacking are the least of the
- *      three, to the bit - short of thousands, not the Small Childcare
- *      Centre; with the gap brought under one small centre's places, the
- *      least count of Small Childcare Centres that closes it - where a place
- *      in one costs more than in the Large; and the card's figure is the
- *      advice's own.
+ *      whose cost over its life - quote, ground and running (0.7.101, Jerus's
+ *      A4; its quote and ground until then) - over the places it will fill
+ *      over that life (the places lacking at its projection until then) is
+ *      the least of the three, to the bit - short of thousands, not the
+ *      Small Childcare Centre; with the gap brought under one small centre's
+ *      places, the least count of its centre that closes it (until 0.7.101
+ *      the Small Childcare Centres, where a place in one costs more than in
+ *      the Large; since then the centre the town fills over its life); and
+ *      the card's figure is the advice's own.
  *   3. A CITY'S BUILDINGS KEEP THEIR TYPE: a save holds its childcare by id,
  *      so a city of the old daycares loads as the same count of the ids'
  *      centres, with their places, posts and ground; overbuilt so, the advice
@@ -166,10 +169,25 @@ public class ChildcareCheck {
         int[] today = BuildAdvice.count(g, CHILDCARE, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
         BuildAdvice.Ahead p = BuildAdvice.opening(g, g.quoteBuild(t, Math.max(1, today[0])).months);
         int n = BuildAdvice.count(g, CHILDCARE, site, t, p)[0];
-        double[] sd = BuildAdvice.supplyDemand(g, CHILDCARE, site, p);
-        // The figure recomputed here: the order's quote and its ground over the places lacking.
-        double per = (g.quoteBuild(t, n).total + BuildAdvice.landValue(g, t.getLandSqFt() * (double) n, landLeft))
-                / (sd[1] - sd[0]);
+        // The figure recomputed here (0.7.101, BuildAdvice, A BUILDING OVER ITS LIFE): the order over its life - its quote,
+        // its ground and LIFE_MONTHS of running at the life's rate - over the places it fills a month on average over that
+        // life, each year read at its middle month on the city's own trend, the places lacking without it less with it.
+        double life = g.quoteBuild(t, n).total + BuildAdvice.landValue(g, t.getLandSqFt() * (double) n, landLeft)
+                + n * BuildAdvice.running(g, t, site) * BuildAdvice.lifeFactor(g);
+        Map<BuildingsTemplate, Integer> with = new java.util.LinkedHashMap<>(site);
+        with.merge(t, n, Integer::sum);
+        double i = BuildAdvice.lifeRate(g) / 12, filled = 0, weights = 0;
+        for (int y = 0; y < BuildAdvice.LIFE_MONTHS / 12; y++) {
+            double w = 0;
+            for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
+            double months = Math.max(0, p.months() - BuildAdvice.HORIZON) + 12 * y + 6;
+            BuildAdvice.Ahead a = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), p.slack());
+            double[] without = BuildAdvice.supplyDemand(g, CHILDCARE, site, a), within = BuildAdvice.supplyDemand(g, CHILDCARE, with, a);
+            filled += w * Math.max(0, Math.max(0, without[1] - without[0]) - Math.max(0, within[1] - within[0]));
+            weights += w;
+        }
+        double avg = weights > 0 ? filled / weights : 0;
+        double per = avg > 0 ? life / avg : life / (n * BuildAdvice.unit(g, CHILDCARE, t));
         return new Weighed(t, n, p, per);
     }
 
@@ -289,10 +307,11 @@ public class ChildcareCheck {
         assertTrue("...where the advice still orders", one != null);
         if (one != null) {
             theLeast(g, one, "short of a few");
-            double l = lacks(g, one.ahead()), unit = BuildAdvice.unit(g, CHILDCARE, small);
-            assertTrue(String.format("...and short of a few that is the Small Childcare Centre, the least count that closes it"
-                    + " (%d x %s for %.1f lacking at %.1f each)", one.count(), one.template().getName(), l, unit),
-                    one.template() == small && one.count() * unit >= l && (one.count() - 1) * unit < l);
+            double l = lacks(g, one.ahead()), unit = BuildAdvice.unit(g, CHILDCARE, one.template());
+            assertTrue(String.format("...and short of a few, the least count of its centre that closes it (%d x %s for %.1f lacking"
+                    + " at %.1f each) - the Small Childcare Centre until 0.7.101, when the places past the gap were idle for good;"
+                    + " since then the one the town fills over its life on its own trend", one.count(), one.template().getName(), l,
+                    unit), one.count() * unit >= l && (one.count() - 1) * unit < l);
             double landLeft = g.getLandManager().getAvailableSqFt();
             double perSmall = (g.quoteBuild(small, 1).total + BuildAdvice.landValue(g, small.getLandSqFt(), landLeft))
                     / BuildAdvice.unit(g, CHILDCARE, small);
@@ -305,17 +324,18 @@ public class ChildcareCheck {
         }
     }
 
-    /** The suggestion is the centre with the least order over the places lacking, each recomputed here, to the bit. */
+    /** The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), each recomputed here, to the bit. */
     static void theLeast(Game g, BuildAdvice.Suggestion s, String when) {
         Weighed best = null;
         StringBuilder said = new StringBuilder();
         for (int id : new int[] { SMALL, CENTRE, LARGE }) {
             Weighed w = weigh(g, byId(g, id));
-            said.append(String.format(" [%s: %d, %,.4f a place lacking]", w.t().getName(), w.count(), w.per()));
+            said.append(String.format(" [%s: %d, %,.4f a place filled over its life]", w.t().getName(), w.count(), w.per()));
             if (best == null || w.per() < best.per()) best = w;
         }
         out.printf("     %s:%s%n", when, said);
-        assertTrue("the card is the centre whose order, quote and ground, over the places lacking is the least of the three ("
+        assertTrue("the card is the centre whose order over its life - quote, ground and running - over the places it will fill"
+                + " over that life is the least of the three (0.7.101; its quote and ground over the places lacking until then) ("
                 + when + ")", best != null && s.template() == best.t() && s.count() == best.count());
         if (best != null && s.template() == best.t()) bits("...its figure is that, recomputed here, to the bit", s.pricePerUnit(), best.per());
     }

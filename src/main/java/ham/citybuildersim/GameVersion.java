@@ -3703,7 +3703,7 @@ public final class GameVersion {
      *   - A CITY'S BUILDINGS KEEP THEIR TYPE (Jerus: "keep them as they
      *     are"): a save holds them by id, so a Home Daycare loads as a Small
      *     Childcare Centre with its places, posts and ground. No format bump.
-     *   - THE SIZE THAT FITS THE NEED (BuildAdvice.perPlaceNeeded()): a
+     *   - THE SIZE THAT FITS THE NEED (BuildAdvice.perPlaceNeeded, since 0.7.101 lifePerServed()): a
      *     living care building is ranked by its whole order - quote and
      *     ground - over the places the need lacks, so a town short of a few
      *     children gets one small centre and a city short of thousands the
@@ -4610,6 +4610,63 @@ public final class GameVersion {
      *   - The inflation ensemble (outside the tree; A27) restates two
      *     premises, S1 and H1, to what the model claims. The playtest is
      *     0.7.99's, byte for byte.
+     *
+     * 0.7.101 (2026-10-10) - AUTOMATIC BUILDING AND THE BUILD ADVICE. Batch
+     * P2 (Jerus's A4, A5, A6, A19 and B of 2026-10-10, the project's
+     * decisions-2026-10-10.md; runs/brief-batchP2.md, runs/fixP2-notes.md).
+     * No save format change (36).
+     *   - THE LONG RUN (A4, A19; BuildAdvice, A BUILDING OVER ITS LIFE): every
+     *     candidate is ranked by its order over its life - its quote for the
+     *     count, its ground at the land office's price and BUILD_BOND_YEARS of
+     *     running, as a road's since 0.7.70 - for each unit it will serve; for
+     *     power, water, the roads and care what it will serve is what it
+     *     takes off the need year by year as the city grows into it, on the
+     *     city's own population trend over the last life (lifeTrend()), so a
+     *     building far past the need pays for what stands idle. Until now the
+     *     rest were ranked by their quote for one and their ground a unit,
+     *     capital only. On the playtest's city a Wind Farm wins at months 250
+     *     and 1,000 (land cheap: a wind farm's kW costs less over its life),
+     *     a Coal Power Plant at 2,000 and 4,000 (land dear, the city growing
+     *     into it); on Jerus's 1008 city coal (its kW 923 over its life
+     *     against wind's 2,063), on his m416 city wind (the plant would stand
+     *     two thirds idle on average).
+     *   - AUTOMATIC BUILDING (A4 to A6; AutoBuilder): a first school down the
+     *     ladder, police station or prison where there is none, however far
+     *     past the need, from the cash alone (it waited for half its worth);
+     *     the debt limit counts all the city owes - its bonds and bills, its
+     *     overdraft, its central bank's advances - over the output of the last
+     *     twelve months as recorded (its bonds and bills over a year scaled up
+     *     from fewer: a village's founding month read as $51.4M a year let it
+     *     borrow $38M for a school in month 3, and the wages it then paid on
+     *     the central bank's advances never reached the ratio); the budget
+     *     Jerus asked to remove is kept for him to decide (below); the next
+     *     building in the advice's ranking where the money, the ground or the
+     *     budget will not pay for or run one of the first (it held the measure
+     *     on the first card month after month: the mechanism that turned one
+     *     refusal into a spiral - the playtest's seed 1 held a Coal Power Plant
+     *     for 3,580 months while its power fell to 36% served); only an order's
+     *     own ground bought, and none in a city whose buildings stand on more
+     *     ground than it owns (it bought the whole deficit: $432.8M of land for
+     *     a $45.8M road); the debt limit 240% of a year's GDP by default, the
+     *     dial to 600% in 10% steps, a save at the old default (60%) reading
+     *     the new one.
+     *   - THE IRON FIELD THAT WILL NOT PAY BACK (B): Build's no-deposit page
+     *     says under its Buy whether the cheapest field pays back here - the
+     *     test player's rule since 0.7.67 (BuildAdvice.ironPayback(), moved
+     *     from LongPlaytest whole).
+     *   - Harnesses: AutoBuildCheck (the settings, the limit's debt and year,
+     *     holds true for every building in the ranking, the walk, first
+     *     buildings, the over-full town), BuildAdviceCheck 7, RoadCheck,
+     *     ChildcareCheck 2 - each premise moved where Jerus's decisions move
+     *     the rule (runs/fixP2-notes.md, section 3); the budget's as 0.7.100's.
+     *   - The playtest is 0.7.100's byte for byte (its player builds its own
+     *     works). The auto-built one (-Dplaytest.autobuild), seeds 0 to 7:
+     *     1.7M-2.2M people each (three of eight thrived before). Without the
+     *     budget, first buildings stalled seven at 2k-37k; with the limit
+     *     counting all it owes and a first of a kind from the cash alone,
+     *     still three for a thousand months or more - a village's first
+     *     school, paid from its founding cash, runs a deficit no debt limit
+     *     sees before the order (runs/fixP2-notes.md, section 4).
      *
      * 0.7.102 (2026-10-10) - THE BUDGET AND THE BOOKS. Batch P3 (Jerus's A15,
      * A16, A17, A21, A22 and B of 2026-10-10, the project's

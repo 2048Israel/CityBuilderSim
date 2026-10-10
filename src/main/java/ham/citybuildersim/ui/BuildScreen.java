@@ -2292,16 +2292,16 @@ final class BuildScreen {
                 + " mo out: " + growth + ", " + pct(BuildAdvice.SLACK) + " to spare.";
 
         String per = BuildCard.perWords(s.measure());
-        // A road's figure is over its life since 0.7.70 (BuildAdvice.lifetime()), and a paving frees its ground.
-        // A living care building's since 0.7.71 is its whole order over the people the need has no place for
-        // (BuildAdvice.perPlaceNeeded()), so the size that fits the need is the cheapest.
-        boolean road = s.measure().kind() == BuildAdvice.Kind.ROADS;
-        boolean care = s.measure().kind() == BuildAdvice.Kind.CARE;
-        String priced = s.paving() ? " over its life, the ground it frees taken off"
-                : road ? " over its life, with its land" : care ? " without a place, the whole order with its land"
-                : " with its land";
+        // Every card's figure is its order over its life since 0.7.101 (BuildAdvice.lifePerServed()): its quote, its
+        // land and its running for BUILD_BOND_YEARS, a paving's with the ground it frees taken off - for power, water,
+        // the roads and care over what the city will use of it as it grows, so a building far past the need pays for
+        // what stands idle. (A road's was over its life from 0.7.70, a care building's its order over the places
+        // lacking from 0.7.71, and the rest their price a unit with their land.)
+        boolean used = BuildAdvice.weighsServed(s.measure());
+        String priced = (s.paving() ? " over its life, the ground it frees taken off" : " over its life, with its land")
+                + (used ? ", for what the city will use of it" : "");
         // ...the card's line says the short of it, the tooltip the whole (four lines at most, 0.7.71's words probe).
-        String pricedShort = care ? " without a place" : priced;
+        String pricedShort = used ? " used, over its life" : " over its life";
         String land = s.paving()
                 ? "Frees " + LandManager.areaWords(-s.landSqFt()) + " ≈ " + money(-s.landValue()) + "."
                 : "Land " + LandManager.areaWords(s.landSqFt()) + " ≈ " + money(s.landValue())
@@ -2316,7 +2316,7 @@ final class BuildScreen {
         String which = s.paving() ? (s.closes() ? ", that keeps it ahead" : "")
                 : s.closes() ? (s.landShort() > 0 ? " that keeps it ahead" : " that keeps it ahead and fits the land left")
                 : s.landShort() > 0 ? "" : " that fits the land left";
-        if (care && !which.isEmpty()) which = "," + which;
+        if (!which.isEmpty() && !which.startsWith(",")) which = "," + which;
         if (s.count() > 1) {
             land += " " + formatter.format(s.count()) + " of them: the cheapest per " + per + pricedShort + which
                     + ", at " + shortNumber(s.unit()) + " " + BuildCard.perPlural(s.measure()) + " each.";
@@ -2389,9 +2389,11 @@ final class BuildScreen {
     /** The section's (i). */
     static final String AUTO_INFO = "Turned on, it orders every month what this page advises for the city's works - "
             + "power, water, roads and transit, care, schools, police, cells - kept ahead of demand with the spare margin "
-            + "on top. It pays from the cash over a month's tax, then borrows on Build's 20-year bond while the city's "
-            + "debt stays under the limit, a share of a year's GDP; over it, it builds nothing, or only from cash. It buys "
-            + "the land its orders need and orders no more than the builders open in a year or the budget can run.";
+            + "on top - a first school, station or prison where there is none, from the cash alone. It pays from the cash "
+            + "over a month's tax, then borrows on Build's 20-year bond while all the city owes stays under the limit, a "
+            + "share of what it produced in the last year; over it, it builds nothing, or only from cash. It buys only its "
+            + "orders' own land, orders what the builders open in a year and the budget can run, and takes the next "
+            + "choice where the money or the budget will not run to the first.";
 
     /** The heading's quiet words: on or off. */
     static String autoHint(AutoBuilder ab) {
@@ -2418,14 +2420,15 @@ final class BuildScreen {
                         + "off Needs you. A network keeps the quarter in hand Needs you asks of it as well." };
     }
 
-    /** The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP). */
+    /** The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP; since 0.7.101 all it owes over the output of its last twelve months). */
     static String[] autoLimitWords(AutoBuilder ab, Game g) {
         double now = AutoBuilder.ratio(g);
         String stands = Double.isFinite(now) ? "Now " + AutoBuilder.gdpShare(now) + (ab.within(g) ? "." : ", over it.")
                 : "No GDP recorded yet to set its debt against.";
         return new String[] { "Debt limit",
-                "The city's debt at most " + AutoBuilder.gdpShare(ab.getDebtLimit()) + " of a year's GDP - the Debt/GDP"
-                        + " the left panel shows; over it, it builds nothing. " + stands,
+                "All the city owes - bonds and bills, its overdraft, its central bank's advances - at most "
+                        + AutoBuilder.gdpShare(ab.getDebtLimit()) + " of what it produced in the last year; over it, it builds"
+                        + " nothing. " + stands,
                 Double.isFinite(now) ? "now " + AutoBuilder.gdpShare(now) : null };
     }
 
@@ -4148,6 +4151,15 @@ final class BuildScreen {
         if (cheapest != null) {
             ui.rootMenu.getChildren().add(bestLandButton(cheapest, noDepositWords(cheapest, site), words[7],
                     () -> handleAllBuildingMenus(menuTitle, categories)));
+            // ...and whether an iron field pays back here (0.7.101, Jerus's decision B): the test player's own rule.
+            if (site == Resource.IRON && !selected.standsAtSea()) {
+                BuildAdvice.Payback field = BuildAdvice.ironPayback(ui.game, cheapest);
+                Label pays = new Label(ironPaybackWords(field));
+                pays.setWrapText(true);
+                pays.setMaxWidth(PAYBACK_LINE);
+                pays.setStyle(wordsAt(10.5, field.pays() ? Palette.TEXT_LABEL : Palette.WARN) + " -fx-padding: 2 0 6 0;");
+                ui.rootMenu.getChildren().add(pays);
+            }
         }
         ui.rootMenu.getChildren().addAll(toLand, back);
     }
@@ -4194,6 +4206,28 @@ final class BuildScreen {
                      : "field the city owns brings its slots with it.",
             String.format("Oil still under the sea: %,.0f tonnes", left),
             "the cheapest offer holding oil: whole fields, the oil in its price" };
+    }
+
+    /** The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. */
+    static final double PAYBACK_LINE = 2 * NEED_CARD;
+
+    /**
+     * Whether the cheapest iron field pays back here, as the no-deposit page
+     * says it under its Buy (0.7.101, Jerus's decision B: "the build advice
+     * says when an iron field won't pay back for a small town"): the test
+     * player's rule since 0.7.67 (BuildAdvice.ironPayback()) - the mines the
+     * city could staff on it, what they would earn a month, and the month's
+     * payment that repays its price over Game.BUILD_BOND_YEARS. Pure, so a
+     * probe measures it.
+     */
+    static String ironPaybackWords(BuildAdvice.Payback p) {
+        String repays = money(p.payment()) + " a month that repays its price over " + Game.BUILD_BOND_YEARS + " years";
+        if (p.pays()) return "It pays back: the " + p.mines() + (p.mines() == 1 ? " mine" : " mines") + " the city could staff"
+                + " on it would earn " + money(p.earns()) + " a month, over the " + repays + ".";
+        if (p.mines() == 0) return "It would not pay back for a city this size: none of the mines it could staff on it would"
+                + " pay yet, against the " + repays + ".";
+        return "It would not pay back for a city this size: the " + p.mines() + (p.mines() == 1 ? " mine" : " mines")
+                + " it could staff on it would earn " + money(p.earns()) + " a month, under the " + repays + ".";
     }
 
     /** The no-deposit page's Buy: "Buy the cheapest: East 7 · 1 iron site, 12.8 Mt for US$6.16M" (or oil sites, 0.7.62) - its sites and, since 0.7.64, its tonnes: the whole of every field centred in it; "the cheapest" since 0.7.64 ("the best" was the most sites a dollar). */
