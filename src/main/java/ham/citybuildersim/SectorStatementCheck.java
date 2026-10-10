@@ -265,7 +265,7 @@ public class SectorStatementCheck {
              * ...AND WHAT ITS BORROWING COST IT UP FRONT IS A COST SINCE 0.7.102 (Jerus's A16). Before: the
              * outside lines took the loans' fees, the premiums and the bonds' issuing costs off the result
              * every month (F2, R5). Since, a month struck in this build carries them as an asset and expenses
-             * a sixtieth a month inside the profit, so they are outside nothing; an older save's month as before.
+             * them over each debt's life inside the profit, so they are outside nothing; an older save's month as before.
              */
             double upfront = now.loanFees() + now.premiums() + now.bondCosts();
             double outside = now.fromTheCity() + now.arrearsPaid() + now.depositInterest() + now.bondCoupons()
@@ -277,12 +277,12 @@ public class SectorStatementCheck {
                     now.netIncome() + outside, at);
             t("1 a month struck in this build carries what its borrowing cost it, not outside the result (0.7.102)").near(
                     now.borrowingCostsDeferred() ? 0 : 1, 0, at);
-            t("1 the borrowing costs line is the month's sixtieths, before the tax").near(
+            t("1 the borrowing costs line is the month's charges, before the tax").near(
                     inc.row(SectorStatements.BORROWING_COSTS) == null ? 0 : -inc.now(SectorStatements.BORROWING_COSTS),
                     now.borrowingCosts(), at);
             if (!then.isEmpty() && then.borrowingCostsDeferred()) {
                 t("1 what is still to expense is last month's, and the month's fees, premiums and issuing costs, less the"
-                        + " month's sixtieths").near(now.borrowingCostsToExpense(),
+                        + " month's charges").near(now.borrowingCostsToExpense(),
                         then.borrowingCostsToExpense() + upfront - now.borrowingCosts(), at);
             }
             if (now.borrowingCosts() > CENT) expensedMonths++;

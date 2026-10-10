@@ -1615,7 +1615,7 @@ final class SectorScreen {
         steps.add(fallTotal(StatementView.sentence(f.operating), t.now(SectorStatements.OPERATING)));
         if (now.interest() != 0) steps.add(Step.of("Interest", -now.interest(), Palette.SPENDING_RAMP[2])
                 .go(n -> openNote(sector, INCOME, SectorStatements.FINANCE_NOTE)));
-        // ...and what its borrowing cost it up front, a sixtieth a month (0.7.102, A16).
+        // ...and what its borrowing cost it up front, a month's share over each debt's life (0.7.102, A16).
         if (now.borrowingCosts() != 0) steps.add(Step.of("Borrowing costs", -now.borrowingCosts(), Palette.SPENDING_RAMP[2])
                 .tip("What its loans' fees, its mortgages' insurance and its bonds' issuing cost it, a month's share of "
                         + "each over its debt's life\n" + m(now.borrowingCosts())));

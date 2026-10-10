@@ -277,7 +277,7 @@ public final class SectorBooks {
             boolean stockCounted,
 
             /* -------------- and what its borrowing cost it, expensed (0.7.102, A16) -------------- */
-            /** The month's sixtieth of what its borrowing cost it up front (Sector.Statement.borrowingCosts): a cost before the profit tax, inside netIncome, paid when it borrowed - so the cash flow adds it back. */
+            /** The month's share of what its borrowing cost it up front, over each debt's life (Sector.Statement.borrowingCosts): a cost before the profit tax, inside netIncome, paid when it borrowed - so the cash flow adds it back. */
             double borrowingCosts,
             /** ...what it has paid and is still to expense, as the month closed (Sector.getBorrowingCostsToExpense()): an asset on its sheet. */
             double borrowingCostsToExpense,
@@ -674,7 +674,7 @@ public final class SectorBooks {
                 credit.getBondWrittenOffThisMonth(key),
                 valued[0], valued[1], valued[2], valued[3],
                 stockRevalued, stockBefore != null,
-                // ...and what its borrowing cost it up front: the month's sixtieth, and what is still to expense (0.7.102).
+                // ...and what its borrowing cost it up front: the month's share, and what is still to expense (0.7.102).
                 st.borrowingCosts, sector.getBorrowingCostsToExpense(), true);
     }
 

@@ -326,7 +326,7 @@ public final class SectorStatements {
             INPUTS = "inputs", GROSS = "gross", PAYROLL = "payroll", ELECTRICITY = "electricity", WATER = "water",
             MAINTENANCE = "maintenance", PROPERTY_TAX = "propertyTax", OPERATING = "operating", INTEREST = "interest",
             PRE_TAX = "preTax", TAX = "tax", PROFIT = "profit", OUTSIDE = "outside", RESULT = "result",
-            // ...and since 0.7.102 (A16) what its borrowing cost it up front, a sixtieth a month, beside the interest.
+            // ...and since 0.7.102 (A16) what its borrowing cost it up front, over each debt's life, beside the interest.
             BORROWING_COSTS = "borrowingCosts";
 
     /** The outside-the-trading-result lines' ids, in their order (F1; since 0.7.75 the bonds written off and F2's three). */

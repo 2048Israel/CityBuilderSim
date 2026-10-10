@@ -133,7 +133,7 @@ public class SectorBooksCheck {
                 near("operating", sector, m.month(),
                         m.operatingIncome(),
                         m.revenue() - m.operatingCost());
-                // ...less, since 0.7.102 (Jerus's A16), what its borrowing cost it up front, a sixtieth a month:
+                // ...less, since 0.7.102 (Jerus's A16), what its borrowing cost it up front, over each debt's life:
                 // a deductible expense beside the interest. Before: operating - property tax - interest - sales tax.
                 near("pre-tax", sector, m.month(),
                         m.preTaxIncome(),
