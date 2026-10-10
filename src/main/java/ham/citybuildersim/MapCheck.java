@@ -65,7 +65,14 @@ import java.util.Map;
  *      within SCREEN_RATIO of the 5B copy's, the first whose screen is all
  *      city; the plans themselves are made away from the screen (PlanCheck
  *      holds their PLAN_MS); and a month's change at 5B and 10B in no more
- *      than RECONCILE_MS (the design's 5 ms; measured 0.76);
+ *      than RECONCILE_MS (the design's 5 ms; measured 0.76) of the main
+ *      thread's CPU - since 0.7.100 (A28) the thread's CPU, not the wall
+ *      clock: on the two-core cloud machine the JIT's compiler threads took
+ *      the main thread's core and a month's wall time jumped 3 to 4.5 ms over
+ *      its CPU, failing the bound about one run in ten with no change in the
+ *      work (runs/fixRD7-notes.md 4 and its star 4, and 7; runs/fixO11-notes.md
+ *      5); the wall clock is printed beside it, and a JVM that cannot measure
+ *      a thread's CPU is timed on the wall clock and says so;
  *   6. the city is drawn as what it has (0.7.64, batch L2): a new default
  *      city as founded, a month on and a year on draws its own buildings and
  *      nothing else - at its founding the bank and bare ground, no road, no
@@ -218,7 +225,7 @@ public class MapCheck {
     /** The most any copy's screen may take against the 5B copy's, the first whose screen is all city (the design's; against the city x 1's until 0.7.64 - section 5's note). */
     static final double SCREEN_RATIO = 1.5;
 
-    /** The design's bound on a month's change at 10B, in ms (measured 0.76). */
+    /** The design's bound on a month's change at 10B, in ms of the main thread's CPU since 0.7.100 (measured 0.76; section 5's note). */
     static final double RECONCILE_MS = 5;
 
     /** Pixels a plot the screen is rastered at: 4, L0's image (spec-land 2.6). */
@@ -1806,6 +1813,42 @@ public class MapCheck {
        5. THE COST FOLLOWS THE SCREEN
        ===================================================================== */
 
+    /*
+     * THE MONTH IS TIMED ON THE MAIN THREAD'S CPU (0.7.100, batch P1; Jerus's
+     * A28 of 2026-10-10: "time it as thread CPU (not a loosening)"). On the
+     * wall clock the 5 ms bound failed about one run in ten on the two-core
+     * cloud machine with no change in the work: a month's wall time jumped 3
+     * to 4.5 ms over its thread's CPU (5.43 ms for 0.97 in RD7's probe; 5.82
+     * in a lone run of 0.7.95 and 5.17 on 0.7.94's classes, its control),
+     * with no GC pause, safepoint or deopt in the window - the JIT's compiler
+     * threads, compiling CityMap's month methods, took the main thread's core
+     * (runs/fixRD7-notes.md 4 and its star 4, and 7; runs/fixO11-notes.md 5).
+     * The design's bound is on the month's own work, which is the thread's
+     * CPU; its value stays 5 ms, and the wall clock is printed beside it.
+     * Where the JVM cannot measure a thread's CPU the month is timed on the
+     * wall clock, and the output and the label say so.
+     */
+    /** The JVM's threads, read for the main thread's CPU time. */
+    static final java.lang.management.ThreadMXBean THREADS = java.lang.management.ManagementFactory.getThreadMXBean();
+
+    /** Whether a month is timed on the main thread's CPU: this JVM measures it and it is on (turned on here if it is off). */
+    static final boolean CPU_TIMED = cpuTimed();
+
+    static boolean cpuTimed() {
+        if (!THREADS.isCurrentThreadCpuTimeSupported()) return false;
+        try {
+            if (!THREADS.isThreadCpuTimeEnabled()) THREADS.setThreadCpuTimeEnabled(true);
+        } catch (UnsupportedOperationException | SecurityException e) {
+            return false;
+        }
+        return THREADS.isThreadCpuTimeEnabled();
+    }
+
+    /** The clock a month's bound reads, in ns: the main thread's CPU, or the wall clock where CPU_TIMED is false. */
+    static long monthClock() {
+        return CPU_TIMED ? THREADS.getCurrentThreadCpuTime() : System.nanoTime();
+    }
+
     static void cost(Squares sq) {
         out.println("\n--- 5. the cost follows the screen, never the population ---");
         int k = TIMES.length;
@@ -1872,30 +1915,43 @@ public class MapCheck {
             int mine = -1;
             for (BuildingVisual.Type t : m.types()) if (t != null && t.site() == Resource.IRON) mine = t.id();
             long sites = m.ownedSites(Resource.IRON);
-            double worst = 0, firstMs, downMs;
+            // Each month on the bound's clock (monthClock(): the main thread's CPU) and on the wall clock; the
+            // bound reads the year of +0.01% and the -0.05%, the worst of them.
+            double worst = 0, worstsWall = 0, worstWall = 0, firstMs, firstWall, downMs, downWall;
             for (int t = 0; t < c.length; t++) c[t] += c[t] / 2000;
             if (mine >= 0) c[mine] = Math.min(c[mine], sites);
-            long t0 = System.nanoTime();
+            long w0 = System.nanoTime(), t0 = monthClock();
             m.reconcile(c);
-            firstMs = (System.nanoTime() - t0) / 1e6;
+            firstMs = (monthClock() - t0) / 1e6;
+            firstWall = (System.nanoTime() - w0) / 1e6;
             StringBuilder months = new StringBuilder();
             for (int month = 0; month < 12; month++) {
                 for (int t = 0; t < c.length; t++) c[t] += c[t] / 10_000;
                 if (mine >= 0) c[mine] = Math.min(c[mine], sites);
-                t0 = System.nanoTime();
+                w0 = System.nanoTime();
+                t0 = monthClock();
                 m.reconcile(c);
-                double ms = (System.nanoTime() - t0) / 1e6;
-                worst = Math.max(worst, ms);
-                months.append(String.format(" %.2f", ms));
+                double ms = (monthClock() - t0) / 1e6;
+                double wall = (System.nanoTime() - w0) / 1e6;
+                if (ms > worst) { worst = ms; worstsWall = wall; }
+                worstWall = Math.max(worstWall, wall);
+                months.append(String.format(" %.2f/%.2f", ms, wall));
             }
             for (int t = 0; t < c.length; t++) c[t] -= c[t] / 2000;
-            t0 = System.nanoTime();
+            w0 = System.nanoTime();
+            t0 = monthClock();
             m.reconcile(c);
-            downMs = (System.nanoTime() - t0) / 1e6;
-            worst = Math.max(worst, downMs);
+            downMs = (monthClock() - t0) / 1e6;
+            downWall = (System.nanoTime() - w0) / 1e6;
+            if (downMs > worst) { worst = downMs; worstsWall = downWall; }
+            worstWall = Math.max(worstWall, downWall);
             String size = TIMES[i] < 10_000 ? "5" : "10";
-            out.printf("      x %,.0f: +0.05%% in %.2f ms, then a year of +0.01%%:%s ms, then -0.05%% in %.2f ms%n", TIMES[i], firstMs, months, downMs);
-            check("at " + size + " billion a month's change takes no more than 5 ms", worst <= RECONCILE_MS);
+            String clock = CPU_TIMED ? "the main thread's CPU" : "the wall clock (this JVM measures no thread's CPU)";
+            out.printf("      x %,.0f, in ms of %s / on the wall clock: +0.05%% in %.2f/%.2f, then a year of +0.01%%:%s,"
+                    + " then -0.05%% in %.2f/%.2f; the bounded months' worst %.2f (its wall clock %.2f), the wall clock's worst %.2f%n",
+                    TIMES[i], clock, firstMs, firstWall, months, downMs, downWall, worst, worstsWall, worstWall);
+            check("at " + size + " billion a month's change takes no more than 5 ms of "
+                    + (CPU_TIMED ? "the main thread's CPU" : "the wall clock"), worst <= RECONCILE_MS);
             check("...and its districts still sum to the counts exactly", Arrays.equals(m.totals(), c));
         }
     }

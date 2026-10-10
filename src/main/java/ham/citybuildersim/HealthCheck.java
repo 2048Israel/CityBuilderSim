@@ -1172,6 +1172,11 @@ public class HealthCheck {
          * fee - with the same premise, direction and tolerance.
          */
         double[] hungerYear = new double[scales.length];
+        // ...and its two halves (0.7.100, printed, not asserted): the share
+        // short of a basket it could not afford, and the share the shelves
+        // left short (HouseholdBalance.getHungerPricedOut(), getHungerShortOfStock()).
+        double[] hungerYearPriced = new double[scales.length];
+        double[] hungerYearShelf = new double[scales.length];
         final int year = 12;
         // The people each city had to bury from, month by month: all of them,
         // and its old (2026-09-21, see the assertions below).
@@ -1223,6 +1228,30 @@ public class HealthCheck {
                 b.addStack(b.getTemplateByName("Walk-in Clinic"), clinics, true);
                 b.addStack(b.getTemplateByName("Childcare Centre"), 8, true);
                 b.addStack(b.getTemplateByName("Home Care Service"), 4, true);
+                /*
+                 * ONE BUILDERS' DEPOT STANDS FROM THE START (0.7.100, batch P1;
+                 * Jerus's A14 of 2026-10-10, "O1"), as round 1 stood theirs in
+                 * eight fixtures at 0.7.17 (ForeignCheck's THE BUILDERS' DEPOTS
+                 * STAND FROM THE START). Since every building gets the crew it
+                 * can use (BuildingManager, EVERY BUILDING GETS THE CREW IT CAN
+                 * USE) the first depot this city orders was still on site when
+                 * the fee was set, so its builders were the works department
+                 * alone; in the dear twin sickness then stalled them for good,
+                 * the city never grew and its shops ended banned with an empty
+                 * till, and the year's hunger read the stalled builders, not the
+                 * clinic's price - 77 points over the free twin at 0.7.17, 40.0
+                 * at 0.7.23, 19.7 at 0.7.99 (the project's
+                 * why-the-dear-city-is-hungrier.md). With one standing the twins
+                 * build alike (18,012, 15,805 and 16,998 people at the end) and
+                 * the fee is what differs. The premise, its direction and its
+                 * tolerance are untouched. Measured at 0.7.100: 5.4 points, of
+                 * which 0.1 priced out of a basket and 5.3 short on the shelf -
+                 * the grocers' shelf (0.7.43's baskets at a price) running out
+                 * in two growing cities at different months, which the 0.7.23
+                 * trace (1.0 with this depot) predates; the halves are printed
+                 * below the twins (runs/fixP1-notes.md).
+                 */
+                b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
                 town.simulateMonths(48);
                 // The drain: nothing saved, nothing abroad, no shares, and
                 // the bank not lending - the waterfall's every step before
@@ -1258,9 +1287,15 @@ public class HealthCheck {
                             + town.getCohorts().get(AgeBand.ELDER);
                     if (hc.getPricedOutTotal() > 0) pricedOutMonths[k]++;
                     if (hc.getPricedOutTotal() == 0) servedInFullMonths[k]++;
-                    if (m >= window - year) hungerYear[k] += town.getHouseholdBalance().getHungerRate();
+                    if (m >= window - year) {
+                        hungerYear[k] += town.getHouseholdBalance().getHungerRate();
+                        hungerYearPriced[k] += town.getHouseholdBalance().getHungerPricedOut();
+                        hungerYearShelf[k] += town.getHouseholdBalance().getHungerShortOfStock();
+                    }
                 }
                 hungerYear[k] /= year;
+                hungerYearPriced[k] /= year;
+                hungerYearShelf[k] /= year;
                 meanAffordable[k] /= window;
                 meanSick[k] /= window;
                 meanBaseline[k] /= window;
@@ -1270,12 +1305,12 @@ public class HealthCheck {
             System.out.printf("  fees x%.2f: %,.0f people, served %.1f%% of those offered care over %d months,"
                     + " sick %.2f%% (baseline %.2f%%), %,.0f died (%,.0f over seventy), priced out in %.0f months,"
                     + " %,.0f last month (childcare %,.0f / general %,.0f / senior %,.0f), hunger %.0f%%"
-                    + " (%.1f%% over the last year)%n",
+                    + " (%.1f%% over the last year: %.1f priced out of a basket, %.1f short on the shelf)%n",
                     scales[k], town.getCohorts().total(), meanAffordable[k] * 100, window,
                     meanSick[k] * 100, meanBaseline[k] * 100, deathsOver[k], eldersLost[k], pricedOutMonths[k],
                     hc.getPricedOutTotal(), hc.getPricedOut(CareType.CHILDCARE),
                     hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
-                    hungerAtEnd[k] * 100, hungerYear[k] * 100);
+                    hungerAtEnd[k] * 100, hungerYear[k] * 100, hungerYearPriced[k] * 100, hungerYearShelf[k] * 100);
         }
         assertTrue("fixture: the poor city has somebody at the eat-less step",
                 hungerAtEnd[1] > 0);
@@ -1342,6 +1377,9 @@ public class HealthCheck {
         check("...every kind of care", towns[0].getHealthcare().getAffordability(CareType.CHILDCARE)
                 + towns[0].getHealthcare().getAffordability(CareType.GENERAL)
                 + towns[0].getHealthcare().getAffordability(CareType.SENIOR), 3, 0);
+        System.out.printf("  over the last year the dear city is %.1f points hungrier than the free one: %.1f priced out of a basket, %.1f short on the shelf%n",
+                (hungerYear[2] - hungerYear[0]) * 100, (hungerYearPriced[2] - hungerYearPriced[0]) * 100,
+                (hungerYearShelf[2] - hungerYearShelf[0]) * 100);
         assertTrue("...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care",
                 hungerYear[2] <= hungerYear[0] + .05);
         {
