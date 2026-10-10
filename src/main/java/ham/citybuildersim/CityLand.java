@@ -212,6 +212,8 @@ public final class CityLand {
         CityLand land = new CityLand(seed, r.siteX(), r.siteY());
         land.take(r);
         land.converted = history == null ? new double[0][] : deepCopy(history);
+        // An older save's centre, drawn on the old world's fields (GridConversion.fromLanes(), fromFigure()): the old world's ground (0.7.99).
+        land.oldWorldHoldings = 1;
         return land;
     }
 

@@ -61,6 +61,12 @@ import java.util.Set;
  *      or by sites, the offers' contents exactly the fields on their free
  *      plots; saved again as format 32 and loaded, the same, and both play
  *      their next month alike.
+ *
+ * Since 0.7.99 (batch W1, fewer and bigger deposits) "the world's fields" in
+ * 2 to 5 are the old world's (World.legacyFieldsInCell()), which every one
+ * of these saves was written on and which its converted ground keeps
+ * (CityLand.oldWorldHoldings()); in 6 the fields as the loaded city sees
+ * them - the old world's on its ground, the world's on the offers' free plots.
  */
 public class ConversionCheck {
 
@@ -279,7 +285,8 @@ public class ConversionCheck {
             if (!res.inFields()) continue;
             double pad = Deposit.mostReach(res) + 1;
             for (int cell : CityLand.cellsUnder(x0 - pad, y0 - pad, x1 - 1 + pad, y1 - 1 + pad)) {
-                for (Deposit d : CityLand.fields(w, cell, res)) {
+                // The old world's fields (0.7.99): the ground the save held, which it keeps.
+                for (Deposit d : CityLand.legacyFields(w, cell, res)) {
                     GridConversion.PartField p = parts.get(fieldKey(res, cell, d.index()));
                     boolean[] mine = new boolean[d.sites()];
                     int in = 0;
@@ -578,7 +585,12 @@ public class ConversionCheck {
         for (Resource r : Resource.values()) {
             if (!r.inFields()) continue;
             for (int cell : CityLand.cellsUnder(x0, y0, x1, y1)) {
-                for (Deposit d : CityLand.fields(world, cell, r)) {
+                // The fields as the city sees them (0.7.99): the old world's on its converted ground, the world's elsewhere;
+                // then the old world's it holds in part.
+                List<Deposit> seen = new ArrayList<>();
+                for (Deposit d : land.fieldsIn(cell, r)) if (!land.isPart(d)) seen.add(d);
+                for (Deposit d : CityLand.legacyFields(world, cell, r)) if (land.isPart(d)) seen.add(d);
+                for (Deposit d : seen) {
                     if (!land.isPart(d)) {
                         int holders = land.ownsPlot(d.x(), d.y()) ? 1 : 0;
                         for (LandParcel p : market.getListing()) {
@@ -685,7 +697,8 @@ public class ConversionCheck {
         for (Resource res : Resource.values()) {
             if (!res.inFields()) continue;
             for (int cell : CityLand.cellsUnder(g.minX(), g.minY(), g.maxX() - 1, g.maxY() - 1)) {
-                for (Deposit d : CityLand.fields(w, cell, res)) {
+                // The old world's fields (0.7.99): an older save's centre is drawn on them.
+                for (Deposit d : CityLand.legacyFields(w, cell, res)) {
                     if (g.owner(d.x(), d.y()) != GridConversion.CONVERTED) continue;
                     sites[res.ordinal()] += d.sites();
                     amounts[res.ordinal()] += d.amount();
