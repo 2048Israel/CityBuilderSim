@@ -142,9 +142,9 @@ These are Jerus's, and they do not move.
                                    of its goods they take before or after the railway, the band they narrow
                                    (Ports.factor(), at the railway's step 5) and the month's tonnes by sea,
                                    saved under one key; and the month's ships as a pure function of time -
-                                   the calls those tonnes make, each boat's place on its lane, a frame's
-                                   query - never saved, the map's to draw (O13). PortCheck holds both
-                                   (runs/spec-oil.md 2.9-2.10)
+                                   the calls those tonnes make, each boat's place on its route, a frame's
+                                   query - never saved, the map's to draw (since 0.7.97). PortCheck holds
+                                   both, MapCheck 9 the boats on the map (runs/spec-oil.md 2.9-2.10)
         DecisionLog.java           what the player decided, and when (0.7.23): every change of a policy and
                                    every spend at scale, recorded where it is applied, held while a city is
                                    founded or loaded, saved under one key; the History chart's flags
@@ -181,6 +181,17 @@ These are Jerus's, and they do not move.
                                    the production rows and its money off the statement, the plant's six
                                    throttles and the rate they multiply to; what the Sectors screen's
                                    Operations page draws; pure - SectorFlowCheck holds it
+        RefineryView.java          the refinery's month as a picture (0.7.95): the crude and where it was bought,
+                                   the column's cuts, each unit's run, spread and gate, the products and who took
+                                   them, the flow traced cut to unit to product, and the pictogram's layout to
+                                   scale with its words and colours; what Refining's Operations page paints;
+                                   pure - RefineryViewCheck holds it (runs/spec-oil.md 2.12)
+        OilView.java               the oil industry on one page (0.7.96): the wells by kind and what they would
+                                   lift over ten years if nothing new were built, each pool within its oil;
+                                   every kind of refinery unit with its spread and the gate that stops one
+                                   more; every product's price and month off the refinery picture's; the
+                                   strategic reserve and its levers' reach; the chart and every word; what
+                                   Oil's Operations page paints - pure, OilViewCheck holds it (runs/spec-oil.md 2.13)
         SectorStatements.java      one business's month as formal statements (0.7.74): profit or loss through
                                    gross and operating profit, the classified sheet, the cash flow in three
                                    sections, the changes in equity - and the bank's - each a list of rows, its
@@ -231,8 +242,17 @@ These are Jerus's, and they do not move.
                                    port of the project's roads prototype (spec-roads-and-ports.md 2);
                                    the painter draws from it since 0.7.88; since 0.7.90 an estate
                                    cell's streets sized to what opens it, since 0.7.92 the outer
-                                   kinds on industry's leftover ground when no cell is left -
-                                   PlanCheck holds it
+                                   kinds on industry's leftover ground when no cell is left, since
+                                   0.7.97 the refinery's units first of industry in touching cells (one
+                                   campus) - PlanCheck holds it
+        CityShore.java, SeaRoutes.java, ShipShapes.java
+                                   the map at the water (0.7.97): the sea terminals, tank farms and the
+                                   reserve's tanks laid once on the shore by water that opens to the sea,
+                                   a terminal's quay to its berth, kept in the map's sidecar (FORMAT 6);
+                                   each terminal's route out to the world, found once on a 480 m sea grid
+                                   and pulled straight to the offing and the abyss; a boat's hull, deck
+                                   and colours by its class - the map's, nothing in the model reads them
+                                   (spec-roads-and-ports.md 2.8, 4) - MapCheck 9 holds them
         ui/                        the interface: UserInterface.java is the window (about 6,000 lines: the header
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's
@@ -248,7 +268,7 @@ These are Jerus's, and they do not move.
                                    (the city map on a canvas, 0.7.61: small in the land office, over the
                                    window on Expand; its arithmetic is the model's MapFrame, LandMap and
                                    MapTiles, which MapCheck holds). The model never imports it.
-        *Check.java                eighty-nine harnesses, each a main() with static helpers
+        *Check.java                ninety-one harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
         LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them

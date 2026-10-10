@@ -13,7 +13,8 @@ import java.util.List;
 /**
  * The oil wells' lives (0.7.84, batch O7; runs/spec-oil.md 2.6 and 4's
  * WellCheck, the land half) - and since 0.7.91 the sea's (batch O10; spec-oil
- * 2.7, 2.11): the platforms, their wells, the shuttle tankers and the pipes.
+ * 2.7, 2.11): the platforms, their wells, the shuttle tankers and the pipes;
+ * and since 0.7.93 the two pools they lift (batch O10b).
  *
  * WHAT THIS HAS TO PROVE:
  *
@@ -38,7 +39,7 @@ import java.util.List;
  *   5. DRY AND SEA SITES ARE KEPT APART: a land well stands only on a dry site
  *      - the order, the card and the investors all refuse a sea one - and
  *      wells already standing past the dry sites, as a save from before 0.7.84
- *      carries them on the sea's, are kept.
+ *      carries them on the sea's, are kept, lifting the ground pool.
  *
  *   6. THE VINTAGES CROSS A SAVE, to the bit, as the Oil sector's extras; and a
  *      save from before them reads every well new, opened the first month the
@@ -55,9 +56,9 @@ import java.util.List;
  *      retired at 348 months and its slot refilled.
  *
  *   9. THE SHUTTLE TANKERS: platform crude sold at home pays CRUDE's band
- *      freight a tonne, its share of the lift, to the bit, booked as the Oil
- *      sector's imported "Shuttle tankers"; crude shipped abroad pays none;
- *      the audit closes.
+ *      freight a tonne, the offshore pool's share of the month's lift, to the
+ *      bit, booked as the Oil sector's imported "Shuttle tankers"; crude
+ *      shipped abroad pays none; the audit closes.
  *
  *  10. THE PIPELINE: the rule passes on a big field and fails on a small one,
  *      and on land; a field's whole pipe stands for its crude and the shuttle
@@ -70,6 +71,16 @@ import java.util.List;
  *      platform's jacket as a package with its wells, by the interest test; a
  *      platform well into a free slot; and once the oil is worked out the
  *      empty jackets and the pipes are decommissioned.
+ *
+ *  13. THE CITY'S CRUDE IS TWO POOLS (0.7.93; Jerus: "two pools, offshore
+ *      oil and ground oil"): the ground pool its dry fields' and the oil by
+ *      fiat, the offshore pool its sea fields'; the land wells lift the
+ *      ground's only and the platform wells the sea's only, each its own
+ *      pool's E, every month; one pool worked out, its wells lift nothing
+ *      and are the spare while the other's lift on, its orders refused for
+ *      their deposit and the other's let through; the Oil page shows both;
+ *      the two E's cross a save, and a save from before them charges its one
+ *      pool to the ground, floored at the ground's tonnes, none to the sea.
  *
  * Every fixture CAUSES its condition: the town is handed its oil by fiat
  * (LandManager.restoreSites(), as MiningCheck hands a city its ore), its
@@ -178,6 +189,7 @@ public class WellCheck {
             seaAcrossASave(sea);
         }
         thePlanner();
+        theTwoPools();
 
         for (GameFiles f : FILES.values()) LongPlaytest.cleanUp(f.getDirectory().getParent());
         out.println();
@@ -399,9 +411,10 @@ public class WellCheck {
         report("...and the investors drill no land well: the word names the deposit and the dry ground", !d.build
                 && d.reason.contains("deposit") && d.reason.contains("dry ground"), "\"" + d.reason + "\"");
 
-        // Two dry sites handed to the centre, with none of the oil: the wells lift the town's pool, the sea field's.
+        // Two dry sites handed to the centre with oil of their own by fiat, the ground pool's - since 0.7.93 a land well lifts
+        // no other (section 13); until then with none of it, the wells lifting the town's one pool, the sea field's.
         double owned = land.getOwnedAmount(Resource.OIL);
-        quietly(() -> land.restoreSites(Resource.OIL, seaSites + 2, owned));
+        quietly(() -> land.restoreSites(Resource.OIL, seaSites + 2, owned + PLENTY));
         Game.BuildResult two = quietlyGet(() -> g.buildStack(well, 2, true));
         Game.BuildResult third = quietlyGet(() -> g.buildStack(well, 1, false));
         report("with two dry sites beside the sea's, two wells stand and a third is refused",
@@ -409,9 +422,9 @@ public class WellCheck {
                         && two == Game.BuildResult.SUCCESS && third == Game.BuildResult.NO_DEPOSIT && g.wellsCommitted() == 2,
                 two + ", " + third);
 
-        // ...and those two dry sites taken away again: the wells now stand past the dry sites, as a save from before 0.7.84
-        // carries wells on the sea's.
-        quietly(() -> land.restoreSites(Resource.OIL, seaSites, owned));
+        // ...and those two dry sites taken away again, their oil left in the ground pool: the wells now stand past the dry
+        // sites, as a save from before 0.7.84 carries wells on the sea's.
+        quietly(() -> land.restoreSites(Resource.OIL, seaSites, owned + PLENTY));
         double world = land.getWorldTotal(Resource.OIL);
         boolean kept = true, standing = true;
         for (int m = 0; m < 6; m++) {
@@ -683,18 +696,25 @@ public class WellCheck {
             g.simulateMonths(1);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.fillReserve(FILL);
-            g.simulateMonths(1);
         });
+        double groundBefore = land.getOilExtractedOnGround(), seaBefore = land.getOilExtractedAtSea();
+        quietly(() -> g.simulateMonths(1));
         o = wells.output(Good.CRUDE);
-        double sea = wells.getCapacityAtSea(), all = wells.getCapacity(Good.CRUDE);
+        // ...the month's crude by pool (0.7.93): the platforms' from the offshore pool, the land wells' from the ground's.
+        double sea = wells.getLiftedAtSea(), onGround = wells.getLiftedOnGround();
         GoodsMarket crude = g.getMarkets().get(Good.CRUDE);
         double freight = Good.CRUDE.baseFreight() * crude.getFreightFactor() * crude.getExchangeRate();
-        double home = Math.min(o.soldLocal, o.produced), tonnes = home * (sea / all), bill = tonnes * freight;
-        report("with the city's reserve filling, the crude ashore is the sea's share of the lift sold at home - the platforms' and"
-                        + " two land wells'",
+        double home = Math.min(o.soldLocal, o.produced), tonnes = home * (sea / (onGround + sea)), bill = tonnes * freight;
+        report("with the city's reserve filling, the crude ashore is the offshore pool's share of the month's lift sold at home -"
+                        + " the platforms' and two land wells' (0.7.93; the platforms' share of the nameplate until then)",
                 stood[0] == Game.BuildResult.SUCCESS && stood[1] == Game.BuildResult.SUCCESS
-                        && home > 0 && sea > 0 && sea < all && wells.getShuttleTonnes() == tonnes,
-                String.format("%,.3f t of %,.3f sold at home, %.4f at sea", tonnes, home, sea / all));
+                        && home > 0 && sea > 0 && onGround > 0 && wells.getShuttleTonnes() == tonnes,
+                String.format("%,.3f t of %,.3f sold at home, %.4f at sea", tonnes, home, sea / (onGround + sea)));
+        report("...each part what left its pool: the platforms' the offshore pool's E, the land wells' the ground's, the two the"
+                        + " month's crude",
+                close(sea, land.getOilExtractedAtSea() - seaBefore) && close(onGround, land.getOilExtractedOnGround() - groundBefore)
+                        && onGround + sea == o.produced,
+                String.format("%,.6f t at sea, %,.6f on the ground", sea, onGround));
         report("...at CRUDE's band freight a tonne, baseFreight x freightFactor x the rate, to the bit",
                 wells.shuttleFreightPerTonne() == freight && wells.getShuttleBill() == bill,
                 String.format("%,.4f a tonne, %,.4f", freight, bill));
@@ -879,5 +899,205 @@ public class WellCheck {
         report("once the oil is worked out, the jacket with no well is decommissioned, and with none left the pipe",
                 wells.jacketsStanding() == 0 && wells.pipeKmStanding() == 0 && wells.platformWellsStanding() == 0,
                 wells.jacketsStanding() + " jacket(s), " + wells.pipeKmStanding() + " km");
+    }
+
+    /* ============================ 13. THE TWO POOLS (0.7.93) ============================ */
+
+    /** Section 13's ground pool: two months of a land well's nameplate, so it is worked out inside the months the section runs. */
+    static final double GROUND = 2 * WELL_TONNES;
+
+    /** Section 13's offshore pool left for its other half: less than a month of the platform wells' lift, so it is worked out in one. */
+    static final double LAST_AT_SEA = 100;
+
+    /** Whether two figures agree but for a rounding: within a billionth of the larger, or of a tonne. */
+    static boolean close(double a, double b) {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    /** The value of the line of `lines` with this label, or null. */
+    static String lineValue(List<Sector.Line> lines, String label) {
+        for (Sector.Line l : lines) if (label.equals(l.label())) return l.value();
+        return null;
+    }
+
+    /** Months played until a pool is worked out to the tonne's last bit (left == 0), at most `most`; the months played. */
+    static int untilWorkedOut(Game g, java.util.function.DoubleSupplier left, int most) {
+        int m = 0;
+        while (left.getAsDouble() > 0 && m < most) {
+            quietly(() -> g.simulateMonths(1));
+            m++;
+        }
+        return m;
+    }
+
+    static void theTwoPools() throws Exception {
+        out.println("\n--- 13. the city's crude is two pools: the land wells lift the ground's, the platform wells the sea's (0.7.93) ---");
+        Game g = seaTown("wellcheck-pools");
+        if (g == null) {
+            report("fixture: the town buys the ground over the sea field", false, "could not");
+            return;
+        }
+        Deposit d = seaField();
+        LandManager land = g.getLandManager();
+        Oil wells = g.getSectors().oil();
+        BuildingsTemplate jacket = template(g, "Offshore Platform"), seaWell = template(g, "Platform Well"), landWell = template(g, "Oil Well");
+        int seaSites = land.getSites(Resource.OIL, false);
+        double bought = g.getCityLand().purchasedAmount(Resource.OIL);
+        // Two dry sites handed to the centre with GROUND by fiat - the ground pool - beside the sea field the town bought.
+        quietly(() -> land.restoreSites(Resource.OIL, seaSites + 2, bought + GROUND));
+        double ground = land.getOilOwnedOnGround(), sea = land.getOilOwnedAtSea();
+        report("the offshore pool is the sea field's tonnes, the ground pool the rest - the centre's by fiat - and the two the city's"
+                        + " oil",
+                sea == d.amount() && close(ground, GROUND) && close(ground + sea, land.getOwnedAmount(Resource.OIL))
+                        && land.getSites(Resource.OIL, true) == 2 && seaSites == d.sites() && land.getOilExtractedOnGround() == 0
+                        && land.getOilExtractedAtSea() == 0,
+                String.format("%,.3f t at sea, %,.3f on the ground", sea, ground));
+
+        // A jacket on the field, a platform well in all but one of its slots, a land well on one of the two dry sites.
+        Game.BuildResult[] stood = new Game.BuildResult[3];
+        quietly(() -> {
+            stood[0] = g.buildStack(jacket, 1, true);
+            g.simulateMonths(1);
+            stood[1] = g.buildStack(seaWell, d.sites() - 1, true);
+            stood[2] = g.buildStack(landWell, 1, true);
+        });
+        report("fixture: a jacket on the field with a well in all but one slot, a land well on one of the two dry sites",
+                stood[0] == Game.BuildResult.SUCCESS && stood[1] == Game.BuildResult.SUCCESS && stood[2] == Game.BuildResult.SUCCESS
+                        && wells.platformWellsStanding() == d.sites() - 1 && wells.landWellsStanding() == 1,
+                stood[0] + ", " + stood[1] + ", " + stood[2]);
+        double world = land.getWorldTotal(Resource.OIL);
+        boolean split = true, kept = true, apart = true;
+        int months = 0, workedOutAt = -1;
+        while (months < 12 && (workedOutAt < 0 || months < workedOutAt + 2)) {
+            double eg = land.getOilExtractedOnGround(), es = land.getOilExtractedAtSea();
+            quietly(() -> g.simulateMonths(1));
+            months++;
+            double dg = land.getOilExtractedOnGround() - eg, ds = land.getOilExtractedAtSea() - es;
+            split &= close(dg, wells.getLiftedOnGround()) && close(ds, wells.getLiftedAtSea()) && ds > 0
+                    && wells.getLiftedOnGround() + wells.getLiftedAtSea() == wells.output(Good.CRUDE).produced;
+            kept &= conserved(land, world);
+            if (workedOutAt >= 0) apart &= dg == 0 && wells.getLiftedOnGround() == 0 && ds > 0;
+            if (workedOutAt < 0 && land.getOilLeftOnGround() == 0) workedOutAt = months;
+        }
+        report("every month each pool gives its own wells' crude: the land well's what left the ground pool, the platforms' what"
+                        + " left the sea's, the two the month's crude",
+                split && months > 0, months + " month(s)");
+        report("the ground pool worked out, the land well lifts nothing while the platform wells lift on from the sea's",
+                workedOutAt > 0 && apart && land.getOilExtractedOnGround() == ground && land.getOilLeftAtSea() > 0,
+                String.format("worked out in month %d; %,.3f t lifted of the ground's %,.3f; %,.0f t left at sea", workedOutAt,
+                        land.getOilExtractedOnGround(), ground, land.getOilLeftAtSea()));
+        assertTrue("...and the world's oil is conserved, to the tonne, every month", kept);
+
+        // The gates, each kind on its own pool.
+        Game.BuildResult landRefused = quietlyGet(() -> g.buildStack(landWell, 1, false));
+        BuildCard.Verdict landCard = BuildCard.verdict(g, landWell, 1);
+        report("a land well is refused for its deposit with a dry site free - its pool worked out - on the order and the card",
+                g.sitesFor(landWell) - g.landWellsCommitted() == 1 && landRefused == Game.BuildResult.NO_DEPOSIT
+                        && landCard.kind() == BuildCard.VerdictKind.NO_DEPOSIT && g.remainingFor(landWell) == 0,
+                landRefused + ", " + landCard.kind());
+        report("...while a platform well into the free slot is let through, the offshore pool its own: the card's tonnes the sea's",
+                g.sitesFor(seaWell) - g.platformWellsCommitted() == 1 && g.hasDepositFor(seaWell, 1)
+                        && g.remainingFor(seaWell) == land.getOilLeftAtSea() && g.remainingFor(jacket) == land.getOilLeftAtSea(),
+                String.format("%,.0f t under the sea", g.remainingFor(seaWell)));
+        BusinessInvestment.Decision word = wells.planOnLand(g.getBusinessInvestment(), g);
+        report("...and the land's word says the oil on dry ground is worked out, a deposit's word (ORE)",
+                !word.build && word.reason.contains("dry ground") && word.reason.contains("worked out")
+                        && BuildCard.wordKind(word.reason) == BuildCard.WordKind.ORE,
+                "\"" + word.reason + "\"");
+
+        // The spare: the well over the worked-out pool.
+        double[] measure = wells.retirementDemandAndCapacity(g);
+        double capacity = wells.getCapacity(Good.CRUDE);
+        report("the land well over the worked-out pool is the spare - the platforms' lift the demand, the whole the capacity - and"
+                        + " the shrinking rules may sell it and not a platform's",
+                measure != null && measure[1] == capacity && close(measure[0], wells.getCapacityAtSea()) && measure[0] < capacity
+                        && wells.mayRetire(landWell) && !wells.mayRetire(seaWell),
+                measure == null ? "none" : String.format("%,.1f against %,.1f", measure[0], measure[1]));
+
+        // The Oil page: each pool its line.
+        List<Sector.Line> lines = wells.ownLines(g);
+        String onGroundLine = lineValue(lines, "Crude in the ground"), atSeaLine = lineValue(lines, "Crude under the sea");
+        report("the Oil page shows both pools: the ground's in \"Crude in the ground\", the sea's in the At sea lines'"
+                        + " \"Crude under the sea\"",
+                (Formats.INSTANCE.count(0) + " t").equals(onGroundLine)
+                        && (Formats.INSTANCE.count(land.getOilLeftAtSea()) + " t").equals(atSeaLine),
+                onGroundLine + " / " + atSeaLine);
+
+        // The map greys each pool apart.
+        double[] byHolding = land.remainingByHolding(Resource.OIL);
+        double sum = 0, most = 0;
+        for (double v : byHolding) {
+            sum += v;
+            most = Math.max(most, v);
+        }
+        report("the map greys each pool apart: the centre's ground oil worked out, the sea field's holding its pool's left, the"
+                        + " holdings' the two pools'",
+                byHolding[0] == 0 && close(most, land.getOilLeftAtSea()) && close(sum, land.getRemaining(Resource.OIL)),
+                String.format("centre %,.0f, the field's %,.0f, all %,.0f", byHolding[0], most, sum));
+
+        // Across a save, and a save from before the pools.
+        GameFiles files = FILES.get(g);
+        quietly(() -> g.saveGame(10, "pools"));
+        Game twin = new Game(files);
+        quietly(() -> twin.loadGameSave(10));
+        LandManager tl = twin.getLandManager();
+        report("the two pools' E cross a save, to the bit",
+                twin.getLoadFailure() == null && tl.getOilExtractedOnGround() == land.getOilExtractedOnGround()
+                        && tl.getOilExtractedAtSea() == land.getOilExtractedAtSea() && land.getOilExtractedAtSea() > 0
+                        && tl.getOilLeftAtSea() == land.getOilLeftAtSea(),
+                String.format("%,.6f / %,.6f t", tl.getOilExtractedOnGround(), tl.getOilExtractedAtSea()));
+        Path file = files.saveFile(10);
+        com.google.gson.JsonObject o = com.google.gson.JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+        int oil = Resource.OIL.ordinal();
+        assertTrue("...saved in SAVE_FORMAT 35: the depletion's oil the ground pool's E, oilDepletionAtSea the sea's",
+                o.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && GameVersion.SAVE_FORMAT == LandManager.TWO_POOLS_FORMAT
+                        && o.getAsJsonArray("depletion").get(oil).getAsDouble() == land.getOilExtractedOnGround()
+                        && o.get("oilDepletionAtSea").getAsDouble() == land.getOilExtractedAtSea());
+        // As a format-34 save carries it: one pool's E - past the dry fields' tonnes by half the sea's - and none at sea.
+        double onePool = ground + sea / 2;
+        o.addProperty("saveFormat", LandManager.TWO_POOLS_FORMAT - 1);
+        o.remove("oilDepletionAtSea");
+        o.getAsJsonArray("depletion").set(oil, new com.google.gson.JsonPrimitive(onePool));
+        Files.writeString(file, new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(o));
+        Game old = new Game(files);
+        quietly(() -> old.loadGameSave(10));
+        LandManager ol = old.getLandManager();
+        report("a save from before the pools: its one pool's E charged to the ground, floored at the ground's tonnes, none to the"
+                        + " sea - the sea's oil whole",
+                old.getLoadFailure() == null && ol.getOilExtractedOnGround() == ol.getOilOwnedOnGround() && ol.getOilExtractedAtSea() == 0
+                        && ol.getOilLeftAtSea() == ol.getOilOwnedAtSea() && ol.getOilLeftOnGround() == 0 && conserved(ol, world),
+                String.format("%,.0f t lifted as one pool: %,.0f on the ground, %,.0f at sea", onePool, ol.getOilExtractedOnGround(),
+                        ol.getOilExtractedAtSea()));
+        quietly(() -> old.simulateMonths(1));
+        assertTrue("...a month on, the world's oil conserved and the audit closing", conserved(ol, world)
+                && old.getLastMoneyAudit().relative() < 1e-10);
+        o.getAsJsonArray("depletion").set(oil, new com.google.gson.JsonPrimitive(ground / 2));
+        Files.writeString(file, new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(o));
+        Game half = new Game(files);
+        quietly(() -> half.loadGameSave(10));
+        report("...and one that lifted less than the dry fields hold charges it all to the ground",
+                half.getLoadFailure() == null && half.getLandManager().getOilExtractedOnGround() == ground / 2
+                        && half.getLandManager().getOilExtractedAtSea() == 0,
+                String.format("%,.3f t on the ground", half.getLandManager().getOilExtractedOnGround()));
+
+        // The other way: the ground refilled, and the offshore pool left LAST_AT_SEA (the load's setter).
+        quietly(() -> {
+            land.restoreSites(Resource.OIL, seaSites + 2, bought + PLENTY);
+            land.restoreOilPools(sea - LAST_AT_SEA);
+        });
+        double groundStart = land.getOilExtractedOnGround();
+        int played = untilWorkedOut(g, land::getOilLeftAtSea, 3);
+        report("the offshore pool's last 100 t: the platforms lift those and no more, the land well its month from the ground's",
+                played == 1 && land.getOilLeftAtSea() == 0 && wells.getLiftedAtSea() == LAST_AT_SEA && wells.getLiftedOnGround() > 0
+                        && land.getOilExtractedOnGround() - groundStart == wells.getLiftedOnGround(),
+                String.format("%d month(s): %,.3f t at sea, %,.3f on the ground", played, wells.getLiftedAtSea(), wells.getLiftedOnGround()));
+        double[] seaSpare = wells.retirementDemandAndCapacity(g);
+        Game.BuildResult seaRefused = quietlyGet(() -> g.buildStack(seaWell, 1, false));
+        report("...the sea worked out: the platform wells the spare and the land well kept, a platform well refused for its deposit"
+                        + " with its slot free, a jacket too",
+                seaSpare != null && close(seaSpare[0], seaSpare[1] - wells.getCapacityAtSea()) && wells.mayRetire(seaWell)
+                        && !wells.mayRetire(landWell) && seaRefused == Game.BuildResult.NO_DEPOSIT && !g.hasDepositFor(jacket, 1)
+                        && g.remainingFor(landWell) == land.getOilLeftOnGround() && land.getOilLeftOnGround() > 0,
+                seaRefused + (seaSpare == null ? "; none" : String.format("; %,.1f against %,.1f", seaSpare[0], seaSpare[1])));
     }
 }

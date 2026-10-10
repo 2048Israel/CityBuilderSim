@@ -291,6 +291,9 @@ public final class Rail extends Sector {
 
     /** The part of the month's fuel the world sold it (0.7.62). */
     private double rFuelImported;
+
+    /** ...and the month's diesel in litres, and the litres of it the world sold (0.7.95, batch O11: the refinery's pictogram's railway). Not saved: none after a load until the next haul. */
+    private double rFuelLitres, rFuelLitresImported;
     private double rCapacity, rTightness, rFx = 1, rAllowed;
 
     /**
@@ -450,6 +453,8 @@ public final class Rail extends Sector {
         rHaulage = haulage;
         rFuel = fuel;
         rFuelImported = took.importCost();
+        rFuelLitres = took.units();
+        rFuelLitresImported = took.imported();
         rHauled = moved;
         rPaidAbroad = abroad;
         abroadKnown = allowedKnown = true;
@@ -658,6 +663,12 @@ public final class Rail extends Sector {
 
     /** ...and the part of it bought from the world (0.7.62): all of it with no refinery in the city. */
     public double getFuelImported()     { return rFuelImported; }
+
+    /** The litres of diesel the last haul drew (0.7.95): its tonnes at FUEL_LITRES_PER_TONNE; none after a load until the next. */
+    public double getFuelLitres()         { return rFuelLitres; }
+
+    /** ...and the litres of it the world sold, the refiners' tanks having none left (Markets.draw()). */
+    public double getFuelLitresImported() { return rFuelLitresImported; }
 
     /**
      * What a month has to bring in: everything it costs to run, plus the return
@@ -978,6 +989,7 @@ public final class Rail extends Sector {
         fleetKnown = false;
         java.util.Arrays.fill(carried, 0);
         rTonnes = rCrossed = rHauled = rCapacity = rTightness = rTruckBill = rOfferedBill = rHaulage = rFuel = rFuelImported = 0;
+        rFuelLitres = rFuelLitresImported = 0;
         rAllowed = rPaidAbroad = 0;
         allowedKnown = abroadKnown = true;
     }

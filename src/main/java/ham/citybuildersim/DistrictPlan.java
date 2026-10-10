@@ -3,7 +3,6 @@ package ham.citybuildersim;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.PriorityQueue;
 
 /**
  * One district's street plan: from its ground, the buildings and road plots the city map gives it and the city's highway and railway plots through it, the cells it opens and the layout of each, every street with its kind and width, and a box for every building - the same plan from the same inputs on any machine.
@@ -126,6 +125,29 @@ import java.util.PriorityQueue;
  * once the JVM is warm (30 at 0.7.88; batch RD3), about 22 with ESTATE
  * LINES' layouts worked out (batch RD5).
  *
+ * SPEED (0.7.94, batch RD7). PlanCheck's 40 ms bound on the dense screen's
+ * slowest district failed about half its runs on a two-core machine: its
+ * districts are timed seconds into a run, while the compiler is still busy
+ * with the dense city just built, and the planner's long loops ran in the
+ * interpreter after their compiled code was given up for an input it had not
+ * seen (a highway at the frame's edge, fresh water down a column, a cut
+ * cell's dead end). The same plans, made with less and more steadily:
+ *   KEPT    each thread's builder and its ladder's turns kept from plan to
+ *           plan (a dense plan made 11.6 MB for the collector, now 1.2);
+ *   SKIP    a building looks first in the cell its shape may still fit;
+ *   BITS    a cell's free rows as it opens, a dead end's row, the verges
+ *           (VERGES), each plot's rules (LAY CODES) and the streets the
+ *           join, the parting and the surface walk (THE STREETS IN ORDER)
+ *           read from bits a row, not plot by plot over the frame;
+ *   NEAR    a merge's or a closed spine's split looked for near the box
+ *           first, a target missed walked from (splits());
+ *   CALLS   the long loops a call a row (THE GROUND, A ROW AT A TIME), a
+ *           building (placeOne()) or a step of a walk: a method called
+ *           thousands of times a plan is compiled, and compiled again after
+ *           a new input's turn, far sooner than one long loop.
+ * The dense screen's slowest district, measured as PlanCheck measures it in
+ * ten runs alone: 26 to 43 ms at 0.7.93 (3 over 40), 17 to 26 ms now.
+ *
  * SEAMS. The arterial on a district's edge is drawn when the cell on either
  * side is open, so both districts may lay it. Its surface is the district's
  * that comes first in the map's order (CityMap.DISTRICT_ORDER, nearest the
@@ -138,7 +160,8 @@ import java.util.PriorityQueue;
  * before it in the map's order) and it surfaces the plot from the road its
  * own streets leave over, half width and then full, before the ladder.
  *
- * Pure: no state between calls, no clock read; hashes from the world's seed
+ * Pure: no state between calls that a plan reads (KEPT's arrays are filled
+ * afresh or stamped for each), no clock read; hashes from the world's seed
  * and the district's place. PlanCheck holds its rules.
  */
 public final class DistrictPlan {
@@ -479,7 +502,38 @@ public final class DistrictPlan {
      * plan_ladder, a step halved while it would leave a building out.
      */
     public static DistrictPlan make(Input in) {
-        Builder b = new Builder(in);
+        java.lang.ref.SoftReference<Builder> kept = BUILDERS.get();
+        Builder b = kept == null ? null : kept.get();
+        if (b == null || b.busy || b.worn()) {
+            Builder fresh = new Builder();
+            if (b == null || !b.busy) BUILDERS.set(new java.lang.ref.SoftReference<>(fresh));
+            b = fresh;
+        }
+        b.start(in);
+        try {
+            return ladder(b);
+        } finally {
+            b.finish();
+        }
+    }
+
+    /**
+     * KEPT (0.7.94, batch RD7): each thread's builder, its arrays - about
+     * 4 MB - and the ladder's turns - about 0.4 MB each, one a step of the
+     * longest chain it has climbed - made once and used plan after plan,
+     * rather than made and collected with every plan (a dense plan made
+     * about 11.6 MB of them; now about 1.2 MB, mostly the plan itself). Held
+     * softly, so the collector may take it back when memory is short; the
+     * next plan makes another. Every array a plan reads is filled afresh for
+     * it, or stamped (walks, SCAN, the touch rows by width) with a count that
+     * only grows; a builder whose counts have grown large is replaced
+     * (worn()). So a plan is the plan a new builder makes: the same inputs,
+     * the same plan, whatever was planned before.
+     */
+    private static final ThreadLocal<java.lang.ref.SoftReference<Builder>> BUILDERS = new ThreadLocal<>();
+
+    /** The ladder (make()) on builder b, started on its input. */
+    private static DistrictPlan ladder(Builder b) {
         DistrictPlan p = b.build(0, 0, Integer.MAX_VALUE, null, null, false, null);
         int builds = 1;
         double s = p.surplus;
@@ -506,6 +560,8 @@ public final class DistrictPlan {
                 } else {
                     byHomes = nBl == 0;
                     at = chain(k, byHomes);
+                    // The last chain's turns are done with: theirs are this chain's to fill (KEPT).
+                    b.freeTurns();
                     turns = new Turn[at.length];
                     p2 = b.build(nSq, nBl, limit, null, at, byHomes, turns);
                 }
@@ -540,26 +596,62 @@ public final class DistrictPlan {
      * step without its square (the `homes`-th homes cell). The two builds are
      * one until that cell, so the later step goes on from here rather than
      * from the start: the same plan, 0.7.88's build for build. Walks' marks
-     * and SCAN's rows are stamped and start afresh.
+     * and SCAN's rows are stamped and start afresh. Since 0.7.94 a builder
+     * keeps its turns and fills them again chain after chain (KEPT); the
+     * lists of shapes a cell holds none of are kept to their counts, all a
+     * build reads of them.
      */
     static final class Turn {
         int g, i, kNext, opened, homes, placed, nMine, nShared;
         boolean exhausted;
-        int[] mine, occ, px, py, pw, ph, pt, fails, failsF, mergeFails, cellRank;
+        int[] mine, px, py, pw, ph, pt, fails, failsF, mergeFails, cellRank;
+        byte[] occ;
         boolean[] str, art, under, blvd, reachStale, cellCut, holdsNone, cellAcross, cellSquare, cellBoulevard, cellMerged;
         byte[] role, cellKind;
         int[] cellStreets;
         long[] rowBits;
         int[][] free, freeF, near, touch, failW, failH, failFW, failFH, mergeFailW, mergeFailH;
-        List<int[]> unplacedAt;
+        final List<int[]> unplacedAt = new ArrayList<>();
         int shoreJoins, strays, mergesRefused, onFields;
     }
 
-    /** Each row of rows copied (a null row kept null). */
-    static int[][] copyRows(int[][] rows) {
-        int[][] out = new int[rows.length][];
-        for (int r = 0; r < rows.length; r++) out[r] = rows[r] == null ? null : rows[r].clone();
-        return out;
+    /** src's first n into dst, a new array where dst is null or shorter (KEPT): dst, or the array made. */
+    static int[] copyInto(int[] src, int n, int[] dst) {
+        if (dst == null || dst.length < n) dst = new int[Math.max(n, src.length)];
+        System.arraycopy(src, 0, dst, 0, n);
+        return dst;
+    }
+
+    static byte[] copyInto(byte[] src, byte[] dst) {
+        if (dst == null || dst.length != src.length) dst = new byte[src.length];
+        System.arraycopy(src, 0, dst, 0, src.length);
+        return dst;
+    }
+
+    static boolean[] copyInto(boolean[] src, boolean[] dst) {
+        if (dst == null || dst.length != src.length) dst = new boolean[src.length];
+        System.arraycopy(src, 0, dst, 0, src.length);
+        return dst;
+    }
+
+    static long[] copyInto(long[] src, long[] dst) {
+        if (dst == null || dst.length != src.length) dst = new long[src.length];
+        System.arraycopy(src, 0, dst, 0, src.length);
+        return dst;
+    }
+
+    /** Each row of rows into dst's (rows all made: a cell's free, reach or touch rows). */
+    static int[][] copyRows(int[][] rows, int[][] dst) {
+        if (dst == null) dst = new int[rows.length][];
+        for (int r = 0; r < rows.length; r++) dst[r] = copyInto(rows[r], rows[r].length, dst[r]);
+        return dst;
+    }
+
+    /** Each cell's list of shapes, its first counts[c] of them, into dst's (a list with none left as it is: a build makes it afresh before it adds one). */
+    static int[][] copyLists(int[][] lists, int[] counts, int[][] dst) {
+        if (dst == null) dst = new int[lists.length][];
+        for (int c = 0; c < lists.length; c++) if (counts[c] > 0) dst[c] = copyInto(lists[c], counts[c], dst[c]);
+        return dst;
     }
 
     /* =====================================================================
@@ -567,9 +659,12 @@ public final class DistrictPlan {
        ===================================================================== */
 
     private static final class Builder {
-        final Input in;
-        final boolean proto;
-        final Hashes hash;
+        /** The plan's input, its rules and hashes: set by start() for each plan (KEPT). */
+        Input in;
+        boolean proto;
+        Hashes hash;
+        /** Whether a plan is being made on it: a make() within a make() is given a builder of its own. */
+        boolean busy;
         /** Dry owned ground: grass, forest or sand. */
         final boolean[] dry = new boolean[AREA];
         /** Plots no building may take: not dry, a highway, its verge (H5), track, a mine's site; and a field, until the last pass. */
@@ -582,15 +677,18 @@ public final class DistrictPlan {
         final short[] hRun = new short[AREA], vRun = new short[AREA];
         /** Each cell's interior plots no building is barred from (not `blocked`), a bit a plot by row as free[] holds them: a cell's free ground until it opens (0.7.90, ESTATE LINES). */
         final int[][] openRows = new int[CELLS][INTERIOR];
+        /** ...and its field plots a building may take once nothing else holds it (fieldOk), likewise (0.7.94, BITS). */
+        final int[][] fieldRows = new int[CELLS][INTERIOR];
         /** The cells in the order they open (spec 2.4), each ci + cj x 8. */
-        final int[] order;
+        int[] order;
         /** Each band's buildings in the order placed: type id, across, down. */
         final int[][] bandType = new int[3][], bandW = new int[3][], bandH = new int[3][];
         /** The first band's slots (MIXED_SLOT). */
         int mixedSlots;
 
         // ---- one build's state
-        final int[] occ = new int[AREA];
+        /** Each plot: -1 no building may stand there (blocked, or a street), 0 free, 1 a building's (since 0.7.94 a byte: no reader asks which building). */
+        final byte[] occ = new byte[AREA];
         final boolean[] str = new boolean[AREA], art = new boolean[AREA], under = new boolean[AREA], blvd = new boolean[AREA];
         final byte[] role = new byte[AREA];
         final int[][] free = new int[CELLS][INTERIOR], near = new int[CELLS][INTERIOR], touch = new int[CELLS][INTERIOR];
@@ -610,7 +708,6 @@ public final class DistrictPlan {
         int nChanged;
         /** A dead end's stub, while the cut's join looks for its neighbour. */
         final boolean[] stub = new boolean[AREA];
-        final List<Integer> stubPlots = new ArrayList<>();
         /** Whether each cell's layout was laid whole, or the ground cut it (a plot refused): only a cut cell's merge can part the network. */
         final boolean[] cellCut = new boolean[CELLS];
         boolean refused;
@@ -661,7 +758,17 @@ public final class DistrictPlan {
             failsF[c] = 0;
             Arrays.fill(holdsNone, c * nShapes, (c + 1) * nShapes, false);
             Arrays.fill(holdsNone, (CELLS + c) * nShapes, (CELLS + c + 1) * nShapes, false);
+            Arrays.fill(skipFrom, 0);
         }
+
+        /**
+         * SKIP (0.7.94): for each shape (shapeSlot), how far into its band's
+         * cells the table (holdsNone, without fields) says no cell holds a box
+         * of it - every cell before is known to hold none - so a building looks
+         * from there. Kept while the table only grows; started again with a
+         * band, and when a cell's entries are forgotten.
+         */
+        int[] skipFrom;
         /** Each cell's touch and reach rows over a box's width, by width, kept until its reach moves: worked out again when its epoch (anyAt) is not the cell's (anyEpoch; 0.7.89, the arrays kept from build to build). */
         final int[][][] anyT = new int[CELLS][INTERIOR + 1][], anyN = new int[CELLS][INTERIOR + 1][];
         final int[][] anyAt = new int[CELLS][INTERIOR + 1];
@@ -671,62 +778,69 @@ public final class DistrictPlan {
         /** shore()'s walk over a cell's ring box: where each plot was reached from, and the queue (kept, as reachRows). */
         int[] shoreFrom, shoreQueue;
 
-        Builder(Input in) {
+        /** A builder, its arrays made: start() sets it on a plan's input. */
+        Builder() { }
+
+        /** Whether a count it stamps with has grown so far it could come round (KEPT): replaced by a new builder before the next plan. */
+        boolean worn() {
+            int most = Math.max(Math.max(Math.max(stamp, tryStamp), Math.max(targetStamp, scanClock)), Math.max(shoreStamp, joinStamp));
+            for (int c = 0; c < CELLS; c++) most = Math.max(most, anyEpoch[c]);
+            return most > WORN;
+        }
+
+        /** The stamps' ceiling: a builder is replaced past it, half the int's range, far beyond what a plan stamps (a dense plan some tens of thousands). */
+        static final int WORN = 1 << 30;
+
+        /** The plan of input `in` begun on this builder (KEPT): every array its plan reads of the ground filled afresh - what the constructor did until 0.7.93. */
+        void start(Input in) {
+            busy = true;
             this.in = in;
             this.proto = in.asPrototype;
             this.hash = in.hashes != null ? in.hashes : worldHashes(in.seed, in.x0, in.y0);
-            for (int p = 0; p < AREA; p++) {
-                byte t = in.terrain[p];
-                dry[p] = in.owned[p] && (t == World.GRASS || t == World.FOREST || t == World.SAND);
-            }
-            for (int p = 0; p < AREA; p++) blocked[p] = !dry[p] || in.fixed[p] != 0 || in.site[p] != 0;
-            // H5: no building plot touches a highway plot, on a side or at a corner.
-            for (int p = 0; p < AREA; p++) {
-                if (in.fixed[p] != FIXED_HIGHWAY) continue;
-                int x = p % FRAME, y = p / FRAME;
-                for (int dy = -1; dy <= 1; dy++) {
-                    for (int dx = -1; dx <= 1; dx++) {
-                        int ax = x + dx, ay = y + dy;
-                        if (ax >= 0 && ay >= 0 && ax < FRAME && ay < FRAME) blocked[ay * FRAME + ax] = true;
-                    }
-                }
-            }
-            for (int y = 0; y < FRAME; y++) {
-                for (int x = 0; x < FRAME; ) {
-                    int p = y * FRAME + x;
-                    if (in.terrain[p] != World.FRESH) { x++; continue; }
-                    int e = x;
-                    while (e + 1 < FRAME && in.terrain[p + e + 1 - x] == World.FRESH) e++;
-                    for (int m = x; m <= e; m++) hRun[y * FRAME + m] = (short) (e - x + 1);
-                    x = e + 1;
-                }
-            }
-            for (int x = 0; x < FRAME; x++) {
-                for (int y = 0; y < FRAME; ) {
-                    if (in.terrain[y * FRAME + x] != World.FRESH) { y++; continue; }
-                    int e = y;
-                    while (e + 1 < FRAME && in.terrain[(e + 1) * FRAME + x] == World.FRESH) e++;
-                    for (int m = y; m <= e; m++) vRun[m * FRAME + x] = (short) (e - y + 1);
-                    y = e + 1;
-                }
-            }
-            for (int p = 0; p < AREA; p++) {
-                if (proto || in.site[p] != SITE_FIELD || !dry[p] || in.fixed[p] != 0 || verge(p)) continue;
-                int x = p % FRAME, y = p / FRAME;
-                if (x % CELL == 0 || y % CELL == 0 || x >= SIDE || y >= SIDE) continue;
-                fieldOk[p] = true;
-                cellField[(x / CELL) + (y / CELL) * CELLS_A_SIDE] = true;
-            }
+            turnsUsed = 0;
+            cutLines.clear();
+            Arrays.fill(cellField, false);
             for (int c = 0; c < CELLS; c++) {
-                int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
-                for (int j = 0; j < INTERIOR; j++) {
-                    int bits = 0, base = (y0 + j) * FRAME + x0;
-                    for (int i = 0; i < INTERIOR; i++) if (!blocked[base + i]) bits |= 1 << i;
-                    openRows[c][j] = bits;
-                }
+                Arrays.fill(free[c], 0);
+                Arrays.fill(freeF[c], 0);
             }
+            // THE GROUND, A ROW AT A TIME (0.7.94, batch RD7): dry, barred, the highways' and the parted streets' plots as bits
+            // a row, and the plots of the city's runs; then H5's verges from the highways' bits (VERGES), the fresh water's runs,
+            // each plot's lay code, the fields and the cells' rows - the same arrays 0.7.93 made plot by plot, made in fewer
+            // passes, with no look about each plot for the verge, and each pass a row (or a cell) a call: a method called
+            // hundreds of times a plan is compiled, and compiled again after a new input's turn, far sooner than one long loop.
+            Arrays.fill(hwRows, 0L);
+            Arrays.fill(paRows, 0L);
+            nHighway = 0;
+            nFixed = 0;
+            anyAnchor = false;
+            for (int y = 0; y < FRAME; y++) groundRow(y);
+            for (int y = 0; y < FRAME; y++) vergeWideRow(y);
+            for (int y = 0; y < FRAME; y++) vergeRow(y);
+            // Fresh water's runs along each row, and down each column read a row at a time (a column's run ends where its
+            // plot is not fresh water, or at the frame's last row): each plot of a run its length; a street refused along a
+            // run wider than its kind's bridge (LAY CODES).
+            for (int y = 0; y < FRAME; y++) freshRow(y);
+            Arrays.fill(runFrom, -1);
+            for (int y = 0; y < FRAME; y++) freshColumns(y);
+            freshColumnsEnd();
+            fixedCodes();
+            // The fields (spec 2.6), occ as a build begins, and each cell's rows of them (openRows, fieldRows) from the rows'
+            // bits of both.
+            Arrays.fill(openBits, 0L);
+            Arrays.fill(fieldBits, 0L);
+            for (int y = 0; y < FRAME; y++) fieldRow(y);
+            for (int c = 0; c < CELLS; c++) cellRows(c);
             order = growthOrder();
             bands();
+        }
+
+        /** The plan made: what it held of its input let go (KEPT). */
+        void finish() {
+            busy = false;
+            in = null;
+            hash = null;
+            cutLines.clear();
         }
 
         /* ------------------------------------------------ the growth order (spec 2.4) */
@@ -755,14 +869,18 @@ public final class DistrictPlan {
             if (start < 0) return new int[0];
             int[] out = new int[CELLS];
             int n = 0;
-            boolean[] seen = new boolean[CELLS];
-            PriorityQueue<Integer> heap = new PriorityQueue<>((a, b) -> dist[a] != dist[b] ? Double.compare(dist[a], dist[b])
-                    : a % CELLS_A_SIDE != b % CELLS_A_SIDE ? Integer.compare(a % CELLS_A_SIDE, b % CELLS_A_SIDE) : Integer.compare(a / CELLS_A_SIDE, b / CELLS_A_SIDE));
-            heap.add(start);
+            boolean[] seen = new boolean[CELLS], frontier = new boolean[CELLS];
+            frontier[start] = true;
             seen[start] = true;
             int[][] steps = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
-            while (!heap.isEmpty()) {
-                int c = heap.poll();
+            // Each next the frontier's nearest (its distance, then its column, then its row): the order the PriorityQueue
+            // it replaces (0.7.94) gave, cell for cell - no two cells tie - from a look over 64 cells, the JDK's queue code
+            // left to the orders of others.
+            while (true) {
+                int c = -1;
+                for (int k = 0; k < CELLS; k++) if (frontier[k] && (c < 0 || nearer(dist, k, c))) c = k;
+                if (c < 0) break;
+                frontier[c] = false;
                 out[n++] = c;
                 for (int[] s : steps) {
                     int ci = c % CELLS_A_SIDE + s[0], cj = c / CELLS_A_SIDE + s[1];
@@ -770,10 +888,17 @@ public final class DistrictPlan {
                     int nb = ci + cj * CELLS_A_SIDE;
                     if (!usable[nb] || seen[nb]) continue;
                     seen[nb] = true;
-                    heap.add(nb);
+                    frontier[nb] = true;
                 }
             }
             return Arrays.copyOf(out, n);
+        }
+
+        /** Whether cell a comes before cell b in the growth order: nearer the hub (with its nudge), then the west column, then the north row. */
+        static boolean nearer(double[] dist, int a, int b) {
+            if (dist[a] != dist[b]) return Double.compare(dist[a], dist[b]) < 0;
+            if (a % CELLS_A_SIDE != b % CELLS_A_SIDE) return a % CELLS_A_SIDE < b % CELLS_A_SIDE;
+            return a / CELLS_A_SIDE < b / CELLS_A_SIDE;
         }
 
         /* ------------------------------------------------ the bands (spec 2.4, R5, R6) */
@@ -783,8 +908,32 @@ public final class DistrictPlan {
             return t.cls() == BuildingVisual.INDUSTRY ? 1 : 0;
         }
 
+        /*
+         * THE CAMPUS (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's
+         * Q11; spec-roads-and-ports.md 2.8: "the refinery as a campus: an
+         * estate cell whose strips hold the units, a service street between
+         * them"). The city map deals the refinery's units to one district
+         * (CityMap's THE CAMPUS); here they are placed first of its industry,
+         * largest first, so they open the first estate cells - its crude units
+         * whole cells, its conversion units along the strips of the cells they
+         * open, the cell's streets laid to fit them (ESTATE LINES) - and the
+         * rest of industry follows, its small works in the gaps they leave
+         * (star O13-2). Once one unit stands, the next goes only to a cell
+         * one stands in or one touching it, side or corner, and opens the
+         * first such cell in the order when none has room (campusNext()):
+         * one campus. A district holding no unit sorts and places as it did,
+         * so its plan is the same plan, box for box.
+         */
+
+        /** The order of two types in a band: a refinery unit before anything else, else none (0). */
+        static int campusFirst(BuildingVisual.Type[] types, int a, int b) {
+            boolean ca = types[a] != null && types[a].campus(), cb = types[b] != null && types[b].campus();
+            return ca == cb ? 0 : ca ? -1 : 1;
+        }
+
         void bands() {
             BuildingVisual.Type[] types = in.types;
+            mixedSlots = 0;
             int[] fw = new int[types.length], fh = new int[types.length];
             List<int[]>[] lists = new List[3];
             for (int g = 0; g < 3; g++) lists[g] = new ArrayList<>();
@@ -796,9 +945,11 @@ public final class DistrictPlan {
                 lists[bandOf(types[t])].add(new int[] { t, in.counts[t] });
             }
             for (int g = 0; g < 3; g++) {
-                // Largest first, then by id: one entry a building.
+                // Largest first, then by id: one entry a building - in industry the refinery's units first of all (THE CAMPUS,
+                // 0.7.97), so they stand together in the first estate cells it opens; a district with none sorts as before.
                 List<int[]> l = lists[g];
-                l.sort((a, b) -> fw[a[0]] * fh[a[0]] != fw[b[0]] * fh[b[0]] ? Integer.compare(fw[b[0]] * fh[b[0]], fw[a[0]] * fh[a[0]]) : Integer.compare(a[0], b[0]));
+                l.sort((a, b) -> campusFirst(types, a[0], b[0]) != 0 ? campusFirst(types, a[0], b[0])
+                        : fw[a[0]] * fh[a[0]] != fw[b[0]] * fh[b[0]] ? Integer.compare(fw[b[0]] * fh[b[0]], fw[a[0]] * fh[a[0]]) : Integer.compare(a[0], b[0]));
                 int n = 0;
                 for (int[] e : l) n += e[1];
                 int[] ty = new int[n], slot = new int[n];
@@ -814,14 +965,13 @@ public final class DistrictPlan {
                         int st = (int) (hash.deal(e[0]) * n0);
                         for (int j = 0; j < e[1]; j++) slot[k++] = (st + j) % n0;
                     }
-                    Integer[] idx = new Integer[n];
-                    for (int i = 0; i < n; i++) idx[i] = i;
-                    final int[] tyF = ty, slotF = slot;
-                    Arrays.sort(idx, (a, b) -> slotF[a] != slotF[b] ? Integer.compare(slotF[a], slotF[b])
-                            : fw[tyF[a]] * fh[tyF[a]] != fw[tyF[b]] * fh[tyF[b]] ? Integer.compare(fw[tyF[b]] * fh[tyF[b]], fw[tyF[a]] * fh[tyF[a]])
-                            : Integer.compare(tyF[a], tyF[b]));
+                    // By slot, then largest first, then by id - a stable count by slot (0.7.94): ty[] is largest first and by id
+                    // already, so within a slot it stays in that order, as the sort it replaces put it.
+                    int[] at = new int[n0 + 1];
+                    for (int i = 0; i < n; i++) at[slot[i] + 1]++;
+                    for (int v = 0; v < n0; v++) at[v + 1] += at[v];
                     int[] t2 = new int[n];
-                    for (int i = 0; i < n; i++) t2[i] = ty[idx[i]];
+                    for (int i = 0; i < n; i++) t2[at[slot[i]]++] = ty[i];
                     ty = t2;
                 }
                 bandType[g] = ty;
@@ -848,6 +998,7 @@ public final class DistrictPlan {
                 shapeH[shapeSlot[k]] = k % (INTERIOR + 1);
             }
             holdsNone = new boolean[2 * CELLS * nShapes];
+            skipFrom = new int[nShapes];
             scanFrom = new int[2 * CELLS * nShapes];
             scanNFrom = new int[2 * CELLS * nShapes];
             scanEpochAt = new int[2 * CELLS * nShapes];
@@ -869,14 +1020,18 @@ public final class DistrictPlan {
             if (placedX == null || placedX.length < total) {
                 placedX = new int[total]; placedY = new int[total]; placedW = new int[total]; placedH = new int[total]; placedT = new int[total];
             }
-            int[] px = placedX, py = placedY, pw = placedW, ph = placedH, pt = placedT;
-            int placed, kNext, opened, homes, g0 = 0, i0 = 0;
-            boolean exhausted;
-            List<int[]> unplacedAt;
+            int g0 = 0, i0 = 0;
+            bOut = out;
+            bSquares = nSquare;
+            bBoulevards = nBlvd;
+            bLimit = limit;
+            bTurnAt = turnAt;
+            bTurns = turns;
+            bByHomes = byHomes;
             if (from == null) {
                 Arrays.fill(out.cellRank, -1);
                 // A field is blocked with the rest (blocked[] holds every site): a building takes one only with no other place.
-                for (int p = 0; p < AREA; p++) occ[p] = blocked[p] ? -1 : 0;
+                System.arraycopy(occStart, 0, occ, 0, AREA);
                 Arrays.fill(str, false);
                 Arrays.fill(rowBits, 0L);
                 Arrays.fill(cellCut, false);
@@ -895,146 +1050,237 @@ public final class DistrictPlan {
                     anyEpoch[c]++;
                     rescan(c);
                 }
-                placed = 0;
-                unplacedAt = new ArrayList<>();
-                kNext = 0;
-                opened = 0;
-                homes = 0;
-                exhausted = false;
+                bPlaced = 0;
+                bUnplaced = new ArrayList<>();
+                bNext = 0;
+                bOpened = 0;
+                bHomes = 0;
+                bExhausted = false;
             } else {
                 resume(from, out);
-                placed = from.placed;
-                unplacedAt = new ArrayList<>(from.unplacedAt);
-                kNext = from.kNext;
-                opened = from.opened;
-                homes = from.homes;
-                exhausted = from.exhausted;
+                bPlaced = from.placed;
+                bUnplaced = new ArrayList<>(from.unplacedAt);
+                bNext = from.kNext;
+                bOpened = from.opened;
+                bHomes = from.homes;
+                bExhausted = from.exhausted;
                 g0 = from.g;
                 i0 = from.i;
             }
             int[] over = new int[in.types.length];
-            // Each band's cells in the order opened (mine): for the outer kinds, industry's first - its first nShared - and
+            // Each band's cells in the order opened (bMine): for the outer kinds, industry's first - its first bNShared - and
             // then their own (SHARED ESTATES).
-            int[] mine = null;
-            int nMine = 0, nShared = 0;
-            boolean share = !proto && !in.bandsApart;
+            bMine = null;
+            bNMine = 0;
+            bNShared = 0;
+            bShare = !proto && !in.bandsApart;
             for (int g = g0; g < 3; g++) {
                 boolean resumed = from != null && g == g0;
                 if (resumed) {
-                    mine = from.mine.clone();
-                    nMine = from.nMine;
-                    nShared = from.nShared;
-                } else if (g == 2 && share) {
-                    nShared = nMine;
+                    bMine = from.mine.clone();
+                    bNMine = from.nMine;
+                    bNShared = from.nShared;
+                } else if (g == 2 && bShare) {
+                    bNShared = bNMine;
                 } else {
-                    mine = new int[CELLS];
-                    nMine = 0;
-                    nShared = 0;
+                    bMine = new int[CELLS];
+                    bNMine = 0;
+                    bNShared = 0;
                 }
-                int[] ty = bandType[g], ws = bandW[g], hs = bandH[g];
-                for (int i = resumed ? i0 : 0; i < ty.length; i++) {
-                    // Every cell opened: a later band can open none, so all its buildings go without a place - a step that
-                    // must leave out more than `limit` is known now. (Not the outer kinds while industry has cells: they may
-                    // take its leftover ground, SHARED ESTATES.)
-                    if (!exhausted && kNext >= order.length) {
-                        exhausted = true;
-                        long later = 0;
-                        for (int g2 = g + 1; g2 < 3; g2++) if (!(share && g == 1 && g2 == 2 && nMine > 0)) later += bandType[g2].length;
-                        if (unplacedAt.size() + later > limit) return null;
-                    }
-                    int w = ws[i], h = hs[i];
-                    boolean wide = g == 0 && Math.max(w, h) > BLOCK_DEPTH;
-                    // Wider than an estate's strip both ways (spec 2.3: a Livestock Farm, a Rail Terminal): the whole cell, its spine closed.
-                    boolean whole = g > 0 && Math.min(w, h) > MIDDLE && Math.max(w, h) <= INTERIOR;
-                    long best = -1;
-                    int cellAt = -1;
-                    // Gone on with from a turn: this building's look over its band's cells was made before it.
-                    boolean looked = resumed && i == i0;
-                    for (int m = nShared; m < nMine && best < 0 && !looked; m++) {
-                        int c = mine[m];
-                        best = tryPlace(c, w, h, false);
-                        if (best < 0 && wide && mergeFor(out, c, w, h)) best = tryPlace(c, w, h, false);
-                        if (best < 0 && whole && closeSpine(out, c)) best = tryPlace(c, w, h, false);
-                        if (best >= 0) cellAt = c;
-                    }
-                    while (best < 0 && kNext < order.length) {
-                        // A later step's turn: the cell about to open is the one it opens otherwise.
-                        if (turnAt != null && out.cellKind[order[kNext]] == CLOSED) {
-                            int at = byHomes ? (g == 0 ? homes : -1) : opened;
-                            for (int j = 0; j < turnAt.length; j++) {
-                                if (turnAt[j] == at && turns[j] == null) turns[j] = turn(out, g, i, kNext, opened, homes, placed, exhausted, mine, nMine, nShared, unplacedAt);
-                            }
-                        }
-                        int c = order[kNext++];
-                        if (out.cellKind[c] != CLOSED) continue;
-                        byte kind = g == 0 ? HOMES : ESTATE;
-                        boolean square = kind == HOMES && homes < nSquare;
-                        boolean bl = opened < nBlvd;
-                        openCell(out, c, kind, opened, square, bl, w, h);
-                        opened++;
-                        if (kind == HOMES) homes++;
-                        mine[nMine++] = c;
-                        best = tryPlace(c, w, h, false);
-                        if (best < 0 && wide && mergeFor(out, c, w, h)) best = tryPlace(c, w, h, false);
-                        if (best < 0 && whole && closeSpine(out, c)) best = tryPlace(c, w, h, false);
-                        if (best >= 0) cellAt = c;
-                    }
-                    // SHARED ESTATES (0.7.92): no cell left to open, an outer kind takes industry's leftover ground, its cells in the
-                    // order opened - an empty one whole, its streets closed, as its own.
-                    for (int m = 0; m < nShared && best < 0; m++) {
-                        int c = mine[m];
-                        best = tryPlace(c, w, h, false);
-                        if (best < 0 && whole && closeSpine(out, c)) best = tryPlace(c, w, h, false);
-                        if (best >= 0) cellAt = c;
-                    }
-                    // FIELDS (spec 2.6): a resource's sites are built on last - by a building nothing else holds, at its turn; in
-                    // the band's own cells first, then those it shares.
-                    for (int m = 0; m < nMine && best < 0; m++) {
-                        int c = mine[m < nMine - nShared ? nShared + m : m - (nMine - nShared)];
-                        if (!cellField[c]) continue;
-                        best = tryPlace(c, w, h, true);
-                        if (best >= 0) { cellAt = c; out.onFields++; }
-                    }
-                    if (best < 0) {
-                        unplacedAt.add(new int[] { g, i });
-                        if (unplacedAt.size() > limit) return null;
-                        continue;
-                    }
-                    int bx = (int) (best >>> 40 & 0xff), byy = (int) (best >>> 32 & 0xff);
-                    boolean turned = (best & 1) != 0;
-                    int bw = turned ? h : w, bh = turned ? w : h;
-                    int x = CELL * (cellAt % CELLS_A_SIDE) + 1 + bx, y = CELL * (cellAt / CELLS_A_SIDE) + 1 + byy;
-                    put(cellAt, x, y, bw, bh, placed + 1);
-                    px[placed] = x; py[placed] = y; pw[placed] = bw; ph[placed] = bh; pt[placed] = ty[i];
-                    placed++;
-                }
+                // A band's list of cells is its own: SKIP's places in it start again.
+                Arrays.fill(skipFrom, 0);
+                int n = bandType[g].length;
+                // Gone on with from a turn: the first building's look over its band's cells was made before it.
+                for (int i = resumed ? i0 : 0; i < n; i++) if (placeOne(g, i, resumed && i == i0)) return let(null);
             }
-            for (int[] u : unplacedAt) over[bandType[u[0]][u[1]]]++;
+            int placed = bPlaced;
+            for (int[] u : bUnplaced) over[bandType[u[0]][u[1]]]++;
             // ONE NETWORK: the pieces joined along the lattice, and to the districts before it (spec 2.4, "Across districts").
             out.joins = join();
             partedOutCount = 0;
             out.joinsOut = joinOut();
             out.partedOut = partedOutCount;
-            out.cellsOpen = opened;
-            out.homesCells = homes;
+            out.cellsOpen = bOpened;
+            out.homesCells = bHomes;
             out.squares = nSquare;
             out.boulevards = nBlvd;
             out.buildings = placed;
-            out.bx = Arrays.copyOf(px, placed);
-            out.by = Arrays.copyOf(py, placed);
-            out.bw = Arrays.copyOf(pw, placed);
-            out.bh = Arrays.copyOf(ph, placed);
-            out.btype = Arrays.copyOf(pt, placed);
+            out.bx = Arrays.copyOf(placedX, placed);
+            out.by = Arrays.copyOf(placedY, placed);
+            out.bw = Arrays.copyOf(placedW, placed);
+            out.bh = Arrays.copyOf(placedH, placed);
+            out.btype = Arrays.copyOf(placedT, placed);
             out.overflow = over;
             out.mixedSlots = mixedSlots;
             surface(out);
             markParted(out);
-            return out;
+            return let(out);
         }
+
+        /** A build's plan returned, what the build held let go (its turns, its plan so far). */
+        DistrictPlan let(DistrictPlan p) {
+            bOut = null;
+            bTurns = null;
+            bTurnAt = null;
+            bUnplaced = null;
+            return p;
+        }
+
+        /*
+         * A BUILD'S RUNNING STATE (0.7.94, batch RD7): what build() kept in
+         * its locals until 0.7.93 - the plan so far, the ladder's step, the
+         * buildings placed, the next cell in the order, the cells opened and
+         * homes cells, whether every cell is open, those without a place,
+         * the band's cells (SHARED ESTATES) - held here, so that each
+         * building is placed by a call of its own (placeOne()): a method
+         * called thousands of times a plan is compiled, and compiled again
+         * after a new input's turn, far sooner than one long loop.
+         */
+        DistrictPlan bOut;
+        int bSquares, bBoulevards, bLimit, bPlaced, bNext, bOpened, bHomes, bNMine, bNShared;
+        boolean bExhausted, bShare, bByHomes;
+        int[] bMine, bTurnAt;
+        Turn[] bTurns;
+        List<int[]> bUnplaced;
+
+        /** Building i of band g placed (`looked`: gone on with from a turn, its look over its band's cells made before it): whether the build is to stop, more than bLimit left out. */
+        boolean placeOne(int g, int i, boolean looked) {
+            DistrictPlan out = bOut;
+            int[] mine = bMine;
+            // Every cell opened: a later band can open none, so all its buildings go without a place - a step that
+            // must leave out more than `limit` is known now. (Not the outer kinds while industry has cells: they may
+            // take its leftover ground, SHARED ESTATES.)
+            if (!bExhausted && bNext >= order.length) {
+                bExhausted = true;
+                long later = 0;
+                for (int g2 = g + 1; g2 < 3; g2++) if (!(bShare && g == 1 && g2 == 2 && bNMine > 0)) later += bandType[g2].length;
+                if (bUnplaced.size() + later > bLimit) return true;
+            }
+            int w = bandW[g][i], h = bandH[g][i];
+            boolean wide = g == 0 && Math.max(w, h) > BLOCK_DEPTH;
+            // Wider than an estate's strip both ways (spec 2.3: a Livestock Farm, a Rail Terminal): the whole cell, its spine closed.
+            boolean whole = g > 0 && Math.min(w, h) > MIDDLE && Math.max(w, h) <= INTERIOR;
+            long best = -1;
+            int cellAt = -1;
+            int m0 = bNShared;
+            // SKIP (0.7.94): the cells the table knows hold no box of this shape, passed without a look (a look at one
+            // is that table's -1 and nothing else, for a building that neither merges blocks nor takes a cell whole).
+            int own = wide || whole || w > INTERIOR || h > INTERIOR ? -1 : shapeSlot[w * (INTERIOR + 1) + h];
+            if (own >= 0 && !looked) {
+                m0 = Math.max(m0, skipFrom[own]);
+                while (m0 < bNMine && holdsNone[mine[m0] * nShapes + own]) m0++;
+                skipFrom[own] = m0;
+            }
+            // THE CAMPUS (0.7.97): once a refinery unit stands, the next goes only to a cell of the campus's or one touching it.
+            boolean campus = in.types[bandType[g][i]] != null && in.types[bandType[g][i]].campus();
+            boolean gathered = campus && campusStands();
+            for (int m = m0; m < bNMine && best < 0 && !looked; m++) {
+                int c = mine[m];
+                if (gathered && !nearCampus(c)) continue;
+                best = tryPlace(c, w, h, false);
+                if (best < 0 && wide && mergeFor(out, c, w, h)) best = tryPlace(c, w, h, false);
+                if (best < 0 && whole && closeSpine(out, c)) best = tryPlace(c, w, h, false);
+                if (best >= 0) cellAt = c;
+            }
+            // ...and opens the first cell in the order that touches the campus's cells, while one does.
+            while (best < 0 && bNext < order.length) {
+                int pick = campus ? campusNext(out) : -1;
+                // A later step's turn: the cell about to open is the one it opens otherwise.
+                if (bTurnAt != null && out.cellKind[pick >= 0 ? order[pick] : order[bNext]] == CLOSED) {
+                    int at = bByHomes ? (g == 0 ? bHomes : -1) : bOpened;
+                    for (int j = 0; j < bTurnAt.length; j++) {
+                        if (bTurnAt[j] == at && bTurns[j] == null) bTurns[j] = turn(out, g, i, bNext, bOpened, bHomes, bPlaced, bExhausted, mine, bNMine, bNShared, bUnplaced);
+                    }
+                }
+                int c = pick >= 0 ? order[pick] : order[bNext++];
+                if (out.cellKind[c] != CLOSED) continue;
+                byte kind = g == 0 ? HOMES : ESTATE;
+                boolean square = kind == HOMES && bHomes < bSquares;
+                boolean bl = bOpened < bBoulevards;
+                openCell(out, c, kind, bOpened, square, bl, w, h);
+                bOpened++;
+                if (kind == HOMES) bHomes++;
+                mine[bNMine++] = c;
+                best = tryPlace(c, w, h, false);
+                if (best < 0 && wide && mergeFor(out, c, w, h)) best = tryPlace(c, w, h, false);
+                if (best < 0 && whole && closeSpine(out, c)) best = tryPlace(c, w, h, false);
+                if (best >= 0) cellAt = c;
+            }
+            // SHARED ESTATES (0.7.92): no cell left to open, an outer kind takes industry's leftover ground, its cells in the
+            // order opened - an empty one whole, its streets closed, as its own.
+            for (int m = 0; m < bNShared && best < 0; m++) {
+                int c = mine[m];
+                best = tryPlace(c, w, h, false);
+                if (best < 0 && whole && closeSpine(out, c)) best = tryPlace(c, w, h, false);
+                if (best >= 0) cellAt = c;
+            }
+            // FIELDS (spec 2.6): a resource's sites are built on last - by a building nothing else holds, at its turn; in
+            // the band's own cells first, then those it shares.
+            int nMine = bNMine, nShared = bNShared;
+            for (int m = 0; m < nMine && best < 0; m++) {
+                int c = mine[m < nMine - nShared ? nShared + m : m - (nMine - nShared)];
+                if (!cellField[c]) continue;
+                best = tryPlace(c, w, h, true);
+                if (best >= 0) { cellAt = c; out.onFields++; }
+            }
+            if (best < 0) {
+                bUnplaced.add(new int[] { g, i });
+                return bUnplaced.size() > bLimit;
+            }
+            int bx = (int) (best >>> 40 & 0xff), byy = (int) (best >>> 32 & 0xff);
+            boolean turned = (best & 1) != 0;
+            int bw = turned ? h : w, bh = turned ? w : h;
+            int x = CELL * (cellAt % CELLS_A_SIDE) + 1 + bx, y = CELL * (cellAt / CELLS_A_SIDE) + 1 + byy;
+            put(cellAt, x, y, bw, bh);
+            int k = bPlaced++;
+            placedX[k] = x; placedY[k] = y; placedW[k] = bw; placedH[k] = bh; placedT[k] = bandType[g][i];
+            return false;
+        }
+
+        /**
+         * The campus's next cell (THE CAMPUS): the index in the order, from
+         * the next to open on, of the first closed cell touching (eight ways:
+         * a side or a corner) a cell a refinery unit already stands in; -1
+         * when none stands yet or no closed cell touches theirs - then the
+         * order's next opens, as for any building.
+         */
+        int campusNext(DistrictPlan out) {
+            if (!campusStands()) return -1;
+            for (int k = bNext; k < order.length; k++) if (out.cellKind[order[k]] == CLOSED && nearCampus(order[k])) return k;
+            return -1;
+        }
+
+        /** Whether a refinery unit stands yet, the cells they stand in marked in campusCells. */
+        boolean campusStands() {
+            boolean any = false;
+            Arrays.fill(campusCells, false);
+            for (int k = 0; k < bPlaced; k++) {
+                BuildingVisual.Type t = in.types[placedT[k]];
+                if (t == null || !t.campus()) continue;
+                campusCells[(placedY[k] / CELL) * CELLS_A_SIDE + placedX[k] / CELL] = true;
+                any = true;
+            }
+            return any;
+        }
+
+        /** Whether cell c is one of campusCells or touches one, eight ways (a side or a corner). */
+        boolean nearCampus(int c) {
+            int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
+            for (int b = -1; b <= 1; b++) {
+                for (int a = -1; a <= 1; a++) {
+                    int ni = ci + a, nj = cj + b;
+                    if (ni >= 0 && nj >= 0 && ni < CELLS_A_SIDE && nj < CELLS_A_SIDE && campusCells[ni + nj * CELLS_A_SIDE]) return true;
+                }
+            }
+            return false;
+        }
+
+        /** The cells the refinery's units stand in (campusStands()), kept from call to call. */
+        final boolean[] campusCells = new boolean[CELLS];
 
         /** This build's state as it stands, at building i of band g with the cell order[kNext] about to open (THE LADDER'S TURNS). */
         Turn turn(DistrictPlan out, int g, int i, int kNext, int opened, int homes, int placed, boolean exhausted, int[] mine, int nMine, int nShared, List<int[]> unplacedAt) {
-            Turn t = new Turn();
+            Turn t = nextTurn();
             t.nShared = nShared;
             t.g = g;
             t.i = i;
@@ -1043,44 +1289,45 @@ public final class DistrictPlan {
             t.homes = homes;
             t.placed = placed;
             t.exhausted = exhausted;
-            t.mine = mine.clone();
+            t.mine = copyInto(mine, mine.length, t.mine);
             t.nMine = nMine;
-            t.unplacedAt = new ArrayList<>(unplacedAt);
-            t.px = Arrays.copyOf(placedX, placed);
-            t.py = Arrays.copyOf(placedY, placed);
-            t.pw = Arrays.copyOf(placedW, placed);
-            t.ph = Arrays.copyOf(placedH, placed);
-            t.pt = Arrays.copyOf(placedT, placed);
-            t.occ = occ.clone();
-            t.str = str.clone();
-            t.art = art.clone();
-            t.under = under.clone();
-            t.blvd = blvd.clone();
-            t.role = role.clone();
-            t.rowBits = rowBits.clone();
-            t.reachStale = reachStale.clone();
-            t.cellCut = cellCut.clone();
-            t.holdsNone = holdsNone.clone();
-            t.free = copyRows(free);
-            t.freeF = copyRows(freeF);
-            t.near = copyRows(near);
-            t.touch = copyRows(touch);
-            t.fails = fails.clone();
-            t.failsF = failsF.clone();
-            t.mergeFails = mergeFails.clone();
-            t.failW = copyRows(failW);
-            t.failH = copyRows(failH);
-            t.failFW = copyRows(failFW);
-            t.failFH = copyRows(failFH);
-            t.mergeFailW = copyRows(mergeFailW);
-            t.mergeFailH = copyRows(mergeFailH);
-            t.cellKind = out.cellKind.clone();
-            t.cellAcross = out.cellAcross.clone();
-            t.cellRank = out.cellRank.clone();
-            t.cellSquare = out.cellSquare.clone();
-            t.cellBoulevard = out.cellBoulevard.clone();
-            t.cellMerged = out.cellMerged.clone();
-            t.cellStreets = out.cellStreets.clone();
+            t.unplacedAt.clear();
+            t.unplacedAt.addAll(unplacedAt);
+            t.px = copyInto(placedX, placed, t.px);
+            t.py = copyInto(placedY, placed, t.py);
+            t.pw = copyInto(placedW, placed, t.pw);
+            t.ph = copyInto(placedH, placed, t.ph);
+            t.pt = copyInto(placedT, placed, t.pt);
+            t.occ = copyInto(occ, t.occ);
+            t.str = copyInto(str, t.str);
+            t.art = copyInto(art, t.art);
+            t.under = copyInto(under, t.under);
+            t.blvd = copyInto(blvd, t.blvd);
+            t.role = copyInto(role, t.role);
+            t.rowBits = copyInto(rowBits, t.rowBits);
+            t.reachStale = copyInto(reachStale, t.reachStale);
+            t.cellCut = copyInto(cellCut, t.cellCut);
+            t.holdsNone = copyInto(holdsNone, t.holdsNone);
+            t.free = copyRows(free, t.free);
+            t.freeF = copyRows(freeF, t.freeF);
+            t.near = copyRows(near, t.near);
+            t.touch = copyRows(touch, t.touch);
+            t.fails = copyInto(fails, CELLS, t.fails);
+            t.failsF = copyInto(failsF, CELLS, t.failsF);
+            t.mergeFails = copyInto(mergeFails, CELLS, t.mergeFails);
+            t.failW = copyLists(failW, fails, t.failW);
+            t.failH = copyLists(failH, fails, t.failH);
+            t.failFW = copyLists(failFW, failsF, t.failFW);
+            t.failFH = copyLists(failFH, failsF, t.failFH);
+            t.mergeFailW = copyLists(mergeFailW, mergeFails, t.mergeFailW);
+            t.mergeFailH = copyLists(mergeFailH, mergeFails, t.mergeFailH);
+            t.cellKind = copyInto(out.cellKind, t.cellKind);
+            t.cellAcross = copyInto(out.cellAcross, t.cellAcross);
+            t.cellRank = copyInto(out.cellRank, CELLS, t.cellRank);
+            t.cellSquare = copyInto(out.cellSquare, t.cellSquare);
+            t.cellBoulevard = copyInto(out.cellBoulevard, t.cellBoulevard);
+            t.cellMerged = copyInto(out.cellMerged, t.cellMerged);
+            t.cellStreets = copyInto(out.cellStreets, CELLS, t.cellStreets);
             t.shoreJoins = out.shoreJoins;
             t.strays = out.strays;
             t.mergesRefused = out.mergesRefused;
@@ -1113,12 +1360,12 @@ public final class DistrictPlan {
                 System.arraycopy(t.freeF[c], 0, freeF[c], 0, INTERIOR);
                 System.arraycopy(t.near[c], 0, near[c], 0, INTERIOR);
                 System.arraycopy(t.touch[c], 0, touch[c], 0, INTERIOR);
-                failW[c] = t.failW[c] == null ? null : t.failW[c].clone();
-                failH[c] = t.failH[c] == null ? null : t.failH[c].clone();
-                failFW[c] = t.failFW[c] == null ? null : t.failFW[c].clone();
-                failFH[c] = t.failFH[c] == null ? null : t.failFH[c].clone();
-                mergeFailW[c] = t.mergeFailW[c] == null ? null : t.mergeFailW[c].clone();
-                mergeFailH[c] = t.mergeFailH[c] == null ? null : t.mergeFailH[c].clone();
+                if (fails[c] > 0) { failW[c] = copyInto(t.failW[c], fails[c], failW[c]); failH[c] = copyInto(t.failH[c], fails[c], failH[c]); }
+                if (failsF[c] > 0) { failFW[c] = copyInto(t.failFW[c], failsF[c], failFW[c]); failFH[c] = copyInto(t.failFH[c], failsF[c], failFH[c]); }
+                if (mergeFails[c] > 0) {
+                    mergeFailW[c] = copyInto(t.mergeFailW[c], mergeFails[c], mergeFailW[c]);
+                    mergeFailH[c] = copyInto(t.mergeFailH[c], mergeFails[c], mergeFailH[c]);
+                }
                 anyEpoch[c]++;
                 rescan(c);
             }
@@ -1133,6 +1380,23 @@ public final class DistrictPlan {
             out.strays = t.strays;
             out.mergesRefused = t.mergesRefused;
             out.onFields = t.onFields;
+        }
+
+        /** The builder's turns (KEPT): the next one free, made the first time. */
+        Turn[] turnPool = new Turn[8];
+        int turnsUsed;
+
+        Turn nextTurn() {
+            if (turnsUsed == turnPool.length) turnPool = Arrays.copyOf(turnPool, turnsUsed * 2);
+            Turn t = turnPool[turnsUsed];
+            if (t == null) turnPool[turnsUsed] = t = new Turn();
+            turnsUsed++;
+            return t;
+        }
+
+        /** Every turn free again: a new chain of the ladder begins (the last chain's are done with). */
+        void freeTurns() {
+            turnsUsed = 0;
         }
 
         /** A street laid on plot p, or taken up: the plot and its bit. */
@@ -1154,24 +1418,12 @@ public final class DistrictPlan {
             return v << (lo - wx);
         }
 
-        /** Whether plot p touches a highway plot, corners included (H5's verge). */
-        boolean verge(int p) {
-            int x = p % FRAME, y = p / FRAME;
-            for (int dy = -1; dy <= 1; dy++) {
-                for (int dx = -1; dx <= 1; dx++) {
-                    int ax = x + dx, ay = y + dy;
-                    if (ax >= 0 && ay >= 0 && ax < FRAME && ay < FRAME && in.fixed[ay * FRAME + ax] == FIXED_HIGHWAY) return true;
-                }
-            }
-            return false;
-        }
-
-        /** A building, number k, on box (x, y, w, h) of cell c: its plots taken, the cell's free rows with them. */
-        void put(int c, int x, int y, int w, int h, int k) {
+        /** A building on box (x, y, w, h) of cell c: its plots taken, the cell's free rows with them. */
+        void put(int c, int x, int y, int w, int h) {
             int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
             int bits = ((1 << w) - 1) << (x - x0);
             for (int yy = y; yy < y + h; yy++) {
-                for (int xx = x; xx < x + w; xx++) occ[yy * FRAME + xx] = k;
+                for (int xx = x; xx < x + w; xx++) occ[yy * FRAME + xx] = 1;
                 free[c][yy - y0] &= ~bits;
                 freeF[c][yy - y0] &= ~bits;
             }
@@ -1248,7 +1500,7 @@ public final class DistrictPlan {
                 cellCut[c] = true;
             }
             for (int k = 0; k < nChanged; k++) occ[changed[k]] = -1;
-            refreeCell(c);
+            freshCell(c);
             staleAround(c);
         }
 
@@ -1364,17 +1616,27 @@ public final class DistrictPlan {
         /** What lay() would make of plot (x, y) on a cell's street running east-west (horizontal) or north-south, laying nothing: 0 refused, 1 a street, 2 a street beneath a highway (layPlot()'s rules, the game's). */
         int lineKind(int x, int y, boolean horizontal) {
             if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) return 0;
-            int p = y * FRAME + x;
-            if (!in.owned[p] || in.terrain[p] == World.SALT || in.site[p] == SITE_MINED) return 0;
-            if (in.terrain[p] == World.FRESH && (horizontal ? hRun[p] : vRun[p]) > STREET_BRIDGE) return 0;
-            byte f = in.fixed[p];
-            if (f == FIXED_YARD) return 0;
-            if (f != 0) {
-                if (along(in.fixed, p, horizontal)) return 0;
-                if (f == FIXED_HIGHWAY) return 2;
-            }
-            return 1;
+            int code = layCode[y * FRAME + x];
+            if ((code & (horizontal ? H_STREET : V_STREET)) != 0) return 0;
+            return (code & LAY_UNDER) != 0 ? 2 : 1;
         }
+
+        /**
+         * LAY CODES (0.7.94, batch RD7): what layPlot() makes of each plot,
+         * read from the input once a plan - the plot refused to a street
+         * running east-west (H_STREET), to an arterial so (H_ARTERIAL), and
+         * north-south (V_STREET, V_ARTERIAL), or laid beneath a highway
+         * (LAY_UNDER). The game's rules: not owned, the sea, a mine's site or
+         * a rail yard refused every way; fresh water wider than the kind's
+         * bridge refused along that run; a highway or railway run along the
+         * line refused that way; a highway crossed laid beneath. The
+         * prototype's: not owned, the sea or a highway refused.
+         */
+        static final int H_STREET = 1, H_ARTERIAL = 2, V_STREET = 4, V_ARTERIAL = 8, LAY_REFUSED = 15, LAY_UNDER = 16;
+
+        /** Each plot's lay code (LAY CODES). */
+        final byte[] layCode = new byte[AREA];
+
 
         /**
          * How many w x h boxes cell c (its interior from x0, y0) holds with
@@ -1402,15 +1664,11 @@ public final class DistrictPlan {
             }
             System.arraycopy(s, 0, cur, 0, n);
             for (int k = 1; k <= REACH; k++) {
-                for (int r = 0; r < n; r++) {
-                    long v = 0;
-                    for (int rr = r - 1; rr <= r + 1; rr++) {
-                        if (rr < 0 || rr >= n) continue;
-                        long a = cur[rr];
-                        v |= a | (a << 1) | (a >>> 1);
-                    }
-                    nxt[r] = v & WINDOW;
-                }
+                // A plot more each way, across corners: each row with the rows either side, spread a plot along (0.7.94: the rows
+                // at the window's edges apart, no test in the loop).
+                nxt[0] = spread(cur[0] | cur[1]);
+                for (int r = 1; r < n - 1; r++) nxt[r] = spread(cur[r - 1] | cur[r] | cur[r + 1]);
+                nxt[n - 1] = spread(cur[n - 2] | cur[n - 1]);
                 long[] t = cur; cur = nxt; nxt = t;
                 if (k == 1) System.arraycopy(cur, 0, one, 0, n);
             }
@@ -1475,22 +1733,13 @@ public final class DistrictPlan {
         boolean layPlot(int x, int y, boolean horizontal, boolean arterial, byte r) {
             if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) return false;
             int p = y * FRAME + x;
-            if (!in.owned[p] || in.terrain[p] == World.SALT) return false;
-            byte f = in.fixed[p];
-            if (proto) {
-                if (f == FIXED_HIGHWAY) return false;
-            } else {
-                if (in.site[p] == SITE_MINED) return false;
-                if (in.terrain[p] == World.FRESH && (horizontal ? hRun[p] : vRun[p]) > (arterial ? ARTERIAL_BRIDGE : STREET_BRIDGE)) return false;
-                if (f == FIXED_YARD) return false;
-                if (f != 0) {
-                    if (along(in.fixed, p, horizontal)) return false;
-                    if (f == FIXED_HIGHWAY) {
-                        if (!under[p]) { under[p] = true; changed[nChanged++] = p; }
-                        if (role[p] < r) role[p] = r;
-                        return true;
-                    }
-                }
+            // The plot's rules, read once a plan (LAY CODES).
+            int code = layCode[p];
+            if ((code & (horizontal ? (arterial ? H_ARTERIAL : H_STREET) : (arterial ? V_ARTERIAL : V_STREET))) != 0) return false;
+            if ((code & LAY_UNDER) != 0) {
+                if (!under[p]) { under[p] = true; changed[nChanged++] = p; }
+                if (role[p] < r) role[p] = r;
+                return true;
             }
             if (!str[p]) { setStr(p, true); changed[nChanged++] = p; }
             if (arterial) art[p] = true;
@@ -1585,21 +1834,29 @@ public final class DistrictPlan {
         int shore(int bx0, int by0, int bx1, int by1) {
             int joined = 0;
             int bw = bx1 - bx0 + 1, bh = by1 - by0 + 1;
-            if (shoreFrom == null || shoreFrom.length < bw * bh) { shoreFrom = new int[bw * bh]; shoreQueue = new int[bw * bh]; }
-            int[] from = shoreFrom, q = shoreQueue;
-            stubPlots.clear();
+            if (shoreFrom == null || shoreFrom.length < bw * bh) { shoreFrom = new int[bw * bh]; shoreQueue = new int[bw * bh]; shoreSeen = new int[bw * bh]; }
+            int[] from = shoreFrom, q = shoreQueue, seen = shoreSeen;
+            nStub = 0;
             for (int y = by0; y <= by1; y++) {
-                for (int x = bx0; x <= bx1; x++) {
-                    if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) continue;
+                if (y < 0 || y >= FRAME) continue;
+                // The row's dead ends to be: its streets with at most one street beside them (BITS, 0.7.94) - a street is
+                // only ever added here, so a plot with two beside it now has two when the scan reaches it.
+                long row = window(y, bx0, bw), up = window(y - 1, bx0, bw), down = window(y + 1, bx0, bw);
+                long left = window(y, bx0 - 1, bw), right = window(y, bx0 + 1, bw);
+                long cand = row & ~((up & down) | (up & left) | (up & right) | (down & left) | (down & right) | (left & right));
+                for (; cand != 0; cand &= cand - 1) {
+                    int x = bx0 + Long.numberOfTrailingZeros(cand);
+                    if (x < 0 || x >= FRAME) continue;
                     int p0 = y * FRAME + x;
                     if (!str[p0] || streetNeighbours(p0) != 1) continue;
                     // Its stub: the plots back along it to the first junction, that junction too.
-                    for (int s : stubPlots) stub[s] = false;
-                    stubPlots.clear();
+                    for (int k = 0; k < nStub; k++) stub[stubAt[k]] = false;
+                    nStub = 0;
                     int prev = -1, cur = p0;
                     while (true) {
                         stub[cur] = true;
-                        stubPlots.add(cur);
+                        if (nStub == stubAt.length) stubAt = Arrays.copyOf(stubAt, nStub * 2);
+                        stubAt[nStub++] = cur;
                         int next = -1, n = 0;
                         int cx = cur % FRAME, cy = cur / FRAME;
                         for (int d = 0; d < 4; d++) {
@@ -1612,9 +1869,11 @@ public final class DistrictPlan {
                         prev = cur;
                         cur = next;
                     }
-                    Arrays.fill(from, 0, bw * bh, -2);
+                    // The walk's marks are stamped (BITS): a plot is reached when seen[] holds this walk's stamp.
+                    int st = ++shoreStamp;
                     int qh = 0, qt = 0, end = -1, target = -1;
                     from[(y - by0) * bw + (x - bx0)] = -1;
+                    seen[(y - by0) * bw + (x - bx0)] = st;
                     q[qt++] = p0;
                     while (qh < qt && end < 0) {
                         int u = q[qh++];
@@ -1623,7 +1882,7 @@ public final class DistrictPlan {
                             int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
                             if (ax < bx0 || ay < by0 || ax > bx1 || ay > by1 || ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
                             int a = ay * FRAME + ax, ai = (ay - by0) * bw + (ax - bx0);
-                            if (from[ai] != -2 || str[a] || under[a]) continue;
+                            if (seen[ai] == st || str[a] || under[a]) continue;
                             if (!dry[a] || in.fixed[a] != 0 || in.site[a] == SITE_MINED || occ[a] > 0) continue;
                             // Beside the cut, across corners.
                             boolean beside = false;
@@ -1642,6 +1901,7 @@ public final class DistrictPlan {
                             }
                             if (bad) continue;
                             from[ai] = (uy - by0) * bw + (ux - bx0);
+                            seen[ai] = st;
                             if (hit >= 0) { end = a; target = hit; break; }
                             q[qt++] = a;
                         }
@@ -1656,12 +1916,215 @@ public final class DistrictPlan {
                     joined++;
                 }
             }
-            for (int s : stubPlots) stub[s] = false;
-            stubPlots.clear();
+            for (int k = 0; k < nStub; k++) stub[stubAt[k]] = false;
+            nStub = 0;
             return joined;
         }
 
+        /** shore()'s stub, its plots (stubAt, nStub), and its walk's stamp a plot (shoreSeen against shoreStamp). */
+        int[] stubAt = new int[64], shoreSeen;
+        int nStub, shoreStamp;
+
         /* ------------------------------------------------ a cell's room and reach, in bit rows */
+
+        /**
+         * A cell's free rows as it opens (BITS, 0.7.94): its ground no
+         * building is barred from (openRows) less the streets its opening laid
+         * (the changed plots) - what refreeCell() reads of occ, since a cell
+         * not open holds no building or street inside its ring and its
+         * interior's occ is as each build began; with its fields, its field
+         * plots (fieldRows) no street was laid on too.
+         */
+        void freshCell(int c) {
+            int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
+            int[] laid = laidRows;
+            Arrays.fill(laid, 0);
+            for (int k = 0; k < nChanged; k++) {
+                int p = changed[k], x = p % FRAME - x0, y = p / FRAME - y0;
+                if (x >= 0 && y >= 0 && x < INTERIOR && y < INTERIOR) laid[y] |= 1 << x;
+            }
+            for (int j = 0; j < INTERIOR; j++) {
+                int bits = openRows[c][j] & ~laid[j];
+                free[c][j] = bits;
+                freeF[c][j] = bits | (fieldRows[c][j] & ~laid[j]);
+            }
+            rescan(c);
+        }
+
+        /** Row y of the ground (THE GROUND, A ROW AT A TIME): dry, barred, its lay code from the ground, the runs' plots, the highways' and the parted streets' bits, an anchor. */
+        void groundRow(int y) {
+            byte[] terrain = in.terrain, fixed = in.fixed, site = in.site;
+            boolean[] owned = in.owned, partedAnchor = in.partedAnchor, anchor = in.anchor;
+            int base = y * WORDS;
+            boolean anchors = false;
+            for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
+                byte t = terrain[p];
+                boolean d = owned[p] & (t == World.GRASS | t == World.FOREST | t == World.SAND);
+                dry[p] = d;
+                byte f = fixed[p];
+                blocked[p] = !d | f != 0 | site[p] != 0;
+                // Its lay code from the ground (LAY CODES; fresh water's runs and the runs' plots added after).
+                layCode[p] = (byte) (!owned[p] | t == World.SALT ? LAY_REFUSED : proto ? (f == FIXED_HIGHWAY ? LAY_REFUSED : 0)
+                        : site[p] == SITE_MINED ? LAY_REFUSED : 0);
+                if (f != 0) fixedPlot(p, x, base, f);
+                if (partedAnchor[p]) paRows[base + (x >>> 6)] |= 1L << (x & 63);
+                anchors |= anchor[p];
+            }
+            anyAnchor |= anchors;
+        }
+
+        /** A plot of the city's runs: listed, and a highway's in its row's bits and listed too. */
+        void fixedPlot(int p, int x, int base, byte f) {
+            if (nFixed == fixedList.length) fixedList = Arrays.copyOf(fixedList, nFixed * 2);
+            fixedList[nFixed++] = p;
+            if (f != FIXED_HIGHWAY) return;
+            hwRows[base + (x >>> 6)] |= 1L << (x & 63);
+            if (nHighway == hwList.length) hwList = Arrays.copyOf(hwList, nHighway * 2);
+            hwList[nHighway++] = p;
+        }
+
+        /** Row y's fresh water runs (THE GROUND, A ROW AT A TIME): each plot of a run its length along the row, a street refused along one wider than its bridge. */
+        void freshRow(int y) {
+            byte[] terrain = in.terrain;
+            for (int x = 0; x < FRAME; ) {
+                int p = y * FRAME + x;
+                if (terrain[p] != World.FRESH) { hRun[p] = 0; x++; continue; }
+                int e = x;
+                while (e + 1 < FRAME && terrain[p + e + 1 - x] == World.FRESH) e++;
+                int len = e - x + 1, bits = proto ? 0 : (len > STREET_BRIDGE ? H_STREET : 0) | (len > ARTERIAL_BRIDGE ? H_ARTERIAL : 0);
+                for (int m = p, last = y * FRAME + e; m <= last; m++) { hRun[m] = (short) len; layCode[m] |= bits; }
+                x = e + 1;
+            }
+        }
+
+        /** ...and down each column, read at row y: a column's run goes on where its plot is fresh water, and ends where it is not (runFrom, its first row). */
+        void freshColumns(int y) {
+            byte[] terrain = in.terrain;
+            int[] from = runFrom;
+            for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
+                if (terrain[p] == World.FRESH) {
+                    if (from[x] < 0) from[x] = y;
+                    continue;
+                }
+                vRun[p] = 0;
+                if (from[x] >= 0) columnRun(x, y);
+            }
+        }
+
+        /** ...the runs still open at the frame's last row ended there. */
+        void freshColumnsEnd() {
+            for (int x = 0; x < FRAME; x++) if (runFrom[x] >= 0) columnRun(x, FRAME);
+        }
+
+        /** Column x's run from runFrom[x] to the row before `end`: its length on each plot, a street refused down one wider than its bridge. */
+        void columnRun(int x, int end) {
+            int len = end - runFrom[x], bits = proto ? 0 : (len > STREET_BRIDGE ? V_STREET : 0) | (len > ARTERIAL_BRIDGE ? V_ARTERIAL : 0);
+            for (int m = runFrom[x] * FRAME + x, stop = end * FRAME + x; m < stop; m += FRAME) { vRun[m] = (short) len; layCode[m] |= bits; }
+            runFrom[x] = -1;
+        }
+
+        /** Row y's fields (spec 2.6) and the rest (THE GROUND, A ROW AT A TIME): barred with the verges, occ as a build begins, the field plots, both as bits. */
+        void fieldRow(int y) {
+            byte[] fixed = in.fixed, site = in.site;
+            int base = y * WORDS;
+            boolean rowIn = y % CELL != 0 & y < SIDE, field = !proto;
+            for (int x = 0, p = y * FRAME; x < FRAME; x++, p++) {
+                long bit = 1L << (x & 63), verge = vergeRows[base + (x >>> 6)] & bit;
+                boolean b = blocked[p] | verge != 0;
+                blocked[p] = b;
+                occStart[p] = (byte) (b ? -1 : 0);
+                boolean fo = field & rowIn & x % CELL != 0 & x < SIDE & site[p] == SITE_FIELD & dry[p] & fixed[p] == 0 & verge == 0;
+                fieldOk[p] = fo;
+                if (!b) openBits[base + (x >>> 6)] |= bit;
+                if (fo) fieldBits[base + (x >>> 6)] |= bit;
+            }
+        }
+
+        /** Cell c's interior rows of free ground and of fields, from the rows' bits, and whether it has a field. */
+        void cellRows(int c) {
+            int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
+            int any = 0;
+            for (int j = 0; j < INTERIOR; j++) {
+                openRows[c][j] = (int) bitsOf(openBits, y0 + j, x0);
+                any |= fieldRows[c][j] = (int) bitsOf(fieldBits, y0 + j, x0);
+            }
+            cellField[c] = any != 0;
+        }
+
+        /**
+         * VERGES (H5, 0.7.94): the plots on or beside a highway plot, corners
+         * included - no building's - as bits a row: the highways' bits
+         * (hwRows) spread a plot either way along the row (vergeWideRow()),
+         * then a row either way (vergeRow()); what a look about each plot
+         * found until 0.7.93, for the whole frame at once.
+         */
+        void vergeWideRow(int y) {
+            long[] wide = vergeWide, hw = hwRows;
+            int base = y * WORDS;
+            long below = 0;
+            for (int w = 0; w < WORDS; w++) {
+                long h = hw[base + w], above = w + 1 < WORDS ? hw[base + w + 1] << 63 : 0;
+                wide[base + w] = h | (h << 1) | below | (h >>> 1) | above;
+                below = h >>> 63;
+            }
+            // No plot past the frame's last column (FRAME = 4 x 64 + 1).
+            wide[base + WORDS - 1] &= LAST_WORD;
+        }
+
+        void vergeRow(int y) {
+            long[] wide = vergeWide;
+            int base = y * WORDS, up = Math.max(0, y - 1) * WORDS, down = Math.min(FRAME - 1, y + 1) * WORDS;
+            for (int w = 0; w < WORDS; w++) vergeRows[base + w] = wide[up + w] | wide[base + w] | wide[down + w];
+        }
+
+        /** The INTERIOR bits of row y of `rows` (WORDS longs a row) from plot x0: a cell's interior row (x0 from 1 to SIDE - INTERIOR). */
+        static long bitsOf(long[] rows, int y, int x0) {
+            int base = y * WORDS, w = x0 >>> 6, o = x0 & 63;
+            long v = rows[base + w] >>> o;
+            if (o + INTERIOR > 64) v |= rows[base + w + 1] << (64 - o);
+            return v & ((1L << INTERIOR) - 1);
+        }
+
+        /** start()'s rows of the plots no building is barred from and of the fields, and each column's fresh run's first row. */
+        final long[] openBits = new long[FRAME * WORDS], fieldBits = new long[FRAME * WORDS];
+        final int[] runFrom = new int[FRAME];
+
+        /** A row's last word's plots in the frame: bit 0 to FRAME - 1 - 64 x (WORDS - 1). */
+        static final long LAST_WORD = (1L << (FRAME - 64 * (WORDS - 1))) - 1;
+
+        /** The verges' bits a row (VERGES), and the highways' rows spread along (vergeWideRow()). */
+        final long[] vergeRows = new long[FRAME * WORDS], vergeWide = new long[FRAME * WORDS];
+
+        /** The plots of the city's runs (Input.fixed not 0), in plot order: their lay codes made apart (fixedCodes()). */
+        int[] fixedList = new int[256];
+        int nFixed;
+
+        /** Each plot of a run's lay code (LAY CODES): a run along a line refuses it that way, a highway crossed is laid beneath - worked out for those plots alone, after start() gave them the ground's. */
+        void fixedCodes() {
+            if (proto) return;
+            for (int k = 0; k < nFixed; k++) {
+                int p = fixedList[k];
+                int code = layCode[p];
+                if (code == LAY_REFUSED) continue;
+                byte f = in.fixed[p];
+                if (f == FIXED_YARD) { layCode[p] = LAY_REFUSED; continue; }
+                if (along(in.fixed, p, true)) code |= H_STREET | H_ARTERIAL;
+                if (along(in.fixed, p, false)) code |= V_STREET | V_ARTERIAL;
+                if (f == FIXED_HIGHWAY) code |= LAY_UNDER;
+                layCode[p] = (byte) code;
+            }
+        }
+
+        /** occ as a build begins: -1 where blocked, else 0 (start()). */
+        final byte[] occStart = new byte[AREA];
+        /** The highways' plots, a bit each by row as rowBits (start()), and in plot order (hwList, nHighway); the parted streets of the districts before it likewise (paRows); whether a plot of the edge is an anchor. */
+        final long[] hwRows = new long[FRAME * WORDS], paRows = new long[FRAME * WORDS];
+        int[] hwList = new int[256];
+        int nHighway;
+        boolean anyAnchor;
+
+        /** freshCell()'s rows of the plots laid. */
+        final int[] laidRows = new int[INTERIOR];
 
         /** A cell's free rows from occ: bit i of row j for interior plot (x0 + i, y0 + j). */
         void refreeCell(int c) {
@@ -1682,15 +2145,16 @@ public final class DistrictPlan {
         /** The cells whose reach a change of c's streets may move: it and the eight about it, their reach worked out again when next asked (reachCell() forgets what a cell was known not to hold if its reach grew). */
         void staleAround(int c) {
             int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
-            for (int b = cj - 1; b <= cj + 1; b++) {
-                for (int a = ci - 1; a <= ci + 1; a++) {
-                    if (a < 0 || b < 0 || a >= CELLS_A_SIDE || b >= CELLS_A_SIDE) continue;
-                    reachStale[a + b * CELLS_A_SIDE] = true;
-                }
-            }
+            int a0 = Math.max(0, ci - 1), a1 = Math.min(CELLS_A_SIDE - 1, ci + 1), b1 = Math.min(CELLS_A_SIDE - 1, cj + 1);
+            for (int b = Math.max(0, cj - 1); b <= b1; b++) for (int a = a0; a <= a1; a++) reachStale[a + b * CELLS_A_SIDE] = true;
         }
 
         static final long WINDOW = (1L << (INTERIOR + 2 * REACH)) - 1;
+
+        /** A window's row of bits spread a plot either way along it, kept to the window. */
+        static long spread(long a) {
+            return (a | (a << 1) | (a >>> 1)) & WINDOW;
+        }
 
         /** A cell's reach rows: plots within REACH of a street, across corners, and those one plot from one - the prototype's reach_map, over the cell's interior and the REACH plots about it. */
         void reachCell(int c) {
@@ -1700,15 +2164,11 @@ public final class DistrictPlan {
             for (int r = 0; r < n; r++) s[r] = window(wy + r, wx, n);
             System.arraycopy(s, 0, cur, 0, n);
             for (int k = 1; k <= REACH; k++) {
-                for (int r = 0; r < n; r++) {
-                    long v = 0;
-                    for (int rr = r - 1; rr <= r + 1; rr++) {
-                        if (rr < 0 || rr >= n) continue;
-                        long a = cur[rr];
-                        v |= a | (a << 1) | (a >>> 1);
-                    }
-                    nxt[r] = v & WINDOW;
-                }
+                // A plot more each way, across corners: each row with the rows either side, spread a plot along (0.7.94: the rows
+                // at the window's edges apart, no test in the loop).
+                nxt[0] = spread(cur[0] | cur[1]);
+                for (int r = 1; r < n - 1; r++) nxt[r] = spread(cur[r - 1] | cur[r] | cur[r + 1]);
+                nxt[n - 1] = spread(cur[n - 2] | cur[n - 1]);
                 long[] t = cur; cur = nxt; nxt = t;
                 if (k == 1) System.arraycopy(cur, 0, one, 0, n);
             }
@@ -1791,7 +2251,12 @@ public final class DistrictPlan {
                 boolean known = slot >= 0 && scanEpochAt[slot] == scanEpoch[c];
                 int j0 = known ? scanFrom[slot] : 0, n0 = known ? scanNFrom[slot] : 0;
                 int firstT = -1, firstN = -1, tBits = 0, nBits = 0;
-                for (int j = j0; j + hh <= INTERIOR && firstT < 0; j++) {
+                // TURNED AFTER A TOUCH (0.7.94): the other way round wins only touching a street in a row no lower than the
+                // first way's - so its look stops past that row, and SCAN keeps what it saw (no box above where it stopped).
+                int last = INTERIOR - hh;
+                if (best >= 0 && best >>> 48 == 1) last = Math.min(last, (int) (best >>> 40 & 0xff));
+                int j = j0;
+                for (; j <= last && firstT < 0; j++) {
                     int f = -1;
                     for (int q = 0; q < hh && f != 0; q++) {
                         int r = j + q;
@@ -1808,8 +2273,10 @@ public final class DistrictPlan {
                         if ((f & nn) != 0) { firstN = j; nBits = f & nn; }
                     }
                 }
+                // The rows looked at: to the last row a box starts on, or where the look stopped.
+                int seen = firstT >= 0 ? firstT : Math.min(j, INTERIOR - hh + 1);
                 // None touching: the first within reach may be above where this look began (and below where the last found one).
-                for (int j = n0; j < j0 && firstT < 0; j++) {
+                for (j = n0; j < j0 && firstT < 0; j++) {
                     int f = -1;
                     for (int q = 0; q < hh && f != 0; q++) {
                         int r = j + q;
@@ -1822,8 +2289,8 @@ public final class DistrictPlan {
                     if ((f & nn) != 0) { firstN = j; nBits = f & nn; break; }
                 }
                 if (slot >= 0) {
-                    scanFrom[slot] = firstT >= 0 ? firstT : INTERIOR - hh + 1;
-                    scanNFrom[slot] = firstT >= 0 ? n0 : firstN >= 0 ? firstN : INTERIOR - hh + 1;
+                    scanFrom[slot] = seen;
+                    scanNFrom[slot] = firstT >= 0 ? n0 : firstN >= 0 ? firstN : seen;
                     scanEpochAt[slot] = scanEpoch[c];
                 }
                 long key;
@@ -1975,30 +2442,104 @@ public final class DistrictPlan {
          * reach it without the box's.
          */
         boolean splits(int gx, int gy, int gw, int gh) {
-            List<Integer> edge = new ArrayList<>();
+            // The streets just outside the box, its corners not, row by row (0.7.94: its sides read, not the box).
+            if (splitEdge.length < 2 * (gw + gh)) splitEdge = new int[2 * (gw + gh)];
+            int[] edge = splitEdge;
+            int n = 0;
             for (int y = gy - 1; y <= gy + gh; y++) {
-                for (int x = gx - 1; x <= gx + gw; x++) {
-                    boolean inside = x >= gx && x < gx + gw && y >= gy && y < gy + gh;
-                    if (inside || x < 0 || y < 0 || x >= FRAME || y >= FRAME) continue;
-                    if ((x < gx || x >= gx + gw) && (y < gy || y >= gy + gh)) continue;
-                    int p = y * FRAME + x;
-                    if (str[p] || under[p]) edge.add(p);
+                if (y < 0 || y >= FRAME) continue;
+                if (y == gy - 1 || y == gy + gh) {
+                    for (int x = Math.max(0, gx); x < Math.min(FRAME, gx + gw); x++) {
+                        int p = y * FRAME + x;
+                        if (str[p] || under[p]) edge[n++] = p;
+                    }
+                } else {
+                    if (gx - 1 >= 0 && gx - 1 < FRAME && (str[y * FRAME + gx - 1] || under[y * FRAME + gx - 1])) edge[n++] = y * FRAME + gx - 1;
+                    if (gx + gw >= 0 && gx + gw < FRAME && (str[y * FRAME + gx + gw] || under[y * FRAME + gx + gw])) edge[n++] = y * FRAME + gx + gw;
                 }
             }
-            if (edge.size() < 2) return false;
+            if (n < 2) return false;
             // The plots just outside the box all street (or beneath a highway), joined round it: the streets about it stay one
             // without it - none parted, at a glance (0.7.89; the search below found the same).
             if (ringWhole(gx, gy, gw, gh)) return false;
-            int after = ++stamp;
-            int[] targets = new int[edge.size()];
-            for (int i = 0; i < targets.length; i++) targets[i] = edge.get(i);
-            if (reachFrom(targets[0], gx, gy, gw, gh, markB, after, targets)) return false;
-            // Not all reached without the box: parted only if they were reached with it.
+            int[] targets = Arrays.copyOf(edge, n);
+            // NEAR FIRST (0.7.94): all of them reached without the box by a walk that keeps within SPLIT_NEAR plots of it - the
+            // streets about it stay one (the walk over the whole frame would find the same way, or another).
+            int near = ++stamp;
+            if (reachFrom(targets[0], gx, gy, gw, gh, markB, near, targets, Math.max(0, gx - SPLIT_NEAR), Math.max(0, gy - SPLIT_NEAR),
+                    Math.min(FRAME - 1, gx + gw - 1 + SPLIT_NEAR), Math.min(FRAME - 1, gy + gh - 1 + SPLIT_NEAR))) return false;
+            // ...and each it missed: still joined to the first without the box when a walk from it, round the box, meets the
+            // near walk's streets (all joined to the first); apart when it ends without (its own piece, often a few plots the
+            // box cut off - where the walk from the first over the whole frame took every street joined to it).
+            int ts = ++targetStamp, apart = ++stamp;
+            boolean anyApart = false;
+            for (int p : targets) {
+                if (markB[p] == near || meets(p, gx, gy, gw, gh, near, apart)) continue;
+                targetMark[p] = ts;
+                anyApart = true;
+            }
+            if (!anyApart) return false;
+            // Parted only if one apart is reached with the box - the walk stops at the first.
             int before = ++stamp;
-            reachFrom(targets[0], -1, 0, 0, 0, markA, before, null);
-            for (int p : targets) if (markA[p] == before && markB[p] != after) return true;
+            int[] q = queue;
+            int qh = 0, qt = 0;
+            q[qt++] = targets[0];
+            markA[targets[0]] = before;
+            while (qh < qt) {
+                int u = q[qh++];
+                int ux = u % FRAME, uy = u / FRAME;
+                for (int d = 0; d < 4; d++) {
+                    int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
+                    if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                    int a = ay * FRAME + ax;
+                    if (markA[a] == before || !(str[a] || under[a])) continue;
+                    if (targetMark[a] == ts) return true;
+                    markA[a] = before;
+                    q[qt++] = a;
+                }
+            }
             return false;
         }
+
+        /**
+         * Whether a walk from street plot p, round box (gx, gy, gw, gh), meets
+         * a plot joined to the near walk's first (markB holding `near`). What
+         * the walk takes is so marked when it meets one, and marked `apart`
+         * when it ends without: a later walk that meets an apart plot is
+         * apart too, at once.
+         */
+        boolean meets(int p, int gx, int gy, int gw, int gh, int near, int apart) {
+            if (markB[p] == apart) return false;
+            int[] q = queue, mark = markA;
+            int st = ++stamp, qh = 0, qt = 0;
+            q[qt++] = p;
+            mark[p] = st;
+            int found = 0;
+            while (qh < qt && found == 0) {
+                int u = q[qh++];
+                int ux = u % FRAME, uy = u / FRAME;
+                for (int d = 0; d < 4; d++) {
+                    int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
+                    if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                    if (ax >= gx && ax < gx + gw && ay >= gy && ay < gy + gh) continue;
+                    int a = ay * FRAME + ax;
+                    if (mark[a] == st || !(str[a] || under[a])) continue;
+                    if (markB[a] == near) { found = near; break; }
+                    if (markB[a] == apart) { found = apart; break; }
+                    mark[a] = st;
+                    q[qt++] = a;
+                }
+            }
+            int as = found == 0 ? apart : found;
+            for (int k = 0; k < qt; k++) markB[q[k]] = as;
+            return as == near;
+        }
+
+        /** splits()'s first walk keeps within this many plots of the box: a cell (NEAR FIRST). */
+        static final int SPLIT_NEAR = CELL;
+
+        /** splits()'s streets about the box. */
+        int[] splitEdge = new int[128];
 
         /** Whether every plot of the ring just outside the box (its corners among them) is in the frame and a street or beneath a highway: a closed loop of street round the box, joining every street that meets it. */
         boolean ringWhole(int gx, int gy, int gw, int gh) {
@@ -2016,6 +2557,11 @@ public final class DistrictPlan {
 
         /** Marks the streets reached from plot p0 with stamp st in mark, four-connected, none inside box (gx, gy, gw, gh) when gx >= 0; whether every plot of targets (when given) was reached, the walk stopping when they are. */
         boolean reachFrom(int p0, int gx, int gy, int gw, int gh, int[] mark, int st, int[] targets) {
+            return reachFrom(p0, gx, gy, gw, gh, mark, st, targets, 0, 0, FRAME - 1, FRAME - 1);
+        }
+
+        /** ...keeping within plots (rx0, ry0) to (rx1, ry1), inclusive. */
+        boolean reachFrom(int p0, int gx, int gy, int gw, int gh, int[] mark, int st, int[] targets, int rx0, int ry0, int rx1, int ry1) {
             int[] q = queue;
             int qh = 0, qt = 0;
             q[qt++] = p0;
@@ -2036,7 +2582,7 @@ public final class DistrictPlan {
                 int ux = u % FRAME, uy = u / FRAME;
                 for (int d = 0; d < 4; d++) {
                     int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
-                    if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                    if (ax < rx0 || ay < ry0 || ax > rx1 || ay > ry1) continue;
                     if (gx >= 0 && ax >= gx && ax < gx + gw && ay >= gy && ay < gy + gh) continue;
                     int a = ay * FRAME + ax;
                     if (mark[a] == st || !(str[a] || under[a])) continue;
@@ -2055,7 +2601,7 @@ public final class DistrictPlan {
         final int[] targetMark = new int[AREA], targetCount = new int[AREA];
         int targetStamp;
 
-        /** The join's, the parting's and the surface's working arrays, a plot each, kept from build to build (0.7.90): each written before it is read (pieces() and markParted() fill a label with -1, the join's way back is -2 before each look, its parted plots cleared), so a build is the build it was with its own - and a dense plan no longer makes about 2 MB of them a build for the collector. */
+        /** The join's, the parting's and the surface's working arrays, a plot each, kept from build to build (0.7.90): each written before it is read (pieces() and markParted() set a label of -1 on each plot they label - the only plots whose label is read - the join's way back is read only where its walk's stamp is, its parted plots are cleared one by one), so a build is the build it was with its own - and a dense plan no longer makes about 2 MB of them a build for the collector. */
         final int[] scratchLab = new int[AREA], scratchPrev = new int[AREA], pieceStack = new int[AREA];
         final boolean[] scratchParted = new boolean[AREA];
 
@@ -2090,37 +2636,139 @@ public final class DistrictPlan {
             if (role[a] == 0) role[a] = (byte) ROLE_JOIN;
         }
 
-        /** The street pieces, four-connected (beneath a highway included): each plot's label into lab, the sizes returned. */
-        int[] pieces(int[] lab) {
-            return pieces(lab, null);
+        /**
+         * THE STREETS IN ORDER (0.7.94, batch RD7): every street plot - and
+         * beneath a highway, and with `alsoRows` its plots too - into
+         * ordered[], in plot order, read from the street bits a row of 64 at
+         * a time (rowBits; a highway's plots, hwRows, looked at one by one):
+         * what the pieces, the join and the parting walk from, where until
+         * 0.7.93 each looked at every plot of the frame. Their count.
+         */
+        int streetsInOrder(long[] alsoRows) {
+            int n = 0;
+            for (int y = 0; y < FRAME; y++) n = streetsInRow(y, alsoRows, n);
+            return n;
         }
 
-        /** ...with the plots of `also` (null for none) as streets of the pieces too - the parted streets of the districts before it (joinOut()). */
-        int[] pieces(int[] lab, boolean[] also) {
-            Arrays.fill(lab, -1);
+        /** ...row y's, into ordered[] from n: the count after them (a row a call, THE GROUND, A ROW AT A TIME's reason). */
+        int streetsInRow(int y, long[] alsoRows, int n) {
+            int[] out = ordered;
+            int base = y * WORDS, row = y * FRAME;
+            for (int w = 0; w < WORDS; w++) {
+                long bits = rowBits[base + w];
+                for (long h = hwRows[base + w] & ~bits; h != 0; h &= h - 1) {
+                    long b = h & -h;
+                    if (under[row + (w << 6) + Long.numberOfTrailingZeros(b)]) bits |= b;
+                }
+                if (alsoRows != null) bits |= alsoRows[base + w];
+                for (; bits != 0; bits &= bits - 1) out[n++] = row + (w << 6) + Long.numberOfTrailingZeros(bits);
+            }
+            return n;
+        }
+
+        /** streetsInOrder()'s plots and their count; and each piece's first plot (pieces()) and its place among them. */
+        final int[] ordered = new int[AREA];
+        int nOrdered;
+        int[] pieceRep = new int[16], pieceAt = new int[16];
+
+        /** The join's walks' marks, by stamp (0.7.94: no clearing of the way back before each): a plot reached when joinSeen holds the walk's. */
+        final int[] joinSeen = new int[AREA];
+        int joinStamp;
+
+        /** The street pieces, four-connected (beneath a highway included): each plot's label into lab, the sizes returned. */
+        int[] pieces(int[] lab) {
+            return pieces(lab, false);
+        }
+
+        /** ...with the parted streets of the districts before it (Input.partedAnchor) as streets of the pieces too (joinOut()) when `parted`; each piece's first plot in plot order into pieceRep, its place in ordered[] into pieceAt. */
+        int[] pieces(int[] lab, boolean parted) {
+            boolean[] also = parted ? in.partedAnchor : null;
+            nOrdered = streetsInOrder(parted ? paRows : null);
+            // A label is read only on these plots (a street's, or a parted street's before it): only theirs are cleared.
+            for (int i = 0; i < nOrdered; i++) lab[ordered[i]] = -1;
             int[] stack = pieceStack;
             int[] sizes = new int[16];
             int n = 0;
-            for (int p = 0; p < AREA; p++) {
-                if (!(str[p] || under[p] || (also != null && also[p])) || lab[p] >= 0) continue;
+            for (int i = 0; i < nOrdered; i++) {
+                int p = ordered[i];
+                if (lab[p] >= 0) continue;
                 if (n == sizes.length) sizes = Arrays.copyOf(sizes, n * 2);
+                if (n == pieceRep.length) { pieceRep = Arrays.copyOf(pieceRep, n * 2); pieceAt = Arrays.copyOf(pieceAt, n * 2); }
+                pieceRep[n] = p;
+                pieceAt[n] = i;
                 int sp = 0, size = 0;
                 stack[sp++] = p;
                 lab[p] = n;
                 while (sp > 0) {
-                    int u = stack[--sp];
+                    sp = pieceStep(lab, stack[--sp], n, sp, also);
                     size++;
-                    int ux = u % FRAME, uy = u / FRAME;
-                    for (int d = 0; d < 4; d++) {
-                        int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
-                        if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
-                        int a = ay * FRAME + ax;
-                        if ((str[a] || under[a] || (also != null && also[a])) && lab[a] < 0) { lab[a] = n; stack[sp++] = a; }
-                    }
                 }
                 sizes[n++] = size;
             }
             return Arrays.copyOf(sizes, n);
+        }
+
+        /** pieces()'s step (a plot a call): plot u's neighbours of piece n - streets, beneath a highway, or of `also` - not yet labelled, labelled and stacked above sp. The stack's height after. */
+        int pieceStep(int[] lab, int u, int n, int sp, boolean[] also) {
+            int[] stack = pieceStack;
+            int ux = u % FRAME, uy = u / FRAME;
+            for (int d = 0; d < 4; d++) {
+                int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
+                if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                int a = ay * FRAME + ax;
+                if ((str[a] || under[a] || (also != null && also[a])) && lab[a] < 0) { lab[a] = n; stack[sp++] = a; }
+            }
+            return sp;
+        }
+
+        /** The join's walk's queue (queue[]) end: its steps add to it. */
+        int joinTail;
+
+        /** joinFromSmall()'s walk's step (a plot a call): plot u's neighbours along the lattice (way 0) or over the ground, from piece pc, by walk st - the first street of another piece reached, or -1, the rest queued. */
+        int joinStep(int u, int way, int pc, int st, int[] lab, int[] prev) {
+            int[] q = queue;
+            int ux = u % FRAME, uy = u / FRAME;
+            for (int d = 0; d < 4; d++) {
+                int ax = ux + JOIN_DX[d], ay = uy + JOIN_DY[d];
+                if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                int a = ay * FRAME + ax;
+                if (joinSeen[a] == st || !(way == 0 ? joinable(a, JOIN_DY[d] == 0) : groundJoinable(a, JOIN_DY[d] == 0))) continue;
+                joinSeen[a] = st;
+                prev[a] = u;
+                if ((str[a] || under[a]) && lab[a] != pc) return a;
+                q[joinTail++] = a;
+            }
+            return -1;
+        }
+
+        /** joinOut()'s walk's step: as joinStep(), the walk ending at a street of a piece that touches an anchor, or beside an anchor. */
+        int joinOutStep(int u, int way, int pc, int st, int[] lab, int[] prev, boolean[] touches) {
+            int[] q = queue;
+            int ux = u % FRAME, uy = u / FRAME;
+            for (int d = 0; d < 4; d++) {
+                int ax = ux + JOIN_DX[d], ay = uy + JOIN_DY[d];
+                if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                int a = ay * FRAME + ax;
+                if (joinSeen[a] == st) continue;
+                boolean street = str[a] || under[a] || in.partedAnchor[a];
+                if (street && lab[a] != pc && touches[lab[a]]) { prev[a] = u; return a; }
+                if (street || !(way == 0 ? joinable(a, JOIN_DY[d] == 0) : groundJoinable(a, JOIN_DY[d] == 0))) continue;
+                joinSeen[a] = st;
+                prev[a] = u;
+                if (nearAnchor(a)) return a;
+                q[joinTail++] = a;
+            }
+            return -1;
+        }
+
+        /** A walk's start: piece pc's plots, in plot order, into queue q from its first (pieces()), each reached by walk st with no way back. Their count. */
+        int seedPiece(int pc, int[] lab, int[] prev, int[] q, int st) {
+            int qt = 0;
+            for (int i = pieceAt[pc]; i < nOrdered; i++) {
+                int p = ordered[i];
+                if (lab[p] == pc) { prev[p] = -1; joinSeen[p] = st; q[qt++] = p; }
+            }
+            return qt;
         }
 
         /**
@@ -2142,9 +2790,8 @@ public final class DistrictPlan {
                 if (sizes.length <= 1) break;
                 int main = 0;
                 for (int i = 1; i < sizes.length; i++) if (sizes[i] > sizes[main]) main = i;
-                Arrays.fill(prev, -2);
-                int qh = 0, qt = 0, hit = -1;
-                for (int p = 0; p < AREA; p++) if (lab[p] == main) { prev[p] = -1; q[qt++] = p; }
+                int st = ++joinStamp;
+                int qh = 0, qt = seedPiece(main, lab, prev, q, st), hit = -1;
                 while (qh < qt && hit < 0) {
                     int u = q[qh++];
                     int ux = u % FRAME, uy = u / FRAME;
@@ -2152,7 +2799,8 @@ public final class DistrictPlan {
                         int ax = ux + JOIN_DX[d], ay = uy + JOIN_DY[d];
                         if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
                         int a = ay * FRAME + ax;
-                        if (prev[a] != -2 || !joinable(a, JOIN_DY[d] == 0)) continue;
+                        if (joinSeen[a] == st || !joinable(a, JOIN_DY[d] == 0)) continue;
+                        joinSeen[a] = st;
                         prev[a] = u;
                         if ((str[a] || under[a]) && lab[a] != main) { hit = a; break; }
                         q[qt++] = a;
@@ -2176,16 +2824,14 @@ public final class DistrictPlan {
         int joinFromSmall() {
             int[] lab = scratchLab, prev = scratchPrev, q = queue;
             boolean[] parted = scratchParted;
-            Arrays.fill(parted, false);
+            clearParted();
             int joined = 0;
             for (int round = 0; round < JOIN_ROUNDS; round++) {
                 int[] sizes = pieces(lab);
                 if (sizes.length <= 1) break;
                 int n = sizes.length, main = 0;
                 for (int i = 1; i < n; i++) if (sizes[i] > sizes[main]) main = i;
-                int[] rep = new int[n];
-                Arrays.fill(rep, -1);
-                for (int p = 0; p < AREA; p++) if (lab[p] >= 0 && rep[lab[p]] < 0) rep[lab[p]] = p;
+                int[] rep = pieceRep;
                 Integer[] byPiece = new Integer[n];
                 for (int i = 0; i < n; i++) byPiece[i] = i;
                 Arrays.sort(byPiece, (a, b) -> sizes[a] != sizes[b] ? Integer.compare(sizes[a], sizes[b]) : Integer.compare(a, b));
@@ -2194,24 +2840,12 @@ public final class DistrictPlan {
                     if (pc == main || parted[rep[pc]]) continue;
                     int hit = -1;
                     for (int way = 0; way < 2 && hit < 0; way++) {
-                        Arrays.fill(prev, -2);
-                        int qh = 0, qt = 0;
-                        for (int p = rep[pc]; p < AREA; p++) if (lab[p] == pc) { prev[p] = -1; q[qt++] = p; }
-                        while (qh < qt && hit < 0) {
-                            int u = q[qh++];
-                            int ux = u % FRAME, uy = u / FRAME;
-                            for (int d = 0; d < 4; d++) {
-                                int ax = ux + JOIN_DX[d], ay = uy + JOIN_DY[d];
-                                if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
-                                int a = ay * FRAME + ax;
-                                if (prev[a] != -2 || !(way == 0 ? joinable(a, JOIN_DY[d] == 0) : groundJoinable(a, JOIN_DY[d] == 0))) continue;
-                                prev[a] = u;
-                                if ((str[a] || under[a]) && lab[a] != pc) { hit = a; break; }
-                                q[qt++] = a;
-                            }
-                        }
+                        int st = ++joinStamp;
+                        int qh = 0;
+                        joinTail = seedPiece(pc, lab, prev, q, st);
+                        while (qh < joinTail && hit < 0) hit = joinStep(q[qh++], way, pc, st, lab, prev);
                     }
-                    if (hit < 0) { parted[rep[pc]] = true; continue; }
+                    if (hit < 0) { markPartedPiece(rep[pc]); continue; }
                     for (int p = prev[hit]; p >= 0 && !((str[p] || under[p]) && lab[p] == pc); p = prev[p]) layJoin(p);
                     joined++;
                     any = true;
@@ -2241,22 +2875,18 @@ public final class DistrictPlan {
          */
         int joinOut() {
             if (proto) return 0;
-            boolean any = false;
-            for (int p = 0; p < AREA && !any; p++) any = in.anchor[p];
-            if (!any) return 0;
+            if (!anyAnchor) return 0;
             int[] lab = scratchLab, prev = scratchPrev, q = queue;
             boolean[] parted = scratchParted;
-            Arrays.fill(parted, false);
+            clearParted();
             int joined = 0;
             for (int round = 0; round < JOIN_ROUNDS; round++) {
-                int[] sizes = pieces(lab, in.partedAnchor);
+                int[] sizes = pieces(lab, true);
                 if (sizes.length == 0) break;
                 boolean[] touches = new boolean[sizes.length];
-                int[] rep = new int[sizes.length];
-                Arrays.fill(rep, -1);
-                for (int p = 0; p < AREA; p++) {
-                    if (lab[p] < 0) continue;
-                    if (rep[lab[p]] < 0) rep[lab[p]] = p;
+                int[] rep = pieceRep;
+                for (int i = 0; i < nOrdered; i++) {
+                    int p = ordered[i];
                     if (nearAnchor(p)) touches[lab[p]] = true;
                 }
                 int pc = -1;
@@ -2267,70 +2897,84 @@ public final class DistrictPlan {
                 if (pc < 0) break;
                 int hit = -1;
                 for (int way = 0; way < 2 && hit < 0; way++) {
-                    Arrays.fill(prev, -2);
-                    int qh = 0, qt = 0;
-                    for (int p = rep[pc]; p < AREA; p++) if (lab[p] == pc) { prev[p] = -1; q[qt++] = p; }
-                    while (qh < qt && hit < 0) {
-                        int u = q[qh++];
-                        int ux = u % FRAME, uy = u / FRAME;
-                        for (int d = 0; d < 4; d++) {
-                            int ax = ux + JOIN_DX[d], ay = uy + JOIN_DY[d];
-                            if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
-                            int a = ay * FRAME + ax;
-                            if (prev[a] != -2) continue;
-                            boolean street = str[a] || under[a] || in.partedAnchor[a];
-                            if (street && lab[a] != pc && touches[lab[a]]) { prev[a] = u; hit = a; break; }
-                            if (street || !(way == 0 ? joinable(a, JOIN_DY[d] == 0) : groundJoinable(a, JOIN_DY[d] == 0))) continue;
-                            prev[a] = u;
-                            if (nearAnchor(a)) { hit = a; break; }
-                            q[qt++] = a;
-                        }
-                    }
+                    int st = ++joinStamp;
+                    int qh = 0;
+                    joinTail = seedPiece(pc, lab, prev, q, st);
+                    while (qh < joinTail && hit < 0) hit = joinOutStep(q[qh++], way, pc, st, lab, prev, touches);
                 }
-                if (hit < 0) { parted[rep[pc]] = true; continue; }
+                if (hit < 0) { markPartedPiece(rep[pc]); partedOutCount++; continue; }
                 // The way laid: from the plot it reached (a street of a piece that touches, already laid) back to the piece.
                 for (int p = (str[hit] || under[hit] || in.partedAnchor[hit]) ? prev[hit] : hit;
                         p >= 0 && !((str[p] || under[p] || in.partedAnchor[p]) && lab[p] == pc); p = prev[p]) layJoin(p);
                 joined++;
             }
-            for (int i = 0; i < AREA; i++) if (parted[i]) partedOutCount++;
             return joined;
         }
 
         int partedOutCount;
+
+        /** The join's parted pieces' first plots (scratchParted), listed so they are cleared one by one rather than the frame (0.7.94). */
+        int[] partedAt = new int[16];
+        int nPartedAt;
+
+        void markPartedPiece(int p) {
+            scratchParted[p] = true;
+            if (nPartedAt == partedAt.length) partedAt = Arrays.copyOf(partedAt, nPartedAt * 2);
+            partedAt[nPartedAt++] = p;
+        }
+
+        void clearParted() {
+            for (int k = 0; k < nPartedAt; k++) scratchParted[partedAt[k]] = false;
+            nPartedAt = 0;
+        }
 
         /** PARTED (0.7.88): out.parted - each street plot whose piece, over the plan's final streets and the parted streets of the districts before it, touches no anchor, nor is the first district's largest piece. */
         void markParted(DistrictPlan out) {
             out.parted = new boolean[AREA];
             if (proto) return;
             int[] lab = scratchLab, stack = pieceStack;
-            Arrays.fill(lab, -1);
-            boolean[] on = new boolean[16];
-            int[] size = new int[16];
+            // Its plots in plot order (THE STREETS IN ORDER): the final streets - a plot with a street code is a street or
+            // beneath a highway - and the parted streets before it; a label is read on none but these.
+            nOrdered = streetsInOrder(paRows);
+            for (int i = 0; i < nOrdered; i++) lab[ordered[i]] = -1;
             int n = 0, largest = -1;
-            for (int p = 0; p < AREA; p++) {
-                if ((out.street[p] == 0 && !in.partedAnchor[p]) || lab[p] >= 0) continue;
-                if (n == on.length) { on = Arrays.copyOf(on, n * 2); size = Arrays.copyOf(size, n * 2); }
+            for (int i = 0; i < nOrdered; i++) {
+                int p = ordered[i];
+                if (lab[p] >= 0) continue;
+                if (n == partOn.length) { partOn = Arrays.copyOf(partOn, n * 2); partSize = Arrays.copyOf(partSize, n * 2); }
+                partOn[n] = false;
+                partSize[n] = 0;
                 int sp = 0;
                 stack[sp++] = p;
                 lab[p] = n;
-                while (sp > 0) {
-                    int u = stack[--sp];
-                    if (out.street[u] != 0) size[n]++;
-                    if (nearAnchor(u)) on[n] = true;
-                    int ux = u % FRAME, uy = u / FRAME;
-                    for (int d = 0; d < 4; d++) {
-                        int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
-                        if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
-                        int a = ay * FRAME + ax;
-                        if ((out.street[a] != 0 || in.partedAnchor[a]) && lab[a] < 0) { lab[a] = n; stack[sp++] = a; }
-                    }
-                }
-                if (largest < 0 || size[n] > size[largest]) largest = n;
+                while (sp > 0) sp = partedStep(out, stack[--sp], n, sp);
+                if (largest < 0 || partSize[n] > partSize[largest]) largest = n;
                 n++;
             }
-            if (in.root && largest >= 0) on[largest] = true;
-            for (int p = 0; p < AREA; p++) out.parted[p] = out.street[p] != 0 && !on[lab[p]];
+            if (in.root && largest >= 0) partOn[largest] = true;
+            for (int i = 0; i < nOrdered; i++) {
+                int p = ordered[i];
+                if (out.street[p] != 0 && !partOn[lab[p]]) out.parted[p] = true;
+            }
+        }
+
+        /** markParted()'s pieces: each one's plots with a street code, and whether it touches an anchor. */
+        int[] partSize = new int[16];
+        boolean[] partOn = new boolean[16];
+
+        /** markParted()'s step (a plot a call): plot u of piece n counted, whether it touches an anchor, its neighbours of the piece not yet labelled labelled and stacked above sp. The stack's height after. */
+        int partedStep(DistrictPlan out, int u, int n, int sp) {
+            int[] lab = scratchLab, stack = pieceStack;
+            if (out.street[u] != 0) partSize[n]++;
+            if (nearAnchor(u)) partOn[n] = true;
+            int ux = u % FRAME, uy = u / FRAME;
+            for (int d = 0; d < 4; d++) {
+                int ax = ux + TilePainter.DX[d], ay = uy + TilePainter.DY[d];
+                if (ax < 0 || ay < 0 || ax >= FRAME || ay >= FRAME) continue;
+                int a = ay * FRAME + ax;
+                if ((out.street[a] != 0 || in.partedAnchor[a]) && lab[a] < 0) { lab[a] = n; stack[sp++] = a; }
+            }
+            return sp;
         }
 
         /** Whether plot p is, or is beside (four ways), a plot of the frame's edge a district before this one lays a street on. */
@@ -2370,30 +3014,21 @@ public final class DistrictPlan {
             // The order: arterials first, then by the rank of the cell a plot is in (or west and north of), none last; row by
             // row within each - bucketed, each bucket filled in plot order.
             int buckets = 2 * (CELLS + 1);
-            int[] bucketOf = scratchPrev, start = new int[buckets + 1];
-            int n = 0, open = 0;
-            for (int p = 0; p < AREA; p++) {
-                bucketOf[p] = -1;
-                if (!str[p]) continue;
-                int x = p % FRAME, y = p / FRAME;
-                if (!surfaces(x, y)) {
-                    if (!proto && in.seamOpen[p]) open++;
-                    continue;
-                }
-                int ci = Math.floorDiv(x - 1, CELL), cj = Math.floorDiv(y - 1, CELL);
-                int rank = ci >= 0 && cj >= 0 && ci < CELLS_A_SIDE && cj < CELLS_A_SIDE && out.cellRank[ci + cj * CELLS_A_SIDE] >= 0
-                        ? out.cellRank[ci + cj * CELLS_A_SIDE] : CELLS;
-                int bk = (art[p] ? 0 : CELLS + 1) + rank;
-                bucketOf[p] = bk;
-                start[bk + 1]++;
-                n++;
-            }
+            int[] start = new int[buckets + 1];
+            // The streets read from their bits in plot order (THE STREETS IN ORDER, 0.7.94): each with its bucket, every one
+            // (allStr), and the one-sided seams (openAt).
+            int[] surfP = scratchPrev, surfB = pieceStack, allStr = scratchLab, openAt = ordered;
+            sN = 0;
+            sOpen = 0;
+            sAll = 0;
+            for (int y = 0; y < FRAME; y++) surfaceRow(out, y, start);
+            int n = sN, open = sOpen, nAll = sAll;
             for (int bk = 0; bk < buckets; bk++) start[bk + 1] += start[bk];
             // ...then the one-sided seams, in plot order (ONE-SIDED SEAMS).
             long[] keys = new long[n + open];
-            for (int p = 0; p < AREA; p++) if (bucketOf[p] >= 0) keys[start[bucketOf[p]]++] = p;
+            for (int i = 0; i < n; i++) keys[start[surfB[i]]++] = surfP[i];
             int k0 = n;
-            if (open > 0) for (int p = 0; p < AREA; p++) if (str[p] && in.seamOpen[p] && !surfaces(p % FRAME, p / FRAME)) keys[k0++] = p;
+            for (int i = 0; i < open; i++) keys[k0++] = openAt[i];
             double b = in.paved + in.gravel + in.highway, left = b;
             byte[] w = new byte[n + open];
             for (int i = 0; i < n; i++) {
@@ -2434,19 +3069,51 @@ public final class DistrictPlan {
             out.leftover[BuildingVisual.GRAVEL] = gv;
             out.leftover[BuildingVisual.PAVED] = pv;
             out.leftover[BuildingVisual.HIGHWAY] = hv;
-            for (int p = 0; p < AREA; p++) {
-                int code = out.street[p];
-                if (str[p] && code == 0) code = SEAM;
-                else if (!str[p] && under[p]) code = UNDER;
-                if (code == 0) continue;
-                int r = role[p] != 0 ? role[p] : ROLE_STREET;
-                if (art[p] && r == ROLE_STREET) r = ROLE_ARTERIAL;
-                if (blvd[p]) r = ROLE_BOULEVARD;
-                code |= r << ROLE_SHIFT;
-                if (in.terrain[p] == World.FRESH) code |= BRIDGE;
-                if (in.fixed[p] == FIXED_RAIL) code |= CROSSING;
-                out.street[p] = (short) code;
+            // Every street's code, and beneath a highway (its plots, hwList): no other plot has one.
+            for (int i = 0; i < nAll; i++) code(out, allStr[i]);
+            for (int i = 0; i < nHighway; i++) if (!str[hwList[i]] && under[hwList[i]]) code(out, hwList[i]);
+        }
+
+        /** surface()'s counts: the streets it surfaces, its one-sided seams, every street. */
+        int sN, sOpen, sAll;
+
+        /** surface()'s row y (a row a call): each street every street's (scratchLab); one it surfaces with its bucket (scratchPrev, pieceStack), counted in start[]; a one-sided seam (ordered). */
+        void surfaceRow(DistrictPlan out, int y, int[] start) {
+            int[] surfP = scratchPrev, surfB = pieceStack, allStr = scratchLab, openAt = ordered;
+            int base = y * WORDS;
+            for (int wd = 0; wd < WORDS; wd++) {
+                for (long bits = rowBits[base + wd]; bits != 0; bits &= bits - 1) {
+                    int x = (wd << 6) + Long.numberOfTrailingZeros(bits), p = y * FRAME + x;
+                    allStr[sAll++] = p;
+                    if (!surfaces(x, y)) {
+                        if (!proto && in.seamOpen[p]) openAt[sOpen++] = p;
+                        continue;
+                    }
+                    int ci = Math.floorDiv(x - 1, CELL), cj = Math.floorDiv(y - 1, CELL);
+                    int rank = ci >= 0 && cj >= 0 && ci < CELLS_A_SIDE && cj < CELLS_A_SIDE && out.cellRank[ci + cj * CELLS_A_SIDE] >= 0
+                            ? out.cellRank[ci + cj * CELLS_A_SIDE] : CELLS;
+                    int bk = (art[p] ? 0 : CELLS + 1) + rank;
+                    surfP[sN] = p;
+                    surfB[sN] = bk;
+                    start[bk + 1]++;
+                    sN++;
+                }
             }
+        }
+
+        /** Plot p's street code made whole: its kind (a seam with none, beneath a highway), role, bridge and crossing. */
+        void code(DistrictPlan out, int p) {
+            int code = out.street[p];
+            if (str[p] && code == 0) code = SEAM;
+            else if (!str[p] && under[p]) code = UNDER;
+            if (code == 0) return;
+            int r = role[p] != 0 ? role[p] : ROLE_STREET;
+            if (art[p] && r == ROLE_STREET) r = ROLE_ARTERIAL;
+            if (blvd[p]) r = ROLE_BOULEVARD;
+            code |= r << ROLE_SHIFT;
+            if (in.terrain[p] == World.FRESH) code |= BRIDGE;
+            if (in.fixed[p] == FIXED_RAIL) code |= CROSSING;
+            out.street[p] = (short) code;
         }
     }
 }

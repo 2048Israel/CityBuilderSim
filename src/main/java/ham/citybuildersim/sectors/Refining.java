@@ -8,7 +8,6 @@ import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.LandManager;
-import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Sectors;
 
@@ -316,6 +315,10 @@ public final class Refining extends Sector {
      */
     @Override
     public void endOfMonth(Game game) {
+        // The month as it ran (0.7.95, THE MONTH AS IT RAN): its flow, mix and rate, before the mix is struck anew.
+        monthsFlow = flow();
+        monthsMix = crudeMix.clone();
+        monthsRate = getOperatingRate();
         Sector.Input in = inputRow(Good.CRUDE);
         double local = in == null ? 0 : in.boughtLocal, imported = in == null ? 0 : in.imported;
         double[] lifted = game == null || game.getLandManager() == null ? null : game.getLandManager().getOilLiftedByGrade();
@@ -359,7 +362,37 @@ public final class Refining extends Sector {
         System.arraycopy(MEDIUM_MIX, 0, crudeMix, 0, crudeMix.length);
         planner.reset();
         crudeCleared = false;
+        monthsFlow = null;
+        monthsMix = null;
+        monthsRate = Double.NaN;
     }
+
+    /* ----- THE MONTH AS IT RAN (0.7.95, batch O11; runs/spec-oil.md 2.12) -----
+     * The flow the month's products were made on (Sector.produceStock() reads
+     * getCapacity(), the flow's, after every market has cleared), its crude
+     * mix and its operating rate - kept at the month's end before the mix is
+     * struck anew from what the month bought, which is next month's. The
+     * refinery's pictogram (RefineryView) draws them: its products are then
+     * the production rows' to the bit. Nothing reads them in the month; not
+     * saved - a city just loaded has none until a month runs, as the rows. */
+
+    /** The flow at nameplate the month's products were made on; null before a month has run. */
+    private RefineryFlow.Flow monthsFlow;
+
+    /** ...the crude mix it was struck on, each grade's share in Deposit.Grade's order; null before a month has run. */
+    private double[] monthsMix;
+
+    /** ...and the operating rate the month's production ran at; NaN before a month has run. */
+    private double monthsRate = Double.NaN;
+
+    /** The flow at nameplate this month's products were made on (THE MONTH AS IT RAN); null before a month has run since the city was founded or loaded. */
+    public RefineryFlow.Flow monthsFlow() { return monthsFlow; }
+
+    /** ...its crude mix, a copy, each grade's share in Deposit.Grade's order; null before a month has run. */
+    public double[] monthsMix() { return monthsMix == null ? null : monthsMix.clone(); }
+
+    /** ...and the operating rate it ran at; NaN before a month has run. */
+    public double monthsRate() { return monthsRate; }
 
     /* =====================================================================
        THE FLOW (0.7.80, batch O4; spec-oil 2.3)
@@ -528,6 +561,47 @@ public final class Refining extends Sector {
             setStock(g, getStockCapacity(g));
         }
         super.produceStock(g, market);
+    }
+
+    /*
+     * THE RUN'S PRODUCTS ALL LEAVE (0.7.98, batch O14; spec-oil 2.3, 2.5 and
+     * 6). A maker's line ships what the city will not take when the net
+     * export price clears the line's marginal cost (Sector.
+     * getExportBoundOutput()), and offers its stock at home at or above it
+     * (Sector.offer()). That cost is the energy, the water and the inputs at
+     * the rate, shared among its goods by their value at the local prices
+     * (Sector.costShareOf()) - a plant's input taken as what one more unit
+     * of its good would need.
+     *
+     * NOT THE REFINERS'. Their crude is the run's: the crude units buy it at
+     * nameplate x the rate (Sector.bid(); spec-oil 2.3, "crude runs at
+     * nameplate x the rate") and the flow makes every product of it at once,
+     * whatever any one line plans - so a line that idled saved none of the
+     * crude; it was bought and turned into nothing. On imported crude a slate
+     * at the city's prices is worth about its crude, and each product's share
+     * of the bill came out a percent or two over its net export price (the
+     * export price less the railway's charge): Jerus's 1008 city bought
+     * 1.65M t of crude a month, sold its petrol, diesel and lubricants at
+     * home, shipped a tenth of its slate and idled 83%, and its refiners
+     * lost $2.49B in 24 months on $0.49B of sales. The spec ships
+     * it: "Everything else, and any surplus, leaves by produceStock's
+     * export-bound line" (2.5); a product with no buyer here "fills 80% of
+     * its tank share before it ships" (6).
+     *
+     * So a refined product's marginal cost is its share of the power and
+     * water - the generic rule's "energy and water and nothing else" - and
+     * what the city does not take ships at the net export price. Whether
+     * the crude should be run at all is the crude units' question: the
+     * planner's when it builds them (THE SPREAD PLANNER), the distress
+     * rule's when they lose money.
+     */
+
+    /** A product's marginal cost to sell or ship: its share of the month's power and water over what the line makes at the rate - not of the crude, which is the run's (THE RUN'S PRODUCTS ALL LEAVE). Nothing made, the generic MAX_VALUE. */
+    @Override
+    public double getMarginalCostPerUnit(Good g) {
+        double output = getCapacity(g) * getOperatingRate();
+        if (output <= 0) return Double.MAX_VALUE;
+        return (getElectricityCost() + getWaterCost()) * costShareOf(g) / output;
     }
 
     /** The crude the crude units on site will take, in tonnes a month. */
@@ -874,12 +948,23 @@ public final class Refining extends Sector {
                 Double.isFinite(local) ? local : 0, Double.isFinite(imported) ? imported : 0);
     }
 
-    /** The grades the wells lift next: their month's potential laid along the city's oil from what has been lifted (LandManager.oilRuns()); MEDIUM with no wells. */
+    /**
+     * The grades the wells lift next: their month's potential laid along the
+     * city's oil from what has been lifted (LandManager.oilRuns()); MEDIUM
+     * with no wells. Since 0.7.93 each pool's wells along its own oil (THE
+     * TWO OIL POOLS): the land wells' part on the ground pool's runs, the
+     * platform wells' on the sea's (oilRunsAtSea()), the two blended by
+     * their tonnes.
+     */
     double[] wellsGradesAhead() {
         Oil wells = game == null ? null : game.getSectors().oil();
         LandManager land = game == null ? null : game.getLandManager();
         if (wells == null || land == null) return MEDIUM_MIX.clone();
-        return gradesAhead(land.oilRuns(), land.getExtracted(Resource.OIL), wells.getPotentialOutput());
+        double all = wells.getPotentialOutput(), atSea = Math.min(all, wells.getCapacityAtSea() * wells.getOperatingRate());
+        if (!(atSea > 0)) return gradesAhead(land.oilRuns(), land.getOilExtractedOnGround(), all);
+        double onLand = all - atSea;
+        return blend(gradesAhead(land.oilRuns(), land.getOilExtractedOnGround(), onLand), onLand,
+                gradesAhead(land.oilRunsAtSea(), land.getOilExtractedAtSea(), atSea), atSea);
     }
 
     /**

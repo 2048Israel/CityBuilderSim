@@ -511,8 +511,33 @@ public final class LandMap {
             return kind + ", " + (p.width[plot] >= 2 ? FULL_WORDS : HALF_WORDS) + role + more;
         }
         if (p.use[plot] == TilePainter.RAIL) return p.bridge[plot] ? "Railway, a bridge" : "Railway";
+        // The works at sea (0.7.97): a quay, a platform and its wells, its safety zone's ring, a pipe.
+        int sea = p.sea[plot];
+        switch (sea & TilePainter.SEA_WORK) {
+            case TilePainter.QUAY:   return QUAY_WORDS;
+            case TilePainter.JACKET: return JACKET_WORDS;
+            case TilePainter.WELL:   return WELL_WORDS;
+            default: break;
+        }
+        if ((sea & TilePainter.SEA_PIPE) != 0) return PIPE_WORDS;
+        if ((sea & TilePainter.SEA_RING) != 0) return RING_WORDS;
         return null;
     }
+
+    /** A terminal's quay in the hover (0.7.97): where its ships come alongside. */
+    public static final String QUAY_WORDS = "Quay: a terminal's berth, where its ships come alongside";
+
+    /** An offshore platform's jacket in the hover (0.7.97). */
+    public static final String JACKET_WORDS = "Offshore platform: its wells drilled from the jacket";
+
+    /** ...a platform well, on its sea site. */
+    public static final String WELL_WORDS = "Platform well, on its sea site";
+
+    /** ...the ring of a platform's safety zone (the research's 3.3 [W32]). */
+    public static final String RING_WORDS = "A platform's 500 m safety zone";
+
+    /** ...a crude pipeline, buried (spec-roads-and-ports.md 2.8). */
+    public static final String PIPE_WORDS = "Crude pipeline, buried: the platforms' crude ashore without tankers";
 
     /** A highway's ramp in the hover (0.7.89; spec 2.7). */
     public static final String RAMP_WORDS = " · a ramp";

@@ -1163,6 +1163,12 @@ public class ReadPathCheck {
         g.getSectors().refining().getCrudeMix(); g.getSectors().refining().slateOf(8300);
         ham.citybuildersim.sectors.Refining.slate(8300, g.getSectors().refining().getCrudeMix());
         lm.oilRuns(); lm.getOilLiftedByGrade();
+        // ...and the two pools (0.7.93): each pool's tonnes, E and what is left, the sea's runs, an order's pool, the month's lift by pool.
+        lm.getOilOwnedOnGround(); lm.getOilOwnedAtSea(); lm.getOilExtractedOnGround(); lm.getOilExtractedAtSea();
+        lm.getOilLeftOnGround(); lm.getOilLeftAtSea(); lm.oilRunsAtSea();
+        g.remainingFor(g.getBuildingManager().getTemplateByName("Oil Well"));
+        g.remainingFor(g.getBuildingManager().getTemplateByName("Platform Well"));
+        g.getSectors().oil().getLiftedOnGround(); g.getSectors().oil().getLiftedAtSea();
         for (Resource r : Resource.values()) { lm.getSites(r, true); lm.getSites(r, false); }
         g.getWorld().shelfTheta(); g.getWorld().depthAt(g.getCityLand().siteX(), g.getCityLand().siteY());
         g.getSectors().refining().estimatedMonthlyProfit(refineryT, g.getBusinessInvestment());
@@ -1703,6 +1709,8 @@ public class ReadPathCheck {
                 loaded.getLandManager().getMarket().getOffersState(), g.getLandManager().getMarket().getOffersState()));
         assertTrue("...and what was taken out of its ground", java.util.Arrays.equals(
                 loaded.getLandManager().getDepletionState(), g.getLandManager().getDepletionState()));
+        assertTrue("...and out of its offshore pool (0.7.93)",
+                loaded.getLandManager().getOilExtractedAtSea() == g.getLandManager().getOilExtractedAtSea());
     }
 
     static void cleanUp(Path root) {

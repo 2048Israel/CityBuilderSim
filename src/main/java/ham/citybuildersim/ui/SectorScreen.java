@@ -3735,6 +3735,10 @@ final class SectorScreen {
             + "city is loaded the units are not counted until a month runs: they are not saved.";
 
     void operationsPage(VBox page, Sector sector, boolean animate) {
+        // The refinery as a picture first (0.7.95): OPERATIONS · THE REFINERY.
+        if (sector instanceof ham.citybuildersim.sectors.Refining) page.getChildren().add(refineryCard(RefineryView.of(ui.game)));
+        // ...and the oil industry on the wells' page (0.7.96): OPERATIONS · THE OIL INDUSTRY.
+        if (sector instanceof ham.citybuildersim.sectors.Oil) page.getChildren().addAll(oilPanels(OilView.of(ui.game)));
         SectorFlow.Flow flow = SectorFlow.of(ui.game, sector);
         page.getChildren().add(flowCard(sector, flow, animate));
         // The new price model, read (0.7.45): the grocers' shelf, the kitchens' and the counters' margin.
@@ -3749,6 +3753,720 @@ final class SectorScreen {
         }
         page.getChildren().add(details(sector.key() + ":every", "every line, as the page listed them before 0.7.30",
                 detailsOpen, ui::redraw, () -> everyLine(sector)));
+    }
+
+    /* ------------------- OPERATIONS · THE REFINERY (0.7.95) -------------------
+       Batch O11 (runs/spec-oil.md 2.12; the research's mockup 1, Jerus's idea):
+       Refining's page opens on the refinery as a picture - the crude in on the
+       left, the column filled with its cuts, the conversion units, the tank
+       filled by product, and who took each on the right, every ribbon to one
+       scale - and a strip of the products under it: made, imported, exported,
+       in or out of the tanks, and the price here. The generic flow card follows
+       it, with the money.
+
+       NOTHING HERE IS WORKED OUT: every figure, every position, every word and
+       its colour is RefineryView's (the model's, pure, held by
+       RefineryViewCheck), and this paints it - a ribbon a Path of two curves, a
+       box a Rectangle, an outline an SVGPath, the words Plex at the picture's
+       sizes, the icons Icons' outlines - and puts what each unit, band and
+       taker says under the pointer. Laid out again at its own width when the
+       page's changes; the scale is the height's, so it does not move. */
+
+    /** The card's heading, its line, and what its (i) says. */
+    static final String REFINERY_HEAD = "THE REFINERY THIS MONTH";
+    static final String REFINERY_SUB = "where the crude went · ribbons to scale";
+    static final String REFINERY_INFO = "The month's crude comes in on the left, from the wells, the reserve or the world. "
+            + "The column cuts it by boiling point - gas at the top, residue at the bottom. Each cut goes through a "
+            + "conversion unit, or straight to the product it is worth as it is. The tank in the middle is filled by "
+            + "product, as the month made them; under it, what was taken out of the refiners' tanks and what was "
+            + "imported, hatched. On the right is who took each product: the cars' petrol at the pump, the vans' and "
+            + "the railway's diesel, the factories' lubricants, the roads' bitumen, the tanks, the world. Every ribbon "
+            + "is to the same scale. Point at a unit for its spread and what one more would need.";
+
+    /** Refining's picture and strip, or a line saying why there is nothing to draw. */
+    VBox refineryCard(RefineryView.View v) {
+        Label head = new Label(REFINERY_HEAD);
+        head.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        head.setMinWidth(Region.USE_PREF_SIZE);
+        Label sub = new Label(REFINERY_SUB);
+        sub.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        sub.setMinWidth(Region.USE_PREF_SIZE);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(Palette.GAP, head, infoButton(REFINERY_INFO, true), sub, gap);
+        row.setAlignment(Pos.CENTER_LEFT);
+        if (!v.drawn()) return card(row, caption(RefineryView.emptyWords(v), Palette.TEXT_MUTED));
+        RefineryPicture picture = new RefineryPicture(v, ui.game.getSectors());
+        Label scale = new Label(RefineryView.scaleWords(v.picture(PAGE_WIDE, RefineryView.HEIGHT).scale()));
+        scale.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        scale.setMinWidth(Region.USE_PREF_SIZE);
+        row.getChildren().add(scale);
+        return card(row, picture, refineryStrip(v));
+    }
+
+    /** The picture: RefineryView.picture() at the pane's width, painted. */
+    static final class RefineryPicture extends javafx.scene.layout.Pane {
+        private final RefineryView.View view;
+        private final Sectors sectors;
+        private double drawnAt = -1;
+
+        RefineryPicture(RefineryView.View view, Sectors sectors) {
+            this.view = view;
+            this.sectors = sectors;
+            setMinSize(RefineryView.LEAST_WIDTH, RefineryView.HEIGHT);
+            setPrefSize(PAGE_WIDE, RefineryView.HEIGHT);
+            setMaxSize(Double.MAX_VALUE, RefineryView.HEIGHT);
+            widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
+        }
+
+        private void draw(double width) {
+            if (!(width > 0) || Math.abs(width - drawnAt) < .5) return;
+            drawnAt = width;
+            getChildren().setAll(paint(view.picture(width, RefineryView.HEIGHT), sectors));
+        }
+    }
+
+    /** A picture's shapes as nodes, in its painting order: the ribbons, the boxes over them, the outlines, lines, icons and words. */
+    static List<Node> paint(RefineryView.Picture p, Sectors sectors) {
+        List<Node> out = new ArrayList<>();
+        for (RefineryView.Ribbon r : p.ribbons()) {
+            double xm = (r.x1() + r.x2()) / 2;
+            javafx.scene.shape.Path path = new javafx.scene.shape.Path(
+                    new javafx.scene.shape.MoveTo(r.x1(), r.a0()),
+                    new javafx.scene.shape.CubicCurveTo(xm, r.a0(), xm, r.b0(), r.x2(), r.b0()),
+                    new javafx.scene.shape.LineTo(r.x2(), r.b1()),
+                    new javafx.scene.shape.CubicCurveTo(xm, r.b1(), xm, r.a1(), r.x1(), r.a1()),
+                    new javafx.scene.shape.ClosePath());
+            path.setStroke(null);
+            path.setFill(r.hatched() ? hatch(r.from(), r.opacity())
+                    : r.from().equals(r.to()) ? javafx.scene.paint.Color.web(r.from(), r.opacity())
+                    : new javafx.scene.paint.LinearGradient(r.x1(), 0, r.x2(), 0, false, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                            new javafx.scene.paint.Stop(0, javafx.scene.paint.Color.web(r.from(), r.opacity())),
+                            new javafx.scene.paint.Stop(1, javafx.scene.paint.Color.web(r.to(), r.opacity()))));
+            path.setMouseTransparent(true);
+            out.add(path);
+        }
+        for (RefineryView.Box b : p.boxes()) {
+            javafx.scene.shape.Rectangle rect = new javafx.scene.shape.Rectangle(b.x(), b.y(), b.w(), b.h());
+            rect.setArcWidth(2 * b.round());
+            rect.setArcHeight(2 * b.round());
+            rect.setFill(b.fill() == null ? javafx.scene.paint.Color.TRANSPARENT
+                    : b.hatched() ? hatch(b.fill(), b.opacity()) : javafx.scene.paint.Color.web(b.fill(), b.opacity()));
+            if (b.stroke() != null) {
+                rect.setStroke(javafx.scene.paint.Color.web(b.stroke()));
+                rect.setStrokeWidth(b.dashed() ? 1 : 1.2);
+                if (b.dashed()) rect.getStrokeDashArray().setAll(3.0, 2.0);
+            } else {
+                rect.setStroke(null);
+            }
+            if (b.tip() != null) {
+                Tooltip t = new Tooltip(b.tip());
+                t.setWrapText(true);
+                t.setMaxWidth(420);
+                t.setShowDelay(Duration.millis(250));
+                Tooltip.install(rect, t);
+            } else {
+                rect.setMouseTransparent(true);
+            }
+            out.add(rect);
+        }
+        for (RefineryView.Outline o : p.outlines()) {
+            javafx.scene.shape.SVGPath s = new javafx.scene.shape.SVGPath();
+            s.setContent(o.path());
+            s.setFill(o.fill() == null ? null : javafx.scene.paint.Color.web(o.fill(), o.opacity()));
+            s.setStroke(o.stroke() == null ? null : javafx.scene.paint.Color.web(o.stroke()));
+            s.setMouseTransparent(true);
+            out.add(s);
+        }
+        for (RefineryView.Line l : p.lines()) {
+            javafx.scene.shape.Line line = new javafx.scene.shape.Line(l.x1(), l.y1(), l.x2(), l.y2());
+            line.setStroke(javafx.scene.paint.Color.web(l.colour()));
+            line.setMouseTransparent(true);
+            out.add(line);
+        }
+        for (RefineryView.Mark m : p.marks()) {
+            Region icon = icon(iconOf(m, sectors), m.colour(), m.size());
+            icon.relocate(m.x(), m.y());
+            out.add(icon);
+        }
+        for (RefineryView.Words w : p.words()) out.addAll(text(w));
+        return out;
+    }
+
+    /** A word and the run after it on its line, from its baseline, aligned on its x; over a halo of the ground if it asks. */
+    static List<Node> text(RefineryView.Words w) {
+        List<javafx.scene.text.Text> runs = new ArrayList<>();
+        double width = 0;
+        for (RefineryView.Words r = w; r != null; r = r.then()) {
+            javafx.scene.text.Text t = new javafx.scene.text.Text(r.text());
+            t.setFont(font(r.face(), r.size()));
+            t.setFill(javafx.scene.paint.Color.web(r.colour()));
+            runs.add(t);
+            width += t.getLayoutBounds().getWidth();
+        }
+        double x = w.align() == RefineryView.Align.MIDDLE ? w.x() - width / 2
+                : w.align() == RefineryView.Align.END ? w.x() - width : w.x();
+        List<Node> out = new ArrayList<>();
+        for (javafx.scene.text.Text t : runs) {
+            t.setX(x);
+            t.setY(w.y());
+            t.setMouseTransparent(true);
+            if (w.halo()) {
+                javafx.scene.text.Text halo = new javafx.scene.text.Text(t.getText());
+                halo.setFont(t.getFont());
+                halo.setX(x);
+                halo.setY(w.y());
+                halo.setFill(javafx.scene.paint.Color.web(RefineryView.GROUND));
+                halo.setStroke(javafx.scene.paint.Color.web(RefineryView.GROUND));
+                halo.setStrokeWidth(3.5);
+                halo.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+                halo.setMouseTransparent(true);
+                out.add(halo);
+            }
+            out.add(t);
+            x += t.getLayoutBounds().getWidth();
+        }
+        return out;
+    }
+
+    /** A picture's face at a size: Plex Sans at its three weights, Plex Mono at two. */
+    static javafx.scene.text.Font font(RefineryView.Face f, double size) {
+        return switch (f) {
+            case SANS -> Palette.Fonts.sansFont(size);
+            case SANS_MEDIUM -> Palette.Fonts.sansMediumFont(size);
+            case SANS_STRONG -> Palette.Fonts.sansStrongFont(size);
+            case MONO -> Palette.Fonts.monoFont(size);
+            case MONO_STRONG -> Palette.Fonts.monoStrongFont(size);
+        };
+    }
+
+    /** What an icon of the picture's is drawn as. */
+    static String iconOf(RefineryView.Mark m, Sectors sectors) {
+        return switch (m.icon()) {
+            case WELL -> Icons.WELL;
+            case PLATFORM -> Icons.PLATFORM;
+            case RESERVE -> Icons.DROP;
+            case TANKER -> Icons.TANKER;
+            case TANK -> Icons.TANK;
+            case CAR -> Icons.VEHICLES;
+            case LORRY -> Icons.LORRY;
+            case TRAIN -> Icons.RAIL;
+            case FACTORY -> Icons.INDUSTRY;
+            case ROAD -> Icons.ROADS;
+            case SECTOR -> Icons.ofSector(sectors == null ? null : sectors.byKey(m.sector()));
+            case GLOBE -> Icons.TRADE;
+            case IDLE -> Icons.ALERT;
+            case UNIT -> Icons.VESSEL;
+            case FLAME -> Icons.FLAME;
+        };
+    }
+
+    /** The import's hatching in a colour (mockup 1's: a stripe at .85 every eight pixels on a ground at .14), at an opacity; one pattern a colour and opacity. */
+    static javafx.scene.paint.ImagePattern hatch(String colour, double opacity) {
+        return HATCHES.computeIfAbsent(colour + "@" + opacity, k -> {
+            int n = 8;
+            javafx.scene.image.WritableImage tile = new javafx.scene.image.WritableImage(n, n);
+            javafx.scene.paint.Color on = javafx.scene.paint.Color.web(colour, .85 * opacity),
+                    off = javafx.scene.paint.Color.web(colour, .14 * opacity);
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++) tile.getPixelWriter().setColor(x, y, (x + y) % n < 3 ? on : off);
+            return new javafx.scene.paint.ImagePattern(tile, 0, 0, n, n, false);
+        });
+    }
+
+    private static final java.util.Map<String, javafx.scene.paint.ImagePattern> HATCHES = new java.util.HashMap<>();
+
+    /** THIS MONTH, BY PRODUCT: its heading, and a cell a product in equal columns. */
+    static VBox refineryStrip(RefineryView.View v) {
+        Label head = new Label(RefineryView.STRIP_HEAD);
+        head.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        head.setMinWidth(Region.USE_PREF_SIZE);
+        Label words = new Label(RefineryView.STRIP_WORDS);
+        words.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        HBox top = new HBox(Palette.GAP_LOOSE, head, words);
+        top.setAlignment(Pos.BASELINE_LEFT);
+        GridPane grid = new GridPane();
+        grid.setHgap(6);
+        List<RefineryView.Cell> cells = RefineryView.strip(v);
+        for (int i = 0; i < cells.size(); i++) {
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            c.setPercentWidth(100.0 / cells.size());
+            grid.getColumnConstraints().add(c);
+            grid.add(stripCell(cells.get(i)), i, 0);
+        }
+        return new VBox(6, top, grid);
+    }
+
+    /** One product's cell: its swatch and name, its bar, and its five lines. */
+    static VBox stripCell(RefineryView.Cell c) {
+        String colour = RefineryView.colour(c.good());
+        Region swatch = new Region();
+        swatch.setMinSize(10, 10);
+        swatch.setMaxSize(10, 10);
+        swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+        Label name = new Label(c.name());
+        name.setStyle(Palette.Fonts.sansMedium() + " -fx-font-size: 11.5px; -fx-text-fill: " + Palette.TEXT + ";");
+        HBox nameRow = new HBox(6, swatch, name);
+        nameRow.setAlignment(Pos.CENTER_LEFT);
+
+        // The bar: taken here, imported (hatched), exported (pale), each its share.
+        GridPane bar = new GridPane();
+        bar.setMinHeight(7);
+        bar.setPrefHeight(7);
+        bar.setMaxHeight(7);
+        bar.setStyle("-fx-background-color: #0e1620; -fx-background-radius: 2;");
+        double[] share = c.share();
+        javafx.scene.paint.Paint[] fills = { javafx.scene.paint.Color.web(colour), hatch(colour, 1),
+                javafx.scene.paint.Color.web(colour, .35) };
+        for (int i = 0; i < 3; i++) {
+            javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
+            cc.setPercentWidth(100 * share[i]);
+            bar.getColumnConstraints().add(cc);
+            Region seg = new Region();
+            seg.setMinHeight(7);
+            seg.setMaxWidth(Double.MAX_VALUE);
+            seg.setBackground(new javafx.scene.layout.Background(new javafx.scene.layout.BackgroundFill(fills[i], null, null)));
+            bar.add(seg, i, 0);
+        }
+
+        VBox cell = new VBox(4, nameRow, bar);
+        String[] figures = { c.made(), c.imported(), c.exported(), c.tanks(), c.price() };
+        VBox lines = new VBox(0);
+        for (int i = 0; i < figures.length; i++) {
+            Label l = new Label(RefineryView.CELL_LINES[i]);
+            l.setStyle("-fx-font-size: 10.5px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+            l.setMinWidth(Region.USE_PREF_SIZE);
+            Label f = new Label(figures[i]);
+            f.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10.5px; -fx-text-fill: "
+                    + (i == 1 && c.hot() ? Palette.WARN : Palette.TEXT_LABEL) + ";");
+            f.setMinWidth(Region.USE_PREF_SIZE);
+            Region spring = new Region();
+            HBox.setHgrow(spring, Priority.ALWAYS);
+            lines.getChildren().add(new HBox(4, l, spring, f));
+        }
+        cell.getChildren().add(lines);
+        cell.setStyle("-fx-padding: 6 8 7 8; -fx-background-color: " + Palette.PANEL + "; -fx-background-radius: 4;"
+                + " -fx-border-color: " + Palette.EDGE + "; -fx-border-radius: 4;");
+        cell.setMinWidth(0);
+        Tooltip.install(cell, new Tooltip(c.name() + ": made here " + c.made() + ", imported " + c.imported() + ", exported "
+                + c.exported() + ", into (+) or out of (−) the refiners' tanks " + c.tanks() + ", " + c.price() + " here."));
+        return cell;
+    }
+
+    /* ----------------- OPERATIONS · THE OIL INDUSTRY (0.7.96) -----------------
+       Batch O12 (runs/spec-oil.md 2.13; the research's mockup 2, Jerus's oil
+       industry screen): Oil's page opens on the whole chain - four figures
+       (what the wells lifted, the crude left in the two pools, the crude
+       bought abroad, the products across the edge); THE WELLS by type, land
+       and offshore, and LOCAL CRUDE, a bar a year of what they would lift if
+       nothing new were built; THE REFINERY's units, each with its spread at
+       the city's own prices and the gate that stops one more; PRODUCTS, each
+       one's price and month and who took it; and THE STRATEGIC RESERVE with
+       its two levers, Fill and Release. The generic flow card follows.
+
+       NOTHING HERE IS WORKED OUT: every figure, word and colour, the boxes'
+       and the tables' widths and the chart's shapes are OilView's (the
+       model's, pure, held by OilViewCheck); the chart is painted by paint(),
+       the refinery picture's painter; the levers are Levers' dial cards,
+       applied through Game.fillReserve() and releaseReserve(). */
+
+    /** What the oil industry's (i)s say. */
+    static final String OIL_WELLS_INFO = "The city's wells by kind. A land well lifts the ground pool - the oil under the city's dry"
+            + " ground - and loses a tenth of its lift a year; a platform's wells lift the offshore pool, hold their lift for three"
+            + " years and then lose 8.5% a year. Each wears out under ten barrels a day. The chart is what the wells standing"
+            + " would lift over the next ten years if nothing new were built: this month solid, each year ahead pale, each pool"
+            + " lifted no further than it has oil.";
+    static final String OIL_UNITS_INFO = "Every kind of refinery unit. Its spread is what it makes of a litre of its feed, less"
+            + " what that litre would fetch as it is, at the city's own prices - the import price for a product the city is short"
+            + " of, the export price for one it has spare. The refiners order the building that earns most on its cost and passes"
+            + " every gate - feed, ground, staff, money; the state says what stops one more. Point at a row for the whole of it.";
+    static final String OIL_PRODUCTS_INFO = "Every product of the refinery, and crude: its price here and the world's, the"
+            + " world's over crude's (the research's ladder), and this month's - made here, used here, imported, exported - with"
+            + " who took it, the same takers as Refining's picture.";
+    static final String OIL_RESERVE_INFO = "The city's own crude, in its Strategic Reserves' tanks. Fill orders crude for the next"
+            + " clearing - the wells' first, beside the refiners, then the world's - cut to the room left and to what the treasury"
+            + " can pay at crude's import price, paid at the next strike. Release offers that many tonnes a month to the"
+            + " refiners, and ships what they do not take at the export price. A fill stops a release; a release cancels a fill.";
+    static final String RESERVE_CAVEAT = "bought at the next clearing at what crude then costs; what the room cannot take lapses";
+    static final String RESERVE_CAVEAT_INFO = "A fill is an order for the next clearing: the wells' crude pro rata with the"
+            + " refiners, the world's for the rest, each at its price then - this reads it at today's import price. What the"
+            + " room left cannot hold lapses with the month. The treasury pays at the next strike.";
+    static final String RELEASE_CAVEAT = "offered to the refiners first; what they do not take ships at the export price";
+
+    /** The lever's ladder width on its dial card. */
+    static final double RESERVE_LADDER = 380;
+
+    /** Oil's panels, in the page's order. */
+    List<Node> oilPanels(OilView.View v) {
+        List<Node> out = new ArrayList<>();
+        out.add(oilFigures(v));
+        VBox wells = oilWells(v), units = oilUnits(v);
+        wells.setMinWidth(OilView.WELLS_W);
+        wells.setPrefWidth(OilView.WELLS_W);
+        wells.setMaxWidth(OilView.WELLS_W);
+        units.setMinWidth(0);
+        units.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(units, Priority.ALWAYS);
+        HBox two = new HBox(OilView.BOX_GAP, wells, units);
+        two.setAlignment(Pos.TOP_LEFT);
+        out.add(two);
+        out.add(oilProducts(v));
+        out.add(oilReserve(v));
+        return out;
+    }
+
+    /** A box of the page (mockup 2's .box): the panel's ground, an edge, its rows. */
+    static VBox oilBox(Node... rows) {
+        VBox b = new VBox(8);
+        for (Node n : rows) if (n != null) b.getChildren().add(n);
+        b.setStyle(String.format("-fx-padding: %s %s %s %s; -fx-background-color: %s; -fx-background-radius: 4;"
+                        + " -fx-border-color: %s; -fx-border-radius: 4;", OilView.BOX_PAD_Y, OilView.BOX_PAD_X, OilView.BOX_PAD_Y,
+                OilView.BOX_PAD_X, Palette.PANEL, Palette.EDGE));
+        return b;
+    }
+
+    /** A box's heading: its title, its line, an (i), and something at its right. */
+    static HBox oilHead(String title, String line, String info, Node right) {
+        Label t = new Label(title);
+        t.setStyle(Palette.strong(Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
+        t.setMinWidth(Region.USE_PREF_SIZE);
+        HBox row = new HBox(Palette.GAP, t);
+        if (info != null) row.getChildren().add(infoButton(info, true));
+        if (line != null) {
+            Label l = new Label(line);
+            l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            l.setMinWidth(0);
+            row.getChildren().add(l);
+        }
+        if (right != null) {
+            Region gap = new Region();
+            HBox.setHgrow(gap, Priority.ALWAYS);
+            row.getChildren().addAll(gap, right);
+        }
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** Words at a size in a colour, wrapping. */
+    static Label oilWords(String text, double size, String colour) {
+        Label l = new Label(text);
+        l.setWrapText(true);
+        l.setMinWidth(0);
+        l.setStyle("-fx-font-size: " + size + "px; -fx-text-fill: " + colour + ";");
+        return l;
+    }
+
+    /** A figure at a size in a colour, the regular weight, never cut. */
+    static Label oilFigure(String text, double size, String colour) {
+        Label l = new Label(text);
+        l.setMinWidth(Region.USE_PREF_SIZE);
+        l.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: " + size + "px; -fx-text-fill: " + colour + ";");
+        return l;
+    }
+
+    /** A tooltip on a node. */
+    static void oilTip(Node n, String tip) {
+        if (tip == null || tip.isEmpty()) return;
+        Tooltip t = new Tooltip(tip);
+        t.setWrapText(true);
+        t.setMaxWidth(420);
+        t.setShowDelay(Duration.millis(250));
+        Tooltip.install(n, t);
+    }
+
+    /** A swatch: a product's or a series' colour in a small square. */
+    static Region oilSwatch(String colour) {
+        Region s = new Region();
+        s.setMinSize(10, 10);
+        s.setMaxSize(10, 10);
+        s.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
+        return s;
+    }
+
+    /** The four figures across the page (mockup 2's .figs). */
+    static GridPane oilFigures(OilView.View v) {
+        GridPane grid = new GridPane();
+        grid.setHgap(OilView.TILE_GAP);
+        List<OilView.Figure> figures = OilView.figures(v);
+        for (int i = 0; i < figures.size(); i++) {
+            OilView.Figure f = figures.get(i);
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            c.setPercentWidth(100.0 / figures.size());
+            grid.getColumnConstraints().add(c);
+            Label label = new Label(f.label());
+            label.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            Label value = new Label(f.value());
+            value.setStyle(Palette.figure((int) OilView.FIGURE_SIZE, f.colour()));
+            value.setMinWidth(Region.USE_PREF_SIZE);
+            Label line = new Label(f.line());
+            line.setStyle("-fx-font-size: " + OilView.TILE_WORDS + "px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+            line.setMinWidth(0);
+            VBox tile = new VBox(2, label, value, line);
+            tile.setMaxWidth(Double.MAX_VALUE);
+            tile.setStyle(String.format("-fx-padding: 8 %s 8 %s; -fx-background-color: %s; -fx-background-radius: 4;"
+                    + " -fx-border-color: %s; -fx-border-radius: 4;", OilView.TILE_PAD_X, OilView.TILE_PAD_X, Palette.RAISED, Palette.EDGE));
+            oilTip(tile, f.tip());
+            grid.add(tile, i, 0);
+        }
+        return grid;
+    }
+
+    /** THE WELLS: the two cards by kind, the chart with its legend, the investors' words. */
+    VBox oilWells(OilView.View v) {
+        VBox land = oilCard(Icons.WELL, "Land wells", String.format("%,d", v.landWells()));
+        for (OilView.Fact f : OilView.landFacts(v)) land.getChildren().add(oilFact(f));
+        VBox sea = oilCard(Icons.PLATFORM, "Offshore platforms", String.format("%,d", v.platforms().size()));
+        if (v.platforms().isEmpty()) {
+            sea.getChildren().add(oilWords(OilView.noPlatformWords(v), OilView.CARD_WORDS, Palette.TEXT_MUTED));
+        } else {
+            for (OilView.PlatformLine p : OilView.platformLines(v)) sea.getChildren().add(oilPlatform(p));
+        }
+        for (OilView.Fact f : OilView.seaFacts(v)) sea.getChildren().add(oilFact(f));
+        // ...side by side, as tall as the taller (mockup 2's .wt grid).
+        land.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        sea.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        GridPane cards = new GridPane();
+        cards.setHgap(OilView.CARD_GAP);
+        for (int i = 0; i < 2; i++) {
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            c.setPercentWidth(50);
+            cards.getColumnConstraints().add(c);
+        }
+        cards.add(land, 0, 0);
+        cards.add(sea, 1, 0);
+
+        HBox legend = new HBox(10);
+        legend.setAlignment(Pos.CENTER_RIGHT);
+        for (OilView.Series s : v.series()) {
+            Label name = new Label(s.name());
+            name.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+            name.setMinWidth(Region.USE_PREF_SIZE);
+            HBox item = new HBox(4, oilSwatch(s.colour()), name);
+            item.setAlignment(Pos.CENTER_LEFT);
+            legend.getChildren().add(item);
+        }
+        javafx.scene.layout.Pane chart = new javafx.scene.layout.Pane();
+        chart.setMinSize(OilView.CHART_W, OilView.CHART_HEIGHT);
+        chart.setPrefSize(OilView.CHART_W, OilView.CHART_HEIGHT);
+        chart.setMaxSize(OilView.CHART_W, OilView.CHART_HEIGHT);
+        chart.getChildren().setAll(paint(v.chart(OilView.CHART_W, OilView.CHART_HEIGHT), ui.game.getSectors()));
+
+        VBox box = oilBox(oilHead("THE WELLS", "by type", OIL_WELLS_INFO, null), cards,
+                oilHead("LOCAL CRUDE · B/D", null, null, legend), chart);
+        for (String w : OilView.drillingWords(v)) box.getChildren().add(oilWords(w, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        return box;
+    }
+
+    /** A wells card (mockup 2's .wc): its icon, its name, its count at the right. */
+    static VBox oilCard(String svg, String name, String count) {
+        Label n = new Label(name);
+        n.setStyle(Palette.strong((int) OilView.CARD_HEAD, Palette.TEXT));
+        n.setMinWidth(0);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox head = new HBox(7, icon(svg, Palette.ORE, 17), n, gap, oilFigure(count, 12, Palette.TEXT_LABEL));
+        head.setAlignment(Pos.CENTER_LEFT);
+        VBox card = new VBox(1, head);
+        card.setStyle(String.format("-fx-padding: 8 %s 8 %s; -fx-background-color: %s; -fx-background-radius: 4;"
+                + " -fx-border-color: %s; -fx-border-radius: 4;", OilView.CARD_PAD_X, OilView.CARD_PAD_X, Palette.RAISED, Palette.EDGE));
+        return card;
+    }
+
+    /** A line of a wells card (mockup 2's .kv): its words, its figure at the right. */
+    static HBox oilFact(OilView.Fact f) {
+        Label l = new Label(f.label());
+        l.setStyle("-fx-font-size: " + OilView.CARD_WORDS + "px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
+        l.setMinWidth(0);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox row = new HBox(8, l, gap, oilFigure(f.value(), OilView.CARD_WORDS, f.colour()));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
+    }
+
+    /** A platform's lines (mockup 2's .plat): its colour, its name and its figure, and under them its words. */
+    static VBox oilPlatform(OilView.PlatformLine p) {
+        Label name = new Label(p.name());
+        name.setStyle("-fx-font-size: " + OilView.CARD_WORDS + "px; -fx-text-fill: " + Palette.TEXT_LABEL + ";");
+        name.setMinWidth(0);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox top = new HBox(OilView.DOT_GAP, oilSwatch(p.colour()), name, gap, oilFigure(p.figure(), OilView.CARD_WORDS, Palette.TEXT));
+        top.setAlignment(Pos.CENTER_LEFT);
+        Label words = oilWords(p.words(), OilView.CARD_WORDS - 1, Palette.TEXT_MUTED);
+        words.setStyle(words.getStyle() + " -fx-padding: 0 0 0 " + (OilView.DOT + OilView.DOT_GAP) + ";");
+        VBox lines = new VBox(0, top, words);
+        lines.setStyle("-fx-padding: 3 0 3 0; -fx-border-color: #1d2b3c transparent transparent transparent;");
+        oilTip(lines, p.tip());
+        return lines;
+    }
+
+    /** A table's grid and its heads: a column a width (0: it takes the rest), each column's cells to the right where `right` says. */
+    static GridPane oilTable(double[] widths, String[] heads, boolean[] right) {
+        GridPane g = new GridPane();
+        g.setVgap(3);
+        for (int i = 0; i < widths.length; i++) {
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            if (widths[i] > 0) {
+                c.setMinWidth(widths[i]);
+                c.setPrefWidth(widths[i]);
+                c.setMaxWidth(widths[i]);
+            } else {
+                c.setMinWidth(0);
+                c.setHgrow(Priority.ALWAYS);
+            }
+            c.setHalignment(right[i] ? javafx.geometry.HPos.RIGHT : javafx.geometry.HPos.LEFT);
+            g.getColumnConstraints().add(c);
+            Label h = new Label(heads[i].toUpperCase());
+            h.setStyle(Palette.words((int) OilView.HEAD_WORDS, Palette.TEXT_MUTED));
+            h.setMinWidth(0);
+            g.add(oilCell(h, right[i]), i, 0);
+        }
+        return g;
+    }
+
+    /** A cell: its node in the cell's padding, to the left or the right; a left cell's words wrap in the column's width. */
+    static HBox oilCell(Node n, boolean right) {
+        HBox c = new HBox(n);
+        if (!right) HBox.setHgrow(n, Priority.ALWAYS);
+        c.setAlignment(right ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
+        c.setMinWidth(0);
+        c.setStyle(String.format("-fx-padding: 3 %s 3 %s;", OilView.CELL_PAD_X, OilView.CELL_PAD_X));
+        return c;
+    }
+
+    /** A rule under a table's row. */
+    static Region oilRule() {
+        Region r = new Region();
+        r.setMinHeight(1);
+        r.setMaxHeight(1);
+        r.setMaxWidth(Double.MAX_VALUE);
+        r.setStyle("-fx-background-color: #18263a;");
+        return r;
+    }
+
+    /** A pill (mockup 2's .pill): its words in its colour, an edge of it. */
+    static Label oilPill(String text, String colour) {
+        Label l = new Label(text);
+        l.setMinWidth(Region.USE_PREF_SIZE);
+        l.setStyle(String.format("-fx-font-size: %spx; -fx-text-fill: %s; -fx-padding: 1 %s 1 %s; -fx-border-color: %s;"
+                + " -fx-border-radius: 3; -fx-background-radius: 3;", OilView.PILL_WORDS, colour, OilView.PILL_PAD_X,
+                OilView.PILL_PAD_X, tint(colour, .45)));
+        return l;
+    }
+
+    /** THE REFINERY: its units as a table, and the refiners' word. */
+    static VBox oilUnits(OilView.View v) {
+        boolean[] right = { false, true, true, true, false };
+        GridPane t = oilTable(OilView.UNIT_WIDTHS, OilView.UNIT_HEADS, right);
+        int row = 1;
+        for (OilView.UnitLine u : OilView.unitLines(v)) {
+            t.add(oilRule(), 0, row++, OilView.UNIT_WIDTHS.length, 1);
+            Label name = new Label(u.name());
+            name.setStyle(Palette.Fonts.sansMedium() + " -fx-font-size: " + OilView.CELL + "px; -fx-text-fill: " + Palette.TEXT + ";");
+            name.setMinWidth(Region.USE_PREF_SIZE);
+            HBox top = new HBox(6, name, oilFigure(u.count(), OilView.CELL, Palette.TEXT_MUTED));
+            top.setAlignment(Pos.BASELINE_LEFT);
+            VBox first = new VBox(1, top, oilWords(u.what(), OilView.HEAD_WORDS, Palette.TEXT_MUTED));
+            first.setMinWidth(0);
+            HBox c0 = oilCell(first, false);
+            oilTip(c0, u.tip());
+            t.add(c0, 0, row);
+            t.add(oilCell(oilFigure(u.barrels(), OilView.CELL, Palette.TEXT_LABEL), true), 1, row);
+            t.add(oilCell(oilFigure(u.running(), OilView.CELL, "on site".equals(u.running()) ? Palette.ACCENT
+                    : "idle".equals(u.running()) ? Palette.WARN : Palette.TEXT_LABEL), true), 2, row);
+            t.add(oilCell(oilFigure(u.spread(), OilView.CELL, u.spreadColour()), true), 3, row);
+            HBox state = new HBox(OilView.PILL_GAP, oilPill(u.state(), u.stateColour()),
+                    oilWords(u.words(), OilView.CELL_NOTE, Palette.TEXT_MUTED));
+            state.setAlignment(Pos.CENTER_LEFT);
+            HBox c4 = oilCell(state, false);
+            oilTip(c4, u.tip());
+            t.add(c4, 4, row++);
+        }
+        VBox box = oilBox(oilHead("THE REFINERY", "its units · spread: what a unit makes less its feed, a litre of feed, at the"
+                + " city's own prices", OIL_UNITS_INFO, null), t);
+        String w = OilView.orderingWords(v);
+        if (w != null) box.getChildren().add(oilWords(w, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        return box;
+    }
+
+    /** PRODUCTS: crude and the nine, a row each. */
+    static VBox oilProducts(OilView.View v) {
+        boolean[] right = { false, true, true, true, true, true, true, true, false };
+        GridPane t = oilTable(OilView.PRODUCT_WIDTHS, OilView.PRODUCT_HEADS, right);
+        int row = 1;
+        for (OilView.ProductLine p : OilView.productLines(v)) {
+            t.add(oilRule(), 0, row++, OilView.PRODUCT_WIDTHS.length, 1);
+            Label name = new Label(p.name());
+            name.setStyle("-fx-font-size: " + OilView.CELL + "px; -fx-text-fill: " + Palette.TEXT + ";");
+            name.setMinWidth(Region.USE_PREF_SIZE);
+            HBox first = new HBox(7, oilSwatch(p.colour()), name);
+            if (p.note() != null) first.getChildren().add(oilWords("(" + p.note() + ")", OilView.CELL_NOTE, Palette.TEXT_MUTED));
+            first.setAlignment(Pos.CENTER_LEFT);
+            HBox c0 = oilCell(first, false);
+            oilTip(c0, p.tip());
+            t.add(c0, 0, row);
+            String[] figs = { p.price(), p.world(), p.ladder(), p.made(), p.used(), p.imported(), p.exported() };
+            for (int i = 0; i < figs.length; i++) {
+                t.add(oilCell(oilFigure(figs[i], OilView.CELL, i == 5 && p.hot() ? Palette.WARN : Palette.TEXT_LABEL), true), i + 1, row);
+            }
+            t.add(oilCell(oilWords(p.where(), OilView.CELL_NOTE, Palette.TEXT_MUTED), false), 8, row++);
+        }
+        return oilBox(oilHead("PRODUCTS", OilView.PRODUCTS_WORDS, OIL_PRODUCTS_INFO, oilWords(OilView.PRODUCTS_RIGHT,
+                Palette.SIZE_LABEL, Palette.TEXT_MUTED)), t);
+    }
+
+    /** THE STRATEGIC RESERVE: its lines, and its two levers on dial cards; or the words that none stands. */
+    VBox oilReserve(OilView.View v) {
+        OilView.Reserve r = v.reserve();
+        HBox head = oilHead("THE STRATEGIC RESERVE", "the city's own crude, in its own tanks", OIL_RESERVE_INFO, null);
+        if (!r.shown()) return oilBox(head, oilWords(OilView.NO_RESERVE, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED));
+        GridPane facts = new GridPane();
+        facts.setHgap(24);
+        facts.setVgap(2);
+        for (int i = 0; i < 2; i++) {
+            javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
+            c.setPercentWidth(50);
+            facts.getColumnConstraints().add(c);
+        }
+        List<OilView.Fact> lines = OilView.reserveFacts(v);
+        for (int i = 0; i < lines.size(); i++) facts.add(oilFact(lines.get(i)), i % 2, i / 2);
+        Game g = ui.game;
+
+        double fillMost = Math.max(r.fillMost(), r.fill());
+        Ladder fill = fillMost > 0 ? ui.policyScreen.ownLadder("reserveFill", r.fill(), 0, fillMost, OilView.step(fillMost),
+                RefineryView::tonnes) : null;
+        double fillWant = ui.policyScreen.staged("reserveFill", r.fill());
+        VBox fillCard = Levers.dialCard(new Levers.DialCard(Icons.TANK, Palette.ORE, "FILL", OIL_RESERVE_INFO,
+                OilView.fillReading(r), OilView.fillStatus(r), null, fill, fillWant, effects(g, x -> OilView.fillEffects(r, x)),
+                RESERVE_CAVEAT, RESERVE_CAVEAT_INFO, ui.policyScreen.applyFoot("reserveFill",
+                        "Order " + RefineryView.tonnes(fillWant) + " of crude", () -> g.fillReserve(fillWant))),
+                RESERVE_LADDER, false);
+
+        double releaseMost = r.releaseMost();
+        Ladder release = releaseMost > 0 ? ui.policyScreen.ownLadder("reserveRelease", r.release(), 0, releaseMost,
+                OilView.step(releaseMost), t -> RefineryView.tonnes(t) + " a month") : null;
+        double releaseWant = ui.policyScreen.staged("reserveRelease", r.release());
+        VBox releaseCard = Levers.dialCard(new Levers.DialCard(Icons.DROP, Palette.ORE, "RELEASE", OIL_RESERVE_INFO,
+                OilView.releaseReading(r), OilView.releaseStatus(r), null, release, releaseWant,
+                effects(g, x -> OilView.releaseEffects(r, x)), RELEASE_CAVEAT, OIL_RESERVE_INFO,
+                ui.policyScreen.applyFoot("reserveRelease", releaseWant > 0 ? "Release " + RefineryView.tonnes(releaseWant)
+                        + " a month" : "Stop the release", () -> g.releaseReserve(releaseWant))),
+                RESERVE_LADDER, false);
+        return oilBox(head, facts, fillCard, releaseCard);
+    }
+
+    /** A lever's effects (OilView.Effect) as the dial card's rows: tonnes in the model's words, money in the city's mark. */
+    static java.util.function.DoubleFunction<List<Pieces.Effect>> effects(Game g,
+            java.util.function.DoubleFunction<List<OilView.Effect>> of) {
+        return x -> {
+            List<Pieces.Effect> out = new ArrayList<>();
+            for (OilView.Effect e : of.apply(x)) {
+                java.util.function.DoubleFunction<String> fmt = e.unit() == OilView.Unit.MONEY ? t -> FundScreen.d(g, t)
+                        : RefineryView::tonnes;
+                out.add(Pieces.Effect.of(e.label(), e.before(), e.after(), fmt));
+            }
+            return out;
+        };
     }
 
     /* ---------------------------- THE SHELF (0.7.45) ----------------------------

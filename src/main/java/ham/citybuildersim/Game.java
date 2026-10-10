@@ -1013,7 +1013,82 @@ public class Game {
     /** The city map: drawn canonically the first time it is asked for, then kept up month by month. */
     public CityMap getCityMap() {
         if (cityMap == null) cityMap = drawMap();
+        if (mapAtSeaStale) {
+            // The oil at sea handed over once the city it is read from is whole (0.7.97): after a draw or a load.
+            mapAtSeaStale = false;
+            cityMap.atSea(mapAtSea());
+        }
         return cityMap;
+    }
+
+    /** Whether the map's oil at sea is to be handed over again before it is next read (0.7.97): set by a draw and a load. */
+    private boolean mapAtSeaStale;
+
+    /**
+     * The oil at sea as the map draws it (0.7.97, batch O13; CityMap's THE
+     * OIL AT SEA, runs/spec-oil.md 2.12): each platform's jacket in the
+     * middle of the sea sites its slots hold on its field - the platforms on
+     * a field taking its sites in their order, as sectors.Oil.slotsOf() deals
+     * them - with its wells on the first of them; and each pipe from its
+     * field's first jacket (its middle with none) toward the founding site,
+     * as far as its kilometres standing reach, dealt to the records oldest
+     * first (sectors.Oil.pipedFields()'s way). Pure; none with no platform and
+     * no pipe, read without touching the ground.
+     */
+    CityMap.AtSea mapAtSea() {
+        ham.citybuildersim.sectors.Oil oil = getSectors().oil();
+        if (oil == null) return CityMap.AtSea.NONE;
+        List<ham.citybuildersim.sectors.Oil.Platform> ps = oil.platformsNow();
+        List<ham.citybuildersim.sectors.Oil.Pipeline> ls = oil.pipelinesNow();
+        if (ps.isEmpty() && ls.isEmpty()) return CityMap.AtSea.NONE;
+        List<LandManager.SeaField> fields = oil.shallowFields();
+        int[] slots = ham.citybuildersim.sectors.Oil.slotsOf(ps, fields, oil.slotsEach());
+        java.util.Map<Long, Integer> used = new java.util.HashMap<>();
+        java.util.Map<Long, double[]> first = new java.util.HashMap<>();
+        List<CityMap.Jacket> jackets = new java.util.ArrayList<>();
+        for (int i = 0; i < ps.size(); i++) {
+            ham.citybuildersim.sectors.Oil.Platform p = ps.get(i);
+            Deposit f = seaFieldOf(fields, p.cell(), p.index());
+            if (f == null) continue;
+            long key = ((long) p.cell() << 32) | (p.index() & 0xffffffffL);
+            int from = used.getOrDefault(key, 0);
+            used.put(key, from + slots[i]);
+            double sx = 0, sy = 0;
+            int n = 0;
+            List<Long> wells = new java.util.ArrayList<>();
+            for (int k = from; k < from + slots[i] && k < f.sites(); k++) {
+                double[] at = f.siteAt(k);
+                double cx = f.x() + at[0], cy = f.y() + at[1];
+                sx += cx + 0.5;
+                sy += cy + 0.5;
+                n++;
+                if (k - from < p.wells()) wells.add(((long) Math.floor(cx) << 32) | ((long) Math.floor(cy) & 0xffffffffL));
+            }
+            if (n == 0) { sx = f.x() + 0.5; sy = f.y() + 0.5; n = 1; }
+            double[] at = { sx / n, sy / n };
+            first.putIfAbsent(key, at);
+            jackets.add(new CityMap.Jacket(at[0], at[1], p.wells(), List.copyOf(wells)));
+        }
+        List<CityMap.Pipe> pipes = new java.util.ArrayList<>();
+        CityLand land = landManager.getCityLand();
+        int left = oil.pipeKmStanding();
+        for (ham.citybuildersim.sectors.Oil.Pipeline l : ls) {
+            int in = Math.min(left, l.km());
+            left -= in;
+            Deposit f = seaFieldOf(fields, l.cell(), l.index());
+            if (f == null || in <= 0) continue;
+            double frac = Math.min(1, in / (double) ham.citybuildersim.sectors.Oil.lengthKm(f, land.siteX(), land.siteY()));
+            double[] from = first.getOrDefault(((long) l.cell() << 32) | (l.index() & 0xffffffffL), new double[] { f.x() + 0.5, f.y() + 0.5 });
+            double tx = land.siteX() + 0.5, ty = land.siteY() + 0.5;
+            pipes.add(new CityMap.Pipe(from[0], from[1], from[0] + (tx - from[0]) * frac, from[1] + (ty - from[1]) * frac));
+        }
+        return new CityMap.AtSea(List.copyOf(jackets), List.copyOf(pipes));
+    }
+
+    /** A sea field in the list by its world cell and index, or null. */
+    private static Deposit seaFieldOf(List<LandManager.SeaField> fields, int cell, int index) {
+        for (LandManager.SeaField f : fields) if (f.field().cell() == cell && f.field().index() == index) return f.field();
+        return null;
     }
 
     /** Whether the city map has been drawn: a city never asked for it has none, and its months pay nothing for it. */
@@ -1106,6 +1181,7 @@ public class Game {
             return false;
         }
         cityMap = map;
+        mapAtSeaStale = true;
         return true;
     }
 
@@ -1126,6 +1202,7 @@ public class Game {
 
     /** The map drawn canonically from the city as it stands. */
     private CityMap drawMap() {
+        mapAtSeaStale = true;
         return CityMap.canonical(landManager.getCityLand(), landManager::remainingByHolding, getMapTypes(), getMapCounts());
     }
 
@@ -1139,6 +1216,8 @@ public class Game {
     private void reconcileMap() {
         if (cityMap == null) return;
         try {
+            // The oil at sea as it stands this month (0.7.97): none, read without touching the ground, in a city with none.
+            cityMap.atSea(mapAtSea());
             if (!cityMap.reconcile(getMapCounts())) cityMap = drawMap();
         } catch (RuntimeException e) {
             mapFailures++;
@@ -3754,10 +3833,7 @@ public class Game {
      * @return the tonnes ordered; nothing with no room or no money
      */
     public double fillReserve(double tonnes) {
-        double room = Math.max(0, StrategicReserve.room(buildingManager) - reserve.getTonnes());
-        double price = getMarkets().get(Good.CRUDE).importPrice();
-        double afford = price > 0 ? discretionaryRoom() / price : 0;
-        double order = Math.max(0, Math.min(tonnes, Math.min(room, afford)));
+        double order = Math.max(0, Math.min(tonnes, reserveFillMost()));
         if (!(order > 0) || !Double.isFinite(order)) return 0;
         boolean releasing = reserve.getRelease() > 0;
         reserve.orderFill(order);
@@ -3765,6 +3841,19 @@ public class Game {
                 releasing ? ", the release stopped" : ""));
         GameLog.note(String.format("The city ordered %,.0f t of crude for its strategic reserve.", order));
         return order;
+    }
+
+    /**
+     * The most a fill order would take now (fillReserve()'s cut): the room
+     * the reserve's tanks have left, and what the treasury could pay at
+     * crude's import price - the reach of the Fill lever on Oil's page
+     * (0.7.96, OilView). Nothing with no room or no money.
+     */
+    public double reserveFillMost() {
+        double room = Math.max(0, StrategicReserve.room(buildingManager) - reserve.getTonnes());
+        double price = getMarkets().get(Good.CRUDE).importPrice();
+        double afford = price > 0 ? discretionaryRoom() / price : 0;
+        return Math.min(room, afford);
     }
 
     /**
@@ -3951,10 +4040,11 @@ public class Game {
      * any retired building takes. Neither is plant the lift measures, so the
      * shrinking rules never sell them (sectors.Oil.mayRetire()); without this
      * their crews and repairs would be paid for ever. Nothing while there is
-     * oil in the ground.
+     * oil under the sea - since 0.7.93 the offshore pool's, which is all a
+     * platform lifts (LandManager's THE TWO OIL POOLS).
      */
     private int decommissionAtSea(ham.citybuildersim.sectors.Oil wells) {
-        if (landManager.getOilReserveTonnes() > 0) return 0;
+        if (landManager.getOilLeftAtSea() > 0) return 0;
         int retired = 0;
         BuildingsTemplate jacket = wells.platformTemplate(), pipe = wells.pipelineTemplate();
         int jackets = wells.jacketsStanding();
@@ -7002,7 +7092,23 @@ public class Game {
         Resource r = siteOf(template);
         if (r == null) return true;
         return sitesFor(template) >= committedFor(template) + before + quantity
-                && landManager.getRemaining(r) > 0;
+                && remainingFor(template) > 0;
+    }
+
+    /**
+     * What is left in the ground for a building that stands on a resource's
+     * sites (siteOf()): its resource's remainder - and since 0.7.93 (THE TWO
+     * OIL POOLS, LandManager) a land well's the ground pool's, a platform's
+     * jacket's and its wells' the offshore pool's. Nothing for a building
+     * that stands on none. What the order's deposit gate, the card's line and
+     * the no-deposit page read.
+     */
+    public double remainingFor(BuildingsTemplate template) {
+        Resource r = siteOf(template);
+        if (r == null) return 0;
+        if (r == Resource.OIL && (template.isPlatform() || template.isPlatformWell())) return landManager.getOilLeftAtSea();
+        if (r == Resource.OIL && ham.citybuildersim.sectors.Oil.isLandWell(template)) return landManager.getOilLeftOnGround();
+        return landManager.getRemaining(r);
     }
 
     /**
@@ -11993,6 +12099,8 @@ public class Game {
                 land.convertedState(), landManager.getMarket().getOffersState(), landManager.getMarket().getNextOfferId(),
                 landManager.getDepletionState(), landManager.getWorldTotalsState(),
                 landManager.getWorldSeaTheta());
+        // ...and the offshore pool's E (0.7.93, SAVE_FORMAT 35): the depletion's oil is the ground pool's.
+        dataSave.setOilDepletionAtSea(landManager.getOilExtractedAtSea());
         dataSave.setLandMarketPrices(landManager.getMarket().getPriceState());
         // ...and the city's water rights (0.7.59): THE FRESH WATER LIMIT AND THE COAST.
         dataSave.setFreshRights(freshRights);
@@ -14103,6 +14211,7 @@ public class Game {
     private void readTheMap(int slot, Long stamp) {
         cityMap = null;
         mapGeneration++;
+        mapAtSeaStale = true;
         if (stamp == null) return;
         try {
             Path file = gameFiles.mapFile(slot);
@@ -14149,6 +14258,27 @@ public class Game {
      *
      * Returns whether the land was converted.
      */
+    /**
+     * THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO
+     * OIL POOLS): once the land is in place, the offshore pool's E as saved -
+     * or, on a save from before SAVE_FORMAT 35, the one pool's E charged to
+     * the ground pool, floored at its tonnes, and none to the sea: before
+     * 0.7.91 only land wells stood, and since then none lifted at sea that
+     * the investors or the player could order on a worked-out pool. No money
+     * moves. Says what it did when the city owns oil.
+     */
+    private void restoreOilPools(DataSave loaded) {
+        boolean old = loaded.getSaveFormat() < LandManager.TWO_POOLS_FORMAT;
+        double taken = landManager.getExtracted(Resource.OIL);
+        landManager.restoreOilPools(old ? null : loaded.getOilDepletionAtSea());
+        if (old && landManager.getOwnedAmount(Resource.OIL) > 0) {
+            System.out.printf("Split the city's oil into two pools (save format %d): %,.0f t lifted, charged to the ground's %,.0f t"
+                            + " (%,.0f t left), the sea's %,.0f t whole; %,.0f t the land wells lifted past the dry fields given back.%n",
+                    loaded.getSaveFormat(), taken, landManager.getOilOwnedOnGround(), landManager.getOilLeftOnGround(),
+                    landManager.getOilOwnedAtSea(), Math.max(0, taken - landManager.getExtracted(Resource.OIL)));
+        }
+    }
+
     private boolean restoreLandOnTheWorld(DataSave loaded, double owned) {
         long seed = founding.getWorldSeed();
         double sea = loaded.getWorldSeaTheta() != null ? loaded.getWorldSeaTheta() : World.of(seed).seaTheta();
@@ -14809,6 +14939,7 @@ public class Game {
             }
 
             boolean landConverted = restoreLandOnTheWorld(loaded, owned);
+            restoreOilPools(loaded);
             landManager.setAllocatedSqFt(built);
             // A converted city's offers (0.7.67, spec-grid 2.6): twenty-four
             // places listed afresh, once, with the buildings back, at the

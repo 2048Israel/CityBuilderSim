@@ -93,7 +93,15 @@ import java.util.zip.InflaterInputStream;
  * the roads following their buildings; FORMAT 5 since 0.7.88, the city's
  * highway and railway runs after the districts - 0.7.88 wrote none, and a
  * sidecar with none has them laid from its counts as it is read - an older
- * one still read).
+ * one still read; FORMAT 6 since 0.7.97, its works on the shore after the
+ * runs, laid from its counts when a FORMAT 5 sidecar is read).
+ *
+ * AT SEA AND ON THE SHORE (0.7.97, batch O13; runs/spec-oil.md 2.12,
+ * spec-roads-and-ports.md 2.8 and 4): THE CAMPUS deals the refinery's units
+ * to the district holding the most of them, THE SHORE lays the city's
+ * terminals and tank farms at the water city-wide (CityShore), THE OIL AT
+ * SEA draws the platforms and pipes the game hands it, and THE SEA ROUTES
+ * finds each terminal's way out to the world (SeaRoutes) for the boats.
  */
 public final class CityMap {
 
@@ -131,8 +139,8 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 5 since 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
-    static final int FORMAT = 5;
+    /** The sidecar's format: 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    static final int FORMAT = 6;
 
     /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
     static final int OLDEST_READ = 4;
@@ -297,6 +305,7 @@ public final class CityMap {
         m.measureAll();
         m.allocate(counts);
         m.layRuns(counts);
+        m.layShore(counts);
         return m;
     }
 
@@ -337,6 +346,7 @@ public final class CityMap {
         m.siteIndex();
         m.allocate(counts);
         m.layRuns(counts);
+        m.layShore(counts);
         return m;
     }
 
@@ -645,6 +655,7 @@ public final class CityMap {
      */
     public boolean reconcile(long[] model) {
         if (syncLand()) return false;
+        nPassed = 0;
         int touched = 0;
         // The buildings first, then the roads, which follow them (0.7.72, ROADS FOLLOW THEIR BUILDINGS).
         roadShare = roadShareOf(model);
@@ -666,6 +677,8 @@ public final class CityMap {
         long r0 = System.nanoTime();
         layRuns(model);
         lastRunsMs = (System.nanoTime() - r0) / 1e6;
+        // ...and its works on the shore to the month's counts (0.7.97): laid at the water, or the newest taken.
+        layShore(model);
         lastTouched = touched;
         // What is worked out moved: the sites drawn are drawn again (their states), the deals stand.
         int[][] states = new int[Resource.values().length][];
@@ -762,23 +775,92 @@ public final class CityMap {
     /** Places n more roads of type t, one at a time: each into the district, of those the month's buildings went into, whose buildings lack road the most and that has room for it inside its tiles' edge rings, the nearer on a tie; the rest as a building is placed. */
     private int placeRoad(int t, long n) {
         long each = BuildingVisual.cells(types[t]);
-        java.util.PriorityQueue<double[]> lacking = new java.util.PriorityQueue<>((a, b) -> a[0] != b[0] ? Double.compare(b[0], a[0]) : Double.compare(a[1], b[1]));
+        lackN = 0;
         for (District d : builtIn) {
             double lack = roadLacking(d);
-            if (lack > 0 && d.freeRoad() >= each) lacking.add(new double[] { lack, d.index });
+            if (lack > 0 && d.freeRoad() >= each) lackAdd(lack, d.index);
         }
+        // Made a heap at once (each parent sifted down, the last first): the same first entry at every poll as entries
+        // pushed one by one gave - the order is strict - in about a sixth of the steps for a month's two thousand.
+        for (int k = (lackN >>> 1) - 1; k >= 0; k--) lackDown(k);
         int touched = 0;
-        while (n > 0 && !lacking.isEmpty()) {
-            double[] top = lacking.poll();
-            District d = districts.get((int) top[1]);
+        while (n > 0 && lackN > 0) {
+            District d = districts.get(lackPoll());
             if (d.freeRoad() < each) continue;
             add(d, d.index, t, 1);
             n--;
             touched++;
             double lack = roadLacking(d);
-            if (lack > 0 && d.freeRoad() >= each) lacking.add(new double[] { lack, d.index });
+            if (lack > 0 && d.freeRoad() >= each) lackPush(lack, d.index);
         }
         return n > 0 ? touched + place(t, n) : touched;
+    }
+
+    /*
+     * THE LACKING HEAP (0.7.94, batch RD7): placeRoad()'s districts, the one
+     * whose buildings lack road the most first, the lower index on a tie -
+     * the order the PriorityQueue it replaces kept, entry for entry (no two
+     * entries tie: a district is in it once). Its own heap of two arrays, so
+     * a month makes no entry objects, and the JDK's queue code, which the
+     * city's runs and others share with their own orders, is not compiled
+     * for one order and given up for another in the middle of a month.
+     */
+    private double[] lackOf = new double[64];
+    private int[] lackAt = new int[64];
+    private int lackN;
+
+    /** Whether heap entry i comes before entry j: more lacking, then the lower index. */
+    private boolean lackFirst(int i, int j) {
+        double a = lackOf[i], b = lackOf[j];
+        return a != b ? Double.compare(b, a) < 0 : lackAt[i] < lackAt[j];
+    }
+
+    /** An entry added at the end, the heap not kept (placeRoad() makes it a heap after). */
+    private void lackAdd(double lack, int index) {
+        if (lackN == lackOf.length) { lackOf = Arrays.copyOf(lackOf, lackN * 2); lackAt = Arrays.copyOf(lackAt, lackN * 2); }
+        lackOf[lackN] = lack;
+        lackAt[lackN] = index;
+        lackN++;
+    }
+
+    private void lackPush(double lack, int index) {
+        lackAdd(lack, index);
+        int k = lackN - 1;
+        while (k > 0) {
+            int up = (k - 1) >>> 1;
+            if (!lackFirst(k, up)) break;
+            lackSwap(k, up);
+            k = up;
+        }
+    }
+
+    /** The first entry's district index, taken off the heap. */
+    private int lackPoll() {
+        int top = lackAt[0];
+        lackN--;
+        if (lackN > 0) {
+            lackOf[0] = lackOf[lackN];
+            lackAt[0] = lackAt[lackN];
+            lackDown(0);
+        }
+        return top;
+    }
+
+    /** Entry k sifted down to its place below. */
+    private void lackDown(int k) {
+        while (true) {
+            int l = 2 * k + 1, r = l + 1, m = k;
+            if (l < lackN && lackFirst(l, m)) m = l;
+            if (r < lackN && lackFirst(r, m)) m = r;
+            if (m == k) return;
+            lackSwap(k, m);
+            k = m;
+        }
+    }
+
+    private void lackSwap(int i, int j) {
+        double a = lackOf[i]; lackOf[i] = lackOf[j]; lackOf[j] = a;
+        int b = lackAt[i]; lackAt[i] = lackAt[j]; lackAt[j] = b;
     }
 
     /** Places n more of type t: into the first districts with room for its whole plots in its direction (a road's inside its tiles' edge rings; since 0.7.72 a building's keeping room for its road, buildingRoom()), the rest into the district with the most room left (0.7.64; the outermost before, which can be a district of water holding only sites). */
@@ -786,24 +868,167 @@ public final class CityMap {
         boolean out = types[t].outer(), road = types[t].road() != BuildingVisual.NOT_A_ROAD;
         long each = BuildingVisual.cells(types[t]);
         int touched = 0;
-        int i = out ? outerCursor : innerCursor;
+        // THE CAMPUS (0.7.97): a refinery unit first into the district holding the most of the refinery's ground, while it has room.
+        if (types[t].campus()) {
+            District c = campusDistrict();
+            long k = c == null ? 0 : Math.min(n, buildingRoom(c, each));
+            if (k > 0) {
+                add(c, c.index, t, k);
+                n -= k;
+                touched++;
+            }
+            if (n <= 0) return touched;
+        }
+        int i = out ? outerCursor : innerCursor, kind = (out ? 2 : 0) | (road ? 1 : 0), first = -2;
+        if (each > 0) i = passed(kind, each, i);
         while (n > 0 && i >= 0 && i < districts.size()) {
             District d = districts.get(i);
             long room = each > 0 ? (road ? d.freeRoad() / each : buildingRoom(d, each)) : n;
             long k = Math.min(n, room);
             if (k > 0) {
+                if (first == -2) first = i;
                 add(d, i, t, k);
                 n -= k;
                 touched++;
             }
             if (n > 0) i += out ? -1 : 1;
         }
+        if (each > 0) notePassed(kind, each, first != -2 ? first : i);
         if (n > 0) {
             District most = roomiest();
             add(most, most.index, t, n);
             touched++;
         }
         return touched;
+    }
+
+    /*
+     * WALKS PASSED (0.7.94, batch RD7). Within a month's change a district's
+     * room only shrinks while buildings are added (roadShare stands for the
+     * month), and a district with no room for a size has none for a larger
+     * one (buildingRoom() and freeRoad() / size fall as the size grows). So
+     * the districts a walk of place() found no room in - from the cursor to
+     * the first with room, or to the end - have none for a walk of the same
+     * kind (inward or outward, a road or not) of that size or larger, from a
+     * cursor that has not moved back: it starts past them. Forgotten at each
+     * month and whenever anything is taken away (add() with k < 0, which
+     * moves the cursors back too). The same districts take the same counts;
+     * at 10 billion the month's first change walked about 38,000 districts.
+     */
+    private long[] passedSize = new long[32];
+    private int[] passedTo = new int[32], passedKind = new int[32];
+    private int nPassed;
+
+    /** Where a walk of `kind` for buildings of `each` plots from cursor i may start (WALKS PASSED). */
+    private int passed(int kind, long each, int i) {
+        boolean out = (kind & 2) != 0;
+        for (int k = 0; k < nPassed; k++) {
+            if (passedKind[k] != kind || passedSize[k] > each) continue;
+            i = out ? Math.min(i, passedTo[k]) : Math.max(i, passedTo[k]);
+        }
+        return i;
+    }
+
+    /** A walk of `kind` for `each` plots found no room before district index `to` (WALKS PASSED). */
+    private void notePassed(int kind, long each, int to) {
+        boolean out = (kind & 2) != 0;
+        for (int k = 0; k < nPassed; k++) {
+            if (passedKind[k] != kind || passedSize[k] != each) continue;
+            passedTo[k] = out ? Math.min(passedTo[k], to) : Math.max(passedTo[k], to);
+            return;
+        }
+        if (nPassed == passedSize.length) {
+            passedSize = Arrays.copyOf(passedSize, nPassed * 2);
+            passedTo = Arrays.copyOf(passedTo, nPassed * 2);
+            passedKind = Arrays.copyOf(passedKind, nPassed * 2);
+        }
+        passedSize[nPassed] = each;
+        passedTo[nPassed] = to;
+        passedKind[nPassed] = kind;
+        nPassed++;
+    }
+
+    /*
+     * THE CAMPUS (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's
+     * Q11: "the refinery is drawn as a campus"). The refinery's units - its
+     * crude units and conversion units (BuildingVisual.Type.campus()) - were
+     * placed as any industry, into the first district with room, so Jerus's
+     * sixteen stood in five districts. Now a unit goes first to the district
+     * already holding the most of the refinery's ground, while it has room
+     * (place()), and the district's plan packs them together, first of its
+     * industry (DistrictPlan's THE CAMPUS); drawn canonically, the whole
+     * refinery goes to the first district with room for all of it, before
+     * the rest is shared (allocate()). What no campus district has room for
+     * goes as any industry. Nothing placed moves, but once: a map read from
+     * a sidecar older than FORMAT 6 (0.7.96's and before) has its refinery
+     * gathered into its campus district as it is read, while it has room
+     * (gatherCampus(), star O13-1) - the picture shifts once, as FORMAT 4's
+     * did.
+     */
+
+    /** The refinery's unit types, by id: worked out once a table. */
+    private int[] campusTypes;
+
+    private int[] campusTypes() {
+        if (campusTypes == null) {
+            int n = 0;
+            for (BuildingVisual.Type ty : types) if (ty != null && ty.campus()) n++;
+            int[] out = new int[n];
+            n = 0;
+            for (int u = 0; u < types.length; u++) if (types[u] != null && types[u].campus()) out[n++] = u;
+            campusTypes = out;
+        }
+        return campusTypes;
+    }
+
+    /** The refinery's ground in district d, in the whole plots its units are drawn on. */
+    long campusCells(District d) {
+        long c = 0;
+        for (int u : campusTypes()) c += (long) d.counts[u] * BuildingVisual.cells(types[u]);
+        return c;
+    }
+
+    /** The district holding the most of the refinery's ground, the nearer on a tie; null when it has none. Looks only between the districts holding a unit (lo, hi). */
+    District campusDistrict() {
+        int from = Integer.MAX_VALUE, to = -1;
+        for (int u : campusTypes()) {
+            if (hi[u] < 0) continue;
+            from = Math.min(from, lo[u]);
+            to = Math.max(to, hi[u]);
+        }
+        District best = null;
+        long most = 0;
+        for (int i = Math.max(0, from); i <= to && i < districts.size(); i++) {
+            long c = campusCells(districts.get(i));
+            if (c > most) { most = c; best = districts.get(i); }
+        }
+        return best;
+    }
+
+    /** The refinery's units in other districts moved into its campus district while it has room, the largest kinds first, then by district in the map's order (a sidecar older than FORMAT 6, read). How many moved. */
+    int gatherCampus() {
+        District c = campusDistrict();
+        if (c == null) return 0;
+        int moved = 0;
+        int[] kinds = campusTypes().clone();
+        Integer[] boxed = new Integer[kinds.length];
+        for (int k = 0; k < kinds.length; k++) boxed[k] = kinds[k];
+        Arrays.sort(boxed, (a, b) -> BuildingVisual.cells(types[a]) != BuildingVisual.cells(types[b])
+                ? Integer.compare(BuildingVisual.cells(types[b]), BuildingVisual.cells(types[a])) : Integer.compare(a, b));
+        for (int u : boxed) {
+            long each = BuildingVisual.cells(types[u]);
+            for (int i = 0; i < districts.size(); i++) {
+                District d = districts.get(i);
+                if (d == c || d.counts[u] <= 0) continue;
+                long k = Math.min(d.counts[u], buildingRoom(c, each));
+                if (k <= 0) break;
+                add(d, i, u, -k);
+                add(c, c.index, u, k);
+                moved += (int) k;
+            }
+        }
+        if (moved > 0) rangeTypes();
+        return moved;
     }
 
     /** The district with the most room left, the nearer on a tie: where what no district has room for goes, to be drawn smaller there. */
@@ -857,6 +1082,8 @@ public final class CityMap {
         } else {
             if (i < innerCursor) innerCursor = i;
             if (i > outerCursor) outerCursor = i;
+            // Room grew: what the month's walks passed is passed no longer (WALKS PASSED).
+            nPassed = 0;
         }
         if (pyramid != null) pyramid.add(d, t, k);
     }
@@ -900,9 +1127,27 @@ public final class CityMap {
         placeSited(counts);
         long[] used = new long[n];
         for (int i = 0; i < n; i++) used[i] = cellsOf(districts.get(i));
+        // THE CAMPUS (0.7.97): the refinery whole, into the first district with room for all of it (the roomiest when none
+        // has), before the rest is shared - as the mines' ground is theirs first.
+        long campus = 0;
+        for (int u : campusTypes()) if (u < counts.length && counts[u] > 0) campus += counts[u] * (long) BuildingVisual.cells(types[u]);
+        if (campus > 0 && n > 0) {
+            int at = -1;
+            for (int i = 0; i < n && at < 0; i++) if (districts.get(i).owned - used[i] >= campus) at = i;
+            if (at < 0) {
+                at = 0;
+                for (int i = 1; i < n; i++) if (districts.get(i).owned - used[i] > districts.get(at).owned - used[at]) at = i;
+            }
+            for (int u : campusTypes()) {
+                if (u >= counts.length || counts[u] <= 0) continue;
+                districts.get(at).counts[u] += (int) counts[u];
+                have[u] = counts[u];
+            }
+            used[at] += campus;
+        }
         double total = 0;
         for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || types[t].site() != null || types[t].sea() || t >= counts.length) continue;
+            if (types[t] == null || types[t].site() != null || types[t].sea() || types[t].campus() || t >= counts.length) continue;
             total += counts[t] * (double) BuildingVisual.cells(types[t]);
         }
         double[] share = new double[n];
@@ -926,7 +1171,7 @@ public final class CityMap {
         for (int t : ranked) order[no++] = t;
         for (int oi = 0; oi < no; oi++) {
             int t = order[oi];
-            if (types[t] == null || types[t].site() != null || t >= counts.length || counts[t] <= 0) continue;
+            if (types[t] == null || types[t].site() != null || types[t].campus() || t >= counts.length || counts[t] <= 0) continue;
             long c = counts[t], given = 0, each = BuildingVisual.cells(types[t]);
             int m = 0;
             for (int i = 0; i < n; i++) {
@@ -1756,6 +2001,11 @@ public final class CityMap {
         // The city's runs over its frame (0.7.89), and its Rail Terminals the runs draw as yards.
         h = World.mix(h ^ runs.frameHash(x0, y0, DistrictPlan.FRAME, DistrictPlan.FRAME));
         h = World.mix(h ^ yardsOf(d));
+        // ...and the works on the shore over its frame and those of its own the shore holds (0.7.97); nothing with none.
+        if (!shore.isEmpty()) {
+            h = World.mix(h ^ shore.frameHash(x0, y0, DistrictPlan.FRAME, DistrictPlan.FRAME));
+            for (int t : shoreTypes()) { int s = shoreOf(d, t); if (s != 0) h = World.mix(h ^ ((long) t << 40) ^ s); }
+        }
         return h;
     }
 
@@ -2424,6 +2674,8 @@ public final class CityMap {
             long tx = x >> 5, ty = y >> 5;
             int ix = (int) (x & (World.TILE - 1)), iy = (int) (y & (World.TILE - 1));
             if (!ownedAt(tx, ty, ix, iy)) return -1;
+            // A work on the shore and the plot round it, and a quay, are not the runs' ground (0.7.97): no run crosses a terminal.
+            if (!shore.isEmpty() && shore.blocks(x, y)) return -1;
             long tk = (tx << 20) | ty;
             if (dir < 0 || (dir & 1) == 1) {
                 byte[] t = tiles.get(tk);
@@ -2479,7 +2731,7 @@ public final class CityMap {
         }
 
         @Override public long version() {
-            return World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp());
+            return World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp() ^ shore.version() * 0x9E3779B97F4A7C15L);
         }
 
         @Override public long[] box() {
@@ -2583,6 +2835,389 @@ public final class CityMap {
             else if (b == CityRuns.F_YARD) fixed[i] = DistrictPlan.FIXED_YARD;
         }
         return h;
+    }
+
+    /* =====================================================================
+       THE SHORE: TERMINALS AND TANK FARMS AT THE WATER (0.7.97, batch O13;
+       spec-roads-and-ports.md 2.8, runs/spec-oil.md 2.12)
+
+       The city's sea terminals and tank farms (BuildingVisual.Type.shore())
+       are laid city-wide on its shore, as its railway's yards are on its
+       track: CityShore holds them and says the rule; this finds each one's
+       place (shoreSpot()), lays them to the month's counts (layShore()) and
+       writes them in the sidecar (FORMAT 6). Each district's plan is drawn
+       round them - their boxes fixed as a yard's ground, the runs kept off
+       them (RunGround) - and the ones its own counts stand for are taken out
+       of its plan (shoreOf()), as its yards are. What no shore holds is its
+       district's plan's to draw, counted (shoreShort()), and the search
+       waits for the ground to change.
+       ===================================================================== */
+
+    /** The city's works on its shore. */
+    private CityShore shore = new CityShore();
+
+    /** The city's works on its shore (0.7.97). */
+    public CityShore shore() { return shore; }
+
+    /** The shore's types, by id: worked out once a table. */
+    private int[] shoreTypes;
+
+    int[] shoreTypes() {
+        if (shoreTypes == null) {
+            int n = 0;
+            for (BuildingVisual.Type ty : types) if (ty != null && ty.shore() && ty.drawn()) n++;
+            int[] out = new int[n];
+            n = 0;
+            for (int u = 0; u < types.length; u++) if (types[u] != null && types[u].shore() && types[u].drawn()) out[n++] = u;
+            shoreTypes = out;
+        }
+        return shoreTypes;
+    }
+
+    /** The ground's key a search came up short at: none is made again until the ground moves (a purchase) or a work is taken. */
+    private long shoreShortAt = Long.MIN_VALUE;
+
+    /** How many works the model has that the shore holds no place for (drawn by their districts' plans). */
+    private int shoreShort;
+
+    /** How many of the model's terminals and tank farms the shore has no place for: their districts' plans draw them. */
+    public int shoreShort() { return shoreShort; }
+
+    /** The ground's key, without the shore's own works: what a search that came up short waits on. */
+    private long groundKey() {
+        return World.mix(landVersion ^ ((long) land.purchases().size() << 32) ^ land.centreStamp());
+    }
+
+    /**
+     * Lays the shore to the model's counts: one fewer of a type takes its
+     * newest work; one more is laid where shoreSpot() finds it, the first
+     * types first. True, and the map's changes bumped, when a work moved.
+     */
+    boolean layShore(long[] model) {
+        int[] st = shoreTypes();
+        if (st.length == 0 || (shore.isEmpty() && !anyOf(model, st))) {
+            shoreShort = 0;
+            return false;
+        }
+        boolean moved = false;
+        for (int t : st) {
+            long want = t < model.length ? Math.max(0, model[t]) : 0;
+            while (shore.count(t) > want && shore.removeNewest(t)) {
+                moved = true;
+                shoreShortAt = Long.MIN_VALUE;
+            }
+        }
+        int missing = 0;
+        List<long[]> mines = null;
+        for (int t : st) {
+            long want = t < model.length ? Math.max(0, model[t]) : 0;
+            int have = shore.count(t);
+            if (have >= want) continue;
+            if (shoreShortAt == groundKey()) { missing += (int) (want - have); continue; }
+            if (mines == null) mines = minedSites();
+            while (have < want) {
+                CityShore.Work w = shoreSpot(t, mines);
+                if (w == null) {
+                    missing += (int) (want - have);
+                    shoreShortAt = groundKey();
+                    break;
+                }
+                shore.add(w);
+                have++;
+                moved = true;
+            }
+        }
+        shoreShort = missing;
+        if (moved) {
+            changes++;
+            shoreShare = null;
+        }
+        return moved;
+    }
+
+    private static boolean anyOf(long[] model, int[] ids) {
+        for (int t : ids) if (t < model.length && model[t] > 0) return true;
+        return false;
+    }
+
+    /**
+     * Where the next work of type t goes (CityShore's rule), or null: the
+     * districts in the map's order, each one's tiles nearest the founding
+     * site first; on each tile with owned salt water and owned dry ground,
+     * its shore plots in rows, each side the sea lies on, the box either way
+     * round with the plot at the middle of its sea side. A spot within REACH
+     * of its cell's ring, off the sea side, is taken at once; else the
+     * district's first spot, once its tiles are looked at.
+     */
+    CityShore.Work shoreSpot(int t, List<long[]> mines) {
+        int[] fp = BuildingVisual.footprint(types[t]);
+        int quay = types[t].berth() >= 0 ? CityShore.QUAY_PLOTS[types[t].berth()] : 0;
+        int m = World.TILE, ww = World.TILE + 2 * m, tile = World.TILE;
+        byte[] fixed = new byte[ww * ww];
+        int[] ground = new int[ww * ww];
+        int scanned = 0;
+        Integer[] order = new Integer[TILES];
+        // A terminal's water must open to the sea (SeaRoutes.opensToSea(), star O13-5): the routes' own grid, and the water found
+        // shut, kept for the search.
+        SeaRoutes.Grid sea = quay > 0 ? new SeaRoutes.Grid(World.of(seed)) : null;
+        java.util.Set<Long> shut = new java.util.HashSet<>();
+        for (District d : districts) {
+            long tx0 = (baseDX + d.dx) * TILES_A_SIDE, ty0 = (baseDY + d.dy) * TILES_A_SIDE;
+            for (int k = 0; k < TILES; k++) order[k] = k;
+            final long fx0 = tx0, fy0 = ty0;
+            Arrays.sort(order, Comparator.comparingDouble((Integer k) -> {
+                double cx = ((fx0 + k % TILES_A_SIDE) + 0.5) * tile - siteX, cy = ((fy0 + k / TILES_A_SIDE) + 0.5) * tile - siteY;
+                return cx * cx + cy * cy;
+            }).thenComparingInt(k -> k));
+            CityShore.Work far = null;
+            for (int k : order) {
+                long tx = tx0 + k % TILES_A_SIDE, ty = ty0 + k / TILES_A_SIDE;
+                if (cover(land.grid().cover(5, tx, ty)) == NONE) continue;
+                if (++scanned > CityShore.SEARCH_TILES_MOST) return far;
+                boolean wet = false, dry = false;
+                for (int i = 0; i < World.TILE * World.TILE && !(wet && dry); i++) {
+                    int g = runGround.at(tx * tile + i % tile, ty * tile + i / tile, -1);
+                    if (g == World.SALT) wet = true;
+                    else if (CityRuns.dry(g)) dry = true;
+                }
+                if (!wet || !dry) continue;
+                long wx0 = tx * tile - m, wy0 = ty * tile - m;
+                runs.fill(wx0, wy0, ww, ww, fixed, null, true);
+                for (int j = 0; j < ww * ww; j++) ground[j] = runGround.at(wx0 + j % ww, wy0 + j / ww, -1);
+                for (long[] s : mines) {
+                    for (long y = Math.max(s[1], wy0); y <= Math.min(s[3], wy0 + ww - 1); y++) {
+                        for (long x = Math.max(s[0], wx0); x <= Math.min(s[2], wx0 + ww - 1); x++) ground[(int) ((y - wy0) * ww + (x - wx0))] = -2;
+                    }
+                }
+                for (int iy = 0; iy < tile; iy++) {
+                    for (int ix = 0; ix < tile; ix++) {
+                        int j = (iy + m) * ww + ix + m;
+                        if (!CityRuns.dry(ground[j])) continue;
+                        for (int side = 0; side < 4; side++) {
+                            if (ground[j + CityShore.DX[side] + CityShore.DY[side] * ww] != World.SALT) continue;
+                            for (int turn = 0; turn < (fp[0] == fp[1] ? 1 : 2); turn++) {
+                                int w = turn == 0 ? fp[0] : fp[1], h = turn == 0 ? fp[1] : fp[0];
+                                long sx = tx * tile + ix, sy = ty * tile + iy;
+                                long bx0 = side == 1 ? sx - (w - 1) : side == 3 ? sx : sx - w / 2;
+                                long by0 = side == 2 ? sy - (h - 1) : side == 0 ? sy : sy - h / 2;
+                                CityShore.Work c = new CityShore.Work(bx0, by0, w, h, t, side, quay);
+                                if (!shoreFits(c, ground, fixed, wx0, wy0, ww)) continue;
+                                if (sea != null) {
+                                    long[] e = c.quayPlot(quay + 1);
+                                    if (!SeaRoutes.opensToSea(sea, e[0], e[1], shut)) continue;
+                                }
+                                if (nearRing(c)) return c;
+                                if (far == null) far = c;
+                            }
+                        }
+                    }
+                }
+            }
+            if (far != null) return far;
+        }
+        return null;
+    }
+
+    /** Whether a work fits where c puts it, on the window's ground and runs from (wx0, wy0), ww a side: its box in one cell's interior on owned dry ground no run, mine or other work takes, no highway beside it, and its quay all owned salt water. */
+    private static boolean shoreFits(CityShore.Work c, int[] ground, byte[] fixed, long wx0, long wy0, int ww) {
+        long cx = Math.floorDiv(c.x0(), World.TILE) * World.TILE, cy = Math.floorDiv(c.y0(), World.TILE) * World.TILE;
+        if (c.x0() - cx < 1 || c.y0() - cy < 1 || c.x0() + c.w() > cx + World.TILE || c.y0() + c.h() > cy + World.TILE) return false;
+        for (long y = c.y0() - CityShore.CLEAR; y < c.y0() + c.h() + CityShore.CLEAR; y++) {
+            for (long x = c.x0() - CityShore.CLEAR; x < c.x0() + c.w() + CityShore.CLEAR; x++) {
+                if (x < wx0 || y < wy0 || x >= wx0 + ww || y >= wy0 + ww) return false;
+                int j = (int) ((y - wy0) * ww + (x - wx0));
+                byte f = fixed[j];
+                if (f == CityRuns.F_HIGHWAY || f == CityRuns.F_RAIL_OVER) return false;
+                if (!c.holds(x, y)) continue;
+                if (f != 0 || !CityRuns.dry(ground[j])) return false;
+            }
+        }
+        for (int q = 1; q <= c.quay(); q++) {
+            long[] at = c.quayPlot(q);
+            if (at[0] < wx0 || at[1] < wy0 || at[0] >= wx0 + ww || at[1] >= wy0 + ww) return false;
+            if (ground[(int) ((at[1] - wy0) * ww + (at[0] - wx0))] != World.SALT) return false;
+        }
+        return true;
+    }
+
+    /** Whether a work's box lies within TilePainter.REACH of its cell's ring on a side away from the sea: where an arterial runs when the cell is open. */
+    static boolean nearRing(CityShore.Work c) {
+        long cx = Math.floorDiv(c.x0(), World.TILE) * World.TILE, cy = Math.floorDiv(c.y0(), World.TILE) * World.TILE;
+        int r = TilePainter.REACH;
+        if (c.side() != 0 && c.y0() - cy <= r) return true;
+        if (c.side() != 1 && cx + World.TILE - (c.x0() + c.w() - 1) <= r) return true;
+        if (c.side() != 2 && cy + World.TILE - (c.y0() + c.h() - 1) <= r) return true;
+        return c.side() != 3 && c.x0() - cx <= r;
+    }
+
+    /** Each district's works the shore holds, by its index and the shore's type: the works dealt to the districts holding their type in the map's order, so the rest are their plans' (kept against the shore and the counts). */
+    private int[][] shoreShare;
+    private long shoreShareAt = Long.MIN_VALUE;
+
+    /** How many of district d's buildings of type t the shore holds. */
+    int shoreOf(District d, int t) {
+        int[] st = shoreTypes();
+        long at = World.mix(shore.version() ^ changes * 0x9E3779B97F4A7C15L);
+        if (shoreShare == null || shoreShareAt != at || shoreShare.length != districts.size()) {
+            shoreShare = new int[districts.size()][st.length];
+            shoreShareAt = at;
+            for (int s = 0; s < st.length; s++) {
+                int left = shore.count(st[s]);
+                for (int i = 0; i < districts.size() && left > 0; i++) {
+                    int take = Math.min(districts.get(i).counts[st[s]], left);
+                    shoreShare[i][s] = take;
+                    left -= take;
+                }
+            }
+        }
+        for (int s = 0; s < st.length; s++) if (st[s] == t) return d.index < shoreShare.length ? shoreShare[d.index][s] : 0;
+        return 0;
+    }
+
+    /* =====================================================================
+       THE OIL AT SEA (0.7.97, batch O13; runs/spec-oil.md 2.12, the
+       research's 3.3)
+
+       The model's platforms and pipelines are on none of the city's dry
+       ground (BuildingVisual.Type.sea()), so no district holds them: the game
+       hands the map where they stand (Game's mapAtSea(), from sectors.Oil's
+       records) and each tile draws what crosses it - a jacket on its field,
+       its wells on their sea sites, its 500 m ring, a pipe from its field
+       toward the founding site as far as its kilometres standing reach.
+       ===================================================================== */
+
+    /** A platform as the map draws it: its jacket's middle in plots, its wells, and the plots its wells stand on (each x << 32 | y). */
+    public record Jacket(double x, double y, int wells, List<Long> wellPlots) { }
+
+    /** A pipe as the map draws it: from its field's middle (x0, y0) toward the founding site, to (x1, y1), in plots - its kilometres standing. */
+    public record Pipe(double x0, double y0, double x1, double y1) { }
+
+    /** The oil at sea: its jackets and pipes. */
+    public record AtSea(List<Jacket> jackets, List<Pipe> pipes) {
+        /** None. */
+        public static final AtSea NONE = new AtSea(List.of(), List.of());
+    }
+
+    private AtSea atSea = AtSea.NONE;
+
+    /** The oil at sea, as the game last handed it. */
+    public AtSea atSea() { return atSea; }
+
+    /** The oil at sea handed over by the game (Game.mapAtSea()); a change restamps the tiles it crosses. */
+    public void atSea(AtSea a) {
+        AtSea now = a == null ? AtSea.NONE : a;
+        if (now.equals(atSea)) return;
+        atSea = now;
+        changes++;
+    }
+
+    /** The oil at sea over tile (px0, py0)'s plots, into its inputs: the jackets' and wells' plots, the rings and pipes that may cross it. */
+    private void atSeaInto(long px0, long py0, TilePainter.Input in) {
+        if (atSea.jackets().isEmpty() && atSea.pipes().isEmpty()) return;
+        int tile = World.TILE;
+        double r = TilePainter.RING_PLOTS + 1;
+        for (Jacket j : atSea.jackets()) {
+            long jx0 = Math.round(j.x()) - TilePainter.JACKET_PLOTS / 2, jy0 = Math.round(j.y()) - TilePainter.JACKET_PLOTS / 2;
+            for (long y = jy0; y < jy0 + TilePainter.JACKET_PLOTS; y++) {
+                for (long x = jx0; x < jx0 + TilePainter.JACKET_PLOTS; x++) {
+                    if (x >= px0 && y >= py0 && x < px0 + tile && y < py0 + tile) in.sea[(int) ((y - py0) * tile + (x - px0))] = TilePainter.JACKET;
+                }
+            }
+            for (long w : j.wellPlots()) {
+                long x = w >> 32, y = (int) w;
+                if (x >= px0 && y >= py0 && x < px0 + tile && y < py0 + tile && in.sea[(int) ((y - py0) * tile + (x - px0))] == 0) {
+                    in.sea[(int) ((y - py0) * tile + (x - px0))] = TilePainter.WELL;
+                }
+            }
+            if (j.x() + r >= px0 && j.y() + r >= py0 && j.x() - r < px0 + tile && j.y() - r < py0 + tile) in.addRing(j.x() - px0, j.y() - py0);
+        }
+        for (Pipe p : atSea.pipes()) {
+            if (Math.max(p.x0(), p.x1()) < px0 || Math.max(p.y0(), p.y1()) < py0 || Math.min(p.x0(), p.x1()) >= px0 + tile
+                    || Math.min(p.y0(), p.y1()) >= py0 + tile) continue;
+            in.addPipe(p.x0() - px0, p.y0() - py0, p.x1() - px0, p.y1() - py0);
+        }
+    }
+
+    /* =====================================================================
+       THE SEA ROUTES (0.7.97, batch O13; spec-roads-and-ports.md 4.1)
+
+       Each terminal's route out to the world, found on the sea's grid and
+       pulled straight (SeaRoutes) from its quay's end: kept, not saved, and
+       found again when the shore's works or the city's ground move - away
+       from the screen's thread (RoutesJob), as a district's plan is.
+       ===================================================================== */
+
+    /** The routes found, and the key of what they were found from. */
+    private List<BoatSchedule.Route> routes;
+    private long routesKey = Long.MIN_VALUE;
+
+    /** The city's radius for the offing, in plots: the farthest corner of its owned box from the founding site. */
+    double cityRadius() {
+        double[] b = ownedBox();
+        double most = 0;
+        for (double x : new double[] { b[0], b[2] + 1 }) for (double y : new double[] { b[1], b[3] + 1 }) most = Math.max(most, Math.hypot(x, y));
+        return most;
+    }
+
+    /** The key the routes are found against: the berths, the founding site and the city's radius. */
+    private long routesKeyNow() {
+        long h = World.mix(seed ^ siteX * 31 ^ siteY);
+        for (BoatSchedule.Berth b : shore.berths(types)) h = World.mix(h ^ b.x() * 0x9E3779B97F4A7C15L ^ b.y() ^ ((long) b.cargo().ordinal() << 56));
+        return World.mix(h ^ Double.doubleToLongBits(cityRadius()));
+    }
+
+    /** The routes now, found here when they are not (a harness's way; the view hands a RoutesJob to its worker). */
+    public List<BoatSchedule.Route> seaRoutes() {
+        long k = routesKeyNow();
+        if (routes == null || routesKey != k) {
+            routes = SeaRoutes.of(World.of(seed), shore.berths(types), siteX, siteY, cityRadius());
+            routesKey = k;
+        }
+        return routes;
+    }
+
+    /** The routes when they are found and current, else null: the screen's thread, which never finds them itself. */
+    public List<BoatSchedule.Route> seaRoutesIfFound() {
+        return routes != null && routesKey == routesKeyNow() ? routes : null;
+    }
+
+    /** The berths' routes found away from the screen's thread: what they are found from, copied here. */
+    public static final class RoutesJob implements Runnable {
+        final long key, seed, siteX, siteY;
+        final List<BoatSchedule.Berth> berths;
+        final double radius;
+        private volatile List<BoatSchedule.Route> found;
+
+        RoutesJob(long key, long seed, List<BoatSchedule.Berth> berths, long siteX, long siteY, double radius) {
+            this.key = key;
+            this.seed = seed;
+            this.berths = List.copyOf(berths);
+            this.siteX = siteX;
+            this.siteY = siteY;
+            this.radius = radius;
+        }
+
+        @Override public void run() {
+            if (found == null) found = SeaRoutes.of(World.of(seed), berths, siteX, siteY, radius);
+        }
+
+        /** Whether it has run. */
+        public boolean done() { return found != null; }
+    }
+
+    /** The job that finds the routes now, or null when they are current. */
+    public RoutesJob routesJob() {
+        long k = routesKeyNow();
+        if (routes != null && routesKey == k) return null;
+        return new RoutesJob(k, seed, shore.berths(types), siteX, siteY, cityRadius());
+    }
+
+    /** A job run: its routes kept when they are still the city's. True when kept. */
+    public boolean adoptRoutes(RoutesJob j) {
+        if (j == null || !j.done() || j.key != routesKeyNow()) return false;
+        routes = j.found;
+        routesKey = j.key;
+        return true;
     }
 
     /* =====================================================================
@@ -2782,6 +3417,18 @@ public final class CityMap {
         if (own != null && own.boxes[k] != null) for (int b : own.boxes[k]) in.addBuilding(b & boxBits, b >>> BOX_TYPE_SHIFT);
         int[][] pk = packedIn(d);
         if (pk != null && pk[k] != null) for (int b : pk[k]) in.addBuilding(b & boxBits, b >>> BOX_TYPE_SHIFT);
+        // The works on the shore (0.7.97): each box on the tile holding it (inside one cell's interior, as a yard), its quay's plots on the water.
+        in.clearSea();
+        for (CityShore.Work wk : shore.works()) {
+            if (wk.x0() >= px0 && wk.y0() >= py0 && wk.x0() < px0 + World.TILE && wk.y0() < py0 + World.TILE) {
+                in.addBuilding(box((int) (wk.x0() - px0), (int) (wk.y0() - py0), wk.w(), wk.h(), false), wk.type());
+            }
+            for (int q = 1; q <= wk.quay(); q++) {
+                long[] at = wk.quayPlot(q);
+                if (at[0] >= px0 && at[1] >= py0 && at[0] < px0 + World.TILE && at[1] < py0 + World.TILE) in.sea[(int) ((at[1] - py0) * World.TILE + (at[0] - px0))] = TilePainter.QUAY;
+            }
+        }
+        atSeaInto(px0, py0, in);
         in.clearSites();
         int ddx = (int) (Math.floorDiv(tx, TILES_A_SIDE) - baseDX), ddy = (int) (Math.floorDiv(ty, TILES_A_SIDE) - baseDY);
         for (int b = -1; b <= 1; b++) {
@@ -2961,10 +3608,14 @@ public final class CityMap {
             in.counts[t] -= take;
             yards -= take;
         }
+        // ...and its terminals and tank farms the shore holds (0.7.97).
+        if (!shore.isEmpty()) for (int t : shoreTypes()) if (t < in.counts.length) in.counts[t] = Math.max(0, in.counts[t] - shoreOf(d, t));
         // The city's highways and railway through its frame (0.7.89: the city's runs; THE NETWORK's plan's until 0.7.88), its yards
         // among them. The model's Elevated Highways are the runs' plots, none a street's surface: what the runs could not lay the
         // map counts (THE RUNS).
         runsInto(d, in.fixed);
+        // The works on the shore over its frame (0.7.97): fixed as a yard's ground is - no street across, no building on it.
+        if (!shore.isEmpty()) shore.fill(x0, y0, f, f, in.fixed, DistrictPlan.FIXED_YARD);
         in.gravel = kind[BuildingVisual.GRAVEL];
         in.paved = kind[BuildingVisual.PAVED];
         in.highway = 0;
@@ -3146,7 +3797,8 @@ public final class CityMap {
      * those inside its tiles' edge rings (int32), plots used (double), owned
      * iron and oil sites and a count a type (int32) - and since FORMAT 5 the
      * city's highway and railway runs (int32 their count: 0 until batch RD3
-     * lays them, which adds their records).
+     * lays them, which adds their records), and since FORMAT 6 (0.7.97) its
+     * works on the shore (CityShore.write()).
      * The stamp is a hash of every other byte, so the same map always writes
      * the same file.
      */
@@ -3190,6 +3842,8 @@ public final class CityMap {
                 out.writeInt(n);
                 if (n > 0) runs.write(out);
             }
+            // The works on the shore (FORMAT 6, 0.7.97): their count, then each one's box, type, side and quay.
+            if (format >= 6) shore.write(out);
             out.flush();
             byte[] bytes = raw.toByteArray();
             long stamp = stampOf(bytes);
@@ -3299,20 +3953,32 @@ public final class CityMap {
                 if (r == null) return null;
                 m.runs = r;
             }
+            // The works on the shore: read back since FORMAT 6 (0.7.97); a FORMAT 5 map's laid now from its counts.
+            if (format >= 6) {
+                CityShore s = CityShore.read(in);
+                if (s == null) return null;
+                m.shore = s;
+            }
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
             m.sortDistricts();
             m.pyramid = new Pyramid(m);
             if (nRuns == 0) m.layRuns(m.have);
+            if (format < 6) {
+                // 0.7.96's map and before (0.7.97): the refinery gathered into its campus once, the shore laid from the counts.
+                m.roadShare = m.roadShareOf(m.have);
+                m.gatherCampus();
+                m.layShore(m.have);
+            }
             return m;
         } catch (IOException | RuntimeException e) {
             return null;
         }
     }
 
-    /** Whether two maps hold the same districts with the same figures, in the same order, and (0.7.89) the same runs. */
+    /** Whether two maps hold the same districts with the same figures, in the same order, and (0.7.89) the same runs, and (0.7.97) the same works on the shore. */
     public boolean same(CityMap o) {
-        return sameDistricts(o) && runs.same(o.runs);
+        return sameDistricts(o) && runs.same(o.runs) && shore.same(o.shore);
     }
 
     /** Whether two maps hold the same districts with the same figures, in the same order. */

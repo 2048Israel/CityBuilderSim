@@ -41,8 +41,11 @@ import java.util.Arrays;
  *             beneath a highway passes under it (spec 2.7: elevated);
  *   BUILDINGS every box the plan placed on the tile, each on its type's own
  *             land, the Rail Terminals the runs set on their track as yards
- *             (since 0.7.89), and those the city had no room for, packed at
- *             its edge without a street (R7).
+ *             (since 0.7.89), the terminals and tank farms the city's shore
+ *             holds (since 0.7.97, CityShore), and those the city had no
+ *             room for, packed at its edge without a street (R7);
+ *   AT SEA    (since 0.7.97) a terminal's quay, a platform's jacket, its
+ *             wells and its 500 m ring, a crude pipeline (AT SEA below).
  *
  * No deal, no road tiles, no lanes, no fill and no edge ring: a street
  * crosses a tile's edge wherever its line does (spec 8.5), so nothing is a
@@ -79,6 +82,30 @@ public final class TilePainter {
 
     /** A road plot's kind past BuildingVisual's GRAVEL, PAVED and HIGHWAY (Painted.road, 0.7.88): a TRACK, a street the city has bought no road for (spec 2.5, R4). */
     public static final byte TRACK = 4;
+
+    /* ------------------------------------------- the works at sea (0.7.97) */
+
+    /** A plot's work at sea (Input.sea, Painted.sea's low two bits): a terminal's quay, out over the water from its box (CityShore)... */
+    public static final byte QUAY = 1;
+    /** ...an offshore platform's jacket... */
+    public static final byte JACKET = 2;
+    /** ...a platform well, on the middle of its sea site. */
+    public static final byte WELL = 3;
+    /** The low two bits of Painted.sea. */
+    public static final int SEA_WORK = 3;
+    /** Painted.sea's bit for a plot a platform's safety ring crosses... */
+    public static final int SEA_RING = 4;
+    /** ...and for one a crude pipeline crosses (buried: it takes no plot, and is drawn over what stands there). */
+    public static final int SEA_PIPE = 8;
+
+    /** A platform's safety zone, drawn as a faint ring about its jacket: 500 m (the research's 3.3 [W32]). */
+    public static final double PLATFORM_ZONE_M = 500;
+
+    /** ...its radius in plots: 16.7. */
+    public static final double RING_PLOTS = PLATFORM_ZONE_M / World.PLOT_M;
+
+    /** A jacket's side, in plots: 2, 60 m - mockup 3's platform, 12 px at 6 m a pixel (72 m), in whole plots (star O13-6). */
+    public static final int JACKET_PLOTS = 2;
 
     /* ------------------------------------------------------ a site's state */
 
@@ -188,6 +215,40 @@ public final class TilePainter {
         /** ...and the site itself, its square's first plot in the world packed (x << 32 | y), unclipped: one site seen from the tiles it spans (0.7.64). */
         public long[] siteKey = new long[16];
 
+        /** Each plot's work at sea (0.7.97): a terminal's QUAY, a platform's JACKET, a platform WELL; 0 for none. */
+        public final byte[] sea = new byte[PLOTS];
+        /** The platforms whose safety ring (RING_PLOTS about its jacket's middle) may cross the tile: how many, and each one's middle in the tile's plots (it may lie off the tile). */
+        public int rings;
+        public double[] ringX = new double[4], ringY = new double[4];
+        /** The crude pipelines that may cross it: how many, and each one's ends in the tile's plots, {from, to}. */
+        public int pipes;
+        public double[] pipeAX = new double[4], pipeAY = new double[4], pipeBX = new double[4], pipeBY = new double[4];
+
+        /** Clears the works at sea; the arrays are reused. */
+        public void clearSea() {
+            Arrays.fill(sea, (byte) 0);
+            rings = 0;
+            pipes = 0;
+        }
+
+        /** Adds a platform's ring about (x, y), in the tile's plots. */
+        public void addRing(double x, double y) {
+            if (rings == ringX.length) { ringX = Arrays.copyOf(ringX, rings * 2); ringY = Arrays.copyOf(ringY, rings * 2); }
+            ringX[rings] = x;
+            ringY[rings] = y;
+            rings++;
+        }
+
+        /** Adds a pipe from (ax, ay) to (bx, by), in the tile's plots. */
+        public void addPipe(double ax, double ay, double bx, double by) {
+            if (pipes == pipeAX.length) {
+                int n = pipes * 2;
+                pipeAX = Arrays.copyOf(pipeAX, n); pipeAY = Arrays.copyOf(pipeAY, n); pipeBX = Arrays.copyOf(pipeBX, n); pipeBY = Arrays.copyOf(pipeBY, n);
+            }
+            pipeAX[pipes] = ax; pipeAY[pipes] = ay; pipeBX[pipes] = bx; pipeBY[pipes] = by;
+            pipes++;
+        }
+
         /** Clears the buildings; the arrays are reused. */
         public void clearBuildings() {
             buildings = 0;
@@ -265,6 +326,10 @@ public final class TilePainter {
         public final int[] streets = new int[5], halves = new int[4];
         /** A highway's own plots laid, the railway's track laid (since 0.7.89 under a building too: a yard, a mine), and the plots where a street crosses the track. */
         public int highwayPlots, railLaid, crossings;
+        /** What each plot carries at sea (0.7.97): its work (SEA_WORK's QUAY, JACKET or WELL), and SEA_RING and SEA_PIPE where a platform's ring or a pipe crosses it. */
+        public final byte[] sea = new byte[PLOTS];
+        /** The plots of quay, of jacket and of platform well drawn, and those a ring or a pipe crosses: what MapCheck sums over the tiles to see each drawn once. */
+        public int quayPlots, jacketPlots, wellPlots, ringPlots, pipePlots;
 
         void reset() {
             Arrays.fill(use, EMPTY);
@@ -278,7 +343,9 @@ public final class TilePainter {
             Arrays.fill(site, (short) 0);
             Arrays.fill(streets, 0);
             Arrays.fill(halves, 0);
+            Arrays.fill(sea, (byte) 0);
             buildings = packed = highwayPlots = railLaid = crossings = 0;
+            quayPlots = jacketPlots = wellPlots = ringPlots = pipePlots = 0;
         }
 
         int add(int x0, int y0, int w, int h, int type, int siteIndex, boolean packedOne) {
@@ -395,6 +462,80 @@ public final class TilePainter {
                 }
             }
         }
+        atSea(in, p);
+    }
+
+    /* =====================================================================
+       AT SEA (0.7.97, batch O13; runs/spec-oil.md 2.12, the research's 3.3
+       and 4.4; spec-roads-and-ports.md 2.8)
+
+       What the city has on the water, drawn over it: a terminal's quay, out
+       from its box on the shore (CityShore); an offshore platform's jacket on
+       its field, its wells on their sea sites, and the faint ring of its
+       500 m safety zone; and a crude pipeline from its field toward the
+       founding site, buried, so it takes no plot and is drawn over whatever
+       stands there. A ring or a pipe is a line, not plots: the plots it
+       crosses are marked - each the same from whichever tile it is seen, so
+       across a screen's tiles every one is drawn once (MapCheck 9) - and the
+       raster draws the line itself through them (TileRaster's AT SEA).
+       ===================================================================== */
+
+    /** The works at sea on the tile, into p.sea and its counts. */
+    static void atSea(Input in, Painted p) {
+        for (int i = 0; i < PLOTS; i++) {
+            byte s = in.sea[i];
+            if (s == 0) continue;
+            p.sea[i] = s;
+            if (s == QUAY) p.quayPlots++;
+            else if (s == JACKET) p.jacketPlots++;
+            else if (s == WELL) p.wellPlots++;
+        }
+        for (int r = 0; r < in.rings; r++) {
+            double cx = in.ringX[r], cy = in.ringY[r];
+            int x0 = (int) Math.max(0, Math.floor(cx - RING_PLOTS - 1)), x1 = (int) Math.min(TILE - 1, Math.ceil(cx + RING_PLOTS + 1));
+            int y0 = (int) Math.max(0, Math.floor(cy - RING_PLOTS - 1)), y1 = (int) Math.min(TILE - 1, Math.ceil(cy + RING_PLOTS + 1));
+            for (int y = y0; y <= y1; y++) {
+                for (int x = x0; x <= x1; x++) {
+                    if (!ringCrosses(cx, cy, x, y)) continue;
+                    p.sea[y * TILE + x] |= SEA_RING;
+                    p.ringPlots++;
+                }
+            }
+        }
+        for (int q = 0; q < in.pipes; q++) {
+            double ax = in.pipeAX[q], ay = in.pipeAY[q], bx = in.pipeBX[q], by = in.pipeBY[q];
+            int x0 = (int) Math.max(0, Math.floor(Math.min(ax, bx))), x1 = (int) Math.min(TILE - 1, Math.floor(Math.max(ax, bx)));
+            int y0 = (int) Math.max(0, Math.floor(Math.min(ay, by))), y1 = (int) Math.min(TILE - 1, Math.floor(Math.max(ay, by)));
+            for (int y = y0; y <= y1; y++) {
+                for (int x = x0; x <= x1; x++) {
+                    if (!segmentCrosses(ax, ay, bx, by, x, y)) continue;
+                    p.sea[y * TILE + x] |= SEA_PIPE;
+                    p.pipePlots++;
+                }
+            }
+        }
+    }
+
+    /** Whether a ring of RING_PLOTS about (cx, cy) crosses the plot whose corner is (x, y): it passes between the plot's nearest point and its farthest corner. */
+    public static boolean ringCrosses(double cx, double cy, double x, double y) {
+        double nx = Math.max(x, Math.min(cx, x + 1)) - cx, ny = Math.max(y, Math.min(cy, y + 1)) - cy;
+        double fx = Math.max(Math.abs(x - cx), Math.abs(x + 1 - cx)), fy = Math.max(Math.abs(y - cy), Math.abs(y + 1 - cy));
+        return nx * nx + ny * ny < RING_PLOTS * RING_PLOTS && fx * fx + fy * fy > RING_PLOTS * RING_PLOTS;
+    }
+
+    /** Whether the segment from (ax, ay) to (bx, by) runs through the plot whose corner is (x, y): some length of it inside the plot (Liang-Barsky). */
+    public static boolean segmentCrosses(double ax, double ay, double bx, double by, double x, double y) {
+        double dx = bx - ax, dy = by - ay, t0 = 0, t1 = 1;
+        double[] p = { -dx, dx, -dy, dy }, q = { ax - x, x + 1 - ax, ay - y, y + 1 - ay };
+        for (int k = 0; k < 4; k++) {
+            if (p[k] == 0) {
+                if (q[k] < 0) return false;
+                continue;
+            }
+            double r = q[k] / p[k];
+            if (p[k] < 0) t0 = Math.max(t0, r); else t1 = Math.min(t1, r);
+        }
+        return t1 - t0 > 1e-9 && (t1 - t0) * Math.hypot(dx, dy) > 1e-9;
     }
 
     /* --------------------------------------------- the mines on their sites */

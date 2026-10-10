@@ -359,6 +359,32 @@ public final class Icons {
     public static final String SAFE = "M5 3h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2V5a2 2 0 0 1 2 -2z"
             + " M7.5 11a3 3 0 1 0 6 0a3 3 0 1 0 -6 0 M10.5 11h.01 M17 9v4 M6 19v2 M18 19v2";
 
+    /*
+     * THE REFINERY'S PICTOGRAM'S SIX (0.7.95, batch O11), on the same grid and
+     * stroke: the research's mockup 1 drew the first four (claude/oil-and-
+     * ports-research.md 6) - a nodding-donkey well, a platform on the waves, a
+     * tanker, a unit's vessel - and the tank and the flame are drawn for it.
+     */
+
+    /** A land well, its beam nodding over the pad: the pictogram's land wells. */
+    public static final String WELL = "M3 21h18 M8 21l3-9 3 9 M2 9l14-4 3 3-14 4z M16 5v3 M5 12v4";
+
+    /** A platform on its legs over the waves: the pictogram's platform wells. */
+    public static final String PLATFORM = "M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"
+            + " M6 18V10h12v8 M5 10h14 M8 10V6h5v4 M15 10V3";
+
+    /** A tanker, low in the water: imported crude. */
+    public static final String TANKER = "M2 15l2 4h16l2-4z M5 15v-3h9v3 M16 15V8h3v7";
+
+    /** A process vessel, a column with its trays: a conversion unit's box. */
+    public static final String VESSEL = "M8 7a4 4 0 0 1 8 0v10a4 4 0 0 1 -8 0z M8 9h8 M8 15h8";
+
+    /** A storage tank, its roof a shallow cone: what goes into the refiners' tanks, and a Tank Farm's crude. */
+    public static final String TANK = "M4 9l8-4 8 4 M4 9v11h16V9 M4 14h16";
+
+    /** A flame: the furnaces, where residue no diesel can cut is burned. */
+    public static final String FLAME = "M12 3c3 4 5 6.5 5 10a5 5 0 0 1 -10 0c0-2 1-3.5 2.5-5 .5 2 1.5 3 2.5 3 -1-3 -.5-5.5 0-8z";
+
     /** Two arrows passing, one each way (Lucide's arrow-left-right): money changed from one currency to the other - the Trade tab's exchange (0.7.35). */
     public static final String EXCHANGE = "M8 3L4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4";
 

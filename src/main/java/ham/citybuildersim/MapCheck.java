@@ -114,9 +114,29 @@ import java.util.Map;
  *      city's edge stopped it, and grown month by month without a plot
  *      moving (H4); every plot of the model's track drawn or counted short,
  *      one railway network; and its Rail Terminals as yards on the track
- *      in the cells nearest the mines. On 0.7.86's painter the network's
- *      checks fail on Jerus's save and the playtest (runs/fixRD2-notes.md):
- *      N3's passed because they measured the deal's x 1 fixture.
+ *      in the cells nearest the mines - and (0.7.98, batch O14) the runs'
+ *      ramps and 45-degree bands reach the screen: every tile they mark
+ *      rastered through the view's own path as the model rasters it. On
+ *      0.7.86's painter the network's checks fail on Jerus's save and the
+ *      playtest (runs/fixRD2-notes.md): N3's passed because they measured
+ *      the deal's x 1 fixture;
+ *   9. at sea and on the shore (0.7.97, batch O13; runs/spec-oil.md 2.12
+ *      and 5's O13 row, spec-roads-and-ports.md 2.8 and 4), on a square city
+ *      on the default world's coast, a district west of its founding site:
+ *      the refinery's units in one district, a unit more a month on there
+ *      too, its plan placing them first of its industry in cells that touch
+ *      (a side or a corner), and an older sidecar's units gathered
+ *      once; each terminal and tank farm at the water - its box on owned dry
+ *      ground in one cell's interior, no run or highway beside it, a
+ *      terminal's quay over owned salt water that opens to the sea - laid one
+ *      a month without one moving, the newest taken first, through a FORMAT 6
+ *      sidecar and laid alike from a FORMAT 5; each drawn once on the tiles,
+ *      its quay's plots once; a platform's jacket, wells, ring and pipe drawn
+ *      once from the game's own platform (WellCheck's sea town); each route
+ *      on the sea's cells to its offing past the city and on into the abyss,
+ *      fading; a boat pure in (call, t), a frame touching only the routes on
+ *      screen; and at 10B (the oil spec's prototype's trade and lanes) a
+ *      frame's boats in no more than BOAT_FRAME_MS.
  */
 public class MapCheck {
 
@@ -225,6 +245,7 @@ public class MapCheck {
         sidecar(city, root, sq);
         cost(sq);
         viewHalf(city, sq, root);
+        atSea(sq.types, sq.seed);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -1164,6 +1185,10 @@ public class MapCheck {
         }
         Raster net = Raster.of(m);
         highways(net, "Jerus's city x 1");
+        marksReachTheView(m, Math.floorDiv(net.px0, World.TILE), Math.floorDiv(net.py0, World.TILE), net.w / World.TILE,
+                net.h / World.TILE, "Jerus's city x 1", false);
+        marksReachTheView(sq.maps[DENSE], Math.floorDiv(sq.x, World.TILE) - SCREEN_ACROSS / 2, Math.floorDiv(sq.y, World.TILE)
+                - SCREEN_DOWN / 2, SCREEN_ACROSS, SCREEN_DOWN, "the dense screen (x 10,000)", false);
         corridors(sq);
         rail(net, "Jerus's city x 1");
         CityMap yards = yardCity(sq);
@@ -1332,6 +1357,67 @@ public class MapCheck {
         check("...junctions few: every plot where highways meet an interchange of the runs or an arm's end against one", junctions <= hw.interchanges() + hw.arms());
     }
 
+    /**
+     * The runs' marks reach the picture a screen draws (0.7.98, batch O14): a
+     * screen rasters a tile from the view's kept copy of its inputs
+     * (MapTiles.painted(), paintedInput()), and until then that copy held none
+     * of the runs' marks (MapTiles.copy()) - so no ramp and no 45-degree band
+     * was drawn, nor a ramp named on hover. Every tile of `tw` x `th` from
+     * (tx0, ty0) the runs mark, through the view's own path (MapTiles.pixels())
+     * against the model's (CityMap.tileInput(), TilePainter.paint(),
+     * TileRaster.raster()): the same marks kept, the same pixels. The fixture:
+     * tiles whose raster the marks change - drawn again with them blanked, as
+     * the kept copy had them - and, with `bands`, 45-degree stretches among
+     * them. Returns how many tiles the marks change.
+     */
+    static int marksReachTheView(CityMap m, long tx0, long ty0, int tw, int th, String what, boolean bands) {
+        MapTiles tiles = new MapTiles(m);
+        TilePainter.Input in = new TilePainter.Input(), direct = new TilePainter.Input(), blank = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted(), pb = new TilePainter.Painted();
+        int n = MapTiles.tileImagePixels(PX);
+        int[] viewed = new int[n], drawn = new int[n], blanked = new int[n];
+        long ramps = 0, diagonal = 0;
+        int marked = 0, changed = 0, changedByBands = 0, keptAlike = 0, drawnAlike = 0;
+        for (int j = 0; j < th; j++) {
+            for (int i = 0; i < tw; i++) {
+                m.tileInput(tx0 + i, ty0 + j, direct);
+                long r = 0, b = 0, beyond = 0;
+                for (byte k : direct.marks) {
+                    if ((k & CityRuns.M_RAMP) != 0) r++;
+                    if ((k & CityRuns.M_DIAG) != 0) b++;
+                }
+                for (byte k : direct.marksBeyond) if (k != 0) beyond++;
+                if (r + b + beyond == 0) continue;
+                marked++;
+                ramps += r;
+                diagonal += b;
+                TilePainter.paint(direct, p);
+                TileRaster.raster(direct, p, PX, drawn);
+                m.tileInput(tx0 + i, ty0 + j, blank);
+                Arrays.fill(blank.marks, (byte) 0);
+                Arrays.fill(blank.marksBeyond, (byte) 0);
+                TilePainter.paint(blank, pb);
+                TileRaster.raster(blank, pb, PX, blanked);
+                if (!Arrays.equals(drawn, blanked)) {
+                    changed++;
+                    if (b > 0) changedByBands++;
+                }
+                tiles.pixels(tx0 + i, ty0 + j, MapFrame.L0, PX, in, viewed);
+                TilePainter.Input kept = tiles.paintedInput(tx0 + i, ty0 + j);
+                if (kept != null && Arrays.equals(kept.marks, direct.marks) && Arrays.equals(kept.marksBeyond, direct.marksBeyond)) keptAlike++;
+                if (Arrays.equals(viewed, drawn)) drawnAlike++;
+            }
+        }
+        out.printf("      %s: %d tile(s) the runs mark (%,d ramp plot(s), %,d of 45-degree stretches), %d whose raster the marks change"
+                + " (%d with a 45-degree stretch); through the view's path %d kept with their marks, %d rastered as the model rasters them%n",
+                what, marked, ramps, diagonal, changed, changedByBands, keptAlike, drawnAlike);
+        check(what + ": fixture: the runs' marks change the raster of some of its tiles" + (bands ? ", 45-degree stretches among them" : ""),
+                changed > 0 && (!bands || changedByBands > 0));
+        check("...and the view keeps every marked tile's marks and rasters it pixel for pixel as the model does: its ramps and"
+                + " 45-degree bands drawn (MapTiles.copy(), 0.7.98)", keptAlike == marked && drawnAlike == marked);
+        return changed;
+    }
+
     /** Spec 2.7's table on the game's own ground: the design's dry place, the city's ground a square 1, 3, 6 and 9 districts a side (4 to 35 km from its middle, the prototype's 4 to 34), and its Elevated Highways the prototype's 6, 92, 400 and 1,385. */
     static final int[][] CORRIDOR_STAGES = { { 1, 6 }, { 3, 92 }, { 6, 400 }, { 9, 1385 } };
 
@@ -1373,6 +1459,9 @@ public class MapCheck {
         check("...straight but where its way was stopped: an arm bends only where the sea, water wider than its bridge or the city's"
                 + " edge stopped it within LOOK plots, and turns back where its way home runs TURN_COST", straight);
         check("...few junctions: its interchanges and arms' ends against one", few);
+        // ...and the largest stage's 45-degree stretches reach the screen (0.7.98).
+        long[] lt = tilesOf(last);
+        marksReachTheView(last, lt[0], lt[1], (int) lt[2], (int) lt[3], "the largest stage (" + CORRIDOR_STAGES[CORRIDOR_STAGES.length - 1][1] + " highways)", true);
         // Grown stage by stage on the largest square's ground, then taken back.
         CityRuns grown = new CityRuns();
         long[] site = last.site();
@@ -1623,7 +1712,7 @@ public class MapCheck {
         byte[] old = live.writeSidecar(back.getMonth(), CityMap.OLDEST_READ);
         CityMap fromOld = CityMap.readSidecar(old, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
                 back.getMonth(), CityMap.stampIn(old));
-        byte[] none = live.writeSidecar(back.getMonth(), CityMap.FORMAT, false);
+        byte[] none = live.writeSidecar(back.getMonth(), 5, false);
         CityMap fromNone = CityMap.readSidecar(none, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
                 back.getMonth(), CityMap.stampIn(none));
         CityMap afresh = CityMap.canonical(back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(), back.getMapCounts());
@@ -1632,7 +1721,7 @@ public class MapCheck {
                 live.runs().highways().plots(), live.runs().rail().plots());
         check("a FORMAT " + CityMap.OLDEST_READ + " sidecar (0.7.72 to 0.7.87) still loads, into the same districts, its runs laid from its counts",
                 fromOld != null && fromOld.sameDistricts(live) && fromOld.runs().same(afresh.runs()));
-        check("...and 0.7.88's FORMAT " + CityMap.FORMAT + ", which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live)
+        check("...and 0.7.88's FORMAT 5, which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live)
                 && fromNone.runs().same(afresh.runs()));
         for (int i = 1; i < TIMES.length; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;
@@ -2438,4 +2527,463 @@ public class MapCheck {
         check("a far node tints the city's built ground by its districts and dims the rest", tinted > 0 && dimmed > 0);
     }
 
+
+    /* =====================================================================
+       9. AT SEA AND ON THE SHORE (0.7.97, batch O13)
+       ===================================================================== */
+
+    /** The section's city: three districts a side, all of it owned and drawn canonically on its measured ground - the playtest's coast (its bay, its south shore, its lagoon) - about a site one district west of the default world's founding site (atSea()). */
+    static final int SHORE_SIDE = 3;
+
+    /** A city owning `side` districts a side about (sx, sy), every plot of them, its map drawn canonically on the ground measured. */
+    static CityMap coastal(long seed, long sx, long sy, BuildingVisual.Type[] types, int side, long[] counts) {
+        int h = side / 2;
+        long dx = Math.floorDiv(sx, CityMap.DISTRICT), dy = Math.floorDiv(sy, CityMap.DISTRICT);
+        double[] centre = new double[CityLand.CENTRE_FIELDS];
+        centre[CityLand.CENTRE_FIELDS - 5] = -1;
+        centre[CityLand.CENTRE_FIELDS - 4] = -1;
+        centre[CityLand.CENTRE_FIELDS - 2] = sx;
+        centre[CityLand.CENTRE_FIELDS - 1] = sy;
+        double[][] rects = { { (dx - h) * CityMap.DISTRICT, (dy - h) * CityMap.DISTRICT, (dx - h + side) * CityMap.DISTRICT, (dy - h + side) * CityMap.DISTRICT } };
+        CityLand land = CityLand.restore(seed, centre, rects, null, null, null);
+        return CityMap.canonical(land, r -> land.amountsInOrder(r), types, counts);
+    }
+
+    /** The design's bound on a frame's boats at 10 billion, in ms (spec-oil 5's O13 row: "a frame's boats <= 0.5 ms at 10B, measured 0.38"). */
+    static final double BOAT_FRAME_MS = 0.5;
+
+    /** Frames timed for that bound, a round: 200 at times through the month; the least of TIMED_ROUNDS rounds' means after WARM_ROUNDS. */
+    static final int BOAT_FRAMES = 200;
+
+    /** The section's town: Jerus's mix at a tenth, one of each of the refinery's units, two of each terminal and one of each tank farm. */
+    static long[] shoreCounts(BuildingVisual.Type[] types) {
+        long[] c = new long[types.length];
+        for (int t = 0; t < JERUS_COUNTS.length && t < c.length; t++) c[t] = Math.round(JERUS_COUNTS[t] / 10.0);
+        for (BuildingVisual.Type t : types) {
+            if (t == null) continue;
+            if (t.site() != null) c[t.id()] = 0;
+            if (t.campus()) c[t.id()] = 1;
+            if (t.berth() >= 0) c[t.id()] = 2;
+            else if (t.shore()) c[t.id()] = 1;
+        }
+        return c;
+    }
+
+    static void atSea(BuildingVisual.Type[] types, long seed) {
+        out.println("\n--- 9. at sea and on the shore: the refinery's campus, the terminals at the water, the oil at sea, the routes and the boats ---");
+        World w = World.of(seed);
+        // The site one district west of the founding site's: that district is mostly sea, too little dry ground for the campus and a
+        // unit more; the one west of it holds the campus with room to spare, and the 3 x 3 still takes in the coast's terminals.
+        long sx = w.foundingX() - CityMap.DISTRICT, sy = w.foundingY();
+        long[] counts = shoreCounts(types);
+        CityMap m = coastal(seed, sx, sy, types, SHORE_SIDE, counts);
+
+        // ---- THE CAMPUS
+        int holding = 0, unitKinds = 0;
+        CityMap.District campus = null;
+        for (CityMap.District d : m.districts()) if (m.campusCells(d) > 0) { holding++; campus = d; }
+        for (BuildingVisual.Type t : types) if (t != null && t.campus()) unitKinds++;
+        out.printf("      a square city on the playtest's coast, %d districts a side: %,d buildings; the refinery's %d kinds of unit in %d district(s)%n",
+                SHORE_SIDE, Arrays.stream(counts).sum(), unitKinds, holding);
+        check("THE CAMPUS: drawn canonically, the refinery's units all stand in one district", holding == 1 && unitKinds > 0);
+        int cracker = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.campus() && cracker < 0 && t.plots() < 100 && t.plots() > 50) cracker = t.id();
+        long[] more = counts.clone();
+        more[cracker]++;
+        int had = campus.count(cracker);
+        m.reconcile(more);
+        check("...one more unit, a month on, goes to the district holding the refinery's ground", campus.count(cracker) == had + 1
+                && m.campusCells(campus) > 0 && Arrays.equals(m.totals(), more));
+        DistrictPlan p = m.plan(campus);
+        boolean firstOfIndustry = true, seenOther = false;
+        java.util.Set<Integer> cells = new java.util.HashSet<>();
+        int placedUnits = 0;
+        for (int b = 0; b < p.buildings; b++) {
+            BuildingVisual.Type t = types[p.btype[b]];
+            if (t == null || t.outer() || t.cls() != BuildingVisual.INDUSTRY) continue;
+            if (t.campus()) {
+                firstOfIndustry &= !seenOther;
+                cells.add((p.by[b] / DistrictPlan.CELL) * DistrictPlan.CELLS_A_SIDE + p.bx[b] / DistrictPlan.CELL);
+                placedUnits++;
+            } else seenOther = true;
+        }
+        int wantUnits = 0;
+        for (BuildingVisual.Type t : types) if (t != null && t.campus()) wantUnits += campus.count(t.id());
+        int overUnits = 0;
+        for (BuildingVisual.Type t : types) if (t != null && t.campus() && t.id() < p.overflow.length) overUnits += p.overflow[t.id()];
+        out.printf("      its plan, district (%d, %d): %d units placed of %d (%d left out), in %d cell(s) %s%n", campus.dx, campus.dy, placedUnits,
+                wantUnits, overUnits, cells.size(), cells);
+        check("...its plan places them first of its industry, every one, in cells that touch one another: one campus",
+                firstOfIndustry && placedUnits == wantUnits && connected(cells));
+        // An older sidecar's units, spread by hand into another district, gathered once as it is read; a FORMAT 6 one read as it is.
+        CityMap.District away = null;
+        for (CityMap.District d : m.districts()) if (d != campus && (away == null || d.index < away.index)) away = d;
+        campus.counts[cracker]--;
+        away.counts[cracker]++;
+        for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
+        byte[] five = m.writeSidecar(1, 5), six = m.writeSidecar(1);
+        CityMap fromFive = CityMap.readSidecar(five, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(five));
+        CityMap fromSix = CityMap.readSidecar(six, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(six));
+        int[] spread = new int[2];
+        if (fromFive != null) for (CityMap.District d : fromFive.districts()) if (fromFive.campusCells(d) > 0) spread[0]++;
+        if (fromSix != null) for (CityMap.District d : fromSix.districts()) if (fromSix.campusCells(d) > 0) spread[1]++;
+        check("...a FORMAT 5 sidecar's units in two districts are gathered into the campus once as it is read; a FORMAT 6 one's stay",
+                fromFive != null && spread[0] == 1 && fromSix != null && spread[1] == 2);
+        campus.counts[cracker]++;
+        away.counts[cracker]--;
+        for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
+
+        // ---- THE SHORE
+        CityShore shore = m.shore();
+        int wantWorks = 0;
+        for (int t : m.shoreTypes()) wantWorks += (int) more[t];
+        SeaRoutes.Grid grid = new SeaRoutes.Grid(w);
+        java.util.Set<Long> shut = new java.util.HashSet<>();
+        boolean onDry = true, inCell = true, quays = true, clear = true, opens = true;
+        for (CityShore.Work k : shore.works()) {
+            long cx = Math.floorDiv(k.x0(), World.TILE) * World.TILE, cy = Math.floorDiv(k.y0(), World.TILE) * World.TILE;
+            inCell &= k.x0() > cx && k.y0() > cy && k.x0() + k.w() <= cx + World.TILE && k.y0() + k.h() <= cy + World.TILE;
+            for (long y = k.y0() - CityShore.CLEAR; y < k.y0() + k.h() + CityShore.CLEAR; y++) {
+                for (long x = k.x0() - CityShore.CLEAR; x < k.x0() + k.w() + CityShore.CLEAR; x++) {
+                    byte r = m.runs().at(x, y);
+                    if (r == CityRuns.F_HIGHWAY || r == CityRuns.F_RAIL_OVER) clear = false;
+                    if (!k.holds(x, y)) continue;
+                    int tg = tileGround(w, x, y);
+                    onDry &= m.land().ownsPlot(x, y) && tg != World.SALT && tg != World.FRESH;
+                    if (r != 0) clear = false;
+                    for (CityShore.Work o : shore.works()) if (o != k && (o.holds(x, y) || o.quayAt(x, y))) clear = false;
+                }
+            }
+            for (int q = 1; q <= k.quay(); q++) {
+                long[] at = k.quayPlot(q);
+                quays &= m.land().ownsPlot(at[0], at[1]) && tileGround(w, at[0], at[1]) == World.SALT;
+            }
+            if (k.berthed()) {
+                long[] e = k.quayPlot(k.quay() + 1);
+                opens &= SeaRoutes.opensToSea(grid, e[0], e[1], shut);
+            }
+        }
+        out.printf("      the shore: %d works of the model's %d laid (%d short): %s%n", shore.works().size(), wantWorks, m.shoreShort(), worksWords(shore, types));
+        check("THE SHORE: every terminal and tank farm the model has is laid at the water, or counted short", shore.works().size() + m.shoreShort() == wantWorks
+                && shore.works().size() > 0);
+        check("...each box on owned dry ground, inside one cell's interior, no run on it, no highway beside it, a plot clear of every other work",
+                onDry && inCell && clear);
+        check("...each terminal's quay of its cargo's QUAY_PLOTS out over owned water, that opens to the sea", quays && opens
+                && shore.works().stream().allMatch(k -> k.quay() == (types[k.type()].berth() >= 0 ? CityShore.QUAY_PLOTS[types[k.type()].berth()] : 0)));
+        // Never moved: one more terminal a month, then one fewer.
+        int gct = -1;
+        for (BuildingVisual.Type t : types) if (t != null && t.berth() == Ports.Cargo.GENERAL.ordinal()) gct = t.id();
+        List<CityShore.Work> before = new ArrayList<>(shore.works());
+        long[] next = more.clone();
+        next[gct]++;
+        m.reconcile(next);
+        List<CityShore.Work> grown = new ArrayList<>(shore.works());
+        next[gct] -= 2;
+        m.reconcile(next);
+        List<CityShore.Work> shrunk = new ArrayList<>(shore.works());
+        boolean newestGone = true;
+        int gone = 0;
+        for (CityShore.Work k : grown) if (!shrunk.contains(k)) { gone++; newestGone &= k.type() == gct; }
+        CityShore.Work lastGct = null, nextLast = null;
+        for (CityShore.Work k : grown) if (k.type() == gct) { nextLast = lastGct; lastGct = k; }
+        check("...laid month by month, nothing laid moves: a terminal more is laid and the rest stand; two fewer take the newest two",
+                grown.size() == before.size() + 1 && grown.subList(0, before.size()).equals(before) && gone == 2 && newestGone
+                        && !shrunk.contains(lastGct) && !shrunk.contains(nextLast));
+        m.reconcile(more);
+        byte[] fmt6 = m.writeSidecar(1), fmt5 = m.writeSidecar(1, 5);
+        CityMap r6 = CityMap.readSidecar(fmt6, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmt6));
+        CityMap r5 = CityMap.readSidecar(fmt5, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmt5));
+        check("...kept in the sidecar: FORMAT 6 reads back the same works and writes the same bytes; a FORMAT 5 one has them laid alike from its counts",
+                r6 != null && r6.same(m) && Arrays.equals(r6.writeSidecar(1), fmt6) && r5 != null && r5.shore().works().size() == shore.works().size());
+        // Each drawn once: its type's plots and its quay's over every tile about the works.
+        MapTiles tiles = new MapTiles(m);
+        TilePainter.Input in = new TilePainter.Input();
+        long bx0 = Long.MAX_VALUE, by0 = Long.MAX_VALUE, bx1 = Long.MIN_VALUE, by1 = Long.MIN_VALUE;
+        for (CityShore.Work k : shore.works()) {
+            bx0 = Math.min(bx0, k.x0() - 20); by0 = Math.min(by0, k.y0() - 20);
+            bx1 = Math.max(bx1, k.x0() + k.w() + 20); by1 = Math.max(by1, k.y0() + k.h() + 20);
+        }
+        Map<Integer, Long> plotsOf = new java.util.HashMap<>();
+        long quayPlots = 0;
+        for (long ty = Math.floorDiv(by0, World.TILE); ty <= Math.floorDiv(by1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(bx0, World.TILE); tx <= Math.floorDiv(bx1, World.TILE); tx++) {
+                long stamp = tiles.input(tx, ty, in);
+                TilePainter.Painted pt = tiles.painted(tx, ty, in, stamp);
+                quayPlots += pt.quayPlots;
+                for (int b = 0; b < pt.buildings; b++) {
+                    BuildingVisual.Type t = types[pt.btype[b]];
+                    if (t == null || !t.shore()) continue;
+                    plotsOf.merge(t.id(), (long) Math.min(pt.bw[b], World.TILE - pt.bx[b]) * Math.min(pt.bh[b], World.TILE - pt.by[b]), Long::sum);
+                }
+            }
+        }
+        boolean once = true;
+        long wantQuay = 0;
+        Map<Integer, Long> wantOf = new java.util.HashMap<>();
+        for (CityShore.Work k : shore.works()) { wantOf.merge(k.type(), (long) k.w() * k.h(), Long::sum); wantQuay += k.quay(); }
+        for (Map.Entry<Integer, Long> e : wantOf.entrySet()) once &= plotsOf.getOrDefault(e.getKey(), 0L) >= e.getValue();
+        for (Map.Entry<Integer, Long> e : plotsOf.entrySet()) once &= wantOf.getOrDefault(e.getKey(), 0L) >= e.getValue();
+        out.printf("      drawn: %s plots of works (the shore's %s), %d of quay (%d)%n", plotsOf, wantOf, quayPlots, wantQuay);
+        check("...each work drawn once on the tiles, on its own box, and every plot of its quay once", once && quayPlots == wantQuay);
+
+        // ---- THE OIL AT SEA: the game's own platform (WellCheck's sea town).
+        oilAtSea();
+
+        // ---- THE ROUTES
+        long t0 = System.nanoTime();
+        List<BoatSchedule.Route> routes = m.seaRoutes();
+        double routesMs = (System.nanoTime() - t0) / 1e6;
+        double want = m.cityRadius() + SeaRoutes.OFFING_M / World.PLOT_M, abyss = SeaRoutes.ABYSS_M / World.PLOT_M;
+        boolean onSea = true, offing = true, fades = true, spreadOk = true;
+        int spreadN = 0, legs = 0, shortAbyss = 0;
+        for (BoatSchedule.Route r : routes) {
+            double bx = r.xs()[0], by = r.ys()[0];
+            for (int i = 0; i + 1 < r.xs().length; i++, legs++) {
+                double len = Math.hypot(r.xs()[i + 1] - r.xs()[i], r.ys()[i + 1] - r.ys()[i]);
+                int n = (int) Math.ceil(len / SeaRoutes.CELL * 3) + 1;
+                for (int k = 0; k <= n; k++) {
+                    double x = r.xs()[i] + (r.xs()[i + 1] - r.xs()[i]) * k / n, y = r.ys()[i] + (r.ys()[i + 1] - r.ys()[i]) * k / n;
+                    if (Math.hypot(x - bx, y - by) < 1.5 * SeaRoutes.CELL * Math.sqrt(2) + SeaRoutes.NEAR_CELLS * SeaRoutes.CELL && i == 0) continue;
+                    onSea &= grid.sea(Math.floorDiv((long) Math.floor(x), SeaRoutes.CELL), Math.floorDiv((long) Math.floor(y), SeaRoutes.CELL));
+                }
+            }
+            double out1 = Math.hypot(r.xs()[r.offing()] - bx, r.ys()[r.offing()] - by);
+            offing &= out1 >= Math.min(want, SeaRoutes.RAY_CELLS * SeaRoutes.CELL) - 2 * SeaRoutes.CELL;
+            double tail = r.length() - r.fadeFrom();
+            fades &= tail >= SeaRoutes.CELL / 3.0 - 1e-6 && tail <= abyss + 1e-6;
+            if (tail < abyss - 1e-6) shortAbyss++;
+            if (r.spread() > 0) spreadN++;
+            spreadOk &= r.spread() >= 0 && r.spread() <= Math.toRadians(SeaRoutes.SPREAD_DEG) + 1e-12;
+        }
+        out.printf("      the routes: %d found in %.0f ms, %d legs, the offing %.1f km past the city's radius %.1f km; %d of them spread, %d with land"
+                + " short of ABYSS_M past the offing%n", routes.size(), routesMs, legs, SeaRoutes.OFFING_M / 1000, m.cityRadius() * World.PLOT_M / 1000,
+                spreadN, shortAbyss);
+        check("THE ROUTES: one a terminal, each leg on the sea's cells (past its berth's own)", routes.size() == shore.berths(types).size() && onSea);
+        check("...each to its offing, the city's radius plus OFFING_M out from its berth (this coast is open), and on into the abyss: ABYSS_M,"
+                + " or as far as the sea goes", offing && fades);
+        check("...a call's last leg turned no more than SPREAD_DEG, where the fan keeps to the sea", spreadOk);
+
+        // ---- THE BOATS: pure in (call, t), a frame touching only the routes on screen, and at 10B a frame's cost.
+        BoatSchedule s = BoatSchedule.of(7, tradeAtSea(PROTO_TONNES / 4, PROTO_TONNES / 4, PROTO_TONNES / 4, PROTO_TONNES / 4), routes);
+        boolean pure = true, alpha = true;
+        double leg = BoatSchedule.LEG_SECONDS / BoatSchedule.MONTH_SECONDS;
+        for (BoatSchedule.Call c : s.calls()) {
+            BoatSchedule.Route r = routes.get(c.route());
+            for (double t = 0; t <= 1; t += 1 / 97.0) {
+                BoatSchedule.Boat a = BoatSchedule.position(c, r, t), b = BoatSchedule.position(c, r, t);
+                pure &= java.util.Objects.equals(a, b);
+                if (a != null) alpha &= a.alpha() >= 0 && a.alpha() <= 1;
+            }
+            // Coming in from the abyss's end it shows nothing; at the quay, whole.
+            BoatSchedule.Boat far = BoatSchedule.position(c, r, c.arrives() - leg), docked = BoatSchedule.position(c, r, c.arrives());
+            alpha &= far != null && far.alpha() < 1e-9 && docked != null && docked.docked() && docked.alpha() == 1;
+        }
+        // An L0 screen about the first terminal's berth.
+        long hx = routes.isEmpty() ? sx : routes.get(0).berth().x(), hy = routes.isEmpty() ? sy : routes.get(0).berth().y();
+        long l0w = Math.round(SCREEN_W_PX / MapFrame.L0_FROM), l0h = Math.round(SCREEN_H_PX / MapFrame.L0_FROM);
+        long vx0 = hx - l0w / 2, vy0 = hy - l0h / 2, vx1 = vx0 + l0w, vy1 = vy0 + l0h;
+        int crossing = 0, expect = 0;
+        List<BoatSchedule.Boat> got = s.frame(vx0, vy0, vx1, vy1, .5);
+        for (int r = 0; r < routes.size(); r++) {
+            if (!BoatSchedule.crosses(routes.get(r), vx0, vy0, vx1, vy1)) continue;
+            crossing++;
+            for (BoatSchedule.Call c : s.calls()) if (c.route() == r && BoatSchedule.position(c, routes.get(r), .5) != null) expect++;
+        }
+        out.printf("      a month of the prototype's trade at m4000, a quarter of each kind: %d calls; an L0 screen about a berth crosses %d route(s),"
+                + " %d boat(s) on them at mid-month%n", s.callCount(), crossing, expect);
+        check("THE BOATS: a boat is pure in (call, t), fading only in the abyss; a frame finds every boat on the routes on screen, touching only those",
+                pure && alpha && got.size() == expect && s.touched() == crossing && crossing > 0 && s.callCount() > 0);
+        // 10B: BoatProto's case - its trade scaled to 10 billion, half of it in MR tankers and half in Capesizes (about its mixed 60,000 t
+        // a call), on its 20,000 lanes along its coast; timed on an L0 screen and an L1 one at the lanes' middle, and on its own frame,
+        // 8 districts wide over the lanes' whole length.
+        double tonnes10B = PROTO_TONNES * 1e10 / PROTO_PEOPLE;
+        BoatSchedule huge = BoatSchedule.of(7, tradeAtSea(tonnes10B / 2, tonnes10B / 2, 0, 0), protoLanes(sx, sy));
+        long midX = sx + PROTO_LANE_DX / 2, midY = sy + PROTO_LANE_DY / 2;
+        long[][] views = {
+                { Math.round(SCREEN_W_PX / MapFrame.L0_FROM), Math.round(SCREEN_H_PX / MapFrame.L0_FROM) },
+                { Math.round(SCREEN_W_PX / MapFrame.L1_FROM), Math.round(SCREEN_H_PX / MapFrame.L1_FROM) },
+                { 8L * World.DISTRICT, Math.abs(PROTO_LANE_DY) + 2 } };
+        double[] best = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE };
+        int[] seen = new int[views.length];
+        huge.frame(vx0, vy0, vx1, vy1, .5);
+        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+            for (int v = 0; v < views.length; v++) {
+                long ax = midX - views[v][0] / 2, ay = midY - views[v][1] / 2, bx = ax + views[v][0], by = ay + views[v][1];
+                long f0 = System.nanoTime();
+                int n = 0;
+                for (int k = 0; k < BOAT_FRAMES; k++) n += huge.frame(ax, ay, bx, by, (k + 0.5) / BOAT_FRAMES).size();
+                double ms = (System.nanoTime() - f0) / 1e6 / BOAT_FRAMES;
+                if (round >= WARM_ROUNDS) best[v] = Math.min(best[v], ms);
+                seen[v] = n / BOAT_FRAMES;
+            }
+        }
+        out.printf("      at 10B (%,d calls a month on %,d lanes): a frame of an L0 screen %.3f ms (%,d boats), of an L1 screen %.3f ms (%,d boats),"
+                + " of the prototype's 8 districts %.3f ms (%,d boats; it measured 0.38)%n", huge.callCount(), PROTO_LANES, best[0], seen[0], best[1],
+                seen[1], best[2], seen[2]);
+        check("...at 10 billion a frame's boats take no more than BOAT_FRAME_MS (0.5 ms): an L0 screen, an L1 one and the prototype's 8 districts",
+                best[0] <= BOAT_FRAME_MS && best[1] <= BOAT_FRAME_MS && best[2] <= BOAT_FRAME_MS);
+    }
+
+    /** The view's size in pixels the frames are timed at: section 5's 1,389 x 868 screen. */
+    static final int SCREEN_W_PX = 1389, SCREEN_H_PX = 868;
+
+    /** BoatProto's trade (the oil spec's prototype, its out/boat.txt): the playtest's tonnes across the boundary a month at m4000 (pt0770's save) and its people then, scaled from by people. */
+    static final double PROTO_TONNES = 896_308, PROTO_PEOPLE = 469_092;
+
+    /** BoatProto's lanes at 10B: its cap of 20,000, each from its berth 200 plots east and 1,500 north ("a lane 45 km out to sea, north of the coast"). */
+    static final int PROTO_LANES = 20_000;
+    static final long PROTO_LANE_DX = 200, PROTO_LANE_DY = -1_500;
+
+    /**
+     * BoatProto's 20,000 lanes about (cx, cy): berths at hashed places along
+     * its coast's span at 10B - sqrt(10B / 5,000) x 33 plots, its "city's span
+     * in plots (rough)" - every other one liquid bulk's, the rest dry bulk's.
+     */
+    static List<BoatSchedule.Route> protoLanes(long cx, long cy) {
+        long span = (long) (Math.sqrt(1e10 / 5000.0) * 33);
+        List<BoatSchedule.Route> out = new ArrayList<>(PROTO_LANES);
+        long h = 12345;
+        for (int i = 0; i < PROTO_LANES; i++) {
+            h = World.mix(h);
+            long x = cx - span / 2 + (long) (World.unit(h) * span);
+            BoatSchedule.Berth b = new BoatSchedule.Berth(i % 2 == 0 ? Ports.Cargo.LIQUID : Ports.Cargo.DRY_BULK, x, cy);
+            out.add(new BoatSchedule.Route(b, x + PROTO_LANE_DX, cy + PROTO_LANE_DY));
+        }
+        return out;
+    }
+
+    /** The world's ground at a plot as the painter reads it: its tile's (World.tileTerrain()), what the shore's search and the routes read. */
+    static int tileGround(World w, long x, long y) {
+        byte[] t = new byte[TilePainter.PLOTS];
+        w.tileTerrain(Math.floorDiv(x, World.TILE), Math.floorDiv(y, World.TILE), t);
+        return t[(int) (Math.floorMod(y, World.TILE) * World.TILE + Math.floorMod(x, World.TILE))];
+    }
+
+    /** Whether a set of cells (ci + cj x CELLS_A_SIDE) is one piece, eight ways: a corner touching counts, as DistrictPlan.campusNext() opens them. */
+    static boolean connected(java.util.Set<Integer> cells) {
+        if (cells.isEmpty()) return false;
+        java.util.Set<Integer> seen = new java.util.HashSet<>();
+        java.util.ArrayDeque<Integer> q = new java.util.ArrayDeque<>();
+        int first = cells.iterator().next();
+        q.add(first);
+        seen.add(first);
+        while (!q.isEmpty()) {
+            int c = q.poll(), ci = c % DistrictPlan.CELLS_A_SIDE, cj = c / DistrictPlan.CELLS_A_SIDE;
+            int[][] steps = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
+            for (int[] st : steps) {
+                int ni = ci + st[0], nj = cj + st[1];
+                if (ni < 0 || nj < 0 || ni >= DistrictPlan.CELLS_A_SIDE || nj >= DistrictPlan.CELLS_A_SIDE) continue;
+                int n = ni + nj * DistrictPlan.CELLS_A_SIDE;
+                if (cells.contains(n) && seen.add(n)) q.add(n);
+            }
+        }
+        return seen.size() == cells.size();
+    }
+
+    /** The shore's works by type, in words. */
+    static String worksWords(CityShore shore, BuildingVisual.Type[] types) {
+        Map<Integer, Integer> n = new java.util.TreeMap<>();
+        for (CityShore.Work k : shore.works()) n.merge(k.type(), 1, Integer::sum);
+        return n.toString();
+    }
+
+    /** A month billed with these tonnes of each kind shipped out, all of them by sea: each on the first good of its kind that is not crude. */
+    static Ports tradeAtSea(double liquid, double dryBulk, double general, double boxes) {
+        Ports p = new Ports();
+        p.beginMonth();
+        double[] by = new double[Ports.Cargo.values().length];
+        by[Ports.Cargo.LIQUID.ordinal()] = liquid;
+        by[Ports.Cargo.DRY_BULK.ordinal()] = dryBulk;
+        by[Ports.Cargo.GENERAL.ordinal()] = general;
+        by[Ports.Cargo.CONTAINER.ordinal()] = boxes;
+        for (Ports.Cargo c : Ports.Cargo.values()) {
+            for (Good g : Good.values()) {
+                if (g == Good.CRUDE || g.cargo() != c) continue;
+                p.tally(g, 0, by[c.ordinal()], 1);
+                break;
+            }
+        }
+        return p;
+    }
+
+    /**
+     * The game's own platform, its wells and its pipe on the map (WellCheck's
+     * sea town): Game.mapAtSea() puts the jacket in the middle of its slotted
+     * sites and its wells on them, the pipe from the jacket to the founding
+     * site; and the tiles about them draw the jacket's plots, each well's,
+     * the ring's and the pipe's each once.
+     */
+    static void oilAtSea() {
+        if (WellCheck.quiet == null) WellCheck.quiet = QUIET;
+        Game g = WellCheck.seaTown("mapcheck-sea");
+        if (g == null) {
+            check("fixture: WellCheck's sea town buys the ground over its sea field", false);
+            return;
+        }
+        Deposit d = WellCheck.seaField();
+        BuildingsTemplate jacket = WellCheck.template(g, "Offshore Platform"), well = WellCheck.template(g, "Platform Well"),
+                pipe = WellCheck.template(g, "Crude Pipeline");
+        int km = ham.citybuildersim.sectors.Oil.lengthKm(d, g.getCityLand().siteX(), g.getCityLand().siteY());
+        WellCheck.quietly(() -> {
+            g.buildStack(jacket, 1, true);
+            g.simulateMonths(1);
+            g.buildStack(well, d.sites(), true);
+            g.buildStack(pipe, km, true);
+            g.simulateMonths(1);
+        });
+        CityMap.AtSea a = g.mapAtSea();
+        CityMap m = g.getCityMap();
+        int slots = Math.min(12, d.sites());
+        double cx = 0, cy = 0;
+        java.util.List<Long> wellsAt = new java.util.ArrayList<>();
+        for (int k = 0; k < slots; k++) {
+            double[] at = d.siteAt(k);
+            cx += d.x() + at[0] + 0.5;
+            cy += d.y() + at[1] + 0.5;
+            wellsAt.add(((long) Math.floor(d.x() + at[0]) << 32) | ((long) Math.floor(d.y() + at[1]) & 0xffffffffL));
+        }
+        cx /= slots;
+        cy /= slots;
+        CityMap.Jacket j = a.jackets().isEmpty() ? null : a.jackets().get(0);
+        CityMap.Pipe pp = a.pipes().isEmpty() ? null : a.pipes().get(0);
+        out.printf("      WellCheck's sea town: a jacket at (%.1f, %.1f) with %d wells, a pipe of %d km to (%.1f, %.1f)%n",
+                j == null ? 0 : j.x(), j == null ? 0 : j.y(), j == null ? 0 : j.wells(), km, pp == null ? 0 : pp.x1(), pp == null ? 0 : pp.y1());
+        check("THE OIL AT SEA: the game hands the map its platform - the jacket amid its slotted sites, its wells on them - and its pipe from the"
+                        + " jacket to the founding site, whole", j != null && a.jackets().size() == 1 && Math.abs(j.x() - cx) < 1e-9
+                && Math.abs(j.y() - cy) < 1e-9 && j.wellPlots().equals(wellsAt.subList(0, Math.min(j.wells(), slots))) && pp != null
+                && pp.x0() == j.x() && pp.y0() == j.y() && Math.abs(pp.x1() - (g.getCityLand().siteX() + 0.5)) < 1e-9
+                && Math.abs(pp.y1() - (g.getCityLand().siteY() + 0.5)) < 1e-9 && m.atSea().equals(a));
+        // Every tile the jacket's ring and the pipe cross, painted: each drawn once.
+        MapTiles tiles = new MapTiles(m);
+        TilePainter.Input in = new TilePainter.Input();
+        double r = TilePainter.RING_PLOTS + 2;
+        long x0 = (long) Math.floor(Math.min(j.x() - r, Math.min(pp.x0(), pp.x1()))), x1 = (long) Math.ceil(Math.max(j.x() + r, Math.max(pp.x0(), pp.x1())));
+        long y0 = (long) Math.floor(Math.min(j.y() - r, Math.min(pp.y0(), pp.y1()))), y1 = (long) Math.ceil(Math.max(j.y() + r, Math.max(pp.y0(), pp.y1())));
+        long jacketPlots = 0, wellPlots = 0, ringPlots = 0, pipePlots = 0;
+        for (long ty = Math.floorDiv(y0, World.TILE); ty <= Math.floorDiv(y1, World.TILE); ty++) {
+            for (long tx = Math.floorDiv(x0, World.TILE); tx <= Math.floorDiv(x1, World.TILE); tx++) {
+                long stamp = tiles.input(tx, ty, in);
+                TilePainter.Painted pt = tiles.painted(tx, ty, in, stamp);
+                jacketPlots += pt.jacketPlots;
+                wellPlots += pt.wellPlots;
+                ringPlots += pt.ringPlots;
+                pipePlots += pt.pipePlots;
+            }
+        }
+        long wantRing = 0, wantPipe = 0;
+        for (long y = y0 - 1; y <= y1 + 1; y++) {
+            for (long x = x0 - 1; x <= x1 + 1; x++) {
+                if (TilePainter.ringCrosses(j.x(), j.y(), x, y)) wantRing++;
+                if (TilePainter.segmentCrosses(pp.x0(), pp.y0(), pp.x1(), pp.y1(), x, y)) wantPipe++;
+            }
+        }
+        long jx0 = Math.round(j.x()) - TilePainter.JACKET_PLOTS / 2, jy0 = Math.round(j.y()) - TilePainter.JACKET_PLOTS / 2;
+        long wellsOff = j.wellPlots().stream().filter(wp -> { long x = wp >> 32, y = (int) (long) wp;
+            return !(x >= jx0 && y >= jy0 && x < jx0 + TilePainter.JACKET_PLOTS && y < jy0 + TilePainter.JACKET_PLOTS); }).distinct().count();
+        out.printf("      drawn: %d jacket plots, %d well plots (%d off the jacket), %,d plots the ring crosses (%,d), %,d the pipe (%,d)%n",
+                jacketPlots, wellPlots, wellsOff, ringPlots, wantRing, pipePlots, wantPipe);
+        check("...on the tiles the jacket drawn once, each well once on its site, the 500 m ring and the pipe through every plot they cross once",
+                jacketPlots == (long) TilePainter.JACKET_PLOTS * TilePainter.JACKET_PLOTS && wellPlots == wellsOff && ringPlots == wantRing
+                        && pipePlots == wantPipe && wantRing > 0 && wantPipe > 0);
+    }
 }

@@ -159,9 +159,9 @@ public final class TileRaster {
         if (lines) ways(in, p, px, img);
         for (int b = 0; b < p.buildings; b++) {
             BuildingVisual.Type t = p.btype[b] >= 0 && p.btype[b] < in.types.length ? in.types[p.btype[b]] : null;
-            boolean flats = t != null && t.flats();
-            int fill = t == null ? BuildingVisual.FILL[BuildingVisual.INDUSTRY] : flats ? BuildingVisual.FLATS_FILL : BuildingVisual.FILL[t.cls()];
-            int edge = t == null ? BuildingVisual.EDGE[BuildingVisual.INDUSTRY] : flats ? BuildingVisual.FLATS_EDGE : BuildingVisual.EDGE[t.cls()];
+            // Its type's fill and edge: its class's, the flats darker, and (0.7.97) the refinery's units, a terminal and a tank farm their own.
+            int fill = t == null ? BuildingVisual.FILL[BuildingVisual.INDUSTRY] : t.fill();
+            int edge = t == null ? BuildingVisual.EDGE[BuildingVisual.INDUSTRY] : t.edge();
             if (p.bpacked[b]) {
                 fill = blend(fill, VOID, PACKED_DIM);
                 edge = blend(edge, VOID, PACKED_DIM);
@@ -212,6 +212,105 @@ public final class TileRaster {
             }
         }
         overBuildings(in, p, px, img);
+        atSea(in, p, px, img);
+    }
+
+    /* =====================================================================
+       AT SEA (0.7.97, batch O13; TilePainter's AT SEA; mockup 3's colours)
+       ===================================================================== */
+
+    /** A quay's deck: mockup 3's jetty, #3a4655... */
+    public static final int QUAY_DECK = 0xff3a4655;
+
+    /** ...and its edge from EDGE_FROM px a plot: the mockup's #5a6676. */
+    public static final int QUAY_EDGE = 0xff5a6676;
+
+    /** A platform's jacket: mockup 3's #2a3540... */
+    public static final int JACKET_FILL = 0xff2a3540;
+
+    /** ...edged in the mockup's tan, #c9b68f - its ring's and the pipe's colour too (the ore's). */
+    public static final int OIL_TAN = 0xffc9b68f;
+
+    /** A platform's 500 m ring over the water: the tan at the mockup's 25%... */
+    public static final double RING_ALPHA = 0.25;
+
+    /** ...dashed 3 px on, 3 off along its arc (the mockup's "3 3"). */
+    public static final double RING_DASH_PX = 3;
+
+    /** A crude pipeline: the tan at the mockup's 50%, dashed 2 px on and 4 off (its "2 4"), 1.5 px wide (drawn 1 below 4 px a plot, 2 from it). */
+    public static final double PIPE_ALPHA = 0.5;
+    public static final double PIPE_ON_PX = 2, PIPE_OFF_PX = 4;
+
+    /**
+     * The works at sea over the tile's picture: each quay plot the deck,
+     * edged from EDGE_FROM; a jacket the mockup's platform, edged; a well its
+     * tan dot; then every pixel of a plot a ring or a pipe crosses that lies
+     * on its line (within half its width) and on a dash - the dashes measured
+     * from the ring's east and along the pipe from its field, so they run on
+     * across a tile's edge.
+     */
+    static void atSea(TilePainter.Input in, TilePainter.Painted p, int px, int[] img) {
+        int tile = TilePainter.TILE, w = tile * px;
+        boolean edged = px >= EDGE_FROM;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            int s = p.sea[i] & TilePainter.SEA_WORK;
+            if (s == 0) continue;
+            int x0 = (i % tile) * px, y0 = (i / tile) * px;
+            if (s == TilePainter.WELL) {
+                int r = Math.max(1, px / 4), cx = x0 + px / 2, cy = y0 + px / 2;
+                fillRect(img, w, Math.max(x0, cx - r), Math.max(y0, cy - r), Math.min(x0 + px, cx + r), Math.min(y0 + px, cy + r), OIL_TAN);
+                continue;
+            }
+            int fill = s == TilePainter.QUAY ? QUAY_DECK : JACKET_FILL, edge = s == TilePainter.QUAY ? QUAY_EDGE : OIL_TAN;
+            fillRect(img, w, x0, y0, x0 + px, y0 + px, fill);
+            if (!edged) continue;
+            // Its edge where the next plot is not the same work: a jetty's sides, a jacket's outline.
+            for (int dir = 0; dir < 4; dir++) {
+                int nx = i % tile + TilePainter.DX[dir], ny = i / tile + TilePainter.DY[dir];
+                boolean same = nx >= 0 && ny >= 0 && nx < tile && ny < tile && (p.sea[ny * tile + nx] & TilePainter.SEA_WORK) == s;
+                if (same) continue;
+                if (dir == 0) fillRect(img, w, x0, y0, x0 + px, y0 + 1, edge);
+                else if (dir == 2) fillRect(img, w, x0, y0 + px - 1, x0 + px, y0 + px, edge);
+                else if (dir == 3) fillRect(img, w, x0, y0, x0 + 1, y0 + px, edge);
+                else fillRect(img, w, x0 + px - 1, y0, x0 + px, y0 + px, edge);
+            }
+        }
+        if (in.rings == 0 && in.pipes == 0) return;
+        double pipeHalf = (px >= LINES_FROM ? 2 : 1) / 2.0, ringHalf = 0.5;
+        for (int i = 0; i < TilePainter.PLOTS; i++) {
+            int s = p.sea[i];
+            if ((s & (TilePainter.SEA_RING | TilePainter.SEA_PIPE)) == 0) continue;
+            int x0 = (i % tile) * px, y0 = (i / tile) * px;
+            for (int y = y0; y < y0 + px; y++) {
+                for (int x = x0; x < x0 + px; x++) {
+                    double fx = (x + 0.5) / px, fy = (y + 0.5) / px;
+                    boolean on = false;
+                    double alpha = 0;
+                    if ((s & TilePainter.SEA_RING) != 0) {
+                        for (int r = 0; r < in.rings && !on; r++) {
+                            double dx = fx - in.ringX[r], dy = fy - in.ringY[r], d = Math.hypot(dx, dy);
+                            if (Math.abs(d - TilePainter.RING_PLOTS) * px > ringHalf) continue;
+                            double arc = (Math.atan2(dy, dx) + Math.PI) * TilePainter.RING_PLOTS * px;
+                            if (((long) Math.floor(arc / RING_DASH_PX)) % 2 == 0) { on = true; alpha = RING_ALPHA; }
+                        }
+                    }
+                    if ((s & TilePainter.SEA_PIPE) != 0) {
+                        for (int q = 0; q < in.pipes; q++) {
+                            double ax = in.pipeAX[q], ay = in.pipeAY[q], bx = in.pipeBX[q], by = in.pipeBY[q];
+                            double vx = bx - ax, vy = by - ay, len = Math.hypot(vx, vy);
+                            if (!(len > 0)) continue;
+                            double t = ((fx - ax) * vx + (fy - ay) * vy) / (len * len);
+                            if (t < 0 || t > 1) continue;
+                            double off = Math.abs((fx - ax) * vy - (fy - ay) * vx) / len;
+                            if (off * px > pipeHalf) continue;
+                            double along = t * len * px;
+                            if (along % (PIPE_ON_PX + PIPE_OFF_PX) < PIPE_ON_PX) { on = true; alpha = Math.max(alpha, PIPE_ALPHA); }
+                        }
+                    }
+                    if (on) img[y * w + x] = blend(img[y * w + x], OIL_TAN, alpha);
+                }
+            }
+        }
     }
 
     /** Whether plot i of the runs is a highway's (its own, or the track bridging it), under a building or not (0.7.89). */
@@ -342,6 +441,8 @@ public final class TileRaster {
                 if (!ns && y < tile - 1) fillRect(img, w, x0, y0 + px, x0 + px, y0 + 2 * px, c);
             }
         }
+        // The works at sea (0.7.97): the quays and jackets in their colours, the rings and pipes as lines.
+        atSea(in, p, px, img);
     }
 
     /** The least a highway is drawn across, in pixels, in the blocks' views: 2 (the mockup's 1.8 at its far view, 2 at its middle). */

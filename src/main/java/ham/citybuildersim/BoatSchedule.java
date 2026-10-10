@@ -7,7 +7,8 @@ import java.util.List;
  * The month's ships, as a pure function of time: which calls the city's sea
  * trade makes, when each arrives, and where each boat is at any moment
  * (0.7.86, batch O9; runs/spec-oil.md 2.10, the research's 4.3-4.4 and Q8;
- * scratch-oil's BoatProto, ported). Model only: the map draws it at O13.
+ * scratch-oil's BoatProto, ported). Model only: since 0.7.97 (batch O13)
+ * ui/MapView draws it on the game's clock, on the map's sea routes.
  *
  * WHY. A port that is a share of the freight band is invisible; the
  * research's answer is boats that follow the trade exactly - a city with no
@@ -32,8 +33,15 @@ import java.util.List;
  * month's turn.
  *
  * ROUTES. Each berth's quay runs straight out to sea, away from the founding
- * site, for LANE_PLOTS. A frame asks which routes cross the screen (an index
- * by district) and, on each, which calls are on the water now (a binary
+ * site, for LANE_PLOTS (lane(): O9's, still each berth's with no sea routes
+ * found). Since 0.7.97 (batch O13; spec-roads-and-ports.md 4.1) the map's
+ * berths sail SeaRoutes' routes: from the quay's end along the way found on
+ * the sea's grid to the offing and on into the abyss, where a boat fades
+ * (Boat.alpha()); each call's last leg turned a few degrees about its start
+ * by the call's own hash (Route.spread()), so the boats do not queue on one
+ * line. A leg is the whole route, quay to the abyss's end, whatever its
+ * length. A frame asks which routes cross the screen (an index by district
+ * of every leg) and, on each, which calls are on the water now (a binary
  * search of the route's sorted arrivals).
  *
  * CHEAP TO COUNT, BUILT ONLY WHEN ASKED. The month's calls are counted by
@@ -68,8 +76,37 @@ public final class BoatSchedule {
     /** One terminal's quay: its kind and where on the map it stands, in plots. */
     public record Berth(Ports.Cargo cargo, long x, long y) { }
 
-    /** A berth's route: its quay, and its lane's end out at sea. */
-    public record Route(Berth berth, long x1, long y1) { }
+    /**
+     * A berth's route: its quay, its far end (x1, y1) out at sea, and the
+     * way between as points in plots - the berth first, its turns, the
+     * offing (point `offing`), the abyss's end last - with each point's
+     * distance along it (`along`); the point its last leg turns about for a
+     * call's spread (`pivot`), and how far that leg may turn either way, in
+     * radians (`spread`). A lane (O9's) is two points, no abyss, no spread.
+     */
+    public record Route(Berth berth, long x1, long y1, double[] xs, double[] ys, double[] along, int offing, int pivot, double spread) {
+
+        /** A straight lane from its quay to (x1, y1): O9's. */
+        public Route(Berth berth, long x1, long y1) {
+            this(berth, x1, y1, new double[] { berth.x(), x1 }, new double[] { berth.y(), y1 },
+                    new double[] { 0, Math.hypot(x1 - berth.x(), y1 - berth.y()) }, 1, 0, 0);
+        }
+
+        /** A route through points (SeaRoutes'): the offing's index, the pivot's, the spread. */
+        public static Route through(Berth berth, double[] xs, double[] ys, int offing, int pivot, double spread) {
+            double[] along = new double[xs.length];
+            for (int i = 1; i < xs.length; i++) along[i] = along[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
+            int n = xs.length - 1;
+            return new Route(berth, (long) Math.floor(xs[n]), (long) Math.floor(ys[n]), xs.clone(), ys.clone(), along,
+                    Math.max(1, Math.min(n, offing)), Math.max(0, Math.min(n - 1, pivot)), Math.max(0, spread));
+        }
+
+        /** Its length, quay to far end, in plots. */
+        public double length() { return along[along.length - 1]; }
+
+        /** Where the abyss begins, in plots along it: at the offing; a lane's whole length. */
+        public double fadeFrom() { return along[offing]; }
+    }
 
     /**
      * One call: a kind and its class, whether it lands cargo (an import, or a
@@ -79,8 +116,13 @@ public final class BoatSchedule {
      */
     public record Call(Ports.Cargo cargo, Ports.Ship ship, boolean inbound, int route, double arrives) { }
 
-    /** A boat at a moment: its call, where it is in plots, whether it is loaded, and whether it lies at the quay. */
-    public record Boat(Call call, double x, double y, boolean loaded, boolean docked) { }
+    /**
+     * A boat at a moment: its call, where it is in plots, whether it is
+     * loaded, whether it lies at the quay, its heading (radians, east 0,
+     * south a quarter turn: the way it is going; at the quay, out along its
+     * route), and how much of it shows (1, fading to 0 in the abyss).
+     */
+    public record Boat(Call call, double x, double y, boolean loaded, boolean docked, double heading, double alpha) { }
 
     /** One (kind, class, direction) of the month: its seed and its calls. */
     private record Group(Ports.Cargo cargo, Ports.Ship ship, boolean inbound, long seed, int calls) { }
@@ -95,6 +137,11 @@ public final class BoatSchedule {
     private int[] routeStart;
     private java.util.Map<Long, int[]> index;
     private int touched;
+
+    /* Built with them: each route's legs' boxes (legBoxes()); and the frame each route was last looked at in, so a frame looks at a route once without a set. */
+    private double[][][] boxes;
+    private int[] seenAt;
+    private int frames;
 
     private BoatSchedule(int month, List<Route> routes, List<Group> groups) {
         this.month = month;
@@ -140,6 +187,12 @@ public final class BoatSchedule {
     public static BoatSchedule of(int month, Ports ports, List<Berth> berths, long foundX, long foundY) {
         List<Route> routes = new ArrayList<>();
         if (berths != null) for (Berth b : berths) routes.add(lane(b, foundX, foundY));
+        return of(month, ports, routes);
+    }
+
+    /** ...on routes found already (0.7.97: the map's, SeaRoutes'), one a berth. */
+    public static BoatSchedule of(int month, Ports ports, List<Route> routes) {
+        routes = routes == null ? new ArrayList<>() : new ArrayList<>(routes);
         List<Group> groups = new ArrayList<>();
         if (ports != null) {
             for (Ports.Cargo c : Ports.Cargo.values()) {
@@ -220,11 +273,16 @@ public final class BoatSchedule {
         }
         while (r < routeStart.length) routeStart[r++] = keys.length;
         java.util.Map<Long, List<Integer>> cells = new java.util.HashMap<>();
+        boxes = new double[routes.size()][][];
+        seenAt = new int[routes.size()];
         for (int i = 0; i < routes.size(); i++) {
-            Route rt = routes.get(i);
-            long cx0 = Math.floorDiv(Math.min(rt.berth().x(), rt.x1()), World.DISTRICT), cx1 = Math.floorDiv(Math.max(rt.berth().x(), rt.x1()), World.DISTRICT);
-            long cy0 = Math.floorDiv(Math.min(rt.berth().y(), rt.y1()), World.DISTRICT), cy1 = Math.floorDiv(Math.max(rt.berth().y(), rt.y1()), World.DISTRICT);
-            for (long cx = cx0; cx <= cx1; cx++) for (long cy = cy0; cy <= cy1; cy++) cells.computeIfAbsent(key(cx, cy), x -> new ArrayList<>()).add(i);
+            java.util.Set<Long> its = new java.util.HashSet<>();
+            boxes[i] = legBoxes(routes.get(i));
+            for (double[] box : boxes[i]) {
+                long cx0 = Math.floorDiv((long) Math.floor(box[0]), World.DISTRICT), cx1 = Math.floorDiv((long) Math.floor(box[2]), World.DISTRICT);
+                long cy0 = Math.floorDiv((long) Math.floor(box[1]), World.DISTRICT), cy1 = Math.floorDiv((long) Math.floor(box[3]), World.DISTRICT);
+                for (long cx = cx0; cx <= cx1; cx++) for (long cy = cy0; cy <= cy1; cy++) if (its.add(key(cx, cy))) cells.computeIfAbsent(key(cx, cy), x -> new ArrayList<>()).add(i);
+            }
         }
         index = new java.util.HashMap<>();
         for (java.util.Map.Entry<Long, List<Integer>> e : cells.entrySet()) index.put(e.getKey(), e.getValue().stream().mapToInt(Integer::intValue).toArray());
@@ -250,18 +308,44 @@ public final class BoatSchedule {
     public static Boat position(Call call, Route route, double t) {
         if (call == null || route == null) return null;
         double leg = LEG_SECONDS / MONTH_SECONDS, berth = BERTH_SECONDS / MONTH_SECONDS, a = call.arrives();
-        double x0 = route.berth().x(), y0 = route.berth().y(), x1 = route.x1(), y1 = route.y1();
         boolean boxes = call.cargo() == Ports.Cargo.CONTAINER;
-        if (t >= a - leg && t < a) {
-            double f = (a - t) / leg;
-            return new Boat(call, x0 + (x1 - x0) * f, y0 + (y1 - y0) * f, boxes || call.inbound(), false);
-        }
-        if (t >= a && t <= a + berth) return new Boat(call, x0, y0, boxes || call.inbound(), true);
-        if (t > a + berth && t <= a + berth + leg) {
-            double f = (t - a - berth) / leg;
-            return new Boat(call, x0 + (x1 - x0) * f, y0 + (y1 - y0) * f, boxes || !call.inbound(), false);
-        }
+        if (t >= a - leg && t < a) return along(call, route, (a - t) / leg, true, boxes || call.inbound(), false);
+        if (t >= a && t <= a + berth) return along(call, route, 0, false, boxes || call.inbound(), true);
+        if (t > a + berth && t <= a + berth + leg) return along(call, route, (t - a - berth) / leg, false, boxes || !call.inbound(), false);
         return null;
+    }
+
+    /**
+     * A call's boat at a share f of its route from the quay (0 at the quay,
+     * lying there; 1 at the far end), coming in or going out: its place on
+     * the way, turned about the pivot by the call's spread past it, its
+     * heading, and how much of it shows past the offing.
+     */
+    static Boat along(Call call, Route route, double f, boolean coming, boolean loaded, boolean docked) {
+        double[] xs = route.xs(), ys = route.ys(), al = route.along();
+        int n = xs.length - 1;
+        double d = f * al[n];
+        int s = 0;
+        while (s < n - 1 && al[s + 1] < d) s++;
+        double seg = al[s + 1] - al[s], u = seg > 0 ? (d - al[s]) / seg : 0;
+        double x = xs[s] + (xs[s + 1] - xs[s]) * u, y = ys[s] + (ys[s + 1] - ys[s]) * u;
+        double heading = Math.atan2(ys[s + 1] - ys[s], xs[s + 1] - xs[s]);
+        if (route.spread() > 0 && s >= route.pivot()) {
+            double turn = turnOf(call, route), c = Math.cos(turn), sn = Math.sin(turn);
+            double px = xs[route.pivot()], py = ys[route.pivot()], dx = x - px, dy = y - py;
+            x = px + dx * c - dy * sn;
+            y = py + dx * sn + dy * c;
+            heading += turn;
+        }
+        if (coming) heading += Math.PI;
+        double fade = route.fadeFrom(), alpha = d <= fade || !(al[n] > fade) ? 1 : Math.max(0, 1 - (d - fade) / (al[n] - fade));
+        return new Boat(call, x, y, loaded, docked, heading, alpha);
+    }
+
+    /** A call's turn of its route's last leg, in radians: within its route's spread either way, by the call's own hash (its arrival and its route). */
+    static double turnOf(Call call, Route route) {
+        long h = World.mix(Double.doubleToLongBits(call.arrives()) ^ ((long) call.route() << 40) ^ 0x5B4EADL);
+        return route.spread() * (2 * World.unit(h) - 1);
     }
 
     /**
@@ -274,7 +358,7 @@ public final class BoatSchedule {
         build();
         touched = 0;
         List<Boat> out = new ArrayList<>();
-        java.util.Set<Integer> seen = new java.util.HashSet<>();
+        int stamp = ++frames;
         double leg = LEG_SECONDS / MONTH_SECONDS, berth = BERTH_SECONDS / MONTH_SECONDS;
         long cx0 = Math.floorDiv(x0, World.DISTRICT), cx1 = Math.floorDiv(Math.max(x0, x1 - 1), World.DISTRICT);
         long cy0 = Math.floorDiv(y0, World.DISTRICT), cy1 = Math.floorDiv(Math.max(y0, y1 - 1), World.DISTRICT);
@@ -283,9 +367,10 @@ public final class BoatSchedule {
                 int[] rs = index.get(key(cx, cy));
                 if (rs == null) continue;
                 for (int r : rs) {
-                    if (!seen.add(r)) continue;
+                    if (seenAt[r] == stamp) continue;
+                    seenAt[r] = stamp;
+                    if (!crosses(boxes[r], x0, y0, x1, y1)) continue;
                     Route rt = routes.get(r);
-                    if (!crosses(rt, x0, y0, x1, y1)) continue;
                     touched++;
                     int from = routeStart[r + 1], to = routeStart[r + 2];
                     long low = ((long) (r + 1) << ROUTE_SHIFT) | ((long) Math.max(0, Math.floor((t - berth - leg) * TICKS)) << GROUP_BITS);
@@ -301,11 +386,34 @@ public final class BoatSchedule {
         return out;
     }
 
-    /** Whether a route's lane's box meets the rectangle. */
-    static boolean crosses(Route rt, long x0, long y0, long x1, long y1) {
-        long ax = Math.min(rt.berth().x(), rt.x1()), bx = Math.max(rt.berth().x(), rt.x1());
-        long ay = Math.min(rt.berth().y(), rt.y1()), by = Math.max(rt.berth().y(), rt.y1());
-        return bx >= x0 && ax < x1 && by >= y0 && ay < y1;
+    /** Whether a route meets the rectangle: one of its legs' boxes does (legBoxes()) - a lane's, its one box. */
+    public static boolean crosses(Route rt, long x0, long y0, long x1, long y1) {
+        return crosses(legBoxes(rt), x0, y0, x1, y1);
+    }
+
+    /** ...by its legs' boxes, worked out already. */
+    static boolean crosses(double[][] legs, long x0, long y0, long x1, long y1) {
+        for (double[] b : legs) if (b[2] >= x0 && b[0] < x1 && b[3] >= y0 && b[1] < y1) return true;
+        return false;
+    }
+
+    /**
+     * Each leg's box, {x0, y0, x1, y1} in plots, inclusive: its two points'
+     * - past the pivot widened by how far the call's spread can swing it
+     * (its far end's distance from the pivot x sin(spread), and a plot).
+     */
+    static double[][] legBoxes(Route rt) {
+        double[] xs = rt.xs(), ys = rt.ys();
+        double[][] out = new double[xs.length - 1][];
+        for (int i = 0; i + 1 < xs.length; i++) {
+            double w = 0;
+            if (rt.spread() > 0 && i >= rt.pivot()) {
+                double far = Math.hypot(xs[i + 1] - xs[rt.pivot()], ys[i + 1] - ys[rt.pivot()]);
+                w = far * Math.sin(rt.spread()) + 1;
+            }
+            out[i] = new double[] { Math.min(xs[i], xs[i + 1]) - w, Math.min(ys[i], ys[i + 1]) - w, Math.max(xs[i], xs[i + 1]) + w, Math.max(ys[i], ys[i + 1]) + w };
+        }
+        return out;
     }
 
     /** The first index in [from, to) whose key is at least v. */

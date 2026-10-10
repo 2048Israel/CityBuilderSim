@@ -711,5 +711,16 @@ public final class Palette {
         static javafx.scene.text.Font monoFont(double size) {
             return javafx.scene.text.Font.font(mono, size);
         }
+
+        /** Words at the medium weight, for a drawing (0.7.95, the refinery's pictogram): the Medium family, or the words' face. */
+        static javafx.scene.text.Font sansMediumFont(double size) {
+            return javafx.scene.text.Font.font(sansMedium != null ? sansMedium : sans, size);
+        }
+
+        /** Figures at the semibold weight, for a drawing (0.7.95): the SmBld family, or bold of the figures' face. */
+        static javafx.scene.text.Font monoStrongFont(double size) {
+            return monoSemiBold != null ? javafx.scene.text.Font.font(monoSemiBold, size)
+                    : javafx.scene.text.Font.font(mono, javafx.scene.text.FontWeight.BOLD, size);
+        }
     }
 }

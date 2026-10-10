@@ -1031,9 +1031,9 @@ final class BuildScreen {
                 parts.add(f.addsNothing() ? "adds nothing at today's prices: its inputs cost more than it makes"
                         : "adds " + money(f.valueAdded()) + " a month at today's prices");
                 if (d.length == 3 && t.isPlatformWell()) {
-                    // ...a platform's well (0.7.91): a slot on a platform standing, not a deposit of its own.
+                    // ...a platform's well (0.7.91): a slot on a platform standing, not a deposit of its own; its oil the offshore pool's (0.7.93).
                     parts.add("needs a platform's slot: " + formatter.format(d[0]) + " standing, "
-                            + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t in the ground");
+                            + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t under the sea");
                 } else if (d.length == 3) {
                     parts.add("needs a deposit: the city owns " + formatter.format(d[0]) + ", "
                             + formatter.format(d[1]) + " spoken for, " + shortNumber(d[2]) + " t in the ground");
@@ -4120,14 +4120,14 @@ final class BuildScreen {
                                    String menuTitle, EnumSet<BuildingType> categories) {
         ui.clearMenu("showNoDepositMenu", () -> showNoDepositMenu(selected, quantity, menuTitle, categories));
 
-        LandManager land = ui.game.getLandManager();
         Resource site = Game.siteOf(selected) == null ? Resource.IRON : Game.siteOf(selected);
-        // ...counted against its own kind (0.7.91, Game.committedFor()): a land well the land wells, a platform's well the slots.
+        // ...counted against its own kind (0.7.91, Game.committedFor()): a land well the land wells, a platform's well the slots;
+        // the tonnes its own pool's (0.7.93, Game.remainingFor()): a land well the ground's, the sea's buildings the sea's.
         String[] words = selected.standsAtSea()
                 ? noDepositAtSea(selected.isPlatform(), selected.getName(), quantity, ui.game.sitesFor(selected),
-                        ui.game.committedFor(selected), land.getRemaining(site))
+                        ui.game.committedFor(selected), ui.game.remainingFor(selected))
                 : noDepositPage(site, selected.getName(), quantity, ui.game.sitesFor(selected),
-                        ui.game.committedFor(selected), land.getRemaining(site));
+                        ui.game.committedFor(selected), ui.game.remainingFor(selected));
 
         Label title = new Label(words[0]);
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 10;");
@@ -4176,7 +4176,8 @@ final class BuildScreen {
      * ...and for the oil at sea (0.7.91; pure, as above): an Offshore
      * Platform with no shallow sea field to take it, or a Platform Well with
      * no free slot - `owned` is Game.sitesFor()'s, the platforms the fields
-     * could still take or the slots standing.
+     * could still take or the slots standing; `left` the offshore pool's
+     * tonnes (0.7.93).
      */
     static String[] noDepositAtSea(boolean platform, String building, int quantity, int owned, int committed, double left) {
         return new String[] {
@@ -4191,7 +4192,7 @@ final class BuildScreen {
                      : "site of its field: an Offshore Platform on a shallow sea",
             platform ? "oil fields, sold whole: an offer holds every field in it."
                      : "field the city owns brings its slots with it.",
-            String.format("Oil still in the ground: %,.0f tonnes", left),
+            String.format("Oil still under the sea: %,.0f tonnes", left),
             "the cheapest offer holding oil: whole fields, the oil in its price" };
     }
 

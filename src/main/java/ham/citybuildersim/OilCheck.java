@@ -58,8 +58,12 @@ import java.nio.file.Path;
  *      the drivers' bill Retail's sale to them), and the goods foot to the
  *      balance of payments - and the
  *      tanks, shared among the products, write none of them off: what nobody
- *      here buys fills its share to the dump line, then ships or (on the
- *      wholesale ladder, 0.7.78, a medium crude's slate) idles.
+ *      here buys fills its share to the dump line, then ships - since 0.7.98
+ *      (batch O14) whatever its share of the crude: the run's every product
+ *      leaves, nothing of it idled, in months when its share of the line's
+ *      whole bill, the crude among it, would not have shipped it (until
+ *      then it idled: on the wholesale ladder, 0.7.78, a medium crude's
+ *      slate).
  *
  *   7. WITH NO REFINERY, THE HOUSEHOLDS PAY TODAY'S BILL AT THE WORLD'S PRICE
  *      LEVEL, as every good is priced - the railway's fuel always was. Since
@@ -100,7 +104,9 @@ import java.nio.file.Path;
  *      more petrol and diesel, heavy burns the residue its diesel cannot
  *      cut. The city's oil is worked out field by field in acquisition
  *      order, a fixture's oil by fiat as medium, so a month's lift is
- *      graded by where E stands; a field's sites are the sea's when its
+ *      graded by where E stands - since 0.7.93 in two pools, the ground's
+ *      (its dry fields and the oil by fiat) and the sea's, each graded by
+ *      where its own E stands; a field's sites are the sea's when its
  *      centre is sea, the rest dry. The refinery's month's mix is its local
  *      crude at the lift's grades and its imports at medium, next month's
  *      slate is struck on it, and it crosses a save (a save without it
@@ -1160,7 +1166,8 @@ public class OilCheck {
         out.println("\n--- 6. fuel's money audit closes, every month of a city with wells and a refinery ---");
         Refining refiners = g.getSectors().refining();
         double worstAudit = 0, worstImports = 0, worstDomestic = 0, worstGoods = 0, writtenOff = 0, shipped = 0, idled = 0;
-        int months = 24, withImports = 0, withDomestic = 0;
+        double ran = 0, made = 0, idledAll = 0;
+        int months = 24, withImports = 0, withDomestic = 0, refusedByWhole = 0;
         boolean toTheLine = true;
         for (int m = 0; m < months; m++) {
             // Every few months the petrol is emptied, so some months the drivers import and some they do not.
@@ -1180,6 +1187,17 @@ public class OilCheck {
                 Sector.Output o = refiners.outputRow(p);
                 if (o == null) continue;
                 writtenOff += o.writtenOff;
+                // The run's products (0.7.98): made for home or shipped, and whether the line's whole bill, the crude among it,
+                // shared by value (Sector's marginal cost, the refiners' until then) would have refused what the city did not take.
+                double run = refiners.getCapacity(p) * refiners.getOperatingRate();
+                if (run > 0) {
+                    ran += run;
+                    made += o.planned + o.exportBound;
+                    idledAll += o.idled;
+                    double whole = (refiners.getElectricityCost() + refiners.getWaterCost() + refiners.inputCostAtRate())
+                            * refiners.costShareOf(p) / run;
+                    if (run - o.planned > 0 && g.getMarkets().get(p).netExportPrice() < whole) refusedByWhole++;
+                }
                 if (p == Good.PETROL || p == Good.DIESEL) continue;
                 shipped += o.exportBound + o.exported;
                 idled += o.idled;
@@ -1218,12 +1236,29 @@ public class OilCheck {
          * when it does not. At FUEL's band (0.7.76) this town's lines shipped
          * 282.8M L in the 24 months; on the wholesale ladder a medium crude's
          * slate is worth less than the crude (spec-oil 6: an Oil Refinery on
-         * medium crude fails its gate by 22%), so they idle.
+         * medium crude fails its gate by 22%), so they idled - 155.2M L of
+         * nameplate in the 24 months, none shipped, the crude for it bought.
+         *
+         * THE RUN'S PRODUCTS ALL LEAVE since 0.7.98 (batch O14; Refining,
+         * THE RUN'S PRODUCTS ALL LEAVE): the crude is the run's, bought at
+         * nameplate x the rate whatever a line plans (spec-oil 2.3), so a
+         * refined product's marginal cost is its share of the power and water
+         * alone, and what the city does not take ships (spec-oil 2.5). The
+         * fixture is the condition: months in which a product's share of the
+         * line's whole bill, the crude among it, was over its net export
+         * price - the rule that idled it.
          */
         report("the products nobody here buys fill their tank share to the dump line and no further, shipped past it or"
                         + " idled, and the tanks write none of any product off (spec-oil 6)",
                 toTheLine && shipped + idled > 0 && writtenOff == 0,
                 String.format("%,.0f L shipped, %,.0f L of nameplate idled, %,.0f written off", shipped, idled, writtenOff));
+        report("fixture: a product the city does not take all of, whose share of the line's whole bill - the crude among it, by"
+                        + " value (Sector's marginal cost) - is over its net export price", refusedByWhole > 0,
+                refusedByWhole + " product-months");
+        report("...yet the run's every product leaves: made for home or shipped, none of it idled (Refining."
+                        + "getMarginalCostPerUnit(): its share of the power and water alone; 0.7.98)",
+                idledAll == 0 && ran > 0 && Math.abs(made - ran) <= 1e-12 * ran,
+                String.format("%,.0f L of the run's %,.0f made or shipped, %,.0f idled", made, ran, idledAll));
         report("...and the domestic part is on Refining's statement, its sales to the forecourts (to the households until"
                         + " 0.7.83), and the drivers' bill Retail's sale of petrol to them", worstDomestic < 1e-9,
                 String.format("worst %.2e of the bill", worstDomestic));
@@ -1804,27 +1839,37 @@ public class OilCheck {
                         && lm.getSites(Resource.OIL, true) + lm.getSites(Resource.OIL, false) == all,
                 String.format("%d dry, %d sea of %d", lm.getSites(Resource.OIL, true), lm.getSites(Resource.OIL, false), all));
 
-        // Its oil as it is worked out: the centre's by fiat first, then the field.
+        // Its oil as it is worked out, a pool apart (0.7.93): the centre's by fiat the ground pool's, the field the sea's.
         double bought = lm.getOwnedAmount(Resource.OIL);
         lm.restoreSites(Resource.OIL, (int) all, bought + FIAT_TONNES);
-        double[][] runs = lm.oilRuns();
-        report("the oil is laid out as it is worked out: the centre's 1,000 t by fiat first, medium as the world's crude, then the"
-                        + " field's, heavy",
-                runs.length >= 2 && runs[0][0] == FIAT_TONNES && runs[0][1] == medium && runs[1][1] == heavy
-                        && runs[1][0] == FIAT_TONNES + sea.amount() && runs[runs.length - 1][0] == lm.getOwnedAmount(Resource.OIL),
-                runs.length + " run(s), ending at " + String.format("%,.0f t", runs.length == 0 ? 0 : runs[runs.length - 1][0]));
+        double[][] runs = lm.oilRuns(), seaRuns = lm.oilRunsAtSea();
+        report("the oil is laid out as it is worked out, each pool on its own fields (0.7.93): the ground's the centre's 1,000 t by"
+                        + " fiat, medium as the world's crude; the sea's the field's, heavy (until then one pool, the fiat first)",
+                runs.length >= 1 && runs[0][0] == FIAT_TONNES && runs[0][1] == medium && runs[runs.length - 1][0] == lm.getOilOwnedOnGround()
+                        && seaRuns.length >= 1 && seaRuns[0][1] == heavy && seaRuns[0][0] == sea.amount()
+                        && seaRuns[seaRuns.length - 1][0] == lm.getOilOwnedAtSea()
+                        && lm.getOilOwnedOnGround() + lm.getOilOwnedAtSea() == lm.getOwnedAmount(Resource.OIL),
+                runs.length + " run(s) on the ground ending at " + String.format("%,.0f t", runs.length == 0 ? 0 : runs[runs.length - 1][0])
+                        + ", " + seaRuns.length + " at sea ending at " + String.format("%,.0f t", seaRuns.length == 0 ? 0 : seaRuns[seaRuns.length - 1][0]));
         double world = lm.getWorldTotal(Resource.OIL);
         double got = lm.extractOil(1_500);
         double[] graded = lm.getOilLiftedByGrade();
-        report("a lift across the two is graded by where E stood: 1,000 t medium, then 500 t heavy, to the tonne",
-                got == 1_500 && graded[medium] == FIAT_TONNES && graded[heavy] == 500 && graded[light] == 0,
-                String.format("%.1f / %.1f / %.1f t", graded[light], graded[medium], graded[heavy]));
-        lm.extractOil(415);
+        report("a land well's lift takes the ground pool's alone: 1,500 t asked, its 1,000 t lifted, medium (until 0.7.93 the one"
+                        + " pool's 1,000 t medium and 500 t heavy)",
+                got == FIAT_TONNES && graded[medium] == FIAT_TONNES && graded[heavy] == 0 && graded[light] == 0 && lm.getOilLeftOnGround() == 0,
+                String.format("%.1f t: %.1f / %.1f / %.1f t", got, graded[light], graded[medium], graded[heavy]));
+        double atSea = lm.extractOilAtSea(500);
         graded = lm.getOilLiftedByGrade();
-        assertTrue("...a month's lifts add up, all of the field's grade past the fiat", graded[heavy] == 915 && graded[medium] == FIAT_TONNES);
-        assertTrue("...nothing moves but E: unowned + remaining + extracted is the world's, to the tonne",
+        report("...and a platform's the offshore pool's: 500 t of the field's heavy, graded by where the sea's E stood, to the tonne",
+                atSea == 500 && graded[heavy] == 500 && graded[medium] == FIAT_TONNES && graded[light] == 0,
+                String.format("%.1f / %.1f / %.1f t", graded[light], graded[medium], graded[heavy]));
+        lm.extractOilAtSea(415);
+        graded = lm.getOilLiftedByGrade();
+        assertTrue("...a month's lifts add up, all of the sea's the field's grade", graded[heavy] == 915 && graded[medium] == FIAT_TONNES);
+        assertTrue("...nothing moves but the two pools' E: unowned + remaining + extracted is the world's, to the tonne",
                 Math.abs(lm.getUnowned(Resource.OIL) + lm.getRemaining(Resource.OIL) + lm.getExtracted(Resource.OIL) - world) <= 1
-                        && lm.getExtracted(Resource.OIL) == 1_915);
+                        && lm.getExtracted(Resource.OIL) == 1_915 && lm.getOilExtractedOnGround() == FIAT_TONNES
+                        && lm.getOilExtractedAtSea() == 915);
         lm.clearMonth();
         assertTrue("...and the month's grades clear with its flows", java.util.Arrays.equals(lm.getOilLiftedByGrade(), new double[3]));
 
@@ -1857,24 +1902,29 @@ public class OilCheck {
             pushes++;
         }
         /*
-         * ITS WELLS ON DRY SITES HANDED TO ITS CENTRE (0.7.84): a land well
-         * stands only on dry ground (Game.sitesFor(); WellCheck 5), and every
-         * site of this field is the sea's - so the centre is handed as many
-         * dry sites with none of the oil (LandManager.restoreSites() at the
-         * tonnes the town owns), and the wells lift the town's oil, which is
-         * the field's. Until 0.7.84 they stood on the field's own sites.
+         * ITS WELLS ON THE FIELD'S PLATFORM (0.7.93): the field's crude is the
+         * offshore pool's since the city's oil is two pools (LandManager's THE
+         * TWO OIL POOLS), and only a platform's wells lift it - so an Offshore
+         * Platform stands on the field (91 m deep, WellCheck 8) and a Platform
+         * Well in each of its slots, one a site. From 0.7.84 the wells were
+         * land wells on dry sites handed to the centre with none of the oil,
+         * lifting the one pool, the field's; until then on its own sites.
          */
         int wellsOn = glm.getOilSites();
         double fieldTonnes = glm.getOwnedAmount(Resource.OIL);
-        quietly(() -> glm.restoreSites(Resource.OIL, 2 * wellsOn, fieldTonnes));
-        Game.BuildResult wellsBuilt = quietlyGet(() -> g.buildStack(t[0], wellsOn, true));
+        BuildingsTemplate jacket = g.getBuildingManager().getTemplateByName("Offshore Platform"),
+                platformWell = g.getBuildingManager().getTemplateByName("Platform Well");
+        g.setCashForTest(Founding.WEALTHY_CASH);
+        Game.BuildResult jacketBuilt = quietlyGet(() -> g.buildStack(jacket, 1, true));
+        Game.BuildResult wellsBuilt = quietlyGet(() -> g.buildStack(platformWell, wellsOn, true));
         Game.BuildResult refineryBuilt = quietlyGet(() -> g.buildStack(t[1], 1, true));
-        double[][] gruns = glm.oilRuns();
-        report("fixture: a town on that world owns the field, its wells on as many dry sites handed to its centre with none of the"
-                        + " oil, and a refinery standing, all its oil heavy",
-                wellsBuilt == Game.BuildResult.SUCCESS && refineryBuilt == Game.BuildResult.SUCCESS && gruns.length == 1 && gruns[0][1] == heavy
-                        && glm.getSites(Resource.OIL, true) == wellsOn && glm.getOwnedAmount(Resource.OIL) == fieldTonnes,
-                String.format("%d purchase(s), %d well(s), %s / %s", pushes, wellsOn, wellsBuilt, refineryBuilt));
+        double[][] gruns = glm.oilRunsAtSea();
+        report("fixture: a town on that world owns the field, a platform on it with a well in each of its slots, and a refinery"
+                        + " standing, all its oil heavy - the offshore pool's",
+                jacketBuilt == Game.BuildResult.SUCCESS && wellsBuilt == Game.BuildResult.SUCCESS && refineryBuilt == Game.BuildResult.SUCCESS
+                        && gruns.length == 1 && gruns[0][1] == heavy && glm.getSites(Resource.OIL, false) == wellsOn
+                        && glm.getOilOwnedAtSea() == fieldTonnes && g.getSectors().oil().platformWellsInSlots() == wellsOn,
+                String.format("%d purchase(s), %d well(s), %s / %s / %s", pushes, wellsOn, jacketBuilt, wellsBuilt, refineryBuilt));
         Refining refiners = g.getSectors().refining();
         // A month for the wells and the refinery to start, then the month measured.
         quietly(() -> g.simulateMonths(2));

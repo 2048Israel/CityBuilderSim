@@ -88,6 +88,24 @@ public final class BuildingVisual {
     /** ...and their edge. */
     public static final int FLATS_EDGE = 0xff7e4119;
 
+    /** The refinery's units (0.7.97, campus()): mockup 3's refinery, #4a3f5c, a darker violet than industry's, so the campus reads as one... */
+    public static final int CAMPUS_FILL = 0xff4a3f5c;
+
+    /** ...edged in its #7a6a90. */
+    public static final int CAMPUS_EDGE = 0xff7a6a90;
+
+    /** A sea terminal's apron (0.7.97, berth()): mockup 3's quays' grey, #2e3640... */
+    public static final int TERMINAL_FILL = 0xff2e3640;
+
+    /** ...edged in its #4a5866. */
+    public static final int TERMINAL_EDGE = 0xff4a5866;
+
+    /** A tank farm's tanks (0.7.97, the refiners' Tank Farm and the city's Strategic Reserve): mockup 3's tanks, #2a3540... */
+    public static final int TANKS_FILL = 0xff2a3540;
+
+    /** ...ringed in its #7f8ca6. */
+    public static final int TANKS_EDGE = 0xff7f8ca6;
+
     /* --------------------------------------------------------- road kinds */
 
     /** Not a road. */
@@ -131,20 +149,31 @@ public final class BuildingVisual {
      * @param terminal  a rail yard, drawn as a building beside its track (0.7.72): RAIL_TERMINALS
      * @param sea       a building at sea (0.7.91): an offshore platform, its wells, a crude pipeline
      *                  (BuildingsTemplate.standsAtSea()) - on none of the city's dry ground, so neither
-     *                  dealt to a district nor drawn on the land; batch O13 draws them on their field
+     *                  dealt to a district nor drawn on the land; since 0.7.97 drawn on their field
+     *                  (CityMap's THE OIL AT SEA, TilePainter's AT SEA)
+     * @param campus    one of the refinery's units (0.7.97, batch O13; spec-oil 2.12, Q11): a crude unit
+     *                  or a conversion unit (sectors.Refining.isCrudeUnit(), isConversionUnit()) - dealt
+     *                  to the district holding the refinery's (CityMap's THE CAMPUS) and packed together
+     *                  there, first of its industry (DistrictPlan's THE CAMPUS)
+     * @param shore     a work on the shore (0.7.97; spec-roads-and-ports.md 2.8: "ports and tank farms ...
+     *                  on the shore"): a sea terminal (BuildingsTemplate.isPort()), the refiners' Tank
+     *                  Farm or the city's Strategic Reserve - laid city-wide on owned dry ground at owned
+     *                  sea (CityShore), not by its district's plan
+     * @param berth     a terminal's cargo, Ports.Cargo's ordinal (0.7.97): its quay runs out over the sea
+     *                  and its boats call there; -1 for anything else
      */
     public record Type(int id, BuildingType category, int cls, boolean flats, int road, Resource site,
                        boolean outer, double plots, boolean transit, long sqFt, int people, int jobs,
-                       boolean track, boolean terminal, boolean sea) {
+                       boolean track, boolean terminal, boolean sea, boolean campus, boolean shore, int berth) {
 
         /** Whether it is drawn as a building: not a road, nor a railway line (0.7.72), nor at sea (0.7.91). */
         public boolean drawn() { return road == NOT_A_ROAD && !track && !sea; }
 
-        /** Its fill. */
-        public int fill() { return flats ? FLATS_FILL : FILL[cls]; }
+        /** Its fill: its class's, the flats darker, and since 0.7.97 the refinery's units, a terminal and a tank farm their own (still of their class's in the blocks and the legend's ten). */
+        public int fill() { return flats ? FLATS_FILL : campus ? CAMPUS_FILL : berth >= 0 ? TERMINAL_FILL : shore ? TANKS_FILL : FILL[cls]; }
 
         /** Its edge. */
-        public int edge() { return flats ? FLATS_EDGE : EDGE[cls]; }
+        public int edge() { return flats ? FLATS_EDGE : campus ? CAMPUS_EDGE : berth >= 0 ? TERMINAL_EDGE : shore ? TANKS_EDGE : EDGE[cls]; }
     }
 
     /** A template as the map draws it. */
@@ -173,8 +202,11 @@ public final class BuildingVisual {
         boolean terminal = false;
         for (int r : RAIL_TERMINALS) if (r == id) terminal = true;
         boolean track = c == BuildingType.RAIL && !terminal;
+        boolean campus = ham.citybuildersim.sectors.Refining.isCrudeUnit(t) || ham.citybuildersim.sectors.Refining.isConversionUnit(t);
+        boolean shore = t.isPort() || ham.citybuildersim.sectors.Refining.isTankFarm(t) || StrategicReserve.isReserve(t);
+        int berth = t.isPort() ? t.berthCargo().ordinal() : -1;
         return new Type(id, c, cls, flats, road, site, outer, plots, t.isTransit(), Math.round(Math.max(0, t.getLandSqFt())),
-                people, Math.max(0, t.getTotalJobs()), track, terminal, sea);
+                people, Math.max(0, t.getTotalJobs()), track, terminal, sea, campus, shore, berth);
     }
 
     /** A category's class (the mockup's ten). */

@@ -6053,6 +6053,15 @@ public class UserInterface extends Application {
     /** Whether this screen - a clearMenu() name, "showHistoryMenu" - is the one on show: a late redraw asks before it draws. */
     boolean isShowing(String screen) { return screen != null && screen.equals(currentScreen); }
 
+    /**
+     * The game's clock in months (0.7.97, batch O13): the month and the share
+     * of the next the clock has run - what the map's boats sail on
+     * (MapView.BOAT_GAME_MONTHS). It stands while the clock is paused.
+     */
+    double clockMonths() {
+        return game == null ? 0 : game.getMonth() + monthProgress;
+    }
+
     /** The date and what the clock is doing, for a line that stands in for the header: "14 February 2151 · paused". */
     String clockWords() {
         return CityCalendar.formatDay(game.getMonth(), monthProgress) + "  ·  "

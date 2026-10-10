@@ -87,6 +87,15 @@ import static ham.citybuildersim.ui.Pieces.*;
  * MapFrame's arithmetic (onScreen(), runOnScreen(), blockLines()), so
  * MapCheck holds it; the edge and each offer's cut-outs are found once a
  * purchase or a listing, not every frame.
+ *
+ * THE BOATS (0.7.97, batch O13; runs/spec-oil.md 2.10, spec-roads-and-ports.md
+ * 4): over the tiles, each terminal's lane out to sea - its route (CityMap's
+ * THE SEA ROUTES, found on WORKER and kept here) - from L2 in, and from L1 in
+ * the boats on it: the month's calls (BoatSchedule) where the game's clock
+ * puts them, a boat-month BOAT_GAME_MONTHS of the game's, so a month of
+ * ships plays as BoatSchedule.MONTH_SECONDS at 1x and stands while the clock
+ * is paused; each boat's shape and colours ShipShapes'. While any is in view
+ * the frame goes on and draws again whenever the clock moves them.
  */
 final class MapView {
 
@@ -113,6 +122,15 @@ final class MapView {
 
     /** Drafts a city may fail to keep before its map is drawn on the FX thread instead: 3. */
     static final int DRAFTS_MOST = 3;
+
+    /** Game months a boat-month spans (0.7.97): BoatSchedule.MONTH_SECONDS over UserInterface.SECONDS_PER_MONTH, 12 - so at 1x a month of ships plays as the research's 60 s (Q8), at every speed in step with the game's clock, and stands while it is paused (star O13-7). */
+    static final double BOAT_GAME_MONTHS = BoatSchedule.MONTH_SECONDS / UserInterface.SECONDS_PER_MONTH;
+
+    /** A lane's band: the import blue at 10%, 8 px wide (mockup 3's trade lanes, quieter: the playtest's 23 lanes overlap)... */
+    static final double LANE_BAND_ALPHA = 0.10, LANE_BAND_PX = 8;
+
+    /** ...and its dashes, the blue at 45%, 5 px on and 6 off (mockup 3's). */
+    static final double LANE_DASH_ALPHA = 0.45;
 
     /** Who hears a click: a side, and an offer's place on it or -1. */
     interface Picker { void picked(int side, int place); }
@@ -183,6 +201,18 @@ final class MapView {
     private double[] hoverAt;
 
     private boolean running, dirty;
+
+    /* ----------------------------- the boats (0.7.97) ----------------------------- */
+
+    /** The routes being found on WORKER, or null. */
+    private CityMap.RoutesJob routesAsked;
+    /** The schedule drawn from: its boat-month, the routes and the game month it was made on. */
+    private BoatSchedule schedule;
+    private int scheduleMonth = Integer.MIN_VALUE, scheduleGameMonth = Integer.MIN_VALUE;
+    private List<BoatSchedule.Route> scheduleRoutes;
+    /** Whether boats are in view (the frame goes on), and the clock they were last drawn at. */
+    private boolean boatsLive;
+    private double drawnClock = Double.NaN;
     private final AnimationTimer pump = new AnimationTimer() {
         @Override public void handle(long now) { tick(); }
     };
@@ -267,6 +297,11 @@ final class MapView {
         ownedIn.clear();
         labelAt.clear();
         shapesFor = labelsFor = Long.MIN_VALUE;
+        routesAsked = null;
+        schedule = null;
+        scheduleRoutes = null;
+        scheduleMonth = scheduleGameMonth = Integer.MIN_VALUE;
+        boatsLive = false;
     }
 
     /** The office drawn again: the side it shows and the offer picked, and whatever moved since - a month, a purchase. */
@@ -308,6 +343,11 @@ final class MapView {
         if (hoverAt != null) {
             hover(hoverAt[0], hoverAt[1]);
             hoverAt = null;
+        }
+        // The boats (0.7.97): while any is in view the frame goes on, and draws again whenever the clock moves them.
+        if (boatsLive) {
+            more = true;
+            if (boatClock() != drawnClock) dirty = true;
         }
         if (dirty) {
             dirty = false;
@@ -538,12 +578,145 @@ final class MapView {
         double w = f.width(), h = f.height();
         gc.setFill(colour(TileRaster.VOID));
         gc.fillRect(0, 0, w, h);
+        boatsLive = false;
         if (tiles != null) {
             int level = f.level();
             if (level == MapFrame.FAR) drawNodes(gc, f);
-            else drawTiles(gc, f, level);
+            else {
+                drawTiles(gc, f, level);
+                boats(gc, f, level);
+            }
         }
         overlays(gc, f);
+    }
+
+    /* =====================================================================
+       THE BOATS (0.7.97, batch O13)
+       ===================================================================== */
+
+    /** The boats' clock, in boat-months: the game's clock (UserInterface.clockMonths()) over BOAT_GAME_MONTHS. */
+    private double boatClock() {
+        return ui.clockMonths() / BOAT_GAME_MONTHS;
+    }
+
+    /**
+     * The lanes and the boats over the tiles: each route on screen as a
+     * band and dashes (from L2 in), and from L1 in the boats the month's
+     * schedule puts on them at the clock - each one's hull, deck and bridge
+     * (ShipShapes), a dart of its colour when it is small, fading in the
+     * abyss. The routes are found on WORKER the first time; nothing is drawn
+     * until they are.
+     */
+    private void boats(GraphicsContext gc, MapFrame f, int level) {
+        if (shownMap == null || shownMap.shore().isEmpty()) return;
+        List<BoatSchedule.Route> routes = shownMap.seaRoutesIfFound();
+        if (routes == null) {
+            askRoutes();
+            return;
+        }
+        if (routes.isEmpty()) return;
+        double clock = boatClock();
+        int m = (int) Math.floor(clock);
+        double t = clock - m;
+        Game g = ui.game;
+        if (schedule == null || scheduleMonth != m || scheduleRoutes != routes || scheduleGameMonth != g.getMonth()) {
+            schedule = BoatSchedule.of(m, g.getPorts(), routes);
+            scheduleMonth = m;
+            scheduleRoutes = routes;
+            scheduleGameMonth = g.getMonth();
+        }
+        double margin = ShipShapes.lengthM(Ports.Ship.VLCC) / World.PLOT_M * ShipShapes.BOOST;
+        long x0 = (long) Math.floor(f.plotX(0) - margin), y0 = (long) Math.floor(f.plotY(0) - margin);
+        long x1 = (long) Math.ceil(f.plotX(f.width()) + margin), y1 = (long) Math.ceil(f.plotY(f.height()) + margin);
+        int crossing = 0;
+        gc.setLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
+        for (BoatSchedule.Route r : routes) {
+            if (!BoatSchedule.crosses(r, x0, y0, x1, y1)) continue;
+            crossing++;
+            int n = r.xs().length;
+            double[] sx = new double[n], sy = new double[n];
+            for (int i = 0; i < n; i++) { sx[i] = f.screenX(r.xs()[i]); sy[i] = f.screenY(r.ys()[i]); }
+            gc.setStroke(colour(ShipShapes.IMPORT, LANE_BAND_ALPHA));
+            gc.setLineWidth(LANE_BAND_PX);
+            gc.setLineDashes((double[]) null);
+            gc.strokePolyline(sx, sy, n);
+            gc.setStroke(colour(ShipShapes.IMPORT, LANE_DASH_ALPHA));
+            gc.setLineWidth(1);
+            gc.setLineDashes(5, 6);
+            gc.strokePolyline(sx, sy, n);
+        }
+        gc.setLineDashes((double[]) null);
+        gc.setLineCap(javafx.scene.shape.StrokeLineCap.SQUARE);
+        gc.setLineJoin(javafx.scene.shape.StrokeLineJoin.MITER);
+        drawnClock = clock;
+        if (level == MapFrame.L2 || crossing == 0 || schedule.callCount() == 0) return;
+        boatsLive = true;
+        double s = f.scale();
+        for (BoatSchedule.Boat b : schedule.frame(x0, y0, x1, y1, t)) {
+            double bx = f.screenX(b.x()), by = f.screenY(b.y());
+            if (bx < -margin * s || by < -margin * s || bx > f.width() + margin * s || by > f.height() + margin * s) continue;
+            int c = ShipShapes.colour(b);
+            double[][] hull = ShipShapes.hull(b, s);
+            if (ShipShapes.drawnLength(b, s) * s <= ShipShapes.LEAST_PX + 1e-9) {
+                fillShape(gc, f, hull, colour(c, b.alpha()));
+                continue;
+            }
+            fillShape(gc, f, hull, colour(b.loaded() ? ShipShapes.HULL_LADEN : ShipShapes.HULL_EMPTY, b.alpha()));
+            double[][][] deck = ShipShapes.deck(b, s);
+            boolean boxes = b.call().cargo() == Ports.Cargo.CONTAINER;
+            for (int k = 0; k < deck.length; k++) {
+                fillShape(gc, f, deck[k], boxes ? colour(ShipShapes.boxColour(b, k), b.alpha()) : colour(c, 0.6 * b.alpha()));
+            }
+            fillShape(gc, f, ShipShapes.bridge(b, s), colour(ShipShapes.BRIDGE, 0.85 * b.alpha()));
+            gc.setStroke(colour(c, b.alpha()));
+            gc.setLineWidth(1.2);
+            gc.strokePolygon(screenXs(f, hull[0]), screenYs(f, hull[1]), hull[0].length);
+        }
+    }
+
+    /** A shape in plots filled on the screen. */
+    private static void fillShape(GraphicsContext gc, MapFrame f, double[][] pts, Color c) {
+        gc.setFill(c);
+        gc.fillPolygon(screenXs(f, pts[0]), screenYs(f, pts[1]), pts[0].length);
+    }
+
+    private static double[] screenXs(MapFrame f, double[] xs) {
+        double[] out = new double[xs.length];
+        for (int i = 0; i < xs.length; i++) out[i] = f.screenX(xs[i]);
+        return out;
+    }
+
+    private static double[] screenYs(MapFrame f, double[] ys) {
+        double[] out = new double[ys.length];
+        for (int i = 0; i < ys.length; i++) out[i] = f.screenY(ys[i]);
+        return out;
+    }
+
+    /** A colour from the model's 0xAARRGGBB at an opacity. */
+    static Color colour(int argb, double alpha) {
+        return Color.rgb((argb >> 16) & 255, (argb >> 8) & 255, argb & 255, Math.max(0, Math.min(1, alpha)));
+    }
+
+    /** The sea routes found on WORKER (CityMap.routesJob()), kept on the FX thread when they are still the city's, and the view drawn again. */
+    private void askRoutes() {
+        if (routesAsked != null || shownMap == null) return;
+        CityMap.RoutesJob j = shownMap.routesJob();
+        if (j == null) return;
+        routesAsked = j;
+        final CityMap map = shownMap;
+        WORKER.submit(() -> {
+            try {
+                j.run();
+            } catch (RuntimeException e) {
+                System.out.println("The sea routes could not be found: " + e);
+            }
+            Platform.runLater(() -> {
+                if (routesAsked == j) routesAsked = null;
+                if (shownMap == map) map.adoptRoutes(j);
+                requestDraw();
+            });
+        });
     }
 
     private void drawTiles(GraphicsContext gc, MapFrame f, int level) {
@@ -1075,14 +1248,27 @@ final class MapView {
         out.add(new String[] { css(TileRaster.TRACK_DASH), TRACK_ENTRY });
         out.add(new String[] { css(TileRaster.ROAD[BuildingVisual.HIGHWAY]), "Highway" });
         out.add(new String[] { css(TileRaster.RAIL_LINE), "Railway" });
+        // At sea and on the shore (0.7.97).
+        out.add(new String[] { css(BuildingVisual.CAMPUS_FILL), "Refinery" });
+        out.add(new String[] { css(BuildingVisual.TERMINAL_FILL), "Sea terminal" });
+        out.add(new String[] { css(TileRaster.QUAY_DECK), "Quay" });
+        out.add(new String[] { css(BuildingVisual.TANKS_FILL), "Tank farm" });
+        out.add(new String[] { css(TileRaster.OIL_TAN), "Platform, pipeline" });
+        out.add(new String[] { css(ShipShapes.IMPORT), "Ship in, full" });
+        out.add(new String[] { css(ShipShapes.EXPORT), "Ship out, full" });
+        out.add(new String[] { css(ShipShapes.EMPTY), "Ship, empty leg" });
+        out.add(new String[] { css(ShipShapes.BOXES), "Box ship, both ways" });
         out.add(new String[] { "#ffffff", "The city's edge" });
         out.add(new String[] { OFFER_EDGE, "On offer" });
         for (Resource r : Resource.values()) if (r.inFields()) out.add(new String[] { css(0xff000000 | r.colour()), r.label() });
         return out;
     }
 
-    /** Rows a column of the legend holds: 12, its 24 entries in two columns (11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
+    /** Rows a column of the legend holds: 12, its 33 entries in three columns (since 0.7.97, nine for the shore and the sea; 24 in two before; 11 until 0.7.72 added the railway to its 22; 0.7.88 the tracks). */
     static final int LEGEND_ROWS = 12;
+
+    /** The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). */
+    static final String SHIP_SIZE_WORDS = "Ships are drawn 1.6\u00d7 their size until 6 px a plot";
 
     /** The legend's tracks (0.7.88; spec 5): a street the city has bought no road for. */
     static final String TRACK_ENTRY = "Track";
@@ -1119,7 +1305,9 @@ final class MapView {
         legendNote.setWrapText(true);
         legendNote.setMaxWidth(LEGEND_NOTE_WIDTH);
         showIf(legendNote, false);
-        VBox box = new VBox(6, grid, legendNote);
+        Label ships = new Label(SHIP_SIZE_WORDS);
+        ships.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        VBox box = new VBox(6, grid, ships, legendNote);
         box.setStyle("-fx-background-color: #0b1118d9; -fx-background-radius: 6; -fx-padding: 8 10 8 10;");
         box.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         box.setMouseTransparent(true);

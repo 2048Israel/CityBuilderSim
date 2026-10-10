@@ -623,9 +623,9 @@ public final class BuildCard {
                 Resource site = Game.siteOf(t);
                 if (site != null) {
                     // ...the sites of its own resource (0.7.62): an Oil Well's oil, a mine's iron - a land well's dry ones (0.7.84,
-                    // Game.sitesFor()), a platform's well its platforms' slots (0.7.91), counted against its own kind (committedFor()).
-                    LandManager ground = game.getLandManager();
-                    detail = new double[] { game.sitesFor(t), game.committedFor(t), ground.getRemaining(site) };
+                    // Game.sitesFor()), a platform's well its platforms' slots (0.7.91), counted against its own kind (committedFor()),
+                    // and the tonnes of its own pool (0.7.93, Game.remainingFor()): a land well's the ground's, a platform's the sea's.
+                    detail = new double[] { game.sitesFor(t), game.committedFor(t), game.remainingFor(t) };
                 }
         }
 

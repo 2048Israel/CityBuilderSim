@@ -126,6 +126,14 @@ public final class MapTiles {
             h = World.mix(h ^ ((long) in.siteX0[s] << 40 ^ (long) in.siteY0[s] << 30 ^ (long) in.siteX1[s] << 20 ^ (long) in.siteY1[s] << 10));
             h = World.mix(h ^ ((long) in.siteKind[s] << 40 ^ (long) in.siteState[s] << 32 ^ (in.siteMine[s] + 1)));
         }
+        // The works at sea (0.7.97): the quays', jackets' and wells' plots, the rings and the pipes - nothing with none.
+        long sea = packed(in.sea);
+        if (sea != 0) h = World.mix(h ^ sea);
+        for (int r = 0; r < in.rings; r++) h = World.mix(h ^ Double.doubleToLongBits(in.ringX[r]) * 31 ^ Double.doubleToLongBits(in.ringY[r]));
+        for (int q = 0; q < in.pipes; q++) {
+            h = World.mix(h ^ Double.doubleToLongBits(in.pipeAX[q]) * 31 ^ Double.doubleToLongBits(in.pipeAY[q]));
+            h = World.mix(h ^ Double.doubleToLongBits(in.pipeBX[q]) * 31 ^ Double.doubleToLongBits(in.pipeBY[q]));
+        }
         return h;
     }
 
@@ -186,6 +194,10 @@ public final class MapTiles {
         System.arraycopy(a.beyond, 0, b.beyond, 0, a.beyond.length);
         System.arraycopy(a.fixed, 0, b.fixed, 0, TilePainter.PLOTS);
         System.arraycopy(a.fixedBeyond, 0, b.fixedBeyond, 0, a.fixedBeyond.length);
+        // ...and the runs' marks, the ramps and 45-degree stretches (0.7.98, batch O14: until then the kept copy the raster
+        // reads had none, so no ramp or smooth band was ever drawn).
+        System.arraycopy(a.marks, 0, b.marks, 0, TilePainter.PLOTS);
+        System.arraycopy(a.marksBeyond, 0, b.marksBeyond, 0, a.marksBeyond.length);
         b.types = a.types;
         if (b.counts.length != a.counts.length) b.counts = new int[a.counts.length];
         b.clearBuildings();
@@ -194,6 +206,11 @@ public final class MapTiles {
         for (int s = 0; s < a.sites; s++) {
             b.addSite(a.siteX0[s], a.siteY0[s], a.siteX1[s], a.siteY1[s], a.siteKind[s], a.siteState[s], a.siteMine[s], a.siteKey[s]);
         }
+        // The works at sea (0.7.97).
+        b.clearSea();
+        System.arraycopy(a.sea, 0, b.sea, 0, TilePainter.PLOTS);
+        for (int r = 0; r < a.rings; r++) b.addRing(a.ringX[r], a.ringY[r]);
+        for (int q = 0; q < a.pipes; q++) b.addPipe(a.pipeAX[q], a.pipeAY[q], a.pipeBX[q], a.pipeBY[q]);
     }
 
     /**
@@ -240,11 +257,11 @@ public final class MapTiles {
         }
     }
 
-    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out. */
+    /** A kept painted tile's bytes, from its arrays' lengths: what PAINTED_KEPT of them weigh - since 0.7.88 its plan's streets and runs and its buildings' boxes in, its plots' use, kind, width, role, flags, building and site out; since 0.7.97 each plot's work at sea both ways, and the rings' and pipes' ends in. */
     public static long paintedBytes(TilePainter.Input in, TilePainter.Painted p) {
         long input = 4L * TilePainter.PLOTS + 2L * in.beyond.length + 4L * (in.counts.length + in.boxes.length) + 16 + 4
-                + 36L * in.siteX0.length;
-        long picture = 6L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 29L * p.bx.length;
+                + 36L * in.siteX0.length + in.sea.length + 8L * (in.ringX.length + in.ringY.length) + 32L * in.pipeAX.length;
+        long picture = 6L * TilePainter.PLOTS + 2L * 2 * TilePainter.PLOTS + 29L * p.bx.length + p.sea.length;
         return input + picture;
     }
 

@@ -47,6 +47,11 @@ import java.util.Map;
  * them where the freight it saves over the field's life repays it (THE OIL
  * AT SEA, below). The planner weighs the three kinds after the land well.
  *
+ * SINCE 0.7.93 (batch O10b; Jerus: "two pools, offshore oil and ground
+ * oil") THE CITY'S CRUDE IS TWO POOLS (LandManager's THE TWO OIL POOLS): the
+ * land wells lift the ground pool only, the platform wells the offshore pool
+ * only, each sized from its own fields (groundLimit()).
+ *
  * Everything else - the books, the credit, the market, the payroll, the
  * export - is the template's.
  */
@@ -60,13 +65,33 @@ public final class Oil extends Sector {
                 + "limit, and the city has to buy the ground it is under.");
     }
 
-    /** The ground, not the well, decides what comes up. */
+    /**
+     * The ground, not the well, decides what comes up - since 0.7.93 each
+     * kind's own pool (LandManager's THE TWO OIL POOLS): the platform wells'
+     * part of the month's ask, their nameplate (getCapacityAtSea()) at the
+     * month's rate, from the offshore pool, and the rest - the land wells' -
+     * from the ground pool. With no platform well, all of it the ground's.
+     */
     @Override
     protected double groundLimit(Good g, double asked) {
         if (game == null || g != Good.CRUDE) return asked;
         LandManager land = game.getLandManager();
-        return land == null ? asked : land.extractOil(asked);
+        if (land == null) return asked;
+        double atSea = Math.min(asked, getCapacityAtSea() * getOperatingRate());
+        if (!(atSea > 0)) {
+            liftedAtSea = 0;
+            return liftedOnGround = land.extractOil(asked);
+        }
+        liftedOnGround = land.extractOil(asked - atSea);
+        liftedAtSea = land.extractOilAtSea(atSea);
+        return liftedOnGround + liftedAtSea;
     }
+
+    /** The month's crude by pool, as groundLimit() lifted it (0.7.93): the land wells' from the ground pool and the platform wells' from the offshore pool. Not saved: the shuttle reads it the month it is lifted. */
+    private double liftedOnGround, liftedAtSea;
+
+    public double getLiftedOnGround() { return liftedOnGround; }
+    public double getLiftedAtSea()    { return liftedAtSea; }
 
     /** What the wells could lift this month if the ground allowed it. */
     public double getPotentialOutput() {
@@ -475,14 +500,16 @@ public final class Oil extends Sector {
         LandManager land = game.getLandManager();
         int dry = land.getSites(Resource.OIL, true);
         int unworked = dry - game.landWellsCommitted();
-        double reserve = land.getOilReserveTonnes();
+        // ...the ground pool's (0.7.93, THE TWO OIL POOLS): a land well lifts no other.
+        double reserve = land.getOilLeftOnGround();
 
         if (land.getOilSites() <= 0) return BusinessInvestment.Decision.no(sector, "no oil deposit to drill");
         if (unworked <= 0) {
             return BusinessInvestment.Decision.no(sector, dry < land.getOilSites()
                     ? "no oil deposit on dry ground to drill" : "no oil deposit to drill");
         }
-        if (reserve <= 0)  return BusinessInvestment.Decision.no(sector, "every oil deposit is worked out");
+        if (reserve <= 0)  return BusinessInvestment.Decision.no(sector, land.getOilOwnedAtSea() > 0
+                ? "every oil deposit on dry ground is worked out" : "every oil deposit is worked out");
 
         BuildingsTemplate best = null;
         double bestScore = 0;
@@ -523,16 +550,22 @@ public final class Oil extends Sector {
     /**
      * A price-taking exporter sells what it lifts and shrinks on distress -
      * while there is oil. A well over a worked-out field lifts nothing, and is
-     * spare by any measure: Mining's rule, for Mining's reason.
+     * spare by any measure: Mining's rule, for Mining's reason. Since 0.7.93
+     * each kind's pool apart (THE TWO OIL POOLS): with one pool worked out
+     * and the other not, the wells over the worked-out one are the spare -
+     * the land wells' part of the lift or the platforms' - and mayRetire()
+     * keeps the others while they stand.
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
         if (game == null) return null;
         double capacity = getCapacity(Good.CRUDE);
         if (capacity <= 0) return null;
-        return game.getLandManager().getOilReserveTonnes() > 0
-                ? null
-                : new double[] { 0, capacity };
+        LandManager land = game.getLandManager();
+        boolean onGround = land.getOilLeftOnGround() > 0, atSea = land.getOilLeftAtSea() > 0;
+        if (!onGround && !atSea) return new double[] { 0, capacity };
+        double sea = getCapacityAtSea(), spare = (onGround ? 0 : capacity - sea) + (atSea ? 0 : sea);
+        return spare > 0 ? new double[] { capacity - spare, capacity } : null;
     }
 
     /**
@@ -554,11 +587,22 @@ public final class Oil extends Sector {
      * jacket and a pipeline are not plant the lift measures, so the
      * shrinking rules never pick them while they stand - they go when their
      * wells have (Game.retireWornOutWells(), THE OIL AT SEA's last
-     * paragraph). Every well, as before.
+     * paragraph). Every well, as before - but since 0.7.93 a well whose pool
+     * still has oil while the other kind's wells stand over a worked-out pool
+     * (THE TWO OIL POOLS): those are the spare, and go first.
      */
     @Override
     public boolean mayRetire(BuildingsTemplate t) {
         if (t != null && (t.isPlatform() || t.isPipeline()) && buildings != null && buildings.getQuantity(t.getId()) > 0) return false;
+        // ...and a well whose pool has oil left, while the other kind's stand over a worked-out pool (0.7.93): those go first.
+        if (isWell(t) && game != null && game.getLandManager() != null) {
+            LandManager land = game.getLandManager();
+            boolean sea = t.isPlatformWell();
+            double mine = sea ? land.getOilLeftAtSea() : land.getOilLeftOnGround();
+            double theirs = sea ? land.getOilLeftOnGround() : land.getOilLeftAtSea();
+            int others = sea ? landWellsStanding() : platformWellsStanding();
+            if (mine > 0 && !(theirs > 0) && others > 0) return false;
+        }
         return true;
     }
 
@@ -618,6 +662,13 @@ public final class Oil extends Sector {
        DECOMMISSIONED: a jacket holding no well and the pipelines are not the
        lift's plant (mayRetire()); once the city's oil is worked out they are
        retired at the top of the month with the worn-out wells.
+
+       THE OFFSHORE POOL (0.7.93, batch O10b): the platform wells lift the
+       city's oil under the sea, and only it (LandManager's THE TWO OIL
+       POOLS) - every sea field's, the deep ones' too, a field keeping none of
+       its own. So the sea's planner weighs, the pipe's months count and the
+       decommissioning waits on that pool alone, and the shuttle tankers
+       carry the month's crude the offshore pool gave.
        ===================================================================== */
 
     /** The deepest sea a platform's jacket stands in, in metres: 150, the fixed platform's limit (the research's 3.2; spec-oil 2.7). */
@@ -1007,15 +1058,16 @@ public final class Oil extends Sector {
 
     /**
      * Pays the shuttle tankers for the month's crude brought ashore
-     * (endOfMonth(), after the crude's market cleared): the lift's share at
-     * sea (getCapacityAtSea() over getCapacity()) of what was sold at home,
-     * less the share a whole pipe carries, at shuttleFreightPerTonne() -
-     * booked as a service bought from the world. Nothing with no platform
-     * crude, or none sold at home.
+     * (endOfMonth(), after the crude's market cleared): the sea's share of
+     * what was sold at home - since 0.7.93 the offshore pool's part of the
+     * month's lift (getLiftedAtSea() over the two pools' lifts), until then
+     * the platforms' part of the nameplate - less the share a whole pipe
+     * carries, at shuttleFreightPerTonne(), booked as a service bought from
+     * the world. Nothing with no platform crude, or none sold at home.
      */
     public void payShuttle() {
         shuttleTonnes = shuttleBill = 0;
-        double sea = getCapacityAtSea(), all = getCapacity(Good.CRUDE);
+        double sea = liftedAtSea, all = liftedOnGround + liftedAtSea;
         if (!(sea > 0) || !(all > 0)) return;
         Output o = output(Good.CRUDE);
         double home = Math.max(0, Math.min(o.soldLocal, o.produced));
@@ -1055,9 +1107,10 @@ public final class Oil extends Sector {
      * their cost, the freight a tonne it saves (the shuttle's at sea; none on
      * land), its repairs and tax a month, the tonnes a month it would carry
      * (the field's wells' share of the lift at sea, at last month's share
-     * sold at home), the months the city's oil lasts at the lift, and the
-     * two provisos - the refiners not losing money, the field's first
-     * platform on its plateau.
+     * sold at home), the months the city's oil lasts at the lift - since
+     * 0.7.93 the offshore pool at the platforms' lift - and the two provisos
+     * - the refiners not losing money, the field's first platform on its
+     * plateau.
      */
     public record PipeCase(Deposit field, int km, double cost, double freight, double standing, double tonnes,
                            double months, boolean refinersPay, boolean onPlateau, boolean pays) { }
@@ -1085,7 +1138,7 @@ public final class Oil extends Sector {
         }
         int inSlots = platformWellsInSlots();
         double tonnes = inSlots > 0 ? getCapacityAtSea() * wells / inSlots * homeShareLastMonth() : 0;
-        double lift = getCapacity(Good.CRUDE), left = game.getLandManager().getOilReserveTonnes();
+        double lift = getCapacityAtSea(), left = game.getLandManager().getOilLeftAtSea();
         double months = lift > 0 ? left / lift : PIPE_LIFE_MONTHS;
         boolean refiners = plans.getLossMonths(Sectors.REFINING) == 0;
         boolean plateau = first != Integer.MAX_VALUE && monthNow() - first < PLATFORM_PLATEAU_MONTHS;
@@ -1177,7 +1230,8 @@ public final class Oil extends Sector {
     private BusinessInvestment.Decision planAtSea(BusinessInvestment plans, Game game) {
         String sector = key();
         LandManager land = game.getLandManager();
-        double reserve = land.getOilReserveTonnes();
+        // ...the offshore pool's (0.7.93, THE TWO OIL POOLS): all a platform lifts.
+        double reserve = land.getOilLeftAtSea();
         if (!(reserve > 0) || (land.getSites(Resource.OIL, false) <= 0 && jacketsStanding() <= 0)) return null;
 
         // 1. A platform well into a free slot.
@@ -1191,7 +1245,7 @@ public final class Oil extends Sector {
                 held = BusinessInvestment.Decision.no(sector, staffing.why(well.getName()));
             } else if (cost > 0 && estimatedMonthlyProfit(well, plans) / cost > 0) {
                 return new BusinessInvestment.Decision(sector, well, 1,
-                        String.format("%d platform slot(s) free at sea, %,.0fk tonnes in the ground", free, reserve / 1000), true);
+                        String.format("%d platform slot(s) free at sea, %,.0fk tonnes under the sea", free, reserve / 1000), true);
             }
         }
 
@@ -1233,13 +1287,14 @@ public final class Oil extends Sector {
         lines.add(Line.of("On dry ground", f.count(dry)));
         lines.add(Line.of("Being worked", f.count(landWells),
                 landWells < dry ? Line.Tone.WARN : Line.Tone.GOOD));
-        lines.add(Line.of("Crude in the ground", f.count(land.getOilReserveTonnes()) + " t"));
+        // ...the ground pool, the land wells' (0.7.93); the offshore pool is the At sea lines'.
+        lines.add(Line.of("Crude in the ground", f.count(land.getOilLeftOnGround()) + " t"));
         double asNew = newWellsCapacity();
         if (asNew > 0) {
             lines.add(Line.of("Lifting a month", f.count(getCapacity(Good.CRUDE)) + " t, "
                     + Math.round(getCapacity(Good.CRUDE) / asNew * 100) + "% of new"));
         }
-        if (landWells < dry && land.getOilReserveTonnes() > 0) {
+        if (landWells < dry && land.getOilLeftOnGround() > 0) {
             lines.add(Line.note("There is oil under this city that no well is lifting."));
         }
         List<LandManager.SeaField> shallow = shallowFields();
@@ -1247,15 +1302,19 @@ public final class Oil extends Sector {
             lines.add(Line.note(shallow.isEmpty() ? "A land well stands only on dry ground, not on the sites at sea."
                     : "A land well stands only on dry ground; the sites at sea take a platform's wells."));
         }
-        // The oil at sea (0.7.91): only where the city owns a shallow sea field or stands a platform.
-        if (shallow.isEmpty() && jacketsStanding() <= 0 && pipeKmStanding() <= 0) return lines;
+        // The oil at sea (0.7.91): only where the city owns a shallow sea field or stands a platform - or, since 0.7.93,
+        // owns oil under the sea, the offshore pool.
+        double underSea = land.getOilOwnedAtSea() > 0 ? land.getOilLeftAtSea() : -1;
+        if (shallow.isEmpty() && jacketsStanding() <= 0 && pipeKmStanding() <= 0 && underSea < 0) return lines;
         int sites = 0;
         for (LandManager.SeaField s : shallow) sites += s.sites();
         lines.add(Line.head("At sea"));
         lines.add(Line.of("Sea sites, 150 m or less", f.count(sites)));
+        lines.add(Line.of("Crude under the sea", f.count(Math.max(0, underSea)) + " t"));
         lines.add(Line.of("Platforms", f.count(jacketsStanding()) + ", " + f.count(slotsStanding()) + " slots"));
         lines.add(Line.of("Platform wells", f.count(platformWellsInSlots()) + " in slots",
                 platformWellsInSlots() < slotsStanding() ? Line.Tone.WARN : Line.Tone.GOOD));
+        if (platformWellsInSlots() > 0) lines.add(Line.of("Lifting at sea a month", f.count(getCapacityAtSea()) + " t"));
         Double shuttle = statement() == null ? null : statement().otherInputs.get(SHUTTLE_TANKERS);
         lines.add(Line.of("Shuttle tankers last month", f.amount(shuttle == null ? 0 : shuttle)));
         if (pipeKmStanding() > 0) {

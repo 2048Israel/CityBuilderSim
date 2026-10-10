@@ -4375,8 +4375,182 @@ public final class GameVersion {
      *     every homes and industry building where it stood). The saves named
      *     are its 9.
      *   - The playtest is 0.7.91's, byte for byte.
+     *
+     * 0.7.93 (2026-10-09) - OIL AND PORTS, TENTH (B): TWO OIL POOLS. Batch
+     * O10b (Jerus, 2026-10-09, answering O10's question: "each oil field
+     * doesnt keep its oil, but you can split it, two pools, offshore oil and
+     * ground oil. pipelines leave it as is"; runs/fixO10b-notes.md).
+     *   - THE CITY'S CRUDE IS TWO POOLS (LandManager's THE TWO OIL POOLS): the
+     *     ground pool, sized from its dry oil fields (and any oil by fiat),
+     *     and the offshore pool, from its sea fields - each holding's sea part
+     *     the lesser of what it listed and its sea fields' tonnes, as its sea
+     *     sites are. The land wells lift the ground pool only, the platform
+     *     wells the offshore pool only; a field keeps no oil of its own, so a
+     *     platform lifts the deep sea fields' tonnes too. Each pool is worked
+     *     out on its own fields in the order they were bought, which the map
+     *     greys and the refiners grade.
+     *   - What reads the oil left reads its kind's pool: an order's deposit
+     *     gate and the card's tonnes (Game.remainingFor()), the land well's
+     *     and the sea's planners, the pipe's months (the offshore pool at the
+     *     platforms' lift) and the decommissioning (the offshore pool). With
+     *     one pool worked out and the other not, the wells over the
+     *     worked-out one are the spare the shrinking rules sell first.
+     *   - The shuttle tankers carry the offshore pool's share of the month's
+     *     crude sold at home: what it gave, not the platforms' share of the
+     *     nameplate. Pipelines as 0.7.91 built them.
+     *   - SAVE_FORMAT 35 (see below): an older save's one pool is charged to
+     *     the ground, floored at its tonnes, and none to the sea. Jerus's 1008
+     *     city (31 dry sites, 80 at sea, its oil worked out) keeps its dry
+     *     fields worked out and has its sea's 11,492,307 t back, 4,233,173 t
+     *     of it on the 16 shallow fields a platform stands on. No money moves.
+     *   - Words: the Oil page's "Crude in the ground" is the ground pool, and
+     *     its At sea lines - shown too where the city owns only deep sea oil -
+     *     say "Crude under the sea" and "Lifting at sea a month"; the platform
+     *     well's card and the sea's no-deposit page say "under the sea".
+     *   - Harnesses: WellCheck 13 (the two pools); WellCheck 5 and 9 and
+     *     OilCheck 12 on the two pools; SaveFileCheck; ReadPathCheck.
+     *   - The playtest is 0.7.92's, byte for byte: its city owns no sea oil.
+     *
+     * 0.7.94 (2026-10-09) - THE ROADS, SEVENTH: THE PLAN FAST AND STEADY.
+     * Batch RD7 (runs/fixRD7-notes.md). Drawing only: every district's plan
+     * the same, street for street and box for box.
+     *   - PlanCheck's bound on the dense screen's slowest district (40 ms,
+     *     half the map's screen) failed about half its runs on a two-core
+     *     machine, its districts timed while the compiler was still busy and
+     *     the planner's long loops fell back to the interpreter on inputs
+     *     they had not seen. The planner (DistrictPlan's SPEED) now keeps its
+     *     arrays from plan to plan (a dense plan made 11.6 MB for the
+     *     collector, now 1.2), looks for a box first where its shape may
+     *     still fit, reads rows of plots as bits, settles a merge's split
+     *     near the box, and runs its long loops a row, a building or a step
+     *     a call. The slowest district, ten runs of PlanCheck alone: 26 to
+     *     43 ms at 0.7.93 (3 over), 17 to 26 ms now.
+     *   - A month's change on the map: a later walk of place() starts past
+     *     the districts an earlier one that month found full for its size
+     *     (CityMap's WALKS PASSED), and the districts lacking road are a heap
+     *     of their own (THE LACKING HEAP): the same districts take the same
+     *     counts. At 10 billion the first month after a step about 1 to 2 ms
+     *     (2 to 3), the rest about 0.5 to 0.7 (0.8 to 1).
+     *   - No harness added, none moved. The playtest is 0.7.93's, byte for
+     *     byte.
+     *
+     * 0.7.95 (2026-10-09) - OIL AND PORTS, ELEVENTH: THE REFINERY AS A
+     * PICTURE. Batch O11 (runs/spec-oil.md 2.12; the research's mockup 1,
+     * Jerus's idea; runs/fixO11-notes.md). Drawing only.
+     *   - Refining's Operations page opens on OPERATIONS · THE REFINERY: the
+     *     month's crude in on the left (the city's wells on land and at sea,
+     *     its reserve, the world), the column filled with its cuts in boiling
+     *     order, the conversion units - the first rank fed from the gas oil
+     *     and the residue, the second (the reformers, alkylation) from what
+     *     other units make - the tank filled by product, with what was taken
+     *     out of the refiners' tanks and the imports under it, and on the
+     *     right who took each product: the cars' petrol at the pump, the vans'
+     *     and the railway's diesel, the factories' lubricants, the roads'
+     *     bitumen, the tanks, the world. Every ribbon to one scale; the residue
+     *     no diesel could cut goes to the furnaces. Under it a strip of the
+     *     products: made, imported, exported, in or out of the tanks, the
+     *     price here. A unit says its spread and what one more would need
+     *     under the pointer.
+     *   - Every figure, position and word is RefineryView's (pure; a new
+     *     model class): the month as the products were made on it - the flow,
+     *     mix and rate the refiners now keep at the month's end
+     *     (Refining.monthsFlow(), not saved) - traced cut to unit to product,
+     *     the takers off the buyers' own rows, and the railway's diesel off
+     *     its haul (Rail.getFuelLitres(), not saved). The screen only paints.
+     *     Nothing is drawn after a load until a month runs.
+     *   - Harnesses: RefineryViewCheck (new: the trace foots to the flow, the
+     *     products to the rows, the takers to the buyers' rows, the picture
+     *     to scale). The playtest is 0.7.94's, byte for byte.
+     *
+     * 0.7.96 (2026-10-09) - OIL AND PORTS, TWELFTH: THE OIL INDUSTRY SCREEN.
+     * Batch O12 (runs/spec-oil.md 2.13; the research's mockup 2;
+     * runs/fixO12-notes.md). Drawing, and the reserve's two levers.
+     *   - Oil's Operations page opens on the whole chain: four figures (what
+     *     the wells lifted, the crude left in the two pools and the years it
+     *     lasts, the crude bought abroad, the products across the edge as the
+     *     Trade tab reads them); THE WELLS by kind - the land wells' lift,
+     *     decline and ground pool, each platform's depth, distance, plateau
+     *     and lift, the offshore pool and how its crude comes ashore - and
+     *     LOCAL CRUDE, a bar a year of what the wells standing would lift over
+     *     the next ten years if nothing new were built, each pool lifted no
+     *     further than it has oil; THE REFINERY's units, every kind with what
+     *     it turns into what, its run, its spread at the city's own prices and
+     *     the gate that stops one more; PRODUCTS, crude and the nine with
+     *     their prices, the world's over crude's and the month - made, used,
+     *     imported, exported, who took them; and THE STRATEGIC RESERVE.
+     *   - The reserve's Fill and Release, on dial cards (Levers): Fill orders
+     *     crude for the next clearing, up to the room left or what the
+     *     treasury can pay (Game.reserveFillMost(), which fillReserve() now
+     *     reads - the same arithmetic); Release sets the tonnes a month.
+     *   - Every figure, word, colour and the chart's shapes are OilView's
+     *     (pure; a new model class), the units and products off the refinery
+     *     picture's month (RefineryView), so the two pages cannot disagree.
+     *     The screen only paints. The month's figures wait for a month after
+     *     a load.
+     *   - Harnesses: OilViewCheck (new). The playtest is 0.7.95's, byte for
+     *     byte.
+     *
+     * 0.7.97 (2026-10-09) - OIL AND PORTS, THIRTEENTH: THE MAP AT SEA AND ON
+     * THE SHORE. Batch O13 (runs/spec-oil.md 5's O13 row; the project's
+     * spec-roads-and-ports.md 2.8 and 4; the research's mockup 3;
+     * runs/fixO13-notes.md). Drawing, and the map's sidecar.
+     *   - The refinery is a campus: the city map deals all its units to one
+     *     district (the first with room), and that district's plan places
+     *     them first of its industry, each in a cell of the campus's or one
+     *     touching it - drawn in a dark violet of its own. A saved map's
+     *     units are gathered there once, as it is read.
+     *   - The sea terminals, the tank farms and the reserve's tanks stand on
+     *     the shore: each laid once, on owned dry ground by owned water that
+     *     opens to the sea, a terminal's quay out over the water to its berth
+     *     (CityShore, a new model class); never moved, the newest taken first
+     *     when one goes. The map's sidecar keeps them (its FORMAT 6, an older
+     *     one's laid from its counts); the plans draw round them.
+     *   - At sea: each platform's jacket, its wells on their sites, its 500 m
+     *     safety zone dashed, and the crude pipeline ashore, buried.
+     *   - The boats: each terminal's route out to the world, found once on a
+     *     480 m grid of the sea and pulled straight (SeaRoutes, new), to the
+     *     offing past the city and on into the abyss, where a boat fades;
+     *     the month's calls (BoatSchedule) sailed on the game's clock, a
+     *     month of ships over a minute of it at 1x, standing while it is
+     *     paused - imports blue, exports orange, empty legs grey, box ships
+     *     loaded both ways - each hull its class's length (ShipShapes, new),
+     *     drawn larger until close in. The lanes show at every view but the
+     *     farthest, the boats close in; the legend says so.
+     *   - Harnesses: MapCheck 9 (new section: the campus, the shore, the oil
+     *     at sea, the routes, the boats pure in time, and at 10 billion a
+     *     frame's boats within 0.5 ms). The playtest is 0.7.96's, byte for
+     *     byte.
+     *
+     * 0.7.98 (2026-10-09) - OIL AND PORTS, FOURTEENTH: THE REFINERY SHIPS
+     * ITS SLATE. Batch O14 (runs/spec-oil.md 2.3, 2.5 and 6;
+     * runs/fixO14-notes.md). A model fix, and one on the map.
+     *   - What the city does not take of the refiners' products ships, every
+     *     month, at the export price less the railway's charge. Until now the
+     *     crude units bought their crude for the whole run, and then each
+     *     product's line idled what the city did not want whenever its export
+     *     price failed its share of the month's whole bill - the crude among
+     *     it, shared by value. On imported crude a slate is worth about its
+     *     crude, so nearly all of it idled: the crude was bought and turned
+     *     into nothing. Jerus's 1008 city (five Crude Units and an Oil
+     *     Refinery on 1.65M t of imported crude a month) idled its fuel oil,
+     *     jet, naphtha and gas and most of its petrol and diesel, and its
+     *     refiners lost $2.49B in two years on $0.49B of sales; now they ship
+     *     1.77B L a month and lose $0.35B on $2.71B - the haulage of the
+     *     crude in and the products out, mostly.
+     *   - A refined product's marginal cost, what its sale at home and its
+     *     shipment are tested against, is its share of the power and water
+     *     alone (Refining.getMarginalCostPerUnit()): the crude is the run's,
+     *     bought at nameplate times the rate whatever any one line plans.
+     *   - The map: the ramps where a highway meets the streets beneath it,
+     *     and the smooth bands of its 45-degree stretches, are drawn - the
+     *     view's kept copy of a tile's inputs had dropped the runs' marks
+     *     (MapTiles.copy()). The district plans are the same, hash for hash.
+     *   - Harnesses: OilCheck 6 (the run's every product leaves, in months
+     *     its share of the whole bill would have idled it), MapCheck 8 (every
+     *     tile the runs mark rastered through the view as the model rasters
+     *     it). The playtest is 0.7.97's, byte for byte.
      */
-    public static final String VERSION = "0.7.92";
+    public static final String VERSION = "0.7.98";
 
     /**
      * The save shape.
@@ -4963,8 +5137,22 @@ public final class GameVersion {
      *     purchases all diesel, the market's price kept for both; the other
      *     seven products start at a known zero. No money moves: at 0.7.76
      *     petrol and diesel carry FUEL's band.
+     *
+     * 35 - TWO OIL POOLS (0.7.93, batch O10b): the depletion's oil is the
+     *     ground pool's E alone, and oilDepletionAtSea the offshore pool's
+     *     (LandManager's THE TWO OIL POOLS). Here because a format-34 build
+     *     handed this save would load it WRONGLY: it reads the depletion's
+     *     oil as the one pool's E, so every tonne the platform wells had
+     *     lifted would be back in the ground.
+     *
+     *     THE OTHER DIRECTION IS CONVERTED, ONCE (LandManager.restoreOilPools(),
+     *     once the land is in place): a format-34 save's one pool's E - land
+     *     wells' alone before 0.7.91 - charged to the ground pool, floored at
+     *     that pool's tonnes, and none to the sea; the tonnes the floor cuts
+     *     the world has back. No money moves: the crude was sold when it was
+     *     lifted.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 34;
+    public static final int SAVE_FORMAT = 35;
 
     /** The first format a sector can be read out of. Nothing older loads. */
     public static final int FIRST_SECTOR_FORMAT = 21;

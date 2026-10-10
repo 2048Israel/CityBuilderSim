@@ -305,8 +305,15 @@ public class SaveFileCheck {
                 landRead.getLandLanes() == null && landRead.getLandPurchases() == null);
         assertEquals("...the next offer's id", landRead.getNextOfferId(), office.getMarket().getNextOfferId());
         assertTrue("...what was taken out", java.util.Arrays.equals(landRead.getDepletion(), office.getDepletionState()));
+        assertTrue("...the offshore pool's E null on a save without it, as one from before 0.7.93 (the load charges its one pool to"
+                + " the ground)", landRead.getOilDepletionAtSea() == null);
         assertTrue("...the world's totals", java.util.Arrays.equals(landRead.getWorldTotals(), office.getWorldTotalsState()));
         assertEquals("...and its sea's level", landRead.getWorldSeaTheta(), office.getWorldSeaTheta());
+        // ...and the offshore pool's E (0.7.93, SAVE_FORMAT 35), beside the depletion's ground pool.
+        landSave.setOilDepletionAtSea(1_234.5);
+        assertTrue("fixture: the offshore pool's E wrote itself", landSave.saveGame(trip, 2).ok);
+        Double atSeaRead = gson.fromJson(Files.readString(trip.saveFile(2)), DataSave.class).getOilDepletionAtSea();
+        assertTrue("the offshore pool's E survived, to the bit (0.7.93)", atSeaRead != null && atSeaRead == 1_234.5);
         // ...and the city's water rights (0.7.59), boxed: absent on an older save.
         landSave.setFreshRights(12_345.5);
         assertTrue("fixture: the rights wrote themselves", landSave.saveGame(trip, 2).ok);

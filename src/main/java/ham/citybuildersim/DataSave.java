@@ -247,6 +247,14 @@ public class DataSave {
     private double[][] landOffers;
     private Integer nextOfferId;
     private double[] depletion;
+    /**
+     * What the platform wells have lifted from the city's offshore pool of
+     * crude, in tonnes (0.7.93, SAVE_FORMAT 35; LandManager's THE TWO OIL
+     * POOLS): since then the depletion's oil is the ground pool's alone.
+     * Boxed: a save from before carries the one pool's E in the depletion,
+     * and the load charges it to the ground (LandManager.restoreOilPools()).
+     */
+    private Double oilDepletionAtSea;
     private double[] landListing;
     /** The office's struck prices and the unit it lists at - see LandMarket.getPriceState(). */
     private double[] landMarketPrices;
@@ -869,6 +877,10 @@ public class DataSave {
     /** The next offer's id, 1 on a save that has none. */
     public int getNextOfferId()             { return nextOfferId != null ? nextOfferId : 1; }
     public double[] getDepletion()          { return depletion; }
+
+    public void setOilDepletionAtSea(double tonnes) { this.oilDepletionAtSea = tonnes; }
+    /** The offshore pool's E as saved (0.7.93), or null on a save from before the two pools. */
+    public Double getOilDepletionAtSea()    { return oilDepletionAtSea; }
     public double[] getWorldTotals()        { return worldTotals; }
     /** The world's sea level as stored, or null on a save from before 0.7.57. */
     public Double getWorldSeaTheta()        { return worldSeaTheta; }
