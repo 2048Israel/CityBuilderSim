@@ -62,9 +62,10 @@ import java.io.PrintStream;
  *      the default it is the transfer to the bit; whole steps from nothing
  *      to MAX_WITHDRAWAL_STEPS; at nothing it pays and sells nothing; over
  *      the default what the cash cannot cover is sold from the market book
- *      at the step, pro rata, and paid at the next month's top, it buys
- *      nothing, and the rescue book is never sold; at or under the default a
- *      short is not paid.
+ *      at the step, pro rata - since 0.7.102 asked at the desk's bid (A21),
+ *      where at fair value nobody bid - and paid at the next month's top, it
+ *      buys nothing, and the rescue book is never sold; at or under the
+ *      default a short is not paid.
  *  10. The hand: its orders at fair value, or at a price the player names,
  *      and one cancelled before the step (0.7.39); pay-in and draw-out off
  *      the surplus.
@@ -1043,16 +1044,29 @@ public class FundCheck {
         check("fixture: its cash could not cover the month, all of it to raise", o.getTransferPaid() == 0
                 && o.getToRaise() == o.getTransferDue() && o.getToRaise() > 0);
         final Exchange ox = over.getExchange();
-        boolean atFair = true;
-        for (int c : two) atFair &= ox.bookOf(c).asks().stream().filter(x -> x.who().equals(Exchange.FUND))
-                .allMatch(x -> Math.abs(x.price() - ox.fair(c)) < 1e-12);
+        /*
+         * ...ASKED AT THE DESK'S BID SINCE 0.7.102 (Jerus's A21). Before, "...asked
+         * at fair value": nobody bid there, and SaveFileCheck's town at 10% asked
+         * D$467k and was paid D$52k. Now a step under it, fair value less
+         * RULE_PREMIUM - the desk's bid, the mirror of the rule's buy at its ask
+         * (C3): every share still resting rests there, and every share sold was
+         * sold no lower, since nothing crosses under an ask.
+         */
+        boolean atTheBid = true;
+        for (int c : two) atTheBid &= ox.bookOf(c).asks().stream().filter(x -> x.who().equals(Exchange.FUND))
+                .allMatch(x -> Math.abs(x.price() - ox.fair(c) * (1 - TreasuryFund.RULE_PREMIUM)) < 1e-12);
+        double soldA = a0 - over.getEquity().getCityMarketShares(two[0]), soldB = b0 - over.getEquity().getCityMarketShares(two[1]);
+        out.printf("   sold at the step: %.4f and %.4f of the two holdings, the rest asked at the desk's bid%n", soldA / a0, soldB / b0);
         check("over the default, what the cash cannot cover is sold from the market book at the step, pro rata",
                 Math.abs(fa - fb) <= 1e-9 && fa > 1 - TreasuryFund.EQUITY_WEIGHT && fa <= 1);
-        check("...asked at fair value", atFair);
+        check("...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid", atTheBid
+                && TreasuryFund.RULE_PREMIUM == Exchange.SPREAD / 2);
+        check("...and the desk's bid meets it at the step: some of it sold, into the fund's cash", (soldA > 0 || soldB > 0)
+                && o.getCash() > 0);
         // A bid caused: the world takes whatever of the fund's asks still rests, at the fund's own price.
         for (int c : two) {
             double resting = ox.bookOf(c).resting(Exchange.FUND, OrderBook.Side.SELL);
-            if (resting > 0) ox.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, ox.fair(c), resting);
+            if (resting > 0) ox.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, ox.fair(c) * (1 - TreasuryFund.RULE_PREMIUM), resting);
         }
         check("fixture: a bid took every share the fund asked", ox.bookOf(two[0]).resting(Exchange.FUND, OrderBook.Side.SELL) == 0
                 && ox.bookOf(two[1]).resting(Exchange.FUND, OrderBook.Side.SELL) == 0 && o.getCash() > 0);

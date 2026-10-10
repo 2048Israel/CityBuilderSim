@@ -1317,6 +1317,17 @@ public class SaveFileCheck {
         same("what the city paid to keep its buildings up",
                 back.getCityMaintenancePaid(), full.getCityMaintenancePaid());
 
+        /*
+         * THE INVESTORS' LAST WORD (0.7.102, Jerus's A22): what the month's
+         * investment pass decided for each sector and why, written inside
+         * the tick - the Sectors screen's investors' line. Not saved until
+         * now, so a reloaded city read "nothing recorded" until it ticked.
+         */
+        assertTrue("fixture: the investors left a word on some sector",
+                full.getLastInvestments().values().stream().anyMatch(w -> !w.isEmpty()));
+        assertEquals("the investors' last word survives a save, slot for slot, word for word",
+                back.getLastInvestments(), full.getLastInvestments());
+
         same("what savers are paid", back.getBank().depositRate(),
                 full.getBank().depositRate());
 

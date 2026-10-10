@@ -1901,6 +1901,11 @@ public class Game {
         return lastInvestment.getOrDefault(sector, "");
     }
 
+    /** Every word the investors left last month, by the slot it was filed under (a sector's key, or the bank branch's label) - saved since 0.7.102 (A22); read-only. */
+    public java.util.Map<String, String> getLastInvestments(){
+        return java.util.Collections.unmodifiableMap(lastInvestment);
+    }
+
     /* =======================================================================
        PRIVATE INVESTMENT
 
@@ -12141,6 +12146,8 @@ public class Game {
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
+        // ...and the investors' last word on each sector (0.7.102, A22): words written inside the tick.
+        dataSave.setLastInvestment(new java.util.LinkedHashMap<>(lastInvestment));
         dataSave.setSubsidyPaid(new java.util.LinkedHashMap<>(subsidyPaid));
         dataSave.setHouseholdStatement(households.getStatementState());
         dataSave.setMonthlyMaterialImports(monthlyMaterialImports);
@@ -15267,6 +15274,14 @@ public class Game {
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
+            // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which
+            // is the "nothing recorded" a reloaded city read until then.
+            lastInvestment = new java.util.LinkedHashMap<>();
+            if (restoredFlows.getLastInvestment() != null) {
+                for (java.util.Map.Entry<String, String> e : restoredFlows.getLastInvestment().entrySet()) {
+                    if (e.getKey() != null && e.getValue() != null) lastInvestment.put(e.getKey(), e.getValue());
+                }
+            }
             /*
              * What the dial paid out last month. A flow, and one the load path
              * cannot re-derive: paySubsidyIfOwed() decides it from a net income

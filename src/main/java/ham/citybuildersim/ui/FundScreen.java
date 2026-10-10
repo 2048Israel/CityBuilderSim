@@ -383,7 +383,10 @@ final class FundScreen {
                         ? " of it sold for, to pay next month" : " of it not paid, for want of cash")
                 : withdrawalShare(g.getFund().getWithdrawal());
         return new Hero(d(g, p.value()), ret, tone, since, sinceInfo, d(g, p.cash()), cashNote, d(g, p.incomeLastMonth()),
-                incomeNote, d(g, p.transferLastMonth()), transferNote, p.transferShort() > 0 ? Palette.WARN : null, recorded);
+                incomeNote, d(g, p.transferLastMonth()), transferNote,
+                // Amber only for what is not paid (0.7.102, Jerus's B): over the default the short is what the step
+                // sells for and the next month pays - a policy, not a warning - as Finances' fund summary has it.
+                p.transferShort() > 0 && !(g.getFund().getToRaise() > 0) ? Palette.WARN : null, recorded);
     }
 
     /** Whether a window shows the whole of a named range ("over 10Y"): picked by its chip, not moved since, not "All", and the history at least that long - else the window says its months. */
@@ -2206,8 +2209,9 @@ final class FundScreen {
                 + "twelfth of the %.0f%% a year Norway's fiscal rule takes, which is the default: about what the fund is "
                 + "expected to earn, so it keeps its worth. At nothing it pays nothing and keeps all it earns. At or under the "
                 + "default it pays from its cash only, and what the cash cannot cover is not paid. Over it the dial spends the "
-                + "fund: what its cash cannot cover is sold from its market book at the step, shares and bonds pro rata, at "
-                + "fair value - never the rescue book - and paid at the next month's top, and the rule buys nothing "
+                + "fund: what its cash cannot cover is sold from its market book at the step, shares and bonds pro rata - "
+                + "the shares at the desk's bid, the bonds at their value; never the rescue book - and paid at the next "
+                + "month's top, and the rule buys nothing "
                 + "meanwhile; what the sale does not raise is not paid. Up to %s a month.",
                 pct2(TreasuryFund.WITHDRAWAL_STEP), TreasuryFund.TRANSFER_RATE * 100,
                 pct2(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP));
@@ -2308,8 +2312,11 @@ final class FundScreen {
         if (fund.getTransferPaidLate() > 0) {
             card.getChildren().add(cardLine("...and the month before's, paid from what it sold", d(g, fund.getTransferPaidLate()), null));
         }
+        // ...and the year's short without what the step is selling for, which is paid next month (0.7.102, B).
+        double notPaidThisYear = Math.max(0, fund.getTransferShortThisYear() - Math.max(0, fund.getToRaise()));
         card.getChildren().add(cardLine("This year so far", d(g, fund.getTransfersThisYear())
-                + (fund.getTransferShortThisYear() > 0 ? " · " + d(g, fund.getTransferShortThisYear()) + " not paid" : ""), null));
+                + (fund.getToRaise() > 0 ? " · " + d(g, fund.getToRaise()) + " being sold for" : "")
+                + (notPaidThisYear > 0 ? " · " + d(g, notPaidThisYear) + " not paid" : ""), null));
         card.getChildren().add(cardLine("Next month's, on what it is worth now", d(g, g.fundTransferDue()), null));
         card.getChildren().add(caption("WHAT CAME IN LAST MONTH", null));
         card.getChildren().add(cardLine("Dividends", d(g, fund.getMonthDividends()), null));
