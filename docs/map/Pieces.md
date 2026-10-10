@@ -1,6 +1,6 @@
 # Pieces.java - 5,307 lines · 232 methods · 27 constants · interface
 
-`ham/citybuildersim/ui/Pieces.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Pieces.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The small pieces of text and layout every screen is made from: a sentence,
 > an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a
@@ -35,7 +35,7 @@
 
 **Uses:** [Palette](Palette.md) (566), [DebtQuote](DebtQuote.md) (4), [PolicyScreen](PolicyScreen.md) (4), [ChartModel](ChartModel.md) (3), [NationalAccounts](NationalAccounts.md) (3), [Icons](Icons.md) (3), [UserInterface](UserInterface.md) (3), [Sector](Sector.md) (3), [Money](Money.md) (2), [Game](Game.md) (2), [PayTier](PayTier.md) (1), [TimeChart](TimeChart.md) (1), [DebtManager](DebtManager.md) (1), [BuildScreen](BuildScreen.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
-**Used by (12):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (13):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

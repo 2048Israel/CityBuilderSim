@@ -6576,7 +6576,8 @@ public class Game {
      * rest at the market as any order's - plus the take-up of the old
      * surface, priced as its demolition is (DEMOLITION_SHARE of the gravel
      * road's work at the builders' rate for it, demolitionPrice()), with the
-     * builders' tax on all of it (THE BUILDERS' PRICE). No ground: each
+     * builders' tax on all of it (THE BUILDERS' PRICE) - and since 0.7.83 its
+     * surface's bitumen, a Paved Road's (bitumenForPaving()). No ground: each
      * stands on its gravel road's. The wait is n Paved Roads' at today's
      * queue (quoteCityMonths()). Reads; null with n under one or either road
      * missing from the catalogue.
@@ -6602,7 +6603,8 @@ public class Game {
      * build order is paid, and puts n Paved Roads on their site as the
      * city's order, behind those already there - the gravel roads' material
      * on site for their bed, the yard's share of the rest delivered now and
-     * the rest drawn as the crews build - standing on the gravel roads'
+     * the rest drawn as the crews build, the bitumen bought with it (0.7.83)
+     * - standing on the gravel roads'
      * ground. Each gravel road carries its traffic until its own Paved Road
      * opens, and is retired then, its spare ground freed
      * (BuildingManager.retirePaved(), settleConstructionControl()). Out of

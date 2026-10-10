@@ -782,7 +782,9 @@ final class TradeScreen {
      * bought abroad with no good behind it, by the sector that bought it
      * (pure). The railway's fuel and the households' were such rows until
      * fuel was a good (0.7.62); they are FUEL's buyers now - the households
-     * PETROL's and the railway DIESEL's since 0.7.76.
+     * PETROL's and the railway DIESEL's since 0.7.76, and since 0.7.83 the
+     * grocers PETROL's for the drivers and the vans DIESEL's (a save from
+     * before keeps the households' month it struck).
      */
     List<GoodRow> goodRows(Sectors.TradeByGood t) {
         List<Sectors.GoodTrade> goods = new ArrayList<>(t.goods().values());

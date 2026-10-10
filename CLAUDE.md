@@ -176,7 +176,9 @@ These are Jerus's, and they do not move.
         BuildCard.java             one build card's figures for all 101 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it
-                                   fails for them, the verdict on an order; pure - BuildCardCheck holds it
+                                   fails for them (since 0.7.75 every gate, with what it would earn, cost and
+                                   take to pay back: appraise()), the verdict on an order; pure -
+                                   BuildCardCheck holds it
         SectorFlow.java            one business's month as a flow (0.7.30): each good in and out, its units off
                                    the production rows and its money off the statement, the plant's six
                                    throttles and the rate they multiply to; what the Sectors screen's
@@ -194,9 +196,10 @@ These are Jerus's, and they do not move.
                                    Oil's Operations page paints - pure, OilViewCheck holds it (runs/spec-oil.md 2.13)
         SectorStatements.java      one business's month as formal statements (0.7.74): profit or loss through
                                    gross and operating profit, the classified sheet, the cash flow in three
-                                   sections, the changes in equity - and the bank's - each a list of rows, its
-                                   format by Sector.statementFormat(); every bottom line the model's own; pure -
-                                   ui/StatementView draws it, SectorStatementCheck holds it
+                                   sections, the changes in equity (since 0.7.75 in columns, share capital and
+                                   what it kept) and the debt schedule by kind - and the bank's - each a list of
+                                   rows, its format by Sector.statementFormat(); every bottom line the model's
+                                   own; pure - ui/StatementView draws it, SectorStatementCheck holds it
         PolicyPreview.java         what a staged set of the Policy tab's dials would do (0.7.36): the tax take
                                    under another policy line by line, and THE BUDGET before and after, each
                                    line its owner's read of a detached TaxPolicy.copy() - since 0.7.48

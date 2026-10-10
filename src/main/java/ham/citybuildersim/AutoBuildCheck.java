@@ -51,7 +51,9 @@ import java.util.Map;
  *   4. A SAVED CITY PLAYS ON AS THE ONE IT WAS SAVED FROM: the city at the
  *      end of section 3, saved and loaded, and both run on with it on - the
  *      cash, the debt, every building and site, the ground it owns and what
- *      it bought, the people and its own log, month by month, to the cent.
+ *      it bought, the people and its own log, month by month, to the cent;
+ *      and (0.7.77) a town with no ground free, saved before its first pass,
+ *      buys its ground and builds the same, saved or not, to the cent.
  *   5. WHAT HOLDS IT BACK, CAUSED: a debt limit of nothing, a limit that
  *      binds and one that does not, a budget that cannot run a building, and
  *      a first police station a town does not need - each one held as it
@@ -235,7 +237,9 @@ public class AutoBuildCheck {
     /** The ground it bought (0.7.77): passes the city's ground grew in, those not by exactly what its orders bought, orders that bought ground, those not its own short orders, offers holding ore, passes that borrowed with ground bought. */
     static int landPasses, landMismatch, landOrders, landNotItsOwn, oreBought, landBorrowPasses;
     static double landSqFt, landCost;
+    /** The passes that held a kept service short of its target with nothing on site, by the cut that held it. */
     static final Map<AutoBuilder.Cut, Integer> heldBy = new LinkedHashMap<>();
+    /** The buildings it ordered over the run, by measure. */
     static final Map<String, Integer> builtBy = new LinkedHashMap<>();
     /** The city's debt over a year of GDP after the passes that borrowed, the worst (0.7.81); passes that began over the limit, and the orders and bonds placed in them. */
     static double worstShare = 0;

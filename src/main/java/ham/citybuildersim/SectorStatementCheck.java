@@ -69,7 +69,8 @@ import java.util.Set;
  *      add to its figure; the sheet's land is its square feet at its price;
  *   6. a save keeps the columns and the register's paid-in, R7 counts again
  *      two months on, and a FORMAT-32 SAVE loads with its paid-in derived and
- *      said so, closes, and saves as 33 and loads back to the cent;
+ *      said so, closes, and saved again in this build's format loads back to
+ *      the cent;
  *   8. THE DEBT SCHEDULE (R7): each kind's start, borrowed, repaid, written
  *      off and end close, and from close to close the running totals are
  *      the month's own loans, bonds, repayments and write-offs;
@@ -676,11 +677,12 @@ public class SectorStatementCheck {
      * taking out what 0.7.75 added - the register's three slots a company and
      * the books' new fields - loads with every listed sector's share capital
      * derived (what it raised since founding) and said so; its equity
-     * statement closes; a month on it still closes; and saved as format 33
-     * and loaded, it is the same to the cent, derived still.
+     * statement closes; a month on it still closes; and saved again, in this
+     * build's format (SAVE_FORMAT), and loaded, it is the same to the cent,
+     * derived still.
      */
     static void anOlderSave(Game g) throws Exception {
-        out.println("\n--- 6b. a format-32 save loads, its paid-in derived; saved as 33 it loads back to the cent ---");
+        out.println("\n--- 6b. a format-32 save loads, its paid-in derived; saved again it loads back to the cent ---");
         quietly(() -> g.saveGame(10));
         Path file = g.getGameFiles().saveFile(10);
         JsonObject json = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();

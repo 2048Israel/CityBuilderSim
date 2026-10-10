@@ -1,6 +1,6 @@
-# LandConversion.java - 216 lines · 7 methods · 9 constants · model
+# LandConversion.java - 217 lines · 7 methods · 9 constants · model
 
-`ham/citybuildersim/LandConversion.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandConversion.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > A saved city's land put on the block grid, and a city's land drawn again to hold a new figure: a format-31 save's lanes snapped to whole blocks, an older save's one figure drawn as a centre of blocks to the plot round the site found for it, its iron as its save had it, and twenty-four offers listed round it.
 > 
@@ -71,12 +71,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 166 | **type** `public final class LandConversion` | A saved city's land put on the block grid, and a city's land drawn again to hold a new figure: a format-31 save's lanes snapped to whole blocks, an older save's one figure drawn as a centre of blocks to the plot round... |
+| 51 | 167 | **type** `public final class LandConversion` | A saved city's land put on the block grid, and a city's land drawn again to hold a new figure: a format-31 save's lanes snapped to whole blocks, an older save's one figure drawn as a centre of blocks to the plot round... |
 | 53 | 1 | `private LandConversion()` |  |
 | 83 | 3 | `public static boolean sameGround(double ownedSqFt, double landDrySqFt)` | Whether a save's figure of dry ground, in square feet, is its land's: within SAME_GROUND_PLOTS plots of it. |
 | 94 | 20 | `public static long[] site(World world, double dryKm2)` | Where an older city's centre goes: the first site of the founding search, a coastal cell at a time, whose square holding dryKm2 passes the fifth test; or, when none of the nearest SITE_CELLS does, the one whose square... |
 | 124 | 10 | `public static void convert(LandManager lm, long seed, double drySqFt, int ironSites, double ironTonnes, int minesCommitted)` | Converts an older city's land (format 30 and before; spec-grid 2.6): on the world its seed makes, at the site site() finds, a centre of blocks holding drySqFt of dry ground to within a plot (GridConversion. |
 | 145 | 15 | `public static boolean convertLanes(LandManager lm, long seed, double[] centre, double[] lanes, double[][] purchases, String gam...` | Converts a format-31 save's land (spec-grid 2.6, star 11): its centre, lanes and purchases as saved, snapped (GridConversion.fromLanes()) by the build that wrote it (gameVersion: whether it held fields site by site), ... |
 | 170 | 22 | `static long[] legacyPlot(World world, long seed, long sx, long sy, double reach, java.util.function.BiPredicate<Long, Long> onG...` | The legacy field's plot round the site (sx, sy) of ground reaching `reach` plots from it (L-infinity): the first of LEGACY_DRAWS draws from the seed within the larger of `reach` and LEGACY_FIELD_KM each way, at least ... |
-| 204 | 12 | `public static void restate(LandManager lm, double drySqFt)` | Draws a city's land again to hold drySqFt of dry ground (spec-grid 2.6: restate() draws as a format-30 save is drawn): the centre round the same site, rings of blocks of the level the figure makes, the last split down... |
+| 204 | 13 | `public static void restate(LandManager lm, double drySqFt)` | Draws a city's land again to hold drySqFt of dry ground (spec-grid 2.6: restate() draws as a format-30 save is drawn): the centre round the same site, rings of blocks of the level the figure makes, the last split down... |
 

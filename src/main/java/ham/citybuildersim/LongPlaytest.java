@@ -2460,7 +2460,7 @@ public class LongPlaytest {
      * Daycares at m1,000 and 3,134 childcare buildings against 2,123 homes at
      * m4,000 (1.48 a home building, Jerus's "5k daycares and 2k residential
      * buildings"); at 0.7.71's, 35 and 247 (0.10), 235 of them Large - and
-     * the city 309,000 at m4,000 where the default's is 477,000, a choice
+     * the city 309,000 at m4,000 where the default's was 477,000, a choice
      * about the default player that is Jerus's, so the default stays.
      */
     static void childcareWhenNeeded(Game g) {
@@ -2512,6 +2512,7 @@ public class LongPlaytest {
 
     /** What the childcare flag has ordered: orders, and buildings by name. */
     static int childcareOrders = 0;
+    /** ...the buildings, by name. */
     static final java.util.Map<String, Integer> childcareBuilt = new java.util.TreeMap<>();
 
     /** What the flag has ordered of each school, so one under construction is not ordered twice. */

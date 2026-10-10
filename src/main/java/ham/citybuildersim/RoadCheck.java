@@ -30,9 +30,10 @@ import java.util.Map;
  * ranks the advice, draws the cards' first bar and orders the test player's
  * roads; and a gravel road can be paved, at a price above a Paved Road's
  * less the gravel's own, on its own ground, open while the works go on.
- * Paving never fires in the default playtest (the playtest's report counts
- * it: a new road is cheaper there at every look), so this is where it is
- * played.
+ * The 0.7.70 playtest never paved (a new road was cheaper there at every
+ * look); the 0.7.99 one paves 87 gravel roads in 14 orders over its four
+ * thousand months (its report counts them). This is where the paving is
+ * played to order, each fixture causing it.
  *
  * What this has to prove:
  *   1. A ROAD'S LIFE, BY THE MODEL'S OWN RULES: every road and line weighed
@@ -113,9 +114,11 @@ public class RoadCheck {
         return t;
     }
 
+    /** The three roads by name: the paving's from and to, and the highway. */
     static final String GRAVEL = ConstructionControl.PAVE_FROM, PAVED = ConstructionControl.PAVE_TO,
             HIGHWAY = "Elevated Highway";
 
+    /** The advice's measure for roads, which the sections here read the site, the units and the cards through. */
     static final BuildAdvice.Measure ROADS = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
 
     /** The months audited, and the worst: a month passes the playtest's audit within a cent or 1e-7 of what moved. */

@@ -1,6 +1,6 @@
-# Palette.java - 715 lines · 25 methods · 74 constants · interface
+# Palette.java - 726 lines · 27 methods · 74 constants · interface
 
-`ham/citybuildersim/ui/Palette.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Palette.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Every colour, size and spacing this game is allowed to use, in one place.
 > 
@@ -44,7 +44,7 @@
 > their names, so every screen that read them took the new values without
 > an edit; the window's own literals moved here the same day.
 
-**Used by (23):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapView](MapView.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (24):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapView](MapView.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -156,7 +156,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 668 | **type** `public final class Palette` | Every colour, size and spacing this game is allowed to use, in one place. |
+| 48 | 679 | **type** `public final class Palette` | Every colour, size and spacing this game is allowed to use, in one place. |
 | 50 | 1 | `private Palette()` |  |
 
 ### THE GROUNDS (lines 52-81)
@@ -202,11 +202,11 @@
 | 528 | 3 | `public static String block(String ground)` | A block of content raised off its ground. |
 | 533 | 4 | `public static String block(String ground, String edge)` | A block with an edge, for when it has to be told from its neighbour. |
 
-### THE FACES (0.7.21) (lines 538-715)
+### THE FACES (0.7.21) (lines 538-726)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 587 | 128 | **type** `public static final class Fonts` | The game's two typefaces, IBM Plex Sans for words and IBM Plex Mono for every figure, loaded from the jar once at start-up. |
+| 587 | 139 | **type** `public static final class Fonts` | The game's two typefaces, IBM Plex Sans for words and IBM Plex Mono for every figure, loaded from the jar once at start-up. |
 | 589 | 1 | `private Fonts()` _(in Palette.Fonts)_ |  |
 | 610 | 30 | `static synchronized void load()` _(in Palette.Fonts)_ | Loads the eight files and records the family JavaFX reports for each. |
 | 642 | 17 | `private static String family(String file, StringBuilder said)` _(in Palette.Fonts)_ | One file: the family JavaFX reports for it, or null - and why, in the log line. |
@@ -221,4 +221,6 @@
 | 700 | 3 | `static javafx.scene.text.Font sansFont(double size)` _(in Palette.Fonts)_ | Words at this size, for a canvas: Plex Sans or the platform's. |
 | 705 | 4 | `static javafx.scene.text.Font sansStrongFont(double size)` _(in Palette.Fonts)_ | Words at the semibold weight, for a canvas: the SmBld family, or bold of the words' face. |
 | 711 | 3 | `static javafx.scene.text.Font monoFont(double size)` _(in Palette.Fonts)_ | Figures at this size, for a canvas: Plex Mono or Courier New. |
+| 716 | 3 | `static javafx.scene.text.Font sansMediumFont(double size)` _(in Palette.Fonts)_ | Words at the medium weight, for a drawing (0.7.95, the refinery's pictogram): the Medium family, or the words' face. |
+| 721 | 4 | `static javafx.scene.text.Font monoStrongFont(double size)` _(in Palette.Fonts)_ | Figures at the semibold weight, for a drawing (0.7.95): the SmBld family, or bold of the figures' face. |
 

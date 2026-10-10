@@ -711,9 +711,9 @@ public enum Good {
        a crude unit actually cuts a barrel into (sectors.Refining, THE SLATE):
        the drivers burn PETROL and the railway DIESEL, and the rest - gas,
        naphtha, kerosene, the gas oil and the residue - leaves as the products
-       below until something here buys them. Seven of the nine come out of a
-       crude unit; LUBRICANTS, BITUMEN and COKE out of conversion units that
-       come later (spec-oil 5, O4).
+       below until something here buys them. Six of the nine come out of a
+       crude unit; LUBRICANTS, BITUMEN and COKE out of the conversion units
+       behind it (since 0.7.80, batch O4).
 
        A SAVE WRITTEN BEFORE 0.7.76 STILL HAS "FUEL" in its markets, its
        sectors' maps and its national accounts. FuelSplit converts it, once,
@@ -767,13 +767,13 @@ public enum Good {
     /** Kerosene for aircraft, 1,260 litres a tonne. */
     JET("Jet fuel", "litre", .0006526, .0005559, .00003626, true, Pricing.BAND, false, 1260),
 
-    /** What the railway burns (Rail.haul()): the ladder's 1.35 of crude since 0.7.78 (FUEL's band before), 1,180 litres a tonne. */
+    /** What the railway burns (Rail.haul()), and since 0.7.83 the vans (Sector.runFleet()): the ladder's 1.35 of crude since 0.7.78 (FUEL's band before), 1,180 litres a tonne. */
     DIESEL("Diesel", "litre", .0006883, .0005864, .00003824, true, Pricing.BAND, false, 1180),
 
     /** Base oils, the dearest litre in the barrel: 1,127 litres a tonne (est., JODI). */
     LUBRICANTS("Lubricants", "litre", .0009637, .0008209, .00005354, true, Pricing.BAND, false, 1127),
 
-    /** Heavy fuel oil - the gas oil and the residue nothing here upgrades - 1,010 litres a tonne. */
+    /** Heavy fuel oil - the gas oil and the residue no conversion unit here upgrades (none until 0.7.80) - 1,010 litres a tonne. */
     FUEL_OIL("Fuel oil", "litre", .0004997, .0004256, .00002776, true, Pricing.BAND, false, 1010),
 
     /** Road binder, by the tonne: an asphalt unit's, from heavy crude's residue. */

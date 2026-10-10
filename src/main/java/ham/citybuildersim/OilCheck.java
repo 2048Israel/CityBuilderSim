@@ -93,7 +93,8 @@ import java.nio.file.Path;
  *      every FUEL figure into PETROL and DIESEL by the drivers' share of the
  *      month's litres, each pair summing to the figure to the bit, the
  *      railway's own all diesel, no money moving; the audit closes for a
- *      year after; and saved as format 34 it loads back to the cent.
+ *      year after; and saved again, in this build's format, it loads back to
+ *      the cent.
  *
  *  11. A REFINERY THAT CLOSES SHIPS WHAT ITS TANKS HELD (Refining.
  *      produceStock(), star O1): nothing written off.
@@ -1033,9 +1034,10 @@ public class OilCheck {
         quietly(() -> {
             /*
              * THE REFINERY THE FIXTURE STANDS IS HELD (0.7.76): on imported
-             * crude its slate is worth less abroad than the crude costs, so it
-             * idles once its tanks are full and the distress rule sheds it in
-             * its third year - this section and the next five are about where
+             * crude its slate is worth less abroad than the crude costs - at
+             * 0.7.76 it idled once its tanks were full and the distress rule
+             * shed it in its third year; since 0.7.98 it ships what it makes,
+             * at a loss - and this section and the next five are about where
              * its crude comes from and where its products go, not whether a
              * refinery pays in a town of 600 houses (that is section 8's).
              */
@@ -1520,7 +1522,8 @@ public class OilCheck {
      * four wide - loads with each FUEL figure split into petrol and diesel
      * by the drivers' share of the month's litres, the pairs summing to the
      * bit, the railway's all diesel; nothing a money figure; the audit closes
-     * for a year; saved as 34, it loads back to the cent.
+     * for a year; saved again, in this build's format, it loads back to the
+     * cent.
      */
     static Game theSplit(Game g) throws Exception {
         out.println("\n--- 10. a save from before 0.7.76 has its FUEL split into petrol and diesel, no money moving ---");
@@ -1628,8 +1631,8 @@ public class OilCheck {
         double[] last = twin.getEconomyManager().getNationalAccounts().getLastHeldUnits();
         boolean zeros = true;
         for (int i = 5; i < last.length; i++) zeros &= last[i] == 0;
-        assertTrue("...and the goods held twelve wide: FUEL's slot petrol's and diesel's, summing to the bit, the other seven"
-                        + " at a known zero",
+        assertTrue("...and the goods held as wide as HELD: FUEL's slot petrol's and diesel's, summing to the bit, the rest"
+                        + " (the other seven, and since 0.7.85 crude) at a known zero",
                 last.length == NationalAccounts.HELD.length && last[3] + last[4] == held
                         && Math.abs(last[3] - held * p) <= Math.ulp(held * p) && zeros);
         double price = fuel.get("price").getAsDouble();
@@ -1660,7 +1663,7 @@ public class OilCheck {
                 past > 0 && fits && wrote == 0,
                 String.format("%,.0f L past the shares, %,.0f shipped, %,.0f written off", past, shipped, wrote));
 
-        // Saved as 34, and loaded back.
+        // Saved again, in this build's format (34 at 0.7.76), and loaded back.
         quietly(() -> twin.saveGame(10, "oil"));
         String json = Files.readString(file);
         com.google.gson.JsonObject again = com.google.gson.JsonParser.parseString(json).getAsJsonObject();

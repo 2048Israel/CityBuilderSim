@@ -1,6 +1,6 @@
 # Resource.java - 121 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/Resource.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Resource.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The seven things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the good it becomes and what the ground under it sells for.
 > 
@@ -30,7 +30,7 @@
 
 **Uses:** [Good](Good.md) (5), [LandManager](LandManager.md) (4)
 
-**Used by (27):** [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingVisual](BuildingVisual.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [Deposit](Deposit.md), [Game](Game.md), [GridConversion](GridConversion.md), [LandCheck](LandCheck.md), [LandConversion](LandConversion.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LegacyLand](LegacyLand.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [TileRaster](TileRaster.md), [World](World.md), [WorldCheck](WorldCheck.md)
+**Used by (35):** [AutoBuildCheck](AutoBuildCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingVisual](BuildingVisual.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [Deposit](Deposit.md), [Game](Game.md), [GridConversion](GridConversion.md), [LandCheck](LandCheck.md), [LandConversion](LandConversion.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LegacyLand](LegacyLand.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PlanCheck](PlanCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [ScaleCheck](ScaleCheck.md), [TileRaster](TileRaster.md), [WellCheck](WellCheck.md), [World](World.md), [WorldCheck](WorldCheck.md)
 
 ## Enum constants
 

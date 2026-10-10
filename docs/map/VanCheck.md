@@ -1,6 +1,6 @@
-# VanCheck.java - 309 lines · 5 methods · 0 constants · harnesses
+# VanCheck.java - 365 lines · 5 methods · 0 constants · harnesses
 
-`ham/citybuildersim/VanCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/VanCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The vans: what a sector needs, what it costs it, and what happens while it
 > waits for them.
@@ -42,7 +42,7 @@
 > 
 > See claude/the-sixth-link.md and Sector's THE FLEET.
 
-**Uses:** [Good](Good.md) (23), [Sector](Sector.md) (16), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [SectorState](SectorState.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Sector](Sector.md) (33), [Good](Good.md) (29), [Game](Game.md) (4), [GameFiles](GameFiles.md) (2), [SectorState](SectorState.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1)
 
 ## Sections
 
@@ -54,6 +54,7 @@
 | 196 | · 4. IT WEARS OUT |
 | 231 | · 5. A SAVE FROM BEFORE VANS HAD VANS |
 | 261 | · 6. IN A CITY THAT RUNS |
+| 300 | · 7. AND THE VANS BURN DIESEL (0.7.83, batch O6; spec-oil 2.5) |
 
 ## Fields (state)
 
@@ -65,10 +66,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 266 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
+| 44 | 322 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
 | 48 | 5 | `static void quietly(Runnable r)` |  |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 65 | 3 | `static boolean same(double a, double b)` | Bitwise. |
-| 69 | 240 | `public static void main(String[] args)` |  |
+| 69 | 296 | `public static void main(String[] args)` |  |
 

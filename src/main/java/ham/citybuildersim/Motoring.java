@@ -90,8 +90,9 @@ public final class Motoring {
      * the exchange rate like the railway's fuel, and the only running cost.
      * A car's wear is its CAR_LIFE_MONTHS, which runs by the calendar, not the
      * mile, and its insurance is sunk. A pump price: since 0.7.62 the journey
-     * is its litres at petrol's market (journeyFuel()), and since 0.7.78 that
-     * is the wholesale ladder's - see LITRES_PER_JOURNEY.
+     * is its litres at petrol's market (journeyFuel()), since 0.7.78 that
+     * is the wholesale ladder's - see LITRES_PER_JOURNEY - and since 0.7.83
+     * the forecourts' pump price on it (journeyFuel(Game)).
      */
     public static final double CAR_FUEL_PER_JOURNEY = .002;
 

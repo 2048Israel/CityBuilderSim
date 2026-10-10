@@ -1,6 +1,6 @@
-# CarCheck.java - 943 lines · 6 methods · 0 constants · harnesses
+# CarCheck.java - 986 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CarCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The cars: who buys one, what it costs them, and what it does to the road.
 > 
@@ -53,43 +53,47 @@
 >      only when its full monthly cost - the payment over its life at the
 >      household rate, and a month of fuel - beats a month's pass; where the
 >      fare deters nobody the ceiling on ownership is 1, and that town owns
->      more cars ten years on.
+>      more cars ten years on. Since 0.7.78 (batch O2) the month of fuel is
+>      petrol on the research's wholesale ladder - since 0.7.83 at the
+>      forecourts' pump price on it - so at the default fare fewer owners
+>      take the bus on cost alone than 0.7.77's pump price sent there: cars
+>      gain on transit.
 > 
 > See claude/the-fifth-link.md, HouseholdBalance's cars section and
 > InfrastructureManager's.
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [InfrastructureManager](InfrastructureManager.md) (26), [Game](Game.md) (13), [Good](Good.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [TaxPolicy](TaxPolicy.md) (8), [Sector](Sector.md) (7), [GameFiles](GameFiles.md) (6), [Traffic](Traffic.md) (5), [BuildingManager](BuildingManager.md) (5), [LongPlaytest](LongPlaytest.md) (5), [Founding](Founding.md) (4), [Motoring](Motoring.md) (4), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (43), [InfrastructureManager](InfrastructureManager.md) (29), [Good](Good.md) (15), [Game](Game.md) (13), [Household](Household.md) (13), [FamilyStructure](FamilyStructure.md) (12), [PayTier](PayTier.md) (12), [TaxPolicy](TaxPolicy.md) (9), [Sector](Sector.md) (7), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Traffic](Traffic.md) (5), [BuildingManager](BuildingManager.md) (5), [LongPlaytest](LongPlaytest.md) (5), [Founding](Founding.md) (4), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Retail](Retail.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 98 | · 1. A CITY WITH NO CARS |
-| 134 | · 2. THE PENALTY |
-| 199 | · 3. THE LOOP |
-| 270 | · 4, 5, 6. IN A CITY |
-| 388 | · WHY THE BAR IS 95% AND NOT 100%, and why it is not the plateau this |
-| 433 | · THE DEPOSIT AND THE LOAN (2026-09-17) |
-| 537 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
-| 750 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
-| 806 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
-| 882 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
+| 102 | · 1. A CITY WITH NO CARS |
+| 138 | · 2. THE PENALTY |
+| 203 | · 3. THE LOOP |
+| 274 | · 4, 5, 6. IN A CITY |
+| 392 | · WHY THE BAR IS 95% AND NOT 100%, and why it is not the plateau this |
+| 437 | · THE DEPOSIT AND THE LOAN (2026-09-17) |
+| 541 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
+| 754 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
+| 810 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
+| 925 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 62 | `static int fails` |  |
+| 66 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 884 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
-| 64 | 7 | `static void quietly(Runnable r)` |  |
-| 72 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 77 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 83 | 3 | `static boolean same(double a, double b)` | Bitwise. |
-| 87 | 8 | `static InfrastructureManager network()` |  |
-| 96 | 847 | `public static void main(String[] args)` |  |
+| 64 | 923 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 68 | 7 | `static void quietly(Runnable r)` |  |
+| 76 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 81 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 87 | 3 | `static boolean same(double a, double b)` | Bitwise. |
+| 91 | 8 | `static InfrastructureManager network()` |  |
+| 100 | 886 | `public static void main(String[] args)` |  |
 

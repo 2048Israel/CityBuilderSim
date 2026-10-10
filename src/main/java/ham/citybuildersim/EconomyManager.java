@@ -1795,7 +1795,9 @@ public class EconomyManager {
                 // the pump's counter: without it a refinery's crude imports would
                 // land in net exports with the fuel they became bought by nobody.
                 // The world's part of their fuel is in neither C nor the imports.
-                // Their petrol since 0.7.76: the only product a household buys.
+                // Their petrol since 0.7.76: the only product a household buys - and since 0.7.83 bought
+                // at the grocers' pumps (Retail.sellFuel()), so in Retail's sales above, the refiners'
+                // a sale to the grocers.
                 + sectors.refining().statement().salesToHouseholds;
         double rentPaid = sectors.realEstate().statement().salesToHouseholds;
 

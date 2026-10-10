@@ -827,7 +827,8 @@ public class LandManager {
      * centre plot is sea (World.depthAt() over 0), else dry - a lake or the
      * river counts as dry, where a rig on land drills. A holding's sea sites
      * are at most the sites it listed; the rest of them are dry, so the two
-     * always add up to getSites(r). Land wells will take only dry sites (O7).
+     * always add up to getSites(r). A land well stands only on a dry site
+     * (since 0.7.84, O7: Game.sitesFor()); the sea's are a platform's.
      */
     public int getSites(Resource r, boolean dry) {
         CityLand l = land();

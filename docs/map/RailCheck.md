@@ -1,6 +1,6 @@
-# RailCheck.java - 627 lines · 8 methods · 0 constants · harnesses
+# RailCheck.java - 637 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RailCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The railway: what it charges, who pays it, and what it does to the band.
 > 
@@ -45,7 +45,7 @@
 | 174 | · 3. THE LAND, THE ROAD AND THE CATALOGUE |
 | 244 | · 4. THE SECTOR, IN A CITY |
 | 478 | · 5. AND IT SURVIVES A RELOAD |
-| 544 | · 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46) |
+| 554 | · 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46) |
 
 ## Fields (state)
 
@@ -57,13 +57,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 592 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
+| 36 | 602 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
 | 40 | 7 | `static void quietly(Runnable r)` |  |
 | 48 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 53 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 59 | 3 | `static boolean same(double a, double b)` | Bitwise, not near. |
 | 63 | 3 | `static boolean near(double a, double b, double tol)` |  |
-| 67 | 513 | `public static void main(String[] args)` |  |
-| 590 | 15 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
-| 611 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
+| 67 | 523 | `public static void main(String[] args)` |  |
+| 600 | 15 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
+| 621 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
 

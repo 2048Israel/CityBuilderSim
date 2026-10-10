@@ -1,6 +1,6 @@
 # CityNeeds.java - 984 lines · 46 methods · 20 constants · model
 
-`ham/citybuildersim/CityNeeds.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityNeeds.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > NEEDS YOU, measured: everything with a lever, each against its own line, in
 > the order a city is built - the list the left panel's Summary prints, the
@@ -36,7 +36,7 @@
 
 **Uses:** [CareType](CareType.md) (47), [EducationType](EducationType.md) (35), [Game](Game.md) (20), [Education](Education.md) (6), [JobType](JobType.md) (6), [InfrastructureManager](InfrastructureManager.md) (5), [Formats](Formats.md) (4), [BuildingType](BuildingType.md) (4), [PopulationCohorts](PopulationCohorts.md) (3), [DebtManager](DebtManager.md) (3), [PopulationManager](PopulationManager.md) (3), [WageBand](WageBand.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (2), [SafetyType](SafetyType.md) (2), [LandManager](LandManager.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [EconomyManager](EconomyManager.md) (1), [Healthcare](Healthcare.md) (1), [Crime](Crime.md) (1), [FamilyModel](FamilyModel.md) (1), [Bank](Bank.md) (1), [Expectations](Expectations.md) (1), [PriceIndex](PriceIndex.md) (1), [Health](Health.md) (1), [NationalAccounts](NationalAccounts.md) (1), [LabourMarket](LabourMarket.md) (1), [BuildingManager](BuildingManager.md) (1), [AgeBand](AgeBand.md) (1), [Debt](Debt.md) (1)... and 1 more
 
-**Used by (20):** [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterCheck](WaterCheck.md)
+**Used by (25):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 

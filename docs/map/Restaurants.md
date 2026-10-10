@@ -1,6 +1,6 @@
-# Restaurants.java - 517 lines · 23 methods · 6 constants · sectors
+# Restaurants.java - 521 lines · 24 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The kitchens. THE FIFTEENTH SECTOR (2026-09-18, Jerus's call).
 > 
@@ -53,7 +53,7 @@
 > groceries are in person-months, and reading one as the other is how a Diner
 > would look ninety times the business it is.
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (11), [Retail](Retail.md) (3), [Markets](Markets.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Trade](Trade.md) (2), [Game](Game.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (11), [Retail](Retail.md) (3), [Markets](Markets.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [Trade](Trade.md) (2), [Game](Game.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (7):** [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [LuxuryCounter](LuxuryCounter.md), [RestaurantsCheck](RestaurantsCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
 
@@ -66,7 +66,7 @@
 | 187 | THE SALE |
 | 345 | PLANNING - the queue at a door that is not there |
 | 445 | THE SCREEN |
-| 492 | SAVE, RESET (0.7.43) |
+| 496 | SAVE, RESET (0.7.43) |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 450 | **type** `public class Restaurants extends Sector` | The kitchens. |
+| 68 | 454 | **type** `public class Restaurants extends Sector` | The kitchens. |
 
 ### WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING (lines 70-89)
 
@@ -129,18 +129,19 @@
 | 359 | 61 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
 | 433 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
 
-### THE SCREEN (lines 445-491)
+### THE SCREEN (lines 445-495)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 450 | 1 | `public boolean hasPlantBlock()` |  |
-| 453 | 39 | `public List<Line> ownLines(Game game)` |  |
+| 451 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
+| 454 | 1 | `public boolean hasPlantBlock()` |  |
+| 457 | 39 | `public List<Line> ownLines(Game game)` |  |
 
-### SAVE, RESET (0.7.43) (lines 492-517)
+### SAVE, RESET (0.7.43) (lines 496-521)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 498 | 4 | `protected void saveExtras(Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
-| 505 | 6 | `protected void restoreExtras(Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its target. |
-| 513 | 4 | `protected void resetExtras()` |  |
+| 502 | 4 | `protected void saveExtras(Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
+| 509 | 6 | `protected void restoreExtras(Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its target. |
+| 517 | 4 | `protected void resetExtras()` |  |
 

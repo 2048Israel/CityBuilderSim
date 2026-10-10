@@ -321,6 +321,7 @@ public final class SectorStatements {
        operating line's (i).
        ===================================================================== */
 
+    /** The statement of profit or loss's row ids, which the screens and SectorStatementCheck look a row up by (Table.row()). */
     public static final String REVENUE = "revenue", SALES_TAX = "salesTax", NET_REVENUE = "netRevenue",
             INPUTS = "inputs", GROSS = "gross", PAYROLL = "payroll", ELECTRICITY = "electricity", WATER = "water",
             MAINTENANCE = "maintenance", PROPERTY_TAX = "propertyTax", OPERATING = "operating", INTEREST = "interest",
@@ -360,9 +361,11 @@ public final class SectorStatements {
                 -m.loanFees(), -m.premiums(), -m.bondCosts() };
     }
 
+    /** The outside lines' row ids, in outside()'s order. */
     static final String[] OUTSIDE_IDS = { SUBSIDY, ARREARS, DEPOSIT_INTEREST, COUPONS, FOREIGN_INTEREST, FORGIVEN,
             WRITTEN_OFF, BONDS_WRITTEN_OFF, STOLEN, LOAN_FEES, PREMIUMS, BOND_COSTS };
 
+    /** ...and their labels, in the same order. */
     static final String[] OUTSIDE_LABELS = { "Subsidy from the city", "Arrears the city paid",
             "Interest on its bank balance", "Coupons on the bonds it holds",
             "Interest abroad, rolled into its holdings", "Overdraft forgiven at a restructure",
@@ -440,6 +443,7 @@ public final class SectorStatements {
        yet.
        ===================================================================== */
 
+    /** The balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. */
     public static final String ASSETS_HEAD = "assetsHead", CURRENT_HEAD = "currentHead", CASH = "cash",
             STOCK = "stock", RECEIVABLES = "receivables", CURRENT = "current", LONG_HEAD = "longHead", LAND = "land",
             BUILDINGS = "buildings", ABROAD = "abroad", BONDS_HELD = "bondsHeld", LONG = "long",
@@ -518,6 +522,7 @@ public final class SectorStatements {
        financing, the creditors' money.
        ===================================================================== */
 
+    /** The cash flow statement's row ids, which the screens and SectorStatementCheck look a row up by. */
     public static final String OPERATING_HEAD = "operatingHead", NET_INCOME = "netIncome",
             PAID_EARLIER = "paidEarlier", TRADE_CREDIT = "tradeCredit", CASH_DEPOSIT_INTEREST = "cash.depositInterest",
             CASH_COUPONS = "cash.coupons", CASH_SUBSIDY = "cash.subsidy", CASH_ARREARS = "cash.arrears",
@@ -611,6 +616,7 @@ public final class SectorStatements {
        last's sheet is not kept.
        ===================================================================== */
 
+    /** The statement of changes in equity's row ids, which the screens and SectorStatementCheck look a row up by. */
     public static final String EQ_START = "eq.start", EQ_PROFIT = "eq.profit", EQ_OUTSIDE = "eq.outside",
             EQ_FOUNDED = "eq.founded", EQ_ISSUED = "eq.issued", EQ_PAID = "eq.paid", EQ_BOUGHT = "eq.bought",
             EQ_STOCK = "eq.stock", EQ_LAND = "eq.land", EQ_BUILDINGS = "eq.buildings", EQ_ABROAD = "eq.abroad",
@@ -816,6 +822,7 @@ public final class SectorStatements {
        allowance, equity in its parts, the deposits it holds as a memorandum.
        ===================================================================== */
 
+    /** The bank's statement of profit or loss's row ids, which the screens and SectorStatementCheck look a row up by. */
     public static final String B_INCOME_HEAD = "b.incomeHead", B_OTHER_INTEREST = "b.otherInterest",
             B_INTEREST = "b.interest", B_EXPENSE_HEAD = "b.expenseHead", B_EXPENSE = "b.expense",
             B_NII = "b.nii", B_FEES_HEAD = "b.feesHead", B_FEES = "b.fees", B_TOI = "b.toi",
@@ -898,6 +905,7 @@ public final class SectorStatements {
         return b.table("Statement of profit or loss");
     }
 
+    /** The bank's balance sheet's row ids, which the screens and SectorStatementCheck look a row up by. */
     public static final String BS_ASSETS_HEAD = "bs.assetsHead", BS_LOANS_HEAD = "bs.loansHead",
             BS_GROSS = "bs.gross", BS_NET = "bs.net", BS_ASSETS_REST = "bs.assetsRest", BS_ASSETS = "bs.assets",
             BS_LIABILITIES_HEAD = "bs.liabilitiesHead", BS_LIABILITIES_REST = "bs.liabilitiesRest",

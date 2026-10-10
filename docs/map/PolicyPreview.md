@@ -1,6 +1,6 @@
 # PolicyPreview.java - 417 lines · 39 methods · 0 constants · model
 
-`ham/citybuildersim/PolicyPreview.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyPreview.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > What a staged set of the Policy tab's dials would do, by the model's own
 > arithmetic (0.7.36): the tax take under another policy, line by line, and
@@ -141,6 +141,6 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 407 | 1 | **type** `public record RuleAt(DebtManager.Strictness step, String aims, double onTarget, double advised)` | What the rule would do at one step of the strictness dial, at the city's target: the step; what it aims at, in words (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past 4.0% (or under 0.0%)"); the rat... |
+| 407 | 1 | **type** `public record RuleAt(DebtManager.Strictness step, String aims, double onTarget, double advised)` | What the rule would do at one step of the strictness dial, at the city's target: the step; what it aims at, in words (DebtManager.aimWords(): "aims under 2.0%, at 1.0%", "acts only past 4.0% (or under 2.0%)"); the rat... |
 | 410 | 7 | `public static RuleAt ruleAt(Game g, DebtManager.Strictness step)` | ...struck by DebtManager.ruleRate() and advisedPolicyRate() at that step; at the step in force, the rule's own to the bit. |
 

@@ -1,6 +1,6 @@
-# ConversionCheck.java - 718 lines · 20 methods · 2 constants · harnesses
+# ConversionCheck.java - 731 lines · 20 methods · 2 constants · harnesses
 
-`ham/citybuildersim/ConversionCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConversionCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Saved cities put on the block grid (0.7.66, batch M2): the five saves the design was measured on, each converted - a format-31 save's lanes snapped to blocks with no field changing hands and its part fields' sites on the right side, an older save's figure drawn to the plot - with the books the plots drawn and the sites and tonnes the save's to the bit.
 > 
@@ -52,87 +52,93 @@
 >      or by sites, the offers' contents exactly the fields on their free
 >      plots; saved again as format 32 and loaded, the same, and both play
 >      their next month alike.
+> 
+> Since 0.7.99 (batch W1, fewer and bigger deposits) "the world's fields" in
+> 2 to 5 are the old world's (World.legacyFieldsInCell()), which every one
+> of these saves was written on and which its converted ground keeps
+> (CityLand.oldWorldHoldings()); in 6 the fields as the loaded city sees
+> them - the old world's on its ground, the world's on the offers' free plots.
 
-**Uses:** [World](World.md) (36), [Resource](Resource.md) (35), [LegacyLand](LegacyLand.md) (30), [CityLand](CityLand.md) (30), [GridConversion](GridConversion.md) (28), [LandGrid](LandGrid.md) (12), [Game](Game.md) (11), [GridOffers](GridOffers.md) (6), [Deposit](Deposit.md) (5), [LandConversion](LandConversion.md) (3), [LandManager](LandManager.md) (3), [LandParcel](LandParcel.md) (3), [GameFiles](GameFiles.md) (2), [LandMarket](LandMarket.md) (2), [Founding](Founding.md) (1), [GridCheck](GridCheck.md) (1), [GameVersion](GameVersion.md) (1)
+**Uses:** [World](World.md) (36), [Resource](Resource.md) (35), [LegacyLand](LegacyLand.md) (30), [CityLand](CityLand.md) (30), [GridConversion](GridConversion.md) (28), [LandGrid](LandGrid.md) (12), [Game](Game.md) (11), [Deposit](Deposit.md) (8), [GridOffers](GridOffers.md) (6), [LandConversion](LandConversion.md) (3), [LandManager](LandManager.md) (3), [LandParcel](LandParcel.md) (3), [GameFiles](GameFiles.md) (2), [LandMarket](LandMarket.md) (2), [Founding](Founding.md) (1), [GridCheck](GridCheck.md) (1), [GameVersion](GameVersion.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 116 | THE FIXTURE |
-| 168 | 1. LEGACYLAND IS CITYLAND'S LANES |
-| 240 | 2 TO 4. A FORMAT-31 SAVE SNAPPED |
-| 442 | 4. A CITY WHOSE FIELDS GO WHOLE |
-| 464 | 6. THE GAME CONVERTS A SAVE AT LOAD, ONCE (0.7.67, batch M3) |
-| 628 | 5. AN OLDER SAVE: A CENTRE OF BLOCKS TO THE PLOT |
+| 122 | THE FIXTURE |
+| 174 | 1. LEGACYLAND IS CITYLAND'S LANES |
+| 246 | 2 TO 4. A FORMAT-31 SAVE SNAPPED |
+| 449 | 4. A CITY WHOSE FIELDS GO WHOLE |
+| 471 | 6. THE GAME CONVERTS A SAVE AT LOAD, ONCE (0.7.67, batch M3) |
+| 640 | 5. AN OLDER SAVE: A CENTRE OF BLOCKS TO THE PLOT |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 75 | `ConversionCheck.FIXTURE` | `"conversion-saves.json"` | The fixture: the five saves' land, copied key for key (src/main/resources). |
-| 78 | `ConversionCheck.WHOLE_CITY_PURCHASES` | `133` | Purchases the whole-field city of section 4 is bought to: 133, as many as Jerus's live city had made. |
+| 81 | `ConversionCheck.FIXTURE` | `"conversion-saves.json"` | The fixture: the five saves' land, copied key for key (src/main/resources). |
+| 84 | `ConversionCheck.WHOLE_CITY_PURCHASES` | `133` | Purchases the whole-field city of section 4 is bought to: 133, as many as Jerus's live city had made. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 67 | `static int fails` |  |
+| 73 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 65 | 654 | **type** `public class ConversionCheck` | Saved cities put on the block grid (0.7.66, batch M2): the five saves the design was measured on, each converted - a format-31 save's lanes snapped to blocks with no field changing hands and its part fields' sites on ... |
-| 69 | 4 | `static void check(String label, boolean ok)` |  |
-| 81 | 2 | **type** `record Save(String name, int format, String version, int month, long seed, double landOwned, int mines, dou...` | One save's land as the fixture holds it. |
-| 84 | 31 | `public static void main(String[] args) throws Exception` |  |
+| 71 | 661 | **type** `public class ConversionCheck` | Saved cities put on the block grid (0.7.66, batch M2): the five saves the design was measured on, each converted - a format-31 save's lanes snapped to blocks with no field changing hands and its part fields' sites on ... |
+| 75 | 4 | `static void check(String label, boolean ok)` |  |
+| 87 | 2 | **type** `record Save(String name, int format, String version, int month, long seed, double landOwned, int mines, dou...` | One save's land as the fixture holds it. |
+| 90 | 31 | `public static void main(String[] args) throws Exception` |  |
 
-### THE FIXTURE (lines 116-167)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 120 | 27 | `static List<Save> load() throws Exception` |  |
-| 148 | 7 | `static double[] doubles(com.google.gson.JsonObject o, String key)` |  |
-| 156 | 11 | `static double[][] rows(com.google.gson.JsonObject o, String key)` |  |
-
-### 1. LEGACYLAND IS CITYLAND'S LANES (lines 168-239)
+### THE FIXTURE (lines 122-173)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 172 | 52 | `static void legacyIsCityLand(List<Save> lanes) throws Exception` |  |
-| 226 | 3 | `static long hex(com.google.gson.JsonObject o, String key, int i)` | A frozen double's bits, as M3Freeze wrote them (hex). |
-| 231 | 6 | `static com.google.gson.JsonObject fixture() throws Exception` | The fixture's whole JSON object. |
-| 238 | 1 | `static long bits(double v)` |  |
+| 126 | 27 | `static List<Save> load() throws Exception` |  |
+| 154 | 7 | `static double[] doubles(com.google.gson.JsonObject o, String key)` |  |
+| 162 | 11 | `static double[][] rows(com.google.gson.JsonObject o, String key)` |  |
 
-### 2 TO 4. A FORMAT-31 SAVE SNAPPED (lines 240-441)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 245 | 1 | `static String fieldKey(Resource r, int cell, int index)` | A field by its kind, cell and index. |
-| 247 | 5 | `static Set<String> partsOf(GridConversion.Result r)` |  |
-| 254 | 127 | `static GridConversion.Result snapped(String name, LegacyLand old, String version, double[] depletion, int mines, boolean causes)` | Converts a format-31 save's land and checks it; `causes` asks that the save's fields decided at least one block. |
-| 388 | 53 | `static void books(World w, GridConversion.Result r, double all, double dry, double fresh, double sea, double forest, double dra...` | What every conversion must hold, whatever the save: the books the ground's plots counted again plot by plot, its forest's timber its area's; its rectangles rebuilding the ground node for node; and offers listed round ... |
-
-### 4. A CITY WHOSE FIELDS GO WHOLE (lines 442-463)
+### 1. LEGACYLAND IS CITYLAND'S LANES (lines 174-245)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 446 | 17 | `static void wholeFields() throws Exception` |  |
+| 178 | 52 | `static void legacyIsCityLand(List<Save> lanes) throws Exception` |  |
+| 232 | 3 | `static long hex(com.google.gson.JsonObject o, String key, int i)` | A frozen double's bits, as M3Freeze wrote them (hex). |
+| 237 | 6 | `static com.google.gson.JsonObject fixture() throws Exception` | The fixture's whole JSON object. |
+| 244 | 1 | `static long bits(double v)` |  |
 
-### 6. THE GAME CONVERTS A SAVE AT LOAD, ONCE (0.7.67, batch M3) (lines 464-627)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 479 | 5 | `static void quietly(Runnable work)` |  |
-| 485 | 69 | `static void atLoad(Save s) throws Exception` |  |
-| 555 | 5 | `static Set<String> partsOfLand(CityLand land)` |  |
-| 567 | 60 | `static void heldOnce(Game g)` | Every field near a city held at most once (spec-grid 2.6): a whole field by the holding whose ground holds its centre plot or by the offer whose free plots do, never both; a field held in part, each site the same; and... |
-
-### 5. AN OLDER SAVE: A CENTRE OF BLOCKS TO THE PLOT (lines 628-718)
+### 2 TO 4. A FORMAT-31 SAVE SNAPPED (lines 246-448)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 633 | 10 | `static double[] j1bKm2(String name)` | J1b's centre for an older save, as 0.7.66 drew it (frozen in the fixture): all, dry, fresh, sea and forest km2 - what the books are printed against. |
-| 645 | 73 | `static boolean centred(Save s)` | Converts a format-30 save and checks it; true when the world laid no iron on its ground, so it stands a legacy field. |
+| 251 | 1 | `static String fieldKey(Resource r, int cell, int index)` | A field by its kind, cell and index. |
+| 253 | 5 | `static Set<String> partsOf(GridConversion.Result r)` |  |
+| 260 | 128 | `static GridConversion.Result snapped(String name, LegacyLand old, String version, double[] depletion, int mines, boolean causes)` | Converts a format-31 save's land and checks it; `causes` asks that the save's fields decided at least one block. |
+| 395 | 53 | `static void books(World w, GridConversion.Result r, double all, double dry, double fresh, double sea, double forest, double dra...` | What every conversion must hold, whatever the save: the books the ground's plots counted again plot by plot, its forest's timber its area's; its rectangles rebuilding the ground node for node; and offers listed round ... |
+
+### 4. A CITY WHOSE FIELDS GO WHOLE (lines 449-470)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 453 | 17 | `static void wholeFields() throws Exception` |  |
+
+### 6. THE GAME CONVERTS A SAVE AT LOAD, ONCE (0.7.67, batch M3) (lines 471-639)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 486 | 5 | `static void quietly(Runnable work)` |  |
+| 492 | 69 | `static void atLoad(Save s) throws Exception` |  |
+| 562 | 5 | `static Set<String> partsOfLand(CityLand land)` |  |
+| 574 | 65 | `static void heldOnce(Game g)` | Every field near a city held at most once (spec-grid 2.6): a whole field by the holding whose ground holds its centre plot or by the offer whose free plots do, never both; a field held in part, each site the same; and... |
+
+### 5. AN OLDER SAVE: A CENTRE OF BLOCKS TO THE PLOT (lines 640-731)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 645 | 10 | `static double[] j1bKm2(String name)` | J1b's centre for an older save, as 0.7.66 drew it (frozen in the fixture): all, dry, fresh, sea and forest km2 - what the books are printed against. |
+| 657 | 74 | `static boolean centred(Save s)` | Converts a format-30 save and checks it; true when the world laid no iron on its ground, so it stands a legacy field. |
 

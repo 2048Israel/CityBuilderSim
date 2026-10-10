@@ -34,12 +34,14 @@ import java.util.Map;
  *      in a bigger one costs less to build all in, to keep, to stand on and to
  *      staff, and costs less to run in a played city; every one keeps between
  *      Ontario's infant and preschool ratios of children to an adult.
- *   2. THE SIZE THAT FITS THE NEED: in a town short of hundreds of places the
- *      advice's childcare card is the order whose quote and ground over the
- *      places lacking are the least of the three, to the bit - the Large
- *      Childcare Centre; with the gap brought under one small centre's
- *      places, one Small Childcare Centre - where a place in it costs more
- *      than in the Large; and the card's figure is the advice's own.
+ *   2. THE SIZE THAT FITS THE NEED: in a town short of thousands of places
+ *      and one short of hundreds the advice's childcare card is the order
+ *      whose quote and ground over the places lacking are the least of the
+ *      three, to the bit - short of thousands, not the Small Childcare
+ *      Centre; with the gap brought under one small centre's places, the
+ *      least count of Small Childcare Centres that closes it - where a place
+ *      in one costs more than in the Large; and the card's figure is the
+ *      advice's own.
  *   3. A CITY'S BUILDINGS KEEP THEIR TYPE: a save holds its childcare by id,
  *      so a city of the old daycares loads as the same count of the ids'
  *      centres, with their places, posts and ground; overbuilt so, the advice
@@ -64,8 +66,10 @@ public class ChildcareCheck {
     /** ...and in its preschool groups, 1 to 8: the fewest. */
     static final double ONTARIO_PRESCHOOL_PER_ADULT = 8;
 
+    /** The three centres' ids in buildings.json: the Small Childcare Centre, the Childcare Centre and the Large. */
     static final int SMALL = 15, CENTRE = 16, LARGE = 17;
 
+    /** The advice's measure for childcare, which the sections here read the need, the site and the card through. */
     static final BuildAdvice.Measure CHILDCARE = BuildAdvice.Measure.care(CareType.CHILDCARE);
 
     static void assertTrue(String label, boolean ok) {

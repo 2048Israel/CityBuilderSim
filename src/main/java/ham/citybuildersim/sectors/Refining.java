@@ -28,9 +28,12 @@ import java.util.Map;
  * first, the world's for the rest (CRUDE is importable, so the shortfall is
  * the template's) - and makes the products of its slate (THE SLATE, below)
  * into its tanks: petrol, diesel, jet fuel, naphtha, petroleum gas and fuel
- * oil. The city's drivers (Motoring, at 6d) draw the petrol and its railway
- * (Rail.haul()) the diesel, off those tanks before the world; the rest
- * leaves by the export-bound line until something here buys it.
+ * oil - and since 0.7.80 its conversion units' lubricants, bitumen and coke.
+ * The city's drivers (Motoring, at 6d; through the grocers' pumps since
+ * 0.7.83) draw the petrol, and its railway (Rail.haul()) and since 0.7.83
+ * its vans the diesel, off those tanks before the world, as the factories
+ * do the lubricants and the builders the bitumen (0.7.83); the rest leaves
+ * by the export-bound line until something here buys it.
  *
  * WHY. Until 0.7.76 it made FUEL, a thousand litres from a tonne - 86% of a
  * barrel as transport fuels and the rest left out - so one refinery was

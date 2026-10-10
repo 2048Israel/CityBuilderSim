@@ -1,6 +1,6 @@
-# Automotive.java - 283 lines · 7 methods · 1 constants · sectors
+# Automotive.java - 294 lines · 7 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Automotive.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The automobile industry. THE THIRTEENTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -60,43 +60,44 @@
 > short of vans cannot move what it makes, and a railway with track and no
 > locomotives carries nothing. See claude/the-railway.md for where that goes.
 
-**Uses:** [Good](Good.md) (18), [BusinessInvestment](BusinessInvestment.md) (10), [Game](Game.md) (5), [Formats](Formats.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (19), [BusinessInvestment](BusinessInvestment.md) (10), [Game](Game.md) (5), [Formats](Formats.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1)
 
-**Used by (2):** [CarCheck](CarCheck.md), [Sectors](Sectors.md)
+**Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CarCheck](CarCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 125 | PLANNING - can the city supply it, and then is it worth it |
-| 236 | · the screen |
+| 136 | PLANNING - can the city supply it, and then is it worth it |
+| 247 | · the screen |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 109 | `Automotive.MAX_SHARE_OF_LOCAL_SUPPLY` | `.25` | The most of the city's WHOLE fabrication output one new plant may want. |
+| 119 | `Automotive.LUBRICANT_LITRES_A_VEHICLE` | `8` | Lubricants a vehicle built takes (0.7.83, batch O6; runs/spec-oil.md 2.5, est., to confirm): eight litres - its first fill of engine, gearbox and axle oils and the line's own - on the car plants' and (star O6) the van... |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 211 | **type** `public final class Automotive extends Sector` | The automobile industry. |
-| 111 | 13 | `public Automotive()` |  |
+| 73 | 222 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 121 | 14 | `public Automotive()` |  |
 
-### PLANNING - can the city supply it, and then is it worth it (lines 125-235)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 130 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
-| 135 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
-| 148 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with HeavyIndustry's supply gate in front of it. |
-| 234 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
-
-### the screen (lines 236-283)
+### PLANNING - can the city supply it, and then is it worth it (lines 136-246)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 239 | 1 | `public boolean hasPlantBlock()` |  |
-| 242 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 141 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
+| 146 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
+| 159 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with HeavyIndustry's supply gate in front of it. |
+| 245 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
+
+### the screen (lines 247-294)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 250 | 1 | `public boolean hasPlantBlock()` |  |
+| 253 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
 

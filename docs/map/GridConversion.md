@@ -1,6 +1,6 @@
-# GridConversion.java - 494 lines · 39 methods · 4 constants · model
+# GridConversion.java - 501 lines · 40 methods · 4 constants · model
 
-`ham/citybuildersim/GridConversion.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GridConversion.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > A saved city's land put on the block grid: a format-31 save's lanes snapped to whole blocks with its fields deciding, or an older save's one figure drawn as a centre of blocks round its site to the plot - one converted holding, whose books are the plots drawn.
 > 
@@ -52,7 +52,7 @@
 > it drops is not refunded. What was paid stays on the save's purchase
 > records (LegacyLand.paidUsd(), paidLocal()).
 
-**Uses:** [World](World.md) (50), [Resource](Resource.md) (15), [CityLand](CityLand.md) (12), [LegacyLand](LegacyLand.md) (11), [LandGrid](LandGrid.md) (9), [Deposit](Deposit.md) (4), [LandConversion](LandConversion.md) (2)
+**Uses:** [World](World.md) (51), [Resource](Resource.md) (15), [CityLand](CityLand.md) (13), [LegacyLand](LegacyLand.md) (11), [LandGrid](LandGrid.md) (9), [Deposit](Deposit.md) (4), [LandConversion](LandConversion.md) (2)
 
 **Used by (4):** [CityLand](CityLand.md), [ConversionCheck](ConversionCheck.md), [LandCheck](LandCheck.md), [LandConversion](LandConversion.md)
 
@@ -63,7 +63,7 @@
 | 160 | WHICH SAVES HELD FIELDS SITE BY SITE |
 | 182 | A FORMAT-31 SAVE, SNAPPED (spec-grid star 11) |
 | 322 | AN OLDER SAVE: A CENTRE OF BLOCKS TO THE PLOT |
-| 440 | THE BOOKS FOLLOW THE MAP (spec-grid star 8) |
+| 447 | THE BOOKS FOLLOW THE MAP (spec-grid star 8) |
 
 ## Constants
 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 435 | **type** `public final class GridConversion` | A saved city's land put on the block grid: a format-31 save's lanes snapped to whole blocks with its fields deciding, or an older save's one figure drawn as a centre of blocks round its site to the plot - one converte... |
+| 60 | 442 | **type** `public final class GridConversion` | A saved city's land put on the block grid: a format-31 save's lanes snapped to whole blocks with its fields deciding, or an older save's one figure drawn as a centre of blocks round its site to the plot - one converte... |
 | 62 | 1 | `private GridConversion()` |  |
 | 82 | 1 | **type** `public record PartField(Resource kind, int cell, int index, int[] owned)` | A field the converted ground holds only part of: its kind, the world cell it was drawn in and its index there (which say which field it is, Deposit), and the sites the save owned, by their index from 0, in order. |
 | 85 | 74 | **type** `public static final class Result` | The converted holding: what fromLanes() and fromFigure() return. |
@@ -139,23 +139,24 @@
 | 289 | 4 | `private static void point(Map<Long, List<long[]>> at, long b, long x, long y, boolean own)` |  |
 | 295 | 26 | `private static void snap(LegacyLand old, Result out, List<long[]> pts, int level, long bx, long by)` | Snaps one block of `level` holding the points `pts` (spec-grid star 11): split when they are of both kinds, else the city's by its point, not by another's, else by the save's half. |
 
-### AN OLDER SAVE: A CENTRE OF BLOCKS TO THE PLOT (lines 322-439)
+### AN OLDER SAVE: A CENTRE OF BLOCKS TO THE PLOT (lines 322-446)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 335 | 50 | `public static Result fromFigure(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes, int minesCommit...` | An older save's ground on the grid (format 30 and before): round the site (sx, sy) J1b's search found for it, rings of blocks of the city's level, the last split down to the plot, holding dryKm2 of dry ground to withi... |
-| 387 | 12 | `static List<long[]> ringOf(long cx, long cy, int n)` | The blocks of one L-infinity ring round (cx, cy), in order: the north row west to east, the east column, the south row east to west, the west column. |
-| 401 | 13 | `private static void claimDry(World world, Map<Long, byte[]> tiles, Result out, int level, long bx, long by, long target, long[]...` | Takes block (bx, by) of `level` whole when its dry plots fit under the target, else its quarters in turn (north-west, north-east, south-west, south-east), down to the plot. |
-| 415 | 10 | `private static long dryIn(World world, Map<Long, byte[]> tiles, long x0, long y0, long b)` |  |
-| 426 | 5 | `private static byte terrain(World world, Map<Long, byte[]> tiles, long x, long y)` |  |
-| 432 | 7 | `private static byte[] tile(World world, Map<Long, byte[]> tiles, long tx, long ty)` |  |
+| 336 | 4 | `public static Result fromFigure(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes, int minesCommit...` | An older save's ground on the grid (format 30 and before): round the site (sx, sy) J1b's search found for it, rings of blocks of the city's level, the last split down to the plot, holding dryKm2 of dry ground to withi... |
+| 342 | 50 | `public static Result fromFigure(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes, int minesCommit...` | ...on the old world's fields when `legacy`, else the world's (0.7.99): what a restatement draws a city founded on 0.7.99 with (LandConversion.restate()). |
+| 394 | 12 | `static List<long[]> ringOf(long cx, long cy, int n)` | The blocks of one L-infinity ring round (cx, cy), in order: the north row west to east, the east column, the south row east to west, the west column. |
+| 408 | 13 | `private static void claimDry(World world, Map<Long, byte[]> tiles, Result out, int level, long bx, long by, long target, long[]...` | Takes block (bx, by) of `level` whole when its dry plots fit under the target, else its quarters in turn (north-west, north-east, south-west, south-east), down to the plot. |
+| 422 | 10 | `private static long dryIn(World world, Map<Long, byte[]> tiles, long x0, long y0, long b)` |  |
+| 433 | 5 | `private static byte terrain(World world, Map<Long, byte[]> tiles, long x, long y)` |  |
+| 439 | 7 | `private static byte[] tile(World world, Map<Long, byte[]> tiles, long tx, long ty)` |  |
 
-### THE BOOKS FOLLOW THE MAP (spec-grid star 8) (lines 440-494)
+### THE BOOKS FOLLOW THE MAP (spec-grid star 8) (lines 447-501)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 450 | 22 | `public static long[] drawnClasses(World world, LandGrid grid)` | The plots a grid's holdings own, by World's classes (GRASS, FOREST, FRESH, SALT, SAND, indexed by the class), counted one by one from World.tileTerrain(), as the map counts them: a leaf of a tile or more a whole tile ... |
-| 474 | 11 | `public static double[] km2Of(long[] cls)` | Five areas in square kilometres - CityLand.TOTAL, DRY, FRESH, SEA and FOREST - of plots counted by World's classes. |
-| 486 | 4 | `private static void books(World world, Result out)` |  |
-| 491 | 3 | `private static void leaves(Result out)` |  |
+| 457 | 22 | `public static long[] drawnClasses(World world, LandGrid grid)` | The plots a grid's holdings own, by World's classes (GRASS, FOREST, FRESH, SALT, SAND, indexed by the class), counted one by one from World.tileTerrain(), as the map counts them: a leaf of a tile or more a whole tile ... |
+| 481 | 11 | `public static double[] km2Of(long[] cls)` | Five areas in square kilometres - CityLand.TOTAL, DRY, FRESH, SEA and FOREST - of plots counted by World's classes. |
+| 493 | 4 | `private static void books(World world, Result out)` |  |
+| 498 | 3 | `private static void leaves(Result out)` |  |
 

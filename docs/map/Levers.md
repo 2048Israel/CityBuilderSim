@@ -1,6 +1,6 @@
 # Levers.java - 145 lines · 3 methods · 1 constants · interface
 
-`ham/citybuildersim/ui/Levers.java` - generated 2026-10-05 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Levers.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36)
 > - the dial on a card with what it does beside it, which every dial on the
@@ -15,7 +15,7 @@
 
 **Uses:** [Palette](Palette.md) (17), [Ladder](Ladder.md) (1)
 
-**Used by (2):** [FundScreen](FundScreen.md), [InfrastructureScreen](InfrastructureScreen.md)
+**Used by (3):** [FundScreen](FundScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 
