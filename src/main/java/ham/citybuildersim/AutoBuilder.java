@@ -36,15 +36,18 @@ import java.util.Set;
  * and it builds what the Build overview advises.
  *
  * FIXED, 0.7.101 (batch P2; Jerus's decisions A4 to A6 of 2026-10-10, "Fix
- * it"): on the auto-built playtest's seeds it ran four cities in seven into
- * the ground (runs/fixP2-notes.md). It now chooses by the long run - the
+ * it"): the auto-built playtest's seeds 0 to 7 stalled or collapsed in five
+ * cities of eight (runs/fixP2-notes.md). It now chooses by the long run - the
  * advice's figure is each building's order over its life for what it will
  * serve (BuildAdvice, A BUILDING OVER ITS LIFE); builds the first of a kind
  * where there is none (kept()); is held by the debt limit alone - the
  * revenue it read the budget against is gone (THE BUDGET, GONE); walks down
  * the advice's ranking past a building the money or the ground cannot pay
  * for one of (step()); buys only an order's own ground (lacks()); and its
- * limit is 240% of a year's GDP by default, the dial to 600%.
+ * limit is 240% of a year's GDP by default, the dial to 600%. The walk and
+ * the limit took all eight seeds past 1.5M people; first buildings where
+ * there are none and no revenue check, together, stall seven at 2k-37k -
+ * staffed services a town cannot run, held only by the limit (star P2-3).
  *
  * THE MONTH (pass()), the first thing Game.nextMonth() does - between the
  * presses, where the player's own Build lands, on the city the last press
