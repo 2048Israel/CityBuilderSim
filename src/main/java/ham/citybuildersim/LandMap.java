@@ -303,18 +303,17 @@ public final class LandMap {
     /** A field one of whose sites lies under a plot, and which site. */
     public record FieldAt(Deposit field, int site) { }
 
-    /** The fields with a site on plot (x, y): the world's, and a converted centre's legacy iron field. */
+    /** The fields with a site on plot (x, y): the world's as the city sees them (CityLand.fieldsIn(): its old world's ground's own, 0.7.99), and a converted centre's legacy iron field. */
     public static List<FieldAt> fieldsAt(CityLand land, long x, long y) {
         List<FieldAt> out = new ArrayList<>();
-        World world = World.of(land.seed());
         for (Resource r : Resource.values()) {
             if (!r.inFields()) continue;
             double reach = Deposit.mostReach(r);
             List<Deposit> near = new ArrayList<>();
-            for (int cell : CityLand.cellsUnder(x - reach, y - reach, x + reach, y + reach)) near.addAll(CityLand.fields(world, cell, r));
+            for (int cell : CityLand.cellsUnder(x - reach, y - reach, x + reach, y + reach)) near.addAll(land.fieldsIn(cell, r));
             if (r == Resource.IRON && land.legacySites() > 0 && land.legacyX() >= 0) {
                 near.add(new Deposit(Resource.IRON, -1, 0, land.legacyX(), land.legacyY(),
-                        Math.min(World.MAX_SITES, land.legacySites()), land.centreAmount(Resource.IRON)));
+                        Math.min(World.LEGACY_MAX_SITES, land.legacySites()), land.centreAmount(Resource.IRON)));
             }
             double w = Deposit.siteWidth(r);
             for (Deposit f : near) {
@@ -336,13 +335,12 @@ public final class LandMap {
         return out;
     }
 
-    /** The fields of a resource whose centres lie in a box of plots - the deposits the far views mark - at most `most` of them. */
+    /** The fields of a resource whose centres lie in a box of plots - the deposits the far views mark - at most `most` of them: the world's as the city sees them (CityLand.fieldsIn(), 0.7.99). */
     public static List<Deposit> fieldsIn(CityLand land, Resource r, double x0, double y0, double x1, double y1, int most) {
         List<Deposit> out = new ArrayList<>();
         if (!r.inFields()) return out;
-        World world = World.of(land.seed());
         for (int cell : CityLand.cellsUnder(x0, y0, x1, y1)) {
-            for (Deposit f : CityLand.fields(world, cell, r)) {
+            for (Deposit f : land.fieldsIn(cell, r)) {
                 if (f.x() < x0 || f.x() > x1 || f.y() < y0 || f.y() > y1) continue;
                 out.add(f);
                 if (out.size() >= most) return out;
@@ -351,7 +349,7 @@ public final class LandMap {
         if (r == Resource.IRON && land.legacySites() > 0 && land.legacyX() >= x0 && land.legacyX() <= x1
                 && land.legacyY() >= y0 && land.legacyY() <= y1) {
             out.add(new Deposit(Resource.IRON, -1, 0, land.legacyX(), land.legacyY(),
-                    Math.min(World.MAX_SITES, land.legacySites()), land.centreAmount(Resource.IRON)));
+                    Math.min(World.LEGACY_MAX_SITES, land.legacySites()), land.centreAmount(Resource.IRON)));
         }
         return out;
     }

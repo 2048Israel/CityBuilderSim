@@ -249,7 +249,7 @@ public final class GridConversion {
             if (!r.inFields()) continue;
             double pad = out.shared ? Deposit.mostReach(r) + 1 : 0;
             for (int cell : CityLand.cellsUnder(x0 - pad, y0 - pad, x1 - 1 + pad, y1 - 1 + pad)) {
-                for (Deposit d : CityLand.fields(world, cell, r)) {
+                for (Deposit d : CityLand.legacyFields(world, cell, r)) {
                     boolean centreIn = d.x() >= x0 && d.x() < x1 && d.y() >= y0 && d.y() < y1;
                     if (!out.shared) {
                         if (centreIn) point(at, b, d.x(), d.y(), old.ownsPlot(d.x(), d.y()));
@@ -330,10 +330,17 @@ public final class GridConversion {
      * within a plot; its iron the save's sites - at least its mines standing
      * and ordered - and tonnes, with a legacy field when the world laid none
      * on the ground drawn; every other resource the world's fields centred on
-     * it; nothing taken out yet.
+     * it; nothing taken out yet. The old world's fields (to 0.7.98, World.
+     * legacyFieldsInCell()): an older save's ground is the ground it had.
      */
     public static Result fromFigure(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes,
                                     int minesCommitted) {
+        return fromFigure(world, sx, sy, dryKm2, ironSites, ironTonnes, minesCommitted, true);
+    }
+
+    /** ...on the old world's fields when `legacy`, else the world's (0.7.99): what a restatement draws a city founded on 0.7.99 with (LandConversion.restate()). */
+    public static Result fromFigure(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes,
+                                    int minesCommitted, boolean legacy) {
         Result out = new Result(sx, sy);
         out.level = LandGrid.levelFor(dryKm2 / World.KM2_PER_PLOT);
         long b = 1L << out.level;
@@ -354,7 +361,7 @@ public final class GridConversion {
         for (Resource r : Resource.values()) {
             if (!r.inFields()) continue;
             for (int cell : CityLand.cellsUnder(out.grid.minX(), out.grid.minY(), out.grid.maxX() - 1, out.grid.maxY() - 1)) {
-                for (Deposit d : CityLand.fields(world, cell, r)) {
+                for (Deposit d : legacy ? CityLand.legacyFields(world, cell, r) : CityLand.fields(world, cell, r)) {
                     if (out.grid.owner(d.x(), d.y()) != CONVERTED) continue;
                     if (r == Resource.IRON) {
                         worldIron = true;

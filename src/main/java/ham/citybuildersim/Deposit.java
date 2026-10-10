@@ -1,15 +1,23 @@
 package ham.citybuildersim;
 
 /**
- * One field of a resource in the world's ground: which resource, the world cell it was drawn in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0.7.79) an oil field's grade.
+ * One field of a resource in the world's ground: which resource, the world cell it is listed in and its place in that cell's list, its centre as a plot, its sites and what it holds - where each of its sites lies, and (0.7.79) an oil field's grade.
  *
  * WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). A
  * field is the unit the land office sells and the map draws: it belongs
  * whole to the piece of ground that holds its centre (spec-land star 12), it
  * is mined a site at a time, and it is worked out in the order the city
- * bought it. World.fieldsInCell() draws a cell's fields from the cell's own
- * stream whenever they are asked for, so a field is never stored - the cell
- * and the index say which one it is, from any save, on any machine.
+ * bought it. World.fieldsInCell() draws a cell's fields whenever they are
+ * asked for, so a field is never stored - the cell and the index say which
+ * one it is, from any save, on any machine.
+ *
+ * FEWER AND BIGGER (0.7.99, batch W1; World's FEWER AND BIGGER DEPOSITS): a
+ * tenth as many fields, each World.FIELD_SCALE of the old draws' sites, in
+ * clusters, drawn a pool of cells at a time and listed in the cell their
+ * centre is in, numbered from World.FIELD_INDEX_FROM. The old world's fields
+ * (World.legacyFieldsInCell(), numbered from 0, at most
+ * World.LEGACY_MAX_SITES sites) are what an older save's ground still holds
+ * (CityLand.fieldsIn()); the two never share a number in a cell.
  *
  * ITS SITES LIE ON THE GROUND (0.7.58, batch J1c): each a square of its
  * resource's site area (siteWidth()) laid on a grid round the centre,
@@ -22,16 +30,21 @@ package ham.citybuildersim;
  * "whole iron fields as one offer") the whole field goes with its centre
  * again, every site and every tonne in one offer: the default world's
  * founding field, 35 sites and 449 Mt, for about US$180M (CityLand, THE
- * FIELDS IN A PIECE OF GROUND).
+ * FIELDS IN A PIECE OF GROUND) - to 0.7.98; since 0.7.99 a new city's
+ * nearest iron field on the default world lies twelve kilometres out.
  *
  * @param kind   the resource (never Resource.FOREST, which is terrain)
- * @param cell   the world cell it was drawn in: row x World.CELLS + column
- * @param index  its place in that cell's list, from 0
+ * @param cell   the world cell its centre is in: row x World.CELLS + column
+ * @param index  its place in that cell's list: from World.FIELD_INDEX_FROM
+ *               since 0.7.99, from 0 on the old world's
  * @param x      its centre's plot, east from the world's west edge
  * @param y      its centre's plot, south from the world's north edge
- * @param sites  how many mines or wells it takes, 1 to World.MAX_SITES
+ * @param sites  how many mines or wells it takes: World.FIELD_SCALE to
+ *               World.MAX_SITES since 0.7.99, 1 to World.LEGACY_MAX_SITES on
+ *               the old world's
  * @param amount what it holds, in its resource's unit, whole: the fields of a
- *               cell sum exactly to World.cellTotal()
+ *               pool sum exactly to its cells' World.cellTotal() since 0.7.99,
+ *               the old world's of a cell to the cell's
  */
 public record Deposit(Resource kind, int cell, int index, long x, long y, int sites, double amount) {
 
@@ -51,19 +64,25 @@ public record Deposit(Resource kind, int cell, int index, long x, long y, int si
 
     /**
      * The grid points a field's sites stand on, nearest the centre first, in
-     * site widths east and south: every point within 14 of the centre each
-     * way sorted by its squared distance, then from north to south, then west
-     * to east, the first World.MAX_SITES of them. 14 is enough: the 512th
-     * point lies about 12.8 from the centre (512 = pi r^2), so every ring the
-     * table reaches is whole in the box.
+     * site widths east and south: every point within PLACES_BOX of the centre
+     * each way sorted by its squared distance, then from north to south, then
+     * west to east, the first World.MAX_SITES of them. The box is enough: the
+     * k-th point lies about sqrt(k / pi) from the centre, so every ring the
+     * table reaches is whole in it. To 0.7.98 the box was 14 for 512 sites;
+     * since 0.7.99 (World.FIELD_SCALE) it is 42 for 5,120, and its first 512
+     * points are the old table's, in its order - so the old world's fields'
+     * sites stand where they stood.
      */
     static final int[][] SITE_PLACES = places();
+
+    /** The box the site table is sorted in, in site widths each way: sqrt(World.MAX_SITES / pi) rounded up, and one more - 14 for the old world's 512 sites, 42 for 5,120. */
+    static final int PLACES_BOX = (int) Math.ceil(Math.sqrt(World.MAX_SITES / Math.PI)) + 1;
 
     /** How far, in site widths each way (L-infinity), the first k + 1 sites reach from the centre. */
     private static final int[] PLACES_REACH = reaches();
 
     private static int[][] places() {
-        int box = 14, n = (2 * box + 1) * (2 * box + 1), at = 0;
+        int box = (int) Math.ceil(Math.sqrt(World.MAX_SITES / Math.PI)) + 1, n = (2 * box + 1) * (2 * box + 1), at = 0;
         int[][] all = new int[n][];
         for (int j = -box; j <= box; j++) for (int i = -box; i <= box; i++) all[at++] = new int[] { i, j };
         java.util.Arrays.sort(all, (a, b) -> {

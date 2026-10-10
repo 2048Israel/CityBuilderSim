@@ -202,8 +202,9 @@ public class OilCheck {
      * A town that pays its people and drives: houses, shops, bakeries to work
      * in, power, water, roads and builders, standing, on ground a quarter more
      * than they take (and `spare` more square feet) - small enough that its
-     * centre holds none of the oil field the default world puts 1.08 km from
-     * its site.
+     * centre holds none of the oil field the default world put 1.08 km from
+     * its site until 0.7.98 (since 0.7.99, batch W1, the nearest lies 14 km
+     * out).
      */
     static Game town(String label, int houses, double spare) {
         GameFiles files = GameFiles.scratch(label);
@@ -225,7 +226,7 @@ public class OilCheck {
         return g;
     }
 
-    /** The offer standing nearest the oil field nearest the city's site that it does not own (MiningCheck.towardIron(), on oil). */
+    /** The offer standing nearest the oil field on dry ground nearest the city's site that it does not own (MiningCheck.towardIron(), on oil): what a land well stands on (since 0.7.84 a dry site; the nearest field may lie in the sea since 0.7.99). */
     static LandParcel towardOil(Game game) {
         CityLand land = game.getCityLand();
         World world = game.getWorld();
@@ -237,7 +238,7 @@ public class OilCheck {
                 if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                 for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), Resource.OIL)) {
                     double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
-                    if (land.ownsPlot(d.x(), d.y()) || r >= best) continue;
+                    if (land.ownsPlot(d.x(), d.y()) || r >= best || world.depthAt(d.x(), d.y()) > 0) continue;
                     best = r;
                     nearest = d;
                 }
@@ -934,12 +935,12 @@ public class OilCheck {
         assertTrue("an Oil Well has one post, a diploma's (0.7.84; three until then: two without a diploma and one with)",
                 well.getTotalJobs() == 1 && well.getJobs(JobType.DIPLOMA) == 1);
 
-        // Bought: toward the nearest oil field, the offer nearest it each time, until an offer holds a site.
+        // Bought: toward the nearest oil field on dry ground, the offer nearest it each time, until the city holds a dry site
+        // (a land well's; since 0.7.99 the nearest field may lie in the sea, fourteen kilometres out on the default world).
         int pushes = 0;
         double paid = 0;
-        while (land.getOilSites() == 0 && pushes < 200) {
-            LandParcel p = land.getMarket().richest(Resource.OIL);
-            if (p == null) p = towardOil(g);
+        while (land.getSites(Resource.OIL, true) == 0 && pushes < 200) {
+            LandParcel p = towardOil(g);
             if (p == null) break;
             final LandParcel buy = p;
             g.setCashForTest(g.getCash() + buy.localPrice(g.getForeignAccounts().getRate()));
@@ -947,13 +948,13 @@ public class OilCheck {
             paid += buy.getPriceUsd();
             pushes++;
         }
-        int sites = land.getOilSites();
+        int all = land.getOilSites(), sites = land.getSites(Resource.OIL, true);
         double owned = land.getOwnedAmount(Resource.OIL);
         int bought = 0;
         for (CityLand.Purchase p : g.getCityLand().purchases()) bought += p.offer().getSites(Resource.OIL);
-        report("fixture: an offer with oil bought (toward the nearest field)", sites > 0,
-                String.format("%d purchase(s), US$%,.0fk, %d site(s), %,.0f t", pushes, paid, sites, owned));
-        assertTrue("...the city's oil sites are the sites its purchases listed", sites == bought);
+        report("fixture: an offer with oil on dry ground bought (toward the nearest such field)", sites > 0,
+                String.format("%d purchase(s), US$%,.0fk, %d site(s), %d dry, %,.0f t", pushes, paid, all, sites, owned));
+        assertTrue("...the city's oil sites are the sites its purchases listed", all == bought);
         report("an Iron Mine is not let through by oil", g.hasDepositFor(mine, 1) == (land.getIronDeposits() > 0),
                 land.getIronDeposits() + " iron site(s)");
 
@@ -1716,8 +1717,13 @@ public class OilCheck {
 
     /* ============================ 12. CRUDE BY GRADE (0.7.79) ============================ */
 
-    /** The world whose founding site has an oil field in the sea 2.6 km out - heavy, 8 sites, 91 m deep (spec-oil 2.7's third seed): what section 12's fixtures buy toward. */
-    static final long SEA_OIL_SEED = 709_115_276L;
+    /**
+     * The world whose founding site's nearest oil field in the sea is heavy and shallow enough for a jacket: 518, its field 3.5 km
+     * out - heavy, 12 sites (a jacket's slots), 58 m deep (fixW1-notes.md, the seed scan) - what section 12's fixtures buy toward.
+     * To 0.7.98 709,115,276 (spec-oil 2.7's third seed: 2.6 km out, 8 sites, 91 m deep); since 0.7.99 (batch W1) the deposits are
+     * fewer and bigger, at least World.FIELD_SCALE sites a field, and that world's nearest lies 103 km out, 332 m deep.
+     */
+    static final long SEA_OIL_SEED = 518;
 
     /** Tonnes of oil a fixture's centre is handed by fiat ahead of the field, so a lift crosses from it into the field: 1,000. */
     static final double FIAT_TONNES = 1_000;
@@ -1905,7 +1911,7 @@ public class OilCheck {
          * ITS WELLS ON THE FIELD'S PLATFORM (0.7.93): the field's crude is the
          * offshore pool's since the city's oil is two pools (LandManager's THE
          * TWO OIL POOLS), and only a platform's wells lift it - so an Offshore
-         * Platform stands on the field (91 m deep, WellCheck 8) and a Platform
+         * Platform stands on the field (58 m deep, WellCheck 8) and a Platform
          * Well in each of its slots, one a site. From 0.7.84 the wells were
          * land wells on dry sites handed to the centre with none of the oil,
          * lifting the one pool, the field's; until then on its own sites.

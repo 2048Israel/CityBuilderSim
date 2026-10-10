@@ -417,8 +417,11 @@ public class LandCheck {
          * parcels. An offer holds the world's fields now, every one whose
          * centre lies on its ground, whole - so a new city's first offers, a
          * few hundred metres out, seldom hold any, and the city finds its ore
-         * by growing toward it: the founding site has an iron field within
-         * World.SITE_IRON_KM, and buying toward it reaches it. (From 0.7.58 to
+         * by growing toward it: until 0.7.98 the founding site had an iron
+         * field within World.SITE_IRON_KM; since 0.7.99 (batch W1) a founding
+         * asks none, and the nearest field lies where its cluster does, some
+         * twelve kilometres out on the default world - and buying toward it
+         * reaches it. (From 0.7.58 to
          * 0.7.63, batch J1c, an offer held each site whose own centre lay in
          * its band, with its share of its field; whole again since 0.7.64,
          * batch L - Jerus: "whole iron fields as one offer". On the block grid
@@ -1714,11 +1717,38 @@ public class LandCheck {
          * site is cut into them and the rest, and every field's centre plot is
          * in exactly one - the fields whose sites lie under more than one are
          * the fixture, those the two rules part on.
+         *
+         * Since 0.7.99 (batch W1) the default site has no field within ten
+         * kilometres - the deposits are fewer and bigger, in clusters, and a
+         * founding asks no iron - so the city here is founded on the centre
+         * plot of the iron field nearest that site on dry ground (foundedOn();
+         * the nearest cluster lies in a lake): it holds that field, and the
+         * rest of its cluster lies round it.
          */
-        LandManager tiled = new LandManager();
+        Deposit onIron = nearestOnDryGround(new LandManager().getCityLand(), Resource.IRON);
+        LandManager tiled = foundedOn(onIron.x(), onIron.y());
         tiled.updateMarket(0);
-        for (int i = 0; i < 24; i++) tiled.buyParcel(tiled.getMarket().cheapest().getId(), 1e12, 0);
         CityLand t = tiled.getCityLand();
+        // The field its centre holds goes whole with that ground: no offer round the new city carries any of it, though its sites reach under them.
+        int sitesUnderOffers = 0;
+        boolean noneCarry = t.holdingOf(onIron.x(), onIron.y()) == CityLand.CENTRE;
+        for (LandParcel p : tiled.getListing()) {
+            int under = 0;
+            for (int k = 0; k < onIron.sites(); k++) {
+                long[] at = GridConversion.sitePlot(onIron, k);
+                if (p.contains(at[0], at[1]) && !t.ownsPlot(at[0], at[1])) under++;
+            }
+            sitesUnderOffers += under;
+            double[] own = offerFields(t, p, Resource.IRON);
+            if (under > 0) noneCarry &= p.getSites(Resource.IRON) == own[0] && p.getAmount(Resource.IRON) == own[1];
+        }
+        System.out.printf("   a city founded on the iron field nearest the default site on dry ground (%d sites, %,.0f Mt, %.1f km out): %d of its sites under"
+                        + " its first offers%n", onIron.sites(), onIron.amount() / 1e6,
+                LegacyLand.radius(onIron.x() - World.of(t.seed()).foundingX(), onIron.y() - World.of(t.seed()).foundingY()) * World.PLOT_M / 1000,
+                sitesUnderOffers);
+        assertTrue("fixture: a new city's centre holds an iron field some of whose sites lie under its first offers", sitesUnderOffers > 0);
+        assertTrue("no offer of a new city's carries any of the field its centre holds: it goes whole with the ground its centre is on", noneCarry);
+        for (int i = 0; i < 24; i++) tiled.buyParcel(tiled.getMarket().cheapest().getId(), 1e12, 0);
         World world = World.of(t.seed());
         int fieldsCut = 0, sitesAcross = 0, sitesAll = 0;
         boolean onePiece = true, sitesWhole = true, offersHold = true;
@@ -1764,49 +1794,36 @@ public class LandCheck {
         assertTrue("every field is held by one piece of ground at most - a holding or an offer standing - whole, wherever its sites lie",
                 onePiece && offersHold);
 
-        // The founding field: the iron field nearest the site, which the
-        // site's fourth test (an iron field within World.SITE_IRON_KM) found.
+        // The founding field: the iron field nearest the site - until 0.7.98 the one the site's fourth test (an iron field within
+        // World.SITE_IRON_KM) found; since 0.7.99 (batch W1) a founding asks no iron, and the nearest lies where its cluster does.
         LandManager fresh = new LandManager();
         fresh.updateMarket(0);
         CityLand t0 = fresh.getCityLand();
-        Deposit founding = null;
-        double nearest = Double.MAX_VALUE;
-        double km = World.SITE_IRON_KM * 1000 / World.PLOT_M;
-        for (int cell : CityLand.cellsUnder(t0.siteX() - km, t0.siteY() - km, t0.siteX() + km, t0.siteY() + km)) {
-            for (Deposit d : world.fieldsInCell(cell, Resource.IRON)) {
-                double dx = d.x() - t0.siteX(), dy = d.y() - t0.siteY(), l2 = Math.sqrt(dx * dx + dy * dy);
-                if (l2 > km || l2 >= nearest) continue;
-                nearest = l2;
-                founding = d;
-            }
-        }
-        assertTrue("fixture: the founding site's iron field", founding != null);
-        int offersOnIt = 0;
-        for (LandParcel p : fresh.getListing()) {
-            if (founding != null && p.contains(founding.x(), founding.y())) offersOnIt++;
-        }
+        Deposit founding = nearestUnowned(t0, Resource.IRON);
+        assertTrue("fixture: an iron field in the nine cells round the founding site", founding != null);
         if (founding != null) {
             LandParcel first = MiningCheck.nearestOffer(fresh.getMarket(), founding.x(), founding.y());
             System.out.printf("   the founding field: %d sites, %,.0f Mt, its centre %.0f plots out; the offer nearest it, %s, runs [%d, %d) x [%d, %d)%n",
                     founding.sites(), founding.amount() / 1e6, LegacyLand.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
                     first.where(), first.getX0(), first.getX1(), first.getY0(), first.getY1());
-            assertTrue("no offer of a new city's carries any of the founding field: it goes whole with the ground its centre is on",
-                    offersOnIt == 0);
         }
 
         System.out.println("\n--- a new city's iron is a significant investment, and the funding page sizes to it ---");
 
         /*
          * Whole fields (0.7.64): the default world puts no iron field in a new
-         * city's first ring, and its founding field - 35 sites, 449 Mt - comes
-         * whole in the one offer holding its centre, at its ground and 449 Mt
-         * at the in-ground price: about US$180M against a founding treasury of
-         * D$100M at 1.00. (At 0.7.58-0.7.63 the cheapest offer with iron was a
-         * single shared site in the first ring, 12.8 Mt for about US$5.3M, out
-         * of the founding treasury.) Buying toward its centre, the offer
-         * nearest it each time (its lane pushed out until 0.7.66), lists it;
-         * the land office's funding page then sizes its bond
-         * to the gap (Game.landCashGap()), and the bond's cash buys it.
+         * city's first ring, and its founding field - 35 sites, 449 Mt to
+         * 0.7.98 - comes whole in the one offer holding its centre, at its
+         * ground and its tonnes at the in-ground price: about US$180M against
+         * a founding treasury of D$100M at 1.00. (At 0.7.58-0.7.63 the
+         * cheapest offer with iron was a single shared site in the first
+         * ring, 12.8 Mt for about US$5.3M, out of the founding treasury.)
+         * Since 0.7.99 (batch W1) the nearest field is ten times the old
+         * world's on the mean and lies where its cluster does, some twelve
+         * kilometres out on the default world. Buying toward its centre, the
+         * offer nearest it each time (its lane pushed out until 0.7.66),
+         * lists it; the land office's funding page then sizes its bond to the
+         * gap (Game.landCashGap()), and the bond's cash buys it.
          */
         Game founded = new Game(GameFiles.scratch("landcheck-whole-iron"));
         quietly(() -> { founded.newGame(); founded.toggleNextMonth(); });
@@ -2161,6 +2178,44 @@ public class LandCheck {
             }
         }
         return nearest;
+    }
+
+    /** The field of a resource nearest a city's site, in the nine cells round it, whose centre plot is dry ground and not the city's (0.7.99): where foundedOn() puts a fixture's city. */
+    static Deposit nearestOnDryGround(CityLand land, Resource kind) {
+        World world = World.of(land.seed());
+        long cx = land.siteX() / World.CELL, cy = land.siteY() / World.CELL;
+        Deposit nearest = null;
+        double best = Double.MAX_VALUE;
+        for (long y = cy - 1; y <= cy + 1; y++) {
+            for (long x = cx - 1; x <= cx + 1; x++) {
+                if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
+                for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), kind)) {
+                    byte c = world.terrainAt(d.x(), d.y());
+                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    if (c == World.SALT || c == World.FRESH || land.ownsPlot(d.x(), d.y()) || r >= best) continue;
+                    best = r;
+                    nearest = d;
+                }
+            }
+        }
+        return nearest;
+    }
+
+    /**
+     * A land office whose city is founded on the default world at plot (x, y)
+     * rather than its founding site (0.7.99, batch W1): a centre of whole
+     * blocks round it holding a new city's dry ground (CityLand.found()),
+     * nothing taken out, its figure its dry plots - as LandManager.land()
+     * founds one. What a fixture needs a deposit near the city for: since the
+     * deposits are fewer and bigger, the default site has none within ten
+     * kilometres.
+     */
+    static LandManager foundedOn(long x, long y) {
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        LandManager lm = new LandManager();
+        lm.install(CityLand.found(w, x, y, LandManager.km2(lm.getOwnedSqFt())), new double[CityLand.KINDS], w.totals(), w.seaTheta());
+        lm.restoreOwnedSqFt(lm.getLandDrySqFt());
+        return lm;
     }
 
     /** Read by nothing since 0.7.67: the width of the bands section 19 tiled the plane with until then, 7 plots, which no offer was - the pieces are the holdings and the offers standing now. */

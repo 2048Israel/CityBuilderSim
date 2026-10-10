@@ -23,6 +23,18 @@ public class MiningCheck {
     static PrintStream out;
     static PrintStream quiet;
 
+    /**
+     * A world whose founding site has an iron field near it, as the default
+     * world's had until 0.7.98 (35 sites, 449 Mt, 0.87 km out): 35, whose
+     * nearest is 36 sites, 471 Mt, 0.97 km out on dry ground, none in a new
+     * city's centre or first offers (fixW1-notes.md, the seed scan). Since
+     * 0.7.99 (batch W1) the deposits are fewer and bigger and a founding asks
+     * no iron: the default world's nearest field lies twelve kilometres out,
+     * in a lake. What the fixtures that want a young city to buy a deposit
+     * found their city on - this one's, MapCheck's and PlanCheck's played city.
+     */
+    static final long IRON_SEED = 35;
+
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
@@ -53,8 +65,9 @@ public class MiningCheck {
      * and a new city's are a few hundred metres out, which seldom hold a
      * field's centre. So a city wanting a deposit buys the richest offer in
      * iron when one stands, and otherwise buys toward the nearest iron field
-     * it does not own - the founding site has one within World.SITE_IRON_KM -
-     * the offer nearest it each time, until an offer holds it (0.7.67; that
+     * it does not own - on IRON_SEED's world one lies a kilometre out (until
+     * 0.7.98 the founding site had one within World.SITE_IRON_KM) - the
+     * offer nearest it each time, until an offer holds it (0.7.67; that
      * field's lane pushed out before).
      */
     static void makeRoom(Game game, double sqFt, boolean wantDeposit) {
@@ -68,9 +81,10 @@ public class MiningCheck {
                     : game.getLandManager().getMarket().bestValue();
             if (ore && target == null) target = towardIron(game);
             // The ore is priced in the ground at 1/350 of its world price. The
-            // world's fields come whole - the field the default world puts by
-            // its founding site is 35 sites, about US$180M, more than a new
-            // city's treasury (0.7.57, and again since 0.7.64; from 0.7.58 to
+            // world's fields come whole - the field the default world put by
+            // its founding site was 35 sites, about US$180M, and IRON_SEED's
+            // is 36 (0.7.99), more than a new city's treasury (0.7.57, and
+            // again since 0.7.64; from 0.7.58 to
             // 0.7.63 they were shared site by site, a site about US$5.3M).
             // Either way the fixture is given the price of a deposit it cannot
             // pay for, so it is the deposit that is tested and not the
@@ -210,7 +224,8 @@ public class MiningCheck {
         Path root = Files.createTempDirectory("mining");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
-        Game city = new Game(files);
+        // On IRON_SEED's world, whose founding site has an iron field a kilometre out (0.7.99: the default world's is twelve).
+        Game city = new Game(files, Founding.defaults().withWorldSeed(IRON_SEED));
         System.setOut(quiet);
         city.run();
         System.setOut(out);
@@ -296,7 +311,7 @@ public class MiningCheck {
          * ONE SITE, ONE MINE (0.7.57). This was "but one deposit only supports
          * one mine", ordering a second and seeing it refused: a parcel's ore
          * was usually one site. A deposit is a field of the world now, and the
-         * one by the founding site holds many; what stands is that each site
+         * one by IRON_SEED's founding site holds many; what stands is that each site
          * takes one mine - as many more as the sites left, and not one more.
          */
         int sites = city.getLandManager().getIronDeposits();

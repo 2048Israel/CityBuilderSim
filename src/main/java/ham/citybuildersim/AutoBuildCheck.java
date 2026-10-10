@@ -431,8 +431,26 @@ public class AutoBuildCheck {
         }
     }
 
-    /** A hold, checked after the pass against the city as the pass left it. */
+    /**
+     * A hold, checked after the pass against the city as the pass left it. A
+     * paving's (its building "Gravel Road, paved", 0.7.70) is weighed as the
+     * pass weighs it: no ground, its cost the paving's quote (Game.quotePave())
+     * - until 0.7.99 it was looked up as a template by that name, found none,
+     * and was counted untrue; no run had held a paving for its money before.
+     */
     static boolean holdIsTrue(Game g, AutoBuilder ab, AutoBuilder.Step s) {
+        boolean paving = s.building().equals(ConstructionControl.PAVE_FROM + ", paved");
+        if (paving && s.cut() == AutoBuilder.Cut.DEBT) {
+            if (!ab.within(g)) return !ab.isCashAnyway();
+            double gap = AutoBuilder.gapFor(g, g.quotePave(1).total);
+            if (!(gap > 0)) return false;
+            if (!(ab.getDebtLimit() > 0)) return true;
+            DebtQuote q = AutoBuilder.bondFor(g, gap);
+            return q == null || AutoBuilder.ratioAfter(g, q) > ab.getDebtLimit();
+        }
+        if (paving && s.cut() == AutoBuilder.Cut.CASH) {
+            return !ab.within(g) && ab.isCashAnyway() && AutoBuilder.gapFor(g, g.quotePave(1).total) > 0;
+        }
         BuildingsTemplate t = g.getBuildingManager().getTemplateByName(s.building());
         switch (s.cut()) {
             case GROUND:

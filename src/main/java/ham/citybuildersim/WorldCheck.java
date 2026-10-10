@@ -27,12 +27,16 @@ import java.util.List;
  *      world built twice is identical; World.of() shares one; two seeds differ;
  *   2. the sea is SEA_SHARE of the world within a point, land the rest; lakes
  *      are LAKE_SHARE and forest FOREST_SHARE of the land within half a point;
- *   3. the founding site passes its four tests, re-tested here from World's
- *      constants, and stands on dry ground; the river runs from its lake,
- *      fresh water all the way, to the sea, widening as it goes;
- *   4. each cell's fields sum exactly to its total, whole tonnes, and number
- *      its count; ore centred in the sea is rarer than oil, which keeps its
- *      first place;
+ *   3. the founding site passes its three tests (since 0.7.99 no iron is
+ *      asked of it: 8 holds that), re-tested here from World's constants,
+ *      and stands on dry ground; the river runs from its lake, fresh water
+ *      all the way, to the sea, widening as it goes;
+ *   4. (since 0.7.99) each pool's fields sum exactly to its cells' totals,
+ *      whole tonnes, each listed in the cell its centre is in, FIELD_SCALE to
+ *      MAX_SITES sites, numbered from FIELD_INDEX_FROM, a cell's as many as
+ *      its count; the old world's fields, which an older save's ground
+ *      holds, as they were: each cell's sum exactly to its total; ore
+ *      centred in the sea is rarer than oil, which keeps its first place;
  *   5. the totals pass is the same every time and takes at most 200 ms
  *      (measured 30); each resource's total is its density x MEAN_SITES x its
  *      amount a site x the land within 3%, and forest's timber is its area;
@@ -46,7 +50,22 @@ import java.util.List;
  *      SHELF_SHARE of the sea is within SHELF_BREAK_M, within half a point;
  *      an oil field's grade is the same every time it is drawn, each grade
  *      is GRADE_SHARES of the fields within two points, and the grades of a
- *      cell's oil add up to its total exactly - nothing stored, no tonne moved.
+ *      pool's oil add up to its total exactly (a cell's, to 0.7.98) - nothing
+ *      stored, no tonne moved;
+ *   8. (0.7.99, batch W1; Jerus, 2026-10-08) FEWER AND BIGGER DEPOSITS, on
+ *      the default world: every pool holds a tenth of its old count of
+ *      fields (FIELD_SCALE, its fraction drawn, at least one), so the world
+ *      a tenth of the old world's of every resource; the pools' totals are
+ *      the world's to the tonne, and the fields share them exactly (the
+ *      sparse resources' whole world summed); a field is FIELD_SCALE of the
+ *      old draws, FIELD_SCALE x MEAN_SITES sites on the mean within 3%; the
+ *      fields lie in clusters - each one's nearest neighbour as near as the
+ *      old world's were, nearer than a tenth as many spread evenly would
+ *      lie; a founding asks no iron of its site (seed NO_IRON_SEED: its site
+ *      has none of the old world's within SITE_IRON_KM, where the
+ *      conversion's search, which still asks it, goes on); and the site
+ *      table's first LEGACY_MAX_SITES places are the old one's, so an older
+ *      save's sites stand where they stood.
  */
 public class WorldCheck {
 
@@ -75,8 +94,14 @@ public class WorldCheck {
     /** Cells, neither all sea nor all land, whose fields are drawn to see where ore and oil lie: 300 (about 100,000 iron fields). */
     static final int COASTAL_CELLS = 300;
 
-    /** The square of cells round the site whose oil fields are graded (section 7): 30 a side, 900 cells - some 20,000 fields, a grade's share then within a third of a point (one standard error). */
-    static final int GRADE_CELLS = 30;
+    /** The square of cells round the site whose oil fields are graded (section 7): 95 a side, 9,025 cells - some 20,000 fields, a grade's share then within a third of a point (one standard error); 30 a side to 0.7.98, when a cell held ten times the fields (World.FIELD_SCALE). */
+    static final int GRADE_CELLS = 95;
+
+    /** A world whose first plot passing a founding's three tests has none of the old world's iron within World.SITE_IRON_KM (section 8): 14, the first such seed from 1 (fixW1-notes.md; 4127, 77 and 2026 found where they did). */
+    static final long NO_IRON_SEED = 14;
+
+    /** The square of cells round the site whose iron fields' nearest neighbours are measured (section 8): 6 a side, 36 cells. */
+    static final int CLUSTER_CELLS = 6;
 
     /** How far the shelf's share of an independent sample of the sea may sit from SHELF_SHARE (spec-oil 4: half a point). */
     static final double SHELF_WITHIN = .005;
@@ -86,6 +111,7 @@ public class WorldCheck {
 
     public static void main(String[] args) {
         for (long seed : SEEDS) world(seed);
+        fewerAndBigger();
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -110,7 +136,12 @@ public class WorldCheck {
         }
         int fc = World.cellOf(w.foundingX(), w.foundingY());
         boolean fieldsSame = true;
-        for (Resource r : Resource.values()) fieldsSame &= again.fieldsInCell(fc, r).equals(w.fieldsInCell(fc, r));
+        for (Resource r : Resource.values()) {
+            fieldsSame &= again.fieldsInCell(fc, r).equals(w.fieldsInCell(fc, r))
+                    && again.legacyFieldsInCell(fc, r).equals(w.legacyFieldsInCell(fc, r));
+            int[] p = World.poolOf(fc, r);
+            if (p != null) fieldsSame &= again.poolFields(r, p[0], p[1]).equals(w.poolFields(r, p[0], p[1]));
+        }
         byte[] a = new byte[World.TILE * World.TILE], b = new byte[World.TILE * World.TILE];
         long ftx = w.foundingX() / World.TILE, fty = w.foundingY() / World.TILE;
         boolean tilesSame = true;
@@ -124,7 +155,7 @@ public class WorldCheck {
         check("...every cell's land and forest", cellsSame);
         check("...the founding site", again.foundingX() == w.foundingX() && again.foundingY() == w.foundingY());
         check("...the river and its lake", again.river().same(w.river()));
-        check("...the founding cell's fields of every resource", fieldsSame);
+        check("...the founding cell's fields of every resource, its pools' and the old world's", fieldsSame);
         check("...the 25 tiles round the site", tilesSame);
         check("...and the world's totals", Arrays.equals(again.computeTotals(), w.computeTotals()));
         check("World.of() hands every asker the same world", World.of(seed) == World.of(seed) && World.of(seed).seed() == seed);
@@ -135,10 +166,11 @@ public class WorldCheck {
             other.tileTerrain(tx, ty, b);
             for (int i = 0; i < a.length; i++) if (a[i] != b[i]) differ++;
         }
+        int[] ironPool = World.poolOf(fc, Resource.IRON);
         check("the next seed is another world: its site, its sea's level, its fields",
                 (other.foundingX() != w.foundingX() || other.foundingY() != w.foundingY())
                         && other.seaTheta() != theta
-                        && !other.fieldsInCell(fc, Resource.IRON).equals(w.fieldsInCell(fc, Resource.IRON)));
+                        && !other.poolFields(Resource.IRON, ironPool[0], ironPool[1]).equals(w.poolFields(Resource.IRON, ironPool[0], ironPool[1])));
         check("...and the ground under this one's site (" + differ + " of 25,600 plots differ)", differ > 0);
 
         /* ---------------------------------------------------------------- 2 */
@@ -184,20 +216,24 @@ public class WorldCheck {
             seaTooNear |= w.elevation(sx + World.SITE_SEA_NOT_WITHIN * c, sy + World.SITE_SEA_NOT_WITHIN * s) < theta;
             seaNear |= w.elevation(sx + World.SITE_SEA_WITHIN * c, sy + World.SITE_SEA_WITHIN * s) < theta;
         }
-        double reach = World.SITE_IRON_KM * 1000 / World.PLOT_M, nearest = Double.MAX_VALUE;
+        double nearest = Double.MAX_VALUE, nearestOld = Double.MAX_VALUE;
         for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++) {
             for (Deposit d : w.fieldsInCell(fc + dy * World.CELLS + dx, Resource.IRON)) {
                 double ex = d.x() + 0.5 - sx, ey = d.y() + 0.5 - sy;
                 nearest = Math.min(nearest, Math.sqrt(ex * ex + ey * ey));
             }
+            for (Deposit d : w.legacyFieldsInCell(fc + dy * World.CELLS + dx, Resource.IRON)) {
+                double ex = d.x() + 0.5 - sx, ey = d.y() + 0.5 - sy;
+                nearestOld = Math.min(nearestOld, Math.sqrt(ex * ex + ey * ey));
+            }
         }
-        System.out.printf("   %d of %d points round it are land; the nearest iron field %.0f m away%n",
-                landRing, World.SITE_LAND_SAMPLES, nearest * World.PLOT_M);
+        System.out.printf("   %d of %d points round it are land; the nearest iron field %s (the old world's %.0f m away)%n",
+                landRing, World.SITE_LAND_SAMPLES, nearest == Double.MAX_VALUE ? "none in the nine cells round it"
+                        : String.format("%.0f m away", nearest * World.PLOT_M), nearestOld * World.PLOT_M);
         check("the site is dry ground for SITE_DRY_PLOTS round", dry);
         check("...SITE_LAND_SHARE of the land within 5 km is land",
                 landRing >= Math.ceil(World.SITE_LAND_SHARE * World.SITE_LAND_SAMPLES));
         check("...the sea within SITE_SEA_WITHIN plots and not within SITE_SEA_NOT_WITHIN", seaNear && !seaTooNear);
-        check("...an iron field within SITE_IRON_KM", nearest <= reach);
         byte here = w.terrainAt(w.foundingX(), w.foundingY());
         check("...and the terrain there is dry", here == World.GRASS || here == World.FOREST || here == World.SAND);
         World.River river = w.river();
@@ -220,11 +256,12 @@ public class WorldCheck {
         check("...to the sea", w.elevation(river.xs()[last], river.ys()[last]) < theta);
 
         /* ---------------------------------------------------------------- 4 */
-        System.out.println("--- 4. the fields: a cell's sum to its total ---");
-        boolean exact = true, whole = true, counted = true;
-        int ironFields = 0, ironSea = 0, oilFields = 0, oilSea = 0, coastal = 0;
+        System.out.println("--- 4. the fields: a pool's sum to its cells' totals (0.7.99); the old world's, a cell's ---");
+        boolean exact = true, whole = true, counted = true, listed = true, oldExact = true, oldWhole = true;
+        int ironFields = 0, ironSea = 0, oilFields = 0, oilSea = 0, coastal = 0, pools = 0;
         long hc = World.mix(seed ^ 0xF1E1D5L);
-        int fieldsSeen = 0;
+        int fieldsSeen = 0, oldSeen = 0;
+        java.util.Set<Long> poolsSeen = new java.util.HashSet<>();
         // The nine cells round the site, then COASTAL_CELLS cells drawn from the world that are neither all sea nor all land.
         int[] sampled = new int[9 + COASTAL_CELLS];
         for (int k = 0; k < 9; k++) sampled[k] = fc + (k / 3 - 1) * World.CELLS + (k % 3 - 1);
@@ -237,29 +274,57 @@ public class WorldCheck {
             int cell = sampled[n];
             for (Resource r : Resource.values()) {
                 if (!r.inFields()) {
-                    counted &= w.fieldsInCell(cell, r).isEmpty() && w.cellFieldCount(cell, r) == 0;
+                    counted &= w.fieldsInCell(cell, r).isEmpty() && w.cellFieldCount(cell, r) == 0
+                            && w.legacyFieldsInCell(cell, r).isEmpty() && w.legacyCellFieldCount(cell, r) == 0;
                     continue;
                 }
                 List<Deposit> fields = w.fieldsInCell(cell, r);
-                double sum = 0;
-                for (Deposit d : fields) {
-                    sum += d.amount();
-                    whole &= d.amount() >= 0 && d.amount() == Math.rint(d.amount()) && d.sites() >= 1
-                            && d.sites() <= World.MAX_SITES && d.cell() == cell && World.cellOf(d.x(), d.y()) == cell;
+                for (int k = 0; k < fields.size(); k++) {
+                    Deposit d = fields.get(k);
+                    whole &= d.amount() >= 0 && d.amount() == Math.rint(d.amount()) && d.sites() >= World.FIELD_SCALE
+                            && d.sites() <= World.MAX_SITES && d.cell() == cell && World.cellOf(d.x(), d.y()) == cell
+                            && d.index() == World.FIELD_INDEX_FROM + k;
                     if (n >= 9 && r == Resource.IRON) { ironFields++; if (w.terrainAt(d.x(), d.y()) == World.SALT) ironSea++; }
                     if (n >= 9 && r == Resource.OIL) { oilFields++; if (w.terrainAt(d.x(), d.y()) == World.SALT) oilSea++; }
                 }
                 fieldsSeen += fields.size();
-                exact &= sum == w.cellTotal(cell, r);
                 counted &= fields.size() == w.cellFieldCount(cell, r);
+                // The cell's pool, once: its fields add up to its cells' totals, each listed where its centre is.
+                int[] p = World.poolOf(cell, r);
+                if (poolsSeen.add(((long) p[1] * World.CELLS + p[0]) * 8 + r.ordinal())) {
+                    pools++;
+                    List<Deposit> mine = w.poolFields(r, p[0], p[1]);
+                    double sum = 0, total = 0;
+                    for (Deposit d : mine) sum += d.amount();
+                    int side = World.poolCells(r);
+                    for (int cy = p[1] * side; cy < Math.min(World.CELLS, p[1] * side + side); cy++) {
+                        for (int cx = p[0] * side; cx < Math.min(World.CELLS, p[0] * side + side); cx++) total += w.cellTotal(cy * World.CELLS + cx, r);
+                    }
+                    exact &= sum == total && total == w.poolTotal(r, p[0], p[1]);
+                    listed &= mine.size() == w.poolFieldCount(r, p[0], p[1]);
+                }
+                // The old world's fields of the cell, as they were.
+                List<Deposit> old = w.legacyFieldsInCell(cell, r);
+                double oldSum = 0;
+                for (int k = 0; k < old.size(); k++) {
+                    Deposit d = old.get(k);
+                    oldSum += d.amount();
+                    oldWhole &= d.amount() >= 0 && d.amount() == Math.rint(d.amount()) && d.sites() >= 1
+                            && d.sites() <= World.LEGACY_MAX_SITES && d.cell() == cell && World.cellOf(d.x(), d.y()) == cell && d.index() == k;
+                }
+                oldSeen += old.size();
+                oldExact &= oldSum == w.cellTotal(cell, r) && old.size() == w.legacyCellFieldCount(cell, r);
             }
         }
         double ironSeaShare = (double) ironSea / ironFields, oilSeaShare = (double) oilSea / oilFields;
-        System.out.printf("   %,d fields in the 9 cells round the site and %d coastal cells; centred in the sea: iron %.2f%%,"
-                + " oil %.2f%%%n", fieldsSeen, coastal, 100 * ironSeaShare, 100 * oilSeaShare);
-        check("each cell's fields sum exactly to its total", exact);
-        check("...whole amounts, 1 to MAX_SITES sites, each in its own cell", whole);
-        check("...as many as its count, and forest none (it is terrain)", counted);
+        System.out.printf("   %,d fields (the old world's %,d) in the 9 cells round the site and %d coastal cells, %d pools; centred in"
+                + " the sea: iron %.2f%%, oil %.2f%%%n", fieldsSeen, oldSeen, coastal, pools, 100 * ironSeaShare, 100 * oilSeaShare);
+        check("each pool's fields sum exactly to its cells' totals (0.7.99)", exact);
+        check("...every one listed in the cell its centre is in, the pool's count", listed);
+        check("...whole amounts, FIELD_SCALE to MAX_SITES sites, numbered from FIELD_INDEX_FROM", whole);
+        check("...a cell's as many as its count, and forest none (it is terrain)", counted);
+        check("the old world's fields as they were: each cell's sum exactly to its total", oldExact);
+        check("...whole amounts, 1 to LEGACY_MAX_SITES sites, numbered from 0", oldWhole);
         check("ore is drawn off the sea: under a quarter of oil's share centred in it", ironSeaShare < oilSeaShare / 4);
 
         /* ---------------------------------------------------------------- 5 */
@@ -370,25 +435,32 @@ public class WorldCheck {
         int[] grades = new int[Deposit.Grade.values().length];
         int graded = 0;
         boolean pure = true, sums = true;
+        java.util.Set<Long> gradedPools = new java.util.LinkedHashSet<>();
         long fcx = w.foundingX() / World.CELL, fcy = w.foundingY() / World.CELL;
         for (long cy = fcy - GRADE_CELLS / 2; cy < fcy + GRADE_CELLS / 2; cy++) {
             for (long cx = fcx - GRADE_CELLS / 2; cx < fcx + GRADE_CELLS / 2; cx++) {
                 if (cx < 0 || cy < 0 || cx >= World.CELLS || cy >= World.CELLS) continue;
                 int cell = (int) (cy * World.CELLS + cx);
                 List<Deposit> fields = w.fieldsInCell(cell, Resource.OIL), twice = again.fieldsInCell(cell, Resource.OIL);
-                double[] byGrade = new double[grades.length];
                 for (int k = 0; k < fields.size(); k++) {
                     Deposit d = fields.get(k);
                     Deposit.Grade g = d.grade();
                     grades[g.ordinal()]++;
                     graded++;
-                    byGrade[g.ordinal()] += d.amount();
                     pure &= twice.get(k).grade() == g && new Deposit(d.kind(), d.cell(), d.index(), d.x(), d.y(), d.sites(), d.amount()).grade() == g;
                 }
-                double total = 0;
-                for (double v : byGrade) total += v;
-                sums &= total == w.cellTotal(cell, Resource.OIL);
+                int[] p = World.poolOf(cell, Resource.OIL);
+                gradedPools.add(((long) p[1] << 32) | p[0]);
             }
+        }
+        // A pool's oil by grade adds up to its total (since 0.7.99; a cell's before): grades move no tonne.
+        for (long key : gradedPools) {
+            int px = (int) (key & 0xffffffffL), py = (int) (key >>> 32);
+            double[] byGrade = new double[grades.length];
+            for (Deposit d : w.poolFields(Resource.OIL, px, py)) byGrade[d.grade().ordinal()] += d.amount();
+            double total = 0;
+            for (double v : byGrade) total += v;
+            sums &= total == w.poolTotal(Resource.OIL, px, py);
         }
         boolean shares = graded > 0;
         StringBuilder words = new StringBuilder();
@@ -397,10 +469,175 @@ public class WorldCheck {
             shares &= Math.abs(s - Deposit.GRADE_SHARES[g.ordinal()]) <= GRADE_WITHIN;
             words.append(String.format(" %s %.2f%%", g.name().toLowerCase(), 100 * s));
         }
-        System.out.printf("   %,d oil fields in the %d x %d cells round the site:%s%n", graded, GRADE_CELLS, GRADE_CELLS, words);
+        System.out.printf("   %,d oil fields in the %d x %d cells round the site:%s; %d pools summed by grade%n", graded, GRADE_CELLS, GRADE_CELLS,
+                words, gradedPools.size());
         check("an oil field's grade is the same every time it is drawn", pure);
         check("...each grade GRADE_SHARES of the fields, within two points", shares);
-        check("...and a cell's oil by grade adds up to its total exactly", sums);
+        check("...and a pool's oil by grade adds up to its total exactly", sums);
+    }
+
+    /* -------------------------------------------------------------------- 8 */
+
+    /**
+     * Section 8 (0.7.99, batch W1): FEWER AND BIGGER DEPOSITS on the default
+     * world - a tenth as many fields, each FIELD_SCALE of the old draws, in
+     * clusters, the world's totals to the tonne; a founding asks no iron; the
+     * site table keeps the old one's places.
+     */
+    static void fewerAndBigger() {
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        System.out.println("\n=== fewer and bigger deposits (0.7.99), on the world of seed " + seed + " ===");
+        World w = World.of(seed);
+        double[] totals = w.computeTotals();
+
+        System.out.println("--- 8. a tenth as many fields, each ten times bigger, in clusters; the totals to the tonne ---");
+        boolean tenth = true, poolRule = true, totalsKept = true;
+        for (Resource r : Resource.values()) {
+            if (!r.inFields()) {
+                totalsKept &= World.poolCells(r) == 0 && w.fieldCount(r) == 0;
+                continue;
+            }
+            long old = 0, now = 0;
+            double sum = 0;
+            for (int py = 0; py < World.poolsOnSide(r); py++) {
+                for (int px = 0; px < World.poolsOnSide(r); px++) {
+                    long o = w.poolLegacyCount(r, px, py), n = w.poolFieldCount(r, px, py);
+                    old += o;
+                    now += n;
+                    sum += w.poolTotal(r, px, py);
+                    // Each pool: its old count over FIELD_SCALE, the fraction drawn, at least one where it had any.
+                    long whole = o / World.FIELD_SCALE;
+                    poolRule &= o == 0 ? n == 0 : n >= Math.max(1, whole) && n <= whole + 1;
+                }
+            }
+            double ratio = (double) old / now;
+            System.out.printf("   %-8s pools of %2d cells a side: %,13d fields -> %,11d (%.3f to one), %.4g %ss a field -> %.4g;"
+                            + " a cluster %.1f km across%n", r, World.poolCells(r), old, now, ratio, totals[r.ordinal()] / old, r.unit(),
+                    totals[r.ordinal()] / now, 2 * World.clusterKm(r));
+            check("   " + r + ": the world's old count equals legacyFieldCount(), and a tenth of it is fieldCount()",
+                    old == w.legacyFieldCount(r) && now == w.fieldCount(r));
+            tenth &= Math.abs(ratio / World.FIELD_SCALE - 1) <= FIELD_COUNT_WITHIN;
+            totalsKept &= sum == totals[r.ordinal()];
+        }
+        check("every pool holds its old count over FIELD_SCALE, its fraction drawn, at least one where it had any", poolRule);
+        check("...so the world holds a FIELD_SCALE-th of the old world's fields of every resource, within 1%", tenth);
+        check("the pools' totals add up to the world's totals, to the tonne, every resource", totalsKept);
+
+        // The sparse resources' whole world drawn: the fields share the world's total exactly, FIELD_SCALE of the old draws each.
+        boolean shared = true, sized = true;
+        long fields = 0, sites = 0;
+        for (Resource r : new Resource[] { Resource.COAL, Resource.COPPER, Resource.URANIUM }) {
+            double sum = 0;
+            long n = 0;
+            for (int py = 0; py < World.poolsOnSide(r); py++) {
+                for (int px = 0; px < World.poolsOnSide(r); px++) {
+                    for (Deposit d : w.poolFields(r, px, py)) {
+                        sum += d.amount();
+                        n++;
+                        sites += d.sites();
+                        sized &= d.sites() >= World.FIELD_SCALE && d.sites() <= World.MAX_SITES;
+                    }
+                }
+            }
+            fields += n;
+            shared &= sum == totals[r.ordinal()] && n == w.fieldCount(r);
+            System.out.printf("   %-8s the whole world drawn: %,d fields, %.6g %ss against the world's %.6g%n", r, n, sum, r.unit(),
+                    totals[r.ordinal()]);
+        }
+        double meanSites = (double) sites / fields, expected = World.FIELD_SCALE * World.MEAN_SITES;
+        System.out.printf("   %,d fields of coal, copper and uranium: %.2f sites a field on the mean, FIELD_SCALE x MEAN_SITES %.2f%n",
+                fields, meanSites, expected);
+        check("coal's, copper's and uranium's whole world drawn: the fields sum to the world's total exactly, every one listed", shared);
+        check("...each FIELD_SCALE to MAX_SITES sites", sized);
+        check("...FIELD_SCALE x MEAN_SITES sites a field on the mean, within 3%", Math.abs(meanSites / expected - 1) <= .03);
+
+        // In clusters: the iron fields' nearest neighbours in CLUSTER_CELLS x CLUSTER_CELLS cells round the site.
+        int fc = World.cellOf(w.foundingX(), w.foundingY());
+        List<Deposit> now = new java.util.ArrayList<>(), old = new java.util.ArrayList<>();
+        double landKm2 = 0;
+        for (int dy = -CLUSTER_CELLS / 2; dy < CLUSTER_CELLS / 2; dy++) {
+            for (int dx = -CLUSTER_CELLS / 2; dx < CLUSTER_CELLS / 2; dx++) {
+                int cell = fc + dy * World.CELLS + dx;
+                now.addAll(w.fieldsInCell(cell, Resource.IRON));
+                old.addAll(w.legacyFieldsInCell(cell, Resource.IRON));
+                landKm2 += w.cellLandShare(cell) * World.CELL_KM2;
+            }
+        }
+        double nnNow = meanNearestKm(now), nnOld = meanNearestKm(old);
+        // A Poisson field's mean nearest neighbour is 1 / (2 sqrt(density)): the old world's density, and a tenth of it spread evenly.
+        double evenNow = 0.5 / Math.sqrt(now.size() / landKm2), evenOld = 0.5 / Math.sqrt(old.size() / landKm2);
+        System.out.printf("   iron in the %d x %d cells round the site (%,.0f km2 of land): %,d fields, the old world's %,d; the mean"
+                        + " nearest neighbour %.2f km, the old world's %.2f km; spread evenly %.2f km and %.2f km%n", CLUSTER_CELLS,
+                CLUSTER_CELLS, landKm2, now.size(), old.size(), nnNow, nnOld, evenNow, evenOld);
+        check("the fields lie in clusters: each one's nearest neighbour within CLUSTER_NN_OF_OLD of the old world's",
+                nnNow <= CLUSTER_NN_OF_OLD * nnOld);
+        check("...nearer than half what a tenth as many spread evenly would lie", nnNow < evenNow / 2);
+
+        /* ---------------------------------------------------------------- 8b */
+        System.out.println("--- 8b. a founding asks no iron; the conversion's search still does, on the old world's fields ---");
+        World nw = new World(NO_IRON_SEED);
+        long[] conversion = nw.searchSites(1, s -> true);
+        double nearestOld = nearestOldIronKm(nw, nw.foundingX(), nw.foundingY());
+        double convOld = conversion == null ? Double.MAX_VALUE : nearestOldIronKm(nw, conversion[0], conversion[1]);
+        System.out.printf("   seed %d: the founding site (%d, %d), the old world's nearest iron %.2f km; the conversion's search"
+                        + " (%s), its nearest %.2f km%n", NO_IRON_SEED, nw.foundingX(), nw.foundingY(), nearestOld,
+                conversion == null ? "none" : conversion[0] + ", " + conversion[1], convOld);
+        check("seed NO_IRON_SEED founds where the old world has no iron within SITE_IRON_KM", nearestOld > World.SITE_IRON_KM);
+        check("...in the same cell as the conversion's search, which went on to a site that has", conversion != null
+                && convOld <= World.SITE_IRON_KM && World.cellOf(conversion[0], conversion[1]) == World.cellOf(nw.foundingX(), nw.foundingY()));
+
+        /* ---------------------------------------------------------------- 8c */
+        System.out.println("--- 8c. the site table keeps the old one's places ---");
+        int box = 14, at = 0;
+        int[][] all = new int[(2 * box + 1) * (2 * box + 1)][];
+        for (int j = -box; j <= box; j++) for (int i = -box; i <= box; i++) all[at++] = new int[] { i, j };
+        Arrays.sort(all, (a, b) -> {
+            int da = a[0] * a[0] + a[1] * a[1], db = b[0] * b[0] + b[1] * b[1];
+            if (da != db) return Integer.compare(da, db);
+            if (a[1] != b[1]) return Integer.compare(a[1], b[1]);
+            return Integer.compare(a[0], b[0]);
+        });
+        boolean kept = Deposit.SITE_PLACES.length == World.MAX_SITES;
+        for (int k = 0; k < World.LEGACY_MAX_SITES; k++) kept &= Arrays.equals(all[k], Deposit.SITE_PLACES[k]);
+        System.out.printf("   %,d places, the last %d site widths out; the old table's %d in a box of %d%n", Deposit.SITE_PLACES.length,
+                Math.max(Math.abs(Deposit.SITE_PLACES[World.MAX_SITES - 1][0]), Math.abs(Deposit.SITE_PLACES[World.MAX_SITES - 1][1])),
+                World.LEGACY_MAX_SITES, box);
+        check("the site table holds MAX_SITES places, its first LEGACY_MAX_SITES the old table's in its order", kept);
+    }
+
+    /** How far the world's count of fields over its new count may sit from FIELD_SCALE: 1% (each pool's fraction is drawn; the sparse resources' at-least-one adds a few, measured 0.3%). */
+    static final double FIELD_COUNT_WITHIN = .01;
+
+    /** How much farther than the old world's a field's nearest neighbour may lie on the mean, clustered: 1.25 times (est.: inside a cluster the fields lie at the old world's density, and a disc of ten loses a few neighbours at its edge; measured 0.98 - 1.16 km against 1.18 - on the default world, where a tenth as many spread evenly would lie 3.4 km apart). */
+    static final double CLUSTER_NN_OF_OLD = 1.25;
+
+    /** The mean distance from each field's centre to its nearest other's, in km. */
+    static double meanNearestKm(List<Deposit> fields) {
+        int n = fields.size();
+        if (n < 2) return Double.MAX_VALUE;
+        long[][] at = new long[n][];
+        for (int i = 0; i < n; i++) at[i] = new long[] { fields.get(i).x(), fields.get(i).y() };
+        Arrays.sort(at, (a, b) -> Long.compare(a[0], b[0]));
+        double sum = 0;
+        for (int i = 0; i < n; i++) {
+            double best = Double.MAX_VALUE;
+            for (int j = i + 1; j < n && at[j][0] - at[i][0] < best; j++) best = Math.min(best, Math.hypot(at[j][0] - at[i][0], at[j][1] - at[i][1]));
+            for (int j = i - 1; j >= 0 && at[i][0] - at[j][0] < best; j--) best = Math.min(best, Math.hypot(at[j][0] - at[i][0], at[j][1] - at[i][1]));
+            sum += best;
+        }
+        return sum / n * World.PLOT_M / 1000;
+    }
+
+    /** The old world's nearest iron field's centre to a plot's, in km, over the cells within SITE_IRON_KM and one more. */
+    static double nearestOldIronKm(World w, long x, long y) {
+        double reach = (World.SITE_IRON_KM + 1) * 1000 / World.PLOT_M, best = Double.MAX_VALUE;
+        for (int cell : CityLand.cellsUnder(x - reach, y - reach, x + reach, y + reach)) {
+            for (Deposit d : w.legacyFieldsInCell(cell, Resource.IRON)) {
+                double dx = d.x() + 0.5 - (x + 0.5), dy = d.y() + 0.5 - (y + 0.5);
+                best = Math.min(best, Math.sqrt(dx * dx + dy * dy));
+            }
+        }
+        return best * World.PLOT_M / 1000;
     }
 
     /** Test 1's dry ground: land, and not a lake. */

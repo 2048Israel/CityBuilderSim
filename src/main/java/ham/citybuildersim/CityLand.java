@@ -104,6 +104,8 @@ public final class CityLand {
     private final List<GridConversion.PartField> parts = new ArrayList<>();
     private final Map<FieldKey, GridConversion.PartField> partIndex = new HashMap<>();
     private double[][] converted;
+    /** How many holdings, the centre and the purchases after it in order, hold the old world's fields (0.7.99): see oldWorldHoldings(). */
+    private int oldWorldHoldings;
 
     /* What the whole holds, kept in step: the centre's and every purchase's, added in acquisition order. */
     private final double[] totalKm2 = new double[AREAS];
@@ -210,6 +212,8 @@ public final class CityLand {
         CityLand land = new CityLand(seed, r.siteX(), r.siteY());
         land.take(r);
         land.converted = history == null ? new double[0][] : deepCopy(history);
+        // An older save's centre, drawn on the old world's fields (GridConversion.fromLanes(), fromFigure()): the old world's ground (0.7.99).
+        land.oldWorldHoldings = 1;
         return land;
     }
 
@@ -235,6 +239,8 @@ public final class CityLand {
         parts.clear();
         partIndex.clear();
         for (GridConversion.PartField p : r.parts()) addPart(p);
+        // Everything is the centre now: on the old world's fields when the centre was (GridConversion.fromFigure()'s `legacy`).
+        oldWorldHoldings = Math.min(oldWorldHoldings, 1);
         recount();
     }
 
@@ -325,6 +331,28 @@ public final class CityLand {
 
     /** The fields the city holds only part of, a converted 0.7.58-0.7.63 save's (spec-grid 2.6). */
     public List<GridConversion.PartField> partFields() { return Collections.unmodifiableList(parts); }
+
+    /**
+     * THE OLD WORLD'S GROUND (0.7.99, batch W1): how many holdings - the
+     * centre, then the purchases after it in the order made - hold the
+     * fields the world had to 0.7.98 (World.legacyFieldsInCell()). A city
+     * founded on 0.7.99 holds none; a save from before (format 35 and older)
+     * holds all it had when it was first loaded, the ground and deposits it
+     * owned as saved, and buys the new world's from then on (Game's load,
+     * NEW_FIELDS_FORMAT). Saved (DataSave's landOldWorldHoldings).
+     */
+    public int oldWorldHoldings() { return oldWorldHoldings; }
+
+    /** Whether a holding (0 the centre, k the k-th purchase; -1 none) holds the old world's fields. */
+    public boolean onOldWorld(int holding) { return holding >= 0 && holding < oldWorldHoldings; }
+
+    /** Sets how many holdings hold the old world's fields, 0 to every holding the city has: a load's (Game). */
+    void setOldWorldHoldings(int holdings) {
+        oldWorldHoldings = Math.max(0, Math.min(holdings, 1 + purchases.size()));
+    }
+
+    /** The first save format whose land says which holdings hold the old world's fields (oldWorldHoldings()): 36. An older save's are all of them. */
+    public static final int NEW_FIELDS_FORMAT = 36;
 
     /** A converted city's purchase records as its save had them (LegacyLand's 28-wide rows), kept as history; null for a city founded on the grid. */
     public double[][] convertedHistory() { return converted == null ? null : deepCopy(converted); }
@@ -490,7 +518,7 @@ public final class CityLand {
             for (int c : cellsUnder(o.getX0(), o.getY0(), o.getX1() - 1, o.getY1() - 1)) cells.add(c);
         }
         for (int cell : cells) {
-            for (Deposit d : world.fieldsInCell(cell, r)) {
+            for (Deposit d : fieldsIn(cell, r)) {
                 if (isPart(d)) continue;
                 int h = grid.owner(d.x(), d.y());
                 if (h >= 0 && h < n) out.get(h).add(new Held(d, d.sites(), d.amount()));
@@ -513,9 +541,9 @@ public final class CityLand {
         return out;
     }
 
-    /** The world's field a part field record names, or null. */
+    /** The world's field a part field record names, or null: the old world's (a part field is a 0.7.58-0.7.63 save's, converted). */
     static Deposit fieldOf(World world, GridConversion.PartField p) {
-        for (Deposit d : fields(world, p.cell(), p.kind())) if (d.index() == p.index()) return d;
+        for (Deposit d : legacyFields(world, p.cell(), p.kind())) if (d.index() == p.index()) return d;
         return null;
     }
 
@@ -530,7 +558,7 @@ public final class CityLand {
         return out;
     }
 
-    private record CellKey(long seed, int cell, Resource kind) { }
+    private record CellKey(long seed, int cell, Resource kind, boolean legacy) { }
 
     /** How many cells' fields are kept: 256 - the nine round a site for every resource, and the cells a large holding reaches. */
     static final int CELLS_KEPT = 256;
@@ -543,14 +571,43 @@ public final class CityLand {
 
     /** A cell's fields of a resource (World.fieldsInCell()), kept: drawing them places every field again, and the offers of one city ask for the same few cells. */
     static List<Deposit> fields(World world, int cell, Resource r) {
-        CellKey key = new CellKey(world.seed(), cell, r);
+        return kept(world, cell, r, false);
+    }
+
+    /** ...and the old world's (World.legacyFieldsInCell(), to 0.7.98), kept the same way: what an older save's ground holds, and its conversion reads. */
+    static List<Deposit> legacyFields(World world, int cell, Resource r) {
+        return kept(world, cell, r, true);
+    }
+
+    private static List<Deposit> kept(World world, int cell, Resource r, boolean legacy) {
+        CellKey key = new CellKey(world.seed(), cell, r, legacy);
         List<Deposit> got;
         synchronized (CELLS) { got = CELLS.get(key); }
         if (got == null) {
-            got = Collections.unmodifiableList(new ArrayList<>(world.fieldsInCell(cell, r)));
+            got = Collections.unmodifiableList(new ArrayList<>(legacy ? world.legacyFieldsInCell(cell, r) : world.fieldsInCell(cell, r)));
             synchronized (CELLS) { CELLS.put(key, got); }
         }
         return got;
+    }
+
+    /**
+     * A cell's fields of a resource as this city sees them (0.7.99, batch
+     * W1): the world's (fields()), but on ground held under the old world -
+     * the holdings an older save brought with it, oldWorldHoldings() - the
+     * fields that ground held then (legacyFields()), as saved: each field
+     * whose centre plot such a holding owns, of the old world's, and every
+     * other field of the new. What the city's holdings hold (heldFields()),
+     * the map draws and the hover names; a city founded on 0.7.99 sees the
+     * world's alone.
+     */
+    public List<Deposit> fieldsIn(int cell, Resource r) {
+        World world = World.of(seed);
+        List<Deposit> now = fields(world, cell, r);
+        if (oldWorldHoldings <= 0 || !r.inFields()) return now;
+        List<Deposit> out = new ArrayList<>();
+        for (Deposit d : legacyFields(world, cell, r)) if (onOldWorld(grid.owner(d.x(), d.y()))) out.add(d);
+        for (Deposit d : now) if (!onOldWorld(grid.owner(d.x(), d.y()))) out.add(d);
+        return out;
     }
 
     /* =====================================================================
@@ -778,14 +835,16 @@ public final class CityLand {
         return land;
     }
 
-    /** A copy, field for field: restore() of its own records - what the map's draft is drawn on (Game.MapDraft). */
+    /** A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). */
     public CityLand copy() {
-        return restore(seed, centreState(), centreRectsState(), holdingsState(), partFieldsState(), convertedState());
+        CityLand c = restore(seed, centreState(), centreRectsState(), holdingsState(), partFieldsState(), convertedState());
+        if (c != null) c.setOldWorldHoldings(oldWorldHoldings);
+        return c;
     }
 
     /** Whether two cities' land is the same, field for field. */
     public boolean same(CityLand o) {
-        return o != null && seed == o.seed && siteX == o.siteX && siteY == o.siteY
+        return o != null && seed == o.seed && siteX == o.siteX && siteY == o.siteY && oldWorldHoldings == o.oldWorldHoldings
                 && Arrays.equals(centreState(), o.centreState()) && Arrays.deepEquals(centreRectsState(), o.centreRectsState())
                 && Arrays.deepEquals(holdingsState(), o.holdingsState()) && Arrays.deepEquals(partFieldsState(), o.partFieldsState())
                 && Arrays.deepEquals(convertedState(), o.convertedState()) && grid.sameAs(o.grid);

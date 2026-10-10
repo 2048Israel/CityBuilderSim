@@ -137,6 +137,14 @@ import java.util.Map;
  *      fading; a boat pure in (call, t), a frame touching only the routes on
  *      screen; and at 10B (the oil spec's prototype's trade and lanes) a
  *      frame's boats in no more than BOAT_FRAME_MS.
+ *
+ * Since 0.7.99 (batch W1, fewer and bigger deposits, in clusters) the
+ * default world's site has no iron within ten kilometres, nor its dry place's
+ * square for his city x 1: so 1's played city stands on MiningCheck.IRON_SEED's
+ * world (its iron a kilometre out, as the default world's was), and the
+ * fixtures that need his mines - 8's runs' marks on his city x 1 and its
+ * rail yards - on his city x 1 again where its square holds iron
+ * (Squares.ironX1, dryPlace(w, side)). The copies stand at the dry place.
  */
 public class MapCheck {
 
@@ -263,7 +271,9 @@ public class MapCheck {
         out.println("\n--- 1. a city's map adds up every month: " + MONTHS + " months played as the playtest plays ---");
         GameFiles files = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy"));
         cityFiles = files;
-        Game g = new Game(files, LongPlaytest.founding());
+        // On MiningCheck.IRON_SEED's world (0.7.99): its site has an iron field a kilometre out, as the default world's had; the
+        // default world's nearest lies twelve kilometres out since the deposits are fewer and bigger.
+        Game g = new Game(files, LongPlaytest.founding().withWorldSeed(MiningCheck.IRON_SEED));
         PrintStream real = System.out, was = LongPlaytest.out;
         LongPlaytest.out = QUIET;
         System.setOut(QUIET);
@@ -566,6 +576,10 @@ public class MapCheck {
         final CityMap[] maps = new CityMap[TIMES.length];
         final long[][] counts = new long[TIMES.length][];
         final double[] buildMs = new double[TIMES.length];
+        /** His city x 1 again where its square holds iron (0.7.99, batch W1; dryPlace(w, side)): the fixtures that need his mines - the runs' marks, the rail yards - stand on it; the dry place's own holds none since the deposits are fewer and bigger. */
+        final long ironX, ironY;
+        final CityMap ironX1;
+        final long[] ironCounts;
 
         Squares() {
             out.println("\n--- the copies: Jerus's city x 1, x 9,814 (5B), x 10,000 and x 19,629 (10B) on the design's square city ---");
@@ -601,11 +615,42 @@ public class MapCheck {
             boolean exact = true;
             for (int i = 0; i < TIMES.length; i++) exact &= Arrays.equals(maps[i].totals(), counts[i]);
             check("the copies' districts sum to their counts exactly (the canonical allocation)", exact);
+            long[] iron = dryPlace(w, x1Side(types));
+            ironX = iron[0];
+            ironY = iron[1];
+            long[] c = counts[0].clone();
+            long wantMines = mine >= 0 ? Math.round(JERUS_COUNTS[mine] * TIMES[0]) : 0;
+            if (mine >= 0) c[mine] = 0;
+            ironX1 = CityMap.square(seed, ironX, ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), c);
+            if (mine >= 0) {
+                c[mine] = Math.min(wantMines, ironX1.ownedSites(Resource.IRON));
+                ironX1.reconcile(c);
+            }
+            ironCounts = c;
+            out.printf("      x 1 where its square holds iron: plot (%d, %d), %d cells from the founding site's; %,d mines on %,d sites%n",
+                    ironX, ironY, iron[2], mine >= 0 ? c[mine] : 0, ironX1.ownedSites(Resource.IRON));
         }
+    }
+
+    /** The side of Jerus's city x 1 on the design's square city, in districts: its ground over a district's (Squares). */
+    static int x1Side(BuildingVisual.Type[] types) {
+        return (int) Math.ceil(Math.sqrt(groundKm2(types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
     }
 
     /** The world cell nearest the founding site's whose middle 3 x 3 districts are DRY_PLACE dry at a sample a tile: {x, y, rings out}. */
     static long[] dryPlace(World w) {
+        return dryPlace(w, 0);
+    }
+
+    /**
+     * ...and (0.7.99, batch W1), with `side` over 0, whose square for Jerus's
+     * city x 1 - `side` districts round its middle, as CityMap.square() lays
+     * it - holds an iron field's centre, so his mines have sites and his
+     * railway its mines: where Squares' ironX1 stands. Until 0.7.98 every
+     * such square held iron; since the deposits are fewer and bigger, in
+     * clusters, the dry place itself holds none on the default world.
+     */
+    static long[] dryPlace(World w, int side) {
         int n = 3 * CityMap.TILES_A_SIDE;
         byte[] buf = new byte[n * n];
         long sx = Math.floorDiv(w.foundingX(), World.CELL), sy = Math.floorDiv(w.foundingY(), World.CELL);
@@ -617,11 +662,25 @@ public class MapCheck {
                     w.regionTerrain(cx - 3 * CityMap.DISTRICT / 2, cy - 3 * CityMap.DISTRICT / 2, World.TILE, n, buf);
                     int dry = 0;
                     for (byte b : buf) if (b != World.SALT && b != World.FRESH) dry++;
-                    if (dry >= DRY_PLACE * buf.length) return new long[] { cx, cy, ring };
+                    if (dry >= DRY_PLACE * buf.length && (side <= 0 || holdsIron(w, cx, cy, side))) return new long[] { cx, cy, ring };
                 }
             }
         }
         return new long[] { w.foundingX(), w.foundingY(), -1 };
+    }
+
+    /** Whether the square of `side` districts CityMap.square() lays round plot (x, y) holds an iron field's centre. */
+    static boolean holdsIron(World w, long x, long y, int side) {
+        long bx = Math.floorDiv(x, CityMap.DISTRICT), by = Math.floorDiv(y, CityMap.DISTRICT);
+        int h = side / 2;
+        long x0 = (bx - h) * CityMap.DISTRICT, x1 = (bx - h + side) * CityMap.DISTRICT;
+        long y0 = (by - h) * CityMap.DISTRICT, y1 = (by - h + side) * CityMap.DISTRICT;
+        for (int cell : CityLand.cellsUnder(x0, y0, x1 - 1, y1 - 1)) {
+            for (Deposit d : w.fieldsInCell(cell, Resource.IRON)) {
+                if (d.x() >= x0 && d.x() < x1 && d.y() >= y0 && d.y() < y1) return true;
+            }
+        }
+        return false;
     }
 
     /* =====================================================================
@@ -1185,8 +1244,10 @@ public class MapCheck {
         }
         Raster net = Raster.of(m);
         highways(net, "Jerus's city x 1");
-        marksReachTheView(m, Math.floorDiv(net.px0, World.TILE), Math.floorDiv(net.py0, World.TILE), net.w / World.TILE,
-                net.h / World.TILE, "Jerus's city x 1", false);
+        // The runs' marks on his city x 1 where its square holds iron (0.7.99): his railway runs from his mines.
+        Raster ironNet = Raster.of(sq.ironX1);
+        marksReachTheView(sq.ironX1, Math.floorDiv(ironNet.px0, World.TILE), Math.floorDiv(ironNet.py0, World.TILE), ironNet.w / World.TILE,
+                ironNet.h / World.TILE, "Jerus's city x 1 where its square holds iron", false);
         marksReachTheView(sq.maps[DENSE], Math.floorDiv(sq.x, World.TILE) - SCREEN_ACROSS / 2, Math.floorDiv(sq.y, World.TILE)
                 - SCREEN_DOWN / 2, SCREEN_ACROSS, SCREEN_DOWN, "the dense screen (x 10,000)", false);
         corridors(sq);
@@ -1578,7 +1639,7 @@ public class MapCheck {
 
     /** The x 1 copy with rail yards and a freight line added (0.7.72's fixture, restored in 0.7.89): its buildings, then its mines on their sites, then its railway - so the railway starts at its mine nearest the founding site and its yards are laid with the mines there. */
     static CityMap yardCity(Squares sq) {
-        long[] c = sq.counts[0].clone();
+        long[] c = sq.ironCounts.clone();
         int yard = -1, freight = -1, mine = -1;
         for (BuildingVisual.Type t : sq.types) {
             if (t == null) continue;
@@ -1594,7 +1655,8 @@ public class MapCheck {
         c[mine] = 0;
         int capacity = (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT);
         int side = (int) Math.ceil(Math.sqrt(groundKm2(sq.types) / (CityMap.DISTRICT * CityMap.DISTRICT * World.KM2_PER_PLOT)));
-        CityMap m = CityMap.square(sq.seed, sq.x, sq.y, sq.types, side, capacity, c);
+        // Where his square holds iron (0.7.99, Squares.ironX1): the yards are laid with his mines.
+        CityMap m = CityMap.square(sq.seed, sq.ironX, sq.ironY, sq.types, side, capacity, c);
         c[mine] = Math.min(wantMines, m.ownedSites(Resource.IRON));
         m.reconcile(c);
         for (int t = 0; t < c.length; t++) c[t] += rail[t];

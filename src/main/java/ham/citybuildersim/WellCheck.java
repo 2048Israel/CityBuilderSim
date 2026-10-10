@@ -598,7 +598,7 @@ public class WellCheck {
                         && land.getSites(Resource.OIL, true) == 0 && land.getSites(Resource.OIL, false) == d.sites(),
                 String.format("%d sites, %.1f m deep, %.2f km out", d.sites(), w.depthAt(d.x(), d.y()),
                         Math.hypot(d.x() - g.getCityLand().siteX(), d.y() - g.getCityLand().siteY()) * World.PLOT_M / 1000));
-        report("with no platform: room for one jacket (8 sites, a jacket to every 12 or part), no slot for a well",
+        report("with no platform: room for one jacket (its " + d.sites() + " sites, a jacket to every 12 or part), no slot for a well",
                 g.sitesFor(jacket) == 1 && g.sitesFor(seaWell) == 0 && wells.platformRoom() == 1,
                 g.sitesFor(jacket) + " jacket(s), " + g.sitesFor(seaWell) + " slot(s)");
         Game.BuildResult noSlot = quietlyGet(() -> g.buildStack(seaWell, 1, false));
@@ -609,7 +609,7 @@ public class WellCheck {
         Game.BuildResult second = quietlyGet(() -> g.buildStack(jacket, 1, false));
         int opened = g.getMonth();
         quietly(() -> g.simulateMonths(1));
-        report("a jacket stands on it; a second is refused for its deposit - the field's 8 sites are its slots - and the record"
+        report("a jacket stands on it; a second is refused for its deposit - the field's " + d.sites() + " sites are its slots - and the record"
                         + " is struck the first month played",
                 stood == Game.BuildResult.SUCCESS && second == Game.BuildResult.NO_DEPOSIT
                         && wells.platforms().equals(List.of(new Oil.Platform(d.cell(), d.index(), 0, opened + 1)))
@@ -640,7 +640,7 @@ public class WellCheck {
         int month = g.getMonth();
         quietly(() -> wells.setVintagesForTest(List.of(new Vintage(month - 40, d.sites(), WellKind.PLATFORM))));
         double expected = d.sites() * WELL_TONNES * Oil.profile(WellKind.PLATFORM, 40);
-        report("...forty months old, four months past its plateau: 8 x 415 t x 0.915^(4/12), to the bit",
+        report("...forty months old, four months past its plateau: " + d.sites() + " x 415 t x 0.915^(4/12), to the bit",
                 wells.getCapacity(Good.CRUDE) == expected && expected < d.sites() * WELL_TONNES,
                 String.format("%,.6f t", wells.getCapacity(Good.CRUDE)));
         assertTrue("...and the world's oil is conserved, to the tonne", kept);
@@ -1049,8 +1049,8 @@ public class WellCheck {
         Path file = files.saveFile(10);
         com.google.gson.JsonObject o = com.google.gson.JsonParser.parseString(Files.readString(file)).getAsJsonObject();
         int oil = Resource.OIL.ordinal();
-        assertTrue("...saved in SAVE_FORMAT 35: the depletion's oil the ground pool's E, oilDepletionAtSea the sea's",
-                o.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && GameVersion.SAVE_FORMAT == LandManager.TWO_POOLS_FORMAT
+        assertTrue("...saved in SAVE_FORMAT 35 and since: the depletion's oil the ground pool's E, oilDepletionAtSea the sea's",
+                o.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && GameVersion.SAVE_FORMAT >= LandManager.TWO_POOLS_FORMAT
                         && o.getAsJsonArray("depletion").get(oil).getAsDouble() == land.getOilExtractedOnGround()
                         && o.get("oilDepletionAtSea").getAsDouble() == land.getOilExtractedAtSea());
         // As a format-34 save carries it: one pool's E - past the dry fields' tonnes by half the sea's - and none at sea.
