@@ -4549,6 +4549,45 @@ public final class GameVersion {
      *     its share of the whole bill would have idled it), MapCheck 8 (every
      *     tile the runs mark rastered through the view as the model rasters
      *     it). The playtest is 0.7.97's, byte for byte.
+     *
+     * 0.7.99 (2026-10-09) - FEWER AND BIGGER DEPOSITS. Batch W1 (Jerus,
+     * 2026-10-08: "the world has too many deposits, a city doesnt require a
+     * deposit, you can just make a deposit deeper or in very big clusters";
+     * runs/brief-batchW.md, runs/fixW1-notes.md). The world, and the land.
+     *   - A tenth as many fields of every resource, each ten times bigger,
+     *     in clusters (World's FEWER AND BIGGER DEPOSITS): the fields are
+     *     drawn a pool of cells at a time, a field's sites ten of the old
+     *     draws added at the same tonnes a site, ten fields to a cluster on
+     *     the mean, each cluster a disc holding its fields as thickly as the
+     *     old world held them everywhere - so a tenth of the land holds
+     *     them. Every cell's total is drawn as before and a pool's fields
+     *     share its cells' totals to the tonne: the world's totals of every
+     *     resource are what they were. Iron 29.7M fields of 38 Mt on the
+     *     mean become 2.97M of 380 Mt; oil 2.96M of 379 kt become 296k of
+     *     3.79 Mt; a field 10 to 5,120 sites.
+     *   - A founding asks no iron of its site: a city may start with no
+     *     deposit, and imports what it needs. The default world's site is
+     *     where it was; its nearest iron field lies 12 km out, in a lake.
+     *     Of 659 sites a city could be founded on within 100 km of it, 2.3%
+     *     find iron in their centre or first offers (21.5% before), none
+     *     coal or oil (0.2% and 1.7%).
+     *   - Older saves keep their ground: every holding a save from before
+     *     brings holds the old world's fields, as saved, and what it buys
+     *     from then on is the new world's; its standing offers are measured
+     *     again once, at the load. Saved: save format 36.
+     *   - Harnesses: WorldCheck 8 (new section). The fixtures that needed a
+     *     deposit near the default site find one: MiningCheck, MapCheck 1
+     *     and PlanCheck 6 on a world whose site has iron a kilometre out
+     *     (MiningCheck.IRON_SEED, 35), MapCheck 8's runs' marks and rail
+     *     yards on his city x 1 where its square holds iron, the sea-oil
+     *     fixtures on seed 518 (OilCheck.SEA_OIL_SEED), OilCheck 2's land
+     *     wells toward the nearest dry field, LandCheck's on the nearest
+     *     iron field on dry ground; ConversionCheck on the old world's
+     *     fields its saves were written on. AutoBuildCheck weighs a paving's
+     *     hold as the pass does. The playtest moves from month 360: its
+     *     player bought its first iron at month 359 (West 2, six sites) and
+     *     now finds none listed in 202 looks; it ends at 545,179 people
+     *     (630,290).
      */
     public static final String VERSION = "0.7.99";
 
@@ -5151,6 +5190,22 @@ public final class GameVersion {
      *     that pool's tonnes, and none to the sea; the tonnes the floor cuts
      *     the world has back. No money moves: the crude was sold when it was
      *     lifted.
+     *
+     * 36 - THE OLD WORLD'S GROUND (0.7.99, batch W1): landOldWorldHoldings,
+     *     how many of the city's holdings - the centre, then its purchases in
+     *     the order made - hold the fields the world had to 0.7.98
+     *     (CityLand.oldWorldHoldings()); 0 for a city founded since. Here
+     *     because a format-35 build handed this save would load it WRONGLY:
+     *     it knows only the old world's fields, so the ground a city bought
+     *     since 0.7.99 would hold other fields than the ones its books and
+     *     its mines and wells were counted on.
+     *
+     *     THE OTHER DIRECTION IS READ, ONCE (Game's load): a save with no
+     *     such key, format 35 and older, holds the old world's fields on all
+     *     the ground it owned; its standing offers, listed on the old
+     *     world's fields, are measured again on the new
+     *     (LandMarket.remeasureStanding()). No money moves: the books are as
+     *     saved, and the world's totals are the same to the tonne.
      * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 36;
 
