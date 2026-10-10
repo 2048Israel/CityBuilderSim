@@ -51,7 +51,9 @@ import java.util.Map;
  *   4. A SAVED CITY PLAYS ON AS THE ONE IT WAS SAVED FROM: the city at the
  *      end of section 3, saved and loaded, and both run on with it on - the
  *      cash, the debt, every building and site, the ground it owns and what
- *      it bought, the people and its own log, month by month, to the cent.
+ *      it bought, the people and its own log, month by month, to the cent;
+ *      and (0.7.77) a town with no ground free, saved before its first pass,
+ *      buys its ground and builds the same, saved or not, to the cent.
  *   5. WHAT HOLDS IT BACK, CAUSED: a debt limit of nothing, a limit that
  *      binds and one that does not, a budget that cannot run a building, and
  *      a first police station a town does not need - each one held as it

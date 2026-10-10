@@ -53,8 +53,10 @@ package ham.citybuildersim;
  *      household rate, and a month of fuel - beats a month's pass; where the
  *      fare deters nobody the ceiling on ownership is 1, and that town owns
  *      more cars ten years on. Since 0.7.78 (batch O2) the month of fuel is
- *      petrol at wholesale, the research's ladder, so at the default fare
- *      fewer owners take the bus on cost alone: cars gain on transit.
+ *      petrol on the research's wholesale ladder - since 0.7.83 at the
+ *      forecourts' pump price on it - so at the default fare fewer owners
+ *      take the bus on cost alone than 0.7.77's pump price sent there: cars
+ *      gain on transit.
  *
  * See claude/the-fifth-link.md, HouseholdBalance's cars section and
  * InfrastructureManager's.
