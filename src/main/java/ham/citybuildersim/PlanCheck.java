@@ -213,7 +213,7 @@ public class PlanCheck {
             0.9141322942518781, 0.40143441123469004, 0.5976824865654488, 0.19275056297714122,
             0.484086489351348, 0.048266584212291304, 0.9085021855150137, 0.2026354914336543,
             0.14575023866893685, 0.17028678553403506 };
-    /** Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (half that the third budget). */
+    /** Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (the third budget half of it). */
     static final double TEST_GRAVEL = 8407.741935483871, TEST_PAVED = 980.6451612903226, TEST_PAVED_ALL = 4483.870967741936;
     /** Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()): his roads... */
     static final long TEST_PLACED_JERUS = -1980402857778823524L, TEST_STREETS_JERUS = -7143981648789130548L;
