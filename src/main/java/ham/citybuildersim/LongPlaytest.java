@@ -2445,7 +2445,8 @@ public class LongPlaytest {
     /**
      * Under the childcare flag (0.7.71, batch N2): when NEEDS YOU lists
      * childcare, the build advice's own card for it - the size that fits the
-     * need (BuildAdvice.perPlaceNeeded()) and the count that keeps it ahead
+     * need (since 0.7.101 its order over its life for the places it will fill,
+     * BuildAdvice.lifePerServed()) and the count that keeps it ahead
      * at its projection, as "Build all three" would place it - through
      * build(), which buys the ground and borrows as for any order. Nothing
      * while what is on site keeps it ahead (suggestFor() says nothing).
@@ -3118,56 +3119,14 @@ public class LongPlaytest {
     /** Over the run (0.7.67, M3b): the looks that needed iron whose cheapest field would not pay itself back (fieldEarnings() under fieldPayment()). */
     static int ironDoesNotPay;
 
-    /**
-     * What a field of `sites` iron sites would earn the city's mines a month
-     * (0.7.67, M3b): {mines, their monthly profit}. The mines are no more
-     * than the sites and than the mining sector could staff
-     * (Sector.staffableCount()), and each counted would pay on the sector's
-     * own screen (BusinessInvestment.estimatedMonthlyProfit()) with the ones
-     * before it lifting: the first is that figure, and each after it sells
-     * at home what the planners' forecast of the mills' demand leaves of the
-     * room (BusinessInvestment.forecast(), less the mines standing and on
-     * site) and the rest at the export price, as estimatedMakerProfit()
-     * splits it. The first that would not pay ends the count.
-     */
+    /** What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b): {mines, their monthly profit} - the build advice's since 0.7.101 (BuildAdvice.fieldEarnings(), moved there whole so Build's no-deposit page says what this rule says). */
     static double[] fieldEarnings(Game g, int sites) {
-        BuildingsTemplate mine = template(g, "Iron Mine");
-        Sector mining = g.getSectors().byKey(Sectors.MINING);
-        if (mine == null || mining == null || sites <= 0) return new double[] { 0, 0 };
-        BusinessInvestment plans = g.getBusinessInvestment();
-        GoodsMarket ore = g.getEconomyManager().getMarkets().get(Good.IRON);
-        double units = mine.makes(Good.IRON);
-        double room = Math.max(0, plans.forecast(mining, ore) - mining.getCapacity(Good.IRON) - mining.getPipeline(Good.IRON));
-        double first = plans.estimatedMonthlyProfit(Sectors.MINING, mine);
-        double homeFirst = Math.min(units, room);
-        double abroad = Good.IRON.exportable() ? Math.max(0, ore.netExportPrice()) : 0;
-        double perTonneAtHome = (ore.getLocalPrice() - abroad) * BusinessInvestment.operatingRateOf(mining.getOperatingRate());
-        int staffable = mining.staffableCount(mine, sites);
-        int mines = 0;
-        double monthly = 0;
-        for (int i = 0; i < staffable; i++) {
-            double home = Math.max(0, Math.min(units, room - i * units));
-            double profit = first + (home - homeFirst) * perTonneAtHome;
-            if (!(profit > 0)) break;
-            mines++;
-            monthly += profit;
-        }
-        return new double[] { mines, monthly };
+        return BuildAdvice.fieldEarnings(g, sites);
     }
 
-    /**
-     * The month's payment that repays a field's price here over
-     * Game.BUILD_BOND_YEARS (0.7.67, M3b): the level payment at the rate the
-     * market quotes for that much money at that term
-     * (DebtManager.quoteRate()) - the funding page's bond, whether or not the
-     * cash would cover it, because cash sunk in ground is cash the city does
-     * not lend or spend.
-     */
+    /** The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b) - the build advice's since 0.7.101 (BuildAdvice.fieldPayment()). */
     static double fieldPayment(Game g, LandParcel field) {
-        double price = field.localPrice(fxRate(g));
-        int months = Game.BUILD_BOND_YEARS * 12;
-        double monthlyRate = g.getDebtManager().quoteRate(price, months) / 12;
-        return monthlyRate > 0 ? price * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months)) : price / months;
+        return BuildAdvice.fieldPayment(g, field);
     }
 
     /** The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. */
