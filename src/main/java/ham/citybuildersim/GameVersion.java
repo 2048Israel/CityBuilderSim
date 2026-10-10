@@ -4784,8 +4784,59 @@ public final class GameVersion {
      *     with each road's own repairs as well, from month 37, and it ends at
      *     617,942: 230 gravel, 291 paved and 161 highways standing where
      *     0.7.102 had 683, 56 and none. runs/fixP4-notes.md, section 4.
+     *
+     * 0.7.105 (2026-10-10) - THE REFINERY'S RUN. Batch P6 (Jerus's decision
+     * of 2026-10-10 on the project's why-the-refinery-loses.md, "go for the
+     * recommended": A2 (b), R1, R2 and R3; runs/brief-batchP6.md,
+     * runs/fixP6-notes.md). No save format change (36): the run's share and
+     * its months ride Refining's extras, and an older save reads the whole
+     * run, as it ran.
+     *   - THE RUN (A2 (b); sectors.Refining, THE RUN): a crude unit runs a
+     *     barrel only while its products, at what they would fetch, beat its
+     *     crude and its haulage - the city's own take of petrol and diesel at
+     *     the net import price, everything past it and every other product at
+     *     the net export price, lubricants past the world's share and the
+     *     city's at nothing; the wells' crude at its local price, the rest at
+     *     the net import price; only what the run moves counts (the vans'
+     *     diesel with it). It moves a quarter of nameplate a month at most
+     *     (RUN_PACE, the brief's example), struck at the month's end on that
+     *     month's prices; the operating rate is the plant's times it. What it
+     *     leaves idle six months is spare, and the spare-capacity rule sells
+     *     a crude unit, a quarter of them at most, never into what the run
+     *     used. A fixture's held refiners hold their run.
+     *   - THE PLANNER'S PRICES AT THE MARGIN (R1; SpreadPlanner.cityValue(),
+     *     Refining.cityValues()): a product nobody trades at its net export
+     *     price, where it read the band's middle; petrol and diesel at the net
+     *     import price only up to what the city imports, past it at the net
+     *     export price; and an order weighed at the run the campus would take
+     *     with it standing - behind a run that stops, at nothing.
+     *   - THE NEXT CARGO'S ROOM (R2; Refining.CARGO_KEPT_FREE): the refiners
+     *     keep an MR's cargo of their Tank Farms' room free. A Crude Unit's
+     *     month beside one farm left 14,185 t free, under an MR's 37,500, and
+     *     no tanker ever landed.
+     *   - ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (R3): a crude unit on
+     *     site no longer holds the refiners' planner "already building"; while
+     *     only crude units are on site it may order a conversion unit or a
+     *     Tank Farm, one at a time, and no other crude unit. Every other
+     *     sector keeps its one order.
+     *   - THE WORDS: Refining's page says the run and why (the seven
+     *     throttles multiply); the refinery's picture why a month ran nothing,
+     *     and under its pointer why the run is short; the oil page's crude
+     *     units "idle" or "part run", and why.
+     *   - Harnesses: RefineryCheck 9 (an untraded good at its net export
+     *     price) and 14 (its town's refinery on its own wells' crude) moved;
+     *     16 to 19 new - the study's margins from the model's own prices to
+     *     its tenth of a point, the run in a town and its spare sold, the
+     *     planner at the margin, one order; PortCheck 7, the next cargo's room.
+     *   - Jerus's 1008 city, 24 months (m8474 to m8497): the run falls to
+     *     nothing in four months, then follows the prices - the railway's
+     *     freight eases while it stands - from nothing to 79% of nameplate,
+     *     most months the barrels of the city's own diesel or petrol (13% to
+     *     29%); crude 39.7M t to 12.6M t, products shipped 42.6B L to 12.1B
+     *     L, the refiners' loss $371M to $190M. Freed of his 14 Crude Units on
+     *     site, the planner orders a Hydrocracker. runs/fixP6-notes.md, 1.
      */
-    public static final String VERSION = "0.7.103";
+    public static final String VERSION = "0.7.105";
 
     /**
      * The save shape.

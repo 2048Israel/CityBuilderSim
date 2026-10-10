@@ -43,7 +43,9 @@ package ham.citybuildersim;
  * run it a month at a time, so crude goes by sea only while the refiners'
  * Tank Farms have room free for at least an MR's cargo, in the largest class
  * that fits (crudeShip()); without it crude stays on the railway and the
- * lorries, HELD BACK FOR ROOM, and Refining's page says how much. The other
+ * lorries, HELD BACK FOR ROOM, and Refining's page says how much. Since
+ * 0.7.105 the refiners keep that room free (sectors.Refining.
+ * CARGO_KEPT_FREE): a farm no longer fills with their month. The other
  * liquids go in MR product tankers, a depot's parcel.
  *
  * THE ROAD. What goes by sea is off the street as what goes by rail is, less

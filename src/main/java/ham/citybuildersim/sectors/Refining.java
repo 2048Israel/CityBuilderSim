@@ -54,6 +54,10 @@ import java.util.Map;
  * AND ITS TANK FARM (0.7.85, batch O8; spec-oil 2.8; THE TANK FARM, below):
  * with one standing the refiners keep a month of their crude on hand and
  * run on what they have and what they bought.
+ *
+ * AND ITS RUN (0.7.105, batch P6; THE RUN, below): the crude units run only
+ * the barrels that pay at what their products would fetch, moving a quarter
+ * of nameplate a month at most; what that leaves idle is spare, and sold.
  */
 public final class Refining extends Sector {
 
@@ -625,8 +629,8 @@ public final class Refining extends Sector {
      * water - the generic rule's "energy and water and nothing else" - and
      * what the city does not take ships at the net export price. Whether
      * the crude should be run at all is the crude units' question: the
-     * planner's when it builds them (THE SPREAD PLANNER), the distress
-     * rule's when they lose money.
+     * planner's when it builds them (THE SPREAD PLANNER), and since 0.7.105
+     * the run's, every month (THE RUN).
      */
 
     /** A product's marginal cost to sell or ship: its share of the month's power and water over what the line makes at the rate - not of the crude, which is the run's (THE RUN'S PRODUCTS ALL LEAVE). Nothing made (0.7.105: a run the rule has stopped, THE RUN), nothing: what is in the tanks costs nothing more to sell, the power and water billed either way. */
@@ -743,8 +747,9 @@ public final class Refining extends Sector {
        rate, the month they ran it - a well ships what it lifts. A Tank Farm
        (buildings.json: the refiners' 500,000 m3 of tanks) makes it a stock.
        With one standing the refiners keep CRUDE_COVER_MONTHS of their crude
-       units' run on hand (crudeKept(): a month at nameplate, as far as the
-       farms' room holds it, ★ spec-oil 2.8), and their products share the
+       units' run on hand (crudeKept(): a month of the run, as far as the
+       farms' room holds it with an MR's cargo kept free - since 0.7.105,
+       THE NEXT CARGO'S ROOM - ★ spec-oil 2.8), and their products share the
        rest of the room (getStockCapacity()). The tanks are what a tanker's
        cargo will land in (the ports, batch O9: a farm is built for them
        when a port holds crude back for room; until then the investors
@@ -1317,7 +1322,8 @@ public final class Refining extends Sector {
        {0, its feed}, so the spare-capacity rule sells it while Refining
        loses money. ★ The crude units stay the distress rule's, as every
        maker's plant is, while no kind of unit stands idle long enough to go
-       first.
+       first - and since 0.7.105 the spare-capacity rule's too, for the
+       nameplate the run has left idle six months (THE RUN).
        ===================================================================== */
 
     /** The most conversion units a crude unit is weighed with: the prototype's twelve rounds (spread.py, its package) - more than one of each of the seven kinds. */
