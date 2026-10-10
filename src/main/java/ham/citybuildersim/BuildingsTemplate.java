@@ -262,6 +262,31 @@ public class BuildingsTemplate {
     /** Litres a month a filling station sells at its typical throughput; 0 for every other building. */
     public double pumpLitres() { return pumpLitres; }
 
+    /* ----- A ROAD'S OWN REPAIRS (0.7.103, batch P4; Jerus's A11, 2026-10-10) -----
+       Every building is repaired at RealEstate.MAINTENANCE_PER_YEAR of what it
+       cost to put up a year, a real order with the builders in its own inputs
+       (EconomyManager.maintenanceBillFor()). At that one rate gravel was the
+       cheaper road to keep, which real gravel is not, so each road kind has
+       its own share ("repairs" in buildings.json; the sources are the
+       file's _readme and the three roads' entries): the Gravel Road 5%, the
+       Paved Road 2.5%, the Elevated Highway 1.25%. Every other building
+       has none and is repaired at the house rate. */
+    private double repairsPerYear;
+
+    /** Gives this building its own repairs a year, a share of what it cost to put up; 0 or less is none (the house rate). */
+    public BuildingsTemplate setRepairsPerYear(double shareAYear) {
+        this.repairsPerYear = Double.isFinite(shareAYear) ? Math.max(0, shareAYear) : 0;
+        return this;
+    }
+
+    /** Whether this building has a repairs share of its own (0.7.103: the three road kinds). */
+    public boolean hasOwnRepairs() { return repairsPerYear > 0; }
+
+    /** Its repairs a year, a share of what it cost to put up: its own, or RealEstate.MAINTENANCE_PER_YEAR. */
+    public double repairsPerYear() {
+        return repairsPerYear > 0 ? repairsPerYear : ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR;
+    }
+
     /* ----- A SEA TERMINAL'S BERTH (0.7.86, batch O9; runs/spec-oil.md 2.9) -----
        A terminal is one berth of one kind of cargo (Ports.Cargo) and handles
        its berth's tonnes a year ("port": {"cargo": "LIQUID", "tonnes":

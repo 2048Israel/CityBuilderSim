@@ -40,7 +40,11 @@ import java.util.Map;
  *      for the road is its quote, its ground at landValue(), and running()
  *      for LIFE_MONTHS at the real rate - each part recomputed here, to the
  *      bit; the repairs in running() are what the month's maintenance bill
- *      charges the city for one more such road.
+ *      charges the city for one more such road - since 0.7.103 (batch P4,
+ *      Jerus's A11) each road kind at its own share a year of its price
+ *      (BuildingsTemplate.repairsPerYear(): gravel 5%, paved 2.5%, the
+ *      highway 1.25%; a line the house's 1%), so a gravel road is the
+ *      dearest to keep a trip it carries and the highway the cheapest.
  *   2. THE ADVICE TAKES THE LEAST OVER ITS LIFE, AND GRAVEL CAN STILL WIN:
  *      with no ground free, the road the advice suggests is the candidate
  *      whose order costs least over its life for the trips it will take off
@@ -92,6 +96,11 @@ public class RoadCheck {
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
         out.printf("%-96s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        out.printf("%-96s %s  %s%n", label, ok ? "OK" : "FAIL", detail);
     }
 
     static void bits(String label, double actual, double expected) {
@@ -232,7 +241,7 @@ public class RoadCheck {
             if (t.getCategory() != BuildingType.INFRASTRUCTURE) continue;
             double materials = Math.max(0, bm.getConstructionMaterialPrice());
             double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
-                    * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
+                    * t.repairsPerYear() / 12;
             double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
                     + t.getWaterConsumption() * econ.getPricePerWaterUnit();
             double riders = BuildAdvice.roads(g, BuildAdvice.plus(site, t, 1)).getTransitRiders()
@@ -247,8 +256,31 @@ public class RoadCheck {
                     g.quoteBuild(t, 1).total, BuildAdvice.landValue(g, t.getLandSqFt(), free), BuildAdvice.running(g, t, site),
                     BuildAdvice.lifetime(g, t, free, site));
         }
-        assertTrue("running() is the repairs (1% a year of its price, tax in), power and water at the utility's prices,"
-                + " its posts and upkeep, less its riders' fares, to the bit (" + weighed + " roads and lines)", run && weighed == 6);
+        assertTrue("running() is the repairs (its own share a year of its price since 0.7.103, tax in), power and water at"
+                + " the utility's prices, its posts and upkeep, less its riders' fares, to the bit (" + weighed
+                + " roads and lines)", run && weighed == 6);
+        // EACH ROAD KIND ITS OWN REPAIRS (0.7.103, batch P4; Jerus's A11), buildings.json's "repairs".
+        BuildingsTemplate gravelT = template(g, GRAVEL), pavedT = template(g, "Paved Road"),
+                highwayT = template(g, "Elevated Highway");
+        boolean lines = true;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (t.getCategory() == BuildingType.INFRASTRUCTURE && t != gravelT && t != pavedT && t != highwayT) {
+                lines &= !t.hasOwnRepairs() && t.repairsPerYear() == ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR;
+            }
+        }
+        assertTrue("each road kind's repairs are its own share a year - gravel 5%, paved 2.5%, the highway 1.25% - and every"
+                + " line's the house's 1% (0.7.103)", gravelT.repairsPerYear() == .05 && pavedT.repairsPerYear() == .025
+                && highwayT.repairsPerYear() == .0125 && lines);
+        double[] perTrip = new double[3];
+        BuildingsTemplate[] three = { gravelT, pavedT, highwayT };
+        for (int k = 0; k < 3; k++) {
+            double materials = Math.max(0, bm.getConstructionMaterialPrice());
+            perTrip[k] = econ.withBuildersTax(bm.nonMaterialCost(three[k]) + three[k].getConstructionMaterials() * materials)
+                    * three[k].repairsPerYear() / 12 / three[k].getCapacity();
+        }
+        report("...so gravel is the dearest road to keep a trip it carries and the highway the cheapest, as real gravel is"
+                        + " (at the house's 1% gravel was the cheapest)", perTrip[0] > perTrip[1] && perTrip[1] > perTrip[2],
+                String.format("repairs a month a trip: gravel %.5f, paved %.5f, highway %.5f", perTrip[0], perTrip[1], perTrip[2]));
         assertTrue("lifetime() is its quote, its ground at landValue() and running() x the life factor, to the bit", whole);
         // The repairs are the month's own bill: one more gravel road standing adds exactly them.
         BuildingsTemplate gravel = template(g, GRAVEL);
@@ -258,8 +290,8 @@ public class RoadCheck {
                 - gravel.getWaterConsumption() * econ.getPricePerWaterUnit() - BuildCard.runningCost(g, gravel);
         quietly(() -> g.buildStack(gravel, 1, true));
         double after = econ.maintenanceBillFor(BuildingType.INFRASTRUCTURE, price);
-        close("...and the repairs are what the month's maintenance bill charges the city for one more gravel road",
-                after - before, repairs, 1e-9);
+        close("...and the repairs are what the month's maintenance bill charges the city for one more gravel road, at its"
+                + " own share", after - before, repairs, 1e-9);
     }
 
     /* ============================ 2. THE ADVICE ============================ */

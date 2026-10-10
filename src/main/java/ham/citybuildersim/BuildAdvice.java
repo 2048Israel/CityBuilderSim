@@ -1305,14 +1305,22 @@ public final class BuildAdvice {
        are a share of its smaller price - so the life moves the line toward
        gravel, not away: a paved road wins where a gravel road's ground is
        worth about 1.4 to 1.7 times its price.
+
+       EACH ROAD ITS OWN REPAIRS (0.7.103, batch P4; Jerus's A11): the share
+       a year is the road kind's own (BuildingsTemplate.repairsPerYear() -
+       gravel 5%, paved 2.5%, the highway 1.25%, where every road was at the
+       house's 1%), so a gravel road is the dearer to keep a trip it carries,
+       as real gravel is, and running() reads it.
        ===================================================================== */
 
     /** Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". */
     public static final int LIFE_MONTHS = Game.BUILD_BOND_YEARS * 12;
 
     /**
-     * What one costs the city a month, standing (0.7.70): its repairs - one
-     * percent a year of what one costs to put up today, its work and its
+     * What one costs the city a month, standing (0.7.70): its repairs - its
+     * share a year of what one costs to put up today (since 0.7.103 a road
+     * kind's own, BuildingsTemplate.repairsPerYear(); the house's one percent
+     * for every other), its work and its
      * material, with the builders' tax: the rule the month charges every
      * city building by (EconomyManager.maintenanceBillFor(),
      * RealEstate.MAINTENANCE_PER_YEAR) - its power and water at the
@@ -1327,7 +1335,7 @@ public final class BuildAdvice {
         EconomyManager econ = game.getEconomyManager();
         double materials = Math.max(0, bm.getConstructionMaterialPrice());
         double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
-                * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12;
+                * t.repairsPerYear() / 12;
         double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
                 + t.getWaterConsumption() * econ.getPricePerWaterUnit();
         double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();

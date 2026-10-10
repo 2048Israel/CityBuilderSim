@@ -75,6 +75,12 @@
   "A WATER building draws fresh water unless it says \"source\": \"SEA\". Fresh water is",
   "held to what the lakes and river the city owns yield (121,600 units a month a km2);",
   "a SEA building is not held to it, and needs the city to own some sea.",
+  "A ROAD's \"repairs\" is its own repairs a year, a share of what it cost to put up",
+  "(0.7.103; every other building is repaired at 1% a year): the Paved Road 2.5% and",
+  "the Elevated Highway 1.25%, the middles of the Canadian Infrastructure Report Card",
+  "2016's reinvestment rates for roads (2-3% of replacement value a year) and bridges",
+  "(1-1.5%); the Gravel Road twice the paved road's, 5% (BuildingsTemplate, A ROAD'S",
+  "OWN REPAIRS).",
   "",
   "For HEALTHCARE, 'care' says what the building treats and 'capacity' is how",
   "many of those people it has room for: CHILDCARE counts babies and children,",
@@ -436,7 +442,8 @@
    "electricity": 5,
    "water": 0,
    "land": 450000,
-   "roadLoad": 0
+   "roadLoad": 0,
+   "repairs": 0.05
   },
   {
    "id": 13,
@@ -450,7 +457,8 @@
    "water": 0,
    "land": 250000,
    "roadLoad": 0,
-   "freightGrade": 0.35
+   "freightGrade": 0.35,
+   "repairs": 0.025
   },
   {
    "id": 30,
@@ -464,7 +472,8 @@
    "water": 0,
    "land": 63000,
    "roadLoad": 0,
-   "freightGrade": 1.0
+   "freightGrade": 1.0,
+   "repairs": 0.0125
   },
   {
    "id": 14,

@@ -113,7 +113,8 @@ public final class RealEstate extends Sector {
      * Repairs: one percent a year of what a building cost to put up, placed
      * as a real order with the builders in the building's own inputs. About
      * $34 a home a month; a tenth to a fifth of gross rent, which is what
-     * real landlords spend.
+     * real landlords spend. The house rate: since 0.7.103 a road kind has its
+     * own (BuildingsTemplate.repairsPerYear()).
      */
     public static final double MAINTENANCE_PER_YEAR = .01;
 
