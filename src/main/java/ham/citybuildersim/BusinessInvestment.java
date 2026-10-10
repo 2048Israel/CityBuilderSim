@@ -82,7 +82,9 @@ public class BusinessInvestment {
        IT DOES NOT STOP A SECTOR EXISTING. A held sector still books, still
        trades, still pays its people - it simply never asks to build, which
        leaves it at whatever the fixture put up by hand. That is what a
-       control is.
+       control is. (Since 0.7.105 held refiners also hold their run where
+       the fixture left it - sectors.Refining, THE RUN: what they run is
+       their decision too.)
        ===================================================================== */
     private final java.util.Set<String> held = new java.util.LinkedHashSet<>();
 

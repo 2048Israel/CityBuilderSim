@@ -195,10 +195,13 @@ public final class RefineryView {
      * @param buyers     who took them, in BuyerKind's order, ABROAD last
      * @param links      the run traced from cut to unit to product, at the month's rate (trace())
      * @param burned     residue burned for want of diesel to cut it, litres at the rate
+     * @param runShare   the crude units' run, a share of nameplate (0.7.105, Refining's THE RUN): the month's when
+     *                   counted, else the one the next month will run - already in `rate`
+     * @param run        why it runs what it runs: the run's verdict on the month's prices (Refining.runVerdict())
      */
     public record View(boolean standing, boolean counted, int crudeUnits, double rate, RefineryFlow.Flow flow,
                        double[] mix, List<Source> sources, List<Unit> units, List<Product> products,
-                       List<Buyer> buyers, List<Link> links, double burned) {
+                       List<Buyer> buyers, List<Link> links, double burned, double runShare, Refining.RunVerdict run) {
 
         /** The crude the month ran, litres. */
         public double runLitres() { return counted ? flow.crude() * rate : Double.NaN; }
@@ -257,6 +260,9 @@ public final class RefineryView {
         RefineryFlow.Flow flow = counted ? months : r.flow();
         double rate = counted ? r.monthsRate() : Double.NaN;
         double[] mix = counted ? r.monthsMix() : r.getCrudeMix();
+        // ...and the run (0.7.105): the share the month ran, and why - the verdict on its prices.
+        double runShare = counted ? r.monthsRun() : r.runShare();
+        Refining.RunVerdict verdict = crudeUnits > 0 ? r.runVerdict() : null;
 
         /* ----- the units, and one more of each kind weighed ----- */
         double[] feed = r.unitFeed(false);
@@ -273,7 +279,7 @@ public final class RefineryView {
 
         if (!counted) {
             return new View(crudeUnits > 0, false, crudeUnits, Double.NaN, flow, mix, List.of(),
-                    Collections.unmodifiableList(units), List.of(), List.of(), List.of(), Double.NaN);
+                    Collections.unmodifiableList(units), List.of(), List.of(), List.of(), Double.NaN, runShare, verdict);
         }
 
         /* ----- the crude: where it was bought, the run credited to it ----- */
@@ -378,7 +384,7 @@ public final class RefineryView {
 
         return new View(crudeUnits > 0, true, crudeUnits, rate, flow, mix, Collections.unmodifiableList(sources),
                 Collections.unmodifiableList(units), Collections.unmodifiableList(products),
-                Collections.unmodifiableList(buyers), trace(flow, rate), flow.burned() * rate);
+                Collections.unmodifiableList(buyers), trace(flow, rate), flow.burned() * rate, runShare, verdict);
     }
 
     private static void addSource(List<Source> to, SourceKind kind, int count, double bought, double tonnes, double[] grades) {
@@ -1045,7 +1051,7 @@ public final class RefineryView {
             Node n = cuts.get(c);
             if (!(n.h > 0)) continue;
             boxes.add(new Box(cx, n.y, cw, n.h, colour(c), .92, null, false, false, 0,
-                    cutName(c) + ": " + litres(n.h / k) + " of the month's run"));
+                    cutName(c) + ": " + litres(n.h / k) + " of the month's run" + withRun(v)));
             if (n.h >= WORDS_IN_BAND) {
                 words.add(new Words(cutName(c), cx + 6, n.y + n.h / 2 + 3.5, Face.SANS_STRONG, 9.5,
                         c == Stream.RESIDUE || c == Stream.GAS_OIL ? TEXT : ON_BAND, Align.START, cw - 8, false));
@@ -1085,7 +1091,7 @@ public final class RefineryView {
         for (Map.Entry<Kind, Node> e : unitNodes.entrySet()) {
             Unit u = units.get(e.getKey());
             Node n = e.getValue();
-            boxes.add(new Box(n.x, n.y, n.w, Math.max(n.h, 3), UNIT_FILL, 1, UNIT_EDGE, false, false, 3, unitTip(u)));
+            boxes.add(new Box(n.x, n.y, n.w, Math.max(n.h, 3), UNIT_FILL, 1, UNIT_EDGE, false, false, 3, unitTip(u) + withRun(v)));
             double unitSlot = xTank - n.x - 6;
             words.add(new Words(unitName(u), n.x, n.y - 5, Face.SANS_MEDIUM, 10.5, TEXT, Align.START, unitSlot, true,
                     Words.run("  " + unitWords(u), Face.SANS, 9.5, u.idle() ? HOT : TEXT_2)));
@@ -1573,10 +1579,22 @@ public final class RefineryView {
     /** The strip's line names, in a cell's order. */
     public static final String[] CELL_LINES = { "made here", "imported", "exported", "tanks", "price here" };
 
-    /** What the card says when there is no month to draw: no crude unit, a month not counted, a month that ran nothing. */
+    /** What the card says when there is no month to draw: no crude unit, a month not counted, a month that ran nothing - and since 0.7.105 why, when the run stopped it (Refining.runWords()). */
     public static String emptyWords(View v) {
         if (!v.standing()) return "No crude unit stands: the refinery has nothing to draw.";
         if (!v.counted()) return "Not drawn until a month runs: the month's figures are not saved.";
+        if (!(v.runShare() > 0) && v.run() != null) return "The crude units ran nothing this month. " + Refining.runWords(v.run(), v.runShare());
         return "The crude units ran nothing this month.";
+    }
+
+    /** The run in a sentence or two (0.7.105): its share of nameplate and why (Refining.runWords()); empty with no crude unit. */
+    public static String runTip(View v) {
+        if (v.run() == null || !Double.isFinite(v.runShare())) return "";
+        return String.format("The crude units ran %.0f%% of nameplate. ", 100 * v.runShare()) + Refining.runWords(v.run(), v.runShare());
+    }
+
+    /** ...on a line of its own under a cut's or a unit's pointer while the run is short of nameplate; nothing at the whole run. */
+    static String withRun(View v) {
+        return v.runShare() < 1 && !runTip(v).isEmpty() ? "\n" + runTip(v) : "";
     }
 }
