@@ -138,8 +138,8 @@ import java.util.List;
  *      strict ones, are the 0.7.52 rule to the bit; every step's weight is
  *      over one, and over the target the rate rises with each step; the
  *      words say what it aims at.
- *      Then a probe city - the playtest's founding and rhythm (its seed 11's
- *      shape since 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
+ *      Then a probe city - the playtest's founding and rhythm (its seed 8's
+ *      shape since 0.7.102, seed 11's from 0.7.67, seed 2's from 0.7.58, seed 5's before) to month STRICT_BRANCH at Standard - played on STRICT_HORIZON
  *      months from one save at each end and at Standard: the Policy tab's
  *      preview (PolicyPreview.ruleAt()) at the step in force is the rule's
  *      own; very strict holds prices lower than Standard; the very loose
@@ -1805,9 +1805,10 @@ public class CentralBankCheck {
 
     /**
      * The probe city: the playtest's founding (LongPlaytest.founding()) in
-     * its seed 11's shape - 43 houses, then five months before the next 20
-     * - and its rhythm (LongPlaytest.main's skips, schools and advice) to
-     * STRICT_BRANCH, on the rule at the default target and Standard.
+     * its seed 8's shape since 0.7.102 - 40 houses, then five months before
+     * the next 20 - and its rhythm (LongPlaytest.main's skips, schools and
+     * advice) to STRICT_BRANCH, on the rule at the default target and
+     * Standard.
      *
      * A SEED WHOSE CITY IS CALM: from its month 600 the twins keep the same
      * people and only the rule differs, so what the dial does to prices is
@@ -1835,6 +1836,18 @@ public class CentralBankCheck {
      * out of work) - and it holds every assertion: 2.987% < 3.321% <
      * 4.137%, the very loose twin's trust 0.624 against 0.933
      * (runs/fixM3b-notes.md).
+     *
+     * SEED 8'S SINCE 0.7.102, for seed 3's old reason. Once what borrowing
+     * costs up front was expensed and the sheet read at the close (Jerus's
+     * A16), seed 11's city reached month 600 at 0.50% a year and its twins
+     * kept inside the target's tolerance (1.797 to 1.946% a year): its very
+     * loose twin trusted the bank exactly as Standard's did (0.942153 both),
+     * and "very loose costs trust" could not be shown. Of the sixteen shapes
+     * probed on 0.7.102 (runs/fixP3-notes.md), eleven hold every premise;
+     * the calmest of them that shows the lean plainly is seed 8's - its twins
+     * 9,194 to 9,196 people - at 2.567% < 2.838% < 3.323% a year, the very
+     * loose twin's trust 0.753 against 0.932 (seed 3's twins are as calm,
+     * 4,783 to 4,784, but the lean costs them 0.915 against 0.949).
      */
     static Game probeCity(GameFiles files) {
         Game g = new Game(files, LongPlaytest.founding());
@@ -1848,7 +1861,7 @@ public class CentralBankCheck {
                 g.setRolloverMode(LongPlaytest.ROLLOVER);
                 g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
                 g.setFundDial(LongPlaytest.FUND_DIAL);
-                LongPlaytest.villageBuild(g, "House", 43);
+                LongPlaytest.villageBuild(g, "House", 40);
                 LongPlaytest.villageBuild(g, "Convenience Store", 3);
                 LongPlaytest.villageBuild(g, "Mixed Farm", 2);
                 LongPlaytest.run(g, 5);

@@ -4632,10 +4632,11 @@ public final class GameVersion {
      *     the debt schedule runs close to close.
      *   - WHAT BORROWING COSTS UP FRONT IS EXPENSED AND DEDUCTED (A16, F1 and
      *     F2): the bank's fee, a mortgage's insurance premium and a bond's
-     *     issuing costs are carried as an asset and expensed a sixtieth a
-     *     month for five years before the profit tax (Canada's Income Tax
-     *     Act s.20(1)(e); Sector.BORROWING_COST_MONTHS) - no longer outside
-     *     the trading result.
+     *     issuing costs are carried as an asset and expensed over each
+     *     debt's life before the profit tax - a mortgage's over its
+     *     amortization, a loan's and a bond's over its term (IFRS 9's
+     *     effective rate, in equal months) - no longer outside the trading
+     *     result.
      *   - A17: the arrears a business is paid have been a line of its cash
      *     flow statement since 0.7.55; now asserted on the statement's row.
      *   - THE FUND'S FORCED SALE AT THE DESK'S BID (A21): over the default

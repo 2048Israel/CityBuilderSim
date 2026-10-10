@@ -61,14 +61,13 @@ public final class SectorState {
 
     /**
      * What its borrowing cost it up front and it is still to expense (0.7.102,
-     * A16): the vintages a sixtieth of each is expensed a month, newest first
-     * (Sector.BORROWING_COST_MONTHS of them), and what it paid since the last
-     * strike. Null and zero in an older save: its borrowing's costs moved its
-     * equity the month they were paid, outside the trading result, so there
-     * is nothing left to expense. See Sector, WHAT ITS BORROWING COST IT UP FRONT.
+     * A16): the month's charge by how many months it has still to run (index
+     * k, k months), to its last charge. Null in an older save, and in one
+     * with nothing to expense: its borrowing's costs moved its equity the
+     * month they were paid, outside the trading result, so there is nothing
+     * left. See Sector, WHAT ITS BORROWING COST IT UP FRONT.
      */
-    public double[] borrowingCostVintages;
-    public double borrowingCostsPending;
+    public double[] borrowingChargesLeft;
 
     /**
      * The month's trade in units by good name: what it shipped and what it

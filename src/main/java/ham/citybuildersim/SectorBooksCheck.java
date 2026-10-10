@@ -18,8 +18,9 @@ package ham.citybuildersim;
  *      plug means a figure moved between being read and being used.
  *
  *   2. THE INCOME STATEMENT ADDS UP, top to bottom: revenue less the operating
- *      lines is operating income, less property tax, interest and sales tax is
- *      pre-tax, less profit tax is what the sector kept. Every line on the
+ *      lines is operating income, less property tax, interest, the borrowing
+ *      costs (0.7.102) and sales tax is pre-tax, less profit tax is what the
+ *      sector kept. Every line on the
  *      screen is one of these, so a break here is a screen that does not foot.
  *
  *      The sales tax joined that chain on 2026-09-09. It used to be remitted
@@ -132,9 +133,11 @@ public class SectorBooksCheck {
                 near("operating", sector, m.month(),
                         m.operatingIncome(),
                         m.revenue() - m.operatingCost());
+                // ...less, since 0.7.102 (Jerus's A16), what its borrowing cost it up front, a sixtieth a month:
+                // a deductible expense beside the interest. Before: operating - property tax - interest - sales tax.
                 near("pre-tax", sector, m.month(),
                         m.preTaxIncome(),
-                        m.operatingIncome() - m.propertyTax() - m.interest()
+                        m.operatingIncome() - m.propertyTax() - m.interest() - m.borrowingCosts()
                                 - m.salesTaxPaid());
                 near("net", sector, m.month(),
                         m.netIncome(), m.preTaxIncome() - m.tax());

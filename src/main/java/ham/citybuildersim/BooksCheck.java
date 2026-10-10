@@ -237,10 +237,11 @@ public class BooksCheck {
 
         /* ===== what its borrowing cost it up front, expensed and deducted (0.7.102, A16) ===== */
         // Jerus's A16: the bank's fee, a mortgage's premium and a bond's issuing costs are deductible
-        // expenses - a sixtieth a month for Sector.BORROWING_COST_MONTHS from the strike after they are paid,
-        // before the profit tax (Canada's Income Tax Act s.20(1)(e): a fifth a year over five years).
-        System.out.println("\n--- what its borrowing cost it up front is expensed over five years, before the tax ---");
-        int n = Sector.BORROWING_COST_MONTHS;
+        // expenses, each over its debt's life in equal months from the strike after it is paid, before the
+        // profit tax (IFRS 9's effective rate). A loan's fee over its term and a mortgage's premium over its
+        // amortization, together: each its own share, each to its own end.
+        System.out.println("\n--- what its borrowing cost it up front is expensed over each debt's life, before the tax ---");
+        int loanLife = BusinessDebtManager.LOAN_TERM_MONTHS, mortgageLife = Mortgage.MORTGAGE_AMORTIZATION_MONTHS;
         Sector b = new ham.citybuildersim.sectors.FoodIndustry();
         b.setCash(1000);
         b.setEnergyRatio(1);
@@ -248,30 +249,42 @@ public class BooksCheck {
         b.updateJobFillRate(fullFill);
         b.updateWages(new double[11], new long[11]);
         b.setTaxRate(taxRate);
-        double cost = 600;
-        b.deferBorrowingCosts(cost);
-        check("fixture: paid up front, all of it still to expense", b.getBorrowingCostsToExpense(), cost);
+        double fee = 360, premium = 960;
+        b.deferBorrowingCosts(fee, loanLife);
+        b.deferBorrowingCosts(premium, mortgageLife);
+        check("fixture: paid up front, all of it still to expense", b.getBorrowingCostsToExpense(), fee + premium);
         b.bookSale(new Trade(Good.BREAD, b.key(), Sectors.RETAIL, 1000, .10));   // revenue 100
         b.strike();
         b.bank(0);
-        double charge = cost / n;
-        check("the next strike expenses a sixtieth of it", b.statement().borrowingCosts, charge);
+        double charge = fee / loanLife + premium / mortgageLife;
+        check("the next strike expenses a month's share of each", b.statement().borrowingCosts, charge);
         check("...before the tax: the profit before tax is less by it", b.statement().preTaxIncome, 100 - charge);
         check("...so the tax is less by the rate of it", b.getProfitTax(), (100 - charge) * taxRate);
         check("...and the cash moves by the tax it saved only: it paid the cost when it borrowed", b.getCash(),
                 1000 + (100 - charge) * (1 - taxRate) + charge);
-        check("...and the rest is still to expense", b.getBorrowingCostsToExpense(), cost - charge);
+        check("...and the rest is still to expense", b.getBorrowingCostsToExpense(), fee + premium - charge);
         SectorState saved = b.toState();
         Sector back = new ham.citybuildersim.sectors.FoodIndustry();
         back.restore(saved);
-        check("what is still to expense crosses a save", back.getBorrowingCostsToExpense(), cost - charge);
+        check("what is still to expense crosses a save", back.getBorrowingCostsToExpense(), fee + premium - charge);
         double expensed = charge;
-        for (int i = 1; i < n; i++) {
+        for (int i = 1; i < loanLife; i++) {
             b.strike();
             b.bank(0);
             expensed += b.statement().borrowingCosts;
         }
-        check("in BORROWING_COST_MONTHS strikes all of it is expensed, a sixtieth each", expensed, cost);
+        check("in LOAN_TERM_MONTHS strikes the loan's fee is expensed whole, the premium a share a month",
+                expensed, fee + premium * loanLife / mortgageLife);
+        b.strike();
+        b.bank(0);
+        check("...and the month after, the premium's share alone", b.statement().borrowingCosts, premium / mortgageLife);
+        expensed += b.statement().borrowingCosts;
+        for (int i = loanLife + 1; i < mortgageLife; i++) {
+            b.strike();
+            b.bank(0);
+            expensed += b.statement().borrowingCosts;
+        }
+        check("in MORTGAGE_AMORTIZATION_MONTHS strikes all of it is expensed", expensed, fee + premium);
         check("...and nothing is left to expense", b.getBorrowingCostsToExpense(), 0);
         b.strike();
         b.bank(0);

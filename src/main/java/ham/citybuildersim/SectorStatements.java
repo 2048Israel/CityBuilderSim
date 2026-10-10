@@ -357,7 +357,7 @@ public final class SectorStatements {
      * was taxed or in what its dividend is struck on (F1's and F2's model
      * questions) - until 0.7.102, when Jerus's A16 made the three deductible
      * expenses: carried as an asset from the month they are paid and
-     * expensed a sixtieth a month inside the profit (Sector, WHAT ITS
+     * expensed over each debt's life inside the profit (Sector, WHAT ITS
      * BORROWING COST IT UP FRONT), so they move its equity through the
      * profit and are outside nothing. Their three lines read nothing on a
      * month struck since (SectorMonth.borrowingCostsDeferred()), and what
@@ -405,9 +405,9 @@ public final class SectorStatements {
         b.line(PROPERTY_TAX, "Property tax", -now.propertyTax(), -then.propertyTax(), 0);
         b.subtotal(OPERATING, f.operating);
         b.line(INTEREST, "Finance costs", -now.interest(), -then.interest(), FINANCE_NOTE);
-        // ...and what its borrowing cost it up front, a fifth a year (0.7.102, A16): only when either month had some.
+        // ...and what its borrowing cost it up front, over each debt's life (0.7.102, A16): only when either month had some.
         if (now.borrowingCosts() != 0 || then.borrowingCosts() != 0) {
-            b.line(BORROWING_COSTS, "Borrowing costs, over five years", -now.borrowingCosts(), -then.borrowingCosts(), 0);
+            b.line(BORROWING_COSTS, "Borrowing costs, over each debt's life", -now.borrowingCosts(), -then.borrowingCosts(), 0);
         }
         b.subtotal(PRE_TAX, "PROFIT BEFORE TAX");
         b.line(TAX, "Business tax", -now.tax(), -then.tax(), 0);

@@ -436,6 +436,7 @@ public class Game {
         world.setMeanInflation(founding.getMeanInflation());
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
+        monthRun = false;
 
         this.isRunning = true;
         this.month = 1;
@@ -1901,27 +1902,45 @@ public class Game {
         return lastInvestment.getOrDefault(sector, "");
     }
 
-    /** Every word the investors left last month, by the slot it was filed under (a sector's key, or the bank branch's label) - saved since 0.7.102 (A22); read-only. */
     /**
      * WHAT EACH BUSINESS'S BORROWING COST IT UP FRONT THIS MONTH (0.7.102,
      * Jerus's A16): the fees the bank kept out of its loans, its mortgages'
      * insurance premiums and its bonds' issuing costs - the month's own
      * figures, the ones its books read as loanFees, premiums and bondCosts -
-     * handed to it to be expensed a sixtieth a month from the next strike
-     * and deducted from its profit tax. At the month's close, after every
-     * loan and issue of the month, before the books read the sheet. No money
-     * moves: its cash paid them when it borrowed. See Sector, WHAT ITS
-     * BORROWING COST IT UP FRONT.
+     * handed to it to be expensed over each debt's life from the next strike
+     * and deducted from its profit tax: a mortgage's premium and fee over its
+     * amortization, a loan's fee over its term, a bond's issuing costs over
+     * its term. At the month's close, after every loan and issue of the
+     * month, before the books read the sheet. No money moves: its cash paid
+     * them when it borrowed. See Sector, WHAT ITS BORROWING COST IT UP FRONT.
      */
     private void deferBorrowingCosts() {
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         for (Sector s : getSectors().all()) {
             String k = s.key();
-            s.deferBorrowingCosts(credit.getFeesThisMonth(k) + credit.getPremiumsThisMonth(k)
-                    + (bondMarket.getIssued(k) - bondMarket.getProceeds(k)));
+            double mortgages = credit.getPremiumsThisMonth(k) + credit.getMortgageFeesThisMonth(k);
+            s.deferBorrowingCosts(mortgages, Mortgage.MORTGAGE_AMORTIZATION_MONTHS);
+            s.deferBorrowingCosts(credit.getFeesThisMonth(k) - credit.getMortgageFeesThisMonth(k),
+                    BusinessDebtManager.LOAN_TERM_MONTHS);
+            s.deferBorrowingCosts(bondMarket.getIssued(k) - bondMarket.getProceeds(k), CorporateBond.TERM_MONTHS);
         }
     }
 
+    /**
+     * WHETHER A MONTH HAS RUN SINCE THE CITY WAS FOUNDED OR LOADED (0.7.102).
+     * The month's flows a save does not carry - a sector's units bid, made,
+     * idled and sold, the counters' customers and the kitchens' meals - read
+     * zero after a load, so the screens show them as not counted until a
+     * month has run (BuildCard.counted(), SectorFlow). They read that off the
+     * investors' word being empty, which a load left empty; since Jerus's A22
+     * saves the word, this says it. Not saved: a load is what it marks.
+     */
+    private boolean monthRun;
+
+    /** True once a month has run since the city was founded or loaded; false until then (0.7.102). */
+    public boolean hasMonthRun() { return monthRun; }
+
+    /** Every word the investors left last month, by the slot it was filed under (a sector's key, or the bank branch's label) - saved since 0.7.102 (A22); read-only. */
     public java.util.Map<String, String> getLastInvestments(){
         return java.util.Collections.unmodifiableMap(lastInvestment);
     }
@@ -9577,6 +9596,8 @@ public class Game {
         // What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16). Moves no pool.
         deferBorrowingCosts();
         recordMonth();
+        // A month has run since the city was founded or loaded: its flows are this month's (0.7.102).
+        monthRun = true;
         // The city map takes the month's buildings (0.7.60): THE CITY MAP. Moves no pool.
         reconcileMap();
 
@@ -13136,8 +13157,9 @@ public class Game {
        is written into a TreasuryJournal by name as it happens - capital into
        the bank, reserves, a buyback, the students' loans, and (until 0.7.49
        and 0.7.102, when the budget took them) the lines the budget balance
-       omitted - and the screen opens the row into those lines. What the lines do not explain is getTreasuryResidual(), printed
-       under them as "Not accounted for". See TreasuryJournal for which sites
+       omitted - and the screen opens the row into those lines. What the
+       lines do not explain is getTreasuryResidual(), printed under them as
+       "Not accounted for". See TreasuryJournal for which sites
        are journalled and why the rest are not.
        ======================================================================= */
 

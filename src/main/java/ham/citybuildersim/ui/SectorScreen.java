@@ -1617,8 +1617,8 @@ final class SectorScreen {
                 .go(n -> openNote(sector, INCOME, SectorStatements.FINANCE_NOTE)));
         // ...and what its borrowing cost it up front, a sixtieth a month (0.7.102, A16).
         if (now.borrowingCosts() != 0) steps.add(Step.of("Borrowing costs", -now.borrowingCosts(), Palette.SPENDING_RAMP[2])
-                .tip("What its loans' fees, its mortgages' insurance and its bonds' issuing cost it, a sixtieth a month for "
-                        + "five years from the month it paid them\n" + m(now.borrowingCosts())));
+                .tip("What its loans' fees, its mortgages' insurance and its bonds' issuing cost it, a month's share of "
+                        + "each over its debt's life\n" + m(now.borrowingCosts())));
         steps.add(fallTotal("Profit before tax", now.preTaxIncome()));
         if (now.tax() != 0) steps.add(Step.of("Business tax", -now.tax(), Palette.SPENDING_RAMP[2]));
         steps.add(fallTotal("What it kept", now.netIncome()));
@@ -1746,7 +1746,7 @@ final class SectorScreen {
     VBox everyDollar(SectorBooks.SectorMonth now) {
         HBox title = head("OF EVERY DOLLAR IT TOOK", "Each line of the month as cents of a dollar of its revenue, on "
                 + "one bar: what the sales tax, its suppliers, its workers, its power, water and repairs, the ground, its "
-                + "lenders - their interest, and what its borrowing cost it up front, a sixtieth a month - and the "
+                + "lenders - their interest, and a month's share of what its borrowing cost it up front - and the "
                 + "business tax took, and what it kept. A month it lost money, the costs come to more than the dollar.", null);
         double rev = now.revenue();
         if (!(rev > 0)) return card(title, caption("It took nothing this month.", Palette.TEXT_MUTED));
@@ -2634,8 +2634,8 @@ final class SectorScreen {
             + "abroad earned, an overdraft forgiven, loans and bonds its lenders wrote off, and a theft. Each moved its "
             + "equity and reached no statement until this one, so none of it is taxed or in what its dividend is struck "
             + "on. What its borrowing cost it up front - the bank's fee, a mortgage's insurance premium, a bond's issuing "
-            + "costs - was here until 0.7.102; it is a cost above the profit now, a sixtieth a month for five years, and "
-            + "deducted from its tax, and is here only for a month from an older save.";
+            + "costs - was here until 0.7.102; it is a cost above the profit now, a month's share over each debt's life, "
+            + "and deducted from its tax, and is here only for a month from an older save.";
 
     /** Share capital's line and note, when a save from before 0.7.75 was loaded (R3). */
     static final String DERIVED_INFO = "Derived when the city was loaded: its save was made before share capital was "
