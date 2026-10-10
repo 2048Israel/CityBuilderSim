@@ -735,17 +735,6 @@ public class FundLedgerCheck {
         theCapCountsEveryBuy(c);
     }
 
-    /**
-     * THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed
-     * after its docs pass): what it holds, its own bids on the book - the
-     * rule's and the hand's - and the hand's buys still waiting, as if every
-     * one filled (Exchange.fundRoom()). Counted against the market book
-     * alone, the rule's bid and two orders each inside that room could all
-     * fill in the month and carry the fund past 10%, which the rule then asks
-     * back at fair value: the loss the cap at posting was put there to stop.
-     * The rule's bid makes way for the hand's: sized while the orders wait,
-     * and filled between steps no further than the room they leave.
-     */
     /** The market caps of every company with shares and a fair value, on a city. */
     static double capsOf(Game g) {
         double caps = 0;
@@ -767,6 +756,17 @@ public class FundLedgerCheck {
         return twin.getExchange().bookOf(c).resting(Exchange.FUND, OrderBook.Side.BUY);
     }
 
+    /**
+     * THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed
+     * after its docs pass): what it holds, its own bids on the book - the
+     * rule's and the hand's - and the hand's buys still waiting, as if every
+     * one filled (Exchange.fundRoom()). Counted against the market book
+     * alone, the rule's bid and two orders each inside that room could all
+     * fill in the month and carry the fund past 10%, which the rule then asks
+     * back at fair value: the loss the cap at posting was put there to stop.
+     * The rule's bid makes way for the hand's: sized while the orders wait,
+     * and filled between steps no further than the room they leave.
+     */
     static void theCapCountsEveryBuy(int c0) {
         /*
          * ...ON A COMPANY THE RULE BIDS FOR (0.7.106): the households' largest
