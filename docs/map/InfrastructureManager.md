@@ -41,7 +41,7 @@
 
 **Uses:** [Traffic](Traffic.md) (40), [TaxPolicy](TaxPolicy.md) (3), [CityNeeds](CityNeeds.md) (2)
 
-**Used by (18):** [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md)
+**Used by (19):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [CarCheck](CarCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Game](Game.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LongPlaytest](LongPlaytest.md), [Motoring](Motoring.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md)
 
 ## Sections
 

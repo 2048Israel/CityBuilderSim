@@ -1075,6 +1075,7 @@ public final class World {
         final double[] e = new double[TILE], lake = new double[TILE], forest = new double[TILE];
         final double[] lat = new double[64];
         int[] segs = new int[64];
+        /** The corners it keeps: 64 slots, picked by the top six bits of the corner's hash. */
         static final int CORNERS = 64;
         final long[] cornerX = new long[CORNERS], cornerY = new long[CORNERS], cornerSeed = new long[CORNERS];
         final boolean[] cornerSet = new boolean[CORNERS];
@@ -1091,6 +1092,7 @@ public final class World {
         }
     }
 
+    /** Each thread's LineScratch, made on its first line. */
     private static final ThreadLocal<LineScratch> LINE_SCRATCH = ThreadLocal.withInitial(LineScratch::new);
 
     /** bilinear() on one line of the tile's plots: acc[i] is the line's i-th plot's value. */

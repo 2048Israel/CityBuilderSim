@@ -105,8 +105,10 @@ public class Game {
     /**
      * The month's ships (0.7.86, batch O9; BoatSchedule): the calls the
      * ports' month billed makes, on these quays, with the lanes run away from
-     * the founding site. Pure; nothing is kept. The map passes its quays
-     * (O13); with none the calls are counted and not placed.
+     * the founding site. Pure; nothing is kept. With no quays the calls are
+     * counted and not placed. The checks' (PortCheck, ReadPathCheck): since
+     * 0.7.97 the map strikes its own schedule on the sea routes it finds
+     * (ui/MapView, BoatSchedule.of(month, ports, routes)).
      */
     public BoatSchedule boats(java.util.List<BoatSchedule.Berth> quays) {
         World w = getWorld();
@@ -4102,14 +4104,14 @@ public class Game {
             for (ham.citybuildersim.sectors.Oil.Platform p : wells.platformsNow()) if (p.wells() == 0) empty++;
             if (empty > 0) {
                 retired += retire(new BusinessInvestment.Decision(wells.key(), jacket, empty,
-                        String.format("%d platform(s) decommissioned: no well in their slots and the oil worked out", empty), true),
+                        String.format("%d platform(s) decommissioned: no well in their slots and the oil under the sea worked out", empty), true),
                         sectorInvestor(wells.key()), false);
             }
         }
         int km = wells.pipeKmStanding();
         if (pipe != null && km > 0 && wells.jacketsStanding() <= 0) {
             retired += retire(new BusinessInvestment.Decision(wells.key(), pipe, km,
-                    String.format("%d km of pipeline decommissioned: no platform left and the oil worked out", km), true),
+                    String.format("%d km of pipeline decommissioned: no platform left and the oil under the sea worked out", km), true),
                     sectorInvestor(wells.key()), false);
         }
         return retired;

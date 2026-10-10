@@ -1236,7 +1236,7 @@ final class MapView {
         requestDraw();
     }
 
-    /** The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, the land, the six resources in fields. */
+    /** The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, the land, the six resources in fields. */
     static List<String[]> legendEntries() {
         List<String[]> out = new ArrayList<>();
         for (int c = 0; c < BuildingVisual.CLASSES; c++) {

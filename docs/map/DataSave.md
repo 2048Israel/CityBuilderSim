@@ -1,4 +1,4 @@
-# DataSave.java - 2,100 lines · 337 methods · 0 constants · model
+# DataSave.java - 2,117 lines · 339 methods · 0 constants · model
 
 `ham/citybuildersim/DataSave.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -205,14 +205,15 @@
 | 1937 | `private double monthlyMaterialImportBill` | The same imports in money, at the price each was charged at - the builders' materials expense and the accounts' import line. |
 | 1938 | `private int materialsConsumed` |  |
 | 1961 | `private double cityMaintenancePaid` | What the treasury paid the builders to keep the city's own buildings up. |
-| 1978 | `private java.util.Map<String, Double> subsidyPaid` | What each protected sector was paid last month. |
-| 1989 | `private double[] householdStatement` | The residents' month: twelve scalars and eleven per-tier arrays. |
+| 1978 | `private java.util.Map<String, String> lastInvestment` | THE INVESTORS' LAST WORD ON EACH SECTOR (0.7.102, Jerus's A22): what the month's investment pass decided for it and why - "Built 2 ...", "Holding: ...", a refusal - as Game.getLastInvestment() reads it, the Sectors sc... |
+| 1995 | `private java.util.Map<String, Double> subsidyPaid` | What each protected sector was paid last month. |
+| 2006 | `private double[] householdStatement` | The residents' month: twelve scalars and eleven per-tier arrays. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 2089 | **type** `public class DataSave` |  |
+| 12 | 2106 | **type** `public class DataSave` |  |
 | 196 | 1 | `public void setSectors(java.util.List<SectorState> s)` |  |
 | 197 | 1 | `public java.util.List<SectorState> getSectors()` |  |
 | 198 | 1 | `public void setMarkets(java.util.List<Markets.State> m)` |  |
@@ -349,7 +350,7 @@
 | 913 | 1 | `public int getIronDeposits()` | An older save's pool of iron sites, 0 when it carries none: what LandConversion reads. |
 | 915 | 1 | `public double getIronReserveTonnes()` | ...and its tonnes. |
 
-### policy (lines 918-2100)
+### policy (lines 918-2117)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -531,50 +532,52 @@
 | 1945 | 1 | `public double getCityCapitalSpending()` |  |
 | 1963 | 1 | `public void setCityMaintenancePaid(double v)` |  |
 | 1964 | 1 | `public double getCityMaintenancePaid()` |  |
-| 1965 | 1 | `public void setMonthlyMaterialImports(double v)` |  |
-| 1966 | 1 | `public double getMonthlyMaterialImports()` |  |
-| 1967 | 1 | `public void setMonthlyMaterialImportBill(double v)` |  |
-| 1968 | 1 | `public double getMonthlyMaterialImportBill()` |  |
-| 1969 | 1 | `public void setMaterialsConsumed(int v)` |  |
-| 1970 | 1 | `public int getMaterialsConsumed()` |  |
-| 1979 | 1 | `public void setSubsidyPaid(java.util.Map<String, Double> v)` |  |
-| 1980 | 1 | `public java.util.Map<String, Double> getSubsidyPaid()` |  |
-| 1990 | 1 | `public void setHouseholdStatement(double[] v)` |  |
-| 1991 | 1 | `public double[] getHouseholdStatement()` |  |
-| 1993 | 3 | `public void setBuilds(java.util.List<BuildLog.Entry> entries)` |  |
-| 1996 | 1 | `public java.util.List<BuildLog.Entry> getBuilds()` |  |
-| 1998 | 3 | `public void setWriteOffTotals(java.util.Map<String, Double> totals)` |  |
-| 2001 | 1 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
-| 2003 | 3 | `public void setRestructureCounts(java.util.Map<String, Integer> counts)` |  |
-| 2006 | 1 | `public java.util.Map<String, Integer> getRestructureCounts()` |  |
-| 2008 | 3 | `public void setBlockedMonths(java.util.Map<String, Integer> months)` |  |
-| 2011 | 1 | `public java.util.Map<String, Integer> getBlockedMonths()` |  |
-| 2013 | 3 | `public void setCreditStatements(java.util.Map<String, double[]> statements)` |  |
-| 2016 | 1 | `public java.util.Map<String, double[]> getCreditStatements()` |  |
-| 2018 | 1 | `public void setMortgageRepaid(java.util.Map<String, Double> repaid)` |  |
-| 2019 | 1 | `public java.util.Map<String, Double> getMortgageRepaid()` |  |
-| 2021 | 1 | `public void setInsuranceClaims(java.util.Map<String, Double> claims)` |  |
-| 2022 | 1 | `public java.util.Map<String, Double> getInsuranceClaims()` |  |
-| 2024 | 1 | `public void setInsurancePremiums(double premiums)` |  |
-| 2025 | 1 | `public double getInsurancePremiums()` |  |
-| 2027 | 1 | `public void setNationalAccounts(double[] state)` |  |
-| 2028 | 1 | `public double[] getNationalAccounts()` |  |
-| 2030 | 1 | `public void setGdpRolling(List<Double> months)` |  |
-| 2031 | 1 | `public List<Double> getGdpRolling()` |  |
-| 2041 | 3 | `public int getUnderConstructionLength()` | Null-safe, because new saves no longer write the legacy arrays at all. |
-| 2044 | 3 | `public int getUnderConstruction(int index)` |  |
-| 2047 | 3 | `public double getCash()` |  |
-| 2051 | 3 | `public int getMonth()` |  |
-| 2055 | 3 | `public int getBuildingQuantity(int index)` |  |
-| 2059 | 3 | `public int getBuildingsLength()` |  |
-| 2063 | 3 | `public JsonArray getDebt()` |  |
-| 2067 | 4 | `public void setBusinessDebt(List<BusinessDebt> loans)` |  |
-| 2072 | 3 | `public JsonArray getBusinessDebt()` |  |
-| 2076 | 3 | `public int getProgressLength()` |  |
-| 2080 | 3 | `public double getProgress(int index)` |  |
-| 2084 | 3 | `public int getConstructionMaterials()` |  |
-| 2088 | 3 | `public long getPopulation()` |  |
-| 2091 | 3 | `public boolean getReports()` |  |
-| 2094 | 3 | `public java.util.List<Notice> getNotices()` |  |
-| 2097 | 3 | `public boolean getGraphs()` |  |
+| 1980 | 1 | `public void setLastInvestment(java.util.Map<String, String> m)` |  |
+| 1981 | 1 | `public java.util.Map<String, String> getLastInvestment()` |  |
+| 1982 | 1 | `public void setMonthlyMaterialImports(double v)` |  |
+| 1983 | 1 | `public double getMonthlyMaterialImports()` |  |
+| 1984 | 1 | `public void setMonthlyMaterialImportBill(double v)` |  |
+| 1985 | 1 | `public double getMonthlyMaterialImportBill()` |  |
+| 1986 | 1 | `public void setMaterialsConsumed(int v)` |  |
+| 1987 | 1 | `public int getMaterialsConsumed()` |  |
+| 1996 | 1 | `public void setSubsidyPaid(java.util.Map<String, Double> v)` |  |
+| 1997 | 1 | `public java.util.Map<String, Double> getSubsidyPaid()` |  |
+| 2007 | 1 | `public void setHouseholdStatement(double[] v)` |  |
+| 2008 | 1 | `public double[] getHouseholdStatement()` |  |
+| 2010 | 3 | `public void setBuilds(java.util.List<BuildLog.Entry> entries)` |  |
+| 2013 | 1 | `public java.util.List<BuildLog.Entry> getBuilds()` |  |
+| 2015 | 3 | `public void setWriteOffTotals(java.util.Map<String, Double> totals)` |  |
+| 2018 | 1 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
+| 2020 | 3 | `public void setRestructureCounts(java.util.Map<String, Integer> counts)` |  |
+| 2023 | 1 | `public java.util.Map<String, Integer> getRestructureCounts()` |  |
+| 2025 | 3 | `public void setBlockedMonths(java.util.Map<String, Integer> months)` |  |
+| 2028 | 1 | `public java.util.Map<String, Integer> getBlockedMonths()` |  |
+| 2030 | 3 | `public void setCreditStatements(java.util.Map<String, double[]> statements)` |  |
+| 2033 | 1 | `public java.util.Map<String, double[]> getCreditStatements()` |  |
+| 2035 | 1 | `public void setMortgageRepaid(java.util.Map<String, Double> repaid)` |  |
+| 2036 | 1 | `public java.util.Map<String, Double> getMortgageRepaid()` |  |
+| 2038 | 1 | `public void setInsuranceClaims(java.util.Map<String, Double> claims)` |  |
+| 2039 | 1 | `public java.util.Map<String, Double> getInsuranceClaims()` |  |
+| 2041 | 1 | `public void setInsurancePremiums(double premiums)` |  |
+| 2042 | 1 | `public double getInsurancePremiums()` |  |
+| 2044 | 1 | `public void setNationalAccounts(double[] state)` |  |
+| 2045 | 1 | `public double[] getNationalAccounts()` |  |
+| 2047 | 1 | `public void setGdpRolling(List<Double> months)` |  |
+| 2048 | 1 | `public List<Double> getGdpRolling()` |  |
+| 2058 | 3 | `public int getUnderConstructionLength()` | Null-safe, because new saves no longer write the legacy arrays at all. |
+| 2061 | 3 | `public int getUnderConstruction(int index)` |  |
+| 2064 | 3 | `public double getCash()` |  |
+| 2068 | 3 | `public int getMonth()` |  |
+| 2072 | 3 | `public int getBuildingQuantity(int index)` |  |
+| 2076 | 3 | `public int getBuildingsLength()` |  |
+| 2080 | 3 | `public JsonArray getDebt()` |  |
+| 2084 | 4 | `public void setBusinessDebt(List<BusinessDebt> loans)` |  |
+| 2089 | 3 | `public JsonArray getBusinessDebt()` |  |
+| 2093 | 3 | `public int getProgressLength()` |  |
+| 2097 | 3 | `public double getProgress(int index)` |  |
+| 2101 | 3 | `public int getConstructionMaterials()` |  |
+| 2105 | 3 | `public long getPopulation()` |  |
+| 2108 | 3 | `public boolean getReports()` |  |
+| 2111 | 3 | `public java.util.List<Notice> getNotices()` |  |
+| 2114 | 3 | `public boolean getGraphs()` |  |
 

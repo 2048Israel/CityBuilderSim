@@ -965,6 +965,7 @@ public final class Retail extends Sector {
 
     /** A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, what the households paid, and of that the fuel duty, the treasury's (0.7.103). */
     public record FuelSale(double litres, double queued, double wholesale, double imported, double bill, double duty) {
+        /** No sale: no litres asked, or no market or city to sell through. */
         public static final FuelSale NONE = new FuelSale(0, 0, 0, 0, 0, 0);
     }
 
@@ -1214,8 +1215,8 @@ public final class Retail extends Sector {
             // ...and the city's fuel duty in it, the treasury's (0.7.103).
             if (rFuelDuty > 0) lines.add(Line.of("Fuel duty, the city's", f.amount(rFuelDuty) + " on the drivers' litres"));
             lines.add(Line.note(String.format("The grocers draw the drivers' petrol at wholesale, the city's refineries first, "
-                    + "and sell it at the pump for %.0f%% more with the sales tax on top. Past what the stations can sell the "
-                    + "drivers queue and pay %.0f%% more, and the grocers build another station.",
+                    + "and sell it at the pump for %.0f%% more with the sales tax and the city's fuel duty on top. Past what "
+                    + "the stations can sell the drivers queue and pay %.0f%% more, and the grocers build another station.",
                     PUMP_MARGIN * 100, QUEUE_MARGIN * 100)));
         }
         return lines;

@@ -18,7 +18,8 @@ import java.util.List;
  * streets by need, road by surface: the plan lays the streets the buildings
  * need - one network, + junctions on a grid, every building within reach -
  * and draws the model's road plots exactly, as what those streets are made of.
- * Nothing in the model reads it (CityMap's banner); RD2 paints from it.
+ * Nothing in the model reads it (CityMap's banner); the painter draws
+ * from it since 0.7.88 (batch RD2).
  *
  * THE FRAME. A district is 256 x 256 plots and 8 x 8 cells; a CELL is a tile,
  * its west column and north row its ARTERIALS, its interior 31 x 31. The plan
@@ -70,8 +71,8 @@ import java.util.List;
  *           place, at its turn; a mine or well stands on its own;
  *   WHOLE   a building wider than an estate's strip both ways takes a whole
  *           estate cell, its spine closed (2.3);
- *   R7      what does not fit is reported, for RD2 to move to the next
- *           district with room;
+ *   R7      what does not fit is reported (overflow), and the map carries
+ *           it to the next district with room (0.7.88, CityMap's R7);
  *   LINES   (0.7.90, batch RD5) an estate cell's streets are laid to fit
  *           what it holds: see ESTATE LINES;
  *   SHARED  (0.7.92, batch RD6) the outer kinds take industry's leftover
@@ -432,7 +433,7 @@ public final class DistrictPlan {
     public int buildings;
     public int[] bx = new int[0], by = new int[0], bw = new int[0], bh = new int[0], btype = new int[0];
 
-    /** What the plan could not place, by type id (R7: RD2 moves it to the next district with room). */
+    /** What the plan could not place, by type id (R7: the map carries it to the next district with room since 0.7.88, and packs what none holds at the city's edge). */
     public int[] overflow = new int[0];
 
     /** The surface left over when every step of the ladder is taken: road the plan has no street for (0 where the ladder holds it). */
@@ -2149,6 +2150,7 @@ public final class DistrictPlan {
             for (int b = Math.max(0, cj - 1); b <= b1; b++) for (int a = a0; a <= a1; a++) reachStale[a + b * CELLS_A_SIDE] = true;
         }
 
+        /** A window's row as bits, one a plot: a cell's interior and the REACH plots either side of it. */
         static final long WINDOW = (1L << (INTERIOR + 2 * REACH)) - 1;
 
         /** A window's row of bits spread a plot either way along it, kept to the window. */

@@ -1,4 +1,4 @@
-# TreasuryJournal.java - 255 lines · 16 methods · 0 constants · model
+# TreasuryJournal.java - 281 lines · 16 methods · 0 constants · model
 
 `ham/citybuildersim/TreasuryJournal.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -62,7 +62,7 @@
 >                                         a budget line (NationalAccounts.getFundTransfer())
 >                                         and is not journalled
 >   buyForeignCurrency()      JOURNALLED  "Bought reserves" - no budget line
-> ... (72 more lines in the source)
+> ... (98 more lines in the source)
 
 **Used by (11):** [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [EducationCheck](EducationCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [LandCheck](LandCheck.md), [OilCheck](OilCheck.md), [SaveFileCheck](SaveFileCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md)
 
@@ -70,40 +70,40 @@
 
 | line | section |
 |---:|---|
-| 203 | · the save |
+| 229 | · the save |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 150 | `private final List<Entry> pending` | The month in progress, in the order things happened. |
-| 153 | `private List<Entry> closed` | The month that has ended - what the bridge shows. |
+| 176 | `private final List<Entry> pending` | The month in progress, in the order things happened. |
+| 179 | `private List<Entry> closed` | The month that has ended - what the bridge shows. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 141 | 115 | **type** `public final class TreasuryJournal` | The treasury's journal: every movement of the city's cash that is neither a budget line nor paper raised or repaid, recorded by name as it happens, so the bridge on the Government tab can name them line by line. |
-| 147 | 1 | **type** `public record Entry(String label, double amount)` | One movement: the player's words for it, and the amount in thousands, signed as the treasury sees it. |
-| 160 | 10 | `void record(String label, double amount)` | Records a movement into the month in progress. |
-| 176 | 4 | `void close()` | Strikes the month: the month in progress becomes the month that has ended, and a new one opens empty. |
-| 182 | 4 | `void reset()` | Both months emptied - a new city. |
-| 188 | 1 | `public List<Entry> lastMonth()` | Last month's lines, in the order they happened. |
-| 191 | 5 | `public double lastMonthTotal()` | The sum of last month's lines - what the journal explains of the bridge's last row. |
-| 198 | 1 | `public boolean hasLines()` | True when the journal has something to show for last month. |
-| 201 | 1 | `public List<Entry> thisMonth()` | The month in progress, for a save and for the harnesses; nothing on a screen reads it. |
+| 167 | 115 | **type** `public final class TreasuryJournal` | The treasury's journal: every movement of the city's cash that is neither a budget line nor paper raised or repaid, recorded by name as it happens, so the bridge on the Government tab can name them line by line. |
+| 173 | 1 | **type** `public record Entry(String label, double amount)` | One movement: the player's words for it, and the amount in thousands, signed as the treasury sees it. |
+| 186 | 10 | `void record(String label, double amount)` | Records a movement into the month in progress. |
+| 202 | 4 | `void close()` | Strikes the month: the month in progress becomes the month that has ended, and a new one opens empty. |
+| 208 | 4 | `void reset()` | Both months emptied - a new city. |
+| 214 | 1 | `public List<Entry> lastMonth()` | Last month's lines, in the order they happened. |
+| 217 | 5 | `public double lastMonthTotal()` | The sum of last month's lines - what the journal explains of the bridge's last row. |
+| 224 | 1 | `public boolean hasLines()` | True when the journal has something to show for last month. |
+| 227 | 1 | `public List<Entry> thisMonth()` | The month in progress, for a save and for the harnesses; nothing on a screen reads it. |
 
-### the save (lines 203-255)
+### the save (lines 229-281)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 206 | 1 | `String[] closedLabels()` | Last month's labels, parallel to {@link #closedAmounts()}. |
-| 207 | 1 | `double[] closedAmounts()` |  |
-| 210 | 1 | `String[] pendingLabels()` | The month in progress, the same way. |
-| 211 | 1 | `double[] pendingAmounts()` |  |
-| 218 | 6 | `void restore(String[] closedLabels, double[] closedAmounts, String[] pendingLabels, double[] pendingAmounts)` | Puts both months back from a save. |
-| 226 | 8 | `void redenominate(double scale)` | The currency reform: every amount in both months, at the new unit. |
-| 235 | 5 | `private static String[] labels(List<Entry> list)` |  |
-| 241 | 5 | `private static double[] amounts(List<Entry> list)` |  |
-| 247 | 8 | `private static List<Entry> entries(String[] labels, double[] amounts)` |  |
+| 232 | 1 | `String[] closedLabels()` | Last month's labels, parallel to {@link #closedAmounts()}. |
+| 233 | 1 | `double[] closedAmounts()` |  |
+| 236 | 1 | `String[] pendingLabels()` | The month in progress, the same way. |
+| 237 | 1 | `double[] pendingAmounts()` |  |
+| 244 | 6 | `void restore(String[] closedLabels, double[] closedAmounts, String[] pendingLabels, double[] pendingAmounts)` | Puts both months back from a save. |
+| 252 | 8 | `void redenominate(double scale)` | The currency reform: every amount in both months, at the new unit. |
+| 261 | 5 | `private static String[] labels(List<Entry> list)` |  |
+| 267 | 5 | `private static double[] amounts(List<Entry> list)` |  |
+| 273 | 8 | `private static List<Entry> entries(String[] labels, double[] amounts)` |  |
 

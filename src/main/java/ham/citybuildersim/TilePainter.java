@@ -126,6 +126,7 @@ public final class TilePainter {
     public static final int S_WIDTH_SHIFT = 3;
     /** ...its role in bits 5 and 6: 0 a cell's street (or one along a cut, or the join's), S_ARTERIAL, S_BOULEVARD... */
     public static final int S_ROLE_SHIFT = 5;
+    /** ...those two roles' values, an arterial's 1 and a boulevard's 2 (DistrictPlan's ROLE_ARTERIAL and ROLE_BOULEVARD)... */
     public static final int S_ARTERIAL = 1, S_BOULEVARD = 2;
     /** ...and a bridge over fresh water in bit 7. */
     public static final int S_BRIDGE = 0x80;

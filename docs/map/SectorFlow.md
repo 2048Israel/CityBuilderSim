@@ -1,6 +1,6 @@
-# SectorFlow.java - 260 lines · 17 methods · 1 constants · model
+# SectorFlow.java - 261 lines · 17 methods · 1 constants · model
 
-`ham/citybuildersim/SectorFlow.java` - generated 2026-10-06 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorFlow.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > One business's month as a flow (0.7.30): what went in, what its plant made
 > of it and what held the plant back, and what came out - each good's units
@@ -39,8 +39,8 @@
 
 | line | section |
 |---:|---|
-| 157 | · · what went in |
-| 184 | · · what came out |
+| 158 | · · what went in |
+| 185 | · · what came out |
 
 ## Constants
 
@@ -52,7 +52,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 222 | **type** `public final class SectorFlow` | One business's month as a flow (0.7.30): what went in, what its plant made of it and what held the plant back, and what came out - each good's units off the month's production rows, its money off the statement, the pl... |
+| 39 | 223 | **type** `public final class SectorFlow` | One business's month as a flow (0.7.30): what went in, what its plant made of it and what held the plant back, and what came out - each good's units off the month's production rows, its money off the statement, the pl... |
 | 55 | 9 | **type** `public record In(Good good, String name, double wanted, double fromCity, double imported, double onHand, do...` | One good or service that went in. |
 | 57 | 1 | `public boolean service()` _(in SectorFlow.In)_ |  |
 | 59 | 1 | `public double units()` _(in SectorFlow.In)_ | Units bought, home and abroad. |
@@ -71,7 +71,7 @@
 | 136 | 5 | `public double inputsMoney()` _(in SectorFlow.Flow)_ | The money in, goods and services: the statement's inputs line. |
 | 142 | 5 | `public double revenueMoney()` _(in SectorFlow.Flow)_ | The money out, goods and work: the statement's revenue line. |
 | 149 | 1 | `private SectorFlow()` |  |
-| 151 | 71 | `public static Flow of(Game game, Sector sector)` |  |
-| 224 | 20 | `public static Plant plant(Sector sector)` | The plant alone (the Sectors list's cards and every page's RUNNING AT). |
-| 251 | 9 | `static double capacityNote(BuildCard.Note note, Good g)` | What a good the seller prices can serve, off the Build group's note: the shops' coverage for groceries, the counters' for a counter's trade, the kitchens' seats for meals; NaN for any other (homes are counted in doors... |
+| 151 | 72 | `public static Flow of(Game game, Sector sector)` |  |
+| 225 | 20 | `public static Plant plant(Sector sector)` | The plant alone (the Sectors list's cards and every page's RUNNING AT). |
+| 252 | 9 | `static double capacityNote(BuildCard.Note note, Good g)` | What a good the seller prices can serve, off the Build group's note: the shops' coverage for groceries, the counters' for a counter's trade, the kitchens' seats for meals; NaN for any other (homes are counted in doors... |
 

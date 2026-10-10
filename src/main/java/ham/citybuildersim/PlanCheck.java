@@ -92,9 +92,10 @@ public class PlanCheck {
      * The most a district's plan may take, the slowest of the dense screen's
      * districts (each its median of TIMED): half MapCheck's screen, 40 ms
      * (star) - one plan and a screen painted from plans within SCREEN_MS, so
-     * long as batch RD2's paint keeps to the other half. RD2 makes the plans
-     * away from the screen's thread, as the map's snapshot is, and keeps them
-     * as the deals are kept, so a frame paints from plans made already.
+     * long as the paint keeps to the other half. Since 0.7.88 (batch RD2)
+     * the plans are made away from the screen's thread, as the map's
+     * snapshot is, and kept (CityMap's THE DRAWN PLANS), so a frame paints
+     * from plans made already.
      */
     static final double PLAN_MS = MapCheck.SCREEN_MS / 2;
 
@@ -104,8 +105,9 @@ public class PlanCheck {
             { 48, 13, 6052, 3137, 2915, 0, 0, 0, 119, 2516 },
             { 48, 13, 6052, 4483, 0, 1569, 0, 0, 119, 2516 } };
 
-    /** ...its buildings, their plots, and the road of each budget, whole plots. */
+    /** ...its buildings and their plots... */
     static final int TABLE_BUILDINGS = 3617, TABLE_BUILDING_PLOTS = 32217;
+    /** ...and the road of each budget, whole plots. */
     static final int[] TABLE_BUDGET = { 9388, 4484, 2242 };
 
     /** The prototype's hub on its test district, in the district's plots: (70, 90) in its frame, 4 plots in. */
@@ -173,6 +175,7 @@ public class PlanCheck {
             "37f13g4f14g22a3s76/g33f54g39f30g21a4s76/g33f38g3f12g41f28g22a3s77/g33f35g8f9g44f24g23a4s77/g32f34g11f5g52f18g2" +
             "4a4s77/g32f33g69f17g25a3s78/g31f33g69f18g25a3s78/g31f32g70f18g25a2s79/g30f33g70f18g25a2s79/g29f34g70f19g23a3s7" +
             "9/g28f35g70f19g23a3s79/g26f37g70f19g23a2s80/g21f42g70f19g23a2s80/g19f44g71f17g24a2s80/g18f44g72f16g25a2s80";
+    /** Each cell's nudge, h32(4127, 'cell', c) as a fraction, cell ci + cj x CELLS_A_SIDE. */
     static final double[] TEST_NUDGE = {
             0.3727494347187473, 0.03906684873305479, 0.22912251263578634, 0.5245030267418446,
             0.8596486524029501, 0.023832658552338577, 0.42353856248950167, 0.041045443138387164,
@@ -190,9 +193,13 @@ public class PlanCheck {
             0.14688990529673163, 0.776653386313684, 0.8402381104863175, 0.08123193215491663,
             0.8996890329806819, 0.8981131272245991, 0.15355654968620291, 0.41713048034363553,
             0.61747010217902, 0.8922983692958087, 0.3361171396656944, 0.6323143954710908 };
+    /** Each cell's direction, a bit a cell: set where h32(4127, 'dir', c) is under a half (east-west), read as 0.25, else 0.75. */
     static final long TEST_ACROSS = 2483539012620168834L;
+    /** The types its buildings are, by id (BuildingVisual.table())... */
     static final int[] TEST_TYPES = { 0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 17, 18, 19, 20, 22, 23, 25, 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 43, 49, 50, 51, 53, 56, 57, 58, 59, 60, 61, 65, 66, 69, 71 };
+    /** ...how many of each, scaled_buildings at 70% of its dry ground... */
     static final int[] TEST_COUNTS = { 899, 94, 569, 30, 2, 799, 2, 1, 2, 23, 5, 112, 54, 1, 1, 13, 6, 4, 1, 2, 22, 22, 19, 3, 3, 2, 1, 1, 1, 3, 18, 1, 3, 53, 50, 2, 7, 53, 69, 12, 5, 1, 3, 54, 62, 527 };
+    /** ...and each type's start, h32(4127, 'deal', t) as a fraction. */
     static final double[] TEST_DEAL = {
             0.8623860022826665, 0.4688361493186886, 0.49244847032280087, 0.9101025582510129,
             0.04369366703319154, 0.7912363634868288, 0.18911176394895476, 0.16246220141040693,
@@ -206,9 +213,13 @@ public class PlanCheck {
             0.9141322942518781, 0.40143441123469004, 0.5976824865654488, 0.19275056297714122,
             0.484086489351348, 0.048266584212291304, 0.9085021855150137, 0.2026354914336543,
             0.14575023866893685, 0.17028678553403506 };
+    /** Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (the third budget half of it). */
     static final double TEST_GRAVEL = 8407.741935483871, TEST_PAVED = 980.6451612903226, TEST_PAVED_ALL = 4483.870967741936;
+    /** Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()): his roads... */
     static final long TEST_PLACED_JERUS = -1980402857778823524L, TEST_STREETS_JERUS = -7143981648789130548L;
+    /** ...the same trips paved... */
     static final long TEST_PLACED_PAVED = 9000504916410474359L, TEST_STREETS_PAVED = -4283127041626870812L;
+    /** ...and half that. */
     static final long TEST_PLACED_THIN = 9000504916410474359L, TEST_STREETS_THIN = 4092048347058802282L;
 
     public static void main(String[] args) throws Exception {
@@ -579,6 +590,7 @@ public class PlanCheck {
         return in;
     }
 
+    /** The three budgets' names, as the sections print them. */
     static final String[] BUDGETS = { "his roads", "the same trips paved", "half that" };
 
     static void replay(BuildingVisual.Type[] types) {
@@ -929,6 +941,7 @@ public class PlanCheck {
        6. A CITY PLAYED AS THE PLAYTEST PLAYS IT
        ===================================================================== */
 
+    /** A stream that drops what is written to it: the game's and the playtest's prose while a section plays or loads a city. */
     static final PrintStream QUIET = new PrintStream(new OutputStream() {
         @Override public void write(int b) { }
         @Override public void write(byte[] b, int off, int len) { }

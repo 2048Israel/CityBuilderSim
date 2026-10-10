@@ -262,7 +262,7 @@
 | 1204 | 7 | `private void picked()` | The picked side and offer on the expanded map's head. |
 | 1213 | 18 | `private void fitPane()` | The canvas sized to the pane: the window's width and height inside its padding and under its head (City History's rule, read off the window). |
 | 1233 | 5 | `private void fitBig()` | The expanded map on the city, as the small map opens. |
-| 1240 | 26 | `static List<String[]> legendEntries()` | The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, the land, the six resources in fields. |
+| 1240 | 26 | `static List<String[]> legendEntries()` | The legend's entries: the ten classes and flats, the three roads, (0.7.88) the tracks and (0.7.72) the railway, (0.7.97) the nine of the shore and the sea, the land, the six resources in fields. |
 | 1277 | 3 | `static String packedWords(int packed)` | The legend's note under its entries, when the city has buildings its plans hold none of (R7; spec 5): how many are packed without a street. |
 | 1282 | 3 | `static String surplusWords(long plots)` | ...and when the city has road its streets have no room for (star RD2-4): how much, in plots. |
 | 1287 | 3 | `static String trackWords(long plots)` | ...and (0.7.89) when the railway's runs found no ground for some of its track: how much, in plots. |

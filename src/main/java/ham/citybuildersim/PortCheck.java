@@ -114,10 +114,13 @@ public class PortCheck {
     /** A lorry: F US$2.0 a tonne, c US$0.080 a tonne-km; and the leg to a quay at each end, 50 km. */
     static final double LORRY_F = 2.0, LORRY_C = .080, ACCESS_KM = 50;
 
-    /** The sea rows, {F, c}: liquid VLCC, Suezmax, Aframax-LR, MR; dry Capesize, Panamax; deep-sea boxes; general cargo. */
+    /** The sea rows, {F, c}: liquid VLCC, Suezmax, Aframax-LR, MR... */
     static final double[][] LIQUID_ROWS = { { 4 + 1, .0012 }, { 4 + 2, .0022 }, { 4 + 5, .0035 }, { 4 + 6, .0035 } };
+    /** ...dry Capesize, Panamax... */
     static final double[][] DRY_ROWS = { { 6 + 1.2, .00075 }, { 6 + 5, .0022 } };
+    /** ...deep-sea boxes... */
     static final double[][] BOX_ROWS = { { 24, .0055 } };
+    /** ...and general cargo. */
     static final double[][] GENERAL_ROWS = { { 40, .0060 } };
 
     /** Sea against a lorry, door to door, at KM: each row's, averaged over the kind's rows. */

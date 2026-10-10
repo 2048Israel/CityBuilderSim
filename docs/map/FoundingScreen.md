@@ -1,6 +1,6 @@
-# FoundingScreen.java - 486 lines · 18 methods · 4 constants · interface
+# FoundingScreen.java - 497 lines · 19 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into.
 > 
@@ -55,7 +55,7 @@
 > cannot be changed later. The city's land stands on it since 0.7.57
 > (CityLand).
 
-**Uses:** [Palette](Palette.md) (76), [Founding](Founding.md) (38), [Currency](Currency.md) (12), [WorldEconomy](WorldEconomy.md) (5), [UserInterface](UserInterface.md) (2), [Icons](Icons.md) (1)
+**Uses:** [Palette](Palette.md) (76), [Founding](Founding.md) (40), [Currency](Currency.md) (12), [WorldEconomy](WorldEconomy.md) (5), [UserInterface](UserInterface.md) (2), [Icons](Icons.md) (1)
 
 **Used by (1):** [UserInterface](UserInterface.md)
 
@@ -71,8 +71,8 @@
 | 224 | · · the ground |
 | 243 | · · the world |
 | 260 | · · found it |
-| 395 | WHAT A KEYSTROKE CHANGES |
-| 414 | THE CHOICES, AS THE MODEL READS THEM |
+| 406 | WHAT A KEYSTROKE CHANGES |
+| 425 | THE CHOICES, AS THE MODEL READS THEM |
 
 ## Constants
 
@@ -103,7 +103,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 414 | **type** `final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. |
+| 73 | 425 | **type** `final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. |
 | 81 | 1 | `FoundingScreen(UserInterface ui)` |  |
 
 ### the choices, between redraws (lines 83-94)
@@ -114,34 +114,35 @@
 |---:|---:|---|---|
 | 102 | 19 | `void show()` | From the main menu: a fresh page on the defaults, whatever was typed last time. |
 
-### THE PAGE (lines 131-394)
+### THE PAGE (lines 131-405)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 134 | 179 | `void draw()` |  |
 | 315 | 5 | `private static Label caption(String text)` | A section's caption over its controls, as the mockups set it. |
-| 327 | 48 | `private VBox presetCard(Founding.Preset p)` | One of the four starts, as a card: its name, its money, and one line on how hard it is - never on what the money buys (Jerus: "even the screen shouldnt say what the money could buy"). |
-| 377 | 3 | `private static String compact(String amount)` | A whole amount without its ".0": "D$100.0M" is "D$100M" on a card, where the room is a card's. |
-| 382 | 12 | `private Button worldChip(double m, boolean first, boolean last)` | One choice of world, as one of a row of five joined segments. |
+| 327 | 49 | `private VBox presetCard(Founding.Preset p)` | One of the four starts, as a card: its name, its money, and one line on how hard it is - never on what the money buys (Jerus: "even the screen shouldnt say what the money could buy"). |
+| 378 | 8 | `private String insaneWords()` | Insane's card's tip: the advances, and the land bond on the plots this world's centre holds (Founding.landBondUsd(), 0.7.106) - the default world's while the seed will not parse. |
+| 388 | 3 | `private static String compact(String amount)` | A whole amount without its ".0": "D$100.0M" is "D$100M" on a card, where the room is a card's. |
+| 393 | 12 | `private Button worldChip(double m, boolean first, boolean last)` | One choice of world, as one of a row of five joined segments. |
 
-### WHAT A KEYSTROKE CHANGES (lines 395-413)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 398 | 15 | `private void refresh()` |  |
-
-### THE CHOICES, AS THE MODEL READS THEM (lines 414-486)
+### WHAT A KEYSTROKE CHANGES (lines 406-424)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 419 | 4 | `private Currency currency()` | The money as chosen, or null when a typed pair does not pass. |
-| 425 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
-| 430 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
-| 435 | 3 | `private Long seed()` | The world's seed as typed, or null when it is not a whole number. |
-| 440 | 14 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse. |
-| 456 | 6 | `private Founding choices()` | The founding as chosen. |
-| 464 | 5 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
-| 470 | 8 | `private static double millions(String typed)` |  |
-| 479 | 3 | `private static String trim(double v)` |  |
-| 483 | 3 | `private static String percent(double m)` |  |
+| 409 | 15 | `private void refresh()` |  |
+
+### THE CHOICES, AS THE MODEL READS THEM (lines 425-497)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 430 | 4 | `private Currency currency()` | The money as chosen, or null when a typed pair does not pass. |
+| 436 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
+| 441 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
+| 446 | 3 | `private Long seed()` | The world's seed as typed, or null when it is not a whole number. |
+| 451 | 14 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse. |
+| 467 | 6 | `private Founding choices()` | The founding as chosen. |
+| 475 | 5 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
+| 481 | 8 | `private static double millions(String typed)` |  |
+| 490 | 3 | `private static String trim(double v)` |  |
+| 494 | 3 | `private static String percent(double m)` |  |
 

@@ -1,4 +1,4 @@
-# HealthCheck.java - 1,591 lines · 5 methods · 0 constants · harnesses
+# HealthCheck.java - 1,656 lines · 5 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HealthCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -55,9 +55,9 @@
 | 923 | · 11. a skip cannot hide an epidemic |
 | 960 | · 12. the fee has a dial, and the funerals do not |
 | 1070 | · 13. who can afford the clinic |
-| 1381 | · 14. the unchanged case, at zero tolerance |
-| 1420 | · 15. the premium |
-| 1509 | · 16. both dials survive a save, and a reform |
+| 1446 | · 14. the unchanged case, at zero tolerance |
+| 1485 | · 15. the premium |
+| 1574 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,10 +69,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1551 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1616 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1515 | `public static void main(String[] args) throws Exception` |  |
-| 1574 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1584 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1580 | `public static void main(String[] args) throws Exception` |  |
+| 1639 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1649 | 7 | `static void cleanUp(Path root)` |  |
 

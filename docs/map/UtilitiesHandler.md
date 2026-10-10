@@ -1,12 +1,12 @@
 # UtilitiesHandler.java - 654 lines · 62 methods · 4 constants · model
 
-`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UtilitiesHandler.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
 **Uses:** [CityNeeds](CityNeeds.md) (2)
 
-**Used by (14):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [ConservationCheck](ConservationCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md)
+**Used by (15):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityNeeds](CityNeeds.md), [ConservationCheck](ConservationCheck.md), [Game](Game.md), [LandManager](LandManager.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [WaterCheck](WaterCheck.md)
 
 ## Sections
 

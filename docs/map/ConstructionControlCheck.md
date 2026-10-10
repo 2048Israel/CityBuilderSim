@@ -1,6 +1,6 @@
-# ConstructionControlCheck.java - 826 lines · 21 methods · 1 constants · harnesses
+# ConstructionControlCheck.java - 830 lines · 21 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ConstructionControlCheck.java` - generated 2026-10-02 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConstructionControlCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The player's hand on the construction queue (0.7.22): each of
 > ConstructionControl's five rules held to its own arithmetic, in a played
@@ -61,7 +61,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [ConstructionControl](ConstructionControl.md) (57), [Game](Game.md) (26), [BuildingManager](BuildingManager.md) (15), [BuildingsStacks](BuildingsStacks.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [JobType](JobType.md) (6), [GameFiles](GameFiles.md) (4), [Sector](Sector.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Good](Good.md) (3), [GameVersion](GameVersion.md) (3), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Construction](Construction.md) (2), [Notice](Notice.md) (2), [Founding](Founding.md) (1), [PopulationManager](PopulationManager.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [ConstructionControl](ConstructionControl.md) (60), [Game](Game.md) (26), [BuildingManager](BuildingManager.md) (15), [BuildingsStacks](BuildingsStacks.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (9), [JobType](JobType.md) (6), [GameFiles](GameFiles.md) (4), [Sector](Sector.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Good](Good.md) (3), [GameVersion](GameVersion.md) (3), [Sectors](Sectors.md) (2), [MoneyAudit](MoneyAudit.md) (2), [Construction](Construction.md) (2), [Notice](Notice.md) (2), [Founding](Founding.md) (1), [PopulationManager](PopulationManager.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
 
 ## Sections
 
@@ -73,10 +73,10 @@
 | 318 | 4. RUSH |
 | 392 | 5. CANCEL |
 | 468 | 6. DEMOLITION |
-| 563 | 7. BUY-OUT |
-| 617 | 8. CONSERVED |
-| 626 | 9. SAVE AND LOAD |
-| 701 | 10. ONE WAIT, AND THE ORDER'S LIFE |
+| 567 | 7. BUY-OUT |
+| 621 | 8. CONSERVED |
+| 630 | 9. SAVE AND LOAD |
+| 705 | 10. ONE WAIT, AND THE ORDER'S LIFE |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 752 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
+| 75 | 756 | **type** `public class ConstructionControlCheck` | The player's hand on the construction queue (0.7.22): each of ConstructionControl's five rules held to its own arithmetic, in a played city. |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 92 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -140,34 +140,34 @@
 |---:|---:|---|---|
 | 394 | 73 | `static void cancel(Path root)` |  |
 
-### 6. DEMOLITION (lines 468-562)
+### 6. DEMOLITION (lines 468-566)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 470 | 92 | `static void demolition(Path root)` |  |
+| 470 | 96 | `static void demolition(Path root)` |  |
 
-### 7. BUY-OUT (lines 563-616)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 565 | 51 | `static void buyOut(Path root)` |  |
-
-### 8. CONSERVED (lines 617-625)
+### 7. BUY-OUT (lines 567-620)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 619 | 6 | `static void conserved()` |  |
+| 569 | 51 | `static void buyOut(Path root)` |  |
 
-### 9. SAVE AND LOAD (lines 626-700)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 628 | 72 | `static void saveAndLoad(Path root) throws Exception` |  |
-
-### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 701-826)
+### 8. CONSERVED (lines 621-629)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 703 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
-| 823 | 3 | `static String fmt(double thousands)` |  |
+| 623 | 6 | `static void conserved()` |  |
+
+### 9. SAVE AND LOAD (lines 630-704)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 632 | 72 | `static void saveAndLoad(Path root) throws Exception` |  |
+
+### 10. ONE WAIT, AND THE ORDER'S LIFE (lines 705-830)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 707 | 119 | `static void oneWaitAndTheOrder(Path root)` |  |
+| 827 | 3 | `static String fmt(double thousands)` |  |
 

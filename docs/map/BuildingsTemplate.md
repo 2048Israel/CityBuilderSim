@@ -1,4 +1,4 @@
-# BuildingsTemplate.java - 911 lines · 97 methods · 2 constants · model
+# BuildingsTemplate.java - 942 lines · 100 methods · 2 constants · model
 
 `ham/citybuildersim/BuildingsTemplate.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -22,7 +22,7 @@
 > claude/reading-the-numbers.md carries every building's price in real dollars
 > next to what the real thing costs, which is the table to balance against.
 
-**Uses:** [Good](Good.md) (14), [JobType](JobType.md) (8), [BuildingType](BuildingType.md) (8), [CareType](CareType.md) (5), [EducationType](EducationType.md) (5), [SafetyType](SafetyType.md) (5), [Traffic](Traffic.md) (4), [RefineryFlow](RefineryFlow.md) (3), [Ports](Ports.md) (3)
+**Uses:** [Good](Good.md) (14), [JobType](JobType.md) (8), [BuildingType](BuildingType.md) (8), [CareType](CareType.md) (5), [EducationType](EducationType.md) (5), [SafetyType](SafetyType.md) (5), [Traffic](Traffic.md) (4), [RefineryFlow](RefineryFlow.md) (3), [Ports](Ports.md) (3), [RealEstate](RealEstate.md) (1)
 
 **Used by (116):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingInstance](BuildingInstance.md), [BuildingManager](BuildingManager.md), [BuildingVisual](BuildingVisual.md), [BuildingsStacks](BuildingsStacks.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CalendarCheck](CalendarCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [Construction](Construction.md), [ConstructionControl](ConstructionControl.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [DenominationCheck](DenominationCheck.md), [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [HealthCheck](HealthCheck.md), [HeavyIndustry](HeavyIndustry.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyCheck](MoneyCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OutsideCheck](OutsideCheck.md), [PlanCheck](PlanCheck.md), [PolicyCheck](PolicyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PopulationCheck](PopulationCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [Rail](Rail.md), [RailCheck](RailCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [RoadCheck](RoadCheck.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [YearBookCheck](YearBookCheck.md)
 
@@ -35,10 +35,11 @@
 | 147 | WHO OWNS IT, AND WHAT IT MAKES (2026-09-11, the sector template). |
 | 223 | · A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; runs/spec-oil.md 2.3) |
 | 248 | · A FILLING STATION'S PUMPS (0.7.83, batch O6; runs/research-pump.md 7) |
-| 265 | · A SEA TERMINAL'S BERTH (0.7.86, batch O9; runs/spec-oil.md 2.9) |
-| 293 | · THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7, 2.11) |
-| 601 | WHAT A MODE IS GOOD AT (2026-09-16) |
-| 665 | WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) |
+| 265 | · A ROAD'S OWN REPAIRS (0.7.103, batch P4; Jerus's A11, 2026-10-10) |
+| 296 | · A SEA TERMINAL'S BERTH (0.7.86, batch O9; runs/spec-oil.md 2.9) |
+| 324 | · THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7, 2.11) |
+| 632 | WHAT A MODE IS GOOD AT (2026-09-16) |
+| 696 | WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) |
 
 ## Enum constants
 
@@ -46,16 +47,16 @@
 |---:|---|---|
 | 119 | `BuildingsTemplate.Source.FRESH` |  |
 | 119 | `BuildingsTemplate.Source.SEA` |  |
-| 305 | `BuildingsTemplate.Offshore.PLATFORM` |  |
-| 305 | `BuildingsTemplate.Offshore.WELL` |  |
-| 305 | `BuildingsTemplate.Offshore.PIPELINE` |  |
+| 336 | `BuildingsTemplate.Offshore.PLATFORM` |  |
+| 336 | `BuildingsTemplate.Offshore.WELL` |  |
+| 336 | `BuildingsTemplate.Offshore.PIPELINE` |  |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 706 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 709 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 737 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 740 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ## Fields (state)
 
@@ -91,25 +92,26 @@
 | 232 | `private ham.citybuildersim.sectors.RefineryFlow.Kind refineryUnit` |  |
 | 233 | `private double feedPerMonth` |  |
 | 254 | `private double pumpLitres` |  |
-| 271 | `private Ports.Cargo berthCargo` |  |
-| 272 | `private double berthTonnesAYear` |  |
-| 307 | `private Offshore offshore` |  |
-| 308 | `private int platformSlots` |  |
-| 309 | `private double onshoreCashPerKm` |  |
-| 343 | `int[] jobsByEducation` | enums |
-| 344 | `private BuildingType category` |  |
-| 610 | `private double freightGrade` |  |
-| 611 | `private double transitCapacity` |  |
-| 648 | `private double railCapacity` |  |
-| 868 | `private double foundingCashCost` | What this building cost when the catalogue was read, before any currency reform - so a reformed city that reloads can divide it again. |
-| 869 | `private double foundingUpkeep` |  |
-| 885 | `private double struckAt` | What the founding figures were last divided by to give today's: the unit over the expected price level at the last re-seed, over any reform since. |
+| 280 | `private double repairsPerYear` |  |
+| 302 | `private Ports.Cargo berthCargo` |  |
+| 303 | `private double berthTonnesAYear` |  |
+| 338 | `private Offshore offshore` |  |
+| 339 | `private int platformSlots` |  |
+| 340 | `private double onshoreCashPerKm` |  |
+| 374 | `int[] jobsByEducation` | enums |
+| 375 | `private BuildingType category` |  |
+| 641 | `private double freightGrade` |  |
+| 642 | `private double transitCapacity` |  |
+| 679 | `private double railCapacity` |  |
+| 899 | `private double foundingCashCost` | What this building cost when the catalogue was read, before any currency reform - so a reformed city that reloads can divide it again. |
+| 900 | `private double foundingUpkeep` |  |
+| 916 | `private double struckAt` | What the founding figures were last divided by to give today's: the unit over the expected price level at the last re-seed, over any reform since. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 885 | **type** `public class BuildingsTemplate` | One kind of building, and what it costs to put up. |
+| 27 | 916 | **type** `public class BuildingsTemplate` | One kind of building, and what it costs to put up. |
 
 ### WHERE A WATER WORKS DRAWS FROM (0.7.59, batch J2; spec-land 2.3) (lines 104-122)
 
@@ -152,103 +154,111 @@
 | 257 | 4 | `public BuildingsTemplate setPumpLitres(double litresAMonth)` | Makes this a filling station that sells `litresAMonth` at its typical throughput. |
 | 263 | 1 | `public double pumpLitres()` | Litres a month a filling station sells at its typical throughput; 0 for every other building. |
 
-### A SEA TERMINAL'S BERTH (0.7.86, batch O9; runs/spec-oil.md 2.9) (lines 265-292)
+### A ROAD'S OWN REPAIRS (0.7.103, batch P4; Jerus's A11, 2026-10-10) (lines 265-295)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 275 | 5 | `public BuildingsTemplate setBerth(Ports.Cargo cargo, double tonnesAYear)` | Makes this a berth of a kind of cargo, handling `tonnesAYear` of it. |
-| 282 | 1 | `public Ports.Cargo berthCargo()` | The kind of cargo a terminal's berth handles, or null for every building that is not a berth. |
-| 285 | 1 | `public double berthTonnesAYear()` | Tonnes a year a terminal's berth handles; 0 for every other building. |
-| 288 | 1 | `public boolean isPort()` | Whether this is a sea terminal (0.7.86): a PORTS building with a berth. |
-| 291 | 1 | `public boolean needsCoast()` | Whether an order for this has to stand on owned sea: a desalination plant (0.7.59) and a sea terminal (0.7.86). |
+| 283 | 4 | `public BuildingsTemplate setRepairsPerYear(double shareAYear)` | Gives this building its own repairs a year, a share of what it cost to put up; 0 or less is none (the house rate). |
+| 289 | 1 | `public boolean hasOwnRepairs()` | Whether this building has a repairs share of its own (0.7.103: the three road kinds). |
+| 292 | 3 | `public double repairsPerYear()` | Its repairs a year, a share of what it cost to put up: its own, or RealEstate.MAINTENANCE_PER_YEAR. |
 
-### THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7, 2.11) (lines 293-600)
+### A SEA TERMINAL'S BERTH (0.7.86, batch O9; runs/spec-oil.md 2.9) (lines 296-323)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 305 | 1 | **type** `public enum Offshore` | What a building at sea is: a platform's jacket, a well in one of its slots, or a kilometre of crude pipeline. |
-| 312 | 6 | `public BuildingsTemplate setOffshore(Offshore kind, int slots, double onshoreCash)` | Makes this one of the oil buildings at sea: a PLATFORM with `slots` for wells, a WELL, or a PIPELINE whose kilometre on land costs `onshoreCash` (thousands). |
-| 320 | 1 | `public Offshore offshore()` | Which of the buildings at sea this is, or null for every building on the ground. |
-| 323 | 1 | `public boolean standsAtSea()` | Whether this stands at sea (an Offshore Platform, a Platform Well, a Crude Pipeline): not on the city's dry ground, nor drawn on its land. |
-| 326 | 1 | `public boolean isPlatform()` | Whether this is an offshore platform's jacket. |
-| 329 | 1 | `public boolean isPlatformWell()` | Whether this is a well in a platform's slot. |
-| 332 | 1 | `public boolean isPipeline()` | Whether this is a kilometre of crude pipeline. |
-| 335 | 1 | `public int platformSlots()` | The wells a platform's jacket holds: 12 for the Offshore Platform; 0 for every other building. |
-| 338 | 1 | `public double onshoreCashPerKm()` | A pipeline's kilometre on land, in thousands (its own cash is a kilometre at sea); 0 for every other building. |
-| 347 | 4 | `public BuildingsTemplate(String name, BuildingType category)` | barebones constructor |
-| 395 | 4 | `public BuildingsTemplate setJobs(JobType type, int number)` | setters (method chaining) |
-| 400 | 7 | `public BuildingsTemplate setCashCost(double cashCost)` |  |
-| 408 | 4 | `public BuildingsTemplate setConstructionPoints(int constructionPoints)` |  |
-| 413 | 4 | `public BuildingsTemplate setCapacity(int capacity)` |  |
-| 418 | 6 | `public BuildingsTemplate setUpkeep(double upkeep)` |  |
-| 425 | 4 | `public BuildingsTemplate setConstructionMaterials(int constructionMaterials)` |  |
-| 430 | 4 | `public BuildingsTemplate setElectricityConsumption(int electricityConsumption)` |  |
-| 435 | 4 | `public BuildingsTemplate setWaterConsumption(double waterConsumption)` |  |
-| 440 | 4 | `public BuildingsTemplate setLandSqFt(double landSqFt)` |  |
-| 445 | 4 | `public BuildingsTemplate setRoadLoad(double roadLoad)` |  |
-| 450 | 4 | `public BuildingsTemplate setCoverage(int coverage)` |  |
-| 455 | 4 | `public BuildingsTemplate setProduction1(double production1)` |  |
-| 460 | 4 | `public BuildingsTemplate setProduction2(double production2)` |  |
-| 465 | 4 | `public BuildingsTemplate setProductionModifier1(double productionModifier1)` |  |
-| 470 | 4 | `public BuildingsTemplate setProductionModifier2(double productionModifier2)` |  |
-| 475 | 4 | `public BuildingsTemplate setNationalized(boolean nationalized)` |  |
-| 480 | 4 | `public BuildingsTemplate setId(int id)` |  |
-| 485 | 4 | `public BuildingsTemplate setCare(CareType care)` |  |
-| 490 | 4 | `public BuildingsTemplate setSafety(SafetyType safety)` |  |
-| 495 | 4 | `public BuildingsTemplate setTeaches(EducationType teaches)` |  |
-| 500 | 4 | `public BuildingsTemplate setSource(Source source)` |  |
-| 506 | 3 | `public Source getSource()` | What it draws from: FRESH for every building but a desalination plant (see the field's note). |
-| 511 | 3 | `public boolean isSeaWater()` | A water works that draws the sea: a Desalination Plant (0.7.59). |
-| 516 | 3 | `public boolean isFreshWater()` | A water works that draws fresh water, held to the city's limit: a Water Treatment Plant. |
-| 521 | 3 | `public double getCashCost()` | getters |
-| 525 | 3 | `public int getConstructionPoints()` |  |
-| 529 | 3 | `public int getDwellings()` |  |
-| 533 | 4 | `public BuildingsTemplate setDwellings(int dwellings)` |  |
-| 554 | 5 | `public int homeSize()` | How big a household one of these units takes, in people. |
-| 568 | 4 | `public boolean adultsOnly()` | True for a flat too small to put a child in. |
-| 573 | 3 | `public int getCapacity()` |  |
-| 577 | 3 | `public double getUpkeep()` |  |
-| 581 | 3 | `public int getConstructionMaterials()` |  |
-| 585 | 3 | `public int getElectricityConsumption()` |  |
-| 589 | 3 | `public double getWaterConsumption()` |  |
-| 593 | 3 | `public double getLandSqFt()` |  |
-| 597 | 3 | `public double getRoadLoad()` |  |
+| 306 | 5 | `public BuildingsTemplate setBerth(Ports.Cargo cargo, double tonnesAYear)` | Makes this a berth of a kind of cargo, handling `tonnesAYear` of it. |
+| 313 | 1 | `public Ports.Cargo berthCargo()` | The kind of cargo a terminal's berth handles, or null for every building that is not a berth. |
+| 316 | 1 | `public double berthTonnesAYear()` | Tonnes a year a terminal's berth handles; 0 for every other building. |
+| 319 | 1 | `public boolean isPort()` | Whether this is a sea terminal (0.7.86): a PORTS building with a berth. |
+| 322 | 1 | `public boolean needsCoast()` | Whether an order for this has to stand on owned sea: a desalination plant (0.7.59) and a sea terminal (0.7.86). |
 
-### WHAT A MODE IS GOOD AT (2026-09-16) (lines 601-664)
+### THE OIL AT SEA (0.7.91, batch O10; runs/spec-oil.md 2.7, 2.11) (lines 324-631)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 623 | 4 | `public BuildingsTemplate setFreightGrade(double grade)` | How much of this road is built for lorries, 0 to 1. |
-| 628 | 1 | `public double getFreightGrade()` |  |
-| 638 | 4 | `public BuildingsTemplate setTransitCapacity(double riders)` | Commuter journeys a month this carries OFF the road, if it is transit. |
-| 643 | 1 | `public double getTransitCapacity()` |  |
-| 646 | 1 | `public boolean isTransit()` | True for a building whose whole purpose is carrying people. |
-| 658 | 4 | `public BuildingsTemplate setRailCapacity(double tonnes)` | Tonnes a month this can haul across the city boundary, if it is rail. |
-| 663 | 1 | `public double getRailCapacity()` |  |
+| 336 | 1 | **type** `public enum Offshore` | What a building at sea is: a platform's jacket, a well in one of its slots, or a kilometre of crude pipeline. |
+| 343 | 6 | `public BuildingsTemplate setOffshore(Offshore kind, int slots, double onshoreCash)` | Makes this one of the oil buildings at sea: a PLATFORM with `slots` for wells, a WELL, or a PIPELINE whose kilometre on land costs `onshoreCash` (thousands). |
+| 351 | 1 | `public Offshore offshore()` | Which of the buildings at sea this is, or null for every building on the ground. |
+| 354 | 1 | `public boolean standsAtSea()` | Whether this stands at sea (an Offshore Platform, a Platform Well, a Crude Pipeline): not on the city's dry ground, nor drawn on its land. |
+| 357 | 1 | `public boolean isPlatform()` | Whether this is an offshore platform's jacket. |
+| 360 | 1 | `public boolean isPlatformWell()` | Whether this is a well in a platform's slot. |
+| 363 | 1 | `public boolean isPipeline()` | Whether this is a kilometre of crude pipeline. |
+| 366 | 1 | `public int platformSlots()` | The wells a platform's jacket holds: 12 for the Offshore Platform; 0 for every other building. |
+| 369 | 1 | `public double onshoreCashPerKm()` | A pipeline's kilometre on land, in thousands (its own cash is a kilometre at sea); 0 for every other building. |
+| 378 | 4 | `public BuildingsTemplate(String name, BuildingType category)` | barebones constructor |
+| 426 | 4 | `public BuildingsTemplate setJobs(JobType type, int number)` | setters (method chaining) |
+| 431 | 7 | `public BuildingsTemplate setCashCost(double cashCost)` |  |
+| 439 | 4 | `public BuildingsTemplate setConstructionPoints(int constructionPoints)` |  |
+| 444 | 4 | `public BuildingsTemplate setCapacity(int capacity)` |  |
+| 449 | 6 | `public BuildingsTemplate setUpkeep(double upkeep)` |  |
+| 456 | 4 | `public BuildingsTemplate setConstructionMaterials(int constructionMaterials)` |  |
+| 461 | 4 | `public BuildingsTemplate setElectricityConsumption(int electricityConsumption)` |  |
+| 466 | 4 | `public BuildingsTemplate setWaterConsumption(double waterConsumption)` |  |
+| 471 | 4 | `public BuildingsTemplate setLandSqFt(double landSqFt)` |  |
+| 476 | 4 | `public BuildingsTemplate setRoadLoad(double roadLoad)` |  |
+| 481 | 4 | `public BuildingsTemplate setCoverage(int coverage)` |  |
+| 486 | 4 | `public BuildingsTemplate setProduction1(double production1)` |  |
+| 491 | 4 | `public BuildingsTemplate setProduction2(double production2)` |  |
+| 496 | 4 | `public BuildingsTemplate setProductionModifier1(double productionModifier1)` |  |
+| 501 | 4 | `public BuildingsTemplate setProductionModifier2(double productionModifier2)` |  |
+| 506 | 4 | `public BuildingsTemplate setNationalized(boolean nationalized)` |  |
+| 511 | 4 | `public BuildingsTemplate setId(int id)` |  |
+| 516 | 4 | `public BuildingsTemplate setCare(CareType care)` |  |
+| 521 | 4 | `public BuildingsTemplate setSafety(SafetyType safety)` |  |
+| 526 | 4 | `public BuildingsTemplate setTeaches(EducationType teaches)` |  |
+| 531 | 4 | `public BuildingsTemplate setSource(Source source)` |  |
+| 537 | 3 | `public Source getSource()` | What it draws from: FRESH for every building but a desalination plant (see the field's note). |
+| 542 | 3 | `public boolean isSeaWater()` | A water works that draws the sea: a Desalination Plant (0.7.59). |
+| 547 | 3 | `public boolean isFreshWater()` | A water works that draws fresh water, held to the city's limit: a Water Treatment Plant. |
+| 552 | 3 | `public double getCashCost()` | getters |
+| 556 | 3 | `public int getConstructionPoints()` |  |
+| 560 | 3 | `public int getDwellings()` |  |
+| 564 | 4 | `public BuildingsTemplate setDwellings(int dwellings)` |  |
+| 585 | 5 | `public int homeSize()` | How big a household one of these units takes, in people. |
+| 599 | 4 | `public boolean adultsOnly()` | True for a flat too small to put a child in. |
+| 604 | 3 | `public int getCapacity()` |  |
+| 608 | 3 | `public double getUpkeep()` |  |
+| 612 | 3 | `public int getConstructionMaterials()` |  |
+| 616 | 3 | `public int getElectricityConsumption()` |  |
+| 620 | 3 | `public double getWaterConsumption()` |  |
+| 624 | 3 | `public double getLandSqFt()` |  |
+| 628 | 3 | `public double getRoadLoad()` |  |
 
-### WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) (lines 665-911)
+### WHAT A MODE IS GOOD AT (2026-09-16) (lines 632-695)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 719 | 42 | `public double loadOf(Traffic stream)` | This building's road load, split by what is actually moving. |
-| 762 | 3 | `public int getCoverage()` |  |
-| 766 | 3 | `public double getProduction1()` |  |
-| 770 | 3 | `public double getProduction2()` |  |
-| 774 | 3 | `public double getProductionModifier1()` |  |
-| 778 | 3 | `public double getProductionModifier2()` |  |
-| 782 | 3 | `public boolean getNationalized()` |  |
-| 785 | 3 | `public int getJobs(JobType type)` |  |
-| 789 | 3 | `public String getName()` |  |
-| 793 | 3 | `public BuildingType getCategory()` |  |
-| 797 | 3 | `public int getId()` |  |
-| 801 | 3 | `public CareType getCare()` |  |
-| 806 | 4 | `public BuildingsTemplate setRequiresLicence(JobType licence)` | The licence this building's practice needs, or null. |
-| 812 | 1 | `public JobType getRequiresLicence()` | The licence this building's practice needs, or null if it needs none. |
-| 815 | 3 | `public int getLicensedPosts()` | How many posts here need that licence - what the gate is measured against. |
-| 819 | 3 | `public SafetyType getSafety()` |  |
-| 823 | 3 | `public EducationType getTeaches()` |  |
-| 831 | 5 | `public int getTotalJobs()` | sum of all jobs |
-| 850 | 6 | `public void redenominate(double scale)` | What a building costs and what it costs to run, in the new unit. |
-| 888 | 9 | `public void seedConstants(double unit)` | Re-seeds this template's price at a given unit (since 0.7.42, the unit over the expected price level). |
-| 904 | 6 | `private void rememberFounding()` | ...and a reform moves the founding figure with it, so that a LATER re-seed at the new unit lands in the same place. |
+| 654 | 4 | `public BuildingsTemplate setFreightGrade(double grade)` | How much of this road is built for lorries, 0 to 1. |
+| 659 | 1 | `public double getFreightGrade()` |  |
+| 669 | 4 | `public BuildingsTemplate setTransitCapacity(double riders)` | Commuter journeys a month this carries OFF the road, if it is transit. |
+| 674 | 1 | `public double getTransitCapacity()` |  |
+| 677 | 1 | `public boolean isTransit()` | True for a building whose whole purpose is carrying people. |
+| 689 | 4 | `public BuildingsTemplate setRailCapacity(double tonnes)` | Tonnes a month this can haul across the city boundary, if it is rail. |
+| 694 | 1 | `public double getRailCapacity()` |  |
+
+### WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) (lines 696-942)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 750 | 42 | `public double loadOf(Traffic stream)` | This building's road load, split by what is actually moving. |
+| 793 | 3 | `public int getCoverage()` |  |
+| 797 | 3 | `public double getProduction1()` |  |
+| 801 | 3 | `public double getProduction2()` |  |
+| 805 | 3 | `public double getProductionModifier1()` |  |
+| 809 | 3 | `public double getProductionModifier2()` |  |
+| 813 | 3 | `public boolean getNationalized()` |  |
+| 816 | 3 | `public int getJobs(JobType type)` |  |
+| 820 | 3 | `public String getName()` |  |
+| 824 | 3 | `public BuildingType getCategory()` |  |
+| 828 | 3 | `public int getId()` |  |
+| 832 | 3 | `public CareType getCare()` |  |
+| 837 | 4 | `public BuildingsTemplate setRequiresLicence(JobType licence)` | The licence this building's practice needs, or null. |
+| 843 | 1 | `public JobType getRequiresLicence()` | The licence this building's practice needs, or null if it needs none. |
+| 846 | 3 | `public int getLicensedPosts()` | How many posts here need that licence - what the gate is measured against. |
+| 850 | 3 | `public SafetyType getSafety()` |  |
+| 854 | 3 | `public EducationType getTeaches()` |  |
+| 862 | 5 | `public int getTotalJobs()` | sum of all jobs |
+| 881 | 6 | `public void redenominate(double scale)` | What a building costs and what it costs to run, in the new unit. |
+| 919 | 9 | `public void seedConstants(double unit)` | Re-seeds this template's price at a given unit (since 0.7.42, the unit over the expected price level). |
+| 935 | 6 | `private void rememberFounding()` | ...and a reform moves the founding figure with it, so that a LATER re-seed at the new unit lands in the same place. |
 

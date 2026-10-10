@@ -1,4 +1,4 @@
-# MoneyAudit.java - 1,153 lines · 27 methods · 5 constants · model
+# MoneyAudit.java - 1,158 lines · 27 methods · 5 constants · model
 
 `ham/citybuildersim/MoneyAudit.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -110,7 +110,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1104 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
+| 50 | 1109 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
 | 53 | 160 | **type** `public static final class Result` | One month's strike. |
 | 113 | 1 | `public double moneyMade()` _(in MoneyAudit.Result)_ | What the month did to M0, as the audit saw it cross the edge. |
 | 116 | 1 | `public double tradeBalance()` _(in MoneyAudit.Result)_ | Exports less imports. |
@@ -137,7 +137,7 @@
 | 311 | 9 | `private static String[] poolNames()` |  |
 | 322 | 58 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
 
-### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 381-1153)
+### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 381-1158)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -145,5 +145,5 @@
 | 460 | 6 | `public static double tolerance(double floor, double scale)` | ...for a comparison held to a floor of its own: the floor while RELATIVE_TOLERANCE of the size is under a cent, and past that the larger of the two - and since 0.7.63 the floor never under ULP_STEPS of a double's step... |
 | 472 | 5 | `public static double pooled(Game g)` | Every dollar in the pools: the city's, its businesses', the builders' order book, and the bank's - plus what it owes the window, less what it owes for the city's paper - and the city's fund's (0.7.14). |
 | 486 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
-| 491 | 662 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
+| 491 | 667 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
 

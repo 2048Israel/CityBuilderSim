@@ -3288,7 +3288,7 @@ public class LongPlaytest {
         return null;
     }
 
-    /** The month's boats and sea tonnes, counted (the calls without their quays: the map places them, O13). */
+    /** The month's boats and sea tonnes, counted (the calls without their quays: the map places them, since 0.7.97 on its sea routes). */
     static void countPorts(Game g) {
         Ports ports = g.getPorts();
         int calls = BoatSchedule.of(g.getMonth(), ports, java.util.List.of(), 0, 0).callCount();
@@ -3322,10 +3322,11 @@ public class LongPlaytest {
      * THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of
      * the refiners' buildings opened and sold back, and the crude units and
      * the conversion units standing at most. Which rule sold one follows from
-     * Refining.mayRetire(): a crude unit only the distress rule sells (the
-     * spare-capacity rule has no measure while no kind of unit stands idle),
-     * a conversion unit only once its kind has stood idle six months, which
-     * the spare-capacity rule sells first.
+     * Refining.mayRetire(): a crude unit the distress rule sells, and since
+     * 0.7.105 the spare-capacity rule too once the run has left nameplate
+     * idle six months (Refining, THE RUN); a conversion unit only once its
+     * kind has stood idle six months, which the spare-capacity rule sells
+     * first.
      */
     static final java.util.Map<String, Integer> refinersOpened = new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>();
     static int[] refinersLast;

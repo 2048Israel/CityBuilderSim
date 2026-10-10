@@ -1,6 +1,6 @@
-# TreasuryCheck.java - 965 lines · 17 methods · 1 constants · harnesses
+# TreasuryCheck.java - 984 lines · 17 methods · 1 constants · harnesses
 
-`ham/citybuildersim/TreasuryCheck.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TreasuryCheck.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > Plays a city and audits what the screens say the treasury did. Not part of
 > the game.
@@ -102,7 +102,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 94 | 872 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 94 | 891 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
 | 101 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 120 | 8 | `static void near(String what, int month, double actual, double expected, double size)` | ...and the journal's reconciliation, which subtracts one cash balance from another (0.7.54): MoneyAudit.tolerance(TOLERANCE, the treasury's size) - TOLERANCE exactly below 2^27 units (1.3e8), from there 64 of a double... |
 | 130 | 3 | `static double treasurySize(Game g)` | The treasury's size this month, for the journal's reconciliation: the larger of its opening and closing balances. |
@@ -116,15 +116,15 @@
 
 ### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 546-574)
 
-### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 575-965)
+### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 575-984)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 587 | 97 | `static void earned()` |  |
-| 686 | 5 | `static Game founded(String label)` | A city founded as a player founds one: newGame(), so it rolls in the same structure. |
-| 693 | 7 | `static String press(Game g)` | One press, its printing kept - the log is where a rollover says what it did. |
-| 702 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
-| 709 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
-| 718 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
-| 722 | 243 | `static void rolling()` |  |
+| 587 | 116 | `static void earned()` |  |
+| 705 | 5 | `static Game founded(String label)` | A city founded as a player founds one: newGame(), so it rolls in the same structure. |
+| 712 | 7 | `static String press(Game g)` | One press, its printing kept - the log is where a rollover says what it did. |
+| 721 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
+| 728 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
+| 737 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
+| 741 | 243 | `static void rolling()` |  |
 

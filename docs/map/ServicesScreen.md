@@ -1,6 +1,6 @@
-# ServicesScreen.java - 3,150 lines · 124 methods · 23 constants · interface
+# ServicesScreen.java - 3,151 lines · 124 methods · 23 constants · interface
 
-`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-10-07 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ServicesScreen.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
 > The services tab: the four systems the city runs for its people - health,
 > education, utilities and safety - each opening on an Overview whose one
@@ -45,16 +45,16 @@
 | 1778 | · the basic ladder |
 | 1863 | · a course |
 | 2153 | UTILITIES |
-| 2418 | SAFETY (2026-09-11) |
-| 2714 | THE BOOKS. |
-| 2739 | · HEALTH |
-| 2827 | · · what it costs |
-| 2839 | · · where the money goes |
-| 2887 | · EDUCATION |
-| 2955 | · · what it costs |
-| 2964 | · · where the money goes |
-| 2991 | · UTILITIES |
-| 3101 | · SAFETY |
+| 2419 | SAFETY (2026-09-11) |
+| 2715 | THE BOOKS. |
+| 2740 | · HEALTH |
+| 2828 | · · what it costs |
+| 2840 | · · where the money goes |
+| 2888 | · EDUCATION |
+| 2956 | · · what it costs |
+| 2965 | · · where the money goes |
+| 2992 | · UTILITIES |
+| 3102 | · SAFETY |
 
 ## Constants
 
@@ -79,10 +79,10 @@
 | 2363 | `ServicesScreen.POWER_INFO` | `"Power is counted in kilowatts, a rate - the screens wrote watts until " + "0...` | The power row's (i): the unit, the staff discount, one workforce, who is billed. |
 | 2373 | `ServicesScreen.BROWNOUT_INFO` | `"Every industrial and commercial building's output is cut in proportion " + "...` | A brownout's (i), as the grid's old alert said it. |
 | 2378 | `ServicesScreen.WATER_INFO` | `"Water is counted in units of 10,000 gallons a month.The people draw " + "the...` | The water row's (i). |
-| 2573 | `ServicesScreen.CAUSES_INFO` | `"Every adult at liberty is counted once, at the heaviest reason they have.The...` | The causes' (i). |
-| 2579 | `ServicesScreen.STOLEN_INFO` | `"What is stolen goes to the offenders' households.The killings are next" + " ...` | What is stolen, and the injured (the old "what it did" note). |
-| 2583 | `ServicesScreen.CAUGHT_INFO` | `"Anybody caught with no staffed cell free stays on the street and keeps" + " ...` | Anybody caught with no cell (the prisons' note). |
-| 2588 | `ServicesScreen.OFFICERS_INFO` | `crime -> String.format("%s officers per 100,000 people.Canada has %s; full co...` | The officers against Canada, and the founding constabulary. |
+| 2574 | `ServicesScreen.CAUSES_INFO` | `"Every adult at liberty is counted once, at the heaviest reason they have.The...` | The causes' (i). |
+| 2580 | `ServicesScreen.STOLEN_INFO` | `"What is stolen goes to the offenders' households.The killings are next" + " ...` | What is stolen, and the injured (the old "what it did" note). |
+| 2584 | `ServicesScreen.CAUGHT_INFO` | `"Anybody caught with no staffed cell free stays on the street and keeps" + " ...` | Anybody caught with no cell (the prisons' note). |
+| 2589 | `ServicesScreen.OFFICERS_INFO` | `crime -> String.format("%s officers per 100,000 people.Canada has %s; full co...` | The officers against Canada, and the founding constabulary. |
 
 ## Fields (state)
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 3112 | **type** `final class ServicesScreen` | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one picture answers the system's question, then the pages behind it and the... |
+| 39 | 3113 | **type** `final class ServicesScreen` | The services tab: the four systems the city runs for its people - health, education, utilities and safety - each opening on an Overview whose one picture answers the system's question, then the pages behind it and the... |
 | 44 | 1 | `ServicesScreen(UserInterface ui)` |  |
 
 ### SERVICES - WHAT THE CITY PROVIDES, AND HOW WELL IT COVERS. (lines 46-125)
@@ -276,7 +276,7 @@
 | 2104 | 28 | `VBox courseStatement(EducationType course)` | The old course block's lines - the pipeline, the gates, the two things that move it - as they were. |
 | 2140 | 12 | `HBox tuitionLine(EducationType course)` | The price of a seat, and the dial that decides who pays it, in one line (0.7.28: "What a seat costs" and its three lines). |
 
-### UTILITIES (lines 2153-2417)
+### UTILITIES (lines 2153-2418)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -287,57 +287,57 @@
 | 2267 | 38 | `List<UtilityRow> utilityRows(List<CityNeeds.Need> all)` |  |
 | 2313 | 7 | `static String shortWords(double asked, double now, double could, java.util.function.DoubleFunction<String> unit)` | How short or spare a supply is, both ways (spec bug 17: the page's "Short by" was full staff against the draw and its alert was now against the draw, and neither said which): "short 38.9 MW now · 26.6 MW even fully st... |
 | 2322 | 39 | `VBox utilityCard(UtilityRow r)` | One capacity row: the name and its verdict figure; the bar with who draws it under it; how short, and the door. |
-| 2392 | 25 | `VBox utilityStatement(String key)` | A row's old lines, in its fold - kW for watts, and the homes for "resident draw". |
+| 2393 | 25 | `VBox utilityStatement(String key)` | A row's old lines, in its fold - kW for watts, and the homes for "resident draw". |
 
-### SAFETY (2026-09-11) (lines 2418-2713)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2433 | 21 | `List<Kpi> safetyKpis(List<CityNeeds.Need> all)` |  |
-| 2455 | 8 | `void safetyPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
-| 2470 | 14 | `List<Part> crimeParts()` | The crime's reasons as parts of the month's crime: Crime's own split (getCrimes(cause), each cause's share of the pressure), in the causes' order and the categories' colours - never a verdict's. |
-| 2486 | 69 | `void crimeOverview(VBox page, List<CityNeeds.Need> all)` | Where the crime comes from, and what the police and the cells are doing about it. |
-| 2557 | 7 | `HBox footDoors(String pageName, BuildAdvice.Measure m)` | A card's two doors: its page, and Build on its ring. |
-| 2566 | 5 | `static VBox didLine(String name, String value, String line)` | One line of what the crime did: a count, its name, and a smaller line. |
-| 2596 | 19 | `VBox causesTable()` | The old "Where it comes from" table: reason, adults, weight, crimes. |
-| 2617 | 40 | `void policePage(VBox page)` | What the police are doing, and what more of them would: with no police against with these, the officers, one more station. |
-| 2659 | 10 | `static HBox crimeRow(String name, double crimes, double scale, String colour)` | One of the police page's two bars: its name, the bar on the shared scale, the crimes a month. |
-| 2671 | 42 | `void prisonsPage(VBox page)` | Who is inside, and whether the city can hold who the police catch. |
-
-### THE BOOKS. (lines 2714-2738)
+### SAFETY (2026-09-11) (lines 2419-2714)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2735 | 3 | `HBox bookRow(String label, double thousands, String tone)` | One line of a set of books: label, figure, and a colour when it matters. |
+| 2434 | 21 | `List<Kpi> safetyKpis(List<CityNeeds.Need> all)` |  |
+| 2456 | 8 | `void safetyPage(VBox page, List<CityNeeds.Need> all, List<Event> events)` |  |
+| 2471 | 14 | `List<Part> crimeParts()` | The crime's reasons as parts of the month's crime: Crime's own split (getCrimes(cause), each cause's share of the pressure), in the causes' order and the categories' colours - never a verdict's. |
+| 2487 | 69 | `void crimeOverview(VBox page, List<CityNeeds.Need> all)` | Where the crime comes from, and what the police and the cells are doing about it. |
+| 2558 | 7 | `HBox footDoors(String pageName, BuildAdvice.Measure m)` | A card's two doors: its page, and Build on its ring. |
+| 2567 | 5 | `static VBox didLine(String name, String value, String line)` | One line of what the crime did: a count, its name, and a smaller line. |
+| 2597 | 19 | `VBox causesTable()` | The old "Where it comes from" table: reason, adults, weight, crimes. |
+| 2618 | 40 | `void policePage(VBox page)` | What the police are doing, and what more of them would: with no police against with these, the officers, one more station. |
+| 2660 | 10 | `static HBox crimeRow(String name, double crimes, double scale, String colour)` | One of the police page's two bars: its name, the bar on the shared scale, the crimes a month. |
+| 2672 | 42 | `void prisonsPage(VBox page)` | Who is inside, and whether the city can hold who the police catch. |
 
-### HEALTH (lines 2739-2886)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2741 | 18 | `void healthBooksPage(VBox page)` |  |
-| 2761 | 13 | `String pricedOutWords()` | ...and who the price turned away (2026-09-19): the dial is on the Policy tab's Health page; this line says what it did. |
-| 2782 | 104 | `VBox healthBooksStatement()` | The old Health books, every line: what care charges for, what it costs, where the money goes. |
-
-### EDUCATION (lines 2887-2990)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2889 | 20 | `void educationBooksPage(VBox page)` |  |
-| 2917 | 73 | `VBox educationBooksStatement()` | The old Education books, every line but two: "Tuition the city covers" listed as a cost and the alert that the subsidy was counted twice. |
-
-### UTILITIES (lines 2991-3100)
+### THE BOOKS. (lines 2715-2739)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2993 | 28 | `void utilityBooksPage(VBox page)` |  |
-| 3034 | 4 | `double roadUpkeep()` | THE ROADS' REPAIR BILL, which until 2026-09-09 could only ever read ZERO. |
-| 3040 | 1 | `static double billedShare(double billed, double draw)` | The share of a draw that is billed: the measured share, where the books said "four fifths" (0.7.28). |
-| 3050 | 50 | `VBox utilityBooksStatement()` | The old utilities' books, every line - but: kW for watts; the unbilled draw is the homes and the city's own buildings, not "resident draw"; households are not billed, rather than "have no cash account" (they have bala... |
+| 2736 | 3 | `HBox bookRow(String label, double thousands, String tone)` | One line of a set of books: label, figure, and a colour when it matters. |
 
-### SAFETY (lines 3101-3150)
+### HEALTH (lines 2740-2887)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3104 | 38 | `void safetyBooksPage(VBox page)` | What it costs. |
-| 3144 | 6 | `static String perHead(Crime crime, double police, double prisons)` | "$X an officer on shift a year, and $Y a prisoner a year" - the officers past the founding constabulary, which costs nothing. |
+| 2742 | 18 | `void healthBooksPage(VBox page)` |  |
+| 2762 | 13 | `String pricedOutWords()` | ...and who the price turned away (2026-09-19): the dial is on the Policy tab's Health page; this line says what it did. |
+| 2783 | 104 | `VBox healthBooksStatement()` | The old Health books, every line: what care charges for, what it costs, where the money goes. |
+
+### EDUCATION (lines 2888-2991)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2890 | 20 | `void educationBooksPage(VBox page)` |  |
+| 2918 | 73 | `VBox educationBooksStatement()` | The old Education books, every line but two: "Tuition the city covers" listed as a cost and the alert that the subsidy was counted twice. |
+
+### UTILITIES (lines 2992-3101)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2994 | 28 | `void utilityBooksPage(VBox page)` |  |
+| 3035 | 4 | `double roadUpkeep()` | THE ROADS' REPAIR BILL, which until 2026-09-09 could only ever read ZERO. |
+| 3041 | 1 | `static double billedShare(double billed, double draw)` | The share of a draw that is billed: the measured share, where the books said "four fifths" (0.7.28). |
+| 3051 | 50 | `VBox utilityBooksStatement()` | The old utilities' books, every line - but: kW for watts; the unbilled draw is the homes and the city's own buildings, not "resident draw"; households are not billed, rather than "have no cash account" (they have bala... |
+
+### SAFETY (lines 3102-3151)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3105 | 38 | `void safetyBooksPage(VBox page)` | What it costs. |
+| 3145 | 6 | `static String perHead(Crime crime, double police, double prisons)` | "$X an officer on shift a year, and $Y a prisoner a year" - the officers past the founding constabulary, which costs nothing. |
 

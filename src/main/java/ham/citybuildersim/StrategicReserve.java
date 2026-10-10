@@ -39,7 +39,8 @@ package ham.citybuildersim;
  *
  * ITS BOOK is at average cost: a fill adds what was paid, a sale takes the
  * share of the book the tonnes sold were. Pure bookkeeping; nothing here
- * moves money - Game pays and journals it.
+ * moves money - Game pays it, on the budget's two lines since 0.7.102 (the
+ * treasury journalled it before).
  */
 public final class StrategicReserve implements Markets.CityTrader {
 

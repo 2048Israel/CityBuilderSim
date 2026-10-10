@@ -1,4 +1,4 @@
-# OilView.java - 1,333 lines · 70 methods · 41 constants · model
+# OilView.java - 1,345 lines · 71 methods · 41 constants · model
 
 `ham/citybuildersim/OilView.java` - generated 2026-10-10 by CodeMap; line numbers are as of that run.
 
@@ -38,7 +38,7 @@
 > Pure: it reads the city and changes nothing (the planner's appraisals are
 > the build card's reads).
 
-**Uses:** [RefineryView](RefineryView.md) (97), [Good](Good.md) (23), [Oil](Oil.md) (19), [Refining](Refining.md) (15), [RefineryFlow](RefineryFlow.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (10), [SpreadPlanner](SpreadPlanner.md) (9), [LandManager](LandManager.md) (7), [Sectors](Sectors.md) (6), [Game](Game.md) (5), [GoodsMarket](GoodsMarket.md) (3), [StrategicReserve](StrategicReserve.md) (3), [CityLand](CityLand.md) (3), [ChartModel](ChartModel.md) (3), [Trade](Trade.md) (2), [World](World.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityCalendar](CityCalendar.md) (2), [YearBook](YearBook.md) (1), [Resource](Resource.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Formats](Formats.md) (1)
+**Uses:** [RefineryView](RefineryView.md) (100), [Good](Good.md) (23), [Oil](Oil.md) (19), [Refining](Refining.md) (16), [RefineryFlow](RefineryFlow.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (10), [SpreadPlanner](SpreadPlanner.md) (9), [LandManager](LandManager.md) (7), [Sectors](Sectors.md) (6), [Game](Game.md) (5), [GoodsMarket](GoodsMarket.md) (3), [StrategicReserve](StrategicReserve.md) (3), [CityLand](CityLand.md) (3), [ChartModel](ChartModel.md) (3), [Trade](Trade.md) (2), [World](World.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [CityCalendar](CityCalendar.md) (2), [YearBook](YearBook.md) (1), [Resource](Resource.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Formats](Formats.md) (1)
 
 **Used by (2):** [OilViewCheck](OilViewCheck.md), [SectorScreen](SectorScreen.md)
 
@@ -60,15 +60,15 @@
 | 828 | · the four figures (mockup 2's) |
 | 888 | · the wells by type (mockup 2's two cards) |
 | 998 | · the units table (mockup 2's THE REFINERY) |
-| 1157 | · the products table (mockup 2's PRODUCTS) |
-| 1257 | · the strategic reserve, and its two levers |
+| 1169 | · the products table (mockup 2's PRODUCTS) |
+| 1269 | · the strategic reserve, and its two levers |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 1313 | `OilView.Unit.TONNES` |  |
-| 1313 | `OilView.Unit.MONEY` |  |
+| 1325 | `OilView.Unit.TONNES` |  |
+| 1325 | `OilView.Unit.MONEY` |  |
 
 ## Constants
 
@@ -103,24 +103,24 @@
 | 826 | `OilView.NOT_COUNTED` | `"not counted until a month runs"` | What the page says while the month is not counted. |
 | 842 | `OilView.TEXT` | `RefineryView.TEXT, GOOD = "#3fb950", BAD = "#f85149", WARN = RefineryView.HOT` | The colour of a figure that is the answer, of good news and bad, and of a warning. |
 | 897 | `OilView.FACT` | `RefineryView.TEXT_2` | The figure's colour on a card: the secondary grey (mockup 2's .kv b). |
-| 1019 | `OilView.UNIT_HEADS` | `{ "Unit · what it turns into what", "b/d", "running", "spread", "state" }` | The table's heads, in its columns' order (mockup 2's). |
-| 1022 | `OilView.UNIT_WIDTHS` | `{ 0, 64, 62, 76, 210 }` | The columns' widths (b/d, running, spread, the state; the first takes the rest - 238 px in the units' box's 650 at the 1,389 window). |
-| 1025 | `OilView.PILL` | `RefineryView.TEXT_2, PILL_BUILDING = ACCENT, PILL_GOOD = GOOD, PILL_GATE = WA...` | The pills' colours: neutral, under way, good, a gate the player can clear, a loss (mockup 2's .pill, .b, .w, .r). |
-| 1080 | `OilView.NO_BREAK` | `'\u00a0'` | The space inside a table's item, where a line does not break: "fuel oil 7" stays whole. |
-| 1169 | `OilView.PRODUCT_HEADS` | `{ "Product", "price here", "world", "× crude", "made here", "used here", "imp...` | The table's heads, in its columns' order (mockup 2's). |
-| 1173 | `OilView.PRODUCT_WIDTHS` | `{ 150, 76, 76, 58, 72, 72, 72, 72, 0 }` | The columns' widths (the product, the seven figures; where it went takes the rest - 560 px in the box's 1,208 at the 1,389 window). |
-| 1176 | `OilView.PRODUCTS_WORDS` | `"this month · litres(M a million, k a thousand); crude, bitumen and coke in" ...` | The products table's line over it. |
-| 1180 | `OilView.PRODUCTS_RIGHT` | `"world: halfway between the import and the export price · × crude: the" + " w...` | ...and at its right. |
-| 1184 | `OilView.CRUDE` | `RefineryView.CRUDE` | Crude's colour in the table (mockup 1's). |
-| 1207 | `OilView.HALF` | `.5` | Under half a unit, a figure is written as nothing (RefineryView.figure() would write "0"). |
-| 1260 | `OilView.LADDER_STEPS` | `100` | The steps a lever's ladder takes from nothing to the most it may be set to: a hundredth of its reach a step (★ O12-8). |
-| 1279 | `OilView.NO_RESERVE` | `"No Strategic Reserve stands.Build one under Build › Industry › Oil storage: ...` | What the reserve's section says when none stands and none is held. |
+| 1020 | `OilView.UNIT_HEADS` | `{ "Unit · what it turns into what", "b/d", "running", "spread", "state" }` | The table's heads, in its columns' order (mockup 2's). |
+| 1023 | `OilView.UNIT_WIDTHS` | `{ 0, 64, 62, 76, 210 }` | The columns' widths (b/d, running, spread, the state; the first takes the rest - 238 px in the units' box's 650 at the 1,389 window). |
+| 1026 | `OilView.PILL` | `RefineryView.TEXT_2, PILL_BUILDING = ACCENT, PILL_GOOD = GOOD, PILL_GATE = WA...` | The pills' colours: neutral, under way, good, a gate the player can clear, a loss (mockup 2's .pill, .b, .w, .r). |
+| 1083 | `OilView.NO_BREAK` | `'\u00a0'` | The space inside a table's item, where a line does not break: "fuel oil 7" stays whole. |
+| 1181 | `OilView.PRODUCT_HEADS` | `{ "Product", "price here", "world", "× crude", "made here", "used here", "imp...` | The table's heads, in its columns' order (mockup 2's). |
+| 1185 | `OilView.PRODUCT_WIDTHS` | `{ 150, 76, 76, 58, 72, 72, 72, 72, 0 }` | The columns' widths (the product, the seven figures; where it went takes the rest - 560 px in the box's 1,208 at the 1,389 window). |
+| 1188 | `OilView.PRODUCTS_WORDS` | `"this month · litres(M a million, k a thousand); crude, bitumen and coke in" ...` | The products table's line over it. |
+| 1192 | `OilView.PRODUCTS_RIGHT` | `"world: halfway between the import and the export price · × crude: the" + " w...` | ...and at its right. |
+| 1196 | `OilView.CRUDE` | `RefineryView.CRUDE` | Crude's colour in the table (mockup 1's). |
+| 1219 | `OilView.HALF` | `.5` | Under half a unit, a figure is written as nothing (RefineryView.figure() would write "0"). |
+| 1272 | `OilView.LADDER_STEPS` | `100` | The steps a lever's ladder takes from nothing to the most it may be set to: a hundredth of its reach a step (★ O12-8). |
+| 1291 | `OilView.NO_RESERVE` | `"No Strategic Reserve stands.Build one under Build › Industry › Oil storage: ...` | What the reserve's section says when none stands and none is held. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 1280 | **type** `public final class OilView` | The oil industry on one page (0.7.96, batch O12; runs/spec-oil.md 2.13): the city's wells by kind with what they would lift over the next ten years if nothing new were built, the refinery's units with each one's sprea... |
+| 54 | 1292 | **type** `public final class OilView` | The oil industry on one page (0.7.96, batch O12; runs/spec-oil.md 2.13): the city's wells by kind with what they would lift over the next ten years if nothing new were built, the refinery's units with each one's sprea... |
 | 56 | 1 | `private OilView()` |  |
 
 ### THE FIGURES (lines 58-447)
@@ -216,45 +216,46 @@
 | 986 | 6 | `public static List<String> drillingWords(View v)` | The wells' and the sea's investors' words, for the foot of the wells' box. |
 | 994 | 3 | `public static String orderingWords(View v)` | The refiners' investors' word, for the foot of the units' box. |
 
-### the units table (mockup 2's THE REFINERY) (lines 998-1156)
+### the units table (mockup 2's THE REFINERY) (lines 998-1168)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1015 | 2 | **type** `public record UnitLine(String name, String count, String what, String barrels, String running, String sprea...` | A row of the units table as it is written. |
-| 1029 | 5 | `public static List<UnitLine> unitLines(View v)` | The units table's rows. |
-| 1035 | 14 | `static UnitLine unitLine(View v, UnitRow u)` |  |
-| 1055 | 17 | `public static String whatWords(Kind k)` | A kind's feed and yields, the litres largest first and coke last: "residue → diesel 35 · naphtha 15 · fuel oil 12 · gas 8 · coke 30"; each item's words joined by NO_BREAK, so a line wraps only between items. |
-| 1074 | 4 | `static String barrelsFigure(double litresAMonth)` | A nameplate in barrels a day for the table, to three figures: "2,000", "99,900", past a million "206M". |
-| 1082 | 3 | `private static String item(String product, long percent)` |  |
-| 1087 | 19 | `static String[] stateOf(UnitRow u)` | The pill, its colour and its words: {state, colour, words}. |
-| 1108 | 11 | `static String oneMoreWords(UnitRow u)` | One more of a kind standing, in a few words: what stops it, or what it would earn. |
-| 1121 | 3 | `static String noCrudeWords(UnitRow u)` | A crude unit refused its feed: the petrol and diesel the city is short, and the crude its wells have spare - both under the gate. |
-| 1126 | 30 | `static String unitTip(UnitRow u)` | Under the pointer, a row: its buildings, its run, its spread, and one more weighed by the planner with its reason whole. |
+| 1016 | 2 | **type** `public record UnitLine(String name, String count, String what, String barrels, String running, String sprea...` | A row of the units table as it is written. |
+| 1030 | 5 | `public static List<UnitLine> unitLines(View v)` | The units table's rows. |
+| 1036 | 16 | `static UnitLine unitLine(View v, UnitRow u)` |  |
+| 1058 | 17 | `public static String whatWords(Kind k)` | A kind's feed and yields, the litres largest first and coke last: "residue → diesel 35 · naphtha 15 · fuel oil 12 · gas 8 · coke 30"; each item's words joined by NO_BREAK, so a line wraps only between items. |
+| 1077 | 4 | `static String barrelsFigure(double litresAMonth)` | A nameplate in barrels a day for the table, to three figures: "2,000", "99,900", past a million "206M". |
+| 1085 | 3 | `private static String item(String product, long percent)` |  |
+| 1090 | 3 | `static String[] stateOf(UnitRow u)` | The pill, its colour and its words: {state, colour, words}. |
+| 1095 | 23 | `static String[] stateOf(UnitRow u, RefineryView.View refinery)` | ...and the crude units' run (0.7.105, Refining's THE RUN): "idle" or "part run" and why, while it is short of nameplate. |
+| 1120 | 11 | `static String oneMoreWords(UnitRow u)` | One more of a kind standing, in a few words: what stops it, or what it would earn. |
+| 1133 | 3 | `static String noCrudeWords(UnitRow u)` | A crude unit refused its feed: the petrol and diesel the city is short, and the crude its wells have spare - both under the gate. |
+| 1138 | 30 | `static String unitTip(UnitRow u)` | Under the pointer, a row: its buildings, its run, its spread, and one more weighed by the planner with its reason whole. |
 
-### the products table (mockup 2's PRODUCTS) (lines 1157-1256)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1164 | 3 | **type** `public record ProductLine(Good good, String colour, String name, String note, String price, String world, S...` | A row of the products table as it is written. |
-| 1187 | 13 | `public static List<ProductLine> productLines(View v)` | The products table's rows: crude, then the nine. |
-| 1202 | 3 | `static String figure(Good g, double units)` | A figure in the product's unit, one that rounds to nothing as "—": "2.00M", "830k t". |
-| 1214 | 14 | `static String whereWords(Product p, boolean counted)` | Where it went: its takers here, largest first, at most RefineryView.LIST_MOST - "cars 1.20M · rail 40.0k and more" - then into the tanks and idled, each always named. |
-| 1230 | 3 | `static boolean isKept(Taker t)` | Whether a taker is the tanks or the idled, not a buyer. |
-| 1235 | 6 | `static String lower(String name)` | A taker's name in a list: "Cars" is "cars"; a sector's label kept as it is ("Business Services"). |
-| 1242 | 14 | `static String productTip(Product p, boolean counted)` |  |
-
-### the strategic reserve, and its two levers (lines 1257-1333)
+### the products table (mockup 2's PRODUCTS) (lines 1169-1268)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1263 | 14 | `public static List<Fact> reserveFacts(View v)` | The reserve's lines: what stands and holds, its book, the fill ordered, the release, the month's trades and the last settlement. |
-| 1283 | 3 | `public static String fillReading(Reserve r)` | The fill's reading. |
-| 1288 | 7 | `public static String fillStatus(Reserve r)` | ...its status: the room and what the treasury could pay, or why it can take nothing. |
-| 1297 | 3 | `public static String releaseReading(Reserve r)` | The release's reading. |
-| 1302 | 4 | `public static String releaseStatus(Reserve r)` | ...its status. |
-| 1308 | 3 | `public static double step(double most)` | A lever's step: its reach over LADDER_STEPS, or nothing with no reach. |
-| 1313 | 1 | **type** `public enum Unit` | What an effect is written in. |
-| 1316 | 1 | **type** `public record Effect(String label, double before, double after, Unit unit)` | One effect of a lever at a value: its words, before and after, and its unit. |
-| 1319 | 6 | `public static List<Effect> fillEffects(Reserve r, double t)` | What a fill of `t` would do: the crude held, the room left, its cost at today's import price. |
-| 1327 | 6 | `public static List<Effect> releaseEffects(Reserve r, double t)` | What a release of `t` a month would do: a month's release, what is held after it, a month's worth at today's price here. |
+| 1176 | 3 | **type** `public record ProductLine(Good good, String colour, String name, String note, String price, String world, S...` | A row of the products table as it is written. |
+| 1199 | 13 | `public static List<ProductLine> productLines(View v)` | The products table's rows: crude, then the nine. |
+| 1214 | 3 | `static String figure(Good g, double units)` | A figure in the product's unit, one that rounds to nothing as "—": "2.00M", "830k t". |
+| 1226 | 14 | `static String whereWords(Product p, boolean counted)` | Where it went: its takers here, largest first, at most RefineryView.LIST_MOST - "cars 1.20M · rail 40.0k and more" - then into the tanks and idled, each always named. |
+| 1242 | 3 | `static boolean isKept(Taker t)` | Whether a taker is the tanks or the idled, not a buyer. |
+| 1247 | 6 | `static String lower(String name)` | A taker's name in a list: "Cars" is "cars"; a sector's label kept as it is ("Business Services"). |
+| 1254 | 14 | `static String productTip(Product p, boolean counted)` |  |
+
+### the strategic reserve, and its two levers (lines 1269-1345)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1275 | 14 | `public static List<Fact> reserveFacts(View v)` | The reserve's lines: what stands and holds, its book, the fill ordered, the release, the month's trades and the last settlement. |
+| 1295 | 3 | `public static String fillReading(Reserve r)` | The fill's reading. |
+| 1300 | 7 | `public static String fillStatus(Reserve r)` | ...its status: the room and what the treasury could pay, or why it can take nothing. |
+| 1309 | 3 | `public static String releaseReading(Reserve r)` | The release's reading. |
+| 1314 | 4 | `public static String releaseStatus(Reserve r)` | ...its status. |
+| 1320 | 3 | `public static double step(double most)` | A lever's step: its reach over LADDER_STEPS, or nothing with no reach. |
+| 1325 | 1 | **type** `public enum Unit` | What an effect is written in. |
+| 1328 | 1 | **type** `public record Effect(String label, double before, double after, Unit unit)` | One effect of a lever at a value: its words, before and after, and its unit. |
+| 1331 | 6 | `public static List<Effect> fillEffects(Reserve r, double t)` | What a fill of `t` would do: the crude held, the room left, its cost at today's import price. |
+| 1339 | 6 | `public static List<Effect> releaseEffects(Reserve r, double t)` | What a release of `t` a month would do: a month offered, what is held after it if the refiners take it all (what they do not take stays, since 0.7.103), a month's worth at today's price here. |
 

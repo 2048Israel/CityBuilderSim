@@ -134,6 +134,7 @@ public final class CityRuns {
     public static final byte M_RAMP = 1;
     /** ...a plot of a 45-degree stretch, drawn smooth, its heading's two bits from M_DIAG_SHIFT (diagCode())... */
     public static final byte M_DIAG = 2;
+    /** ...the bit that heading's two bits start at: bits 2 and 3, between M_DIAG and M_CORNER... */
     public static final int M_DIAG_SHIFT = 2;
     /** ...and of those, a staircase's corner: the plot beside the stretch's line, (x + dx, y) of a step from (x, y). */
     public static final byte M_CORNER = 16;

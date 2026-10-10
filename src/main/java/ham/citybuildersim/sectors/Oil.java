@@ -182,6 +182,7 @@ public final class Oil extends Sector {
         return kind == WellKind.PLATFORM ? PLATFORM_LIFE : LAND_LIFE;
     }
 
+    /** Each kind's life in months, worked out once from its profile (firstWornOut()). */
     private static final int LAND_LIFE = firstWornOut(WellKind.LAND), PLATFORM_LIFE = firstWornOut(WellKind.PLATFORM);
 
     private static int firstWornOut(WellKind kind) {
