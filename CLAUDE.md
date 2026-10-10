@@ -170,14 +170,15 @@ These are Jerus's, and they do not move.
                                    hold it
         AutoBuilder.java           automatic building (0.7.73): the player's switch and two dials (a
                                    spare margin, a debt limit - since 0.7.81 the city's debt over a year
-                                   of GDP, 240% by default and to 600% since 0.7.101, and "Build from
-                                   cash anyway" for when it is over), and the month's pass that orders the
-                                   build advice's own cards for the city's works within the builders
-                                   and the limit (the budget too until 0.7.101) - since 0.7.77 buying the
-                                   bare ground they lack as Build's land shortcut would, since 0.7.101
-                                   only an order's own, and the next card in the advice's ranking where
-                                   the money will not pay for the first - borrowing on the funding page's
-                                   bond; its log, its inbox notices - AutoBuildCheck holds it
+                                   of GDP, since 0.7.101 all it owes over the year it has recorded, 240%
+                                   by default and to 600%, and "Build from cash anyway" for when it is
+                                   over), and the month's pass that orders the build advice's own cards
+                                   for the city's works within the builders, the budget and the limit (a
+                                   first of a kind from the cash alone) - since 0.7.77 buying the bare
+                                   ground they lack as Build's land shortcut would, since 0.7.101 only an
+                                   order's own, and the next card in the advice's ranking where the money,
+                                   the ground or the budget will not run to the first - borrowing on the
+                                   funding page's bond; its log, its inbox notices - AutoBuildCheck holds it
         BuildCard.java             one build card's figures for all 101 buildings (0.7.25): what it gives the
                                    city and in what unit, its money and scarce-resource bars, the group it is
                                    compared within and its tags, the investors' word and the first gate it

@@ -4630,35 +4630,43 @@ public final class GameVersion {
      *     into it); on Jerus's 1008 city coal (its kW 923 over its life
      *     against wind's 2,063), on his m416 city wind (the plant would stand
      *     two thirds idle on average).
-     *   - AUTOMATIC BUILDING (A4 to A6; AutoBuilder): held by the debt limit
-     *     alone - the budget it read a year's revenue against is gone; a first
-     *     school down the ladder, police station or prison where there is none,
-     *     however far past the need (it waited for half its worth); the next
-     *     building in the advice's ranking where the money or the ground will
-     *     not pay for one of the first (it held the measure on the first card
-     *     month after month: the mechanism that turned one refusal into a
-     *     spiral - the playtest's seed 1 held a Coal Power Plant for 3,580
-     *     months while its power fell to 36% served); only an order's own
-     *     ground bought, and none in a city whose buildings stand on more
+     *   - AUTOMATIC BUILDING (A4 to A6; AutoBuilder): a first school down the
+     *     ladder, police station or prison where there is none, however far
+     *     past the need, from the cash alone (it waited for half its worth);
+     *     the debt limit counts all the city owes - its bonds and bills, its
+     *     overdraft, its central bank's advances - over the output of the last
+     *     twelve months as recorded (its bonds and bills over a year scaled up
+     *     from fewer: a village's founding month read as $51.4M a year let it
+     *     borrow $38M for a school in month 3, and the wages it then paid on
+     *     the central bank's advances never reached the ratio); the budget
+     *     Jerus asked to remove is kept for him to decide (below); the next
+     *     building in the advice's ranking where the money, the ground or the
+     *     budget will not pay for or run one of the first (it held the measure
+     *     on the first card month after month: the mechanism that turned one
+     *     refusal into a spiral - the playtest's seed 1 held a Coal Power Plant
+     *     for 3,580 months while its power fell to 36% served); only an order's
+     *     own ground bought, and none in a city whose buildings stand on more
      *     ground than it owns (it bought the whole deficit: $432.8M of land for
      *     a $45.8M road); the debt limit 240% of a year's GDP by default, the
-     *     dial to 600% in 10% steps, a save at the old default (60%) reading the
-     *     new one.
+     *     dial to 600% in 10% steps, a save at the old default (60%) reading
+     *     the new one.
      *   - THE IRON FIELD THAT WILL NOT PAY BACK (B): Build's no-deposit page
      *     says under its Buy whether the cheapest field pays back here - the
      *     test player's rule since 0.7.67 (BuildAdvice.ironPayback(), moved
      *     from LongPlaytest whole).
-     *   - Harnesses: AutoBuildCheck (the settings, the budget's premises gone,
+     *   - Harnesses: AutoBuildCheck (the settings, the limit's debt and year,
      *     holds true for every building in the ranking, the walk, first
      *     buildings, the over-full town), BuildAdviceCheck 7, RoadCheck,
      *     ChildcareCheck 2 - each premise moved where Jerus's decisions move
-     *     the rule (runs/fixP2-notes.md, section 3).
+     *     the rule (runs/fixP2-notes.md, section 3); the budget's as 0.7.100's.
      *   - The playtest is 0.7.100's byte for byte (its player builds its own
      *     works). The auto-built one (-Dplaytest.autobuild), seeds 0 to 7:
-     *     the walk and the 240% limit took every seed to 1.5M-2.3M people
-     *     (three of eight thrived before); with first buildings where there
-     *     are none and no revenue check together, seven stall at 2k-37k -
-     *     either alone is fine (runs/fixP2-notes.md, section 4).
+     *     1.7M-2.2M people each (three of eight thrived before). Without the
+     *     budget, first buildings stalled seven at 2k-37k; with the limit
+     *     counting all it owes and a first of a kind from the cash alone,
+     *     still three for a thousand months or more - a village's first
+     *     school, paid from its founding cash, runs a deficit no debt limit
+     *     sees before the order (runs/fixP2-notes.md, section 4).
      */
     public static final String VERSION = "0.7.101";
 
