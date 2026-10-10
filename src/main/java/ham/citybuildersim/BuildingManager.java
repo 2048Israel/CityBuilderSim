@@ -1320,7 +1320,7 @@ public class BuildingManager {
                 .setElectricityConsumption(5)   // barely lit
                 .setLandSqFt(450000)
                 .setRoadLoad(0)                 // a road does not drive on itself
-                .setRepairsPerYear(.05)         // its own repairs, 0.7.103: buildings.json's "repairs"
+                .setRepairsPerYear(.03)         // its own repairs, 0.7.103: buildings.json's "repairs"
                 .setId(29);
 
         templates.add(gravelRoad);
@@ -1349,7 +1349,7 @@ public class BuildingManager {
                 .setLandSqFt(250000)
                 .setRoadLoad(0)                 // a road does not drive on itself
                 .setFreightGrade(.35)           // kerbed and signalled; a lorry still stops at junctions
-                .setRepairsPerYear(.025)        // its own repairs, 0.7.103: buildings.json's "repairs"
+                .setRepairsPerYear(.02)         // its own repairs, 0.7.103: buildings.json's "repairs"
                 .setId(13);
 
         templates.add(pavedRoad);

@@ -42,9 +42,10 @@ import java.util.Map;
  *      bit; the repairs in running() are what the month's maintenance bill
  *      charges the city for one more such road - since 0.7.103 (batch P4,
  *      Jerus's A11) each road kind at its own share a year of its price
- *      (BuildingsTemplate.repairsPerYear(): gravel 5%, paved 2.5%, the
- *      highway 1.25%; a line the house's 1%), so a gravel road is the
- *      dearest to keep a trip it carries and the highway the cheapest.
+ *      (BuildingsTemplate.repairsPerYear(): gravel 3%, paved 2%, the
+ *      highway 1.25%; a line the house's 1%), so gravel's share of its
+ *      price is the dearest and the highway's the least, and gravel's lead
+ *      a trip it carries over paved shrinks from nearly half to a seventh.
  *   2. THE ADVICE TAKES THE LEAST OVER ITS LIFE, AND GRAVEL CAN STILL WIN:
  *      with no ground free, the road the advice suggests is the candidate
  *      whose order costs least over its life for the trips it will take off
@@ -268,8 +269,8 @@ public class RoadCheck {
                 lines &= !t.hasOwnRepairs() && t.repairsPerYear() == ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR;
             }
         }
-        assertTrue("each road kind's repairs are its own share a year - gravel 5%, paved 2.5%, the highway 1.25% - and every"
-                + " line's the house's 1% (0.7.103)", gravelT.repairsPerYear() == .05 && pavedT.repairsPerYear() == .025
+        assertTrue("each road kind's repairs are its own share a year - gravel 3%, paved 2%, the highway 1.25% - and every"
+                + " line's the house's 1% (0.7.103)", gravelT.repairsPerYear() == .03 && pavedT.repairsPerYear() == .02
                 && highwayT.repairsPerYear() == .0125 && lines);
         double[] perTrip = new double[3];
         BuildingsTemplate[] three = { gravelT, pavedT, highwayT };
@@ -278,9 +279,15 @@ public class RoadCheck {
             perTrip[k] = econ.withBuildersTax(bm.nonMaterialCost(three[k]) + three[k].getConstructionMaterials() * materials)
                     * three[k].repairsPerYear() / 12 / three[k].getCapacity();
         }
-        report("...so gravel is the dearest road to keep a trip it carries and the highway the cheapest, as real gravel is"
-                        + " (at the house's 1% gravel was the cheapest)", perTrip[0] > perTrip[1] && perTrip[1] > perTrip[2],
-                String.format("repairs a month a trip: gravel %.5f, paved %.5f, highway %.5f", perTrip[0], perTrip[1], perTrip[2]));
+        // ...at the house's 1% a gravel road's repairs a trip were its price a trip's share of a paved road's; now its
+        // share's ratio over that: gravel's lead a trip narrows from nearly a half to a seventh, the highway under paved.
+        double atOnePercent = (perTrip[0] / gravelT.repairsPerYear()) / (perTrip[1] / pavedT.repairsPerYear());
+        report("...gravel's share of its price the dearest and the highway's the least; a trip it carries, gravel's repairs"
+                        + " come to its price's ratio times the shares' (3 to 2) of a paved road's, and the highway's under paved's",
+                gravelT.repairsPerYear() > pavedT.repairsPerYear() && pavedT.repairsPerYear() > highwayT.repairsPerYear()
+                        && Math.abs(perTrip[0] / perTrip[1] - atOnePercent * 1.5) <= 1e-12 && perTrip[2] < perTrip[1],
+                String.format("repairs a month a trip: gravel %.5f, paved %.5f, highway %.5f; gravel %.0f%% of paved's, %.0f%%"
+                        + " at the house's 1%%", perTrip[0], perTrip[1], perTrip[2], 100 * perTrip[0] / perTrip[1], 100 * atOnePercent));
         assertTrue("lifetime() is its quote, its ground at landValue() and running() x the life factor, to the bit", whole);
         // The repairs are the month's own bill: one more gravel road standing adds exactly them.
         BuildingsTemplate gravel = template(g, GRAVEL);

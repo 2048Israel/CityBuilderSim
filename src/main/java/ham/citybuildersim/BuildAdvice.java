@@ -1308,9 +1308,11 @@ public final class BuildAdvice {
 
        EACH ROAD ITS OWN REPAIRS (0.7.103, batch P4; Jerus's A11): the share
        a year is the road kind's own (BuildingsTemplate.repairsPerYear() -
-       gravel 5%, paved 2.5%, the highway 1.25%, where every road was at the
-       house's 1%), so a gravel road is the dearer to keep a trip it carries,
-       as real gravel is, and running() reads it.
+       gravel 3%, paved 2%, the highway 1.25%, where every road was at the
+       house's 1%), and running() reads it. A gravel road is still a little
+       the cheaper to keep a trip it carries (its 900 trips are three
+       quarters of a paved road's, where real gravel carries far less), but
+       the gap is a seventh where it was nearly a half.
        ===================================================================== */
 
     /** Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". */

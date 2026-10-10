@@ -379,9 +379,9 @@ public class BuildingDataCheck {
         // EACH ROAD KIND ITS OWN REPAIRS (0.7.103, batch P4; Jerus's A11): the three roads' "repairs", and no other's.
         java.util.Map<String, Double> repairs = new java.util.TreeMap<>();
         for (BuildingsTemplate t : data) if (t.hasOwnRepairs()) repairs.put(t.getName(), t.repairsPerYear());
-        assertTrue("the three roads each have their own repairs a year - the Gravel Road 5%, the Paved Road 2.5%, the Elevated"
+        assertTrue("the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated"
                         + " Highway 1.25% - and no other building has: " + repairs,
-                repairs.equals(java.util.Map.of("Gravel Road", .05, "Paved Road", .025, "Elevated Highway", .0125)));
+                repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125)));
         assertTrue("...and 101 buildings in all (0.7.91; 98 from 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76"
                         + " until then)",
                 data.size() == 101);
