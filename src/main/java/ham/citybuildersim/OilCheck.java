@@ -906,8 +906,9 @@ public class OilCheck {
         BuildingsTemplate one = template(bare, "Filling Station");
         double landed = bare.getMarkets().get(Good.PETROL).landedPrice();
         double expected = Math.min(one.pumpLitres(), none.litresForecast(one, barePlans)) * landed * Retail.PUMP_MARGIN;
-        close("...earning, for the interest test, its margin on the litres it would sell: the forecast's, under its 350,000",
-                none.estimatedMonthlyProfit(one, barePlans), expected, 1e-12);
+        // ...less its staff at today's wages since 0.7.106 (Jerus's A18: the grocers' investment test counts their wages).
+        close("...earning, for the interest test, its margin on the litres it would sell (the forecast's, under its 350,000)"
+                + " less its staff", none.estimatedMonthlyProfit(one, barePlans), expected - barePlans.wageBillFor(one), 1e-12);
         assertTrue("...and the shops' rules never sell a station: it serves the drivers, not the baskets they count",
                 !none.mayRetire(one) && none.mayRetire(template(bare, "Convenience Store")));
 

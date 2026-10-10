@@ -100,42 +100,48 @@ public class LandCheck {
         System.out.printf("   founded on %d blocks of %.0f m: %d dry plots, %,.0f sq ft (STARTING_SQ_FT %,.0f)%n",
                 opening.centreRects().size(), (1L << opening.level()) * World.PLOT_M, dryPlots, founded, LandManager.STARTING_SQ_FT);
         check("owned: the centre's drawn dry plots", lm.getOwnedSqFt(), LandManager.sqFt(dryPlots * World.KM2_PER_PLOT));
+        assertTrue("...whole blocks holding at least STARTING_SQ_FT, and less than a block more",
+                founded >= LandManager.STARTING_SQ_FT && founded - LandManager.STARTING_SQ_FT
+                        < LandManager.sqFt((1L << (2 * opening.level())) * World.KM2_PER_PLOT));
         /*
-         * ...AND THE WATER ONE PLANT NEEDS (0.7.106, Jerus's A24). The rings
-         * are what they were - whole blocks round the site until their dry
-         * plots reach STARTING_SQ_FT, less than a block more - and past them
-         * the centre takes blocks along the founding river until its lake and
-         * river reach FOUNDING_FRESH_KM2, their banks with them. Until then
-         * the premise was the rings alone: at least STARTING_SQ_FT of dry
-         * ground and less than a block more.
+         * ...AND THE FOUNDING LAKE, ONE PLANT'S WATER (0.7.106, Jerus's A24).
+         * The rings are what they were - the centre's first blocks, round the
+         * site until their dry plots reach STARTING_SQ_FT - and past them the
+         * centre takes the founding lake's blocks, most fresh water first from
+         * the lake's centre, until its lake and river reach FOUNDING_FRESH_KM2:
+         * an island of the city's ground 2.4 km off. On the default world it is
+         * open water, so the dry ground above is the rings' alone.
          */
         World w0 = World.of(opening.seed());
         CityLand rings = CityLand.found(w0, w0.foundingX(), w0.foundingY(), LandManager.km2(LandManager.STARTING_SQ_FT));
-        double ringsDry = LandManager.sqFt(rings.centreKm2(CityLand.DRY)), block = (1L << (2 * opening.level())) * World.KM2_PER_PLOT;
-        System.out.printf("   the rings: %d blocks, %,.0f sq ft dry; the river past them: %d blocks, %.4f km2 of lake and river"
-                        + " (FOUNDING_FRESH_KM2 %.4f), %,.0f sq ft of its banks%n", rings.centreRects().size(), ringsDry,
-                opening.centreRects().size() - rings.centreRects().size(), opening.centreKm2(CityLand.FRESH),
-                LandManager.FOUNDING_FRESH_KM2, founded - ringsDry);
-        assertTrue("the rings: whole blocks holding at least STARTING_SQ_FT of dry ground, and less than a block more",
-                ringsDry >= LandManager.STARTING_SQ_FT && ringsDry - LandManager.STARTING_SQ_FT < LandManager.sqFt(block));
-        assertTrue("...the centre's first blocks, in their order", opening.centreRects().size() > rings.centreRects().size()
-                && opening.centreRects().subList(0, rings.centreRects().size()).equals(rings.centreRects()));
+        int r0 = rings.centreRects().size();
+        double block = (1L << (2 * opening.level())) * World.KM2_PER_PLOT;
+        World.River lake = w0.river();
+        System.out.printf("   the rings: %d blocks; the lake: %d blocks, %.4f km2 of lake and river in all (FOUNDING_FRESH_KM2 %.4f),"
+                        + " its centre %.0f plots from the site%n", r0, opening.centreRects().size() - r0,
+                opening.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2,
+                Math.hypot(lake.lakeX() - opening.siteX(), lake.lakeY() - opening.siteY()));
+        assertTrue("the rings are the centre's first blocks, in their order, and all its dry ground: the lake's hold none here",
+                opening.centreRects().size() > r0 && opening.centreRects().subList(0, r0).equals(rings.centreRects())
+                        && opening.centreKm2(CityLand.DRY) == rings.centreKm2(CityLand.DRY));
         assertTrue("THE CENTRE HOLDS ONE WATER PLANT'S FRESH WATER: at least FOUNDING_FRESH_KM2, and less than a block more",
                 opening.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2
                         && opening.centreKm2(CityLand.FRESH) - LandManager.FOUNDING_FRESH_KM2 < block);
-        boolean touching = true;
+        boolean lakeBlocks = true, onTheLake = false;
         java.util.List<LandGrid.Fill> blocks = opening.centreRects();
-        for (int i = rings.centreRects().size(); i < blocks.size(); i++) {
+        for (int i = r0; i < blocks.size(); i++) {
             LandGrid.Fill b = blocks.get(i);
-            boolean any = false;
-            for (int j = 0; j < i && !any; j++) {
+            boolean touches = i == r0;
+            for (int j = r0; j < i && !touches; j++) {
                 LandGrid.Fill a = blocks.get(j);
-                any = (a.x0() == b.x1() || a.x1() == b.x0()) && a.y0() == b.y0()
+                touches = (a.x0() == b.x1() || a.x1() == b.x0()) && a.y0() == b.y0()
                         || (a.y0() == b.y1() || a.y1() == b.y0()) && a.x0() == b.x0();
             }
-            touching &= any && b.x1() - b.x0() == 1L << opening.level() && b.y1() - b.y0() == 1L << opening.level();
+            lakeBlocks &= touches && b.x1() - b.x0() == 1L << opening.level() && b.y1() - b.y0() == 1L << opening.level();
+            onTheLake |= b.x0() <= lake.lakeX() && lake.lakeX() < b.x1() && b.y0() <= lake.lakeY() && lake.lakeY() < b.y1();
         }
-        assertTrue("...each a whole block of the city's level, edge to edge with the blocks before it", touching);
+        assertTrue("...the lake's whole blocks of the city's level, each edge to edge with the lake's before it", lakeBlocks);
+        assertTrue("...one of them holding the lake's centre", onTheLake);
         assertTrue("...and the world's totals untouched", java.util.Arrays.equals(lm.getWorldTotalsState(), w0.totals()));
         check("allocated", lm.getAllocatedSqFt(), 0);
         check("available", lm.getAvailableSqFt(), founded);
@@ -195,10 +201,8 @@ public class LandCheck {
          * one offer standing - a rectangle of whole blocks against the city's
          * edge (GridOffers) - or none while the side has no room for it. A new
          * city of 120 m blocks lists 19, each 1 x 2 blocks (spec-grid 1.5) -
-         * until 0.7.106, when its centre took the founding river's blocks
-         * (Jerus's A24): the default world's lists 21 since, two of them
-         * clipped to one block against their neighbours along the river, and
-         * one all water.
+         * 20 since its founding lake (0.7.106, Jerus's A24): North 6, which
+         * had no room against the rings, stands against the lake's blocks.
          */
         System.out.println("\n--- six offers a side ---");
 
@@ -212,11 +216,10 @@ public class LandCheck {
         for (int side = 0; side < CityLand.SIDES; side++) waiting += buy.getMarket().emptyOn(side);
         System.out.printf("   %d offers listed, %d places waiting for room (North %d, East %d, South %d, West %d)%n", listing.size(), waiting,
                 buy.getMarket().emptyOn(0), buy.getMarket().emptyOn(1), buy.getMarket().emptyOn(2), buy.getMarket().emptyOn(3));
-        check("a new city lists every place it has room for: twenty-one of twenty-four (nineteen until its river, 0.7.106)",
-                listing.size(), 21);
+        check("a new city lists every place it has room for: twenty of twenty-four (nineteen until its lake, 0.7.106)",
+                listing.size(), 20);
         check("...the other places waiting", waiting, LandMarket.OFFERS - listing.size());
         boolean placeEach = true, against = true, whole = true, theirArea = true, apart = true;
-        int clipped = 0;
         for (int side = 0; side < CityLand.SIDES; side++) {
             for (int place = 0; place < LandMarket.OFFERS_A_SIDE; place++) {
                 LandParcel p = buy.getMarket().offerIn(side, place);
@@ -226,19 +229,15 @@ public class LandCheck {
         long b2 = 1L << LandGrid.MIN_LEVEL;
         for (LandParcel p : listing) {
             against &= touchesOwned(grid, p) && grid.owned(p.getX0(), p.getY0(), p.getX1(), p.getY1()) == 0;
-            whole &= p.getLevel() == LandGrid.MIN_LEVEL && p.blocksAcross() == 1 && p.blocksDeep() >= 1
-                    && p.blocksDeep() <= GridOffers.DEPTH_OVER_WIDTH
+            whole &= p.getLevel() == LandGrid.MIN_LEVEL && p.blocksAcross() == 1 && p.blocksDeep() == GridOffers.DEPTH_OVER_WIDTH
                     && p.getX0() % b2 == 0 && p.getY0() % b2 == 0 && p.getX1() % b2 == 0 && p.getY1() % b2 == 0;
-            if (p.blocksDeep() < GridOffers.DEPTH_OVER_WIDTH) clipped++;
             theirArea &= p.getKm2() == (p.getX1() - p.getX0()) * (p.getY1() - p.getY0()) * World.KM2_PER_PLOT;
             for (LandParcel q : listing) if (q != p) apart &= !(p.getX0() < q.getX1() && q.getX0() < p.getX1() && p.getY0() < q.getY1() && q.getY0() < p.getY1());
         }
         assertTrue("...one in each place, place by place", placeEach);
         assertTrue("a new city's offers lie against its centre, on ground it does not own", against);
-        System.out.printf("   %d of them clipped to a block deep%n", clipped);
-        assertTrue("...each a block of 120 m across and at most 2 deep, whole blocks of the grid", whole);
-        assertTrue("...most of them the whole 1 x 2", clipped * 2 < listing.size());
-        assertTrue("...each its rectangle's area, every plot of it unowned", theirArea);
+        assertTrue("...each 1 x 2 blocks of 120 m, whole blocks of the grid", whole);
+        assertTrue("...each its rectangle's area, 0.0288 km2, every plot of it unowned", theirArea);
         assertTrue("...and no two of them share a plot", apart);
         near("the ground costs batch I's price at the founding: the base, the founding's US prices, no crowding",
                 buy.getGroundUsdPerSqFt(), LandMarket.openingUsdPerSqFt() * 1 * LandMarket.crowdingPremium(0), 0);
@@ -385,9 +384,8 @@ public class LandCheck {
         empty.updateMarket(0);
         double emptyPrice = empty.getPricePerSqFt();
 
-        // Built out: 95% of what a new city owns (STARTING_SQ_FT's until its river's banks came with it, 0.7.106).
         LandManager full = new LandManager();
-        full.allocate(full.getLandDrySqFt() * .95);
+        full.allocate(LandManager.STARTING_SQ_FT * .95);
         full.updateMarket(0);
 
         assertTrue("a full city sells land dearer than an empty one",
@@ -425,7 +423,7 @@ public class LandCheck {
          * barely registered.
          */
         LandManager tight = new LandManager();
-        tight.allocate(tight.getLandDrySqFt() * .92);
+        tight.allocate(LandManager.STARTING_SQ_FT * .92);
         tight.updateMarket(2000);
         double whenTight = tight.getPricePerSqFt();
 
@@ -1229,10 +1227,9 @@ public class LandCheck {
             String words = LandManager.km2Words(parcel.getSizeSqFt());
             double read = Double.parseDouble(words.substring(0, words.indexOf(' ')));
             double exact = LandManager.km2(parcel.getSizeSqFt());
-            // ...an offer all water (the founding river's, since 0.7.106) has no dry ground to read: it reads 0.
-            if (exact == 0 ? read != 0 : !(read > 0) || Math.abs(read - exact) > exact * 5e-3) allRead = false;
+            if (!(read > 0) || Math.abs(read - exact) > exact * 5e-3) allRead = false;
         }
-        assertTrue("every plot on offer reads within half a percent of its area, none with dry ground as nothing", allRead);
+        assertTrue("every plot on offer reads within half a percent of its area, and none as nothing", allRead);
     }
 
     /* ==================================================================
@@ -1272,11 +1269,9 @@ public class LandCheck {
         boolean allRead = true;
         for (LandParcel parcel : office.getListing()) {
             String words = LandManager.areaWords(parcel.getSizeSqFt());
-            // An offer all water (the founding river's, since 0.7.106) has no dry ground: it reads 0 m2.
-            if (parcel.getSizeSqFt() == 0 ? !words.equals("0" + m2)
-                    : !readsAs(words, parcel.getSizeSqFt() * LandManager.SQ_M_PER_SQ_FT)) allRead = false;
+            if (!readsAs(words, parcel.getSizeSqFt() * LandManager.SQ_M_PER_SQ_FT)) allRead = false;
         }
-        assertTrue("every offer standing reads within half a percent of its area, in its unit (one all water, 0 m2)", allRead);
+        assertTrue("every offer standing reads within half a percent of its area, in its unit", allRead);
 
         double whole = LandManager.sqFt(line / 2), part = whole * .9;
         assertTrue("a part reads bare, in its whole's m2",

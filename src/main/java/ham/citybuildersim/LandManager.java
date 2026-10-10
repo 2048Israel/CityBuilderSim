@@ -153,8 +153,9 @@ public class LandManager {
      * Land the city starts with - thirty blocks, about 69 acres; since 0.7.67
      * the figure a new city's centre of whole blocks is drawn to hold, and it
      * owns the dry plots drawn, a little more (CityLand.found(): 3,051,569
-     * sq ft on the default world) - and since 0.7.106 its river's banks
-     * besides (FOUNDING_FRESH_KM2; 3,681,257 sq ft on the default world).
+     * sq ft on the default world) - and since 0.7.106 the founding lake
+     * besides (FOUNDING_FRESH_KM2), whose banks it owns where the lake is too
+     * small for one plant (none on the default world).
      *
      * Sized off the two buildings the player cannot avoid: a coal plant is
      * twenty blocks and a water plant eight, so putting up both leaves two.
@@ -178,7 +179,7 @@ public class LandManager {
     /** ...as lake and river ground in its centre, in square kilometres: FOUNDING_FRESH_UNITS over what one yields a month (UtilitiesHandler.FRESH_UNITS_PER_KM2), 0.4934 km2 (CityLand.found()). */
     public static final double FOUNDING_FRESH_KM2 = FOUNDING_FRESH_UNITS / UtilitiesHandler.FRESH_UNITS_PER_KM2;
 
-    /** The land a new city is founded with on the world of this seed (0.7.106): the centre land() founds - STARTING_SQ_FT's rings and FOUNDING_FRESH_KM2 of water - drawn apart from any city, for what is priced on it before one stands (Founding.landBondUsd()). */
+    /** The land a new city is founded with on the world of this seed (0.7.106): the centre land() founds - STARTING_SQ_FT's rings and FOUNDING_FRESH_KM2 of the founding lake - drawn apart from any city, for what is priced on it before one stands (Founding.landBondUsd()). */
     public static CityLand foundingLand(long worldSeed) {
         World world = World.of(worldSeed);
         return CityLand.found(world, world.foundingX(), world.foundingY(), km2(STARTING_SQ_FT), FOUNDING_FRESH_KM2);
@@ -454,9 +455,9 @@ public class LandManager {
      * figure is then its dry plots, the ground drawn (the books follow the
      * map, spec-grid star 8): the rings hold 3,051,569 sq ft, 315 plots, for
      * STARTING_SQ_FT's 309.7. Since 0.7.106 the centre takes the founding
-     * river's blocks too, until its lake and river hold FOUNDING_FRESH_KM2
-     * (Jerus's A24): on the default world 38 blocks more, 0.5076 km2 of
-     * river and 65 plots of its banks, so a new city owns 3,681,257 sq ft.
+     * lake's blocks too, until its lake and river hold FOUNDING_FRESH_KM2
+     * (Jerus's A24): on the default world 33 blocks of open lake 2.4 km off,
+     * no dry plot among them, so the city's square feet are what they were.
      */
     CityLand land() {
         if (land == null) {

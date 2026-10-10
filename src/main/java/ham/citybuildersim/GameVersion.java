@@ -4841,20 +4841,21 @@ public final class GameVersion {
      *     $1.05M demolition). The player's demolitions, a shell's, and a
      *     sector's plant retired (the 0.7.8 rule) alike; the demolition card
      *     and its (i) say so.
-     *   - A NEW CITY IS FOUNDED WITH ONE PLANT'S FRESH WATER (A24;
+     *   - A NEW CITY IS FOUNDED WITH ITS LAKE, ONE PLANT'S FRESH WATER (A24;
      *     CityLand.found(), LandManager.FOUNDING_FRESH_UNITS): past the
-     *     rings, the centre takes whole blocks along the founding river,
-     *     most fresh water first and nearest the site on a tie, until its
-     *     lake and river yield one Water Treatment Plant's 60,000 units -
-     *     the world untouched. The default world's city owns 59 blocks
-     *     where it owned 21: 0.5076 km2 of river (0.011 until now, a limit
-     *     of 1,324 units and its first plant 98% idle) and 65 more dry plots
-     *     of its banks, 3,681,257 sq ft in all.
+     *     rings, which are what they were, the centre takes whole blocks of
+     *     the founding lake - from its centre, most fresh water first - until
+     *     its lake and river yield one Water Treatment Plant's 60,000 units,
+     *     on along the river that leaves the lake where the lake is smaller;
+     *     the world untouched. The default world's city owns 54 blocks where
+     *     it owned 21: 33 of open lake 2.4 km off, 0.4941 km2 of lake and
+     *     river (0.011 until now, a limit of 1,324 units and its first plant
+     *     98% idle) and the same 3,051,569 sq ft of dry ground.
      *   - INSANE'S LAND BOND ON THE PLOTS IT OWNS (B; Founding.landBondUsd(),
      *     LandMarket.groundKm2()): the centre's ground as the land office
      *     charges it - dry whole, fresh water at 45%, sea at 8% - at the
      *     opening dollar price, where it was STARTING_SQ_FT's 3,000,000
-     *     square feet: US$4.30M on the default world (US$2.1M). The founding
+     *     square feet: US$3.81M on the default world (US$2.1M). The founding
      *     screen prices it on the world typed.
      *   - Harnesses: InvestCheck (the test reads the margin less the staff,
      *     and refuses a loan the margin alone would carry), BuildAdviceCheck
@@ -4867,7 +4868,7 @@ public final class GameVersion {
      *   - The playtest moves from month 2 (A24: the land's inside price, so
      *     the landlords' first home is cheaper); alone, A23 moves it from
      *     month 17 and A18 from month 75, and A20 not at all. It ends at
-     *     495,329 people (617,942 at 0.7.103/0.7.104); runs/fixP5-notes.md,
+     *     495,512 people (617,942 at 0.7.103/0.7.104); runs/fixP5-notes.md,
      *     section 4.
      */
     public static final String VERSION = "0.7.106";

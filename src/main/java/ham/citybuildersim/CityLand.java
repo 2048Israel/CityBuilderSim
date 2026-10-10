@@ -150,27 +150,32 @@ public final class CityLand {
      * A24, 2026-10-10: "found with fresh water for one plant"). The default
      * city's rings held 0.011 km2 of river, a limit of 1,324 units a month,
      * so the first Water Treatment Plant it built idled about 98% until it
-     * bought lake or river (fixJ2 section 8.4). Now, once the rings hold the
-     * dry ground, the centre takes more whole blocks of the same level until
-     * its lake and river ground reach freshKm2: each time the block edge to
-     * edge with the centre that holds the most fresh plots, the nearer the
-     * site on a tie (L-infinity, in blocks, then north to south and west to
-     * east) - so it follows the founding river from where it passes the
-     * site, its banks with it; while no such block holds any, the one
-     * nearest the fresh block nearest the site, a step toward it. Within
-     * FRESH_REACH plots of the site's block, which the founding lake's far
-     * shore never lies beyond; a world with none nearer founds without it.
-     * Every block is holding 0's, so the centre stays whole blocks of one
-     * level, drawn plot by plot like the rings (drawnBooks()); the world's
-     * fields and its totals are untouched - a field whose centre plot the
-     * river's blocks hold goes with them whole, as with any of the centre's.
+     * bought lake or river (fixJ2 section 8.4, which asked "should a city
+     * start with lake?"). Now, once the rings hold the dry ground, the
+     * centre takes the founding lake as well: whole blocks of the same
+     * level, from the block holding fresh water nearest the lake's centre
+     * (World.river()), each time the one edge to edge with those taken that
+     * holds the most fresh plots, the nearer the lake's centre on a tie (then
+     * north to south and west to east), until the centre's lake and river
+     * reach freshKm2 - and where the lake is smaller than that, on along the
+     * river that leaves it, its banks with it; while no such block holds any,
+     * a step toward the fresh block nearest the lake's centre. Within
+     * FRESH_REACH plots of the site, which the founding lake's far shore
+     * never lies beyond; a world with too little nearer founds with what
+     * there is. The rings are what they were, so the city's dry ground is
+     * what it was and the lake an island of its own ground, 1.9 to 2.7 km
+     * off: on the default world 35 blocks of open lake and no dry plot. Every
+     * block is holding 0's, drawn plot by plot like the rings (drawnBooks());
+     * the world's fields and its totals are untouched - a field whose centre
+     * plot the lake's blocks hold goes with them whole, as with any of the
+     * centre's.
      */
 
     /** How far the founding takes blocks for its fresh water, in plots from the site, L-infinity: the founding lake's far shore at the most (World.RIVER_LAKE_NEAR + RIVER_LAKE_SPAN + LAKE_R_MIN + LAKE_R_SPAN, 107 plots, 3.2 km). */
     static final long FRESH_REACH = (long) Math.ceil(World.RIVER_LAKE_NEAR + World.RIVER_LAKE_SPAN
             + World.LAKE_R_MIN + World.LAKE_R_SPAN);
 
-    /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the water - see above; on the default world at LandManager.FOUNDING_FRESH_KM2, 38 blocks past the rings' 21, 564 fresh plots and 65 dry. freshKm2 0 is the rings alone. */
+    /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the lake - see above. freshKm2 0 is the rings alone. */
     public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2) {
         CityLand land = new CityLand(world.seed(), x, y);
         int level = LandGrid.levelFor(dryKm2 / World.KM2_PER_PLOT);
@@ -196,14 +201,16 @@ public final class CityLand {
         return land;
     }
 
-    /** The founding's water (0.7.106): blocks of `level` added to the centre until its fresh plots reach freshKm2 rounded up to a whole plot - see ...AND THE FRESH WATER ONE PLANT NEEDS. */
+    /** The founding's water (0.7.106): blocks of `level` added to the centre from the founding lake until its fresh plots reach freshKm2 rounded up to a whole plot - see ...AND THE FRESH WATER ONE PLANT NEEDS. */
     private void takeFresh(World world, int level, long x, long y, double freshKm2) {
         long b = 1L << level, last = World.SIDE / b - 1;
         long target = (long) Math.ceil(freshKm2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
         long sbx = Math.floorDiv(x, b), sby = Math.floorDiv(y, b), reach = (FRESH_REACH + b - 1) / b;
+        World.River river = world.river();
+        double lx = river.lakeX(), ly = river.lakeY();
         Map<Long, byte[]> tiles = new HashMap<>();
         Map<Long, Long> fresh = new HashMap<>();
-        java.util.Set<Long> owned = new java.util.LinkedHashSet<>();
+        java.util.Set<Long> owned = new java.util.HashSet<>(), lake = new java.util.LinkedHashSet<>();
         long have = 0;
         for (LandGrid.Fill f : centreRects) {
             long k = blockKey(f.x0() >> level, f.y0() >> level);
@@ -212,46 +219,44 @@ public final class CityLand {
         }
         long[][] steps = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
         for (long guard = target + 4 * reach; have < target && guard > 0; guard--) {
-            long best = Long.MIN_VALUE, bestFresh = -1, bestNear = 0;
-            for (long k : owned) {
+            long best = Long.MIN_VALUE, bestFresh = 0;
+            double bestNear = 0;
+            for (long k : lake) {
                 for (long[] d : steps) {
                     long bx = (k >> 32) + d[0], by = (int) k + d[1];
-                    if (bx < 0 || by < 0 || bx > last || by > last) continue;
+                    if (!within(bx, by, sbx, sby, reach, last)) continue;
                     long nk = blockKey(bx, by);
                     if (owned.contains(nk)) continue;
                     long f = freshPlots(world, tiles, fresh, nk, b);
-                    long near = Math.max(Math.abs(bx - sbx), Math.abs(by - sby));
-                    if (f > bestFresh || (f == bestFresh && before(near, by, bx, bestNear, best))) {
+                    double near = fromLake(bx, by, b, lx, ly);
+                    if (f > bestFresh || (f > 0 && f == bestFresh && before(near, by, bx, bestNear, best))) {
                         best = nk; bestFresh = f; bestNear = near;
                     }
                 }
             }
-            if (best == Long.MIN_VALUE) break;
-            if (bestFresh == 0) {
-                // No block beside the centre holds any: a step toward the fresh block nearest the site.
+            if (best == Long.MIN_VALUE) {
+                // None beside the lake's blocks holds any (or none is taken yet): the fresh block nearest the lake's
+                // centre, and the step toward it from the blocks taken - the block itself when none is.
                 long goal = Long.MIN_VALUE;
-                search:
-                for (int ring = 0; ring <= reach; ring++) {
-                    for (long[] p : GridConversion.ringOf(sbx, sby, ring)) {
-                        if (p[0] < 0 || p[1] < 0 || p[0] > last || p[1] > last) continue;
-                        long gk = blockKey(p[0], p[1]);
-                        if (!owned.contains(gk) && freshPlots(world, tiles, fresh, gk, b) > 0) { goal = gk; break search; }
+                double goalNear = 0;
+                for (long by = Math.max(0, sby - reach); by <= Math.min(last, sby + reach); by++) {
+                    for (long bx = Math.max(0, sbx - reach); bx <= Math.min(last, sbx + reach); bx++) {
+                        long gk = blockKey(bx, by);
+                        if (owned.contains(gk) || freshPlots(world, tiles, fresh, gk, b) == 0) continue;
+                        double near = fromLake(bx, by, b, lx, ly);
+                        if (before(near, by, bx, goalNear, goal)) { goal = gk; goalNear = near; }
                     }
                 }
                 if (goal == Long.MIN_VALUE) break;
+                best = goal;
                 long gx = goal >> 32, gy = (int) goal;
-                best = Long.MIN_VALUE;
-                long bestTo = 0;
-                for (long k : owned) {
+                double bestTo = Double.MAX_VALUE;
+                for (long k : lake) {
                     for (long[] d : steps) {
                         long bx = (k >> 32) + d[0], by = (int) k + d[1];
-                        if (bx < 0 || by < 0 || bx > last || by > last) continue;
-                        long nk = blockKey(bx, by);
-                        if (owned.contains(nk)) continue;
-                        long to = Math.max(Math.abs(bx - gx), Math.abs(by - gy));
-                        if (best == Long.MIN_VALUE || to < bestTo || (to == bestTo && before(0, by, bx, 0, best))) {
-                            best = nk; bestTo = to;
-                        }
+                        if (!within(bx, by, sbx, sby, reach, last) || owned.contains(blockKey(bx, by))) continue;
+                        double to = Math.max(Math.abs(bx - gx), Math.abs(by - gy));
+                        if (to < bestTo || (to == bestTo && before(0, by, bx, 0, best))) { best = blockKey(bx, by); bestTo = to; }
                     }
                 }
             }
@@ -259,15 +264,26 @@ public final class CityLand {
             grid.fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE);
             centreRects.add(new LandGrid.Fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE));
             owned.add(best);
+            lake.add(best);
             have += freshPlots(world, tiles, fresh, best, b);
         }
+    }
+
+    /** Whether block (bx, by) is on the world and within `reach` blocks of the site's, L-infinity. */
+    private static boolean within(long bx, long by, long sbx, long sby, long reach, long last) {
+        return bx >= 0 && by >= 0 && bx <= last && by <= last && Math.abs(bx - sbx) <= reach && Math.abs(by - sby) <= reach;
+    }
+
+    /** How far block (bx, by)'s middle lies from the lake's centre (lx, ly), in plots. */
+    private static double fromLake(long bx, long by, long b, double lx, double ly) {
+        return Math.hypot(bx * b + b / 2.0 - lx, by * b + b / 2.0 - ly);
     }
 
     /** A block's key: its column in the high half, its row in the low. */
     private static long blockKey(long bx, long by) { return (bx << 32) | (by & 0xffffffffL); }
 
     /** Whether a block (near, by, bx) comes before another's key at `otherNear`: the nearer, then north first, then west first. */
-    private static boolean before(long near, long by, long bx, long otherNear, long other) {
+    private static boolean before(double near, long by, long bx, double otherNear, long other) {
         if (other == Long.MIN_VALUE) return true;
         if (near != otherNear) return near < otherNear;
         long oy = (int) other, ox = other >> 32;

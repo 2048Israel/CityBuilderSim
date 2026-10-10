@@ -1213,7 +1213,7 @@ public class FundCheck {
         close("...at 3%", bond.getCouponRate(), Founding.INSANE_LAND_COUPON, 1e-15);
         check("...for twenty years", bond.getDuration() == Founding.INSANE_LAND_YEARS * 12);
         // 0.7.106 (Jerus's B): for the plots it owns, not STARTING_SQ_FT's square feet - its centre as the
-        // land office charges ground, the river or lake its first water plant needs among them (A24).
+        // land office charges ground, the founding lake its first water plant needs among them (A24).
         CityLand centre = g.getLandManager().getCityLand();
         close("...for the plots it was founded on, as the land office charges ground, at the opening dollar price",
                 bond.principalInCurrency(), LandMarket.openingUsdPerSqFt() * (centre.centreKm2(CityLand.DRY)
@@ -1221,7 +1221,7 @@ public class FundCheck {
                         + LandMarket.SEA_PRICE_SHARE * centre.centreKm2(CityLand.SEA)) * LandManager.SQ_FT_PER_KM2, 1e-9);
         close("...the figure the founding screen quotes for its world", bond.principalInCurrency(),
                 Founding.landBondUsd(g.getFounding().getWorldSeed()), 0);
-        check("...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its river is in it",
+        check("...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it",
                 bond.principalInCurrency() > LandManager.STARTING_SQ_FT * LandMarket.openingUsdPerSqFt()
                         && centre.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2);
         out.printf("   the land bond: US$%,.0fk face, worth US$%,.0fk on the world's curve; the window abroad: %s%n",

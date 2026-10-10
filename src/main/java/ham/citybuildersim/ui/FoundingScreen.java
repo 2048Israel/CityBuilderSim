@@ -378,7 +378,7 @@ final class FoundingScreen {
     private String insaneWords() {
         Long typed = seed();
         return String.format("Nothing in hand: it runs on the central bank's advances and borrows to build."
-                        + " Its ground - the plots it is founded on, its river with them - is owed abroad on a"
+                        + " Its ground - the plots it is founded on, its lake with them - is owed abroad on a"
                         + " %d-year US-dollar bond at %.0f%%: %s.", Founding.INSANE_LAND_YEARS,
                 Founding.INSANE_LAND_COUPON * 100,
                 usd(Founding.landBondUsd(typed == null ? Founding.DEFAULT_WORLD_SEED : typed)));
