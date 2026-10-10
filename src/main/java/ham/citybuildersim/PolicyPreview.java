@@ -41,6 +41,11 @@ import java.util.Map;
  * from its cash and from its market book, and the fund a year on
  * (fundWithdrawalAt()), struck as TreasuryFund.payTransfer() strikes it.
  *
+ * AND ZONING (0.7.107, batch Z1): a zone's held ground, what it keeps from
+ * everyone, the price it gives up and its tax relief (zoneAt()), and the
+ * forest law's three kinds and its wood (forestAt()), each before and after
+ * on a staged Zoning.copy().
+ *
  * AND THE RULE'S STRICTNESS (0.7.52): at any step of the dial beside the
  * inflation target, what the bank would aim at, what the rule sets on
  * target and what it would advise at this year's inflation (ruleAt()),
@@ -424,6 +429,76 @@ public final class PolicyPreview {
         boolean sells = steps > TreasuryFund.DEFAULT_WITHDRAWAL_STEPS;
         double yearOn = value > 0 ? value * Math.pow(1 - steps * TreasuryFund.WITHDRAWAL_STEP, TreasuryFund.YEAR_MONTHS) : 0;
         return new Withdrawal(due, fromCash, sells ? due - fromCash : 0, sells ? 0 : due - fromCash, yearOn);
+    }
+
+    /* =====================================================================
+       ZONING (0.7.107, batch Z1; the project's spec-zoning.md 4)
+
+       Zoning's dials before and after, as every dial's: a staged Zoning
+       (Zoning.copy() with the dial moved) read against the land as it stands
+       (LandManager.heldUnder(), groundUnder()), and the same read of the
+       city's own the "before". A zone: what it holds, what that ground would
+       fetch at the going price - what it keeps from everyone else - the
+       price the city gives up selling it at the zone's share, and the
+       property tax a month its assessment forgoes on the ground built in it.
+       The law: the forest's three kinds, the ground left free for anyone,
+       the wood it keeps standing for ever and the wood that may be cut -
+       Forestry's crews on it are I9's (materials). The zone's tax rows are
+       the sector's own offsets, previewed where they always were (taxTake()).
+       ===================================================================== */
+
+    /**
+     * One zone under a zoning, on the land as it stands: its size and what
+     * its sector has built in it, square feet; what it holds of the free
+     * ground; its price share; the held ground at the going price; the price
+     * given up selling that at the zone's share; and the property tax a month
+     * forgone on the ground built in it (Z4) - all nothing for a sector with
+     * no zone.
+     */
+    public record ZoneAt(String sector, double sizeSqFt, double usedSqFt, double heldSqFt, double priceShare,
+                         double heldAtGoingPrice, double priceGivenUp, double taxRelief) { }
+
+    /** ...struck from LandManager.heldUnder() and the roll's rule: the relief is the zone's built ground (never more than the sector stands on) at the roll's price less the zone's, on the share the roll carries, at the sector's own monthly rate - at the city's own zoning, getAssessedValue()'s difference to the bit's rounding. */
+    public static ZoneAt zoneAt(Game g, Zoning z, String sector) {
+        LandManager land = g.getLandManager();
+        Zoning.Zone zone = z == null ? null : z.zone(sector);
+        if (zone == null) return new ZoneAt(sector, 0, 0, 0, 1, 0, 0, 0);
+        double going = land.getPricePerSqFt();
+        double held = land.heldUnder(z, sector);
+        EconomyManager em = g.getEconomyManager();
+        TaxPolicy p = em.getTaxPolicy();
+        double built = Math.min(g.getBuildingManager().getLandSqFtBySector(sector), zone.usedSqFt());
+        double relief = built * em.getLandPricePerSqFt() * (1 - zone.priceShare())
+                * p.assessedLandShare(sector) * p.effectiveMonthlyPropertyRate(sector);
+        return new ZoneAt(sector, zone.targetSqFt(land.getOwnedSqFt()), zone.usedSqFt(), held, zone.priceShare(),
+                held * going, held * going * (1 - zone.priceShare()), relief);
+    }
+
+    /** What a staged zoning would change in the property tax a month: every zone's relief at the city's own zoning less at the staged one's. */
+    public static double zoningTaxChange(Game g, Zoning after) {
+        Zoning live = g.getZoning();
+        double moved = 0;
+        for (String key : Sectors.KEYS) moved += zoneAt(g, live, key).taxRelief() - zoneAt(g, after, key).taxRelief();
+        return moved;
+    }
+
+    /**
+     * The forest law under a zoning, on the land as it stands: the
+     * protected, working and open forest and the ground free for anyone,
+     * square feet; the wood it keeps standing for ever and the wood that may
+     * be cut, cubic metres; and the share of the forest's full stock it keeps
+     * standing - where the forest settles under the law (spec-zoning 3.3).
+     */
+    public record ForestAt(double protectedSqFt, double workingSqFt, double openSqFt, double freeForAnyone,
+                           double protectedWood, double cuttableWood, double standsForEver) { }
+
+    /** ...struck by LandManager.groundUnder(). */
+    public static ForestAt forestAt(Game g, Zoning z) {
+        LandManager land = g.getLandManager();
+        LandManager.GroundUnder u = land.groundUnder(z);
+        double full = land.getOwnedAmount(Resource.FOREST);
+        return new ForestAt(u.protectedSqFt(), u.workingSqFt(), u.openSqFt(), u.freeForAnyone(), u.protectedWood(),
+                u.cuttableWood(), full > 0 ? u.protectedWood() / full : 0);
     }
 
     /* =====================================================================

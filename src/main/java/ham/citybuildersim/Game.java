@@ -355,6 +355,8 @@ public class Game {
         // read when the land is founded and each offer listed.
         landManager = new LandManager(() -> foreign.getRate(), () -> world.getPriceLevel(),
                 () -> this.founding.getWorldSeed(), () -> month);
+        // ...and its zones, which the roll and a new building's ground read (0.7.107, batch Z1).
+        economyManager.setZoning(landManager.getZoning(), landManager::heldBy);
         // ...and the fresh water limit is the land's and the rights' (0.7.59,
         // batch J2): read each time the services update, on every path. A new
         // city has no rights; a load sets its own (readTheSave()).
@@ -3947,10 +3949,88 @@ public class Game {
         economyManager.setReserveCrude(bought, sold);
     }
 
-    /** Tells the investment engine what land is left to sell, right now. */
+    /** Tells the investment engine what land is left to sell, right now - and since 0.7.107 what each zone holds and at what share of the price (BusinessInvestment, THE INVESTORS' GROUND BY ZONE). */
     private void refreshLand(){
         businessInvestment.setLandAvailable(landManager.getAvailableSqFt(),
                 landManager.getPricePerSqFt());
+        businessInvestment.setZoneLand(landManager.zoneLand());
+    }
+
+    /* =======================================================================
+       ZONING (0.7.107, batch Z1; Jerus, 2026-10-08, the project's
+       spec-zoning.md)
+
+       The player's hand on the zones and the forest law - the doors Policy's
+       ZONING area opens (batch Z2), each change a line in the decision log:
+       LandManager holds the ground and works out what each zone holds
+       (ZONES AND THE FOREST LAW there), Zoning the settings. THE ZONE'S
+       TAXES ARE THE SECTOR'S OWN (Z5, "one dial, two doors"): setZoneTax()
+       moves TaxPolicy's offset of the sector, as Policy > Taxes does, so a
+       zone's rows and every building of the sector move together.
+       ======================================================================= */
+
+    /** The city's zones and its forest law. */
+    public Zoning getZoning() { return landManager.getZoning(); }
+
+    /**
+     * Zones a sector's ground, or re-sizes or re-prices its zone: `size` a
+     * share of the city's dry ground (Zoning.Size.SHARE, 0 to 1) or square
+     * kilometres (KM2); `priceShare` 0 to 1 of the going business price,
+     * what the next sale in it pays (Z3: ground already sold is not
+     * re-priced). Any of the seventeen sectors, Real Estate's for homes.
+     */
+    public void setZone(String sector, Zoning.Size kind, double size, double priceShare) {
+        if (getSectors().byKey(sector) == null) return;
+        Zoning.Zone was = landManager.getZoning().zone(sector);
+        Zoning.Zone now = landManager.getZoning().set(sector, kind, size, priceShare);
+        if (now == null) return;
+        if (was == null || was.kind() != now.kind() || DecisionLog.moved(was.size(), now.size())
+                || DecisionLog.moved(was.priceShare(), now.priceShare())) {
+            decisions.record(DecisionLog.TAX, "Zoned " + zoneSizeWords(now) + " for " + sector + " at "
+                    + DecisionLog.pct(now.priceShare()) + " of the going price");
+        }
+    }
+
+    /** A zone's size as the log writes it: "2% of the dry ground", "40 km²". */
+    static String zoneSizeWords(Zoning.Zone z) {
+        return z.kind() == Zoning.Size.SHARE ? DecisionLog.pct(z.size()) + " of the dry ground"
+                : LandManager.areaWords(LandManager.sqFt(z.size()));
+    }
+
+    /** Un-zones a sector: what its zone held goes back to everyone; what was sold in it stays with its owner at what it paid. */
+    public void removeZone(String sector) {
+        if (landManager.getZoning().remove(sector) != null) decisions.record(DecisionLog.TAX, "Un-zoned " + sector);
+    }
+
+    /** The forest law (Z6): `protectedShare` of the city's forest ground never cut nor built on, `keptShare` - at least that - never built on. */
+    public void setForestLaw(double protectedShare, double keptShare) {
+        Zoning z = landManager.getZoning();
+        double wasP = z.protectedShare(), wasK = z.keptShare();
+        z.setForestLaw(protectedShare, keptShare);
+        if (DecisionLog.moved(wasP, z.protectedShare()) || DecisionLog.moved(wasK, z.keptShare())) {
+            decisions.record(DecisionLog.TAX, "Forest law: " + DecisionLog.pct(z.protectedShare()) + " protected, "
+                    + DecisionLog.pct(z.keptShare()) + " kept from building");
+        }
+    }
+
+    /** A zone's tax row moved (Z5): the sector's own offset, in rate points - annual points for property - exactly as Policy > Taxes moves it (TaxPolicy's setters, their clamps and their log lines). */
+    public void setZoneTax(String sector, Zoning.Tax tax, double points) {
+        TaxPolicy p = economyManager.getTaxPolicy();
+        switch (tax) {
+            case PROFIT -> p.setProfitOffset(sector, points);
+            case SALES -> p.setSalesOffset(sector, points);
+            case PROPERTY -> p.setPropertyOffset(sector, points);
+        }
+    }
+
+    /** ...and what a zone's tax row reads: the sector's effective rate (TaxPolicy.effective*(), the property rate annual). */
+    public double zoneTaxRate(String sector, Zoning.Tax tax) {
+        TaxPolicy p = economyManager.getTaxPolicy();
+        return switch (tax) {
+            case PROFIT -> p.effectiveProfitRate(sector);
+            case SALES -> p.effectiveSalesRate(sector);
+            case PROPERTY -> p.effectivePropertyRate(sector);
+        };
     }
 
     /* =======================================================================
@@ -4171,15 +4251,16 @@ public class Game {
             return 0;
         }
 
+        // ...its zone's part bought back at the zone's price and handed back
+        // to the zone (0.7.107): priced before the release takes it out.
         double landFreed = decision.template.getLandSqFt() * scrapped;
-        landManager.release(landFreed);
-
-        double proceeds = landManager.priceFor(landFreed);
+        double proceeds = landManager.buybackPriceFor(landFreed, decision.template.getSector());
+        landManager.release(landFreed, decision.template.getSector());
 
         if (proceeds > 0 && proceeds <= cash) {
             treasuryPays(TreasuryLine.LAND, proceeds);
             seller.receive(proceeds);
-            landManager.recordBuyback(landFreed);
+            landManager.recordBuyback(landFreed, proceeds);
         } else {
             proceeds = 0;   // abandoned - the city takes it back for nothing
         }
@@ -6427,7 +6508,8 @@ public class Game {
         Sector owner = getSectors().byKey(t.getSector());
         double each = t.getCashCost() + t.getConstructionMaterials() * buildingManager.getConstructionMaterialPrice();
         double buildingValue = each * n;
-        double ground = landManager.priceFor(t.getLandSqFt() * n);
+        // ...its zone's part at the zone's price since 0.7.107 (LandManager.buybackPriceFor()).
+        double ground = landManager.buybackPriceFor(t.getLandSqFt() * n, owner.key());
         double book = buildingManager.getBookValueBySector(owner.key());
         double share = book > 0 ? Math.min(1, buildingValue / book) : 0;
         double operating = owner.statement().operatingIncome;
@@ -6470,7 +6552,7 @@ public class Game {
         // as a purchase of the city's. Its debts stay its own.
         Investor owner = sectorInvestor(q.sector());
         double ground = treasuryPays(TreasuryLine.LAND, q.ground());
-        landManager.recordBuyback(t.getLandSqFt() * n);
+        landManager.recordBuyback(t.getLandSqFt() * n, q.ground());
         double rest = treasuryPays(TreasuryLine.BUILDINGS, q.buildingValue() + q.businessLoss());
         cityCapitalSpending += rest;
         owner.receive(ground + rest);
@@ -6857,7 +6939,8 @@ public class Game {
             // the docs pass): two demolitions of one building and count finishing
             // in one month are two sales, not one read twice.
             c.sold(bought, paid);
-            landManager.release(d.landSqFt);
+            // ...a bought building's ground back to its zone, if its sector has one (0.7.107).
+            landManager.release(d.landSqFt, d.from);
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for $%,.0fk, %s freed.",
                     d.buildings, d.building, bought, paid, LandManager.areaWords(d.landSqFt)));
         }
@@ -6941,16 +7024,18 @@ public class Game {
         // two was actually missing.
         double landNeeded = selected.getLandSqFt() * quantity;
 
-        if (!landManager.canAllocate(landNeeded)) {
+        // ...the city's own works on the ground free for anyone, a sector's
+        // building (a fixture's) on its zone's first (0.7.107).
+        if (!landManager.canAllocate(landNeeded, selected.getSector())) {
             this.hasNewReceipt = false;
             System.out.println("Not enough land (need "
                     + LandManager.areaWords(landNeeded) + ", have "
-                    + LandManager.areaWords(landManager.getAvailableSqFt()) + ")");
+                    + LandManager.areaWords(landManager.freeFor(selected.getSector())) + ")");
             return;
         }
 
         if (totalCost <= cash) {
-            landManager.allocate(landNeeded);
+            landManager.allocate(landNeeded, selected.getSector());
             this.hasNewReceipt = true;
             this.receiptSerial++;
             lastBuildingName = buildingManager.getName(selected);
@@ -7289,13 +7374,17 @@ public class Game {
             return false;   // nobody licensed to practise in it
         }
 
-        if (!landManager.canAllocate(landNeeded)) {
+        // ...on the ground free for anyone and, since 0.7.107, what the
+        // building's sector's zone holds (LandManager.freeFor()).
+        String zoned = template.getSector();
+        if (!landManager.canAllocate(landNeeded, zoned)) {
             return false;   // the city has no plot to sell them
         }
 
         // A business buys its plot from the city. This is the one part of a
-        // private build the player actually receives.
-        double landPrice = landManager.priceFor(landNeeded);
+        // private build the player actually receives - its zone's part at the
+        // zone's price since 0.7.107 (Z3), asked before the zone's ground is taken.
+        double landPrice = landManager.priceFor(landNeeded, zoned);
 
         double totalCost = quote.total + landPrice;
 
@@ -7311,8 +7400,8 @@ public class Game {
         payer.spend(totalCost);
 
         // The land money goes to the city; the rest goes to construction below.
-        landManager.allocate(landNeeded);
-        landManager.recordSale(landNeeded);
+        landManager.allocate(landNeeded, zoned);
+        landManager.recordSale(landNeeded, landPrice);
         cash += landPrice;
 
         buildingManager.addStack(template, quantity, false);
@@ -7384,7 +7473,7 @@ public class Game {
             return BuildResult.NO_LICENCE;
         }
 
-        if (!landManager.canAllocate(template.getLandSqFt() * quantity)) {
+        if (!landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector())) {
             this.hasNewReceipt = false;
             return BuildResult.NO_LAND;
         }
@@ -7500,7 +7589,7 @@ public class Game {
                 BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool]) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
-                        : !landManager.canAllocate(ground + t.getLandSqFt() * (double) n) ? BuildResult.NO_LAND
+                        : !landManager.canAllocate(ground + t.getLandSqFt() * (double) n, t.getSector()) ? BuildResult.NO_LAND
                         : null;
                 if (refused != null) {
                     if (stop != null) stop[0] = refused;
@@ -12190,6 +12279,8 @@ public class Game {
         dataSave.setLandMarketPrices(landManager.getMarket().getPriceState());
         // ...and the city's water rights (0.7.59): THE FRESH WATER LIMIT AND THE COAST.
         dataSave.setFreshRights(freshRights);
+        // ...and its zones, the forest law and the forest cleared for building (0.7.107, batch Z1).
+        dataSave.setZoning(landManager.zoningState());
         dataSave.setConstructionShedding(constructionShedMonth, constructionShedPoints);
 
         dataSave.setNationalAccounts(economyManager.getNationalAccountsState());
@@ -15079,6 +15170,9 @@ public class Game {
             boolean landConverted = restoreLandOnTheWorld(loaded, owned);
             restoreOilPools(loaded);
             landManager.setAllocatedSqFt(built);
+            // ...and its zones, the forest law and the forest cleared (0.7.107): a save from before
+            // them has none, and loads with the ground free for anyone, as it always was.
+            landManager.restoreZoning(loaded.getZoning());
             // A converted city's offers (0.7.67, spec-grid 2.6): twenty-four
             // places listed afresh, once, with the buildings back, at the
             // prices the save last struck (settled above for an older save's

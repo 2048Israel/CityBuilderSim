@@ -221,15 +221,36 @@ public final class Agriculture extends Sector {
            refused for ever - the moment the landlord has caught up, the fields
            can have what is left, which in a city with room is most of it.
            ================================================================= */
+        /*
+         * ...BUT ZONED FIELDS DO NOT YIELD (0.7.107, batch Z1; Jerus's Z11).
+         * Ground the city has zoned for the fields is held from homes
+         * already: building on it takes nothing a landlord could have. So
+         * while somebody sleeps outside the fields may still break ground -
+         * in their zone, as far as it holds, and nowhere else.
+         */
+        double zonedForFields = 0;
         if (game != null && game.getFamilies() != null
                 && game.getFamilies().getStillUnplaced() > 0) {
-            return BusinessInvestment.Decision.no(key(),
-                    "the city is short of homes - ground is worth more to live on");
+            zonedForFields = game.getLandManager().heldBy(key());
+            if (!(zonedForFields > 0)) {
+                return BusinessInvestment.Decision.no(key(),
+                        "the city is short of homes - ground is worth more to live on");
+            }
         }
 
         BusinessInvestment.Decision wanted = plans.planMaker(this, game);
         if (wanted == null || !wanted.build || wanted.template == null || game == null) {
             return wanted;
+        }
+        if (zonedForFields > 0 && wanted.template.getLandSqFt() > 0) {
+            int inZone = (int) Math.min(wanted.quantity, Math.floor(zonedForFields / wanted.template.getLandSqFt()));
+            if (inZone < 1) {
+                return BusinessInvestment.Decision.no(key(),
+                        "the city is short of homes - and the fields' zone holds too little for a " + wanted.template.getName());
+            }
+            if (inZone < wanted.quantity) {
+                wanted = new BusinessInvestment.Decision(wanted.sector, wanted.template, inZone, wanted.reason, true);
+            }
         }
 
         double cost = plans.getCostOf(wanted.template, Math.max(1, wanted.quantity));

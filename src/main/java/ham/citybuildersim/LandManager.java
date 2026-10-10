@@ -377,8 +377,15 @@ public class LandManager {
     public double getOwnedSqFt()     { return ownedSqFt; }
     public double getAllocatedSqFt() { return allocatedSqFt; }
 
+    /**
+     * The ground free for anyone: what is not built on, less what the forest
+     * law keeps from building and what the zones hold (0.7.107, ZONES AND THE
+     * FOREST LAW) - with no zones and the law at 0 and 0, owned less
+     * allocated, as it always was. What the city's own works and every
+     * unzoned business may build on; a zoned sector sees freeFor().
+     */
     public double getAvailableSqFt() {
-        return Math.max(ownedSqFt - allocatedSqFt, 0);
+        return freeForAnyone();
     }
 
     /** How full the city is. 1.0 means every square foot is spoken for. */
@@ -973,8 +980,10 @@ public class LandManager {
      * mine's month is what its throttles leave of its nameplate.
      */
     public double extract(Resource r, double amount) {
-        // ...oil's from the ground pool (0.7.93): the offshore pool is extractOilAtSea()'s.
-        double lifted = Math.max(0, Math.min(amount, r == Resource.OIL ? getOilLeftOnGround() : getRemaining(r)));
+        // ...oil's from the ground pool (0.7.93): the offshore pool is extractOilAtSea()'s; and
+        // forest's from what may be cut since 0.7.107, the protected wood never (cuttableForest()).
+        double lifted = Math.max(0, Math.min(amount, r == Resource.OIL ? getOilLeftOnGround()
+                : r == Resource.FOREST ? cuttableForest() : getRemaining(r)));
         extracted[r.ordinal()] += lifted;
         return lifted;
     }
@@ -982,12 +991,16 @@ public class LandManager {
     /** What the city owns of a resource as listed - its centre's and every purchase's: O. */
     public double getOwnedAmount(Resource r) { return land().totalAmount(r); }
 
-    /** What it has taken out: E - oil's both pools' since 0.7.93. */
-    public double getExtracted(Resource r)   { return r == Resource.OIL ? extracted[r.ordinal()] + extractedAtSea : extracted[r.ordinal()]; }
+    /** What it has taken out: E - oil's both pools' since 0.7.93, and forest's the wood cleared for building with it since 0.7.107 (C, never regrowing), so W = unowned + remaining + taken out holds. */
+    public double getExtracted(Resource r)   {
+        if (r == Resource.FOREST && clearedM3 > 0) return extracted[r.ordinal()] + clearedM3;
+        return r == Resource.OIL ? extracted[r.ordinal()] + extractedAtSea : extracted[r.ordinal()];
+    }
 
-    /** What remains in its ground: O - E, never below nothing - oil's each pool's, added (0.7.93). */
+    /** What remains in its ground: O - E, never below nothing - oil's each pool's, added (0.7.93); forest's O - C - E (0.7.107). */
     public double getRemaining(Resource r) {
         if (r == Resource.OIL) return getOilLeftOnGround() + getOilLeftAtSea();
+        if (r == Resource.FOREST && clearedM3 > 0) return Math.max(0, land().totalAmount(r) - extracted[r.ordinal()] - clearedM3);
         return Math.max(0, land().totalAmount(r) - extracted[r.ordinal()]);
     }
 
@@ -1015,7 +1028,8 @@ public class LandManager {
     public double[] remainingByHolding(Resource r) {
         double[] held = land().amountsInOrder(r);
         if (r == Resource.OIL) return oilRemainingByHolding(held);
-        double left = extracted[r.ordinal()];
+        // ...forest's with the wood cleared for building taken out first too (0.7.107).
+        double left = r == Resource.FOREST && clearedM3 > 0 ? extracted[r.ordinal()] + clearedM3 : extracted[r.ordinal()];
         for (int i = 0; i < held.length; i++) {
             double taken = Math.min(held[i], left);
             left -= taken;
@@ -1112,9 +1126,14 @@ public class LandManager {
     public void setBlocksPurchased(int blocks){ this.blocksPurchased = blocks; }
 
     //land
-    /** Is there room to put this up at all? */
+    /** Is there room to put this up at all? On the ground free for anyone (getAvailableSqFt()). */
     public boolean canAllocate(double sqFt) {
         return sqFt <= getAvailableSqFt();
+    }
+
+    /** ...for one sector's building (0.7.107): on the ground free for anyone and what its zone holds (freeFor()); a key with no zone, "" or null, the first. */
+    public boolean canAllocate(double sqFt, String sector) {
+        return sqFt <= freeFor(sector);
     }
 
     /**
@@ -1124,16 +1143,39 @@ public class LandManager {
      *         the caller must not build.
      */
     public boolean allocate(double sqFt) {
-        if (!canAllocate(sqFt)) {
+        return allocate(sqFt, null);
+    }
+
+    /**
+     * ...for one sector's building (0.7.107): its zone's held ground first,
+     * recorded as the zone's used, then the ground free for anyone; and
+     * where the bare ground runs out it lies on open forest and clears it
+     * (clearFor(), Z7). A key with no zone takes the ground free for anyone.
+     */
+    public boolean allocate(double sqFt, String sector) {
+        if (!canAllocate(sqFt, sector)) {
             return false;
         }
+        double fromZone = zoning.zone(sector) == null ? 0 : Math.min(sqFt, heldBy(sector));
+        clearFor(sqFt, fromZone, sector);
         allocatedSqFt += sqFt;
+        if (fromZone > 0) zoning.addUsed(sector, fromZone);
         return true;
     }
 
     /** Frees land again: a scrapped business's plot (Game.retire()), and since 0.7.22 a finished demolition's ground (Game.settleConstructionControl()). */
     public void release(double sqFt) {
+        release(sqFt, null);
+    }
+
+    /**
+     * ...a sector's (0.7.107): out of its zone's used ground first, which the
+     * zone then holds again for it (spec-materials 2.15); the rest back to
+     * everyone. Cleared forest stays cleared (Z7).
+     */
+    public void release(double sqFt, String sector) {
         allocatedSqFt = Math.max(allocatedSqFt - sqFt, 0);
+        zoning.releaseUsed(sector, sqFt);
     }
 
     /** What a business pays the city for a plot this size. */
@@ -1141,10 +1183,362 @@ public class LandManager {
         return sqFt * pricePerSqFt;
     }
 
+    /**
+     * ...one sector's business (0.7.107, Z3): the part its zone holds at the
+     * zone's price (groundPriceFor()), the rest at the going price - the
+     * zone's ground first, as allocate() takes it. Asked before allocate().
+     */
+    public double priceFor(double sqFt, String sector) {
+        double inZone = zoning.zone(sector) == null ? 0 : Math.min(Math.max(0, sqFt), heldBy(sector));
+        if (!(inZone > 0)) return priceFor(sqFt);
+        return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
+    }
+
+    /**
+     * What the city pays a sector for a plot it gives back (0.7.107): the
+     * part out of its zone's used ground at the zone's price - the zone's
+     * ground trades at the zone's price both ways - the rest at the going
+     * price. Asked before release(); with no zone, priceFor().
+     */
+    public double buybackPriceFor(double sqFt, String sector) {
+        double inZone = Math.min(Math.max(0, sqFt), zoning.used(sector));
+        if (!(inZone > 0)) return priceFor(sqFt);
+        return (sqFt - inZone) * pricePerSqFt + inZone * groundPriceFor(sector);
+    }
+
     /** Records a sale to a business. The caller moves the cash. */
     public void recordSale(double sqFt) {
         landSalesThisMonth += priceFor(sqFt);
         sqFtSoldThisMonth += sqFt;
+    }
+
+    /** ...at the price it was sold at (0.7.107: a zone's part at its price, priceFor(sqFt, sector)). */
+    public void recordSale(double sqFt, double price) {
+        landSalesThisMonth += price;
+        sqFtSoldThisMonth += sqFt;
+    }
+
+    /* =====================================================================
+       ZONES AND THE FOREST LAW (0.7.107, batch Z1; Jerus, 2026-10-08, the
+       project's spec-zoning.md; runs/spec-materials.md 2.15)
+
+       THE GROUND. The dry ground D is bare ground B and forest F (forest is
+       dry ground a building can take, World.FOREST, and was until now built
+       on as freely as grass). The forest law splits F three ways: PROTECTED,
+       p of it, never cut nor built on; WORKING, k - p, cut but never built
+       on; OPEN, 1 - k, cut or built on (Z6). Buildable is D less k F; free
+       is buildable less built (allocated), never below nothing.
+
+       THE ZONES (Zoning). Each holds free ground for its sector: its size -
+       a share of D, re-read as the city buys land, or square kilometres -
+       less what its sector has built in it (used), out of the free ground;
+       when the zones together want more than is free, each holds the same
+       share of its want (Z10: "holds 12.4 of 40 km2") and fills as land is
+       bought. Free for anyone is free less what the zones hold; free for a
+       sector is that and its zone's (freeFor()). The zones hold bare ground
+       first, then open forest (Z9); no positions, so that is an amount.
+
+       THE PRICE AND THE ASSESSMENT. A zone's ground is sold at its price
+       share of the going business price (groundPriceFor(), Z3) and assessed
+       at it (EconomyManager.assessedLandValueOf(), Z4); bought back at it
+       too (buybackPriceFor()).
+
+       CLEARING (Z7). Built ground lies on bare ground first - less the bare
+       ground the zones hold for others - and past it on open forest, which
+       it clears: cut-over ground first (E moves to C, the cleared wood,
+       never regrowing), then standing forest, whose wood is counted as taken
+       out (C) and is Forestry's salvage cut once Forestry exists (materials
+       I9) - lost until then (getForestClearedThisMonth()). allocate() clears
+       as it builds; the month's end (settleClearing()) holds C to at least
+       what the built ground past the bare ground needs, for ground set by
+       hand. A demolition leaves it cleared. Remaining is O - C - E, so the
+       world's totals hold: W = unowned + remaining + C + E.
+
+       THE CUTTABLE FOREST (Z8): what stands less the protected wood - the
+       protected share of the forest's full stock, from the fullest forest
+       first, never more than stands; extract(FOREST) cuts only it, and
+       Forestry's crew rule reads it from I9 (cuttableForest()).
+
+       NOTHING SET, NOTHING MOVES: with no zones and the law at 0 and 0 the
+       free ground is owned less allocated and every price the going one;
+       only the forest's C rises as the city builds past its bare ground,
+       which nothing priced reads (ZoningCheck 1).
+       ===================================================================== */
+
+    /** The city's zones and its forest law (0.7.107): empty for a new city - the ground free for anyone, as it always was. */
+    private final Zoning zoning = new Zoning();
+
+    /** Forest cleared for building, in square feet of ground (C's area, Z7): never regrowing, never un-cleared. */
+    private double clearedSqFt;
+
+    /** ...and its wood, in cubic metres: the cut-over wood it took from E and the standing wood it took out (C). */
+    private double clearedM3;
+
+    /** The standing wood cleared this month, cubic metres: Forestry's salvage cut from materials I9, lost until then. */
+    private double forestClearedThisMonth;
+
+    /** The city's zones and its forest law. */
+    public Zoning getZoning() { return zoning; }
+
+    /** A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). */
+    private static final double CLEARING_ROUNDING = 1e-9;
+
+    /* ----- the ground, by kind ----- */
+
+    /** The city's forest ground, in square feet: the forest class of its dry ground as drawn, cleared or standing (getForestKm2()). */
+    public double getForestSqFt()          { return sqFt(getForestKm2()); }
+
+    /** ...its bare ground: the dry ground owned less the forest, never below nothing. */
+    public double getBareSqFt()            { return Math.max(0, ownedSqFt - getForestSqFt()); }
+
+    /** The forest the law protects: never cut, never built on (Z6). */
+    public double getProtectedForestSqFt() { return protectedSqFt(zoning); }
+
+    /** ...the working forest: cut, never built on. */
+    public double getWorkingForestSqFt()   { return keptFromBuildingSqFt(zoning) - protectedSqFt(zoning); }
+
+    /** ...and the open forest: cut or built on - all of it with the law at 0 and 0. */
+    public double getOpenForestSqFt()      { return openSqFt(zoning); }
+
+    /** Forest cleared for building, square feet (C): built on, or built on once. */
+    public double getForestClearedSqFt()   { return clearedSqFt; }
+
+    /** ...and the wood that stood or had been cut on it, cubic metres. */
+    public double getForestClearedM3()     { return clearedM3; }
+
+    /** The standing wood cleared this month, cubic metres: lost until Forestry's salvage cut (I9). */
+    public double getForestClearedThisMonth() { return forestClearedThisMonth; }
+
+    private double protectedSqFt(Zoning z) {
+        return z.protectedShare() > 0 ? z.protectedShare() * getForestSqFt() : 0;
+    }
+
+    /** What the law keeps from building: the protected and the working forest. Nothing, with no forest read, at 0. */
+    private double keptFromBuildingSqFt(Zoning z) {
+        return z.keptShare() > 0 ? z.keptShare() * getForestSqFt() : 0;
+    }
+
+    private double openSqFt(Zoning z) {
+        return Math.max(0, getForestSqFt() - keptFromBuildingSqFt(z));
+    }
+
+    /** The ground that may be built on: the dry ground owned less what the law keeps. */
+    public double getBuildableSqFt() { return ownedSqFt - keptFromBuildingSqFt(zoning); }
+
+    /** Free ground, for anyone and the zones together: buildable less built, never below nothing. */
+    public double getFreeSqFt() { return freeSqFt(zoning); }
+
+    private double freeSqFt(Zoning z) {
+        if (!(z.keptShare() > 0)) return Math.max(ownedSqFt - allocatedSqFt, 0);
+        return Math.max(ownedSqFt - keptFromBuildingSqFt(z) - allocatedSqFt, 0);
+    }
+
+    /* ----- the zones ----- */
+
+    /** What each zone holds, square feet, in Zoning.zones()'s order: its want - its size less what it has used - out of the free ground, every want scaled alike when the ground is short (Z10). */
+    private double[] heldByZone(Zoning z) {
+        java.util.List<Zoning.Zone> list = z.zones();
+        double[] held = new double[list.size()];
+        double wanted = 0;
+        for (int i = 0; i < held.length; i++) {
+            Zoning.Zone zone = list.get(i);
+            held[i] = Math.max(0, zone.targetSqFt(ownedSqFt) - zone.usedSqFt());
+            wanted += held[i];
+        }
+        double free = freeSqFt(z);
+        if (wanted > free && wanted > 0) {
+            for (int i = 0; i < held.length; i++) held[i] *= free / wanted;
+        }
+        return held;
+    }
+
+    private double heldTotal(Zoning z) {
+        double sum = 0;
+        for (double h : heldByZone(z)) sum += h;
+        return sum;
+    }
+
+    private double heldBy(Zoning z, String sector) {
+        if (z.zone(sector) == null) return 0;
+        java.util.List<Zoning.Zone> list = z.zones();
+        double[] held = heldByZone(z);
+        for (int i = 0; i < held.length; i++) if (list.get(i).sector().equals(sector)) return held[i];
+        return 0;
+    }
+
+    private double freeForAnyone(Zoning z) {
+        if (!z.hasZones()) return freeSqFt(z);
+        return Math.max(0, freeSqFt(z) - heldTotal(z));
+    }
+
+    /** The free ground a sector's zone holds for it, square feet: its size less what it has used, as far as the free ground goes (Z10); 0 with no zone. */
+    public double heldBy(String sector)   { return heldBy(zoning, sector); }
+
+    /** ...and what its sector has built in it (used). */
+    public double usedBy(String sector)   { return zoning.used(sector); }
+
+    /** What a sector's zone is to be, square feet: its share of the dry ground or its square kilometres; 0 with no zone. */
+    public double zoneSizeOf(String sector) {
+        Zoning.Zone z = zoning.zone(sector);
+        return z == null ? 0 : z.targetSqFt(ownedSqFt);
+    }
+
+    /** What all the zones hold together. */
+    public double heldByZones()           { return zoning.hasZones() ? heldTotal(zoning) : 0; }
+
+    /** The ground free for anyone: free, less what the zones hold. */
+    public double freeForAnyone()         { return freeForAnyone(zoning); }
+
+    /** The ground a sector may build on: free for anyone, and what its zone holds for it. */
+    public double freeFor(String sector)  { return freeFor(zoning, sector); }
+
+    private double freeFor(Zoning z, String sector) {
+        double anyone = freeForAnyone(z);
+        return z.zone(sector) == null ? anyone : anyone + heldBy(z, sector);
+    }
+
+    /** What a square foot of a sector's zone is sold and assessed at: its price share of the going business price (Z3, Z4); the going price with no zone. */
+    public double groundPriceFor(String sector) {
+        Zoning.Zone z = zoning.zone(sector);
+        return z == null ? pricePerSqFt : z.priceShare() * pricePerSqFt;
+    }
+
+    /**
+     * The zones' ground, for the investors' month (Game.refreshLand(),
+     * BusinessInvestment.setZoneLand()): each zoned sector's {held square
+     * feet, price share}; empty with no zones.
+     */
+    public java.util.Map<String, double[]> zoneLand() {
+        if (!zoning.hasZones()) return java.util.Map.of();
+        java.util.Map<String, double[]> out = new java.util.LinkedHashMap<>();
+        java.util.List<Zoning.Zone> list = zoning.zones();
+        double[] held = heldByZone(zoning);
+        for (int i = 0; i < held.length; i++) out.put(list.get(i).sector(), new double[] { held[i], list.get(i).priceShare() });
+        return out;
+    }
+
+    /**
+     * THE GROUND UNDER ANOTHER ZONING (0.7.107), for PolicyPreview's before
+     * and after: a staged copy's free ground for anyone, a sector's held and
+     * free ground, and the forest's three kinds - the land as it stands, read
+     * through the copy's settings. Pure.
+     */
+    public record GroundUnder(double freeForAnyone, double heldByZones, double protectedSqFt, double workingSqFt,
+                              double openSqFt, double protectedWood, double cuttableWood) { }
+
+    /** ...the whole of it. */
+    public GroundUnder groundUnder(Zoning z) {
+        double kept = keptFromBuildingSqFt(z), prot = protectedSqFt(z);
+        double wood = protectedWood(z);
+        return new GroundUnder(freeForAnyone(z), z.hasZones() ? heldTotal(z) : 0, prot, kept - prot, openSqFt(z),
+                wood, Math.max(0, getRemaining(Resource.FOREST) - wood));
+    }
+
+    /** ...and one sector's held ground under it. */
+    public double heldUnder(Zoning z, String sector) { return heldBy(z, sector); }
+
+    /* ----- the forest's wood ----- */
+
+    /** The wood the law keeps standing, cubic metres: the protected share of the forest's full stock, from the fullest forest first, never more than stands (Z6, Z8). */
+    public double getProtectedWood() { return protectedWood(zoning); }
+
+    private double protectedWood(Zoning z) {
+        if (!(z.protectedShare() > 0)) return 0;
+        return Math.min(z.protectedShare() * getOwnedAmount(Resource.FOREST), getRemaining(Resource.FOREST));
+    }
+
+    /**
+     * THE CUTTABLE FOREST (Z8, Z13), cubic metres: what stands less the
+     * protected wood - the working and the open forest's. extract(FOREST)
+     * cuts only it; Forestry's crew rule (materials I9: a crew only while
+     * this lasts FOREST_CREW_MONTHS at the cut with it) reads it.
+     */
+    public double cuttableForest() {
+        return Math.max(0, getRemaining(Resource.FOREST) - getProtectedWood());
+    }
+
+    /* ----- clearing ----- */
+
+    /**
+     * Clears the open forest an allocation lies on (Z7), asked before it is
+     * made: the zone's part on what its zone holds of the bare ground, the
+     * rest on the bare ground free for anyone - the bare and cleared ground
+     * not built on, less what the zones hold of it, bare first (Z9), each
+     * zone its share - and what is past them on open forest. A bare office
+     * that has founded no land knows no forest, and clears nothing.
+     */
+    private void clearFor(double sqFt, double fromZone, String sector) {
+        if (land == null || !(sqFt > 0)) return;
+        double forest = getForestSqFt();
+        if (!(forest > 0)) return;
+        double freeBare = Math.max(0, Math.max(0, ownedSqFt - forest) + clearedSqFt - allocatedSqFt);
+        double zoneBare = 0, anyoneBare = freeBare;
+        if (zoning.hasZones()) {
+            java.util.List<Zoning.Zone> list = zoning.zones();
+            double[] held = heldByZone(zoning);
+            double all = 0, mine = 0;
+            for (int i = 0; i < held.length; i++) {
+                all += held[i];
+                if (list.get(i).sector().equals(sector)) mine = held[i];
+            }
+            double heldBare = Math.min(all, freeBare);
+            zoneBare = all > 0 ? heldBare * mine / all : 0;
+            anyoneBare = freeBare - heldBare;
+        }
+        clear(Math.max(0, fromZone - zoneBare) + Math.max(0, sqFt - fromZone - anyoneBare));
+    }
+
+    /**
+     * The month's floor (Z7): the cleared ground at least what the built
+     * ground past the bare ground needs, as far as the open forest goes - the
+     * same as allocate() leaves it, and what ground set by hand (a fixture,
+     * an older save built over its forest) is given. Past a rounding of the
+     * dry ground (CLEARING_ROUNDING).
+     */
+    private void settleClearing() {
+        if (land == null) return;
+        double forest = getForestSqFt();
+        if (!(forest > 0)) return;
+        double past = allocatedSqFt - Math.max(0, ownedSqFt - forest) - clearedSqFt;
+        if (past > CLEARING_ROUNDING * ownedSqFt) clear(past);
+    }
+
+    /**
+     * Clears this much open forest, as far as it goes: cut-over ground first
+     * - its wood moves from E to C - then standing forest, whose wood is
+     * taken out into C, never past what may be cut (the protected wood stands
+     * on ground nothing builds on): the month's salvage, lost until Forestry
+     * (I9). W holds: what leaves remaining arrives in C.
+     */
+    private void clear(double sqFt) {
+        double take = Math.min(sqFt, openSqFt(zoning) - clearedSqFt);
+        if (!(take > 0)) return;
+        double wood = km2(take) * World.FOREST_M3_PER_KM2;
+        int f = Resource.FOREST.ordinal();
+        double cutOver = Math.min(extracted[f], wood);
+        double standing = Math.min(wood - cutOver, cuttableForest());
+        extracted[f] -= cutOver;
+        clearedSqFt += take;
+        clearedM3 += cutOver + standing;
+        forestClearedThisMonth += standing;
+    }
+
+    /* ----- the save ----- */
+
+    /** DataSave's zoning (0.7.107): the zones, the law and the forest cleared; null when nothing is set and nothing cleared, as an older save reads. */
+    public Zoning.State zoningState() {
+        if (zoning.isEmpty() && clearedSqFt == 0 && clearedM3 == 0) return null;
+        Zoning.State s = zoning.toState();
+        s.clearedSqFt = clearedSqFt;
+        s.clearedM3 = clearedM3;
+        return s;
+    }
+
+    /** Puts them back (Game's load path, after the land and its allocation): null, none, 0 and 0, nothing cleared. */
+    public void restoreZoning(Zoning.State s) {
+        zoning.restore(s);
+        clearedSqFt = s == null ? 0 : Math.max(0, s.clearedSqFt);
+        clearedM3 = s == null ? 0 : Math.max(0, s.clearedM3);
     }
 
     /**
@@ -1164,6 +1558,12 @@ public class LandManager {
      */
     public void recordBuyback(double sqFt) {
         landPurchasesThisMonth += priceFor(sqFt);
+        sqFtBoughtBackThisMonth += sqFt;
+    }
+
+    /** ...at the price it was bought back at (0.7.107: a zone's part at its price, buybackPriceFor()). */
+    public void recordBuyback(double sqFt, double price) {
+        landPurchasesThisMonth += price;
         sqFtBoughtBackThisMonth += sqFt;
     }
 
@@ -1204,9 +1604,11 @@ public class LandManager {
      * The month's end for the ground (0.7.57): forest's stored depletion
      * grows back by FOREST_REGROWTH, then the month's flows are cleared. The
      * month calls this; a load calls clearMonth() alone, so loading a city
-     * grows nothing back.
+     * grows nothing back. Since 0.7.107 the forest the built ground needs is
+     * cleared first (settleClearing()): cleared ground never grows back.
      */
     public void endMonth() {
+        settleClearing();
         extracted[Resource.FOREST.ordinal()] *= 1 - FOREST_REGROWTH;
         clearMonth();
     }
@@ -1220,6 +1622,7 @@ public class LandManager {
         ironMinedThisMonth = 0;
         oilLiftedThisMonth = 0;
         java.util.Arrays.fill(liftedByGrade, 0);
+        forestClearedThisMonth = 0;
     }
 
     public void reset() {
@@ -1230,6 +1633,9 @@ public class LandManager {
         land = null;
         java.util.Arrays.fill(extracted, 0);
         extractedAtSea = 0;
+        zoning.clear();
+        clearedSqFt = 0;
+        clearedM3 = 0;
         worldTotals = null;
         market.reset();
         market.attach(null);

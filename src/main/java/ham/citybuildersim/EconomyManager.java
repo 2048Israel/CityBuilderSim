@@ -262,9 +262,49 @@ public class EconomyManager {
     public void setLandPricePerSqFt(double price) { this.landPricePerSqFt = price; }
     public double getLandPricePerSqFt()           { return landPricePerSqFt; }
 
-    /** What a sector's land is worth at the city's current price. */
+    /** What a sector's land is worth at the city's current price - on its books; the roll reads assessedLandValueOf() since 0.7.107. */
     public double landValueOf(Sector s) {
         return buildingManager.getLandSqFtBySector(s.key()) * landPricePerSqFt;
+    }
+
+    /*
+     * ZONED GROUND IS ASSESSED AT THE ZONE'S PRICE (0.7.107, batch Z1; Jerus's
+     * Z4: "so that some industries can build even tho land is expensive and
+     * property tax would kill them"), as FARMLAND_RELIEF assesses the fields
+     * at use value: the ground a sector has built on in its zone at the
+     * zone's price share of the going price, the rest at the going price.
+     * Its books keep the going price (landValueOf()), as the fields' do under
+     * the relief: the roll is the tax's, not the sheet's. A new building's
+     * ground reads its zone's price while its zone holds the plot
+     * (groundPriceFor()), as the investors build there first. With no zones,
+     * both are the going price to the bit.
+     */
+
+    /** The city's zones, and what each holds of the free ground (LandManager.heldBy()); Game wires both, a bare economy has none. */
+    private Zoning zoning;
+    private java.util.function.ToDoubleFunction<String> zoneHeld;
+
+    public void setZoning(Zoning zoning, java.util.function.ToDoubleFunction<String> held) {
+        this.zoning = zoning;
+        this.zoneHeld = held;
+    }
+
+    /** A sector's land as the roll values it, before the share the roll carries: its zone's used ground at the zone's price, the rest at the going price. */
+    public double assessedLandValueOf(Sector s) {
+        Zoning.Zone z = zoning == null ? null : zoning.zone(s.key());
+        if (z == null || !(z.usedSqFt() > 0)) return landValueOf(s);
+        double all = buildingManager.getLandSqFtBySector(s.key());
+        double inZone = Math.min(all, z.usedSqFt());
+        return (all - inZone) * landPricePerSqFt + inZone * z.priceShare() * landPricePerSqFt;
+    }
+
+    /** What a square foot of ground under one more of these costs its owner and is assessed at: its zone's price while the zone holds its plot, the going price past it - never below nothing. */
+    public double groundPriceFor(BuildingsTemplate t) {
+        double going = Math.max(0, landPricePerSqFt);
+        if (zoning == null || t == null || !zoning.hasZones()) return going;
+        Zoning.Zone z = zoning.zone(t.getSector());
+        if (z == null || zoneHeld == null || zoneHeld.applyAsDouble(t.getSector()) < t.getLandSqFt()) return going;
+        return going * z.priceShare();
     }
 
     /** What a city-owned category's land is worth. */
@@ -350,7 +390,8 @@ public class EconomyManager {
         if (t == null || buildingManager == null) return 0;
         double materials = t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
         double structure = t.getCashCost() + materials;
-        double land = t.getLandSqFt() * Math.max(0, landPricePerSqFt);
+        // ...its plot at its zone's price while the landlords' zone holds it (0.7.107, groundPriceFor()).
+        double land = t.getLandSqFt() * groundPriceFor(t);
         double full = structure + land;
         if (full <= 0) return 0;
         double monthlyPropertyRate = taxPolicy.effectiveMonthlyPropertyRate(sectors.realEstate());
@@ -375,7 +416,7 @@ public class EconomyManager {
             // the rebate on a new rental home (THE REBATES ON A NEW HOME).
             double structure = ownersBuildCost(t, re.key(),
                     buildingManager.nonMaterialCost(t) + t.getConstructionMaterials() * materialPrice) / t.getCapacity();
-            double land = t.getLandSqFt() * Math.max(0, landPricePerSqFt) / t.getCapacity();
+            double land = t.getLandSqFt() * groundPriceFor(t) / t.getCapacity();
             double full = structure + land;
             if (full <= 0) continue;
             if (bestFull <= 0 || full < bestFull) {
@@ -557,7 +598,8 @@ public class EconomyManager {
      * the fence - so the player has a dial. See TaxPolicy.assessedLandShare.
      */
     public double getAssessedValue(Sector s) {
-        return landValueOf(s) * taxPolicy.assessedLandShare(s.key())
+        // ...and its zone's ground at the zone's price since 0.7.107 (Z4; assessedLandValueOf()).
+        return assessedLandValueOf(s) * taxPolicy.assessedLandShare(s.key())
                 + buildingManager.getBookValueBySector(s.key());
     }
 
@@ -1561,9 +1603,9 @@ public class EconomyManager {
                           : salesTaxLedger.getTaxableSales(s.key()) * at;
     }
 
-    /** One sector's property tax under a policy (M2): its land at today's price on that policy's roll share, and its finished buildings, at that policy's monthly rate - getPropertyTaxFor()'s rule. */
+    /** One sector's property tax under a policy (M2): its land at today's price on that policy's roll share - its zone's ground at the zone's since 0.7.107 - and its finished buildings, at that policy's monthly rate - getPropertyTaxFor()'s rule. */
     public double propertyTaxUnder(Sector s, TaxPolicy p) {
-        double roll = landValueOf(s) * p.assessedLandShare(s.key())
+        double roll = assessedLandValueOf(s) * p.assessedLandShare(s.key())
                 + buildingManager.getBookValueBySector(s.key());
         return p.propertyTaxOn(roll, s.key());
     }
