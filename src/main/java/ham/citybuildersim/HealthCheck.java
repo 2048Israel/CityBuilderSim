@@ -1174,7 +1174,7 @@ public class HealthCheck {
         double[] hungerYear = new double[scales.length];
         // ...and its two halves (0.7.100, printed, not asserted): the share
         // short of a basket it could not afford, and the share the shelves
-        // left short (HouseholdBalance.getHungerPricedOut(), ShortOfStock()).
+        // left short (HouseholdBalance.getHungerPricedOut(), getHungerShortOfStock()).
         double[] hungerYearPriced = new double[scales.length];
         double[] hungerYearShelf = new double[scales.length];
         final int year = 12;
