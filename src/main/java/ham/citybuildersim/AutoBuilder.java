@@ -2,6 +2,7 @@ package ham.citybuildersim;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,13 +46,23 @@ import java.util.Set;
  * cannot pay for or run one of (step()); buys only an order's own ground
  * (lacks()); and its debt limit counts everything the city owes over the
  * output it has recorded (THE DEBT LIMIT), 240% of it by default, the dial
- * to 600%. THE BUDGET STAYS (star P2-3): Jerus asked for the debt limit
+ * to 600%. THE BUDGET STAYED (star P2-3): Jerus asked for the debt limit
  * alone, and without the budget a village's first school, paid from its
  * founding cash, ran it into a deficit no debt limit sees before the order
  * - the limit binds once the debt is there and the deficit goes on - so
  * three of the eight auto-built seeds stalled for a thousand months or more
- * even with the limit counting everything; with it all eight pass 1.7M
- * people. Kept for Jerus to decide (runs/fixP2-notes.md).
+ * even with the limit counting everything; with it all eight passed 1.7M
+ * people (runs/fixP2-notes.md).
+ *
+ * SMARTER, 0.7.104 (batch P2b; Jerus's decision of 2026-10-10 on the budget
+ * P2 kept: "don't keep it as is, and don't remove it. Make it smarter"): an
+ * ESSENTIAL SERVICE - power, water, care of every kind, death care - is
+ * held by the debt limit, the money and the ground alone, and a deficit to
+ * run it is the city's to carry (essential()); every other building the
+ * treasury runs - a school, a police station, a prison, a transit line - is
+ * ordered only as far as it PAYS BACK over its life: its running against
+ * what the residents it covers pay, past what each already costs the city
+ * (THE PAYBACK, payback()). The budget is gone (runs/fixP2b-notes.md).
  *
  * THE MONTH (pass()), the first thing Game.nextMonth() does - between the
  * presses, where the player's own Build lands, on the city the last press
@@ -65,8 +76,8 @@ import java.util.Set;
  *     over its life. A school above the ladder only where NEEDS YOU lists
  *     it (kept()); a first school down the ladder, police station or prison
  *     wherever the figure is short, however far past the need one goes, paid
- *     from the cash alone, once the budget runs it (0.7.101; it waited for
- *     half its worth until then).
+ *     from the cash alone, once it pays back (0.7.104; once the budget ran
+ *     it from 0.7.101; it waited for half its worth until then).
  *   - THE ORDER: the advice's own card for the measure at the player's
  *     margin (BuildAdvice.suggestFor(..., slack)) - nothing while what
  *     stands and what is on site keep it ahead of the demand it will have
@@ -76,8 +87,10 @@ import java.util.Set;
  *     BusinessInvestment.MAX_ORDER_MONTHS, the businesses' own rule for an
  *     order the queue can deliver, and one when none would and nothing for
  *     the measure is on site, so a slow plant is not put off for ever; to
- *     THE BUDGET, for a building the budget runs (staff, upkeep, a line's
- *     crews) - what the year's revenue leaves (budgetRoom()); and to THE
+ *     THE BUDGET, for a building the treasury runs (staff, upkeep, a line's
+ *     crews) - what the year's revenue left, until 0.7.104 (THE PAYBACK
+ *     since: for a school, a station, a prison or a line, what pays back
+ *     over its life; an essential service none); and to THE
  *     GROUND AND THE MONEY together (0.7.77) - the ground the order
  *     lacks past what is free bought as Build's land shortcut buys it
  *     (groundFor()), and the ground and the order paid for out of the cash
@@ -85,15 +98,17 @@ import java.util.Set;
  *     bond (Game.handleLongBondForCash(), BUILD_BOND_YEARS), only as large as
  *     keeps the city's debt within the limit (canPay()) - and with the debt
  *     already over it, nothing at all, or with "Build from cash anyway" on,
- *     only what the cash pays for. Where not one is run or paid for, the
- *     next building in the advice's ranking (the budget's since 0.7.73, the
- *     ground's and the money's since 0.7.101), and held only when none is.
+ *     only what the cash pays for. Where not one pays back or is paid for,
+ *     the next building in the advice's ranking (the budget's since 0.7.73,
+ *     the ground's and the money's since 0.7.101, the payback's since
+ *     0.7.104), and held only when none is.
  *   - PLACED through Build's own path (Game.buildStack(); Game.paveRoads()
  *     when the advice's road is a paving), its ground first through the
  *     land office's (Game.buyLandParcel()), in its log with why, and the
  *     game's log. What held a service back - the builders, no ground to be
- *     had, the budget, the limit, or nothing the city could build - is the
- *     inbox's notice (Inbox, "autobuild"), a line a service; the ground it
+ *     had, the payback, the limit, or nothing the city could build - is the
+ *     inbox's notice (Inbox, "autobuild"), a line a service - the payback's
+ *     with its figure (paybackWords()); the ground it
  *     bought, and why, another ("autobuild-land").
  *
  * THE DEBT LIMIT, A SHARE OF GDP (0.7.81, batch N6; ratio()): the city's
@@ -103,11 +118,12 @@ import java.util.Set;
  * from 0.7.81 its bonds and bills, the left panel's Debt/GDP, over a year
  * scaled up from fewer. From 0.7.73 to 0.7.80 the limit was debt payments
  * as a share of the revenue the city can count on (the Finances tab's debt
- * service gauge, its leading mark). The revenue it can count on
- * (revenue()) still holds the budget.
+ * service gauge, its leading mark).
  *
- * THE BUDGET'S REVENUE (revenue()): a year's, its land sales and the
- * builders' tax left out - what a staffed order is held to.
+ * WHAT A RESIDENT PAYS THE CITY (paid(), 0.7.104): its recurring revenue a
+ * resident, the lesser of the month's and the year's - land sales, the
+ * builders' tax and the reserve's crude sold left out - as the budget's
+ * revenue was read, the city's whole, from 0.7.73 to 0.7.103.
  *
  * THE PLAYER'S SETTING AT WORK, NOT A DECISION: like the rollover's issues
  * (Game.issueForRollover()), what it orders and borrows is not in the
@@ -496,51 +512,21 @@ public final class AutoBuilder {
     }
 
     /**
-     * A month's revenue the city can count on (star N4-2): the month's take,
-     * the Finances tab's, less what the city's growth brings in once - its
-     * land sales, and the builders' sales tax and profit tax, which follow the
-     * building, much of it the city's own. A new town of sixteen people took
-     * $2.2M in its third month, nine tenths of it the builders' tax on its
-     * first orders, and $0.3M a month once they were built; on the 0.7.73
-     * playtest the builders' tax was half the take of a town of 4,336 in the
-     * months its schools were ordered, and the schools' running outlived it
-     * (runs/fixN4-notes.md).
+     * Months of monthPaid() the payback's figure averages: a year, as a
+     * lender reads a city's accounts - a year of its own recurring revenue,
+     * the sale of its property left out, as a city's debt limit is set
+     * (Ontario's annual repayment limit, O. Reg. 403/02; the budget's revenue
+     * from 0.7.73 to 0.7.103, star N4-2).
      */
-    public static double monthRevenue(Game game) {
-        NationalAccounts n = game.getEconomyManager().getNationalAccounts();
-        Sector.Statement builders = game.getSectors().construction().statement();
-        return n.getTotalRevenue() - Math.max(0, n.getLandSales())
-                - Math.max(0, builders.salesTax) - Math.max(0, builders.profitTax);
-    }
+    public static final int PAID_MONTHS = 12;
 
-    /** Months of monthRevenue() the year's figure averages: a year, as a lender reads a city's accounts (star N4-2). */
-    public static final int REVENUE_MONTHS = 12;
+    /** monthPaid() at each of the last PAID_MONTHS passes, oldest first: saved (0.7.104; the budget's revenue under "recent" until then, which nothing reads now). */
+    private final List<Double> paidMonths = new ArrayList<>();
 
-    /** monthRevenue() at each of the last REVENUE_MONTHS passes, oldest first: saved. */
-    private final List<Double> recent = new ArrayList<>();
-
-    /**
-     * The revenue the budget is read against (star N4-2; the limit too until 0.7.81): the
-     * lesser of the month's (monthRevenue()) and its average over the last
-     * REVENUE_MONTHS passes, so a month that swells - a batch of mortgages
-     * insured, a central bank's remittance - is read at the year's, and a
-     * month that falls as it falls. A lender reads a year of a city's own
-     * recurring revenue, the sale of its property left out, as a city's debt
-     * limit is set (Ontario's annual repayment limit, O. Reg. 403/02). Before
-     * a pass has recorded one, the month's.
-     */
-    public double revenue(Game game) {
-        double now = monthRevenue(game);
-        if (recent.isEmpty()) return now;
-        double sum = 0;
-        for (double r : recent) sum += r;
-        return Math.min(now, sum / recent.size());
-    }
-
-    /** What a pass records first: this month's monthRevenue(), the oldest dropped past REVENUE_MONTHS. */
+    /** What a pass records first: this month's monthPaid(), the oldest dropped past PAID_MONTHS. */
     void remember(Game game) {
-        recent.add(monthRevenue(game));
-        while (recent.size() > REVENUE_MONTHS) recent.remove(0);
+        paidMonths.add(monthPaid(game));
+        while (paidMonths.size() > PAID_MONTHS) paidMonths.remove(0);
     }
 
     /** The funding page's bond for `gap` of cash: its quote, or null for none to be had. */
@@ -607,26 +593,30 @@ public final class AutoBuilder {
         ORDERED,
         /** Works for it are on site and the builders could open no more inside a year. */
         WAITING,
-        /** The builders have no site output, or no ground is to be had for one (since 0.7.77 it buys the rest), or the budget cannot run one, or the limit - over it, the cash - would not pay for one, of any building in the advice's ranking (the ground and the money walked since 0.7.101). */
+        /** The builders have no site output, or no ground is to be had for one (since 0.7.77 it buys the rest), or none would pay back (since 0.7.104; the budget could not run one until then), or the limit - over it, the cash - would not pay for one, of any building in the advice's ranking (the ground and the money walked since 0.7.101). */
         HELD,
         /** No building the city could staff moves it (the advice offers nothing). */
         NOTHING
     }
 
-    /** Why a count was cut or an order held: BUDGET what the year's revenue leaves to run it; DEBT the limit - over it, or a bond that would cross it; CASH (0.7.81) over it with "Build from cash anyway" on, to what the cash pays for, and (0.7.101) a first of a kind, which the cash alone pays for. */
-    public enum Cut { NONE, BUILDERS, GROUND, BUDGET, DEBT, CASH }
+    /** Why a count was cut or an order held: PAYBACK (0.7.104) what pays back over its life, for a building the treasury runs that is not an essential service - BUDGET, what the year's revenue left to run it, until then; DEBT the limit - over it, or a bond that would cross it; CASH (0.7.81) over it with "Build from cash anyway" on, to what the cash pays for, and (0.7.101) a first of a kind, which the cash alone pays for. */
+    public enum Cut { NONE, BUILDERS, GROUND, PAYBACK, DEBT, CASH }
 
     /**
      * One measure at the last pass: what it did, and why - and since 0.7.77
      * the ground its order lacked when it was weighed (landShort, square feet
      * past what was free), the offers it bought for it and their price in
-     * local money.
+     * local money; and since 0.7.104 the payback it weighed (payback): an
+     * order's, for its count, or a hold's, for one of the card it held on -
+     * null where the payback does not hold the building, or the hold was for
+     * the money, the ground or the builders.
      */
     public record Step(BuildAdvice.Measure measure, Outcome outcome, String building, int wanted, int ordered,
-                       Cut cut, double cost, double borrowed, double landShort, List<LandParcel> land, double landCost) {
+                       Cut cut, double cost, double borrowed, double landShort, List<LandParcel> land, double landCost,
+                       Payback payback) {
         Step(BuildAdvice.Measure measure, Outcome outcome, String building, int wanted, int ordered, Cut cut, double cost,
              double borrowed) {
-            this(measure, outcome, building, wanted, ordered, cut, cost, borrowed, 0, List.of(), 0);
+            this(measure, outcome, building, wanted, ordered, cut, cost, borrowed, 0, List.of(), 0, null);
         }
 
         /** The dry ground it bought, in square feet. */
@@ -640,67 +630,281 @@ public final class AutoBuilder {
     private final List<Step> steps = new ArrayList<>();
 
     /*
-     * THE BUDGET (star N4-6). A staffed building - care, death care, a
-     * school, the police, the cells, and a transit line, whose crews the
-     * treasury has paid since 0.7.49 - is paid for out of the budget every
-     * month it stands: its posts at the city's wages and its upkeep, a line
-     * less its fares (BuildAdvice.running()). Jerus's debt limit holds the
-     * borrowing; this holds the running: an order for one is no larger than
-     * the year's revenue (revenue()) leaves after the month's spending - all
-     * of it but buildings and land - and a month of running what is on site.
-     * Past a building the budget cannot run, the pass takes the next in the
-     * advice's ranking (a road where the bus's crews cannot be paid), and
-     * says so in the inbox only when none is left. Power, water and the roads
-     * are not held by it: the utilities sell what they make, and a road has
-     * no staff. On 0.7.73's playtest without it, a town of 1,768 was given a
-     * Bus Network whose crews cost half its revenue, and 22 childcare centres
-     * and two of each basic school took it from a surplus to a deficit, its
-     * central bank advancing the rest (runs/fixN4-notes.md).
+     * THE PAYBACK (0.7.104, batch P2b), which replaced the budget for every
+     * building the treasury runs but the essential services. Jerus
+     * (2026-10-10), of the budget P2 kept: "don't keep it as is, and don't
+     * remove it. Make it smarter. 1. Essential services (death care, health,
+     * water, power) skip the revenue budget. Only the debt limit applies to
+     * them, and running a deficit to have them is fine. 2. For everything
+     * else, replace "can this year's revenue run it" with payback: its
+     * running cost against the extra tax revenue from the residents and
+     * workers it lets the city add, over the building's life, consistent
+     * with P2's long-run ranking."
      *
-     * KEPT IN 0.7.101 (star P2-3). Jerus (decision A4, 2026-10-10): "for some
-     * reason some checks to check revenue, while the real thing is only debt
-     * to gdp ratio". Taken out, nothing but the debt limit stopped a city
-     * building a staffed service it could not run, and the limit cannot see
-     * it coming: the order is paid for - a village's first school out of its
-     * founding cash - and its wages then overdraw the treasury month after
-     * month, the central bank advancing them, then bonds; the limit binds
-     * once that debt is there, and the deficit goes on under it. On the
-     * auto-built playtest a village of 18 built its Elementary School in
-     * month 3 and stood near 400 people for 600 months, its debt from 1.3 to
-     * 13 years of its output; with the limit counting all it owes (THE DEBT
-     * LIMIT) and a first of a kind from the cash alone, seeds 0, 2 and 7
-     * still stood still for a thousand months or more, and with the limit as
-     * it was, seeds 3 and 5. With the budget all eight pass 1.7M
-     * (runs/fixP2-notes.md). So it stays, for Jerus to decide.
+     * So an ESSENTIAL SERVICE (essential(): power, water, care of every kind,
+     * death care) is held by the debt limit, the money and the ground alone,
+     * and a deficit to run it is the city's to carry. Every other building
+     * the treasury runs (paysBackFirst(): a school, a police station, a
+     * prison, a transit line - the buildings the budget held but the
+     * essential ones; a road has no staff and neither held it) is ordered
+     * only as far as it PAYS BACK (payback()), a month on average over its
+     * life (BuildAdvice.LIFE_MONTHS, the funding page's bond term) at
+     * today's prices:
+     *   - ITS RUNNING (runs): running() for each - its posts at today's
+     *     wages and its upkeep, its repairs, its power and water, a line
+     *     less its fares - the advice's own figure (A BUILDING OVER ITS
+     *     LIFE), a month at today's prices, as its life is reckoned there.
+     *   - THE RESIDENTS IT COVERS (coveredOverLife(), star P2b-2): in each
+     *     year of its life, read as the advice reads what an order will
+     *     serve - from its opening, the demand today's grown by the city's
+     *     own trend (lifeTrend(), star P2-2), its margin past it - the share
+     *     of the measure's need it takes off the shortfall, of the people the
+     *     city has that year: a school's places of the children or teens
+     *     (above the ladder, of the students the city would get and hire), a
+     *     station's officers of those its people need (Crime.FULL_OFFICERS_PER_100K),
+     *     a prison's cells of the caught's sentences, a line's trips of the
+     *     trips on the road; each year discounted as lifeFactor() discounts
+     *     the running. A building past the need covers only what the city
+     *     grows into; a first one where there is none covers everybody its
+     *     need comes from.
+     *   - WHAT EACH OF THEM PAYS THE CITY (paid()): a month of its recurring
+     *     revenue a resident - its taxes on wages, sales, property, business
+     *     and industry, its contributions, premiums, fees and fares, and the
+     *     rest it takes in every month - less what comes in once (land sold,
+     *     the builders' tax, the reserve's crude sold), the lesser of the
+     *     month's and the year's.
+     *   - LESS WHAT EACH ALREADY COSTS IT (costs(), star P2b-3): a building
+     *     helps the city grow only with all the others - the residents a
+     *     school lets it keep need its clinics, cemeteries, roads, police,
+     *     pensions and debt as well - so what each pays is first what each
+     *     already costs: the city's running spend a resident (its spending but
+     *     buildings and land), the staffed services on site counted (this
+     *     pass's orders too), the measure's own buildings not (the need this
+     *     order meets is theirs). What is left is what pays for this one.
+     * It pays back where covered x (paid - costs) >= runs; the count is cut
+     * to what pays back, and past a building none of which pays back the pass
+     * takes the next in the advice's ranking, as it took the next past one
+     * the budget could not run, and says so in the inbox, with the figure,
+     * only when none is left. THE BUDGET'S LINES (star P2b-4): of the four
+     * the budget's totals took in at 0.7.102 it reads the repairs - a running
+     * cost, in what each resident costs and in running() since 0.7.70 - and
+     * leaves out the arrears paid down, a past month's bill, and the
+     * reserve's crude bought and sold, an asset as land is.
+     *
+     * THE BUDGET IT REPLACED (star N4-6, 0.7.73 to 0.7.103): a staffed
+     * building - care, death care, a school, the police, the cells, and a
+     * transit line, whose crews the treasury has paid since 0.7.49 - was
+     * ordered only within what the year's revenue left after the month's
+     * spending and a month of running what is on site. On 0.7.73's playtest
+     * without it, a town of 1,768 was given a Bus Network whose crews cost
+     * half its revenue, and 22 childcare centres and two of each basic school
+     * took it from a surplus to a deficit, its central bank advancing the rest
+     * (runs/fixN4-notes.md). P2 took it out and put it back (0.7.101, star
+     * P2-3): without it a village's first school, paid from its founding
+     * cash, ran wages no debt limit sees before the order, and three of the
+     * eight auto-built seeds stood still for a thousand months or more
+     * (runs/fixP2-notes.md).
      */
 
-    /** A month's spending that is not a building or land: what the city pays to run itself (NationalAccounts). */
-    public static double runningSpend(Game game) {
-        NationalAccounts n = game.getEconomyManager().getNationalAccounts();
-        return n.getTotalExpenses() - n.getCapitalSpending() - n.getLandPurchases();
-    }
-
-    /** A month of running the staffed services on site, once they open. */
-    public static double onSiteRunning(Game game) {
-        BuildingManager bm = game.getBuildingManager();
-        int[] site = bm.getUnderConstructionById();
-        double total = 0;
-        for (BuildingsTemplate t : bm.getTemplates()) {
-            if (t.getId() >= site.length || site[t.getId()] <= 0 || !staffedBuilding(t)) continue;
-            total += site[t.getId()] * Math.max(0, BuildAdvice.running(game, t, new LinkedHashMap<>()));
-        }
-        return total;
-    }
-
-    /** A building the budget runs: care, death care, a school, the police, the cells - and a transit line, whose crews the treasury pays (0.7.49). */
+    /** A building the treasury runs: care, death care, a school, the police, the cells - and a transit line, whose crews the treasury pays (0.7.49). The budget held each until 0.7.104; since then the payback holds those that are not essential services. */
     public static boolean staffedBuilding(BuildingsTemplate t) {
         return t != null && (t.getCare() != CareType.NONE || t.getTeaches() != EducationType.NONE
                 || t.getSafety() != SafetyType.NONE || t.getTransitCapacity() > 0);
     }
 
-    /** What the year's revenue leaves a month for running a new staffed service: revenue() less runningSpend() and onSiteRunning(). */
-    public double budgetRoom(Game game) {
-        return revenue(game) - runningSpend(game) - onSiteRunning(game);
+    /**
+     * An ESSENTIAL SERVICE (0.7.104, star P2b-1): power, water, care of
+     * every kind and death care. Jerus: "Essential services (death care,
+     * health, water, power) skip the revenue budget. Only the debt limit
+     * applies to them, and running a deficit to have them is fine." Health is
+     * the Healthcare category's three kinds of care - general care (clinics
+     * and hospitals, the sick rate), senior care (the elders' mortality) and
+     * childcare, whose places are what keeps the city's babies and children
+     * alive in the model (Healthcare.CHILDCARE_SWING) - and death care is the
+     * crematoria and the cemeteries, with their plots. Ordered within the
+     * debt limit, the money and the ground; no payback holds them.
+     */
+    public static boolean essential(BuildAdvice.Measure m) {
+        switch (m.kind()) {
+            case POWER: case WATER: case CARE: case DEATH: case PLOTS: return true;
+            default: return false;
+        }
+    }
+
+    /** Whether the payback holds an order of t for measure m (0.7.104): a building the treasury runs (staffedBuilding()) for a service that is not essential (essential()) - a school, a police station, a prison, a transit line. */
+    public static boolean paysBackFirst(BuildAdvice.Measure m, BuildingsTemplate t) {
+        return staffedBuilding(t) && !essential(m);
+    }
+
+    /**
+     * What a resident pays the city a month (0.7.104, star P2b-3): the
+     * city's recurring revenue - its taxes on wages, sales, property,
+     * business and industry, its contributions and premiums, its fees and
+     * fares, what its utilities sell, its central bank's profit and its
+     * fund's transfer (NationalAccounts.getTotalRevenue()) - less what comes
+     * in once: the land it sold, the builders' sales and profit tax, which
+     * follow the building, much of it the city's own (left out of the
+     * budget's revenue since 0.7.73, star N4-2), and the reserve's crude
+     * sold, an asset sold as land is (star P2b-4); over the city's people, 0
+     * with nobody.
+     */
+    public static double monthPaid(Game game) {
+        double people = game.getPopulationManager().getPopulation();
+        if (!(people > 0)) return 0;
+        NationalAccounts n = game.getEconomyManager().getNationalAccounts();
+        Sector.Statement builders = game.getSectors().construction().statement();
+        double paid = n.getTotalRevenue() - Math.max(0, n.getLandSales()) - Math.max(0, builders.salesTax)
+                - Math.max(0, builders.profitTax) - Math.max(0, n.getReserveCrudeSold());
+        return Math.max(0, paid) / people;
+    }
+
+    /**
+     * What a resident pays the city a month, as the payback reads it
+     * (0.7.104): the lesser of this month's (monthPaid()) and its average
+     * over the last PAID_MONTHS passes, so a month that swells - a batch of
+     * mortgages insured, a central bank's remittance - is read at the year's,
+     * and a month that falls as it falls (the budget's rule for its revenue,
+     * star N4-2). Before a pass has recorded one, the month's.
+     */
+    public double paid(Game game) {
+        double now = monthPaid(game);
+        if (paidMonths.isEmpty()) return now;
+        double sum = 0;
+        for (double r : paidMonths) sum += r;
+        return Math.min(now, sum / paidMonths.size());
+    }
+
+    /**
+     * What each resident already costs the city a month (0.7.104, star
+     * P2b-3 - A BUILDING THAT HELPS THE CITY GROW ONLY WITH OTHERS): its
+     * running spend - all it spends but buildings and land, and but the
+     * arrears it paid down, a past month's bill, and the reserve's crude it
+     * bought, an asset (star P2b-4) - and a month of running the staffed
+     * services on site but the measure's own (they will run once they open),
+     * this pass's orders among them, less what the measure's own buildings
+     * standing cost to run (running(): the need this order meets is theirs to
+     * share, not a cost the residents it covers bring), over the city's
+     * people; 0 with nobody.
+     */
+    public double costs(Game game, BuildAdvice.Measure m) {
+        double people = game.getPopulationManager().getPopulation();
+        if (!(people > 0)) return 0;
+        NationalAccounts na = game.getEconomyManager().getNationalAccounts();
+        double spend = na.getTotalExpenses() - na.getCapitalSpending() - na.getLandPurchases() - na.getArrearsPaid()
+                - na.getReserveCrudeBought();
+        BuildingManager bm = game.getBuildingManager();
+        int[] site = bm.getUnderConstructionById();
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (!inRemit(t)) continue;
+            int id = t.getId();
+            if (ownMeasure(m, t)) spend -= bm.getQuantity(id) * running(game, t);
+            else if (id < site.length && site[id] > 0 && staffedBuilding(t)) spend += site[id] * running(game, t);
+        }
+        return spend / people;
+    }
+
+    /** running() of each building this month, read once (costs() reads every one of the measure's own and every one on site, each weighing): not saved. */
+    private final Map<BuildingsTemplate, Double> runningNow = new HashMap<>();
+    private Game runningGame;
+    private int runningMonth = -1;
+
+    /**
+     * A month of running one (BuildAdvice.running(), held at nothing), read
+     * once a month: its wages, prices and fares are the month's, and what a
+     * pass orders goes on site, not into the network a line's fares are read
+     * on - so it stands while the month does.
+     */
+    double running(Game game, BuildingsTemplate t) {
+        if (game != runningGame || game.getMonth() != runningMonth) {
+            runningNow.clear();
+            runningGame = game;
+            runningMonth = game.getMonth();
+        }
+        return runningNow.computeIfAbsent(t, x -> Math.max(0, BuildAdvice.running(game, x, new LinkedHashMap<>())));
+    }
+
+    /** Whether t is one of the measure's own buildings (0.7.104): a road's or a line's, any of the Roads & transit category's; otherwise those that serve it. */
+    static boolean ownMeasure(BuildAdvice.Measure m, BuildingsTemplate t) {
+        return m.kind() == BuildAdvice.Kind.ROADS ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
+    }
+
+    /**
+     * A measure's need and its shortfall, in its own unit, with these
+     * buildings standing as well, at `at`'s demand (0.7.104): {need, short}.
+     * The need is what the measure's people ask of it (supplyDemand()'s
+     * demand: the children or teens, the students the city would get and
+     * hire, the officers its people need, the caught's sentences in cells)
+     * and the shortfall that less what stands; the roads' need the trips on
+     * them and its shortfall the trips over STRAINED of their capacity
+     * (BuildAdvice.shortfall()'s line, the unit a road's or a line's unit()
+     * is in).
+     */
+    static double[] need(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at) {
+        if (m.kind() == BuildAdvice.Kind.ROADS) {
+            InfrastructureManager r = BuildAdvice.roads(game, added, at.scale());
+            return new double[] { r.getEffectiveLoad(), r.getEffectiveLoad() - InfrastructureManager.STRAINED * r.getCapacity() };
+        }
+        double[] sd = BuildAdvice.supplyDemand(game, m, added, at);
+        return new double[] { sd[1], sd[1] - sd[0] };
+    }
+
+    /**
+     * The residents an order covers, a month on average over its life
+     * (0.7.104, star P2b-2): each of its LIFE_YEARS years read at its middle
+     * month as the advice reads what an order serves (servedOverLife()) -
+     * from its opening, `p`'s months less HORIZON, the demand today's times
+     * the city's own trend (lifeTrend(), star P2-2) with p's margin past it -
+     * as the share of the measure's need it takes off the shortfall (need():
+     * the shortfall with what stands and is on site less the shortfall with
+     * the order too, both held at nothing, over the need), times the city's
+     * people that year (today's times the same trend); each year weighted by
+     * its twelve months discounted as lifeFactor() discounts the running.
+     */
+    public static double coveredOverLife(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
+                                         Map<BuildingsTemplate, Integer> order, BuildAdvice.Ahead p) {
+        double people = game.getPopulationManager().getPopulation();
+        if (!(people > 0)) return 0;
+        Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
+        double opens = Math.max(0, p.months() - BuildAdvice.HORIZON);
+        double i = BuildAdvice.lifeRate(game) / 12;
+        double covered = 0, weights = 0;
+        for (int y = 0; y < BuildAdvice.LIFE_YEARS; y++) {
+            double w = 0;
+            for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
+            double months = opens + 12 * y + 6;
+            double trend = BuildAdvice.lifeTrend(game, months);
+            BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, trend, p.slack());
+            double[] before = need(game, m, site, at), after = need(game, m, with, at);
+            double taken = Math.max(0, before[1]) - Math.max(0, after[1]);
+            if (before[0] > 0 && taken > 0) covered += w * Math.min(1, taken / before[0]) * people * trend;
+            weights += w;
+        }
+        return weights > 0 ? covered / weights : 0;
+    }
+
+    /**
+     * An order's payback (0.7.104), a month on average over its life at
+     * today's prices: what it costs to run (runs: running() for each), the
+     * residents it covers (coveredOverLife()), what each pays the city
+     * (paid()) and what each already costs it (costs()). It pays back where
+     * what they pay past what they cost covers its running.
+     */
+    public record Payback(double runs, double covered, double paid, double costs) {
+        /** What the residents it covers pay the city a month past what they already cost it. */
+        public double net() { return covered * (paid - costs); }
+        /** Whether it pays back: net() at least runs. */
+        public boolean paysBack() { return runs <= 0 || net() >= runs; }
+        /** net() over runs, nothing under nothing: 1 or more pays back. */
+        public double share() { return runs > 0 ? Math.max(0, net()) / runs : Double.POSITIVE_INFINITY; }
+    }
+
+    /** n of a suggestion's building, weighed for its payback at the demand its count is sized to (its ahead()). */
+    public Payback payback(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, int n) {
+        BuildingsTemplate t = s.template();
+        double runs = n * running(game, t);
+        double covered = coveredOverLife(game, m, BuildAdvice.onSite(game, m),
+                BuildAdvice.plus(new LinkedHashMap<>(), t, n), s.ahead());
+        return new Payback(runs, covered, paid(game), costs(game, m));
     }
 
     /** The last pass, a step a measure (not saved: a harness reads it the month it is made). */
@@ -729,7 +933,7 @@ public final class AutoBuilder {
     }
 
     /** A card the money or the ground could not pay for one of (0.7.101): the suggestion, why, how many it asked for, and the inbox's line for it. */
-    private record Refused(BuildAdvice.Suggestion s, Cut cut, int wanted, String line) { }
+    private record Refused(BuildAdvice.Suggestion s, Cut cut, int wanted, String line, Payback payback) { }
 
     /**
      * One measure's order, cut and placed. THE RANKING, WALKED PAST WHAT THE
@@ -737,7 +941,8 @@ public final class AutoBuilder {
      * would not pay for one of the advice's card - a Coal Power Plant past the
      * debt limit, a building no bare ground can be had for - the pass takes the
      * next building in the advice's ranking (its skip), as it takes the next
-     * past one the budget cannot run (since 0.7.73), and holds only when none
+     * past one that would not pay back (since 0.7.104; one the budget could not
+     * run from 0.7.73), and holds only when none
      * is left, in the first card's words. Until 0.7.101 it held the
      * measure on the first card, month after month, while a building the money
      * would pay for served it: on the auto-built playtest's seed 1 the advice's
@@ -762,7 +967,7 @@ public final class AutoBuilder {
                     game.getLandManager().getAvailableSqFt(), slack, skip, noPaving);
             if (s == null || s.count() < 1 || !inRemit(s.template())) {
                 if (first != null) {
-                    hold(m, first.s(), first.cut(), first.wanted(), first.line());
+                    hold(m, first.s(), first.cut(), first.wanted(), first.line(), first.payback());
                     return;
                 }
                 steps.add(new Step(m, Outcome.NOTHING, null, 0, 0, Cut.NONE, 0, 0));
@@ -777,7 +982,7 @@ public final class AutoBuilder {
             // THE BUILDERS: no more than opens inside MAX_ORDER_MONTHS.
             if (Double.isNaN(wait(game, s, 1))) {
                 hold(m, s, Cut.BUILDERS, wanted, m.label() + ": " + wanted + " " + name + " wanted; the builders have no"
-                        + " site output to build them.");
+                        + " site output to build them.", null);
                 return;
             }
             int n = wanted;
@@ -799,26 +1004,31 @@ public final class AutoBuilder {
                 }
             }
 
-            // THE BUDGET, for a staffed building: what it costs to run, within what the year's revenue leaves -
-            // and past one it cannot run, the next in the ranking (star N4-6; kept in 0.7.101, star P2-3).
-            double run = !s.paving() && staffedBuilding(t) ? Math.max(0, BuildAdvice.running(game, t, new LinkedHashMap<>())) : 0;
-            if (run > 0) {
-                // ...what is on site counted in it, this pass's orders too.
-                double room = budgetRoom(game);
-                int fits = room > 0 ? (int) Math.min(n, Math.floor(room / run)) : 0;
-                if (fits < n) {
-                    if (fits < 1) {
+            // THE PAYBACK, for a building the treasury runs that is not an essential service (0.7.104): no more of
+            // it than pays back over its life - and past one that does not, the next in the ranking (the budget's
+            // walk since 0.7.73). An essential service skips it: the debt limit, the money and the ground alone.
+            Payback weighed = null;
+            if (!s.paving() && paysBackFirst(m, t)) {
+                Payback pb = payback(game, m, s, n);
+                weighed = pb;
+                if (!pb.paysBack()) {
+                    int lo = 0, hi = n;                  // lo pays back (or is 0), hi does not
+                    while (hi - lo > 1) {
+                        int mid = lo + (hi - lo) / 2;
+                        if (payback(game, m, s, mid).paysBack()) lo = mid; else hi = mid;
+                    }
+                    if (lo < 1) {
                         if (first == null) {
-                            first = new Refused(s, Cut.BUDGET, wanted, m.label() + ": " + wanted + " " + name + " wanted;"
-                                    + String.format(" the budget cannot run one: $%,.0fk a month of staff and upkeep, against"
-                                    + " $%,.0fk a month the year's revenue leaves after what the city spends and what is on"
-                                    + " site. Raise taxes on the Policy tab.", run, Math.max(0, room)));
+                            Payback one = payback(game, m, s, 1);
+                            first = new Refused(s, Cut.PAYBACK, wanted, m.label() + ": " + wanted + " " + name
+                                    + " wanted; " + paybackWords(one), one);
                         }
                         skip.add(t);
                         continue;
                     }
-                    n = fits;
-                    cut = Cut.BUDGET;
+                    n = lo;
+                    cut = Cut.PAYBACK;
+                    weighed = payback(game, m, s, n);
                 }
             }
 
@@ -842,11 +1052,11 @@ public final class AutoBuilder {
                     if (first == null) {
                         first = new Refused(s, refused, wanted, m.label() + ": " + wanted + " " + name + " wanted; "
                                 + (one == null ? groundWords(game, t) : fromCash && within(game) ? firstWords(game, s, one)
-                                : debtWords(game, s, one)));
+                                : debtWords(game, s, one)), null);
                     }
                     // Over the limit, the toggle off, nothing is paid for: no other building in the ranking either.
                     if (refused == Cut.DEBT && !within(game)) {
-                        hold(m, first.s(), first.cut(), first.wanted(), first.line());
+                        hold(m, first.s(), first.cut(), first.wanted(), first.line(), first.payback());
                         return;
                     }
                     if (s.paving()) noPaving = true; else skip.add(t);
@@ -855,9 +1065,11 @@ public final class AutoBuilder {
                 n = lo;
                 cut = why;
                 ground = s.paving() ? Ground.NONE : groundFor(game, t, n);
+                // ...fewer than the payback weighed: what it weighs for these (fewer pay back as well, never worse).
+                if (weighed != null) weighed = payback(game, m, s, n);
             }
 
-            place(game, m, s, name, wanted, n, cut, ground, first);
+            place(game, m, s, name, wanted, n, cut, ground, first, weighed);
             return;
         }
     }
@@ -879,7 +1091,7 @@ public final class AutoBuilder {
 
     /** Places n of a suggestion, its ground bought first (0.7.77), borrowing what the spendable cash does not cover, and writes it down. */
     private void place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, int wanted, int n,
-                       Cut cut, Ground ground, Refused first) {
+                       Cut cut, Ground ground, Refused first, Payback weighed) {
         String before = reading(game, m, new LinkedHashMap<>());
         double cost = total(game, s, n);
         double landShort = s.paving() ? 0 : Math.max(0, lacks(game, s.template(), n));
@@ -910,14 +1122,14 @@ public final class AutoBuilder {
         landSpent += landCost;
         if (got.size() < ground.offers().size()) {
             if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
-            hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought.");
+            hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought.", weighed);
             return;
         }
         boolean placed = s.paving() ? game.paveRoads(n)
                 : game.buildStack(s.template(), n, false) == Game.BuildResult.SUCCESS;
         if (!placed) {
             if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
-            hold(m, s, Cut.NONE, wanted, m.label() + ": " + n + " " + name + " could not be placed.");
+            hold(m, s, Cut.NONE, wanted, m.label() + ": " + n + " " + name + " could not be placed.", weighed);
             return;
         }
         String after = reading(game, m, BuildAdvice.onSite(game, m));
@@ -928,7 +1140,7 @@ public final class AutoBuilder {
                 + DecisionLog.money(overdraft) + " overdraft, as Build's funding page does" : "")
                 + (first == null ? "" : "; the advice ranks " + first.wanted() + " " + refusedName(first.s()) + " first, "
                 + (first.cut() == Cut.GROUND ? "for which no ground could be had"
-                : first.cut() == Cut.BUDGET ? "which the budget could not run" : "which the money would not pay for")
+                : first.cut() == Cut.PAYBACK ? "which would not pay back" : "which the money would not pay for")
                 + ", so the next in its ranking");
         Entry e = new Entry(game.getMonth(), m.label(), name, n, wanted, cost, raised, s.paving(), why);
         if (!got.isEmpty()) {
@@ -942,7 +1154,8 @@ public final class AutoBuilder {
         orders++;
         buildings += n;
         spent += cost;
-        steps.add(new Step(m, Outcome.ORDERED, name, wanted, n, cut, cost, raised, landShort, List.copyOf(got), landCost));
+        steps.add(new Step(m, Outcome.ORDERED, name, wanted, n, cut, cost, raised, landShort, List.copyOf(got), landCost,
+                weighed));
         GameLog.note(String.format("Automatic building: %d %s for %s, $%,.0fk%s. %s", n, name,
                 m.label().toLowerCase(), cost, raised > 0 ? String.format(" ($%,.0fk of it on a %d-year bond)",
                         raised, Game.BUILD_BOND_YEARS) : "", why));
@@ -1101,10 +1314,10 @@ public final class AutoBuilder {
         return q == null ? Double.POSITIVE_INFINITY : q.total;
     }
 
-    private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, int wanted, String line) {
+    private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, int wanted, String line, Payback pb) {
         held.add(line);
         steps.add(new Step(m, Outcome.HELD, s.paving() ? ConstructionControl.PAVE_FROM + ", paved" : s.template().getName(),
-                wanted, 0, cut, 0, 0));
+                wanted, 0, cut, 0, 0, 0, List.of(), 0, pb));
     }
 
     /** Whether this pass has said why over the limit it builds nothing: the first such line says it whole, the rest in short (0.7.81). */
@@ -1152,6 +1365,24 @@ public final class AutoBuilder {
                 + ").";
     }
 
+    /**
+     * Why one would not pay back (0.7.104), with its figure: what each of
+     * the residents it would cover pays the city a month and what each
+     * already costs it, on average over its life, and what that leaves
+     * against its running - nothing, or a share of it. One line of the
+     * auto-build card's tooltip: at most 1,308 of the 1,349 px a tooltip
+     * line has at the 1,389 window with the widest figures the money words
+     * make (runs/fixP2b-notes.md).
+     */
+    static String paybackWords(Payback p) {
+        String leaves = String.format("it would not pay back: the %,.0f residents it would cover over its %d years pay the city ",
+                p.covered(), BuildAdvice.LIFE_YEARS) + money(p.paid()) + " a month each and cost it " + money(p.costs())
+                + " each, which leaves ";
+        if (!(p.paid() > p.costs())) return leaves + "nothing for the " + money(p.runs()) + " a month it runs at.";
+        return leaves + money(p.net()) + " a month, " + String.format("%.0f%%", 100 * p.share()) + " of the "
+                + money(p.runs()) + " it runs at.";
+    }
+
     /** Why nothing the city could build moves a measure short of its margin: water past the fresh water it owns with no sea, or no building it could staff. */
     static String nothingWords(Game game, BuildAdvice.Measure m) {
         if (m.kind() == BuildAdvice.Kind.WATER
@@ -1169,7 +1400,7 @@ public final class AutoBuilder {
         switch (cut) {
             case BUILDERS: return " (" + wanted + " wanted; " + n + " open inside a year)";
             case GROUND:   return " (" + wanted + " wanted; the ground to be had for " + n + ")";
-            case BUDGET:   return " (" + wanted + " wanted; the budget runs " + n + ")";
+            case PAYBACK:  return " (" + wanted + " wanted; " + n + " pay back)";
             case DEBT:    return " (" + wanted + " wanted; " + n + " within the debt limit)";
             case CASH:     return " (" + wanted + " wanted; " + n + " the cash pays for, over the debt limit)";
             default:       return "";
@@ -1209,7 +1440,8 @@ public final class AutoBuilder {
         public double spent;
         public double borrowed;
         public int bonds;
-        public List<Double> recent;
+        /** monthPaid() at the last PAID_MONTHS passes (0.7.104): a save from before has none - its "recent", the budget's revenue, is not read - and reads the month's until a pass records one. */
+        public List<Double> paid;
         /** The ground bought for its orders (0.7.77): a save from before has none. */
         public double landSqFt;
         public double landSpent;
@@ -1230,7 +1462,7 @@ public final class AutoBuilder {
         s.spent = spent;
         s.borrowed = borrowed;
         s.bonds = bonds;
-        s.recent = new ArrayList<>(recent);
+        s.paid = new ArrayList<>(paidMonths);
         s.landSqFt = landSqFt;
         s.landSpent = landSpent;
         s.landOffers = landOffers;
@@ -1243,7 +1475,7 @@ public final class AutoBuilder {
         held.clear();
         bought.clear();
         steps.clear();
-        recent.clear();
+        paidMonths.clear();
         if (s == null) {
             on = false;
             slack = DEFAULT_SLACK;
@@ -1271,7 +1503,7 @@ public final class AutoBuilder {
         landSqFt = s.landSqFt;
         landSpent = s.landSpent;
         landOffers = s.landOffers;
-        if (s.recent != null) for (Double r : s.recent) if (r != null) recent.add(r);
-        while (recent.size() > REVENUE_MONTHS) recent.remove(0);
+        if (s.paid != null) for (Double r : s.paid) if (r != null) paidMonths.add(r);
+        while (paidMonths.size() > PAID_MONTHS) paidMonths.remove(0);
     }
 }

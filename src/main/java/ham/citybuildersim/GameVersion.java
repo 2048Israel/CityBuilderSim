@@ -4784,8 +4784,37 @@ public final class GameVersion {
      *     with each road's own repairs as well, from month 37, and it ends at
      *     617,942: 230 gravel, 291 paved and 161 highways standing where
      *     0.7.102 had 683, 56 and none. runs/fixP4-notes.md, section 4.
+     *
+     * 0.7.104 (2026-10-10) - A SMARTER BUDGET FOR AUTOMATIC BUILDING. Batch
+     * P2b (Jerus's decision of 2026-10-10 on the budget P2 kept: "don't keep
+     * it as is, and don't remove it. Make it smarter"; runs/brief-batchP2b.md,
+     * runs/fixP2b-notes.md). No save format change (36): an older save's
+     * auto-build state reads the month's figure until a pass records a year.
+     *   - ESSENTIAL SERVICES SKIP THE BUDGET (AutoBuilder.essential()): power,
+     *     water, care of every kind and death care are held by the debt limit,
+     *     the money and the ground alone; a deficit to run them is the city's
+     *     to carry.
+     *   - EVERYTHING ELSE THE TREASURY RUNS PAYS BACK (AutoBuilder, THE
+     *     PAYBACK): a school, a police station, a prison or a transit line is
+     *     ordered only as far as the residents it covers over its life - each
+     *     year's share of its measure's need it takes, of the city's people on
+     *     its own trend, as the build advice reads what an order serves - pay
+     *     the city, past what each already costs it, at least its running; a
+     *     month on average over BUILD_BOND_YEARS at the advice's real rate.
+     *     What a resident pays is the city's recurring revenue a resident,
+     *     what it costs its running spend a resident (the arrears paid down
+     *     and the reserve's crude left out of both, as land is). Until now
+     *     every staffed building was held to what the year's revenue left.
+     *   - Words: the auto-build (i), the inbox's hold with the payback's
+     *     figure, an order's why. AutoBuildCheck's budget premises are the
+     *     payback's (runs/fixP2b-notes.md, section 3).
+     *   - The playtest is 0.7.102's byte for byte (its player builds its own
+     *     works). The auto-built one (-Dplaytest.autobuild), seeds 0 to 7:
+     *     PEOPLE_AT_END; four villages stand at 2,000 to 3,600 people for some
+     *     400 months while care, essential now, runs them into deficit
+     *     (runs/fixP2b-notes.md, section 4).
      */
-    public static final String VERSION = "0.7.103";
+    public static final String VERSION = "0.7.104";
 
     /**
      * The save shape.
