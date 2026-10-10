@@ -3728,7 +3728,8 @@ public final class GameVersion {
      *     inside a tile the grid's streets JUNCTION_APART (8 plots, eight
      *     houses) apart, lanes off them in T's, then the fill - all of it
      *     before the small buildings, and the large ones keep the network
-     *     the room its roads need (keepsNetwork()). Jerus's city x 1: 19,995
+     *     the room its roads need (the painter's keepsNetwork test, gone with
+     *     the deal at 0.7.88). Jerus's city x 1: 19,995
      *     road plots in one piece, 135 + junctions, none nearer than 8.
      *   - HIGHWAYS one straight run a district from its hub, turning only
      *     at the sea, the city's edge or a mine, crossing once at the hub.

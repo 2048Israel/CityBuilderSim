@@ -559,7 +559,7 @@ public final class AutoBuilder {
         ORDERED,
         /** Works for it are on site and the builders could open no more inside a year. */
         WAITING,
-        /** The builders have no site output, or the city has no ground for one, or the budget cannot run one, or the limit would not pay for one. */
+        /** The builders have no site output, or no bare ground is to be had for one (since 0.7.77 it buys the rest), or the budget cannot run one, or the limit - over it, the cash - would not pay for one. */
         HELD,
         /** No building the city could staff moves it (the advice offers nothing). */
         NOTHING
