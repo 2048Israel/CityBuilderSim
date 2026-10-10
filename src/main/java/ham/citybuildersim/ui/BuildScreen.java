@@ -2392,8 +2392,8 @@ final class BuildScreen {
             + "on top - a first school, station or prison where there is none, from the cash alone. It pays from the cash "
             + "over a month's tax, then borrows on Build's 20-year bond while all the city owes stays under the limit, a "
             + "share of what it produced in the last year; over it, it builds nothing, or only from cash. It buys only its "
-            + "orders' own land, orders what the builders open in a year, and takes the next choice where the money will "
-            + "not pay for the first.";
+            + "orders' own land, orders what the builders open in a year and the budget can run, and takes the next "
+            + "choice where the money or the budget will not run to the first.";
 
     /** The heading's quiet words: on or off. */
     static String autoHint(AutoBuilder ab) {
