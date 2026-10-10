@@ -988,9 +988,11 @@ public final class Refining extends Sector {
        A CRUDE UNIT RUNS A BARREL ONLY WHILE THE BARREL PAYS: while its
        products, at what they would actually fetch, beat its crude and its
        haulage (runRule(), pure). What they fetch (RunPrices): the city's
-       own take of petrol and diesel at the import price - a litre made
-       here is a litre the city does not import, and the local price sits
-       at the ceiling while it imports - and everything past that take, and
+       own take of petrol and diesel at the import price - the net import
+       price, landed and hauled, what the city pays for each litre a
+       refinery here does not make (★ the study's price and SpreadPlanner.
+       cityValue()'s; the band's ceiling, the most a seller here is paid, is
+       the railway's charge less) - and everything past that take, and
        every other product, at the net export price; lubricants past what
        the world and the city take, at nothing (THE WORLD'S DEMAND FOR
        LUBRICANTS). Its crude: the wells' at the local price while they
@@ -1046,7 +1048,7 @@ public final class Refining extends Sector {
     /**
      * What a barrel's products fetch, and what its crude costs (THE RUN).
      *
-     * @param home        by Good's ordinal: a litre of the city's own take of petrol and diesel - the import price
+     * @param home        by Good's ordinal: a litre of the city's own take of petrol and diesel - the net import price
      * @param away        by Good's ordinal: a litre past it, and of every other product - the net export price (0 for none)
      * @param take        by Good's ordinal: litres a month the city takes of petrol and diesel; nothing for the rest
      * @param lubricantsHome litres a month of lubricants the city's own buyers take (the world's share on top)
@@ -1142,7 +1144,7 @@ public final class Refining extends Sector {
         return v - crudeCostAt(at, p) - p.perTonne();
     }
 
-    /** This month's prices for the run (THE RUN), read after the clearing: petrol and diesel's import price and the city's take of each on the trend (BusinessInvestment.forecast()), every product's net export price, the lubricants the city takes, the wells' crude and crude's two prices, and the vans' diesel a tonne of nameplate. */
+    /** This month's prices for the run (THE RUN), read after the clearing: petrol and diesel's net import price and the city's take of each on the trend (BusinessInvestment.forecast()), every product's net export price, the lubricants the city takes, the wells' crude and crude's two prices, and the vans' diesel a tonne of nameplate. */
     public RunPrices runPrices() {
         int n = Good.values().length;
         double[] home = new double[n], away = new double[n], take = new double[n];
@@ -1154,7 +1156,7 @@ public final class Refining extends Sector {
             double out = m.netExportPrice();
             away[g.ordinal()] = Double.isFinite(out) ? Math.max(0, out) : 0;
             if (g == Good.PETROL || g == Good.DIESEL) {
-                double in = m.importPrice();
+                double in = m.netImportPrice();
                 home[g.ordinal()] = Double.isFinite(in) ? in : Double.NaN;
                 double t = plans == null ? 0 : plans.forecast(this, m);
                 take[g.ordinal()] = Double.isFinite(t) ? Math.max(0, t) : 0;
@@ -1339,7 +1341,8 @@ public final class Refining extends Sector {
      * Each product at the city's own price at the margin (SpreadPlanner.
      * cityValue()), by Good's ordinal: what the planner's spreads are struck
      * at. Since 0.7.105 (R1, THE PLANNER'S PRICES AT THE MARGIN, below)
-     * petrol and diesel at the import price while the city imports any on
+     * petrol and diesel at the net import price, landed and hauled, while
+     * the city imports any on
      * the trend past what its refinery makes and has coming (importsOf()),
      * and at the net export price once it does not: the market's own tally
      * misses the drivers' and the railway's draws (★ O5-1), so it cannot say.
@@ -1350,7 +1353,7 @@ public final class Refining extends Sector {
         for (Good g : BOUGHT_HERE) {
             GoodsMarket m = markets.get(g);
             if (m == null) continue;
-            double value = importsOf(g) > 0 ? m.importPrice() : m.netExportPrice();
+            double value = importsOf(g) > 0 ? m.netImportPrice() : m.netExportPrice();
             v[g.ordinal()] = Double.isFinite(value) ? value : 0;
         }
         return v;

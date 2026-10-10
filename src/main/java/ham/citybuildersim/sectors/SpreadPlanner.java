@@ -33,9 +33,9 @@ import java.util.Map;
  * the same rule, so the rule is here, shared, and not inside Refining.
  *
  * THE PIECES, each one a client's to use:
- *   1. THE CITY'S OWN PRICE (cityValue()): what one more unit of a good
- *      fetches here - the import price while the city imports it, the export
- *      price it nets otherwise (at the margin since 0.7.105).
+ *   1. THE CITY'S OWN PRICE (cityValue()): what one more unit of a good is
+ *      worth here - the landed import price while the city imports it, the
+ *      export price it nets otherwise (at the margin since 0.7.105).
  *   2. A CANDIDATE (Candidate): a building, what one would earn a month once
  *      running - its spread on its feed at the rate the sector runs, less
  *      its wages, power and water and its repairs and property tax - and
@@ -76,27 +76,26 @@ public final class SpreadPlanner {
     /* ----- 1. the city's own price (spec-oil 2.4, cityValue) ----- */
 
     /**
-     * What one more unit of a good fetches here (pure): the import price - the
-     * band's ceiling, where the local price sits while the city imports - if
-     * its market imported any this month, else the net export price, where a
-     * unit nobody here takes goes; a good the world will not buy, its local
-     * price. Read at the month's end, after the clearing, as the planner is:
-     * the market's tally of the clearing and of the draws since (the
-     * railway's diesel). ★ O5-1: a draw before the clearing - the drivers'
-     * petrol, at 6d - is not in it, so a client that knows what the city
-     * imports reads that instead (Refining.cityValues()). Nothing for a good
-     * with no market or a price that is not a number.
+     * What one more unit of a good is worth to the city (pure): the net import
+     * price (landed and hauled) if its market imported any this month - what
+     * the city would pay for the unit made here instead - else the net export
+     * price, where a unit nobody here takes goes; a good the world will not
+     * buy, its local price. Read at the month's end, after the clearing, as
+     * the planner is: the market's tally of the clearing and of the draws
+     * since (the railway's diesel). ★ O5-1: a draw before the clearing - the
+     * drivers' petrol, at 6d - is not in it, so a client that knows what the
+     * city imports reads that instead (Refining.cityValues()). Nothing for a
+     * good with no market or a price that is not a number.
      *
      * AT THE MARGIN SINCE 0.7.105 (batch P6, Jerus's R1): until then a good
-     * nobody here traded was worth its local price, the band's middle, and
-     * one the city imported its net import price, landed and hauled - what
-     * the city would save, not what the seller is paid - so the refiners'
-     * planner saw a topping barrel by rail earn 2.9% of its crude where a
-     * running one earned -1.7% to -3.9%.
+     * nobody here traded, or that the city exported none of, was worth its
+     * local price - the band's middle - so the refiners' planner saw a
+     * topping barrel by rail earn 2.9% of its crude where a running one
+     * earned -1.7% to -3.9%.
      */
     public static double cityValue(GoodsMarket m) {
         if (m == null) return 0;
-        double v = m.getImported() > 0 ? m.importPrice() : m.netExportPrice();
+        double v = m.getImported() > 0 ? m.netImportPrice() : m.netExportPrice();
         if (!Double.isFinite(v)) v = m.getLocalPrice();
         return Double.isFinite(v) ? v : 0;
     }

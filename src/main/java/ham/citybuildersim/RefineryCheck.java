@@ -58,8 +58,9 @@ import java.io.PrintStream;
  *   THE SPREAD PLANNER (0.7.82):
  *
  *   9. THE CITY'S OWN PRICE: a good is worth its net import price while its
- *      market imported any this month, its net export price while it
- *      exported any, its local price otherwise (SpreadPlanner.cityValue()).
+ *      market imported any this month, its net export price otherwise - its
+ *      local price until 0.7.105 when it exported none (R1) - and a good the
+ *      world will not buy its local price (SpreadPlanner.cityValue()).
  *
  *  10. A UNIT'S EARNINGS ARE ITS SPREAD, to the bit: at the values, on the
  *      feed it would find spare, at most its own, at the rate, less its
@@ -90,7 +91,9 @@ import java.io.PrintStream;
  *      not the crude unit while it idles - the spare-capacity rule's measure
  *      is its feed and the rule sells it; the months cross a save.
  *
- *  14. THE INVESTORS ORDER A UNIT: a town with an Oil Refinery and nothing
+ *  14. THE INVESTORS ORDER A UNIT: a town with an Oil Refinery on its own
+ *      wells' crude (since 0.7.105: on imported crude by lorry its barrel
+ *      loses, the run stops, and no unit is ordered behind it) and nothing
  *      held - since 0.7.103 the cost of any unit in the refiners' till, the
  *      lube plant it ordered until then capped out (15) - orders the
  *      planner's best, a conversion unit; Game.consider()
@@ -109,6 +112,38 @@ import java.io.PrintStream;
  *      and in a town with an Oil Refinery and a Small Lube Plant standing
  *      the ship's line takes no more than the world's share of the month's
  *      crude, the rest idled, the audit closing.
+ *
+ *   THE RUN, AND THE PLANNER AT THE MARGIN (0.7.105, batch P6; Jerus's A2 (b),
+ *   R1 and R3, on the project's why-the-refinery-loses.md):
+ *
+ *  16. A CRUDE UNIT RUNS A BARREL ONLY WHILE IT PAYS (Refining.runRule()):
+ *      the study's margins from the model's own prices and freight - a
+ *      topping barrel of medium crude, all exported, by lorry -10.0%, by rail
+ *      at .60 -4.7%, at the floor -0.7%, by tanker +2.3% of crude's world
+ *      middle, and through conversion units by tanker +9.3% - each to its
+ *      tenth; a barrel's margin to the bit; none run by lorry or rail, the
+ *      whole by tanker; at the floor the barrels the city's petrol and diesel
+ *      take, at the net import price (+1.4%), and none past them (-0.7%); at
+ *      .60 not even those (-1.7%); the wells' crude, and not the imported;
+ *      no lubricants past the world's and the city's; the pace.
+ *
+ *  17. THE RUN IN A TOWN: an Oil Refinery on imported crude by lorry, the
+ *      refiners not held: the month's end moves the run RUN_PACE a month to
+ *      nothing; the rate is the plant's times it, the crude bought and the
+ *      products made at it, the audit closing; a held town's stays; the run
+ *      crosses a save; the page and the picture say why; and once it has
+ *      stood under nameplate IDLE_MONTHS months the spare-capacity rule
+ *      measures it, and sells the crude unit when a whole one is spare.
+ *
+ *  18. THE PLANNER'S PRICES AT THE MARGIN (R1): an order is weighed at the
+ *      run it would take - behind a run that stops it earns nothing, by
+ *      tanker its spread as in the prototype's frame, to the bit - and petrol
+ *      past what the city imports at the net export price, to the bit.
+ *
+ *  19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (R3): the city's own
+ *      Crude Unit on site does not hold the refiners' planner, which weighs
+ *      its units and no other crude unit; a conversion unit on site does;
+ *      and the spare-capacity rule still reads a site as building.
  */
 public class RefineryCheck {
 
@@ -399,6 +434,12 @@ public class RefineryCheck {
         theInvestorsOrderAUnit();
         lubricantsCapped(catalogue);
 
+        /* ============================ 16-19. THE RUN, THE PLANNER AT THE MARGIN, ONE ORDER (0.7.105) ============================ */
+        theRun(catalogue);
+        theRunInATown();
+        thePlannerAtTheMargin(catalogue);
+        oneOrderInFlight();
+
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -651,9 +692,18 @@ public class RefineryCheck {
         report("...one it exported, its net export price", SpreadPlanner.cityValue(sold) == sold.netExportPrice()
                         && sold.netExportPrice() < sold.exportPrice(),
                 String.format("fuel oil %.7f against %.7f", SpreadPlanner.cityValue(sold), sold.exportPrice()));
-        report("...and one it neither imported nor exported, its local price", SpreadPlanner.cityValue(neither)
-                        == neither.getLocalPrice() && neither.getImported() == 0 && neither.getExported() == 0,
-                String.format("jet fuel %.7f", SpreadPlanner.cityValue(neither)));
+        report("...and one it neither imported nor exported, its net export price - where its every unit goes (0.7.105, R1: at"
+                        + " the margin; its local price, the band's middle, until then)", SpreadPlanner.cityValue(neither)
+                        == neither.netExportPrice() && neither.getImported() == 0 && neither.getExported() == 0
+                        && neither.netExportPrice() < neither.getLocalPrice(),
+                String.format("jet fuel %.7f against %.7f here", SpreadPlanner.cityValue(neither), neither.getLocalPrice()));
+        GoodsMarket kept = new GoodsMarket(Good.VANS);
+        kept.setExchangeRate(1.37);
+        kept.startMonth();
+        kept.strike(10, 0, 4);
+        report("...and one the world will not buy, its local price", !Good.VANS.exportable()
+                        && SpreadPlanner.cityValue(kept) == kept.getLocalPrice() && kept.getLocalPrice() > 0,
+                String.format("vans %.4f", SpreadPlanner.cityValue(kept)));
     }
 
     static void earnings(BuildingManager catalogue) {
@@ -906,6 +956,22 @@ public class RefineryCheck {
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingManager b = g.getBuildingManager();
         /*
+         * ...ON THE WELLS' CRUDE (0.7.105, batch P6): until then the town's
+         * Oil Refinery ran on imported crude by lorry and lost on every
+         * barrel; since the run rule (Refining, THE RUN) such a refinery
+         * stands idle, and the planner weighs a unit at the run it would
+         * take with it standing - none, so nothing is ordered (section 16).
+         * A unit is ordered behind crude units whose barrels pay: so the town
+         * lifts its own crude, past what the refinery runs, and its barrel
+         * pays at the wells' price (OilCheck 4's thirty wells).
+         */
+        BuildingsTemplate well = b.getTemplateByName("Oil Well");
+        quietly(() -> {
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + TOWN_WELLS * well.getLandSqFt());
+            g.getLandManager().restoreSites(Resource.OIL, TOWN_WELLS, 50_000_000);
+            g.buildStack(well, TOWN_WELLS, true);
+        });
+        /*
          * Watched where Game.consider() weighs the refiners' order, before it
          * builds: the planner's best on the city as it then stands, the
          * estimate consider() read, and the same plan with no ground free
@@ -919,9 +985,16 @@ public class RefineryCheck {
                 java.util.List<SpreadPlanner.Candidate> all = Refining.appraise(o, b.getTemplatesBySector(r.key()),
                         r.planner().city(r, plans, g));
                 boolean values = true;
-                for (Good p : new Good[] { Good.PETROL, Good.DIESEL, Good.LPG, Good.NAPHTHA, Good.JET, Good.FUEL_OIL, Good.LUBRICANTS }) {
+                for (Good p : new Good[] { Good.LPG, Good.NAPHTHA, Good.JET, Good.FUEL_OIL, Good.LUBRICANTS }) {
                     values &= o.values()[p.ordinal()] == SpreadPlanner.cityValue(g.getMarkets().get(p));
                 }
+                // ...petrol and diesel at the net import price while the city imports any on the trend, else the net export price (R1).
+                for (Good p : Refining.BOUGHT_HERE) {
+                    GoodsMarket m = g.getMarkets().get(p);
+                    values &= o.values()[p.ordinal()] == (r.importsOf(p) > 0 ? m.netImportPrice() : m.netExportPrice())
+                            && o.imports()[p.ordinal()] == r.importsOf(p) && o.away()[p.ordinal()] == m.netExportPrice();
+                }
+                values &= o.run() != null;
                 plans.setLandAvailable(0, g.getLandManager().getPricePerSqFt());
                 BusinessInvestment.Decision noGround = r.plan(plans, g);
                 plans.setLandAvailable(g.getLandManager().getAvailableSqFt(), g.getLandManager().getPricePerSqFt());
@@ -956,10 +1029,13 @@ public class RefineryCheck {
         g.watchOrders(null);
         BusinessInvestment.Decision d = (BusinessInvestment.Decision) seen[0];
         SpreadPlanner.Candidate best = (SpreadPlanner.Candidate) seen[2];
-        report("fixture: an Oil Refinery standing on imported crude in a town of 600 houses, the refiners not held and the cost of"
-                        + " any unit in their till (0.7.103), orders within two years", d != null,
+        report("fixture: an Oil Refinery standing on its wells' crude in a town of 600 houses (0.7.105; on imported crude until"
+                        + " then), the refiners not held and the cost of any unit in their till (0.7.103), orders within two years",
+                d != null && r.runShare() == 1 && r.inputRow(Good.CRUDE) != null && r.inputRow(Good.CRUDE).imported == 0,
                 d == null ? "no order" : String.format("m%d: %s", g.getMonth(), d.reason));
-        assertTrue("the planner's values are each product at the city's own price, to the bit", d != null && (Boolean) seen[3]);
+        assertTrue("the planner's values are each product at the city's own price at the margin, petrol and diesel at the net import"
+                + " price only while the city imports them (0.7.105, R1), and the run's prices with them, to the bit",
+                d != null && (Boolean) seen[3]);
         report("the order is the planner's best, a conversion unit, one of it", d != null && best != null && d.template == best.template()
                         && d.quantity == 1 && Refining.isConversionUnit(best.template()),
                 best == null ? "none" : String.format("%s, %,.1fk a month on %,.0fk (%.3f%% a month)", best.template().getName(),
@@ -1049,6 +1125,336 @@ public class RefineryCheck {
                 within && shipped <= Refining.lubricantsWorldTakes(ran) * (1 + 1e-12),
                 String.format("shipped %.2f%% of the crude, idled %,.0f L", 100 * shipped / ran, idled));
         report("...and the audit closes every month", worst < 1e-10, String.format("worst %.2e", worst));
+    }
+
+    /* ============================ 16. THE RUN (0.7.105) ============================ */
+
+    /** Wells the town of section 14 stands under its Oil Refinery (OilCheck 4's thirty): more crude than it runs, its barrel paying at their price. */
+    static final int TOWN_WELLS = 30;
+
+    /** The study's margins (the project's why-the-refinery-loses.md, on 0.7.99), a share of crude's world middle: a topping barrel of medium crude on imported crude, all exported, by lorry, by rail at .60 and at the floor, and by tanker; and by tanker through two Cracking Units, two Alkylation Units, two Reformers and a Hydrocracker behind one Crude Unit. */
+    static final double STUDY_LORRY = -.100, STUDY_RAIL = -.047, STUDY_FLOOR = -.007, STUDY_TANKER = .023, STUDY_CONVERTED = .093;
+
+    /** ...and the barrels the city's own petrol and diesel take, at the net import price: at the floor, and at .60. */
+    static final double STUDY_HOME_FLOOR = .014, STUDY_HOME_RAIL = -.017;
+
+    /** The study's railway above its floor: a quote of .60 of a lorry's rate. */
+    static final double STUDY_QUOTE = .60;
+
+    /** The study's figures are to a tenth of a point, and its tanker's +2.3% is +2.25% here: within six hundredths. */
+    static final double STUDY_ROUNDING = .0006;
+
+    /** Jerus's campus: five Crude Units and an Oil Refinery - the study's 500,000 b/d topping plant. */
+    static final double HIS_CRUDE = 5 * 415_000 + 8_300;
+
+    /** The nine products, as Refining lists them. */
+    static final Good[] NINE = { Good.PETROL, Good.DIESEL, Good.LPG, Good.NAPHTHA, Good.JET, Good.FUEL_OIL, Good.LUBRICANTS,
+            Good.BITUMEN, Good.COKE };
+
+    /** How the oil moves in a fixture: by lorry, all by rail at a quote, or by sea. */
+    enum Way { LORRY, RAIL, SEA }
+
+    /** A good's market as it moves one way (exchange 1): the band's share of a lorry's freight and the railway's charge, as sectors.Rail.haul() sets them (Ports.factor()). */
+    static GoodsMarket moved(Good g, Way way, double quote) {
+        GoodsMarket m = new GoodsMarket(g);
+        m.setExchangeRate(1);
+        m.setFreightFactor(way == Way.LORRY ? 1 : way == Way.RAIL ? Ports.factor(1, 0, 0)
+                : Ports.factor(0, 1, Ports.seaFreightShareOf(g)));
+        m.setRailCharge(way == Way.RAIL ? quote : 0);
+        return m;
+    }
+
+    /** The run's prices, every good moved one way: petrol and diesel's `petrol` and `diesel` litres at the net import price, the rest of every product at its net export price, the wells' `wells` tonnes at crude's export price there and the rest imported at its net import price; nothing else a tonne. */
+    static Refining.RunPrices movedPrices(Way way, double quote, double petrol, double diesel, double lubricants, double wells) {
+        int n = Good.values().length;
+        double[] home = new double[n], away = new double[n], take = new double[n];
+        java.util.Arrays.fill(home, Double.NaN);
+        for (Good g : NINE) {
+            GoodsMarket m = moved(g, way, quote);
+            away[g.ordinal()] = m.netExportPrice();
+            if (g == Good.PETROL || g == Good.DIESEL) home[g.ordinal()] = m.netImportPrice();
+        }
+        take[Good.PETROL.ordinal()] = petrol;
+        take[Good.DIESEL.ordinal()] = diesel;
+        GoodsMarket crude = moved(Good.CRUDE, way, quote);
+        return new Refining.RunPrices(home, away, take, lubricants, wells, crude.exportPrice(), crude.netImportPrice(), 0);
+    }
+
+    /** Crude's world middle: what the study's margins are a share of. */
+    static double crudeMiddle() { return (Good.CRUDE.worldImportPrice() + Good.CRUDE.worldExportPrice()) / 2; }
+
+    /** A verdict's barrel - `share`, a share of what its crude cost - as a share of crude's world middle. */
+    static double ofMiddle(double share, double crudeCost) { return share * crudeCost / crudeMiddle(); }
+
+    static void theRun(BuildingManager catalogue) {
+        out.println("\n--- 16. the run: a crude unit runs a barrel only while it pays, at what its products fetch (0.7.105) ---");
+        double[] none = new double[Kind.values().length];
+        RefineryFlow.Flow topping = RefineryFlow.solve(none, HIS_CRUDE, Refining.MEDIUM_MIX, worldMid());
+        double crudeImport = moved(Good.CRUDE, Way.LORRY, 0).netImportPrice();
+        Refining.RunVerdict lorry = Refining.runRule(topping, movedPrices(Way.LORRY, 0, 0, 0, 0, 0)),
+                rail = Refining.runRule(topping, movedPrices(Way.RAIL, STUDY_QUOTE, 0, 0, 0, 0)),
+                floor = Refining.runRule(topping, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR, 0, 0, 0, 0)),
+                sea = Refining.runRule(topping, movedPrices(Way.SEA, 0, 0, 0, 0, 0));
+        double mLorry = ofMiddle(lorry.first(), crudeImport),
+                mRail = ofMiddle(rail.first(), moved(Good.CRUDE, Way.RAIL, STUDY_QUOTE).netImportPrice()),
+                mFloor = ofMiddle(floor.first(), moved(Good.CRUDE, Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR).netImportPrice()),
+                mSea = ofMiddle(sea.first(), moved(Good.CRUDE, Way.SEA, 0).netImportPrice());
+        report("THE STUDY'S MARGINS, from the model's own prices and freight: a topping barrel of medium crude on imported crude,"
+                        + " all exported - by lorry -10.0%, by rail at .60 -4.7%, at the floor -0.7%, by tanker +2.3% of crude's"
+                        + " world middle, each to the study's tenth of a point",
+                Math.abs(mLorry - STUDY_LORRY) <= STUDY_ROUNDING && Math.abs(mRail - STUDY_RAIL) <= STUDY_ROUNDING
+                        && Math.abs(mFloor - STUDY_FLOOR) <= STUDY_ROUNDING && Math.abs(mSea - STUDY_TANKER) <= STUDY_ROUNDING,
+                String.format("%+.2f%%, %+.2f%%, %+.2f%%, %+.2f%%", 100 * mLorry, 100 * mRail, 100 * mFloor, 100 * mSea));
+        double hand = -crudeImport;
+        Refining.RunPrices lp = movedPrices(Way.LORRY, 0, 0, 0, 0, 0);
+        for (Good g : NINE) hand += topping.of(g) / HIS_CRUDE * lp.away()[g.ordinal()];
+        assertTrue("...a barrel's margin is its products a tonne at what they fetch less its crude, to the bit",
+                Math.abs(lorry.first() * crudeImport - hand) <= 1e-12 * crudeImport);
+        assertTrue("THE RUN: none of it by lorry or by rail at either quote - the first barrel loses - and the whole of it by"
+                        + " tanker, every barrel paying",
+                lorry.share() == 0 && rail.share() == 0 && floor.share() == 0 && lorry.stop() == Refining.RunStop.FIRST
+                        && rail.stop() == Refining.RunStop.FIRST && floor.stop() == Refining.RunStop.FIRST
+                        && sea.share() == 1 && sea.stop() == Refining.RunStop.NAMEPLATE && sea.last() > 0);
+
+        // ...through his conversion units, by tanker.
+        double[] his = new double[Kind.values().length];
+        his[Kind.CRACKER.ordinal()] = 2 * catalogue.getTemplateByName("Cracking Unit").feedPerMonth();
+        his[Kind.ALKYLATION.ordinal()] = 2 * catalogue.getTemplateByName("Alkylation Unit").feedPerMonth();
+        his[Kind.REFORMER.ordinal()] = 2 * catalogue.getTemplateByName("Reformer").feedPerMonth();
+        his[Kind.HYDROCRACKER.ordinal()] = catalogue.getTemplateByName("Hydrocracker").feedPerMonth();
+        Refining.RunPrices sp = movedPrices(Way.SEA, 0, 0, 0, 0, 0);
+        RefineryFlow.Flow converted = RefineryFlow.solve(his, HIS_CRUDE, Refining.MEDIUM_MIX, sp.away()),
+                behindOne = RefineryFlow.solve(his, catalogue.getTemplateByName("Crude Unit").uses(Good.CRUDE), Refining.MEDIUM_MIX, sp.away());
+        Refining.RunVerdict conv = Refining.runRule(converted, sp), one = Refining.runRule(behindOne, sp);
+        double seaCrude = moved(Good.CRUDE, Way.SEA, 0).netImportPrice();
+        double mConv = ofMiddle(conv.first(), seaCrude), mOne = ofMiddle(one.first(), seaCrude);
+        report("...through conversion units (two Cracking Units, two Alkylation Units, two Reformers, a Hydrocracker) by tanker,"
+                        + " behind one Crude Unit +9.3% (the study's) and behind Jerus's 2,083,300 t less, each run whole",
+                Math.abs(mOne - STUDY_CONVERTED) <= STUDY_ROUNDING && mConv > mSea && mOne > mConv && conv.share() == 1 && one.share() == 1,
+                String.format("%+.2f%% and %+.2f%% of crude's world middle", 100 * mOne, 100 * mConv));
+
+        // THE HOME MARKET: the city takes a third of the run's petrol and two thirds of its diesel; at .60 none pays.
+        double third = HIS_CRUDE / 3;
+        double petrolTake = topping.of(Good.PETROL) / HIS_CRUDE * third, dieselTake = topping.of(Good.DIESEL) / HIS_CRUDE * third;
+        Refining.RunVerdict home = Refining.runRule(topping, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR,
+                petrolTake, 2 * dieselTake, 0, 0));
+        double floorCrude = moved(Good.CRUDE, Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR).netImportPrice();
+        double mHome = ofMiddle(home.first(), floorCrude);
+        report("THE HOME MARKET AT THE FLOOR: the barrels whose petrol and diesel the city takes, at the net import price, pay"
+                        + " (+1.4%, the study's); the run takes them, and the barrels past the city's diesel - at the export"
+                        + " price - it does not (-0.7%)",
+                Math.abs(mHome - STUDY_HOME_FLOOR) <= STUDY_ROUNDING && home.stop() == Refining.RunStop.DIESEL
+                        && Math.abs(home.share() * HIS_CRUDE - 2 * third) <= 1e-9 * HIS_CRUDE
+                        && home.last() > 0 && Math.abs(home.next() - floor.first()) <= 1e-12,
+                String.format("%+.2f%% at home; runs %.4f of nameplate, stops past the diesel at %+.2f%%", 100 * mHome,
+                        home.share(), 100 * ofMiddle(home.next(), floorCrude)));
+        Refining.RunVerdict homeRail = Refining.runRule(topping, movedPrices(Way.RAIL, STUDY_QUOTE, petrolTake, 2 * dieselTake, 0, 0));
+        double mHomeRail = ofMiddle(homeRail.first(), moved(Good.CRUDE, Way.RAIL, STUDY_QUOTE).netImportPrice());
+        report("...at .60 even the barrels that replace the city's imports lose (-1.7%, the study's): it runs none",
+                Math.abs(mHomeRail - STUDY_HOME_RAIL) <= STUDY_ROUNDING && homeRail.share() == 0
+                        && homeRail.stop() == Refining.RunStop.FIRST,
+                String.format("%+.2f%%", 100 * mHomeRail));
+
+        // THE WELLS: their crude at its export price there, the rest imported.
+        double wells = HIS_CRUDE / 4;
+        Refining.RunVerdict own = Refining.runRule(topping, movedPrices(Way.RAIL, STUDY_QUOTE, 0, 0, 0, wells));
+        report("THE WELLS' CRUDE: at its export price the barrel pays where an imported one does not; the run stops where the"
+                        + " wells' crude runs out", own.stop() == Refining.RunStop.WELLS && Math.abs(own.share() - wells / HIS_CRUDE) <= 1e-12
+                        && own.last() > 0 && own.next() < 0,
+                String.format("runs %.4f; the wells' barrel %+.2f%%, an imported one %+.2f%% of its crude", own.share(),
+                        100 * own.last(), 100 * own.next()));
+
+        // THE WORLD'S LUBRICANTS: an Oil Refinery's gas oil through a Small Lube Plant, the city taking half the run's past the world's share.
+        double[] lube = only(Kind.LUBE, catalogue.getTemplateByName("Small Lube Plant").feedPerMonth());
+        RefineryFlow.Flow lf = RefineryFlow.solve(lube, 8300, Refining.MEDIUM_MIX, worldMid());
+        double perTonne = lf.of(Good.LUBRICANTS) / 8300, world = Refining.lubricantsWorldTakes(Refining.CRUDE_LITRES_PER_TONNE);
+        double homeLubes = (perTonne - world) * 8300 / 2;
+        Refining.RunVerdict lv = Refining.runRule(lf, movedPrices(Way.RAIL, ham.citybuildersim.sectors.Rail.RAIL_FLOOR, 0, 0, homeLubes, 0));
+        report("THE WORLD'S LUBRICANTS: past what the world and the city take a lube plant's lubricants fetch nothing, and the run"
+                        + " stops there", perTonne > world && lv.stop() == Refining.RunStop.LUBRICANTS
+                        && Math.abs(lv.share() - .5) <= 1e-9 && lv.last() > 0 && lv.next() < 0,
+                String.format("%.1f L a tonne against the world's %.1f; runs %.4f", perTonne, world, lv.share()));
+
+        // THE PACE.
+        assertTrue("THE PACE: the run moves at most RUN_PACE of nameplate a month - MAX_RETIREMENT_FRACTION, a quarter - and"
+                        + " never past nothing or nameplate",
+                Refining.RUN_PACE == BusinessInvestment.MAX_RETIREMENT_FRACTION && Refining.paced(1, 0) == 1 - Refining.RUN_PACE
+                        && Refining.paced(0, 1) == Refining.RUN_PACE && Refining.paced(.5, .6) == .6 && Refining.paced(.1, 0) == 0
+                        && Refining.paced(.9, 1) == 1);
+        Refining.RunVerdict empty = Refining.runRule(RefineryFlow.solve(none, 0, Refining.MEDIUM_MIX, worldMid()), lp);
+        assertTrue("...and with no crude unit there is no run, and no barrel to weigh", empty.share() == 0 && Double.isNaN(empty.first())
+                && Refining.runWords(empty, 1).isEmpty());
+    }
+
+    /* ============================ 17. THE RUN IN A TOWN (0.7.105) ============================ */
+
+    static void theRunInATown() throws Exception {
+        out.println("\n--- 17. the run in a town: struck at the month's end, at the pace, the rate times it; spare once idle"
+                + " six months, and sold (0.7.105) ---");
+        Game g = plannerTown("refinerycheck-run", false);
+        Game held = plannerTown("refinerycheck-run-held", true);
+        Refining r = g.getSectors().refining(), h = held.getSectors().refining();
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate refinery = b.getTemplateByName("Oil Refinery"), farm = b.getTemplateByName("Tank Farm"),
+                lube = b.getTemplateByName("Small Lube Plant");
+        double nameplate = r.getInputAtCapacity(Good.CRUDE);
+        boolean paced = true, rate = true, bought = true, made = true, stopped = true;
+        double worst = 0;
+        String path = "";
+        for (int m = 1; m <= 4; m++) {
+            double before = r.runShare();
+            quietly(() -> g.simulateMonths(1));
+            quietly(() -> held.simulateMonths(1));
+            worst = Math.max(worst, g.getLastMoneyAudit().relative());
+            Refining.RunVerdict v = r.runVerdict();
+            stopped &= v.share() == 0 && v.stop() == Refining.RunStop.FIRST;
+            paced &= r.runShare() == Refining.paced(before, v.share()) && r.monthsRun() == before;
+            rate &= r.getOperatingRate() == r.plantRate() * r.runShare();
+            Sector.Input in = r.inputRow(Good.CRUDE);
+            double crude = in == null ? 0 : Math.max(0, in.boughtLocal) + Math.max(0, in.imported);
+            bought &= Math.abs(crude - nameplate * r.monthsRate()) <= 1e-9 * nameplate;
+            Sector.Output o = r.outputRow(Good.DIESEL);
+            double out = o == null ? 0 : o.produced + o.exportBound + o.idled;
+            made &= Math.abs(out - r.getCapacity(Good.DIESEL) * r.monthsRate()) <= 1e-9 * Math.max(1, r.getCapacity(Good.DIESEL));
+            path += String.format("%.2f ", r.runShare());
+        }
+        report("fixture: an Oil Refinery on imported crude by lorry, the refiners not held: every month's verdict is that no"
+                + " barrel pays", stopped, Refining.runWords(r.runVerdict(), r.runShare()));
+        report("the month's end moves the run toward it RUN_PACE of nameplate a month, and the month ran at the share it was",
+                paced && r.runShare() == 0, "after each month: " + path.trim());
+        assertTrue("...the operating rate is the plant's times the run, to the bit", rate);
+        assertTrue("...the crude units buy nameplate at that rate, and make each product's nameplate at it", bought && made);
+        report("...and the audit closes every month", worst < 1e-10, String.format("worst %.2e", worst));
+        report("A HELD REFINERS' RUN STAYS WHERE THE FIXTURE LEFT IT (BusinessInvestment.holdSector())", h.runShare() == 1
+                && h.runVerdict().share() == 0, String.format("%.2f", h.runShare()));
+        // The run crosses a save.
+        GameFiles files = PLANNER_FILES.get(g);
+        quietly(() -> g.saveGame(10, "run"));
+        Game twin = new Game(files);
+        quietly(() -> twin.loadGameSave(10));
+        Refining back = twin.getSectors().refining();
+        boolean same = back.runShare() == r.runShare();
+        quietly(() -> g.simulateMonths(2));
+        quietly(() -> twin.simulateMonths(2));
+        same &= back.runShare() == r.runShare() && Double.compare(back.runUsed(), r.runUsed()) == 0 && r.runUsed() == 1;
+        assertTrue("the run crosses a save, its share and its months (extras run.share, run.history.<n>)", same);
+        boolean said = false, why = false;
+        for (Sector.Line l : r.ownLines(g)) {
+            said |= "Crude run".equals(l.label()) && l.value().startsWith("0") && l.tone() == Sector.Line.Tone.BAD;
+            why |= l.kind() == Sector.Line.Kind.NOTE && l.label().equals(Refining.runWords(r.runVerdict(), r.runShare()))
+                    && l.label().startsWith("No barrel pays");
+        }
+        RefineryView.View pic = RefineryView.of(g);
+        report("THE WORDS: Refining's page says the run and why; the refinery's picture, of a month that ran nothing, why",
+                said && why && !pic.drawn() && RefineryView.emptyWords(pic).contains("No barrel pays"), RefineryView.emptyWords(pic));
+
+        // THE SPARE, SOLD: idle IDLE_MONTHS months, losing money, the spare-capacity rule sells the crude unit.
+        double[] measure = null;
+        boolean before = true;
+        int months = 6;
+        while (b.getQuantity(refinery.getId()) > 0 && months < 24) {
+            if (r.retirementDemandAndCapacity(g) != null && measure == null) {
+                measure = r.retirementDemandAndCapacity(g);
+                before &= r.mayRetire(refinery) && !r.mayRetire(farm) && !r.mayRetire(lube);
+            }
+            quietly(() -> g.simulateMonths(1));
+            months++;
+        }
+        report("THE SPARE: once the run has stood under nameplate IDLE_MONTHS months the spare-capacity rule's measure is the most"
+                        + " it used in them against nameplate, in tonnes; the crude unit may be sold, a Tank Farm or a working unit not",
+                measure != null && measure[0] == (1 - Refining.RUN_PACE) * nameplate && measure[1] == nameplate && before,
+                measure == null ? "none" : String.format("{%,.0f, %,.0f t}", measure[0], measure[1]));
+        report("...and the rule sells it, losing money, the month after six at nothing - where what is spare is a whole unit - and"
+                        + " not the distress rule, which waits DISTRESS_LOSS_MONTHS",
+                b.getQuantity(refinery.getId()) == 0 && months == 4 + SpreadPlanner.IDLE_MONTHS + 1
+                        && g.getBusinessInvestment().getLossMonths(Sectors.REFINING) < BusinessInvestment.DISTRESS_LOSS_MONTHS,
+                String.format("sold in month %d", months));
+    }
+
+    /* ============================ 18. THE PLANNER'S PRICES AT THE MARGIN (0.7.105) ============================ */
+
+    static void thePlannerAtTheMargin(BuildingManager catalogue) {
+        out.println("\n--- 18. the planner's prices at the margin: petrol and diesel past the city's imports at the export price,"
+                + " an order weighed at the run it would take (0.7.105) ---");
+        double[] none = new double[Kind.values().length];
+        BuildingsTemplate cracking = catalogue.getTemplateByName("Small Cracking Unit"), reformer = catalogue.getTemplateByName("Small Reformer");
+        SpreadPlanner.City city = frame(null, null);
+        Refining.RunPrices lorry = movedPrices(Way.LORRY, 0, 0, 0, 0, 0), sea = movedPrices(Way.SEA, 0, 0, 0, 0, 0);
+        double[] endless = new double[Good.values().length];
+        java.util.Arrays.fill(endless, Double.POSITIVE_INFINITY);
+        Refining.Outlook proto = new Refining.Outlook(none, 8300, Refining.MEDIUM_MIX, lorry.away(), 0, 0, Refining.MEDIUM_MIX,
+                0, lorry.crudeImport(), Double.POSITIVE_INFINITY);
+        Refining.Outlook stopped = new Refining.Outlook(none, 8300, Refining.MEDIUM_MIX, lorry.away(), 0, 0, Refining.MEDIUM_MIX,
+                0, lorry.crudeImport(), Double.POSITIVE_INFINITY, lorry.away(), endless, lorry);
+        Refining.Outlook paying = new Refining.Outlook(none, 8300, Refining.MEDIUM_MIX, sea.away(), 0, 0, Refining.MEDIUM_MIX,
+                0, sea.crudeImport(), Double.POSITIVE_INFINITY, sea.away(), endless, sea);
+        RefineryFlow.Flow lf = RefineryFlow.solve(none, 8300, Refining.MEDIUM_MIX, lorry.away()),
+                sf = RefineryFlow.solve(none, 8300, Refining.MEDIUM_MIX, sea.away());
+        SpreadPlanner.Candidate free = Refining.unitEstimate(proto, lf, cracking, city), idle = Refining.unitEstimate(stopped, lf, cracking, city),
+                runs = Refining.unitEstimate(paying, sf, cracking, city), plain = Refining.unitEstimate(sf, cracking, city);
+        report("fixture: a Small Cracking Unit's spread is above nothing at the export prices, on an Oil Refinery's gas oil",
+                lf.spread(Kind.CRACKER) > 0 && free.refusal(SpreadPlanner.Gate.FEED) == null,
+                String.format("%s a litre", RefineryView.spreadWords(lf.spread(Kind.CRACKER))));
+        report("AN ORDER IS WEIGHED AT THE RUN IT WOULD TAKE: behind an Oil Refinery on imported crude by lorry - no barrel pays,"
+                        + " with the unit or without - it earns nothing, its wages and its standing lost, and the money gate refuses it",
+                idle.earns() == -city.running(cracking) - city.standing(cracking) && idle.failed() == SpreadPlanner.Gate.MONEY
+                        && free.earns() > idle.earns(),
+                String.format("%,.1f a month; in the prototype's frame, every barrel run, %,.1f", idle.earns(), free.earns()));
+        assertTrue("...by tanker, every barrel paying, it is weighed as in the prototype's frame, its spread on its feed, to the bit",
+                runs.earns() == plain.earns() && runs.passes() == plain.passes());
+        // Petrol past the city's imports: a Small Reformer, the city importing half the petrol it would make.
+        RefineryFlow.Flow vf0 = RefineryFlow.solve(none, 8300, Refining.MEDIUM_MIX, sea.away());
+        double takes = Math.min(Refining.spareFeed(vf0, Kind.REFORMER), reformer.feedPerMonth());
+        double makes = RefineryFlow.madeAlone(Kind.REFORMER, takes).get(Good.PETROL);
+        double[] imports = endless.clone();
+        imports[Good.PETROL.ordinal()] = makes / 2;
+        double[] values = sea.away().clone();
+        values[Good.PETROL.ordinal()] = sea.home()[Good.PETROL.ordinal()];
+        Refining.Outlook half = new Refining.Outlook(none, 8300, Refining.MEDIUM_MIX, values, 0, 0, Refining.MEDIUM_MIX,
+                0, sea.crudeImport(), Double.POSITIVE_INFINITY, sea.away(), imports, sea);
+        Refining.Outlook all = new Refining.Outlook(none, 8300, Refining.MEDIUM_MIX, values, 0, 0, Refining.MEDIUM_MIX,
+                0, sea.crudeImport(), Double.POSITIVE_INFINITY, sea.away(), endless, sea);
+        RefineryFlow.Flow vf = RefineryFlow.solve(none, 8300, Refining.MEDIUM_MIX, values);
+        SpreadPlanner.Candidate past = Refining.unitEstimate(half, vf, reformer, city), within = Refining.unitEstimate(all, vf, reformer, city);
+        double lost = makes / 2 * (values[Good.PETROL.ordinal()] - sea.away()[Good.PETROL.ordinal()]);
+        report("PETROL PAST THE CITY'S IMPORTS AT THE EXPORT PRICE: a Small Reformer's petrol, the city importing half of it,"
+                        + " is worth the net import price on that half and the net export price on the rest, to the bit",
+                makes > 0 && Math.abs((within.earns() - past.earns()) - lost) <= 1e-9 * Math.max(1, lost) && lost > 0,
+                String.format("%,.0f L of petrol; %,.2f a month less", makes, lost));
+    }
+
+    /* ============================ 19. ONE ORDER IN FLIGHT, CRUDE UNITS ON SITE ASIDE (0.7.105) ============================ */
+
+    static void oneOrderInFlight() throws Exception {
+        out.println("\n--- 19. one order in flight, crude units on site aside: the city's Crude Unit on site does not hold the"
+                + " refiners' planner (0.7.105) ---");
+        Game g = plannerTown("refinerycheck-r3", true);
+        Refining r = g.getSectors().refining();
+        BuildingManager b = g.getBuildingManager();
+        BusinessInvestment plans = g.getBusinessInvestment();
+        BuildingsTemplate crude = b.getTemplateByName("Crude Unit"), lube = b.getTemplateByName("Small Lube Plant");
+        Game.BuildResult[] put = new Game.BuildResult[2];
+        quietly(() -> {
+            g.setCashForTest(Founding.WEALTHY_CASH * 100);
+            put[0] = g.buildStack(crude, 1, false);
+            g.simulateMonths(1);
+        });
+        BuildingsStacks site = b.getStack(crude);
+        report("fixture: the city's own Crude Unit on site beside the town's Oil Refinery, nothing else of the refiners'",
+                put[0] == Game.BuildResult.SUCCESS && site != null && site.getUnderConstruction() == 1 && site.isCitysOwn()
+                        && b.getUnderConstructionBySector(Sectors.REFINING) == 1, String.valueOf(put[0]));
+        BusinessInvestment.Decision d = r.plan(plans, g);
+        report("THE PLANNER WEIGHS ITS UNITS: not \"already building\" (MAX_CONCURRENT_ORDERS counted it until 0.7.105), and no"
+                        + " other crude unit", !"already building".equals(d.reason) && (d.template == null || !Refining.isCrudeUnit(d.template)),
+                d.reason);
+        quietly(() -> {
+            put[1] = g.buildStack(lube, 1, false);
+        });
+        BusinessInvestment.Decision held = r.plan(plans, g);
+        report("...and with a conversion unit on site as well it holds to one order: \"already building\"",
+                put[1] == Game.BuildResult.SUCCESS && "already building".equals(held.reason), held.reason);
+        assertTrue("...while the spare-capacity rule still reads a refiners' site as building, not shrinking",
+                !plans.planRetirement(r, 0, 1e9, b.getUnderConstructionBySector(Sectors.REFINING)).build);
     }
 
     /** The buildings a package was weighed with, by name. */
