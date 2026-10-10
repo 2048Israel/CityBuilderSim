@@ -127,14 +127,16 @@ import java.nio.file.Path;
  *      (QUEUE_MARGIN) past that; the drivers' bill is Retail's sale to the
  *      households to the bit; a journey's fuel is the pump's; the grocers
  *      order a Filling Station when the drivers' litres outrun what their
- *      stations can sell, earning on the litres it would sell, and the shops'
+ *      stations can sell, earning on the litres it would sell (less its
+ *      staff at today's wages since 0.7.106, Jerus's A18), and the shops'
  *      rules never sell one; the month crosses a save, and a save from
  *      before reads none sold.
  *
  *  15. THE TANK FARM (0.7.85, batch O8; spec-oil 2.8): with none standing
  *      the refiners keep no crude and every figure is what it was; with one
  *      they keep CRUDE_COVER_MONTHS of their crude units' run as far as its
- *      room holds, their products share the rest of the room, their order
+ *      room holds (an MR's cargo of it kept free since 0.7.105: PortCheck
+ *      7), their products share the rest of the room, their order
  *      is the run and what fills the store, bought as stock - and a refinery
  *      short of cash runs down its tanks and then runs no more than its
  *      crude on hand and the month's fill: the run held to the crude. The
@@ -1199,7 +1201,8 @@ public class OilCheck {
              * crude its slate is worth less abroad than the crude costs - at
              * 0.7.76 it idled once its tanks were full and the distress rule
              * shed it in its third year; since 0.7.98 it ships what it makes,
-             * at a loss - and this section and the next five are about where
+             * at a loss, and since 0.7.105 its run would stop (Refining, THE
+             * RUN; held, it runs whole) - and this section and the next five are about where
              * its crude comes from and where its products go, not whether a
              * refinery pays in a town of 600 houses (that is section 8's).
              */

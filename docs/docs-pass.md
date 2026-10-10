@@ -20,7 +20,8 @@ from the code.
 ## What you are given
 
 - **The changed files.** From git: `git diff --name-only HEAD~1` (or the
-  commit range named). From a Cowork session: the deploy set's file list.
+  commit range named) - in a cloud session, the batch's branch against
+  `main`, or the range the orchestrator names.
 - **The design note** for the batch — `claude/<title>.md` in the project, or
   its text pasted in — which is the *why*. Read it first. If there is none,
   say so in the report and do the mechanical parts only.
@@ -97,9 +98,10 @@ from the code.
 - **Do not invent a why.** A sentence you would have to guess at gets a
   `TODO(docs): <what you could not tell>` in the comment and a line in the
   report, not a plausible paragraph.
-- **Do not renormalise line endings.** The tree is still mixed (see
-  `CLAUDE.md`); a text-mode edit of a CRLF file turns into a whole-file
-  diff. `grep -c $'\r' file` before and after.
+- **Do not renormalise line endings.** The repository stores LF and the
+  `.bat` files CRLF (see `CLAUDE.md`); write LF, never convert a file
+  wholesale, and `git ls-files --eol` shows no `w/crlf` but the `.bat`
+  files.
 - **Do not touch saves, `buildings.json`, or `AllChecks`' list.**
 
 ## The report
@@ -111,10 +113,11 @@ needed changing, say that — it is a result.
 
 ## Where this runs
 
-- **From a Cowork session:** the implementer, at the end of the batch, spawns
-  a subagent with a fresh context and gives it this file, the changed-file
-  list and the design note, then acts on the report before the deploy is
-  verified. It is a step in `CLAUDE.md`'s "How a batch is done".
+- **From a cloud session (the git era, since 2026-10-10):** a batch of its
+  own, on its own branch and worktree, by an agent with a fresh context,
+  given this file, the range and the batches' notes; the orchestrator gates
+  it and merges it like any batch. It is a step in `CLAUDE.md`'s "How a
+  batch is done".
 - **From Claude Code on the PC:** `Docs pass.bat` runs it headless against
   the last commit, which is the fully automatic version — it cannot ask
   questions, so it flags rather than guesses. `docs/docs-pass-agent.md` is

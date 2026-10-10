@@ -225,7 +225,7 @@ public class MapCheck {
     /** The most any copy's screen may take against the 5B copy's, the first whose screen is all city (the design's; against the city x 1's until 0.7.64 - section 5's note). */
     static final double SCREEN_RATIO = 1.5;
 
-    /** The design's bound on a month's change at 10B, in ms of the main thread's CPU since 0.7.100 (measured 0.76; section 5's note). */
+    /** The design's bound on a month's change at 5B and at 10B, in ms of the main thread's CPU since 0.7.100 (measured 0.76; section 5's note). */
     static final double RECONCILE_MS = 5;
 
     /** Pixels a plot the screen is rastered at: 4, L0's image (spec-land 2.6). */

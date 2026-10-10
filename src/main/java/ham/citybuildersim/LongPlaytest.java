@@ -3553,7 +3553,10 @@ public class LongPlaytest {
      * Three roads and three transit lines, each costed in the trips a dollar
      * takes off the street, offered best-first so that the tie-break inside
      * addThrottle picks the best rather than the first one somebody typed. See
-     * the note at the call site for why transit is in here at all.
+     * the note at the call site for why transit is in here at all. The roads
+     * keep the best road's place among them but are offered as the build
+     * advice's cards - which road since 0.7.70, how many since 0.7.103
+     * (roadsByNeed(); below).
      */
     static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost) {
         if (lost <= 0) return;

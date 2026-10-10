@@ -89,9 +89,9 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   is also the only harness that touches the interface at all; everything on the
   screen beyond it is checked by opening the game.
 
-**Run `AllChecks` after a copy-back, not before.** A batch has more than once
-landed in the Java and not in `buildings.json`, and `BuildingDataCheck` exists
-to catch exactly that.
+**Run `AllChecks` on the tree as it landed - after a pull or a merge - not
+before.** A batch has more than once landed in the Java and not in
+`buildings.json`, and `BuildingDataCheck` exists to catch exactly that.
 
 Three rules the harnesses are written to, and worth keeping:
 
@@ -110,7 +110,7 @@ suite into a record of what the code does rather than what it should do.
 ## `buildings.json` — the balance file
 
 Every building in the game is a row in `src/main/resources/buildings.json` —
-seventy-odd of them: cash cost, construction points, materials,
+a hundred and one of them: cash cost, construction points, materials,
 maintenance, capacity, footprint in square feet, power and water draw, road load,
 its job mix across the eleven job types, which sector owns it, and what it makes
 and uses.
@@ -158,7 +158,9 @@ Adding a field does not need a format bump — Gson leaves a missing key alone,
 and a city saved before the field loads with it empty, which is correct for that
 city. Bump `GameVersion.SAVE_FORMAT` when an old save would be read *wrongly*
 rather than incompletely, so it is refused cleanly; no conversion code is written
-for it. Once the game is published, older saves must load again.
+for it. (Today the loader refuses only a save from a newer format, or one from
+before the sector template, `GameVersion.FIRST_SECTOR_FORMAT`: a bump alone does
+not refuse an older save.) Once the game is published, older saves must load again.
 
 ## Making the Windows build
 
@@ -181,7 +183,7 @@ unsigned exe: *More info → Run anyway*.
 ## The source tree
 
 ```
-src/main/java/ham/citybuildersim/     about 280 files
+src/main/java/ham/citybuildersim/     about 300 files
     CityBuilderSim.java               the launcher
     Game.java                         the month, and the seam every system meets at
     Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
@@ -191,7 +193,7 @@ src/main/java/ham/citybuildersim/     about 280 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the seventeen sector classes
+    sectors/                          the seventeen sector classes, and the refinery's flow and spread planner
     BondMarket.java, CorporateBond.java, OrderBook.java
                                       the businesses' bonds, and the order book they and the shares trade on
     tools/                            the index generators (see below); not part of the game

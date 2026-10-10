@@ -100,7 +100,7 @@
 | 402 | `public int buildings` |  |
 | 404 | `public double points` | The points of work it is, all told: DEMOLITION_SHARE of the work it holds. |
 | 405 | `public double progress` |  |
-| 407 | `public double salvageUnits` | Units of construction material the buildings hold, salvaged when it completes. |
+| 407 | `public double salvageUnits` | Units of construction material salvaged when it completes, as quoted: SALVAGE_SHARE of what the buildings hold since 0.7.106 (all of it until then). |
 | 409 | `public double landSqFt` | The ground it holds until it completes, in square feet. |
 | 411 | `public double paid` | What the city paid the builders for it. |
 | 413 | `public double value` | ...and what of that they have still to earn. |

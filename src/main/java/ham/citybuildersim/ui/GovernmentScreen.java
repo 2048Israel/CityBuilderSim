@@ -977,7 +977,7 @@ final class GovernmentScreen {
         return Icons.COIN;
     }
 
-    /** ...and where it is decided (the spec's section 4): reserves on Trade, the fund on Finances, the bank's shares on Bank, the central bank on Policy, repairs and salvage on Build's construction page, fares on Infrastructure (no journal line names transit since 0.7.49, when the fares became a budget line, so that branch and journalIcon()'s are reached by nothing). */
+    /** ...and where it is decided (the spec's section 4): reserves on Trade, the fund on Finances, the bank's shares on Bank, the central bank on Policy, repairs and salvage on Build's construction page, fares on Infrastructure (no journal line names transit since 0.7.49, when the fares became a budget line, so that branch and journalIcon()'s are reached by nothing; nor the city's repairs since 0.7.102, a budget line too, so the construction page's door opens for a demolition's salvage alone). */
     Runnable journalDoor(String label) {
         if (label.startsWith("Bought land")) return () -> ui.landScreen.showLandMenu();
         if (label.contains("reserves")) return () -> ui.tradeScreen.showForeignMenu();

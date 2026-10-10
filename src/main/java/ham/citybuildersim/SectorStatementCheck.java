@@ -61,7 +61,9 @@ import java.util.Set;
  *
  * BATCH S2 (0.7.75) adds, in the same sections and three of its own:
  *   1. the outside lines' new four - the bonds written off, the bank's fees,
- *      the mortgages' premiums and the bonds' issuing costs (F2, R5);
+ *      the mortgages' premiums and the bonds' issuing costs (F2, R5) - the
+ *      last three outside only in a month struck before 0.7.102, which
+ *      expenses them over each debt's life inside the profit (A16);
  *   4. THE EQUITY STATEMENT IN COLUMNS (R3, R6): its share capital starts
  *      at last month's paid-in and ends at this month's, closing on its own
  *      lines - the founders' shares, issued, bought back - so the register's

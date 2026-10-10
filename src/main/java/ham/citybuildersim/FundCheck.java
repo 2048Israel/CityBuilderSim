@@ -71,7 +71,9 @@ import java.io.PrintStream;
  *      the surplus.
  *  11. Every piece round-trips through a save; an older save loads empty.
  *  12. Insane: nothing in the treasury or the vault; one dollar bond abroad at
- *      3% for twenty years at the land's value; a day-0 city is quoted both
+ *      3% for twenty years at the land's value - since 0.7.106 the plots its
+ *      centre holds, as the land office charges ground, the founding
+ *      screen's figure for its world; a day-0 city is quoted both
  *      of the build screen's offers, and the build screen and the land office
  *      ask for funding at D$0; borrowed, it runs and its audit closes.
  *  13. Insane, never borrowing (0.7.15, Jerus: "Play runs on advances"): at

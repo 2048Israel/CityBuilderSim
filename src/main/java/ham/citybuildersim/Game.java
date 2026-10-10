@@ -6392,7 +6392,7 @@ public class Game {
                 t.isOwnedBySector() ? 0 : wages + t.getUpkeep() * n);
     }
 
-    /** A shell's demolition: DEMOLITION_SHARE of the work it holds, the material it drew to salvage, its ground. Reads. */
+    /** A shell's demolition: DEMOLITION_SHARE of the work it holds, SALVAGE_SHARE of the material it drew to salvage (since 0.7.106; all of it until then), its ground. Reads. */
     public DemolitionQuote quoteShellDemolition(ConstructionControl.Shell shell) {
         BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
         if (t == null) return null;

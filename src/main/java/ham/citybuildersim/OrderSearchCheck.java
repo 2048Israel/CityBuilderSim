@@ -61,8 +61,9 @@ public class OrderSearchCheck {
     /**
      * The copy of that city: the month it is copied at, how many times over,
      * and how many months it plays. At month 400 the city is growing and its
-     * copy orders: 28 orders judged on their interest in 24 months, 22 of
-     * them trimmed by more than Game.COUNTDOWN_SLICES.
+     * copy orders: 26 orders judged on their interest in 24 months at
+     * 0.7.106, 16 of them trimmed by more than Game.COUNTDOWN_SLICES (28 and
+     * 22 when the month was chosen, 23 and 5 at 0.7.103).
      */
     static final int COPY_MONTH = 400;
     /** ...how many times over it is copied... */

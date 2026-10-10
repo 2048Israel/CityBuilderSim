@@ -14,7 +14,7 @@ requirement.
 
 ## Open these before reading source
 
-The tree is over 250,000 lines; `Game.java` alone is over 15,000, and the
+The tree is over 300,000 lines; `Game.java` alone is over 16,000, and the
 interface is twenty-seven files, the largest about 6,000. Do not read them. Read the generated indexes and jump.
 
 | document | what it answers |
@@ -61,9 +61,12 @@ These are Jerus's, and they do not move.
   assistant's playtest slot. A harness city uses `GameFiles.scratch(label)` or
   an explicit temp path, never `new Game()`, which points at the real save
   folder.
-- **Write fixes to the PC without asking** ("yes, always"), then verify every
-  file byte-for-byte. Ask as many questions as you like; do not wait on
-  answers to ship what is already decided.
+- **Ship fixes without asking** ("yes, always"), through GitHub, the one
+  source of truth (`2048Israel/CityBuilderSim`, since 2026-10-10): a batch
+  is done in a worktree and a branch of its own, the orchestrator alone
+  merges it into `main`, tags it and pushes, and the PC pulls `main` every
+  ten minutes. Nothing is written to the PC by hand. Ask as many questions
+  as you like; do not wait on answers to ship what is already decided.
 - **Per-batch write-up** goes to the project as `claude/<title>.md`, in prose,
   with what was found and what was decided; the todo and the changelog get
   their lines. The README's counts are not the record - the changelog is.
@@ -86,20 +89,23 @@ These are Jerus's, and they do not move.
   2026-10-10: "old saves do not matter, only once we publish to old saves
   matter"). Write no conversion code for an older save. If a change would
   make one load *wrongly*, bump `SAVE_FORMAT` so it is refused cleanly
-  instead, and say so in the batch's notes. When the game is published this
-  rule ends, and old saves must load again. (Slots 1-9 are still never
-  written.)
+  instead, and say so in the batch's notes (today the loader refuses only a
+  format newer than `SAVE_FORMAT`, `GameVersion.isFromNewerBuild()`, or older
+  than `FIRST_SECTOR_FORMAT`: a bump alone refuses no older save). When the
+  game is published this rule ends, and old saves must load again. (Slots
+  1-9 are still never written.)
 - **Bump `SAVE_FORMAT` when an old save would load wrongly**, not merely
   incompletely; Gson leaves a missing key alone.
 - **Every `println` is the log.** There is no separate logging call to adopt.
-- **Keep each file's own line endings** until the repository is normalised
-  (`.gitattributes` says LF; the tree is still mixed - see the audit note).
+- **Line endings: the repository stores LF** (`.gitattributes`), the `.bat`
+  files CRLF. Write LF, and never convert a file wholesale; `git ls-files
+  --eol` shows no `w/crlf` but the `.bat` files.
 
 ## The shape of the tree
 
     src/main/java/ham/citybuildersim/
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
-        Game.java                  the month, the seam every system meets at; over 15,000 lines, 41 banner sections
+        Game.java                  the month, the seam every system meets at; over 16,000 lines, 41 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
                                    mechanics moved out of Game on 2026-09-18, behaviour unchanged: each is
                                    called from the month and read through Game's delegating getters (the
@@ -137,8 +143,9 @@ These are Jerus's, and they do not move.
                                    holds both (the project's spec-fund-0739.md)
         ConstructionControl.java   the player's hand on the construction queue (0.7.22): the city's order of
                                    its own sites, rushes on overtime, cancels and the shells they leave,
-                                   demolitions and buy-outs, and since 0.7.70 its gravel roads paved - the
-                                   state, saved under one key, and each rule's
+                                   demolitions and buy-outs (since 0.7.106 a demolition recovers
+                                   SALVAGE_SHARE, a quarter, of its material), and since 0.7.70 its gravel
+                                   roads paved - the state, saved under one key, and each rule's
                                    arithmetic with its source; BuildingManager applies the crews and Game's
                                    THE PLAYER'S HAND ON THE QUEUE moves the money
         StrategicReserve.java      the city's strategic reserve of crude (0.7.85): what its tanks hold and cost,
@@ -146,6 +153,11 @@ These are Jerus's, and they do not move.
                                    clearing (Markets.CityTrader) and the month the next strike settles;
                                    Game's THE STRATEGIC RESERVE pulls the levers and pays - OilCheck 16
                                    holds it (runs/spec-oil.md 2.8)
+        FuelSplit.java             FUEL split into the PETROL and DIESEL it became (0.7.76): a save written
+                                   before then converted once, on its load, before anything is restored -
+                                   every FUEL figure by the drivers' share of the month's litres, the
+                                   railway's own all diesel, no money moving; OilCheck 10 holds it
+                                   (runs/spec-oil.md 3)
         Ports.java, BoatSchedule.java
                                    the city's sea terminals (0.7.86): each kind of cargo's berths, the share
                                    of its goods they take before or after the railway, the band they narrow
@@ -166,7 +178,8 @@ These are Jerus's, and they do not move.
                                    in the panel's order - moved out of ui/SummaryScreen whole, so the left
                                    panel, the header's "Needs you" chip and the Build overview read one list;
                                    and SERVED (0.7.41), the one verdict every service gauge is read by -
-                                   supply over demand, its lines turned over
+                                   supply over demand, its lines turned over; since 0.7.106 a care row's
+                                   supply the staffed beds less the priced out
         BuildAdvice.java           the Build tab's categories and measures, each measure's figure before and
                                    after an order by the model's own arithmetic, and the rule behind the
                                    overview's WHAT WOULD HELP MOST (0.7.24; since 0.7.51 priced with its
@@ -174,9 +187,9 @@ These are Jerus's, and they do not move.
                                    over its life, since 0.7.71 a care building the size that fits the
                                    need, since 0.7.101 every building its order over its life for what
                                    it will serve - power, water, roads and care as the city grows into
-                                   it - and an iron field's pay-back, the test player's rule); advice,
-                                   not a model change - BuildAdviceCheck, RoadCheck and ChildcareCheck
-                                   hold it
+                                   it - and an iron field's pay-back, the test player's rule; since 0.7.106
+                                   care's places the beds less the priced out); advice, not a model
+                                   change - BuildAdviceCheck, RoadCheck and ChildcareCheck hold it
         AutoBuilder.java           automatic building (0.7.73): the player's switch and two dials (a
                                    spare margin, a debt limit - since 0.7.81 the city's debt over a year
                                    of GDP, since 0.7.101 all it owes over the year it has recorded, 240%
@@ -217,7 +230,9 @@ These are Jerus's, and they do not move.
                                    sections, the changes in equity (since 0.7.75 in columns, share capital and
                                    what it kept) and the debt schedule by kind - and the bank's - each a list of
                                    rows, its format by Sector.statementFormat(); every bottom line the model's
-                                   own; pure - ui/StatementView draws it, SectorStatementCheck holds it
+                                   own (since 0.7.102 the sheet read at the month's close, and what borrowing
+                                   cost up front expensed over each debt's life); pure - ui/StatementView
+                                   draws it, SectorStatementCheck holds it
         PolicyPreview.java         what a staged set of the Policy tab's dials would do (0.7.36): the tax take
                                    under another policy line by line, and THE BUDGET before and after, each
                                    line its owner's read of a detached TaxPolicy.copy() - since 0.7.48
@@ -234,10 +249,20 @@ These are Jerus's, and they do not move.
                                    books, the world's share in the money audit; SupplierCreditCheck holds it
         World.java, Resource.java, Deposit.java, CityLand.java, LandConversion.java
                                    the world a city stands on (0.7.56: one seed's coast, lakes, river and
-                                   fields of seven resources) and the city's land on it (0.7.57; since
-                                   0.7.67 whole blocks of a grid, six offers a side; an older save
-                                   converted once) - LandManager and LandMarket sell it, WorldCheck and
-                                   LandCheck hold it (the project's spec-land.md and spec-grid.md)
+                                   fields of seven resources; since 0.7.99 a tenth as many fields, each ten
+                                   times bigger, in clusters, and no iron asked of a founding) and the
+                                   city's land on it (0.7.57; since 0.7.67 whole blocks of a grid, six
+                                   offers a side; an older save converted once, and since 0.7.99 the ground
+                                   it brings holding the old world's fields; since 0.7.106 a new city's
+                                   centre its rings and its founding lake's blocks, one water plant's fresh
+                                   water) - LandManager and LandMarket sell it, WorldCheck and LandCheck
+                                   hold it (the project's spec-land.md and spec-grid.md)
+        LandManager.java, LandMarket.java
+                                   the city's land: what it owns, what is built on and what it sells - the
+                                   ore and oil its ground holds less what is taken out, since 0.7.93 the
+                                   oil in two pools, the ground's and the sea's (THE TWO OIL POOLS), and
+                                   since 0.7.106 the land a new city is founded with (foundingLand()) - and
+                                   the land office's window, six offers a side; LandCheck holds them
         LandGrid.java, GridOffers.java, LegacyLand.java, GridConversion.java
                                    the block grid (0.7.65 to 0.7.67): the ground owned as a quadtree of
                                    blocks lined up with the world, the six places a side and their
@@ -278,7 +303,9 @@ These are Jerus's, and they do not move.
                                    and its clock, the rail, the main menu, the panels, dialogs), one
                                    <Name>Screen.java per tab (split 2026-09-18 - the project's
                                    splitting-the-interface.md), Money/Statement/Pieces/Levers (what the screens
-                                   share), Ladder.java (every dial, since 0.7.6), Palette.java (the colours, and
+                                   share), StatementView.java (0.7.74: SectorStatements' rows set as an
+                                   accountant sets them, and the Summary | Statement switch the sector pages
+                                   and the bank's share), Ladder.java (every dial, since 0.7.6), Palette.java (the colours, and
                                    its nested Fonts, which loads IBM Plex since 0.7.21), Icons.java, and
                                    FoundingScreen.java (New city's page, 0.7.10, one panel since 0.7.21; the
                                    record it fills is Founding.java), and ConstructionScreen.java (the Build
@@ -291,15 +318,16 @@ These are Jerus's, and they do not move.
                                    MapTiles, which MapCheck holds). The model never imports it.
         *Check.java                ninety-one harnesses, each a main() with static helpers
         AllChecks.java             the runner; its HARNESSES list is the registry - a harness not in it does not run
-        LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow
+        LongPlaytest.java          4,000-odd months, audited every one; also the fixture builder harnesses borrow;
+                                   its player asks the build advice which road (0.7.70) and how many (0.7.103)
         tools/                     the index generators, the two look-up tools, Stale (the prose check) and ManualToMarkdown (the manual into docs/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
                                          conversion-saves.json the five saves' land ConversionCheck converts (0.7.66)
 
-A `.java` file at the root that holds only a comment saying MOVED is a stub
-left where a class used to be, because a cloud session cannot delete on the
-PC; Jerus `git rm`s them. The maps skip them.
+Before the git era a class that moved left a stub at the root, a `.java` file
+holding only a comment saying MOVED, because a cloud session could not delete
+on the PC; none is left, and the maps skip one.
 
 Conventions the code is written to, which the indexes rely on:
 
@@ -345,27 +373,27 @@ Conventions the code is written to, which the indexes rely on:
    Fable take the substantial jobs; it is withdrawn.) The orchestrating
    session keeps the gate either way.
 
-**From a cloud session linked to the PC (Cowork):**
+**From a cloud session (the git era, since 2026-10-10):**
 
-The working copy is staged from the PC, built there, and the changed files
-are written back. Stage the tree (in batches of fifty paths), keep a
-byte-for-byte verify copy, compile the model without JavaFX (`build.sh`
-excludes `ui/`, `CityBuilderSim` and `BuildMenuCheck`; `build-ui.sh`
+Each batch runs in a worktree of the orchestrator's clone of GitHub, on a
+branch of its own made from `main` (`batch/<id>`); at most two batches at
+once, on files of their own, and one JVM at a time on the machine, under a
+shared lock. Build it there (`build.sh` compiles the model without JavaFX,
+leaving out `ui/`, `CityBuilderSim` and `BuildMenuCheck`; `build-ui.sh`
 compiles everything against the cached JavaFX jars), run `AllChecks -q` for
-the baseline, edit, rebuild, rerun, then commit each changed file to its
-original path with the modification time recorded at staging, re-stage it and
-compare. A fresh output folder per deploy, because the bridge caches by staged
-path. Slot 10 for any playtest that touches a real save folder. Then the docs
-pass (step 6 above): spawn a subagent with a fresh context, give it
-`docs/docs-pass.md`, the deploy set's file list and the design note, and act
-on its report before the deploy is verified.
+the baseline, edit, rebuild, rerun, and commit to the branch, small and
+often. It ships by merge and push: the orchestrator gates the branch, merges
+it into `main`, tags it and pushes, and the PC pulls. Slot 10 for any
+playtest that touches a real save folder. The docs pass (step 6 above) is a
+batch of its own, on its own branch, by an agent with a fresh context.
 
 **Either way, before saying a change works:** the suite is green except for
 what was already red (say which), the map is regenerated, the write-up
 exists, and the docs pass has run. `docs/notes/` carries copies of the
-project's `todo.md`, `changelog.md` and `index.md` as of the last deploy from
-the cloud loop, so a session on the PC can read the list and the record; the
-project is the original.
+project's `todo.md`, `changelog.md` and `index.md`, last copied in on
+2026-10-07 (the changelog's top block is 0.7.53 to 0.7.54), so a session on
+the PC can read the list and the record as they stood then; the project is
+the original.
 
 ## Adding things - where the shape already is
 

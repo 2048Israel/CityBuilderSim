@@ -31,8 +31,9 @@ import java.util.Map;
  * roads; and a gravel road can be paved, at a price above a Paved Road's
  * less the gravel's own, on its own ground, open while the works go on.
  * The 0.7.70 playtest never paved (a new road was cheaper there at every
- * look); the 0.7.99 one paves 87 gravel roads in 14 orders over its four
- * thousand months (its report counts them). This is where the paving is
+ * look); the 0.7.99 one paved 87 gravel roads in 14 orders over its four
+ * thousand months, and the 0.7.106 one, its player ordering roads by need
+ * since 0.7.103, 10 in 2 (its report counts them). This is where the paving is
  * played to order, each fixture causing it.
  *
  * What this has to prove:
@@ -84,7 +85,10 @@ import java.util.Map;
  *      three" leaves it out.
  *   9. THE TEST PLAYER ASKS THE ADVICE: its first road move is the road the
  *      advice ranks first, and the paving where it beats a new Paved Road
- *      and the roads - a move that paves.
+ *      and the roads - a move that paves; and since 0.7.103 how many: the
+ *      move paves the advice's card's count, a paved town with its ground
+ *      free orders the advice's road and count, and a town whose roads are
+ *      well ahead makes no road move.
  *
  * Every fixture causes its condition.
  */
