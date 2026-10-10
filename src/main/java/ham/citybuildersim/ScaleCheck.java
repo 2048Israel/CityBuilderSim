@@ -171,8 +171,20 @@ public class ScaleCheck {
      * assertion holds at each month scanned from 527 to 565 (527, 530, 533,
      * 535, 537, 540, 543, 545, 547, 550, 553, 555, 557, 560, 563, 565). 545
      * is the middle of that.
+     *
+     * ...AT 2,375 SINCE 0.7.103, BY THE SAME PREMISE. Each road kind's own
+     * repairs (Jerus's A11; BuildingsTemplate, A ROAD'S OWN REPAIRS): the
+     * player's ten gravel roads of month 32 cost the village more than its
+     * tax, and it stands at about 250 people until month 2,000 (runs/
+     * fixP4-notes.md, 4) - 258 people at 547, growing by none. Scanned
+     * (scratch-p4/scan, ScaleCheck with the month changed, every assertion
+     * read): every assertion holds at 2,200, 2,300, 2,350, 2,375, 2,400,
+     * 2,425 and 2,450; at 2,250 the history's net income missed the sector
+     * books' by a cent; from 2,500 to 2,700 the copies' businesses do not
+     * pay the city's price for its ground. 2,375 is the middle: 31,664
+     * people at 2,380.
      */
-    static final int FREE_FIXTURE_MONTHS = 545;
+    static final int FREE_FIXTURE_MONTHS = 2375;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
