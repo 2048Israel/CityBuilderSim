@@ -43,9 +43,12 @@ import java.util.Map;
  *      charges the city for one more such road.
  *   2. THE ADVICE TAKES THE LEAST OVER ITS LIFE, AND GRAVEL CAN STILL WIN:
  *      with no ground free, the road the advice suggests is the candidate
- *      least over its life a trip; with the land office's prices at nothing
- *      it is the gravel road, past the crossover the model's figures give
- *      the paved road, and past the next the highway.
+ *      whose order costs least over its life for the trips it will take off
+ *      over that life (0.7.101, Jerus's A4 and A19; its life a trip until
+ *      then), every candidate's figure recomputed; by their lives a trip,
+ *      with the land office's prices at nothing the gravel road is the
+ *      least, past the crossover the model's figures give the paved road,
+ *      and past the next the highway.
  *   3. THE ROAD CARDS SAY THE SAME: bar 1 is the road's life a trip off the
  *      road and bar 2 its ground a trip, to the bit, and the card tagged
  *      cheapest is the road the advice ranks first among the three.
@@ -70,9 +73,10 @@ import java.util.Map;
  *      months alike; an older save, with no pavings, loads with none.
  *   8. THE ADVICE OFFERS THE PAVING WHEN IT BEATS A NEW PAVED ROAD, and not
  *      before: at the crossover the model's figures give, the suggestion is
- *      the paving - its quote, its gravel roads gone, the ground it frees -
- *      and the Gravel Road card's paving says so; "Build all three" leaves
- *      it out.
+ *      the paving - its quote, its gravel roads gone, the ground it frees,
+ *      its figure the order's over its life (0.7.101) - and the Gravel Road
+ *      card's paving says so, a trip under a new Paved Road's; "Build all
+ *      three" leaves it out.
  *   9. THE TEST PLAYER ASKS THE ADVICE: its first road move is the road the
  *      advice ranks first, and the paving where it beats a new Paved Road
  *      and the roads - a move that paves.
@@ -261,6 +265,30 @@ public class RoadCheck {
     /* ============================ 2. THE ADVICE ============================ */
 
     /** The least over its life a trip of every road and line the advice weighs, recomputed: {its name, its figure}. */
+    /**
+     * Whether the advice's road card is the least of its own candidates
+     * (0.7.101): the ranking walked as automatic building walks it - each
+     * card in turn left out (BuildAdvice.suggestFor()'s skip) - every card's
+     * figure its order over its life for the trips it will take off
+     * (BuildAdviceCheck.lifeFigure(), recomputed), and none of the same rank -
+     * keeping the road ahead, fitting the land left - under the first.
+     */
+    static boolean leastOrder(Game g, CityNeeds.Need need, BuildAdvice.Suggestion first) {
+        double free = g.getLandManager().getAvailableSqFt();
+        java.util.Set<BuildingsTemplate> skip = new java.util.HashSet<>();
+        boolean ok = Double.doubleToLongBits(BuildAdviceCheck.lifeFigure(g, first, free)) == Double.doubleToLongBits(first.pricePerUnit());
+        skip.add(first.template());
+        for (int guard = 0; guard < 8; guard++) {
+            BuildAdvice.Suggestion c = BuildAdvice.suggestFor(g, need, ROADS, g.getCash(), free, BuildAdvice.SLACK, skip, true);
+            if (c == null) break;
+            ok &= Double.doubleToLongBits(BuildAdviceCheck.lifeFigure(g, c, free)) == Double.doubleToLongBits(c.pricePerUnit());
+            boolean sameRank = c.closes() == first.closes() && (c.landShort() > 0) == (first.landShort() > 0);
+            if (sameRank && c.pricePerUnit() < first.pricePerUnit()) ok = false;
+            skip.add(c.template());
+        }
+        return ok;
+    }
+
     static String[] least(Game g, boolean roadsOnly) {
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, ROADS);
         double free = g.getLandManager().getAvailableSqFt();
@@ -318,12 +346,15 @@ public class RoadCheck {
             out.printf("      x%-7.2f the advice: %s %s (%,.4f a trip over its life); the least of the six %s, of the roads %s%n",
                     at[k], s == null ? "-" : s.count() + " x", s == null ? "nothing" : s.template().getName(),
                     s == null ? Double.NaN : s.pricePerUnit(), all[0], three[0]);
-            agrees &= s != null && !s.paving() && s.template().getName().equals(all[0])
-                    && Double.doubleToLongBits(s.pricePerUnit()) == Double.doubleToLongBits(Double.parseDouble(all[1]));
+            // Since 0.7.101 (Jerus's A4 and A19) the advice's figure is the order's over its life for the trips it will take
+            // off over that life: its own candidates, walked as the ranking lists them, each recomputed here.
+            agrees &= s != null && !s.paving() && leastOrder(g, need, s);
             roads &= want[k].equals(three[0]);
         }
         scale(g, base, 1);
-        assertTrue("the advice's road is the candidate least over its life a trip, its figure to the bit, at every price", agrees);
+        assertTrue("the advice's road is the candidate whose order costs least over its life for the trips it will take off over"
+                + " that life, every candidate's figure recomputed here to the bit, at every price (0.7.101; its life a trip,"
+                + " count and need aside, until then)", agrees);
         assertTrue("...the gravel road at nothing and under the crossover, the paved road past it, the highway past the next",
                 roads);
     }
@@ -645,9 +676,13 @@ public class RoadCheck {
         Map<BuildingsTemplate, Integer> done = BuildAdvice.plus(site, BuildAdvice.added(g, s));
         bits("...and the road it leaves, with its gravel roads gone", s.after(), BuildAdvice.figure(g, ROADS, done));
         assertTrue("...which keeps the road ahead", s.closes() && BuildAdvice.ahead(g, ROADS, done, s.ahead()));
-        assertTrue("the Gravel Road card recommends it too: its figure the suggestion's, under a new Paved Road's",
-                card.beatsPaved() && Double.doubleToLongBits(card.perTrip()) == Double.doubleToLongBits(s.pricePerUnit())
-                        && card.perTrip() < card.pavedPerTrip());
+        // The card's figure is a paving's life a trip (pavingLifetime() over pavingUnit()); since 0.7.101 the suggestion's is
+        // the pavings' order over its life for the trips it will take off (BuildAdvice, A BUILDING OVER ITS LIFE).
+        assertTrue("the Gravel Road card recommends it too: a paving's life a trip under a new Paved Road's (until 0.7.101 the"
+                + " suggestion's own figure; since then the suggestion's is the order's for the trips it will take off, recomputed"
+                + " here to the bit)",
+                card.beatsPaved() && card.perTrip() < card.pavedPerTrip()
+                        && Double.doubleToLongBits(BuildAdviceCheck.lifeFigure(g, s, 0)) == Double.doubleToLongBits(s.pricePerUnit()));
         List<BuildAdvice.Suggestion> one = new ArrayList<>(List.of(s));
         assertTrue("\"Build all three\" leaves the paving out: it is not a build order",
                 BuildAdvice.run(one).isEmpty() && BuildAdvice.builds(one).isEmpty());

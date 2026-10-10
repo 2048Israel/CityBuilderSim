@@ -810,11 +810,19 @@ public class AutoBuildCheck {
                 chosen = m; first = a; second = b;
                 break;
             }
-            // ...this one brought ahead with its own card, standing, its ground given.
+            // ...this one brought ahead with its own card, standing, its ground and its cash given.
             LandManager land = g.getLandManager();
             land.setOwnedSqFt(land.getOwnedSqFt() + a.template().getLandSqFt() * (double) a.count());
+            g.setCashForTest(g.getCash() + a.template().getCashCost() * (double) a.count());
             BuildAdvice.Suggestion card = a;
-            quietly(() -> g.buildStack(card.template(), card.count(), true));
+            Game.BuildResult[] r = new Game.BuildResult[1];
+            quietly(() -> r[0] = g.buildStack(card.template(), card.count(), true));
+            if (r[0] != Game.BuildResult.SUCCESS) {
+                out.printf("    (bringing it ahead: %d %s refused, %s)%n", card.count(), card.template().getName(), r[0]);
+                break;
+            }
+            // ...and a month run, auto-build off, so the networks read what stands (the road's capacity is the month's).
+            quietly(() -> g.simulateMonths(1));
         }
         assertTrue("fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card that"
                 + " costs less for one than its first", chosen != null);
