@@ -1631,8 +1631,8 @@ public class OilCheck {
         double[] last = twin.getEconomyManager().getNationalAccounts().getLastHeldUnits();
         boolean zeros = true;
         for (int i = 5; i < last.length; i++) zeros &= last[i] == 0;
-        assertTrue("...and the goods held twelve wide: FUEL's slot petrol's and diesel's, summing to the bit, the other seven"
-                        + " at a known zero",
+        assertTrue("...and the goods held as wide as HELD: FUEL's slot petrol's and diesel's, summing to the bit, the rest"
+                        + " (the other seven, and since 0.7.85 crude) at a known zero",
                 last.length == NationalAccounts.HELD.length && last[3] + last[4] == held
                         && Math.abs(last[3] - held * p) <= Math.ulp(held * p) && zeros);
         double price = fuel.get("price").getAsDouble();
