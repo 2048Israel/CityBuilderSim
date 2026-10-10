@@ -393,6 +393,17 @@ public class WaterCheck {
         // Plants standing: fresh ones until this city's lakes cannot feed them, and one on the sea.
         double power = u.getConsumption();
         int plants = 0;
+        // ...the first on the lake and river the city was founded with (0.7.106, Jerus's A24: "found with
+        // fresh water for one plant"; 0.011 km2 of river and a limit of 1,324 units until then, 98% idle).
+        check("A NEW CITY'S WATER IS ONE PLANT'S: FOUNDING_FRESH_UNITS is the Water Treatment Plant's nameplate",
+                LandManager.FOUNDING_FRESH_UNITS, plant.getProduction1());
+        assertTrue(String.format("...its lakes and river yield at least that (%,.0f units a month)", f * land.getFreshKm2()),
+                f * land.getFreshKm2() >= LandManager.FOUNDING_FRESH_UNITS && land.getFreshKm2() >= LandManager.FOUNDING_FRESH_KM2);
+        bm.addStack(plant, 1, true);
+        plants++;
+        g.getServicesManager().updateServices();
+        assertTrue("...so its first plant treats all it can: not held to the limit, nothing idle",
+                !u.isFreshCapped() && u.getFreshIdleShare() == 0);
         while (!u.isFreshCapped() && plants < 50) {
             bm.addStack(plant, 1, true);
             plants++;

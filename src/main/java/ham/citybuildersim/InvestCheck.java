@@ -266,6 +266,36 @@ public class InvestCheck {
                 d.template != null && d.template.getCategory() == BuildingType.COMMERCIAL);
         System.out.println("   " + d.reason + " -> " + (d.template == null ? "none" : d.template.getName()));
 
+        /*
+         * THE INVESTMENT TEST COUNTS THE STAFF (0.7.106, batch P5; Jerus's
+         * A18, "all rec"). What a shop would clear, the figure the interest
+         * test reads (BusinessInvestment.estimatedMonthlyProfit(), through
+         * Game.consider()), is its margin less its posts at today's wages; it
+         * was the margin alone, and the grocers at their floor borrowed for
+         * shops that did not pay their staff. The test only: plan() still
+         * ranks a shop by its margin over its cost.
+         */
+        BuildingsTemplate store = template(housed, "Convenience Store");
+        double rateNow = shops.getOperatingRate() > 0 ? shops.getOperatingRate() : 1;
+        double margin = store.getCoverage() * rateNow * (shops.getStoreSellPrice() - shops.getFoodPrice());
+        double staff = plansHoused.wageBillFor(store);
+        System.out.printf("   a convenience store: margin $%,.2fk a month, its staff $%,.2fk, the test reads $%,.2fk%n",
+                margin, staff, plansHoused.estimatedMonthlyProfit(Sectors.RETAIL, store));
+        assertTrue("fixture: a shop's staff cost something, and its margin more", staff > 0 && margin > staff);
+        check("A SHOP'S TEST FIGURE IS ITS MARGIN LESS ITS STAFF AT TODAY'S WAGES (wageBillFor())",
+                plansHoused.estimatedMonthlyProfit(Sectors.RETAIL, store), margin - staff, 1e-9);
+        // A loan whose interest, with the margin over it, the margin alone would carry and the margin less the staff not.
+        double between = (margin + (margin - staff)) / 2;
+        double lent = between / BusinessInvestment.PROFIT_OVER_INTEREST * 12 / .09;
+        assertTrue("fixture: the margin alone would carry a loan of $" + Math.round(lent) + "k at 9%",
+                plansHoused.servicesItsOwnDebt(margin, lent, .09));
+        assertTrue("...so the grocers' test refuses it: the staff are paid before the interest",
+                !plansHoused.servicesItsOwnDebt(plansHoused.estimatedMonthlyProfit(Sectors.RETAIL, store), lent, .09));
+        BuildingsTemplate station = template(housed, "Filling Station");
+        check("...and a filling station's is its margin on the litres less its staff too",
+                shops.estimatedMonthlyProfit(station, plansHoused), shops.stationEarns(station, plansHoused)
+                        - plansHoused.wageBillFor(station), 1e-9);
+
         // ...and with thirty more stores, nobody is short of a shop.
         hb.addStack(template(housed, "Convenience Store"), 30, true);
         d = shops.plan(plansHoused, housed);

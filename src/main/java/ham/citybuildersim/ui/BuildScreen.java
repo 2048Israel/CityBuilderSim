@@ -1888,9 +1888,14 @@ final class BuildScreen {
                 return new Shown(CityNeeds.servedPct(s.share()), arc(s),
                         said + " · " + pct(ui.game.getInfrastructureManager().getThroughputRatio()) + " flow",
                         shortNumber(sd[1]) + " trips on " + shortNumber(sd[0]) + " of road");
-            case CARE:
+            case CARE: {
+                // The places are the beds less the priced out since 0.7.106 (Jerus's A20): say how many of
+                // those without are the fee's.
+                double without = sd[1] - sd[0], fee = Math.min(without, ui.game.getHealthcare().getPricedOut(n.care()));
                 return new Shown(CityNeeds.servedPct(s.share()), arc(s), said,
-                        sd[1] - sd[0] >= .5 ? people(sd[1] - sd[0]) + " people without" : "everyone has a place");
+                        without >= .5 ? people(without) + " people without" + (fee >= .5 ? ", " + people(fee) + " priced out" : "")
+                                : "everyone has a place");
+            }
             case DEAD:
                 return new Shown(people(v), share, "dead with nowhere to go",
                         people(ui.game.getHealthcare().getDeaths()) + " die a month");
@@ -3569,8 +3574,9 @@ final class BuildScreen {
                 } else {
                     out.add(String.format("Treats %s units of fresh water a month.",
                             formatter.format(t.getProduction1())));
+                    // ...and a new city is founded with one plant's (0.7.106, Jerus's A24; LandManager.FOUNDING_FRESH_UNITS).
                     out.add(String.format("The plants together treat no more than the city's lakes and river yield:"
-                            + " %s units a month for each km² of them it owns.",
+                            + " %s units a month for each km² of them it owns - a new city is founded with one plant's.",
                             formatter.format(UtilitiesHandler.FRESH_UNITS_PER_KM2)));
                 }
                 break;

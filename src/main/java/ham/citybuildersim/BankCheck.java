@@ -2534,8 +2534,10 @@ public class BankCheck {
         double shopsGone = shopsBefore - city.getBuildingManager().getQuantity(shop.getId());
         out.printf("   month %d: %d %s retired, %.0f units of material at $%,.3fk - the builders paid $%,.1fk%n",
                 city.getMonth(), sale.buildings(), sale.building(), sale.units(), sale.price(), sale.paid());
-        close("the material sold is the template's own, times the buildings retired",
-                sale.units(), template(city, sale.building()).getConstructionMaterials() * (double) sale.buildings(), 1e-9);
+        // 0.7.106 (Jerus's A23): the share a demolition recovers, ConstructionControl.SALVAGE_SHARE; all of it until then.
+        close("the material sold is the share a demolition recovers of the template's own, times the buildings retired",
+                sale.units(), template(city, sale.building()).getConstructionMaterials() * (double) sale.buildings()
+                        * ConstructionControl.SALVAGE_SHARE, 1e-9);
         close("...a shop's material, the shops the city lost", sale.buildings(), shopsGone, 0);
         assertTrue("fixture: the builders could pay for all of it", sale.unitsBought() == sale.units() && sale.paid() > 0);
         close("the builders paid the units at the day's price for material", sale.paid(), sale.units() * sale.price(), 1e-9);

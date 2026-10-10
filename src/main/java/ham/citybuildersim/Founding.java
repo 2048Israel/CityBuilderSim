@@ -64,11 +64,22 @@ public final class Founding {
        0 cash, 0 vault, and a 20y bond 3% for the initial land cost the city
        starts with ... if easier the starting debt is abroad in usd". Nothing
        in the treasury, nothing in the vault, and the city owes the world for
-       its ground: LandManager.STARTING_SQ_FT at the land market's opening
-       dollar price a square foot (LandMarket.openingUsdPerSqFt()), about
-       US$2.1M, on the model's own twenty-year dollar term loan with its
-       coupon fixed at Jerus's 3% (landBondUsd(), Game.foundTheLandBond()). A
-       founding of D$0 and US$0 reads back as Insane (Preset.of()).
+       its ground: the plots it is founded on at the land market's opening
+       dollar price a square foot (LandMarket.openingUsdPerSqFt()), on the
+       model's own twenty-year dollar term loan with its coupon fixed at
+       Jerus's 3% (landBondUsd(), Game.foundTheLandBond()). A founding of D$0
+       and US$0 reads back as Insane (Preset.of()).
+
+       ON THE PLOTS IT OWNS (0.7.106, batch P5; Jerus's B, 2026-10-10). The
+       bond was sized on LandManager.STARTING_SQ_FT, US$2.1M, the figure the
+       centre is drawn to hold - though since 0.7.67 the city owns the dry
+       plots drawn, 1.7% more, and since 0.7.106 the river or lake ground its
+       first water plant needs as well (CityLand.found(), A24). It is now the
+       centre's plots as the land office charges ground (LandMarket.
+       groundKm2(): dry ground whole, fresh water at FRESH_PRICE_SHARE, sea
+       at SEA_PRICE_SHARE) at that opening price - what the same plots would
+       have cost on the office's shelf before any premium. The fields under
+       them are not in it, as they never were.
        ===================================================================== */
 
     /** Insane's coupon on the land it owes for, a year: 3%, Jerus's number. */
@@ -77,9 +88,16 @@ public final class Founding {
     /** Insane's land bond's term, in years: twenty, Jerus's "20y" - one of the five term loans (LongTermBond.MATURITIES). */
     public static final int INSANE_LAND_YEARS = 20;
 
-    /** What an Insane city owes for its founding ground, in thousands of US dollars: every starting square foot at the land market's opening dollar price - STARTING_SQ_FT, the figure its centre is drawn to hold, though since 0.7.67 it owns the dry plots drawn, a little more. */
-    public static double landBondUsd() {
-        return LandManager.STARTING_SQ_FT * LandMarket.openingUsdPerSqFt();
+    /** What an Insane city owes for its founding ground, in thousands of US dollars: the plots its centre holds, as the land office charges ground (LandMarket.groundKm2()), at the land market's opening dollar price a square foot (0.7.106; STARTING_SQ_FT's square feet until then). */
+    public static double landBondUsd(CityLand land) {
+        double[] km2 = new double[CityLand.AREAS];
+        for (int a = 0; a < CityLand.AREAS; a++) km2[a] = land.centreKm2(a);
+        return LandMarket.openingUsdPerSqFt() * LandMarket.groundKm2(km2) * LandManager.SQ_FT_PER_KM2;
+    }
+
+    /** ...for a city founded on the world of this seed (LandManager.foundingLand()): what the founding screen quotes, and what Game.foundTheLandBond() books. */
+    public static double landBondUsd(long worldSeed) {
+        return landBondUsd(LandManager.foundingLand(worldSeed));
     }
 
     /** Lean's treasury, in thousands: D$25M - two-thirds of the founding village at a new city's invoices (three-quarters until the builders' sales tax went into them, 0.7.19), so the city borrows from its first months, for the rest of it and for every big work. */

@@ -142,6 +142,36 @@ public final class CityLand {
      * 120 m, 0.3024 km2.
      */
     public static CityLand found(World world, long x, long y, double dryKm2) {
+        return found(world, x, y, dryKm2, 0);
+    }
+
+    /*
+     * ...AND THE FRESH WATER ONE PLANT NEEDS (0.7.106, batch P5; Jerus's
+     * A24, 2026-10-10: "found with fresh water for one plant"). The default
+     * city's rings held 0.011 km2 of river, a limit of 1,324 units a month,
+     * so the first Water Treatment Plant it built idled about 98% until it
+     * bought lake or river (fixJ2 section 8.4). Now, once the rings hold the
+     * dry ground, the centre takes more whole blocks of the same level until
+     * its lake and river ground reach freshKm2: each time the block edge to
+     * edge with the centre that holds the most fresh plots, the nearer the
+     * site on a tie (L-infinity, in blocks, then north to south and west to
+     * east) - so it follows the founding river from where it passes the
+     * site, its banks with it; while no such block holds any, the one
+     * nearest the fresh block nearest the site, a step toward it. Within
+     * FRESH_REACH plots of the site's block, which the founding lake's far
+     * shore never lies beyond; a world with none nearer founds without it.
+     * Every block is holding 0's, so the centre stays whole blocks of one
+     * level, drawn plot by plot like the rings (drawnBooks()); the world's
+     * fields and its totals are untouched - a field whose centre plot the
+     * river's blocks hold goes with them whole, as with any of the centre's.
+     */
+
+    /** How far the founding takes blocks for its fresh water, in plots from the site, L-infinity: the founding lake's far shore at the most (World.RIVER_LAKE_NEAR + RIVER_LAKE_SPAN + LAKE_R_MIN + LAKE_R_SPAN, 107 plots, 3.2 km). */
+    static final long FRESH_REACH = (long) Math.ceil(World.RIVER_LAKE_NEAR + World.RIVER_LAKE_SPAN
+            + World.LAKE_R_MIN + World.LAKE_R_SPAN);
+
+    /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the water - see above. freshKm2 0 is the rings alone. */
+    public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2) {
         CityLand land = new CityLand(world.seed(), x, y);
         int level = LandGrid.levelFor(dryKm2 / World.KM2_PER_PLOT);
         long b = 1L << level;
@@ -161,8 +191,107 @@ public final class CityLand {
                 if (dry >= target) break outer;
             }
         }
+        if (freshKm2 > 0) land.takeFresh(world, level, x, y, freshKm2);
         land.drawnBooks(world);
         return land;
+    }
+
+    /** The founding's water (0.7.106): blocks of `level` added to the centre until its fresh plots reach freshKm2 rounded up to a whole plot - see ...AND THE FRESH WATER ONE PLANT NEEDS. */
+    private void takeFresh(World world, int level, long x, long y, double freshKm2) {
+        long b = 1L << level, last = World.SIDE / b - 1;
+        long target = (long) Math.ceil(freshKm2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long sbx = Math.floorDiv(x, b), sby = Math.floorDiv(y, b), reach = (FRESH_REACH + b - 1) / b;
+        Map<Long, byte[]> tiles = new HashMap<>();
+        Map<Long, Long> fresh = new HashMap<>();
+        java.util.Set<Long> owned = new java.util.LinkedHashSet<>();
+        long have = 0;
+        for (LandGrid.Fill f : centreRects) {
+            long k = blockKey(f.x0() >> level, f.y0() >> level);
+            owned.add(k);
+            have += freshPlots(world, tiles, fresh, k, b);
+        }
+        long[][] steps = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+        for (long guard = target + 4 * reach; have < target && guard > 0; guard--) {
+            long best = Long.MIN_VALUE, bestFresh = -1, bestNear = 0;
+            for (long k : owned) {
+                for (long[] d : steps) {
+                    long bx = (k >> 32) + d[0], by = (int) k + d[1];
+                    if (bx < 0 || by < 0 || bx > last || by > last) continue;
+                    long nk = blockKey(bx, by);
+                    if (owned.contains(nk)) continue;
+                    long f = freshPlots(world, tiles, fresh, nk, b);
+                    long near = Math.max(Math.abs(bx - sbx), Math.abs(by - sby));
+                    if (f > bestFresh || (f == bestFresh && before(near, by, bx, bestNear, best))) {
+                        best = nk; bestFresh = f; bestNear = near;
+                    }
+                }
+            }
+            if (best == Long.MIN_VALUE) break;
+            if (bestFresh == 0) {
+                // No block beside the centre holds any: a step toward the fresh block nearest the site.
+                long goal = Long.MIN_VALUE;
+                search:
+                for (int ring = 0; ring <= reach; ring++) {
+                    for (long[] p : GridConversion.ringOf(sbx, sby, ring)) {
+                        if (p[0] < 0 || p[1] < 0 || p[0] > last || p[1] > last) continue;
+                        long gk = blockKey(p[0], p[1]);
+                        if (!owned.contains(gk) && freshPlots(world, tiles, fresh, gk, b) > 0) { goal = gk; break search; }
+                    }
+                }
+                if (goal == Long.MIN_VALUE) break;
+                long gx = goal >> 32, gy = (int) goal;
+                best = Long.MIN_VALUE;
+                long bestTo = 0;
+                for (long k : owned) {
+                    for (long[] d : steps) {
+                        long bx = (k >> 32) + d[0], by = (int) k + d[1];
+                        if (bx < 0 || by < 0 || bx > last || by > last) continue;
+                        long nk = blockKey(bx, by);
+                        if (owned.contains(nk)) continue;
+                        long to = Math.max(Math.abs(bx - gx), Math.abs(by - gy));
+                        if (best == Long.MIN_VALUE || to < bestTo || (to == bestTo && before(0, by, bx, 0, best))) {
+                            best = nk; bestTo = to;
+                        }
+                    }
+                }
+            }
+            long bx = best >> 32, by = (int) best;
+            grid.fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE);
+            centreRects.add(new LandGrid.Fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE));
+            owned.add(best);
+            have += freshPlots(world, tiles, fresh, best, b);
+        }
+    }
+
+    /** A block's key: its column in the high half, its row in the low. */
+    private static long blockKey(long bx, long by) { return (bx << 32) | (by & 0xffffffffL); }
+
+    /** Whether a block (near, by, bx) comes before another's key at `otherNear`: the nearer, then north first, then west first. */
+    private static boolean before(long near, long by, long bx, long otherNear, long other) {
+        if (other == Long.MIN_VALUE) return true;
+        if (near != otherNear) return near < otherNear;
+        long oy = (int) other, ox = other >> 32;
+        return by != oy ? by < oy : bx < ox;
+    }
+
+    /** The fresh plots of block k, `b` plots a side, read a tile at a time and kept. */
+    private static long freshPlots(World world, Map<Long, byte[]> tiles, Map<Long, Long> fresh, long k, long b) {
+        Long known = fresh.get(k);
+        if (known != null) return known;
+        long x0 = (k >> 32) * b, y0 = (int) k * b, n = 0;
+        for (long y = y0; y < y0 + b; y++) {
+            for (long x = x0; x < x0 + b; x++) {
+                long tx = Math.floorDiv(x, World.TILE), ty = Math.floorDiv(y, World.TILE);
+                byte[] t = tiles.computeIfAbsent(blockKey(tx, ty), q -> {
+                    byte[] out = new byte[World.TILE * World.TILE];
+                    world.tileTerrain(tx, ty, out);
+                    return out;
+                });
+                if (t[(int) ((y - ty * World.TILE) * World.TILE + (x - tx * World.TILE))] == World.FRESH) n++;
+            }
+        }
+        fresh.put(k, n);
+        return n;
     }
 
     /** The dry plots of a square of `b` plots at (x0, y0), read a tile at a time. */

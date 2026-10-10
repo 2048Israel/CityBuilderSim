@@ -364,13 +364,24 @@ final class FoundingScreen {
         card.setStyle("-fx-padding: 14; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-width: 2;"
                 + " -fx-cursor: hand; -fx-background-color: " + (on ? Palette.PINNED : Palette.RAISED) + ";"
                 + " -fx-border-color: " + (on ? Palette.MONEY : Palette.EDGE) + ";");
-        Tooltip.install(card, new Tooltip(p == Founding.Preset.INSANE
-                ? String.format("Nothing in hand: it runs on the central bank's advances and borrows to build."
-                        + " Its ground is owed abroad on a %d-year US-dollar bond at %.0f%%: %s.",
-                        Founding.INSANE_LAND_YEARS, Founding.INSANE_LAND_COUPON * 100, usd(Founding.landBondUsd()))
-                : "In the treasury " + marked(here, money(p.cash())) + ", in the vault " + usd(p.reserveUsd()) + "."));
+        Tooltip tip = new Tooltip(p == Founding.Preset.INSANE ? "Nothing in hand."
+                : "In the treasury " + marked(here, money(p.cash())) + ", in the vault " + usd(p.reserveUsd()) + ".");
+        // Insane's bond is the plots the world's centre holds (0.7.106): priced on the seed as typed when the
+        // tip opens, not on every keystroke - drawing a new world's centre takes a moment.
+        if (p == Founding.Preset.INSANE) tip.setOnShowing(e -> tip.setText(insaneWords()));
+        Tooltip.install(card, tip);
         card.setOnMouseClicked(e -> { preset = p; draw(); });
         return card;
+    }
+
+    /** Insane's card's tip: the advances, and the land bond on the plots this world's centre holds (Founding.landBondUsd(), 0.7.106) - the default world's while the seed will not parse. */
+    private String insaneWords() {
+        Long typed = seed();
+        return String.format("Nothing in hand: it runs on the central bank's advances and borrows to build."
+                        + " Its ground - the plots it is founded on, its river with them - is owed abroad on a"
+                        + " %d-year US-dollar bond at %.0f%%: %s.", Founding.INSANE_LAND_YEARS,
+                Founding.INSANE_LAND_COUPON * 100,
+                usd(Founding.landBondUsd(typed == null ? Founding.DEFAULT_WORLD_SEED : typed)));
     }
 
     /** A whole amount without its ".0": "D$100.0M" is "D$100M" on a card, where the room is a card's. */
