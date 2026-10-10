@@ -2292,16 +2292,16 @@ final class BuildScreen {
                 + " mo out: " + growth + ", " + pct(BuildAdvice.SLACK) + " to spare.";
 
         String per = BuildCard.perWords(s.measure());
-        // A road's figure is over its life since 0.7.70 (BuildAdvice.lifetime()), and a paving frees its ground.
-        // A living care building's since 0.7.71 is its whole order over the people the need has no place for
-        // (BuildAdvice.perPlaceNeeded()), so the size that fits the need is the cheapest.
-        boolean road = s.measure().kind() == BuildAdvice.Kind.ROADS;
-        boolean care = s.measure().kind() == BuildAdvice.Kind.CARE;
-        String priced = s.paving() ? " over its life, the ground it frees taken off"
-                : road ? " over its life, with its land" : care ? " without a place, the whole order with its land"
-                : " with its land";
+        // Every card's figure is its order over its life since 0.7.101 (BuildAdvice.lifePerServed()): its quote, its
+        // land and its running for BUILD_BOND_YEARS, a paving's with the ground it frees taken off - for power, water,
+        // the roads and care over what the city will use of it as it grows, so a building far past the need pays for
+        // what stands idle. (A road's was over its life from 0.7.70, a care building's its order over the places
+        // lacking from 0.7.71, and the rest their price a unit with their land.)
+        boolean used = BuildAdvice.weighsServed(s.measure());
+        String priced = (s.paving() ? " over its life, the ground it frees taken off" : " over its life, with its land")
+                + (used ? ", for what the city will use of it" : "");
         // ...the card's line says the short of it, the tooltip the whole (four lines at most, 0.7.71's words probe).
-        String pricedShort = care ? " without a place" : priced;
+        String pricedShort = used ? " used, over its life" : " over its life";
         String land = s.paving()
                 ? "Frees " + LandManager.areaWords(-s.landSqFt()) + " ≈ " + money(-s.landValue()) + "."
                 : "Land " + LandManager.areaWords(s.landSqFt()) + " ≈ " + money(s.landValue())
@@ -2316,7 +2316,7 @@ final class BuildScreen {
         String which = s.paving() ? (s.closes() ? ", that keeps it ahead" : "")
                 : s.closes() ? (s.landShort() > 0 ? " that keeps it ahead" : " that keeps it ahead and fits the land left")
                 : s.landShort() > 0 ? "" : " that fits the land left";
-        if (care && !which.isEmpty()) which = "," + which;
+        if (!which.isEmpty() && !which.startsWith(",")) which = "," + which;
         if (s.count() > 1) {
             land += " " + formatter.format(s.count()) + " of them: the cheapest per " + per + pricedShort + which
                     + ", at " + shortNumber(s.unit()) + " " + BuildCard.perPlural(s.measure()) + " each.";
@@ -2389,9 +2389,10 @@ final class BuildScreen {
     /** The section's (i). */
     static final String AUTO_INFO = "Turned on, it orders every month what this page advises for the city's works - "
             + "power, water, roads and transit, care, schools, police, cells - kept ahead of demand with the spare margin "
-            + "on top. It pays from the cash over a month's tax, then borrows on Build's 20-year bond while the city's "
-            + "debt stays under the limit, a share of a year's GDP; over it, it builds nothing, or only from cash. It buys "
-            + "the land its orders need and orders no more than the builders open in a year or the budget can run.";
+            + "on top, a first one where there is none. It pays from the cash over a month's tax, then borrows on Build's "
+            + "20-year bond while the city's debt stays under the limit, a share of a year's GDP; over it, it builds "
+            + "nothing, or only from cash. It buys only its orders' own land, orders what the builders open in a year, "
+            + "and takes the next choice where the money will not pay for the first.";
 
     /** The heading's quiet words: on or off. */
     static String autoHint(AutoBuilder ab) {
@@ -4150,11 +4151,11 @@ final class BuildScreen {
                     () -> handleAllBuildingMenus(menuTitle, categories)));
             // ...and whether an iron field pays back here (0.7.101, Jerus's decision B): the test player's own rule.
             if (site == Resource.IRON && !selected.standsAtSea()) {
-                BuildAdvice.Payback back = BuildAdvice.ironPayback(ui.game, cheapest);
-                Label pays = new Label(ironPaybackWords(back));
+                BuildAdvice.Payback field = BuildAdvice.ironPayback(ui.game, cheapest);
+                Label pays = new Label(ironPaybackWords(field));
                 pays.setWrapText(true);
                 pays.setMaxWidth(PAYBACK_LINE);
-                pays.setStyle(wordsAt(10.5, back.pays() ? Palette.TEXT_LABEL : Palette.WARN) + " -fx-padding: 2 0 6 0;");
+                pays.setStyle(wordsAt(10.5, field.pays() ? Palette.TEXT_LABEL : Palette.WARN) + " -fx-padding: 2 0 6 0;");
                 ui.rootMenu.getChildren().add(pays);
             }
         }

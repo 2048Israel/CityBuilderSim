@@ -124,9 +124,9 @@ public class Inbox {
                 demolished);
 
         // Automatic building (0.7.73): a service below its spare margin that
-        // this month's pass could not order for - the builders, the ground,
-        // the budget or the player's debt limit, or nothing it could build -
-        // a paragraph each, in its own words.
+        // this month's pass could not order for - the builders, the ground or
+        // the player's debt limit (the budget too until 0.7.101), or nothing
+        // it could build - a paragraph each, in its own words.
         List<String> autoBuild = new ArrayList<>();
         for (String held : game.getAutoBuilder().held()) {
             if (!autoBuild.isEmpty()) autoBuild.add("");

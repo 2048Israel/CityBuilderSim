@@ -697,9 +697,8 @@ public final class AutoBuilder {
      */
     private static String groundWords(Game game, BuildingsTemplate t) {
         double over = overFull(game);
-        if (over > 0) return "the city's buildings already stand on " + LandManager.areaWords(over) + " more ground than it"
-                + " owns, so an order cannot be placed on ground of its own, and it buys only an order's own. Buy "
-                + LandManager.areaWords(over) + " at the land office first.";
+        if (over > 0) return "the city's buildings stand on " + LandManager.areaWords(over) + " more ground than it owns, so"
+                + " no order fits on ground of its own, and it buys only an order's own. Buy that at the land office.";
         double free = game.getLandManager().getAvailableSqFt();
         return "the city has no ground for one (" + LandManager.areaWords(t.getLandSqFt()) + " each, "
                 + LandManager.areaWords(Math.max(0, free)) + " free) and no bare ground on offer to buy for it. Buy land at"
