@@ -53,10 +53,12 @@ import java.util.Set;
  *      the advice takes the one with fewer.
  *   6. NOTHING NEEDED, NOTHING SUGGESTED: a city NEEDS YOU lists no
  *      city-built need for gets no suggestion.
- *   7. LAND COUNTED (0.7.51): a building's price a unit is its quote for one
- *      and its ground at landValue(), over what it serves, to the bit, on
- *      the land the cards before leave - a road's with its running over its
- *      life since 0.7.70 (BuildAdvice.lifetime(); RoadCheck holds the rest);
+ *   7. LAND COUNTED (0.7.51): a card's figure is, since 0.7.101, its order
+ *      over its life - its quote for the count, its ground at landValue()
+ *      and its running - over what it will serve over that life, to the bit,
+ *      on the land the cards before leave (its quote for one and its ground
+ *      over what one serves until then, a road's with its running over its
+ *      life since 0.7.70; RoadCheck holds the rest);
  *      with no ground free, the land office's prices at nothing pick the
  *      road that is cheapest to build and keep, and at ten times the price
  *      past which the road that needs the least ground a trip is the
@@ -75,6 +77,12 @@ import java.util.Set;
  *      goes all the way exactly when no card is short of land and otherwise
  *      stops at the first that is, for land; and what it charges is the
  *      header's total, Game.buildRunInvoice().
+ *  12. CARE IS THE BEDS LESS THE PRICED OUT (0.7.106, Jerus's A20): with
+ *      half of those the beds could take priced out, NEEDS YOU's care row
+ *      carries the staffed beds less them and reads them served over its
+ *      people, lower than the beds alone; Build's ring reads the same; an
+ *      order's after is the beds and its staffed places less the month's
+ *      priced out; with nobody priced out, the beds.
  *
  * Every fixture causes its condition.
  */

@@ -1092,13 +1092,13 @@ public final class BuildAdvice {
         return suggestFor(game, need, m, cashLeft, landLeft, slack, java.util.Collections.emptySet());
     }
 
-    /** ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one its budget cannot run one of, and since 0.7.101 one the money or the ground cannot pay for one of - the next in the ranking is the card. */
+    /** ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one that would not pay back (since 0.7.104; one its budget could not run from 0.7.73), and since 0.7.101 one the money or the ground cannot pay for one of - the next in the ranking is the card; and since 0.7.103 the test player's, every building but the roads (LongPlaytest.roadsByNeed()). */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip) {
         return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, false);
     }
 
-    /** ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way. */
+    /** ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way (and the test player's paving once offered, since 0.7.103). */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving) {
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
@@ -1499,7 +1499,8 @@ public final class BuildAdvice {
            measures whose need is a shortfall to fill - power and water (the
            supply the quarter in hand asks, NETWORK_YELLOW, past what stands
            and is on site), the roads (the trips over STRAINED, roadsOver()'s
-           line) and care (the places past what stands): in each year of its
+           line) and care (the places past what stands, the beds less the
+           priced out since 0.7.106): in each year of its
            life, from the month it opens, what it takes off that shortfall at
            the demand then - today's grown by the city's own trend (lifeTrend())
            with the slack past it - each year discounted as lifeFactor()
@@ -1567,7 +1568,8 @@ public final class BuildAdvice {
      * NEEDS YOU's quarter in hand asks (the demand over NETWORK_YELLOW) less
      * the supply; the roads the trips over STRAINED of their capacity
      * (roadsOver()'s line, the unit a road's unit() is in); care the places
-     * past what stands. NaN for a measure not weighed so.
+     * past what stands (since 0.7.106 the beds less the priced out,
+     * carePlaces()). NaN for a measure not weighed so.
      */
     public static double shortfall(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
         switch (m.kind()) {

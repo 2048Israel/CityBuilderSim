@@ -677,7 +677,7 @@ public class AutoBuildCheck {
         // Ground for both, the same: the decades ended short of it, and a city that can build nothing proves little.
         for (Game c : new Game[] { g, back }) c.getLandManager().setOwnedSqFt(c.getLandManager().getOwnedSqFt() + 50_000_000L);
         // ...and room for both, the same (withRoom()): since 0.7.102 the decades end with the city spending past its revenue
-        // - $73,708k a month against $59,907k at the first pass after them, the repairs $4,816k of it - and a city that
+        // - $73,708k a month against $59,907k at the first pass after them at 0.7.102, the repairs $4,816k of it - and a city that
         // orders nothing proves as little (the budget held every staffed service there until 0.7.104; the payback reads
         // what a resident pays and costs the city, the same in both, since).
         for (Game c : new Game[] { g, back }) withRoom(c);

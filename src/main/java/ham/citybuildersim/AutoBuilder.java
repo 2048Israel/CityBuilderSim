@@ -16,7 +16,8 @@ import java.util.Set;
  * it, by the build advice's own ranking and count, paid out of the cash and,
  * when the cash runs out, on the funding page's bond no further than the
  * player's debt limit - since 0.7.81 the city's debt over a year of its GDP,
- * over which it builds nothing, or with "Build from cash anyway" on, only
+ * since 0.7.101 all it owes over the output it has recorded - over which it
+ * builds nothing, or with "Build from cash anyway" on, only
  * what the cash pays for.
  *
  * WHY. Jerus: "an automatic build and acquire debt button for basically
@@ -142,7 +143,7 @@ public final class AutoBuilder {
     public static final double DEFAULT_SLACK = .15;
 
     /**
-     * The debt limit a new city is given, the city's debt over a year of its GDP: 240% (0.7.101, Jerus's decision A6 of
+     * The debt limit a new city is given, all the city owes over a year of its output (THE DEBT LIMIT): 240% (0.7.101, Jerus's decision A6 of
      * 2026-10-10, "have the default at 240%"). From 0.7.81 to 0.7.100 60%, the Maastricht Treaty's reference value
      * (OLD_DEFAULT_DEBT_LIMIT), which stopped automatic building in most played cities - his own owed 250% of a year's
      * GDP; from 0.7.73 to 0.7.80 debt payments at most 15% of revenue.
@@ -185,7 +186,7 @@ public final class AutoBuilder {
 
     public boolean isOn() { return on; }
     public double getSlack() { return slack; }
-    /** The debt limit: the city's debt over a year of its GDP (0.7.81; debt payments over revenue until then). */
+    /** The debt limit: all the city owes over a year of its output (0.7.101, THE DEBT LIMIT; its bonds and bills over a year of GDP from 0.7.81, debt payments over revenue until then). */
     public double getDebtLimit() { return debtLimit; }
     public boolean isCashAnyway() { return cashAnyway; }
 
@@ -248,7 +249,7 @@ public final class AutoBuilder {
         public String measure;
         public String building;
         public int count;
-        /** What the advice's card asked for; more than count when the builders, the ground, the budget or the limit cut it. */
+        /** What the advice's card asked for; more than count when the builders, the ground, the payback (the budget until 0.7.104) or the limit cut it. */
         public int wanted;
         public double cost;
         /** What the funding page's bond brought for it; 0 out of the cash. */
@@ -932,7 +933,7 @@ public final class AutoBuilder {
         }
     }
 
-    /** A card the money or the ground could not pay for one of (0.7.101): the suggestion, why, how many it asked for, and the inbox's line for it. */
+    /** A card the money or the ground could not pay for one of (0.7.101), or none of which would pay back (0.7.104): the suggestion, why, how many it asked for, the inbox's line for it, and the payback weighed for one (null for the money or the ground). */
     private record Refused(BuildAdvice.Suggestion s, Cut cut, int wanted, String line, Payback payback) { }
 
     /**
