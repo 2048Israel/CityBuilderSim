@@ -1188,7 +1188,14 @@ public class CentralBankCheck {
         Debt serial = fixtureSerial(city, soldIn);
         assertTrue("fixture: the treasury sold a two-year serial", serial != null);
         play(city);                                        // the settle: the households take their share
-        double dial = .5;
+        /*
+         * THE DIAL LEAVES THE BANK A PART WHATEVER THE HOUSEHOLDS TAKE (0.7.103; P3's 0.7.102 found the same). It was
+         * .5: the households take at most HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE of an issue at its settle, so a
+         * central bank buying half of what was left left the bank nothing whenever they took their whole share - which
+         * they do once each road's own repairs (Jerus's A11) move this town - and the fixture stopped causing the three
+         * holders it is about. Four fifths of the rest.
+         */
+        double dial = (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE) * .8;
         city.getCentralBank().setTargetShare(dial);
         while (serial.getRemainingMonths() > 16) play(city);
         assertTrue("fixture: the households, the bank and the central bank each hold part of it",
@@ -1650,7 +1657,7 @@ public class CentralBankCheck {
 
         /* ---- the probe city ---- */
         GameFiles files = GameFiles.scratch("howstrict");
-        Game city = probeCity(files);
+        Game city = probeCity(files, PROBE_SHAPE);
         out.printf("   the probe city at m%d: %,d people, inflation %.2f%%, the dial %.2f%%, trust %.3f%n", city.getMonth(),
                 city.getPopulationManager().getPopulation(), city.getPriceIndex().inflation() * 100,
                 city.getDebtManager().getPolicyRate() * 100, city.getExpectations().getCredibility());
@@ -1798,7 +1805,18 @@ public class CentralBankCheck {
      * 4.137%, the very loose twin's trust 0.624 against 0.933
      * (runs/fixM3b-notes.md).
      */
-    static Game probeCity(GameFiles files) {
+    /*
+     * THE PROBE CITY'S SHAPE (0.7.103): the playtest's founding nudges, as its ensemble mode makes them
+     * (LongPlaytest, ENSEMBLE MODE) - 40 + shape % 4 houses, then 3 + (shape / 4) % 3 months, then 20 +
+     * (shape / 12) % 3 houses more. Shape 11 is the founding this city had until 0.7.103 (43, 5, 20); each road's
+     * own repairs (Jerus's A11) keep that city over its target the whole twenty years, so the very loose twin no
+     * longer read a month under it, and section 21's fixture needs a city that does. Shape 0 is the default
+     * playtest's own founding (40, 3, 20): its very loose twin reads 141 months under the target and 99 over.
+     * Shapes 1 to 3 cause it too (54, 35 and 53 months under); 11 does not (0).
+     */
+    static final int PROBE_SHAPE = 0;
+
+    static Game probeCity(GameFiles files, int shape) {
         Game g = new Game(files, LongPlaytest.founding());
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
@@ -1810,11 +1828,11 @@ public class CentralBankCheck {
                 g.setRolloverMode(LongPlaytest.ROLLOVER);
                 g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
                 g.setFundDial(LongPlaytest.FUND_DIAL);
-                LongPlaytest.villageBuild(g, "House", 43);
+                LongPlaytest.villageBuild(g, "House", 40 + shape % 4);
                 LongPlaytest.villageBuild(g, "Convenience Store", 3);
                 LongPlaytest.villageBuild(g, "Mixed Farm", 2);
-                LongPlaytest.run(g, 5);
-                LongPlaytest.villageBuild(g, "House", 20);
+                LongPlaytest.run(g, 3 + (shape / 4) % 3);
+                LongPlaytest.villageBuild(g, "House", 20 + (shape / 12) % 3);
                 LongPlaytest.run(g, 4);
                 LongPlaytest.villageBuild(g, "Convenience Store", 2);
                 LongPlaytest.villageBuild(g, "Construction Depot", 1);

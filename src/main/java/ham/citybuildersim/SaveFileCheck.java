@@ -2330,8 +2330,10 @@ public class SaveFileCheck {
         // city's treasury runs a surplus whose pay-in met the transfer every
         // month, so the fund never sold (its cash $136.6M after a year).
         drawing.setFundDial(0);
-        // A month for what it held to run short, and one to pay what it sold late: pressed until both, no more than a year.
-        for (int m = 0; m < 12 && !(drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0); m++) {
+        // A month for what it held to run short, and one to pay what it sold late: pressed until both, no more than two
+        // years (0.7.103: a year until each road's own repairs, Jerus's A11, moved this city - it owed at month 12, and
+        // had not yet paid late).
+        for (int m = 0; m < 24 && !(drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0); m++) {
             drawing.simulateMonths(1);
         }
         System.out.printf("   drawing %s a month: due $%,.2fk, paid $%,.2fk, to raise $%,.2fk, paid late $%,.2fk, cash $%,.2fk%n",
