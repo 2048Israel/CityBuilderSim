@@ -68,9 +68,11 @@ public final class BoatSchedule {
     /** The salt the calls' hashes start from. */
     private static final long SALT = 0xB0A7_5417L;
 
-    /* A call's key: its route + 1 (0 for none) in the top ROUTE_BITS, its arrival in ARRIVAL_BITS ticks of a month, its group in the low GROUP_BITS. */
+    /* A call's key: its route + 1 (0 for none) from bit ROUTE_SHIFT up, its arrival in ARRIVAL_BITS ticks of a month, its group in the low GROUP_BITS. */
     private static final int GROUP_BITS = 7, ARRIVAL_BITS = 36, ROUTE_SHIFT = GROUP_BITS + ARRIVAL_BITS;
+    /** The masks that take a key's group and its arrival back out, once shifted down. */
     private static final long GROUP_MASK = (1L << GROUP_BITS) - 1, ARRIVAL_MASK = (1L << ARRIVAL_BITS) - 1;
+    /** A month's arrival ticks, 2^36: an arrival in ticks over this is its share of the month. */
     private static final double TICKS = (double) (1L << ARRIVAL_BITS);
 
     /** One terminal's quay: its kind and where on the map it stands, in plots. */

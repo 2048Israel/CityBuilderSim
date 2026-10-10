@@ -2149,6 +2149,7 @@ public final class DistrictPlan {
             for (int b = Math.max(0, cj - 1); b <= b1; b++) for (int a = a0; a <= a1; a++) reachStale[a + b * CELLS_A_SIDE] = true;
         }
 
+        /** A window's row as bits, one a plot: a cell's interior and the REACH plots either side of it. */
         static final long WINDOW = (1L << (INTERIOR + 2 * REACH)) - 1;
 
         /** A window's row of bits spread a plot either way along it, kept to the window. */

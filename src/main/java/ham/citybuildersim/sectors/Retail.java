@@ -965,6 +965,7 @@ public final class Retail extends Sector {
 
     /** A month's sale at the pump (sellFuel()): the litres, those sold past the stations, the wholesale bill and its imported part, what the households paid, and of that the fuel duty, the treasury's (0.7.103). */
     public record FuelSale(double litres, double queued, double wholesale, double imported, double bill, double duty) {
+        /** No sale: no litres asked, or no market or city to sell through. */
         public static final FuelSale NONE = new FuelSale(0, 0, 0, 0, 0, 0);
     }
 

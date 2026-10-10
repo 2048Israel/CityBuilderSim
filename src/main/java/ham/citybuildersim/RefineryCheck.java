@@ -148,7 +148,9 @@ import java.io.PrintStream;
 public class RefineryCheck {
 
     static int fails = 0;
+    /** Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. */
     static final PrintStream out = System.out;
+    /** A stream that drops what is written to it: the game's prose while a fixture town is founded and played. */
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
     static void assertTrue(String label, boolean ok) {
@@ -903,6 +905,7 @@ public class RefineryCheck {
         return g;
     }
 
+    /** Each planner town's save folder (plannerTown()), for the sections that save one and load its twin. */
     static final java.util.Map<Game, GameFiles> PLANNER_FILES = new java.util.IdentityHashMap<>();
 
     static void idleThenShed() throws Exception {

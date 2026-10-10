@@ -159,7 +159,9 @@ public final class Ports {
     /** The share of a berth's month the uncovered tonnes of its kind must reach before the test player orders one (spec-oil 5's O9 row): the railway's own line, Rail.MIN_LINE_UTILISATION. */
     public static final double WORTH_A_BERTH = ham.citybuildersim.sectors.Rail.MIN_LINE_UTILISATION;
 
+    /** The kinds of cargo a terminal takes, the length of every by-kind array here. */
     private static final int KINDS = Cargo.values().length;
+    /** The streams of traffic (Traffic), the length of every by-stream array here. */
     private static final int STREAMS = Traffic.values().length;
 
     /* =====================================================================
