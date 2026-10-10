@@ -32,8 +32,9 @@ import java.util.Map;
  * its strategic reserve (StrategicReserve, a CityTrader) bids for crude to
  * fill it and offers crude to release it, in crude's clearing beside the
  * sectors - its fill pro rata with theirs from the wells and the world for
- * the rest, its release pro rata with the wells' offers and shipped, as
- * their unsold crude is, past what the buyers take. A city with no order
+ * the rest, its release pro rata with the wells' offers - and since 0.7.103
+ * (Jerus's A8) what the buyers do not take of it stays in its tanks, where
+ * until then it shipped as their unsold crude does. A city with no order
  * standing trades nothing, and every figure of the clearing is what it was.
  *
  * PRO RATA BOTH WAYS. With one mill and ten shops, or three mines and one
@@ -290,7 +291,6 @@ public final class Markets {
         }
 
         double fill = Math.min(offered, bid);
-        double citySoldHere = 0;
 
         if (fill > 0) {
             for (int j = 0; j < users.size(); j++) {
@@ -310,7 +310,6 @@ public final class Markets {
                         users.get(j).bookPurchase(t);
                         users.get(j).receiveInput(g, units);
                         city.citySold(t);
-                        citySoldHere += units;
                     }
                 }
             }
@@ -350,11 +349,9 @@ public final class Markets {
 
         // the makers' unsold flow, to the world or to nobody
         for (Sector s : makers) s.shipUnsoldFlow(g, m);
-        // ...and the city's release past what the buyers took, shipped as theirs is (0.7.85).
-        if (cityOffer > 0 && g.exportable()) {
-            double unsold = cityOffer - citySoldHere;
-            if (unsold > 0) city.citySold(m.record(Trade.CITY, Trade.WORLD, unsold, m.exportPrice()));
-        }
+        // ...and the city's release past what the buyers took STAYS IN ITS TANKS (0.7.103, batch P4; Jerus's
+        // A8, 2026-10-10): it shipped at the export price as the wells' unsold crude does from 0.7.85 (star O8-4).
+        // A reserve is the city's to hold for a shock, so only what the buyers here take leaves it.
         if (city != null && (cityBid > 0 || cityOffer > 0)) city.cityCleared(g);
         // ...and each buyer told its good has cleared (0.7.85; Sector.afterClearing()).
         for (Sector u : users) u.afterClearing(g);

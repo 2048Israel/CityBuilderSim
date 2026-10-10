@@ -1301,7 +1301,7 @@ public final class OilView {
     /** ...its status. */
     public static String releaseStatus(Reserve r) {
         if (!(r.held() > 0)) return r.release() > 0 ? "the reserve is empty: nothing left to release" : "the reserve is empty";
-        return RefineryView.tonnes(r.held()) + " held · offered to the refiners first, the rest shipped at the export price";
+        return RefineryView.tonnes(r.held()) + " held · offered to the refiners; what they do not take stays in the tanks";
     }
 
     /** A lever's step: its reach over LADDER_STEPS, or nothing with no reach. */
@@ -1323,11 +1323,11 @@ public final class OilView {
                 new Effect("Its cost at today's import price", r.fill() * r.importPrice(), order * r.importPrice(), Unit.MONEY));
     }
 
-    /** What a release of `t` a month would do: a month's release, what is held after it, a month's worth at today's price here. */
+    /** What a release of `t` a month would do: a month offered, what is held after it if the refiners take it all (what they do not take stays, since 0.7.103), a month's worth at today's price here. */
     public static List<Effect> releaseEffects(Reserve r, double t) {
         double now = Math.min(r.release(), r.held()), then = Math.min(Math.max(0, t), r.held());
-        return List.of(new Effect("Released next month", now, then, Unit.TONNES),
-                new Effect("Held after it", r.held() - now, r.held() - then, Unit.TONNES),
+        return List.of(new Effect("Offered next month", now, then, Unit.TONNES),
+                new Effect("Held after it, if all is taken", r.held() - now, r.held() - then, Unit.TONNES),
                 new Effect("A month's worth at today's price here", now * r.localPrice(), then * r.localPrice(), Unit.MONEY));
     }
 }

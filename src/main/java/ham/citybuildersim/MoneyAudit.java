@@ -569,7 +569,9 @@ public final class MoneyAudit {
             in += credit.apply("+ " + s.key() + " Exports", s.statement().exports, Scope.TRADE);
         }
         // ...and the strategic reserve's crude shipped (0.7.85), settled at the strike beside the
-        // sectors' month; what the refiners bought of it is a pool paying a pool, not listed.
+        // sectors' month; what the refiners bought of it is a pool paying a pool, not listed. Since
+        // 0.7.103 (A8) a release the refiners do not take stays in the tanks, so this is only a
+        // save's month in flight from before.
         in += credit.apply("+ city ReserveSales", g.getReserve().getSettledExports(), Scope.TRADE);
         /*
          * THE LENDER IS INSIDE THE CITY NOW.

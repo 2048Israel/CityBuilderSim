@@ -147,8 +147,11 @@ import java.nio.file.Path;
  *      abroad the audit's "- city ReserveFill", the part from the wells
  *      Oil's sale banked at the same strike, the whole journalled, the
  *      reserve's cash exact; a release sold to the refiners pro rata with
- *      the wells and shipped past what they take ("+ city ReserveSales"),
- *      its book falling at average cost; each lever the player's decision,
+ *      the wells, its book falling at average cost - and since 0.7.103
+ *      (batch P4, Jerus's A8) what they do not take of it STAYS IN THE
+ *      TANKS, nothing shipped ("+ city ReserveSales" none), the treasury
+ *      taking in what the refiners paid to the bit (it shipped at the
+ *      export price from 0.7.85); each lever the player's decision,
  *      a release cancelling a fill; the crude among the goods held, the
  *      goods footing to the balance of payments and the audit closing
  *      every month; and the reserve crossing a save to settle the same.
@@ -433,7 +436,7 @@ public class OilCheck {
      */
     static void theStrategicReserve() throws Exception {
         out.println("\n--- 16. the strategic reserve: the city's crude, filled from the wells and the world, released to"
-                + " the refiners and the world, its money at the strike (0.7.85) ---");
+                + " the refiners - the rest kept in its tanks since 0.7.103 - its money at the strike (0.7.85) ---");
         int wellsN = 4;
         Game g = town("oilcheck-reserve", 600, wellsN * 87_120 + 870_000 + 1_076_391 + 700_000);
         BuildingsTemplate well = template(g, "Oil Well"), refinery = template(g, "Oil Refinery");
@@ -553,17 +556,22 @@ public class OilCheck {
         close("...and its book by the share of it the tonnes were, at average cost", reserve.getCost(),
                 cost2 - cost2 * (release / tonnes2), 1e-12);
 
-        // ...a release past what the refiners take: the rest ships at the export price.
-        double big = 30_000, tonnes3 = reserve.getTonnes();
+        // ...a release past what the refiners take: the rest STAYS IN THE TANKS (0.7.103, batch P4; Jerus's A8 - it
+        // shipped at the export price from 0.7.85, star O8-4).
+        double big = 30_000, tonnes3 = reserve.getTonnes(), cost3 = reserve.getCost();
         g.releaseReserve(big);
         quietly(() -> g.simulateMonths(1));
         worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
         double home = reserve.getSoldHomeTonnes(), abroad = reserve.getSoldAbroadTonnes();
-        report("a release past what the refiners want ships the rest at the export price, as the wells' unsold crude does",
-                home > 0 && abroad > 0 && Math.abs(home + abroad - big) <= 1e-9 * big
-                        && same(reserve.getSoldAbroad(), abroad * crude.exportPrice()),
-                String.format("%,.0f t to the refiners, %,.0f t shipped", home, abroad));
-        double shipped = reserve.getSoldAbroad(), soldHome = reserve.getSoldHome();
+        report("a release past what the refiners want: they take their share, and the rest stays in the reserve's tanks -"
+                        + " none shipped (0.7.103, A8)",
+                home > 0 && home < big && abroad == 0 && reserve.getSoldAbroad() == 0
+                        && same(reserve.getSoldHome(), home * crude.getLocalPrice()),
+                String.format("%,.0f t to the refiners of %,.0f t offered, %,.0f t shipped", home, big, abroad));
+        close("...its tonnes fall by what the refiners took and no more", reserve.getTonnes(), tonnes3 - home, 1e-12);
+        close("...and its book by the share of it those tonnes were, at average cost", reserve.getCost(),
+                cost3 - cost3 * (home / tonnes3), 1e-12);
+        double soldHome = reserve.getSoldHome(), tonnes4 = reserve.getTonnes();
 
         // ...across a save, its month unsettled.
         GameFiles files = FILES.get(g);
@@ -573,22 +581,28 @@ public class OilCheck {
         StrategicReserve back = twin.getReserve();
         report("the reserve crosses a save: its crude, its book, its release and the month the strike will settle, to the bit",
                 same(back.getTonnes(), reserve.getTonnes()) && same(back.getCost(), reserve.getCost())
-                        && back.getRelease() == big && same(back.getSoldAbroad(), shipped) && same(back.getSoldHome(), soldHome),
+                        && back.getRelease() == big && back.getSoldAbroad() == 0 && same(back.getSoldHome(), soldHome),
                 String.format("%,.2f t, $%,.2fk", back.getTonnes(), back.getCost()));
+        double cashBefore = g.getCash();
         quietly(() -> { g.simulateMonths(1); twin.simulateMonths(1); });
         worstAudit = Math.max(worstAudit, g.getLastMoneyAudit().relative());
         MoneyAudit.Result b = g.getLastMoneyAudit();
-        report("...the strike after settles what shipped as the audit's + city ReserveSales, TRADE, journalled",
-                reserve.getSettledExports() == shipped && Math.abs(auditLine(b, "+ city ReserveSales") - shipped) <= .005
-                        && same(journalled(g, "Sold crude from the strategic reserve"), soldHome + shipped),
-                String.format("$%,.2fk", auditLine(b, "+ city ReserveSales")));
+        report("...the strike after settles what the refiners took: the treasury takes in the reserve's sale to the bit,"
+                        + " journalled, and nothing as + city ReserveSales",
+                same(reserve.getSettledSold(), soldHome) && reserve.getSettledExports() == 0
+                        && auditLine(b, "+ city ReserveSales") == 0
+                        && same(journalled(g, "Sold crude from the strategic reserve"), soldHome),
+                String.format("$%,.2fk, the treasury's cash %+,.2fk over the month", journalled(g,
+                        "Sold crude from the strategic reserve"), g.getCash() - cashBefore));
         report("...and the reloaded city settles the same, and holds the same, to the bit",
                 same(twin.getReserve().getSettledSold(), reserve.getSettledSold())
                         && same(twin.getReserve().getSettledExports(), reserve.getSettledExports())
                         && same(twin.getReserve().getTonnes(), reserve.getTonnes())
                         && same(twin.getReserve().getCost(), reserve.getCost()),
                 String.format("$%,.2fk", twin.getReserve().getSettledSold()));
-        report("...the release a standing order, the tonnes falling by it", reserve.getTonnes() < tonnes3 - big,
+        report("...the release a standing order, the tonnes falling by what the refiners took again, the rest kept",
+                reserve.getSoldHomeTonnes() > 0 && reserve.getSoldAbroadTonnes() == 0
+                        && Math.abs(reserve.getTonnes() - (tonnes4 - reserve.getSoldHomeTonnes())) <= 1e-12 * tonnes4,
                 String.format("%,.0f t left", reserve.getTonnes()));
 
         // A year more: the release runs the reserve down and stops with it, the audit closing and the goods footing.

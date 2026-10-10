@@ -4085,12 +4085,12 @@ final class SectorScreen {
     static final String OIL_RESERVE_INFO = "The city's own crude, in its Strategic Reserves' tanks. Fill orders crude for the next"
             + " clearing - the wells' first, beside the refiners, then the world's - cut to the room left and to what the treasury"
             + " can pay at crude's import price, paid at the next strike. Release offers that many tonnes a month to the"
-            + " refiners, and ships what they do not take at the export price. A fill stops a release; a release cancels a fill.";
+            + " refiners; what they do not take stays in the tanks. A fill stops a release; a release cancels a fill.";
     static final String RESERVE_CAVEAT = "bought at the next clearing at what crude then costs; what the room cannot take lapses";
     static final String RESERVE_CAVEAT_INFO = "A fill is an order for the next clearing: the wells' crude pro rata with the"
             + " refiners, the world's for the rest, each at its price then - this reads it at today's import price. What the"
             + " room left cannot hold lapses with the month. The treasury pays at the next strike.";
-    static final String RELEASE_CAVEAT = "offered to the refiners first; what they do not take ships at the export price";
+    static final String RELEASE_CAVEAT = "offered to the refiners; what they do not take stays in the tanks";
 
     /** The lever's ladder width on its dial card. */
     static final double RESERVE_LADDER = 380;

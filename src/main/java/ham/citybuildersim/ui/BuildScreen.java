@@ -3480,7 +3480,7 @@ final class BuildScreen {
             out.add(String.format("Holds %s litres of crude oil, %s t, for the city.", formatter.format(t.getStock()),
                     formatter.format(Math.round(t.getStock() / ham.citybuildersim.sectors.Refining.CRUDE_LITRES_PER_TONNE))));
             out.add("The city fills it in the month's crude market, from its wells first and the world for the rest,"
-                    + " and releases it there to the refiners, shipping what they do not take. Paid at the next strike.");
+                    + " and releases it there to the refiners, keeping what they do not take. Paid at the next strike.");
             return out;
         }
         // ...what it makes: a crude unit's slate since 0.7.76 (Refining.madeBy()), a conversion unit's products of its feed since 0.7.80.
