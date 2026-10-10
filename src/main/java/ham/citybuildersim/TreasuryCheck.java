@@ -641,8 +641,8 @@ public class TreasuryCheck {
          * town with two Bus Networks, played until they carry people and
          * their crews draw wages, then a year: the budget carries the bill
          * and the fares, the cash moved by both (the bridge closes with
-         * nothing left after the journal - which names the buses' repairs -
-         * and no fares in it), and EARNED,
+         * nothing left after the journal - which named the buses' repairs
+         * until 0.7.102, a budget line since (below) - and no fares in it), and EARNED,
          * which subtracts the bill with the running programmes, walks to
          * the budget with no fares step and nothing left for the dials.
          */
