@@ -27,14 +27,17 @@ import java.util.Map;
  * the ladder listed only for the students the city would both get and hire
  * (CityNeeds.wanted(), listsSchool()) - and keep those a city-built building
  * answers and what is on site does not already keep ahead; for each, of the
- * buildings that serve its measure (for the roads, any road or line), the
- * one with the lowest price per unit of staffed capacity with its ground
- * at what the city would pay to replace it (landValue(), the land office's
- * price; a road's over its life since 0.7.70, lifetime(), and the city's
- * gravel roads paved beside the roads; a living care building's its order
- * over the places the need lacks since 0.7.71, perPlaceNeeded(), so the
- * size that fits the need wins) - preferring one that can keep the
- * need ahead at all, and then one
+ * buildings that serve its measure (for the roads, any road or line, and
+ * the city's gravel roads paved beside them), the one whose order costs
+ * least over its life for each unit it will serve (since 0.7.101,
+ * lifePerServed(): its quote, its ground at what the city would pay to
+ * replace it - landValue(), the land office's price - and its running for
+ * BUILD_BOND_YEARS, as a road's has been since 0.7.70; over what it will
+ * serve of the need as the city grows into it, for power, water, the
+ * roads and care, so a building far bigger than the need pays for what
+ * stands idle, and what its count adds for the rest; see A BUILDING OVER
+ * ITS LIFE) - preferring one that can keep the need ahead at all, and
+ * then one
  * whose whole count fits the ground the suggestions before it leave; the
  * count that keeps the need ahead at the demand it opens to, projected
  * the way the businesses project theirs (above the ladder, the students it
@@ -43,7 +46,10 @@ import java.util.Map;
  * after what is on site at its staffed capacity; on credit when its quote
  * is more than the cash the ones before leave, never cut to the cash; at
  * most three, one per need. Every judgement in it is named where it is made
- * below, and in the project's design notes for 0.7.24 and 0.7.51.
+ * below, and in the project's design notes for 0.7.24 and 0.7.51. A first
+ * building where none stands is suggested however far past the need one
+ * goes (Jerus's school at 0% that one would take to 20,000%): the overshoot
+ * ranks the candidates, it never stops one (0.7.101).
  */
 public final class BuildAdvice {
 
@@ -962,7 +968,7 @@ public final class BuildAdvice {
         return free * Math.min(land.getPricePerSqFt(), office) + Math.max(0, sqFt - Math.max(0, landLeft)) * office;
     }
 
-    /** Why the next building in the ranking lost to the one suggested: dearer a unit with its land, it cannot keep the need ahead, or its count needs more land than is left. */
+    /** Why the next building in the ranking lost to the one suggested: dearer over its life for what it serves (a unit with its land until 0.7.101), it cannot keep the need ahead, or its count needs more land than is left. */
     public enum Lost { DEARER, CANNOT_CLOSE, NO_ROOM }
 
     /**
@@ -986,8 +992,10 @@ public final class BuildAdvice {
      *                    before it leave
      * @param onSite      units on site that already serve the measure
      * @param unit        what one serves at today's staffing
-     * @param pricePerUnit its quote for one and its ground (landValue(), on
-     *                    the land the ones before leave), over unit
+     * @param pricePerUnit the figure it was ranked by (lifePerServed(), since
+     *                    0.7.101): its order over its life, its ground at
+     *                    landValue() on the land the ones before leave, for
+     *                    each unit it will serve over that life
      * @param ahead       the demand it is sized to (opening(lead))
      * @param lead        the city order's own wait, Game.quoteBuild()'s months
      *                    for the count at today's demand with the slack
@@ -995,7 +1003,7 @@ public final class BuildAdvice {
      * @param landValue   ...at landValue(), on the land the ones before leave
      * @param landShort   square feet past the land the ones before leave, or 0
      * @param runnerUp    the next building in the ranking, or null for none
-     * @param runnerUpPer ...its price a unit with its land, NaN for none
+     * @param runnerUpPer ...its figure, the same (lifePerServed()), NaN for none
      * @param runnerUpLost ...and why it lost, null for none
      * @param credit      the part of its quote the cash the ones before leave
      *                    does not cover: 0 unless needsCredit
@@ -1077,9 +1085,15 @@ public final class BuildAdvice {
         return suggestFor(game, need, m, cashLeft, landLeft, slack, java.util.Collections.emptySet());
     }
 
-    /** ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one its budget cannot run - the next in the ranking is the card. */
+    /** ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one the money or the ground cannot pay for one of (since 0.7.101; its budget could not run one until then) - the next in the ranking is the card. */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip) {
+        return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, false);
+    }
+
+    /** ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way. */
+    public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
+                                        double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving) {
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
         double whenOnSite = figure(game, m, site);
         // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
@@ -1105,27 +1119,25 @@ public final class BuildAdvice {
             if (found[0] <= 0) continue;
             boolean closes = found[1] == 1;
             boolean fits = t.getLandSqFt() * (double) found[0] <= landLeft;
-            // The road's own figure since 0.7.70: its cost over its life, not
-            // its price - see A ROAD OVER ITS LIFE. A living care building's
-            // since 0.7.71: its order over the places the need lacks, so the
-            // size that fits the need wins - see THE SIZE THAT FITS THE NEED.
-            double per = m.kind() == Kind.CARE ? perPlaceNeeded(game, m, site, t, found[0], p, landLeft)
-                    : (m.kind() == Kind.ROADS ? lifetime(game, t, landLeft, site)
-                    : game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)) / unit;
+            // Every candidate's figure since 0.7.101: its order over its life
+            // for each unit it will serve - see A BUILDING OVER ITS LIFE. (A
+            // road's was its cost over its life a trip from 0.7.70, a living
+            // care building's its order over the places the need lacks from
+            // 0.7.71, and the rest their price a unit with their ground.)
+            double per = lifePerServed(game, m, site, t, found[0], unit, p, landLeft);
             weighed.add(new Weighed(t, (closes ? 0 : 2) + (fits ? 0 : 1), per, unit, found[0], closes, fits, p, lead,
                     false));
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
-        Weighed paving = m.kind() == Kind.ROADS ? weighPaving(game, m, site, landLeft, slack) : null;
+        Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack) : null;
         if (paving != null) weighed.add(paving);
         if (weighed.isEmpty()) return null;
         /*
          * JUDGEMENTS, in this order: one that can keep the need ahead beats
          * one that cannot, at any price; of those, one whose whole count
          * fits the ground the cards before leave beats one the order would be
-         * refused for (Game.buildStack()'s NO_LAND); then the lowest price a
-         * unit with its ground (a living care building's, a place the need
-         * lacks: 0.7.71). Land can be bought from the refusal's own
+         * refused for (Game.buildStack()'s NO_LAND); then the least over its
+         * life for each unit it will serve (0.7.101). Land can be bought from the refusal's own
          * page; a building that cannot close a gap never will. A tie keeps
          * the catalogue's order (the sort is stable).
          */
@@ -1246,36 +1258,18 @@ public final class BuildAdvice {
        are centres of 80, 220 and 360 places since 0.7.71, a place cheaper
        the bigger (BuildingManager, childcare resized), and ranked a place
        the largest would win everywhere: a 360-place centre for a town short
-       of thirty children. So a living care building - childcare, general or
-       senior - is ranked by what its order costs over the places the need
-       lacks at the demand it is sized to (perPlaceNeeded()): the order's own
-       quote - Game.quoteBuild() for the count, which takes the yard's
-       material once, where a quote for one takes it for every building -
-       and its ground, over that demand less what is on site. Where the
-       order is many buildings that is its price a place, as before, and the
-       cheapest a place wins - a big city builds big centres; where one
-       building is more than the need, the places past it are paid for, so
-       the smallest that closes the gap wins.
+       of thirty children. So from 0.7.71 to 0.7.100 a living care building -
+       childcare, general or senior - was ranked by what its order costs over
+       the places the need lacks at the demand it is sized to
+       (perPlaceNeeded(), gone): the order's own quote - Game.quoteBuild() for
+       the count, which takes the yard's material once, where a quote for one
+       takes it for every building - and its ground, over that demand less
+       what is on site. Where the order is many buildings that is its price a
+       place, and the cheapest a place wins - a big city builds big centres;
+       where one building is more than the need, the places past it are paid
+       for, so the smallest that closes the gap wins. Since 0.7.101 every
+       candidate is weighed so, over its life (A BUILDING OVER ITS LIFE).
        ===================================================================== */
-
-    /**
-     * A living care building's figure (0.7.71): an order of `count` of it -
-     * its quote, Game.quoteBuild(), and its ground at landValue() on the land
-     * left - over the places the need lacks at p: supplyDemand()'s demand
-     * less what is on site, staffed. Its price a place where the count is
-     * many; more where one building is more than the gap. With nothing
-     * lacking (or no count), its price a place: its quote for one and its
-     * ground over unit().
-     */
-    public static double perPlaceNeeded(Game game, Measure m, Map<BuildingsTemplate, Integer> site,
-                                        BuildingsTemplate t, int count, Ahead p, double landLeft) {
-        double[] sd = supplyDemand(game, m, site, p);
-        double lacks = sd[1] - sd[0];
-        if (!(lacks > 0) || count < 1) {
-            return (game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)) / unit(game, m, t);
-        }
-        return (game.quoteBuild(t, count).total + landValue(game, t.getLandSqFt() * (double) count, landLeft)) / lacks;
-    }
 
     /* =====================================================================
        A ROAD OVER ITS LIFE (0.7.70)
@@ -1424,8 +1418,10 @@ public final class BuildAdvice {
      * The city's gravel roads, paved, weighed for the road (0.7.70) as a
      * building is in suggestFor(): the count that keeps the road ahead at
      * its projection, of the gravel roads the city could pave (Game.paveable());
-     * its wait, a Paved Road's; its price a unit, pavingLifetime() over the
-     * trips one paving takes off; no ground to fit. Weighed only when it
+     * its wait, a Paved Road's; its figure every candidate's since 0.7.101
+     * (its order over its life for each trip it will take off -
+     * pavingOrderLife(), servedOverLife(); pavingLifetime() over the trips one
+     * paving takes off until then); no ground to fit. Weighed only when it
      * beats a new Paved Road a trip over its life (pavingBeatsPaved(), star
      * N1-5): it needs no ground, so it would rank over any road the land left
      * cannot hold, however dear, and it is offered as the cheaper way to the
@@ -1450,9 +1446,280 @@ public final class BuildAdvice {
         int[] found = count(game, m, site, step, p, most);
         if (found[0] <= 0) return null;
         boolean closes = found[1] == 1;
-        double per = pavingLifetime(game, landLeft, site) / unit;
+        // Its figure since 0.7.101 as every candidate's (A BUILDING OVER ITS LIFE): the pavings' order over its
+        // life for each trip it will take off; pavingLifetime() over pavingUnit() until then.
+        double served = servedOverLife(game, m, site, times(new LinkedHashMap<>(), step, found[0]), p);
+        double life = pavingOrderLife(game, found[0], landLeft, site);
+        double per = perServed(life, served, found[0], unit);
         BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
         return new Weighed(to, closes ? 0 : 2, per, unit, found[0], closes, true, p, lead, true);
+    }
+
+    /* =====================================================================
+       A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2)
+
+       Jerus (the project's decisions-2026-10-10, A4): "it doesnt actually
+       target the best, it targets the optimal to satisfy the next few points
+       not long run, thus it builds wind farms instead of coal powerplants";
+       and A19, of the advice taking a city at 89% served to 670% with a
+       $4.95B Coal Power Plant: price the overshoot on power, water and the
+       roads as care's (THE SIZE THAT FITS THE NEED) - without stopping a
+       first building where there is none. Until now a road was weighed over
+       its life (0.7.70), a care building by its order over the places the
+       need lacked at its projection (0.7.71), and everything else by its
+       quote for one and its ground over what one adds: capital, and only the
+       next months' need.
+
+       So every candidate is weighed the one way (lifePerServed()):
+         - ITS ORDER OVER ITS LIFE (orderLife()): the quote for the count
+           (Game.quoteBuild(), what Build charges), its ground at landValue()
+           on the land left, and for each building lifeFactor() months of
+           running() - repairs, power and water, posts and upkeep, less fares
+           - the road's arithmetic since 0.7.70, over LIFE_MONTHS, the funding
+           page's bond term; a paving's (pavingOrderLife()) its quote less the
+           ground it frees, and a paved road's running over a gravel road's.
+         - OVER WHAT IT WILL SERVE OVER THAT LIFE (servedOverLife()), for the
+           measures whose need is a shortfall to fill - power and water (the
+           supply the quarter in hand asks, NETWORK_YELLOW, past what stands
+           and is on site), the roads (the trips over STRAINED, roadsOver()'s
+           line) and care (the places past what stands): in each year of its
+           life, from the month it opens, what it takes off that shortfall at
+           the demand then - today's grown by the city's own trend (lifeTrend())
+           with the slack past it - each year discounted as lifeFactor()
+           discounts it. A building bigger than the need is paid for whole and
+           counted only for what the city grows into: a coal plant wins where
+           the city will use it, and a wind farm where it will not. For the
+           rest - the dead, the plots, the schools, the police and the cells -
+           what its count adds (count x unit()).
+       The count is the one that keeps the need ahead at its opening, as
+       before; only the choice between candidates reads the life. A first
+       building is never stopped by it: the ranking always names the least,
+       however far past the need it goes.
+       ===================================================================== */
+
+    /** The years of a building's life the served figure reads: LIFE_MONTHS in whole years. */
+    static final int LIFE_YEARS = LIFE_MONTHS / 12;
+
+    /**
+     * The city's demand `months` from now over today's, for a building's life
+     * (0.7.101): the city's own population trend over the last LIFE_MONTHS of
+     * its record - or since its first month recorded, a younger city -
+     * linear in the months as the businesses' growthFactor() is, never under
+     * today's (star P2-2). Not growthFactor() itself: its trend is the last
+     * TREND_WINDOW months' and it stops at the homes standing and on site,
+     * which is the next months' future - over a life the market builds the
+     * homes, and one flat year (the playtest's at month 2,000) or one boom
+     * would read as the next twenty. The past life's growth, read off the
+     * city's history (HistorySave.getPopulation()), for the next life's.
+     */
+    public static double lifeTrend(Game game, double months) {
+        HistorySave h = game.getHistorySave();
+        List<Long> people = h == null ? null : h.getPopulation();
+        List<Integer> at = h == null ? null : h.getMonth();
+        if (people == null || at == null || people.size() < 2 || at.size() != people.size()) return 1;
+        int last = people.size() - 1, from = 0;
+        for (int i = last; i >= 0; i--) {
+            if (at.get(last) - at.get(i) >= LIFE_MONTHS) { from = i; break; }
+        }
+        double now = people.get(last), span = at.get(last) - at.get(from);
+        if (!(now > 0) || !(span > 0)) return 1;
+        double share = (now - people.get(from)) / span / now;
+        return Math.max(1, 1 + share * Math.max(0, months));
+    }
+
+    /** An order of `count` of t over its life (0.7.101): its quote for the count, its ground at landValue() on the land left, and lifeFactor() months of running() for each. */
+    public static double orderLife(Game game, BuildingsTemplate t, int count, double landLeft,
+                                   Map<BuildingsTemplate, Integer> site) {
+        return game.quoteBuild(t, count).total + landValue(game, t.getLandSqFt() * (double) count, landLeft)
+                + count * running(game, t, site) * lifeFactor(game);
+    }
+
+    /** ...`count` pavings' (0.7.101): their quote (Game.quotePave()), less the ground they free at landValue() on the land left, and lifeFactor() months of a paved road's running over a gravel road's for each; NaN with nothing to pave. */
+    public static double pavingOrderLife(Game game, int count, double landLeft, Map<BuildingsTemplate, Integer> site) {
+        Game.BuildQuote q = game.quotePave(count);
+        BuildingsTemplate from = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM);
+        BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        if (q == null || from == null || to == null) return Double.NaN;
+        return q.total - landValue(game, pavingFrees(game) * (double) count, landLeft)
+                + count * (running(game, to, site) - running(game, from, site)) * lifeFactor(game);
+    }
+
+    /**
+     * What a measure is short of, in its own unit, with these buildings
+     * standing as well, at `p`'s demand (0.7.101): power and water the supply
+     * NEEDS YOU's quarter in hand asks (the demand over NETWORK_YELLOW) less
+     * the supply; the roads the trips over STRAINED of their capacity
+     * (roadsOver()'s line, the unit a road's unit() is in); care the places
+     * past what stands. NaN for a measure not weighed so.
+     */
+    public static double shortfall(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
+        switch (m.kind()) {
+            case POWER: case WATER: {
+                double[] sd = supplyDemand(game, m, added, p);
+                return sd[1] / CityNeeds.NETWORK_YELLOW - sd[0];
+            }
+            case ROADS: {
+                InfrastructureManager r = roads(game, added, p.scale());
+                return r.getEffectiveLoad() - InfrastructureManager.STRAINED * r.getCapacity();
+            }
+            case CARE: {
+                double[] sd = supplyDemand(game, m, added, p);
+                return sd[1] - sd[0];
+            }
+            default:
+                return Double.NaN;
+        }
+    }
+
+    /** Whether a measure's candidates are weighed for what they will serve over their lives (shortfall()): power, water, the roads and care. */
+    public static boolean weighsServed(Measure m) {
+        switch (m.kind()) {
+            case POWER: case WATER: case ROADS: case CARE: return true;
+            default: return false;
+        }
+    }
+
+    /**
+     * What an order serves over its life, a month on average, in the
+     * measure's unit (0.7.101): each of its LIFE_YEARS years read at its
+     * middle month - from its opening, `p`'s months less HORIZON, the demand
+     * today's times lifeTrend() with p's slack past it - as the shortfall
+     * with what stands and is on site (`site`) less the shortfall with the
+     * order too (both held at nothing), each year weighted by its twelve
+     * months discounted as lifeFactor() discounts them. NaN for a measure not
+     * weighed so (weighsServed()).
+     */
+    public static double servedOverLife(Game game, Measure m, Map<BuildingsTemplate, Integer> site,
+                                        Map<BuildingsTemplate, Integer> order, Ahead p) {
+        if (!weighsServed(m)) return Double.NaN;
+        Map<BuildingsTemplate, Integer> with = plus(site, order);
+        double opens = Math.max(0, p.months() - HORIZON);
+        double i = lifeRate(game) / 12;
+        double served = 0, weights = 0;
+        for (int y = 0; y < LIFE_YEARS; y++) {
+            double w = 0;
+            for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
+            double months = opens + 12 * y + 6;
+            Ahead at = new Ahead(months, lifeTrend(game, months), p.slack());
+            double before = Math.max(0, shortfall(game, m, site, at));
+            double after = Math.max(0, shortfall(game, m, with, at));
+            served += w * Math.max(0, before - after);
+            weights += w;
+        }
+        return weights > 0 ? served / weights : 0;
+    }
+
+    /** The figure from an order's life and what it serves (0.7.101): the life over what it will serve; with that not measured, or nothing, over what its count adds (count x unit). */
+    public static double perServed(double life, double served, int count, double unit) {
+        return served > 0 ? life / served : life / (Math.max(1, count) * unit);
+    }
+
+    /**
+     * A candidate's figure, the one the advice ranks by (0.7.101): an order
+     * of `count` of t over its life (orderLife()) for each unit it will serve
+     * over that life (servedOverLife() at `p`, the demand it is sized to;
+     * what its count adds where the measure is not weighed so).
+     */
+    public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t,
+                                       int count, double unit, Ahead p, double landLeft) {
+        double served = servedOverLife(game, m, site, plus(new LinkedHashMap<>(), t, count), p);
+        return perServed(orderLife(game, t, count, landLeft, site), served, count, unit);
+    }
+
+    /* =====================================================================
+       AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2)
+
+       Jerus (decision B, 2026-10-10): the build advice says when an iron
+       field will not pay back for a small town. Build's no-deposit page has
+       sold the cheapest field holding iron since 0.7.64, and on the default
+       world that was the 35-site founding field for about US$180M, on a bond
+       when short; the test player has asked since 0.7.67 (batch M3b) whether
+       the mines the field would carry pay its price back, and waits until
+       they would. That test, moved here whole from the test player
+       (LongPlaytest.ironWhenNeeded(), which reads it from here) so the page
+       says what the player's rule says:
+         - WHAT IT EARNS (fieldEarnings()): the mines the city could staff on
+           it (Sector.staffableCount(), no more than its sites), each that
+           would pay on the mining sector's own screen with the ones before
+           it lifting - the first at BusinessInvestment.estimatedMonthlyProfit(),
+           each after it selling at home what the planners' forecast of the
+           mills' demand leaves (BusinessInvestment.forecast(), less the mines
+           standing and on site) and the rest at the export price - the first
+           that would not pay ending the count; their profit a month.
+         - WHAT IT MUST EARN (fieldPayment()): the level payment that repays
+           the field's price, in local money at the day's rate, over
+           Game.BUILD_BOND_YEARS at the rate the market quotes for that much
+           money (DebtManager.quoteRate()) - the funding page's bond, cash or
+           not, since cash sunk in ground is cash the city does not lend.
+       It pays back when the first is at least the second (ironPayback()).
+       ===================================================================== */
+
+    /** An iron field weighed (0.7.101): the mines the city could staff and work on it, their profit a month, and the month's payment that repays its price - it pays back when the profit is at least the payment. */
+    public record Payback(int mines, double earns, double payment) {
+        /** Whether the mines pay the field back. */
+        public boolean pays() { return earns >= payment; }
+    }
+
+    /** Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()). */
+    public static Payback ironPayback(Game game, LandParcel field) {
+        double[] earned = fieldEarnings(game, field.getDeposits());
+        return new Payback((int) earned[0], earned[1], fieldPayment(game, field));
+    }
+
+    /**
+     * What a field of `sites` iron sites would earn the city's mines a month
+     * (0.7.67, M3b; moved from LongPlaytest in 0.7.101): {mines, their monthly
+     * profit}. The mines are no more than the sites and than the mining
+     * sector could staff (Sector.staffableCount()), and each counted would pay
+     * on the sector's own screen (BusinessInvestment.estimatedMonthlyProfit())
+     * with the ones before it lifting: the first is that figure, and each
+     * after it sells at home what the planners' forecast of the mills' demand
+     * leaves of the room (BusinessInvestment.forecast(), less the mines
+     * standing and on site) and the rest at the export price, as
+     * estimatedMakerProfit() splits it. The first that would not pay ends the
+     * count.
+     */
+    public static double[] fieldEarnings(Game game, int sites) {
+        BuildingsTemplate mine = null;
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (t.getName().equals("Iron Mine")) { mine = t; break; }
+        }
+        Sector mining = game.getSectors().byKey(Sectors.MINING);
+        if (mine == null || mining == null || sites <= 0) return new double[] { 0, 0 };
+        BusinessInvestment plans = game.getBusinessInvestment();
+        GoodsMarket ore = game.getEconomyManager().getMarkets().get(Good.IRON);
+        double units = mine.makes(Good.IRON);
+        double room = Math.max(0, plans.forecast(mining, ore) - mining.getCapacity(Good.IRON) - mining.getPipeline(Good.IRON));
+        double first = plans.estimatedMonthlyProfit(Sectors.MINING, mine);
+        double homeFirst = Math.min(units, room);
+        double abroad = Good.IRON.exportable() ? Math.max(0, ore.netExportPrice()) : 0;
+        double perTonneAtHome = (ore.getLocalPrice() - abroad) * BusinessInvestment.operatingRateOf(mining.getOperatingRate());
+        int staffable = mining.staffableCount(mine, sites);
+        int mines = 0;
+        double monthly = 0;
+        for (int i = 0; i < staffable; i++) {
+            double home = Math.max(0, Math.min(units, room - i * units));
+            double profit = first + (home - homeFirst) * perTonneAtHome;
+            if (!(profit > 0)) break;
+            mines++;
+            monthly += profit;
+        }
+        return new double[] { mines, monthly };
+    }
+
+    /**
+     * The month's payment that repays a field's price here over
+     * Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101):
+     * the level payment at the rate the market quotes for that much money at
+     * that term (DebtManager.quoteRate()) - the funding page's bond, whether
+     * or not the cash would cover it, because cash sunk in ground is cash the
+     * city does not lend or spend.
+     */
+    public static double fieldPayment(Game game, LandParcel field) {
+        double price = field.localPrice(game.getForeignAccounts().getRate());
+        int months = Game.BUILD_BOND_YEARS * 12;
+        double monthlyRate = game.getDebtManager().quoteRate(price, months) / 12;
+        return monthlyRate > 0 ? price * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months)) : price / months;
     }
 
     /** Which way is worse for a measure's figure. */

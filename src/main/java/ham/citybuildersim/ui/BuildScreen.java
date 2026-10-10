@@ -4148,6 +4148,15 @@ final class BuildScreen {
         if (cheapest != null) {
             ui.rootMenu.getChildren().add(bestLandButton(cheapest, noDepositWords(cheapest, site), words[7],
                     () -> handleAllBuildingMenus(menuTitle, categories)));
+            // ...and whether an iron field pays back here (0.7.101, Jerus's decision B): the test player's own rule.
+            if (site == Resource.IRON && !selected.standsAtSea()) {
+                BuildAdvice.Payback back = BuildAdvice.ironPayback(ui.game, cheapest);
+                Label pays = new Label(ironPaybackWords(back));
+                pays.setWrapText(true);
+                pays.setMaxWidth(PAYBACK_LINE);
+                pays.setStyle(wordsAt(10.5, back.pays() ? Palette.TEXT_LABEL : Palette.WARN) + " -fx-padding: 2 0 6 0;");
+                ui.rootMenu.getChildren().add(pays);
+            }
         }
         ui.rootMenu.getChildren().addAll(toLand, back);
     }
@@ -4194,6 +4203,28 @@ final class BuildScreen {
                      : "field the city owns brings its slots with it.",
             String.format("Oil still under the sea: %,.0f tonnes", left),
             "the cheapest offer holding oil: whole fields, the oil in its price" };
+    }
+
+    /** The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. */
+    static final double PAYBACK_LINE = 2 * NEED_CARD;
+
+    /**
+     * Whether the cheapest iron field pays back here, as the no-deposit page
+     * says it under its Buy (0.7.101, Jerus's decision B: "the build advice
+     * says when an iron field won't pay back for a small town"): the test
+     * player's rule since 0.7.67 (BuildAdvice.ironPayback()) - the mines the
+     * city could staff on it, what they would earn a month, and the month's
+     * payment that repays its price over Game.BUILD_BOND_YEARS. Pure, so a
+     * probe measures it.
+     */
+    static String ironPaybackWords(BuildAdvice.Payback p) {
+        String repays = money(p.payment()) + " a month that repays its price over " + Game.BUILD_BOND_YEARS + " years";
+        if (p.pays()) return "It pays back: the " + p.mines() + (p.mines() == 1 ? " mine" : " mines") + " the city could staff"
+                + " on it would earn " + money(p.earns()) + " a month, over the " + repays + ".";
+        if (p.mines() == 0) return "It would not pay back for a city this size: none of the mines it could staff on it would"
+                + " pay yet, against the " + repays + ".";
+        return "It would not pay back for a city this size: the " + p.mines() + (p.mines() == 1 ? " mine" : " mines")
+                + " it could staff on it would earn " + money(p.earns()) + " a month, under the " + repays + ".";
     }
 
     /** The no-deposit page's Buy: "Buy the cheapest: East 7 · 1 iron site, 12.8 Mt for US$6.16M" (or oil sites, 0.7.62) - its sites and, since 0.7.64, its tonnes: the whole of every field centred in it; "the cheapest" since 0.7.64 ("the best" was the most sites a dollar). */

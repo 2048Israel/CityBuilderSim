@@ -750,11 +750,15 @@ public class BuildAdviceCheck {
      * LAND COUNTED (0.7.51): the short city's cards with the land office's
      * listing at nothing, as it stands, and at ten times its prices (each
      * parcel's dollar price in LandMarket's listing state, scaled): every
-     * card's price a unit is its quote for one and its ground
-     * (BuildAdvice.landValue()) over what it serves - a road's, since
-     * 0.7.70, with its running over its life (BuildAdvice.lifetime()); a
-     * living care building's, since 0.7.71, its order's quote and ground over
-     * the places the need lacks (BuildAdvice.perPlaceNeeded()) - and
+     * card's figure is, since 0.7.101 (Jerus's decisions A4 and A19), its
+     * order over its life - its quote for the count, its ground
+     * (BuildAdvice.landValue()) and lifeFactor() months of running() a
+     * building - over what it will serve over that life, year by year as
+     * the city grows into it, for power, water, the roads and care, and over
+     * what its count adds for the rest (lifeFigure(), recomputed here); until
+     * then its quote for one and its ground over what one serves, a road's
+     * with its running over its life (0.7.70), a living care building's its
+     * order over the places the need lacked (0.7.71) - and
      * its ground is valued on what the cards before it leave. Then with no
      * ground free, so every road's ground is bought at the office: with the
      * office's prices at nothing the road cheapest to build and keep a trip
@@ -785,20 +789,14 @@ public class BuildAdviceCheck {
             for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) {
                 cards++;
                 BuildingsTemplate t = s.template();
-                // ...a road's over its life since 0.7.70: BuildAdvice.lifetime() on the road as on site (RoadCheck 1);
-                // a living care building's since 0.7.71, its order over the places lacking at the demand it is sized to.
-                double per = s.measure().kind() == BuildAdvice.Kind.CARE
-                        ? BuildAdvice.perPlaceNeeded(g, s.measure(), BuildAdvice.onSite(g, s.measure()), t, s.count(),
-                                s.ahead(), landLeft)
-                        : (s.measure().kind() == BuildAdvice.Kind.ROADS
-                        ? BuildAdvice.lifetime(g, t, landLeft, BuildAdvice.onSite(g, s.measure()))
-                        : g.quoteBuild(t, 1).total + BuildAdvice.landValue(g, t.getLandSqFt(), landLeft)) / s.unit();
+                // Every card's since 0.7.101: its order over its life for what it will serve, recomputed here.
+                double per = lifeFigure(g, s, landLeft);
                 perBits &= bitsEqual(s.pricePerUnit(), per);
                 leftBits &= bitsEqual(s.landValue(), BuildAdvice.landValue(g, s.landSqFt(), landLeft))
                         && bitsEqual(s.landShort(), Math.max(0, s.landSqFt() - landLeft));
                 if (s.measure().kind() == BuildAdvice.Kind.ROADS) roads[f] = t.getName();
                 if (s.measure().kind() == BuildAdvice.Kind.POWER) power[f] = t.getName();
-                said.append(String.format(" [%s: %,d x %s, %,.3f a unit with its land]", s.need().label(), s.count(),
+                said.append(String.format(" [%s: %,d x %s, %,.3f a unit it will serve over its life]", s.need().label(), s.count(),
                         t.getName(), s.pricePerUnit()));
                 landLeft = Math.max(0, landLeft - s.landSqFt());
             }
@@ -807,9 +805,9 @@ public class BuildAdviceCheck {
         }
         market.restoreOffers(base, nextId);
         assertTrue("fixture: cards at nothing, as the listing stands and at ten times", cards > 0);
-        assertTrue("every card's price a unit is its quote for one and its ground at landValue(), over what it serves - a"
-                + " road's with its running over its life (0.7.70), a living care building's its order's over the places"
-                + " the need lacks (0.7.71) - to the bit", perBits);
+        assertTrue("every card's figure is its order over its life - its quote for the count, its ground at landValue() and"
+                + " lifeFactor() months of running() each - over what it will serve over that life (power, water, the roads and"
+                + " care) or what its count adds (the rest) (0.7.101) - to the bit", perBits);
         assertTrue("...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit",
                 leftBits);
 
@@ -858,6 +856,53 @@ public class BuildAdviceCheck {
                 "Gravel Road".equals(dear[0]));
         assertTrue("...and at ten times that price a square foot, the one that needs the least ground: Elevated Highway ("
                 + dear[1] + ")", "Elevated Highway".equals(dear[1]));
+    }
+
+    /**
+     * A card's figure, recomputed here from the model's own pieces (0.7.101,
+     * BuildAdvice, A BUILDING OVER ITS LIFE): its order over its life - the
+     * quote for its count (Game.quoteBuild(), or Game.quotePave() and the
+     * ground a paving frees taken off), its ground at landValue() and
+     * lifeFactor() months of running() each - over what it serves a month on
+     * average over LIFE_YEARS years, each read at its middle month from its
+     * opening at the demand today's grows to on lifeTrend() with the card's
+     * slack, as the shortfall without it less the shortfall with it, the
+     * year weighted by its twelve months at the life's rate; where the
+     * measure has no shortfall (BuildAdvice.weighsServed()) or the order
+     * serves none of it, over the count times what one serves.
+     */
+    static double lifeFigure(Game g, BuildAdvice.Suggestion s, double landLeft) {
+        BuildAdvice.Measure m = s.measure();
+        BuildingsTemplate t = s.template();
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
+        int n = s.count();
+        double factor = BuildAdvice.lifeFactor(g);
+        double life;
+        Map<BuildingsTemplate, Integer> with = new java.util.LinkedHashMap<>(site);
+        if (s.paving()) {
+            BuildingsTemplate from = template(g, ConstructionControl.PAVE_FROM), to = template(g, ConstructionControl.PAVE_TO);
+            life = g.quotePave(n).total - BuildAdvice.landValue(g, BuildAdvice.pavingFrees(g) * (double) n, landLeft)
+                    + n * (BuildAdvice.running(g, to, site) - BuildAdvice.running(g, from, site)) * factor;
+            with.merge(to, n, Integer::sum);
+            with.merge(from, -n, Integer::sum);
+        } else {
+            life = g.quoteBuild(t, n).total + BuildAdvice.landValue(g, t.getLandSqFt() * (double) n, landLeft)
+                    + n * BuildAdvice.running(g, t, site) * factor;
+            with.merge(t, n, Integer::sum);
+        }
+        if (!BuildAdvice.weighsServed(m)) return life / (n * s.unit());
+        double i = BuildAdvice.lifeRate(g) / 12, served = 0, weights = 0;
+        for (int y = 0; y < BuildAdvice.LIFE_MONTHS / 12; y++) {
+            double w = 0;
+            for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
+            double months = Math.max(0, s.ahead().months() - BuildAdvice.HORIZON) + 12 * y + 6;
+            BuildAdvice.Ahead a = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), s.ahead().slack());
+            served += w * Math.max(0, Math.max(0, BuildAdvice.shortfall(g, m, site, a))
+                    - Math.max(0, BuildAdvice.shortfall(g, m, with, a)));
+            weights += w;
+        }
+        double avg = weights > 0 ? served / weights : 0;
+        return avg > 0 ? life / avg : life / (n * s.unit());
     }
 
     /** The offers' records with each one's dollar price times f (LandParcel.offerRow(): the price second from the end). */
