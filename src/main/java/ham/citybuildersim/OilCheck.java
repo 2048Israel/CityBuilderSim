@@ -1158,7 +1158,10 @@ public class OilCheck {
         // The railway: track in the oil town, carrying its crude and its fuel across the edge.
         quietly(() -> {
             g.getBusinessInvestment().holdSector(Sectors.RAIL);
-            g.buildStack(template(g, "Rail Spur"), 2, true);
+            // ...on ground of their own (0.7.103): the town's investors may have built on what was spare by now.
+            BuildingsTemplate spur = template(g, "Rail Spur");
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 2 * spur.getLandSqFt());
+            g.buildStack(spur, 2, true);
             g.simulateMonths(4);
         });
         // ...and one month more, the litre's price at its draw (the top of the month, the last clearing's) kept.
@@ -1411,7 +1414,7 @@ public class OilCheck {
     /** The Oil Refinery's package earnings at an outlook with its crude's two prices raised by `local` and `imported` (Refining.packageEstimate()). */
     static double packageEarns(Refining refiners, BusinessInvestment plans, Game g, Refining.Outlook o, double local, double imported) {
         Refining.Outlook moved = new Refining.Outlook(o.feed(), o.crude(), o.mix(), o.values(), o.room(), o.spareCrude(), o.spareMix(),
-                o.crudeLocal() + local, o.crudeImport() + imported);
+                o.crudeLocal() + local, o.crudeImport() + imported, o.lubricantsHome());
         RefineryFlow.Flow before = RefineryFlow.solve(moved.feed(), moved.crude(), moved.mix(), moved.values());
         return Refining.packageEstimate(moved, before, template(g, "Oil Refinery"),
                 g.getBuildingManager().getTemplatesBySector(refiners.key()), refiners.planner().city(refiners, plans, g)).earns();

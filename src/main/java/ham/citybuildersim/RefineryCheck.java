@@ -91,10 +91,24 @@ import java.io.PrintStream;
  *      is its feed and the rule sells it; the months cross a save.
  *
  *  14. THE INVESTORS ORDER A UNIT: a town with an Oil Refinery and nothing
- *      held orders the planner's best, a conversion unit; Game.consider()
+ *      held - since 0.7.103 the cost of any unit in the refiners' till, the
+ *      lube plant it ordered until then capped out (15) - orders the
+ *      planner's best, a conversion unit; Game.consider()
  *      tests it on the planner's earnings; with no ground free it is refused
  *      at the ground and the land office hears of it; a crude unit's
  *      estimate is its share of its package's by cost.
+ *
+ *  15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103, batch P4; Jerus's A9):
+ *      the world takes a city's lubricants up to LUBRICANTS_WORLD_SHARE of
+ *      the crude its crude units run, litre for litre; the planner weighs a
+ *      lube plant on no more gas oil than makes what the world and the city
+ *      would still take - refused at its feed in the words of the
+ *      lubricants where an Oil Refinery's share is under FEED_GATE of a
+ *      Small Lube Plant's, weighed again once the city's own demand is
+ *      there, and left out of a package - the prototype's frame uncapped;
+ *      and in a town with an Oil Refinery and a Small Lube Plant standing
+ *      the ship's line takes no more than the world's share of the month's
+ *      crude, the rest idled, the audit closing.
  */
 public class RefineryCheck {
 
@@ -383,6 +397,7 @@ public class RefineryCheck {
         fourRows(catalogue);
         idleThenShed();
         theInvestorsOrderAUnit();
+        lubricantsCapped(catalogue);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -918,16 +933,32 @@ public class RefineryCheck {
                 seen[5] = found.quantity();
             }
         });
+        /*
+         * ...AND THE COST OF ANY UNIT IN THEIR TILL (0.7.103, batch P4): until
+         * then the town's order was a Small Lube Plant, its lubricants all
+         * shipped; the world's demand for them capped (Jerus's A9; section
+         * 15), none is wanted on this crude, and the best unit left earns
+         * too little to pay the interest on what it would borrow. With what
+         * one costs in hand the money gate asks only that it earn something
+         * (11b), so the order is still the planner's to place.
+         */
+        double most = 0;
+        for (BuildingsTemplate t : b.getTemplatesBySector(r.key())) {
+            if (Refining.isConversionUnit(t)) most = Math.max(most, plans.getCostOf(t, 1));
+        }
+        final double till = most;
         int[] months = { 0 };
         while (seen[0] == null && months[0] < 24) {
+            r.setCash(Math.max(r.getCash(), till));
             quietly(() -> g.simulateMonths(1));
             months[0]++;
         }
         g.watchOrders(null);
         BusinessInvestment.Decision d = (BusinessInvestment.Decision) seen[0];
         SpreadPlanner.Candidate best = (SpreadPlanner.Candidate) seen[2];
-        report("fixture: an Oil Refinery standing on imported crude in a town of 600 houses, the refiners not held, orders within"
-                        + " two years", d != null, d == null ? "no order" : String.format("m%d: %s", g.getMonth(), d.reason));
+        report("fixture: an Oil Refinery standing on imported crude in a town of 600 houses, the refiners not held and the cost of"
+                        + " any unit in their till (0.7.103), orders within two years", d != null,
+                d == null ? "no order" : String.format("m%d: %s", g.getMonth(), d.reason));
         assertTrue("the planner's values are each product at the city's own price, to the bit", d != null && (Boolean) seen[3]);
         report("the order is the planner's best, a conversion unit, one of it", d != null && best != null && d.template == best.template()
                         && d.quantity == 1 && Refining.isConversionUnit(best.template()),
@@ -946,5 +977,84 @@ public class RefineryCheck {
         SpreadPlanner.Candidate pkg = r.appraise(crude, plans);
         assertTrue("a crude unit's estimate is its share of its package's earnings, by cost", pkg.cost() > 0
                 && r.estimatedMonthlyProfit(crude, plans) == pkg.earns() * plans.getCostOf(crude, 1) / pkg.cost());
+    }
+
+    /* ============================ 15. THE WORLD'S DEMAND FOR LUBRICANTS (0.7.103) ============================ */
+
+    static void lubricantsCapped(BuildingManager catalogue) throws Exception {
+        out.println("\n--- 15. the world takes a city's lubricants up to LUBRICANTS_WORLD_SHARE of its crude, and no more (0.7.103) ---");
+        double[] world = worldMid();
+        double[] none = new double[Kind.values().length];
+        BuildingsTemplate small = catalogue.getTemplateByName("Small Lube Plant"), refinery = catalogue.getTemplateByName("Oil Refinery");
+        double crude = refinery.uses(Good.CRUDE), litres = crude * Refining.CRUDE_LITRES_PER_TONNE;
+        RefineryFlow.Flow f = RefineryFlow.solve(none, crude, Refining.MEDIUM_MIX, world);
+        assertTrue("the world takes LUBRICANTS_WORLD_SHARE of a crude run's litres - 1%, the real share [R37] - and nothing of none",
+                Refining.LUBRICANTS_WORLD_SHARE == .01 && Refining.lubricantsWorldTakes(litres) == .01 * litres
+                        && Refining.lubricantsWorldTakes(0) == 0 && f.crude() == litres);
+        double home = 20_000;
+        assertTrue("...the room past a flow's own lubricants: the world's share of its crude and the city's own, less what it makes;"
+                        + " in the prototype's frame none is capped",
+                Refining.lubricantsRoom(f, home) == Refining.lubricantsWorldTakes(litres) + home - f.of(Good.LUBRICANTS)
+                        && Refining.lubricantsRoom(f, Double.POSITIVE_INFINITY) == Double.POSITIVE_INFINITY);
+        double perLitre = Refining.lubricantsPerLitreOfFeed(), plant = small.feedPerMonth() * perLitre;
+        SpreadPlanner.City city = frame(null, null);
+        SpreadPlanner.Candidate free = Refining.unitEstimate(f, small, city), alone = Refining.unitEstimate(f, small, city, 0);
+        report("fixture: an Oil Refinery's gas oil would feed a Small Lube Plant in the prototype's frame, and the world's share of its"
+                        + " crude is under FEED_GATE of the plant's lubricants",
+                free.refusal(SpreadPlanner.Gate.FEED) == null && perLitre == .40
+                        && Refining.lubricantsWorldTakes(litres) < SpreadPlanner.FEED_GATE * plant,
+                String.format("%,.0f L the world takes against %,.0f L a plant makes", Refining.lubricantsWorldTakes(litres), plant));
+        report("with no lubricants bought in the city the Small Lube Plant is refused at its feed, in the lubricants' words",
+                alone.failed() == SpreadPlanner.Gate.FEED && alone.why().contains("lubricants the world and the city would still take"),
+                alone.why());
+        SpreadPlanner.Candidate wanted = Refining.unitEstimate(f, small, city, plant);
+        assertTrue("...and with a plant's worth bought in the city it is weighed as in the prototype's frame: the same earnings",
+                wanted.refusal(SpreadPlanner.Gate.FEED) == null && wanted.earns() == free.earns());
+        java.util.List<BuildingsTemplate> ts = catalogue.getTemplatesBySector(Sectors.REFINING);
+        Refining.Outlook bare = prototypeOutlook(none, 0, M4000_PETROL, M4000_DIESEL, 0, Refining.MEDIUM_MIX);
+        Refining.Outlook capped = new Refining.Outlook(bare.feed(), bare.crude(), bare.mix(), bare.values(), bare.room(),
+                bare.spareCrude(), bare.spareMix(), bare.crudeLocal(), bare.crudeImport(), 0);
+        RefineryFlow.Flow nothing = RefineryFlow.solve(none, 0, Refining.MEDIUM_MIX, bare.values());
+        SpreadPlanner.Candidate open = Refining.packageEstimate(bare, nothing, refinery, ts, city),
+                shut = Refining.packageEstimate(capped, nothing, refinery, ts, city);
+        boolean lubeOpen = false, lubeShut = false;
+        for (BuildingsTemplate u : open.with()) lubeOpen |= u.refineryUnit() == Kind.LUBE;
+        for (BuildingsTemplate u : shut.with()) lubeShut |= u.refineryUnit() == Kind.LUBE;
+        report("an Oil Refinery's package takes a lube plant in the prototype's frame and none where the world and the city take"
+                        + " no more lubricants than its crude's share", lubeOpen && !lubeShut,
+                names(open.with()) + "; capped: " + names(shut.with()));
+
+        // In a town: an Oil Refinery and a Small Lube Plant standing, the refiners held.
+        Game g = plannerTown("refinerycheck-lubricants", true, "Small Lube Plant");
+        Refining r = g.getSectors().refining();
+        double worst = 0, made = 0, shipped = 0, ran = 0, idled = 0;
+        boolean within = true;
+        for (int m = 0; m < 12; m++) {
+            quietly(() -> g.simulateMonths(1));
+            worst = Math.max(worst, g.getLastMoneyAudit().relative());
+            Sector.Output o = r.outputRow(Good.LUBRICANTS);
+            Sector.Input c = r.inputRow(Good.CRUDE);
+            double run = (Math.max(0, c.boughtLocal) + Math.max(0, c.imported)) * Refining.CRUDE_LITRES_PER_TONNE;
+            within &= o.exportBound <= Refining.lubricantsWorldTakes(run) * (1 + 1e-12);
+            made += o.produced + o.exportBound + o.idled;
+            shipped += o.exportBound;
+            idled += o.idled;
+            ran += run;
+        }
+        report("fixture: the Small Lube Plant runs, its lubricants past what the world takes",
+                made > 0 && made > Refining.lubricantsWorldTakes(ran) && idled > 0,
+                String.format("its line %.2f%% of the crude run, the world's share %.0f%%", 100 * made / ran,
+                        100 * Refining.LUBRICANTS_WORLD_SHARE));
+        report("the ship's line takes no more lubricants than the world's share of the month's crude, every month; the rest idles",
+                within && shipped <= Refining.lubricantsWorldTakes(ran) * (1 + 1e-12),
+                String.format("shipped %.2f%% of the crude, idled %,.0f L", 100 * shipped / ran, idled));
+        report("...and the audit closes every month", worst < 1e-10, String.format("worst %.2e", worst));
+    }
+
+    /** The buildings a package was weighed with, by name. */
+    static String names(java.util.List<BuildingsTemplate> with) {
+        java.util.List<String> n = new java.util.ArrayList<>();
+        for (BuildingsTemplate t : with) n.add(t.getName());
+        return n.toString();
     }
 }
