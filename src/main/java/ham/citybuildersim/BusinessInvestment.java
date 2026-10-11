@@ -28,7 +28,10 @@ import java.util.List;
  *      to completion plus a planning horizon.
  *
  *   3. THE BRAKE. Businesses here borrow freely, so something has to stop a
- *      loss-making expansion spiral: a project must service its own debt.
+ *      loss-making expansion spiral: a project must service its own debt -
+ *      since 0.7.113 the interest on its whole cost, whoever pays (Jerus's
+ *      decisions A and A13; Game.consider(), ON ITS WHOLE COST), where until
+ *      then a project the till paid for was asked nothing.
  *      That is a business test rather than a credit limit, which is the
  *      honest place for it - the lender is willing, the business shouldn't be.
  *      Since 0.7.11 a landlord's home is asked the mortgage lender's test
@@ -1048,6 +1051,11 @@ public class BusinessInvestment {
      * Every order but a landlord's home since 0.7.11, which is bought on an
      * insured mortgage and asked the mortgage lender's test instead
      * (Mortgage.decide(), in Game.consider()).
+     *
+     * @param amountBorrowed what the interest is struck on: since 0.7.113 an
+     *        order's whole cost, whoever pays (Game.consider(), ON ITS WHOLE
+     *        COST; sectors.SpreadPlanner's ON_ITS_WHOLE_COST) - what it would
+     *        borrow until then, so nothing was asked of what the till paid for
      */
     public boolean servicesItsOwnDebt(double estimatedMonthlyProfit,
                                       double amountBorrowed, double annualRate) {

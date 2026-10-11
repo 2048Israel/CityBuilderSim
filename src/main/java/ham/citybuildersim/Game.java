@@ -4433,9 +4433,12 @@ public class Game {
      * Applies the brake, then builds.
      *
      * The plan says demand justifies the capacity. This asks the separate
-     * question of whether the business can carry what it would have to borrow -
-     * a lender here will fund anything, so the discipline has to come from the
-     * borrower.
+     * question of whether the building earns its keep on what it costs - a
+     * lender here will fund anything, so the discipline has to come from the
+     * borrower. Until 0.7.113 it asked that of what the order would borrow
+     * alone, so a building the till paid for was asked nothing; since then
+     * of its whole cost, whoever pays (Jerus's decisions A and A13 - see ON
+     * ITS WHOLE COST, below consider()).
      *
      * TWO SIDES OF THE SAME SCALE, AND THEY USED NOT TO MATCH.
      *
@@ -4580,9 +4583,9 @@ public class Game {
             return;
         }
 
-        // The largest slice that carries its interest: the countdown's own
-        // first slices, then a search (0.7.54) - see THE LARGEST SLICE,
-        // WITHOUT COUNTING TO IT, below.
+        // The largest slice that carries the interest on its whole cost (0.7.113):
+        // the countdown's own first slices, then a search (0.7.54) - see THE
+        // LARGEST SLICE, WITHOUT COUNTING TO IT, below.
         Afford afford = largestSliceThatCarries(decision, cash, perUnitProfit);
         if (orderWatch != null) orderWatch.invested(decision, cash, perUnitProfit, afford);
         int affordable = afford.quantity();
@@ -4591,18 +4594,21 @@ public class Game {
 
         if (affordable <= 0) {
             if (atPrime) refusedOnPrice.add(decision.sector);
+            // ...on its whole cost since 0.7.113 (ON ITS WHOLE COST, below): the rate is the debt's where it borrows, its own risk's where the till pays.
+            boolean borrows = businessInvestment.getCostOf(decision.template, decision.quantity) > cash;
             lastInvestment.put(slot, atPrime
-                    ? String.format("Declined %s - not even one would cover its interest at %.2f%%,"
-                            + " the rate its own risk costs at the debt it would take on",
-                            decision.template.getName(), firstRate * 100)
-                    : String.format("Declined %s - not even one would cover its interest",
+                    ? String.format("Declined %s - not even one would cover its interest on its whole cost at %.2f%%,"
+                            + " the rate its own risk costs%s",
+                            decision.template.getName(), firstRate * 100,
+                            borrows ? " at the debt it would take on" : " it")
+                    : String.format("Declined %s - not even one would cover its interest on its whole cost",
                             decision.template.getName()));
             return;
         }
 
         int quantity = affordable;
         String trimmed = quantity < decision.quantity
-                ? String.format(" (trimmed from %,d - could not carry the interest)",
+                ? String.format(" (trimmed from %,d - could not carry the interest on its whole cost)",
                         decision.quantity)
                 : "";
 
@@ -4662,7 +4668,8 @@ public class Game {
        THE LARGEST SLICE, WITHOUT COUNTING TO IT (0.7.54)
 
        consider() trims an order to the largest slice that carries its
-       interest. Until 0.7.54 it counted down from the whole order one
+       interest - on its whole cost since 0.7.113 (ON ITS WHOLE COST,
+       below). Until 0.7.54 it counted down from the whole order one
        building at a time and asked the bond desk about every one
        (financeProject()), so the month grew with the order and the order
        with the city: the scale study (the project's spec-scale.md, section
@@ -4686,7 +4693,12 @@ public class Game {
        (owed + a) / (owns + a), falls towards one for a sector that owes more
        than it owns (BusinessDebtManager.quote()), and a bond's fixed costs
        can make a bigger bond cheaper a dollar than a smaller one
-       (BondMarket.plan()). The study's halving matched the countdown to
+       (BondMarket.plan()); and since 0.7.113 a slice the till pays for is
+       judged at the sector's own rate, while a bigger one that borrows may
+       be judged at a bond's cheaper one (ON ITS WHOLE COST). At a fixed
+       rate the whole cost made it a run from one - the profit against a
+       fixed share of the cost, whose share a building rises past the yard -
+       but the rate is not fixed. The study's halving matched the countdown to
        x1000 and drifted 0.12% in people at x10,000. Here the search can
        differ from the countdown only if, below the slices counted, the test
        passes at some slice, fails at a smaller one and passes again at a
@@ -4706,19 +4718,44 @@ public class Game {
        when none passes, and then the countdown had asked every slice that.
        Up to PRIME_SCAN_SLICES slices, so do we (Slices.askPrimeOfTheRest()),
        which costs no bond desk. Past that we ask four, because at a fixed
-       rate that test is drawn in straight lines: none passing means even one
-       building borrows, so every slice borrows its cost less the till, and
-       the test is the profit against a fixed share of that. The cost is the
-       builders' price a building and the materials past the yard - two
+       rate that test is drawn in straight lines: the profit against a fixed
+       share of the slice's whole cost (until 0.7.113 of its cost less the
+       till, which none passing then meant every slice borrowed). The cost is
+       the builders' price a building and the materials past the yard - two
        straight pieces, the second steeper - so what the interest is short
        by is least at one, at the whole order, or either side of where the
        yard runs out (BusinessInvestment.yardCovers()), and if none of those
        four carries it, none does: exactly so in real arithmetic, and to the
        rounding of the test's own figures in a double, which the scan to
        PRIME_SCAN_SLICES keeps out of every order today's cities place.
+       Under a borrowing ban only the slices the till pays for are asked, so
+       the last of them is asked too (largestSlice() on the cost against the
+       till, a run from one): the line's ends are then one and that slice.
        Asking every slice of an order of 280 million, as 0.7.53's count did
        in a copy of the playtest's city at 5 billion, kept its median month
        at 8.8 s.
+
+       ON ITS WHOLE COST (0.7.113, batch I2b). Jerus, 2026-10-08 (decision
+       A): "test every order on its whole cost, whoever pays"; 2026-10-10
+       (A13): for these orders and the sea's. Until then a slice was asked to
+       earn PROFIT_OVER_INTEREST times the interest on what it would borrow,
+       its cost less the till, so a slice the till paid for was asked
+       nothing, and loss-making or thin plants were built: on the playtest's
+       city a Diner losing $7k a month at month 9, and from month 127 Filling
+       Stations losing $14k to $43k a month, out of the shops' till. Now each
+       slice is asked it of its whole cost (Slices.passes()), at the one rate
+       the slice is judged at - the loan's at the leverage it leaves
+       (BusinessDebtManager.projectRate()), or a bond's blended with the
+       bank's where one is cheaper and raises it all (financeProject()) - the
+       till's part priced as the money it stands in for, what the slice would
+       otherwise raise at the margin. The financing is as it was: the till
+       pays first, the bond desk is asked for what is borrowed, and a ban
+       stops a slice that borrows. "At prime" and the refusal's words read
+       the same whole cost. The sea's three orders are asked it here like
+       every other (sectors.Oil's planner asks carriesItsWholeCost() before it
+       walks on from one kind to the next), the processing sectors' plans in
+       SpreadPlanner's money gate too (ON_ITS_WHOLE_COST, 0.7.112). A
+       landlord's home is not asked it: the mortgage lender's test, below.
        ======================================================================= */
 
     /** The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. */
@@ -4795,69 +4832,97 @@ public class Game {
             this.banned = credit.isBorrowingBlocked(decision.sector);
         }
 
-        /** Whether n of them carry their interest; what failed at prime and the rate at the whole order are kept for the refusal. */
+        /** Whether n of them carry the interest on their whole cost (0.7.113); what failed at prime and the rate at the whole order are kept for the refusal. */
         boolean passes(int n) {
             double cost = businessInvestment.getCostOf(decision.template, n);
             double borrowed = Math.max(cost - cash, 0);
             // Under a ban the largest slice is the one its own cash pays for.
             if (banned && borrowed > 0) return false;
-            /*
-             * AT THE RATE THE LOAN WOULD BE WRITTEN AT (0.7.8), not today's
-             * quote: the curve at the leverage this slice leaves the sector
-             * at, its building counted (BusinessDebtManager.projectRate()).
-             * Judged at the quote, a plan that takes a sector from 0.8 to 1.2
-             * times its assets was asked to earn prime and a quarter point,
-             * and then written at prime and eleven. This is the brake.
-             */
-            double rate = credit.projectRate(decision.sector, borrowed);
-            if (n == decision.quantity) firstRate = rate;
-            /*
-             * ...OR AT A BOND'S, WHERE ONE IS CHEAPER (0.7.12). Jerus:
-             * "Cheapest, within the bank's limit." The same test - the
-             * building must earn BusinessInvestment's margin over the
-             * interest - at the instrument's own rate: the bond's coupon on
-             * what the bond raises and the loan's rate on the rest, as
-             * financeProject() splits it. A plan that cannot raise the whole
-             * is judged at the loan's rate, as before, and the bank's own
-             * rules say no at the door.
-             */
-            BusinessDebtManager.Plan plan = null;
-            if (borrowed > 0) {
-                plan = financeProject(decision.sector, borrowed, rate);
-                deskCalls++;
-            }
-            double tested = plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : rate;
-            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed, tested)) return true;
-            if (carriesAtPrime(n, borrowed)) atPrime = true;
+            Judged at = judged(decision.sector, borrowed);
+            if (n == decision.quantity) firstRate = at.rate();
+            if (at.askedDesk()) deskCalls++;
+            // ON ITS WHOLE COST (0.7.113): the interest on all the slice costs, whoever pays - until then on what it borrowed alone.
+            if (businessInvestment.servicesItsOwnDebt(perUnitProfit * n, cost, at.tested())) return true;
+            if (carriesAtPrime(n, cost)) atPrime = true;
             return false;
         }
 
-        /** Whether n of them would carry their interest at prime and the sector's record. */
-        boolean carriesAtPrime(int n, double borrowed) {
-            return businessInvestment.servicesItsOwnDebt(perUnitProfit * n, borrowed,
+        /** Whether n of them, costing `cost`, would carry the interest on it at prime and the sector's record - on their whole cost since 0.7.113. */
+        boolean carriesAtPrime(int n, double cost) {
+            return businessInvestment.servicesItsOwnDebt(perUnitProfit * n, cost,
                     credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector));
         }
 
-        /** When none passes: whether any of the q slices would have carried it at prime - every slice to PRIME_SCAN_SLICES, the four that decide it past that. */
+        /** When none passes: whether any of the q slices would have carried it at prime - every slice to PRIME_SCAN_SLICES, the four that decide it past that, and under a ban the last the till pays for. */
         void askPrimeOfTheRest(int q) {
             if (q <= PRIME_SCAN_SLICES) {
                 for (int n = 1; n <= q && !atPrime; n++) askPrime(n);
                 return;
             }
             long yard = businessInvestment.yardCovers(decision.template);
-            for (long n : new long[] { 1, q, yard, yard + 1 }) {
+            // ...under a ban only what the till pays for is asked: its last slice is the line's other end (0.7.113).
+            long till = banned ? largestSlice(q, n -> businessInvestment.getCostOf(decision.template, n) <= cash) : q;
+            for (long n : new long[] { 1, q, yard, yard + 1, till }) {
                 if (n >= 1 && n <= q && !atPrime) askPrime((int) n);
             }
         }
 
         /** Whether n of them would have carried it at prime, as the countdown asked it of a slice that failed. */
         void askPrime(int n) {
-            double borrowed = Math.max(businessInvestment.getCostOf(decision.template, n) - cash, 0);
-            if (banned && borrowed > 0) return;
-            if (carriesAtPrime(n, borrowed)) atPrime = true;
+            double cost = businessInvestment.getCostOf(decision.template, n);
+            if (banned && cost > cash) return;
+            if (carriesAtPrime(n, cost)) atPrime = true;
         }
 
         Afford result(int quantity) { return new Afford(quantity, atPrime, firstRate, deskCalls); }
+    }
+
+    /** The rate a slice is judged at: the loan's, and the one tested - a bond's blended with the bank's where one is cheaper and raises it all; and whether the bond desk was asked. */
+    private record Judged(double rate, double tested, boolean askedDesk) { }
+
+    /** ...for a slice of `sector`'s that borrows `borrowed`. Books nothing. */
+    private Judged judged(String sector, double borrowed) {
+        /*
+         * AT THE RATE THE LOAN WOULD BE WRITTEN AT (0.7.8), not today's
+         * quote: the curve at the leverage this slice leaves the sector
+         * at, its building counted (BusinessDebtManager.projectRate()).
+         * Judged at the quote, a plan that takes a sector from 0.8 to 1.2
+         * times its assets was asked to earn prime and a quarter point,
+         * and then written at prime and eleven. This is the brake.
+         */
+        double rate = economyManager.getBusinessDebtManager().projectRate(sector, borrowed);
+        if (!(borrowed > 0)) return new Judged(rate, rate, false);
+        /*
+         * ...OR AT A BOND'S, WHERE ONE IS CHEAPER (0.7.12). Jerus:
+         * "Cheapest, within the bank's limit." The same test - the
+         * building must earn BusinessInvestment's margin over the
+         * interest - at the instrument's own rate: the bond's coupon on
+         * what the bond raises and the loan's rate on the rest, as
+         * financeProject() splits it. A plan that cannot raise the whole
+         * is judged at the loan's rate, as before, and the bank's own
+         * rules say no at the door. Since 0.7.113 that rate is asked of
+         * the whole cost (ON ITS WHOLE COST).
+         */
+        BusinessDebtManager.Plan plan = financeProject(sector, borrowed, rate);
+        return new Judged(rate, plan != null && plan.hasBond() && plan.covers() ? plan.blendedRate() : rate, true);
+    }
+
+    /**
+     * Whether an order by `sector` costing `cost` and earning `earns` a
+     * month would carry the interest on its whole cost, as consider() asks
+     * each slice (ON ITS WHOLE COST, 0.7.113): it earns something, and at
+     * least PROFIT_OVER_INTEREST times a month's interest on the cost at the
+     * rate it would be judged at, its till and what it holds abroad paying
+     * first; false where it would borrow under a ban. The question a planner
+     * asks before it walks on from one kind to the next (sectors.Oil, THE
+     * OIL AT SEA). Books nothing.
+     */
+    public boolean carriesItsWholeCost(String sector, double earns, double cost) {
+        if (!(earns > 0)) return false;
+        double till = economyManager.getSectorCash(sector) + Math.max(0, economyManager.getForeignAssets(sector));
+        double borrowed = Math.max(cost - till, 0);
+        if (borrowed > 0 && economyManager.getBusinessDebtManager().isBorrowingBlocked(sector)) return false;
+        return businessInvestment.servicesItsOwnDebt(earns, cost, judged(sector, borrowed).tested());
     }
 
     /* =======================================================================
